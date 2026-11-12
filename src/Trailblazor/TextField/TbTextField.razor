@@ -195,6 +195,8 @@
         }
     }
 
+    private protected override string FieldModifiers => ClassNames.Join(base.FieldModifiers, "tb-text-field");
+
     private protected override string? FormatValue(TValue? value)
     {
         var text = base.FormatValue(value);

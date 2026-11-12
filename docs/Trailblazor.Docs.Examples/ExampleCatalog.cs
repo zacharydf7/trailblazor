@@ -3074,7 +3074,9 @@ public static class ExampleCatalog
             ],
             TestingTip = "A field with `UpdateDelay` takes its value once typing pauses, so assert with Playwright's "
                 + "`Expect`, which waits, or press Enter to update it at once. In bUnit, which runs no browser, the "
-                + "value updates on each input, so there's nothing to wait for.",
+                + "value updates on each input, so there's nothing to wait for. "
+                + "`await cut.Tb().TextField(\"Trail\").EnterAsync(\"Pine Hollow\")` from `Trailblazor.Testing` types "
+                + "the text and commits it.",
         },
         new("rich-text-editor", "Rich text editor", ExampleCategory.Inputs,
             "A labeled field for formatted text, with a toolbar, shortcuts, undo and paste cleanup.")
@@ -7502,8 +7504,10 @@ public static class ExampleCatalog
                     + "`Shipping.City` unless the column has an `Id`. A pinned column's header and cells also carry "
                     + "`data-pinned`, `start` or `end`, and a filter cell's `data-value` holds its applied values as "
                     + "invariant text, with a range's two dates separated by a space.",
-                "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync` and "
-                    + "`FilterAsync`.",
+                "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync`, "
+                    + "`SortAsync` and `FilterAsync`, and `Cell(row, column)` finds a cell. "
+                    + "With that driver as `grid`, `cut.Tb().Within(() => grid.Row(\"Cedar Flats\"))` finds the "
+                    + "fields in one row.",
                 "In bUnit, `await cut.Tb().Menu(\"Export\").ChooseAsync(\"CSV\")` downloads the file into "
                     + "`FakeBrowserService.Downloads`, where `Text` reads a CSV back, starting with its byte order "
                     + "mark. In Playwright, wrap the choice in "

@@ -75,8 +75,8 @@
 
         <DocsHeading Id="bunit-fields" Text="Drive fields in bUnit" Class="docs-section" />
         <TbText>
-            <code>cut.Tb()</code> finds fields by their labels and drives them the way a user does. The helpers have
-            the same names as the <a href="guides/testing#playwright">Playwright helpers</a>.
+            <code>cut.Tb()</code> finds fields by their labels and drives them the way a user does. Most have the
+            same names as the <a href="guides/testing#playwright">Playwright helpers</a>.
         </TbText>
         <div class="docs-api" tabindex="0" role="region" aria-label="bUnit helpers">
             <table>
@@ -98,6 +98,18 @@
                     <tr>
                         <th scope="row"><code>ListBox(label).ChooseAsync(options)</code></th>
                         <td>Chooses options in a list box by their text.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>TextField(label).EnterAsync(text)</code></th>
+                        <td>Types text and commits it, and <code>Text</code> reads what the field shows.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Within(() =&gt; element)</code></th>
+                        <td>
+                            Finds components only inside an element, such as a grid's row, so a field that repeats in
+                            every row can be told apart. It finds the element again each time a helper runs, so a render
+                            doesn't leave it stale. In Playwright, <code>row.Tb()</code> does the same.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>NumberField(label).EnterAsync(text)</code></th>
@@ -161,10 +173,11 @@
                         <th scope="row"><code>Grid(name)</code></th>
                         <td>
                             Clicks or selects a row by a cell's text, with <code>ClickRowAsync</code> and
-                            <code>SelectAsync</code>, filters a column with <code>FilterAsync</code> or picks a filter's
-                            values with <code>FilterChoicesAsync</code>, and resizes a column with
-                            <code>ResizeColumnAsync</code>. Reads the column headers with <code>Columns</code>, a
-                            column's total with <code>Total</code> and each group's totals with
+                            <code>SelectAsync</code>, sorts by a column with <code>SortAsync</code>, filters a column
+                            with <code>FilterAsync</code> or picks a filter's values with
+                            <code>FilterChoicesAsync</code>, and resizes a column with <code>ResizeColumnAsync</code>.
+                            Finds a cell with <code>Cell</code>, and reads the column headers with <code>Columns</code>,
+                            a column's total with <code>Total</code> and each group's totals with
                             <code>GroupTotals</code>.
                         </td>
                     </tr>

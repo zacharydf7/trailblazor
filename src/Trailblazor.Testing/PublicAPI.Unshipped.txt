@@ -171,3 +171,10 @@ Trailblazor.Testing.TbTreeSelectDriver.FilterAsync(string! text) -> System.Threa
 Trailblazor.Testing.TrailblazorMarkup.TreeSelect(string! label) -> Trailblazor.Testing.TbTreeSelectDriver!
 static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog, TResult>(this Bunit.IRenderedComponent<Trailblazor.TbRoot!>! root, string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, TResult>!>!
 static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog>(this Bunit.IRenderedComponent<Trailblazor.TbRoot!>! root, string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, bool>!>!
+Trailblazor.Testing.TrailblazorMarkup.Within(System.Func<AngleSharp.Dom.IElement!>! scope) -> Trailblazor.Testing.TrailblazorMarkup!
+Trailblazor.Testing.TrailblazorMarkup.TextField(string! label) -> Trailblazor.Testing.TbTextFieldDriver!
+Trailblazor.Testing.TbTextFieldDriver
+Trailblazor.Testing.TbTextFieldDriver.Text.get -> string?
+Trailblazor.Testing.TbTextFieldDriver.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.Cell(string! row, string! column) -> AngleSharp.Dom.IElement!
+Trailblazor.Testing.TbGridDriver.SortAsync(string! column, bool descending = false) -> System.Threading.Tasks.Task!

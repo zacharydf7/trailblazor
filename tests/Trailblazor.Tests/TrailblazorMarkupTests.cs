@@ -394,6 +394,131 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Grid_ShouldSortByAColumnAndFindACell_WhenAskedByTitle()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
+            .Add(grid => grid.Items,
+                [new("Pine Hollow", "North"), new("Cedar Flats", "East"), new("Lake camp", "East")])
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Trail>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Trail>.Field),
+                    (System.Linq.Expressions.Expression<Func<Trail, object?>>)(trail => trail.Name));
+                builder.AddAttribute(2, nameof(TbColumn<Trail>.Sortable), true);
+                builder.CloseComponent();
+                builder.OpenComponent<TbColumn<Trail>>(3);
+                builder.AddAttribute(4, nameof(TbColumn<Trail>.Field),
+                    (System.Linq.Expressions.Expression<Func<Trail, object?>>)(trail => trail.Region));
+                builder.AddAttribute(5, nameof(TbColumn<Trail>.Sortable), true);
+                builder.CloseComponent();
+            })));
+        var grid = cut.Tb().Grid("Trails");
+        // Sorting by Name and then Region, with Shift, leaves Name sorted ascending but not alone.
+        await cut.FindAll("thead [data-part=sort]")[0].ClickAsync(new());
+        await cut.FindAll("thead [data-part=sort]")[1].ClickAsync(new() { ShiftKey = true });
+
+        await grid.SortAsync("Name");
+
+        Assert.Equal(["Cedar Flats", "Lake camp", "Pine Hollow"], cut.FindAll("tbody tr[data-part=row]")
+            .Select(row => row.QuerySelector("td")!.TextContent.Trim()));
+        Assert.Empty(cut.FindAll("[data-part=sort-order]"));
+        Assert.Equal("East", grid.Cell("Lake camp", "Region").TextContent.Trim());
+    }
+
+    [Theory]
+    [InlineData(false, 1)]
+    [InlineData(true, 1)]
+    [InlineData(false, 3)]
+    public async Task TextField_ShouldCommitTheText_WhenEntered(bool updateOnInput, int lines)
+    {
+        var values = new List<string?>();
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.UpdateOnInput, updateOnInput).Add(field => field.Lines, lines)
+            .Add(field => field.ValueChanged, (string value) => values.Add(value)));
+
+        await cut.Tb().TextField("Trail").EnterAsync("Pine Hollow");
+
+        Assert.Equal("Pine Hollow", values.Last());
+        Assert.Equal("Pine Hollow", cut.Tb().TextField("Trail").Text);
+    }
+
+    [Fact]
+    public async Task Within_ShouldDriveTheFieldInTheScope_WhenTheLabelRepeats()
+    {
+        string? first = null;
+        string? second = null;
+        var cut = Render(builder =>
+        {
+            (string Id, Action<string> Set)[] fields =
+                [("first", value => first = value), ("second", value => second = value)];
+            foreach (var (id, set) in fields)
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "id", id);
+                builder.OpenComponent<TbTextField<string>>(2);
+                builder.AddAttribute(3, nameof(TbTextField<string>.Label), "Count");
+                builder.AddAttribute(4, nameof(TbTextField<string>.ValueChanged),
+                    EventCallback.Factory.Create(this, set));
+                builder.CloseComponent();
+                builder.CloseElement();
+            }
+        });
+
+        await cut.Tb().Within(() => cut.Find("#second")).TextField("Count").EnterAsync("2");
+
+        Assert.Equal((null, "2"), (first, second));
+        Assert.Throws<InvalidOperationException>(() => cut.Tb().TextField("Count").Text);
+    }
+
+    [Fact]
+    public async Task Within_ShouldChooseFromTheMenuInTheScope_WhenItsTriggerRepeats()
+    {
+        var chosen = new List<string>();
+        var cut = Render(builder =>
+        {
+            foreach (var row in new[] { "first", "second" })
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "id", row);
+                builder.OpenComponent<TbMenu>(2);
+                builder.AddAttribute(3, nameof(TbMenu.Label), "Actions");
+                builder.AddAttribute(4, nameof(TbMenu.ChildContent), (RenderFragment)(items =>
+                {
+                    items.OpenComponent<TbMenuItem>(0);
+                    items.AddAttribute(1, nameof(TbMenuItem.ChildContent),
+                        (RenderFragment)(text => text.AddContent(0, "Delete")));
+                    items.AddAttribute(2, nameof(TbMenuItem.OnClick),
+                        EventCallback.Factory.Create<MouseEventArgs>(this, () => chosen.Add(row)));
+                    items.CloseComponent();
+                }));
+                builder.CloseComponent();
+                builder.CloseElement();
+            }
+        });
+
+        await cut.Tb().Within(() => cut.Find("#second")).Menu("Actions").ChooseAsync("Delete");
+
+        Assert.Equal(["second"], chosen);
+    }
+
+    [Fact]
+    public async Task TextField_ShouldThrow_WhenTheFieldIsReadOnly()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.ReadOnly, true));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().TextField("Trail").EnterAsync("Pine"));
+    }
+
+    [Fact]
+    public void TextField_ShouldThrow_WhenTheLabelNamesAnotherKindOfField()
+    {
+        var cut = Render<TbTagInput>(parameters => parameters.Add(field => field.Label, "Features"));
+
+        Assert.Throws<InvalidOperationException>(() => cut.Tb().TextField("Features").Text);
+    }
+
+    [Fact]
     public async Task Tree_ShouldExpandSelectAndCheckRowsByTheirTexts_WhenRowsRepeatATextAndHoldATree()
     {
         IReadOnlyCollection<string> selected = [];
@@ -603,5 +728,5 @@ public class TrailblazorMarkupTests : BunitContext
         }
     };
 
-    private sealed record Trail(string Name);
+    private sealed record Trail(string Name, string Region = "");
 }

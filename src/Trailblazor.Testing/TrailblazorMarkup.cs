@@ -7,8 +7,8 @@ using Trailblazor.Internal.Events;
 
 namespace Trailblazor.Testing;
 
-/// <summary>bUnit helpers that find Trailblazor components by their labels and names, as a user would, with the same
-/// names as the Playwright helpers in Trailblazor.Testing.Playwright.</summary>
+/// <summary>bUnit helpers that find Trailblazor components by their labels and names, as a user would, mostly with the
+/// same names as the Playwright helpers in Trailblazor.Testing.Playwright.</summary>
 public static class TrailblazorMarkupExtensions
 {
     /// <summary>The Trailblazor components in this rendered markup.</summary>
@@ -23,6 +23,17 @@ public sealed class TrailblazorMarkup
     private readonly Func<string, IReadOnlyList<IElement>> _findAll;
 
     internal TrailblazorMarkup(Func<string, IReadOnlyList<IElement>> findAll) => _findAll = findAll;
+
+    /// <summary>The Trailblazor components inside the element <paramref name="scope"/> finds, such as a grid's row,
+    /// so a field that repeats in every row can be told apart:
+    /// <c>cut.Tb().Within(() =&gt; cut.Tb().Grid("Orders").Row("Tent")).Select("Size")</c>. The element is found again
+    /// each time a helper looks for a component, since one found before a render is stale after it.</summary>
+    public TrailblazorMarkup Within(Func<IElement> scope) =>
+        new(selector => scope().QuerySelectorAll(selector).ToList());
+
+    /// <summary>The <c>TbTextField</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
+    public TbTextFieldDriver TextField(string label) =>
+        new(() => Field(label, ".tb-text-field input[data-part=input]", ".tb-text-field textarea[data-part=input]"));
 
     /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> with this label, or with this <c>AriaLabel</c> when it
     /// has no label.</summary>
@@ -344,6 +355,38 @@ internal static class Choices
     }
 }
 
+/// <summary>A <c>TbTextField</c>, found by its label.</summary>
+public sealed class TbTextFieldDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbTextFieldDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The text the field shows.</summary>
+    public string? Text => _find().GetAttribute("value");
+
+    /// <summary>Types this text into the field and commits it, as typing and then leaving the field does. It sends
+    /// whichever of the input and change events the field listens for, so a mask or check runs as in a browser. A
+    /// read-only or disabled field throws, since a user can't type into it.</summary>
+    public async Task EnterAsync(string text)
+    {
+        if (_find().HasAttribute("readonly") || _find().HasAttribute("disabled"))
+        {
+            throw new InvalidOperationException("This field is read-only or disabled, so text can't be typed into it.");
+        }
+
+        if (_find().HasAttribute("blazor:oninput"))
+        {
+            await _find().InputAsync(new ChangeEventArgs { Value = text });
+        }
+
+        if (_find().HasAttribute("blazor:onchange"))
+        {
+            await _find().ChangeAsync(new ChangeEventArgs { Value = text });
+        }
+    }
+}
+
 /// <summary>A <c>TbNumberField</c>, found by its label.</summary>
 public sealed class TbNumberFieldDriver
 {
@@ -649,6 +692,33 @@ public sealed class TbGridDriver
             : throw new InvalidOperationException(rows.Count == 0
                 ? $"No row has a cell that reads \"{cell}\"."
                 : $"{rows.Count} rows have a cell that reads \"{cell}\".");
+    }
+
+    /// <summary>The cell under the column with this title in the row with a cell whose text is exactly
+    /// <paramref name="row"/>.</summary>
+    public IElement Cell(string row, string column) =>
+        Row(row).QuerySelector($"td[data-column=\"{Header(column).GetAttribute("data-column")}\"]")
+        ?? throw new InvalidOperationException($"The row \"{row}\" has no cell under \"{column}\".");
+
+    /// <summary>Sorts the rows by this column alone, ascending or descending, clicking its header until it shows that
+    /// order.</summary>
+    public async Task SortAsync(string column, bool descending = false)
+    {
+        var wanted = descending ? "descending" : "ascending";
+        // A plain click sorts by the column alone; after that it reverses the order, then stops sorting by the column.
+        for (var clicks = 0; clicks < 4; clicks++)
+        {
+            var header = Header(column);
+            if (header.GetAttribute("aria-sort") == wanted && _find().QuerySelector("[data-part=sort-order]") is null)
+            {
+                return;
+            }
+
+            await (header.QuerySelector("[data-part=sort]") ?? throw new InvalidOperationException(
+                $"The \"{column}\" column can't be sorted; make it Sortable.")).ClickAsync(new MouseEventArgs());
+        }
+
+        throw new InvalidOperationException($"The \"{column}\" column didn't sort {wanted}.");
     }
 
     /// <summary>Clicks the row with a cell whose text is exactly this, as the browser reports a click on a plain cell
