@@ -4525,3 +4525,8 @@ Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.UnmatchedText.get -> System.Fu
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.UnmatchedText.set -> void
 override Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 ~override Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+const Trailblazor.TbStrings.TreeSelectMore = "TreeSelect.More" -> string!
+Trailblazor.TbMultiTreeSelect<TItem, TKey>.MaxShown.get -> int?
+Trailblazor.TbMultiTreeSelect<TItem, TKey>.MaxShown.set -> void
+Trailblazor.TbMultiTreeSelect<TItem, TKey>.MoreLabel.get -> string?
+Trailblazor.TbMultiTreeSelect<TItem, TKey>.MoreLabel.set -> void

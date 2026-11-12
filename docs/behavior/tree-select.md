@@ -47,6 +47,7 @@ Familiar apps: the folder picker in Google Drive's move dialog, the category pic
 - [x] A value whose item hasn't loaded still shows a name, from `UnmatchedText`. `TbTreeSelectTests.Render_ShouldAskForTheText_WhenTheValuesItemIsntLoaded`
 - [x] A key type's default, such as 0 for an `int`, counts as nothing chosen and shows the placeholder. `TbTreeSelectTests.Render_ShouldShowThePlaceholder_WhenAnIntKeyHoldsItsDefault`
 - [x] A multi tree select's field shows the checked items' text, separated by commas, or the placeholder when none is checked. `TbMultiTreeSelectTests.Render_ShouldShowTheCheckedItemsTextOrThePlaceholder_WhenGivenAValue`
+- [x] Past `MaxShown` items (three unless set), the field counts the rest, so its accessible name stays short. `TbMultiTreeSelectTests.Render_ShouldNameUpToMaxShownItemsAndCountTheRest_WhenGivenMaxShown`, `TbMultiTreeSelectTests.Render_ShouldNameThreeItemsAndCountTheRest_WhenMaxShownIsLeftAlone`
 - [x] A required field with nothing chosen leaves the form invalid. `TbTreeSelectTests.Form_ShouldBeInvalid_WhenARequiredTreeSelectIsEmpty`
 
 ## Not applicable

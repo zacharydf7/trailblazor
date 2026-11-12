@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor;
@@ -13,6 +14,17 @@ public class TbMultiTreeSelect<TItem, [DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter]
     public bool CascadeChecks { get; set; } = true;
 
+    /// <summary>How many checked items the field names before it counts the rest, as in "Pine Hollow, Cedar Flats,
+    /// Fern Gully, 4 more", which keeps the field and its accessible name short. Null names them all. Defaults to 3.
+    /// </summary>
+    [Parameter]
+    public int? MaxShown { get; set; } = 3;
+
+    /// <summary>The text that counts the checked items the field doesn't name, with {0} for how many. Defaults to the
+    /// app's text for <see cref="TbStrings.TreeSelectMore"/>, "{0} more" in English.</summary>
+    [Parameter]
+    public string? MoreLabel { get; set; }
+
     private protected override string? ValueText
     {
         get
@@ -23,7 +35,14 @@ public class TbMultiTreeSelect<TItem, [DynamicallyAccessedMembers(DynamicallyAcc
             }
 
             var items = ByKey();
-            return string.Join(", ", value.Select(key => TextOf(key, items)));
+            var shown = value.Take(MaxShown ?? value.Count).Select(key => TextOf(key, items)).ToList();
+            if (shown.Count < value.Count)
+            {
+                shown.Add(string.Format(CultureInfo.CurrentCulture, MoreLabel ?? Localizer[TbStrings.TreeSelectMore],
+                    value.Count - shown.Count));
+            }
+
+            return string.Join(", ", shown);
         }
     }
 

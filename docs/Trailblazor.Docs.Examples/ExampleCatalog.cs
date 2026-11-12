@@ -4255,8 +4255,10 @@ public static class ExampleCatalog
                     + "loaded, such as a saved choice in a branch not yet opened.", typeof(TreeSelectExample)),
                 new("choose-several", "Choosing several items", "`TbMultiTreeSelect` binds a list of keys. Its tree "
                     + "has a checkbox on each row, and stays open while items are checked by click, Enter or Space; "
-                    + "the field shows their text, separated by commas. Checking an item checks the items inside it, "
-                    + "and a parent shows whether all, some or none of them are checked; `CascadeChecks=\"false\"` "
+                    + "the field shows their text, separated by commas. Past `MaxShown` items (3 unless set), the "
+                    + "field counts the rest, as in \"4 more\", and `MoreLabel` words the count. Checking an item "
+                    + "checks the items inside it, and a parent shows whether all, some or none of them are checked; "
+                    + "`CascadeChecks=\"false\"` "
                     + "checks each row on its own. When `IsSelectable` leaves out a heading, it has a checkbox only "
                     + "while checks cascade; the checkbox checks the items inside it, including those that load "
                     + "later, but the heading isn't part of the value. The value lists keys in tree order, except "
@@ -4283,7 +4285,8 @@ public static class ExampleCatalog
             Labeling =
             [
                 "The field's `Label` and the chosen item's text name its button together, as they would a select; "
-                    + "in a multi tree select, the checked items' text takes the chosen item's place.",
+                    + "in a multi tree select, the first `MaxShown` checked items' text and a count of the rest take the "
+                    + "chosen item's place.",
             ],
             Announcements =
             [

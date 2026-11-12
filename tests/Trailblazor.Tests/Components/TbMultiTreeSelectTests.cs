@@ -70,6 +70,28 @@ public class TbMultiTreeSelectTests : BunitContext
         Assert.Equal("Choose trails", cut.Find("[data-part=value]").TextContent.Trim());
     }
 
+    [Theory]
+    [InlineData(null, null, "Pine Hollow, Eagle Ridge, Cedar Flats")]
+    [InlineData(2, null, "Pine Hollow, Eagle Ridge, 1 more")]
+    [InlineData(0, "{0} trails", "3 trails")]
+    public void Render_ShouldNameUpToMaxShownItemsAndCountTheRest_WhenGivenMaxShown(int? maxShown, string? more,
+        string expected)
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.Value, ["pine", "eagle", "cedar"])
+            .Add(select => select.MaxShown, maxShown).Add(select => select.MoreLabel, more));
+
+        Assert.Equal(expected, cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldNameThreeItemsAndCountTheRest_WhenMaxShownIsLeftAlone()
+    {
+        var cut = RenderPlaces(parameters =>
+            parameters.Add(select => select.Value, ["pine", "eagle", "cedar", "valley"]));
+
+        Assert.Equal("Pine Hollow, Eagle Ridge, Cedar Flats, 1 more", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
     [Fact]
     public void Check_ShouldLeaveAHeadingOutOfTheValue_WhenIsSelectableExcludesIt()
     {

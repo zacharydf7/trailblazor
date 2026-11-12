@@ -943,6 +943,10 @@ public static class TbStrings
     /// <summary>"Search": names a tree select's search field and is its placeholder.</summary>
     public const string TreeSelectSearch = "TreeSelect.Search";
 
+    /// <summary>"{0} more": ends a multi tree select's field when it lists only some of the checked items; {0} is how
+    /// many it leaves out.</summary>
+    public const string TreeSelectMore = "TreeSelect.More";
+
     // Each Plural key's one-form, which the default Plural gives for a count of 1.
     private static readonly FrozenDictionary<string, string> OneForms = new Dictionary<string, string>
     {
@@ -1241,6 +1245,7 @@ public static class TbStrings
         [TreeViewItemCount] = "{0} items",
         [TreeViewCantMoveIntoItself] = "An item can't move into itself.",
         [TreeSelectSearch] = "Search",
+        [TreeSelectMore] = "{0} more",
         [SortableHandle] = "Move {0}",
         [SortableHint] =
             "Arrow keys move it, and Home and End move it to the start or end. Enter opens a menu of moves.",
