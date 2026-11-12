@@ -133,18 +133,23 @@
         <DocsHeading Id="what-each-control-counts" Text="What each control counts" Class="docs-section" />
         <ul class="docs-notes">
             <li>
-                <strong>Buttons, icon buttons, links, toggle items, checkboxes and switches:</strong> shown as they
-                first render, and used each time they are clicked, pressed or changed. A switch counts that it changed,
-                never to what.
+                <strong>Buttons, icon buttons, links, list items, toggle items, checkboxes and switches:</strong> shown
+                as they first render, and used each time they are clicked, pressed or changed. A switch counts that it
+                changed, never to what.
+            </li>
+            <li>
+                <strong>Toolbar buttons:</strong> shown as they render, and used each time they're chosen, in the
+                toolbar or from its overflow menu. The button counts as a <code>TbButton</code> or
+                <code>TbIconButton</code>, and its overflow item as a <code>TbMenuItem</code>, under the same name.
             </li>
             <li>
                 <strong>Tabs:</strong> a tab's header is shown as it renders, and the tab is used each time the user
                 selects it.
             </li>
             <li>
-                <strong>Menus and their items:</strong> a labeled menu is shown as it renders and used each time it
-                opens, by pointer or key, which is how often its items are seen; a labeled item counts its uses only,
-                since it renders hidden until the menu opens.
+                <strong>Menus, popovers and menu items:</strong> a labeled menu or popover is shown as it renders and
+                used each time it opens, by pointer or key, which is how often its contents are seen; a labeled item,
+                checkbox item or radio item counts its uses only, since it renders hidden until the menu opens.
             </li>
             <li>
                 <strong>Selects and list boxes:</strong> a labeled one is shown as it renders and used for each choice,

@@ -17,8 +17,8 @@ cascade layers, and built on the browser's native `<dialog>`, Popover API and an
   use it. The counts go through OpenTelemetry to the dashboard you already have, so features that are shown but never
   used stand out. Nothing is recorded until the app listens, and nothing about the user is recorded at all.
 
-Trailblazor is in development (phase 2: parity with the components a large app needs). There are no packages yet. Try
-the components on the documentation site: https://trailblazor.dev/. For a coding assistant, every page
+Trailblazor is in development, and there are no packages yet. Try the components on the documentation site:
+https://trailblazor.dev/. For a coding assistant, every page
 is also published as Markdown, listed in https://trailblazor.dev/llms.txt (or all in one file,
 llms-full.txt).
 
@@ -28,7 +28,7 @@ llms-full.txt).
 src/
   Trailblazor/               styled components, CSS, JS module
   Trailblazor.Primitives/    headless behaviors (focus scope, dismissable layer, anchored positioning)
-  Trailblazor.Analyzers/     build warnings for unnamed controls and fields, untitled dialogs and stuck values
+  Trailblazor.Analyzers/     build warnings for accessibility and usage mistakes
   Trailblazor.Icons.Material/  Google's Material Symbols as icons for TbIcon (paths under Apache 2.0)
   Trailblazor.Testing/       bUnit setup for consumers: this.AddTrailblazor()
   Trailblazor.Testing.Playwright/  Playwright helpers for consumers: page.Tb().Select("Size").ChooseAsync("Medium")

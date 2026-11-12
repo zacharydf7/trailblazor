@@ -78,9 +78,11 @@
     [Parameter, EditorRequired]
     public IEnumerable<TItem> Items { get; set; } = [];
 
-    /// <summary>Gives each item the key the value holds. Required.</summary>
-    [Parameter, EditorRequired]
-    public Func<TItem, TKey> KeySelector { get; set; } = default!;
+    /// <summary>Gives each item the key the value holds. Defaults to the item itself, which suits items compared by
+    /// value, such as strings and records, when <typeparamref name="TKey"/> is the item's type; required
+    /// otherwise.</summary>
+    [Parameter]
+    public Func<TItem, TKey>? KeySelector { get; set; }
 
     /// <summary>The text an item shows in the tree and, once chosen, in the field. Required.</summary>
     [Parameter, EditorRequired]
@@ -208,7 +210,7 @@
     private async Task<IEnumerable<TItem>> LoadAndKeepAsync(TItem item, CancellationToken cancel)
     {
         List<TItem> children = [.. await LoadChildren!(item, cancel)];
-        children.ForEach(child => _loaded[KeySelector(child)] = child);
+        children.ForEach(child => _loaded[KeyOf(child)] = child);
         return children;
     }
 
@@ -274,6 +276,17 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        if (KeySelector is null && !typeof(TKey).IsAssignableFrom(typeof(TItem)))
+        {
+            throw new InvalidOperationException(
+                $"{Name} needs a {nameof(KeySelector)} when its items aren't their own keys.");
+        }
+
+        if (ItemText is null)
+        {
+            throw new InvalidOperationException($"{Name} needs an {nameof(ItemText)}.");
+        }
+
         if (Open == _lastOpen)
         {
             return;
@@ -295,6 +308,10 @@
             await OpenChanged.InvokeAsync(open);
         }
     }
+
+    private string Name => GetType().Name.Split('`')[0];
+
+    private TKey KeyOf(TItem item) => KeySelector is null ? (TKey)(object)item! : KeySelector(item);
 
     // The items held in memory, in tree order, then the children loaded so far.
     private protected IEnumerable<TItem> Known() => Walk(Items).Concat(_loaded.Values);
@@ -347,13 +364,13 @@
     // rows, it's rebuilt for new items or selectors, a loaded child or RefreshAsync, but not on every render.
     private protected OrderedDictionary<TKey, TItem> ByKey()
     {
-        var builtFor = (Items, _loaded.Count, KeySelector.Method, ChildrenSelector?.Method);
+        var builtFor = (Items, _loaded.Count, KeySelector?.Method, ChildrenSelector?.Method);
         if (_byKey is null || !builtFor.Equals(_byKeyFor))
         {
             _byKey = [];
             foreach (var item in Known())
             {
-                _byKey.TryAdd(KeySelector(item), item);
+                _byKey.TryAdd(KeyOf(item), item);
             }
 
             _byKeyFor = builtFor;

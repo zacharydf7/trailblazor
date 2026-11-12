@@ -6,7 +6,7 @@ const showDelay = 300;
 // The pointer crosses the gap between the trigger and the panel; this keeps the panel open on the way (WCAG 1.4.13).
 const hideDelay = 300;
 
-// Opening, closing and focus stay in the browser; only a bound Open reaches the server.
+// Opening, closing and focus stay in the browser; only a bound Open or a TelemetryName reaches the server.
 export function createPopover(root, panel, options, hover, dotNetReference) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!root || !panel) {

@@ -11,6 +11,8 @@
 </button>
 
 @code {
+    private ControlTelemetry? _telemetry;
+
     [CascadingParameter]
     private MenuClasses? Classes { get; set; }
     /// <summary>The value the group takes when this item is chosen. A plain value fits a group of its nullable type,
@@ -31,6 +33,17 @@
     [Parameter]
     public bool KeepOpen { get; set; }
 
+    /// <summary>A label this item's use is counted under, such as <c>"sort-by-name"</c>, through the <c>Trailblazor</c>
+    /// meter. An item renders hidden until its menu opens, so it counts uses only. Controls that share a label count
+    /// together. It names what the item does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
     [CascadingParameter]
     private IMenuRadioGroup? Group { get; set; }
 
@@ -46,5 +59,14 @@
         }
     }
 
-    private Task ChooseAsync() => Disabled ? Task.CompletedTask : Group!.ChooseAsync(Value);
+    private Task ChooseAsync()
+    {
+        if (Disabled)
+        {
+            return Task.CompletedTask;
+        }
+
+        Telemetry.Used(TelemetryName);
+        return Group!.ChooseAsync(Value);
+    }
 }

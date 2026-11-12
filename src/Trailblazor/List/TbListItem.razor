@@ -7,12 +7,12 @@
     @if (Href is not null && !Disabled)
     {
         <a href="@Href" data-part="action" class="tb-list__action" aria-current="@(Selected ? "page" : null)"
-           @onclick="OnClick">@Body</a>
+           @onclick="OnClickAsync">@Body</a>
     }
     else if (OnClick.HasDelegate)
     {
         <button type="button" data-part="action" class="tb-list__action" disabled="@Disabled"
-                aria-current="@(Selected ? "true" : null)" @onclick="OnClick">@Body</button>
+                aria-current="@(Selected ? "true" : null)" @onclick="OnClickAsync">@Body</button>
     }
     else
     {
@@ -25,6 +25,8 @@
 </li>
 
 @code {
+    private ControlTelemetry? _telemetry;
+
     /// <summary>The item's main text.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -60,7 +62,27 @@
     [Parameter]
     public bool Disabled { get; set; }
 
+    /// <summary>A label this item's use is counted under, such as <c>"open-report"</c>, through the
+    /// <c>Trailblazor</c> meter: shown as it renders, and used each time its link or button is clicked. Controls
+    /// that share a label count together. It names what the item does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
     private bool IsAction => (Href is not null && !Disabled) || OnClick.HasDelegate;
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
+    private Task OnClickAsync(MouseEventArgs args)
+    {
+        Telemetry.Used(TelemetryName);
+        return OnClick.InvokeAsync(args);
+    }
 
     private RenderFragment Body =>
         @<text>

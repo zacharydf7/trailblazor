@@ -7,13 +7,15 @@
 {
     <TbTooltip Text="@AriaLabel" Placement="Placement.Bottom" data-toolbar-item="@Id">
         <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@AriaLabel" Variant="Variant"
-                      Size="ShownSize" Disabled="Disabled" OnClick="OnClick" Class="@Class" Style="@Style" />
+                      Size="ShownSize" Disabled="Disabled" OnClick="OnClick" TelemetryName="@TelemetryName"
+                      Class="@Class" Style="@Style" />
     </TbTooltip>
 }
 else
 {
     <TbButton @attributes="AdditionalAttributes" Variant="Variant" Size="ShownSize" Disabled="Disabled"
-              OnClick="OnClick" data-toolbar-item="@Id" Class="@Class" Style="@Style">
+              OnClick="OnClick" TelemetryName="@TelemetryName" data-toolbar-item="@Id" Class="@Class"
+              Style="@Style">
         @Label
     </TbButton>
 }
@@ -51,6 +53,13 @@ else
     /// <summary>Raised when the button, or its item in the overflow menu, is chosen.</summary>
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>A label this button's use is counted under, such as <c>"export-csv"</c>, through the
+    /// <c>Trailblazor</c> meter: shown as the button renders, and used each time it, or its item in the overflow
+    /// menu, is chosen. Controls that share a label count together. It names what the button does, never the
+    /// user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
 
     [CascadingParameter]
     private TbToolbar? Toolbar { get; set; }

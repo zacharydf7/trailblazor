@@ -38,12 +38,15 @@
 </div>
 
 @code {
+    private ControlTelemetry? _telemetry;
     private readonly string _id = $"tb-popover-{Guid.NewGuid():N}";
     private ElementReference _root;
     private ElementReference _panel;
     private IJSObjectReference? _handle;
     private DotNetObjectReference<PopoverEvents>? _reference;
     private bool _lastOpen;
+    // Whether the panel is open, as the script last reported it or was told; a script attached again reports it again.
+    private bool _panelOpen;
     // What the script was attached with, so a change attaches it again.
     private (Placement, PlacementAlign, bool) _attachedWith;
     private bool _attaching;
@@ -108,6 +111,17 @@
     /// <summary>Raised when the panel opens or closes.</summary>
     [Parameter]
     public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>A label this popover's use is counted under, such as <c>"trail-details"</c>, through the
+    /// <c>Trailblazor</c> meter: shown as it renders, and used each time the user opens it, by pointer or key.
+    /// Controls that share a label count together. It names what the popover does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     /// <summary>The panel's content.</summary>
     [Parameter]
@@ -209,6 +223,7 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Telemetry.Rendered(TelemetryName);
         try
         {
             if ((!AttachOnFirstUse || Open) && !_attaching)
@@ -224,7 +239,7 @@
                 // The new script would inherit a panel left open, so a close from the parent goes to the old one first.
                 if (Open != _lastOpen)
                 {
-                    _lastOpen = Open;
+                    _lastOpen = _panelOpen = Open;
                     await old.InvokeVoidAsync("setOpen", Open);
                 }
 
@@ -234,7 +249,7 @@
             }
             else if (_handle is not null && Open != _lastOpen)
             {
-                _lastOpen = Open;
+                _lastOpen = _panelOpen = Open;
                 await _handle.InvokeVoidAsync("setOpen", Open);
             }
         }
@@ -270,8 +285,10 @@
             return;
         }
 
-        // Only a bound Open needs to hear about toggles, so an unbound popover costs no round trips.
-        _reference = OpenChanged.HasDelegate ? DotNetObjectReference.Create(new PopoverEvents(OnToggleAsync)) : null;
+        // Only a bound Open or a TelemetryName needs to hear about toggles, so a popover with neither costs no round
+        // trips.
+        _reference = OpenChanged.HasDelegate || TelemetryName is not null
+            ? DotNetObjectReference.Create(new PopoverEvents(OnToggleAsync)) : null;
         var options = new AnchoredPositionOptions
         {
             Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = 8,
@@ -293,7 +310,7 @@
         _handle = handle;
         if (Open)
         {
-            _lastOpen = true;
+            _lastOpen = _panelOpen = true;
             await _handle.InvokeVoidAsync("setOpen", true);
         }
 
@@ -307,7 +324,19 @@
     // The popover's script reports the panel opening or closing, as a click or Escape changes it.
     internal async Task OnToggleAsync(bool open)
     {
-        if (open == Open)
+        if (open == _panelOpen || (OpenChanged.HasDelegate && open == Open))
+        {
+            return;
+        }
+
+        _panelOpen = open;
+        if (open)
+        {
+            Telemetry.Used(TelemetryName);
+        }
+
+        // Without a binding, leave Open alone: the parent's next render would put its value back anyway.
+        if (!OpenChanged.HasDelegate)
         {
             return;
         }

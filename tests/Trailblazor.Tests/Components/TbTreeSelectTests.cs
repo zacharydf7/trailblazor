@@ -50,6 +50,30 @@ public class TbTreeSelectTests : BunitContext
         item.QuerySelector("[data-part=content]")!.TextContent.Trim();
 
     [Fact]
+    public void Render_ShouldUseEachItemAsItsKey_WhenItsItemsAreItsKeysAndItHasNoKeySelector()
+    {
+        var cut = Render<TbTreeSelect<string, string>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.Items, ["Pine Hollow", "Cedar Flats"]).Add(select => select.ItemText, name => name)
+            .Add(select => select.Value, "Cedar Flats"));
+
+        Assert.Equal("Cedar Flats", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldNameWhatIsMissing_WhenTheKeySelectorOrItemTextIsLeftOut()
+    {
+        var noKeys = Assert.Throws<InvalidOperationException>(() => Render<TbTreeSelect<Place, string>>(parameters =>
+            parameters.Add(select => select.Label, "Trail").Add(select => select.Items, Places)
+                .Add(select => select.ItemText, place => place.Name)));
+        var noText = Assert.Throws<InvalidOperationException>(() => Render<TbMultiTreeSelect<Place, string>>(
+            parameters => parameters.Add(select => select.Label, "Trails").Add(select => select.Items, Places)
+                .Add(select => select.KeySelector, place => place.Id)));
+
+        Assert.Equal("TbTreeSelect needs a KeySelector when its items aren't their own keys.", noKeys.Message);
+        Assert.Equal("TbMultiTreeSelect needs an ItemText.", noText.Message);
+    }
+
+    [Fact]
     public void Render_ShouldNameTheButtonByItsLabelAndChoice_WhenShown()
     {
         var cut = RenderInMemory();

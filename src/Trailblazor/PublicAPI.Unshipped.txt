@@ -4496,7 +4496,7 @@ Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemText.get -> System.Func<TI
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemText.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Items.get -> System.Collections.Generic.IEnumerable<TItem>!
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Items.set -> void
-Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.KeySelector.get -> System.Func<TItem, TKey>!
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.KeySelector.get -> System.Func<TItem, TKey>?
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.KeySelector.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.LoadChildren.get -> System.Func<TItem, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<TItem>!>!>?
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.LoadChildren.set -> void
@@ -4723,3 +4723,14 @@ Trailblazor.TransferListLabels.Moved.get -> string?
 Trailblazor.TransferListLabels.Moved.init -> void
 Trailblazor.TransferListLabels.Empty.get -> string?
 Trailblazor.TransferListLabels.Empty.init -> void
+Trailblazor.TbListItem.TelemetryName.get -> string?
+Trailblazor.TbListItem.TelemetryName.set -> void
+Trailblazor.TbMenuCheckboxItem.TelemetryName.get -> string?
+Trailblazor.TbMenuCheckboxItem.TelemetryName.set -> void
+Trailblazor.TbMenuRadioItem<TValue>.TelemetryName.get -> string?
+Trailblazor.TbMenuRadioItem<TValue>.TelemetryName.set -> void
+Trailblazor.TbPopover.TelemetryName.get -> string?
+Trailblazor.TbPopover.TelemetryName.set -> void
+Trailblazor.TbToolbarButton.TelemetryName.get -> string?
+Trailblazor.TbToolbarButton.TelemetryName.set -> void
+override Trailblazor.TbListItem.OnAfterRender(bool firstRender) -> void

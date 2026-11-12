@@ -97,6 +97,15 @@ public sealed partial class TbSortable<TItem> : TbComponentBase
     }
 
     /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (ItemTemplate is null)
+        {
+            throw new InvalidOperationException($"{nameof(TbSortable<TItem>)} needs an {nameof(ItemTemplate)}.");
+        }
+    }
+
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         Telemetry.Rendered(TelemetryName);

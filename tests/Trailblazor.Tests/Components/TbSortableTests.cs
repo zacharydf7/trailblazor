@@ -18,6 +18,15 @@ public class TbSortableTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameWhatIsMissing_WhenTheItemTemplateIsLeftOut()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<TbSortable<string>>(parameters =>
+            parameters.Add(list => list.Items, _rules).Add(list => list.Label, "Rules")));
+
+        Assert.Equal("TbSortable needs an ItemTemplate.", error.Message);
+    }
+
+    [Fact]
     public void Render_ShouldNameTheListAndEachHandle_WhenGivenItems()
     {
         var cut = RenderRules();

@@ -197,10 +197,38 @@
 
         <DocsHeading Id="options" Text="App-wide options" Class="docs-section" />
         <TbText>
-            <code>AddTrailblazor</code> takes the settings that apply to every dialog and toast. A dialog's own options
-            still override them.
+            <code>AddTrailblazor</code> takes the settings that apply across the app. A component's own parameters, or a
+            dialog's or toast's own options, still override them.
         </TbText>
         <CodeBlock Label="App-wide options" Code="@Options" />
+        <ul>
+            <li>
+                <code>Theme</code>: the theme and palette a page starts with, and whether the user's choice is
+                remembered. See <a href="guides/theming">Theming</a>.
+            </li>
+            <li>
+                <code>Dialogs</code> and <code>Toasts</code>: defaults for every dialog and toast. See
+                <a href="components/dialog">Dialog</a> and <a href="components/toast">Toast</a>.
+            </li>
+            <li>
+                <code>Tooltips</code>: how long tooltips wait to appear and disappear. See
+                <a href="components/tooltip">Tooltip</a>.
+            </li>
+            <li>
+                <code>Telemetry</code>: whether the components count what people see and use. See
+                <a href="guides/telemetry">Telemetry</a>.
+            </li>
+            <li>
+                <code>Strings</code>: your own text for the built-in words. See
+                <a href="guides/localization">Localization</a>.
+            </li>
+            <li>
+                <code>WarnAboutUnlayeredStyles</code> and <code>WarnAboutContrast</code>: whether to warn when another
+                stylesheet overrides Trailblazor's styles, and when a palette's colors have too little contrast. See
+                <a href="guides/theming#other-stylesheets">Other stylesheets</a> and
+                <a href="guides/theming#seeded-palette">A palette from seed colors</a>.
+            </li>
+        </ul>
 
         <DocsHeading Id="trimming" Text="Trimming and AOT" Class="docs-section" />
         <TbText>
@@ -229,7 +257,10 @@
             <li>
                 <a href="guides/accessibility">Accessibility</a>: what components do, and what your app must still do.
             </li>
-            <li><a href="guides/analyzers">Analyzers</a>: warnings that catch unnamed controls as you build.</li>
+            <li>
+                <a href="guides/analyzers">Analyzers</a>: warnings that catch accessibility and usage mistakes as you
+                build.
+            </li>
             <li><a href="guides/wrapping">Wrapping components</a>: give a component your app's defaults in one place.</li>
             <li><a href="recipes/sign-up">Recipes</a>: components combined for common tasks, starting with a sign-up form.</li>
             <li><a href="components/button">Button</a>, and every other component's page.</li>

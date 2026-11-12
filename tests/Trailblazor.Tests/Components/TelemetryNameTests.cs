@@ -147,6 +147,77 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task Popover_ShouldCountItselfShownAndEachOpen_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Details")
+            .Add(popover => popover.TelemetryName, "trail-details").AddChildContent("Pine Hollow loop"));
+
+        await cut.InvokeAsync(() => cut.Instance.OnToggleAsync(true));
+        await cut.InvokeAsync(() => cut.Instance.OnToggleAsync(false));
+
+        Assert.NotNull(JSInterop.Invocations["createPopover"].Single().Arguments[4]);
+        Assert.Equal(["trail-details"], Names(_shown));
+        Assert.Equal([("trail-details", "TbPopover", null)], Uses());
+    }
+
+    [Fact]
+    public async Task Popover_ShouldLeaveAOneWayOpenToItsParent_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Details")
+            .Add(popover => popover.Open, false).Add(popover => popover.TelemetryName, "trail-details")
+            .AddChildContent("Pine Hollow loop"));
+
+        await cut.InvokeAsync(() => cut.Instance.OnToggleAsync(true));
+        await cut.InvokeAsync(() => cut.Instance.OnToggleAsync(true));
+
+        Assert.False(cut.Instance.Open);
+        Assert.Equal([("trail-details", "TbPopover", null)], Uses());
+    }
+
+    [Fact]
+    public void ToolbarButton_ShouldCountItsClicksInlineAndInTheOverflowMenu_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbToolbar>(parameters => parameters.Add(toolbar => toolbar.AriaLabel, "Trail actions")
+            .AddChildContent<TbToolbarButton>(button => button.Add(b => b.Label, "Export")
+                .Add(b => b.TelemetryName, "export-csv").Add(b => b.OnClick, () => { })));
+        var button = cut.FindComponent<TbToolbarButton>().Instance;
+        var overflow = Render<OverflowMenuItems>(parameters => parameters.Add(items => items.Buttons, () => [button]));
+
+        cut.Find("button").Click();
+        overflow.Find("[role=menuitem]").Click();
+
+        Assert.Equal([("export-csv", "TbButton", null), ("export-csv", "TbMenuItem", null)], Uses());
+    }
+
+    [Fact]
+    public void MenuItems_ShouldCountACheckboxOrRadioItemChosen_WhenTheyHaveTelemetryNames()
+    {
+        var checkbox = Render<TbMenuCheckboxItem>(parameters => parameters
+            .Add(item => item.TelemetryName, "show-closed").AddChildContent("Show closed trails"));
+        var radio = Render<TbMenuRadioGroup<string>>(parameters => parameters.Add(group => group.Label, "Sort")
+            .AddChildContent<TbMenuRadioItem<string>>(item => item.Add(i => i.Value, "name")
+                .Add(i => i.TelemetryName, "sort-by-name").AddChildContent("Name")));
+
+        checkbox.Find("[role=menuitemcheckbox]").Click();
+        radio.Find("[role=menuitemradio]").Click();
+
+        Assert.Empty(Names(_shown));
+        Assert.Equal([("show-closed", "TbMenuCheckboxItem", null), ("sort-by-name", "TbMenuRadioItem", null)], Uses());
+    }
+
+    [Fact]
+    public void ListItem_ShouldCountItselfShownAndEachClick_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbListItem>(parameters => parameters.Add(item => item.TelemetryName, "open-report")
+            .Add(item => item.OnClick, () => { }).AddChildContent("Pine Hollow loop"));
+
+        cut.Find("button").Click();
+
+        Assert.Equal(["open-report"], Names(_shown));
+        Assert.Equal([("open-report", "TbListItem", null)], Uses());
+    }
+
+    [Fact]
     public void EmptyState_ShouldCountItselfShown_WhenItHasATelemetryName()
     {
         Render<TbEmptyState>(parameters => parameters.Add(empty => empty.Title, "No trails saved yet")
