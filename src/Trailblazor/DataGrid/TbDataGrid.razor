@@ -344,8 +344,7 @@
                 <td data-column="@column.Key" data-pinned="@PinSide(column)" style="@PinStyle(column)"
                     data-editable="@(editable ? "" : null)" class="@ClassNames.Join(column.CellClass, Classes?.Cell)"
                     @ondblclick="@((editable ? _startEdit.For((key, column)) : null)!)"
-                    @ontbeditstart="@((editable ? _startEdit.For((key, column)) : null)!)"
-                    @onkeydown="@((editable ? _cellKey.For((key, column)) : null)!)">
+                    @ontbeditstart="@((editable ? _startEdit.For((key, column)) : null)!)">
                     @if (RowEditOf(key) is { } edit && edit.CellOf(column) is { } cell)
                     {
                         @Editor(edit, cell)

@@ -77,6 +77,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private readonly ItemHandlers<object, Func<Task>> _toggleCheck;
     private ControlTelemetry? _telemetry;
     private object? _builtFor;
+    private object? _rowsFor;
     private object? _flattenedFor;
     private Func<TItem, bool>? _flattenedFilter;
     private TreeScope<TItem>? _scope;
@@ -345,7 +346,13 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        _rowVersion++;
+        var rowsFor = RowsFor;
+        if (!rowsFor.Equals(_rowsFor))
+        {
+            _rowsFor = rowsFor;
+            _rowVersion++;
+        }
+
         if (ChildContent is not null && (Items.Any() || ChildrenSelector is not null || ParentKeySelector is not null
             || LoadChildren is not null))
         {
@@ -401,6 +408,24 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private bool ShowsEmpty => _rows.Count == 0 && (ChildContent is null || _itemsRegistered);
 
     private object FlattenedFor => (FilterKeepsDescendants, Checkable, CascadeChecks, _expanded, _checked);
+
+    // What a row shows beyond its context. Markup makes new functions and templates on every render, so they're
+    // compared by method.
+    private object RowsFor => (BuiltFor, Classes, Disabled, SelectionMode, Checkable, CascadeChecks, Virtualize,
+        (ItemText?.Method, ItemIcon?.Method, ItemClass?.Method, IsSelectable?.Method, ItemDisabled?.Method,
+            CanMoveItem?.Method, OnMove.HasDelegate),
+        (ItemTemplate?.Method, ItemEndTemplate?.Method, InsertTemplate?.Method));
+
+    /// <summary>Draws every row again. Call it after changing page state that a template, or a function such as
+    /// <see cref="ItemClass"/> or <see cref="ItemDisabled"/>, reads. A parent render draws every row again only when
+    /// the items or a tree-wide setting such as <see cref="Classes"/> or <see cref="Disabled"/> change, or a function
+    /// or template changes to a different method; a row whose own state changes, such as being selected or opened,
+    /// still draws again.</summary>
+    public void RenderRows()
+    {
+        _rowVersion++;
+        StateHasChanged();
+    }
 
     /// <summary>Builds the rows again from <see cref="Items"/> after they, or the children they hold, changed in
     /// place, or after what <see cref="KeySelector"/>, <see cref="ChildrenSelector"/>,

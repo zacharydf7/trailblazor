@@ -461,6 +461,18 @@ public class TbRichTextEditorTests : BunitContext
     }
 
     [Fact]
+    public async Task Change_ShouldTakeBackTheRequiredMessage_WhenTextComesBack()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Description")
+            .Add(editor => editor.Value, "<p>Something</p>").Add(editor => editor.Required, true));
+        await ChangeAsync(cut, "");
+
+        await ChangeAsync(cut, "<p>Back</p>");
+
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+    }
+
+    [Fact]
     public void Render_ShouldShowTheValueBeforeThePageIsInteractive_WhenPrerendered()
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
@@ -469,6 +481,25 @@ public class TbRichTextEditorTests : BunitContext
             .Add(editor => editor.Value, "<p>Saved <b>text</b></p><img src=x onerror=alert(1)>"));
 
         Assert.Equal("<p>Saved <strong>text</strong></p>", cut.Find("[data-part=input]").InnerHtml.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldParseTheValueAgain_WhenTheFormatsBlocksOrSchemesChange()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        const string value = "<blockquote><p><b>Hi</b> <a href=\"ftp://example.com\">there</a></p></blockquote>";
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Value, value));
+        string Shown() => cut.Find("[data-part=input]").InnerHtml.Trim();
+        Assert.Equal("<blockquote><p><strong>Hi</strong> there</p></blockquote>", Shown());
+
+        cut.Render(parameters => parameters.Add(editor => editor.LinkSchemes, ["ftp"]));
+        Assert.Contains("<a href=\"ftp://example.com\"", Shown());
+        cut.Render(parameters => parameters.Add(editor => editor.Formats, RichTextFormats.Link));
+        Assert.DoesNotContain("<strong>", Shown());
+        cut.Render(parameters => parameters.Add(editor => editor.Blocks, RichTextBlocks.None));
+
+        Assert.DoesNotContain("<blockquote>", Shown());
     }
 
     [Fact]

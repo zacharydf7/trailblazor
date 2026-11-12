@@ -15,7 +15,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] An arrow on a row's radio button moves on without choosing the row. `DataGridTests.CellNavigation_ShouldMoveFromARowsRadioWithoutChoosingIt_WhenAnArrowIsPressed`
 - [x] Enter or F2 moves into a cell's controls, Tab goes around them and Escape comes back out. `DataGridTests.CellNavigation_ShouldGoRoundACellsButtonsAndBackOut_WhenEnteredWithEnter`
 - [x] Space selects the focused cell's row; on a header it does nothing and doesn't scroll the page. `DataGridTests.CellNavigation_ShouldLeaveTheRowsUnselected_WhenSpaceIsPressedOnAHeader`
-- [x] Enter or F2 starts an edit in an editable cell. `TbDataGridEditTests.Enter_ShouldRaiseTheEditWithAValueOfTheFieldsType_WhenTheGridHandlesEdits`, `TbDataGrid.cs`
+- [x] Enter or F2 starts an edit in an editable cell, and F2 in an edit does nothing. Of the keys pressed in an edit, only Enter and Escape go to the server. `GridEditKeysTests.Enter_ShouldStartAnEditThatF2LeavesAlone_WhenPressedOnAnEditableCell`, `DataGridTests.CellEdit_ShouldSaveAndFocusTheCellAgain_WhenEnterStartsAndEndsIt`, `data-grid.js`
 - [x] Enter saves an edit, and when a value fails its check, the edit stays open and says why. `TbDataGridEditTests.Enter_ShouldKeepTheEditOpenWithWhy_WhenACheckFails`, `DataGridTests.CellEdit_ShouldSaveAndFocusTheCellAgain_WhenEnterStartsAndEndsIt`
 - [x] Escape cancels an edit and doesn't also close a dialog around the grid. `DataGridTests.CellEdit_ShouldLeaveTheValue_WhenEscapeCancelsAChange`
 - [x] In a row's edit, Tab stays among its fields and its Save and Cancel buttons. `DataGridTests.RowEdit_ShouldKeepTabInTheRowAndSaveItWhole_WhenEnterIsPressed`

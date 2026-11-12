@@ -337,6 +337,23 @@ export function createDataGrid(table, waitForReorder) {
     };
     table.addEventListener('keydown', keepEscapeInEdit);
 
+    // Only Enter and Escape reach a cell's edit, saying whether its field used the key; the grid's own guards don't
+    // count. Blazor listens on the document, so the window hears the key after a field's handlers have run.
+    const sendEditKey = event => {
+        const edit = event.target.closest?.('.tb-data-grid__editor, .tb-data-grid__row-actions');
+        if ((event.key === 'Enter' || event.key === 'Escape') && edit?.closest('table') === table) {
+            edit.dispatchEvent(new CustomEvent('tb-edit-key', {
+                bubbles: true,
+                detail: {
+                    key: event.key,
+                    isComposing: isComposing(event),
+                    handled: event.defaultPrevented && !event.tbGridGuarded,
+                },
+            }));
+        }
+    };
+    window.addEventListener('keydown', sendEditKey);
+
     // Pressing an option in a cell's field, or a row's Save or Cancel in browsers where a click doesn't focus a
     // button, would take focus from the field, which saves the edit before the click arrives.
     const keepEditFocused = event => {
@@ -433,6 +450,7 @@ export function createDataGrid(table, waitForReorder) {
             navigation.dispose();
             table.removeEventListener('keydown', keepPageFormUnsubmitted);
             table.removeEventListener('keydown', keepEscapeInEdit);
+            window.removeEventListener('keydown', sendEditKey);
             table.removeEventListener('pointerdown', keepEditFocused);
             table.removeEventListener('mousedown', notePress);
             document.removeEventListener('mouseup', endPress);
@@ -666,10 +684,17 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             return;
         }
 
-        // A cell being edited, or one Enter or F2 starts editing, leaves those keys to the grid.
+        // A cell being edited leaves Enter and Escape to its edit, and Enter or F2 on an editable cell starts one.
         const editing = !inDetail && cell.querySelector('[data-part=editor], [data-part=row-actions]');
-        if (editing && ['Enter', 'Escape'].includes(event.key)
-            || cell.hasAttribute('data-editable') && ['Enter', 'F2'].includes(event.key)) {
+        if (editing && ['Enter', 'Escape'].includes(event.key)) {
+            return;
+        }
+
+        if (cell.hasAttribute('data-editable') && ['Enter', 'F2'].includes(event.key)) {
+            if (!editing) {
+                startEdit(cell);
+            }
+
             return;
         }
 

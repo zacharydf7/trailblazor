@@ -60,7 +60,7 @@ public class TbDataGridEditTests : BunitContext
     public async Task Enter_ShouldSetTheValueOnTheItem_WhenTheGridHasNoEditHandler()
     {
         var cut = RenderHikes();
-        await Cell(cut, 1, "Name").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+        await Cell(cut, 1, "Name").TriggerEventAsync("ontbeditstart", EventArgs.Empty);
 
         await cut.Find("[data-part=editor] input").InputAsync(new ChangeEventArgs { Value = "Pine Hollow loop" });
         await EditorKeyAsync(cut, "Enter");
@@ -122,7 +122,7 @@ public class TbDataGridEditTests : BunitContext
         GridCellEdit<Hike>? saved = null;
         var cut = RenderHikes(parameters => parameters.Add(grid => grid.OnCellEdit,
             (GridCellEdit<Hike> edit) => saved = edit));
-        await Cell(cut, 1, "LengthKm").KeyDownAsync(new KeyboardEventArgs { Key = "F2" });
+        await Cell(cut, 1, "LengthKm").TriggerEventAsync("ontbeditstart", EventArgs.Empty);
 
         await cut.Tb().NumberField("Length km").EnterAsync("12");
         await EditorKeyAsync(cut, "Enter");

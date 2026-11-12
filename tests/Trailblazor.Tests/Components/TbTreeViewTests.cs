@@ -1,6 +1,7 @@
 using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Trailblazor.Testing;
@@ -819,6 +820,82 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public void Click_ShouldDrawOnlyTheRowsThatChange_WhenTheParentBindsSelectedKeys()
+    {
+        var host = Render<BoundTree>();
+        var rows = host.FindComponents<TreeItemRow>();
+        var before = rows.Select(row => row.RenderCount).ToList();
+
+        host.Find("[data-key='3']").Click();
+
+        Assert.Equal([1, 0, 1, 0], rows.Select((row, index) => row.RenderCount - before[index]));
+        Assert.Equal("true", host.Find("[data-key='3']").GetAttribute("aria-selected"));
+    }
+
+    [Theory]
+    [InlineData("Disabled")]
+    [InlineData("SelectionMode")]
+    [InlineData("Checkable")]
+    [InlineData("Classes")]
+    [InlineData("ItemTemplate")]
+    public void Render_ShouldDrawEveryRowAgain_WhenTheParentChangesWhatTheRowsShow(string change)
+    {
+        IReadOnlyList<Place> places = [new(1, "North"), new(2, "East")];
+        var cut = RenderPlaces(places, nested: false);
+
+        cut.Render(parameters => _ = change switch
+        {
+            "Disabled" => parameters.Add(tree => tree.Disabled, true),
+            "SelectionMode" => parameters.Add(tree => tree.SelectionMode, SelectionMode.None),
+            "Checkable" => parameters.Add(tree => tree.Checkable, true),
+            "Classes" => parameters.Add(tree => tree.Classes, new TreeViewClasses { Item = "my-row" }),
+            _ => parameters.Add(tree => tree.ItemTemplate,
+                context => builder => builder.AddContent(0, $"Row {context.Item.Name}")),
+        });
+
+        Assert.All(cut.FindAll("[data-part=item]"), row => Assert.True(change switch
+        {
+            "Disabled" => row.GetAttribute("aria-disabled") == "true",
+            "SelectionMode" => !row.HasAttribute("aria-selected"),
+            "Checkable" => row.HasAttribute("aria-checked"),
+            "Classes" => row.ClassList.Contains("my-row"),
+            _ => row.TextContent.Contains("Row ", StringComparison.Ordinal),
+        }));
+    }
+
+    [Fact]
+    public void Render_ShouldDrawEveryRowWithTheNewTemplate_WhenTheParentSwitchesTemplates()
+    {
+        IReadOnlyList<Place> places = [new(1, "North"), new(2, "East")];
+        RenderFragment<TreeItemContext<Place, int>> full = context => builder =>
+            builder.AddContent(0, $"Full {context.Item.Name}");
+        RenderFragment<TreeItemContext<Place, int>> compact = context => builder =>
+            builder.AddContent(0, $"Compact {context.Item.Name}");
+        var cut = RenderPlaces(places, parameters => parameters.Add(tree => tree.ItemTemplate, full), nested: false);
+
+        cut.Render(parameters => parameters.Add(tree => tree.ItemTemplate, compact));
+
+        Assert.Equal(["Compact North", "Compact East"],
+            cut.FindAll("[data-part=content]").Select(content => content.TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task RenderRows_ShouldDrawEveryRowAgain_WhenPageStateTheRowsReadChanged()
+    {
+        var names = new Dictionary<int, string> { [1] = "North", [2] = "East" };
+        Func<Place, string> text = place => names[place.Id];
+        IReadOnlyList<Place> places = [new(1, "North"), new(2, "East")];
+        var cut = RenderPlaces(places, parameters => parameters.Add(tree => tree.ItemText, text), nested: false);
+        names[2] = "Far East";
+
+        cut.Render(parameters => parameters.Add(tree => tree.ItemText, text));
+        Assert.Equal(["North", "East"], Texts(cut));
+        await cut.InvokeAsync(cut.Instance.RenderRows);
+
+        Assert.Equal(["North", "Far East"], Texts(cut));
+    }
+
+    [Fact]
     public void Toggle_ShouldLeaveTheRowsBelowAlone_WhenARowOpens()
     {
         var cut = RenderPlaces(Nested);
@@ -833,7 +910,7 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldDrawEveryRowAgain_WhenTheParentRendersAgain()
+    public void Render_ShouldDrawEveryRowAgain_WhenTheParentGivesANewFunction()
     {
         IReadOnlyList<Place> places = [new(1, "North"), new(2, "East")];
         var cut = RenderPlaces(places, nested: false);
@@ -940,6 +1017,28 @@ public class TbTreeViewTests : BunitContext
 
     private static string[] Texts(IRenderedComponent<TbTreeView<Place, int>> cut) =>
         [.. cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-text")!)];
+
+    // A page that binds the selection, so a click renders it, and the tree, again.
+    private sealed class BoundTree : ComponentBase
+    {
+        private static readonly IReadOnlyList<Place> Places = [new(1, "North"), new(2, "East"), new(3, "South"),
+            new(4, "West")];
+
+        private IReadOnlyCollection<int> _selected = [];
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbTreeView<Place, int>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeView<Place, int>.Items), Places);
+            builder.AddComponentParameter(2, nameof(TbTreeView<Place, int>.KeySelector),
+                (Func<Place, int>)(place => place.Id));
+            builder.AddComponentParameter(3, nameof(TbTreeView<Place, int>.AriaLabel), "Places");
+            builder.AddComponentParameter(4, nameof(TbTreeView<Place, int>.SelectedKeys), _selected);
+            builder.AddComponentParameter(5, nameof(TbTreeView<Place, int>.SelectedKeysChanged),
+                EventCallback.Factory.Create<IReadOnlyCollection<int>>(this, keys => _selected = keys));
+            builder.CloseComponent();
+        }
+    }
 
     // Nested places give their own children; the others come as a flat list or load lazily.
     private IRenderedComponent<TbTreeView<Place, int>> RenderPlaces(IReadOnlyList<Place> items,

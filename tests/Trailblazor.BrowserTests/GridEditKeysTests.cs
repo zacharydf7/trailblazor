@@ -25,6 +25,24 @@ public class GridEditKeysTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Enter_ShouldStartAnEditThatF2LeavesAlone_WhenPressedOnAnEditableCell(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        var cell = Cell(page, 3, "Name");
+        await cell.ClickAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(cell.Locator("input")).ToBeFocusedAsync();
+        await cell.Locator("input").FillAsync("Fir Gap");
+        await page.Keyboard.PressAsync("F2");
+        // An F2 that started the edit again would have saved the text first, which Escape couldn't take back.
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(cell).ToBeFocusedAsync();
+        await Expect(cell).ToHaveTextAsync("Cedar Flats");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Typing_ShouldStartTheEditWithWhatWasTyped_WhenPressedOnATextCell(string browser)
     {
         var page = await OpenReadyAsync(browser);

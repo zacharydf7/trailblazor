@@ -65,6 +65,7 @@
     private string? _parameterValue;
     private object? _sentOptions;
     private bool _disposed;
+    private (string? Value, bool Missing)? _missing;
 
     /// <summary>The formats the editor allows: the toolbar has a button for each, and text pasted in keeps only these.
     /// <see cref="RichTextFormats.Link"/> adds a link button that opens a dialog, which needs a <see cref="TbRoot"/> in
@@ -232,9 +233,17 @@
 
     private protected override bool LabelTargetsInput => false;
 
-    // Paragraphs with no text are still empty.
-    private protected override bool IsMissing(string? value) =>
-        string.IsNullOrWhiteSpace(RichTextDocument.Parse(value).ToPlainText());
+    // Paragraphs with no text are still empty. Each check of a form asks again, so the last answer is kept.
+    private protected override bool IsMissing(string? value)
+    {
+        if (_missing is not { } last || last.Value != value)
+        {
+            last = (value, string.IsNullOrWhiteSpace(RichTextDocument.Parse(value).ToPlainText()));
+            _missing = last;
+        }
+
+        return last.Missing;
+    }
 
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
@@ -256,9 +265,10 @@
             if (Value != _parameterValue)
             {
                 _parameterValue = Value;
-                if (Canonical != _sent && !_echoes.Contains(Canonical))
+                var canonical = Canonical;
+                if (canonical != _sent && !_echoes.Contains(canonical))
                 {
-                    _sent = Canonical;
+                    _sent = canonical;
                     await _handle.InvokeVoidAsync("setValue", _sent);
                 }
             }

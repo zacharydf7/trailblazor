@@ -45,7 +45,7 @@
     @{ _scrollRendered = _scrollAfterRender?.Done; }
     @if (ChildContent is null)
     {
-        @((RenderFragment)RenderRows)
+        @((RenderFragment)RenderItemRows)
     }
 </div>
 </CascadingValue>
@@ -53,7 +53,7 @@
 
 @code {
     // The rows for Items, with spacers for those a virtualized tree leaves out, as siblings so their keys hold.
-    private void RenderRows(RenderTreeBuilder __builder)
+    private void RenderItemRows(RenderTreeBuilder __builder)
     {
         var focusId = FocusId();
         var next = 0;

@@ -87,7 +87,6 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly string _detailPrefix = $"tb-grid-detail-{Guid.NewGuid():N}";
     private IReadOnlyCollection<TItem>? _expandedFromParent;
     private readonly ItemHandlers<(object, TbColumn<TItem>), Func<Task>> _startEdit;
-    private readonly ItemHandlers<(object, TbColumn<TItem>), Func<KeyboardEventArgs, Task>> _cellKey;
     private readonly ItemHandlers<GroupKey, Action> _toggleGroup;
     private readonly ItemHandlers<TbColumn<TItem>, Func<KeyboardEventArgs, Task>> _applyOnEnter;
     private bool _columnsChanged;
@@ -106,7 +105,6 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _choose = new(key => () => OnRowAsync(key, ChooseAsync), byValue: true);
         _toggleDetail = new(key => () => OnRowAsync(key, ToggleDetailAsync), byValue: true);
         _startEdit = new(cell => () => OnRowAsync(cell.Item1, item => StartEditAsync(item, cell.Item2)));
-        _cellKey = new(cell => args => OnRowAsync(cell.Item1, item => OnCellKeyAsync(item, cell.Item2, args)));
         _toggleGroup = new(key => () => ToggleGroup(key), byValue: true);
         _applyOnEnter = new(column => args => ApplyOnEnterAsync(column, args));
     }
@@ -948,9 +946,6 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         cell.Value = choice;
         return EditMode == GridEditMode.Cell ? SaveEditAsync(refocus: true) : Task.CompletedTask;
     }
-
-    private Task OnCellKeyAsync(TItem item, TbColumn<TItem> column, KeyboardEventArgs args) =>
-        args.Key is "Enter" or "F2" ? StartEditAsync(item, column) : Task.CompletedTask;
 
     // A key the field used, such as Enter opening a select's list or Escape closing it, leaves the edit open.
     private async Task OnEditKeyAsync(GridEditKeyEventArgs args)
@@ -1859,7 +1854,6 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _choose.KeepOnly(shown.Contains);
         _toggleDetail.KeepOnly(shown.Contains);
         _startEdit.KeepOnly(cell => shown.Contains(cell.Item1) && _columns.Contains(cell.Item2));
-        _cellKey.KeepOnly(cell => shown.Contains(cell.Item1) && _columns.Contains(cell.Item2));
         var groups = lines.Where(line => line.Group is not null).Select(line => line.Group!.Key).ToHashSet();
         _toggleGroup.KeepOnly(groups.Contains);
         _ids.Keep(shown);

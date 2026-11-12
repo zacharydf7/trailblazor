@@ -20,7 +20,7 @@ import './message-hold.js';
 import { measurePageScrollbar } from './page-scroll.js';
 // Every module that another one imports loads here too, so a component's module finds its imports already loaded.
 import '../Trailblazor.Primitives/anchored-position.js';
-import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import '../Trailblazor.Primitives/composing.js';
 import '../Trailblazor.Primitives/dotnet-call.js';
 import '../Trailblazor.Primitives/focus-scope.js';
 import '../Trailblazor.Primitives/pointer-drag.js';
@@ -156,13 +156,12 @@ function registerEvents(blazor) {
     });
     blazor.registerCustomEventType('tbeditstart', { browserEventName: 'tb-edit-start', createEventArgs: () => ({}) });
 
-    // A key in a grid cell's edit says whether its field used it; the grid's own Enter and Escape guards don't count.
     blazor.registerCustomEventType('tbeditkey', {
-        browserEventName: 'keydown',
+        browserEventName: 'tb-edit-key',
         createEventArgs: event => ({
-            key: event.key,
-            isComposing: isComposing(event),
-            handled: event.defaultPrevented && !event.tbGridGuarded,
+            key: event.detail.key,
+            isComposing: event.detail.isComposing,
+            handled: event.detail.handled,
         }),
     });
 }
