@@ -4,11 +4,13 @@
         <Start><TbIcon Icon="ExampleIcons.Search" /></Start>
     </TbTextField>
     <output>@(string.IsNullOrEmpty(_search) ? "Not searching yet." : $"Searching for: {_search}")</output>
-    <TbTextField Label="Region" @bind-Value="_region" Clearable ClearLabel="Clear the region" />
+    <TbTextField Label="Region" @bind-Value="_region" Clearable Labels="RegionLabels" />
     <output>Region: @(_region ?? "null")</output>
 </TbStack>
 
 @code {
+    private static readonly TextFieldLabels RegionLabels = new() { Clear = "Clear the region" };
+
     private string? _search;
     private string? _region = "North ridge";
 }

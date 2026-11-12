@@ -501,8 +501,11 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     }
 
     // A message about the field: the key's text with the field's label, or a stand-in, first and then the args.
-    private protected string Message(string key, params object?[] args) => string.Format(CultureInfo.CurrentCulture,
-        Localizer[key], [ShownLabel ?? Localizer[TbStrings.FieldUnnamed], .. args]);
+    private protected string Message(string key, params object?[] args) => FormatMessage(Localizer[key], args);
+
+    // The same for a template the app may have given in place of the key's text.
+    private protected string FormatMessage(string template, params object?[] args) =>
+        string.Format(CultureInfo.CurrentCulture, template, [ShownLabel ?? Localizer[TbStrings.FieldUnnamed], .. args]);
 
     // The same for a message whose words change with a count, which goes in {1} after the label.
     private protected string CountedMessage(string key, int count) => string.Format(CultureInfo.CurrentCulture,

@@ -63,6 +63,17 @@ public class TextFieldMaskTests : BunitContext
         Assert.Equal("Phone isn't complete.", cut.Find("[data-part=error]").TextContent.Trim());
     }
 
+    [Fact]
+    public void Change_ShouldSayTheGivenWordsWithTheLabel_WhenLabelsWordTheIncompleteMessage()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Phone")
+            .Add(field => field.Mask, Phone).Add(field => field.Labels, new() { MaskIncomplete = "Finish {0}." }));
+
+        cut.Find("input").Change("(555) 12");
+
+        Assert.Equal("Finish Phone.", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
     [Theory]
     [InlineData(@"aa-\0-**", "AB0z", "AB0z", "AB-0-0z")]
     [InlineData("+44 0000", "4123", "4123", "+44 4123")]

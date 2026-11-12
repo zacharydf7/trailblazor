@@ -71,10 +71,10 @@
     [Parameter]
     public bool Clearable { get; set; }
 
-    /// <summary>The clear button's name. Defaults to the localizer's "Clear"; the button is described by the field's
-    /// label.</summary>
+    /// <summary>The words the field shows and says to screen readers: the clear button's name and the message for an
+    /// incomplete mask. Each one left null uses the app's text.</summary>
     [Parameter]
-    public string? ClearLabel { get; set; }
+    public TextFieldLabels Labels { get; set; } = new();
 
     /// <summary>Lets a text area grow with its text, from <see cref="Lines"/> up to this many lines, and then scroll.
     /// A browser without CSS <c>field-sizing</c> shows a resizable text area of <see cref="Lines"/> instead.</summary>
@@ -130,7 +130,7 @@
 
     private RenderFragment? EndWithClear => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(Text) ? End :
         @<text>
-            <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(ClearLabel ?? Localizer[TbStrings.TextFieldClear])"
+            <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.TextFieldClear])"
                           aria-describedby="@ClearDescribedBy"
                           Size="Size.Small" OnClick="ClearAsync" data-part="clear" />
             @End
@@ -213,7 +213,7 @@
         if (slotted.Length > 0 && slotted.Length < _mask.Slots)
         {
             value = default;
-            error = Message(TbStrings.TextFieldMaskIncomplete);
+            error = FormatMessage(Labels.MaskIncomplete ?? Localizer[TbStrings.TextFieldMaskIncomplete]);
             return false;
         }
 

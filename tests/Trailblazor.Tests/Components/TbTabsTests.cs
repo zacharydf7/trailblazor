@@ -855,6 +855,18 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameTheScrollButtonsByTheLabels_WhenGivenThem()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ScrollButtons, true)
+            .Add(tabs => tabs.Labels, new() { ScrollStart = "Earlier reports", ScrollEnd = "Later reports" })
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        Assert.Equal(("Earlier reports", "Later reports"),
+            (cut.Find("[data-part=scroll-start]").GetAttribute("aria-label"),
+                cut.Find("[data-part=scroll-end]").GetAttribute("aria-label")));
+    }
+
+    [Fact]
     public void Render_ShouldPutNoScrollButtons_WhenTheListIsVerticalOrThePageIsStatic()
     {
         var vertical = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ScrollButtons, true)
@@ -901,10 +913,10 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldNameTheAddButtonByAddLabel_WhenGivenOne()
+    public void Render_ShouldNameTheAddButtonByTheLabels_WhenGivenOne()
     {
         var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.OnAdd, () => { })
-            .Add(tabs => tabs.AddLabel, "New report")
+            .Add(tabs => tabs.Labels, new() { Add = "New report" })
             .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
 
         Assert.Equal("New report", cut.Find("[data-part=add]").GetAttribute("aria-label"));

@@ -11,7 +11,7 @@
                 _collapsed && Navigation is not null ? "tb-app-shell--collapsed" : null, Class)">
     @* An ordinary link before the page is interactive; once it is, it moves focus to the content itself. *@
     <a href="@SkipHref" data-part="skip-link" class="tb-app-shell__skip" @onclick="SkipAsync"
-       @onclick:preventDefault>@(SkipLinkText ?? Localizer[TbStrings.AppShellSkipToContent])</a>
+       @onclick:preventDefault>@(Labels.SkipLink ?? Localizer[TbStrings.AppShellSkipToContent])</a>
     <CascadingValue Value="this">
         @if (Header is not null)
         {
@@ -81,20 +81,10 @@
     [Parameter]
     public EventCallback<bool> NavigationCollapsedChanged { get; set; }
 
-    /// <summary>Names the navigation landmark for screen readers. Defaults to the app's text for
-    /// <see cref="TbStrings.AppShellNavigation"/>, "Main" in English, heard as "Main navigation".</summary>
+    /// <summary>The words the shell shows and says to screen readers: the navigation landmark's name, the menu
+    /// button's name and the skip link's text. Each one left null uses the app's text.</summary>
     [Parameter]
-    public string? NavigationLabel { get; set; }
-
-    /// <summary>Names the app bar's menu button and titles the navigation drawer. Defaults to the app's text for
-    /// <see cref="TbStrings.AppShellMenu"/>, "Navigation" in English.</summary>
-    [Parameter]
-    public string? MenuLabel { get; set; }
-
-    /// <summary>The text of the link that skips to the page's content, shown when it has focus. Defaults to the app's
-    /// text for <see cref="TbStrings.AppShellSkipToContent"/>, "Skip to content" in English.</summary>
-    [Parameter]
-    public string? SkipLinkText { get; set; }
+    public AppShellLabels Labels { get; set; } = new();
 
     internal bool HasNavigation => Navigation is not null;
 
@@ -104,9 +94,9 @@
 
     internal string NavigationId => $"{_id}-navigation";
 
-    internal string MenuName => MenuLabel ?? Localizer[TbStrings.AppShellMenu];
+    internal string MenuName => Labels.Menu ?? Localizer[TbStrings.AppShellMenu];
 
-    private string NavigationName => NavigationLabel ?? Localizer[TbStrings.AppShellNavigation];
+    private string NavigationName => Labels.Navigation ?? Localizer[TbStrings.AppShellNavigation];
 
     private string MainId => $"{_id}-main";
 

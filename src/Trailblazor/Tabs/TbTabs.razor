@@ -14,7 +14,8 @@
     @if (ShowsScrollButtons)
     {
         <div class="tb-tabs__scroll tb-tabs__scroll--start" hidden>
-            <TbIconButton Icon="ScrollStartIcon" AriaLabel="@Localizer[TbStrings.TabsScrollStart]" Size="Size"
+            <TbIconButton Icon="ScrollStartIcon"
+                          AriaLabel="@(Labels.ScrollStart ?? Localizer[TbStrings.TabsScrollStart])" Size="Size"
                           Class="@Classes?.ScrollButton" tabindex="-1" data-part="scroll-start" />
         </div>
     }
@@ -40,7 +41,8 @@
     @if (ShowsScrollButtons)
     {
         <div class="tb-tabs__scroll tb-tabs__scroll--end" hidden>
-            <TbIconButton Icon="ScrollEndIcon" AriaLabel="@Localizer[TbStrings.TabsScrollEnd]" Size="Size"
+            <TbIconButton Icon="ScrollEndIcon"
+                          AriaLabel="@(Labels.ScrollEnd ?? Localizer[TbStrings.TabsScrollEnd])" Size="Size"
                           Class="@Classes?.ScrollButton" tabindex="-1" data-part="scroll-end" />
         </div>
     }
@@ -48,7 +50,7 @@
     @if (ShowsAdd)
     {
         <div class="tb-tabs__actions">
-            <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@(AddLabel ?? Localizer[TbStrings.TabsAdd])" Size="Size"
+            <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@(Labels.Add ?? Localizer[TbStrings.TabsAdd])" Size="Size"
                           OnClick="() => OnAdd.InvokeAsync()" Class="@Classes?.Add" data-part="add" />
         </div>
     }
@@ -147,10 +149,10 @@
     [Parameter]
     public EventCallback OnAdd { get; set; }
 
-    /// <summary>The add button's accessible name. Defaults to the app's text for <see cref="TbStrings.TabsAdd"/>,
-    /// "Add tab" in English.</summary>
+    /// <summary>The words the tabs say to screen readers: the add button's name and the scroll buttons' names. Each
+    /// one left null uses the app's text.</summary>
     [Parameter]
-    public string? AddLabel { get; set; }
+    public TabsLabels Labels { get; set; } = new();
 
     /// <summary>Puts a button at each end of the tab row; a click scrolls the row by most of its width.
     /// The buttons show only while the row overflows and the page is interactive, and are for the pointer: the arrow

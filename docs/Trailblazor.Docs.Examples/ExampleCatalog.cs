@@ -2038,7 +2038,11 @@ public static class ExampleCatalog
                     + "`TbNavGroup` opens and closes its links, and opens by itself when it holds the current page. "
                     + "On its own, put the menu in a `nav` with an `aria-label`.", typeof(AppShellNavMenuExample)),
             ],
-            Api = [typeof(TbAppShell), typeof(TbAppBar), typeof(TbNavMenu), typeof(TbNavLink), typeof(TbNavGroup)],
+            Api =
+            [
+                typeof(TbAppShell), typeof(AppShellLabels), typeof(TbAppBar), typeof(TbNavMenu), typeof(TbNavLink),
+                typeof(TbNavGroup),
+            ],
             Anatomy = """
                 <TbAppShell @bind-NavigationCollapsed="_collapsed">
                     <Header>
@@ -2071,9 +2075,11 @@ public static class ExampleCatalog
             Labeling =
             [
                 "The app bar is the page's `banner` landmark, the navigation a `navigation` landmark named by "
-                    + "`NavigationLabel` (\"Main\" by default, heard as \"Main navigation\"), and the page the `main` "
-                    + "landmark.",
-                "The menu button is named by `MenuLabel` (\"Navigation\" by default), which also titles the drawer.",
+                    + "`Labels.Navigation` (\"Main\" by default, heard as \"Main navigation\"), and the page the "
+                    + "`main` landmark.",
+                "The menu button is named by `Labels.Menu` (\"Navigation\" by default), which also titles the "
+                    + "drawer.",
+                "The skip link reads \"Skip to content\", or `Labels.SkipLink`.",
                 "Each group's button is named by its `Text`.",
             ],
             Announcements =
@@ -2968,17 +2974,18 @@ public static class ExampleCatalog
                     + "such as `autocomplete` on the input. Bind the field to a number or date instead of a string, and "
                     + "text that doesn't convert shows an error.",
                     typeof(TextFieldTypesExample)),
-                new("search-and-clearing", "Search and clearing", "`UpdateOnInput` updates the value while typing, and "
-                    + "`UpdateDelay` waits for a pause, so a search doesn't run on every keystroke. `Clearable` adds a "
-                    + "button that empties the field, and `ClearLabel` names that button. The button sets the value to "
-                    + "`null`, while deleting the text by hand leaves an empty string.", typeof(TextFieldSearchExample)),
+                new("search-and-clearing", "Search and clearing", "`UpdateOnInput` updates the value while typing, "
+                    + "and `UpdateDelay` waits for a pause, so a search doesn't run on every keystroke. `Clearable` "
+                    + "adds a button that empties the field, and `Labels.Clear` names that button. The button sets "
+                    + "the value to `null`, while deleting the text by hand leaves an empty string.",
+                    typeof(TextFieldSearchExample)),
                 new("start-and-end", "Start and end content", "`Start` and `End` hold an icon, a prefix or a unit beside "
                     + "the input.", typeof(TextFieldAdornmentExample)),
                 new("mask", "Mask", "`Mask` fits typing to a pattern such as `(000) 000-0000`, where `0` is a digit, "
                     + "`a` a letter and `*` either, and adds the parentheses and dashes as you type, keeping the caret "
                     + "in place. The value holds only what was typed into the slots, or the whole text, parentheses "
-                    + "and dashes included, with `IncludeMaskLiterals`.",
-                    typeof(TextFieldMaskExample)),
+                    + "and dashes included, with `IncludeMaskLiterals`. A partly filled field shows that it isn't "
+                    + "complete, or the message in `Labels.MaskIncomplete`.", typeof(TextFieldMaskExample)),
                 new("several-lines", "Several lines", "`Lines` makes a text area, and `MaxLines` lets it grow with its "
                     + "text up to that many lines and then scroll.", typeof(TextFieldLinesExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the field focusable and posted "
@@ -2992,7 +2999,7 @@ public static class ExampleCatalog
                 new("when-focus-leaves", "When focus leaves", "`OnBlur` runs when focus leaves the field, which "
                     + "suits checking or saving what was entered as someone moves on.", typeof(TextFieldBlurExample)),
             ],
-            Api = [typeof(TbTextField<>), typeof(FieldClasses)],
+            Api = [typeof(TbTextField<>), typeof(TextFieldLabels), typeof(FieldClasses)],
             Keyboard =
             [
                 new(["Enter"], "In a single-line field, updates the value at once and submits its form."),
@@ -3017,7 +3024,7 @@ public static class ExampleCatalog
                 "`Type` sets the role: a text box, a search box for `Search`, and none for `Password`, as browsers "
                     + "expose them.",
                 "Screen readers hear a `ReadOnly` field as read only.",
-                "The clear button is named \"Clear\", or `ClearLabel`, and described by the field's label. It shows "
+                "The clear button is named \"Clear\", or `Labels.Clear`, and described by the field's label. It shows "
                     + "while the field holds text it can change, and pressing it puts focus back in the field.",
                 "The `Filled` variant keeps a line with 3:1 contrast along the box's bottom, red when the field is invalid "
                     + "and dashed when it's read only.",
@@ -6627,7 +6634,9 @@ public static class ExampleCatalog
                 new("scroll-buttons", "Scroll buttons", "`ScrollButtons` puts a button at each end of the row; a click "
                     + "scrolls the tabs by most of the row's width. They show only while the row overflows, each turns "
                     + "off at its own end, and they're for the pointer, since the arrow keys already bring each tab "
-                    + "into view. A `Vertical` list has none.", typeof(TabsScrollButtonsExample)),
+                    + "into view. A `Vertical` list has none. `Labels.ScrollStart` and `Labels.ScrollEnd` name the "
+                    + "buttons.",
+                    typeof(TabsScrollButtonsExample)),
                 new("forms", "A form across tabs", "`RenderAllPanels` renders every panel from the start, hidden, so a "
                     + "form across the tabs validates and saves every field. A hidden panel's fields can't take focus, "
                     + "so name the tab that needs attention with `Text` and a `HeaderClass`; a class alone changes "
@@ -6641,11 +6650,11 @@ public static class ExampleCatalog
                     + "there, and focus moves to the next enabled tab, or to the one before it when none follows; keep "
                     + "rendering it to leave it open, such as after asking about unsaved work.",
                     typeof(TabsClosableExample)),
-                new("add", "Adding tabs", "`OnAdd` ends the row of tabs with an add button, named by `AddLabel`, or "
+                new("add", "Adding tabs", "`OnAdd` ends the row of tabs with an add button, named by `Labels.Add`, or "
                     + "\"Add tab\" in English. Add a tab there, and select it to show it. The button stays at the row's "
                     + "end while the tabs scroll, and sits under them in a `Vertical` list.", typeof(TabsAddExample)),
             ],
-            Api = [typeof(TbTabs), typeof(TbTab), typeof(TabsClasses)],
+            Api = [typeof(TbTabs), typeof(TbTab), typeof(TabsLabels), typeof(TabsClasses)],
             Keyboard =
             [
                 new(["Left", "Right"], "Moves between tabs and selects the one reached, unless activation is manual. "

@@ -2815,8 +2815,6 @@ Trailblazor.TbTextField<TValue>.Classes.get -> Trailblazor.FieldClasses?
 Trailblazor.TbTextField<TValue>.Classes.set -> void
 Trailblazor.TbTextField<TValue>.Clearable.get -> bool
 Trailblazor.TbTextField<TValue>.Clearable.set -> void
-Trailblazor.TbTextField<TValue>.ClearLabel.get -> string?
-Trailblazor.TbTextField<TValue>.ClearLabel.set -> void
 Trailblazor.TbTextField<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Trailblazor.TbTextField<TValue>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbTextField<TValue>.End.set -> void
@@ -3992,22 +3990,16 @@ Trailblazor.TbAppShell.Footer.get -> Microsoft.AspNetCore.Components.RenderFragm
 Trailblazor.TbAppShell.Footer.set -> void
 Trailblazor.TbAppShell.Header.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbAppShell.Header.set -> void
-Trailblazor.TbAppShell.MenuLabel.get -> string?
-Trailblazor.TbAppShell.MenuLabel.set -> void
 Trailblazor.TbAppShell.Navigation.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbAppShell.Navigation.set -> void
 Trailblazor.TbAppShell.NavigationCollapsed.get -> bool
 Trailblazor.TbAppShell.NavigationCollapsed.set -> void
 Trailblazor.TbAppShell.NavigationCollapsedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
 Trailblazor.TbAppShell.NavigationCollapsedChanged.set -> void
-Trailblazor.TbAppShell.NavigationLabel.get -> string?
-Trailblazor.TbAppShell.NavigationLabel.set -> void
 Trailblazor.TbAppShell.NavigationOpen.get -> bool
 Trailblazor.TbAppShell.NavigationOpen.set -> void
 Trailblazor.TbAppShell.NavigationOpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
 Trailblazor.TbAppShell.NavigationOpenChanged.set -> void
-Trailblazor.TbAppShell.SkipLinkText.get -> string?
-Trailblazor.TbAppShell.SkipLinkText.set -> void
 Trailblazor.TbAppShell.TbAppShell() -> void
 Trailblazor.TbNavGroup
 Trailblazor.TbNavGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
@@ -4307,8 +4299,6 @@ Trailblazor.TbMultiSelect<TItem>.ItemDisabled.set -> void
 Trailblazor.TbTab.OnClose.get -> Microsoft.AspNetCore.Components.EventCallback
 Trailblazor.TbTab.OnClose.set -> void
 const Trailblazor.TbStrings.TabsAdd = "Tabs.Add" -> string!
-Trailblazor.TbTabs.AddLabel.get -> string?
-Trailblazor.TbTabs.AddLabel.set -> void
 Trailblazor.TbTabs.OnAdd.get -> Microsoft.AspNetCore.Components.EventCallback
 Trailblazor.TbTabs.OnAdd.set -> void
 Trailblazor.Internal.Events.NumberStepEventArgs
@@ -4608,3 +4598,52 @@ Trailblazor.TbSortable<TItem>.Labels.get -> Trailblazor.SortableLabels!
 Trailblazor.TbSortable<TItem>.Labels.set -> void
 Trailblazor.TbSplitter.Labels.get -> Trailblazor.SplitterLabels!
 Trailblazor.TbSplitter.Labels.set -> void
+Trailblazor.AppShellLabels
+Trailblazor.AppShellLabels.<Clone>$() -> Trailblazor.AppShellLabels!
+Trailblazor.AppShellLabels.Equals(Trailblazor.AppShellLabels? other) -> bool
+Trailblazor.AppShellLabels.AppShellLabels() -> void
+override Trailblazor.AppShellLabels.Equals(object? obj) -> bool
+override Trailblazor.AppShellLabels.GetHashCode() -> int
+override Trailblazor.AppShellLabels.ToString() -> string!
+static Trailblazor.AppShellLabels.operator !=(Trailblazor.AppShellLabels? left, Trailblazor.AppShellLabels? right) -> bool
+static Trailblazor.AppShellLabels.operator ==(Trailblazor.AppShellLabels? left, Trailblazor.AppShellLabels? right) -> bool
+Trailblazor.AppShellLabels.Navigation.get -> string?
+Trailblazor.AppShellLabels.Navigation.init -> void
+Trailblazor.AppShellLabels.Menu.get -> string?
+Trailblazor.AppShellLabels.Menu.init -> void
+Trailblazor.AppShellLabels.SkipLink.get -> string?
+Trailblazor.AppShellLabels.SkipLink.init -> void
+Trailblazor.TextFieldLabels
+Trailblazor.TextFieldLabels.<Clone>$() -> Trailblazor.TextFieldLabels!
+Trailblazor.TextFieldLabels.Equals(Trailblazor.TextFieldLabels? other) -> bool
+Trailblazor.TextFieldLabels.TextFieldLabels() -> void
+override Trailblazor.TextFieldLabels.Equals(object? obj) -> bool
+override Trailblazor.TextFieldLabels.GetHashCode() -> int
+override Trailblazor.TextFieldLabels.ToString() -> string!
+static Trailblazor.TextFieldLabels.operator !=(Trailblazor.TextFieldLabels? left, Trailblazor.TextFieldLabels? right) -> bool
+static Trailblazor.TextFieldLabels.operator ==(Trailblazor.TextFieldLabels? left, Trailblazor.TextFieldLabels? right) -> bool
+Trailblazor.TextFieldLabels.Clear.get -> string?
+Trailblazor.TextFieldLabels.Clear.init -> void
+Trailblazor.TextFieldLabels.MaskIncomplete.get -> string?
+Trailblazor.TextFieldLabels.MaskIncomplete.init -> void
+Trailblazor.TabsLabels
+Trailblazor.TabsLabels.<Clone>$() -> Trailblazor.TabsLabels!
+Trailblazor.TabsLabels.Equals(Trailblazor.TabsLabels? other) -> bool
+Trailblazor.TabsLabels.TabsLabels() -> void
+override Trailblazor.TabsLabels.Equals(object? obj) -> bool
+override Trailblazor.TabsLabels.GetHashCode() -> int
+override Trailblazor.TabsLabels.ToString() -> string!
+static Trailblazor.TabsLabels.operator !=(Trailblazor.TabsLabels? left, Trailblazor.TabsLabels? right) -> bool
+static Trailblazor.TabsLabels.operator ==(Trailblazor.TabsLabels? left, Trailblazor.TabsLabels? right) -> bool
+Trailblazor.TabsLabels.Add.get -> string?
+Trailblazor.TabsLabels.Add.init -> void
+Trailblazor.TabsLabels.ScrollStart.get -> string?
+Trailblazor.TabsLabels.ScrollStart.init -> void
+Trailblazor.TabsLabels.ScrollEnd.get -> string?
+Trailblazor.TabsLabels.ScrollEnd.init -> void
+Trailblazor.TbAppShell.Labels.get -> Trailblazor.AppShellLabels!
+Trailblazor.TbAppShell.Labels.set -> void
+Trailblazor.TbTextField<TValue>.Labels.get -> Trailblazor.TextFieldLabels!
+Trailblazor.TbTextField<TValue>.Labels.set -> void
+Trailblazor.TbTabs.Labels.get -> Trailblazor.TabsLabels!
+Trailblazor.TbTabs.Labels.set -> void

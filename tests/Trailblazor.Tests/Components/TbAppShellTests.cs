@@ -116,8 +116,8 @@ public class TbAppShellTests : BunitContext
     [Fact]
     public void Render_ShouldUseTheGivenLabels_WhenTheyAreSet()
     {
-        var cut = RenderShell(parameters => parameters.Add(shell => shell.NavigationLabel, "Trail log")
-            .Add(shell => shell.MenuLabel, "Menu").Add(shell => shell.SkipLinkText, "Skip to the hikes"));
+        var cut = RenderShell(parameters => parameters.Add(shell => shell.Labels,
+            new() { Navigation = "Trail log", Menu = "Menu", SkipLink = "Skip to the hikes" }));
 
         Assert.Equal("Trail log", cut.Find("nav").GetAttribute("aria-label"));
         Assert.Equal("Menu", cut.Find("[data-part=menu-button]").GetAttribute("aria-label"));

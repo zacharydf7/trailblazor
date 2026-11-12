@@ -222,7 +222,7 @@ public class TbTextFieldTests : BunitContext
     {
         var values = new List<string?>();
         var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Clearable, true)
-            .Add(field => field.ClearLabel, "Clear search").Add(field => field.UpdateOnInput, true)
+            .Add(field => field.Labels, new() { Clear = "Clear search" }).Add(field => field.UpdateOnInput, true)
             .Add(field => field.UpdateDelay, TimeSpan.FromMilliseconds(300))
             .Add(field => field.ValueChanged, (string text) => values.Add(text)));
         // bUnit leaves the reference out of the markup once the input re-renders.
