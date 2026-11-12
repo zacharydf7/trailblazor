@@ -3,6 +3,7 @@ using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Trailblazor.Internal.Events;
 
 namespace Trailblazor.Testing;
 

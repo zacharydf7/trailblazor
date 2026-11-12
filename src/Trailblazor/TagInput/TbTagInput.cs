@@ -2,6 +2,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+using Trailblazor.Internal.Events;
 using Trailblazor.Primitives;
 
 namespace Trailblazor;

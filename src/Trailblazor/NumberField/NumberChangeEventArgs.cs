@@ -1,9 +1,11 @@
+using System.ComponentModel;
 using Microsoft.AspNetCore.Components;
 
-namespace Trailblazor;
+namespace Trailblazor.Internal.Events;
 
 /// <summary>A number input's change, with whether the browser could read what was typed. Raised by
 /// <see cref="TbNumberField{TValue}"/>'s input; consumers don't normally handle it.</summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class NumberChangeEventArgs : EventArgs
 {
     /// <summary>The input's value, which the browser leaves empty when it can't read the text.</summary>
@@ -16,6 +18,7 @@ public sealed class NumberChangeEventArgs : EventArgs
 /// <summary>A step a number field's script asks for: a large one for Page Up or Page Down, or a repeat or the release
 /// of a held step button. Raised by <see cref="TbNumberField{TValue}"/>'s input; consumers don't normally handle it.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class NumberStepEventArgs : EventArgs
 {
     /// <summary>1 to step up, -1 to step down, or 0 when a held step button is let go.</summary>
@@ -31,6 +34,7 @@ public sealed class NumberStepEventArgs : EventArgs
 /// <summary>Focus moving into or out of a field's root, with whether it crossed the root's edge or only moved between
 /// the field's own parts. Raised for a field's <c>OnFocus</c> and <c>OnBlur</c>; consumers don't normally handle it.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class FieldFocusEventArgs : EventArgs
 {
     /// <summary>Whether focus came from, or went to, somewhere outside the field.</summary>
@@ -39,6 +43,7 @@ public sealed class FieldFocusEventArgs : EventArgs
 
 /// <summary>HTML a rich text editor's script sent: its new value, or what was pasted for the app's paste transform.
 /// Raised by <see cref="TbRichTextEditor"/>'s editing area; consumers don't normally handle it.</summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class RichTextChangeEventArgs : EventArgs
 {
     /// <summary>The HTML the editor's script sent, before the editor parses it: all of it, or one part when it's
@@ -51,6 +56,7 @@ public sealed class RichTextChangeEventArgs : EventArgs
 
 /// <summary>A rich text editor's request for its link dialog, sent by its script on Ctrl+K or the link button. Raised
 /// by <see cref="TbRichTextEditor"/>'s editing area; consumers don't normally handle it.</summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class RichTextLinkEventArgs : EventArgs
 {
     /// <summary>The link the selected text has, or null when it has none or more than one.</summary>
@@ -87,6 +93,7 @@ public sealed class RichTextLinkEventArgs : EventArgs
 [EventHandler("ontbtagadd", typeof(TagAddEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbtagremove", typeof(TagRemoveEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbtreedrop", typeof(TreeDropEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class EventHandlers
 {
 }

@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Trailblazor;
+using Trailblazor.Internal.Events;
 using Trailblazor.Primitives;
 
 namespace Microsoft.Extensions.DependencyInjection;

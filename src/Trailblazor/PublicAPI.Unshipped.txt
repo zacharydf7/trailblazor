@@ -172,14 +172,14 @@ Trailblazor.ColumnAggregate.Max = 5 -> Trailblazor.ColumnAggregate
 Trailblazor.ColumnAggregate.Min = 4 -> Trailblazor.ColumnAggregate
 Trailblazor.ColumnAggregate.None = 0 -> Trailblazor.ColumnAggregate
 Trailblazor.ColumnAggregate.Sum = 1 -> Trailblazor.ColumnAggregate
-Trailblazor.ColumnOrderEventArgs
-Trailblazor.ColumnOrderEventArgs.ColumnOrderEventArgs() -> void
-Trailblazor.ColumnOrderEventArgs.Order.get -> System.Collections.Generic.List<string!>!
-Trailblazor.ColumnOrderEventArgs.Order.set -> void
-Trailblazor.ColumnWidthsEventArgs
-Trailblazor.ColumnWidthsEventArgs.ColumnWidthsEventArgs() -> void
-Trailblazor.ColumnWidthsEventArgs.Widths.get -> System.Collections.Generic.Dictionary<string!, double>!
-Trailblazor.ColumnWidthsEventArgs.Widths.set -> void
+Trailblazor.Internal.Events.ColumnOrderEventArgs
+Trailblazor.Internal.Events.ColumnOrderEventArgs.ColumnOrderEventArgs() -> void
+Trailblazor.Internal.Events.ColumnOrderEventArgs.Order.get -> System.Collections.Generic.List<string!>!
+Trailblazor.Internal.Events.ColumnOrderEventArgs.Order.set -> void
+Trailblazor.Internal.Events.ColumnWidthsEventArgs
+Trailblazor.Internal.Events.ColumnWidthsEventArgs.ColumnWidthsEventArgs() -> void
+Trailblazor.Internal.Events.ColumnWidthsEventArgs.Widths.get -> System.Collections.Generic.Dictionary<string!, double>!
+Trailblazor.Internal.Events.ColumnWidthsEventArgs.Widths.set -> void
 Trailblazor.DatePickerLabels
 Trailblazor.DatePickerLabels.<Clone>$() -> Trailblazor.DatePickerLabels!
 Trailblazor.DatePickerLabels.BadDate.get -> string?
@@ -237,10 +237,10 @@ Trailblazor.GridState.ColumnWidths.get -> System.Collections.Generic.IReadOnlyDi
 Trailblazor.GridState.ColumnWidths.init -> void
 Trailblazor.GridState.HiddenColumns.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.GridState.HiddenColumns.init -> void
-Trailblazor.TagAddEventArgs
-Trailblazor.TagAddEventArgs.TagAddEventArgs() -> void
-Trailblazor.TagAddEventArgs.Text.get -> string!
-Trailblazor.TagAddEventArgs.Text.set -> void
+Trailblazor.Internal.Events.TagAddEventArgs
+Trailblazor.Internal.Events.TagAddEventArgs.TagAddEventArgs() -> void
+Trailblazor.Internal.Events.TagAddEventArgs.Text.get -> string!
+Trailblazor.Internal.Events.TagAddEventArgs.Text.set -> void
 Trailblazor.TagInputLabels
 Trailblazor.TagInputLabels.<Clone>$() -> Trailblazor.TagInputLabels!
 Trailblazor.TagInputLabels.Added.get -> string?
@@ -257,12 +257,12 @@ Trailblazor.TagInputLabels.Removed.init -> void
 Trailblazor.TagInputLabels.TagInputLabels() -> void
 Trailblazor.TagInputLabels.TooMany.get -> string?
 Trailblazor.TagInputLabels.TooMany.init -> void
-Trailblazor.TagRemoveEventArgs
-Trailblazor.TagRemoveEventArgs.Focus.get -> string!
-Trailblazor.TagRemoveEventArgs.Focus.set -> void
-Trailblazor.TagRemoveEventArgs.Key.get -> string!
-Trailblazor.TagRemoveEventArgs.Key.set -> void
-Trailblazor.TagRemoveEventArgs.TagRemoveEventArgs() -> void
+Trailblazor.Internal.Events.TagRemoveEventArgs
+Trailblazor.Internal.Events.TagRemoveEventArgs.Focus.get -> string!
+Trailblazor.Internal.Events.TagRemoveEventArgs.Focus.set -> void
+Trailblazor.Internal.Events.TagRemoveEventArgs.Key.get -> string!
+Trailblazor.Internal.Events.TagRemoveEventArgs.Key.set -> void
+Trailblazor.Internal.Events.TagRemoveEventArgs.TagRemoveEventArgs() -> void
 const Trailblazor.TbStrings.PopconfirmCancel = "Popconfirm.Cancel" -> string!
 const Trailblazor.TbStrings.PopconfirmConfirm = "Popconfirm.Confirm" -> string!
 override Trailblazor.TbPopconfirm.OnAfterRender(bool firstRender) -> void
@@ -1231,7 +1231,7 @@ Trailblazor.Elevation.High = 3 -> Trailblazor.Elevation
 Trailblazor.Elevation.Low = 1 -> Trailblazor.Elevation
 Trailblazor.Elevation.Medium = 2 -> Trailblazor.Elevation
 Trailblazor.Elevation.None = 0 -> Trailblazor.Elevation
-Trailblazor.EventHandlers
+Trailblazor.Internal.Events.EventHandlers
 Trailblazor.FieldClasses
 Trailblazor.FieldClasses.<Clone>$() -> Trailblazor.FieldClasses!
 Trailblazor.FieldClasses.Control.get -> string?
@@ -1250,10 +1250,10 @@ Trailblazor.FieldClasses.Label.get -> string?
 Trailblazor.FieldClasses.Label.init -> void
 Trailblazor.FieldClasses.Start.get -> string?
 Trailblazor.FieldClasses.Start.init -> void
-Trailblazor.FieldFocusEventArgs
-Trailblazor.FieldFocusEventArgs.CrossesField.get -> bool
-Trailblazor.FieldFocusEventArgs.CrossesField.set -> void
-Trailblazor.FieldFocusEventArgs.FieldFocusEventArgs() -> void
+Trailblazor.Internal.Events.FieldFocusEventArgs
+Trailblazor.Internal.Events.FieldFocusEventArgs.CrossesField.get -> bool
+Trailblazor.Internal.Events.FieldFocusEventArgs.CrossesField.set -> void
+Trailblazor.Internal.Events.FieldFocusEventArgs.FieldFocusEventArgs() -> void
 Trailblazor.FieldVariant
 Trailblazor.FieldVariant.Filled = 1 -> Trailblazor.FieldVariant
 Trailblazor.FieldVariant.Outlined = 0 -> Trailblazor.FieldVariant
@@ -1423,12 +1423,12 @@ Trailblazor.MoveCheck.Equals(Trailblazor.MoveCheck? other) -> bool
 Trailblazor.MoveCheck.MoveCheck(bool Allowed, string? Reason = null) -> void
 Trailblazor.MoveCheck.Reason.get -> string?
 Trailblazor.MoveCheck.Reason.init -> void
-Trailblazor.NumberChangeEventArgs
-Trailblazor.NumberChangeEventArgs.BadInput.get -> bool
-Trailblazor.NumberChangeEventArgs.BadInput.set -> void
-Trailblazor.NumberChangeEventArgs.NumberChangeEventArgs() -> void
-Trailblazor.NumberChangeEventArgs.Value.get -> string?
-Trailblazor.NumberChangeEventArgs.Value.set -> void
+Trailblazor.Internal.Events.NumberChangeEventArgs
+Trailblazor.Internal.Events.NumberChangeEventArgs.BadInput.get -> bool
+Trailblazor.Internal.Events.NumberChangeEventArgs.BadInput.set -> void
+Trailblazor.Internal.Events.NumberChangeEventArgs.NumberChangeEventArgs() -> void
+Trailblazor.Internal.Events.NumberChangeEventArgs.Value.get -> string?
+Trailblazor.Internal.Events.NumberChangeEventArgs.Value.set -> void
 Trailblazor.PaginationLabels
 Trailblazor.PaginationLabels.<Clone>$() -> Trailblazor.PaginationLabels!
 Trailblazor.PaginationLabels.Equals(Trailblazor.PaginationLabels? other) -> bool
@@ -1487,16 +1487,16 @@ Trailblazor.PopoverTrigger.Attributes.get -> System.Collections.Generic.IReadOnl
 Trailblazor.PopoverTrigger.Attributes.init -> void
 Trailblazor.PopoverTrigger.Equals(Trailblazor.PopoverTrigger? other) -> bool
 Trailblazor.PopoverTrigger.PopoverTrigger() -> void
-Trailblazor.RowClickEventArgs
-Trailblazor.RowClickEventArgs.Ignored.get -> bool
-Trailblazor.RowClickEventArgs.Ignored.set -> void
-Trailblazor.RowClickEventArgs.RowClickEventArgs() -> void
-Trailblazor.RowClickEventArgs.ShiftKey.get -> bool
-Trailblazor.RowClickEventArgs.ShiftKey.set -> void
-Trailblazor.RowExtendEventArgs
-Trailblazor.RowExtendEventArgs.From.get -> string?
-Trailblazor.RowExtendEventArgs.From.set -> void
-Trailblazor.RowExtendEventArgs.RowExtendEventArgs() -> void
+Trailblazor.Internal.Events.RowClickEventArgs
+Trailblazor.Internal.Events.RowClickEventArgs.Ignored.get -> bool
+Trailblazor.Internal.Events.RowClickEventArgs.Ignored.set -> void
+Trailblazor.Internal.Events.RowClickEventArgs.RowClickEventArgs() -> void
+Trailblazor.Internal.Events.RowClickEventArgs.ShiftKey.get -> bool
+Trailblazor.Internal.Events.RowClickEventArgs.ShiftKey.set -> void
+Trailblazor.Internal.Events.RowExtendEventArgs
+Trailblazor.Internal.Events.RowExtendEventArgs.From.get -> string?
+Trailblazor.Internal.Events.RowExtendEventArgs.From.set -> void
+Trailblazor.Internal.Events.RowExtendEventArgs.RowExtendEventArgs() -> void
 Trailblazor.ScrollAlignment
 Trailblazor.ScrollAlignment.Center = 2 -> Trailblazor.ScrollAlignment
 Trailblazor.ScrollAlignment.End = 3 -> Trailblazor.ScrollAlignment
@@ -3591,14 +3591,14 @@ static Trailblazor.GridCellEdit<TItem>.operator !=(Trailblazor.GridCellEdit<TIte
 static Trailblazor.GridCellEdit<TItem>.operator ==(Trailblazor.GridCellEdit<TItem>? left, Trailblazor.GridCellEdit<TItem>? right) -> bool
 Trailblazor.GridCellEdit<TItem>.Error.get -> string?
 Trailblazor.GridCellEdit<TItem>.Error.set -> void
-Trailblazor.GridEditKeyEventArgs
-Trailblazor.GridEditKeyEventArgs.GridEditKeyEventArgs() -> void
-Trailblazor.GridEditKeyEventArgs.Handled.get -> bool
-Trailblazor.GridEditKeyEventArgs.Handled.set -> void
-Trailblazor.GridEditKeyEventArgs.IsComposing.get -> bool
-Trailblazor.GridEditKeyEventArgs.IsComposing.set -> void
-Trailblazor.GridEditKeyEventArgs.Key.get -> string!
-Trailblazor.GridEditKeyEventArgs.Key.set -> void
+Trailblazor.Internal.Events.GridEditKeyEventArgs
+Trailblazor.Internal.Events.GridEditKeyEventArgs.GridEditKeyEventArgs() -> void
+Trailblazor.Internal.Events.GridEditKeyEventArgs.Handled.get -> bool
+Trailblazor.Internal.Events.GridEditKeyEventArgs.Handled.set -> void
+Trailblazor.Internal.Events.GridEditKeyEventArgs.IsComposing.get -> bool
+Trailblazor.Internal.Events.GridEditKeyEventArgs.IsComposing.set -> void
+Trailblazor.Internal.Events.GridEditKeyEventArgs.Key.get -> string!
+Trailblazor.Internal.Events.GridEditKeyEventArgs.Key.set -> void
 Trailblazor.GridEditMode
 Trailblazor.GridEditMode.Cell = 0 -> Trailblazor.GridEditMode
 Trailblazor.GridEditMode.Row = 1 -> Trailblazor.GridEditMode
@@ -3733,12 +3733,12 @@ override Trailblazor.TbRichTextEditor.OnParametersSetAsync() -> System.Threading
 static Trailblazor.RichTextEditorLabels.operator !=(Trailblazor.RichTextEditorLabels? left, Trailblazor.RichTextEditorLabels? right) -> bool
 static Trailblazor.RichTextEditorLabels.operator ==(Trailblazor.RichTextEditorLabels? left, Trailblazor.RichTextEditorLabels? right) -> bool
 ~override Trailblazor.TbRichTextEditor.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
-Trailblazor.RichTextChangeEventArgs
-Trailblazor.RichTextChangeEventArgs.Html.get -> string!
-Trailblazor.RichTextChangeEventArgs.Html.set -> void
-Trailblazor.RichTextChangeEventArgs.RichTextChangeEventArgs() -> void
-Trailblazor.RichTextChangeEventArgs.Continues.get -> bool
-Trailblazor.RichTextChangeEventArgs.Continues.set -> void
+Trailblazor.Internal.Events.RichTextChangeEventArgs
+Trailblazor.Internal.Events.RichTextChangeEventArgs.Html.get -> string!
+Trailblazor.Internal.Events.RichTextChangeEventArgs.Html.set -> void
+Trailblazor.Internal.Events.RichTextChangeEventArgs.RichTextChangeEventArgs() -> void
+Trailblazor.Internal.Events.RichTextChangeEventArgs.Continues.get -> bool
+Trailblazor.Internal.Events.RichTextChangeEventArgs.Continues.set -> void
 Trailblazor.RichTextBlocks.Headings = 1 -> Trailblazor.RichTextBlocks
 Trailblazor.RichTextBlocks.Quotes = 2 -> Trailblazor.RichTextBlocks
 Trailblazor.RichTextBlocks.BulletedLists = 4 -> Trailblazor.RichTextBlocks
@@ -3826,12 +3826,12 @@ Trailblazor.RichTextEditorLabels.OpenLink.get -> string?
 Trailblazor.RichTextEditorLabels.OpenLink.init -> void
 Trailblazor.RichTextEditorLabels.RemoveLink.get -> string?
 Trailblazor.RichTextEditorLabels.RemoveLink.init -> void
-Trailblazor.RichTextLinkEventArgs
-Trailblazor.RichTextLinkEventArgs.Insert.get -> bool
-Trailblazor.RichTextLinkEventArgs.Insert.set -> void
-Trailblazor.RichTextLinkEventArgs.Link.get -> string?
-Trailblazor.RichTextLinkEventArgs.Link.set -> void
-Trailblazor.RichTextLinkEventArgs.RichTextLinkEventArgs() -> void
+Trailblazor.Internal.Events.RichTextLinkEventArgs
+Trailblazor.Internal.Events.RichTextLinkEventArgs.Insert.get -> bool
+Trailblazor.Internal.Events.RichTextLinkEventArgs.Insert.set -> void
+Trailblazor.Internal.Events.RichTextLinkEventArgs.Link.get -> string?
+Trailblazor.Internal.Events.RichTextLinkEventArgs.Link.set -> void
+Trailblazor.Internal.Events.RichTextLinkEventArgs.RichTextLinkEventArgs() -> void
 Trailblazor.TbRichTextEditor.LinkSchemes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.TbRichTextEditor.LinkSchemes.set -> void
 const Trailblazor.TbStrings.RichTextEditorAddLink = "RichTextEditor.AddLink" -> string!
@@ -4225,14 +4225,14 @@ Trailblazor.TbMenu.AttachOnFirstUse.get -> bool
 Trailblazor.TbMenu.AttachOnFirstUse.set -> void
 const Trailblazor.TbStrings.TreeSelectFilter = "TreeSelect.Filter" -> string!
 Trailblazor.TbTreeView<TItem, TKey>.SelectAsync(TKey key) -> System.Threading.Tasks.Task!
-Trailblazor.TreeDropEventArgs
-Trailblazor.TreeDropEventArgs.Position.get -> Trailblazor.TreeMovePosition
-Trailblazor.TreeDropEventArgs.Position.set -> void
-Trailblazor.TreeDropEventArgs.Rows.get -> string![]!
-Trailblazor.TreeDropEventArgs.Rows.set -> void
-Trailblazor.TreeDropEventArgs.Target.get -> string!
-Trailblazor.TreeDropEventArgs.Target.set -> void
-Trailblazor.TreeDropEventArgs.TreeDropEventArgs() -> void
+Trailblazor.Internal.Events.TreeDropEventArgs
+Trailblazor.Internal.Events.TreeDropEventArgs.Position.get -> Trailblazor.TreeMovePosition
+Trailblazor.Internal.Events.TreeDropEventArgs.Position.set -> void
+Trailblazor.Internal.Events.TreeDropEventArgs.Rows.get -> string![]!
+Trailblazor.Internal.Events.TreeDropEventArgs.Rows.set -> void
+Trailblazor.Internal.Events.TreeDropEventArgs.Target.get -> string!
+Trailblazor.Internal.Events.TreeDropEventArgs.Target.set -> void
+Trailblazor.Internal.Events.TreeDropEventArgs.TreeDropEventArgs() -> void
 Trailblazor.TbListBoxBase<TValue>.Size.get -> Trailblazor.Size
 Trailblazor.TbListBoxBase<TValue>.Size.set -> void
 Trailblazor.TbSliderBase<TValue>.Size.get -> Trailblazor.Size
@@ -4311,14 +4311,14 @@ Trailblazor.TbTabs.AddLabel.get -> string?
 Trailblazor.TbTabs.AddLabel.set -> void
 Trailblazor.TbTabs.OnAdd.get -> Microsoft.AspNetCore.Components.EventCallback
 Trailblazor.TbTabs.OnAdd.set -> void
-Trailblazor.NumberStepEventArgs
-Trailblazor.NumberStepEventArgs.Direction.get -> int
-Trailblazor.NumberStepEventArgs.Direction.set -> void
-Trailblazor.NumberStepEventArgs.Held.get -> bool
-Trailblazor.NumberStepEventArgs.Held.set -> void
-Trailblazor.NumberStepEventArgs.Large.get -> bool
-Trailblazor.NumberStepEventArgs.Large.set -> void
-Trailblazor.NumberStepEventArgs.NumberStepEventArgs() -> void
+Trailblazor.Internal.Events.NumberStepEventArgs
+Trailblazor.Internal.Events.NumberStepEventArgs.Direction.get -> int
+Trailblazor.Internal.Events.NumberStepEventArgs.Direction.set -> void
+Trailblazor.Internal.Events.NumberStepEventArgs.Held.get -> bool
+Trailblazor.Internal.Events.NumberStepEventArgs.Held.set -> void
+Trailblazor.Internal.Events.NumberStepEventArgs.Large.get -> bool
+Trailblazor.Internal.Events.NumberStepEventArgs.Large.set -> void
+Trailblazor.Internal.Events.NumberStepEventArgs.NumberStepEventArgs() -> void
 Trailblazor.TbNumberField<TValue>.LargeStep.get -> decimal?
 Trailblazor.TbNumberField<TValue>.LargeStep.set -> void
 const Trailblazor.TbStrings.TabsScrollEnd = "Tabs.ScrollEnd" -> string!

@@ -1,7 +1,10 @@
-namespace Trailblazor;
+using System.ComponentModel;
+
+namespace Trailblazor.Internal.Events;
 
 /// <summary>A click on a <see cref="TbDataGrid{TItem}"/> row, with whether the row should ignore it. Raised by the grid's
 /// rows; consumers don't normally handle it.</summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class RowClickEventArgs : EventArgs
 {
     /// <summary>Whether the row should ignore the click: it landed on a link, button, field or other control in the row,
@@ -14,6 +17,7 @@ public sealed class RowClickEventArgs : EventArgs
 
 /// <summary>A range of <see cref="TbDataGrid{TItem}"/> rows growing or shrinking to reach this row. Raised by the grid's
 /// rows; consumers don't normally handle it.</summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class RowExtendEventArgs : EventArgs
 {
     /// <summary>The id of the row that Shift and an arrow key moved from, which anchors the range if no chosen row is

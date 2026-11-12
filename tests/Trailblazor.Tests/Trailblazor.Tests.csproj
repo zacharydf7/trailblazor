@@ -34,6 +34,7 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Trailblazor.Testing" />
+    <Using Include="Trailblazor.Internal.Events" />
   </ItemGroup>
 
 </Project>

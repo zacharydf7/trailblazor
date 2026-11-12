@@ -1,7 +1,10 @@
-namespace Trailblazor;
+using System.ComponentModel;
+
+namespace Trailblazor.Internal.Events;
 
 /// <summary>Rows of a <see cref="TbTreeView{TItem, TKey}"/> dropped on another row. Raised by the tree's script when a
 /// drag ends, and by the bUnit tree driver's drag steps; consumers don't normally handle it.</summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class TreeDropEventArgs : EventArgs
 {
     /// <summary>The <c>data-key</c> of each moved row.</summary>
