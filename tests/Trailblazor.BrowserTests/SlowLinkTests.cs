@@ -80,3 +80,40 @@ public class SlowLinkTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(clicked.Elapsed >= Delay, $"The click took {clicked.Elapsed}.");
     }
 }
+
+// The server's answer to End has to arrive after the ArrowUp pressed right after it, as on any real link; a local
+// server can answer first. The delay is long enough to outlast a stall between the two presses.
+public class SlowLinkSelectWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
+{
+    private static readonly TimeSpan Delay = TimeSpan.FromMilliseconds(400);
+
+    protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(Delay);
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiSelect_ShouldKeepTheLatestKeysOption_WhenAnEarlierKeyIsStillWaitingForItsOption(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items");
+        var trails = page.GetByRole(AriaRole.Combobox, new() { Name = "Long trails" });
+        await Expect(trails).ToHaveAttributeAsync("data-ready", "");
+        await trails.FocusAsync();
+        await trails.PressAsync("ArrowDown");
+        // The first options draw a moment after the list opens, so wait for Trail 1 before the quick presses.
+        await page.Keyboard.PressAsync("ArrowDown");
+        await SelectTests.ExpectActiveAsync(page, trails, "Trail 1");
+        for (var step = 0; step < 5; step++)
+        {
+            await page.Keyboard.PressAsync("ArrowDown");
+        }
+
+        await SelectTests.ExpectActiveAsync(page, trails, "Trail 6");
+
+        // End waits for the server to draw Trail 1000, and ArrowUp, pressed meanwhile, replaces it.
+        await page.Keyboard.PressAsync("End");
+        await page.Keyboard.PressAsync("ArrowUp");
+        // Longer than the script's 2-second wait for an option, so End's search has given up by now.
+        await page.WaitForTimeoutAsync(2500);
+
+        await SelectTests.ExpectActiveAsync(page, trails, "Trail 5");
+    }
+}

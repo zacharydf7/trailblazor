@@ -463,35 +463,8 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
         await ExpectActiveAsync(page, trails, "Trail 1000");
     }
 
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task MultiSelect_ShouldKeepTheLatestKeysOption_WhenAnEarlierKeyIsStillWaitingForItsOption(string browser)
-    {
-        var page = await OpenAsync(browser, "/select-items");
-        var trails = page.GetByRole(AriaRole.Combobox, new() { Name = "Long trails" });
-        await Expect(trails).ToHaveAttributeAsync("data-ready", "");
-        await trails.FocusAsync();
-        await trails.PressAsync("ArrowDown");
-        // The first options draw a moment after the list opens, so wait for Trail 1 before the quick presses.
-        await page.Keyboard.PressAsync("ArrowDown");
-        await ExpectActiveAsync(page, trails, "Trail 1");
-        for (var step = 0; step < 5; step++)
-        {
-            await page.Keyboard.PressAsync("ArrowDown");
-        }
-
-        await ExpectActiveAsync(page, trails, "Trail 6");
-
-        // End waits for the server to draw Trail 1000, and ArrowUp, pressed meanwhile, replaces it.
-        await page.Keyboard.PressAsync("End");
-        await page.Keyboard.PressAsync("ArrowUp");
-        // Longer than the script's 2-second wait for an option, so End's search has given up by now.
-        await page.WaitForTimeoutAsync(2500);
-
-        await ExpectActiveAsync(page, trails, "Trail 5");
-    }
-
     // The option marked active, which the combobox names to screen readers.
-    private static async Task ExpectActiveAsync(IPage page, ILocator combobox, string text)
+    internal static async Task ExpectActiveAsync(IPage page, ILocator combobox, string text)
     {
         var option = page.Locator($"[role=option][data-active][data-text='{text}']");
         await Expect(option).ToHaveCountAsync(1);
