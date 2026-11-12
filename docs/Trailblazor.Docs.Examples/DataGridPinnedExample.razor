@@ -12,10 +12,10 @@
         <TbColumn Field="trail => trail.Surface" />
         <TbColumn Field="trail => trail.Dogs" />
         <TbColumn Title="Details" Id="details" Pinned="ColumnPin.End">
-            <Cell>
+            <CellTemplate>
                 <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _shown = context.Name"
                           aria-label="@($"Details for {context.Name}")">Details</TbButton>
-            </Cell>
+            </CellTemplate>
         </TbColumn>
     </TbDataGrid>
     <output aria-label="Trail open">@(_shown is null ? "No trail open." : $"Showing {_shown}.")</output>

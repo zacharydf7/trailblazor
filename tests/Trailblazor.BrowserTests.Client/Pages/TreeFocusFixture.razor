@@ -6,11 +6,11 @@
 <div @onkeydown="OnKeyAsync">
     <TbTreeView TItem="Place" TKey="int" AriaLabel="Places" Items="_places" KeySelector="place => place.Id"
                 ChildrenSelector="place => place.Children" @bind-ExpandedKeys="_expanded">
-        <ItemEnd>
+        <ItemEndTemplate>
             <TbButton Size="Size.Small" Variant="Variant.Text" OnClick="() => Delete(context.Item.Id)">
                 Delete @context.Item.Name
             </TbButton>
-        </ItemEnd>
+        </ItemEndTemplate>
     </TbTreeView>
 </div>
 

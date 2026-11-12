@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 namespace Trailblazor;
 
 /// <summary>A column of a <see cref="TbDataGrid{TItem}"/>: a <see cref="Field"/> it shows and can sort by, or a
-/// <see cref="Cell"/> template of its own, or both. Columns show in the order they first render, so one that shows
+/// <see cref="CellTemplate"/> of its own, or both. Columns show in the order they first render, so one that shows
 /// later, such as inside an <c>@if</c>, goes last.</summary>
 public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 {
@@ -128,7 +128,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     /// its label or the columns change; call the grid's <see cref="TbDataGrid{TItem}.RenderRows"/> when the template
     /// shows anything else that changed.</summary>
     [Parameter]
-    public RenderFragment<TItem>? Cell { get; set; }
+    public RenderFragment<TItem>? CellTemplate { get; set; }
 
     /// <summary>Draws the header instead of the <see cref="Title"/>, such as a title with a filter beside it. A
     /// sortable column keeps its sort button, with this content after it.</summary>
@@ -271,7 +271,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
         object shown = (_compiled, Title, Id, Format, Sortable, SortBy?.Method, Filterable, FilterBy?.Method,
             FilterChoices is null, FilterTemplate is null, Groupable, GroupBy?.Method, Width, Pinned, Align, Class,
-            Cell is null, Header is null, Editable, EditTemplate is null, Validate?.Method, Aggregate,
+            CellTemplate is null, Header is null, Editable, EditTemplate is null, Validate?.Method, Aggregate,
             AggregateBy?.Method, FooterTemplate is null);
         if (!shown.Equals(_shown))
         {
@@ -285,7 +285,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     internal object? ValueOf(TItem item) => _value?.Invoke(item);
 
-    // A column drawn only by its Cell template has no value to export.
+    // A column drawn only by its CellTemplate has no value to export.
     internal bool HasField => _value is not null;
 
     internal bool HasTotal =>

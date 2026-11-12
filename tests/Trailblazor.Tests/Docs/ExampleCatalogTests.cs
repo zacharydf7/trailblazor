@@ -245,7 +245,8 @@ public class ExampleCatalogTests
             return tags.SelectMany(tag =>
             {
                 var name = tag.Groups["name"].Value;
-                // A tag that isn't a component, such as <Cell>, is a fragment parameter of a component around it.
+                // A tag that isn't a component, such as <CellTemplate>, is a fragment parameter of a component
+                // around it.
                 if (!name.StartsWith("Tb"))
                 {
                     return named.Any(component => Parameters(component).Contains(name))

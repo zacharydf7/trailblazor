@@ -4857,10 +4857,10 @@ public static class ExampleCatalog
                     + "and `IsDateDisabled` returns true for a date that can't be chosen, such as a weekend. Focus can "
                     + "still reach those days, so a screen reader can say they're unavailable.",
                     typeof(CalendarLimitsExample)),
-                new("day-content", "Content in the days", "`DayContent` adds content under a day's number, such as a "
+                new("day-content", "Content in the days", "`DayTemplate` adds content under a day's number, such as a "
                     + "dot for a day with events. Give it words for screen readers, which hear them after the date. "
                     + "`@bind-Month` holds the month that's shown, so your app can load what its days show.",
-                    typeof(CalendarDayContentExample)),
+                    typeof(CalendarDayTemplateExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the date from changing while "
                     + "the months can still be browsed. `Disabled` turns every button off and takes the calendar out "
                     + "of the tab order.", typeof(CalendarStatesExample)),
@@ -4899,8 +4899,8 @@ public static class ExampleCatalog
             ],
             AppDuties =
             [
-                "Purely visual content in `DayContent`, such as a dot, needs words for screen readers too, for example "
-                    + "visually hidden text.",
+                "Purely visual content in `DayTemplate`, such as a dot, needs words for screen readers too, for "
+                    + "example visually hidden text.",
             ],
             Notes =
             [
@@ -4923,7 +4923,7 @@ public static class ExampleCatalog
                 new("next", "The button that shows the month, year or decade after."),
                 new("grid", "The grid of days, months or years; `data-view` says which."),
                 new("day", "One day."),
-                new("day-content", "The content `DayContent` adds to a day."),
+                new("day-content", "The content `DayTemplate` adds to a day."),
                 new("month", "One month, in the months view."),
                 new("year", "One year, in the years view."),
                 new("input", "The browser's date box."),
@@ -6833,9 +6833,9 @@ public static class ExampleCatalog
             [
                 new("filter-and-select", "Filter, select and open", "Rows come from `Items`. Typing in the field "
                     + "filters them and keeps each match's parents. Only trails can be selected, so a click on a region "
-                    + "opens or closes it. Double-clicking a trail or pressing Enter on it opens it. `ItemEnd`, or a "
-                    + "`TbTreeItem`'s `EndContent`, holds what sits at the end of a row, such as a count or a button. "
-                    + "Clicks and keys there never select, open or activate the row.",
+                    + "opens or closes it. Double-clicking a trail or pressing Enter on it opens it. "
+                    + "`ItemEndTemplate`, or a `TbTreeItem`'s `End`, holds what sits at the end of a row, such as a "
+                    + "count or a button. Clicks and keys there never select, open or activate the row.",
                     typeof(TreeViewExample)),
                 new("multiple-selection", "Multiple selection", "`SelectionMode.Multiple` lets several rows be "
                     + "selected, and `SelectedKeys` holds their keys. A click selects one row, Ctrl or Cmd with a click "
@@ -6976,7 +6976,7 @@ public static class ExampleCatalog
                 new("With cascading checks, a `TbTreeItem` with no `Value` checks the rows inside it. Such a row is "
                     + "never in the bound keys, so several of them can share a text without needing keys."),
                 new("`ExpandAllAsync` opens rows with `HasChildren` too, and the rows that appear in them."),
-                new("Put a row's buttons and menus in `ItemEnd`, or a `TbTreeItem`'s `EndContent`, not in "
+                new("Put a row's buttons and menus in `ItemEndTemplate`, or a `TbTreeItem`'s `End`, not in "
                     + "`ItemTemplate`. `ItemTemplate` renders in the row's content (`data-part=\"content\"`), where a "
                     + "click selects the row, or opens it when it can't be selected. The end (`data-part=\"end\"`) "
                     + "keeps clicks and keys to itself."),
@@ -7062,7 +7062,7 @@ public static class ExampleCatalog
                     + "with a line such as \"1–5 of 7\" and a `TbPagination`. `ShowFirstLast` adds first and last "
                     + "page buttons to it, and `PageSizes` adds a list of page sizes. `Multiple` selection gives each "
                     + "row a checkbox and adds one to the header that selects every row on the page. `Single` uses "
-                    + "radio buttons. A column's `Cell` template can hold buttons.",
+                    + "radio buttons. A column's `CellTemplate` can hold buttons.",
                     typeof(DataGridExample)),
                 new("row-click", "Clicking a row", "With a `SelectionMode` set, a click on a row selects it, unless the "
                     + "click lands on a button, link or field inside the row. `RowClickSelects=\"false\"` leaves "
@@ -7114,7 +7114,7 @@ public static class ExampleCatalog
                     + "with `GridExportRows.All` they return every row and column. A CSV holds each cell's text as the "
                     + "grid shows it; a workbook keeps numbers, dates and yes-or-no values as values a spreadsheet can "
                     + "sum and sort. In a CSV, text a spreadsheet would run as a formula gets an apostrophe in front, "
-                    + "and a column drawn only by its `Cell` template has nothing to export.",
+                    + "and a column drawn only by its `CellTemplate` has nothing to export.",
                     typeof(DataGridExportExample)),
                 new("header-bands", "Header bands", "`TbColumnGroup` puts a heading over the columns inside it, in a "
                     + "row above their headers. Groups nest, and each level adds a row. Sorting, resizing, hiding and "
@@ -7346,7 +7346,7 @@ public static class ExampleCatalog
             Notes =
             [
                 new("A row draws again only when its item, its selection, its `RowClass`, its `RowLabel` or the "
-                    + "columns change. When a `Cell` template shows something else, call `RenderRows` after it "
+                    + "columns change. When a `CellTemplate` shows something else, call `RenderRows` after it "
                     + "changes. After changing `Items` in place, or after the page changes a filter of its own, call "
                     + "`RefreshAsync`.") { Pitfall = true },
                 new("Each move handle is a menu with a script of its own, so set a `PageSize` on a grid with many rows "
@@ -7406,7 +7406,7 @@ public static class ExampleCatalog
                 <TbDataGrid Items="_items" AriaLabel="…" KeySelector="item => item.Id">
                     <TbColumn Field="item => item.Name" Sortable Filterable />
                     <TbColumn Title="…">
-                        <Cell>…</Cell>
+                        <CellTemplate>…</CellTemplate>
                     </TbColumn>
                 </TbDataGrid>
                 """,

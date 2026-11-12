@@ -161,7 +161,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// <summary>Content at the end of a row, such as badges or action buttons. Clicks and keys in it never select,
     /// expand or activate the row.</summary>
     [Parameter]
-    public RenderFragment<TreeItemContext<TItem, TKey>>? ItemEnd { get; set; }
+    public RenderFragment<TreeItemContext<TItem, TKey>>? ItemEndTemplate { get; set; }
 
     /// <summary>The keys of the open rows. Bind it with <c>@bind-ExpandedKeys</c> to open rows from code or to save
     /// them. A <see cref="TbTreeItem{TItem}"/> with no value has no key, so it opens and closes only by the user,

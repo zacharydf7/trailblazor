@@ -339,9 +339,9 @@ public class TbCalendarTests : BunitContext
     }
 
     [Fact]
-    public void DayContent_ShouldShowUnderTheDayAndDescribeIt_WhenGiven()
+    public void DayTemplate_ShouldShowUnderTheDayAndDescribeIt_WhenGiven()
     {
-        var cut = RenderCalendar(June3, parameters => parameters.Add(calendar => calendar.DayContent,
+        var cut = RenderCalendar(June3, parameters => parameters.Add(calendar => calendar.DayTemplate,
             date => builder => builder.AddContent(0, date.Day == 9 ? "2 hikes" : null)));
 
         var day = Cell(cut, "2026-06-09");

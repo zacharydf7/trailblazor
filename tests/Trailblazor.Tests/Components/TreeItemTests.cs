@@ -320,7 +320,7 @@ public class TreeItemTests : BunitContext
             .Add(tree => tree.IsSelectable, value => value.Length > 0)
             .Add(tree => tree.ItemText, value => value.ToUpperInvariant())
             .Add(tree => tree.Filter, value => value.StartsWith('g'))
-            .Add(tree => tree.ItemEnd, context => builder => builder.AddContent(0, context.Item.Length)));
+            .Add(tree => tree.ItemEndTemplate, context => builder => builder.AddContent(0, context.Item.Length)));
 
         Assert.Equal(["Guides", "GUIDE"],
             cut.FindAll("[data-part=item]").Select(row => row.GetAttribute("data-text")));
@@ -582,7 +582,7 @@ public class TreeItemTests : BunitContext
         {
             builder.OpenComponent<TbTreeItem<string>>(0);
             builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), "docs");
-            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.EndContent),
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.End),
                 (RenderFragment)(end => end.AddContent(0, "3 new")));
             builder.CloseComponent();
         };
@@ -600,7 +600,7 @@ public class TreeItemTests : BunitContext
     }
 
     [Fact]
-    public void TreeItem_ShouldFollowItsExpandedAndShowItsEndContent_WhenStatic()
+    public void TreeItem_ShouldFollowItsExpandedAndShowItsEnd_WhenStatic()
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         RenderFragment rows = builder =>
@@ -608,7 +608,7 @@ public class TreeItemTests : BunitContext
             builder.OpenComponent<TbTreeItem<string>>(0);
             builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), "docs");
             builder.AddComponentParameter(2, nameof(TbTreeItem<string>.Expanded), false);
-            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.EndContent),
+            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.End),
                 (RenderFragment)(end => end.AddContent(0, "3 new")));
             builder.AddComponentParameter(4, nameof(TbTreeItem<string>.ChildContent), Fragment([new Row("guide")], null));
             builder.CloseComponent();
@@ -650,14 +650,14 @@ public class TreeItemTests : BunitContext
     }
 
     [Fact]
-    public void TreeItem_ShouldKeepClicksInItsEndContentFromTheRow_WhenGivenEndContent()
+    public void TreeItem_ShouldKeepClicksInItsEndFromTheRow_WhenGivenEnd()
     {
         var clicks = 0;
         RenderFragment rows = builder =>
         {
             builder.OpenComponent<TbTreeItem<string>>(0);
             builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Value), "docs");
-            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.EndContent), (RenderFragment)(end =>
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.End), (RenderFragment)(end =>
             {
                 end.OpenElement(0, "button");
                 end.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, () => clicks++));

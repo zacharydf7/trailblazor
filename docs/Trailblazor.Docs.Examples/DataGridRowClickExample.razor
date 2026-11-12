@@ -5,10 +5,10 @@
         <TbColumn Field="trail => trail.Name" />
         <TbColumn Field="trail => trail.Region" />
         <TbColumn Title="Map" Id="map">
-            <Cell>
+            <CellTemplate>
                 <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _open = context.Name"
                           aria-label="@($"Open the map of {context.Name}")">Open</TbButton>
-            </Cell>
+            </CellTemplate>
         </TbColumn>
     </TbDataGrid>
     <output aria-label="Map open">Map open: @(_open ?? "none"). Chosen: @_chosen.Count.</output>

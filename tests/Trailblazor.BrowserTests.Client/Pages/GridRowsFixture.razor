@@ -6,9 +6,9 @@
             OnRowClick="(string trail) => _clicks.Add(trail)">
     <TbColumn Field="trail => trail" Title="Name" Id="name" />
     <TbColumn Title="Actions" Id="actions">
-        <Cell>
+        <CellTemplate>
             <button type="button" @onclick="() => Remove(context)">Delete @context</button>
-        </Cell>
+        </CellTemplate>
     </TbColumn>
 </TbDataGrid>
 <TbDataGrid TItem="string" Items="Editable" AriaLabel="Editable trails" OnCellEdit="(GridCellEdit<string> _) => { }"
@@ -18,11 +18,11 @@
 <TbDataGrid TItem="string" Items="_stops" AriaLabel="Many stops" KeySelector="stop => stop" CellNavigation Virtualize
             Height="12rem">
     <TbColumn Title="Stop" Id="stop">
-        <Cell>
+        <CellTemplate>
             <button type="button" @onclick="() => _stops = [.. _stops.Where(other => other != context)]">
                 Delete @context
             </button>
-        </Cell>
+        </CellTemplate>
     </TbColumn>
 </TbDataGrid>
 @* A press here leaves focus where it is, so a row can go away while focus is on the page. *@

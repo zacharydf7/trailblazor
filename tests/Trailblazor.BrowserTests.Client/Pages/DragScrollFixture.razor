@@ -9,7 +9,7 @@
 <output data-testid="moved-to">@_rules.IndexOf("Rule 1")</output>
 <TbDataGrid TItem="string" Items="_stops" AriaLabel="Stops" Height="150px" OnRowMove="move => move.ApplyTo(_stops)">
     <TbColumn TItem="string" Title="Stop" Id="stop">
-        <Cell>@context</Cell>
+        <CellTemplate>@context</CellTemplate>
     </TbColumn>
 </TbDataGrid>
 <div data-testid="tree-box" style="block-size: 150px; overflow: auto">

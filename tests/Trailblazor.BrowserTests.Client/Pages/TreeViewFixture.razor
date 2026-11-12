@@ -4,9 +4,9 @@
     <TbButton>Before</TbButton>
     <TbTreeView TItem="Place" TKey="int" AriaLabel="Places" Items="Places" KeySelector="place => place.Id"
                 ChildrenSelector="place => place.Children" @bind-SelectedKeys="_selected" OnActivate="Activate">
-        <ItemEnd>
+        <ItemEndTemplate>
             <TbButton Size="Size.Small" Variant="Variant.Text" OnClick="() => _info = context.Item.Name">Info</TbButton>
-        </ItemEnd>
+        </ItemEndTemplate>
     </TbTreeView>
     <output data-testid="selected">@string.Join(", ", _selected)</output>
     <output data-testid="activated">@_activated</output>

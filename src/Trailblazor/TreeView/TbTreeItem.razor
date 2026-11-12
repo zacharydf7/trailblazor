@@ -27,9 +27,9 @@ else
          class="@ClassNames.Join("tb-tree__item", classes?.Item, Class)">
         <span class="@ClassNames.Join("tb-tree__toggle", classes?.Toggle)" aria-hidden="true"></span>
         <span data-part="content" class="@ClassNames.Join("tb-tree__content", classes?.Content)">@Row</span>
-        @if (EndContent is not null)
+        @if (End is not null)
         {
-            <span data-part="end" class="@ClassNames.Join("tb-tree__end", classes?.End)">@EndContent</span>
+            <span data-part="end" class="@ClassNames.Join("tb-tree__end", classes?.End)">@End</span>
         }
     </div>
     @if (open)
@@ -71,7 +71,7 @@ else
     /// <summary>Content at the end of the row, such as badges or controls. Clicks and keys in it never select, expand
     /// or activate the row, so a row's controls go here rather than in its <see cref="TextContent"/>.</summary>
     [Parameter]
-    public RenderFragment? EndContent { get; set; }
+    public RenderFragment? End { get; set; }
 
     /// <summary>Whether this row is open. Bind it with <c>@bind-Expanded</c> to open it from code or to know when the
     /// user does, which also works for a row with no <see cref="Value"/>.</summary>

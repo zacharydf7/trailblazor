@@ -13,10 +13,10 @@
     <TbColumn Field="row => row" Title="Number" />
     <TbColumn Title="Odd" Id="odd" Groupable GroupBy="row => row % 2 == 1" />
     <TbColumn Title="Actions" Id="actions">
-        <Cell>
+        <CellTemplate>
             <button type="button">Up @context</button>
             <button type="button">Down @context</button>
-        </Cell>
+        </CellTemplate>
     </TbColumn>
 </TbDataGrid>
 <button type="button" @onclick="() => _keys = false">Turn off keys</button>
@@ -24,18 +24,18 @@
             OnRowMove="(SortableMove<string> move) => move.ApplyTo(_stops)">
     <TbColumn Field="stop => stop" Title="Stop" Id="stop" />
     <TbColumn Title="Visit" Id="visit">
-        <Cell>
+        <CellTemplate>
             <button type="button" disabled="@_visited.Contains(context)" @onclick="() => Visit(context)">
                 Visit @context
             </button>
-        </Cell>
+        </CellTemplate>
     </TbColumn>
     <TbColumn Title="More" Id="more">
-        <Cell>
+        <CellTemplate>
             <TbMenu Label="@($"More for {context}")">
                 <TbMenuItem>Skip</TbMenuItem>
             </TbMenu>
-        </Cell>
+        </CellTemplate>
     </TbColumn>
 </TbDataGrid>
 <TbDataGrid TItem="int" DataProvider="FailAsync" AriaLabel="Broken numbers" CellNavigation Virtualize Height="8rem">

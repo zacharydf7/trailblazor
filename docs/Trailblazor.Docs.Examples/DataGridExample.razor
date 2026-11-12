@@ -7,11 +7,11 @@
         <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable />
         <TbColumn Field="trail => trail.LastHiked" Format="d" Sortable />
         <TbColumn Title="Plan" Id="plan">
-            <Cell>
+            <CellTemplate>
                 <TbButton Variant="Variant.Text" Size="Size.Small" Pressed="_planned == context.Name"
                           PressedChanged="pressed => Plan(context, pressed)"
                           aria-label="@($"Plan {context.Name}")">Plan</TbButton>
-            </Cell>
+            </CellTemplate>
         </TbColumn>
     </TbDataGrid>
     <output aria-label="Chosen and planned">

@@ -10,9 +10,9 @@
     <TbDataGrid TItem="Order" Items="_orders" AriaLabel="Orders" KeySelector="order => order.Id">
         <TbColumn TItem="Order" Field="order => order.Name" Sortable />
         <TbColumn TItem="Order" Title="Count" Id="count">
-            <Cell>
+            <CellTemplate>
                 <TbNumberField TValue="int" AriaLabel="Count" @bind-Value="context.Count" />
-            </Cell>
+            </CellTemplate>
         </TbColumn>
     </TbDataGrid>
     <output data-testid="counts">@string.Join(",", _orders.Select(order => order.Count))</output>

@@ -838,7 +838,7 @@ public class TbDataGridTests : BunitContext
                 builder.AddAttribute(1, nameof(TbColumn<Trail>.Id), "plan");
                 builder.AddAttribute(2, nameof(TbColumn<Trail>.Header),
                     (RenderFragment)(header => header.AddContent(0, "Plan it")));
-                builder.AddAttribute(3, nameof(TbColumn<Trail>.Cell), (RenderFragment<Trail>)(trail => cell =>
+                builder.AddAttribute(3, nameof(TbColumn<Trail>.CellTemplate), (RenderFragment<Trail>)(trail => cell =>
                     cell.AddMarkupContent(0, $"<button>Plan {trail.Name}</button>")));
                 builder.CloseComponent();
             })));
@@ -967,7 +967,7 @@ public class TbDataGridTests : BunitContext
         {
             builder.OpenComponent<TbColumn<Trail>>(0);
             builder.AddAttribute(1, nameof(TbColumn<Trail>.Id), "name");
-            builder.AddAttribute(2, nameof(TbColumn<Trail>.Cell), (RenderFragment<Trail>)(trail => cell =>
+            builder.AddAttribute(2, nameof(TbColumn<Trail>.CellTemplate), (RenderFragment<Trail>)(trail => cell =>
             {
                 drawn.Add(trail.Id);
                 cell.AddContent(0, trail.Name);
@@ -994,7 +994,7 @@ public class TbDataGridTests : BunitContext
         {
             builder.OpenComponent<TbColumn<Trail>>(0);
             builder.AddAttribute(1, nameof(TbColumn<Trail>.Id), "name");
-            builder.AddAttribute(2, nameof(TbColumn<Trail>.Cell), (RenderFragment<Trail>)(trail => cell =>
+            builder.AddAttribute(2, nameof(TbColumn<Trail>.CellTemplate), (RenderFragment<Trail>)(trail => cell =>
                 cell.AddContent(0, trail.Id == editing ? "Editing" : trail.Name)));
             builder.CloseComponent();
         };

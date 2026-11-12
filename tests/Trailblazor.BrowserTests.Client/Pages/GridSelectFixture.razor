@@ -6,10 +6,10 @@
             SelectionMode="SelectionMode.Multiple" @bind-SelectedItems="_selected">
     <TbColumn Field="trail => trail" Title="Name" Id="name" />
     <TbColumn Title="Note" Id="note">
-        <Cell>
+        <CellTemplate>
             <input aria-label="Note for @context" value="hello" />
             <div contenteditable aria-label="Free note for @context" role="textbox">hello</div>
-        </Cell>
+        </CellTemplate>
     </TbColumn>
 </TbDataGrid>
 <output aria-label="Selected">@string.Join(", ", (_selected ?? []).Order())</output>

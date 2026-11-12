@@ -166,7 +166,7 @@ public class TbDataGridFilterTests : BunitContext
             builder.AddAttribute(1, nameof(TbColumn<Hike>.Title), "Trail");
             builder.AddAttribute(2, nameof(TbColumn<Hike>.Filterable), true);
             builder.AddAttribute(3, nameof(TbColumn<Hike>.FilterBy), (Func<Hike, object?>)(hike => hike.Name));
-            builder.AddAttribute(4, nameof(TbColumn<Hike>.Cell),
+            builder.AddAttribute(4, nameof(TbColumn<Hike>.CellTemplate),
                 (RenderFragment<Hike>)(hike => cell => cell.AddContent(0, hike.Name)));
             builder.CloseComponent();
         });

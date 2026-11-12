@@ -1,6 +1,6 @@
 <TbStack Gap="2">
     <TbCalendar TDate="DateOnly" Label="Group hikes" @bind-Value="_day" @bind-Month="_month">
-        <DayContent>
+        <DayTemplate>
             @{ var count = HikesOn(context); }
             @if (count > 0)
             {
@@ -8,7 +8,7 @@
                                                 background: currentColor"></span>
                 <span class="tb-visually-hidden">@HikeCount(count)</span>
             }
-        </DayContent>
+        </DayTemplate>
     </TbCalendar>
     <output>@HikeCount(_hikes.Count(hike => hike.Year == _month?.Year && hike.Month == _month?.Month)) this month.</output>
 </TbStack>

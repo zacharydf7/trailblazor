@@ -127,6 +127,17 @@ mark it "n/a" with a reason (a layout component has no keys, for example). Some 
 - [ ] Every statement matches the code: parameter names, defaults, keys and announcements were checked against the
       component and its tests, and every demo and link works on a phone at 390 px and in both themes.
 
+## API names
+
+The same idea gets the same name on every component.
+
+- A `RenderFragment<T>` parameter is named for what it draws and ends in `Template`, such as `ItemTemplate`,
+  `CellTemplate` and `DayTemplate`. `TbVirtualList`'s `ChildContent` and `Placeholder` keep their names, since they
+  mirror `Virtualize`. `Trigger` on the menu, popover and popconfirm keeps its name too, since its context hands over
+  the attributes for the element that opens the popup.
+- A slot before or after a component's main content, such as an icon in a button or a unit in a field, is `Start` or
+  `End`.
+
 ## Upcoming components
 
 The docs site's navigation lists each component still to come under its category. `UpcomingCatalog.All` names each one

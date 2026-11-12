@@ -66,16 +66,16 @@
                                         <button type="button" data-part="day" data-date="@Iso(date)"
                                                 tabindex="@(date == _focus ? 0 : -1)"
                                                 aria-label="@DayName(date, DateCulture)"
-                                                aria-describedby="@(DayContent is null ? null : DayContentId(date))"
+                                                aria-describedby="@(DayTemplate is null ? null : DayContentId(date))"
                                                 aria-disabled="@(IsUnavailable(date) ? "true" : null)"
                                                 aria-current="@(IsToday(date, DayOf) ? "date" : null)" disabled="@Disabled"
                                                 class="@CellClass(date, DayOf)" @onclick="_pick.For(date)">
                                             <span class="tb-calendar__number">@date.Day.ToString(DateCulture)</span>
-                                            @if (DayContent is not null)
+                                            @if (DayTemplate is not null)
                                             {
                                                 <span id="@DayContentId(date)" data-part="day-content"
                                                       class="tb-calendar__day-content">
-                                                    @DayContent(FromDate<TDate>(date))
+                                                    @DayTemplate(FromDate<TDate>(date))
                                                 </span>
                                             }
                                         </button>

@@ -292,8 +292,8 @@ Trailblazor.TbCalendar<TDate>.Classes.get -> Trailblazor.ChoiceClasses?
 Trailblazor.TbCalendar<TDate>.Classes.set -> void
 Trailblazor.TbCalendar<TDate>.Culture.get -> System.Globalization.CultureInfo?
 Trailblazor.TbCalendar<TDate>.Culture.set -> void
-Trailblazor.TbCalendar<TDate>.DayContent.get -> Microsoft.AspNetCore.Components.RenderFragment<TDate>?
-Trailblazor.TbCalendar<TDate>.DayContent.set -> void
+Trailblazor.TbCalendar<TDate>.DayTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TDate>?
+Trailblazor.TbCalendar<TDate>.DayTemplate.set -> void
 Trailblazor.TbCalendar<TDate>.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Trailblazor.TbCalendar<TDate>.IsDateDisabled.get -> System.Func<TDate, bool>?
 Trailblazor.TbCalendar<TDate>.IsDateDisabled.set -> void
@@ -1833,8 +1833,8 @@ Trailblazor.TbColorPicker.TbColorPicker() -> void
 Trailblazor.TbColumn<TItem>
 Trailblazor.TbColumn<TItem>.Align.get -> Trailblazor.ColumnAlign?
 Trailblazor.TbColumn<TItem>.Align.set -> void
-Trailblazor.TbColumn<TItem>.Cell.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>?
-Trailblazor.TbColumn<TItem>.Cell.set -> void
+Trailblazor.TbColumn<TItem>.CellTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>?
+Trailblazor.TbColumn<TItem>.CellTemplate.set -> void
 Trailblazor.TbColumn<TItem>.Class.get -> string?
 Trailblazor.TbColumn<TItem>.Class.set -> void
 Trailblazor.TbColumn<TItem>.Dispose() -> void
@@ -2968,8 +2968,8 @@ Trailblazor.TbTreeItem<TItem>.ChildContent.set -> void
 Trailblazor.TbTreeItem<TItem>.Disabled.get -> bool
 Trailblazor.TbTreeItem<TItem>.Disabled.set -> void
 Trailblazor.TbTreeItem<TItem>.Dispose() -> void
-Trailblazor.TbTreeItem<TItem>.EndContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
-Trailblazor.TbTreeItem<TItem>.EndContent.set -> void
+Trailblazor.TbTreeItem<TItem>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTreeItem<TItem>.End.set -> void
 Trailblazor.TbTreeItem<TItem>.Expanded.get -> bool
 Trailblazor.TbTreeItem<TItem>.Expanded.set -> void
 Trailblazor.TbTreeItem<TItem>.ExpandedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
@@ -3033,8 +3033,8 @@ Trailblazor.TbTreeView<TItem, TKey>.IsSelectable.get -> System.Func<TItem, bool>
 Trailblazor.TbTreeView<TItem, TKey>.IsSelectable.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ItemClass.get -> System.Func<TItem, string?>?
 Trailblazor.TbTreeView<TItem, TKey>.ItemClass.set -> void
-Trailblazor.TbTreeView<TItem, TKey>.ItemEnd.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.TreeItemContext<TItem, TKey>!>?
-Trailblazor.TbTreeView<TItem, TKey>.ItemEnd.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ItemEndTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.TreeItemContext<TItem, TKey>!>?
+Trailblazor.TbTreeView<TItem, TKey>.ItemEndTemplate.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ItemIcon.get -> System.Func<TItem, Trailblazor.Icon?>?
 Trailblazor.TbTreeView<TItem, TKey>.ItemIcon.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.Items.get -> System.Collections.Generic.IEnumerable<TItem>!

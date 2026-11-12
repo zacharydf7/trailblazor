@@ -10,12 +10,12 @@
                 IsSelectable="place => place.Children is null" InitialExpandDepth="1"
                 Filter="@(string.IsNullOrWhiteSpace(_search) ? null : Matches)" @bind-SelectedKeys="_selected"
                 OnActivate="Open">
-        <ItemEnd>
+        <ItemEndTemplate>
             @if (context.Item.Children is { } trails)
             {
                 <TbBadge Count="trails.Length" Label="@($"{trails.Length} trails")" Tone="Tone.Neutral" />
             }
-        </ItemEnd>
+        </ItemEndTemplate>
     </TbTreeView>
 </TbStack>
 

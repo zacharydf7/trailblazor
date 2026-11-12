@@ -6,10 +6,10 @@
         <TbColumn Field="trail => trail.Region" Sortable />
         <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" Sortable />
         <TbColumn Title="Map" Id="map">
-            <Cell>
+            <CellTemplate>
                 <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _opened = context.Name"
                           aria-label="@($"Map of {context.Name}")">Map</TbButton>
-            </Cell>
+            </CellTemplate>
         </TbColumn>
     </TbDataGrid>
     <output aria-label="Chosen and opened">

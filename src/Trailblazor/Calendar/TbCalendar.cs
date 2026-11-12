@@ -38,7 +38,7 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
     public TbCalendar() => _pick = new(date => () => PickAsync(date));
 
     /// <summary>The month shown, as any date in it. It defaults to the value's month, or else today's, and follows the
-    /// user as they move to other months; bind it with <c>@bind-Month</c> to load what <see cref="DayContent"/> shows.
+    /// user as they move to other months; bind it with <c>@bind-Month</c> to load what <see cref="DayTemplate"/> shows.
     /// </summary>
     [Parameter]
     public TDate? Month { get; set; }
@@ -69,7 +69,7 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
     /// <summary>Content shown under a day's number, such as a dot for a day with events. Screen readers hear its text
     /// after the date.</summary>
     [Parameter]
-    public RenderFragment<TDate>? DayContent { get; set; }
+    public RenderFragment<TDate>? DayTemplate { get; set; }
 
     /// <summary>The culture for the month and day names and the first day of the week. Defaults to the current
     /// culture. Dates are always Gregorian, like the grid, even for a culture with its own calendar, such as th-TH.

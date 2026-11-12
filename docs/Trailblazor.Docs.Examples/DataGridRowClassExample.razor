@@ -9,7 +9,7 @@
             RowClass="@(trail => trail.Open ? null : "closed-trail")">
     <TbColumn Field="trail => trail.Name" />
     <TbColumn Title="Status" Id="status">
-        <Cell>@(context.Open ? "Open" : "Closed")</Cell>
+        <CellTemplate>@(context.Open ? "Open" : "Closed")</CellTemplate>
     </TbColumn>
 </TbDataGrid>
 

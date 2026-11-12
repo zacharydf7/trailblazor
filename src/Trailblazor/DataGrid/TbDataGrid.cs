@@ -709,8 +709,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     /// <summary>Draws every row again. A row draws again by itself only when its item, its selection, its
     /// <see cref="RowClass"/>, its <see cref="RowLabel"/> or the columns change, so call this when a
-    /// <see cref="TbColumn{TItem}.Cell"/> template shows something else that changed, such as which row is being
-    /// edited.</summary>
+    /// <see cref="TbColumn{TItem}.CellTemplate"/> shows something else that changed, such as which row is being edited.
+    /// </summary>
     public void RenderRows()
     {
         _rowVersion++;

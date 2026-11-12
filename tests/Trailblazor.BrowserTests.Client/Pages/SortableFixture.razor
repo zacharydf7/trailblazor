@@ -8,7 +8,7 @@
 @* A list inside a grid's cell moves its own items, and only its own. *@
 <TbDataGrid TItem="string" Items="_crews" AriaLabel="Crews" OnRowMove="move => move.ApplyTo(_crews)">
     <TbColumn TItem="string" Title="Crew" Id="crew">
-        <Cell>
+        <CellTemplate>
             @context
             @if (context == "North crew")
             {
@@ -17,13 +17,13 @@
                     <ItemTemplate>@member</ItemTemplate>
                 </TbSortable>
             }
-        </Cell>
+        </CellTemplate>
     </TbColumn>
 </TbDataGrid>
 <output data-testid="crews">@string.Join(", ", _crews); @string.Join(", ", _members)</output>
 <TbDataGrid TItem="string" Items="_stops" AriaLabel="Route stops" OnRowMove="move => move.ApplyTo(_stops)">
     <TbColumn TItem="string" Title="Stop" Id="stop">
-        <Cell>@context</Cell>
+        <CellTemplate>@context</CellTemplate>
     </TbColumn>
 </TbDataGrid>
 

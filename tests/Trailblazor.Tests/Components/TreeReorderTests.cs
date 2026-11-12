@@ -204,7 +204,7 @@ public class TreeReorderTests : BunitContext
     public void Render_ShouldNameEachRowByItsContentAndEnd_WhenItHasInsertSlots()
     {
         var cut = RenderPlaces(parameters => parameters
-            .Add(tree => tree.ItemEnd, place => builder => builder.AddContent(0, "end"))
+            .Add(tree => tree.ItemEndTemplate, place => builder => builder.AddContent(0, "end"))
             .Add(tree => tree.InsertTemplate, _ => builder => builder.AddContent(0, "insert")));
 
         var row = Row(cut, "1");

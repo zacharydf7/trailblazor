@@ -167,7 +167,8 @@
                     <span class="tb-tree__text">@TextOf(node)</span>
                 }
             </span>
-            @if ((declared?.EndContent ?? (ItemEnd is not null && valued ? ItemEnd(context) : null)) is { } end)
+            @if ((declared?.End ?? (ItemEndTemplate is not null && valued ? ItemEndTemplate(context) : null))
+                is { } end)
             {
                 @* The end slot's own controls keep their clicks and keys from the row. *@
                 <span data-part="end" id="@(InsertTemplate is null ? null : $"{nameId}-end")"

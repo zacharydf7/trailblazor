@@ -909,7 +909,7 @@ public class TbTreeViewTests : BunitContext
     public void Render_ShouldAddPartClasses_WhenClassesAreSet()
     {
         var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.Checkable, true)
-            .Add(tree => tree.ItemEnd, context => builder => builder.AddContent(0, "3 new"))
+            .Add(tree => tree.ItemEndTemplate, context => builder => builder.AddContent(0, "3 new"))
             .Add(tree => tree.InsertTemplate, context => builder => builder.AddContent(0, "Add"))
             .Add(tree => tree.Classes, new TreeViewClasses
             {

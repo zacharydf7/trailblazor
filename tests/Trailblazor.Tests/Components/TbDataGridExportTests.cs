@@ -67,7 +67,7 @@ public class TbDataGridExportTests : BunitContext
         builder.CloseComponent();
         builder.OpenComponent<TbColumn<Hike>>(12);
         builder.AddAttribute(13, nameof(TbColumn<Hike>.Title), "Actions");
-        builder.AddAttribute(14, nameof(TbColumn<Hike>.Cell), (RenderFragment<Hike>)(_ => _ => { }));
+        builder.AddAttribute(14, nameof(TbColumn<Hike>.CellTemplate), (RenderFragment<Hike>)(_ => _ => { }));
         builder.CloseComponent();
     }
 
