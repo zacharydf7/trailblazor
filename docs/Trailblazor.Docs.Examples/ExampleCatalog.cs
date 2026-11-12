@@ -512,10 +512,10 @@ public static class ExampleCatalog
                     + "button for each slide move between them, and `@bind-ActiveIndex` is the shown slide's "
                     + "position. A slide is named by its place, such as \"2 of 3\", unless `AriaLabel` names it.",
                     typeof(CarouselExample)),
-                new("auto-play", "Turning by itself", "`AutoPlay` sets how often the carousel turns to the next "
-                    + "slide by itself, and adds a button, first in the controls, that stops and starts it. It pauses "
-                    + "while the pointer is over the carousel or focus is in it, stops when keyboard focus lands "
-                    + "anywhere in it, and starts stopped for someone who asks for reduced motion.",
+                new("auto-play", "Turning by itself", "`AutoPlayInterval` sets how often the carousel turns to the "
+                    + "next slide by itself, and adds a button, first in the controls, that stops and starts it. It "
+                    + "pauses while the pointer is over the carousel or focus is in it, stops when keyboard focus "
+                    + "lands anywhere in it, and starts stopped for someone who asks for reduced motion.",
                     typeof(CarouselAutoPlayExample)),
                 new("ends", "Ends and buttons", "`Loop=\"false\"` stops at the first and last slides and turns off "
                     + "the button that would pass them. `ShowPicker=\"false\"` leaves out the button for each slide.",
@@ -524,8 +524,8 @@ public static class ExampleCatalog
             Api = [typeof(TbCarousel), typeof(TbCarouselSlide), typeof(CarouselLabels)],
             Keyboard =
             [
-                new(["Tab"], "Moves to the stop button, when `AutoPlay` is set, then previous and next, into the "
-                    + "shown slide's content, and on to the slide buttons."),
+                new(["Tab"], "Moves to the stop button, when `AutoPlayInterval` is set, then previous and next, into "
+                    + "the shown slide's content, and on to the slide buttons."),
                 new(["Enter", "Space"], "Presses the focused button."),
             ],
             Labeling =
@@ -578,7 +578,7 @@ public static class ExampleCatalog
             TestingTip = "Find it as `GetByRole(AriaRole.Region, new() { Name = \"Featured trails\" })`, move with "
                 + "`GetByRole(AriaRole.Button, new() { Name = \"Next slide\" })`, and find the shown slide as the "
                 + "visible `group` named, for example, \"2 of 3\". In bUnit, register a `FakeTimeProvider` as the "
-                + "`TimeProvider` and advance it past the `AutoPlay` interval to turn the slides.",
+                + "`TimeProvider` and advance it past the `AutoPlayInterval` to turn the slides.",
         },
         new("virtual-list", "Virtual list", ExampleCategory.Content,
             "A long list of items of any height, such as thousands of trail reports, that draws only those near the "

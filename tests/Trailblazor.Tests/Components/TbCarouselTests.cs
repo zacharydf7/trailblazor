@@ -30,7 +30,7 @@ public class TbCarouselTests : BunitContext
     private IRenderedComponent<TbCarousel> RenderTurning(bool reducedMotion = false)
     {
         _handle.Setup<bool>("prefersReducedMotion").SetResult(reducedMotion);
-        var cut = RenderCarousel(parameters => parameters.Add(carousel => carousel.AutoPlay, FiveSeconds));
+        var cut = RenderCarousel(parameters => parameters.Add(carousel => carousel.AutoPlayInterval, FiveSeconds));
         cut.WaitForAssertion(() => Assert.Equal(reducedMotion ? "polite" : "off",
             cut.Find("[data-part=slides]").GetAttribute("aria-live")));
         return cut;
@@ -116,7 +116,7 @@ public class TbCarouselTests : BunitContext
     }
 
     [Fact]
-    public void AutoPlay_ShouldTurnTheSlidesAndStopWhenAsked_WhenGivenAnInterval()
+    public void AutoPlayInterval_ShouldTurnTheSlidesAndStopWhenAsked_WhenGivenAnInterval()
     {
         var cut = RenderTurning();
 
@@ -131,7 +131,7 @@ public class TbCarouselTests : BunitContext
     }
 
     [Fact]
-    public void AutoPlay_ShouldStartStopped_WhenTheUserAsksForReducedMotion()
+    public void AutoPlayInterval_ShouldStartStopped_WhenTheUserAsksForReducedMotion()
     {
         var cut = RenderTurning(reducedMotion: true);
 
@@ -142,7 +142,7 @@ public class TbCarouselTests : BunitContext
     }
 
     [Fact]
-    public async Task AutoPlay_ShouldPauseAndGoOn_WhenThePointerOrAPointersFocusComesAndGoes()
+    public async Task AutoPlayInterval_ShouldPauseAndGoOn_WhenThePointerOrAPointersFocusComesAndGoes()
     {
         var cut = RenderTurning();
 
@@ -161,7 +161,7 @@ public class TbCarouselTests : BunitContext
     }
 
     [Fact]
-    public async Task AutoPlay_ShouldStayStoppedUntilStartIsPressed_WhenKeyboardFocusEntersAndLeaves()
+    public async Task AutoPlayInterval_ShouldStayStoppedUntilStartIsPressed_WhenKeyboardFocusEntersAndLeaves()
     {
         var cut = RenderTurning();
 
@@ -179,12 +179,12 @@ public class TbCarouselTests : BunitContext
     }
 
     [Fact]
-    public void AutoPlay_ShouldStartTurning_WhenItIsSetAfterTheFirstRender()
+    public void AutoPlayInterval_ShouldStartTurning_WhenItIsSetAfterTheFirstRender()
     {
         _handle.Setup<bool>("prefersReducedMotion").SetResult(false);
         var cut = RenderCarousel();
 
-        cut.Render(parameters => parameters.Add(carousel => carousel.AutoPlay, FiveSeconds));
+        cut.Render(parameters => parameters.Add(carousel => carousel.AutoPlayInterval, FiveSeconds));
         cut.WaitForAssertion(() => Assert.Equal("off", cut.Find("[data-part=slides]").GetAttribute("aria-live")));
         _time.Advance(FiveSeconds);
 
@@ -192,11 +192,11 @@ public class TbCarouselTests : BunitContext
     }
 
     [Fact]
-    public void AutoPlay_ShouldTurnAtTheNewInterval_WhenItChanges()
+    public void AutoPlayInterval_ShouldTurnAtTheNewInterval_WhenItChanges()
     {
         var cut = RenderTurning();
 
-        cut.Render(parameters => parameters.Add(carousel => carousel.AutoPlay, FiveSeconds * 2));
+        cut.Render(parameters => parameters.Add(carousel => carousel.AutoPlayInterval, FiveSeconds * 2));
         _time.Advance(FiveSeconds);
         Assert.Equal("Pine", Shown(cut));
         _time.Advance(FiveSeconds);
@@ -205,11 +205,11 @@ public class TbCarouselTests : BunitContext
     }
 
     [Fact]
-    public async Task AutoPlay_ShouldHandTheErrorToTheRenderer_WhenActiveIndexChangedThrowsOnATurn()
+    public async Task AutoPlayInterval_ShouldHandTheErrorToTheRenderer_WhenActiveIndexChangedThrowsOnATurn()
     {
         _handle.Setup<bool>("prefersReducedMotion").SetResult(false);
         var cut = Render<TbCarousel>(parameters => parameters.Add(carousel => carousel.AriaLabel, "Featured trails")
-            .Add(carousel => carousel.AutoPlay, FiveSeconds)
+            .Add(carousel => carousel.AutoPlayInterval, FiveSeconds)
             .Add(carousel => carousel.ActiveIndexChanged, (int _) => throw new InvalidOperationException("Turned"))
             .AddChildContent<TbCarouselSlide>().AddChildContent<TbCarouselSlide>());
         cut.WaitForAssertion(() => Assert.Equal("off", cut.Find("[data-part=slides]").GetAttribute("aria-live")));

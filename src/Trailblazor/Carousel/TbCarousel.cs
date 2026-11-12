@@ -6,7 +6,7 @@ using Trailblazor.Primitives;
 namespace Trailblazor;
 
 /// <summary>A set of slides shown one at a time, such as trail photos, with previous and next buttons, a button for
-/// each slide and, with <see cref="AutoPlay"/>, slides that turn by themselves.</summary>
+/// each slide and, with <see cref="AutoPlayInterval"/>, slides that turn by themselves.</summary>
 public partial class TbCarousel
 {
     private readonly string _slidesId = $"tb-carousel-{Guid.NewGuid():N}-slides";
@@ -56,7 +56,7 @@ public partial class TbCarousel
     /// starts the turning. It pauses while the pointer is over the carousel or focus is in it, stops when keyboard focus
     /// lands anywhere in it, and starts stopped for someone who asks for reduced motion.</summary>
     [Parameter]
-    public TimeSpan? AutoPlay { get; set; }
+    public TimeSpan? AutoPlayInterval { get; set; }
 
     /// <summary>Shows a button for each slide under the slides. On by default.</summary>
     [Parameter]
@@ -77,7 +77,7 @@ public partial class TbCarousel
 
     private int Current => _slides.Count == 0 ? 0 : Math.Clamp(_current, 0, _slides.Count - 1);
 
-    private bool Rotating => AutoPlay is not null && _handle is not null && !_stopped && !_hovered && !_focused
+    private bool Rotating => AutoPlayInterval is not null && _handle is not null && !_stopped && !_hovered && !_focused
         && _slides.Count > 1;
 
     private string Text(string? given, string key) => given ?? Localizer[key];
@@ -140,7 +140,7 @@ public partial class TbCarousel
             await ActiveIndexChanged.InvokeAsync(_current);
         }
 
-        if (AutoPlay is not null && !_attaching && RendererInfo.IsInteractive)
+        if (AutoPlayInterval is not null && !_attaching && RendererInfo.IsInteractive)
         {
             await AttachAsync();
         }
@@ -148,7 +148,7 @@ public partial class TbCarousel
         UpdateTimer();
     }
 
-    // Runs once AutoPlay is first set, which needn't be on the first render.
+    // Runs once AutoPlayInterval is first set, which needn't be on the first render.
     private async Task AttachAsync()
     {
         _attaching = true;
@@ -229,7 +229,7 @@ public partial class TbCarousel
     // The timer runs only while the slides should turn, and starts over after each pause or a new interval.
     private void UpdateTimer()
     {
-        if (!Rotating || _timerInterval != AutoPlay)
+        if (!Rotating || _timerInterval != AutoPlayInterval)
         {
             _timer?.Dispose();
             _timer = null;
@@ -237,7 +237,7 @@ public partial class TbCarousel
 
         if (Rotating && _timer is null)
         {
-            _timerInterval = AutoPlay!.Value;
+            _timerInterval = AutoPlayInterval!.Value;
             _timer = Time.CreateTimer(_ => _ = InvokeAsync(TurnFromTimerAsync), null, _timerInterval, _timerInterval);
         }
     }

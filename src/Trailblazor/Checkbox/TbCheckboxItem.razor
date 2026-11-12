@@ -1,5 +1,5 @@
 @namespace Trailblazor
-@typeparam TItem
+@typeparam TValue
 @inherits TbComponentBase
 
 @* Each option is drawn as a checkbox, so it shares the checkbox's label and input classes; an id names its input. *@
@@ -17,7 +17,7 @@
     /// <summary>The value the group gains while this option is checked. A plain value fits a group of its nullable
     /// type, such as <c>Value="2"</c> in a group bound to an <c>IReadOnlyList&lt;int?&gt;</c>.</summary>
     [Parameter, EditorRequired]
-    public TItem Value { get; set; } = default!;
+    public TValue Value { get; set; } = default!;
 
     /// <summary>The option's visible label, which can hold rich content such as a link.</summary>
     [Parameter]
@@ -36,7 +36,7 @@
         if (Group is null || !Group.Accepts(Value))
         {
             throw new InvalidOperationException(
-                $"{nameof(TbCheckboxItem<TItem>)} must be inside a {nameof(TbCheckboxGroup<TItem>)} its value fits.");
+                $"{nameof(TbCheckboxItem<TValue>)} must be inside a {nameof(TbCheckboxGroup<TValue>)} its value fits.");
         }
     }
 }

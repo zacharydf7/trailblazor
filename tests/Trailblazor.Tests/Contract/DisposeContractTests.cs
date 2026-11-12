@@ -94,7 +94,7 @@ public class DisposeContractTests : BunitContext
     // before calling it, and each call is counted.
     private Dictionary<string, object> Settings(Type component) => component switch
     {
-        _ when component == typeof(TbCarousel) => new() { ["AutoPlay"] = TimeSpan.FromSeconds(5) },
+        _ when component == typeof(TbCarousel) => new() { ["AutoPlayInterval"] = TimeSpan.FromSeconds(5) },
         _ when component == typeof(TbOverlay) => new() { ["CloseOnClick"] = true },
         _ when component == typeof(TbAutocomplete<string>) => new()
         {

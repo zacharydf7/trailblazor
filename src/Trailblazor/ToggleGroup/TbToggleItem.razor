@@ -4,7 +4,7 @@
 
 @if (ChildContent is null && string.IsNullOrEmpty(Text) && Icon is Icon icon)
 {
-    <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@AriaLabel" Variant="Group!.Variant"
+    <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@(AriaLabel ?? "")" Variant="Group!.Variant"
                   Tone="Group.Tone" Size="Group.Size" Disabled="@(Disabled || Group.Disabled)"
                   Pressed="Group.IsPressed(Value)" PressedChanged="OnPressedChanged" data-part="item" Class="@Class"
                   Style="@Style" ShowTooltip />
@@ -48,7 +48,7 @@ else
     /// <summary>The name of an item that shows only an icon. Required then, since an icon says nothing to a screen
     /// reader. The name also shows in a tooltip on hover and keyboard focus.</summary>
     [Parameter]
-    public string AriaLabel { get; set; } = "";
+    public string? AriaLabel { get; set; }
 
     /// <summary>Turns this item off while the rest stay usable.</summary>
     [Parameter]

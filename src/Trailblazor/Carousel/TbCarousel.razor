@@ -8,7 +8,7 @@
          data-ready="@(_handle is null ? null : "")" style="@Style" class="@ClassNames.Join("tb-carousel", Class)"
          @onmouseenter="() => _hovered = true" @onmouseleave="() => _hovered = false">
     <div data-part="controls" class="tb-carousel__controls">
-        @if (AutoPlay is not null)
+        @if (AutoPlayInterval is not null)
         {
             <TbIconButton Icon="@(_stopped ? BuiltInIcons.Play : BuiltInIcons.Pause)"
                           AriaLabel="@RotationLabel"

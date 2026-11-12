@@ -313,8 +313,8 @@ Trailblazor.TbCalendar<TDate>.TbCalendar() -> void
 Trailblazor.TbCarousel
 Trailblazor.TbCarousel.AriaLabel.get -> string!
 Trailblazor.TbCarousel.AriaLabel.set -> void
-Trailblazor.TbCarousel.AutoPlay.get -> System.TimeSpan?
-Trailblazor.TbCarousel.AutoPlay.set -> void
+Trailblazor.TbCarousel.AutoPlayInterval.get -> System.TimeSpan?
+Trailblazor.TbCarousel.AutoPlayInterval.set -> void
 Trailblazor.TbCarousel.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbCarousel.ChildContent.set -> void
 Trailblazor.TbCarousel.DisposeAsync() -> System.Threading.Tasks.ValueTask
@@ -742,7 +742,7 @@ override Trailblazor.TbCheckbox<TValue>.FocusAsync(bool preventScroll = false) -
 override Trailblazor.TbCheckbox<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbCheckbox<TValue>.OnParametersSet() -> void
 override Trailblazor.TbCheckboxGroup<TItem>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
-override Trailblazor.TbCheckboxItem<TItem>.OnParametersSet() -> void
+override Trailblazor.TbCheckboxItem<TValue>.OnParametersSet() -> void
 override Trailblazor.TbChip.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbChipGroup.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbChipGroup.OnParametersSet() -> void
@@ -1763,14 +1763,14 @@ Trailblazor.TbCheckboxGroup<TItem>.Size.set -> void
 Trailblazor.TbCheckboxGroup<TItem>.TbCheckboxGroup() -> void
 Trailblazor.TbCheckboxGroup<TItem>.Tone.get -> Trailblazor.Tone
 Trailblazor.TbCheckboxGroup<TItem>.Tone.set -> void
-Trailblazor.TbCheckboxItem<TItem>
-Trailblazor.TbCheckboxItem<TItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
-Trailblazor.TbCheckboxItem<TItem>.ChildContent.set -> void
-Trailblazor.TbCheckboxItem<TItem>.Disabled.get -> bool
-Trailblazor.TbCheckboxItem<TItem>.Disabled.set -> void
-Trailblazor.TbCheckboxItem<TItem>.TbCheckboxItem() -> void
-Trailblazor.TbCheckboxItem<TItem>.Value.get -> TItem
-Trailblazor.TbCheckboxItem<TItem>.Value.set -> void
+Trailblazor.TbCheckboxItem<TValue>
+Trailblazor.TbCheckboxItem<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCheckboxItem<TValue>.ChildContent.set -> void
+Trailblazor.TbCheckboxItem<TValue>.Disabled.get -> bool
+Trailblazor.TbCheckboxItem<TValue>.Disabled.set -> void
+Trailblazor.TbCheckboxItem<TValue>.TbCheckboxItem() -> void
+Trailblazor.TbCheckboxItem<TValue>.Value.get -> TValue
+Trailblazor.TbCheckboxItem<TValue>.Value.set -> void
 Trailblazor.TbChip
 Trailblazor.TbChip.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbChip.ChildContent.set -> void
@@ -2885,7 +2885,7 @@ Trailblazor.TbToggleGroupBase<TValue>.Variant.set -> void
 Trailblazor.TbToggleGroupBase<TValue>.Vertical.get -> bool
 Trailblazor.TbToggleGroupBase<TValue>.Vertical.set -> void
 Trailblazor.TbToggleItem<TValue>
-Trailblazor.TbToggleItem<TValue>.AriaLabel.get -> string!
+Trailblazor.TbToggleItem<TValue>.AriaLabel.get -> string?
 Trailblazor.TbToggleItem<TValue>.AriaLabel.set -> void
 Trailblazor.TbToggleItem<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbToggleItem<TValue>.ChildContent.set -> void
@@ -3342,7 +3342,7 @@ Trailblazor.Viewport.Width.init -> void
 ~override Trailblazor.TbCarouselSlide.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbCheckbox<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbCheckboxGroup<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
-~override Trailblazor.TbCheckboxItem<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbCheckboxItem<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbChip.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbChipGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbCodeField.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
