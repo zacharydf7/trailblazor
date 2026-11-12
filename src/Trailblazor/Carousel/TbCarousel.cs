@@ -39,13 +39,13 @@ public partial class TbCarousel
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>The shown slide's position, from 0. Bind it with <c>@bind-Index</c>.</summary>
+    /// <summary>The shown slide's position, from 0. Bind it with <c>@bind-ActiveIndex</c>.</summary>
     [Parameter]
-    public int Index { get; set; }
+    public int ActiveIndex { get; set; }
 
     /// <summary>Raised when another slide is shown.</summary>
     [Parameter]
-    public EventCallback<int> IndexChanged { get; set; }
+    public EventCallback<int> ActiveIndexChanged { get; set; }
 
     /// <summary>Moves from the last slide to the first, and back, instead of stopping at the ends. On by default.
     /// </summary>
@@ -123,10 +123,10 @@ public partial class TbCarousel
             throw new InvalidOperationException($"{nameof(TbCarousel)} needs an {nameof(AriaLabel)}.");
         }
 
-        // A new Index from the parent shows that slide; one the carousel reported itself changes nothing.
-        if (Index != _lastIndex)
+        // A new ActiveIndex from the parent shows that slide; one the carousel reported itself changes nothing.
+        if (ActiveIndex != _lastIndex)
         {
-            _current = _lastIndex = Index;
+            _current = _lastIndex = ActiveIndex;
         }
     }
 
@@ -137,7 +137,7 @@ public partial class TbCarousel
         {
             _indexMoved = false;
             _lastIndex = _current;
-            await IndexChanged.InvokeAsync(_current);
+            await ActiveIndexChanged.InvokeAsync(_current);
         }
 
         if (AutoPlay is not null && !_attaching && RendererInfo.IsInteractive)
@@ -200,7 +200,7 @@ public partial class TbCarousel
         }
 
         _current = next;
-        await IndexChanged.InvokeAsync(next);
+        await ActiveIndexChanged.InvokeAsync(next);
         StateHasChanged();
     }
 
@@ -242,7 +242,7 @@ public partial class TbCarousel
         }
     }
 
-    // Runs outside any event handler, so it hands a failing IndexChanged to the renderer.
+    // Runs outside any event handler, so it hands a failing ActiveIndexChanged to the renderer.
     private async Task TurnFromTimerAsync()
     {
         try

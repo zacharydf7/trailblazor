@@ -318,10 +318,10 @@ Trailblazor.TbCarousel.AutoPlay.set -> void
 Trailblazor.TbCarousel.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbCarousel.ChildContent.set -> void
 Trailblazor.TbCarousel.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Trailblazor.TbCarousel.Index.get -> int
-Trailblazor.TbCarousel.Index.set -> void
-Trailblazor.TbCarousel.IndexChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
-Trailblazor.TbCarousel.IndexChanged.set -> void
+Trailblazor.TbCarousel.ActiveIndex.get -> int
+Trailblazor.TbCarousel.ActiveIndex.set -> void
+Trailblazor.TbCarousel.ActiveIndexChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Trailblazor.TbCarousel.ActiveIndexChanged.set -> void
 Trailblazor.TbCarousel.Labels.get -> Trailblazor.CarouselLabels?
 Trailblazor.TbCarousel.Labels.set -> void
 Trailblazor.TbCarousel.Loop.get -> bool
@@ -4072,10 +4072,10 @@ Trailblazor.TbStep.TbStep() -> void
 Trailblazor.TbStep.Title.get -> string!
 Trailblazor.TbStep.Title.set -> void
 Trailblazor.TbStepper
-Trailblazor.TbStepper.Active.get -> string?
-Trailblazor.TbStepper.Active.set -> void
-Trailblazor.TbStepper.ActiveChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
-Trailblazor.TbStepper.ActiveChanged.set -> void
+Trailblazor.TbStepper.ActiveKey.get -> string?
+Trailblazor.TbStepper.ActiveKey.set -> void
+Trailblazor.TbStepper.ActiveKeyChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
+Trailblazor.TbStepper.ActiveKeyChanged.set -> void
 Trailblazor.TbStepper.AriaLabel.get -> string?
 Trailblazor.TbStepper.AriaLabel.set -> void
 Trailblazor.TbStepper.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?

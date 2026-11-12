@@ -42,7 +42,7 @@ public class TbCarouselTests : BunitContext
         Action<ComponentParameterCollectionBuilder<TbCarousel>>? configure = null) => Render<TbCarousel>(parameters =>
     {
         parameters.Add(carousel => carousel.AriaLabel, "Featured trails")
-            .Add(carousel => carousel.IndexChanged, (int index) => Indexes.Add(index))
+            .Add(carousel => carousel.ActiveIndexChanged, (int index) => Indexes.Add(index))
             .Add(carousel => carousel.ChildContent, (RenderFragment)(builder =>
             {
                 foreach (var (trail, at) in new[] { "Pine", "Cedar", "Eagle" }.Select((trail, at) => (trail, at)))
@@ -106,7 +106,7 @@ public class TbCarouselTests : BunitContext
     public void Render_ShouldTurnOffTheButtonsAtTheEnds_WhenItDoesntLoop()
     {
         var cut = RenderCarousel(parameters => parameters.Add(carousel => carousel.Loop, false)
-            .Add(carousel => carousel.Index, 2).Add(carousel => carousel.ShowPicker, false));
+            .Add(carousel => carousel.ActiveIndex, 2).Add(carousel => carousel.ShowPicker, false));
 
         Assert.Null(cut.Find("[data-part=previous]").GetAttribute("aria-disabled"));
         Assert.Equal("true", cut.Find("[data-part=next]").GetAttribute("aria-disabled"));
@@ -205,12 +205,12 @@ public class TbCarouselTests : BunitContext
     }
 
     [Fact]
-    public async Task AutoPlay_ShouldHandTheErrorToTheRenderer_WhenIndexChangedThrowsOnATurn()
+    public async Task AutoPlay_ShouldHandTheErrorToTheRenderer_WhenActiveIndexChangedThrowsOnATurn()
     {
         _handle.Setup<bool>("prefersReducedMotion").SetResult(false);
         var cut = Render<TbCarousel>(parameters => parameters.Add(carousel => carousel.AriaLabel, "Featured trails")
             .Add(carousel => carousel.AutoPlay, FiveSeconds)
-            .Add(carousel => carousel.IndexChanged, (int _) => throw new InvalidOperationException("Turned"))
+            .Add(carousel => carousel.ActiveIndexChanged, (int _) => throw new InvalidOperationException("Turned"))
             .AddChildContent<TbCarouselSlide>().AddChildContent<TbCarouselSlide>());
         cut.WaitForAssertion(() => Assert.Equal("off", cut.Find("[data-part=slides]").GetAttribute("aria-live")));
 
@@ -226,7 +226,8 @@ public class TbCarouselTests : BunitContext
     {
         var trails = new List<string> { "Pine", "Cedar", "Eagle" };
         var cut = Render<TbCarousel>(parameters => parameters.Add(carousel => carousel.AriaLabel, "Featured trails")
-            .Add(carousel => carousel.Index, 1).Add(carousel => carousel.IndexChanged, (int index) => Indexes.Add(index))
+            .Add(carousel => carousel.ActiveIndex, 1)
+            .Add(carousel => carousel.ActiveIndexChanged, (int index) => Indexes.Add(index))
             .Add(carousel => carousel.ChildContent, (RenderFragment)(builder =>
             {
                 foreach (var trail in trails)
@@ -240,7 +241,7 @@ public class TbCarouselTests : BunitContext
             })));
 
         trails.Remove("Pine");
-        await cut.InvokeAsync(() => cut.Render(parameters => parameters.Add(carousel => carousel.Index, 1)));
+        await cut.InvokeAsync(() => cut.Render(parameters => parameters.Add(carousel => carousel.ActiveIndex, 1)));
 
         cut.WaitForAssertion(() => Assert.Equal([0], Indexes));
         Assert.Equal("Cedar", Shown(cut));

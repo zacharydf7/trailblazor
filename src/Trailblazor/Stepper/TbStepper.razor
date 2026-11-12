@@ -17,14 +17,14 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>The <see cref="TbStep.Key"/> of the step people are on. Bind it with <c>@bind-Active</c>: it changes
-    /// when people choose a step, and the app changes it to move on, such as from its Next button.</summary>
+    /// <summary>The <see cref="TbStep.Key"/> of the step people are on. Bind it with <c>@bind-ActiveKey</c>: it
+    /// changes when people choose a step, and the app changes it to move on, such as from its Next button.</summary>
     [Parameter]
-    public string? Active { get; set; }
+    public string? ActiveKey { get; set; }
 
     /// <summary>Raised when people choose a step.</summary>
     [Parameter]
-    public EventCallback<string?> ActiveChanged { get; set; }
+    public EventCallback<string?> ActiveKeyChanged { get; set; }
 
     /// <summary>Lets people go only to completed steps, so they finish the steps in order. Defaults to true; set it to
     /// false to let them go to any step.</summary>
@@ -46,10 +46,10 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Active != _lastActive)
+        if (ActiveKey != _lastActive)
         {
-            _lastActive = Active;
-            Current = Active;
+            _lastActive = ActiveKey;
+            Current = ActiveKey;
         }
     }
 
@@ -57,6 +57,6 @@
     {
         Current = key;
         StateHasChanged();
-        return ActiveChanged.InvokeAsync(key);
+        return ActiveKeyChanged.InvokeAsync(key);
     }
 }

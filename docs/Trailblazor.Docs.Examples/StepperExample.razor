@@ -1,5 +1,5 @@
 <TbStack Gap="4">
-    <TbStepper @bind-Active="_step" AriaLabel="Trip booking">
+    <TbStepper @bind-ActiveKey="_step" AriaLabel="Trip booking">
         @foreach (var step in Steps)
         {
             <TbStep Title="@step" Completed="_done.Contains(step)" />

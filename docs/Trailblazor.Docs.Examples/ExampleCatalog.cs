@@ -509,8 +509,8 @@ public static class ExampleCatalog
             Sections =
             [
                 new("basic", "Carousel", "Each `TbCarouselSlide` is one slide. The previous and next buttons and a "
-                    + "button for each slide move between them, and `@bind-Index` is the shown slide's position. A "
-                    + "slide is named by its place, such as \"2 of 3\", unless `AriaLabel` names it.",
+                    + "button for each slide move between them, and `@bind-ActiveIndex` is the shown slide's "
+                    + "position. A slide is named by its place, such as \"2 of 3\", unless `AriaLabel` names it.",
                     typeof(CarouselExample)),
                 new("auto-play", "Turning by itself", "`AutoPlay` sets how often the carousel turns to the next "
                     + "slide by itself, and adds a button, first in the controls, that stops and starts it. It pauses "
@@ -552,9 +552,9 @@ public static class ExampleCatalog
             Notes =
             [
                 new("A slide added after the first render goes after the others, whatever its place in the markup. When "
-                    + "another slide is removed, the shown one stays shown and `@bind-Index` gets its new position; "
-                    + "when the shown slide itself is removed, the one after it shows, or the last one if there's "
-                    + "none after it."),
+                    + "another slide is removed, the shown one stays shown and `@bind-ActiveIndex` gets its new "
+                    + "position; when the shown slide itself is removed, the one after it shows, or the last one if "
+                    + "there's none after it."),
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
@@ -7638,9 +7638,9 @@ public static class ExampleCatalog
             Related = ["tabs", "breadcrumbs", "progress"],
             Sections =
             [
-                new("basic", "Steps", "`@bind-Active` holds the `Key` of the step people are on, which defaults to "
+                new("basic", "Steps", "`@bind-ActiveKey` holds the `Key` of the step people are on, which defaults to "
                     + "the step's `Title`. In a horizontal stepper, the app shows the current step's content under it, "
-                    + "and the app's Back and Next buttons change `Active`. `Completed` puts a check in place of a "
+                    + "and the app's Back and Next buttons change `ActiveKey`. `Completed` puts a check in place of a "
                     + "step's number, and people can go back to a completed step.", typeof(StepperExample)),
                 new("vertical", "Vertical", "`Vertical` lays the steps out in a column, with the current step's "
                     + "content under it.", typeof(StepperVerticalExample)),
@@ -7652,7 +7652,7 @@ public static class ExampleCatalog
             ],
             Api = [typeof(TbStepper), typeof(TbStep)],
             Anatomy = """
-                <TbStepper @bind-Active="_step">
+                <TbStepper @bind-ActiveKey="_step">
                     <TbStep Title="…" Completed="…" />
                     <TbStep Title="…" Optional>…</TbStep>
                 </TbStepper>
@@ -7713,7 +7713,7 @@ public static class ExampleCatalog
                 "Find the current step with `Locator(\"[aria-current=step]\")`, and a step by its title with "
                     + "`GetByRole(AriaRole.Button, new() { Name = \"Gear\" })`; a finished step's name ends in "
                     + "\"Completed\", as in \"Trip Completed\".",
-                "In bUnit, set `Active` and check `[aria-current=step]`.",
+                "In bUnit, set `ActiveKey` and check `[aria-current=step]`.",
             ],
         },
         new("pagination", "Pagination", ExampleCategory.Navigation,

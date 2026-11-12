@@ -2,7 +2,7 @@
 
 @* Six steps in a box narrower than the page, and a vertical stepper sharing a row with other content. *@
 <div style="inline-size: 600px">
-    <TbStepper Active="One" AriaLabel="Six steps">
+    <TbStepper ActiveKey="One" AriaLabel="Six steps">
         @foreach (var step in new[] { "One", "Two", "Three", "Four", "Five", "Payment" })
         {
             <TbStep Title="@step" />
@@ -10,7 +10,7 @@
     </TbStepper>
 </div>
 <TbStack Row Gap="4">
-    <TbStepper Active="Profile" Vertical AriaLabel="In a row">
+    <TbStepper ActiveKey="Profile" Vertical AriaLabel="In a row">
         <TbStep Title="Profile" />
         <TbStep Title="Trail alerts" />
     </TbStepper>

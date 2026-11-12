@@ -13,7 +13,7 @@ public class TbStepperTests : BunitContext
     private IRenderedComponent<TbStepper> RenderStepper(string active,
         Action<ComponentParameterCollectionBuilder<TbStepper>>? configure = null) => Render<TbStepper>(parameters =>
     {
-        parameters.Add(stepper => stepper.Active, active)
+        parameters.Add(stepper => stepper.ActiveKey, active)
             .AddChildContent<TbStep>(step => step.Add(s => s.Title, "Trip").Add(s => s.Completed, true)
                 .Add(s => s.Description, "Where and when").AddChildContent("Pick the dates"))
             .AddChildContent<TbStep>(step => step.Add(s => s.Title, "Gear").Add(s => s.Optional, true)
@@ -47,7 +47,7 @@ public class TbStepperTests : BunitContext
     public void StepButton_ShouldMoveToACompletedStep_WhenPressed()
     {
         var changes = new List<string?>();
-        var cut = RenderStepper("Gear", parameters => parameters.Add(stepper => stepper.ActiveChanged,
+        var cut = RenderStepper("Gear", parameters => parameters.Add(stepper => stepper.ActiveKeyChanged,
             (string? active) => changes.Add(active)));
 
         cut.FindAll("[data-part=step-button]")[0].Click();
@@ -61,7 +61,7 @@ public class TbStepperTests : BunitContext
     public void StepButton_ShouldDoNothing_WhenItIsTheCurrentStep()
     {
         var changes = new List<string?>();
-        var cut = RenderStepper("Gear", parameters => parameters.Add(stepper => stepper.ActiveChanged,
+        var cut = RenderStepper("Gear", parameters => parameters.Add(stepper => stepper.ActiveKeyChanged,
             (string? active) => changes.Add(active)));
 
         cut.Find("[aria-current=step]").Click();
@@ -93,7 +93,7 @@ public class TbStepperTests : BunitContext
     [Fact]
     public void Render_ShouldKeepPeopleFromAStep_WhenItIsDisabled()
     {
-        var cut = Render<TbStepper>(parameters => parameters.Add(stepper => stepper.Active, "Trip")
+        var cut = Render<TbStepper>(parameters => parameters.Add(stepper => stepper.ActiveKey, "Trip")
             .Add(stepper => stepper.Linear, false)
             .AddChildContent<TbStep>(step => step.Add(s => s.Title, "Trip"))
             .AddChildContent<TbStep>(step => step.Add(s => s.Title, "Gear").Add(s => s.Disabled, true)));
@@ -105,7 +105,7 @@ public class TbStepperTests : BunitContext
     [Fact]
     public void Render_ShouldShowTheErrorInPlaceOfTheCheck_WhenAStepHasOne()
     {
-        var cut = Render<TbStepper>(parameters => parameters.Add(stepper => stepper.Active, "Gear")
+        var cut = Render<TbStepper>(parameters => parameters.Add(stepper => stepper.ActiveKey, "Gear")
             .AddChildContent<TbStep>(step => step.Add(s => s.Title, "Trip").Add(s => s.Completed, true)
                 .Add(s => s.Error, "Pick a date."))
             .AddChildContent<TbStep>(step => step.Add(s => s.Title, "Gear")));
@@ -130,13 +130,13 @@ public class TbStepperTests : BunitContext
     }
 
     [Fact]
-    public void Active_ShouldAnnounceTheNewStep_WhenItChangesAfterTheFirstRender()
+    public void ActiveKey_ShouldAnnounceTheNewStep_WhenItChangesAfterTheFirstRender()
     {
         var announcer = Render<AnnouncerHost>();
         var cut = RenderStepper("Gear");
         Assert.Empty(announcer.FindAll("[role=status] p"));
 
-        cut.Render(parameters => parameters.Add(stepper => stepper.Active, "pay"));
+        cut.Render(parameters => parameters.Add(stepper => stepper.ActiveKey, "pay"));
 
         announcer.WaitForAssertion(() =>
             Assert.Equal("Current step: Payment", announcer.Find("[role=status] p").TextContent));

@@ -36,8 +36,8 @@
     [Parameter, EditorRequired]
     public string Title { get; set; } = "";
 
-    /// <summary>What identifies the step in <see cref="TbStepper.Active"/>. Defaults to <see cref="Title"/>. Keys, or
-    /// titles when no key is given, must be unique within the stepper.</summary>
+    /// <summary>What identifies the step in <see cref="TbStepper.ActiveKey"/>. Defaults to <see cref="Title"/>. Keys,
+    /// or titles when no key is given, must be unique within the stepper.</summary>
     [Parameter]
     public string? Key { get; set; }
 
