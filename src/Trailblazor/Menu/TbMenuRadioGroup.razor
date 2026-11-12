@@ -22,14 +22,18 @@
     [Parameter]
     public EventCallback<TValue?> ValueChanged { get; set; }
 
+    /// <summary>Decides whether two values are the same, such as entities matched by id, so a value loaded again
+    /// still matches its item. Defaults to the values' own equality.</summary>
+    [Parameter]
+    public IEqualityComparer<TValue>? Comparer { get; set; }
+
     /// <summary>The group's <see cref="TbMenuRadioItem{TValue}"/>s.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     bool IMenuRadioGroup.Accepts(object? value) => GroupValues.TryFit<TValue>(value, out _);
 
-    bool IMenuRadioGroup.IsChosen(object? value) =>
-        EqualityComparer<TValue>.Default.Equals(GroupValues.Fit<TValue>(value), Value);
+    bool IMenuRadioGroup.IsChosen(object? value) => OptionValues.Same(Comparer, GroupValues.Fit<TValue>(value), Value);
 
     // The click belongs to the chosen item, so the group re-renders itself to move the mark.
     async Task IMenuRadioGroup.ChooseAsync(object? value)

@@ -2357,6 +2357,8 @@ Trailblazor.TbMenuItem.TelemetryName.set -> void
 Trailblazor.TbMenuRadioGroup<TValue>
 Trailblazor.TbMenuRadioGroup<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbMenuRadioGroup<TValue>.ChildContent.set -> void
+Trailblazor.TbMenuRadioGroup<TValue>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TValue>?
+Trailblazor.TbMenuRadioGroup<TValue>.Comparer.set -> void
 Trailblazor.TbMenuRadioGroup<TValue>.Label.get -> string?
 Trailblazor.TbMenuRadioGroup<TValue>.Label.set -> void
 Trailblazor.TbMenuRadioGroup<TValue>.TbMenuRadioGroup() -> void

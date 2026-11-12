@@ -32,6 +32,7 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 - [x] A second click on the trigger, or a click outside, closes it. `TbMenu.razor`
 - [x] A click on an item runs it and closes every open list. `MenuTests.SubMenu_ShouldRunTheItemAndCloseEveryMenu_WhenOneOfItsItemsIsChosen`
 - [x] A click on a disabled item leaves the menu open and runs nothing. `MenuTests.Menu_ShouldStayOpenAndDoNothing_WhenADisabledItemIsChosen`
+- [x] With a `Comparer` on a radio group, such as one matching entities by id, a value loaded again still checks its item. `ComparerTests.MenuRadioGroup_ShouldCheckTheReloadedValuesItem_WhenGivenAComparer`
 - [x] Resting on a submenu's item opens the submenu, and focus doesn't go into it. `MenuTests.SubMenu_ShouldOpenWithoutTakingFocus_WhenThePointerRestsOnItsItem`
 - [x] Crossing an item quickly doesn't open its submenu. `MenuTests.SubMenu_ShouldNotOpen_WhenThePointerCrossesItsItemAndLeavesTheMenu`
 - [x] Resting on another item closes an open submenu. `MenuTests.SubMenu_ShouldClose_WhenThePointerRestsOnAnotherItem`

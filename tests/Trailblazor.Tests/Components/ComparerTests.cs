@@ -49,6 +49,17 @@ public class ComparerTests : BunitContext
     }
 
     [Fact]
+    public void MenuRadioGroup_ShouldCheckTheReloadedValuesItem_WhenGivenAComparer()
+    {
+        var cut = Render<TbMenuRadioGroup<Trail>>(parameters => parameters.Add(group => group.Label, "Trail")
+            .Add(group => group.Value, Reloaded).Add(group => group.Comparer, ById)
+            .Add(group => group.ChildContent, MenuItems()));
+
+        Assert.Equal(["false", "true"],
+            cut.FindAll("[role=menuitemradio]").Select(item => item.GetAttribute("aria-checked")));
+    }
+
+    [Fact]
     public void ToggleGroup_ShouldPressTheReloadedValuesItem_WhenGivenAComparer()
     {
         var changes = 0;
@@ -141,6 +152,18 @@ public class ComparerTests : BunitContext
 
         Assert.Empty(cut.FindAll("[data-part=clear]"));
     }
+
+    private static RenderFragment MenuItems() => builder =>
+    {
+        foreach (var trail in Trails)
+        {
+            builder.OpenComponent<TbMenuRadioItem<Trail>>(0);
+            builder.AddAttribute(1, nameof(TbMenuRadioItem<Trail>.Value), trail);
+            builder.AddAttribute(2, nameof(TbMenuRadioItem<Trail>.ChildContent),
+                (RenderFragment)(content => content.AddContent(0, trail.Name)));
+            builder.CloseComponent();
+        }
+    };
 
     private static RenderFragment Radios() => builder =>
     {

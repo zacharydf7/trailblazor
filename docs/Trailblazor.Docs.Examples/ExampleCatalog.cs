@@ -5801,7 +5801,9 @@ public static class ExampleCatalog
                     + "trigger an icon button named by `AriaLabel`.", typeof(MenuSubmenuExample)),
                 new("checks-and-radios", "Checkbox and radio items", "`TbMenuCheckboxItem` and `TbMenuRadioItem` keep "
                     + "a value in a menu. `TbMenuGroup` and `TbMenuRadioGroup` group items under a `Label`, and "
-                    + "`TbMenuSeparator` draws a line between them.", typeof(MenuCheckExample)),
+                    + "`TbMenuSeparator` draws a line between them. A radio group's `Comparer` decides whether two "
+                    + "values are the same, such as entities matched by id, so a value loaded again still checks its "
+                    + "item.", typeof(MenuCheckExample)),
                 new("keep-open", "Keeping the menu open", "`KeepOpen` on a checkbox or radio item keeps the menu open "
                     + "when the item is set, with focus still on it, so several can be set in a row.",
                     typeof(MenuKeepOpenExample)),
