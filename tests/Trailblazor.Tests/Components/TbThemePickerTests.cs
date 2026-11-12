@@ -40,6 +40,16 @@ public class TbThemePickerTests : BunitContext
         Assert.Equal("Theme", cut.Find("[role=group]").GetAttribute("aria-label"));
     }
 
+    [Fact]
+    public void Labels_ShouldNameTheButtons_WhenGiven()
+    {
+        var cut = Render<TbThemePicker>(parameters => parameters.Add(picker => picker.Labels,
+            new ThemePickerLabels { Light = "Hell", Dark = "Dunkel", System = "Wie das Gerät" }));
+
+        Assert.Equal(["Hell", "Dunkel", "Wie das Gerät"],
+            cut.FindAll("button").Select(item => item.GetAttribute("aria-label")));
+    }
+
     private static IElement Item(IRenderedComponent<TbThemePicker> cut, string name) =>
         cut.Find($"button[aria-label='{name}']");
 }

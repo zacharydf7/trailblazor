@@ -1,12 +1,9 @@
 namespace Trailblazor;
 
-/// <summary>The words a <see cref="TbPagination"/> says to screen readers and shows in its compact mode.</summary>
+/// <summary>The words a <see cref="TbPagination"/> says to screen readers and shows in its compact mode. The
+/// pagination's own <c>AriaLabel</c> names its landmark.</summary>
 public sealed record PaginationLabels
 {
-    /// <summary>Names the navigation landmark, unless the pagination sets its own <c>AriaLabel</c>. Leave it null for
-    /// the app's text for <see cref="TbStrings.PaginationNavigation"/>.</summary>
-    public string? Navigation { get; init; }
-
     /// <summary>Names a page button, with <c>{0}</c> for its number. Leave it null for the app's text for <see
     /// cref="TbStrings.PaginationPage"/>.</summary>
     public string? Page { get; init; }

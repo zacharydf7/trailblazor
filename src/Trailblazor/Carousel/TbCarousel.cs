@@ -64,7 +64,7 @@ public partial class TbCarousel
 
     /// <summary>Replaces the words the carousel says to screen readers.</summary>
     [Parameter]
-    public CarouselLabels? Labels { get; set; }
+    public CarouselLabels Labels { get; set; } = new();
 
     [Inject]
     private ITbLocalizer Localizer { get; set; } = default!;
@@ -82,8 +82,8 @@ public partial class TbCarousel
 
     private string Text(string? given, string key) => given ?? Localizer[key];
 
-    private string RotationLabel => _stopped ? Text(Labels?.Start, TbStrings.CarouselStart)
-        : Text(Labels?.Stop, TbStrings.CarouselStop);
+    private string RotationLabel => _stopped ? Text(Labels.Start, TbStrings.CarouselStart)
+        : Text(Labels.Stop, TbStrings.CarouselStop);
 
     private static string Format(string format, params object[] args) =>
         string.Format(CultureInfo.CurrentCulture, format, args);
@@ -112,7 +112,7 @@ public partial class TbCarousel
 
     internal bool IsShown(TbCarouselSlide slide) => _slides.IndexOf(slide) == Current;
 
-    internal string SlideName(TbCarouselSlide slide) => Format(Text(Labels?.SlideOf, TbStrings.CarouselSlideOf),
+    internal string SlideName(TbCarouselSlide slide) => Format(Text(Labels.SlideOf, TbStrings.CarouselSlideOf),
         _slides.IndexOf(slide) + 1, _slides.Count);
 
     /// <inheritdoc />

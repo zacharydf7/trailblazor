@@ -31,13 +31,13 @@
                 <TbPagination @bind-Page="_page" PageCount="12" />
                 @* Marked as Spanish so screen readers pronounce these labels in Spanish. *@
                 <div lang="es">
-                    <TbPagination @bind-Page="_page" PageCount="12" Labels="Spanish" />
+                    <TbPagination @bind-Page="_page" PageCount="12" AriaLabel="Paginación" Labels="Spanish" />
                 </div>
             </TbStack>
         </div>
         <TbText>
             The first pagination says the localizer's words; the second sets its own, in Spanish, through its
-            <code>Labels</code>. Both move together, since they're bound to the same page number.
+            <code>AriaLabel</code> and <code>Labels</code>. Both move together, since they're bound to the same page number.
         </TbText>
 
         <DocsHeading Id="change-a-few-words" Text="Change a few words" Class="docs-section" />
@@ -133,7 +133,7 @@
 @code {
     private static readonly PaginationLabels Spanish = new()
     {
-        Navigation = "Paginación", Page = "Página {0}", Previous = "Página anterior", Next = "Página siguiente",
+        Page = "Página {0}", Previous = "Página anterior", Next = "Página siguiente",
     };
 
     private int _page = 3;

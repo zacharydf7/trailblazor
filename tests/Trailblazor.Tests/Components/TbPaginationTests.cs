@@ -155,9 +155,10 @@ public class TbPaginationTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldNameTheNavigationFromTheLabels_WhenNoAriaLabelIsGiven()
+    public void Render_ShouldNameTheNavigationByAriaLabel_WhenGivenOne()
     {
-        var cut = RenderPagination(page: 1, count: 2, labels: new() { Navigation = "Seiten" });
+        var cut = Render<TbPagination>(parameters => parameters.Add(pagination => pagination.PageCount, 2)
+            .Add(pagination => pagination.AriaLabel, "Seiten"));
 
         Assert.Equal("Seiten", cut.Find("nav").GetAttribute("aria-label"));
     }

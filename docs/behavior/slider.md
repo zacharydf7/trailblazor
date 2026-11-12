@@ -53,6 +53,7 @@ Familiar apps: the volume slider in an OS or video player, the price range filte
 - [x] A slider whose `Min` equals its `Max` shows that value, disabled, and isn't required of the user. `TbSliderTests.Render_ShouldShowTheOneValueDisabled_WhenMinEqualsMax`, `TbSliderTests.Validate_ShouldNotAskForTheOneValue_WhenARequiredSlidersMinEqualsMax`
 - [x] `FocusAsync` moves focus to the thumb, or to a range slider's start thumb. `FieldFocusTests.FocusAsync_ShouldMoveFocusToTheFieldsInput_WhenCalled`
 - [x] Moving between a range slider's thumbs doesn't raise `OnFocus` or `OnBlur`. `TbFieldBase.cs`
+- [x] A range slider's thumbs are named by the label followed by "Minimum" or "Maximum", which `Labels` replaces. `TbSliderTests.Render_ShouldNameEachThumbByTheLabelAndItsEnd_WhenARangeSlider`, `TbSliderTests.Labels_ShouldNameTheThumbs_WhenGiven`
 
 ## Not applicable
 

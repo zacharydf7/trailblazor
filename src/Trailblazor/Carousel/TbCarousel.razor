@@ -14,10 +14,10 @@
                           AriaLabel="@RotationLabel"
                           Variant="Variant.Text" Size="Size.Small" OnClick="ToggleRotation" data-part="rotation" />
         }
-        <TbIconButton Icon="BuiltInIcons.ChevronStart" AriaLabel="@Text(Labels?.Previous, TbStrings.CarouselPrevious)"
+        <TbIconButton Icon="BuiltInIcons.ChevronStart" AriaLabel="@Text(Labels.Previous, TbStrings.CarouselPrevious)"
                       Variant="Variant.Text" Size="Size.Small" Disabled="@(!Loop && Current == 0)" FocusableWhenDisabled
                       OnClick="() => GoToAsync(Current - 1)" aria-controls="@_slidesId" data-part="previous" />
-        <TbIconButton Icon="BuiltInIcons.ChevronEnd" AriaLabel="@Text(Labels?.Next, TbStrings.CarouselNext)"
+        <TbIconButton Icon="BuiltInIcons.ChevronEnd" AriaLabel="@Text(Labels.Next, TbStrings.CarouselNext)"
                       Variant="Variant.Text" Size="Size.Small" Disabled="@(!Loop && Current == _slides.Count - 1)"
                       FocusableWhenDisabled
                       OnClick="() => GoToAsync(Current + 1)" aria-controls="@_slidesId" data-part="next" />
@@ -33,7 +33,7 @@
             {
                 var at = index;
                 <button type="button" data-part="pick" class="tb-carousel__pick" aria-controls="@_slidesId"
-                        aria-label="@Format(Text(Labels?.Slide, TbStrings.CarouselSlide), at + 1)"
+                        aria-label="@Format(Text(Labels.Slide, TbStrings.CarouselSlide), at + 1)"
                         aria-current="@(at == Current ? "true" : null)" @onclick="_goTo.For(at)"></button>
             }
         </div>

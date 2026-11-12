@@ -59,7 +59,7 @@ public partial class TbTagInput : IAsyncDisposable
 
     /// <summary>Replaces the words the field says and shows, such as its hint and its messages.</summary>
     [Parameter]
-    public TagInputLabels? Labels { get; set; }
+    public TagInputLabels Labels { get; set; } = new();
 
     /// <summary>Extra CSS classes for the field's inner parts.</summary>
     [Parameter]
@@ -80,7 +80,7 @@ public partial class TbTagInput : IAsyncDisposable
     private string? Described => !Editable ? InputDescribedBy
         : InputDescribedBy is { } described ? $"{described} {HintId}" : HintId;
 
-    private string RemoveFormat => Labels?.Remove ?? Localizer[TbStrings.TagInputRemove];
+    private string RemoveFormat => Labels.Remove ?? Localizer[TbStrings.TagInputRemove];
 
     private static string Format(string format, object? arg) => string.Format(CultureInfo.CurrentCulture, format, arg);
 
@@ -156,7 +156,7 @@ public partial class TbTagInput : IAsyncDisposable
             _ids.AddRange(added.Select(_ => _nextId++));
             _idsFor = [.. tags];
             await SetValueAsync(tags);
-            Announcer.Polite(string.Join(", ", added.Select(tag => Format(Labels?.Added
+            Announcer.Polite(string.Join(", ", added.Select(tag => Format(Labels.Added
                 ?? Localizer[TbStrings.TagInputAdded], tag))));
         }
 
@@ -177,12 +177,12 @@ public partial class TbTagInput : IAsyncDisposable
     {
         if (tags.Contains(text, Comparer ?? StringComparer.CurrentCultureIgnoreCase))
         {
-            return Format(Labels?.Duplicate ?? Localizer[TbStrings.TagInputDuplicate], text);
+            return Format(Labels.Duplicate ?? Localizer[TbStrings.TagInputDuplicate], text);
         }
 
         if (MaxTags is int most && tags.Count >= most)
         {
-            return Format(Labels?.TooMany ?? Localizer.Plural(TbStrings.TagInputTooMany, most), most);
+            return Format(Labels.TooMany ?? Localizer.Plural(TbStrings.TagInputTooMany, most), most);
         }
 
         return TagValidation?.Invoke(text);
@@ -228,7 +228,7 @@ public partial class TbTagInput : IAsyncDisposable
         _ids.RemoveAt(index);
         _idsFor = [.. tags];
         await SetValueAsync(tags);
-        Announcer.Polite(Format(Labels?.Removed ?? Localizer[TbStrings.TagInputRemoved], tag));
+        Announcer.Polite(Format(Labels.Removed ?? Localizer[TbStrings.TagInputRemoved], tag));
         // -1 is the input, which takes focus when no tag is left in that direction.
         _focusAfter = focus switch
         {

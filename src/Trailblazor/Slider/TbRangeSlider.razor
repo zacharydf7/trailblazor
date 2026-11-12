@@ -4,8 +4,8 @@
 
 @* Two native range inputs share one track, each taking the pointer only on its thumb. range-slider.js takes the rest. *@
 @Layout(StartId, Fraction(Start), Fraction(End), @<text>
-    <span id="@($"{StartId}-name")" hidden>@(StartLabel ?? Localizer[TbStrings.RangeSliderStart])</span>
-    <span id="@($"{EndId}-name")" hidden>@(EndLabel ?? Localizer[TbStrings.RangeSliderEnd])</span>
+    <span id="@($"{StartId}-name")" hidden>@(Labels.Start ?? Localizer[TbStrings.RangeSliderStart])</span>
+    <span id="@($"{EndId}-name")" hidden>@(Labels.End ?? Localizer[TbStrings.RangeSliderEnd])</span>
     <input @attributes="InputAttributes" @ref="_start" data-part="start-thumb" id="@StartId"
            data-tb-autofocus="@AutoFocusMark" name="@NameOf("Start")" type="range" data-value="@Invariant(Start)"
            data-static="@StaticMark" data-ready="@ReadyMark"
@@ -33,15 +33,10 @@
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) => _start.FocusAsync(preventScroll);
 
-    /// <summary>Names the lower thumb, after the field's label. Defaults to the app's text for <see
-    /// cref="TbStrings.RangeSliderStart"/>, "Minimum" in English.</summary>
+    /// <summary>The words that name the thumbs, after the field's label. Each one left null uses the app's text.
+    /// </summary>
     [Parameter]
-    public string? StartLabel { get; set; }
-
-    /// <summary>Names the upper thumb, after the field's label. Defaults to the app's text for <see
-    /// cref="TbStrings.RangeSliderEnd"/>, "Maximum" in English.</summary>
-    [Parameter]
-    public string? EndLabel { get; set; }
+    public RangeSliderLabels Labels { get; set; } = new();
 
     /// <summary>Turns a thumb's value into the text shown above it and read by screen readers, such as "40%".
     /// Defaults to the number itself.</summary>

@@ -1555,7 +1555,7 @@ public static class ExampleCatalog
                     + "and raises `Changed`, so any control can drive the theme. Call `LoadAsync` once the page is "
                     + "interactive to read the remembered choice.", typeof(ThemePickerCustomExample)),
             ],
-            Api = [typeof(TbThemePicker), typeof(IThemeService), typeof(ThemeSettings)],
+            Api = [typeof(TbThemePicker), typeof(ThemePickerLabels), typeof(IThemeService), typeof(ThemeSettings)],
             Keyboard =
             [
                 new(["Tab"], "Moves into the picker and out of it, as one tab stop."),
@@ -1565,8 +1565,8 @@ public static class ExampleCatalog
             ],
             Labeling =
             [
-                "A `group` named \"Theme\", holding toggle buttons for Light, Dark and Match the device, each named by "
-                    + "the localizer.",
+                "A `group` named by `AriaLabel`, or \"Theme\" without one, holding toggle buttons for Light, Dark and "
+                    + "Match the device. `Labels` renames the buttons.",
             ],
             Announcements =
             [
@@ -3687,7 +3687,8 @@ public static class ExampleCatalog
                     + "`Marks` labels points along the track.", typeof(SliderMarksExample)),
                 new("range", "Range", "`TbRangeSlider` binds a `SliderRange` with two thumbs, and neither can pass the "
                     + "other. A click on the track moves the nearer thumb. Thumbs on one value, or close enough to "
-                    + "overlap, separate in the direction they're dragged. `StartLabel` and `EndLabel` name the thumbs.",
+                    + "overlap, separate in the direction they're dragged. `Labels.Start` and `Labels.End` name the "
+                    + "thumbs.",
                     typeof(SliderRangeExample)),
                 new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`, and scales the thumb, the track and the "
                     + "label. The slider stays at least 24 pixels high, so it is still easy to press. Unlike other "
@@ -3704,8 +3705,8 @@ public static class ExampleCatalog
                     + "shown value stays above the thumb. The [right-to-left guide](guides/right-to-left) has the rest.",
                     typeof(SliderRightToLeftExample)),
             ],
-            Api = [typeof(TbSlider<>), typeof(TbRangeSlider<>), typeof(SliderMark), typeof(SliderRange<>),
-                typeof(ChoiceClasses)],
+            Api = [typeof(TbSlider<>), typeof(TbRangeSlider<>), typeof(RangeSliderLabels), typeof(SliderMark),
+                typeof(SliderRange<>), typeof(ChoiceClasses)],
             Keyboard =
             [
                 new(["Right", "Up"], "Raises the value by `Step`."),
@@ -3719,7 +3720,7 @@ public static class ExampleCatalog
             [
                 "Each thumb is the browser's own range input, a `slider` named by the `Label`.",
                 "A range slider names each thumb with the label followed by \"Minimum\" or \"Maximum\", which "
-                    + "`StartLabel` and `EndLabel` replace.",
+                    + "`Labels.Start` and `Labels.End` replace.",
             ],
             Announcements =
             [
@@ -7776,8 +7777,9 @@ public static class ExampleCatalog
                     typeof(PaginationLinksExample)),
                 new("disabled", "Disabled", "`Disabled` turns off every button of a pagination.",
                     typeof(PaginationDisabledExample)),
-                new("labels", "Other languages", "All of a pagination's words come from `Labels`, such as `Previous`, "
-                    + "`Next` and `Page`, whose `{0}` stands for the number.", typeof(PaginationLabelsExample)),
+                new("labels", "Other languages", "`AriaLabel` names a pagination, and the rest of its words come "
+                    + "from `Labels`, such as `Previous`, `Next` and `Page`, whose `{0}` stands for the number.",
+                    typeof(PaginationLabelsExample)),
             ],
             Api = [typeof(TbPagination), typeof(PaginationLabels)],
             Keyboard =

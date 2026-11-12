@@ -322,7 +322,7 @@ Trailblazor.TbCarousel.ActiveIndex.get -> int
 Trailblazor.TbCarousel.ActiveIndex.set -> void
 Trailblazor.TbCarousel.ActiveIndexChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
 Trailblazor.TbCarousel.ActiveIndexChanged.set -> void
-Trailblazor.TbCarousel.Labels.get -> Trailblazor.CarouselLabels?
+Trailblazor.TbCarousel.Labels.get -> Trailblazor.CarouselLabels!
 Trailblazor.TbCarousel.Labels.set -> void
 Trailblazor.TbCarousel.Loop.get -> bool
 Trailblazor.TbCarousel.Loop.set -> void
@@ -1436,8 +1436,6 @@ Trailblazor.PaginationLabels.First.get -> string?
 Trailblazor.PaginationLabels.First.init -> void
 Trailblazor.PaginationLabels.Last.get -> string?
 Trailblazor.PaginationLabels.Last.init -> void
-Trailblazor.PaginationLabels.Navigation.get -> string?
-Trailblazor.PaginationLabels.Navigation.init -> void
 Trailblazor.PaginationLabels.Next.get -> string?
 Trailblazor.PaginationLabels.Next.init -> void
 Trailblazor.PaginationLabels.Of.get -> string?
@@ -2562,10 +2560,6 @@ Trailblazor.TbRadioGroup<TValue>.TbRadioGroup() -> void
 Trailblazor.TbRadioGroup<TValue>.Tone.get -> Trailblazor.Tone
 Trailblazor.TbRadioGroup<TValue>.Tone.set -> void
 Trailblazor.TbRangeSlider<TValue>
-Trailblazor.TbRangeSlider<TValue>.EndLabel.get -> string?
-Trailblazor.TbRangeSlider<TValue>.EndLabel.set -> void
-Trailblazor.TbRangeSlider<TValue>.StartLabel.get -> string?
-Trailblazor.TbRangeSlider<TValue>.StartLabel.set -> void
 Trailblazor.TbRangeSlider<TValue>.TbRangeSlider() -> void
 Trailblazor.TbRangeSlider<TValue>.ValueFormatter.get -> System.Func<TValue, string!>?
 Trailblazor.TbRangeSlider<TValue>.ValueFormatter.set -> void
@@ -2785,7 +2779,7 @@ Trailblazor.TbTagInput.Classes.set -> void
 Trailblazor.TbTagInput.Comparer.get -> System.Collections.Generic.IEqualityComparer<string!>?
 Trailblazor.TbTagInput.Comparer.set -> void
 Trailblazor.TbTagInput.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Trailblazor.TbTagInput.Labels.get -> Trailblazor.TagInputLabels?
+Trailblazor.TbTagInput.Labels.get -> Trailblazor.TagInputLabels!
 Trailblazor.TbTagInput.Labels.set -> void
 Trailblazor.TbTagInput.MaxTags.get -> int?
 Trailblazor.TbTagInput.MaxTags.set -> void
@@ -4687,3 +4681,35 @@ Trailblazor.TbNumberField<TValue>.Labels.get -> Trailblazor.NumberFieldLabels!
 Trailblazor.TbNumberField<TValue>.Labels.set -> void
 Trailblazor.TbStepper.Labels.get -> Trailblazor.StepperLabels!
 Trailblazor.TbStepper.Labels.set -> void
+Trailblazor.RangeSliderLabels
+Trailblazor.RangeSliderLabels.<Clone>$() -> Trailblazor.RangeSliderLabels!
+Trailblazor.RangeSliderLabels.Equals(Trailblazor.RangeSliderLabels? other) -> bool
+Trailblazor.RangeSliderLabels.RangeSliderLabels() -> void
+override Trailblazor.RangeSliderLabels.Equals(object? obj) -> bool
+override Trailblazor.RangeSliderLabels.GetHashCode() -> int
+override Trailblazor.RangeSliderLabels.ToString() -> string!
+static Trailblazor.RangeSliderLabels.operator !=(Trailblazor.RangeSliderLabels? left, Trailblazor.RangeSliderLabels? right) -> bool
+static Trailblazor.RangeSliderLabels.operator ==(Trailblazor.RangeSliderLabels? left, Trailblazor.RangeSliderLabels? right) -> bool
+Trailblazor.RangeSliderLabels.Start.get -> string?
+Trailblazor.RangeSliderLabels.Start.init -> void
+Trailblazor.RangeSliderLabels.End.get -> string?
+Trailblazor.RangeSliderLabels.End.init -> void
+Trailblazor.ThemePickerLabels
+Trailblazor.ThemePickerLabels.<Clone>$() -> Trailblazor.ThemePickerLabels!
+Trailblazor.ThemePickerLabels.Equals(Trailblazor.ThemePickerLabels? other) -> bool
+Trailblazor.ThemePickerLabels.ThemePickerLabels() -> void
+override Trailblazor.ThemePickerLabels.Equals(object? obj) -> bool
+override Trailblazor.ThemePickerLabels.GetHashCode() -> int
+override Trailblazor.ThemePickerLabels.ToString() -> string!
+static Trailblazor.ThemePickerLabels.operator !=(Trailblazor.ThemePickerLabels? left, Trailblazor.ThemePickerLabels? right) -> bool
+static Trailblazor.ThemePickerLabels.operator ==(Trailblazor.ThemePickerLabels? left, Trailblazor.ThemePickerLabels? right) -> bool
+Trailblazor.ThemePickerLabels.Light.get -> string?
+Trailblazor.ThemePickerLabels.Light.init -> void
+Trailblazor.ThemePickerLabels.Dark.get -> string?
+Trailblazor.ThemePickerLabels.Dark.init -> void
+Trailblazor.ThemePickerLabels.System.get -> string?
+Trailblazor.ThemePickerLabels.System.init -> void
+Trailblazor.TbRangeSlider<TValue>.Labels.get -> Trailblazor.RangeSliderLabels!
+Trailblazor.TbRangeSlider<TValue>.Labels.set -> void
+Trailblazor.TbThemePicker.Labels.get -> Trailblazor.ThemePickerLabels!
+Trailblazor.TbThemePicker.Labels.set -> void

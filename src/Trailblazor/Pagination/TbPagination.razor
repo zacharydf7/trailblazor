@@ -8,7 +8,7 @@
 @* The testing helper reads data-page and data-page-count, and waits for data-ready before a click that needs the
    page to be interactive. *@
 <nav @attributes="AdditionalAttributes" data-page="@CurrentPage"
-     aria-label="@(AriaLabel ?? NavigationLabel)"
+     aria-label="@(AriaLabel ?? Localizer[TbStrings.PaginationNavigation])"
      data-page-count="@Count" data-ready="@(RendererInfo.IsInteractive ? "" : null)" style="@Style"
      class="@ClassNames.Join("tb-pagination", ClassNames.Modifier("tb-pagination", Size),
                 Compact ? "tb-pagination--compact" : null, Class)">
@@ -122,8 +122,8 @@
     [Parameter]
     public bool Disabled { get; set; }
 
-    /// <summary>The navigation's accessible name. Defaults to <see cref="PaginationLabels.Navigation"/>; name each
-    /// one when a page has several.</summary>
+    /// <summary>The navigation's accessible name. Defaults to the app's text for
+    /// <see cref="TbStrings.PaginationNavigation"/>; name each one when a page has several.</summary>
     [Parameter]
     public string? AriaLabel { get; set; }
 
@@ -196,7 +196,6 @@
         }
     }
 
-    private string NavigationLabel => Labels.Navigation ?? Localizer[TbStrings.PaginationNavigation];
     private string PageLabel => Labels.Page ?? Localizer[TbStrings.PaginationPage];
     private string PageBoxLabel => Labels.PageBox ?? Localizer[TbStrings.PaginationPageBox];
     private string OfLabel => Labels.Of ?? Localizer[TbStrings.PaginationOf];

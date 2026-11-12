@@ -50,6 +50,6 @@
            @ontbtagadd="OnAddAsync" @ontbtagremove="OnRemoveKeyAsync" />
     @if (Editable)
     {
-        <span id="@HintId" class="tb-visually-hidden">@(Labels?.Hint ?? Localizer[TbStrings.TagInputHint])</span>
+        <span id="@HintId" class="tb-visually-hidden">@(Labels.Hint ?? Localizer[TbStrings.TagInputHint])</span>
     }
 </text>, null, null)

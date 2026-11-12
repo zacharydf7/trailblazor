@@ -257,6 +257,18 @@ public class TbSliderTests : BunitContext
     }
 
     [Fact]
+    public void Labels_ShouldNameTheThumbs_WhenGiven()
+    {
+        var cut = Render<TbRangeSlider<int>>(parameters => parameters.Add(slider => slider.Label, "Price")
+            .Add(slider => slider.Labels, new RangeSliderLabels { Start = "From", End = "To" }));
+
+        var start = cut.Find("[data-part=start-thumb]");
+        var end = cut.Find("[data-part=end-thumb]");
+        Assert.Equal("From", cut.Find($"#{start.GetAttribute("aria-labelledby")!.Split(' ')[1]}").TextContent);
+        Assert.Equal("To", cut.Find($"#{end.GetAttribute("aria-labelledby")!.Split(' ')[1]}").TextContent);
+    }
+
+    [Fact]
     public void Input_ShouldStopAThumbAtTheOther_WhenItIsDraggedPastIt()
     {
         var cut = RenderRange(new(800, 2400));

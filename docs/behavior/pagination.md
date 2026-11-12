@@ -36,6 +36,7 @@ Familiar apps: search results, GitHub's lists, the pager under a data table
 - [x] The chosen page keeps focus when the numbers shift around it. `PaginationTests.Pagination_ShouldGoToThePageAndKeepFocusOnIt_WhenAPageIsChosenWithTheKeyboard`
 - [x] A step button that reaches the end keeps focus, turned off. `PaginationTests.Pagination_ShouldStepStopAndKeepFocusAtTheEnds_WhenFirstPreviousNextAndLastAreUsed`
 - [x] A focused control shows a focus ring. `trailblazor.css`
+- [x] The navigation is named "Pagination", or by `AriaLabel`. `TbPaginationTests.Render_ShouldNameTheNavigationByAriaLabel_WhenGivenOne`
 
 ## Not applicable
 

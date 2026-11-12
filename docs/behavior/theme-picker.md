@@ -29,6 +29,7 @@ Familiar apps: the Light, Dark and System choice in GitHub's appearance settings
 - [x] Once read, the remembered mode is pressed. `TbThemePickerTests.Click_ShouldPressTheLoadedModeThenSetTheOnePressed_WhenInteractive`
 - [x] Focus stays on the chosen item after a pick. `TbThemePicker.razor`
 - [x] Keyboard focus shows a choice's name. `ToggleItemsTests.ThemePicker_ShouldShowTheNextChoicesName_WhenTheKeysMoveFocus`
+- [x] `Labels` renames the choices. `TbThemePickerTests.Labels_ShouldNameTheButtons_WhenGiven`
 
 ## Not applicable
 
