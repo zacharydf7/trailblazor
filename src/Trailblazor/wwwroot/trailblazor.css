@@ -3870,16 +3870,30 @@
         background: var(--tb-color-surface);
     }
 
+    .tb-radio-group--segmented {
+        --tb-segment-height: var(--tb-control-height);
+    }
+
+    .tb-radio-group--segmented.tb-radio-group--small {
+        --tb-segment-height: var(--tb-control-height-sm);
+    }
+
+    .tb-radio-group--segmented.tb-radio-group--large {
+        --tb-segment-height: var(--tb-control-height-lg);
+    }
+
+    /* The track's padding and border take 6px of the control height; a segment is never shorter than 24px. */
     .tb-radio-group--segmented .tb-radio {
         position: relative;
         justify-content: center;
-        padding: var(--tb-space-1) var(--tb-space-3);
+        min-height: max(24px, calc(var(--tb-segment-height) - 6px));
+        padding: 0 var(--tb-space-3);
         border-radius: calc(var(--tb-radius-md) - 2px);
         font-weight: var(--tb-font-weight-medium);
     }
 
     .tb-radio-group--segmented .tb-radio:not(:has(.tb-radio__input:checked, .tb-radio__input:disabled)):hover {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
     }
 
     /* The radio stays over its segment, focusable and clickable, with its circle hidden, also in forced colors. */
@@ -4102,7 +4116,7 @@
     }
 
     .tb-menu__item[aria-disabled="true"] {
-        opacity: var(--tb-disabled-opacity);
+        color: var(--tb-color-text-disabled);
         cursor: default;
     }
 
@@ -4154,6 +4168,10 @@
         .tb-menu__item:focus {
             outline: 2px solid Highlight;
             outline-offset: -2px;
+        }
+
+        .tb-menu__item[aria-disabled="true"] {
+            color: GrayText;
         }
 
         .tb-menu__separator {
@@ -4733,8 +4751,8 @@
         gap: var(--tb-space-3);
         box-sizing: border-box;
         width: 100%;
-        min-height: 2.5rem;
-        padding: var(--tb-space-2) var(--tb-space-3);
+        min-height: var(--tb-control-height);
+        padding: var(--tb-control-padding-block) var(--tb-space-3);
         border: 0;
         border-radius: var(--tb-radius-md);
         background: none;
@@ -4746,7 +4764,11 @@
     }
 
     .tb-nav-menu__link:hover {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
+    }
+
+    .tb-nav-menu__link:active {
+        background: var(--tb-color-pressed);
     }
 
     .tb-nav-menu__link:focus-visible {
@@ -4843,7 +4865,11 @@
     }
 
     button.tb-stepper__header:hover {
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-color-hover);
+    }
+
+    button.tb-stepper__header:active {
+        background: var(--tb-color-pressed);
     }
 
     .tb-stepper__header:focus-visible {
@@ -5422,6 +5448,19 @@
         outline-offset: calc(-1 * var(--tb-focus-ring-width));
     }
 
+    /* In a list box, the field draws the filter's focus ring, and the filter's text matches the list's size. */
+    .tb-listbox-body:has(> .tb-listbox--small) .tb-select__filter {
+        font-size: var(--tb-font-size-xs);
+    }
+
+    .tb-listbox-body:has(> .tb-listbox--large) .tb-select__filter {
+        font-size: var(--tb-font-size-md);
+    }
+
+    .tb-listbox-body .tb-select__filter:focus-visible {
+        outline: none;
+    }
+
     /* The status stays rendered while empty, so screen readers announce the text it gets. */
     .tb-select__no-results:empty {
         padding: 0;
@@ -5472,6 +5511,10 @@
     .tb-select__option[aria-disabled="true"] {
         color: var(--tb-color-text-disabled);
         cursor: default;
+    }
+
+    .tb-select__option[aria-disabled="true"] > .tb-select__box {
+        opacity: var(--tb-disabled-opacity);
     }
 
     .tb-field__control:has(> .tb-listbox, > .tb-listbox-body) {
@@ -7349,7 +7392,7 @@
         block-size: calc(var(--tb-tree-gap) * var(--tb-tree-row-size));
     }
 
-    .tb-tree__item:hover:not(.tb-tree__item--status) {
+    .tb-tree__item:hover:not(.tb-tree__item--status, [aria-disabled="true"]) {
         background: var(--tb-color-hover);
     }
 
@@ -7661,7 +7704,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 2rem;
+        min-height: var(--tb-control-height-sm);
         font-weight: var(--tb-font-weight-semibold);
     }
 
@@ -7751,7 +7794,7 @@
         display: inline-flex;
         align-items: center;
         gap: var(--tb-space-1);
-        min-height: 2rem;
+        min-height: var(--tb-control-height-sm);
         padding-inline: var(--tb-space-2);
         border: 0;
         border-radius: var(--tb-radius-sm);

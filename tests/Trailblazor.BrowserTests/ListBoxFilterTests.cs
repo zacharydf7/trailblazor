@@ -115,7 +115,7 @@ public class ListBoxFilterTests(BrowserFixture fixture) : BrowserTest(fixture)
     private async Task<IPage> OpenFilterAsync(string browser)
     {
         var page = await OpenAsync(browser, "/listbox-filter");
-        foreach (var name in new[] { "Trail", "Trails", "Camp", "Region", "Season" })
+        foreach (var name in new[] { "Trail", "Trails", "Camp", "Region", "Season", "Big trail" })
         {
             await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = name, Exact = true }))
                 .ToHaveAttributeAsync("data-ready", "");

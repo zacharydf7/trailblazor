@@ -50,6 +50,11 @@
     <TbOptionGroup Label="Winter" />
 </TbListBox>
 
+@* A large list box's filter takes the list's larger text. *@
+<TbListBox TValue="string" Label="Big trail" Filterable Size="Size.Large" @bind-Value="_big">
+    <TbOption Value="@("pine")">Pine Hollow</TbOption>
+</TbListBox>
+
 @code {
     private static readonly string[] Trails = ["Cedar Flats", "Éagle Ridge", "Lake Shore", "Lookout Loop", "Pine Hollow"];
     private string? _trail;
@@ -58,5 +63,6 @@
     private string? _camp;
     private string? _region;
     private string? _season;
+    private string? _big;
     private readonly List<string> _added = [];
 }

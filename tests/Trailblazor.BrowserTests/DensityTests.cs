@@ -17,6 +17,11 @@ public class DensityTests(BrowserFixture fixture) : BrowserTest(fixture)
         ("listbox", "[role=option]", "min-height", "32px", "28px", null),
         ("menu", "[role=menuitem]", "min-height", "32px", "28px", "Actions"),
         ("alert", ".tb-alert", "padding-top", "12px", "6px", null),
+        ("app-shell", ".tb-nav-menu__link", "min-height", "40px", "32px", null),
+        ("segmented-control", ".tb-radio-group--segmented:not(.tb-radio-group--small, .tb-radio-group--large) .tb-radio",
+            "min-height", "34px", "26px", null),
+        ("calendar", ".tb-calendar__title", "min-height", "32px", "26px", null),
+        ("date-range-picker", ".tb-date-range__title", "min-height", "32px", "26px", "Choose dates"),
     ];
 
     public static TheoryData<string, string> PartsInEveryBrowser => new(
@@ -29,7 +34,7 @@ public class DensityTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, $"/examples/{example}");
         if (opener is not null)
         {
-            await page.GetByRole(AriaRole.Button, new() { Name = opener, Exact = true }).ClickAsync();
+            await page.GetByRole(AriaRole.Button, new() { Name = opener, Exact = true }).First.ClickAsync();
         }
 
         var part = page.Locator(selector).First;
