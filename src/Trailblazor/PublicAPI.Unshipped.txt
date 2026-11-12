@@ -4530,3 +4530,11 @@ Trailblazor.TbMultiTreeSelect<TItem, TKey>.MaxShown.get -> int?
 Trailblazor.TbMultiTreeSelect<TItem, TKey>.MaxShown.set -> void
 Trailblazor.TbMultiTreeSelect<TItem, TKey>.MoreLabel.get -> string?
 Trailblazor.TbMultiTreeSelect<TItem, TKey>.MoreLabel.set -> void
+const Trailblazor.TbStrings.TreeSelectClear = "TreeSelect.Clear" -> string!
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Clearable.get -> bool
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Clearable.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Open.get -> bool
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Open.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.OpenChanged.set -> void
+override Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.OnParametersSetAsync() -> System.Threading.Tasks.Task!

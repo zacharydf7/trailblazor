@@ -30,6 +30,8 @@ Familiar apps: the folder picker in Google Drive's move dialog, the category pic
 - [x] When `IsSelectable` leaves out a heading that holds nothing, it has no checkbox. `TbMultiTreeSelectTests.Check_ShouldOfferNoCheckOnAHeading_WhenIsSelectableExcludesItAndItHoldsNothing`
 - [x] A form's reset clears a heading's check, even one that hadn't changed the value. `TbMultiTreeSelectTests.Reset_ShouldUncheckAHeadingWhoseItemsHaventLoaded_WhenTheFormResets`
 - [x] Closing the tree without a choice clears the search. `TbTreeSelectTests.Search_ShouldStartAfresh_WhenTheTreeClosesWithoutAChoice`
+- [x] With `Clearable`, a button beside the field clears the choice and goes away with it; a disabled or read-only field has none. `TbTreeSelectTests.Clear_ShouldEmptyTheValueAndRemoveTheButton_WhenClearableAndClicked`, `TbTreeSelectTests.Render_ShouldOfferNoClearButton_WhenThereIsNothingToClearOrItCantChange`, `TbMultiTreeSelectTests.Clear_ShouldUncheckEveryRow_WhenClearableAndClicked`, `TbMultiTreeSelectTests.Clear_ShouldUncheckAHeadingWhoseItemsHaventLoaded_WhenTheValueWasEmptyBefore`
+- [x] `@bind-Open` opens and closes the tree from code and reports each open and close by the user, including a choice that closes it; a disabled or read-only field stays closed and reports `false` back to the parent. `TbTreeSelectTests.Open_ShouldOpenTheTree_WhenTheParentSetsIt`, `TbTreeSelectTests.Open_ShouldCloseTheTreeAndItsSearch_WhenTheParentClearsIt`, `TbTreeSelectTests.Open_ShouldStayClosedAndSaySo_WhenTheFieldCantChange`, `TbTreeSelectTests.OpenChanged_ShouldReportEachToggle_WhenTheUserOpensAndChooses`
 
 ## Touch
 

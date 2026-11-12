@@ -46,6 +46,13 @@ public class TbMultiTreeSelect<TItem, [DynamicallyAccessedMembers(DynamicallyAcc
         }
     }
 
+    // Like a reset, a clear forgets headings checked without changing the value.
+    private protected override Task ClearValueAsync()
+    {
+        (_treeKeys, _treeValue) = ([], null);
+        return SetValueAsync([]);
+    }
+
     private protected override bool ChecksRows => true;
 
     private protected override IReadOnlyCollection<TKey> SelectedKeys => [];

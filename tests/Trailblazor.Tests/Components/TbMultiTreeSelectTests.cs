@@ -93,6 +93,41 @@ public class TbMultiTreeSelectTests : BunitContext
     }
 
     [Fact]
+    public async Task Clear_ShouldUncheckEveryRow_WhenClearableAndClicked()
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.IsSelectable, place => !place.Area)
+            .Add(select => select.Clearable, true));
+        Item(cut, "North ridge").QuerySelector("[data-part=check]")!.Click();
+        Assert.Equal(["pine", "eagle"], Chosen[^1]);
+
+        await cut.Find("[data-part=clear]").ClickAsync(new());
+
+        Assert.Empty(Chosen[^1]);
+        Assert.All(cut.FindAll("[role=treeitem]"), row => Assert.Equal("false", row.GetAttribute("aria-checked")));
+    }
+
+    [Fact]
+    public async Task Clear_ShouldUncheckAHeadingWhoseItemsHaventLoaded_WhenTheValueWasEmptyBefore()
+    {
+        var cut = Render<TbMultiTreeSelect<Place, string>>(parameters => parameters
+            .Add(select => select.Label, "Trails").Add(select => select.Items, Countries)
+            .Add(select => select.KeySelector, place => place.Id).Add(select => select.ItemText, place => place.Name)
+            .Add(select => select.IsSelectable, place => !place.Area)
+            .Add(select => select.LoadChildren,
+                (place, _) => Task.FromResult<IEnumerable<Place>>(place.Children ?? []))
+            .Add(select => select.HasChildren, place => place.Children is not null)
+            .Add(select => select.Clearable, true).Add(select => select.Value, ["pine"]));
+        await cut.Find("[data-part=clear]").ClickAsync(new());
+        // Nothing inside Highlands has loaded, so checking it leaves the value empty.
+        Item(cut, "Highlands").QuerySelector("[data-part=check]")!.Click();
+        cut.Render(parameters => parameters.Add(select => select.Value, ["pine"]));
+
+        await cut.Find("[data-part=clear]").ClickAsync(new());
+
+        Assert.Equal("false", Item(cut, "Highlands").GetAttribute("aria-checked"));
+    }
+
+    [Fact]
     public void Check_ShouldLeaveAHeadingOutOfTheValue_WhenIsSelectableExcludesIt()
     {
         var cut = RenderPlaces(parameters => parameters.Add(select => select.IsSelectable, place => !place.Area));

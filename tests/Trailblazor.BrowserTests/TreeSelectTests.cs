@@ -88,6 +88,25 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Clear_ShouldEmptyTheFieldAndFocusIt_WhenTheClearButtonIsClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-select");
+        var field = await OpenFieldAsync(page);
+        await field.ClickAsync();
+        await page.GetByRole(AriaRole.Treeitem, new() { Name = "North ridge" }).Locator("[data-part=toggle]")
+            .ClickAsync();
+        await page.GetByRole(AriaRole.Treeitem, new() { Name = "Pine Hollow loop" }).ClickAsync();
+        await Expect(page.GetByLabel("Chosen trail")).ToHaveTextAsync("Chosen: pine.");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Clear" }).ClickAsync();
+
+        await Expect(page.GetByLabel("Chosen trail")).ToHaveTextAsync("No trail chosen.");
+        await Expect(field).ToContainTextAsync("Choose a trail");
+        await Expect(field).ToBeFocusedAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Clear" })).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task MultiTreeSelect_ShouldCheckFromTheKeyboardAndStayOpen_WhenEnterOrSpaceIsPressed(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-select");
@@ -138,7 +157,8 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task MultiTreeSelect_ShouldMoveToTheFirstMatchAndCheckIt_WhenDownArrowThenSpaceIsPressed(string browser)
+    public async Task MultiTreeSelect_ShouldMoveToTheFirstMatchAndCheckIt_WhenDownArrowThenSpaceIsPressed(
+        string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-select");
         var field = await OpenRegionsAsync(page);

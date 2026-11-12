@@ -4252,7 +4252,9 @@ public static class ExampleCatalog
                     + "being chosen. `Searchable` adds a search that keeps the items whose text contains what's typed, "
                     + "with the items above and below them. `LoadChildren` loads a branch when it opens, and the "
                     + "search covers only the branches loaded so far. `UnmatchedText` names a value whose item hasn't "
-                    + "loaded, such as a saved choice in a branch not yet opened.", typeof(TreeSelectExample)),
+                    + "loaded, such as a saved choice in a branch not yet opened. `Clearable` adds a button that "
+                    + "clears the choice. `@bind-Open` opens or closes the tree from code, though a disabled or "
+                    + "read-only field stays closed.", typeof(TreeSelectExample)),
                 new("choose-several", "Choosing several items", "`TbMultiTreeSelect` binds a list of keys. Its tree "
                     + "has a checkbox on each row, and stays open while items are checked by click, Enter or Space; "
                     + "the field shows their text, separated by commas. Past `MaxShown` items (3 unless set), the "
@@ -4284,6 +4286,8 @@ public static class ExampleCatalog
             ],
             Labeling =
             [
+                "The clear button is named \"Clear\" and described by the field's label, so a screen reader says "
+                    + "which field it clears.",
                 "The field's `Label` and the chosen item's text name its button together, as they would a select; "
                     + "in a multi tree select, the first `MaxShown` checked items' text and a count of the rest take the "
                     + "chosen item's place.",
@@ -4298,6 +4302,7 @@ public static class ExampleCatalog
             [
                 "Focus moves into the tree as it opens and back to the field as it closes, by a choice, Escape or a "
                     + "click outside.",
+                "The clear button sends focus back to the field.",
                 "A read-only field can still be focused and read, but opens nothing; a disabled one can't be focused.",
                 "A search that matches nothing shows \"No matches\" and announces it.",
                 "A required field with nothing chosen is invalid, and says so once the form validates, as any field "
@@ -4318,6 +4323,7 @@ public static class ExampleCatalog
                 new("value", "The chosen item's text, or the placeholder."),
                 new("search", "The search field above the tree."),
                 new("no-results", "The message shown when the search matches nothing."),
+                new("clear", "The button that clears the choice, with `Clearable`."),
             ],
             Anatomy = """
                 <TbTreeSelect Label="…" Items="…" KeySelector="…" ItemText="…" @bind-Value="_key" />

@@ -87,6 +87,85 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
+    public async Task Clear_ShouldEmptyTheValueAndRemoveTheButton_WhenClearableAndClicked()
+    {
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Value, "cedar")
+            .Add(select => select.Clearable, true));
+
+        await cut.Find("[data-part=clear]").ClickAsync(new());
+
+        Assert.Equal([null], Chosen);
+        cut.Render(parameters => parameters.Add(select => select.Value, null));
+        Assert.Empty(cut.FindAll("[data-part=clear]"));
+        Assert.Equal("Choose a trail", cut.Find("[data-part=value]").TextContent.Trim());
+    }
+
+    [Theory]
+    [InlineData(null, false, false)]
+    [InlineData("cedar", true, false)]
+    [InlineData("cedar", false, true)]
+    public void Render_ShouldOfferNoClearButton_WhenThereIsNothingToClearOrItCantChange(string? value, bool disabled,
+        bool readOnly)
+    {
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Value, value)
+            .Add(select => select.Clearable, true).Add(select => select.Disabled, disabled)
+            .Add(select => select.ReadOnly, readOnly));
+
+        Assert.Empty(cut.FindAll("[data-part=clear]"));
+    }
+
+    [Fact]
+    public void Open_ShouldOpenTheTree_WhenTheParentSetsIt()
+    {
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Open, true));
+
+        Assert.True(cut.FindComponent<TbPopover>().Instance.Open);
+    }
+
+    [Fact]
+    public void Open_ShouldCloseTheTreeAndItsSearch_WhenTheParentClearsIt()
+    {
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Open, true)
+            .Add(select => select.Searchable, true));
+        cut.Find("[data-part=search]").Input("cedar");
+
+        cut.Render(parameters => parameters.Add(select => select.Open, false));
+
+        Assert.False(cut.FindComponent<TbPopover>().Instance.Open);
+        Assert.Equal("", cut.Find("[data-part=search]").GetAttribute("value") ?? "");
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void Open_ShouldStayClosedAndSaySo_WhenTheFieldCantChange(bool disabled, bool readOnly)
+    {
+        var reported = new List<bool>();
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Disabled, disabled)
+            .Add(select => select.ReadOnly, readOnly)
+            .Add(select => select.OpenChanged, (bool open) => reported.Add(open)));
+
+        cut.Render(parameters => parameters.Add(select => select.Open, true));
+
+        Assert.DoesNotContain(cut.FindComponents<TbPopover>(), popover => popover.Instance.Open);
+        Assert.Equal([false], reported);
+    }
+
+    [Fact]
+    public async Task OpenChanged_ShouldReportEachToggle_WhenTheUserOpensAndChooses()
+    {
+        var reported = new List<bool>();
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.OpenChanged,
+            (bool open) => reported.Add(open)));
+        var popover = cut.FindComponent<TbPopover>().Instance;
+
+        await cut.InvokeAsync(() => popover.OnToggleAsync(true));
+        Item(cut, "Cedar Flats").Click();
+
+        Assert.Equal([true, false], reported);
+    }
+
+    [Fact]
     public void Render_ShouldShowANestedItemsText_WhenTheValueIsSet()
     {
         var cut = RenderInMemory(parameters => parameters.Add(select => select.Value, "eagle"));

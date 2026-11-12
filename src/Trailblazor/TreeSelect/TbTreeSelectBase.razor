@@ -16,7 +16,7 @@
     }
     else
     {
-        <TbPopover @bind-Open="_open" @bind-Open:after="OpenChanged" id="@InputId" Disabled="Disabled"
+        <TbPopover @bind-Open="_open" @bind-Open:after="ToggledAsync" id="@InputId" Disabled="Disabled"
                    Class="tb-tree-select__popover">
             <Trigger>
                 @* The label and the chosen items name the button, as they would a select. The popup is named by the
@@ -53,13 +53,15 @@
             </ChildContent>
         </TbPopover>
     }
-</text>, null, null)
+</text>, null, RendererInfo.IsInteractive && Clearable && !Disabled && !ReadOnly && !IsMissing(Value)
+    ? ClearButton : null)
 
 @code {
     private readonly Dictionary<TKey, TItem> _loaded = [];
     private ElementReference _trigger;
     private TbTreeView<TItem, TKey>? _tree;
     private bool _open;
+    private bool _lastOpen;
     private string? _search;
     private bool _saidNoMatches;
 
@@ -120,6 +122,21 @@
     [Parameter]
     public string? SearchLabel { get; set; }
 
+    /// <summary>Adds a button that clears the choice.</summary>
+    [Parameter]
+    public bool Clearable { get; set; }
+
+    /// <summary>Whether the tree is open. Bind it with <c>@bind-Open</c> to open or close the tree from code; only a
+    /// new value from the parent opens or closes it, so a render that passes the same value again leaves the user's
+    /// choice alone.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised when the user opens or closes the tree, or when it can't open as asked because the field is
+    /// disabled or read only.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
     /// <summary>The text the field shows with nothing chosen.</summary>
     [Parameter]
     public string? Placeholder { get; set; }
@@ -130,6 +147,9 @@
 
     // The text the field shows for its value, or null to show the placeholder.
     private protected abstract string? ValueText { get; }
+
+    // Empties the value for the clear button.
+    private protected abstract Task ClearValueAsync();
 
     // The rows the tree marks selected.
     private protected virtual IReadOnlyCollection<TKey>? SelectedKeys => null;
@@ -158,6 +178,10 @@
     private RenderFragment ValueContent => ValueText is { } text
         ? @<span id="@ValueId" data-part="value" class="tb-select__value">@text</span>
         : @<span id="@ValueId" data-part="value" class="tb-select__placeholder">@Placeholder</span>;
+
+    private RenderFragment ClearButton =>
+        @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@Localizer[TbStrings.TreeSelectClear]"
+                       aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="ClearAsync" data-part="clear" />;
 
     private RenderFragment NoMatches => @<div data-part="no-results" class="tb-select__no-results">
         @Localizer[TbStrings.SelectNoResults]
@@ -197,12 +221,14 @@
         }
     }
 
-    private void OpenChanged()
+    private async Task ToggledAsync()
     {
         if (!_open)
         {
             ClearSearch();
         }
+
+        await OpenChanged.InvokeAsync(_open);
     }
 
     private void ClearSearch()
@@ -212,10 +238,47 @@
     }
 
     // Closes the tree and its search, as a select closes its list once an option is chosen.
-    private protected void Close()
+    private protected async Task CloseAsync()
     {
         _open = false;
         ClearSearch();
+        await OpenChanged.InvokeAsync(false);
+    }
+
+    // The clear button goes away with the value, so focus moves to the field's button instead of the page.
+    private async Task ClearAsync()
+    {
+        await ClearValueAsync();
+        StateHasChanged();
+        await _trigger.FocusAsync();
+    }
+
+    // A new Open from the parent opens or closes the tree; a disabled or read-only field stays closed and reports
+    // false, so the parent's value matches.
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (Open == _lastOpen)
+        {
+            return;
+        }
+
+        _lastOpen = Open;
+        var open = Open && !Disabled && !ReadOnly;
+        if (open != _open)
+        {
+            _open = open;
+            if (!open)
+            {
+                ClearSearch();
+            }
+        }
+
+        if (open != Open)
+        {
+            await OpenChanged.InvokeAsync(open);
+        }
     }
 
     // The items held in memory, in tree order, then the children loaded so far.

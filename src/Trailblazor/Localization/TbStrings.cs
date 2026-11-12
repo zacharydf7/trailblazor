@@ -943,6 +943,9 @@ public static class TbStrings
     /// <summary>"Search": names a tree select's search field and is its placeholder.</summary>
     public const string TreeSelectSearch = "TreeSelect.Search";
 
+    /// <summary>"Clear": names a tree select's clear button.</summary>
+    public const string TreeSelectClear = "TreeSelect.Clear";
+
     /// <summary>"{0} more": ends a multi tree select's field when it lists only some of the checked items; {0} is how
     /// many it leaves out.</summary>
     public const string TreeSelectMore = "TreeSelect.More";
@@ -1245,6 +1248,7 @@ public static class TbStrings
         [TreeViewItemCount] = "{0} items",
         [TreeViewCantMoveIntoItself] = "An item can't move into itself.",
         [TreeSelectSearch] = "Search",
+        [TreeSelectClear] = "Clear",
         [TreeSelectMore] = "{0} more",
         [SortableHandle] = "Move {0}",
         [SortableHint] =

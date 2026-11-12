@@ -1,7 +1,7 @@
 <TbStack Gap="3">
     <TbTreeSelect TItem="Place" TKey="string" Label="Trail" Items="Places" KeySelector="place => place.Id"
                   ItemText="place => place.Name" ChildrenSelector="place => place.Children"
-                  IsSelectable="place => place.Children is null" Placeholder="Choose a trail" Searchable
+                  IsSelectable="place => place.Children is null" Placeholder="Choose a trail" Searchable Clearable
                   @bind-Value="_trail" />
     <output aria-label="Chosen trail">@(_trail is null ? "No trail chosen." : $"Chosen: {_trail}.")</output>
 </TbStack>
