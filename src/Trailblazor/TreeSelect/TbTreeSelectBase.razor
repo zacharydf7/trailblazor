@@ -36,7 +36,8 @@
                     @* The search waits for a pause in typing, and Down Arrow is the only key it sends to the server. *@
                     <input type="search" data-part="search" autocomplete="off" aria-label="@SearchText"
                            placeholder="@SearchText" @bind="_search" @bind:event="oninput" @bind:after="Searched"
-                           data-input-delay="@SearchDelay" @ontbtreesearchdown="SearchDownAsync"
+                           data-input-delay="@SearchDelay" data-searched="@(_search?.Trim() ?? "")"
+                           @ontbtreesearchdown="SearchDownAsync"
                            class="tb-select__filter tb-tree-select__search" />
                 }
                 <CascadingValue TValue="ITreeChoice" Value="this" IsFixed="true">

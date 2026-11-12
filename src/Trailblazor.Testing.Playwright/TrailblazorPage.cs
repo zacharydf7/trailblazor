@@ -99,6 +99,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbCalendar</c> with this label.</summary>
     public TbCalendarLocator Calendar(string label) => new(scope, label);
 
+    /// <summary>The <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c> with this label.</summary>
+    public TbTreeSelectLocator TreeSelect(string label) => new(scope, label);
+
     /// <summary>The <c>TbTreeView</c> with this accessible name.</summary>
     public TbTreeLocator Tree(string name) => new(scope, name);
 

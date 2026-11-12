@@ -1,0 +1,27 @@
+@page "/tree-select-states"
+
+@* Tree selects that can't be used, one without a search, and one whose region starts partly checked. *@
+<TbStack Gap="3">
+    <TbTreeSelect TItem="Place" TKey="string" Label="Closed trail" Items="Places" KeySelector="place => place.Id"
+                  ItemText="place => place.Name" ChildrenSelector="place => place.Children" Disabled />
+    <TbTreeSelect TItem="Place" TKey="string" Label="Fixed trail" Items="Places" KeySelector="place => place.Id"
+                  ItemText="place => place.Name" ChildrenSelector="place => place.Children" ReadOnly
+                  Value="@("pine")" />
+    <TbTreeSelect TItem="Place" TKey="string" Label="Plain trail" Items="Places" KeySelector="place => place.Id"
+                  ItemText="place => place.Name" ChildrenSelector="place => place.Children" />
+    <TbMultiTreeSelect TItem="Place" TKey="string" Label="Visited trails" Items="Places"
+                       KeySelector="place => place.Id" ItemText="place => place.Name"
+                       ChildrenSelector="place => place.Children" @bind-Value="_visited" />
+    <output aria-label="Visited">@string.Join(", ", _visited)</output>
+</TbStack>
+
+@code {
+    private static readonly Place[] Places =
+    [
+        new("north", "North ridge", [new("pine", "Pine Hollow"), new("eagle", "Eagle Ridge")]),
+    ];
+
+    private IReadOnlyList<string> _visited = ["pine"];
+
+    private sealed record Place(string Id, string Name, IReadOnlyList<Place>? Children = null);
+}

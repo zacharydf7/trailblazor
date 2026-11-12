@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
@@ -33,6 +34,75 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(gaps[0] >= 4, $"The row starts {gaps[0]}px in.");
         Assert.True(gaps[1] >= 4, $"The row ends {gaps[1]}px in.");
         Assert.True(gaps[2] >= 4, $"The first row is {gaps[2]}px below the tree's top.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeSelectLocator_ShouldSearchChooseAndReadTheField_WhenUsedByLabel(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-select");
+        var field = page.Tb().TreeSelect("Trail");
+        Assert.Null(await field.TextAsync());
+
+        await field.SearchAsync("cedar");
+        Assert.Equal(2, await page.GetByRole(AriaRole.Treeitem).CountAsync());
+        await field.ChooseAsync("River valley", "Cedar Flats");
+
+        await Expect(page.GetByLabel("Chosen trail")).ToHaveTextAsync("Chosen: cedar.");
+        Assert.Equal("Cedar Flats", await field.TextAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeSelectLocator_ShouldUncheckEveryRow_WhenTheRegionIsPartlyChecked(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-select-states");
+        var visited = page.GetByLabel("Visited", new() { Exact = true });
+        await Expect(visited).ToHaveTextAsync("pine");
+
+        await page.Tb().TreeSelect("Visited trails").UncheckAsync("North ridge");
+
+        await Expect(visited).ToHaveTextAsync("");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeSelectLocator_ShouldLeaveAnItemChecked_WhenCheckedAgain(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-select-states");
+
+        await page.Tb().TreeSelect("Visited trails").CheckAsync("North ridge", "Pine Hollow");
+
+        await Expect(page.GetByLabel("Visited", new() { Exact = true })).ToHaveTextAsync("pine");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeSelectLocator_ShouldThrow_WhenTheFieldCantChange(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-select-states");
+        await Expect(page.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("^Plain trail") }))
+            .ToHaveAttributeAsync("data-ready", "");
+
+        foreach (var label in new[] { "Closed trail", "Fixed trail" })
+        {
+            var problem = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                page.Tb().TreeSelect(label).ChooseAsync("North ridge", "Pine Hollow"));
+            Assert.Contains("disabled or read-only", problem.Message);
+        }
+
+        var search = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            page.Tb().TreeSelect("Plain trail").SearchAsync("pine"));
+        Assert.Contains("no search", search.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeSelectLocator_ShouldCheckAndUncheckItems_WhenUsedByLabel(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-select");
+        var field = page.Tb().TreeSelect("Regions");
+
+        await field.CheckAsync("Coast", "Harbor bay");
+        await Expect(page.GetByLabel("Chosen regions")).ToHaveTextAsync("Chosen: bay.");
+        await field.UncheckAsync("Coast", "Harbor bay");
+
+        await Expect(page.GetByLabel("Chosen regions")).ToHaveTextAsync("No regions chosen.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

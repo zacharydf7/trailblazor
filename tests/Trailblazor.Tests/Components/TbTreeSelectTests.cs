@@ -337,6 +337,43 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
+    public async Task TreeSelectDriver_ShouldChooseAnItemByItsPathAndReadItsText_WhenGivenAPath()
+    {
+        var cut = RenderInMemory();
+        var field = cut.Tb().TreeSelect("Trail");
+        Assert.Null(field.Text);
+
+        await field.ChooseAsync("North ridge", "Pine Hollow");
+
+        Assert.Equal(["pine"], Chosen);
+        Assert.Equal("Pine Hollow", field.Text);
+    }
+
+    [Fact]
+    public async Task TreeSelectDriver_ShouldNarrowTheTree_WhenSearching()
+    {
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true));
+
+        await cut.Tb().TreeSelect("Trail").SearchAsync("cedar");
+
+        Assert.Equal(["River valley", "Cedar Flats"], cut.FindAll("[role=treeitem]").Select(ItemName));
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task TreeSelectDriver_ShouldThrow_WhenTheFieldCantChange(bool disabled, bool readOnly)
+    {
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Disabled, disabled)
+            .Add(select => select.ReadOnly, readOnly));
+
+        var problem = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            cut.Tb().TreeSelect("Trail").ChooseAsync("River valley", "Cedar Flats"));
+
+        Assert.Contains("disabled or read-only", problem.Message);
+    }
+
+    [Fact]
     public void Search_ShouldStaySilent_WhenSomethingMatches()
     {
         var host = Render<AnnouncerHost>();

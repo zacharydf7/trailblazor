@@ -134,6 +134,14 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>TreeSelect(label)</code></th>
+                        <td>
+                            Chooses an item by the texts along its path with <code>ChooseAsync</code>, checks and
+                            unchecks items with <code>CheckAsync</code> and <code>UncheckAsync</code>, types in the
+                            field's search with <code>SearchAsync</code>, and reads what the field shows with <code>Text</code>.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Grid(name)</code></th>
                         <td>
                             Clicks or selects a row by a cell's text, with <code>ClickRowAsync</code> and
@@ -577,6 +585,8 @@
         new("Rich text editor", "Its label", "`RichTextEditor(label).EnterAsync(html)` pastes the HTML over the text "
             + "and leaves the editor; `Input` is the editing area, for typing and reading its text."),
         new("Tree", "Its name", "`Tree(name)` expands, selects, checks and drags rows by the texts along their path."),
+        new("Tree select", "Its label", "`TreeSelect(label)` chooses, checks and unchecks items by the texts along "
+            + "their path, `SearchAsync(text)` types in its search, and `TextAsync()` reads what the field shows."),
         new("Data grid", "Its name", "`Grid(name)` finds rows and cells by their text, and sorts, filters, selects "
             + "and pages."),
         new("Accordion", "An item's header", "`AccordionItem(header).ExpandAsync()` opens the item, waits until it "

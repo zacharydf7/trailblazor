@@ -128,6 +128,34 @@ public class TbMultiTreeSelectTests : BunitContext
     }
 
     [Fact]
+    public async Task TreeSelectDriver_ShouldCheckAndUncheckItemsByTheirPaths_WhenCalled()
+    {
+        var cut = RenderPlaces();
+        var field = cut.Tb().TreeSelect("Trails");
+
+        await field.CheckAsync("North ridge", "Pine Hollow");
+        await field.CheckAsync("North ridge", "Pine Hollow");
+        Assert.Equal(["pine"], Chosen[^1]);
+
+        await field.UncheckAsync("North ridge", "Pine Hollow");
+        await field.UncheckAsync("North ridge", "Pine Hollow");
+
+        Assert.Empty(Chosen[^1]);
+        Assert.Equal(2, Chosen.Count);
+    }
+
+    [Fact]
+    public async Task TreeSelectDriver_ShouldUncheckEveryRow_WhenTheHeadingIsPartlyChecked()
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.Value, ["pine"]));
+
+        await cut.Tb().TreeSelect("Trails").UncheckAsync("North ridge");
+
+        Assert.Empty(Chosen[^1]);
+        Assert.Equal("false", Item(cut, "North ridge").GetAttribute("aria-checked"));
+    }
+
+    [Fact]
     public void Check_ShouldLeaveAHeadingOutOfTheValue_WhenIsSelectableExcludesIt()
     {
         var cut = RenderPlaces(parameters => parameters.Add(select => select.IsSelectable, place => !place.Area));

@@ -162,3 +162,10 @@ Trailblazor.Testing.TbRichTextEditorDriver.EnterAsync(string! html) -> System.Th
 Trailblazor.Testing.TrailblazorMarkup.RichTextEditor(string! label) -> Trailblazor.Testing.TbRichTextEditorDriver!
 Trailblazor.Testing.TbTabsDriver.CloseAsync(string! tab) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTabsDriver.AddAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeSelectDriver
+Trailblazor.Testing.TbTreeSelectDriver.Text.get -> string?
+Trailblazor.Testing.TbTreeSelectDriver.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeSelectDriver.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeSelectDriver.UncheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeSelectDriver.SearchAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.TreeSelect(string! label) -> Trailblazor.Testing.TbTreeSelectDriver!

@@ -71,6 +71,11 @@ public sealed class TrailblazorMarkup
                 : $"No tab list is named \"{name}\".");
     });
 
+    /// <summary>The <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c> with this label, or with this <c>AriaLabel</c>
+    /// when it has no label.</summary>
+    public TbTreeSelectDriver TreeSelect(string label) =>
+        new(() => Field(label, ".tb-tree-select__trigger"), _findAll);
+
     /// <summary>The <c>TbTreeView</c> with this accessible name, or the only tree in the markup when no name is given.
     /// </summary>
     public TbTreeDriver Tree(string? name = null) => new(() =>
@@ -172,6 +177,68 @@ public sealed class TbSelectDriver
             ? control.QuerySelectorAll("option:not([value='']):not([data-unmatched]):not([data-part=status])")
             : _findAll($"[id='{control.GetAttribute("aria-controls")}'] [role=option]:not([data-part=status])");
     }
+}
+
+/// <summary>A <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c>, found by its label. Items are named by their path of
+/// texts from a root, such as <c>("North ridge", "Pine Hollow")</c>.</summary>
+public sealed class TbTreeSelectDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+
+    internal TbTreeSelectDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
+        (_find, _findAll) = (find, findAll);
+
+    /// <summary>The text the field shows for its value, or null while it shows its placeholder.</summary>
+    public string? Text => _find().QuerySelector("[data-part=value]") is { } value
+        && !value.ClassList.Contains("tb-select__placeholder") ? value.TextContent.Trim() : null;
+
+    /// <summary>Opens the rows above the item at this path and chooses it, as clicking it does.</summary>
+    public Task ChooseAsync(params string[] path) => Tree().SelectAsync(path);
+
+    /// <summary>Opens the rows above the item at this path and, unless it is checked already, checks it in a multi
+    /// tree select as clicking its box does.</summary>
+    public Task CheckAsync(params string[] path) => SetCheckedAsync(path, true);
+
+    /// <summary>Opens the rows above the item at this path and, unless it is unchecked already, unchecks it in a
+    /// multi tree select as clicking its box does.</summary>
+    public Task UncheckAsync(params string[] path) => SetCheckedAsync(path, false);
+
+    /// <summary>Types this text in the field's search, as the user does, so the tree shows what matches.</summary>
+    public Task SearchAsync(string text) => (Panel().QuerySelector("[data-part=search]")
+        ?? throw new InvalidOperationException("This tree select has no search; set Searchable to add one."))
+        .InputAsync(new ChangeEventArgs { Value = text });
+
+    private async Task SetCheckedAsync(string[] path, bool check)
+    {
+        var tree = Tree();
+        await tree.ExpandAsync(path[..^1]);
+        // A partly checked row checks everything under it first, so unchecking it takes a second click.
+        for (var clicks = 0; tree.Item(path).GetAttribute("aria-checked") != (check ? "true" : "false"); clicks++)
+        {
+            if (clicks == 2)
+            {
+                throw new InvalidOperationException($"The row at {string.Join(" > ", path)} can't be checked or "
+                    + "unchecked.");
+            }
+
+            await tree.CheckAsync(path);
+        }
+    }
+
+    // A disabled field's tree can't be used, and a read-only field has none.
+    private IElement Panel()
+    {
+        var trigger = _find();
+        return trigger.HasAttribute("disabled") || trigger.GetAttribute("aria-disabled") == "true" ? throw Closed()
+            : _findAll($"[id='{trigger.GetAttribute("aria-controls")}']").SingleOrDefault() ?? throw Closed();
+
+        static InvalidOperationException Closed() =>
+            new("This tree select is disabled or read-only, so its tree can't be used.");
+    }
+
+    private TbTreeDriver Tree() => new(() => Panel().QuerySelector(".tb-tree")
+        ?? throw new InvalidOperationException("This tree select's tree isn't there."));
 }
 
 /// <summary>A <c>TbListBox</c> or <c>TbMultiListBox</c>, found by its label.</summary>

@@ -4340,10 +4340,15 @@ public static class ExampleCatalog
                 """,
             TestingTips =
             [
-                "Open it from its button, which its label names, then choose an item by its text: "
-                    + "`await page.GetByRole(AriaRole.Button, new() { Name = \"Trail\" }).ClickAsync()` and "
-                    + "`await page.GetByRole(AriaRole.Treeitem, new() { Name = \"Cedar Flats\" }).ClickAsync()` in "
-                    + "Playwright, or `cut.Find(\"[role=treeitem]\")` and `Click()` in bUnit.",
+                "In Playwright, `await page.Tb().TreeSelect(\"Trail\").ChooseAsync(\"River valley\", \"Cedar "
+                    + "Flats\")` from `Trailblazor.Testing.Playwright` waits for the field's script, opens the tree "
+                    + "and the rows along the path, and chooses the item. `CheckAsync`, `UncheckAsync` and "
+                    + "`SearchAsync` work the same way, and `TextAsync()` reads what the field shows.",
+                "In bUnit, `await cut.Tb().TreeSelect(\"Trail\").ChooseAsync(\"River valley\", \"Cedar Flats\")` "
+                    + "from `Trailblazor.Testing` does the same, and `Text` reads the field.",
+                "The field's button is named by its label and its choice together, as in \"Trail Cedar Flats\", so "
+                    + "a locator that expects the exact name \"Trail\" misses it once something is chosen; "
+                    + "`TreeSelect(label)` finds it by the label alone.",
             ],
         },
         new("autocomplete", "Autocomplete", ExampleCategory.Inputs,
