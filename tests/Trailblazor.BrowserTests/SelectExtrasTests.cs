@@ -330,4 +330,24 @@ public class SelectExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(result.Violations.Select(violation =>
             $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helpers_ShouldReadUnchooseAndClearTheChosenOptions_WhenGivenASelect(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/select");
+        var topics = page.Tb().Select("Notify me about");
+        await topics.ChooseAsync("Returns", "Offers");
+        Assert.Equal(["Orders", "Returns", "Offers"], await topics.ChosenAsync());
+
+        await topics.UnchooseAsync("Returns");
+        Assert.Equal(["Orders", "Offers"], await topics.ChosenAsync());
+        Assert.Equal("Orders, Offers", await topics.TextAsync());
+        await topics.ClearAsync();
+        await page.Tb().Select("Campsite").ClearAsync();
+
+        await Expect(page.GetByText("Notifications value:")).ToHaveTextAsync("Notifications value:");
+        await Expect(page.GetByText("Campsite value:")).ToHaveTextAsync("Campsite value: null");
+        Assert.Null(await page.Tb().Select("Campsite").TextAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Select("Campsite").UnchooseAsync("Lake"));
+    }
 }

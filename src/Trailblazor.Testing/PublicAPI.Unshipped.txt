@@ -204,3 +204,8 @@ Trailblazor.Testing.TbDateTimePickerDriver.ChooseAsync(System.DateTime? value) -
 Trailblazor.Testing.TbDateRangePickerDriver
 Trailblazor.Testing.TbDateRangePickerDriver.Range.get -> (System.DateOnly? Start, System.DateOnly? End)
 Trailblazor.Testing.TbDateRangePickerDriver.ChooseAsync(System.DateOnly? start, System.DateOnly? end) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSelectDriver.Chosen.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbSelectDriver.UnchooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSelectDriver.ClearAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbListBoxDriver.UnchooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbListBoxDriver.ClearAsync() -> System.Threading.Tasks.Task!

@@ -161,6 +161,21 @@ public class ListBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helpers_ShouldReadUnchooseAndClearTheChosenOptions_WhenTheListboxIsMultiple(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/listbox");
+        var gear = page.Tb().ListBox("Gear to pack");
+        await gear.ChooseAsync("Tent", "Stove", "Headlamp");
+
+        await gear.UnchooseAsync("Stove");
+        Assert.Equal(["Tent", "Headlamp"], await gear.ChosenAsync());
+        await gear.ClearAsync();
+
+        await Expect(page.GetByText("Packing: ")).ToHaveTextAsync("Packing: nothing");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().ListBox("Trail").UnchooseAsync("Old mill"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ChooseAsync_ShouldChooseTheNativeWay_WhenTheListboxIsRenderedStatically(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-listbox");

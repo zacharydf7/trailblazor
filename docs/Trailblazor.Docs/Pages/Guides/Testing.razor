@@ -93,11 +93,22 @@
                     </tr>
                     <tr>
                         <th scope="row"><code>Select(label).Text</code></th>
-                        <td>Reads what the select shows.</td>
+                        <td>Reads what the select shows, and <code>Chosen</code> reads the chosen options.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Select(label).UnchooseAsync(options)</code></th>
+                        <td>
+                            Unchooses options in a multiple select, and <code>ClearAsync()</code> clears a
+                            <code>Clearable</code> select with its clear button.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>ListBox(label).ChooseAsync(options)</code></th>
-                        <td>Chooses options in a list box by their text.</td>
+                        <td>
+                            Chooses options in a list box by their text, and <code>Chosen</code> reads the chosen ones.
+                            In a multiple list box, <code>UnchooseAsync(options)</code> unchooses some and
+                            <code>ClearAsync()</code> unchooses all.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>TextField(label).EnterAsync(text)</code></th>
@@ -629,10 +640,14 @@
     private static readonly Helper[] Helpers =
     [
         new("Select", "Its label", "`Select(label).ChooseAsync(options)` chooses by option names, whether the select "
-            + "renders as Trailblazor's list or, on a static page, as a native `<select>`."),
+            + "renders as Trailblazor's list or, on a static page, as a native `<select>`. `UnchooseAsync(options)` "
+            + "unchooses options in a multiple select, `ClearAsync()` clears a `Clearable` one, `TextAsync()` reads "
+            + "what it shows, and `ChosenAsync()` reads the chosen options."),
         new("Autocomplete", "Its label",
             "`Autocomplete(label).ChooseAsync(text, option)` types and picks an option."),
-        new("List box", "Its label", "`ListBox(label).ChooseAsync(options)` chooses by option names."),
+        new("List box", "Its label", "`ListBox(label).ChooseAsync(options)` chooses by option names, and "
+            + "`ChosenAsync()` reads the chosen ones. In a multiple list box, `UnchooseAsync(options)` unchooses some "
+            + "and `ClearAsync()` unchooses all."),
         new("Color picker", "Its label", "`ColorPicker(label).ChooseAsync(color)` picks a color."),
         new("File upload", "Its label", "`FileUpload(label).ChooseAsync(paths)` chooses files."),
         new("Date picker", "Its label", "`DatePicker(label).ChooseAsync(date)` types the date in the field's format "

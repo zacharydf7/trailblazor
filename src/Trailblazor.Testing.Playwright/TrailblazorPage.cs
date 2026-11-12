@@ -236,21 +236,99 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field)
     public async Task ChooseAsync(params string[] options)
     {
         ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
-        // The list shares the label, so only the combobox, or the native select it replaces, counts as the field.
-        var control = field.And(scope.Locator("[role=combobox], select"));
-        if (await NativeSelect.TryChooseAsync(control, options, "select"))
+        if (await NativeSelect.TryChooseAsync(Control, options, "select"))
         {
             return;
         }
 
+        await SetChosenAsync(options, choose: true);
+    }
+
+    /// <summary>Unchooses the options with these names in a multiple select, as clicking them again does, leaving the
+    /// others chosen. A select that takes one option throws; clear it with <see cref="ClearAsync"/>. On a static page
+    /// this throws too, since a native select posts with its form.</summary>
+    public async Task UnchooseAsync(params string[] options)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
+        await NativeSelect.ThrowIfStaticAsync(Control);
+        await SetChosenAsync(options, choose: false);
+    }
+
+    /// <summary>Clears the select with its clear button, as a user does, and waits until nothing is chosen. A select
+    /// that isn't <c>Clearable</c>, or has nothing chosen, shows no clear button, so this throws, as it does on a
+    /// static page.</summary>
+    public async Task ClearAsync()
+    {
+        var control = Control;
+        await NativeSelect.ThrowIfStaticAsync(control);
+        await Scope.ReadyAsync(scope, control);
+        var clear = control.Locator("xpath=ancestor::*[@data-part='control'][1]").Locator("[data-part=clear]");
+        if (await clear.CountAsync() == 0)
+        {
+            throw new InvalidOperationException(
+                "The select shows no clear button; make it Clearable, and choose an option first.");
+        }
+
+        await clear.ClickAsync();
+        await Assertions.Expect(control.Locator("[data-part=value], [data-part=chip]")).ToHaveCountAsync(0);
+    }
+
+    /// <summary>The name of the select's value, as a screen reader hears it, or null while it shows its placeholder. A
+    /// multiple select's chosen options are joined with ", ".</summary>
+    public async Task<string?> TextAsync()
+    {
+        var shown = await Control.EvaluateAsync<string[]>(Choices.ShownNames);
+        return shown.Length > 0 ? string.Join(", ", shown) : null;
+    }
+
+    /// <summary>The names of the chosen options, in order. A list of more than 100 options shows only those in view,
+    /// so for one that long this throws; read <see cref="TextAsync"/> instead.</summary>
+    public async Task<IReadOnlyList<string>> ChosenAsync()
+    {
+        var control = Control;
+        // A prerendered select is replaced by the interactive one, which holds its own list.
+        await Assertions.Expect(control).Not.ToHaveAttributeAsync("data-prerender", "");
+        if (await control.EvaluateAsync<bool>("control => control.localName === 'select'"))
+        {
+            return await control.Locator(NativeSelect.Chosen).AllInnerTextsAsync();
+        }
+
+        var listbox = await ListboxAsync(control);
+        if (await listbox.GetAttributeAsync("data-count") is not null)
+        {
+            throw new InvalidOperationException(
+                "The list shows only the options in view, so their names can't all be read; read TextAsync instead.");
+        }
+
+        return await listbox.EvaluateAsync<string[]>(Choices.ChosenNames);
+    }
+
+    // The list shares the label, so only the combobox, or the native select it replaces, counts as the field.
+    private ILocator Control => @field.And(scope.Locator("[role=combobox], select"));
+
+    // A filterable select points to the dialog that holds its filter and listbox.
+    private async Task<ILocator> ListboxAsync(ILocator control)
+    {
+        var controls = await control.GetAttributeAsync("aria-controls");
+        return Scope.Document(scope).Locator($"[id='{controls}'][role=listbox], [id='{controls}'] [role=listbox]");
+    }
+
+    private async Task SetChosenAsync(string[] options, bool choose)
+    {
+        var control = Control;
         // The keys and clicks work once the select's script has attached.
         await Scope.ReadyAsync(scope, control);
-        // A filterable select points to the dialog that holds its filter and listbox.
-        var controls = await control.GetAttributeAsync("aria-controls");
-        var listbox = Scope.Document(scope)
-            .Locator($"[id='{controls}'][role=listbox], [id='{controls}'] [role=listbox]");
-        NativeSelect.ThrowIfSeveral(options, await listbox.GetAttributeAsync("aria-multiselectable") == "true",
-            "select");
+        var listbox = await ListboxAsync(control);
+        var multiple = await listbox.GetAttributeAsync("aria-multiselectable") == "true";
+        if (choose)
+        {
+            NativeSelect.ThrowIfSeveral(options, multiple, "select");
+        }
+        else if (!multiple)
+        {
+            throw new InvalidOperationException("A select that takes one option can't unchoose it; clear it instead.");
+        }
+
         // The keyboard opens the list, since a click could land on a chip's remove button.
         if (!await listbox.IsVisibleAsync())
         {
@@ -258,15 +336,16 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field)
             await control.PressAsync("ArrowDown");
         }
 
+        var state = choose ? "true" : "false";
         foreach (var name in options)
         {
             // A single select closes once chosen, so the option is found even while its list is hidden.
             var option = listbox.GetByRole(AriaRole.Option, new() { Name = name, Exact = true, IncludeHidden = true });
-            if (await option.GetAttributeAsync("aria-selected") != "true")
+            if (await option.GetAttributeAsync("aria-selected") != state)
             {
                 await option.ClickAsync();
                 // The server applies the choice, so wait for it before reading the next option's state.
-                await Assertions.Expect(option).ToHaveAttributeAsync("aria-selected", "true");
+                await Assertions.Expect(option).ToHaveAttributeAsync("aria-selected", state);
             }
         }
 
@@ -276,7 +355,6 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field)
             await control.PressAsync("Escape");
         }
     }
-
 }
 
 /// <summary>A <c>TbAutocomplete</c>, found by its label.</summary>
@@ -712,28 +790,73 @@ public sealed class TbListBoxLocator(ILocator scope, string label)
     public async Task ChooseAsync(params string[] options)
     {
         ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
-        var field = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("[role=listbox], select"));
-        if (await NativeSelect.TryChooseAsync(field, options, "listbox"))
+        if (await NativeSelect.TryChooseAsync(Field, options, "listbox"))
         {
             return;
         }
 
-        // The keys and clicks work once the listbox's script has attached.
-        await Assertions.Expect(field).ToHaveAttributeAsync("data-ready", "");
-        NativeSelect.ThrowIfSeveral(options, await field.GetAttributeAsync("aria-multiselectable") == "true",
-            "listbox");
-        foreach (var name in options)
+        await SetChosenAsync(options, choose: true);
+    }
+
+    /// <summary>Unchooses the options with these names in a multiple list box, as clicking them again does, leaving
+    /// the others chosen. A list box that takes one option throws, since a click can't unchoose its option, and so
+    /// does a static one, whose native list posts with its form.</summary>
+    public async Task UnchooseAsync(params string[] options)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
+        await NativeSelect.ThrowIfStaticAsync(Field);
+        await SetChosenAsync(options, choose: false);
+    }
+
+    /// <summary>Unchooses every chosen option in a multiple list box.</summary>
+    public async Task ClearAsync()
+    {
+        if (await ChosenAsync() is { Count: > 0 } chosen)
         {
-            var option = field.GetByRole(AriaRole.Option, new() { Name = name, Exact = true });
-            if (await option.GetAttributeAsync("aria-selected") != "true")
-            {
-                await option.ClickAsync();
-                // The server applies the choice, so wait for it before reading the next option's state.
-                await Assertions.Expect(option).ToHaveAttributeAsync("aria-selected", "true");
-            }
+            await UnchooseAsync([.. chosen]);
         }
     }
 
+    /// <summary>The names of the chosen options, in order.</summary>
+    public async Task<IReadOnlyList<string>> ChosenAsync()
+    {
+        // A prerendered list box is replaced by the interactive one.
+        await Assertions.Expect(Field).Not.ToHaveAttributeAsync("data-prerender", "");
+        // A native list box has no placeholder, so every chosen option counts.
+        return await Field.EvaluateAsync<bool>("list => list.localName === 'select'")
+            ? await Field.Locator("option:checked").AllInnerTextsAsync()
+            : await Field.EvaluateAsync<string[]>(Choices.ChosenNames);
+    }
+
+    private ILocator Field => scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("[role=listbox], select"));
+
+    private async Task SetChosenAsync(string[] options, bool choose)
+    {
+        var field = Field;
+        // The keys and clicks work once the listbox's script has attached.
+        await Assertions.Expect(field).ToHaveAttributeAsync("data-ready", "");
+        var multiple = await field.GetAttributeAsync("aria-multiselectable") == "true";
+        if (choose)
+        {
+            NativeSelect.ThrowIfSeveral(options, multiple, "listbox");
+        }
+        else if (!multiple)
+        {
+            throw new InvalidOperationException("A list box that takes one option can't unchoose it by clicking.");
+        }
+
+        var state = choose ? "true" : "false";
+        foreach (var name in options)
+        {
+            var option = field.GetByRole(AriaRole.Option, new() { Name = name, Exact = true });
+            if (await option.GetAttributeAsync("aria-selected") != state)
+            {
+                await option.ClickAsync();
+                // The server applies the choice, so wait for it before reading the next option's state.
+                await Assertions.Expect(option).ToHaveAttributeAsync("aria-selected", state);
+            }
+        }
+    }
 }
 
 /// <summary>A <c>TbTransferList</c>, found by its label.</summary>
@@ -1125,9 +1248,45 @@ public sealed class TbPaginationLocator(ILocator scope, string name)
     }
 }
 
+// Option names as the helpers read them: what a screen reader hears.
+internal static class Choices
+{
+    // An aria-label, else the text outside hidden parts.
+    private const string NameOf = """
+        element => {
+            if (element.hasAttribute('aria-label')) return element.getAttribute('aria-label');
+            const copy = element.cloneNode(true);
+            copy.querySelectorAll('[aria-hidden=true]').forEach(hidden => hidden.remove());
+            return copy.textContent.trim();
+        }
+        """;
+
+    // A native select shows its chosen options other than the placeholder, including one that keeps a value no option
+    // has.
+    public const string ShownNames = "control => control.localName === 'select' "
+        + "? [...control.selectedOptions].filter(option => option.value !== '').map(option => option.text.trim()) "
+        + ": [...control.querySelectorAll('[data-part=value], [data-part=chip]')].map(" + NameOf + ")";
+
+    public const string ChosenNames = "list => [...list.querySelectorAll("
+        + "'[role=option][aria-selected=true]:not([data-part=select-all])')].map(" + NameOf + ")";
+}
+
 // What the select and listbox helpers share: a statically rendered field is the browser's own select.
 internal static class NativeSelect
 {
+    // The chosen options, less a static select's placeholder and the option that keeps a value no option has.
+    public const string Chosen = "option:checked:not([value='']):not([data-unmatched])";
+
+    public static async Task ThrowIfStaticAsync(ILocator field)
+    {
+        if (await field.EvaluateAsync<bool>(
+                "field => field.localName === 'select' && !field.hasAttribute('data-prerender')"))
+        {
+            throw new InvalidOperationException("On a static page this field renders as a native select, which posts "
+                + "with its form; render it on an interactive page to unchoose or clear options.");
+        }
+    }
+
     // Chooses on a native select, unless the field is the interactive one or a prerendered select it will replace.
     public static async Task<bool> TryChooseAsync(ILocator field, string[] options, string kind)
     {

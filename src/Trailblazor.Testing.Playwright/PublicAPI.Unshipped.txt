@@ -180,3 +180,10 @@ Trailblazor.Testing.Playwright.TbTreeSelectLocator.UncheckAsync(params string![]
 Trailblazor.Testing.Playwright.TbTreeSelectLocator.FilterAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeSelectLocator.TextAsync() -> System.Threading.Tasks.Task<string?>!
 Trailblazor.Testing.Playwright.TrailblazorPage.TreeSelect(string! label) -> Trailblazor.Testing.Playwright.TbTreeSelectLocator!
+Trailblazor.Testing.Playwright.TbSelectLocator.TextAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbSelectLocator.ChosenAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbSelectLocator.UnchooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSelectLocator.ClearAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbListBoxLocator.ChosenAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbListBoxLocator.UnchooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbListBoxLocator.ClearAsync() -> System.Threading.Tasks.Task!

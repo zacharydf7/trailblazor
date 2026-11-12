@@ -205,7 +205,48 @@ public sealed class TbSelectDriver
     /// <summary>Chooses the options with these names, as clicking them does: the one option of a select, or each one
     /// not yet chosen in a multiple select, keeping what is already chosen. On a static page the select is a native
     /// one that posts with its form, so this throws, as it does for a disabled select.</summary>
-    public Task ChooseAsync(params string[] options) => Choices.ChooseAsync(() =>
+    public Task ChooseAsync(params string[] options) => Choices.SetChosenAsync(Choosable, options, choose: true);
+
+    /// <summary>The names of the chosen options, in order. A list of more than 100 options shows only those in view,
+    /// so for one that long this throws; read <see cref="Text"/> instead.</summary>
+    public IReadOnlyList<string> Chosen
+    {
+        get
+        {
+            var control = _find();
+            if (_findAll($"[id='{control.GetAttribute("aria-controls")}'][data-count], "
+                    + $"[id='{control.GetAttribute("aria-controls")}'] [data-count]").Count > 0)
+            {
+                throw new InvalidOperationException(
+                    "The list shows only the options in view, so their names can't all be read; read Text instead.");
+            }
+
+            // A multiple select's Select all row is an option, but it chooses the others rather than itself.
+            return OptionElements().Where(option => !option.Matches("[data-part=select-all]")
+                    && (option.GetAttribute("aria-selected") == "true" || option.HasAttribute("selected")))
+                .Select(Choices.NameOf).ToList();
+        }
+    }
+
+    /// <summary>Unchooses the options with these names in a multiple select, as clicking them again does, leaving the
+    /// others chosen. A select that takes one option throws; clear it with <see cref="ClearAsync"/>. On a static page,
+    /// or when the select is disabled, this throws too, as <see cref="ChooseAsync"/> does.</summary>
+    public Task UnchooseAsync(params string[] options) => Choices.SetChosenAsync(Choosable, options, choose: false);
+
+    /// <summary>Clears the select with its clear button, as a user does. A select that isn't <c>Clearable</c>, or has
+    /// nothing chosen, shows no clear button, so this throws, as it does on a static page or for a disabled select.
+    /// </summary>
+    public Task ClearAsync()
+    {
+        var control = _find();
+        Choices.ThrowIfStaticOrDisabled(control);
+        var clear = control.Closest(".tb-field")?.QuerySelector("[data-part=clear]")
+            ?? throw new InvalidOperationException(
+                "The select shows no clear button; make it Clearable, and choose an option first.");
+        return clear.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private (IEnumerable<IElement> Options, bool Multiple) Choosable()
     {
         var control = _find();
         Choices.ThrowIfStaticOrDisabled(control);
@@ -213,7 +254,7 @@ public sealed class TbSelectDriver
         var controls = control.GetAttribute("aria-controls");
         return (OptionElements(), _findAll($"[id='{controls}'][aria-multiselectable=true], "
             + $"[id='{controls}'] [aria-multiselectable=true]").Count > 0);
-    }, options);
+    }
 
     private IEnumerable<IElement> OptionElements()
     {
@@ -305,12 +346,22 @@ public sealed class TbListBoxDriver
     /// <summary>Chooses the options with these names, as clicking them does: the one option of a list box, or each one
     /// not yet chosen in a multiple list box, keeping what is already chosen. On a static page, or when the list box is
     /// disabled, this throws, as for a select.</summary>
-    public Task ChooseAsync(params string[] options) => Choices.ChooseAsync(() =>
+    public Task ChooseAsync(params string[] options) => Choices.SetChosenAsync(Choosable, options, choose: true);
+
+    /// <summary>Unchooses the options with these names in a multiple list box, as clicking them again does, leaving
+    /// the others chosen. A list box that takes one option throws, since a click can't unchoose its option, and so
+    /// does a static or disabled one, as for <see cref="ChooseAsync"/>.</summary>
+    public Task UnchooseAsync(params string[] options) => Choices.SetChosenAsync(Choosable, options, choose: false);
+
+    /// <summary>Unchooses every chosen option in a multiple list box.</summary>
+    public Task ClearAsync() => Chosen.Count == 0 ? Task.CompletedTask : UnchooseAsync([.. Chosen]);
+
+    private (IEnumerable<IElement> Options, bool Multiple) Choosable()
     {
         var list = _find();
         Choices.ThrowIfStaticOrDisabled(list);
         return (OptionElements(list), list.GetAttribute("aria-multiselectable") == "true");
-    }, options);
+    }
 
     private static IEnumerable<IElement> OptionElements(IElement list) =>
         list.QuerySelectorAll("[role=option]:not([data-part=status]), option:not([data-part=status])");
@@ -346,19 +397,26 @@ public sealed class TbTransferListDriver
 // What choosing in a select and a list box share, with the Playwright helpers' rules.
 internal static class Choices
 {
-    internal static async Task ChooseAsync(Func<(IEnumerable<IElement> Options, bool Multiple)> find, string[] texts)
+    // Clicks each named option whose state differs: one not yet chosen to choose it, or a chosen one to unchoose it.
+    internal static async Task SetChosenAsync(Func<(IEnumerable<IElement> Options, bool Multiple)> find,
+        string[] texts, bool choose)
     {
         ArgumentOutOfRangeException.ThrowIfZero(texts.Length, nameof(texts));
-        if (texts.Length > 1 && !find().Multiple)
+        if (choose && texts.Length > 1 && !find().Multiple)
         {
             throw new ArgumentException("A field that takes one option can't choose several.", nameof(texts));
+        }
+
+        if (!choose && !find().Multiple)
+        {
+            throw new InvalidOperationException("A field that takes one option can't unchoose it by clicking.");
         }
 
         foreach (var text in texts)
         {
             var option = find().Options.SingleOrDefault(option => NameOf(option) == text)
                 ?? throw new InvalidOperationException($"No option reads \"{text}\".");
-            if (option.GetAttribute("aria-selected") != "true")
+            if (option.GetAttribute("aria-selected") == "true" != choose)
             {
                 // A click from a pointer has a count, which the option reports as pointer input.
                 await option.ClickAsync(new MouseEventArgs { Detail = 1 });

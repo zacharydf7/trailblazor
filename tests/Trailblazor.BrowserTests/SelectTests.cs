@@ -233,6 +233,17 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helpers_ShouldReadAStaticSelectButNotUnchoose_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-select");
+        await page.Tb().Select("Toppings").ChooseAsync("Cheese", "Olives");
+
+        Assert.Equal(["Cheese", "Olives"], await page.Tb().Select("Toppings").ChosenAsync());
+        Assert.Equal("Cheese, Olives", await page.Tb().Select("Toppings").TextAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Select("Toppings").UnchooseAsync("Ham"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldShowItsEmptyMessageInMutedText_WhenRenderedStaticallyWithNoOptions(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-select");

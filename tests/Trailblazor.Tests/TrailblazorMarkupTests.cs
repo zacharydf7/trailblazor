@@ -31,6 +31,69 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Select_ShouldReadUnchooseAndClearTheChosenOptions_WhenAsked()
+    {
+        IReadOnlyList<string> toppings = [];
+        var cut = Render<TbMultiSelect<string>>(parameters => parameters.Add(select => select.Label, "Toppings")
+            .Add(select => select.Clearable, true).Add(select => select.SelectAll, true)
+            .Add(select => select.ValueChanged, (IReadOnlyList<string> value) => toppings = value)
+            .Add(select => select.ChildContent, Options("Olives", "Basil", "Garlic")));
+        var select = cut.Tb().Select("Toppings");
+        await select.ChooseAsync("Olives", "Basil", "Garlic");
+        Assert.Equal(["Olives", "Basil", "Garlic"], select.Chosen);
+
+        await select.UnchooseAsync("Olives");
+        Assert.Equal(["Basil", "Garlic"], select.Chosen);
+        await select.ClearAsync();
+
+        Assert.Empty(toppings);
+    }
+
+    [Fact]
+    public void Select_ShouldThrow_WhenReadingTheChosenOptionsOfAListTooLongToShowWhole()
+    {
+        var cut = Render<TbMultiSelect<string>>(parameters => parameters.Add(select => select.Label, "Trails")
+            .Add(select => select.Items, Enumerable.Range(1, 101).Select(number => $"Trail {number}").ToList()));
+
+        Assert.Throws<InvalidOperationException>(() => cut.Tb().Select("Trails").Chosen);
+    }
+
+    [Fact]
+    public async Task Select_ShouldThrow_WhenUnchoosingInASelectThatTakesOneOption()
+    {
+        var cut = RenderForm();
+        await cut.Tb().Select("Size").ChooseAsync("Small");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Select("Size").UnchooseAsync("Small"));
+    }
+
+    [Fact]
+    public async Task Select_ShouldThrow_WhenClearedWithoutAClearButton()
+    {
+        var cut = RenderForm();
+        await cut.Tb().Select("Size").ChooseAsync("Medium");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Select("Size").ClearAsync());
+    }
+
+    [Fact]
+    public async Task ListBox_ShouldUnchooseAndClearTheChosenOptions_WhenItTakesSeveral()
+    {
+        IReadOnlyList<string> gear = [];
+        var cut = Render<TbMultiListBox<string>>(parameters => parameters.Add(list => list.Label, "Gear")
+            .Add(list => list.ValueChanged, (IReadOnlyList<string> value) => gear = value)
+            .Add(list => list.ChildContent, Options("Tent", "Stove", "Map")));
+        var list = cut.Tb().ListBox("Gear");
+        await list.ChooseAsync("Tent", "Stove", "Map");
+
+        await list.UnchooseAsync("Stove");
+        Assert.Equal(["Tent", "Map"], list.Chosen);
+        await list.ClearAsync();
+
+        Assert.Empty(gear);
+    }
+
+    [Fact]
     public async Task Select_ShouldReadTheOptionsButSayChoosingNeedsAnInteractivePage_WhenThePageIsStatic()
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
