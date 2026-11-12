@@ -5397,6 +5397,11 @@
         padding: 0;
     }
 
+    /* Rows stand off the popup's edges, as a select's options do. */
+    .tb-tree-select__tree {
+        padding: var(--tb-space-1);
+    }
+
     .tb-select__filter {
         display: block;
         box-sizing: border-box;

@@ -39,6 +39,7 @@ Familiar apps: the folder picker in Google Drive's move dialog, the category pic
 ## Touch
 
 - [x] The button fills the field's box, and the tree's rows are the same size as a tree view's. `trailblazor.css`
+- [x] The tree's rows stand off the popup's edges, as a select's options do. `TreeSelectTests.TreeSelect_ShouldSetItsRowsOffThePopupsEdges_WhenOpened`
 
 ## Focus
 

@@ -12,6 +12,30 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeSelect_ShouldSetItsRowsOffThePopupsEdges_WhenOpened(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-select");
+        var field = await OpenFieldAsync(page);
+        await field.ClickAsync();
+        var popup = page.GetByRole(AriaRole.Dialog, new() { Name = "Trail", Exact = true });
+        await Expect(popup).ToBeVisibleAsync();
+
+        // Measured together, since the popup is placed a frame after it opens.
+        var gaps = await popup.GetByRole(AriaRole.Treeitem).First.EvaluateAsync<double[]>("""
+            row => {
+                const own = row.getBoundingClientRect();
+                const panel = row.closest('[role=dialog]').getBoundingClientRect();
+                const tree = row.closest('.tb-tree-select__tree').getBoundingClientRect();
+                return [own.left - panel.left, panel.right - own.right, own.top - tree.top];
+            }
+            """);
+
+        Assert.True(gaps[0] >= 4, $"The row starts {gaps[0]}px in.");
+        Assert.True(gaps[1] >= 4, $"The row ends {gaps[1]}px in.");
+        Assert.True(gaps[2] >= 4, $"The first row is {gaps[2]}px below the tree's top.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TreeSelect_ShouldChooseFromTheKeyboardAndReturnToTheField_WhenOpened(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-select");
