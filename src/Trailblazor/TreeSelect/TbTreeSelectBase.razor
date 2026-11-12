@@ -48,7 +48,7 @@
                                 CheckedKeys="CheckedKeys" CheckedKeysChanged="CheckedAsync"
                                 CascadeChecks="CascadesChecks"
                                 EmptyContent="@(SearchFilter is null ? null : NoMatches)"
-                                Class="tb-tree-select__tree" />
+                                Labels="@(Labels.Tree ?? new())" Class="tb-tree-select__tree" />
                 </CascadingValue>
             </ChildContent>
         </TbPopover>
@@ -117,10 +117,10 @@
     [Parameter]
     public bool Searchable { get; set; }
 
-    /// <summary>The search field's name and placeholder. Defaults to the app's text for
-    /// <see cref="TbStrings.TreeSelectSearch"/>, "Search" in English.</summary>
+    /// <summary>The words the field shows and says to screen readers, such as the search box's name. Each one left
+    /// null uses the app's text.</summary>
     [Parameter]
-    public string? SearchLabel { get; set; }
+    public TreeSelectLabels Labels { get; set; } = new();
 
     /// <summary>Adds a button that clears the choice.</summary>
     [Parameter]
@@ -173,18 +173,20 @@
     private string TriggerClass => ClassNames.Join("tb-field__input", "tb-select__trigger", "tb-tree-select__trigger",
         Classes?.Input);
 
-    private string SearchText => SearchLabel ?? Localizer[TbStrings.TreeSelectSearch];
+    private string SearchText => Labels.Search ?? Localizer[TbStrings.TreeSelectSearch];
+
+    private string NoResultsText => Labels.NoResults ?? Localizer[TbStrings.SelectNoResults];
 
     private RenderFragment ValueContent => ValueText is { } text
         ? @<span id="@ValueId" data-part="value" class="tb-select__value">@text</span>
         : @<span id="@ValueId" data-part="value" class="tb-select__placeholder">@Placeholder</span>;
 
     private RenderFragment ClearButton =>
-        @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@Localizer[TbStrings.TreeSelectClear]"
+        @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.TreeSelectClear])"
                        aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="ClearAsync" data-part="clear" />;
 
     private RenderFragment NoMatches => @<div data-part="no-results" class="tb-select__no-results">
-        @Localizer[TbStrings.SelectNoResults]
+        @NoResultsText
     </div>;
 
     private Func<TItem, bool>? SearchFilter => string.IsNullOrWhiteSpace(_search) ? null
@@ -207,7 +209,7 @@
         var none = SearchFilter is { } filter && !Known().Any(filter);
         if (none && !_saidNoMatches)
         {
-            Announcer.Polite(Localizer[TbStrings.SelectNoResults]);
+            Announcer.Polite(NoResultsText);
         }
 
         _saidNoMatches = none;

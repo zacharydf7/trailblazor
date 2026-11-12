@@ -78,7 +78,7 @@ public class TbMultiTreeSelectTests : BunitContext
         string expected)
     {
         var cut = RenderPlaces(parameters => parameters.Add(select => select.Value, ["pine", "eagle", "cedar"])
-            .Add(select => select.MaxShown, maxShown).Add(select => select.MoreLabel, more));
+            .Add(select => select.MaxShown, maxShown).Add(select => select.Labels, new() { More = more }));
 
         Assert.Equal(expected, cut.Find("[data-part=value]").TextContent.Trim());
     }

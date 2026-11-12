@@ -4254,11 +4254,12 @@ public static class ExampleCatalog
                     + "search covers only the branches loaded so far. `UnmatchedText` names a value whose item hasn't "
                     + "loaded, such as a saved choice in a branch not yet opened. `Clearable` adds a button that "
                     + "clears the choice. `@bind-Open` opens or closes the tree from code, though a disabled or "
-                    + "read-only field stays closed.", typeof(TreeSelectExample)),
+                    + "read-only field stays closed. `Labels` words the search box, its no-match message, the clear "
+                    + "button and the tree's own text.", typeof(TreeSelectExample)),
                 new("choose-several", "Choosing several items", "`TbMultiTreeSelect` binds a list of keys. Its tree "
                     + "has a checkbox on each row, and stays open while items are checked by click, Enter or Space; "
                     + "the field shows their text, separated by commas. Past `MaxShown` items (3 unless set), the "
-                    + "field counts the rest, as in \"4 more\", and `MoreLabel` words the count. Checking an item "
+                    + "field counts the rest, as in \"4 more\", and `Labels.More` words the count. Checking an item "
                     + "checks the items inside it, and a parent shows whether all, some or none of them are checked; "
                     + "`CascadeChecks=\"false\"` "
                     + "checks each row on its own. When `IsSelectable` leaves out a heading, it has a checkbox only "
@@ -4268,7 +4269,10 @@ public static class ExampleCatalog
                     + "`LoadChildren` and `UnmatchedText` work as they do for one item.",
                     typeof(MultiTreeSelectExample)),
             ],
-            Api = [typeof(TbTreeSelect<,>), typeof(TbMultiTreeSelect<,>), typeof(FieldClasses)],
+            Api =
+            [
+                typeof(TbTreeSelect<,>), typeof(TbMultiTreeSelect<,>), typeof(TreeSelectLabels), typeof(FieldClasses),
+            ],
             Keyboard =
             [
                 new(["Enter", "Space"], "Opens the tree, with focus in its search when it has one.")
@@ -4286,8 +4290,8 @@ public static class ExampleCatalog
             ],
             Labeling =
             [
-                "The clear button is named \"Clear\" and described by the field's label, so a screen reader says "
-                    + "which field it clears.",
+                "The clear button is named \"Clear\", or `Labels.Clear`, and described by the field's label, so a "
+                    + "screen reader says which field it clears.",
                 "The field's `Label` and the chosen item's text name its button together, as they would a select; "
                     + "in a multi tree select, the first `MaxShown` checked items' text and a count of the rest take the "
                     + "chosen item's place.",

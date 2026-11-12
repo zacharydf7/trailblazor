@@ -253,6 +253,34 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
+    public void Labels_ShouldWordTheSearchNoMatchesAndClear_WhenGiven()
+    {
+        var host = Render<AnnouncerHost>();
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Searchable, true)
+            .Add(select => select.Clearable, true).Add(select => select.Value, "cedar")
+            .Add(select => select.Labels, new() { Search = "Find a trail", NoResults = "No trail by that name",
+                Clear = "Clear the trail" }));
+
+        cut.Find("[data-part=search]").Input("summit");
+
+        Assert.Equal("Find a trail", cut.Find("[data-part=search]").GetAttribute("aria-label"));
+        Assert.Equal("Clear the trail", cut.Find("[data-part=clear]").GetAttribute("aria-label"));
+        Assert.Equal("No trail by that name", cut.Find("[data-part=no-results]").TextContent.Trim());
+        host.WaitForAssertion(() => Assert.Contains("No trail by that name", host.Find("[role=status]").TextContent));
+    }
+
+    [Fact]
+    public void Labels_ShouldReachTheTree_WhenGivenTreeLabels()
+    {
+        var cut = Render<TbTreeSelect<Place, string>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.Items, []).Add(select => select.KeySelector, place => place.Id)
+            .Add(select => select.ItemText, place => place.Name)
+            .Add(select => select.Labels, new() { Tree = new() { Empty = "No trails yet" } }));
+
+        Assert.Equal("No trails yet", cut.Find(".tb-tree-select__tree [data-part=empty]").TextContent.Trim());
+    }
+
+    [Fact]
     public void Search_ShouldStaySilent_WhenSomethingMatches()
     {
         var host = Render<AnnouncerHost>();

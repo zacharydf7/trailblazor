@@ -4516,8 +4516,8 @@ Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.LoadChildren.get -> System.Fun
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.LoadChildren.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Placeholder.get -> string?
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Placeholder.set -> void
-Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.SearchLabel.get -> string?
-Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.SearchLabel.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Labels.get -> Trailblazor.TreeSelectLabels!
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Labels.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Searchable.get -> bool
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Searchable.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.TbTreeSelectBase() -> void
@@ -4528,8 +4528,25 @@ override Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.FocusAsync(bool preve
 const Trailblazor.TbStrings.TreeSelectMore = "TreeSelect.More" -> string!
 Trailblazor.TbMultiTreeSelect<TItem, TKey>.MaxShown.get -> int?
 Trailblazor.TbMultiTreeSelect<TItem, TKey>.MaxShown.set -> void
-Trailblazor.TbMultiTreeSelect<TItem, TKey>.MoreLabel.get -> string?
-Trailblazor.TbMultiTreeSelect<TItem, TKey>.MoreLabel.set -> void
+Trailblazor.TreeSelectLabels
+Trailblazor.TreeSelectLabels.TreeSelectLabels() -> void
+Trailblazor.TreeSelectLabels.<Clone>$() -> Trailblazor.TreeSelectLabels!
+Trailblazor.TreeSelectLabels.Equals(Trailblazor.TreeSelectLabels? other) -> bool
+override Trailblazor.TreeSelectLabels.Equals(object? obj) -> bool
+override Trailblazor.TreeSelectLabels.GetHashCode() -> int
+override Trailblazor.TreeSelectLabels.ToString() -> string!
+static Trailblazor.TreeSelectLabels.operator !=(Trailblazor.TreeSelectLabels? left, Trailblazor.TreeSelectLabels? right) -> bool
+static Trailblazor.TreeSelectLabels.operator ==(Trailblazor.TreeSelectLabels? left, Trailblazor.TreeSelectLabels? right) -> bool
+Trailblazor.TreeSelectLabels.Search.get -> string?
+Trailblazor.TreeSelectLabels.Search.init -> void
+Trailblazor.TreeSelectLabels.NoResults.get -> string?
+Trailblazor.TreeSelectLabels.NoResults.init -> void
+Trailblazor.TreeSelectLabels.More.get -> string?
+Trailblazor.TreeSelectLabels.More.init -> void
+Trailblazor.TreeSelectLabels.Clear.get -> string?
+Trailblazor.TreeSelectLabels.Clear.init -> void
+Trailblazor.TreeSelectLabels.Tree.get -> Trailblazor.TreeViewLabels?
+Trailblazor.TreeSelectLabels.Tree.init -> void
 const Trailblazor.TbStrings.TreeSelectClear = "TreeSelect.Clear" -> string!
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Clearable.get -> bool
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Clearable.set -> void

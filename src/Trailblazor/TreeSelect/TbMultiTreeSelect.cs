@@ -20,11 +20,6 @@ public class TbMultiTreeSelect<TItem, [DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter]
     public int? MaxShown { get; set; } = 3;
 
-    /// <summary>The text that counts the checked items the field doesn't name, with {0} for how many. Defaults to the
-    /// app's text for <see cref="TbStrings.TreeSelectMore"/>, "{0} more" in English.</summary>
-    [Parameter]
-    public string? MoreLabel { get; set; }
-
     private protected override string? ValueText
     {
         get
@@ -38,7 +33,7 @@ public class TbMultiTreeSelect<TItem, [DynamicallyAccessedMembers(DynamicallyAcc
             var shown = value.Take(MaxShown ?? value.Count).Select(key => TextOf(key, items)).ToList();
             if (shown.Count < value.Count)
             {
-                shown.Add(string.Format(CultureInfo.CurrentCulture, MoreLabel ?? Localizer[TbStrings.TreeSelectMore],
+                shown.Add(string.Format(CultureInfo.CurrentCulture, Labels.More ?? Localizer[TbStrings.TreeSelectMore],
                     value.Count - shown.Count));
             }
 
