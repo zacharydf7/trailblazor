@@ -2552,7 +2552,12 @@ public static class ExampleCatalog
                 new("handle", "The item's drag handle, which also moves it with the keyboard or its menu."),
                 new("drop-reason", "The reason shown while a dragged item is held over a place it may not go."),
             ],
-            TestingTip = "Press keys on a handle, found as "
+            TestingTip = "The helpers move an item through its handle's menu, straight to either end or a place at "
+                + "a time: "
+                + "`page.Tb().Sortable(\"Trail alerts, first match wins\").MoveAsync(\"Storm warning\", 0)`, or "
+                + "`cut.Tb().Sortable()` in bUnit. In Playwright, `DragBeforeAsync` and `DragAfterAsync` drag it "
+                + "onto another item, and each waits for the app's answer. "
+                + "Without them, press keys on a handle, found as "
                 + "`GetByRole(AriaRole.Button, new() { Name = \"Move Storm warning\" })`, and check the order the "
                 + "app shows. To drag, move the mouse from the handle to the lower half of the item it should "
                 + "follow. A handle gets `data-ready`, and its keys start working, once it's focused, pointed at or "
@@ -7499,6 +7504,10 @@ public static class ExampleCatalog
                     + "`[data-part=group]` row whose `[data-part=group-toggle]` button opens or closes it.",
                 "A row's details button is named for the row: `GetByRole(AriaRole.Button, new() { Name = \"Details "
                     + "for Cedar Flats\" })`. Its `aria-controls` names the `[data-part=detail]` row it opens.",
+                "With `OnRowMove`, `page.Tb().Grid(\"Route stops\").MoveRowAsync(\"Trailhead\", 2)` moves a row "
+                    + "through its handle's menu, straight to either end or a place at a time, and in Playwright "
+                    + "`DragRowBeforeAsync` and `DragRowAfterAsync` drag it onto another row. Rows that can move "
+                    + "carry `data-index`, their place among all the rows.",
                 "Without the helpers, wait for the table's `aria-busy` to clear before clicking a row. A row's move "
                     + "handle gets `data-ready` only once it's focused, pointed at or clicked: wait for "
                     + "`[data-ready], [data-attach-on-use]`, focus it, then wait for `data-ready` before pressing its "

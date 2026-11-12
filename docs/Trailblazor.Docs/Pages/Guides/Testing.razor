@@ -201,13 +201,20 @@
                         <td>Presses the confirm button; <code>CancelAsync()</code> presses the cancel button.</td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Sortable(name).MoveAsync(item, index)</code></th>
+                        <td>
+                            Moves an item to <code>index</code> through its handle's menu, and <code>Items</code> reads
+                            the order.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Grid(name)</code></th>
                         <td>
                             Clicks or selects a row by a cell's text, with <code>ClickRowAsync</code> and
                             <code>SelectAsync</code>, sorts by a column with <code>SortAsync</code>, pages with
                             <code>GoToPageAsync</code>, filters a column with <code>FilterAsync</code> or picks a
-                            filter's values with <code>FilterChoicesAsync</code>, and resizes a column with
-                            <code>ResizeColumnAsync</code>.
+                            filter's values with <code>FilterChoicesAsync</code>, resizes a column with
+                            <code>ResizeColumnAsync</code>, and moves a row to a place with <code>MoveRowAsync</code>.
                             Finds a cell with <code>Cell</code>, and reads the column headers with <code>Columns</code>,
                             a column's total with <code>Total</code> and each group's totals with
                             <code>GroupTotals</code>.
@@ -677,7 +684,11 @@
         new("Tree select", "Its label", "`TreeSelect(label)` chooses, checks and unchecks items by the texts along "
             + "their path, `FilterAsync(text)` types in its filter box, and `TextAsync()` reads what the field shows."),
         new("Data grid", "Its name", "`Grid(name)` finds rows and cells by their text, and sorts, filters, selects "
-            + "and pages."),
+            + "and pages. `MoveRowAsync(row, index)` moves a row through its handle's menu, and `DragRowBeforeAsync` "
+            + "and `DragRowAfterAsync` drag it onto another row; each waits for the app's answer."),
+        new("Sortable", "Its label", "`Sortable(name).MoveAsync(item, index)` moves an item through its handle's "
+            + "menu, `DragBeforeAsync` and `DragAfterAsync` drag it onto another item, and each waits for the app's "
+            + "answer; `ItemsAsync()` reads the order."),
         new("Accordion", "An item's header", "`AccordionItem(header).ExpandAsync()` opens the item, waits until it "
             + "is open and hands back its panel; `CollapseAsync()` closes it."),
         new("Tooltip", "Its trigger", "`Tooltip(trigger).TextAsync()` rests the pointer on the trigger and returns "

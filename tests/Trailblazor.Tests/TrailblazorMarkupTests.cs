@@ -647,6 +647,98 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Sortable_ShouldMoveTheItemAPlaceAtATimeThroughItsMenu_WhenMovedToAPlace()
+    {
+        List<string> rules = ["Block spam", "Flag invoices", "Star the team", "Catch-all"];
+        var moves = new List<int>();
+        var cut = RenderSortable(rules, move =>
+        {
+            moves.Add(move.To);
+            move.ApplyTo(rules);
+        });
+
+        await cut.Tb().Sortable("Rules").MoveAsync("Block spam", 2);
+        Assert.Equal(["Flag invoices", "Star the team", "Block spam", "Catch-all"], cut.Tb().Sortable("Rules").Items);
+        await cut.Tb().Sortable("Rules").MoveAsync("Catch-all", 0);
+
+        Assert.Equal(["Catch-all", "Flag invoices", "Star the team", "Block spam"], cut.Tb().Sortable().Items);
+        await cut.Tb().Sortable("Rules").MoveAsync("Flag invoices", 3);
+
+        Assert.Equal(["Catch-all", "Star the team", "Block spam", "Flag invoices"], cut.Tb().Sortable().Items);
+        Assert.Equal([1, 2, 0, 3], moves);
+    }
+
+    [Fact]
+    public async Task Sortable_ShouldStopAtTheStepTheAppRefuses_WhenMovingAnItem()
+    {
+        List<string> rules = ["Block spam", "Flag invoices", "Star the team", "Catch-all"];
+        var cut = RenderSortable(rules, move => move.ApplyTo(rules), move => Task.FromResult(
+            move.To == 2 ? MoveCheck.Refuse("The third place is taken.") : MoveCheck.Allow));
+
+        await cut.Tb().Sortable("Rules").MoveAsync("Block spam", 2);
+
+        Assert.Equal(["Flag invoices", "Block spam", "Star the team", "Catch-all"], cut.Tb().Sortable("Rules").Items);
+    }
+
+    [Fact]
+    public async Task Sortable_ShouldThrow_WhenMovingPastTheEndOrInADisabledList()
+    {
+        List<string> rules = ["Block spam", "Flag invoices"];
+        var cut = RenderSortable(rules, move => move.ApplyTo(rules));
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => cut.Tb().Sortable("Rules").MoveAsync("Block spam", 2));
+        cut.Render(parameters => parameters.Add(sortable => sortable.Disabled, true));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Sortable("Rules").MoveAsync("Block spam", 1));
+        Assert.Equal(["Block spam", "Flag invoices"], rules);
+    }
+
+    [Fact]
+    public async Task Grid_ShouldMoveARowAcrossPages_WhenMovedToAPlaceAmongAllTheRows()
+    {
+        List<Trail> trails = [new("Pine Hollow"), new("Cedar Flats"), new("Lake camp")];
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
+            .Add(grid => grid.Items, trails).Add(grid => grid.PageSize, 2)
+            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Trail>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Trail>.Field),
+                    (System.Linq.Expressions.Expression<Func<Trail, object?>>)(trail => trail.Name));
+                builder.CloseComponent();
+            })));
+
+        await cut.Tb().Grid("Trails").MoveRowAsync("Pine Hollow", 2);
+        Assert.Equal(["Cedar Flats", "Lake camp", "Pine Hollow"], trails.Select(trail => trail.Name));
+        Assert.Equal(2, cut.Tb().Pagination().Page);
+        await cut.Tb().Grid("Trails").GoToPageAsync(1);
+        await cut.Tb().Grid("Trails").MoveRowAsync("Lake camp", 0);
+
+        Assert.Equal(["Lake camp", "Cedar Flats", "Pine Hollow"], trails.Select(trail => trail.Name));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => cut.Tb().Grid("Trails").MoveRowAsync("Lake camp", 3));
+    }
+
+    [Fact]
+    public async Task Grid_ShouldThrow_WhenMovingARowTheGridCantMove()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
+            .Add(grid => grid.Items, [new("Pine Hollow"), new("Cedar Flats")])
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Trail>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Trail>.Field),
+                    (System.Linq.Expressions.Expression<Func<Trail, object?>>)(trail => trail.Name));
+                builder.CloseComponent();
+            })));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Grid("Trails").MoveRowAsync("Pine Hollow", 1));
+    }
+
+    [Fact]
     public async Task DatePicker_ShouldTypeTheDateInTheFieldsFormat_WhenChosen()
     {
         DateOnly? value = null;
@@ -907,6 +999,13 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     private IRenderedComponent<ContainerFragment> RenderForm() => Render(BuildForm);
+
+    private IRenderedComponent<TbSortable<string>> RenderSortable(List<string> items,
+        Action<SortableMove<string>> onMove, Func<SortableMove<string>, Task<MoveCheck>>? canMove = null) =>
+        Render<TbSortable<string>>(parameters => parameters.Add(sortable => sortable.Label, "Rules")
+            .Add(sortable => sortable.Items, items).Add(sortable => sortable.OnMove, onMove)
+            .Add(sortable => sortable.CanMove, canMove)
+            .Add(sortable => sortable.ItemTemplate, item => builder => builder.AddContent(0, item)));
 
     private IRenderedComponent<TbRichTextEditor> RenderRichTextEditor(
         Action<ComponentParameterCollectionBuilder<TbRichTextEditor>> parameters)

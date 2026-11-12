@@ -26,10 +26,22 @@
         <CellTemplate>@context</CellTemplate>
     </TbColumn>
 </TbDataGrid>
+@* Rows far wider than the grid's own scroll box, whose middles are out of view. *@
+<div style="width: 320px">
+    <TbDataGrid TItem="string" Items="_camps" AriaLabel="Camps" Height="160px" OnRowMove="move => move.ApplyTo(_camps)">
+        <TbColumn TItem="string" Title="Camp" Id="camp">
+            <CellTemplate>@context</CellTemplate>
+        </TbColumn>
+        <TbColumn TItem="string" Title="Notes" Id="notes">
+            <CellTemplate><span style="display: inline-block; width: 900px">Notes on @context</span></CellTemplate>
+        </TbColumn>
+    </TbDataGrid>
+</div>
 
 @code {
     private readonly List<string> _rules = ["Block spam", "Flag invoices", "Star the team", "Catch-all"];
     private readonly List<string> _stops = ["Trailhead", "Lake camp", "Summit Gate"];
+    private readonly List<string> _camps = ["Pine camp", "Fern camp", "Ridge camp"];
     private readonly List<string> _crews = ["North crew", "South crew"];
     private readonly List<string> _members = ["Ada", "Ben"];
 

@@ -41,4 +41,20 @@ public class ScopedHelpersTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(frame.GetByTestId("counts")).ToHaveTextAsync("2,0");
         await Expect(frame.GetByRole(AriaRole.Row).Nth(1)).ToContainTextAsync("Stove");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tb_ShouldDragItemsAndRowsInTheFrame_WhenTheFrameIsSetInFromThePage(string browser)
+    {
+        var page = await OpenAsync(browser, "/frame-helpers");
+        var frame = page.FrameLocator("iframe[title=Sortable]");
+
+        await frame.Tb().Sortable("Rules").DragAfterAsync("Block spam", "Star the team");
+        await frame.Tb().Grid("Route stops").DragRowBeforeAsync("Summit Gate", "Trailhead");
+
+        await Expect(frame.GetByTestId("order"))
+            .ToHaveTextAsync("Flag invoices, Star the team, Block spam, Catch-all");
+        var stops = frame.GetByRole(AriaRole.Table, new() { Name = "Route stops" })
+            .Locator("tbody td[data-column=stop]");
+        await Expect(stops).ToHaveTextAsync(["Summit Gate", "Trailhead", "Lake camp"]);
+    }
 }

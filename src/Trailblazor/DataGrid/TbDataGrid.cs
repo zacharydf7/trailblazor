@@ -93,6 +93,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private ControlTelemetry? _telemetry;
     private int _columnVersion;
     private int _rowVersion;
+    // Counts the moves the user asked for that the app has answered, made or refused, so a test can wait for its own.
+    private int _rowMovesAnswered;
     private object? _arrangedFor;
     private object? _rowOptions;
 
@@ -1564,6 +1566,19 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // The app moves the item in its own list, often in place, so the rows are arranged again, on the page the row
     // went to. A key press keeps focus on the moved row's handle.
     private async Task MoveRowAsync(int from, int to, string input)
+    {
+        try
+        {
+            await MoveRowCoreAsync(from, to, input);
+        }
+        finally
+        {
+            _rowMovesAnswered++;
+            StateHasChanged();
+        }
+    }
+
+    private async Task MoveRowCoreAsync(int from, int to, string input)
     {
         if (!CanReorder || from < 0
             || !await Mover.MoveAsync(() => AllItems, from, to, CanMoveRow, OnRowMove, LabelOf, moved: null))

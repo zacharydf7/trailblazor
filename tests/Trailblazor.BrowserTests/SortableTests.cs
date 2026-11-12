@@ -136,6 +136,69 @@ public class SortableTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("order")).ToHaveTextAsync("Flag invoices, Block spam, Star the team, Catch-all");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SortableHelpers_ShouldMoveByMenuAndStopWhereRefused_WhenMovingAnItemToAPlace(string browser)
+    {
+        // Skips waiting for the page to turn interactive, so the order is only read after the helpers' own waits.
+        var page = await OpenStaticAsync(browser, "/sortable");
+        var rules = page.Tb().Sortable("Rules");
+
+        await rules.MoveAsync("Block spam", 2);
+        Assert.Equal("Flag invoices, Star the team, Block spam, Catch-all",
+            await page.GetByTestId("order").TextContentAsync());
+        await rules.MoveAsync("Star the team", 0);
+        Assert.Equal(["Star the team", "Flag invoices", "Block spam", "Catch-all"], await rules.ItemsAsync());
+        await rules.MoveAsync("Flag invoices", 3);
+
+        Assert.Equal(["Star the team", "Flag invoices", "Block spam", "Catch-all"], await rules.ItemsAsync());
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => rules.MoveAsync("Catch-all", 4));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SortableHelpers_ShouldDropBeforeOrAfterAnItem_WhenDraggingByTheHandle(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/sortable");
+        var rules = page.Tb().Sortable("Rules");
+
+        await rules.DragAfterAsync("Block spam", "Star the team");
+        Assert.Equal("Flag invoices, Star the team, Block spam, Catch-all",
+            await page.GetByTestId("order").TextContentAsync());
+        await rules.DragBeforeAsync("Catch-all", "Flag invoices");
+        Assert.Equal("Flag invoices, Star the team, Block spam, Catch-all",
+            await page.GetByTestId("order").TextContentAsync());
+        await rules.DragBeforeAsync("Star the team", "Flag invoices");
+
+        Assert.Equal(["Star the team", "Flag invoices", "Block spam", "Catch-all"], await rules.ItemsAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task GridHelpers_ShouldMoveAndDragRows_WhenTheGridLetsRowsMove(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/sortable");
+        var grid = page.Tb().Grid("Route stops");
+        var stops = page.GetByRole(AriaRole.Table, new() { Name = "Route stops" })
+            .Locator("tbody td[data-column=stop]");
+
+        await grid.MoveRowAsync("Trailhead", 2);
+        Assert.Equal(["Lake camp", "Summit Gate", "Trailhead"], await stops.AllInnerTextsAsync());
+        await grid.DragRowBeforeAsync("Trailhead", "Lake camp");
+        Assert.Equal(["Trailhead", "Lake camp", "Summit Gate"], await stops.AllInnerTextsAsync());
+        await grid.DragRowAfterAsync("Trailhead", "Summit Gate");
+
+        Assert.Equal(["Lake camp", "Summit Gate", "Trailhead"], await stops.AllInnerTextsAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task GridHelpers_ShouldDropInTheHandlesColumn_WhenRowsAreWiderThanTheGrid(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/sortable");
+        var camps = page.GetByRole(AriaRole.Table, new() { Name = "Camps" }).Locator("tbody td[data-column=camp]");
+
+        await page.Tb().Grid("Camps").DragRowAfterAsync("Pine camp", "Fern camp");
+
+        Assert.Equal(["Fern camp", "Pine camp", "Ridge camp"], await camps.AllInnerTextsAsync());
+    }
+
     // The lists and the grids hear drags and keys once their scripts have attached.
     private async Task<IPage> OpenReadyAsync(string browser)
     {

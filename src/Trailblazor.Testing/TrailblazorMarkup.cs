@@ -145,6 +145,18 @@ public sealed class TrailblazorMarkup
                 : $"No data grid is named \"{name}\".");
     });
 
+    /// <summary>The <c>TbSortable</c> with this label, or the only one in the markup when no label is given.
+    /// </summary>
+    public TbSortableDriver Sortable(string? name = null) => new(() =>
+    {
+        var lists = _findAll("[data-part=list][data-sortable]")
+            .Where(list => name is null || list.GetAttribute("aria-label") == name).ToList();
+        return lists.Count == 1 ? lists[0]
+            : throw new InvalidOperationException(name is null
+                ? $"Expected one sortable list, found {lists.Count}; name the one to use."
+                : $"No sortable list is named \"{name}\".");
+    });
+
     // A field's label names its control by for or aria-labelledby; a required field's label ends with an asterisk. A
     // field with no label, such as one editing a grid's cell, is named by its aria-label, as Playwright finds it too.
     private IElement Field(string label, params string[] controls)
@@ -1096,6 +1108,22 @@ public sealed class TbGridDriver
     public Task ClickRowAsync(string cell) =>
         Row(cell).TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
 
+    /// <summary>Moves the row with a cell whose text is exactly <paramref name="row"/> to <paramref name="index"/>
+    /// among all the rows, on every page, through its handle's menu as a user would: Move to start or Move to end for
+    /// the first or last place, else Move up or Move down a place at a time, so <c>CanMoveRow</c> and
+    /// <c>OnRowMove</c> see each step. A step the app refuses ends the move. The row must be on the page shown, and the
+    /// grid shows the page it lands on. Throws when the rows can't move or <paramref name="index"/> is past the last
+    /// row.</summary>
+    public Task MoveRowAsync(string row, int index) => HandleMenu.MoveAsync(
+        () => MovableRow(row).Children.First(cell => cell.ClassList.Contains("tb-data-grid__handle"))
+            .FirstElementChild!,
+        () => int.Parse(MovableRow(row).GetAttribute("data-index")!, CultureInfo.InvariantCulture),
+        int.Parse(_find().GetAttribute("data-count") ?? "0", CultureInfo.InvariantCulture), index, row);
+
+    private IElement MovableRow(string cell) => Row(cell) is var row && row.HasAttribute("data-index") ? row
+        : throw new InvalidOperationException("The grid's rows can't move: it needs an OnRowMove and in-memory Items, "
+            + "and mustn't be sorted, filtered or grouped.");
+
     /// <summary>Selects the row with a cell whose text is exactly this, with its checkbox or radio button, unless it
     /// is selected already.</summary>
     public Task SelectAsync(string row)
@@ -1292,6 +1320,71 @@ public sealed class TbGridDriver
             : input.ChangeAsync(new ChangeEventArgs { Value = text });
 }
 
+/// <summary>A <c>TbSortable</c>, found by its label.</summary>
+public sealed class TbSortableDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbSortableDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The items' text, in the order they show.</summary>
+    public IReadOnlyList<string> Items => [.. ItemElements().Select(TextOf)];
+
+    /// <summary>Moves the item whose text is exactly <paramref name="item"/> to <paramref name="index"/>, through its
+    /// handle's menu as a user would: Move to start or Move to end for the first or last place, else Move up or Move
+    /// down a place at a time, so <c>CanMove</c> and <c>OnMove</c> see each step. A step the app refuses ends the
+    /// move. Throws when the list is disabled or <paramref name="index"/> is past its last item.</summary>
+    public Task MoveAsync(string item, int index) => HandleMenu.MoveAsync(
+        () => Item(item).Children.First(child => child.GetAttribute("data-part") == "handle"),
+        () => ItemElements().IndexOf(Item(item)), ItemElements().Count, index, item);
+
+    private List<IElement> ItemElements() =>
+        [.. _find().Children.Where(child => child.GetAttribute("data-part") == "item")];
+
+    private static string TextOf(IElement item) =>
+        item.Children.First(child => child.ClassList.Contains("tb-sortable__content")).TextContent.Trim();
+
+    private IElement Item(string text)
+    {
+        var items = ItemElements().Where(item => TextOf(item) == text).ToList();
+        return items.Count == 1 ? items[0]
+            : throw new InvalidOperationException($"Expected one item that reads \"{text}\", found {items.Count}.");
+    }
+}
+
+// Moves an item or a row through its handle's menu, whose items are Move up, Move down, Move to start and Move to end
+// in that order, so they're found by place, whatever the app's labels call them.
+internal static class HandleMenu
+{
+    internal static async Task MoveAsync(Func<IElement> handle, Func<int> place, int count, int index, string name)
+    {
+        // A grid whose rows can't move has no count, so finding the row first throws the reason, not an out-of-range
+        // index.
+        var from = place();
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, count);
+        while (from != index)
+        {
+            var menu = handle();
+            var trigger = menu.QuerySelector("[aria-haspopup=menu]")!;
+            if (trigger.HasAttribute("disabled") || trigger.GetAttribute("aria-disabled") == "true")
+            {
+                throw new InvalidOperationException($"\"{name}\" can't move, because its list is disabled.");
+            }
+
+            var step = index == 0 ? 2 : index == count - 1 ? 3 : index < from ? 0 : 1;
+            await TbMenuDriver.ClickAsync(trigger, menu.QuerySelectorAll("[role=menuitem]")[step]);
+            var now = place();
+            if (now == from)
+            {
+                return;
+            }
+
+            from = now;
+        }
+    }
+}
+
 /// <summary>A <c>TbTabs</c>, found by its accessible name.</summary>
 public sealed class TbTabsDriver
 {
@@ -1360,10 +1453,14 @@ public sealed class TbMenuDriver
             list = ListOf(Find(list, name, "[data-part=submenu-trigger]", "submenu"));
         }
 
-        var item = Find(list, path[^1], Items, "item");
+        return ClickAsync(trigger, Find(list, path[^1], Items, "item"));
+    }
+
+    internal static Task ClickAsync(IElement trigger, IElement item)
+    {
         if (item.GetAttribute("aria-disabled") == "true")
         {
-            throw new InvalidOperationException($"The menu item \"{path[^1]}\" is disabled.");
+            throw new InvalidOperationException($"The menu item \"{NameOf(item)}\" is disabled.");
         }
 
         if (trigger.HasAttribute("data-static") && item.TagName != "A")

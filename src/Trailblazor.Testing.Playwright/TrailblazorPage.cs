@@ -111,6 +111,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbDataGrid</c> whose table has this accessible name.</summary>
     public TbGridLocator Grid(string name) => new(scope, name);
 
+    /// <summary>The <c>TbSortable</c> with this label.</summary>
+    public TbSortableLocator Sortable(string name) => new(scope, name);
+
     /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
     public TbPopoverLocator Popover(string trigger) => new(scope, trigger);
 
@@ -594,8 +597,7 @@ public sealed class TbTreeLocator(ILocator scope, string name)
     /// move it inside that row. Both rows must be showing, with their parents open.</summary>
     public Task DragIntoAsync(string[] row, string[] target) => DragAsync(row, target, 0.5f);
 
-    // A drag near the window's edge scrolls the page, so the target is brought to the middle first, and measured again
-    // once the drag has started with a short move. The drop lands at a fraction of the target row's height.
+    // A drag near the window's edge scrolls the page, so the target is brought to the middle first.
     private async Task DragAsync(string[] row, string[] target, float at)
     {
         await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
@@ -610,13 +612,7 @@ public sealed class TbTreeLocator(ILocator scope, string name)
         }
 
         await source.ScrollIntoViewIfNeededAsync();
-        var from = await BoxAsync(source, row);
-        await scope.Page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
-        await scope.Page.Mouse.DownAsync();
-        await scope.Page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2 + 8, new() { Steps = 2 });
-        var to = await BoxAsync(destination, target);
-        await scope.Page.Mouse.MoveAsync(to.X + to.Width / 2, to.Y + to.Height * at, new() { Steps = 10 });
-        await scope.Page.Mouse.UpAsync();
+        await PointerDrag.DragAsync(scope.Page, await BoxAsync(source, row), () => BoxAsync(destination, target), at);
     }
 
     // A virtualized tree renders only the rows in view, so a row it still has must show, clipped by the tree and the
@@ -923,6 +919,36 @@ public sealed class TbGridLocator(ILocator scope, string name)
         var id = await Header(column).GetAttributeAsync("data-column");
         return Row(row).Locator($"td[data-column=\"{id}\"]");
     }
+
+    /// <summary>Moves the row with a cell whose text is exactly <paramref name="row"/> to <paramref name="index"/>
+    /// among all the rows, on every page, through its handle's menu as a user would: Move to start or Move to end for
+    /// the first or last place, else Move up or Move down a place at a time, so <c>CanMoveRow</c> and
+    /// <c>OnRowMove</c> see each step. Waits for each step's answer, and a step the app refuses ends the move. The row
+    /// must be on the page shown, and the grid shows the page it lands on. Throws when the rows can't move or
+    /// <paramref name="index"/> is past the last row.</summary>
+    public Task MoveRowAsync(string row, int index) => HandleMoves.MoveAsync(Root, Handle(row), () => PlaceAsync(row),
+        async () => int.Parse(await Table.GetAttributeAsync("data-count") ?? "0", CultureInfo.InvariantCulture), index,
+        row);
+
+    /// <summary>Drags the row with a cell whose text is exactly <paramref name="row"/> by its handle onto the top half
+    /// of the row with a cell whose text is exactly <paramref name="target"/>, to move it just before that row, and
+    /// waits for the app's answer. Both rows must be on the page shown.</summary>
+    public Task DragRowBeforeAsync(string row, string target) => DragRowAsync(row, target, before: true);
+
+    /// <summary>Drags the row with a cell whose text is exactly <paramref name="row"/> by its handle onto the bottom
+    /// half of the row with a cell whose text is exactly <paramref name="target"/>, to move it just after that row, and
+    /// waits for the app's answer. Both rows must be on the page shown.</summary>
+    public Task DragRowAfterAsync(string row, string target) => DragRowAsync(row, target, before: false);
+
+    private async Task DragRowAsync(string row, string target, bool before) => await HandleMoves.DragAsync(Root, Root,
+        Handle(row), Row(target), before, await PlaceAsync(row), await PlaceAsync(target), row);
+
+    private ILocator Handle(string row) =>
+        Row(row).Locator(":scope > td > [data-part=handle] > [aria-haspopup=menu]");
+
+    private async Task<int> PlaceAsync(string row) => int.Parse(await Row(row).GetAttributeAsync("data-index")
+        ?? throw new InvalidOperationException("The grid's rows can't move: it needs an OnRowMove and in-memory "
+            + "Items, and mustn't be sorted, filtered or grouped."), CultureInfo.InvariantCulture);
 
     /// <summary>Sorts the rows by this column alone, ascending or descending, clicking its header until it shows that
     /// order, and waits for a <c>DataProvider</c>'s rows.</summary>

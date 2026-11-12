@@ -18,6 +18,8 @@ public sealed partial class TbSortable<TItem> : TbComponentBase
     private ItemMover<TItem>? _mover;
     private ControlTelemetry? _telemetry;
     private bool _disposed;
+    // Counts the moves the user asked for that the app has answered, made or refused, so a test can wait for its own.
+    private int _answered;
 
     /// <summary>The items, in the order they show. Apply each <see cref="OnMove"/> to them.</summary>
     [Parameter, EditorRequired]
@@ -178,22 +180,30 @@ public sealed partial class TbSortable<TItem> : TbComponentBase
     // Blazor may move the item's element to its new place, taking focus off its handle, so the handle gets it back.
     private async Task UserMoveAsync(int from, int to, string input)
     {
-        if (Disabled || !await MoveAsync(from, to))
+        try
         {
-            return;
-        }
+            if (Disabled || !await MoveAsync(from, to))
+            {
+                return;
+            }
 
-        Telemetry.Used(TelemetryName, "move", input);
-        if (input == "keyboard" && _handle is not null)
+            Telemetry.Used(TelemetryName, "move", input);
+            if (input == "keyboard" && _handle is not null)
+            {
+                try
+                {
+                    await _handle.InvokeVoidAsync("focusHandle", IdOf(Items[to]));
+                }
+                catch (JSDisconnectedException)
+                {
+                    // The circuit is gone, and the list went with it.
+                }
+            }
+        }
+        finally
         {
-            try
-            {
-                await _handle.InvokeVoidAsync("focusHandle", IdOf(Items[to]));
-            }
-            catch (JSDisconnectedException)
-            {
-                // The circuit is gone, and the list went with it.
-            }
+            _answered++;
+            StateHasChanged();
         }
     }
 

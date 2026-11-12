@@ -4,7 +4,7 @@
 @typeparam TItem
 @inherits TbComponentBase
 
-<div @attributes="AdditionalAttributes" data-part="grid" style="@Style"
+<div @attributes="AdditionalAttributes" data-part="grid" data-commits="@_rowMovesAnswered" style="@Style"
      class="@ClassNames.Join("tb-data-grid", ClassNames.Modifier("tb-data-grid", Size),
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
                 Height is null ? null : "tb-data-grid--scrolls", Virtualize ? "tb-data-grid--virtual" : null, Class)">
@@ -64,6 +64,7 @@
          aria-label="@(ScrollIsTabStop ? AriaLabel : null)"
          tabindex="@(ScrollIsTabStop ? 0 : null)">
         <table @ref="_table" role="@(IsGrid ? "grid" : null)" aria-label="@AriaLabel"
+               data-count="@(CanReorder ? _total : null)"
                aria-multiselectable="@(IsGrid && SelectionMode == SelectionMode.Multiple ? "true" : null)"
                data-selection="@(SelectionMode == SelectionMode.Multiple ? "multiple" : null)"
                data-select-all="@(SelectionMode == SelectionMode.Multiple && CanSelectAll ? "" : null)"
@@ -299,6 +300,7 @@
     private RenderFragment Row(TItem item, object key, bool selected, int at, string? rowClass, string? label,
         bool expanded) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
+             data-index="@(CanReorder ? at : null)"
              aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" aria-selected="@AriaSelected(selected)"
              data-tb-focus-root="@(EditMode == GridEditMode.Row && RowEditOf(key) is not null ? "" : null)"
              @ontbfocusleave="@((EditMode == GridEditMode.Row && RowEditOf(key) is { } leaving ? LeftHandler(leaving)

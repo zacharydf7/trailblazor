@@ -7,7 +7,8 @@
 <div @attributes="AdditionalAttributes" style="@Style"
      class="@ClassNames.Join("tb-sortable", Disabled ? "tb-sortable--disabled" : null, Class)">
     @* Safari drops a list's semantics when its markers are hidden, so the role is set as well. *@
-    <ul @ref="_list" role="list" aria-label="@Label" data-part="list" data-sortable class="tb-sortable__list">
+    <ul @ref="_list" role="list" aria-label="@Label" data-part="list" data-sortable
+        data-commits="@_answered" class="tb-sortable__list">
         @for (var index = 0; index < Items.Count; index++)
         {
             var item = Items[index];

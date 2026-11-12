@@ -209,3 +209,8 @@ Trailblazor.Testing.TbSelectDriver.UnchooseAsync(params string![]! options) -> S
 Trailblazor.Testing.TbSelectDriver.ClearAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbListBoxDriver.UnchooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbListBoxDriver.ClearAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Sortable(string? name = null) -> Trailblazor.Testing.TbSortableDriver!
+Trailblazor.Testing.TbSortableDriver
+Trailblazor.Testing.TbSortableDriver.Items.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbSortableDriver.MoveAsync(string! item, int index) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.MoveRowAsync(string! row, int index) -> System.Threading.Tasks.Task!
