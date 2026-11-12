@@ -24,6 +24,17 @@ internal sealed class HostCheck(string shown, TimeProvider time, ILogger? logger
         }
     }
 
+    public int Count
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _hosts;
+            }
+        }
+    }
+
     public void Detach()
     {
         lock (_lock)

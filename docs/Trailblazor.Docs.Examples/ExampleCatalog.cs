@@ -659,7 +659,7 @@ public static class ExampleCatalog
             ],
             TestingTip = "Find it as `GetByRole(AriaRole.Feed, new() { Name = \"Trail reports\" })` and an item as "
                 + "`GetByRole(AriaRole.Article, new() { Name = \"Report 12: Trail 13\" })`. Only items near the view "
-                + "are drawn, so call `ScrollToAsync` or press Page Down to reach a far one. In bUnit, `Items` draws "
+                + "are drawn, so scroll the feed or press Page Down until a far one shows. In bUnit, `Items` draws "
                 + "the first ones.",
         },
         new("image", "Image", ExampleCategory.Content,
@@ -5717,8 +5717,10 @@ public static class ExampleCatalog
             [
                 "In bUnit, raise one input event with the whole code, as the browser reports it: "
                     + "`cut.Find(\"[data-part=input]\").Input(\"246810\")`.",
-                "In Playwright, fill it by its label: "
-                    + "`await page.GetByLabel(\"Verification code\").FillAsync(\"246810\")`.",
+                "In Playwright, wait for the input's `data-ready`, which comes once the page is interactive and "
+                    + "the field filters what's typed, then fill it by its label: `var code = "
+                    + "page.GetByLabel(\"Verification code\"); await Expect(code).ToHaveAttributeAsync(\"data-ready\", "
+                    + "\"\"); await code.FillAsync(\"246810\");`.",
             ],
         },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,

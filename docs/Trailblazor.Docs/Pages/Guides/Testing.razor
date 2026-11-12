@@ -115,6 +115,17 @@
                         <td>Replaces the editor's text with this HTML, keeping only the formats it allows.</td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>TransferList(label)</code></th>
+                        <td>
+                            Moves items to the chosen list with <code>MoveAsync</code> and back with
+                            <code>MoveBackAsync</code>, and reads the chosen ones with <code>Chosen</code>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Calendar(label).ChooseAsync(date)</code></th>
+                        <td>Picks a date as a user would, through the calendar's years, months and days.</td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Menu(trigger).ChooseAsync(path)</code></th>
                         <td>
                             Clicks an item by its name, through the submenus named before it, and throws for a disabled
@@ -146,7 +157,11 @@
                         <th scope="row"><code>Grid(name)</code></th>
                         <td>
                             Clicks or selects a row by a cell's text, with <code>ClickRowAsync</code> and
-                            <code>SelectAsync</code>, and filters a column with <code>FilterAsync</code>.
+                            <code>SelectAsync</code>, filters a column with <code>FilterAsync</code> or picks a filter's
+                            values with <code>FilterChoicesAsync</code>, and resizes a column with
+                            <code>ResizeColumnAsync</code>. Reads the column headers with <code>Columns</code>, a
+                            column's total with <code>Total</code> and each group's totals with
+                            <code>GroupTotals</code>.
                         </td>
                     </tr>
                 </tbody>
@@ -179,9 +194,10 @@
             <li><code>Content</code>, the dialog's component.</li>
             <li><code>Reference</code>, to close the dialog or await its result.</li>
         </ul>
-        <DocsCallout Tone="Tone.Warning" Title="Don't render a TbRoot of your own">
+        <DocsCallout Tone="Tone.Warning" Title="One TbRoot per test">
             <code>ShowDialogAsync</code> renders one for you, and a second call in the same test opens its dialog in
-            that same <code>TbRoot</code>.
+            that same <code>TbRoot</code>. A test that renders its own, such as one beside the page it tests, calls
+            <code>root.ShowDialogAsync&lt;TDialog&gt;()</code> on it instead, so the dialog shows once.
         </DocsCallout>
         <CodeBlock Label="Testing a dialog in bUnit" Code="@BunitDialog" />
 
@@ -210,6 +226,12 @@
             <li>Await the click.</li>
         </ol>
         <CodeBlock Label="Checking the dialogs a page opens" Code="@FakeDialogs" />
+        <TbText>
+            To use a dialog's own controls, render a <code>TbRoot</code> before the page, as a layout does. The dialog
+            shows in the root's markup, so <code>root.Tb()</code> finds its fields and <code>root.Find</code> its
+            buttons.
+        </TbText>
+        <CodeBlock Label="Using a dialog's controls in bUnit" Code="@PageDialogControls" />
 
         <DocsHeading Id="announcements" Text="Test what screen readers hear" Class="docs-section" />
         <TbText>
@@ -363,11 +385,11 @@
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row">The app to settle</th>
+                        <th scope="row">The result of an action</th>
                         <td>
-                            A page-level wait that holds until Blazor has no render or server call in flight, such as a
-                            test library's wait-for-idle helper. It covers what the markers can't, such as the result of
-                            a click whose handler is still running.
+                            The result itself, asserted with <code>Expect</code>, which retries until it shows, even
+                            when a click's handler is still running. Neither Blazor nor Playwright has a wait for a page
+                            with nothing left to do.
                         </td>
                     </tr>
                 </tbody>
@@ -585,6 +607,11 @@
             + "`RemoveAsync(tag)` clicks its remove button, and `Tags` is the tags, for assertions."),
         new("Rich text editor", "Its label", "`RichTextEditor(label).EnterAsync(html)` pastes the HTML over the text "
             + "and leaves the editor; `Input` is the editing area, for typing and reading its text."),
+        new("Transfer list", "Its label", "`TransferList(label).MoveAsync(items)` moves items to the chosen list, "
+            + "`MoveBackAsync(items)` moves them back, and `ChosenAsync()` reads the chosen ones."),
+        new("Calendar", "Its label", "`Calendar(label).ChooseAsync(date)` picks a date as a user would, through the "
+            + "calendar's years, months and days."),
+        new("Pagination", "Its name", "`Pagination(name).GoToPageAsync(number)` goes to a page."),
         new("Tree", "Its name", "`Tree(name)` expands, selects, checks and drags rows by the texts along their path."),
         new("Tree select", "Its label", "`TreeSelect(label)` chooses, checks and unchecks items by the texts along "
             + "their path, `FilterAsync(text)` types in its filter box, and `TextAsync()` reads what the field shows."),
@@ -692,6 +719,16 @@
 
         dialogs.Answer = confirm => confirm.Title == "Delete trail?";
         await page.Find("button.delete").ClickAsync(new());
+        """;
+
+    private const string PageDialogControls = """
+        var root = Render<TbRoot>();
+        var page = Render<TrailsPage>();
+
+        var click = page.Find("button.edit").ClickAsync(new());
+        await root.Tb().Select("Region").ChooseAsync("North ridge");
+        await root.Find("[data-testid=save]").ClickAsync(new());
+        await click;
         """;
 
     private const string Contract = """

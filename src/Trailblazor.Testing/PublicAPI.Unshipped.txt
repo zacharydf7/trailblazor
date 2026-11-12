@@ -169,3 +169,5 @@ Trailblazor.Testing.TbTreeSelectDriver.CheckAsync(params string![]! path) -> Sys
 Trailblazor.Testing.TbTreeSelectDriver.UncheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTreeSelectDriver.FilterAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.TreeSelect(string! label) -> Trailblazor.Testing.TbTreeSelectDriver!
+static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog, TResult>(this Bunit.IRenderedComponent<Trailblazor.TbRoot!>! root, string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, TResult>!>!
+static Trailblazor.Testing.TrailblazorBunitExtensions.ShowDialogAsync<TDialog>(this Bunit.IRenderedComponent<Trailblazor.TbRoot!>! root, string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.Testing.TestDialog<TDialog!, bool>!>!

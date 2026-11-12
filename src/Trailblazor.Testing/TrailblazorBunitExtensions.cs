@@ -53,21 +53,54 @@ public static class TrailblazorBunitExtensions
     /// <see cref="TestDialog{TDialog, TResult}.Content"/>, and close it or await its result through its
     /// <see cref="TestDialog{TDialog, TResult}.Reference"/>. Call <see cref="AddTrailblazor"/> first, and leave the
     /// renderer interactive, since dialogs open only in interactive sessions. Later calls in the same test use the same
-    /// <see cref="TbRoot"/>; don't render another one yourself, or every dialog shows in both.</summary>
-    public static async Task<TestDialog<TDialog, TResult>> ShowDialogAsync<TDialog, TResult>(this BunitContext context,
+    /// <see cref="TbRoot"/>. A test that renders a <see cref="TbRoot"/> of its own, such as one beside the page it
+    /// tests, calls <c>ShowDialogAsync</c> on that root instead.</summary>
+    /// <exception cref="InvalidOperationException">The test has rendered a <see cref="TbRoot"/> of its own, in which
+    /// the dialog would also show.</exception>
+    public static Task<TestDialog<TDialog, TResult>> ShowDialogAsync<TDialog, TResult>(this BunitContext context,
         string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent<TResult>
     {
-        if (!Roots.TryGetValue(context, out var root) || root.IsDisposed)
+        var cached = Roots.TryGetValue(context, out var root) && !root.IsDisposed;
+        if (!cached && context.Services.GetRequiredService<DialogService>().Hosts.Count > 0)
+        {
+            throw new InvalidOperationException("The test has rendered a TbRoot of its own, so call ShowDialogAsync "
+                + "on it instead. Otherwise the dialog would show in both roots.");
+        }
+
+        if (!cached)
         {
             root = context.Render<TbRoot>();
             Roots.AddOrUpdate(context, root);
         }
 
-        var dialogs = context.Services.GetRequiredService<IDialogService>();
+        return root!.ShowDialogAsync<TDialog, TResult>(title, parameters, options);
+    }
+
+    /// <summary>Opens a dialog in a <see cref="TbRoot"/> the test rendered itself, such as one beside the page it
+    /// tests, as <c>this.ShowDialogAsync</c> does in the root it renders for you.</summary>
+    /// <exception cref="InvalidOperationException">The test has rendered another <see cref="TbRoot"/>, in which the
+    /// dialog would also show.</exception>
+    public static async Task<TestDialog<TDialog, TResult>> ShowDialogAsync<TDialog, TResult>(
+        this IRenderedComponent<TbRoot> root, string? title = null,
+        Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+        where TDialog : TbDialogContent<TResult>
+    {
+        if (root.Services.GetRequiredService<DialogService>().Hosts.Count > 1)
+        {
+            throw new InvalidOperationException("The test has rendered another TbRoot too, so the dialog would show "
+                + "in both roots. Render one TbRoot per test.");
+        }
+
+        var dialogs = root.Services.GetRequiredService<IDialogService>();
         var reference = await root.InvokeAsync(() => dialogs.Show<TDialog, TResult>(title, parameters, options));
         return new(root, reference);
     }
+
+    /// <summary>Opens a dialog with no result in a <see cref="TbRoot"/> the test rendered itself.</summary>
+    public static Task<TestDialog<TDialog, bool>> ShowDialogAsync<TDialog>(this IRenderedComponent<TbRoot> root,
+        string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
+        where TDialog : TbDialogContent => root.ShowDialogAsync<TDialog, bool>(title, parameters, options);
 
     /// <summary>Opens a dialog with no result for a test, as <c>ShowDialogAsync&lt;TDialog, TResult&gt;</c> does.
     /// </summary>

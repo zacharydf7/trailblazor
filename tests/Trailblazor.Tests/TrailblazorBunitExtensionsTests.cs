@@ -130,6 +130,65 @@ public class TrailblazorBunitExtensionsTests : BunitContext
     }
 
     [Fact]
+    public async Task ShowDialogAsync_ShouldShowTheDialogOnce_WhenCalledOnARootTheTestRendered()
+    {
+        this.AddTrailblazor();
+        var root = Render<TbRoot>();
+
+        var dialog = await root.ShowDialogAsync<NoticeDialog>("Trail notice");
+
+        Assert.Same(root, dialog.Root);
+        Assert.Single(root.FindAll("dialog"));
+    }
+
+    [Fact]
+    public async Task RootTb_ShouldDriveTheDialogAPageOpens_WhenTheTestRendersTheRootBesideThePage()
+    {
+        this.AddTrailblazor();
+        var root = Render<TbRoot>();
+        var page = Render<DistancePage>();
+
+        var click = page.Find("button").ClickAsync(new());
+        await root.Tb().NumberField("Distance").EnterAsync("12");
+        await root.Find("[data-testid=save]").ClickAsync(new());
+        await click;
+
+        Assert.Equal("12 km", page.Find("output").TextContent);
+    }
+
+    [Fact]
+    public async Task ShowDialogAsync_ShouldThrow_WhenTheTestRendersARootOfItsOwnAfterTheFirstCall()
+    {
+        this.AddTrailblazor();
+        await this.ShowDialogAsync<NoticeDialog>("Trail notice");
+        Render<TbRoot>();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => this.ShowDialogAsync<NoticeDialog>("Trail notice"));
+    }
+
+    [Fact]
+    public async Task RootShowDialogAsync_ShouldThrow_WhenTheTestRenderedAnotherRoot()
+    {
+        this.AddTrailblazor();
+        await this.ShowDialogAsync<NoticeDialog>("Trail notice");
+        var root = Render<TbRoot>();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => root.ShowDialogAsync<NoticeDialog>("Trail notice"));
+    }
+
+    [Fact]
+    public async Task ShowDialogAsync_ShouldThrow_WhenTheTestRenderedARootOfItsOwn()
+    {
+        this.AddTrailblazor();
+        Render<TbRoot>();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => this.ShowDialogAsync<NoticeDialog>("Trail notice"));
+
+        Assert.Contains("ShowDialogAsync on it", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ShowDialogAsync_ShouldShowADialogWithNoResult_WhenGivenOnlyTheDialogType()
     {
         this.AddTrailblazor();
@@ -184,6 +243,44 @@ public class TrailblazorBunitExtensionsTests : BunitContext
     }
 
     private sealed class NoticeDialog : TbDialogContent;
+
+    private sealed class DistancePage : ComponentBase
+    {
+        private string _shown = "";
+
+        [Inject]
+        private IDialogService Dialogs { get; set; } = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, async () =>
+                _shown = $"{(await Dialogs.Show<DistanceDialog, int>("Distance").Result).Value} km"));
+            builder.CloseElement();
+            builder.OpenElement(2, "output");
+            builder.AddContent(3, _shown);
+            builder.CloseElement();
+        }
+    }
+
+    private sealed class DistanceDialog : TbDialogContent<int>
+    {
+        private int _distance;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbNumberField<int>>(0);
+            builder.AddAttribute(1, nameof(TbNumberField<int>.Label), "Distance");
+            builder.AddAttribute(2, nameof(TbNumberField<int>.Value), _distance);
+            builder.AddAttribute(3, nameof(TbNumberField<int>.ValueChanged),
+                EventCallback.Factory.Create<int>(this, distance => _distance = distance));
+            builder.CloseComponent();
+            builder.OpenElement(4, "button");
+            builder.AddAttribute(5, "data-testid", "save");
+            builder.AddAttribute(6, "onclick", EventCallback.Factory.Create(this, () => Dialog.CloseAsync(_distance)));
+            builder.CloseElement();
+        }
+    }
 
     // Content that reads how it renders, as fields and uploads do, finds itself interactive, as on a page.
     private sealed class RenameDialog : TbDialogContent<string>
