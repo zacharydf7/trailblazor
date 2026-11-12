@@ -223,7 +223,12 @@ public class ColorPickerPadTests(BrowserFixture fixture) : BrowserTest(fixture)
             .GetByRole(AriaRole.Button, new() { Name = "Choose a color" });
         await Expect(trigger).ToHaveAttributeAsync("data-ready", "");
         await trigger.ClickAsync();
-        return (page, ColorPickerTests.Picker(page).Locator("[data-part=pad]"));
+        // The pad's script attaches separately from the trigger's, so a ready trigger doesn't mean a drag is heard.
+        // The popup is placed a frame after it opens, so hovering the pad waits for its box to stop moving.
+        var pad = ColorPickerTests.Picker(page).Locator("[data-part=pad]");
+        await Expect(pad).ToHaveAttributeAsync("data-ready", "");
+        await pad.HoverAsync();
+        return (page, pad);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
