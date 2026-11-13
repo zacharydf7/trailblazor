@@ -1,3 +1,4 @@
+using System.Globalization;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -44,6 +45,9 @@ public class TbViewportTests : BunitContext
         return handle;
     }
 
+    // The viewport formats the zoom with the current culture, so it reads "125%" or "125 %".
+    private static string Percent(double zoom) => zoom.ToString("P0", CultureInfo.CurrentCulture);
+
     private static ViewportReport ReportOf(BunitJSInterop interop) =>
         ((DotNetObjectReference<ViewportReport>)interop.Invocations["attachViewport"].Single().Arguments[1]!).Value;
 
@@ -56,7 +60,7 @@ public class TbViewportTests : BunitContext
         Assert.Equal(("region", "Trail map", "0"), (surface.GetAttribute("role"), surface.GetAttribute("aria-label"),
             surface.GetAttribute("tabindex")));
         Assert.NotNull(surface.QuerySelector("[data-part=content] img"));
-        Assert.Equal(["Zoom out", "Zoom 100%", "Zoom in"],
+        Assert.Equal(["Zoom out", $"Zoom {Percent(1)}", "Zoom in"],
             cut.FindAll("[data-part=controls] [aria-label]").Select(control => control.GetAttribute("aria-label")));
         Assert.Equal(("1", "None"), (cut.Find("[data-part=viewport]").GetAttribute("data-zoom"),
             cut.Find("[data-part=viewport]").GetAttribute("data-fit")));
@@ -71,7 +75,8 @@ public class TbViewportTests : BunitContext
 
         Assert.Equal("--tb-viewport-zoom: 2; --tb-viewport-height: 30rem;",
             cut.Find("[data-part=viewport]").GetAttribute("style"));
-        Assert.Equal("Zoom 200%", cut.Find("[data-part=zoom-menu] [aria-haspopup=menu]").GetAttribute("aria-label"));
+        Assert.Equal($"Zoom {Percent(2)}",
+            cut.Find("[data-part=zoom-menu] [aria-haspopup=menu]").GetAttribute("aria-label"));
     }
 
     [Fact]
@@ -115,7 +120,8 @@ public class TbViewportTests : BunitContext
 
         Assert.Equal(1.25, cut.Tb().Viewport("Trail map").Zoom);
         Assert.Equal([1.25], Zooms);
-        announcer.WaitForAssertion(() => Assert.Equal("Zoom 125%", announcer.FindAll("[role=status] p").Last().TextContent));
+        announcer.WaitForAssertion(() => Assert.Equal($"Zoom {Percent(1.25)}",
+            announcer.FindAll("[role=status] p").Last().TextContent));
     }
 
     [Fact]
@@ -254,7 +260,8 @@ public class TbViewportTests : BunitContext
         Assert.Equal((2, ViewportFit.None), (cut.Tb().Viewport("Trail map").Zoom, cut.Tb().Viewport("Trail map").Fit));
         Assert.Equal([2d], Zooms);
         Assert.Equal([ViewportFit.None], Fits);
-        announcer.WaitForAssertion(() => Assert.Equal("Zoom 200%", announcer.FindAll("[role=status] p").Last().TextContent));
+        announcer.WaitForAssertion(() => Assert.Equal($"Zoom {Percent(2)}",
+            announcer.FindAll("[role=status] p").Last().TextContent));
     }
 
     [Fact]
@@ -281,7 +288,7 @@ public class TbViewportTests : BunitContext
             ActualSize = "Real size",
         }));
 
-        Assert.Equal(["Farther", "Scale 100%", "Closer"],
+        Assert.Equal(["Farther", $"Scale {Percent(1)}", "Closer"],
             cut.FindAll("[data-part=controls] [aria-label]").Select(control => control.GetAttribute("aria-label")));
         Assert.Equal(["Across", "Whole", "Real size"],
             cut.FindAll("[role=menuitemradio], [role=menuitem]").Select(item => item.TextContent.Trim()));
