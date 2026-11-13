@@ -4307,7 +4307,8 @@
         box-shadow: var(--tb-shadow-lg), 0 0 0 100vmax var(--tb-color-scrim);
     }
 
-    .tb-dialog::backdrop {
+    /* A non-modal dialog in the top layer is a manual popover, which has a backdrop too; only a modal dims the page. */
+    .tb-dialog:is(:modal, [data-leaving-modal])::backdrop {
         background: var(--tb-color-scrim);
         transition: opacity var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
     }

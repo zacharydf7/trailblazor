@@ -529,6 +529,8 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
 
             if (entry.modal && entry.topLayer) {
                 hide();
+                // Shown again as a popover it's no longer :modal, so this mark keeps its scrim while it fades.
+                dialog.dataset.leavingModal = '';
                 show(dialog, false, true);
                 // Shown again, it would start its transition afresh, which WebKit sometimes drops, so it fades out as
                 // an animation with the transition's timing; reduced motion makes that 0s. A drawer also slides back

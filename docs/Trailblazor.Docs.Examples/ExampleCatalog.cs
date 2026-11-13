@@ -6857,11 +6857,11 @@ public static class ExampleCatalog
                 new("saving", "Saving and errors", "While a dialog saves, set `Loading` on its button, and "
                     + "`CanDismiss` can keep it open until the work ends. Show a failure in the dialog with an alert, "
                     + "so the user keeps what they typed and can try again.", typeof(DialogSavingExample)),
-                new("non-modal", "Non-modal dialogs", "`Modal = false` leaves the page usable. Such a dialog can be "
-                    + "`Draggable` by its header and `Resizable` by its bottom-end grip. Neither needs dragging: the "
-                    + "header gains a Move button whose menu picks a place, and the grip is a Resize button whose menu "
-                    + "picks a size. `Minimizable` and `Maximizable` add header "
-                    + "buttons.", typeof(DialogWindowExample), typeof(RenameDialog)),
+                new("non-modal", "Non-modal dialogs", "`Modal = false` leaves the page usable and undimmed. Such a "
+                    + "dialog can be `Draggable` by its header and `Resizable` by its bottom-end grip. Neither needs "
+                    + "dragging: the header gains a Move button whose menu picks a place, and the grip is a Resize "
+                    + "button whose menu picks a size. `Minimizable` and `Maximizable` add header buttons.",
+                    typeof(DialogWindowExample), typeof(RenameDialog)),
                 new("changing", "Changing an open dialog's window", "An open dialog can change. Set `Modal`, `Size`, "
                     + "`Position`, `WindowState`, `ShowHeader` or `CloseButton` on its reference, or on `Dialog` from "
                     + "inside a `TbDialogContent<TResult>`, as this notes dialog does.",

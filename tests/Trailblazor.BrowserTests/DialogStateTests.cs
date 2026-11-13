@@ -41,13 +41,26 @@ public class DialogStateTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(dialog.GetByRole(AriaRole.Button, new() { Name = "Pop in" })).ToBeFocusedAsync();
         Assert.False(await IsModalAsync(dialog));
+        Assert.Equal(Transparent, await BackdropColorAsync(dialog));
         await page.GetByTestId("page-button").ClickAsync();
         await Expect(page.GetByTestId("page-clicks")).ToHaveTextAsync("1");
         await PressAsync(dialog, "Pop in");
         await Expect(dialog.GetByRole(AriaRole.Button, new() { Name = "Pop out" })).ToBeFocusedAsync();
         Assert.True(await IsModalAsync(dialog));
+        Assert.NotEqual(Transparent, await BackdropColorAsync(dialog));
         await page.Keyboard.PressAsync("Escape");
         await Expect(page.GetByTestId("result")).ToHaveTextAsync("editor cancelled");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldLeaveThePageUndimmed_WhenOpenedModeless(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Panel" }).ClickAsync();
+        var panel = page.GetByRole(AriaRole.Dialog, new() { Name = "Panel" });
+        await Expect(panel).ToBeVisibleAsync();
+
+        Assert.Equal(Transparent, await BackdropColorAsync(panel));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -126,4 +139,9 @@ public class DialogStateTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static Task<bool> IsModalAsync(ILocator dialog) =>
         dialog.EvaluateAsync<bool>("dialog => dialog.matches(':modal')");
+
+    private const string Transparent = "rgba(0, 0, 0, 0)";
+
+    private static Task<string> BackdropColorAsync(ILocator dialog) =>
+        dialog.EvaluateAsync<string>("dialog => getComputedStyle(dialog, '::backdrop').backgroundColor");
 }

@@ -263,6 +263,8 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await page.Keyboard.PressAsync("Escape");
         await Expect(dialog).ToHaveAttributeAsync("data-leaving", "");
+        Assert.NotEqual("rgba(0, 0, 0, 0)",
+            await dialog.EvaluateAsync<string>("dialog => getComputedStyle(dialog, '::backdrop').backgroundColor"));
         // The dialog and its backdrop both fade as the dialog lets the page go; WebKit lists no ::backdrop animation.
         var fading = await dialog.EvaluateAsync<bool[]>("""
             dialog => [false, true].map(backdrop => dialog.getAnimations({ subtree: true })

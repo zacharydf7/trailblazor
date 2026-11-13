@@ -35,6 +35,7 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [ ] A page with its own padding, width, minimum width or a both-edges gutter on the root holds still when a modal takes away the scrollbar. UNCONFIRMED
 - [ ] A page whose body scrolls under `html, body { height: 100% }` holds still when a modal takes away the scrollbar. UNCONFIRMED
 - [x] The page stays usable behind a non-modal dialog. `DialogTests.Dialog_ShouldLeaveThePageUsable_WhenNotModal`
+- [x] Only a modal dims the page, even when a dialog switches between modal and non-modal while open. `DialogStateTests.Dialog_ShouldLeaveThePageUndimmed_WhenOpenedModeless`, `DialogStateTests.Dialog_ShouldSwitchBetweenModalAndModelessAndKeepFocus_WhenItsContentAsks`
 - [x] A click or focus in a non-modal dialog behind another brings it to the front. `DialogWindowsTests.Window_ShouldComeToTheFront_WhenPressed`, `DialogWindowsTests.Window_ShouldComeToTheFront_WhenFocusMovesIntoIt`, `DialogWindowsTests.Window_ShouldComeToTheFront_WhenPressedOnThePageLayer`
 - [x] Coming to the front keeps focus where it is and raises no `OnFocus` or `OnBlur`. `DialogWindowsTests.Window_ShouldKeepFocusAndRaiseNoFieldEvents_WhenWindowsSwapPlaces`, `DialogWindowsTests.Window_ShouldComeToTheFrontAndKeepFocusElsewhere_WhenItsGripIsDragged`, `DialogWindowsTests.Window_ShouldFocusTheFieldOnce_WhenClickingItBringsItForward`
 - [x] The press that brings a dialog forward still reaches what it landed on. `DialogWindowsTests.Window_ShouldStillTakeTheClick_WhenTheClickBringsItForward`
