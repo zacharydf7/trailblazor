@@ -91,9 +91,8 @@ public class TreeGridTests(BrowserFixture fixture) : BrowserTest(fixture)
         var grid = page.Tb().Grid("Many files");
         var archive = Toggle(page, "Many files", "Archive");
         // Until the rows are measured, the box is too short to scroll to the last row.
-        await page.Locator("[data-part=scroll]").Filter(new() { Has = archive })
-            .EvaluateAsync("box => new Promise(done => { const check = () => box.scrollHeight > box.clientHeight * 10 "
-                + "? done() : requestAnimationFrame(check); check(); })");
+        await page.WaitForFunctionAsync("box => box.scrollHeight > box.clientHeight * 10",
+            await page.Locator("[data-part=scroll]").Filter(new() { Has = archive }).ElementHandleAsync());
         await archive.FocusAsync();
 
         await page.Keyboard.PressAsync("Control+End");
