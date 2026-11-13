@@ -31,6 +31,16 @@ public sealed class TrailblazorMarkup
     public TrailblazorMarkup Within(Func<IElement> scope) =>
         new(selector => scope().QuerySelectorAll(selector).ToList());
 
+    /// <summary>The fields of the <c>TbPropertyGrid</c> with this label, found by their labels as anywhere else:
+    /// <c>cut.Tb().PropertyGrid("Trail properties").NumberField("Length (km)")</c>.</summary>
+    public TrailblazorMarkup PropertyGrid(string label) => Within(() =>
+    {
+        var grids = _findAll(".tb-property-grid[role=group]").Where(grid => grid.GetAttribute("aria-label") == label)
+            .ToList();
+        return grids.Count == 1 ? grids[0]
+            : throw new InvalidOperationException($"Expected one property grid labeled \"{label}\", found {grids.Count}.");
+    });
+
     /// <summary>The <c>TbTextField</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbTextFieldDriver TextField(string label) =>
         new(() => Field(label, ".tb-text-field input[data-part=input]", ".tb-text-field textarea[data-part=input]"));

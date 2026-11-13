@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor;
@@ -197,7 +196,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     internal string Key => Id ?? MemberPath ?? MemberName ?? Title ?? throw new InvalidOperationException(
         $"A {nameof(TbColumn<TItem>)} needs a {nameof(Field)}, an {nameof(Id)} or a {nameof(Title)}.");
 
-    internal string Heading => Title ?? (MemberName is { } name ? Words(name) : "");
+    internal string Heading => Title ?? (MemberName is { } name ? NameWords.Of(name) : "");
 
     internal ColumnAlign Alignment => Align ?? (IsNumber(FieldType) ? ColumnAlign.End : ColumnAlign.Start);
 
@@ -236,7 +235,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     // An enum's values, each named in words, for a choice filter.
     internal IEnumerable<(object Value, string Label)> Choices => ValueType is { IsEnum: true } type
-        ? Enum.GetNames(type).Select(name => (Enum.Parse(type, name), Words(name)))
+        ? Enum.GetNames(type).Select(name => (Enum.Parse(type, name), NameWords.Of(name)))
         : [];
 
     internal string CellClass { get; private set; } = "";
@@ -511,16 +510,4 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
         (Nullable.GetUnderlyingType(type ?? typeof(object)) ?? type) is { } underlying
         && (underlying.IsPrimitive && underlying != typeof(bool) && underlying != typeof(char)
             || underlying == typeof(decimal));
-
-    private static string Words(string name)
-    {
-        var words = WordStart().Replace(name, " ");
-        return words.Length == 0 ? words : char.ToUpper(words[0], CultureInfo.CurrentCulture)
-            + words[1..].ToLower(CultureInfo.CurrentCulture);
-    }
-
-    // Where a new word starts: before a capital after a lowercase letter or digit, and before the last capital of a run
-    // that a lowercase letter follows, so "HTMLPage" becomes "HTML page".
-    [GeneratedRegex("(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")]
-    private static partial Regex WordStart();
 }

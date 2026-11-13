@@ -1,0 +1,39 @@
+@using System.ComponentModel
+@using System.ComponentModel.DataAnnotations
+
+<TbStack Gap="3" Style="max-inline-size: 28rem">
+    <TbPropertyGrid Model="_trail" Label="Trail properties" OnChange="field => _last = field.Name" />
+    <TbText Muted>Last changed: @(_last ?? "nothing yet")</TbText>
+</TbStack>
+
+@code {
+    private readonly Trail _trail = new();
+    private string? _last;
+
+    public enum Surface
+    {
+        Paved,
+        Gravel,
+        Dirt,
+    }
+
+    public sealed class Trail
+    {
+        public int Id { get; } = 42;
+
+        public string Name { get; set; } = "Ridge loop";
+
+        [Display(Name = "Length (km)", GroupName = "Route", Description = "The whole loop.")]
+        public double LengthKm { get; set; } = 12.5;
+
+        [Category("Route")]
+        public Surface Surface { get; set; } = Surface.Gravel;
+
+        [Category("Status")]
+        public bool Open { get; set; } = true;
+
+        [Category("Status")]
+        [Display(Name = "Reopens")]
+        public DateOnly? ReopensOn { get; set; }
+    }
+}

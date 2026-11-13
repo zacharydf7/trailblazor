@@ -4936,3 +4936,41 @@ static Trailblazor.HotkeysHelpLabels.operator !=(Trailblazor.HotkeysHelpLabels? 
 static Trailblazor.HotkeysHelpLabels.operator ==(Trailblazor.HotkeysHelpLabels? left, Trailblazor.HotkeysHelpLabels? right) -> bool
 ~override Trailblazor.TbHotkey.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbHotkeysHelp.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.PropertyGridField
+Trailblazor.PropertyGridField.<Clone>$() -> Trailblazor.PropertyGridField!
+Trailblazor.PropertyGridField.Description.get -> string?
+Trailblazor.PropertyGridField.Description.init -> void
+Trailblazor.PropertyGridField.Equals(Trailblazor.PropertyGridField? other) -> bool
+Trailblazor.PropertyGridField.Get.get -> System.Func<object?>!
+Trailblazor.PropertyGridField.Get.init -> void
+Trailblazor.PropertyGridField.Group.get -> string?
+Trailblazor.PropertyGridField.Group.init -> void
+Trailblazor.PropertyGridField.Label.get -> string?
+Trailblazor.PropertyGridField.Label.init -> void
+Trailblazor.PropertyGridField.Name.get -> string!
+Trailblazor.PropertyGridField.Name.init -> void
+Trailblazor.PropertyGridField.PropertyGridField() -> void
+Trailblazor.PropertyGridField.Set.get -> System.Action<object?>?
+Trailblazor.PropertyGridField.Set.init -> void
+Trailblazor.PropertyGridField.Type.get -> System.Type!
+Trailblazor.PropertyGridField.Type.init -> void
+Trailblazor.TbPropertyGrid<TModel>
+Trailblazor.TbPropertyGrid<TModel>.Fields.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.PropertyGridField!>?
+Trailblazor.TbPropertyGrid<TModel>.Fields.set -> void
+Trailblazor.TbPropertyGrid<TModel>.Label.get -> string!
+Trailblazor.TbPropertyGrid<TModel>.Label.set -> void
+Trailblazor.TbPropertyGrid<TModel>.Model.get -> TModel?
+Trailblazor.TbPropertyGrid<TModel>.Model.set -> void
+Trailblazor.TbPropertyGrid<TModel>.OnChange.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.PropertyGridField!>
+Trailblazor.TbPropertyGrid<TModel>.OnChange.set -> void
+Trailblazor.TbPropertyGrid<TModel>.ReadOnly.get -> bool
+Trailblazor.TbPropertyGrid<TModel>.ReadOnly.set -> void
+Trailblazor.TbPropertyGrid<TModel>.TbPropertyGrid() -> void
+Trailblazor.TbPropertyGrid<TModel>.TelemetryName.get -> string?
+Trailblazor.TbPropertyGrid<TModel>.TelemetryName.set -> void
+override Trailblazor.PropertyGridField.Equals(object? obj) -> bool
+override Trailblazor.PropertyGridField.GetHashCode() -> int
+override Trailblazor.PropertyGridField.ToString() -> string!
+static Trailblazor.PropertyGridField.For<TModel>(TModel! model) -> System.Collections.Generic.IReadOnlyList<Trailblazor.PropertyGridField!>!
+static Trailblazor.PropertyGridField.operator !=(Trailblazor.PropertyGridField? left, Trailblazor.PropertyGridField? right) -> bool
+static Trailblazor.PropertyGridField.operator ==(Trailblazor.PropertyGridField? left, Trailblazor.PropertyGridField? right) -> bool

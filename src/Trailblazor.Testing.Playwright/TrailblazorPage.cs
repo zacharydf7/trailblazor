@@ -127,6 +127,11 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbPopconfirm</c> whose trigger has this name.</summary>
     public TbPopconfirmLocator Popconfirm(string trigger) => new(new TbPopoverLocator(scope, trigger));
 
+    /// <summary>The fields of the <c>TbPropertyGrid</c> with this label, found by their labels as anywhere else:
+    /// <c>page.Tb().PropertyGrid("Trail properties").NumberField("Length (km)")</c>.</summary>
+    public TrailblazorPage PropertyGrid(string label) =>
+        new(scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true }).And(scope.Locator(".tb-property-grid")));
+
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
     public TbMenuLocator Menu(string trigger) => new(scope, trigger);
 

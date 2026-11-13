@@ -228,3 +228,4 @@ Trailblazor.Testing.TbSortableDriver.MoveToListAsync(string! item, string! list)
 Trailblazor.Testing.TbHotkeyDriver
 Trailblazor.Testing.TbHotkeyDriver.PressAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.Hotkey(string! keys) -> Trailblazor.Testing.TbHotkeyDriver!
+Trailblazor.Testing.TrailblazorMarkup.PropertyGrid(string! label) -> Trailblazor.Testing.TrailblazorMarkup!

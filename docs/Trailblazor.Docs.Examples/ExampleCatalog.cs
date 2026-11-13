@@ -5754,6 +5754,82 @@ public static class ExampleCatalog
                     + "\"\"); await code.FillAsync(\"246810\");`.",
             ],
         },
+        new("property-grid", "Property grid", ExampleCategory.Inputs,
+            "An object's properties, each with an editor that suits its type, grouped under headings.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to inspect and change many settings of one object at once, such as the item selected in an "
+                    + "editor or an app's options.",
+            ],
+            WhenNotToUse =
+            [
+                "For a form people fill in once, with its own layout and wording, use a [form](components/form) of "
+                    + "fields.",
+                "To edit many objects side by side, use a [data grid](components/data-grid).",
+            ],
+            Related = ["form", "text-field", "number-field", "data-grid"],
+            Sections =
+            [
+                new("model", "From a model", "`Model` lists an object's public properties, each with an editor for its "
+                    + "type: text, a number, a switch, a list of an enum's values, a date, a date and time, or a time; "
+                    + "a `[Flags]` enum and any other type show as read-only text. `[Display]`, `[DisplayName]`, `[Description]` and "
+                    + "`[Category]` name, describe and group them, and a missing or `init` setter, `[ReadOnly(true)]` or "
+                    + "`[Editable(false)]` makes one read-only. `OnChange` gets the changed property's "
+                    + "`PropertyGridField` after its new value is set.", typeof(PropertyGridExample)),
+                new("fields", "From fields", "`Fields` lists properties of your own, such as the settings in a "
+                    + "dictionary: each `PropertyGridField` says how to read and set its value, and what to call it. "
+                    + "`PropertyGridField.For(model)` gives a model's fields to change before passing them in.",
+                    typeof(PropertyGridFieldsExample)),
+            ],
+            Api = [typeof(TbPropertyGrid<>), typeof(PropertyGridField)],
+            Keyboard =
+            [
+                new(["Tab", "Shift+Tab"], "Moves through the editors and the group headings.") { When = "In the grid" },
+                new(["Enter", "Space"], "Folds a group away or opens it again.") { When = "On a group heading" },
+            ],
+            Labeling =
+            [
+                "The grid is a `group` named by `Label`.",
+                "Each editor is labeled by its property's display name or, without one, by its name split into "
+                    + "words.",
+            ],
+            Announcements =
+            [
+                "Each group heading is a `summary` that screen readers announce as expanded or collapsed.",
+                "Each editor is announced as it would be on its own, with its description as its help text.",
+            ],
+            Accessibility =
+            [
+                "Every property is a labeled field, so the grid reads like a form, in the order the properties come.",
+            ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
+            BeforeInteractive =
+            [
+                "The properties and their values render, and the group headings fold, but changes need the page to be "
+                    + "interactive.",
+            ],
+            Target = new("group", "Trail properties"),
+            Blocks = ["tb-property-grid"],
+            DataParts =
+            [
+                new("property", "One property's editor, with its name in `data-name`."),
+                new("group", "A group of properties."),
+                new("group-label", "A group's heading, which folds it."),
+            ],
+            TestingTip = "`page.Tb().PropertyGrid(\"Trail properties\")` from `Trailblazor.Testing.Playwright` finds the "
+                + "fields inside the grid by their labels, as anywhere else: "
+                + "`.NumberField(\"Length (km)\").EnterAsync(\"8\")` or `.Select(\"Surface\").ChooseAsync(\"Dirt\")`. "
+                + "In bUnit, `cut.Tb().PropertyGrid(\"Trail properties\")` does the same. A property's editor is in "
+                + "`[data-part=property][data-name=LengthKm]`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-settings\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` with the action `change` each time the user "
+                    + "changes a property. Which property and its value are never recorded.",
+            ],
+        },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
             "A short description that appears on hover or keyboard focus.")
         {

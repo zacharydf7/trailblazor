@@ -1,0 +1,33 @@
+@namespace Trailblazor
+@typeparam TModel where TModel : class
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" role="group" aria-label="@Label" style="@Style"
+     class="@ClassNames.Join("tb-property-grid", Class)">
+    @foreach (var group in Groups)
+    {
+        @if (group.Key is null)
+        {
+            @Rows(group)
+        }
+        else
+        {
+            @* A group folds away like a disclosure, and screen readers hear its heading as the summary. *@
+            <details open class="tb-property-grid__group" data-part="group">
+                <summary class="tb-property-grid__group-label" data-part="group-label">@group.Key</summary>
+                @Rows(group)
+            </details>
+        }
+    }
+</div>
+
+@code {
+    private RenderFragment Rows(IEnumerable<PropertyGridField> fields) => @<text>
+        @foreach (var field in fields)
+        {
+            <div @key="field.Name" class="tb-property-grid__property" data-part="property" data-name="@field.Name">
+                @((RenderFragment)(builder => AddEditor(builder, field)))
+            </div>
+        }
+    </text>;
+}

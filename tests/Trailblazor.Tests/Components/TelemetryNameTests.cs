@@ -145,6 +145,23 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task PropertyGrid_ShouldCountEachChange_WhenItHasATelemetryName()
+    {
+        var name = "Ridge loop";
+        var cut = Render<TbPropertyGrid<object>>(parameters => parameters.Add(grid => grid.Label, "Trail")
+            .Add(grid => grid.TelemetryName, "trail-settings")
+            .Add(grid => grid.Fields, [new PropertyGridField
+            {
+                Name = "Name", Type = typeof(string), Get = () => name, Set = value => name = (string)value!,
+            }]));
+
+        await cut.Tb().TextField("Name").EnterAsync("Lake path");
+
+        Assert.Equal(["trail-settings"], Names(_shown));
+        Assert.Equal([("trail-settings", "TbPropertyGrid", "change")], Uses());
+    }
+
+    [Fact]
     public async Task SpeedDial_ShouldCountItsOpensAndItsActionsChosen_WhenTheyHaveTelemetryNames()
     {
         var cut = Render<TbSpeedDial>(parameters => parameters.Add(dial => dial.Label, "Add")

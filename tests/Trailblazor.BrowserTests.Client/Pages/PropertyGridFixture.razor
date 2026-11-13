@@ -1,0 +1,31 @@
+@page "/property-grid"
+@using System.ComponentModel
+@using System.ComponentModel.DataAnnotations
+
+<div style="max-inline-size: 32rem; padding: 2rem">
+    <TbPropertyGrid Model="_trail" Label="Trail" />
+</div>
+
+@code {
+    private readonly Trail _trail = new();
+
+    public enum Difficulty
+    {
+        Easy,
+        Hard,
+    }
+
+    public sealed class Trail
+    {
+        public string Name { get; set; } = "Ridge loop";
+
+        [Display(Name = "Length (km)", GroupName = "Route")]
+        public double LengthKm { get; set; } = 12.5;
+
+        [Category("Route")]
+        public Difficulty Difficulty { get; set; }
+
+        [Category("Status")]
+        public bool Open { get; set; } = true;
+    }
+}

@@ -214,3 +214,4 @@ Trailblazor.Testing.Playwright.TbHotkeyLocator
 Trailblazor.Testing.Playwright.TbHotkeyLocator.PressAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbHotkeyLocator.TbHotkeyLocator(Microsoft.Playwright.ILocator! scope, string! keys) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Hotkey(string! keys) -> Trailblazor.Testing.Playwright.TbHotkeyLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.PropertyGrid(string! label) -> Trailblazor.Testing.Playwright.TrailblazorPage!

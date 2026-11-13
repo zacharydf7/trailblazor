@@ -1,0 +1,20 @@
+<TbStack Gap="3" Style="max-inline-size: 28rem">
+    <TbPropertyGrid TModel="object" Fields="_fields" Label="Map settings" />
+    <TbText Muted>Saved: @string.Join(", ", _settings.Select(setting => $"{setting.Key} = {setting.Value}"))</TbText>
+</TbStack>
+
+@code {
+    private readonly Dictionary<string, object?> _settings =
+        new() { ["Units"] = "km", ["ZoomLevel"] = 12, ["Terrain"] = true };
+    private IReadOnlyList<PropertyGridField> _fields = [];
+
+    // Settings kept as a dictionary have no properties to reflect over, so each gets a field of its own.
+    protected override void OnInitialized() => _fields = [.. _settings.Keys.Select(key => new PropertyGridField
+    {
+        Name = key,
+        Type = _settings[key]!.GetType(),
+        Get = () => _settings[key],
+        Set = value => _settings[key] = value,
+        Group = key == "Units" ? null : "Display",
+    })];
+}

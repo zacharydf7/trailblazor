@@ -8349,6 +8349,28 @@
         color: var(--tb-color-text-muted);
     }
 
+    /* Each property is a field with its label above it; groups fold away under their headings. */
+    .tb-property-grid > * + *,
+    .tb-property-grid__property + .tb-property-grid__property {
+        margin-block-start: var(--tb-space-3);
+    }
+
+    .tb-property-grid__group-label {
+        padding-block: var(--tb-space-1);
+        border-radius: var(--tb-radius-sm);
+        font-weight: var(--tb-font-weight-semibold);
+        cursor: pointer;
+    }
+
+    .tb-property-grid__group[open] > .tb-property-grid__group-label {
+        margin-block-end: var(--tb-space-2);
+    }
+
+    .tb-property-grid__group-label:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
     .tb-sortable {
         position: relative;
     }

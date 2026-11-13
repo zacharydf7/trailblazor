@@ -35,7 +35,8 @@ public class ComponentContractTests : BunitContext
 
     // Components that render nothing until they are shown are checked shown; a popover, a popconfirm, a menu, a
     // tooltip, a progress, an avatar, a kbd, a virtual list, a tab and a column get the label, text, name, keys, items
-    // or title they need when they are given none. A hotkey's sample keys are a character key, which it must allow.
+    // or title they need when they are given none. A hotkey's sample keys are a character key, which it must allow,
+    // and a property grid gets an empty Fields list in place of a model.
     internal static readonly Dictionary<Type, (string Name, object Value)> Setup = new()
     {
         [typeof(TbOverlay)] = (nameof(TbOverlay.Open), true),
@@ -51,6 +52,7 @@ public class ComponentContractTests : BunitContext
         [typeof(TbAvatar)] = (nameof(TbAvatar.Name), "Sample"),
         [typeof(TbKbd)] = (nameof(TbKbd.Keys), "Ctrl+K"),
         [typeof(TbHotkey)] = (nameof(TbHotkey.AllowCharacterKey), true),
+        [typeof(TbPropertyGrid<string>)] = (nameof(TbPropertyGrid<string>.Fields), Array.Empty<PropertyGridField>()),
         [typeof(TbVirtualList<string>)] = (nameof(TbVirtualList<string>.Items), Array.Empty<string>()),
         [typeof(TbTab)] = (nameof(TbTab.Text), "Sample"),
         [typeof(TbColumn<string>)] = (nameof(TbColumn<string>.Title), "Sample"),
