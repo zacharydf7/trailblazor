@@ -224,6 +224,68 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("posted")).ToHaveTextAsync("1234.50");
     }
 
+    // Each size has its own padding and buttons, and End content takes room from the input.
+    public static TheoryData<string, string> NarrowFields() => new(AllBrowsers.Names.SelectMany(browser =>
+        new[] { (browser, "Tents"), (browser, "Stoves"), (browser, "Packs"), (browser, "Fuel") }));
+
+    [Theory, MemberData(nameof(NarrowFields))]
+    public async Task NumberField_ShouldHideItsStepButtonsUntilThereIsRoom_WhenItsColumnIsTooNarrowForThem(
+        string browser, string label)
+    {
+        var page = await OpenAsync(browser, "/number-narrow");
+        var input = page.GetByRole(AriaRole.Spinbutton, new() { Name = label });
+        var increase = input.Locator("xpath=ancestor::*[@data-part='control'][1]/*[@data-part='increment']");
+
+        await Expect(increase).ToBeHiddenAsync();
+        // Once the page's fonts load: the input's width inside its padding, less the width its value's text needs. A
+        // negative result means the value is cut off.
+        var room = await input.EvaluateAsync<double>("""
+            async input => {
+                await document.fonts.ready;
+                const style = getComputedStyle(input);
+                const context = document.createElement('canvas').getContext('2d');
+                context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+                return input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+                    - context.measureText(input.value).width;
+            }
+            """);
+        Assert.True(room >= 0, $"The value needs {-room}px more than the input has.");
+        await page.GetByTestId("column").EvaluateAsync("column => column.style.width = '320px'");
+
+        await Expect(increase).ToBeVisibleAsync();
+    }
+
+    [Theory, MemberData(nameof(NarrowFields))]
+    public async Task NumberField_ShouldHideItsStepButtons_WhenItsColumnNarrowedWhileItWasHidden(string browser,
+        string label)
+    {
+        var page = await OpenAsync(browser, "/number-narrow");
+        var column = page.GetByTestId("column");
+        var increase = page.GetByRole(AriaRole.Spinbutton, new() { Name = label })
+            .Locator("xpath=ancestor::*[@data-part='control'][1]/*[@data-part='increment']");
+        await column.EvaluateAsync("column => column.style.width = '320px'");
+        await Expect(increase).ToBeVisibleAsync();
+
+        // Hidden, as in a tab panel that isn't selected, then shown again in a column too narrow for the buttons.
+        // Each step waits two frames so the field sees the change. The check reads once instead of retrying, because a
+        // retrying wait can pass on the state from before the field answered.
+        await column.EvaluateAsync("""
+            column => {
+                column.hidden = true;
+                return new Promise(drawn => requestAnimationFrame(() => requestAnimationFrame(drawn)));
+            }
+            """);
+        await column.EvaluateAsync("""
+            column => {
+                column.style.width = '100px';
+                column.hidden = false;
+                return new Promise(drawn => requestAnimationFrame(() => requestAnimationFrame(drawn)));
+            }
+            """);
+
+        Assert.False(await increase.IsVisibleAsync(), "The step buttons came back in a box too narrow for them.");
+    }
+
     private async Task<IPage> OpenStepAsync(string browser, BrowserNewContextOptions? options = null)
     {
         var page = await OpenAsync(browser, "/number-step", options);

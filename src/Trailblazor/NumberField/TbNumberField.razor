@@ -1,7 +1,11 @@
 @namespace Trailblazor
 @using System.Globalization
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
 @typeparam TValue
 @inherits TbBoxedFieldBase<TValue>
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
 
 @Layout(Classes, @<text>
     @* The step buttons repeat the arrow keys for pointers, so they stay out of the tab order. *@
@@ -27,6 +31,10 @@
 
     // While a step button is held, its steps show in the field, and the value changes once, when it's let go.
     private decimal? _held;
+
+    // Hides the step buttons while the field is too narrow for them and a few digits.
+    private IJSObjectReference? _widthHandle;
+    private bool _disposed;
 
     /// <summary>Content before the input, usually an icon.</summary>
     [Parameter]
@@ -60,7 +68,8 @@
     [Parameter]
     public decimal? LargeStep { get; set; }
 
-    /// <summary>Hides the decrease and increase buttons; the arrow keys still step the value.</summary>
+    /// <summary>Hides the decrease and increase buttons; the arrow keys still step the value. A field too narrow for
+    /// the buttons and about four digits hides them on its own.</summary>
     [Parameter]
     public bool HideStepButtons { get; set; }
 
@@ -283,6 +292,38 @@
         return SetTextAsync(e.Value);
     }
 
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/number-field.js");
+            var handle = await module.InvokeAsync<IJSObjectReference?>("watchWidth", _input);
+            if (handle is null)
+            {
+                return;
+            }
+
+            if (_disposed)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _widthHandle = handle;
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the field went with it.
+        }
+    }
+
     // A number input always holds its value with a period; the browser shows it in the user's own format.
     private protected override string? FormatValue(TValue? value) => Formatted && value is IFormattable number
         ? number.ToString(Format, NumberCulture)
@@ -421,4 +462,13 @@
         (TValue)Convert.ChangeType(number, NumberType, CultureInfo.InvariantCulture);
 
     private static string? Invariant(decimal? number) => number?.ToString(CultureInfo.InvariantCulture);
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
+    {
+        // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
+        Dispose();
+        _disposed = true;
+        return _widthHandle?.DisposeHandleAsync() ?? ValueTask.CompletedTask;
+    }
 }

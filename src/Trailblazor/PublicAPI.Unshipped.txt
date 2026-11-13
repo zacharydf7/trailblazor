@@ -5345,3 +5345,5 @@ static Trailblazor.ModelFieldContext.operator !=(Trailblazor.ModelFieldContext? 
 static Trailblazor.ModelFieldContext.operator ==(Trailblazor.ModelFieldContext? left, Trailblazor.ModelFieldContext? right) -> bool
 Trailblazor.TbModelFields<TModel>.OnChange.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
 Trailblazor.TbModelFields<TModel>.OnChange.set -> void
+override Trailblazor.TbNumberField<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+Trailblazor.TbNumberField<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask

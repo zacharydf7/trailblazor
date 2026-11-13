@@ -3502,6 +3502,7 @@ public static class ExampleCatalog
                     + "posts numbers in the invariant culture.",
                 "A static form's post is checked against `Min` and `Max` on the server, as a typed value is, unless "
                     + "the field is read-only; use `Validation` to check a read-only value.",
+                "A field too narrow for its step buttons shows them until the page is interactive.",
             ],
             Notes =
             [
@@ -3510,6 +3511,8 @@ public static class ExampleCatalog
                 new("What the user types stays as typed until they leave the field, press Enter, step the value or "
                     + "click a step button that's off at a limit, and an error waits until then too."),
                 new("`ClampToRange` also moves a number too large or small for the value's type to the nearer limit."),
+                new("A field too narrow for its step buttons and about four digits, such as one in an 80-pixel "
+                    + "column, hides the buttons, as `HideStepButtons` does, and shows them again once it has room."),
             ],
             Ready = new("[data-part=input]", "the input"),
             Target = new("spinbutton", "Quantity"),

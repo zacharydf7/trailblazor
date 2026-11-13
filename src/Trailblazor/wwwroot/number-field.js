@@ -144,3 +144,35 @@ document.addEventListener('contextmenu', event => {
         event.preventDefault();
     }
 }, { capture: true });
+
+// A box too narrow for its step buttons and about four digits hides the buttons, as HideStepButtons does, instead of
+// squeezing the value out of sight. The input's own width decides, so Start and End content, size and density count.
+// While they're hidden, the buttons come back once the input has room for them and the digits.
+const buttonRoom = new WeakMap();
+const fits = new ResizeObserver(entries => entries.forEach(({ target }) => fitStepButtons(target)));
+
+function fitStepButtons(control) {
+    const input = control.querySelector(':scope > [data-part="input"]');
+    const buttons = [...control.querySelectorAll(':scope > :is([data-part="increment"], [data-part="decrement"])')];
+    // A hidden box, such as one in a hidden tab panel, has nothing to measure until it shows again.
+    if (!input || buttons.length === 0 || control.clientWidth === 0) {
+        return;
+    }
+
+    const digits = 2.5 * parseFloat(getComputedStyle(input).fontSize);
+    if (!('narrow' in control.dataset)) {
+        const gap = parseFloat(getComputedStyle(control).columnGap) || 0;
+        buttonRoom.set(control, buttons.reduce((room, button) => room + button.getBoundingClientRect().width + gap, 0));
+        if (input.clientWidth < digits) {
+            control.dataset.narrow = '';
+        }
+    } else if (input.clientWidth - buttonRoom.get(control) >= digits) {
+        delete control.dataset.narrow;
+    }
+}
+
+export function watchWidth(input) {
+    const control = input.closest('[data-part="control"]');
+    fits.observe(control);
+    return { dispose: () => fits.unobserve(control) };
+}

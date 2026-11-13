@@ -3223,6 +3223,11 @@
         outline: none;
     }
 
+    /* number-field.js marks a box too narrow for its step buttons and a few digits. */
+    .tb-field__control[data-narrow] > :is([data-part="increment"], [data-part="decrement"]) {
+        display: none;
+    }
+
     /* A size works from the density's control height, as a button's does, and leaves the token to what's inside. */
     .tb-field--small {
         --tb-field-font-size: var(--tb-font-size-sm);

@@ -1,0 +1,16 @@
+@page "/number-narrow"
+
+@* A column too narrow for the fields' step buttons and their values. *@
+@* A fixed field height, so showing or hiding the buttons doesn't resize the box. *@
+<div data-testid="column" style="width: 80px; --tb-field-height: 64px">
+    <TbNumberField TValue="int" Label="Tents" @bind-Value="_count" />
+    <TbNumberField TValue="int" Label="Stoves" @bind-Value="_count" Size="Size.Small" />
+    <TbNumberField TValue="int" Label="Packs" @bind-Value="_count" Size="Size.Large" />
+    <TbNumberField TValue="int" Label="Fuel" @bind-Value="_count">
+        <End>L</End>
+    </TbNumberField>
+</div>
+
+@code {
+    private int _count = 120;
+}
