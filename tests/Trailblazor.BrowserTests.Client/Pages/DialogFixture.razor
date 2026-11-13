@@ -19,6 +19,10 @@
     <TbButton OnClick='() => Dialogs.ShowAsync<SizedDialog, string>("Sized", options: new() { Width = "600px" })'>
         Sized
     </TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<NameDialog, string>("Full sized",
+                  options: new() { Size = DialogSize.Full, Width = "600px" })'>
+        Full sized
+    </TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<NameDialog, string>("Fit", options: new() { Size = DialogSize.Fit })'>
         Fit
     </TbButton>

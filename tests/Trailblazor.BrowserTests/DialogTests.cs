@@ -169,6 +169,30 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldFillTheWindow_WhenItsSizeIsFull(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Full notes" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Notes 1" })).ToBeVisibleAsync();
+        var (width, height) = await ViewportAsync(page);
+        var box = await BoxAsync(page, "Notes 1");
+        Assert.Equal((0d, 0d, width, height), ((double)box.X, (double)box.Y, (double)box.Width, (double)box.Height));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldTakeItsWidth_WhenItsSizeIsFullAndItHasAWidth(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Full sized" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Full sized" })).ToBeVisibleAsync();
+        Assert.Equal(600, (await BoxAsync(page, "Full sized")).Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldFillTheWindowAndComeBack_WhenMaximizedAndRestored(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");
