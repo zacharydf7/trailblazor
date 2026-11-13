@@ -242,20 +242,27 @@ public sealed class TrailblazorMarkup
             return unlabeled;
         }
 
-        if (labels.Count != 1)
+        if (labels.Count == 0)
         {
-            throw new InvalidOperationException(labels.Count == 0
-                ? $"No field is labeled \"{label}\"."
-                : $"{labels.Count} fields are labeled \"{label}\".");
+            throw new InvalidOperationException($"No field is labeled \"{label}\".");
         }
 
-        var named = labels[0];
-        var control = named.GetAttribute("for") is { Length: > 0 } target
-            ? _findAll($"[id='{target}']").FirstOrDefault()
-            : _findAll($"[aria-labelledby~='{named.Id}']").FirstOrDefault();
-        return control is not null && controls.Any(control.Matches) ? control
-            : throw new InvalidOperationException($"The field labeled \"{label}\" isn't the kind asked for.");
+        // A slider or checkbox can share the label, so only the fields of the kind asked for count.
+        var fields = labels.Select(ControlOf).OfType<IElement>().Where(control => controls.Any(control.Matches))
+            .ToList();
+        return fields.Count switch
+        {
+            1 => fields[0],
+            0 => throw new InvalidOperationException(labels.Count == 1
+                ? $"The field labeled \"{label}\" isn't the kind asked for."
+                : $"None of the {labels.Count} fields labeled \"{label}\" is the kind asked for."),
+            _ => throw new InvalidOperationException($"{fields.Count} fields are labeled \"{label}\"."),
+        };
     }
+
+    private IElement? ControlOf(IElement label) => label.GetAttribute("for") is { Length: > 0 } target
+        ? _findAll($"[id='{target}']").FirstOrDefault()
+        : _findAll($"[aria-labelledby~='{label.Id}']").FirstOrDefault();
 
     private static string LabelText(IElement label) => label.TextContent.Trim().TrimEnd('*').Trim();
 }
@@ -500,8 +507,17 @@ internal static class Choices
 
         foreach (var text in texts)
         {
-            var option = find().Options.SingleOrDefault(option => NameOf(option) == text)
-                ?? throw new InvalidOperationException($"No option reads \"{text}\".");
+            var options = find().Options.ToList();
+            var option = options.Where(option => NameOf(option) == text).ToList() switch
+            {
+                [var only] => only,
+                [] => throw new InvalidOperationException(options.Count == 0
+                    ? $"No option reads \"{text}\": there are none."
+                    : $"No option reads \"{text}\". The options read: "
+                        + string.Join(", ", options.Select(option => $"\"{NameOf(option)}\"")) + "."),
+                var several => throw new InvalidOperationException(
+                    $"{several.Count} options read \"{text}\"; give each option a name of its own."),
+            };
             if (option.GetAttribute("aria-selected") == "true" != choose)
             {
                 // A click from a pointer has a count, which the option reports as pointer input.
@@ -654,10 +670,19 @@ internal static class Dates
                 + "which posts with its form; render it on an interactive page to choose a date.");
         }
 
+        Typing.ThrowIfLocked(input, "a date");
+    }
+}
+
+// A user can't type into a read-only or disabled field, so the drivers that type refuse it too.
+internal static class Typing
+{
+    internal static void ThrowIfLocked(IElement input, string what)
+    {
         if (input.HasAttribute("readonly") || input.HasAttribute("disabled"))
         {
             throw new InvalidOperationException(
-                "This field is read-only or disabled, so a date can't be typed into it.");
+                $"This field is read-only or disabled, so {what} can't be typed into it.");
         }
     }
 }
@@ -814,11 +839,7 @@ public sealed class TbTextFieldDriver
     /// read-only or disabled field throws, since a user can't type into it.</summary>
     public async Task EnterAsync(string text)
     {
-        if (_find().HasAttribute("readonly") || _find().HasAttribute("disabled"))
-        {
-            throw new InvalidOperationException("This field is read-only or disabled, so text can't be typed into it.");
-        }
-
+        Typing.ThrowIfLocked(_find(), "text");
         if (_find().HasAttribute("blazor:oninput"))
         {
             await _find().InputAsync(new ChangeEventArgs { Value = text });
@@ -842,13 +863,15 @@ public sealed class TbNumberFieldDriver
     public string? Text => _find().GetAttribute("value");
 
     /// <summary>Types this text into the field and commits it, as typing and then leaving the field does. Text that
-    /// isn't a number shows the field's error, as in a browser.</summary>
-    public Task EnterAsync(string text)
+    /// isn't a number shows the field's error, as in a browser. A read-only or disabled field throws, since a user
+    /// can't type into it.</summary>
+    public async Task EnterAsync(string text)
     {
         // A plain number box reads what was typed through its own event; a formatted one is a text box.
         var input = _find();
-        return input.GetAttribute("role") == "spinbutton" ? input.ChangeAsync(new ChangeEventArgs { Value = text })
-            : input.TriggerEventAsync("ontbnumberchange", new NumberChangeEventArgs { Value = text });
+        Typing.ThrowIfLocked(input, "a number");
+        await (input.GetAttribute("role") == "spinbutton" ? input.ChangeAsync(new ChangeEventArgs { Value = text })
+            : input.TriggerEventAsync("ontbnumberchange", new NumberChangeEventArgs { Value = text }));
     }
 }
 
@@ -1116,7 +1139,7 @@ public sealed class TbTreeDriver
 
     // Follows the tree's script: a selected row brings the other selected rows that can move, a drop below an open
     // row goes above its first child, and a drop on a moving row does nothing. The tree then checks it with CanMove.
-    private Task DragAsync(string[] row, string[] target, TreeMovePosition position)
+    private async Task DragAsync(string[] row, string[] target, TreeMovePosition position)
     {
         var source = Item(row);
         if (!source.HasAttribute("data-draggable"))
@@ -1132,7 +1155,7 @@ public sealed class TbTreeDriver
         var onto = Item(target);
         if (moved.Contains(onto))
         {
-            return Task.CompletedTask;
+            return;
         }
 
         var next = rows.ElementAtOrDefault(rows.IndexOf(onto) + 1);
@@ -1142,13 +1165,15 @@ public sealed class TbTreeDriver
             (onto, position) = (next, TreeMovePosition.Before);
         }
 
-        return moved.Contains(onto) ? Task.CompletedTask : _find().TriggerEventAsync("ontbtreedrop",
-            new TreeDropEventArgs
+        if (!moved.Contains(onto))
+        {
+            await _find().TriggerEventAsync("ontbtreedrop", new TreeDropEventArgs
             {
                 Rows = [.. moved.Select(other => other.GetAttribute("data-key")!)],
                 Target = onto.GetAttribute("data-key")!,
                 Position = position,
             });
+        }
 
         static bool Selected(IElement other) => other.GetAttribute("aria-selected") == "true";
 
@@ -1552,28 +1577,29 @@ public sealed class TbCommandPaletteDriver
     private IElement Listbox() => _findAll($"[id='{Open().GetAttribute("aria-controls")}']").Single();
 }
 
-/// <summary>A <c>TbSortable</c>, found by its label.</summary>
+/// <summary>A <c>TbSortable</c>, found by its label. Its items are named by the list's <c>ItemLabel</c>, or by their
+/// text when it has none.</summary>
 public sealed class TbSortableDriver
 {
     private readonly Func<IElement> _find;
 
     internal TbSortableDriver(Func<IElement> find) => _find = find;
 
-    /// <summary>The items' text, in the order they show.</summary>
-    public IReadOnlyList<string> Items => [.. ItemElements().Select(TextOf)];
+    /// <summary>The items' names, in the order they show.</summary>
+    public IReadOnlyList<string> Items => [.. ItemElements().Select(NameOf)];
 
-    /// <summary>Moves the item whose text is exactly <paramref name="item"/> to <paramref name="index"/>, through its
-    /// handle's menu as a user would: Move to start or Move to end for the first or last place, else Move up or Move
-    /// down a place at a time, so <c>CanMove</c> and <c>OnMove</c> see each step. A step the app refuses ends the
-    /// move. Throws when the list is disabled or <paramref name="index"/> is past its last item.</summary>
+    /// <summary>Moves the item named <paramref name="item"/> to <paramref name="index"/>, through its handle's menu as
+    /// a user would: Move to start or Move to end for the first or last place, else Move up or Move down a place at a
+    /// time, so <c>CanMove</c> and <c>OnMove</c> see each step. A step the app refuses ends the move. Throws when the
+    /// list is disabled or <paramref name="index"/> is past its last item.</summary>
     public Task MoveAsync(string item, int index) => HandleMenu.MoveAsync(
         () => Item(item).Children.First(child => child.GetAttribute("data-part") == "handle"),
         () => ItemElements().IndexOf(Item(item)), ItemElements().Count, index, item);
 
-    /// <summary>Moves the item whose text is exactly <paramref name="item"/> to the end of the list labeled
-    /// <paramref name="list"/> in its group, through its handle's menu as a user would. Throws when either list is
-    /// disabled or no other list in the group has that label.</summary>
-    public Task MoveToListAsync(string item, string list)
+    /// <summary>Moves the item named <paramref name="item"/> to the end of the list labeled <paramref name="list"/> in
+    /// its group, through its handle's menu as a user would. Throws when either list is disabled or no other list in
+    /// the group has that label.</summary>
+    public async Task MoveToListAsync(string item, string list)
     {
         var menu = Item(item).Children.First(child => child.GetAttribute("data-part") == "handle");
         var trigger = HandleMenu.TriggerOf(menu, item);
@@ -1581,20 +1607,20 @@ public sealed class TbSortableDriver
             .FirstOrDefault(choice => choice.GetAttribute("data-list") == list)
             ?? throw new InvalidOperationException($"\"{item}\" can't move to \"{list}\": no other list in its group "
                 + "has that label.");
-        return TbMenuDriver.ClickAsync(trigger, choice);
+        await TbMenuDriver.ClickAsync(trigger, choice);
     }
 
     private List<IElement> ItemElements() =>
         [.. _find().Children.Where(child => child.GetAttribute("data-part") == "item")];
 
-    private static string TextOf(IElement item) =>
-        item.Children.First(child => child.ClassList.Contains("tb-sortable__content")).TextContent.Trim();
+    private static string NameOf(IElement item) => item.GetAttribute("data-text")
+        ?? item.Children.First(child => child.ClassList.Contains("tb-sortable__content")).TextContent.Trim();
 
-    private IElement Item(string text)
+    private IElement Item(string name)
     {
-        var items = ItemElements().Where(item => TextOf(item) == text).ToList();
+        var items = ItemElements().Where(item => NameOf(item) == name).ToList();
         return items.Count == 1 ? items[0]
-            : throw new InvalidOperationException($"Expected one item that reads \"{text}\", found {items.Count}.");
+            : throw new InvalidOperationException($"Expected one item named \"{name}\", found {items.Count}.");
     }
 }
 

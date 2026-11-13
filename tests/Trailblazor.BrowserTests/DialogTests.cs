@@ -611,4 +611,27 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Close" }).ClickAsync();
         await Expect(dialog).ToBeHiddenAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReturn_WhenTheDialogsButtonReloadsThePage(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialog-reload");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open sign out" }).ClickAsync();
+
+        await page.Tb().Dialog("Sign out?").ChooseAsync("Sign out");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReturnOnceTheDialogCloses_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-dialog");
+        var open = page.GetByRole(AriaRole.Button, new() { Name = "Returns policy" });
+
+        await open.ClickAsync();
+        await page.Tb().Dialog("Returns").ChooseAsync("Close");
+        await open.ClickAsync();
+        await page.Tb().Dialog("Returns").CancelAsync();
+
+        await Expect(page.GetByRole(AriaRole.Dialog)).ToHaveCountAsync(0);
+    }
 }

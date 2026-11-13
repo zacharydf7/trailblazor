@@ -31,6 +31,31 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldReturnOnceTheAppHasTheValue_WhenTheAppReKeysTheField(string browser)
+    {
+        var page = await OpenAsync(browser, "/number-live");
+
+        await page.Tb().NumberField("Trips").EnterAsync("7");
+
+        Assert.Equal("7", await page.GetByTestId("trips").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldReturnOnceTheAppHasTheAnswer_WhenAButtonIsChosenOrTheDialogIsCanceled(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+        var delete = page.GetByRole(AriaRole.Button, new() { Name = "Delete report" });
+
+        await delete.ClickAsync();
+        await page.Tb().Dialog("Delete report?").ChooseAsync("Delete");
+        Assert.Equal(1, await page.GetByText("Deleted", new() { Exact = true }).CountAsync());
+        await delete.ClickAsync();
+        await page.Tb().Dialog("Delete report?").CancelAsync();
+
+        Assert.Equal(1, await page.GetByText("Kept", new() { Exact = true }).CountAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task RichTextEditor_ShouldReturnOnceTheAppHasTheValue_WhenEntered(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-editor");

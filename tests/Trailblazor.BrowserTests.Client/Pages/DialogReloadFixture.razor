@@ -1,0 +1,14 @@
+@page "/dialog-reload"
+@inject NavigationManager Navigation
+
+@* A dialog whose button reloads the page, so the page goes before the dialog can fade out. *@
+<TbButton OnClick="() => _open = true">Open sign out</TbButton>
+<TbDialog @bind-Open="_open" Title="Sign out?">
+    <TbDialogActions>
+        <TbButton OnClick="@(() => Navigation.NavigateTo(Navigation.Uri, forceLoad: true))">Sign out</TbButton>
+    </TbDialogActions>
+</TbDialog>
+
+@code {
+    private bool _open;
+}

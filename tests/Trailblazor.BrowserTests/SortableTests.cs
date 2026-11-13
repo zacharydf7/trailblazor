@@ -137,6 +137,19 @@ public class SortableTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SortableHelpers_ShouldFindAnItemByItsLabel_WhenItHoldsAField(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/sortable");
+        var steps = page.Tb().Sortable("Packing steps");
+
+        await steps.MoveAsync("Stove", 0);
+        Assert.Equal(["Stove", "Tent"], await steps.ItemsAsync());
+        await steps.DragAfterAsync("Stove", "Tent");
+
+        Assert.Equal(["Tent", "Stove"], await steps.ItemsAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task SortableHelpers_ShouldMoveByMenuAndStopWhereRefused_WhenMovingAnItemToAPlace(string browser)
     {
         // Skips waiting for the page to turn interactive, so the order is only read after the helpers' own waits.

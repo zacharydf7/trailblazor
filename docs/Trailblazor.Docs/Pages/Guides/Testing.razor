@@ -253,6 +253,8 @@
                         <td>
                             Moves an item to <code>index</code> through its handle's menu, and <code>Items</code> reads
                             the order. <code>MoveToListAsync(item, list)</code> moves it to another list of its group.
+                            An item is named by the list's <code>ItemLabel</code>, or by its text when the list has
+                            none.
                         </td>
                     </tr>
                     <tr>
@@ -499,6 +501,25 @@
                         <td>
                             <code>aria-busy</code> to clear from its table, which a grid with a
                             <code>DataProvider</code> sets while rows load.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A change the app answers</th>
+                        <td>
+                            <code>data-commits</code> to change on the field's root, tab list, sortable list or data
+                            grid; it counts the changes the app has answered. An app that changes a component's
+                            <code>@@key</code> replaces it, and the new component counts from 0 again, so the count can
+                            look unchanged after the app has answered. End the wait when the old element leaves the
+                            page, too; the helpers stop on either.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A dialog's answer</th>
+                        <td>
+                            The dialog to leave the page. While it fades out it stays there with
+                            <code>data-leaving</code>, and the app gets the answer only once it has gone, so waiting
+                            for it to be hidden ends too soon. A dialog on a static page never fades or leaves, so wait for
+                            it to close instead.
                         </td>
                     </tr>
                     <tr>
@@ -752,7 +773,8 @@
         new("Sortable", "Its label", "`Sortable(name).MoveAsync(item, index)` moves an item through its handle's "
             + "menu, `DragBeforeAsync` and `DragAfterAsync` drag it onto another item, `MoveToListAsync(item, list)` "
             + "and `DragToListAsync(item, list)` move it to another list of its group, and each waits for the app's "
-            + "answer; `ItemsAsync()` reads the order."),
+            + "answer; `ItemsAsync()` reads the order. An item is named by the list's `ItemLabel`, or by its text "
+            + "when the list has none."),
         new("Accordion", "An item's header", "`AccordionItem(header).ExpandAsync()` opens the item, waits until it "
             + "is open and hands back its panel; `CollapseAsync()` closes it."),
         new("Tooltip", "Its trigger", "`Tooltip(trigger).TextAsync()` rests the pointer on the trigger and returns "
@@ -777,7 +799,9 @@
         new("Context menu", "An element in its area", "`ContextMenu(element).ChooseAsync(path)` right-clicks the "
             + "element and chooses an item through its submenus, from the items drawn for that element's key."),
         new("Tabs", "Their list's name", "`Tabs(name).SelectAsync(tab)` selects a tab by its name."),
-        new("Dialog", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name."),
+        new("Dialog", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name, and "
+            + "`CancelAsync()` dismisses it with Escape; both wait until the dialog has left the page, or, on a static "
+            + "page, until it closes."),
         new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows."),
     ];
 

@@ -34,7 +34,8 @@ public sealed partial class TbSortable<TItem> : TbComponentBase, ISortableGroupM
     public string Label { get; set; } = "";
 
     /// <summary>The item's name for its handle's label, which is also said after it moves. Defaults to
-    /// <see cref="object.ToString"/>.</summary>
+    /// <see cref="object.ToString"/>. When it's set, the test helpers find the item by it; otherwise they use the
+    /// item's text.</summary>
     [Parameter]
     public Func<TItem, string>? ItemLabel { get; set; }
 

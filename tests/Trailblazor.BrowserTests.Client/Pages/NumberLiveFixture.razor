@@ -6,9 +6,13 @@
 <output data-testid="budget">@_budget.ToString(CultureInfo.InvariantCulture)</output>
 <TbNumberField Label="Copies" @bind-Value="_copies" UpdateOnInput />
 <output data-testid="copies">@_copies</output>
+@* An app that re-keys a field replaces it, so its count of commits starts again. *@
+<TbNumberField @key="_trips" Label="Trips" @bind-Value="_trips" />
+<output data-testid="trips">@_trips</output>
 
 @code {
     private static readonly CultureInfo UsEnglish = CultureInfo.GetCultureInfo("en-US");
     private decimal _budget;
     private int? _copies;
+    private int _trips = 1;
 }

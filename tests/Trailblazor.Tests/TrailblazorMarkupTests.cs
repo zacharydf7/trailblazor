@@ -665,6 +665,24 @@ public class TrailblazorMarkupTests : BunitContext
         await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().TextField("Trail").EnterAsync("Pine"));
     }
 
+    [Theory]
+    [InlineData(true, null)]
+    [InlineData(false, "N0")]
+    public async Task NumberField_ShouldThrow_WhenTheFieldIsReadOnlyOrDisabled(bool readOnly, string? format)
+    {
+        int? copies = 3;
+        var cut = Render<TbNumberField<int?>>(parameters => parameters.Add(field => field.Label, "Copies")
+            .Add(field => field.Value, copies).Add(field => field.ValueChanged, (int? value) => copies = value)
+            .Add(field => field.Format, format).Add(field => field.ReadOnly, readOnly)
+            .Add(field => field.Disabled, !readOnly));
+
+        // The driver throws through its task, not when called, so a test can hold the task and await it later.
+        var entered = cut.Tb().NumberField("Copies").EnterAsync("12");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => entered);
+        Assert.Equal(3, copies);
+    }
+
     [Fact]
     public void TextField_ShouldThrow_WhenTheLabelNamesAnotherKindOfField()
     {
@@ -760,6 +778,27 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Sortable_ShouldFindAnItemByItsLabel_WhenItHoldsAField()
+    {
+        List<string> steps = ["Tent", "Stove"];
+        var cut = Render<TbSortable<string>>(parameters => parameters.Add(sortable => sortable.Label, "Packing steps")
+            .Add(sortable => sortable.Items, steps).Add(sortable => sortable.ItemLabel, step => step)
+            .Add(sortable => sortable.OnMove, (SortableMove<string> move) => move.ApplyTo(steps))
+            .Add(sortable => sortable.ItemTemplate, step => builder =>
+            {
+                builder.AddContent(0, step);
+                builder.OpenComponent<TbTextField<string>>(1);
+                builder.AddAttribute(2, nameof(TbTextField<string>.Label), $"Note for {step}");
+                builder.CloseComponent();
+            }));
+
+        await cut.Tb().Sortable("Packing steps").MoveAsync("Stove", 0);
+
+        Assert.Equal(["Stove", "Tent"], steps);
+        Assert.Equal(["Stove", "Tent"], cut.Tb().Sortable("Packing steps").Items);
+    }
+
+    [Fact]
     public async Task Sortable_ShouldStopAtTheStepTheAppRefuses_WhenMovingAnItem()
     {
         List<string> rules = ["Block spam", "Flag invoices", "Star the team", "Catch-all"];
@@ -802,8 +841,9 @@ public class TrailblazorMarkupTests : BunitContext
         // The handler isn't a component's, so nothing redraws the lists; the app's data shows the move.
         Assert.Equal(["Book campsite", "Check weather"], done);
         Assert.Equal(["Pack food"], todo);
-        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => cut.Tb().Sortable("To do").MoveToListAsync("Pack food", "Archive"));
+        // The driver throws through its task, not when called, so a test can hold the task and await it later.
+        var refused = cut.Tb().Sortable("To do").MoveToListAsync("Pack food", "Archive");
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => refused);
         Assert.Contains("no other list in its group has that label", failure.Message);
 
         void Column(RenderTreeBuilder builder, int sequence, string label, List<string> tasks)
@@ -1123,6 +1163,60 @@ public class TrailblazorMarkupTests : BunitContext
         var error = Assert.Throws<InvalidOperationException>(() => cut.Tb().Select("Color").Options);
 
         Assert.Equal("No field is labeled \"Color\".", error.Message);
+    }
+
+    [Fact]
+    public async Task Select_ShouldListTheOptions_WhenNoOptionReadsTheText()
+    {
+        var cut = RenderForm();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Select("Size").ChooseAsync("Huge"));
+
+        Assert.Equal("No option reads \"Huge\". The options read: \"Small\", \"Medium\", \"Large\".", error.Message);
+    }
+
+    [Fact]
+    public async Task Select_ShouldSaySeveralOptionsReadTheText_WhenTwoShareIt()
+    {
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.ChildContent, (RenderFragment)(builder =>
+            {
+                foreach (var (index, value) in new[] { "pine-north", "pine-south" }.Index())
+                {
+                    builder.OpenComponent<TbOption<string>>(index * 3);
+                    builder.AddAttribute(index * 3 + 1, nameof(TbOption<string>.Value), value);
+                    builder.AddAttribute(index * 3 + 2, nameof(TbOption<string>.Text), "Pine");
+                    builder.CloseComponent();
+                }
+            })));
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Select("Trail").ChooseAsync("Pine"));
+
+        Assert.Equal("2 options read \"Pine\"; give each option a name of its own.", error.Message);
+    }
+
+    [Fact]
+    public async Task NumberField_ShouldFindTheNumberField_WhenASliderSharesItsLabel()
+    {
+        int? threshold = null;
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbSlider<int>>(0);
+            builder.AddAttribute(1, nameof(TbSlider<int>.Label), "Threshold");
+            builder.CloseComponent();
+            builder.OpenComponent<TbNumberField<int?>>(2);
+            builder.AddAttribute(3, nameof(TbNumberField<int?>.Label), "Threshold");
+            builder.AddAttribute(4, nameof(TbNumberField<int?>.ValueChanged),
+                EventCallback.Factory.Create<int?>(this, value => threshold = value));
+            builder.CloseComponent();
+        });
+
+        await cut.Tb().NumberField("Threshold").EnterAsync("40");
+
+        Assert.Equal(40, threshold);
+        Assert.Throws<InvalidOperationException>(() => cut.Tb().TextField("Threshold").Text);
     }
 
     [Fact]

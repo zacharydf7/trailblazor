@@ -13,7 +13,9 @@
         {
             var item = Items[index];
             var at = index;
-            <li @key="KeyOf(item)" data-part="item" data-key="@IdOf(item)" class="tb-sortable__item">
+            @* Test helpers find an item by its label, since an item holding a field has more text than its name. *@
+            <li @key="KeyOf(item)" data-part="item" data-key="@IdOf(item)" data-text="@ItemLabel?.Invoke(item)"
+                class="tb-sortable__item">
                 @((RenderFragment)(handle => MoveHandle.Add(handle, 0, HandleLabel(item), at, Items.Count, Disabled,
                     Labels, Localizer,
                     (to, args) => UserMoveAsync(item, to, args.Detail > 0 ? "pointer" : "keyboard"),

@@ -5,6 +5,11 @@
     <ItemTemplate>@context</ItemTemplate>
 </TbSortable>
 <output data-testid="order">@string.Join(", ", _rules)</output>
+@* An item holding a field has more text than its name. *@
+<TbSortable TItem="string" Items="_steps" Label="Packing steps" ItemLabel="step => step"
+            OnMove="move => move.ApplyTo(_steps)">
+    <ItemTemplate>@context <TbTextField TValue="string" Label="@($"Note for {context}")" /></ItemTemplate>
+</TbSortable>
 @* A list inside a grid's cell moves its own items, and only its own. *@
 <TbDataGrid TItem="string" Items="_crews" AriaLabel="Crews" OnRowMove="move => move.ApplyTo(_crews)">
     <TbColumn TItem="string" Title="Crew" Id="crew">
@@ -40,6 +45,7 @@
 
 @code {
     private readonly List<string> _rules = ["Block spam", "Flag invoices", "Star the team", "Catch-all"];
+    private readonly List<string> _steps = ["Tent", "Stove"];
     private readonly List<string> _stops = ["Trailhead", "Lake camp", "Summit Gate"];
     private readonly List<string> _camps = ["Pine camp", "Fern camp", "Ridge camp"];
     private readonly List<string> _crews = ["North crew", "South crew"];

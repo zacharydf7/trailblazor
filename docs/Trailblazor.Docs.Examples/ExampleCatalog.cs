@@ -2695,7 +2695,9 @@ public static class ExampleCatalog
                 + "`cut.Tb().Sortable()` in bUnit. In Playwright, `DragBeforeAsync` and `DragAfterAsync` drag it "
                 + "onto another item, and each waits for the app's answer. Between lists, "
                 + "`MoveToListAsync(\"Ridge loop\", \"Planned\")` moves an item through its handle's menu in both "
-                + "libraries, and `DragToListAsync` drags it there in Playwright. "
+                + "libraries, and `DragToListAsync` drags it there in Playwright. The helpers name an item by "
+                + "`ItemLabel`, or by its text when the list has none, so give a list whose items hold a field an "
+                + "`ItemLabel`. "
                 + "Without them, press keys on a handle, found as "
                 + "`GetByRole(AriaRole.Button, new() { Name = \"Move Storm warning\" })`, and check the order the "
                 + "app shows. To drag, move the mouse from the handle to the lower half of the item it should "
@@ -7007,8 +7009,10 @@ public static class ExampleCatalog
                 + "and answers confirms and alerts with `Answer`, as the Testing guide shows. In Playwright, "
                 + "`page.Tb().Dialog(\"Delete report?\")` from "
                 + "`Trailblazor.Testing.Playwright` finds a dialog by its title: `WaitForAsync()` returns it once "
-                + "open, `ChooseAsync(\"Delete\")` clicks a button and waits for it to close, and `CancelAsync()` "
-                + "presses Escape.",
+                + "open, `ChooseAsync(\"Delete\")` clicks a button, and `CancelAsync()` presses Escape. Those two "
+                + "wait until the dialog has faded out and left the page, which is when the app gets the answer. A "
+                + "dialog that's fading carries `data-leaving`, so if you write your own wait, wait for the dialog to "
+                + "be gone, not hidden.",
             Telemetry =
             [
                 "With `DialogOptions.TelemetryName`, such as `\"delete-trail\"`, or the `telemetryName` of "

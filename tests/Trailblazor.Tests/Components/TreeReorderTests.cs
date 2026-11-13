@@ -328,8 +328,10 @@ public class TreeReorderTests : BunitContext
             .Add(tree => tree.ChildrenSelector, place => place.Children)
             .Add(tree => tree.KeySelector, place => place.Id).Add(tree => tree.AriaLabel, "Places"));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => cut.Tb().Tree("Places").DragAfterAsync(["North"], ["South"]));
+        // The driver throws through its task, not when called, so a test can hold the task and await it later.
+        var drag = cut.Tb().Tree("Places").DragAfterAsync(["North"], ["South"]);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => drag);
     }
 
     private TreeViewEvents Events() =>

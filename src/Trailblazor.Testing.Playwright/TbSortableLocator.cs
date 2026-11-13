@@ -3,7 +3,8 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbSortable</c>, found by its label.</summary>
+/// <summary>A <c>TbSortable</c>, found by its label. Its items are named by the list's <c>ItemLabel</c>, or by their
+/// text when it has none.</summary>
 public sealed class TbSortableLocator(ILocator scope, string name)
 {
     private ILocator List => scope.GetByRole(AriaRole.List, new() { Name = name, Exact = true })
@@ -11,29 +12,29 @@ public sealed class TbSortableLocator(ILocator scope, string name)
 
     private ILocator Items => List.Locator(":scope > [data-part=item]");
 
-    /// <summary>The items' text, in the order they show.</summary>
-    public async Task<IReadOnlyList<string>> ItemsAsync() =>
-        [.. (await Items.Locator(":scope > .tb-sortable__content").AllInnerTextsAsync()).Select(text => text.Trim())];
+    /// <summary>The items' names, in the order they show.</summary>
+    public async Task<IReadOnlyList<string>> ItemsAsync() => await Items.EvaluateAllAsync<string[]>("items => items.map("
+        + "item => item.dataset.text ?? item.querySelector(':scope > .tb-sortable__content').innerText.trim())");
 
-    /// <summary>Moves the item whose text is exactly <paramref name="item"/> to <paramref name="index"/>, through its
-    /// handle's menu as a user would: Move to start or Move to end for the first or last place, else Move up or Move
-    /// down a place at a time, so <c>CanMove</c> and <c>OnMove</c> see each step. Waits for each step's answer, and a
-    /// step the app refuses ends the move. Throws when the list is disabled or <paramref name="index"/> is past its
-    /// last item.</summary>
+    /// <summary>Moves the item named <paramref name="item"/> to <paramref name="index"/>, through its handle's menu as
+    /// a user would: Move to start or Move to end for the first or last place, else Move up or Move down a place at a
+    /// time, so <c>CanMove</c> and <c>OnMove</c> see each step. Waits for each step's answer, and a step the app
+    /// refuses ends the move. Throws when the list is disabled or <paramref name="index"/> is past its last
+    /// item.</summary>
     public Task MoveAsync(string item, int index) =>
         HandleMoves.MoveAsync(List, Handle(item), () => PlaceAsync(item), Items.CountAsync, index, item);
 
-    /// <summary>Drags the item whose text is exactly <paramref name="item"/> by its handle onto the top half of the
-    /// item <paramref name="target"/>, to move it just before that item, and waits for the app's answer.</summary>
+    /// <summary>Drags the item named <paramref name="item"/> by its handle onto the top half of the item
+    /// <paramref name="target"/>, to move it just before that item, and waits for the app's answer.</summary>
     public Task DragBeforeAsync(string item, string target) => DragAsync(item, target, before: true);
 
-    /// <summary>Drags the item whose text is exactly <paramref name="item"/> by its handle onto the bottom half of the
-    /// item <paramref name="target"/>, to move it just after that item, and waits for the app's answer.</summary>
+    /// <summary>Drags the item named <paramref name="item"/> by its handle onto the bottom half of the item
+    /// <paramref name="target"/>, to move it just after that item, and waits for the app's answer.</summary>
     public Task DragAfterAsync(string item, string target) => DragAsync(item, target, before: false);
 
-    /// <summary>Moves the item whose text is exactly <paramref name="item"/> to the end of the list labeled
-    /// <paramref name="list"/> in its group, through its handle's menu as a user would, and waits for the app's
-    /// answer. Throws when either list is disabled or no other list in the group has that label.</summary>
+    /// <summary>Moves the item named <paramref name="item"/> to the end of the list labeled <paramref name="list"/> in
+    /// its group, through its handle's menu as a user would, and waits for the app's answer. Throws when either list
+    /// is disabled or no other list in the group has that label.</summary>
     public Task MoveToListAsync(string item, string list) =>
         HandleMoves.ChooseAsync(List, Handle(item), item, async menu =>
         {
@@ -49,7 +50,7 @@ public sealed class TbSortableLocator(ILocator scope, string name)
                 + "that label.");
         });
 
-    /// <summary>Drags the item whose text is exactly <paramref name="item"/> by its handle into the list labeled
+    /// <summary>Drags the item named <paramref name="item"/> by its handle into the list labeled
     /// <paramref name="list"/> in its group, onto the top half of the item <paramref name="before"/> to land just
     /// before it, or below that list's last item (onto the list itself when it's empty) when
     /// <paramref name="before"/> is null, and waits for the app's answer. Throws when either list is disabled, when
@@ -78,7 +79,7 @@ public sealed class TbSortableLocator(ILocator scope, string name)
 
         if (before is not null && await other.Item(before).CountAsync() != 1)
         {
-            throw new InvalidOperationException($"\"{list}\" has no item that reads \"{before}\".");
+            throw new InvalidOperationException($"\"{list}\" has no item named \"{before}\".");
         }
 
         var (target, at) = before is not null ? (other.Item(before), 0.25f)
@@ -91,8 +92,10 @@ public sealed class TbSortableLocator(ILocator scope, string name)
         await HandleMoves.DragAsync(List.Locator("xpath=.."), List,
             Handle(item), Item(target), before, await PlaceAsync(item), await PlaceAsync(target), item);
 
-    private ILocator Item(string text) => Items.Locator(":scope > .tb-sortable__content")
-        .Filter(new() { HasTextRegex = new Regex($"^{Regex.Escape(text)}$") }).Locator("xpath=parent::*");
+    private ILocator Item(string name) => List.Locator(
+            $":scope > [data-part=item][data-text=\"{name.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"]")
+        .Or(List.Locator(":scope > [data-part=item]:not([data-text]) > .tb-sortable__content")
+            .Filter(new() { HasTextRegex = new Regex($"^{Regex.Escape(name)}$") }).Locator("xpath=parent::*"));
 
     private ILocator Handle(string item) => Item(item).Locator(":scope > [data-part=handle] > [aria-haspopup=menu]");
 
