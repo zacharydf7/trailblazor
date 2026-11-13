@@ -1,0 +1,53 @@
+<TbStack Gap="3">
+    <TbDataGrid TItem="Trail" Items="_trails" AriaLabel="Trail closures" KeySelector="trail => trail.Id"
+                EditMode="GridEditMode.Batch" OnBatchSave="Save">
+        <TbColumn Field="trail => trail.Name" Editable />
+        <TbColumn Field="trail => trail.Region" Editable />
+        <TbColumn Field="trail => trail.Open" Editable />
+    </TbDataGrid>
+    <TbText Muted>@_status</TbText>
+</TbStack>
+
+@code {
+    private readonly List<Trail> _trails =
+    [
+        new(1, "Pine Hollow", "North ridge", true),
+        new(2, "Eagle Ridge", "North ridge", false),
+        new(3, "Cedar Flats", "River valley", true),
+    ];
+
+    private string _status = "Nothing saved yet.";
+
+    public sealed class Trail(int id, string name, string region, bool open)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; set; } = name;
+
+        public string Region { get; set; } = region;
+
+        public bool Open { get; set; } = open;
+    }
+
+    // Every change arrives at once, as a server would take them in one request.
+    private void Save(GridBatchEdit<Trail> batch)
+    {
+        foreach (var change in batch.Changes)
+        {
+            switch (change.Column)
+            {
+                case nameof(Trail.Name):
+                    change.Item.Name = (string)change.Value!;
+                    break;
+                case nameof(Trail.Region):
+                    change.Item.Region = (string)change.Value!;
+                    break;
+                case nameof(Trail.Open):
+                    change.Item.Open = (bool)change.Value!;
+                    break;
+            }
+        }
+
+        _status = $"Saved {batch.Changes.Count} {(batch.Changes.Count == 1 ? "change" : "changes")}.";
+    }
+}

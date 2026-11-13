@@ -8,4 +8,8 @@ public enum GridEditMode
 
     /// <summary>Every <see cref="TbColumn{TItem}.Editable"/> cell of a row, checked and saved together.</summary>
     Row,
+
+    /// <summary>One cell at a time, as <see cref="Cell"/> does, but each checked edit is kept as a change, marked on its
+    /// cell, until the user saves or discards all the changes at once.</summary>
+    Batch,
 }

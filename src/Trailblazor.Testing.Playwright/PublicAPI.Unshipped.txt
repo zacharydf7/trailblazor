@@ -236,3 +236,5 @@ Trailblazor.Testing.Playwright.TbQueryBuilderLocator.RemoveGroupAsync(params int
 Trailblazor.Testing.Playwright.TbQueryBuilderLocator.RemoveConditionAsync(int number, params int[]! group) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbQueryBuilderLocator.TbQueryBuilderLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.QueryBuilder(string! label) -> Trailblazor.Testing.Playwright.TbQueryBuilderLocator!
+Trailblazor.Testing.Playwright.TbGridLocator.DiscardChangesAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbGridLocator.SaveChangesAsync() -> System.Threading.Tasks.Task!

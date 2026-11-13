@@ -943,6 +943,52 @@ public sealed class TbGridLocator(ILocator scope, string name)
         return Row(row).Locator($"td[data-column=\"{id}\"]");
     }
 
+    /// <summary>Clicks the Save changes button of a grid whose <c>EditMode</c> is <c>Batch</c>, and waits until the app
+    /// has taken the changes or shown why it can't. Throws when the grid holds no changes or doesn't edit in
+    /// batches; an edit still open doesn't count as a change until it ends.</summary>
+    public async Task SaveChangesAsync()
+    {
+        var save = await BatchButtonAsync("save-changes");
+        await Commit.WaitAsync(save, async () =>
+        {
+            await save.ClickAsync();
+            return true;
+        });
+    }
+
+    /// <summary>Clicks the Discard changes button of a grid whose <c>EditMode</c> is <c>Batch</c>, and waits until every
+    /// cell shows its item's value again. Throws when the grid holds no changes or doesn't edit in batches;
+    /// an edit still open doesn't count as a change until it ends.</summary>
+    public async Task DiscardChangesAsync()
+    {
+        var discard = await BatchButtonAsync("discard-changes");
+        await discard.ClickAsync();
+        await Assertions.Expect(discard).ToHaveAttributeAsync("aria-disabled", "true");
+    }
+
+    // A change that just landed enables the button only after the app re-renders, so wait briefly for that, then throw
+    // if it's still disabled, since clicking a disabled button would wait forever.
+    private async Task<ILocator> BatchButtonAsync(string part)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var button = Root.Locator($"[data-part=batch-bar] [data-part={part}]");
+        if (await button.CountAsync() == 0)
+        {
+            throw new InvalidOperationException("The grid has no batch bar; set its EditMode to Batch.");
+        }
+
+        try
+        {
+            await Assertions.Expect(button).Not.ToHaveAttributeAsync("aria-disabled", "true", new() { Timeout = 2000 });
+        }
+        catch (PlaywrightException exception)
+        {
+            throw new InvalidOperationException("The grid holds no changes.", exception);
+        }
+
+        return button;
+    }
+
     /// <summary>Opens the tree grid row with a cell whose text is exactly this, with its button, and waits for its
     /// child rows to show. A row already open stays open.</summary>
     public Task ExpandAsync(string row) => SetExpandedAsync(row, true);

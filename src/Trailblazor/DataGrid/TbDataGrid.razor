@@ -4,7 +4,7 @@
 @typeparam TItem
 @inherits TbComponentBase
 
-<div @attributes="AdditionalAttributes" data-part="grid" data-commits="@_rowMovesAnswered" style="@Style"
+<div @attributes="AdditionalAttributes" data-part="grid" data-commits="@_answered" style="@Style"
      class="@ClassNames.Join("tb-data-grid", ClassNames.Modifier("tb-data-grid", Size),
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
                 Height is null ? null : "tb-data-grid--scrolls", Virtualize ? "tb-data-grid--virtual" : null, Class)">
@@ -57,6 +57,28 @@
                     </TbMenuItem>
                 </TbMenu>
             }
+        </div>
+    }
+    @if (EditMode == GridEditMode.Batch)
+    {
+        @* The bar stays while there is nothing to save, so focus on its buttons isn't lost once the changes are saved. *@
+        <div data-part="batch-bar" class="tb-data-grid__batch-bar">
+            <span id="@_changedId" hidden>@Localizer[TbStrings.DataGridChanged]</span>
+            <span data-part="change-count" class="tb-data-grid__change-count">
+                @Format(TbStrings.DataGridUnsavedChanges, _changes.Count)
+            </span>
+            @if (_batchError is not null)
+            {
+                <span data-part="batch-error" class="tb-data-grid__batch-error">@_batchError</span>
+            }
+            <TbButton Size="Size.Small" Disabled="!HasChanges" FocusableWhenDisabled data-part="save-changes"
+                      OnClick="SaveChangesFromBarAsync">
+                @Localizer[TbStrings.DataGridSaveChanges]
+            </TbButton>
+            <TbButton Variant="Variant.Text" Size="Size.Small" Disabled="!HasChanges" FocusableWhenDisabled
+                      data-part="discard-changes" OnClick="DiscardChangesFromBarAsync">
+                @Localizer[TbStrings.DataGridDiscardChanges]
+            </TbButton>
         </div>
     }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")"
@@ -348,9 +370,12 @@
             {
                 var editable = CanEdit(column);
                 var treeCell = tree is not null && column == _shownColumns[0];
+                var change = ChangeOf(key, column);
                 <td data-column="@column.Key" data-part="@(treeCell ? "tree-cell" : null)" data-pinned="@PinSide(column)"
                     style="@PinStyle(column)" data-editable="@(editable ? "" : null)"
-                    class="@ClassNames.Join(column.CellClass, Classes?.Cell)"
+                    data-changed="@(change is null ? null : "")" aria-describedby="@(change is null ? null : _changedId)"
+                    class="@ClassNames.Join(column.CellClass, change is null ? null : "tb-data-grid__cell--changed",
+                               Classes?.Cell)"
                     @ondblclick="@((editable ? _startEdit.For((key, column)) : null)!)"
                     @ontbeditstart="@((editable ? _startEdit.For((key, column)) : null)!)">
                     @if (treeCell)
@@ -360,6 +385,11 @@
                     @if (RowEditOf(key) is { } edit && edit.CellOf(column) is { } cell)
                     {
                         @Editor(edit, cell)
+                    }
+                    else if (change is not null)
+                    {
+                        @* A change shows as its column's text, since a cell template draws from the item. *@
+                        @column.TextOf(change.Value)
                     }
                     else if (column.CellTemplate is not null)
                     {
@@ -415,9 +445,9 @@
     // A cell being edited holds its field, saved when focus leaves it, or in row mode when focus leaves the row; like
     // the filters, a page's form doesn't own it, and its keys go no further than the edit.
     private RenderFragment Editor(GridEdit edit, CellEdit cell) =>
-        @<div data-part="editor" data-tb-focus-root="@(EditMode == GridEditMode.Cell ? "" : null)"
+        @<div data-part="editor" data-tb-focus-root="@(EditMode != GridEditMode.Row ? "" : null)"
               class="tb-data-grid__editor" @ontbeditkey="OnEditKeyAsync" @onkeydown:stopPropagation
-              @ontbfocusleave="@((EditMode == GridEditMode.Cell ? LeftHandler(edit) : null)!)">
+              @ontbfocusleave="@((EditMode != GridEditMode.Row ? LeftHandler(edit) : null)!)">
             <CascadingValue TValue="EditContext" Value="null">
                 <CascadingValue TValue="TbForm" Value="null">
                     @switch (cell.Column.Editor)

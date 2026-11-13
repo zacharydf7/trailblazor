@@ -7340,6 +7340,28 @@
         vertical-align: middle;
     }
 
+    /* A changed cell shows a bar at its start as well as a tint, so the mark doesn't rest on color alone. */
+    .tb-data-grid__cell--changed {
+        background: var(--tb-color-warning-subtle);
+        box-shadow: inset 3px 0 0 var(--tb-color-warning);
+    }
+
+    .tb-data-grid__batch-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--tb-space-2);
+        padding-block-end: var(--tb-space-2);
+    }
+
+    .tb-data-grid__change-count {
+        margin-inline-end: auto;
+    }
+
+    .tb-data-grid__batch-error {
+        color: var(--tb-color-danger-text);
+    }
+
     .tb-data-grid__detail-cell {
         padding: var(--tb-space-3) var(--tb-space-4);
         background: var(--tb-color-surface-sunken);
@@ -7522,6 +7544,11 @@
 
         .tb-data-grid__row[data-drop-refused] > td {
             border-style: dashed;
+        }
+
+        .tb-data-grid__cell--changed {
+            outline: 2px dashed Highlight;
+            outline-offset: -2px;
         }
     }
 

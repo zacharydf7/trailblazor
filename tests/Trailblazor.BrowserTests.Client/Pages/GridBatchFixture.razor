@@ -1,0 +1,53 @@
+@page "/grid-batch"
+@using System.ComponentModel.DataAnnotations
+
+@* A grid that edits in batches, with what the app last saved read out; a name "Refused" is turned down by a slow server, and "Held" at once. *@
+<TbDataGrid TItem="Hike" Items="_hikes" AriaLabel="Hikes" KeySelector="hike => hike.Id" EditMode="GridEditMode.Batch"
+            OnBatchSave="Save">
+    <TbColumn Field="hike => hike.Name" Editable />
+    <TbColumn Field="hike => hike.LengthKm" Title="Length (km)" Editable />
+</TbDataGrid>
+<output aria-label="Saved">@_saved</output>
+<output aria-label="Attempts">@_attempts</output>
+
+@code {
+    private readonly List<Hike> _hikes = [new(1, "Pine Hollow", 6), new(2, "Eagle Ridge", 14)];
+    private string _saved = "";
+    private int _attempts;
+
+    public sealed class Hike(int id, string name, int lengthKm)
+    {
+        public int Id { get; } = id;
+
+        [Required]
+        public string Name { get; set; } = name;
+
+        public int LengthKm { get; set; } = lengthKm;
+    }
+
+    private async Task Save(GridBatchEdit<Hike> batch)
+    {
+        var refused = batch.Changes.Any(change => Equals(change.Value, "Refused"));
+        if (refused || batch.Changes.Any(change => Equals(change.Value, "Held")))
+        {
+            if (refused)
+            {
+                await Task.Delay(500);
+            }
+
+            _attempts++;
+            batch.Error = "The server turned the changes down.";
+            return;
+        }
+
+        foreach (var change in batch.Changes)
+        {
+            if (change.Column == "Name")
+            {
+                change.Item.Name = (string)change.Value!;
+            }
+        }
+
+        _saved = string.Join(", ", batch.Changes.Select(change => change.Value));
+    }
+}

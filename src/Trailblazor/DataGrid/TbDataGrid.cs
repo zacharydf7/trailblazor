@@ -94,6 +94,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly ItemHandlers<object, Func<Task>> _toggleDetail;
     private readonly ItemHandlers<object, Func<Task>> _toggleChildren;
     private readonly Dictionary<object, TItem> _expanded = [];
+    // A batch grid's changes by row key and column, in the order first made, then why the app last turned them down,
+    // and the save in flight with the cells it sent.
+    private readonly OrderedDictionary<(object Key, string Column), GridCellEdit<TItem>> _changes = [];
+    private string? _batchError;
+    private Task? _batchSave;
+    private HashSet<(object Key, string Column)> _sending = [];
+    private readonly string _changedId = $"tb-grid-changed-{Guid.NewGuid():N}";
     private readonly string _detailPrefix = $"tb-grid-detail-{Guid.NewGuid():N}";
     private IReadOnlyCollection<TItem>? _expandedFromParent;
     private readonly ItemHandlers<(object, TbColumn<TItem>), Func<Task>> _startEdit;
@@ -103,8 +110,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private ControlTelemetry? _telemetry;
     private int _columnVersion;
     private int _rowVersion;
-    // Counts the moves the user asked for that the app has answered, made or refused, so a test can wait for its own.
-    private int _rowMovesAnswered;
+    // Counts the row moves and batch saves the user asked for that the app has answered, done or refused, so a test can
+    // wait for its own.
+    private int _answered;
     private object? _arrangedFor;
     private object? _rowOptions;
 
@@ -384,7 +392,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     /// <summary>What one edit covers: a cell, the default, or in <see cref="GridEditMode.Row"/> every
     /// <see cref="TbColumn{TItem}.Editable"/> cell of a row, where Enter saves the row, Escape cancels it, Tab moves
-    /// between its fields and Save and Cancel buttons, and leaving the row saves it.</summary>
+    /// between its fields and Save and Cancel buttons, and leaving the row saves it. In
+    /// <see cref="GridEditMode.Batch"/>, cells are edited as in the default, and each edit is kept as a change until
+    /// the user saves or discards them all.</summary>
     [Parameter]
     public GridEditMode EditMode { get; set; }
 
@@ -393,6 +403,18 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// it, each value is set on the item when its column's field is a property or field the grid can set.</summary>
     [Parameter]
     public EventCallback<GridRowEdit<TItem>> OnRowEdit { get; set; }
+
+    /// <summary>Raised with every change when the user saves the changes of a grid whose <see cref="EditMode"/> is
+    /// <see cref="GridEditMode.Batch"/>; apply them to the items, or save them, and the grid shows the rows again.
+    /// Without it, each value is set on its item when its column's field is a property or field the grid can set.
+    /// A change holds the item it was made on, so if the rows can reload before a save, set <see cref="KeySelector"/>
+    /// and look the item up by its key.</summary>
+    [Parameter]
+    public EventCallback<GridBatchEdit<TItem>> OnBatchSave { get; set; }
+
+    /// <summary>Whether a <see cref="GridEditMode.Batch"/> grid holds changes not yet saved, such as to ask before the
+    /// user leaves the page.</summary>
+    public bool HasChanges => _changes.Count > 0;
 
     /// <summary>Shows the rows as loading, such as while the page fetches <see cref="Items"/>.</summary>
     [Parameter]
@@ -494,7 +516,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private bool CanEdit(TbColumn<TItem> column) => column.Editor != ColumnEditor.None
         && (HasEditHandler || column.CanSet);
 
-    private bool HasEditHandler => EditMode == GridEditMode.Row ? OnRowEdit.HasDelegate : OnCellEdit.HasDelegate;
+    private bool HasEditHandler => EditMode switch
+    {
+        GridEditMode.Row => OnRowEdit.HasDelegate,
+        GridEditMode.Batch => OnBatchSave.HasDelegate,
+        _ => OnCellEdit.HasDelegate,
+    };
 
     // A failed, loading or empty grid shows one row saying so, which a virtualized table counts and numbers too, so
     // the keyboard can reach it.
@@ -999,7 +1026,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         item = _rows[at];
         var columns = EditMode == GridEditMode.Row ? _shownColumns.Where(CanEdit) : [column];
-        _edit = new(item, key, column, [.. columns.Select(editable => new CellEdit(editable, editable.ValueOf(item)))]);
+        _edit = new(item, key, column, [.. columns.Select(editable => new CellEdit(editable,
+            ChangeOf(key, editable) is { } change ? change.Value : editable.ValueOf(item)))]);
         _editVersion++;
     }
 
@@ -1007,7 +1035,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private Task ChooseAsync(CellEdit cell, string? choice)
     {
         cell.Value = choice;
-        return EditMode == GridEditMode.Cell ? SaveEditAsync(refocus: true) : Task.CompletedTask;
+        return EditMode != GridEditMode.Row ? SaveEditAsync(refocus: true) : Task.CompletedTask;
     }
 
     // A key the field used, such as Enter opening a select's list or Escape closing it, leaves the edit open.
@@ -1079,6 +1107,18 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return false;
         }
 
+        if (EditMode == GridEditMode.Batch)
+        {
+            KeepChanges(edit, values);
+            Telemetry.Used(TelemetryName, "edit");
+            if (refocus)
+            {
+                await FocusCellAsync(edit);
+            }
+
+            return true;
+        }
+
         if (await RejectionOfAsync(edit, values) is { } rejected)
         {
             if (EditMode == GridEditMode.Row)
@@ -1113,6 +1153,126 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         return true;
+    }
+
+    // A batch grid keeps each checked value as a change, and a value edited back to the item's own drops the change.
+    private void KeepChanges(GridEdit edit, Dictionary<CellEdit, object?> values)
+    {
+        foreach (var (cell, value) in values)
+        {
+            var key = (edit.Key, cell.Column.Key);
+            // A cell still being saved keeps a value edited back to the item's own, since the save is about to change the
+            // item.
+            if (Equals(value, cell.Column.ValueOf(edit.Item)) && !_sending.Contains(key))
+            {
+                _changes.Remove(key);
+            }
+            else
+            {
+                _changes[key] = new(edit.Item, cell.Column.Key, value);
+            }
+        }
+
+        _edit = null;
+        _editVersion++;
+        _rowVersion++;
+    }
+
+    private GridCellEdit<TItem>? ChangeOf(object key, TbColumn<TItem> column) =>
+        _changes.GetValueOrDefault((key, column.Key));
+
+    /// <summary>Saves the changes of a grid whose <see cref="EditMode"/> is <see cref="GridEditMode.Batch"/>, as its
+    /// Save changes button does: an edit still open is saved into them first, then <see cref="OnBatchSave"/> gets them
+    /// all (without a handler, each value is set on its item), and the rows are shown again. If that edit fails its
+    /// check, nothing is saved. A handler that sets <see cref="GridBatchEdit{TItem}.Error"/> keeps the changes and
+    /// shows why. A save already on its way is waited for rather than started again.</summary>
+    public Task SaveChangesAsync() => _batchSave is { IsCompleted: false } saving ? saving : _batchSave = SaveBatchAsync();
+
+    private async Task SaveBatchAsync()
+    {
+        try
+        {
+            await SaveBatchCoreAsync();
+        }
+        finally
+        {
+            _answered++;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveBatchCoreAsync()
+    {
+        if (!await SaveEditAsync(refocus: false) || _changes.Count == 0)
+        {
+            return;
+        }
+
+        var sent = _changes.ToList();
+        var batch = new GridBatchEdit<TItem>([.. sent.Select(pair => pair.Value)]);
+        _batchError = null;
+        _sending = [.. sent.Select(pair => pair.Key)];
+        try
+        {
+            if (OnBatchSave.HasDelegate)
+            {
+                await OnBatchSave.InvokeAsync(batch);
+            }
+            else
+            {
+                foreach (var change in batch.Changes)
+                {
+                    _columns.First(column => column.Key == change.Column).SetValue(change.Item, change.Value);
+                }
+            }
+        }
+        finally
+        {
+            _sending = [];
+        }
+
+        if (batch.Error is { } error)
+        {
+            _batchError = error;
+            Announcer.Assertive(error);
+            return;
+        }
+
+        // Changes made while the batch was on its way stay for the next save.
+        foreach (var (key, change) in sent)
+        {
+            if (ReferenceEquals(_changes.GetValueOrDefault(key), change))
+            {
+                _changes.Remove(key);
+            }
+        }
+
+        Announcer.Polite(Localizer[TbStrings.DataGridChangesSaved]);
+        await RefreshAsync();
+    }
+
+    /// <summary>Drops the changes of a grid whose <see cref="EditMode"/> is <see cref="GridEditMode.Batch"/>, and any
+    /// edit still open, as its Discard changes button does, so every cell shows its item's value again.</summary>
+    public Task DiscardChangesAsync()
+    {
+        _edit = null;
+        _editVersion++;
+        _changes.Clear();
+        _batchError = null;
+        RenderRows();
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveChangesFromBarAsync()
+    {
+        Telemetry.Used(TelemetryName, "save_changes");
+        await SaveChangesAsync();
+    }
+
+    private Task DiscardChangesFromBarAsync()
+    {
+        Telemetry.Used(TelemetryName, "discard_changes");
+        return DiscardChangesAsync();
     }
 
     private void ShowEditErrors()
@@ -1615,7 +1775,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
         finally
         {
-            _rowMovesAnswered++;
+            _answered++;
             StateHasChanged();
         }
     }

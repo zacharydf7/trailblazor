@@ -247,3 +247,5 @@ Trailblazor.Testing.TbQueryBuilderDriver.JoinAsync(Trailblazor.QueryJoin join, p
 Trailblazor.Testing.TbQueryBuilderDriver.RemoveConditionAsync(int number, params int[]! group) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbQueryBuilderDriver.RemoveGroupAsync(params int[]! group) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.QueryBuilder(string? label = null) -> Trailblazor.Testing.TbQueryBuilderDriver!
+Trailblazor.Testing.TbGridDriver.DiscardChangesAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.SaveChangesAsync() -> System.Threading.Tasks.Task!

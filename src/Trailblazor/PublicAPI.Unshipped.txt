@@ -5159,3 +5159,28 @@ override Trailblazor.QueryBuilderLabels.GetHashCode() -> int
 override Trailblazor.QueryBuilderLabels.ToString() -> string!
 static Trailblazor.QueryBuilderLabels.operator !=(Trailblazor.QueryBuilderLabels? left, Trailblazor.QueryBuilderLabels? right) -> bool
 static Trailblazor.QueryBuilderLabels.operator ==(Trailblazor.QueryBuilderLabels? left, Trailblazor.QueryBuilderLabels? right) -> bool
+Trailblazor.GridBatchEdit<TItem>
+Trailblazor.GridBatchEdit<TItem>.<Clone>$() -> Trailblazor.GridBatchEdit<TItem>!
+Trailblazor.GridBatchEdit<TItem>.Changes.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridCellEdit<TItem>!>!
+Trailblazor.GridBatchEdit<TItem>.Changes.init -> void
+Trailblazor.GridBatchEdit<TItem>.Deconstruct(out System.Collections.Generic.IReadOnlyList<Trailblazor.GridCellEdit<TItem>!>! Changes) -> void
+Trailblazor.GridBatchEdit<TItem>.Equals(Trailblazor.GridBatchEdit<TItem>? other) -> bool
+Trailblazor.GridBatchEdit<TItem>.Error.get -> string?
+Trailblazor.GridBatchEdit<TItem>.Error.set -> void
+Trailblazor.GridBatchEdit<TItem>.GridBatchEdit(System.Collections.Generic.IReadOnlyList<Trailblazor.GridCellEdit<TItem>!>! Changes) -> void
+Trailblazor.GridEditMode.Batch = 2 -> Trailblazor.GridEditMode
+Trailblazor.TbDataGrid<TItem>.DiscardChangesAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbDataGrid<TItem>.HasChanges.get -> bool
+Trailblazor.TbDataGrid<TItem>.OnBatchSave.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.GridBatchEdit<TItem>!>
+Trailblazor.TbDataGrid<TItem>.OnBatchSave.set -> void
+Trailblazor.TbDataGrid<TItem>.SaveChangesAsync() -> System.Threading.Tasks.Task!
+const Trailblazor.TbStrings.DataGridChanged = "DataGrid.Changed" -> string!
+const Trailblazor.TbStrings.DataGridChangesSaved = "DataGrid.ChangesSaved" -> string!
+const Trailblazor.TbStrings.DataGridDiscardChanges = "DataGrid.DiscardChanges" -> string!
+const Trailblazor.TbStrings.DataGridSaveChanges = "DataGrid.SaveChanges" -> string!
+const Trailblazor.TbStrings.DataGridUnsavedChanges = "DataGrid.UnsavedChanges" -> string!
+override Trailblazor.GridBatchEdit<TItem>.Equals(object? obj) -> bool
+override Trailblazor.GridBatchEdit<TItem>.GetHashCode() -> int
+override Trailblazor.GridBatchEdit<TItem>.ToString() -> string!
+static Trailblazor.GridBatchEdit<TItem>.operator !=(Trailblazor.GridBatchEdit<TItem>? left, Trailblazor.GridBatchEdit<TItem>? right) -> bool
+static Trailblazor.GridBatchEdit<TItem>.operator ==(Trailblazor.GridBatchEdit<TItem>? left, Trailblazor.GridBatchEdit<TItem>? right) -> bool

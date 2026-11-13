@@ -1176,6 +1176,24 @@ public sealed class TbGridDriver
     public Task ClickRowAsync(string cell) =>
         Row(cell).TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
 
+    /// <summary>Clicks the Save changes button of a grid whose <c>EditMode</c> is <c>Batch</c>. Throws when the grid
+    /// holds no changes or doesn't edit in batches; an edit still open doesn't count as a change until it ends.
+    /// </summary>
+    public Task SaveChangesAsync() => BatchButton("save-changes").ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    /// <summary>Clicks the Discard changes button of a grid whose <c>EditMode</c> is <c>Batch</c>. Throws when the grid
+    /// holds no changes or doesn't edit in batches; an edit still open doesn't count as a change until it ends.
+    /// </summary>
+    public Task DiscardChangesAsync() => BatchButton("discard-changes").ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    private IElement BatchButton(string part)
+    {
+        var button = _find().Closest("[data-part=grid]")?.QuerySelector($":scope > [data-part=batch-bar] [data-part={part}]")
+            ?? throw new InvalidOperationException("The grid has no batch bar; set its EditMode to Batch.");
+        return button.GetAttribute("aria-disabled") == "true"
+            ? throw new InvalidOperationException("The grid holds no changes.") : button;
+    }
+
     /// <summary>Opens the tree grid row with a cell whose text is exactly this, with its button, so its child rows
     /// show. A row already open stays open.</summary>
     public Task ExpandAsync(string row) => SetExpandedAsync(row, true);

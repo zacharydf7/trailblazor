@@ -787,6 +787,21 @@ public static class TbStrings
     /// </summary>
     public const string DataGridDetailsFor = "DataGrid.DetailsFor";
 
+    /// <summary>"Changed": tells screen readers a batch grid's cell holds a change not yet saved.</summary>
+    public const string DataGridChanged = "DataGrid.Changed";
+
+    /// <summary>"Unsaved changes: {0}": says how many changes a batch grid holds; {0} is the count.</summary>
+    public const string DataGridUnsavedChanges = "DataGrid.UnsavedChanges";
+
+    /// <summary>"Save changes": the button that saves a batch grid's changes.</summary>
+    public const string DataGridSaveChanges = "DataGrid.SaveChanges";
+
+    /// <summary>"Discard changes": the button that drops a batch grid's changes.</summary>
+    public const string DataGridDiscardChanges = "DataGrid.DiscardChanges";
+
+    /// <summary>"Changes saved": read out once a batch grid's changes are saved.</summary>
+    public const string DataGridChangesSaved = "DataGrid.ChangesSaved";
+
     /// <summary>"Rows under {0}": names a tree grid row's button that shows and hides its child rows; {0} is the row's
     /// label.</summary>
     public const string DataGridRowsUnder = "DataGrid.RowsUnder";
@@ -1330,6 +1345,11 @@ public static class TbStrings
         [DataGridSelectRow] = "Select {0}",
         [DataGridDetails] = "Details",
         [DataGridDetailsFor] = "Details for {0}",
+        [DataGridChanged] = "Changed",
+        [DataGridUnsavedChanges] = "Unsaved changes: {0}",
+        [DataGridSaveChanges] = "Save changes",
+        [DataGridDiscardChanges] = "Discard changes",
+        [DataGridChangesSaved] = "Changes saved",
         [DataGridRowsUnder] = "Rows under {0}",
         [DataGridExport] = "Export",
         [DataGridExportCsv] = "CSV",

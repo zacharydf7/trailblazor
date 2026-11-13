@@ -7856,6 +7856,13 @@ public static class ExampleCatalog
                     + "the row: Tab moves between its fields and its Save and Cancel buttons, Enter saves the row, "
                     + "Escape cancels it, focus leaving the row saves it, and `OnRowEdit` gets all of its values at "
                     + "once.", typeof(DataGridRowEditExample)),
+                new("batch-editing", "Edit in batches", "With `EditMode` set to `Batch`, cells are edited as usual, "
+                    + "but each checked edit is kept as a change, marked on its cell with a bar and a tint, while the "
+                    + "rows keep their places. A bar above the rows counts the changes; its Save changes button gives "
+                    + "them all to `OnBatchSave` at once, in the order they were made, and Discard changes drops them. "
+                    + "A handler that sets the batch's `Error` keeps the changes and shows why. `SaveChangesAsync` "
+                    + "and `DiscardChangesAsync` do the same from code, and `HasChanges` says whether any are "
+                    + "waiting, such as before the user leaves the page.", typeof(DataGridBatchExample)),
                 new("save-state", "Save the view", "`State` holds the rows' sorts, filters, groups, page and page size "
                     + "in one `GridState`. Bind it to save how the user arranged the rows, such as to local storage "
                     + "as JSON, and set it to restore them; filter values read back from JSON take their columns' "
@@ -7896,7 +7903,7 @@ public static class ExampleCatalog
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),
                 typeof(GridFilterMode), typeof(GridFilterContext), typeof(ColumnPin), typeof(GridCellEdit<>),
                 typeof(GridCellEditContext<>), typeof(GridEditMode), typeof(GridRowEdit<>),
-                typeof(GridState), typeof(ColumnAggregate), typeof(GridAggregate),
+                typeof(GridState), typeof(ColumnAggregate), typeof(GridAggregate), typeof(GridBatchEdit<>),
                 typeof(SortableMove<>), typeof(MoveCheck),
             ],
             Keyboard =
@@ -7947,6 +7954,8 @@ public static class ExampleCatalog
                     { When = "Editing a row" },
                 new(["Enter"], "Saves the row.") { When = "Editing a row" },
                 new(["Escape"], "Cancels the row's edit.") { When = "Editing a row" },
+                new(["Enter", "Space"], "Saves or discards every change, and focus stays on the button.")
+                    { When = "On the batch bar's buttons" },
                 new(["Enter"], "In the value field, applies the filter.") { When = "In a filter menu" },
                 new(["Escape"], "Closes the menu.") { When = "In a filter menu" },
                 new(["Up", "Down"], "Moves the row up or down, and focus stays on the handle.")
@@ -8093,6 +8102,11 @@ public static class ExampleCatalog
                 new("editor", "The field that edits a cell."),
                 new("row-actions", "The Save and Cancel buttons of a row that's being edited."),
                 new("row-error", "The message that says why a row could not be saved."),
+                new("batch-bar", "The bar above the rows of a grid that edits in batches."),
+                new("change-count", "The batch bar's count of changes not yet saved."),
+                new("batch-error", "The message that says why the changes could not be saved."),
+                new("save-changes", "The batch bar's Save changes button."),
+                new("discard-changes", "The batch bar's Discard changes button."),
                 new("select", "The cell that holds a row's checkbox or radio, and its header cell."),
                 new("order", "The header cell of the column that holds the rows' drag handles."),
                 new("handle", "A row's drag handle."),
@@ -8176,7 +8190,8 @@ public static class ExampleCatalog
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
                     + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize`, `reorder`, "
-                    + "`hide`, `show`, `open_detail`, `close_detail`, `export_csv` or `export_excel` for each of "
+                    + "`hide`, `show`, `open_detail`, `close_detail`, `save_changes`, `discard_changes`, "
+                    + "`export_csv` or `export_excel` for each of "
                     + "those the user does; a `move` also "
                     + "says whether a `pointer` or the "
                     + "`keyboard` made it.",

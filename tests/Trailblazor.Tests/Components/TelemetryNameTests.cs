@@ -514,6 +514,34 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task DataGrid_ShouldCountBatchSavesAndDiscardsButNotCodes_WhenItEditsInBatches()
+    {
+        Trail[] trails = [new(1, "Pine Hollow"), new(2, "Eagle Ridge")];
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, trails)
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.KeySelector, trail => trail.Id)
+            .Add(grid => grid.TelemetryName, "trails").Add(grid => grid.EditMode, GridEditMode.Batch)
+            .Add(grid => grid.OnBatchSave, (GridBatchEdit<Trail> _) => { })
+            .AddChildContent<TbColumn<Trail>>(column => column.Add(name => name.Field, trail => trail.Name)
+                .Add(name => name.Editable, true)));
+        async Task EditAsync(string name)
+        {
+            await cut.Find("tbody td[data-column=Name]").DoubleClickAsync(new());
+            await cut.Find("[data-part=editor] input").InputAsync(new ChangeEventArgs { Value = name });
+            await cut.Find("[data-part=editor]").TriggerEventAsync("ontbeditkey", new GridEditKeyEventArgs { Key = "Enter" });
+        }
+
+        await EditAsync("Pine loop");
+        await cut.Tb().Grid("Trails").SaveChangesAsync();
+        await EditAsync("Pine trail");
+        await cut.Tb().Grid("Trails").DiscardChangesAsync();
+        await EditAsync("Pine path");
+        await cut.InvokeAsync(() => cut.Instance.SaveChangesAsync());
+
+        Assert.Equal(["edit", "save_changes", "edit", "discard_changes", "edit"],
+            Uses().Where(use => Equals(use.Name, "trails")).Select(use => use.Action));
+    }
+
+    [Fact]
     public async Task TreeView_ShouldCountWhatTheUserDoesButNotWhatCodeDoes_WhenItHasATelemetryName()
     {
         Place[] places = [new(1, "North", [new(2, "Ridge")]), new(4, "South", [new(5, "Lake")])];
