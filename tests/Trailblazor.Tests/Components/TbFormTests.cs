@@ -693,6 +693,117 @@ public class TbFormTests : BunitContext
         Assert.True(_valid);
     }
 
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task Validate_ShouldShowTheFieldsRequiredMessage_WhenTheModelRequiresAFieldTheUserCantChange(
+        bool disabled, bool readOnly)
+    {
+        _leaderDisabled = disabled;
+        var cut = RenderLeaderForm(new EditContext(new Trip()), readOnly);
+
+        await cut.InvokeAsync(() => cut.Instance.ValidateAsync());
+
+        Assert.Equal("Leader is required.", cut.Find("[data-part=error]").TextContent);
+        Assert.Equal(["Leader is required."], _errors);
+    }
+
+    [Fact]
+    public async Task Field_ShouldShowItsRequiredMessage_WhenCodeEmptiesTheModelBeforeTheFieldChecksIt()
+    {
+        var trip = new Trip { Leader = "Sam" };
+        var context = new EditContext(trip);
+        var cut = RenderLeaderForm(context);
+
+        trip.Leader = null;
+        await cut.InvokeAsync(() => context.NotifyFieldChanged(new FieldIdentifier(trip, nameof(Trip.Leader))));
+
+        Assert.Equal("Leader is required.", cut.Find("[data-part=error]").TextContent);
+        Assert.Equal(["Leader is required."], _errors);
+    }
+
+    [Fact]
+    public async Task Field_ShouldShowOneRequiredMessage_WhenItBecomesDisabledAfterItCheckedItself()
+    {
+        var cut = RenderLeaderForm(new EditContext(new Trip()));
+        await cut.InvokeAsync(() => cut.Instance.ValidateAsync());
+
+        _leaderDisabled = true;
+        cut.Render();
+
+        Assert.Equal(["Leader is required."], cut.FindAll("[data-part=error]").Select(error => error.TextContent));
+        Assert.Equal(["Leader is required."], _errors);
+    }
+
+    [Fact]
+    public async Task Errors_ShouldWordEachFieldsMessageItsOwnWay_WhenTwoFieldsMembersShareAName()
+    {
+        var first = new Trip();
+        var second = new Trip();
+        var context = new EditContext(first);
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.EditContext, context)
+            .Add(form => form.DataAnnotations, true)
+            .Add(form => form.ErrorsChanged, (IReadOnlyList<string> errors) => _errors = errors)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                AddLeaderField(builder, 0, first, "First leader");
+                AddLeaderField(builder, 10, second, "Second leader");
+            })));
+
+        await cut.InvokeAsync(() => context.NotifyFieldChanged(new FieldIdentifier(first, nameof(Trip.Leader))));
+        await cut.InvokeAsync(() => context.NotifyFieldChanged(new FieldIdentifier(second, nameof(Trip.Leader))));
+
+        Assert.Equal(["First leader is required.", "Second leader is required."], _errors.Order());
+    }
+
+    [Fact]
+    public async Task Field_ShouldShowItsRequiredMessage_WhenTheModelNamesTheMemberWithDisplay()
+    {
+        var trip = new NamedTrip();
+        var context = new EditContext(trip);
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.EditContext, context)
+            .Add(form => form.DataAnnotations, true)
+            .Add(form => form.ErrorsChanged, (IReadOnlyList<string> errors) => _errors = errors)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTextField<string>>(0);
+                builder.AddAttribute(1, nameof(TbTextField<string>.Label), "Leader");
+                builder.AddAttribute(2, nameof(TbTextField<string>.Value), trip.Leader);
+                builder.AddAttribute(3, nameof(TbTextField<string>.ValueExpression),
+                    (System.Linq.Expressions.Expression<Func<string>>)(() => trip.Leader!));
+                builder.AddAttribute(4, nameof(TbTextField<string>.Disabled), true);
+                builder.CloseComponent();
+            })));
+
+        await cut.InvokeAsync(() => cut.Instance.ValidateAsync());
+
+        Assert.Equal(["Leader is required."], _errors);
+    }
+
+    private bool _leaderDisabled;
+
+    // A field bound to Trip.Leader in a form that checks the model's annotations.
+    private IRenderedComponent<TbForm> RenderLeaderForm(EditContext context, bool readOnly = false) =>
+        Render<TbForm>(parameters => parameters.Add(form => form.EditContext, context)
+            .Add(form => form.DataAnnotations, true)
+            .Add(form => form.ErrorsChanged, (IReadOnlyList<string> errors) => _errors = errors)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+                AddLeaderField(builder, 0, (Trip)context.Model, "Leader", readOnly))));
+
+    private void AddLeaderField(RenderTreeBuilder builder, int sequence, Trip trip, string label, bool readOnly = false)
+    {
+        builder.OpenComponent<TbTextField<string>>(sequence);
+        builder.AddAttribute(sequence + 1, nameof(TbTextField<string>.Label), label);
+        builder.AddAttribute(sequence + 2, nameof(TbTextField<string>.Value), trip.Leader);
+        builder.AddAttribute(sequence + 3, nameof(TbTextField<string>.ValueChanged),
+            EventCallback.Factory.Create<string>(this, value => trip.Leader = value));
+        builder.AddAttribute(sequence + 4, nameof(TbTextField<string>.ValueExpression),
+            (System.Linq.Expressions.Expression<Func<string>>)(() => trip.Leader!));
+        builder.AddAttribute(sequence + 5, nameof(TbTextField<string>.Disabled), _leaderDisabled);
+        builder.AddAttribute(sequence + 6, nameof(TbTextField<string>.ReadOnly), readOnly);
+        builder.CloseComponent();
+    }
+
     private IRenderedComponent<TbForm> RenderModelForm(object model, bool annotations = true) =>
         Render<TbForm>(parameters => parameters.Add(form => form.Model, model).Add(form => form.IsValid, _valid)
             .Add(form => form.DataAnnotations, annotations)
@@ -895,6 +1006,13 @@ public class TbFormTests : BunitContext
             (Func<string?, IEnumerable<string>>)(name => string.IsNullOrWhiteSpace(name) ? ["Enter a name."] : []));
         builder.AddAttribute(5, nameof(TbTextField<string>.Error), _nameError);
         builder.CloseComponent();
+    }
+
+    private sealed class NamedTrip
+    {
+        [Required]
+        [Display(Name = "Trip leader")]
+        public string? Leader { get; set; }
     }
 
     private sealed class Trip

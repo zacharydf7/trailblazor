@@ -116,8 +116,10 @@
             the field's <code>RequiredMessage</code>, or else the attribute's own message when it sets one, or else
             "{label} is required." While that message shows, the field shows no other, so a rule such as
             <code>[EmailAddress]</code>, which rejects the empty text a cleared field holds, doesn't add a second one.
-            The form's <code>Errors</code> leaves those out too, but a summary of your own that reads the
-            <code>EditContext</code> still finds the validator's messages.
+            When the validator reports a <code>[Required]</code> that has no message of its own, such as "The Leader field
+            is required.", the field shows its own message instead, for example on a field the user can't change or one
+            your code emptied. The form's <code>Errors</code> follows the field in both cases, but a summary of
+            your own that reads the <code>EditContext</code> still finds the validator's messages.
         </TbText>
         <TbText>
             Annotations stop at the model's own properties. To check nested objects too, add the

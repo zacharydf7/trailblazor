@@ -23,6 +23,9 @@ internal interface IFormField
 
     void HideMessages();
 
+    // Edit-context messages the field rewords, such as a model's default [Required] message.
+    IEnumerable<(string From, string To)> RenamedMessages();
+
     // Goes back to the value the parent last gave it, showing no message, for a form reset.
     Task ResetAsync();
 

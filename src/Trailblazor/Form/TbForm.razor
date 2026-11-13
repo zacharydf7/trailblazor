@@ -479,6 +479,16 @@
             errors.Remove(hidden);
         }
 
+        // Each claim rewords one copy, since fields bound to members with the same name share a default message.
+        foreach (var (from, to) in _fields.SelectMany(field => field.RenamedMessages()).ToList())
+        {
+            var at = errors.IndexOf(from);
+            if (at >= 0)
+            {
+                errors[at] = to;
+            }
+        }
+
         if (!errors.SequenceEqual(Errors))
         {
             Errors = errors;

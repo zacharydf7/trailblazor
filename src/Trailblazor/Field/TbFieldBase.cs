@@ -21,6 +21,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 {
     private readonly List<string> _messages = [];
     private RequiredAttribute? _modelRequired;
+    // The validator's message for a model [Required] that sets none; the field shows RequiredText in its place.
+    private string? _modelRequiredDefault;
     private EditContext? _editContext;
     private ValidationMessageStore? _messageStore;
     private FieldIdentifier? _field;
@@ -306,7 +308,10 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // shows its required message it shows only its own, so a model's [Required] or [EmailAddress] doesn't add another.
     private protected IReadOnlyList<string> Errors =>
         _messageStore is null || ShowsRequiredMessage ? OwnMessages
-            : _editContext!.GetValidationMessages(_field!.Value).ToList();
+            : [.. _editContext!.GetValidationMessages(_field!.Value).Select(ShownAs).Distinct()];
+
+    // A validator's default [Required] message shows as the field's own, even when the field skipped its own check.
+    private string ShownAs(string message) => message == _modelRequiredDefault ? RequiredText : message;
 
     // Once the field has checked itself while empty and required, its messages hold the required one.
     private bool ShowsRequiredMessage => MissesRequired && _messages.Count > 0;
@@ -396,6 +401,11 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
             && ValueExpression?.Body is MemberExpression { Member: var member }
             && member.GetCustomAttribute<RequiredAttribute>() is { AllowEmptyStrings: false } required
             ? required : null;
+        // A validator names the member by its [Display] name, or else by the member's own name.
+        _modelRequiredDefault = _modelRequired is { ErrorMessage: null, ErrorMessageResourceType: null }
+            && ValueExpression?.Body is MemberExpression { Member: var named }
+            ? _modelRequired.FormatErrorMessage(named.GetCustomAttribute<DisplayAttribute>()?.GetName() ?? named.Name)
+            : null;
         // Only a form needs the identifier, and outside one an expression it can't parse must not throw. A field
         // without a binding names itself, so the form still counts its messages.
         FieldIdentifier? field = CascadedEditContext is null ? null
@@ -783,7 +793,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     {
         if (!ShowsRequiredMessage)
         {
-            return [];
+            // The field's own required message is still listed, so drop the validator's default copy, not reword it.
+            return DefaultRequiredCopy() is { } copy && HeldMessages().Contains(RequiredText) ? [copy] : [];
         }
 
         // Remove one copy of each message the field shows, so a validator's duplicate of the same text stays hidden.
@@ -795,6 +806,16 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 
         return hidden;
     }
+
+    IEnumerable<(string From, string To)> IFormField.RenamedMessages() =>
+        !ShowsRequiredMessage && DefaultRequiredCopy() is { } copy && !HeldMessages().Contains(RequiredText)
+            ? [(copy, RequiredText)] : [];
+
+    // The validator's default [Required] message, if this field's edit-context messages hold it.
+    private string? DefaultRequiredCopy() =>
+        _modelRequiredDefault is { } copy && copy != RequiredText && HeldMessages().Contains(copy) ? copy : null;
+
+    private List<string> HeldMessages() => [.. _editContext!.GetValidationMessages(_field!.Value)];
 
     bool IFormField.IsDirty() => _parseError is not null || !SameValue(Value, _valueToResetTo);
 
