@@ -41,8 +41,8 @@ const show = (anchor, byPointer = false) => {
     if (tooltip && !tooltip.matches(':popover-open')) {
         hideShown();
         tooltip.showPopover();
-        const { side, align, offset } = tooltip.dataset;
-        const position = createAnchoredPosition(tooltip, anchor, { side, align, offset: +offset });
+        const { placement, align, offset } = tooltip.dataset;
+        const position = createAnchoredPosition(tooltip, anchor, { side: placement, align, offset: +offset });
         shown = { anchor, tooltip, position, byPointer };
     }
 };

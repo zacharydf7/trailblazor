@@ -62,6 +62,46 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldAppearAboveTheTriggerAgain_WhenShownASecondTime(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tooltip");
+        var errors = new List<string>();
+        page.PageError += (_, error) => errors.Add(error);
+        var add = page.GetByRole(AriaRole.Button, new() { Name = "Add" });
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Add an item" });
+        await add.HoverAsync();
+        await Expect(tooltip).ToBeVisibleAsync();
+        await page.Mouse.MoveAsync(0, 0);
+        await Expect(tooltip).ToBeHiddenAsync();
+
+        await add.HoverAsync();
+
+        await Expect(tooltip).ToBeVisibleAsync();
+        var trigger = await add.BoundingBoxAsync();
+        var box = await tooltip.BoundingBoxAsync();
+        Assert.True(box!.Y + box.Height <= trigger!.Y + 1, "The tooltip should sit above its trigger.");
+        Assert.Empty(errors);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldGoBackAboveTheTrigger_WhenThereIsRoomAgainAfterFlippingBelow(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip");
+        var edge = page.GetByRole(AriaRole.Button, new() { Name = "Flipping" });
+        var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Flips when it must" });
+        await edge.HoverAsync();
+        await Expect(tooltip).ToHaveAttributeAsync("data-side", "bottom");
+        await page.Mouse.MoveAsync(0, 0);
+        await Expect(tooltip).ToBeHiddenAsync();
+        await page.Locator("#top-edge").EvaluateAsync("element => element.style.top = '12rem'");
+
+        await edge.HoverAsync();
+
+        await Expect(tooltip).ToBeVisibleAsync();
+        await Expect(tooltip).ToHaveAttributeAsync("data-side", "top");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tooltip_ShouldDescribeTheTriggerAndCloseOnEscape_WhenTheTriggerHasFocus(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tooltip");

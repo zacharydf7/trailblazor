@@ -13,6 +13,13 @@
     </TbTooltip>
 </div>
 
+@* At the top edge, a tooltip set to show above flips below; one test then moves the trigger down to give it room. *@
+<div id="top-edge" style="position: fixed; top: 0; inset-inline-end: 0">
+    <TbTooltip Text="Flips when it must">
+        <button>Flipping</button>
+    </TbTooltip>
+</div>
+
 <TbTooltip Text="Takes its time" ShowDelay="TimeSpan.FromSeconds(1)">
     <button>Slow</button>
 </TbTooltip>

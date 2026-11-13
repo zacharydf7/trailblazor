@@ -13,8 +13,10 @@
     @if (Active)
     {
         @* The arrow sits in the gap, so the tooltip moves out to make room for it. *@
+        @* The script writes the side it used to data-side, so the requested side needs its own attribute. *@
         <span id="@_id" popover="manual" role="tooltip" data-part="tooltip"
-              data-side="@Anchors.Side(Placement)" data-align="@Anchors.Align(Align)" data-offset="@(ShowArrow ? 9 : 6)"
+              data-placement="@Anchors.Side(Placement)" data-align="@Anchors.Align(Align)"
+              data-offset="@(ShowArrow ? 9 : 6)"
               data-show-delay="@Milliseconds(ShowDelay ?? TrailblazorOptions.Value.Tooltips.ShowDelay)"
               data-hide-delay="@Milliseconds(HideDelay ?? TrailblazorOptions.Value.Tooltips.HideDelay)"
               class="@ClassNames.Join("tb-tooltip", BubbleClass)">

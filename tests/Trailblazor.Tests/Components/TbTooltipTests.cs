@@ -33,7 +33,7 @@ public class TbTooltipTests : BunitContext
             .Add(tooltip => tooltip.Placement, placement).Add(tooltip => tooltip.Align, align));
 
         var bubble = cut.Find("[role=tooltip]");
-        Assert.Equal((side, alignment), (bubble.GetAttribute("data-side"), bubble.GetAttribute("data-align")));
+        Assert.Equal((side, alignment), (bubble.GetAttribute("data-placement"), bubble.GetAttribute("data-align")));
     }
 
     [Fact]
