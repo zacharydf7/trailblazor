@@ -111,6 +111,28 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task ContextMenu_ShouldCountItsOpensAndItsItemsChosen_WhenTheyHaveTelemetryNames()
+    {
+        var cut = Render<TbContextMenu>(parameters => parameters.Add(menu => menu.TelemetryName, "trail-actions")
+            .Add(menu => menu.Items, _ => builder =>
+            {
+                builder.OpenComponent<TbMenuItem>(0);
+                builder.AddAttribute(1, nameof(TbMenuItem.TelemetryName), "delete-trail");
+                builder.AddAttribute(2, nameof(TbMenuItem.ChildContent), (RenderFragment)(text => text.AddContent(0,
+                    "Delete")));
+                builder.CloseComponent();
+            }));
+        var events = ((DotNetObjectReference<MenuEvents>)JSInterop.Invocations["createContextMenu"].Single()
+            .Arguments[2]!).Value;
+
+        await cut.InvokeAsync(() => events.OnToggle(true));
+        cut.Find("[role=menuitem]").Click();
+
+        Assert.Equal(["trail-actions"], Names(_shown));
+        Assert.Equal([("trail-actions", "TbContextMenu", null), ("delete-trail", "TbMenuItem", null)], Uses());
+    }
+
+    [Fact]
     public async Task SpeedDial_ShouldCountItsOpensAndItsActionsChosen_WhenTheyHaveTelemetryNames()
     {
         var cut = Render<TbSpeedDial>(parameters => parameters.Add(dial => dial.Label, "Add")

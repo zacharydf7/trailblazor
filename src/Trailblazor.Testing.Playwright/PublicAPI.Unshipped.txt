@@ -204,3 +204,7 @@ Trailblazor.Testing.Playwright.TbCommandPaletteLocator.ResultsAsync() -> System.
 Trailblazor.Testing.Playwright.TbCommandPaletteLocator.SearchAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbCommandPaletteLocator.TbCommandPaletteLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.CommandPalette(string? name = null) -> Trailblazor.Testing.Playwright.TbCommandPaletteLocator!
+Trailblazor.Testing.Playwright.TbContextMenuLocator
+Trailblazor.Testing.Playwright.TbContextMenuLocator.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbContextMenuLocator.TbContextMenuLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! at) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.ContextMenu(Microsoft.Playwright.ILocator! at) -> Trailblazor.Testing.Playwright.TbContextMenuLocator!

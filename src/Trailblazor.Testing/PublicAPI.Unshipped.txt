@@ -220,3 +220,7 @@ Trailblazor.Testing.TbCommandPaletteDriver.IsOpen.get -> bool
 Trailblazor.Testing.TbCommandPaletteDriver.Results.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbCommandPaletteDriver.SearchAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.CommandPalette(string? name = null) -> Trailblazor.Testing.TbCommandPaletteDriver!
+Trailblazor.Testing.TbContextMenuDriver
+Trailblazor.Testing.TbContextMenuDriver.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbContextMenuDriver.On(string! key) -> Trailblazor.Testing.TbContextMenuDriver!
+Trailblazor.Testing.TrailblazorMarkup.ContextMenu(string? name = null) -> Trailblazor.Testing.TbContextMenuDriver!

@@ -5979,6 +5979,128 @@ public static class ExampleCatalog
                     + "render hidden until the menu opens, so they count uses only.",
             ],
         },
+        new("context-menu", "Context menu", ExampleCategory.Overlays,
+            "A menu that opens where an area is right-clicked or long-pressed, with items for what was clicked.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for shortcuts to actions on what's under the pointer, such as a map, a canvas or a list's "
+                    + "rows, in an app people use often enough to look for them.",
+            ],
+            WhenNotToUse =
+            [
+                "As the only way to reach an action: people can't see that a context menu is there, so offer its "
+                    + "actions elsewhere too, such as in a [menu](components/menu) on the row.",
+                "For a few actions that should be seen, use a [menu](components/menu) or [buttons](components/button).",
+            ],
+            Related = ["menu", "command-palette", "popover"],
+            Pattern = new("menu", "https://www.w3.org/WAI/ARIA/apg/patterns/menubar/"),
+            RightToLeftKeys = "The menu opens toward the left of the pointer, Left opens a submenu and Right closes it.",
+            Sections =
+            [
+                new("area", "Opening on an area", "Wrap the area in a `TbContextMenu` and put its items in `Items`. A "
+                    + "right-click opens the menu at the pointer, and a touch that rests on the area for half a "
+                    + "second opens it at the finger. Shift+F10 or the context menu key opens it below the focused "
+                    + "element, so give keyboard users something in the area to focus, as this map is. Near the "
+                    + "window's edge, the menu opens on the other side of the pointer. `AriaLabel` names the menu, and "
+                    + "`TbSubMenu`, `TbMenuGroup`, checkbox and radio items work as they do in a [menu](components/menu).",
+                    typeof(ContextMenuExample)),
+                new("keys", "Items for what was clicked", "Put `data-context-key` on the elements inside the area "
+                    + "that need their own items, such as rows, and read `context.Key` in `Items`: it holds the key of "
+                    + "the element the menu opened on, or null for the rest of the area. One context menu then "
+                    + "serves every row. When the menu opens on a key whose items aren't drawn yet, it waits until "
+                    + "they are, so it never shows another row's items.", typeof(ContextMenuKeysExample)),
+            ],
+            Api = [typeof(TbContextMenu), typeof(ContextMenuContext), typeof(MenuClasses)],
+            Keyboard =
+            [
+                new(["Shift+F10", "Context menu key"], "Opens the menu below the focused element, on its first item.")
+                {
+                    When = "In the area",
+                },
+                new(["Up", "Down"], "Moves through the items from the focused one, wrapping at the ends. Moving the "
+                    + "pointer onto an item focuses it.") { When = "In the menu" },
+                new(["Home", "End"], "Jumps to the first or last item.") { When = "In the menu" },
+                new(["A letter"], "Jumps to the next item that starts with it.") { When = "In the menu" },
+                new(["Enter", "Space"], "Chooses the focused item, follows a link, or goes into a submenu.")
+                {
+                    When = "In the menu",
+                },
+                new(["Right"], "Opens a submenu.") { When = "In the menu" },
+                new(["Left"], "Closes a submenu.") { When = "In the menu" },
+                new(["Escape"], "Closes one level at a time: a submenu first, then the menu, which returns focus to "
+                    + "where it was when the menu opened.") { When = "In the menu" },
+                new(["Tab"], "Closes the menu and moves on.") { When = "In the menu" },
+            ],
+            Labeling =
+            [
+                "The menu is named by `AriaLabel`, which screen readers read as it opens.",
+            ],
+            Announcements =
+            [
+                "The menu is a `menu` of `menuitem`s, with `menuitemcheckbox`es and `menuitemradio`s for checkbox and "
+                    + "radio items. The area itself has no role, since no button opens a context menu.",
+            ],
+            AppDuties =
+            [
+                "Offer the menu's actions another way too, such as a menu button on each row, since nothing on screen "
+                    + "says a context menu is there.",
+                "Give keyboard users something in the area to focus, so Shift+F10 has an element to open on.",
+            ],
+            Accessibility =
+            [
+                "A click or tap outside the menu closes it, as Escape and Tab do. So does scrolling the page, since "
+                    + "the menu stays put while what it was opened on moves away.",
+                "The highlight marks the focused item, which is what Enter chooses. A mouse moves it, and opening the "
+                    + "menu puts it on the first item.",
+                "With `Disabled`, a right-click, Shift+F10 or the context menu key opens the browser's own menu.",
+            ],
+            Modes = new(ModeSupport.None, ModeSupport.None),
+            BeforeInteractive =
+            [
+                "Until the page is interactive, and on a static page, the area shows its content and a right-click "
+                    + "opens the browser's own menu.",
+            ],
+            Ready = new("[data-part=target]", "the area"),
+            Target = new("region", "Trail map"),
+            Blocks = ["tb-menu"],
+            DataParts =
+            [
+                new("target", "The area that opens the menu."),
+                new("menu", "The menu popup."),
+            ],
+            Anatomy = """
+                <TbContextMenu AriaLabel="…">
+                    <ChildContent>
+                        <div data-context-key="…">…</div>
+                    </ChildContent>
+                    <Items>
+                        <TbMenuItem OnClick="…">… @context.Key</TbMenuItem>
+                        <TbSubMenu Label="…">
+                            <TbMenuItem OnClick="…">…</TbMenuItem>
+                        </TbSubMenu>
+                    </Items>
+                </TbContextMenu>
+                """,
+            TestingTip = "Right-click with `ClickAsync(new() { Button = MouseButton.Right })`, then find the menu with "
+                + "`GetByRole(AriaRole.Menu, new() { Name = \"Map actions\" })` and its items by role, as in a "
+                + "[menu](components/menu). The area gets `data-ready` once the page is interactive and a right-click "
+                + "will open the menu. The menu gets `data-open` in the render that draws its items as it opens, and "
+                + "`data-key` with the key those items were drawn for. "
+                + "`await page.Tb().ContextMenu(page.GetByText(\"Ridge loop\")).ChooseAsync(\"Remove\")` from "
+                + "`Trailblazor.Testing.Playwright` waits for it, right-clicks the element and clicks the item. In "
+                + "bUnit, `await cut.Tb().ContextMenu().On(\"Ridge loop\").ChooseAsync(\"Remove\")` draws the items for "
+                + "that key and clicks one.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"map-actions\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders and `trailblazor.control.used` each time it opens, by pointer or key, which is how often "
+                    + "its items are seen.",
+                "An item with its own `TelemetryName` counts `trailblazor.control.used` each time it is chosen. Items "
+                    + "render hidden until the menu opens, so they count uses only.",
+            ],
+        },
         new("command-palette", "Command palette", ExampleCategory.Overlays,
             "A dialog, opened anywhere with Ctrl+K, that finds a command or a page as the user types.")
         {

@@ -340,6 +340,97 @@ public class TrailblazorMarkupTests : BunitContext
         Assert.Contains("is disabled", failure.Message);
     }
 
+    [Fact]
+    public async Task ContextMenu_ShouldClickTheItemForTheKeyThroughItsSubmenus_WhenChosenOnAKey()
+    {
+        var clicked = new List<string>();
+        var cut = RenderContextMenu(clicked);
+
+        await cut.Tb().ContextMenu("Trail actions").ChooseAsync("Rename");
+        await cut.Tb().ContextMenu().On("ridge").ChooseAsync("Move to", "Archive");
+        await cut.Tb().ContextMenu().On("ridge").ChooseAsync("Rename");
+        await cut.Tb().ContextMenu().ChooseAsync("Rename");
+
+        Assert.Equal(["Rename all", "Archive ridge", "Rename ridge", "Rename all"], clicked);
+    }
+
+    [Theory]
+    [InlineData("Trail actions", "", "Delete", "no item named")]
+    [InlineData("Trail actions", "", "Rename/Archive", "no submenu named")]
+    [InlineData("Trail actions", "lake", "Rename", "no element with the key \"lake\"")]
+    [InlineData("Nope", "", "Rename", "Expected one context menu named \"Nope\"")]
+    public async Task ContextMenu_ShouldThrow_WhenThePathCantBeChosen(string name, string key, string path,
+        string message)
+    {
+        var cut = RenderContextMenu([]);
+        var menu = cut.Tb().ContextMenu(name);
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => (key.Length > 0 ? menu.On(key) : menu).ChooseAsync(path.Split('/')));
+
+        Assert.Contains(message, failure.Message);
+    }
+
+    [Theory]
+    [InlineData(false, "is disabled")]
+    [InlineData(true, "static page")]
+    public async Task ContextMenu_ShouldThrow_WhenItIsDisabledOrOnAStaticPage(bool staticPage, string message)
+    {
+        if (staticPage)
+        {
+            SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        }
+
+        var cut = RenderContextMenu([], disabled: !staticPage);
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().ContextMenu().ChooseAsync("Rename"));
+
+        Assert.Contains(message, failure.Message);
+    }
+
+    [Fact]
+    public async Task ContextMenu_ShouldAskForANameOrThrow_WhenTheMarkupHasMoreThanOne()
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbContextMenu>(0);
+            builder.CloseComponent();
+            builder.OpenComponent<TbContextMenu>(1);
+            builder.CloseComponent();
+        });
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().ContextMenu().ChooseAsync("Rename"));
+
+        Assert.Contains("Expected one context menu, found 2", failure.Message);
+    }
+
+    private IRenderedComponent<TbContextMenu> RenderContextMenu(List<string> clicked, bool disabled = false)
+    {
+        return Render<TbContextMenu>(parameters => parameters.Add(menu => menu.AriaLabel, "Trail actions")
+            .Add(menu => menu.Disabled, disabled).AddChildContent("<p data-context-key=\"ridge\">Ridge loop</p>")
+            .Add(menu => menu.Items, context => builder =>
+            {
+                var key = context.Key ?? "all";
+                ContextItem(builder, "Rename", () => clicked.Add($"Rename {key}"));
+                builder.OpenComponent<TbSubMenu>(10);
+                builder.AddAttribute(11, nameof(TbSubMenu.Label), "Move to");
+                builder.AddAttribute(12, nameof(TbSubMenu.ChildContent), (RenderFragment)(sub =>
+                    ContextItem(sub, "Archive", () => clicked.Add($"Archive {key}"))));
+                builder.CloseComponent();
+            }));
+    }
+
+    private void ContextItem(RenderTreeBuilder builder, string text, Action onClick)
+    {
+        builder.OpenComponent<TbMenuItem>(0);
+        builder.AddAttribute(1, nameof(TbMenuItem.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, onClick));
+        builder.AddAttribute(2, nameof(TbMenuItem.ChildContent), (RenderFragment)(content => content.AddContent(0,
+            text)));
+        builder.CloseComponent();
+    }
+
     private IRenderedComponent<TbMenu> RenderMenu(List<string> clicked)
     {
         return Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions").AddChildContent(builder =>

@@ -1,0 +1,25 @@
+<TbStack Gap="3">
+    <TbContextMenu AriaLabel="Map actions">
+        <ChildContent>
+            <TbSurface Outlined role="region" aria-label="Trail map" tabindex="0"
+                       style="display: grid; place-items: center; block-size: 10rem; padding: 1rem">
+                <TbText>Right-click or long-press the map, or focus it and press Shift+F10.</TbText>
+            </TbSurface>
+        </ChildContent>
+        <Items>
+            <TbMenuItem Icon="ExampleIcons.Plus" OnClick="@(() => _last = "Add a marker")">Add a marker</TbMenuItem>
+            <TbMenuItem OnClick="@(() => _last = "Measure distance")">Measure distance</TbMenuItem>
+            <TbSubMenu Label="Map style">
+                <TbMenuItem OnClick="@(() => _last = "Terrain")">Terrain</TbMenuItem>
+                <TbMenuItem OnClick="@(() => _last = "Satellite")">Satellite</TbMenuItem>
+            </TbSubMenu>
+            <TbMenuSeparator />
+            <TbMenuItem Disabled>Clear the route</TbMenuItem>
+        </Items>
+    </TbContextMenu>
+    <output aria-label="Last action">@_last</output>
+</TbStack>
+
+@code {
+    private string _last = "";
+}

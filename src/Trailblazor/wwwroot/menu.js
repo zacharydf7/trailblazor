@@ -7,6 +7,12 @@ const hoverDelay = 150;
 // How long a pointer heading for an open submenu across other items keeps it open.
 const graceTime = 400;
 
+// How far a context menu stays from the window's edges.
+const viewportPadding = 8;
+// A touch that rests this long on a context menu's target opens the menu, unless it moves further than pressSlop.
+const longPressDelay = 500;
+const pressSlop = 10;
+
 // Keyboard and focus handling stay in the browser; only choosing an item, and a labeled menu's opens, reach the server.
 export function createMenu(root, menu, options, events) {
     // Blazor passes null for an element that was removed before this call arrived.
@@ -18,6 +24,229 @@ export function createMenu(root, menu, options, events) {
     trigger.setAttribute('aria-expanded', String(menu.matches(':popover-open')));
     // Set once the page is interactive, so tests know a click on an item reaches the server.
     trigger.dataset.ready = '';
+    let focusLastOnOpen = false;
+    const lists = attachLists(menu, events, {
+        place: () => createAnchoredPosition(menu, trigger, options),
+        toggled: open => trigger.setAttribute('aria-expanded', String(open)),
+        firstItem: () => {
+            const last = focusLastOnOpen;
+            focusLastOnOpen = false;
+            return last ? -1 : 0;
+        },
+        returnFocus: () => trigger.focus(),
+    });
+    // A trigger that's off, including one that stays focusable or is loading, opens nothing.
+    const onTriggerKeyDown = event => {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+            || trigger.matches(':disabled, [aria-disabled="true"]')) {
+            return;
+        }
+
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusLastOnOpen = event.key === 'ArrowUp';
+            menu.showPopover();
+        }
+    };
+    trigger.addEventListener('keydown', onTriggerKeyDown);
+    lists.replay();
+
+    return {
+        setOpen: lists.setOpen,
+        dispose() {
+            // Cleared so tests can wait for a script attached in its place to mark it ready again.
+            delete trigger.dataset.ready;
+            lists.dispose();
+            trigger.removeEventListener('keydown', onTriggerKeyDown);
+        },
+    };
+}
+
+// Opens the menu where the target is right-clicked or long-pressed, or at its focused element on Shift+F10 or the
+// context menu key. An element in the target with a data-context-key opens the menu for that key: the server draws the
+// key's items first and writes back the number of the request it drew them for, so no item meant for another key is
+// ever on screen.
+export function createContextMenu(target, menu, events) {
+    if (!target || !menu) {
+        return null;
+    }
+
+    let point = null;
+    let pending = null;
+    let requests = 0;
+    let returnTo = null;
+    let press = null;
+    let keyOpened = false;
+    const lists = attachLists(menu, events, {
+        place: () => keepAtPoint(menu, point),
+        toggled: () => {},
+        firstItem: () => 0,
+        // Focus goes back without scrolling, as the scroll that closed the menu may have moved that element out of view.
+        returnFocus: () => returnTo?.focus({ preventScroll: true }),
+    });
+
+    const keyOf = element => {
+        const keyed = element.closest('[data-context-key]');
+        return keyed && target.contains(keyed) ? keyed.dataset.contextKey : '';
+    };
+    // Placed at once, as the list's own placement waits a frame, which would show it at the window's corner first.
+    const show = at => {
+        point = at;
+        menu.showPopover();
+        placeAtPoint(menu, at);
+    };
+    const open = (element, at) => {
+        if (menu.matches(':popover-open')) {
+            return;
+        }
+
+        returnTo = document.activeElement;
+        const key = keyOf(element);
+        // Until the server has answered the last request, that answer could still redraw the items, so a key already
+        // drawn is asked for again.
+        if (menu.dataset.request === String(requests) && (menu.dataset.key ?? '') === key) {
+            show(at);
+            return;
+        }
+
+        // The latest opening wins, so a second right-click before the server answers opens for the second key.
+        pending = { request: ++requests, at };
+        target.dispatchEvent(new CustomEvent('tb-context-menu-open',
+            { bubbles: true, detail: { key, request: pending.request } }));
+    };
+    const requestObserver = new MutationObserver(() => {
+        if (pending && menu.dataset.request === String(pending.request)) {
+            const at = pending.at;
+            pending = null;
+            show(at);
+        }
+    });
+    requestObserver.observe(menu, { attributes: true, attributeFilter: ['data-request'] });
+
+    // A context menu inside the target handles its own area. This menu sits inside the target too, so its events
+    // bubble here, and a right-click on it opens nothing else. A disabled one leaves every way in to the browser.
+    const ownArea = event => !target.hasAttribute('data-disabled')
+        && event.target.closest('.tb-context-menu') === target && !menu.contains(event.target);
+    const onContextMenu = event => {
+        if (menu.contains(event.target)) {
+            event.preventDefault();
+            return;
+        }
+
+        if (!ownArea(event)) {
+            return;
+        }
+
+        event.preventDefault();
+        // The context menu key and Shift+F10 also make some browsers fire contextmenu, as the key is pressed or let go.
+        if (keyOpened) {
+            return;
+        }
+
+        cancelPress();
+        open(event.target, { x: event.clientX, y: event.clientY });
+    };
+    const onKeyDown = event => {
+        if (!ownArea(event) || !(event.key === 'ContextMenu' || event.key === 'F10' && event.shiftKey)) {
+            return;
+        }
+
+        event.preventDefault();
+        keyOpened = true;
+        const rect = event.target.getBoundingClientRect();
+        const rtl = getComputedStyle(event.target).direction === 'rtl';
+        open(event.target, { x: rtl ? rect.right : rect.left, y: rect.bottom });
+    };
+    // Cleared a task later, so a contextmenu event fired by the key's release still sees keyOpened.
+    const onKeyUp = () => setTimeout(() => keyOpened = false);
+    // A mouse has its right button; touch and pen open the menu by resting on the target.
+    const onPointerDown = event => {
+        if (event.pointerType === 'mouse' || !ownArea(event)) {
+            return;
+        }
+
+        cancelPress();
+        const at = { x: event.clientX, y: event.clientY };
+        press = { at, timer: setTimeout(() => {
+            press = null;
+            open(event.target, at);
+        }, longPressDelay) };
+    };
+    const onPointerMove = event => {
+        if (press && Math.hypot(event.clientX - press.at.x, event.clientY - press.at.y) > pressSlop) {
+            cancelPress();
+        }
+    };
+    const cancelPress = () => {
+        clearTimeout(press?.timer);
+        press = null;
+    };
+    // The menu is a manual popover, as the browser would close an auto one as the press that opened it ends. So it
+    // closes itself on a press outside it, and on Escape unless a submenu is open, which Escape closes first.
+    // A press outside also drops an opening still waiting for the server, as the user has moved on. It doesn't send
+    // focus back, since the press itself moves focus once the menu has closed.
+    const onOutsidePress = event => {
+        keyOpened = false;
+        if (!menu.contains(event.target)) {
+            pending = null;
+            if (menu.matches(':popover-open')) {
+                returnTo = null;
+                menu.hidePopover();
+            }
+        }
+    };
+    // The menu stays where it opened, so a scroll that moves what it was opened on closes it.
+    const onScroll = event => {
+        if (!menu.contains(event.target)) {
+            pending = null;
+            if (menu.matches(':popover-open')) {
+                menu.hidePopover();
+            }
+        }
+    };
+    const onMenuEscape = event => {
+        if (event.key === 'Escape' && !menu.querySelector('[role="menu"]:popover-open')) {
+            event.preventDefault();
+            menu.hidePopover();
+        }
+    };
+
+    target.addEventListener('contextmenu', onContextMenu);
+    target.addEventListener('keydown', onKeyDown);
+    target.addEventListener('keyup', onKeyUp);
+    target.addEventListener('pointerdown', onPointerDown);
+    target.addEventListener('pointermove', onPointerMove);
+    target.addEventListener('pointerup', cancelPress);
+    target.addEventListener('pointercancel', cancelPress);
+    document.addEventListener('pointerdown', onOutsidePress, true);
+    window.addEventListener('scroll', onScroll, { capture: true, passive: true });
+    menu.addEventListener('keydown', onMenuEscape);
+    // Set once the page is interactive, so tests know a right-click opens the menu.
+    target.dataset.ready = '';
+
+    return {
+        dispose() {
+            delete target.dataset.ready;
+            cancelPress();
+            requestObserver.disconnect();
+            lists.dispose();
+            target.removeEventListener('contextmenu', onContextMenu);
+            target.removeEventListener('keydown', onKeyDown);
+            target.removeEventListener('keyup', onKeyUp);
+            target.removeEventListener('pointerdown', onPointerDown);
+            target.removeEventListener('pointermove', onPointerMove);
+            target.removeEventListener('pointerup', cancelPress);
+            target.removeEventListener('pointercancel', cancelPress);
+            document.removeEventListener('pointerdown', onOutsidePress, true);
+            window.removeEventListener('scroll', onScroll, { capture: true });
+            menu.removeEventListener('keydown', onMenuEscape);
+        },
+    };
+}
+
+// The keys, pointer handling, focus and placement of a menu and its submenus. The hooks handle what differs for the
+// menu itself: where it's placed, what opened it, and where focus goes back to.
+function attachLists(menu, events, hooks) {
     const submenuOptions = { side: 'End', align: 'Start', offset: 0 };
     const positions = new Map();
     const returnFocus = new Set();
@@ -25,14 +254,13 @@ export function createMenu(root, menu, options, events) {
     const shown = new Set();
     // Whether the server last knew the menu as open, from its own setOpen or from a toggle reported to it.
     let reported = false;
-    let focusLastOnOpen = false;
     let hovered = null;
     let hoverTimer = 0;
     let lastPoint = null;
     let grace = null;
 
-    // The element that opens a list: the trigger for the menu itself, or a submenu's item.
-    const opener = list => list === menu ? trigger : menu.querySelector(`[aria-controls="${list.id}"]`);
+    // The item that opens a submenu.
+    const opener = list => menu.querySelector(`[aria-controls="${list.id}"]`);
     // A list's own items, not those of the submenus inside it.
     const items = list => [...list.querySelectorAll(itemSelector)]
         .filter(item => item.closest('[role="menu"]') === list);
@@ -66,8 +294,8 @@ export function createMenu(root, menu, options, events) {
         // toggle fires a task later, possibly after a paint, so the list is placed in the next frame, before it paints.
         requestAnimationFrame(() => {
             if (list.matches(':popover-open') && !positions.has(list)) {
-                const placement = list === menu ? options : submenuOptions;
-                positions.set(list, createAnchoredPosition(list, opener(list), placement));
+                positions.set(list, list === menu ? hooks.place()
+                    : createAnchoredPosition(list, opener(list), submenuOptions));
             }
         });
     };
@@ -98,15 +326,18 @@ export function createMenu(root, menu, options, events) {
             shown.delete(list);
         }
 
-        opener(list).setAttribute('aria-expanded', String(open));
+        if (list === menu) {
+            hooks.toggled(open);
+        } else {
+            opener(list).setAttribute('aria-expanded', String(open));
+        }
 
         if (open) {
             // A submenu the pointer opened leaves focus where it was, as the pointer may only be passing through.
             if (!openedByHover.delete(list)) {
-                focusItem(list, list === menu && focusLastOnOpen ? -1 : 0);
+                focusItem(list, list === menu ? hooks.firstItem() : 0);
             }
 
-            focusLastOnOpen = false;
             return;
         }
 
@@ -117,20 +348,11 @@ export function createMenu(root, menu, options, events) {
         }
 
         if (returnFocus.delete(list)) {
-            opener(list).focus();
-        }
-    };
-    // A trigger that's off, including one that stays focusable or is loading, opens nothing.
-    const onTriggerKeyDown = event => {
-        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
-            || trigger.matches(':disabled, [aria-disabled="true"]')) {
-            return;
-        }
-
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-            event.preventDefault();
-            focusLastOnOpen = event.key === 'ArrowUp';
-            menu.showPopover();
+            if (list === menu) {
+                hooks.returnFocus();
+            } else {
+                opener(list).focus();
+            }
         }
     };
     const onMenuKeyDown = event => {
@@ -313,17 +535,18 @@ export function createMenu(root, menu, options, events) {
     menu.addEventListener('click', onMenuClick);
     menu.addEventListener('pointermove', onPointerMove);
     menu.addEventListener('pointerleave', forgetPointer);
-    trigger.addEventListener('keydown', onTriggerKeyDown);
-
-    // Replay toggles missed by any list clicked open before this script attached, outermost first so focus ends deepest.
-    for (const list of [menu, ...menu.querySelectorAll('[role="menu"]')]) {
-        if (list.matches(':popover-open')) {
-            onBeforeToggle({ target: list, newState: 'open' });
-            onToggle({ target: list, newState: 'open' });
-        }
-    }
 
     return {
+        // Replays toggles missed by any list clicked open before the script attached, outermost first so focus ends
+        // deepest.
+        replay() {
+            for (const list of [menu, ...menu.querySelectorAll('[role="menu"]')]) {
+                if (list.matches(':popover-open')) {
+                    onBeforeToggle({ target: list, newState: 'open' });
+                    onToggle({ target: list, newState: 'open' });
+                }
+            }
+        },
         setOpen(open) {
             reported = open;
             if (open !== menu.matches(':popover-open')) {
@@ -331,8 +554,6 @@ export function createMenu(root, menu, options, events) {
             }
         },
         dispose() {
-            // Cleared so tests can wait for a script attached in its place to mark it ready again.
-            delete trigger.dataset.ready;
             // Closing the menu closes any submenu open inside it.
             if (menu.matches(':popover-open')) {
                 menu.hidePopover();
@@ -345,8 +566,44 @@ export function createMenu(root, menu, options, events) {
             menu.removeEventListener('click', onMenuClick);
             menu.removeEventListener('pointermove', onPointerMove);
             menu.removeEventListener('pointerleave', forgetPointer);
-            trigger.removeEventListener('keydown', onTriggerKeyDown);
             forgetPointer();
+        },
+    };
+}
+
+// Places a context menu's corner at the point, or its other corner where the window has no room past the point.
+function placeAtPoint(menu, point) {
+    menu.style.position = 'fixed';
+    menu.style.inset = 'auto';
+    menu.style.margin = '0';
+    const width = document.documentElement.clientWidth;
+    const height = document.documentElement.clientHeight;
+    // A menu taller than the window scrolls, as the CSS caps it at this.
+    menu.style.setProperty('--tb-available-block-size', `${Math.max(height - 2 * viewportPadding, 0)}px`);
+    const size = { width: menu.offsetWidth, height: menu.offsetHeight };
+    // In right-to-left text the menu opens toward the left, as the end of the line is there.
+    const rtl = getComputedStyle(menu).direction === 'rtl';
+    const after = rtl ? point.x - size.width : point.x;
+    const before = rtl ? point.x : point.x - size.width;
+    const fitsAfter = after >= viewportPadding && after + size.width <= width - viewportPadding;
+    const x = fitsAfter ? after : before;
+    const y = point.y + size.height <= height - viewportPadding ? point.y : point.y - size.height;
+    const clamp = (value, room) => Math.max(viewportPadding, Math.min(value, room - viewportPadding));
+    menu.style.left = `${clamp(x, width - size.width)}px`;
+    menu.style.top = `${clamp(y, height - size.height)}px`;
+}
+
+// Keeps a context menu placed at the point as its items render and the window resizes.
+function keepAtPoint(menu, point) {
+    const update = () => placeAtPoint(menu, point);
+    update();
+    const resizeObserver = new ResizeObserver(update);
+    resizeObserver.observe(menu);
+    window.addEventListener('resize', update, { passive: true });
+    return {
+        dispose() {
+            resizeObserver.disconnect();
+            window.removeEventListener('resize', update);
         },
     };
 }

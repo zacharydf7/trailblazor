@@ -121,6 +121,10 @@ function registerEvents(blazor) {
         browserEventName: 'tb-tree-drop',
         createEventArgs: event => event.detail,
     });
+    blazor.registerCustomEventType('tbcontextmenuopen', {
+        browserEventName: 'tb-context-menu-open',
+        createEventArgs: event => ({ key: event.detail.key, request: event.detail.request }),
+    });
     blazor.registerCustomEventType('tbcolumnwidths', {
         browserEventName: 'tb-column-widths',
         createEventArgs: event => ({ widths: event.detail.widths }),

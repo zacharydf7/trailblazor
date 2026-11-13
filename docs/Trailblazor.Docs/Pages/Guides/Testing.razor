@@ -160,6 +160,15 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>ContextMenu(name).On(key).ChooseAsync(path)</code></th>
+                        <td>
+                            Opens the menu for the element with this <code>data-context-key</code>, or, without
+                            <code>On</code>, for the rest of the area, and clicks an item as <code>Menu</code> does. The
+                            name is the menu's <code>AriaLabel</code> and can be left out when the markup has only one
+                            context menu.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Tabs(name).SelectAsync(tab)</code></th>
                         <td>Selects a tab by its name.</td>
                     </tr>
@@ -713,6 +722,8 @@
             + "`OnCancel` may still be running. An `OnConfirm` that waits for the user, such as one that opens a "
             + "dialog, would keep the helper waiting, so click the confirm button instead."),
         new("Menu", "Its trigger", "`Menu(trigger).ChooseAsync(path)` chooses an item through its submenus."),
+        new("Context menu", "An element in its area", "`ContextMenu(element).ChooseAsync(path)` right-clicks the "
+            + "element and chooses an item through its submenus, from the items drawn for that element's key."),
         new("Tabs", "Their list's name", "`Tabs(name).SelectAsync(tab)` selects a tab by its name."),
         new("Dialog", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name."),
         new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows."),

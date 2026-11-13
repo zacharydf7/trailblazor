@@ -1,0 +1,47 @@
+<TbStack Gap="3">
+    <TbContextMenu AriaLabel="Trail actions">
+        <ChildContent>
+            <TbSurface Outlined style="padding: 1rem">
+                <TbStack Gap="2">
+                    @foreach (var trail in _trails)
+                    {
+                        <TbButton Variant="Variant.Text" data-context-key="@trail" style="justify-content: start">
+                            @trail
+                        </TbButton>
+                    }
+                </TbStack>
+            </TbSurface>
+        </ChildContent>
+        <Items>
+            @if (context.Key is { } trail)
+            {
+                <TbMenuItem OnClick="@(() => _last = $"Opened {trail}")">Open @trail</TbMenuItem>
+                <TbMenuItem Icon="ExampleIcons.Trash" OnClick="@(() => Remove(trail))">Remove</TbMenuItem>
+            }
+            else
+            {
+                <TbMenuItem Icon="ExampleIcons.Plus" OnClick="Add">Add a trail</TbMenuItem>
+            }
+        </Items>
+    </TbContextMenu>
+    <output aria-label="Last action">@_last</output>
+</TbStack>
+
+@code {
+    private readonly List<string> _trails = ["Ridge loop", "Lake path", "Pine trail"];
+    private string _last = "";
+    private int _added;
+
+    private void Add()
+    {
+        var name = $"New trail {++_added}";
+        _trails.Add(name);
+        _last = $"Added {name}";
+    }
+
+    private void Remove(string trail)
+    {
+        _trails.Remove(trail);
+        _last = $"Removed {trail}";
+    }
+}

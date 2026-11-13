@@ -93,6 +93,8 @@ public sealed class RichTextLinkEventArgs : EventArgs
 [EventHandler("ontbtagadd", typeof(TagAddEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbtagremove", typeof(TagRemoveEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbtreedrop", typeof(TreeDropEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
+[EventHandler("ontbcontextmenuopen", typeof(ContextMenuOpenEventArgs), enableStopPropagation: true,
+    enablePreventDefault: true)]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class EventHandlers
 {

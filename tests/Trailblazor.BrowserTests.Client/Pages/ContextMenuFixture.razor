@@ -1,0 +1,51 @@
+@page "/context-menu"
+
+<div style="display: grid; gap: 1rem; padding: 2rem">
+    <TbContextMenu AriaLabel="Trail actions" style="padding: 1rem; border: 1px solid">
+        <ChildContent>
+            <p>Trails</p>
+            @foreach (var trail in Trails)
+            {
+                <button type="button" data-context-key="@trail">@trail</button>
+            }
+        </ChildContent>
+        <Items>
+            <TbMenuItem OnClick="@(() => _chosen = $"Rename {context.Key ?? "all"}")">
+                Rename @(context.Key ?? "all")
+            </TbMenuItem>
+            <TbSubMenu Label="Move to">
+                <TbMenuItem OnClick="@(() => _chosen = $"Archive {context.Key ?? "all"}")">Archive</TbMenuItem>
+            </TbSubMenu>
+            <TbMenuItem Disabled>Locked</TbMenuItem>
+        </Items>
+    </TbContextMenu>
+    <TbContextMenu AriaLabel="Off" Disabled>
+        <ChildContent><p>Disabled area</p><button type="button">Off button</button></ChildContent>
+        <Items><TbMenuItem>Never</TbMenuItem></Items>
+    </TbContextMenu>
+    <TbContextMenu AriaLabel="Outer" style="padding: 1rem; border: 1px solid">
+        <ChildContent>
+            <p>Outer area</p>
+            <TbContextMenu AriaLabel="Inner">
+                <ChildContent><p>Inner area</p></ChildContent>
+                <Items><TbMenuItem OnClick="@(() => _chosen = "Inner")">Inner item</TbMenuItem></Items>
+            </TbContextMenu>
+        </ChildContent>
+        <Items><TbMenuItem OnClick="@(() => _chosen = "Outer")">Outer item</TbMenuItem></Items>
+    </TbContextMenu>
+    <div dir="rtl">
+        <TbContextMenu AriaLabel="Right to left">
+            <ChildContent><p>Right-to-left area</p></ChildContent>
+            <Items><TbMenuItem>Copy</TbMenuItem></Items>
+        </TbContextMenu>
+    </div>
+    <input aria-label="Note" />
+    <output data-testid="chosen">@_chosen</output>
+    @* Room to scroll the page. *@
+    <div style="block-size: 150vh"></div>
+</div>
+
+@code {
+    private static readonly string[] Trails = ["Ridge loop", "Lake path"];
+    private string _chosen = "";
+}

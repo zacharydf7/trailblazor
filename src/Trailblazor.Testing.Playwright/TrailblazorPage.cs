@@ -126,6 +126,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
     public TbMenuLocator Menu(string trigger) => new(scope, trigger);
 
+    /// <summary>The <c>TbContextMenu</c> that opens on this element, such as <c>page.GetByText("Ridge loop")</c>.
+    /// </summary>
+    public TbContextMenuLocator ContextMenu(ILocator at) => new(scope, at);
+
     /// <summary>The dialog with this title.</summary>
     public TbDialogLocator Dialog(string title) => new(Scope.Document(scope), title);
 

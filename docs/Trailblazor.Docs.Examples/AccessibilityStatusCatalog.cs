@@ -85,6 +85,7 @@ public static class AccessibilityStatusCatalog
         new("code-field", Tested, NotYet, None),
         new("tooltip", Tested, NotYet, None),
         new("menu", Tested, NotYet, None),
+        new("context-menu", Tested, NotYet, None),
         new("command-palette", Tested, NotYet, NotYet),
         new("dialog", Tested, NotYet, Tested),
         new("drawer", Tested, NotYet, Tested),

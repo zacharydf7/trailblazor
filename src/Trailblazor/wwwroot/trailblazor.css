@@ -4064,6 +4064,11 @@
         min-width: max(10rem, var(--tb-anchor-width, 0px));
     }
 
+    /* A long press opens the context menu, so iOS doesn't also show its own callout for a link or image. */
+    .tb-context-menu {
+        -webkit-touch-callout: none;
+    }
+
     /* The positioning script places the open menu and writes its room, so a long one scrolls instead of overflowing. */
     .tb-menu__list {
         box-sizing: border-box;

@@ -40,6 +40,12 @@ public sealed class TbMenuLocator(ILocator scope, string trigger)
             await Assertions.Expect(menu).ToHaveAttributeAsync("data-open", "");
         }
 
+        await ChooseFromAsync(scope, menu, path);
+    }
+
+    // Clicks the item at the end of the path in an open menu, opening the submenus named before it.
+    internal static async Task ChooseFromAsync(ILocator scope, ILocator menu, string[] path)
+    {
         var list = menu;
         foreach (var name in path[..^1])
         {

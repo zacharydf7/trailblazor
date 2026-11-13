@@ -39,6 +39,12 @@ public class SlowLinkGridSelectTests(BrowserFixture fixture) : GridSelectTests(f
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
 }
 
+// A context menu on a key it hasn't drawn waits for the server, so a second right-click can land in that wait.
+public class SlowLinkContextMenuTests(BrowserFixture fixture) : ContextMenuTests(fixture)
+{
+    protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
+}
+
 public class SlowLinkGridEditKeysTests(BrowserFixture fixture) : GridEditKeysTests(fixture)
 {
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);

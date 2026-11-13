@@ -29,6 +29,7 @@ public static class TrailblazorServiceCollectionExtensions
     [DynamicDependency(Kept, typeof(TagAddEventArgs))]
     [DynamicDependency(Kept, typeof(TagRemoveEventArgs))]
     [DynamicDependency(Kept, typeof(TreeDropEventArgs))]
+    [DynamicDependency(Kept, typeof(ContextMenuOpenEventArgs))]
     [DynamicDependency(Kept, typeof(MoveCheck))]
     [DynamicDependency(Kept, typeof(Viewport))]
     public static IServiceCollection AddTrailblazor(this IServiceCollection services,

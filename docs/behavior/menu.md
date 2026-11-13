@@ -67,6 +67,7 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 ## Not applicable
 
 - A menu bar, and hover switching between open menus: a menu opens from one button.
-- A context menu or press, drag and release: a menu opens with a click, and an item is chosen with a second one.
+- A context menu: `TbContextMenu` covers it.
+- Press, drag and release: a menu opens with a click, and an item is chosen with a second one.
 - Typing several letters to match a label: the pattern asks for one, and menus are short.
 - Space toggling a checkbox or radio item without closing, which the pattern makes optional: `KeepOpen` decides, for Enter and Space alike.

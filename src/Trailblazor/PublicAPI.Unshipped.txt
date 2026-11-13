@@ -4820,3 +4820,39 @@ override Trailblazor.CommandPaletteLabels.GetHashCode() -> int
 override Trailblazor.CommandPaletteLabels.ToString() -> string!
 static Trailblazor.CommandPaletteLabels.operator !=(Trailblazor.CommandPaletteLabels? left, Trailblazor.CommandPaletteLabels? right) -> bool
 static Trailblazor.CommandPaletteLabels.operator ==(Trailblazor.CommandPaletteLabels? left, Trailblazor.CommandPaletteLabels? right) -> bool
+Trailblazor.ContextMenuContext
+Trailblazor.ContextMenuContext.<Clone>$() -> Trailblazor.ContextMenuContext!
+Trailblazor.ContextMenuContext.ContextMenuContext() -> void
+Trailblazor.ContextMenuContext.Equals(Trailblazor.ContextMenuContext? other) -> bool
+Trailblazor.ContextMenuContext.Key.get -> string?
+Trailblazor.ContextMenuContext.Key.init -> void
+Trailblazor.Internal.Events.ContextMenuOpenEventArgs
+Trailblazor.Internal.Events.ContextMenuOpenEventArgs.ContextMenuOpenEventArgs() -> void
+Trailblazor.Internal.Events.ContextMenuOpenEventArgs.Key.get -> string!
+Trailblazor.Internal.Events.ContextMenuOpenEventArgs.Key.set -> void
+Trailblazor.TbContextMenu
+Trailblazor.TbContextMenu.AriaLabel.get -> string?
+Trailblazor.TbContextMenu.AriaLabel.set -> void
+Trailblazor.TbContextMenu.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbContextMenu.ChildContent.set -> void
+Trailblazor.TbContextMenu.Classes.get -> Trailblazor.MenuClasses?
+Trailblazor.TbContextMenu.Classes.set -> void
+Trailblazor.TbContextMenu.Disabled.get -> bool
+Trailblazor.TbContextMenu.Disabled.set -> void
+Trailblazor.TbContextMenu.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbContextMenu.Items.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.ContextMenuContext!>?
+Trailblazor.TbContextMenu.Items.set -> void
+Trailblazor.TbContextMenu.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbContextMenu.OpenChanged.set -> void
+Trailblazor.TbContextMenu.TbContextMenu() -> void
+Trailblazor.TbContextMenu.TelemetryName.get -> string?
+Trailblazor.TbContextMenu.TelemetryName.set -> void
+override Trailblazor.ContextMenuContext.Equals(object? obj) -> bool
+override Trailblazor.ContextMenuContext.GetHashCode() -> int
+override Trailblazor.ContextMenuContext.ToString() -> string!
+override Trailblazor.TbContextMenu.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+static Trailblazor.ContextMenuContext.operator !=(Trailblazor.ContextMenuContext? left, Trailblazor.ContextMenuContext? right) -> bool
+static Trailblazor.ContextMenuContext.operator ==(Trailblazor.ContextMenuContext? left, Trailblazor.ContextMenuContext? right) -> bool
+~override Trailblazor.TbContextMenu.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.Internal.Events.ContextMenuOpenEventArgs.Request.get -> int
+Trailblazor.Internal.Events.ContextMenuOpenEventArgs.Request.set -> void

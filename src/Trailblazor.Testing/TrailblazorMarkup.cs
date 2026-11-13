@@ -104,6 +104,19 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
     public TbMenuDriver Menu(string trigger) => new(trigger, _findAll);
 
+    /// <summary>The <c>TbContextMenu</c> whose menu has this <c>AriaLabel</c>, or the only one in the markup when no
+    /// name is given.</summary>
+    public TbContextMenuDriver ContextMenu(string? name = null) => new(() =>
+    {
+        var targets = _findAll(".tb-context-menu[data-part=target]")
+            .Where(target => name is null || TbContextMenuDriver.Menu(target).GetAttribute("aria-label") == name)
+            .ToList();
+        return targets.Count == 1 ? targets[0]
+            : throw new InvalidOperationException(name is null
+                ? $"Expected one context menu, found {targets.Count}; name the one to use."
+                : $"Expected one context menu named \"{name}\", found {targets.Count}.");
+    });
+
     /// <summary>The <c>TbTabs</c> with this accessible name, or the only tabs in the markup when no name is given.
     /// </summary>
     public TbTabsDriver Tabs(string? name = null) => new(() =>
@@ -1483,10 +1496,67 @@ public sealed class TbTabsDriver
             ?? throw new InvalidOperationException($"No tab reads \"{tab}\".");
 }
 
+/// <summary>A <c>TbContextMenu</c>, found by its menu's name.</summary>
+public sealed class TbContextMenuDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly string _key;
+
+    internal TbContextMenuDriver(Func<IElement> find, string key = "") => (_find, _key) = (find, key);
+
+    /// <summary>The same context menu, opened on the element inside it with this <c>data-context-key</c>, such as a
+    /// row's id: <c>cut.Tb().ContextMenu().On("ridge-loop").ChooseAsync("Delete")</c>.</summary>
+    public TbContextMenuDriver On(string key) => new(_find, key);
+
+    /// <summary>Opens the menu as a right-click would and clicks the item with this name, through the submenus named
+    /// before it, as in <c>ChooseAsync("Move to", "Archive")</c>. Throws for a disabled context menu or item, a key or
+    /// name it doesn't have, or a static page, where the browser's own menu opens instead.</summary>
+    public async Task ChooseAsync(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        var target = _find();
+        if (target.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("This context menu is on a static page, where the browser's own menu "
+                + "opens; render it on an interactive page.");
+        }
+
+        if (target.HasAttribute("data-disabled"))
+        {
+            throw new InvalidOperationException("This context menu is disabled.");
+        }
+
+        if (_key.Length > 0 && !target.QuerySelectorAll("[data-context-key]")
+            .Any(element => element.GetAttribute("data-context-key") == _key))
+        {
+            throw new InvalidOperationException($"The context menu has no element with the key \"{_key}\".");
+        }
+
+        // The menu's script asks for another key's items the same way before it shows them.
+        if (Menu(target).GetAttribute("data-key") != _key)
+        {
+            await target.TriggerEventAsync("ontbcontextmenuopen", new ContextMenuOpenEventArgs { Key = _key });
+            target = _find();
+        }
+
+        var list = Menu(target);
+        foreach (var name in path[..^1])
+        {
+            var opener = TbMenuDriver.Find(list, name, "[data-part=submenu-trigger]", "submenu");
+            list = target.QuerySelector($"[id='{opener.GetAttribute("aria-controls")}']")!;
+        }
+
+        await TbMenuDriver.ClickAsync(target, TbMenuDriver.Find(list, path[^1], TbMenuDriver.Items, "item"));
+    }
+
+    internal static IElement Menu(IElement target) =>
+        target.Children.Single(child => child.GetAttribute("role") == "menu");
+}
+
 /// <summary>A <c>TbMenu</c>, found by its trigger's name.</summary>
 public sealed class TbMenuDriver
 {
-    private const string Items = "[role=menuitem]:not([data-part=submenu-trigger]), [role=menuitemcheckbox], "
+    internal const string Items = "[role=menuitem]:not([data-part=submenu-trigger]), [role=menuitemcheckbox], "
         + "[role=menuitemradio]";
 
     private readonly string _trigger;
@@ -1551,7 +1621,7 @@ public sealed class TbMenuDriver
         ?? throw new InvalidOperationException($"The menu that \"{NameOf(opener)}\" opens isn't in the markup.");
 
     // A submenu's items sit inside the parent's list, so only the items whose nearest list is this one count.
-    private static IElement Find(IElement list, string name, string selector, string kind)
+    internal static IElement Find(IElement list, string name, string selector, string kind)
     {
         var found = list.QuerySelectorAll(selector)
             .Where(item => item.Closest("[role=menu]") == list && NameOf(item) == name).ToList();
