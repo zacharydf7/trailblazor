@@ -7732,7 +7732,8 @@ public static class ExampleCatalog
                     typeof(TreeViewVirtualExample)),
                 new("content-instead-of-rows", "Content instead of rows", "A row shows its toggle once a `TbTreeItem` "
                     + "inside it exists. Other content doesn't count, so a row holding only other content needs "
-                    + "`HasChildren`. With `HasChildren`, the content renders only while the row is open: none of it "
+                    + "`HasChildren`. Without it the content never shows, and the row gets a warning in the browser "
+                    + "console. With `HasChildren`, the content renders only while the row is open: none of it "
                     + "exists or runs until the row opens, and closing the row removes all of it. `@bind-Expanded` "
                     + "opens a `TbTreeItem` from code.", typeof(TreeViewContentExample)),
                 new("open-state", "Open state kept on your items", "When your items keep their own open state, such as "

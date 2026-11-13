@@ -146,4 +146,56 @@ public class TreeItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Empty(result.Violations.Select(violation =>
             $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeItem_ShouldWarnInTheConsole_WhenItHoldsContentButNoRowsAndNoHasChildren(string browser)
+    {
+        var page = await OpenHiddenContentAsync(browser);
+
+        Assert.Equal(["Gate", "Notes"], await HiddenContentWarningsAsync(page));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeItem_ShouldNotWarn_WhenALeafRowGetsItsFirstChildRow(string browser)
+    {
+        var page = await OpenHiddenContentAsync(browser);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Add a pond trail" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Pond" })).ToHaveAttributeAsync("aria-expanded",
+            "false");
+        Assert.Equal(["Gate", "Notes"], await HiddenContentWarningsAsync(page));
+    }
+
+    // Declared rows exist only once their tree has built them, which is when the check can run.
+    private async Task<IPage> OpenHiddenContentAsync(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-hidden-content");
+        foreach (var row in new[] { "Notes", "Docs", "Ridge", "Pond", "Lake", "Gate" })
+        {
+            await Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = row })).ToBeVisibleAsync();
+        }
+
+        return page;
+    }
+
+    // The rows the warnings name, sorted, since the trees may build in either order. A console message can reach the
+    // test a little after the page logs it, as in WebKit, so this waits up to five seconds for the two expected, then
+    // half a second more for any that shouldn't be there.
+    private static async Task<string[]> HiddenContentWarningsAsync(IPage page)
+    {
+        var rows = await WarnedRowsAsync(page);
+        for (var waited = 0; rows.Length < 2 && waited < 5000; waited += 100)
+        {
+            await page.WaitForTimeoutAsync(100);
+            rows = await WarnedRowsAsync(page);
+        }
+
+        await page.WaitForTimeoutAsync(500);
+        return await WarnedRowsAsync(page);
+    }
+
+    private static async Task<string[]> WarnedRowsAsync(IPage page) => [.. (await page.ConsoleMessagesAsync())
+        .Where(message => message.Type == "warning" && message.Text.Contains("Set HasChildren to show the content"))
+        .Select(message => message.Text.Split('"')[1]).Order()];
 }

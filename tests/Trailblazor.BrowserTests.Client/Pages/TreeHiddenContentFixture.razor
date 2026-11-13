@@ -1,0 +1,25 @@
+@page "/tree-hidden-content"
+
+@* Notes and Gate hold content that isn't rows, which can never show; the other rows are written as they should be. *@
+<TbTreeView TItem="string" TKey="string" AriaLabel="Projects">
+    <TbTreeItem Value="@("notes")" Text="Notes"><p>Written in the row</p></TbTreeItem>
+    <TbTreeItem Value="@("docs")" Text="Docs"><TbTreeItem Value="@("guide")" Text="Guide" /></TbTreeItem>
+</TbTreeView>
+<TbTreeView TItem="string" TKey="string" AriaLabel="Trails">
+    <TbTreeItem Value="@("ridge")" Text="Ridge"><TbTreeItem Value="@("loop")" Text="Loop" /></TbTreeItem>
+    <TbTreeItem Value="@("pond")" Text="Pond">
+        @foreach (var trail in _pondTrails)
+        {
+            <TbTreeItem Value="@trail" Text="@trail" />
+        }
+    </TbTreeItem>
+    <TbTreeItem Value="@("lake")" Text="Lake" HasChildren><p>Shown when open</p></TbTreeItem>
+</TbTreeView>
+<TbTreeView TItem="string" TKey="string" AriaLabel="Camps">
+    <TbTreeItem Value="@("gate")" Text="Gate">Remember the code</TbTreeItem>
+</TbTreeView>
+<TbButton OnClick="@(() => _pondTrails.Add("Shore"))">Add a pond trail</TbButton>
+
+@code {
+    private readonly List<string> _pondTrails = [];
+}

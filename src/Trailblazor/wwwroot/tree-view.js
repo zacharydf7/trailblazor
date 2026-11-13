@@ -130,7 +130,23 @@ export function createTreeView(tree, events) {
             focusRow(target);
         }
     };
+    // A declared row whose content holds no rows has no toggle, so that content never shows; warn once per tree.
+    // While the tree builds, a row's first child rows aren't rows yet, so the check waits for the build.
+    let warned = false;
+    const warnAboutHiddenContent = () => {
+        const group = !warned && tree.getAttribute('aria-busy') !== 'true' && own('[data-part="group"]')
+            .find(group => (group.firstElementChild || group.textContent.trim())
+                && group.previousElementSibling?.matches('[role="treeitem"]:not([aria-expanded])'));
+        if (group) {
+            warned = true;
+            const row = group.previousElementSibling;
+            console.warn(`Trailblazor: the TbTreeItem "${row.dataset.text}" holds content but no TbTreeItems, so it `
+                + 'has no toggle and the content never shows. Set HasChildren to show the content when the row opens.',
+                row);
+        }
+    };
     const observer = new MutationObserver(() => {
+        warnAboutHiddenContent();
         keepStatusFocus();
         keepRowFocus();
         syncEnds();
@@ -446,6 +462,7 @@ export function createTreeView(tree, events) {
     syncEnds();
     reportOrder();
     scheduleView();
+    warnAboutHiddenContent();
     tree.dataset.ready = '';
     return {
         dispose() {
