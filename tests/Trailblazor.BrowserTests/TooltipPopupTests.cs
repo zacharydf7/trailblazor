@@ -29,7 +29,8 @@ public class TooltipPopupTests(BrowserFixture fixture) : BrowserTest(fixture)
         var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Share" });
         await trigger.FocusAsync();
         await page.Keyboard.PressAsync("Enter");
-        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Copy the link" })).ToBeVisibleAsync();
+        // The panel takes focus a task after it shows; an Escape before then would only hide the trigger's tooltip.
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Copy the link" })).ToBeFocusedAsync();
 
         await page.Keyboard.PressAsync("Escape");
 
