@@ -447,8 +447,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <summary>A label the grid's use is counted under, such as <c>"jobs"</c>, so the app can see how people use it
     /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>sort</c>,
     /// <c>filter</c>, <c>page</c>, <c>page_size</c>, <c>select</c>, <c>move</c>, <c>group</c>, <c>expand</c>,
-    /// <c>collapse</c>, <c>edit</c>, <c>open_detail</c>, <c>close_detail</c>, <c>export_csv</c> or
-    /// <c>export_excel</c> each time the user does one. Which
+    /// <c>collapse</c>, <c>edit</c>, <c>open_detail</c>, <c>close_detail</c>, <c>export_csv</c>,
+    /// <c>export_excel</c> or <c>export_pdf</c> each time the user does one. Which
     /// column, filter value, page, group, rows or value is never recorded. It names the grid, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }

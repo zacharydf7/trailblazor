@@ -39,4 +39,15 @@ public class GridExportTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal("Trail list.xlsx", download.SuggestedFilename);
         Assert.Equal("PK"u8.ToArray(), (await ContentOf(download))[..2]);
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ExportMenu_ShouldDownloadAPdf_WhenPdfIsChosen(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+
+        var download = await ExportAsync(page, "PDF");
+
+        Assert.Equal("Trail list.pdf", download.SuggestedFilename);
+        Assert.Equal("%PDF-1.4"u8.ToArray(), (await ContentOf(download))[..8]);
+    }
 }

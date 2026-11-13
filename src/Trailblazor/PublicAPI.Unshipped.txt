@@ -5196,3 +5196,5 @@ Trailblazor.Internal.Events.CellRangeEventArgs.ToRow.get -> string?
 Trailblazor.Internal.Events.CellRangeEventArgs.ToRow.set -> void
 Trailblazor.TbDataGrid<TItem>.CellSelection.get -> bool
 Trailblazor.TbDataGrid<TItem>.CellSelection.set -> void
+const Trailblazor.TbStrings.DataGridExportPdf = "DataGrid.ExportPdf" -> string!
+Trailblazor.TbDataGrid<TItem>.ExportPdfAsync(Trailblazor.GridExportRows rows = Trailblazor.GridExportRows.Shown) -> System.Threading.Tasks.Task<byte[]!>!

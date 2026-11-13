@@ -7801,14 +7801,17 @@ public static class ExampleCatalog
                     + "into them and Escape comes back out. They keep their own Tab stops, so a grid inside them "
                     + "works as it would anywhere. A grid that virtualizes its rows can't show details.",
                     typeof(DataGridDetailExample)),
-                new("export", "Export", "`Exportable` adds an Export menu that downloads the rows as a CSV file or an "
-                    + "Excel workbook: the rows the filters leave, from every page and in the order they show, with "
-                    + "the columns shown. The file is named for the grid's `AriaLabel`, or for `ExportFileName` when "
-                    + "it's set. `ExportCsvAsync` and `ExportExcelAsync` return the same content to your own code, and "
-                    + "with `GridExportRows.All` they return every row and column. A CSV holds each cell's text as the "
-                    + "grid shows it; a workbook keeps numbers, dates and yes-or-no values as values a spreadsheet can "
-                    + "sum and sort. In a CSV, text a spreadsheet would run as a formula gets an apostrophe in front, "
-                    + "and a column drawn only by its `CellTemplate` has nothing to export.",
+                new("export", "Export", "`Exportable` adds an Export menu that downloads the rows as a CSV file, an "
+                    + "Excel workbook or a PDF: the rows the filters leave, from every page and in the order they "
+                    + "show, with the columns shown. The file is named for the grid's `AriaLabel`, or for "
+                    + "`ExportFileName` when it's set. `ExportCsvAsync`, `ExportExcelAsync` and `ExportPdfAsync` "
+                    + "return the same content to your own code, and with `GridExportRows.All` they return every row "
+                    + "and column. A CSV holds each cell's text as the grid shows it; a workbook keeps numbers, dates "
+                    + "and yes-or-no values as values a spreadsheet can sum and sort. A PDF prints the rows on "
+                    + "landscape A4 pages that repeat the column headings, puts each group's rows under its own "
+                    + "heading and ends with the totals; it uses the standard Helvetica font, so letters outside "
+                    + "Western European alphabets show as question marks. In a CSV, text a spreadsheet would run as a formula gets an apostrophe in "
+                    + "front, and a column drawn only by its `CellTemplate` has nothing to export.",
                     typeof(DataGridExportExample)),
                 new("header-bands", "Header bands", "`TbColumnGroup` puts a heading over the columns inside it, in a "
                     + "row above their headers. Groups nest, and each level adds a row. Sorting, resizing, hiding and "
@@ -8204,7 +8207,7 @@ public static class ExampleCatalog
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
                     + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize`, `reorder`, "
                     + "`hide`, `show`, `open_detail`, `close_detail`, `save_changes`, `discard_changes`, `copy`, "
-                    + "`export_csv` or `export_excel` for each of "
+                    + "`export_csv`, `export_excel` or `export_pdf` for each of "
                     + "those the user does; a `move` also "
                     + "says whether a `pointer` or the "
                     + "`keyboard` made it.",

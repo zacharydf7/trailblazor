@@ -49,11 +49,14 @@
             {
                 <TbMenu Label="@Localizer[TbStrings.DataGridExport]" Variant="Variant.Text" Size="Size.Small"
                         Align="PlacementAlign.End" data-part="export" Class="tb-data-grid__export">
-                    <TbMenuItem OnClick="() => ExportFromMenuAsync(excel: false)">
+                    <TbMenuItem OnClick="() => ExportFromMenuAsync(ExportFormat.Csv)">
                         @Localizer[TbStrings.DataGridExportCsv]
                     </TbMenuItem>
-                    <TbMenuItem OnClick="() => ExportFromMenuAsync(excel: true)">
+                    <TbMenuItem OnClick="() => ExportFromMenuAsync(ExportFormat.Excel)">
                         @Localizer[TbStrings.DataGridExportExcel]
+                    </TbMenuItem>
+                    <TbMenuItem OnClick="() => ExportFromMenuAsync(ExportFormat.Pdf)">
+                        @Localizer[TbStrings.DataGridExportPdf]
                     </TbMenuItem>
                 </TbMenu>
             }
@@ -631,8 +634,10 @@
             @TotalCells(totals.Values, Format(TbStrings.DataGridGroupTotals, GroupName(totals.Group)))
         </tr>;
 
-    private string GroupName(GroupHeading group) =>
-        Format(TbStrings.DataGridGroupHeading, group.Column, group.Value ?? Localizer[TbStrings.DataGridGroupNone]);
+    private string GroupName(GroupHeading group) => GroupName(group.Column, group.Value);
+
+    private string GroupName(string column, string? value) =>
+        Format(TbStrings.DataGridGroupHeading, column, value ?? Localizer[TbStrings.DataGridGroupNone]);
 
     // The handle, details and selection columns hold nothing in the rows that aren't items.
     private RenderFragment BlankLeadCells =>

@@ -815,6 +815,9 @@ public static class TbStrings
     /// <summary>"Excel": the Export menu's item that downloads the rows as an Excel workbook.</summary>
     public const string DataGridExportExcel = "DataGrid.ExportExcel";
 
+    /// <summary>"PDF": the Export menu's item that downloads the rows as a PDF.</summary>
+    public const string DataGridExportPdf = "DataGrid.ExportPdf";
+
     /// <summary>"Order": names the column of a data grid whose rows can be moved, which holds each row's move
     /// handle.</summary>
     public const string DataGridOrder = "DataGrid.Order";
@@ -1354,6 +1357,7 @@ public static class TbStrings
         [DataGridExport] = "Export",
         [DataGridExportCsv] = "CSV",
         [DataGridExportExcel] = "Excel",
+        [DataGridExportPdf] = "PDF",
         [DataGridOrder] = "Order",
         [DataGridRange] = "{0}–{1} of {2}",
         [DataGridPages] = "Pages of {0}",

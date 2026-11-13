@@ -341,14 +341,17 @@ public class TbDataGridExportTests : BunitContext
 
         await cut.Tb().Menu("Export").ChooseAsync("CSV");
         await cut.Tb().Menu("Export").ChooseAsync("Excel");
+        await cut.Tb().Menu("Export").ChooseAsync("PDF");
 
-        var (csv, excel) = (Browser.Downloads[0], Browser.Downloads[1]);
+        var (csv, excel, pdf) = (Browser.Downloads[0], Browser.Downloads[1], Browser.Downloads[2]);
         Assert.Equal(("Hikes- May.csv", "text/csv"), (csv.FileName, csv.ContentType));
         Assert.Equal([0xEF, 0xBB, 0xBF], csv.Content[..3]);
         Assert.StartsWith("\uFEFFName,Length km,Done,Walked", csv.Text);
         Assert.Equal("Hikes- May.xlsx", excel.FileName);
         Assert.Equal("PK"u8.ToArray(), excel.Content[..2]);
-        Assert.Equal(["export_csv", "export_excel"],
+        Assert.Equal(("Hikes- May.pdf", "application/pdf"), (pdf.FileName, pdf.ContentType));
+        Assert.Equal("%PDF"u8.ToArray(), pdf.Content[..4]);
+        Assert.Equal(["export_csv", "export_excel", "export_pdf"],
             used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
     }
 }
