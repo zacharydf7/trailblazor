@@ -7340,6 +7340,13 @@
         vertical-align: middle;
     }
 
+    /* A cell in the selected range has an outline as well as a tint, so the range doesn't rest on color alone. */
+    .tb-data-grid__cell--in-range {
+        background: var(--tb-color-primary-subtle);
+        outline: 1px solid var(--tb-color-primary);
+        outline-offset: -1px;
+    }
+
     /* A changed cell shows a bar at its start as well as a tint, so the mark doesn't rest on color alone. */
     .tb-data-grid__cell--changed {
         background: var(--tb-color-warning-subtle);
@@ -7544,6 +7551,11 @@
 
         .tb-data-grid__row[data-drop-refused] > td {
             border-style: dashed;
+        }
+
+        .tb-data-grid__cell--in-range {
+            outline: 2px solid Highlight;
+            outline-offset: -2px;
         }
 
         .tb-data-grid__cell--changed {

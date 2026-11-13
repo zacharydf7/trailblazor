@@ -257,7 +257,10 @@
                             opens or closes a tree grid's row with <code>ExpandAsync</code> and
                             <code>CollapseAsync</code>. In a grid that edits in batches,
                             <code>SaveChangesAsync</code> and <code>DiscardChangesAsync</code> press its Save changes and
-                            Discard changes buttons.
+                            Discard changes buttons. In a grid with <code>CellSelection</code>,
+                            <code>SelectCellsAsync</code> selects a range, <code>SelectedCells</code> reads its text,
+                            and in Playwright <code>CopyAsync</code> presses Ctrl+C and returns what was copied, with
+                            no clipboard permission needed.
                             Finds a cell with <code>Cell</code>, and reads the column headers with <code>Columns</code>,
                             a column's total with <code>Total</code> and each group's totals with
                             <code>GroupTotals</code>.

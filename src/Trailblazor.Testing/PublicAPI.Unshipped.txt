@@ -249,3 +249,5 @@ Trailblazor.Testing.TbQueryBuilderDriver.RemoveGroupAsync(params int[]! group) -
 Trailblazor.Testing.TrailblazorMarkup.QueryBuilder(string? label = null) -> Trailblazor.Testing.TbQueryBuilderDriver!
 Trailblazor.Testing.TbGridDriver.DiscardChangesAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.SaveChangesAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.SelectCellsAsync(string! fromRow, string! fromColumn, string! toRow, string! toColumn) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.SelectedCells.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string!>!>!

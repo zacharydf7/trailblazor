@@ -1,0 +1,27 @@
+@page "/grid-cells"
+
+@* A grid that selects ranges of cells as well as rows, with a count of row clicks, a column drawn by a template, columns
+   that can be hidden, and a button that removes the first row. *@
+<TbDataGrid TItem="Hike" Items="_hikes" AriaLabel="Hikes" KeySelector="hike => hike.Id" CellSelection HideableColumns
+            SelectionMode="SelectionMode.Multiple" OnRowClick="_ => _clicks++">
+    <TbColumn Field="hike => hike.Name" />
+    <TbColumn Field="hike => hike.Region">
+        <CellTemplate>@context.Region (map)</CellTemplate>
+    </TbColumn>
+    <TbColumn Field="hike => hike.LengthKm" Title="Length (km)" />
+</TbDataGrid>
+<output aria-label="Row clicks">@_clicks</output>
+<TbButton OnClick="() => _hikes = [.. _hikes.Skip(1)]">Remove the first hike</TbButton>
+
+@code {
+    private List<Hike> _hikes =
+    [
+        new(1, "Pine Hollow", "North ridge", 6),
+        new(2, "Eagle Ridge", "North ridge", 14),
+        new(3, "Lake \"Blue\"", "River valley", 3),
+    ];
+
+    private int _clicks;
+
+    public sealed record Hike(int Id, string Name, string Region, int LengthKm);
+}

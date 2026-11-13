@@ -943,6 +943,43 @@ public sealed class TbGridLocator(ILocator scope, string name)
         return Row(row).Locator($"td[data-column=\"{id}\"]");
     }
 
+    /// <summary>Selects the cells from the one under <paramref name="fromColumn"/> in the row <paramref name="fromRow"/>
+    /// to a different one under <paramref name="toColumn"/> in the row <paramref name="toRow"/>, by clicking the first and
+    /// Shift-clicking the second, then waits until the grid marks the range. Each row is found by a cell whose text is
+    /// exactly that value.</summary>
+    public async Task SelectCellsAsync(string fromRow, string fromColumn, string toRow, string toColumn)
+    {
+        var from = await CellAsync(fromRow, fromColumn);
+        var to = await CellAsync(toRow, toColumn);
+        await from.ClickAsync();
+        await to.ClickAsync(new() { Modifiers = [KeyboardModifier.Shift] });
+        await Assertions.Expect(to).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    /// <summary>The text of the selected range's cells, row by row, as Ctrl+C copies them; empty without a range.
+    /// </summary>
+    public async Task<IReadOnlyList<IReadOnlyList<string>>> SelectedCellsAsync() =>
+        await Root.Locator(":scope > [data-part=copy] tr").EvaluateAllAsync<string[][]>(
+            "rows => rows.map(row => [...row.cells].map(cell => cell.textContent))");
+
+    /// <summary>Presses Ctrl+C (Cmd+C on a Mac) on the grid's cell in focus and returns the text it copied, as
+    /// tab-separated lines. The text is read from the copy as it happens, so the test needs no clipboard permission.
+    /// Throws when nothing was copied, such as when focus isn't in a grid with <c>CellSelection</c>.</summary>
+    public async Task<string> CopyAsync()
+    {
+        var page = Root.Page;
+        await page.EvaluateAsync("""
+            () => {
+                window.tbCopied = null;
+                addEventListener('copy', event => window.tbCopied = event.clipboardData.getData('text/plain'),
+                    { once: true });
+            }
+            """);
+        await page.Keyboard.PressAsync("ControlOrMeta+c");
+        return await page.EvaluateAsync<string?>("() => window.tbCopied")
+            ?? throw new InvalidOperationException("Nothing was copied; focus a cell of a grid with CellSelection.");
+    }
+
     /// <summary>Clicks the Save changes button of a grid whose <c>EditMode</c> is <c>Batch</c>, and waits until the app
     /// has taken the changes or shown why it can't. Throws when the grid holds no changes or doesn't edit in
     /// batches; an edit still open doesn't count as a change until it ends.</summary>

@@ -542,6 +542,21 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task DataGrid_ShouldCountCopiesButNotRangeSelections_WhenItSelectsCells()
+    {
+        Trail[] trails = [new(1, "Pine Hollow"), new(2, "Eagle Ridge")];
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, trails)
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.KeySelector, trail => trail.Id)
+            .Add(grid => grid.TelemetryName, "trails").Add(grid => grid.CellSelection, true)
+            .AddChildContent<TbColumn<Trail>>(column => column.Add(name => name.Field, trail => trail.Name)));
+
+        await cut.Tb().Grid("Trails").SelectCellsAsync("Pine Hollow", "Name", "Eagle Ridge", "Name");
+        await cut.Find("table").TriggerEventAsync("ontbcellscopy", EventArgs.Empty);
+
+        Assert.Equal(["copy"], Uses().Where(use => Equals(use.Name, "trails")).Select(use => use.Action));
+    }
+
+    [Fact]
     public async Task TreeView_ShouldCountWhatTheUserDoesButNotWhatCodeDoes_WhenItHasATelemetryName()
     {
         Place[] places = [new(1, "North", [new(2, "Ridge")]), new(4, "South", [new(5, "Lake")])];

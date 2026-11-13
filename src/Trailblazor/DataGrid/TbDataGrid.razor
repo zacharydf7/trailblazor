@@ -9,7 +9,7 @@
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
                 Height is null ? null : "tb-data-grid--scrolls", Virtualize ? "tb-data-grid--virtual" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
-    @{ CheckColumnKeys(); ArrangeColumns(); ArrangeForColumns(); DrawRowsForReorder(); }
+    @{ CheckColumnKeys(); ArrangeColumns(); ArrangeForColumns(); UpdateRange(); DrawRowsForReorder(); }
     @if (HasGroupBy || HideableColumns || Exportable)
     {
         <div data-part="toolbar" class="@ClassNames.Join("tb-data-grid__toolbar", Classes?.Toolbar)">
@@ -87,7 +87,10 @@
          tabindex="@(ScrollIsTabStop ? 0 : null)">
         <table @ref="_table" role="@(IsGrid ? ChildrenSelector is null ? "grid" : "treegrid" : null)" aria-label="@AriaLabel"
                data-count="@(CanReorder ? _total : null)"
-               aria-multiselectable="@(IsGrid && SelectionMode == SelectionMode.Multiple ? "true" : null)"
+               aria-multiselectable="@(IsGrid && (SelectionMode == SelectionMode.Multiple || CellSelection) ? "true" : null)"
+               data-cell-selection="@(CellSelection ? "" : null)" data-cell-range="@(HasRange ? "" : null)"
+               @ontbcellrange="OnCellRange" @ontbcellrange:stopPropagation
+               @ontbcellscopy="OnCellsCopied" @ontbcellscopy:stopPropagation
                data-selection="@(SelectionMode == SelectionMode.Multiple ? "multiple" : null)"
                data-select-all="@(SelectionMode == SelectionMode.Multiple && CanSelectAll ? "" : null)"
                data-row-click-selects="@(SelectionMode == SelectionMode.Multiple && RowClickSelects ? "" : null)"
@@ -278,6 +281,21 @@
             }
         </table>
     </div>
+    @if (HasRange)
+    {
+        @* What Ctrl+C copies, kept by the server, since a virtualized grid draws only some of the range's rows. *@
+        <table data-part="copy" data-from="@RangeEnd(_rangeFrom)" data-to="@RangeEnd(_rangeTo)" hidden>
+            @foreach (var row in SelectedCellTexts())
+            {
+                <tr>
+                    @foreach (var text in row)
+                    {
+                        <td>@text</td>
+                    }
+                </tr>
+            }
+        </table>
+    }
     @if (OnRowMove.HasDelegate)
     {
         @* The announcer reads the reason out, so this is only for sight. *@
@@ -371,11 +389,15 @@
                 var editable = CanEdit(column);
                 var treeCell = tree is not null && column == _shownColumns[0];
                 var change = ChangeOf(key, column);
+                var inRange = InRange(key, column);
                 <td data-column="@column.Key" data-part="@(treeCell ? "tree-cell" : null)" data-pinned="@PinSide(column)"
                     style="@PinStyle(column)" data-editable="@(editable ? "" : null)"
                     data-changed="@(change is null ? null : "")" aria-describedby="@(change is null ? null : _changedId)"
+                    aria-selected="@(CellSelection ? inRange ? "true" : "false" : null)"
+                    data-in-range="@(inRange ? "" : null)"
+                    data-copy="@(CellSelection && column.CellTemplate is not null ? CopyTextOf(key, column, item) : null)"
                     class="@ClassNames.Join(column.CellClass, change is null ? null : "tb-data-grid__cell--changed",
-                               Classes?.Cell)"
+                               inRange ? "tb-data-grid__cell--in-range" : null, Classes?.Cell)"
                     @ondblclick="@((editable ? _startEdit.For((key, column)) : null)!)"
                     @ontbeditstart="@((editable ? _startEdit.For((key, column)) : null)!)">
                     @if (treeCell)

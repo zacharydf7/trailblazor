@@ -5184,3 +5184,15 @@ override Trailblazor.GridBatchEdit<TItem>.GetHashCode() -> int
 override Trailblazor.GridBatchEdit<TItem>.ToString() -> string!
 static Trailblazor.GridBatchEdit<TItem>.operator !=(Trailblazor.GridBatchEdit<TItem>? left, Trailblazor.GridBatchEdit<TItem>? right) -> bool
 static Trailblazor.GridBatchEdit<TItem>.operator ==(Trailblazor.GridBatchEdit<TItem>? left, Trailblazor.GridBatchEdit<TItem>? right) -> bool
+Trailblazor.Internal.Events.CellRangeEventArgs
+Trailblazor.Internal.Events.CellRangeEventArgs.CellRangeEventArgs() -> void
+Trailblazor.Internal.Events.CellRangeEventArgs.FromColumn.get -> string?
+Trailblazor.Internal.Events.CellRangeEventArgs.FromColumn.set -> void
+Trailblazor.Internal.Events.CellRangeEventArgs.FromRow.get -> string?
+Trailblazor.Internal.Events.CellRangeEventArgs.FromRow.set -> void
+Trailblazor.Internal.Events.CellRangeEventArgs.ToColumn.get -> string?
+Trailblazor.Internal.Events.CellRangeEventArgs.ToColumn.set -> void
+Trailblazor.Internal.Events.CellRangeEventArgs.ToRow.get -> string?
+Trailblazor.Internal.Events.CellRangeEventArgs.ToRow.set -> void
+Trailblazor.TbDataGrid<TItem>.CellSelection.get -> bool
+Trailblazor.TbDataGrid<TItem>.CellSelection.set -> void

@@ -238,3 +238,6 @@ Trailblazor.Testing.Playwright.TbQueryBuilderLocator.TbQueryBuilderLocator(Micro
 Trailblazor.Testing.Playwright.TrailblazorPage.QueryBuilder(string! label) -> Trailblazor.Testing.Playwright.TbQueryBuilderLocator!
 Trailblazor.Testing.Playwright.TbGridLocator.DiscardChangesAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.SaveChangesAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbGridLocator.CopyAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbGridLocator.SelectCellsAsync(string! fromRow, string! fromColumn, string! toRow, string! toColumn) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbGridLocator.SelectedCellsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string!>!>!>!

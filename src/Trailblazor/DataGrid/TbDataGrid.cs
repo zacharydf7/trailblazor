@@ -511,7 +511,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         PinStyle(columns[0].Pinned == ColumnPin.End ? columns[^1] : columns[0]);
 
     // Editing a cell or opening a tree's rows, as much as moving between cells, makes the table an ARIA grid.
-    private bool IsGrid => CellNavigation || ChildrenSelector is not null || _columns.Any(CanEdit);
+    private bool IsGrid => CellNavigation || CellSelection || ChildrenSelector is not null || _columns.Any(CanEdit);
 
     private bool CanEdit(TbColumn<TItem> column) => column.Editor != ColumnEditor.None
         && (HasEditHandler || column.CanSet);
@@ -666,9 +666,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         // Rows draw again for a new collection, whose items may have changed in place, or when the selection mode,
-        // cell navigation or part classes change a row's markup. Each row compares its own class and label, which may
-        // read from outside the item.
-        object rowOptions = (Items, SelectionMode, CellNavigation, Classes);
+        // cell navigation, cell selection or part classes change a row's markup. Each row compares its own class and
+        // label, which may read from outside the item.
+        object rowOptions = (Items, SelectionMode, CellNavigation, CellSelection, Classes);
         if (!rowOptions.Equals(_rowOptions))
         {
             _rowOptions = rowOptions;

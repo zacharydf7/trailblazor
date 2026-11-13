@@ -7863,6 +7863,11 @@ public static class ExampleCatalog
                     + "A handler that sets the batch's `Error` keeps the changes and shows why. `SaveChangesAsync` "
                     + "and `DiscardChangesAsync` do the same from code, and `HasChanges` says whether any are "
                     + "waiting, such as before the user leaves the page.", typeof(DataGridBatchExample)),
+                new("cell-selection", "Select and copy cells", "With `CellSelection` on, drag across cells, or hold "
+                    + "Shift and click a cell or press an arrow key, Home or End, to select a range. Ctrl+C (Cmd+C on "
+                    + "a Mac) copies it as tab-separated text and as a table, so it pastes into a spreadsheet's "
+                    + "cells; without a range it copies the cell in focus. Escape, a click or a move without Shift "
+                    + "clears the range.", typeof(DataGridCellSelectionExample)),
                 new("save-state", "Save the view", "`State` holds the rows' sorts, filters, groups, page and page size "
                     + "in one `GridState`. Bind it to save how the user arranged the rows, such as to local storage "
                     + "as JSON, and set it to restore them; filter values read back from JSON take their columns' "
@@ -7956,6 +7961,13 @@ public static class ExampleCatalog
                 new(["Escape"], "Cancels the row's edit.") { When = "Editing a row" },
                 new(["Enter", "Space"], "Saves or discards every change, and focus stays on the button.")
                     { When = "On the batch bar's buttons" },
+                new(["Shift+Up", "Shift+Down", "Shift+Left", "Shift+Right"], "Grows or shrinks the range of cells "
+                    + "from where it started to the cell focus reaches.") { When = "With `CellSelection`" },
+                new(["Shift+Home", "Shift+End", "Shift+Page Up", "Shift+Page Down"], "Selects the cells from where "
+                    + "the range started to the cell the key moves focus to.") { When = "With `CellSelection`" },
+                new(["Ctrl+C", "Cmd+C"], "Copies the range, or the cell in focus without one, as text and as a "
+                    + "table.") { When = "With `CellSelection`" },
+                new(["Escape"], "Clears the range.") { When = "With `CellSelection` and a range" },
                 new(["Enter"], "In the value field, applies the filter.") { When = "In a filter menu" },
                 new(["Escape"], "Closes the menu.") { When = "In a filter menu" },
                 new(["Up", "Down"], "Moves the row up or down, and focus stays on the handle.")
@@ -8107,6 +8119,7 @@ public static class ExampleCatalog
                 new("batch-error", "The message that says why the changes could not be saved."),
                 new("save-changes", "The batch bar's Save changes button."),
                 new("discard-changes", "The batch bar's Discard changes button."),
+                new("copy", "A hidden table of the selected range's text, which Ctrl+C copies."),
                 new("select", "The cell that holds a row's checkbox or radio, and its header cell."),
                 new("order", "The header cell of the column that holds the rows' drag handles."),
                 new("handle", "A row's drag handle."),
@@ -8190,7 +8203,7 @@ public static class ExampleCatalog
                 "With a `TelemetryName`, such as `\"jobs\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders, and `trailblazor.control.used` with `trailblazor.action` `sort`, `filter`, `page`, "
                     + "`page_size`, `select`, `move`, `group`, `expand`, `collapse`, `edit`, `resize`, `reorder`, "
-                    + "`hide`, `show`, `open_detail`, `close_detail`, `save_changes`, `discard_changes`, "
+                    + "`hide`, `show`, `open_detail`, `close_detail`, `save_changes`, `discard_changes`, `copy`, "
                     + "`export_csv` or `export_excel` for each of "
                     + "those the user does; a `move` also "
                     + "says whether a `pointer` or the "

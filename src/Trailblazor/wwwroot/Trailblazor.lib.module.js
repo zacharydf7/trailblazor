@@ -111,13 +111,16 @@ function registerEvents(blazor) {
     document.addEventListener('pointerdown', event => pressedAt = { x: event.clientX, y: event.clientY }, true);
     const endsTextDrag = event => event.detail === 1 && !document.getSelection().isCollapsed
         && pressedAt !== null && Math.hypot(event.clientX - pressedAt.x, event.clientY - pressedAt.y) >= dragThreshold;
+    // A press that selected cells, by dragging across them or with Shift, ends in a click the row ignores.
+    const cellGesture = event => !!event.target.closest?.('table[data-cell-gesture]');
     // The second click of a double-click leaves the row alone, so it doesn't toggle the row's selection back or raise
-    // its click again. So does a drag that selects the row's text, and any click in an edit, such as choosing an option.
+    // its click again. So does a drag that selects the row's text or its cells, and any click in an edit, such as
+    // choosing an option.
     blazor.registerCustomEventType('tbrowclick', {
         browserEventName: 'click',
         createEventArgs: event => ({
             ignored: !!event.target.closest?.(rowControls) || !!event.target.closest?.('[data-part=editor]')
-                || event.detail > 1 || endsTextDrag(event),
+                || event.detail > 1 || endsTextDrag(event) || event.detail > 0 && cellGesture(event),
             shiftKey: event.shiftKey,
         }),
     });
@@ -127,6 +130,11 @@ function registerEvents(blazor) {
         browserEventName: 'tb-row-extend',
         createEventArgs: event => ({ from: event.detail }),
     });
+    blazor.registerCustomEventType('tbcellrange', {
+        browserEventName: 'tb-cell-range',
+        createEventArgs: event => event.detail,
+    });
+    blazor.registerCustomEventType('tbcellscopy', { browserEventName: 'tb-cells-copy', createEventArgs: () => ({}) });
     blazor.registerCustomEventType('tbtreedrop', {
         browserEventName: 'tb-tree-drop',
         createEventArgs: event => event.detail,

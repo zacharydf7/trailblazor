@@ -1138,6 +1138,36 @@ public sealed class TbGridDriver
         Row(row).QuerySelector($"td[data-column=\"{Header(column).GetAttribute("data-column")}\"]")
         ?? throw new InvalidOperationException($"The row \"{row}\" has no cell under \"{column}\".");
 
+    /// <summary>Selects the cells from the one under <paramref name="fromColumn"/> in the row <paramref name="fromRow"/>
+    /// to the one under <paramref name="toColumn"/> in the row <paramref name="toRow"/>, as a drag across them does. Each
+    /// row is found by a cell whose text is exactly that value. Throws when the grid's <c>CellSelection</c> is off.
+    /// </summary>
+    public Task SelectCellsAsync(string fromRow, string fromColumn, string toRow, string toColumn)
+    {
+        var table = _find();
+        if (!table.HasAttribute("data-cell-selection"))
+        {
+            throw new InvalidOperationException("The grid doesn't select cells; set its CellSelection.");
+        }
+
+        var (from, to) = (Cell(fromRow, fromColumn), Cell(toRow, toColumn));
+        return table.TriggerEventAsync("ontbcellrange", new CellRangeEventArgs
+        {
+            FromRow = from.ParentElement!.GetAttribute("data-key"),
+            FromColumn = from.GetAttribute("data-column"),
+            ToRow = to.ParentElement!.GetAttribute("data-key"),
+            ToColumn = to.GetAttribute("data-column"),
+        });
+    }
+
+    /// <summary>The text of the selected range's cells, row by row, as Ctrl+C copies them; empty without a range.
+    /// </summary>
+    public IReadOnlyList<IReadOnlyList<string>> SelectedCells =>
+        _find().Closest("[data-part=grid]")?.QuerySelector(":scope > [data-part=copy]") is { } copy
+            ? [.. copy.QuerySelectorAll("tr").Select(row => (IReadOnlyList<string>)
+                [.. row.QuerySelectorAll("td").Select(cell => cell.TextContent)])]
+            : [];
+
     /// <summary>Sorts the rows by this column alone, ascending or descending, clicking its header until it shows that
     /// order.</summary>
     public async Task SortAsync(string column, bool descending = false)

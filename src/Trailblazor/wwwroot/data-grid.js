@@ -43,6 +43,37 @@ const startOf = cell => [...cell.parentElement.cells].slice(0, cell.cellIndex)
 const cellAt = (row, column) => [...row.cells].find(cell => startOf(cell) + cell.colSpan > column)
     ?? row.cells[row.cells.length - 1];
 
+// A spreadsheet pastes either tab-separated lines, with a field that holds a tab, line break or quote put in quotes, or
+// an HTML table.
+const tsvField = text => /[\t\r\n"]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+const escapeHtml = text => text.replace(/[&<>"]/g, letter =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[letter]);
+const copyRows = rows => {
+    const text = rows.map(row => row.map(tsvField).join('\t')).join('\r\n');
+    const html = `<table>${rows.map(row => `<tr>${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`)
+        .join('')}</table>`;
+    const fill = event => {
+        event.clipboardData.setData('text/plain', text);
+        event.clipboardData.setData('text/html', html);
+        event.preventDefault();
+    };
+    // Some browsers copy only with something selected, so a hidden node holds the text while the copy runs.
+    const holder = document.createElement('span');
+    holder.className = 'tb-visually-hidden';
+    holder.textContent = text || ' ';
+    document.body.append(holder);
+    const selection = document.getSelection();
+    selection.selectAllChildren(holder);
+    document.addEventListener('copy', fill, { capture: true });
+    try {
+        document.execCommand('copy');
+    } finally {
+        document.removeEventListener('copy', fill, { capture: true });
+        selection.removeAllRanges();
+        holder.remove();
+    }
+};
+
 // With rows that move, the grid is ready only once their reordering is wired too, and the server says so through
 // setReady.
 export function createDataGrid(table, waitForReorder) {
@@ -494,6 +525,114 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
     let moves = 0;
     let holdsFocus = false;
 
+    // A grid that selects cells keeps the cell its range started at; the server marks the cells from it to focus.
+    const selectsCells = () => table.hasAttribute('data-cell-selection');
+    let anchor = null;
+    let end = null;
+    let ranged = false;
+    let extending = false;
+    const bodyCellOf = target => {
+        const cell = target?.closest?.('td');
+        return cell?.closest('table') === table && cell.parentElement.dataset.part === 'row' && cell.dataset.column
+            ? cell : null;
+    };
+    const spotOf = cell => ({ row: cell.parentElement.dataset.key, column: cell.dataset.column });
+    // When a filter, a page change or a removal takes away the row the range started on, or hiding takes away its
+    // column, the range starts again where focus is. In a virtualized grid that still shows the range, the row has only
+    // scrolled out of view.
+    const startsAgain = () => !ranged
+        || ![...headerRowOf(table).cells].some(cell => cell.dataset.column === anchor.column)
+        || !linesOf(table).some(row => row.dataset.key === anchor.row)
+            && (!isVirtual() || !table.hasAttribute('data-cell-range'));
+    // A cell drawn by a template copies its field's text, as a range does.
+    const copyTextOf = cell => cell.dataset.copy ?? cell.textContent.trim();
+    const reportRange = to => {
+        end = to;
+        ranged = to.row !== anchor.row || to.column !== anchor.column;
+        table.dispatchEvent(new CustomEvent('tb-cell-range', { bubbles: true, detail: { fromRow: anchor.row,
+            fromColumn: anchor.column, toRow: to.row, toColumn: to.column } }));
+    };
+    const clearRange = () => {
+        if (ranged) {
+            ranged = false;
+            table.dispatchEvent(new CustomEvent('tb-cell-range', { bubbles: true, detail: {} }));
+        }
+    };
+    // The server's copy holds rows a virtualized grid hasn't drawn, but until it has caught up with the range last
+    // reported, the drawn cells of that range are copied instead, since the copy can't wait.
+    const nameOf = spot => `${spot.row}:${spot.column}`;
+    const drawnRange = () => {
+        const rows = linesOf(table).filter(row => row.dataset.part === 'row');
+        const [top, bottom] = [anchor, end].map(spot => rows.findIndex(row => row.dataset.key === spot.row));
+        const columns = [...headerRowOf(table).cells].map(cell => cell.dataset.column).filter(Boolean);
+        const [start, stop] = [anchor, end].map(spot => columns.indexOf(spot.column));
+        if (top < 0 || bottom < 0 || start < 0 || stop < 0) {
+            return null;
+        }
+
+        const keys = columns.slice(Math.min(start, stop), Math.max(start, stop) + 1);
+        return rows.slice(Math.min(top, bottom), Math.max(top, bottom) + 1).map(row => keys.map(key =>
+            [...row.cells].find(one => one.dataset.column === key)).map(one => one ? copyTextOf(one) : ''));
+    };
+    const copyCells = cell => {
+        const copy = table.closest('[data-part=grid]')?.querySelector(':scope > [data-part=copy]');
+        const current = copy?.dataset.from === nameOf(anchor ?? {}) && copy?.dataset.to === nameOf(end ?? {});
+        const range = !ranged ? null
+            : current ? [...copy.rows].map(row => [...row.cells].map(one => one.textContent)) : drawnRange();
+        copyRows(range ?? [[copyTextOf(cell)]]);
+        table.dispatchEvent(new CustomEvent('tb-cells-copy', { bubbles: true }));
+    };
+
+    // A press on a cell starts a range there and a drag across cells grows it; Shift with a press grows it from where it
+    // started. Focus ends on the cell the drag reached, so Shift and the arrow keys carry on from there.
+    let dragged = null;
+    const startCellDrag = event => {
+        const cell = bodyCellOf(event.target);
+        table.removeAttribute('data-cell-gesture');
+        const control = event.target.closest?.(focusable);
+        if (!selectsCells() || event.button !== 0 || !cell || event.target.closest('[data-part=editor]')
+            || control && control !== cell && cell.contains(control)) {
+            return;
+        }
+
+        extending = false;
+        if (event.shiftKey) {
+            const focused = bodyCellOf(document.activeElement);
+            if (startsAgain()) {
+                anchor = spotOf(focused ?? cell);
+            }
+
+            table.setAttribute('data-cell-gesture', '');
+            reportRange(spotOf(cell));
+            return;
+        }
+
+        clearRange();
+        anchor = spotOf(cell);
+        dragged = { from: cell, to: cell };
+    };
+    const moveCellDrag = event => {
+        const cell = dragged && bodyCellOf(event.target);
+        if (cell && cell !== dragged.to) {
+            dragged.to = cell;
+            reportRange(spotOf(cell));
+        }
+    };
+    const endCellDrag = () => {
+        if (dragged && dragged.to !== dragged.from) {
+            table.setAttribute('data-cell-gesture', '');
+            focusCell(dragged.to);
+        }
+
+        dragged = null;
+    };
+    const keepCellsUnselected = event => {
+        const target = event.target.nodeType === Node.ELEMENT_NODE ? event.target : event.target.parentElement;
+        if (selectsCells() && (dragged || ranged) && bodyCellOf(target) && !target.closest('[data-part=editor]')) {
+            event.preventDefault();
+        }
+    };
+
     const makeStop = (element, cell) => {
         if (stop && stop !== element) {
             stop.tabIndex = -1;
@@ -744,6 +883,33 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         const page = () => Math.max(1, Math.floor(Math.min(scroll.clientHeight, window.innerHeight)
             / (rowHeight() || fallbackRowHeight)) - 1);
         const control = event.ctrlKey || event.metaKey;
+        if (selectsCells() && control && !event.shiftKey && event.key.toLowerCase() === 'c') {
+            event.preventDefault();
+            copyCells(cell);
+            return;
+        }
+
+        // Shift with a key that moves focus grows the range to the cell focus reaches; the key alone clears it.
+        extending = false;
+        if (selectsCells() && ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End']
+            .includes(event.key)) {
+            if (!event.shiftKey) {
+                clearRange();
+            } else if (bodyCellOf(cell)) {
+                if (startsAgain()) {
+                    anchor = spotOf(cell);
+                }
+
+                extending = true;
+            }
+        }
+
+        if (selectsCells() && event.key === 'Escape' && ranged) {
+            event.preventDefault();
+            clearRange();
+            return;
+        }
+
         if (control && event.key.toLowerCase() === 'a') {
             if (table.hasAttribute('data-select-all')) {
                 event.preventDefault();
@@ -766,7 +932,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
 
             const reached = await moveToRow(to, linesOf(table));
             const target = reached?.dataset.part === 'row' ? reached : row;
-            if (reached && event.shiftKey && selectsMany(table) && target.dataset.part === 'row') {
+            if (reached && event.shiftKey && selectsMany(table) && !selectsCells() && target.dataset.part === 'row') {
                 extendTo(target, row.dataset.key);
             }
         };
@@ -884,6 +1050,11 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             if (!steering) {
                 place.column = startOf(cell);
             }
+
+            if (extending && bodyCellOf(cell)) {
+                extending = false;
+                reportRange(spotOf(cell));
+            }
         }
     };
 
@@ -897,6 +1068,10 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
     table.addEventListener('keydown', onKeyDown);
     table.addEventListener('focusin', followFocus);
     table.addEventListener('focusout', onFocusOut);
+    table.addEventListener('pointerdown', startCellDrag);
+    table.addEventListener('pointerover', moveCellDrag);
+    document.addEventListener('pointerup', endCellDrag);
+    table.addEventListener('selectstart', keepCellsUnselected);
     return {
         focusCell,
         focusPlace() {
@@ -911,6 +1086,10 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             table.removeEventListener('keydown', onKeyDown);
             table.removeEventListener('focusin', followFocus);
             table.removeEventListener('focusout', onFocusOut);
+            table.removeEventListener('pointerdown', startCellDrag);
+            table.removeEventListener('pointerover', moveCellDrag);
+            document.removeEventListener('pointerup', endCellDrag);
+            table.removeEventListener('selectstart', keepCellsUnselected);
         },
     };
 }
