@@ -214,3 +214,9 @@ Trailblazor.Testing.TbSortableDriver
 Trailblazor.Testing.TbSortableDriver.Items.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbSortableDriver.MoveAsync(string! item, int index) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.MoveRowAsync(string! row, int index) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCommandPaletteDriver
+Trailblazor.Testing.TbCommandPaletteDriver.ChooseAsync(string! name) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCommandPaletteDriver.IsOpen.get -> bool
+Trailblazor.Testing.TbCommandPaletteDriver.Results.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbCommandPaletteDriver.SearchAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.CommandPalette(string? name = null) -> Trailblazor.Testing.TbCommandPaletteDriver!

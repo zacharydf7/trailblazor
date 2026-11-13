@@ -336,6 +336,24 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task CommandPalette_ShouldCountEachChoiceWithItsInput_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbCommandPalette<string>>(parameters => parameters.Add(palette => palette.Items, ["New tab"])
+            .Add(palette => palette.TelemetryName, "app-commands").Add(palette => palette.Open, true));
+
+        await cut.Find("[role=option]").ClickAsync(new MouseEventArgs { Detail = 1 });
+        cut.Render(parameters => parameters.Add(palette => palette.Open, false));
+        cut.Render(parameters => parameters.Add(palette => palette.Open, true));
+        await cut.Find("[role=option]").ClickAsync(new MouseEventArgs { Detail = 0 });
+
+        Assert.Equal(["app-commands"], Names(_shown).Distinct());
+        Assert.Equal([("app-commands", "TbCommandPalette", "choose"), ("app-commands", "TbCommandPalette", "choose")],
+            Uses());
+        Assert.Equal(["pointer", "keyboard"],
+            _used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.input"]));
+    }
+
+    [Fact]
     public void SelectAll_ShouldCountItsUseWithTheInput_WhenTheSelectHasATelemetryName()
     {
         var cut = Render<TbMultiSelect<string>>(parameters => parameters.Add(select => select.Label, "Sizes")

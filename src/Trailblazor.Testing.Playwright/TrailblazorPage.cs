@@ -111,6 +111,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbDataGrid</c> whose table has this accessible name.</summary>
     public TbGridLocator Grid(string name) => new(scope, name);
 
+    /// <summary>The <c>TbCommandPalette</c> with this label, or the only one in the scope.</summary>
+    public TbCommandPaletteLocator CommandPalette(string? name = null) => new(scope, name);
+
     /// <summary>The <c>TbSortable</c> with this label.</summary>
     public TbSortableLocator Sortable(string name) => new(scope, name);
 

@@ -1,5 +1,6 @@
 // "/" outside a field, or Ctrl+K (Cmd+K on Apple devices) anywhere, asks the layout to open and focus the search. On
-// Apple devices Ctrl+K is left to text fields, where it deletes to the end of the line.
+// Apple devices Ctrl+K is left to text fields, where it deletes to the end of the line. On a page with a command
+// palette that has a shortcut, the search leaves Ctrl+K and Cmd+K to the palette.
 const apple = () => /Mac|iPhone|iPad/.test(navigator.platform);
 
 export function listen(layout) {
@@ -9,7 +10,7 @@ export function listen(layout) {
         const slash = event.key === '/' && !typing && !event.ctrlKey && !event.metaKey && !event.altKey;
         // Autofill sends keydown events without a key.
         const k = event.key?.toLowerCase() === 'k' && (apple() ? event.metaKey : event.ctrlKey) && !event.altKey
-            && !event.shiftKey;
+            && !event.shiftKey && !document.querySelector('[data-command-palette][data-shortcut]');
         if (slash || k) {
             event.preventDefault();
             layout.invokeMethodAsync('OpenSearch');

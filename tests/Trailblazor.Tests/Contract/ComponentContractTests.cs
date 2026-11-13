@@ -47,6 +47,7 @@ public class ComponentContractTests : BunitContext
         [typeof(TbProgress)] = (nameof(TbProgress.Label), "Sample"),
         [typeof(TbDialog)] = (nameof(TbDialog.Open), true),
         [typeof(TbDrawer)] = (nameof(TbDrawer.Open), true),
+        [typeof(TbCommandPalette<string>)] = (nameof(TbCommandPalette<string>.Open), true),
         [typeof(TbAvatar)] = (nameof(TbAvatar.Name), "Sample"),
         [typeof(TbKbd)] = (nameof(TbKbd.Keys), "Ctrl+K"),
         [typeof(TbVirtualList<string>)] = (nameof(TbVirtualList<string>.Items), Array.Empty<string>()),

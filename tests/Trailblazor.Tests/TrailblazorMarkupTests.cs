@@ -998,6 +998,63 @@ public class TrailblazorMarkupTests : BunitContext
         Assert.Equal("No field is labeled \"Color\".", error.Message);
     }
 
+    [Fact]
+    public async Task CommandPalette_ShouldSearchAndRunACommand_WhenItIsOpen()
+    {
+        string? chosen = null;
+        var cut = RenderCommandPalette(open: true, command => chosen = command);
+
+        await cut.Tb().CommandPalette().SearchAsync("tab");
+        Assert.Equal(["New tab", "Close tab"], cut.Tb().CommandPalette("Command palette").Results);
+        await cut.Tb().CommandPalette().ChooseAsync("Close tab");
+
+        Assert.Equal("Close tab", chosen);
+        Assert.False(cut.Tb().CommandPalette().IsOpen);
+    }
+
+    [Fact]
+    public async Task CommandPalette_ShouldThrow_WhenClosedOrTheCommandIsDisabled()
+    {
+        var cut = RenderCommandPalette(open: false, _ => { });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().CommandPalette().SearchAsync("tab"));
+        cut.Render(parameters => parameters.Add(palette => palette.Open, true));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().CommandPalette().ChooseAsync("Delete everything"));
+        Assert.True(cut.Tb().CommandPalette().IsOpen);
+    }
+
+    [Fact]
+    public async Task CommandPalette_ShouldReadAndRunTemplatedCommands_WhenItsLabelHasAnApostrophe()
+    {
+        string? chosen = null;
+        var cut = Render<TbCommandPalette<string>>(parameters => parameters.Add(palette => palette.Items, ["Pine loop"])
+            .Add(palette => palette.Label, "Today's picks").Add(palette => palette.Open, true)
+            .Add(palette => palette.OnChoose, (string pick) => chosen = pick)
+            .Add(palette => palette.ItemTemplate, pick => builder =>
+            {
+                // A part named label inside the template, as a chip or button in it would have.
+                builder.AddContent(0, $"{pick} ");
+                builder.OpenElement(1, "small");
+                builder.AddAttribute(2, "data-part", "label");
+                builder.AddContent(3, "new");
+                builder.CloseElement();
+            }));
+
+        Assert.Equal(["Pine loop new"], cut.Tb().CommandPalette("Today's picks").Results);
+        await cut.Tb().CommandPalette("Today's picks").ChooseAsync("Pine loop new");
+
+        Assert.Equal("Pine loop", chosen);
+    }
+
+    private IRenderedComponent<TbCommandPalette<string>> RenderCommandPalette(bool open, Action<string> chosen) =>
+        Render<TbCommandPalette<string>>(parameters => parameters
+            .Add(palette => palette.Items, ["New tab", "Close tab", "Delete everything"])
+            .Add(palette => palette.ItemShortcut, command => command == "New tab" ? "Ctrl+T" : null)
+            .Add(palette => palette.ItemDisabled, command => command == "Delete everything")
+            .Add(palette => palette.Open, open).Add(palette => palette.OnChoose, chosen));
+
     private IRenderedComponent<ContainerFragment> RenderForm() => Render(BuildForm);
 
     private IRenderedComponent<TbSortable<string>> RenderSortable(List<string> items,

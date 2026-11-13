@@ -4600,6 +4600,115 @@
         flex-direction: column;
     }
 
+    /* A command palette is a search box over its results, with no padding between them and the dialog's edge. */
+    .tb-command-palette .tb-dialog__body {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+    }
+
+    .tb-command-palette__search {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .tb-command-palette__input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: var(--tb-space-4) var(--tb-space-5);
+        border: 0;
+        border-block-end: 1px solid var(--tb-border-subtle);
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-size: var(--tb-font-size-lg);
+    }
+
+    .tb-command-palette__input:focus {
+        outline: none;
+    }
+
+    .tb-command-palette__input::placeholder {
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-command-palette__listbox {
+        flex: 1 1 auto;
+        max-height: min(60vh, 26rem);
+        overflow-y: auto;
+        padding: var(--tb-space-2);
+    }
+
+    .tb-command-palette__group-heading {
+        padding: var(--tb-space-2) var(--tb-space-3) var(--tb-space-1);
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-xs);
+        font-weight: var(--tb-font-weight-medium);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .tb-command-palette__option {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-3);
+        min-height: var(--tb-item-height);
+        padding: var(--tb-space-2) var(--tb-space-3);
+        border-radius: var(--tb-radius-sm);
+        font-size: var(--tb-font-size-sm);
+        cursor: pointer;
+    }
+
+    /* The active option has the box's focus, so it shows the focus ring as well as a fill. */
+    .tb-command-palette__option[data-active] {
+        background: var(--tb-color-hover);
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    .tb-command-palette__option[aria-disabled="true"] {
+        color: var(--tb-color-text-disabled);
+        cursor: default;
+    }
+
+    .tb-command-palette__icon {
+        flex: none;
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-command-palette__text {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .tb-command-palette__description {
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-xs);
+    }
+
+    /* The matched letters keep the text's color and are bold, so they show without a highlight's fill. */
+    .tb-command-palette__match {
+        background: none;
+        color: inherit;
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    .tb-command-palette__shortcut {
+        flex: none;
+        margin-inline-start: auto;
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-command-palette__status {
+        padding: var(--tb-space-3);
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
     /* The sticky actions cover the bottom of the body, so a field that Tab reaches scrolls to rest above them (WCAG
        2.4.11). The padding fits one row of actions; a second row covers part of the field. */
     .tb-drawer .tb-dialog__body:has(.tb-dialog__actions) {

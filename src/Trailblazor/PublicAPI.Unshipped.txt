@@ -4764,3 +4764,59 @@ Trailblazor.TbDataGrid<TItem>.StartEditAsync(TItem item, string? columnId = null
 Trailblazor.TbDataGrid<TItem>.CancelEditAsync() -> System.Threading.Tasks.Task!
 Trailblazor.TbDrawer.Options.get -> Trailblazor.DialogOptions?
 Trailblazor.TbDrawer.Options.set -> void
+Trailblazor.CommandPaletteLabels
+Trailblazor.CommandPaletteLabels.<Clone>$() -> Trailblazor.CommandPaletteLabels!
+Trailblazor.CommandPaletteLabels.CommandPaletteLabels() -> void
+Trailblazor.CommandPaletteLabels.Equals(Trailblazor.CommandPaletteLabels? other) -> bool
+Trailblazor.CommandPaletteLabels.NoResults.get -> string?
+Trailblazor.CommandPaletteLabels.NoResults.init -> void
+Trailblazor.CommandPaletteLabels.Results.get -> string?
+Trailblazor.CommandPaletteLabels.Results.init -> void
+Trailblazor.TbCommandPalette<TItem>
+Trailblazor.TbCommandPalette<TItem>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbCommandPalette<TItem>.ItemDescription.get -> System.Func<TItem, string?>?
+Trailblazor.TbCommandPalette<TItem>.ItemDescription.set -> void
+Trailblazor.TbCommandPalette<TItem>.ItemDisabled.get -> System.Func<TItem, bool>?
+Trailblazor.TbCommandPalette<TItem>.ItemDisabled.set -> void
+Trailblazor.TbCommandPalette<TItem>.ItemGroup.get -> System.Func<TItem, string?>?
+Trailblazor.TbCommandPalette<TItem>.ItemGroup.set -> void
+Trailblazor.TbCommandPalette<TItem>.ItemHref.get -> System.Func<TItem, string?>?
+Trailblazor.TbCommandPalette<TItem>.ItemHref.set -> void
+Trailblazor.TbCommandPalette<TItem>.ItemIcon.get -> System.Func<TItem, Trailblazor.Icon?>?
+Trailblazor.TbCommandPalette<TItem>.ItemIcon.set -> void
+Trailblazor.TbCommandPalette<TItem>.ItemKeywords.get -> System.Func<TItem, System.Collections.Generic.IEnumerable<string!>!>?
+Trailblazor.TbCommandPalette<TItem>.ItemKeywords.set -> void
+Trailblazor.TbCommandPalette<TItem>.ItemShortcut.get -> System.Func<TItem, string?>?
+Trailblazor.TbCommandPalette<TItem>.ItemShortcut.set -> void
+Trailblazor.TbCommandPalette<TItem>.ItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>?
+Trailblazor.TbCommandPalette<TItem>.ItemTemplate.set -> void
+Trailblazor.TbCommandPalette<TItem>.ItemText.get -> System.Func<TItem, string!>?
+Trailblazor.TbCommandPalette<TItem>.ItemText.set -> void
+Trailblazor.TbCommandPalette<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+Trailblazor.TbCommandPalette<TItem>.Items.set -> void
+Trailblazor.TbCommandPalette<TItem>.Label.get -> string?
+Trailblazor.TbCommandPalette<TItem>.Label.set -> void
+Trailblazor.TbCommandPalette<TItem>.Labels.get -> Trailblazor.CommandPaletteLabels!
+Trailblazor.TbCommandPalette<TItem>.Labels.set -> void
+Trailblazor.TbCommandPalette<TItem>.OnChoose.get -> Microsoft.AspNetCore.Components.EventCallback<TItem>
+Trailblazor.TbCommandPalette<TItem>.OnChoose.set -> void
+Trailblazor.TbCommandPalette<TItem>.Open.get -> bool
+Trailblazor.TbCommandPalette<TItem>.Open.set -> void
+Trailblazor.TbCommandPalette<TItem>.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbCommandPalette<TItem>.OpenChanged.set -> void
+Trailblazor.TbCommandPalette<TItem>.Placeholder.get -> string?
+Trailblazor.TbCommandPalette<TItem>.Placeholder.set -> void
+Trailblazor.TbCommandPalette<TItem>.Shortcut.get -> string?
+Trailblazor.TbCommandPalette<TItem>.Shortcut.set -> void
+Trailblazor.TbCommandPalette<TItem>.TbCommandPalette() -> void
+Trailblazor.TbCommandPalette<TItem>.TelemetryName.get -> string?
+Trailblazor.TbCommandPalette<TItem>.TelemetryName.set -> void
+const Trailblazor.TbStrings.CommandPaletteLabel = "CommandPalette.Label" -> string!
+const Trailblazor.TbStrings.CommandPaletteNoResults = "CommandPalette.NoResults" -> string!
+const Trailblazor.TbStrings.CommandPalettePlaceholder = "CommandPalette.Placeholder" -> string!
+const Trailblazor.TbStrings.CommandPaletteResults = "CommandPalette.Results" -> string!
+override Trailblazor.CommandPaletteLabels.Equals(object? obj) -> bool
+override Trailblazor.CommandPaletteLabels.GetHashCode() -> int
+override Trailblazor.CommandPaletteLabels.ToString() -> string!
+static Trailblazor.CommandPaletteLabels.operator !=(Trailblazor.CommandPaletteLabels? left, Trailblazor.CommandPaletteLabels? right) -> bool
+static Trailblazor.CommandPaletteLabels.operator ==(Trailblazor.CommandPaletteLabels? left, Trailblazor.CommandPaletteLabels? right) -> bool

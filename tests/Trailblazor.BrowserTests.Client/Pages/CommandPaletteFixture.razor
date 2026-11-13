@@ -1,0 +1,48 @@
+@page "/command-palette"
+
+<button type="button" @onclick="() => _open = true">Open commands</button>
+<button type="button" @onclick="@(() => _shortcut = "Alt+J")">Use Alt+J</button>
+<button type="button" @onclick="() => _picksOpen = true">Open picks</button>
+<TbCommandPalette TItem="Command" Items="Commands" @bind-Open="_open" Shortcut="@_shortcut"
+                  ItemText="command => command.Name" ItemGroup="command => command.Group"
+                  ItemDisabled="command => command.Disabled"
+                  ItemShortcut="command => command.Shortcut" OnChoose="command => _chosen = command.Name" />
+@* A label with an apostrophe, a template with a label part of its own, and no shortcut, which the testing helpers must
+   all handle. *@
+<TbCommandPalette TItem="string" Items="Picks" @bind-Open="_picksOpen" Shortcut="@null" Label="Today's picks"
+                  OnChoose="pick => _chosen = pick">
+    <ItemTemplate><em>@context</em> <small data-part="label">new</small></ItemTemplate>
+</TbCommandPalette>
+<output data-testid="chosen">@_chosen</output>
+
+@code {
+    private static readonly Command[] Commands =
+    [
+        new("New tab", "Actions", Shortcut: "Ctrl+T"),
+        new("Close tab", "Actions"),
+        new("Delete everything", "Actions", Disabled: true),
+        new("Settings", "Pages"),
+        new("Trails", "Pages"),
+    ];
+
+    private static readonly string[] Picks = ["Pine loop", "Cedar falls"];
+
+    private bool _open;
+    private bool _picksOpen;
+    private string _shortcut = "Mod+K";
+    private string? _chosen;
+
+    [SupplyParameterFromQuery]
+    public string? Keys { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && Keys is not null)
+        {
+            _shortcut = Keys;
+            StateHasChanged();
+        }
+    }
+
+    private sealed record Command(string Name, string Group, bool Disabled = false, string? Shortcut = null);
+}

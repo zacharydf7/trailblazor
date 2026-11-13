@@ -1,0 +1,27 @@
+<p>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _open = true">Search commands</TbButton>
+    or press <TbKbd Keys="Ctrl+K" />
+</p>
+<TbCommandPalette TItem="Command" Items="Commands" @bind-Open="_open" ItemText="command => command.Name"
+                  ItemGroup="command => command.Group" ItemIcon="command => command.Icon"
+                  ItemKeywords="command => command.Keywords" ItemShortcut="command => command.Shortcut"
+                  ItemDisabled="command => command.Disabled" OnChoose="command => _ran = command.Name" />
+<p>Last command: @(_ran ?? "none")</p>
+
+@code {
+    private static readonly Command[] Commands =
+    [
+        new("New trail", "Trails", ExampleIcons.Plus, ["add", "create"], "Ctrl+Alt+N"),
+        new("Find a trail", "Trails", ExampleIcons.Search, ["search", "look up"], "Ctrl+F"),
+        new("Filter by region", "Trails", ExampleIcons.Filter, ["narrow"]),
+        new("Open a saved map", "Maps", ExampleIcons.Folder, ["load"]),
+        new("Delete the current map", "Maps", ExampleIcons.Trash, ["remove"], Disabled: true),
+        new("Notification settings", "Settings", ExampleIcons.Bell, ["alerts", "preferences"]),
+    ];
+
+    private bool _open;
+    private string? _ran;
+
+    private sealed record Command(string Name, string Group, Icon Icon, string[] Keywords, string? Shortcut = null,
+        bool Disabled = false);
+}

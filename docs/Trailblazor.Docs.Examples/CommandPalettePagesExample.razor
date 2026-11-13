@@ -1,0 +1,19 @@
+@* The page's first palette has Ctrl+K, so this one opens from its button alone. *@
+<TbButton Variant="Variant.Outlined" OnClick="() => _open = true">Go to a page</TbButton>
+<TbCommandPalette TItem="Page" Items="Pages" @bind-Open="_open" Shortcut="@null" Label="Go to a page"
+                  Placeholder="Search the components" ItemText="page => page.Title"
+                  ItemDescription="page => page.Summary" ItemHref="page => page.Href" />
+
+@code {
+    private static readonly Page[] Pages =
+    [
+        new("Dialog", "A window over the page for a focused task", "components/dialog"),
+        new("Drawer", "A panel that slides in from an edge", "components/drawer"),
+        new("Kbd", "Keys to press, set as keycaps", "components/kbd"),
+        new("Toast", "A short message that comes and goes", "components/toast"),
+    ];
+
+    private bool _open;
+
+    private sealed record Page(string Title, string Summary, string Href);
+}

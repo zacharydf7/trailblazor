@@ -5979,6 +5979,105 @@ public static class ExampleCatalog
                     + "render hidden until the menu opens, so they count uses only.",
             ],
         },
+        new("command-palette", "Command palette", ExampleCategory.Overlays,
+            "A dialog, opened anywhere with Ctrl+K, that finds a command or a page as the user types.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to reach any action or page by name from the keyboard, in an app with more of them than its "
+                    + "menus show at once.",
+            ],
+            WhenNotToUse =
+            [
+                "To pick a value for a field, use an [autocomplete](components/autocomplete).",
+                "For a few actions on one item, use a [menu](components/menu).",
+            ],
+            Related = ["dialog", "autocomplete", "menu", "kbd"],
+            Pattern = new("combobox", "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/"),
+            Sections =
+            [
+                new("commands", "Run a command", "Press Ctrl+K, or ⌘K on a Mac, or use the button. The search matches "
+                    + "the letters in order, so \"nwtr\" finds \"New trail\", and ranks letters in a row or at the "
+                    + "start of a word first. "
+                    + "`ItemGroup` sets the headings, `ItemKeywords` adds words that find a command, and "
+                    + "`ItemShortcut` shows the keys that run it elsewhere. `OnChoose` runs once the palette has "
+                    + "closed.", typeof(CommandPaletteExample)),
+                new("pages", "Go to a page", "`ItemHref` goes to the command's page once `OnChoose` has run, and "
+                    + "`ItemDescription` adds a line under its name. A second palette on a page needs its own "
+                    + "`Shortcut`, or none, as here.", typeof(CommandPalettePagesExample)),
+            ],
+            Api = [typeof(TbCommandPalette<>), typeof(CommandPaletteLabels)],
+            Keyboard =
+            [
+                new(["Ctrl+K"], "Opens the palette, or closes it. ⌘K on a Mac; `Shortcut` changes it.")
+                    { When = "Anywhere on the page" },
+                new(["Down", "Up"], "Moves to the next or previous command, wrapping around and skipping disabled "
+                    + "ones; focus stays in the search box.") { When = "In the search box" },
+                new(["Enter"], "Runs the active command.") { When = "In the search box" },
+                new(["Escape"], "Closes the palette and returns focus to where it was.") { When = "In the palette" },
+            ],
+            Labeling =
+            [
+                "A modal `dialog` named by its `Label`, \"Command palette\" by default.",
+                "The search box is a `combobox` with the same name, which points at the active command with "
+                    + "`aria-activedescendant`.",
+                "The results are a `listbox` of `option`s, with a `group` for each heading. A disabled command has "
+                    + "`aria-disabled`.",
+                "`Labels` replaces the message shown when nothing matches and the count read out as results change "
+                    + "(with `{0}` for the number).",
+            ],
+            Announcements =
+            [
+                "As the user types, the number of results is read out, such as \"Results: 2\", whenever it changes.",
+                "When nothing matches, \"No matching commands\" shows and is read out.",
+            ],
+            Accessibility =
+            [
+                "Focus stays in the search box while the arrow keys move the active command, so typing never stops.",
+                "The matched letters are bold, so they show without relying on color.",
+                "A pointer resting on a command makes it the active one, as the arrow keys would.",
+            ],
+            AppDuties =
+            [
+                "Keep `Shortcut` clear of keys the app or the browser already uses. Ctrl+K replaces the browser's own "
+                    + "search shortcut while the page has focus.",
+            ],
+            Modes = new(ModeSupport.None, ModeSupport.None),
+            BeforeInteractive =
+            [
+                "Nothing renders until the page is interactive, since the palette only opens from the shortcut or the "
+                    + "app.",
+            ],
+            Ready = new("[data-command-palette]", "the palette's hidden marker"),
+            Target = new("combobox", "Command palette") { OpenedBy = new("button", "Search commands") },
+            Blocks = ["tb-command-palette"],
+            DataParts =
+            [
+                new("input", "The search box."),
+                new("listbox", "The results."),
+                new("group", "The commands under one heading."),
+                new("group-heading", "A group's heading."),
+                new("option", "One command."),
+                new("label", "A command's name, with the matched letters in `mark`s."),
+                new("description", "The line under a command's name."),
+                new("shortcut", "The keys shown beside a command."),
+                new("status", "The message shown when nothing matches."),
+            ],
+            TestingTip = "The helpers open, search and run commands: "
+                + "`page.Tb().CommandPalette().OpenAsync()` presses its shortcut, then `SearchAsync(\"trail\")` and "
+                + "`ChooseAsync(\"New trail\")` wait for the results and for `OnChoose`; in bUnit, open it as the app "
+                + "does and use `cut.Tb().CommandPalette()`. Without the helpers, wait until `[data-command-palette]` has "
+                + "`data-ready` set to its shortcut, such as `Mod+K`, then press `ControlOrMeta+K`, or click the "
+                + "app's own button. Each `option`'s text includes its shortcut's keys, so match its "
+                + "`.tb-command-palette__text > [data-part=label]` for the name alone.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"app-commands\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders, and `trailblazor.control.used` with the action `choose` and the input `pointer` "
+                    + "or `keyboard` each time the user runs a command. Which command is never recorded.",
+            ],
+        },
         new("dialog", "Dialog", ExampleCategory.Overlays,
             "A window over the page, opened from code or written in markup, that asks for input or a decision.")
         {

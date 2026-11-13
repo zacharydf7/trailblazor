@@ -177,6 +177,11 @@
                 <code>close_button</code>, and how long it was open. Its title and result are never recorded.
             </li>
             <li>
+                <strong>Command palettes:</strong> shown as they render, and used with the action
+                <code>choose</code> and the input <code>pointer</code> or <code>keyboard</code> each time the user runs
+                a command. Which command is never recorded.
+            </li>
+            <li>
                 <strong>Toasts:</strong> with <code>ToastOptions.TelemetryName</code>, each toast counts as shown, then
                 <code>trailblazor.toast.closed</code> says whether its action was taken, it was dismissed, it timed out
                 or the app closed it. Its message is never recorded.

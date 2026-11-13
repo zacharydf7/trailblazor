@@ -197,3 +197,10 @@ Trailblazor.Testing.Playwright.TbSortableLocator.DragAfterAsync(string! item, st
 Trailblazor.Testing.Playwright.TbGridLocator.MoveRowAsync(string! row, int index) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.DragRowBeforeAsync(string! row, string! target) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.DragRowAfterAsync(string! row, string! target) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbCommandPaletteLocator
+Trailblazor.Testing.Playwright.TbCommandPaletteLocator.ChooseAsync(string! command) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbCommandPaletteLocator.OpenAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbCommandPaletteLocator.ResultsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbCommandPaletteLocator.SearchAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbCommandPaletteLocator.TbCommandPaletteLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.CommandPalette(string? name = null) -> Trailblazor.Testing.Playwright.TbCommandPaletteLocator!

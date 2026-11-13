@@ -73,6 +73,19 @@ public static class TbStrings
     /// <summary>"Remove {0}": names a chip's remove button; {0} is the chip's text.</summary>
     public const string ChipRemoveNamed = "Chip.RemoveNamed";
 
+    /// <summary>"Command palette": names a command palette's dialog.</summary>
+    public const string CommandPaletteLabel = "CommandPalette.Label";
+
+    /// <summary>"Type a command or search": the placeholder in a command palette's search box.</summary>
+    public const string CommandPalettePlaceholder = "CommandPalette.Placeholder";
+
+    /// <summary>"No matching commands": shown, and read out, when nothing in a command palette matches.</summary>
+    public const string CommandPaletteNoResults = "CommandPalette.NoResults";
+
+    /// <summary>"Results: {0}": announced when the number of a command palette's results changes; {0} is how many.
+    /// </summary>
+    public const string CommandPaletteResults = "CommandPalette.Results";
+
     /// <summary>"Choose a color": names the button that opens a color picker's panel.</summary>
     public const string ColorPickerOpen = "ColorPicker.Open";
 
@@ -1009,6 +1022,10 @@ public static class TbStrings
         [BreadcrumbsNavigation] = "Breadcrumb",
         [ChipRemove] = "Remove",
         [ChipRemoveNamed] = "Remove {0}",
+        [CommandPaletteLabel] = "Command palette",
+        [CommandPalettePlaceholder] = "Type a command or search",
+        [CommandPaletteNoResults] = "No matching commands",
+        [CommandPaletteResults] = "Results: {0}",
         [ColorPickerOpen] = "Choose a color",
         [ColorPickerEyedropper] = "Pick a color from the screen",
         [ColorPickerClear] = "Clear",

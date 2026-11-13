@@ -145,6 +145,18 @@ public sealed class TrailblazorMarkup
                 : $"No data grid is named \"{name}\".");
     });
 
+    /// <summary>The <c>TbCommandPalette</c> with this label, or the only one in the markup when no label is given.
+    /// Open it as the app does, such as with its button, since the shortcut needs a browser.</summary>
+    public TbCommandPaletteDriver CommandPalette(string? name = null) => new(() =>
+    {
+        var markers = _findAll("[data-command-palette]")
+            .Where(marker => name is null || marker.GetAttribute("data-command-palette") == name).ToList();
+        return markers.Count == 1 ? markers[0]
+            : throw new InvalidOperationException(name is null
+                ? $"Expected one command palette, found {markers.Count}; name the one to use."
+                : $"No command palette is named \"{name}\".");
+    }, _findAll);
+
     /// <summary>The <c>TbSortable</c> with this label, or the only one in the markup when no label is given.
     /// </summary>
     public TbSortableDriver Sortable(string? name = null) => new(() =>
@@ -1318,6 +1330,54 @@ public sealed class TbGridDriver
             ? new TbNumberFieldDriver(() => input).EnterAsync(text)
             : input.HasAttribute("blazor:oninput") ? input.InputAsync(new ChangeEventArgs { Value = text })
             : input.ChangeAsync(new ChangeEventArgs { Value = text });
+}
+
+/// <summary>A <c>TbCommandPalette</c>, found by its label.</summary>
+public sealed class TbCommandPaletteDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+
+    internal TbCommandPaletteDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
+        (_find, _findAll) = (find, findAll);
+
+    /// <summary>Whether the palette is open.</summary>
+    public bool IsOpen => SearchBox() is not null;
+
+    /// <summary>The names of the commands it shows, in order.</summary>
+    public IReadOnlyList<string> Results => [.. Listbox().QuerySelectorAll("[data-part=option]").Select(NameOf)];
+
+    /// <summary>Types this text in the search box, as the user does, so the list shows what matches.</summary>
+    public Task SearchAsync(string text) => Open().InputAsync(new ChangeEventArgs { Value = text });
+
+    /// <summary>Runs the command with this name, as clicking it does, and returns once the app's <c>OnChoose</c> has
+    /// run. Throws for a closed palette, or a command it doesn't show or that is disabled.</summary>
+    public Task ChooseAsync(string name)
+    {
+        var option = Listbox().QuerySelectorAll("[data-part=option]")
+            .SingleOrDefault(option => NameOf(option) == name)
+            ?? throw new InvalidOperationException($"The command palette shows no command named \"{name}\".");
+        return option.GetAttribute("aria-disabled") == "true"
+            ? throw new InvalidOperationException($"The command \"{name}\" is disabled.")
+            : option.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    // A component inside a template can have a label part of its own, so only the palette's own label counts.
+    private static string NameOf(IElement option) => (option.Children
+        .FirstOrDefault(child => child.ClassList.Contains("tb-command-palette__text"))?.Children
+        .FirstOrDefault(child => child.GetAttribute("data-part") == "label") ?? option).TextContent.Trim();
+
+    private IElement? SearchBox()
+    {
+        var label = _find().GetAttribute("data-command-palette");
+        return _findAll(".tb-command-palette__input")
+            .SingleOrDefault(input => input.GetAttribute("aria-label") == label);
+    }
+
+    private IElement Open() => SearchBox() ?? throw new InvalidOperationException(
+        "The command palette is closed; open it as the app does, such as with its button.");
+
+    private IElement Listbox() => _findAll($"[id='{Open().GetAttribute("aria-controls")}']").Single();
 }
 
 /// <summary>A <c>TbSortable</c>, found by its label.</summary>

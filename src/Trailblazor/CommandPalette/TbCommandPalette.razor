@@ -1,0 +1,125 @@
+@namespace Trailblazor
+@typeparam TItem
+@inherits TbComponentBase
+
+<TbDialog Title="@LabelText" Open="_open" OpenChanged="OnDialogOpenChangedAsync" Options="DialogSettings"
+          class="@ClassNames.Join("tb-command-palette", Class)" style="@Style" @attributes="AdditionalAttributes">
+    @WithKeys(Search)
+</TbDialog>
+@* The palette shows nothing until it opens, so this marks where it is and the shortcut that opens it. The script sets
+   data-ready here to the shortcut once it works, and data-commits counts the choices the app has handled, which tests
+   wait for. *@
+<span @ref="_marker" hidden data-command-palette="@LabelText" data-shortcut="@Shortcut" data-commits="@_chosen"></span>
+
+@code {
+    // The search box and its list, whose arrow-key and Enter handling comes from the component that holds them.
+    private RenderFragment Search => @<text>
+        @* The list always shows, so the box says it's expanded; the script keeps aria-activedescendant on the active
+           option and sets data-ready once the keys work. *@
+        <input id="@InputId" type="text" role="combobox" aria-expanded="true" aria-autocomplete="list"
+               aria-controls="@ListboxId" aria-label="@LabelText" autocomplete="off" spellcheck="false"
+               placeholder="@(Placeholder ?? Localizer[TbStrings.CommandPalettePlaceholder])" data-part="input"
+               class="tb-command-palette__input" @bind:get="_query" @bind:set="SetQuery" @bind:event="oninput" />
+        @* data-query says which search the results are for, so a test knows they have caught up with its typing. *@
+        <div id="@ListboxId" role="listbox" aria-label="@LabelText" data-part="listbox"
+             data-query="@_query" class="tb-command-palette__listbox">
+            @* A listbox must hold options, so the message that stands in for them is one that can't be chosen. *@
+            @if (_results.Count == 0)
+            {
+                <div role="option" aria-disabled="true" aria-selected="false" data-part="status"
+                     class="tb-command-palette__status">@NoResultsText</div>
+            }
+            @{
+                var index = 0;
+            }
+            @foreach (var group in _groups)
+            {
+                if (group.Name is null)
+                {
+                    foreach (var result in group.Results)
+                    {
+                        @Option(result, index++)
+                    }
+                }
+                else
+                {
+                    var headingId = $"{ListboxId}-group-{index}";
+                    <div role="group" aria-labelledby="@headingId" data-part="group" class="tb-command-palette__group">
+                        <div id="@headingId" data-part="group-heading" class="tb-command-palette__group-heading">
+                            @group.Name
+                        </div>
+                        @foreach (var result in group.Results)
+                        {
+                            @Option(result, index++)
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </text>;
+
+    private static RenderFragment WithKeys(RenderFragment content) => builder =>
+    {
+        builder.OpenComponent<CommandPaletteKeys>(0);
+        builder.AddComponentParameter(1, nameof(CommandPaletteKeys.ChildContent), content);
+        builder.CloseComponent();
+    };
+
+    private RenderFragment Option(Result result, int index) =>
+        @<div id="@($"{ListboxId}-{index}")" role="option" aria-selected="false"
+              aria-disabled="@(IsDisabled(result.Item) ? "true" : null)" data-part="option"
+              class="tb-command-palette__option" @onclick="_choose.For(result.Item)">
+            @if (ItemTemplate is not null)
+            {
+                @ItemTemplate(result.Item)
+            }
+            else
+            {
+                @if (ItemIcon?.Invoke(result.Item) is { } icon)
+                {
+                    <TbIcon Icon="icon" Size="Size.Small" class="tb-command-palette__icon" />
+                }
+                <span class="tb-command-palette__text">
+                    <span data-part="label" class="tb-command-palette__label">@Highlighted(result)</span>
+                    @if (ItemDescription?.Invoke(result.Item) is { } description)
+                    {
+                        <span data-part="description" class="tb-command-palette__description">@description</span>
+                    }
+                </span>
+                @if (ItemShortcut?.Invoke(result.Item) is { } shortcut)
+                {
+                    <TbKbd Keys="@shortcut" data-part="shortcut" Class="tb-command-palette__shortcut" />
+                }
+            }
+        </div>;
+
+    // The matched letters are marked, so the user sees why a command came up.
+    private RenderFragment Highlighted(Result result) => builder =>
+    {
+        var text = TextOf(result.Item);
+        var start = 0;
+        while (start < text.Length)
+        {
+            var marked = Array.BinarySearch(result.Places, start) >= 0;
+            var end = start + 1;
+            while (end < text.Length && Array.BinarySearch(result.Places, end) >= 0 == marked)
+            {
+                end++;
+            }
+
+            if (marked)
+            {
+                builder.OpenElement(0, "mark");
+                builder.AddAttribute(1, "class", "tb-command-palette__match");
+                builder.AddContent(2, text[start..end]);
+                builder.CloseElement();
+            }
+            else
+            {
+                builder.AddContent(3, text[start..end]);
+            }
+
+            start = end;
+        }
+    };
+}

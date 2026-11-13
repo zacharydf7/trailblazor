@@ -201,6 +201,14 @@
                         <td>Presses the confirm button; <code>CancelAsync()</code> presses the cancel button.</td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>CommandPalette(name).ChooseAsync(command)</code></th>
+                        <td>
+                            Runs a command in an open palette. <code>SearchAsync</code> types in its search box,
+                            <code>Results</code> reads the commands it shows and <code>IsOpen</code> says whether it's
+                            open; open it as the app does, such as with its button.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Sortable(name).MoveAsync(item, index)</code></th>
                         <td>
                             Moves an item to <code>index</code> through its handle's menu, and <code>Items</code> reads
@@ -686,6 +694,9 @@
         new("Data grid", "Its name", "`Grid(name)` finds rows and cells by their text, and sorts, filters, selects "
             + "and pages. `MoveRowAsync(row, index)` moves a row through its handle's menu, and `DragRowBeforeAsync` "
             + "and `DragRowAfterAsync` drag it onto another row; each waits for the app's answer."),
+        new("Command palette", "Its label", "`CommandPalette(name).OpenAsync()` presses its shortcut, "
+            + "`SearchAsync(text)` types and waits for the results, `ResultsAsync()` reads them, and "
+            + "`ChooseAsync(command)` runs one and waits until the app's `OnChoose` has run."),
         new("Sortable", "Its label", "`Sortable(name).MoveAsync(item, index)` moves an item through its handle's "
             + "menu, `DragBeforeAsync` and `DragAfterAsync` drag it onto another item, and each waits for the app's "
             + "answer; `ItemsAsync()` reads the order."),
