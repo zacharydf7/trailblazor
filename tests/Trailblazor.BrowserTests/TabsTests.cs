@@ -675,4 +675,22 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
             .ToHaveAttributeAsync("aria-selected", "true");
         await Expect(page.GetByText("Refunds were up in March.")).ToBeVisibleAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TabList_ShouldKeepItsHeight_WhenAFixedHeightLeavesThePanelTooLittleRoom(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs-fill");
+
+        // A list or tab squeezed shorter than its content clips it, which shows as content taller than the box.
+        foreach (var tabs in new[] { "Flex column", "With an add button", "With scroll buttons" })
+        {
+            var clipped = await page.GetByRole(AriaRole.Tablist, new() { Name = tabs }).EvaluateAsync<string[]>("""
+                list => [list, list.querySelector('[role=tab]')]
+                    .filter(box => box.scrollHeight > box.clientHeight)
+                    .map(box => `${box.getAttribute('role')} ${box.clientHeight}px of ${box.scrollHeight}px`)
+                """);
+
+            Assert.True(clipped.Length == 0, $"{tabs}: {string.Join(", ", clipped)}.");
+        }
+    }
 }

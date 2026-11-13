@@ -1,0 +1,16 @@
+@page "/tabs-fill"
+
+@* Tabs an app sizes to fill a pane, each with a panel taller than the space left for it. *@
+<TbTabs AriaLabel="Flex column" Style="display: flex; flex-direction: column; block-size: 8rem">
+    <TbTab Text="Notes"><div style="block-size: 30rem">Tall notes.</div></TbTab>
+</TbTabs>
+@* Its tab is taller than the add button, which would otherwise hold the row at the button's height. *@
+<TbTabs AriaLabel="With an add button" OnAdd="() => { }" Style="block-size: 8rem">
+    <TbTab>
+        <TextContent><span style="display: block; block-size: 4rem">Gear</span></TextContent>
+        <ChildContent><div style="block-size: 30rem">Tall gear list.</div></ChildContent>
+    </TbTab>
+</TbTabs>
+<TbTabs AriaLabel="With scroll buttons" ScrollButtons Style="block-size: 8rem">
+    <TbTab Text="Camps"><div style="block-size: 30rem">Tall camp list.</div></TbTab>
+</TbTabs>

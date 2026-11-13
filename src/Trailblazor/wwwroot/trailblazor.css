@@ -6368,8 +6368,10 @@
         gap: var(--tb-space-4);
     }
 
+    /* A scrolling list could shrink to nothing when an app makes the tabs a flex column that fills a pane. */
     .tb-tabs__list {
         display: flex;
+        flex: none;
         gap: var(--tb-space-1);
         overflow-x: auto;
         border-block-end: 1px solid var(--tb-border-subtle);
@@ -6386,7 +6388,6 @@
 
     .tb-tabs--vertical > .tb-tabs__list {
         flex-direction: column;
-        flex: none;
         overflow: visible;
         border-block-end: none;
         border-inline-end: 1px solid var(--tb-border-subtle);
@@ -6399,9 +6400,11 @@
     }
 
     /* The add button ends the row, outside the list's scrolling, and the panels take the whole width below. */
+    /* The row is as tall as its tallest tab, not just the add button, even when the panel can't fit below it. */
     .tb-tabs--actions {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: max-content;
     }
 
     .tb-tabs--actions > :not(.tb-tabs__list, .tb-tabs__actions) {
@@ -6416,9 +6419,11 @@
     }
 
     /* Scroll buttons sit outside the scrolling list, each in a fixed grid cell so hiding one shifts nothing. */
+    /* With both scroll buttons hidden, the scrolling list is alone in its row and could shrink to nothing. */
     .tb-tabs--scrolls {
         display: grid;
         grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-rows: max-content;
     }
 
     .tb-tabs--scrolls.tb-tabs--actions {
