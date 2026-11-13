@@ -87,17 +87,18 @@
 
         <DocsHeading Id="typography" Text="Typography" Class="docs-section" />
         <TbText>
-            Every component sets its text in <code>--tb-font-family</code>, the system's interface font unless you
-            change it. The page that <code>TbThemeHead</code> marks takes the same font and
-            <code>--tb-line-height-normal</code>, and its <code>body</code> takes <code>--tb-font-size-md</code>, so
-            text outside the components matches them without CSS of your own.
+            Components set their text in <code>--tb-font-family</code>, the system's interface font unless you change
+            it, and controls such as text fields, tabs and links take the font of the text around them. The page that
+            <code>TbThemeHead</code> marks takes <code>--tb-font-family</code> on both <code>html</code> and
+            <code>body</code>, with <code>--tb-line-height-normal</code>, and its <code>body</code> takes
+            <code>--tb-font-size-md</code>, so text outside the components matches them without CSS of your own.
         </TbText>
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Your own font, everywhere</TbText>
         <TbText>
             Set <code>--tb-font-family</code> rather than a font on <code>body</code>. The token changes the page and
-            every component at once, while a font on <code>body</code> alone changes only your own text and leaves the
-            components in the system font.
+            every component at once, while a font on <code>body</code> alone changes your own text and the controls
+            that take its font, and leaves the rest in the system font.
         </TbText>
         <CodeBlock Label="Your own font, everywhere" Code="@Font" Language="CodeLanguage.Css" />
 
@@ -273,6 +274,14 @@
         <TbText>
             Once the stylesheet is in a layer, the warning stops. To turn it off anyway, set
             <code>options.WarnAboutUnlayeredStyles = false</code>.
+        </TbText>
+        <TbText>
+            A layered stylesheet still reaches whatever Trailblazor leaves unset, so Trailblazor sets the themed page's
+            font and the components' margins, <code>kbd</code> colors and focus outlines, which resets such as
+            Bootstrap's change. Your own CSS outside a layer wins over Trailblazor's, so rules for elements such as
+            <code>h1</code>–<code>h6</code>, <code>label</code> or <code>legend</code> restyle the components'
+            headings and labels too. Put those rules in a layer ordered before Trailblazor's, such as the other
+            stylesheet's, or scope them to your own content.
         </TbText>
 
         <DocsHeading Id="seeded-palette" Text="A palette from seed colors" Class="docs-section" />

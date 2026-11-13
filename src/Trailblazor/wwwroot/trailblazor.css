@@ -43,7 +43,9 @@
         line-height: var(--tb-line-height-normal);
     }
 
+    /* On body too, so a base stylesheet's body font in a lower layer doesn't reach the controls that inherit theirs. */
     :where(html[data-tb-theme] > body) {
+        font-family: var(--tb-font-family);
         font-size: var(--tb-font-size-md);
     }
 }
@@ -741,6 +743,11 @@
 }
 
 @layer tb.components {
+    /* A base stylesheet's :focus outline would show after a click; components ring keyboard focus themselves. */
+    :where(:is([class^="tb-"], [class*=" tb-"]):focus:not(:focus-visible)) {
+        outline: none;
+    }
+
     .tb-text {
         margin: 0;
         font-family: var(--tb-font-family);
@@ -1773,7 +1780,10 @@
     }
 
     /* A key looks like a keycap: a raised box in the monospace font, sized to the text around it. */
+    /* A combination draws only its keys, whatever a base stylesheet gives kbd. */
     .tb-kbd {
+        padding: 0;
+        background: none;
         font-family: var(--tb-font-family-mono);
         font-size: 0.875em;
         white-space: nowrap;
@@ -1797,6 +1807,7 @@
     .tb-kbd__key {
         font-family: inherit;
         font-size: inherit;
+        font-weight: inherit;
     }
 
     .tb-kbd__plus {
@@ -3154,6 +3165,7 @@
 
     .tb-field__label,
     .tb-label__text {
+        margin: 0;
         font-weight: var(--tb-font-weight-medium);
     }
 
@@ -3522,6 +3534,7 @@
         display: inline-flex;
         align-items: center;
         gap: var(--tb-space-2);
+        margin: 0;
         min-height: 24px;
         cursor: pointer;
     }
@@ -3762,8 +3775,12 @@
 
     .tb-radio-group__label,
     .tb-checkbox-group__label {
+        width: auto;
+        margin: 0;
         padding: 0;
+        font-size: inherit;
         font-weight: var(--tb-font-weight-medium);
+        line-height: inherit;
     }
 
     .tb-radio-group__options,
@@ -3835,8 +3852,12 @@
     }
 
     .tb-transfer-list__label {
+        width: auto;
+        margin: 0;
         padding: 0;
+        font-size: inherit;
         font-weight: var(--tb-font-weight-medium);
+        line-height: inherit;
     }
 
     .tb-transfer-list__panes {
@@ -5345,6 +5366,7 @@
         display: flex;
         flex-direction: column;
         gap: var(--tb-space-1);
+        margin: 0;
         max-inline-size: 36rem;
     }
 
@@ -5398,9 +5420,12 @@
     }
 
     .tb-rating__label {
-        margin-block-end: var(--tb-space-1);
+        width: auto;
+        margin: 0 0 var(--tb-space-1);
         padding: 0;
+        font-size: inherit;
         font-weight: var(--tb-font-weight-medium);
+        line-height: inherit;
     }
 
     .tb-rating__stars {
@@ -5411,6 +5436,7 @@
     .tb-rating__star {
         position: relative;
         display: inline-flex;
+        margin: 0;
         border-radius: var(--tb-radius-sm);
         color: var(--tb-rating-off);
         cursor: pointer;
@@ -5973,6 +5999,7 @@
     }
 
     .tb-slider__label {
+        margin: 0;
         font-size: var(--tb-font-size-sm);
         font-weight: var(--tb-font-weight-medium);
     }
@@ -8290,6 +8317,7 @@
         display: flex;
         flex-direction: column;
         gap: var(--tb-space-1);
+        margin: 0;
         font-size: var(--tb-font-size-sm);
     }
 
@@ -8514,9 +8542,12 @@
     }
 
     .tb-model-fields__group-label {
-        margin-block-end: var(--tb-space-2);
+        width: auto;
+        margin: 0 0 var(--tb-space-2);
         padding: 0;
+        font-size: inherit;
         font-weight: var(--tb-font-weight-semibold);
+        line-height: inherit;
     }
 
     @container (max-width: 30rem) {

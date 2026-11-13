@@ -1,0 +1,47 @@
+@page "/base-stylesheet"
+
+@* An older base stylesheet below Trailblazor's layers; a sublayer of tb.reset ranks below every Trailblazor rule. *@
+<style>
+    @@layer tb.reset.base {
+        body { font-family: Georgia, serif; }
+        label { display: inline-block; margin-bottom: 0.5rem; }
+        legend { width: 100%; margin-bottom: 0.5rem; font-size: 1.5rem; line-height: inherit; }
+        kbd {
+            padding: 0.2rem 0.4rem; border-radius: 0.2rem; background-color: rgb(33, 37, 41); color: rgb(255, 255, 255);
+        }
+        kbd kbd { padding: 0; font-weight: 700; }
+        button:focus { outline: 5px solid rgb(255, 0, 0); }
+    }
+</style>
+
+<div id="parts">
+    <TbTextField Label="Name" Required @bind-Value="_name" />
+    <TbCheckbox TValue="bool" Label="Remember me" @bind-Value="_remember" />
+    <TbSwitch Label="Notify me" @bind-Value="_notify" />
+    <TbRadioGroup TValue="string" Label="Size" @bind-Value="_size">
+        <TbRadio Value="@("small")">Small</TbRadio>
+        <TbRadio Value="@("large")">Large</TbRadio>
+    </TbRadioGroup>
+    <TbCheckboxGroup Label="Gear" @bind-Value="_gear">
+        <TbCheckboxItem Value="@("Tent")">Tent</TbCheckboxItem>
+    </TbCheckboxGroup>
+    <TbRating Label="Rate the trail" @bind-Value="_rating" />
+    <TbSlider TValue="int" Label="Volume" @bind-Value="_volume" />
+    <TbAlert>Trails close at dusk.</TbAlert>
+    <TbTabs AriaLabel="Gear lists">
+        <TbTab Text="Packs">Day packs.</TbTab>
+    </TbTabs>
+    <TbLink Href="base-stylesheet">A link</TbLink>
+    <TbKbd Keys="Ctrl+K" />
+    <TbButton>Save</TbButton>
+</div>
+
+@code {
+    private string? _name;
+    private bool _remember;
+    private bool _notify;
+    private string? _size;
+    private IReadOnlyList<string> _gear = [];
+    private int _rating;
+    private int _volume;
+}
