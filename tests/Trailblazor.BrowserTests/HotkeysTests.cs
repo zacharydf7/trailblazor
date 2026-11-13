@@ -105,18 +105,76 @@ public class HotkeysTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("pressed")).ToHaveTextAsync("new line");
     }
 
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Hotkey_ShouldFireOnlyInsideTheDialog_WhenAModalDialogIsOpen(string browser)
+    // One modal in the browser's top layer and one kept on the page layer.
+    public static TheoryData<string, string, string, string> ModalDialogs() => new(AllBrowsers.Names.SelectMany(
+        browser => new[]
+        {
+            (browser, "Open dialog", "Trail", "done"),
+            (browser, "Open page dialog", "Notes", "noted"),
+        }));
+
+    [Theory, MemberData(nameof(ModalDialogs))]
+    public async Task Hotkey_ShouldFireOnlyInsideTheDialog_WhenAModalDialogIsOpen(string browser, string opener,
+        string title, string pressed)
     {
         var page = await OpenReadyAsync(browser);
-        await page.GetByRole(AriaRole.Button, new() { Name = "Open dialog" }).ClickAsync();
-        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Trail" });
+        await page.GetByRole(AriaRole.Button, new() { Name = opener }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = title });
         await Expect(dialog).ToBeVisibleAsync();
 
         await page.Keyboard.PressAsync("ControlOrMeta+S");
         await dialog.Tb().Hotkey("Mod+Enter").PressAsync();
 
+        await Expect(page.GetByTestId("pressed")).ToHaveTextAsync(pressed);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Hotkey_ShouldFireOnlyInTheTopLayerModal_WhenItOpensOverAPageLayerOne(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open page dialog" }).ClickAsync();
+        var notes = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes" });
+        await notes.GetByRole(AriaRole.Button, new() { Name = "Open trail" }).ClickAsync();
+        var trail = page.GetByRole(AriaRole.Dialog, new() { Name = "Trail" });
+        await Expect(trail).ToBeVisibleAsync();
+
+        await trail.Tb().Hotkey("Mod+Enter").PressAsync();
+
         await Expect(page.GetByTestId("pressed")).ToHaveTextAsync("done");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Hotkey_ShouldFireOnlyInTheFrontModal_WhenOneOpensOverAnotherOnThePageLayer(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open page dialog" }).ClickAsync();
+        var notes = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes" });
+        await notes.GetByRole(AriaRole.Button, new() { Name = "Open packing" }).ClickAsync();
+        var packing = page.GetByRole(AriaRole.Dialog, new() { Name = "Packing" });
+        await Expect(packing).ToBeVisibleAsync();
+
+        await packing.Tb().Hotkey("Mod+Enter").PressAsync();
+
+        await Expect(page.GetByTestId("pressed")).ToHaveTextAsync("packed");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Hotkey_ShouldFireOnThePage_WhenAPageLayerModalIsFadingOut(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open page dialog" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Notes" });
+        await Expect(dialog).ToBeVisibleAsync();
+        // A long fade, so the keys are pressed while the dialog is still leaving.
+        await dialog.EvaluateAsync("dialog => dialog.style.setProperty('--tb-motion-duration-normal', '3s')");
+        await page.Keyboard.PressAsync("Escape");
+        var leaving = page.Locator("dialog[data-leaving]");
+        await Expect(leaving).ToHaveCountAsync(1);
+
+        await page.Keyboard.PressAsync("ControlOrMeta+S");
+
+        await Expect(page.GetByTestId("pressed")).ToHaveTextAsync("save");
+        Assert.Equal(1, await leaving.CountAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

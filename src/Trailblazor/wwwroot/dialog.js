@@ -562,6 +562,9 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
     };
 }
 
+// The frontmost open modal, on either layer; one that has started to close has already left the stack.
+export const frontModal = () => stack.findLast(entry => entry.modal)?.dialog;
+
 // Resolves once the browser has drawn a frame, by which time a dialog it just opened is in the accessibility tree.
 export function nextFrame() {
     return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));

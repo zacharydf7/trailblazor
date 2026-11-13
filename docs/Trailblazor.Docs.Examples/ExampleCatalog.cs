@@ -6713,8 +6713,10 @@ public static class ExampleCatalog
                     + "`\"Alt+Shift+S\"`: any of Mod, Ctrl, Alt, Shift and Meta, then one key, where Mod is ⌘ on Apple "
                     + "devices and Ctrl elsewhere. It shows nothing. `TbHotkeysHelp` lists every enabled hotkey that "
                     + "has a `Description`, under its `Group`, in a dialog. Its own `Keys`, here `\"?\"`, open it, and "
-                    + "so does `@bind-Open`, such as from a button. While a modal dialog is open, only the hotkeys "
-                    + "inside it fire.",
+                    + "so does `@bind-Open`, such as from a button. While a modal dialog is open, whether in the "
+                    + "browser's top layer or kept on the page with `TopLayer = false`, only the hotkeys inside it "
+                    + "fire. With one modal over another, only the front one's hotkeys fire, and once a modal starts "
+                    + "to close, the hotkeys behind it work again.",
                     typeof(HotkeysExample)),
                 new("scope", "Keys for one part of the page", "`Scope=\"HotkeyScope.Parent\"` makes a hotkey fire only "
                     + "while focus is inside the element it sits in, such as an editor. There it wins over a page "

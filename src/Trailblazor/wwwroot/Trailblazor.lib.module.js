@@ -28,6 +28,7 @@ import '../Trailblazor.Primitives/pointer-drag.js';
 import '../Trailblazor.Primitives/roving-focus.js';
 import './browser.js';
 import './date-grid.js';
+import './dialog.js';
 import './field.js';
 import './inert.js';
 import './option-filter.js';

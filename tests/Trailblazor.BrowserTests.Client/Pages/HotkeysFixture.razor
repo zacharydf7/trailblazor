@@ -23,6 +23,19 @@
         <TbHotkey Keys="Mod+Enter" Description="Done" OnPress="@(() => _pressed.Add("done"))" />
         <input aria-label="Trail name" />
     </TbDialog>
+    @* Opened from the Notes dialog and shown over it on the page layer, though it comes before Notes in the page. *@
+    <TbDialog Title="Packing" @bind-Open="_packing" Options="new() { TopLayer = false }">
+        <TbHotkey Keys="Mod+Enter" Description="Done" OnPress="@(() => _pressed.Add("packed"))" />
+    </TbDialog>
+    <button type="button" @onclick="() => _pageDialog = true">Open page dialog</button>
+    @* A modal kept on the page layer, which opens without the browser's own modal mode. *@
+    <TbDialog Title="Notes" @bind-Open="_pageDialog" Options="new() { TopLayer = false }">
+        <TbHotkey Keys="Mod+Enter" Description="Done" OnPress="@(() => _pressed.Add("noted"))" />
+        <input aria-label="Note text" />
+        @* Opens the Trail dialog, which comes earlier in the page, over this one in the top layer. *@
+        <button type="button" @onclick="() => _dialog = true">Open trail</button>
+        <button type="button" @onclick="() => _packing = true">Open packing</button>
+    </TbDialog>
     @* A page hotkey deeper in the page than the editor's, which the editor's Parent hotkey still wins over. *@
     <div><div><div><div><div><div>
         <TbHotkey Keys="Mod+B" OnPress="@(() => _pressed.Add("page bold"))" />
@@ -34,4 +47,6 @@
     private readonly List<string> _pressed = [];
     private bool _off = true;
     private bool _dialog;
+    private bool _pageDialog;
+    private bool _packing;
 }
