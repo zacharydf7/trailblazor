@@ -7,29 +7,7 @@
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
 
-@Layout(Classes, @<text>
-    @if (Lines > 1)
-    {
-        <textarea @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
-                  rows="@Lines" @bind:get="Text" @bind:set="SetTextAsync" @bind:event="@BindEvent"
-                  @onchange="CommitOnChange" data-input-delay="@InputDelay" data-max-lines="@(Grows ? MaxLines : null)"
-                  style="@(Grows ? $"--tb-text-field-lines: {Lines}; --tb-text-field-max-lines: {MaxLines}" : null)"
-                  placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
-                  aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
-                  aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)"></textarea>
-    }
-    else
-    {
-        <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
-               type="@Type.ToString().ToLowerInvariant()" @bind:get="Text" @bind:set="SetTextAsync"
-               @bind:event="@BindEvent" @onchange="CommitOnChange" data-input-delay="@InputDelay"
-               placeholder="@(Placeholder ?? _mask?.Hint)"
-               inputmode="@InputMode" disabled="@Disabled"
-               readonly="@ReadOnly" aria-required="@AriaRequired"
-               aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
-               class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
-    }
-</text>, Start, EndWithClear)
+@Layout(Classes, Control, Start, EndWithClear)
 
 @code {
     private ElementReference _input;
@@ -109,7 +87,6 @@
         await module.InvokeVoidAsync("selectText", _input);
     }
 
-    // @bind keeps keystrokes typed during a round trip; only the committing event is bound.
     private string BindEvent => UpdateOnInput ? "oninput" : "onchange";
 
     private bool Grows => Lines > 1 && MaxLines > Lines;
@@ -123,10 +100,51 @@
     private string? InputDelay => UpdateOnInput && UpdateDelay is { } delay
         ? delay.TotalMilliseconds.ToString(CultureInfo.InvariantCulture) : null;
 
-    // Enter and leaving the field update it at once. In the browser, debounced-input.js has already sent the waiting
-    // text by then, so this matters where that script isn't running, as in bUnit tests that commit with a change.
-    private EventCallback<ChangeEventArgs> CommitOnChange => InputDelay is null ? default
-        : EventCallback.Factory.Create<ChangeEventArgs>(this, change => SetTextAsync(change.Value as string));
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment Control => builder =>
+    {
+        var area = Lines > 1;
+        builder.OpenElement(0, area ? "textarea" : "input");
+        builder.AddMultipleAttributes(1, ControlAttributes);
+        builder.AddAttribute(2, "data-part", "input");
+        builder.AddAttribute(3, "id", InputId);
+        builder.AddAttribute(4, "name", InputNameAttribute);
+        if (area)
+        {
+            builder.AddAttribute(5, "rows", Lines);
+            builder.AddAttribute(6, "data-max-lines", Grows ? MaxLines : null);
+            builder.AddAttribute(7, "style",
+                Grows ? $"--tb-text-field-lines: {Lines}; --tb-text-field-max-lines: {MaxLines}" : null);
+        }
+        else
+        {
+            builder.AddAttribute(8, "type", Type.ToString().ToLowerInvariant());
+            builder.AddAttribute(9, "inputmode", InputMode);
+        }
+
+        builder.AddAttribute(10, "value", Text);
+        builder.AddAttribute(11, BindEvent, EventCallback.Factory.Create<ChangeEventArgs>(this, OnTextAsync));
+        builder.SetUpdatesAttributeName("value");
+        // Enter and leaving the field commit at once. In a browser, debounced-input.js has sent the text by then, so
+        // this is for where that script isn't running, as in bUnit tests that commit with a change.
+        if (InputDelay is not null)
+        {
+            builder.AddAttribute(12, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, OnTextAsync));
+        }
+
+        builder.AddAttribute(13, "data-input-delay", InputDelay);
+        builder.AddAttribute(14, "placeholder", area ? Placeholder : Placeholder ?? _mask?.Hint);
+        builder.AddAttribute(15, "disabled", Disabled);
+        builder.AddAttribute(16, "readonly", ReadOnly);
+        builder.AddAttribute(17, "aria-required", AriaRequired);
+        builder.AddAttribute(18, "aria-invalid", ShowsInvalid ? "true" : null);
+        builder.AddAttribute(19, "aria-describedby", InputDescribedBy);
+        builder.AddAttribute(20, "class", ClassNames.Join("tb-field__input", Classes?.Input));
+        builder.AddElementReferenceCapture(21, element => _input = element);
+        builder.CloseElement();
+    };
+
+    private Task OnTextAsync(ChangeEventArgs change) => SetTextAsync(change.Value as string);
 
     private RenderFragment? EndWithClear => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(Text) ? End :
         @<text>

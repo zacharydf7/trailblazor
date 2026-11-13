@@ -391,9 +391,14 @@
             </li>
             <li>
                 An element you found keeps working after the component renders again, so you can click a button twice
-                without finding it a second time. A text box's input and change events are the exception: Blazor's
-                <code>@@bind</code> gives them a new handler on each render, so find the box again before you type in
-                it a second time.
+                without finding it a second time. Blazor keeps an event handler's id only while each render passes an
+                equal delegate: the same method on the same object. Trailblazor's text and number fields don't use
+                <code>@@bind</code>, so their boxes keep working too. Its other inputs, such as the autocomplete, date,
+                color and slider fields, still do for now, so find those again before raising a second event. In your
+                own components, <code>@@bind</code> and a lambda that captures a loop variable make a new delegate on
+                every render: if background work renders the component after a test finds an element but before the
+                test raises its event, bUnit throws "There is no event handler with ID". Pass a method, such as
+                <code>@@onchange="OnNameChanged"</code>, instead.
             </li>
         </ul>
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Check your own components</TbText>

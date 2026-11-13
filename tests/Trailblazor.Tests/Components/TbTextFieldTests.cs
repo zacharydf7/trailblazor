@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq.Expressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -64,6 +65,37 @@ public class TbTextFieldTests : BunitContext
         Assert.Equal(cut.Find("[data-part=helper]").Id, input.GetAttribute("aria-describedby"));
         Assert.Equal("true", input.GetAttribute("aria-required"));
         Assert.Null(input.GetAttribute("aria-invalid"));
+    }
+
+    [Theory]
+    [InlineData(1, false, null, "onchange")]
+    [InlineData(1, true, null, "oninput")]
+    [InlineData(1, true, 300, "onchange")]
+    [InlineData(3, false, null, "onchange")]
+    [InlineData(3, true, null, "oninput")]
+    public async Task Change_ShouldReachTheField_WhenItRendersBetweenATestReadingTheInputAndRaisingItsEvent(int lines,
+        bool updateOnInput, int? delay, string committing)
+    {
+        string? name = null;
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Lines, lines)
+            .Add(field => field.UpdateOnInput, updateOnInput)
+            .Add(field => field.UpdateDelay, delay is { } ms ? TimeSpan.FromMilliseconds(ms) : null)
+            .Add(field => field.ValueChanged, (string value) => name = value));
+        var handler = ulong.Parse(cut.Find("[data-part=input]").GetAttribute($"blazor:{committing}")!,
+            CultureInfo.InvariantCulture);
+
+        // As when a background continuation renders the field while a test is raising the event it found.
+        cut.Render();
+#pragma warning disable BL0006 // Dispatching by handler id, as the browser does, needs RenderTree's EventFieldInfo.
+        var field = new Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo
+        {
+            ComponentId = cut.ComponentId,
+            FieldValue = "Ada",
+        };
+        await Renderer.DispatchEventAsync(handler, field, new ChangeEventArgs { Value = "Ada" });
+#pragma warning restore BL0006
+
+        Assert.Equal("Ada", name);
     }
 
     [Fact]
