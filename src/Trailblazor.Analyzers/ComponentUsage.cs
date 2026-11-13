@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -8,10 +9,15 @@ namespace Trailblazor.Analyzers;
 // component in markup this way, in the page's own code or in a type-inference helper for a generic component.
 internal sealed class ComponentUsage
 {
-    private ComponentUsage(INamedTypeSymbol component, Location location)
+    private readonly Location _open;
+    private readonly Lazy<Location?> _tag;
+    private Location? _mapped;
+
+    private ComponentUsage(INamedTypeSymbol component, Location open, Func<Location?> findTag)
     {
         Component = component;
-        Location = location;
+        _open = open;
+        _tag = new Lazy<Location?>(findTag);
     }
 
     public INamedTypeSymbol Component { get; }
@@ -22,13 +28,14 @@ internal sealed class ComponentUsage
     // Attributes splatted with @attributes, which may hold any name.
     public bool HasSplattedAttributes { get; private set; }
 
-    // Where to report a problem with the whole component: the first parameter name Razor maps to the .razor file, or
-    // else the OpenComponent call.
-    public Location Location { get; private set; }
+    // Where to report a problem with the whole component: the first parameter name Razor maps to the .razor file, else
+    // the component's tag there, else the OpenComponent call.
+    public Location Location => _mapped ?? _tag.Value ?? _open;
 
     public bool Has(string name) => Parameters.ContainsKey(name);
 
-    public static ComponentUsage? Read(IInvocationOperation open)
+    public static ComponentUsage? Read(IInvocationOperation open,
+        ImmutableDictionary<string, AdditionalText> razorFiles, CancellationToken cancel)
     {
         if (open.TargetMethod.Name != "OpenComponent" || open.TargetMethod.TypeArguments.Length != 1
             || open.TargetMethod.TypeArguments[0] is not INamedTypeSymbol component
@@ -38,7 +45,8 @@ internal sealed class ComponentUsage
             return null;
         }
 
-        var usage = new ComponentUsage(component, open.Syntax.GetLocation());
+        var usage = new ComponentUsage(component, open.Syntax.GetLocation(),
+            () => RazorTag.Find((InvocationExpressionSyntax)open.Syntax, component.Name, razorFiles, cancel));
         var builder = Builder(open);
         for (var i = block.Operations.IndexOf(statement) + 1; i < block.Operations.Length; i++)
         {
@@ -59,9 +67,9 @@ internal sealed class ComponentUsage
                     && call.Arguments[1].Value.ConstantValue.Value is string name:
                     var location = NameLocation(call.Arguments[1].Syntax);
                     usage.Parameters[name] = (call.Arguments.Length > 2 ? call.Arguments[2].Value : null, location);
-                    if (!IsMapped(usage.Location) && IsMapped(location))
+                    if (usage._mapped is null && IsMapped(location))
                     {
-                        usage.Location = location;
+                        usage._mapped = location;
                     }
 
                     break;

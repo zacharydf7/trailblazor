@@ -125,11 +125,16 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                     .Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()],
                 compilation.GetTypeByMetadataName("Trailblazor.TbTreeView`2"),
                 [.. Labeled.Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()]);
-            start.RegisterOperationAction(operation => Analyze(operation, types), OperationKind.Invocation);
+            // Razor passes each .razor file to analyzers too, which is where a component's tag is found.
+            var razorFiles = start.Options.AdditionalFiles
+                .Where(file => file.Path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
+                .ToImmutableDictionary(file => file.Path, StringComparer.OrdinalIgnoreCase);
+            start.RegisterOperationAction(operation => Analyze(operation, types, razorFiles), OperationKind.Invocation);
         });
     }
 
-    private static void Analyze(OperationAnalysisContext context, KnownTypes types)
+    private static void Analyze(OperationAnalysisContext context, KnownTypes types,
+        ImmutableDictionary<string, AdditionalText> razorFiles)
     {
         var invocation = (IInvocationOperation)context.Operation;
         if (SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType, types.DialogService))
@@ -143,7 +148,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (ComponentUsage.Read(invocation) is not { } usage)
+        if (ComponentUsage.Read(invocation, razorFiles, context.CancellationToken) is not { } usage)
         {
             return;
         }

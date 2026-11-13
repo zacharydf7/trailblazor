@@ -9,6 +9,8 @@
 <TbSelect Label="Trail" @bind-Value="_trail"><TbOption Value="1">One</TbOption></TbSelect>
 <TbSlider TValue="string" Label="Pace" />
 <TbTreeView TItem="string" TKey="int" AriaLabel="Trails" Items="_trails" />
+@* <TbTagInput /> *@<TbTagInput />
+<TbSelect TValue="string"><TbOption Value="@("1")">One</TbOption></TbSelect>
 
 @code {
     private string? _trail;

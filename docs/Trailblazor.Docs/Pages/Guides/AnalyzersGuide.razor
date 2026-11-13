@@ -210,7 +210,9 @@
         <DocsHeading Id="turning-a-rule-off" Text="Turning a rule off" Class="docs-section" />
         <TbText>
             The rules are warnings, or errors in a project that treats warnings as errors. To turn one off for a whole
-            project, list it in <code>NoWarn</code>.
+            project, list it in <code>NoWarn</code>. A <code>#pragma warning disable</code> in a page doesn't silence a
+            warning on a component with no parameters set in its markup, because that warning is reported at the
+            component's tag.
         </TbText>
         <CodeBlock Label="MyApp.csproj" Code="@NoWarn" />
         <TbText>
