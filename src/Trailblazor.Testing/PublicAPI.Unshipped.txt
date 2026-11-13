@@ -225,3 +225,6 @@ Trailblazor.Testing.TbContextMenuDriver.ChooseAsync(params string![]! path) -> S
 Trailblazor.Testing.TbContextMenuDriver.On(string! key) -> Trailblazor.Testing.TbContextMenuDriver!
 Trailblazor.Testing.TrailblazorMarkup.ContextMenu(string? name = null) -> Trailblazor.Testing.TbContextMenuDriver!
 Trailblazor.Testing.TbSortableDriver.MoveToListAsync(string! item, string! list) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbHotkeyDriver
+Trailblazor.Testing.TbHotkeyDriver.PressAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Hotkey(string! keys) -> Trailblazor.Testing.TbHotkeyDriver!

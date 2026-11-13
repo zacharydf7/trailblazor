@@ -141,17 +141,13 @@ public sealed partial class TbCommandPalette<TItem> : TbComponentBase, IAsyncDis
 
     private string ListboxId => $"{_id}-listbox";
 
-    private static readonly HashSet<string> Modifiers =
-        new(["Mod", "Ctrl", "Alt", "Shift", "Meta"], StringComparer.OrdinalIgnoreCase);
-
     private static readonly DialogOptions DialogSettings =
         new() { Position = DialogPosition.Top, ShowHeader = false, Size = DialogSize.Medium };
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Shortcut?.Split('+') is [.. var modifiers, var key]
-            && (key.Trim().Length == 0 || modifiers.Any(modifier => !Modifiers.Contains(modifier.Trim()))))
+        if (Shortcut is not null && !KeyShortcut.IsValid(Shortcut))
         {
             throw new InvalidOperationException($"{nameof(TbCommandPalette<TItem>)} can't read the shortcut "
                 + $"\"{Shortcut}\": end it with one key, after any of Mod, Ctrl, Alt, Shift and Meta, as in "

@@ -4872,3 +4872,67 @@ Trailblazor.TbSortable<TItem>.ListId.set -> void
 const Trailblazor.TbStrings.SortableGroupHint = "Sortable.GroupHint" -> string!
 const Trailblazor.TbStrings.SortableMoveToList = "Sortable.MoveToList" -> string!
 const Trailblazor.TbStrings.SortableMovedToList = "Sortable.MovedToList" -> string!
+Trailblazor.HotkeyScope
+Trailblazor.HotkeyScope.Page = 0 -> Trailblazor.HotkeyScope
+Trailblazor.HotkeyScope.Parent = 1 -> Trailblazor.HotkeyScope
+Trailblazor.HotkeysHelpLabels
+Trailblazor.HotkeysHelpLabels.<Clone>$() -> Trailblazor.HotkeysHelpLabels!
+Trailblazor.HotkeysHelpLabels.Action.get -> string?
+Trailblazor.HotkeysHelpLabels.Action.init -> void
+Trailblazor.HotkeysHelpLabels.Equals(Trailblazor.HotkeysHelpLabels? other) -> bool
+Trailblazor.HotkeysHelpLabels.General.get -> string?
+Trailblazor.HotkeysHelpLabels.General.init -> void
+Trailblazor.HotkeysHelpLabels.HotkeysHelpLabels() -> void
+Trailblazor.HotkeysHelpLabels.Keys.get -> string?
+Trailblazor.HotkeysHelpLabels.Keys.init -> void
+Trailblazor.HotkeysHelpLabels.Show.get -> string?
+Trailblazor.HotkeysHelpLabels.Show.init -> void
+Trailblazor.HotkeysHelpLabels.Title.get -> string?
+Trailblazor.HotkeysHelpLabels.Title.init -> void
+Trailblazor.TbHotkey
+Trailblazor.TbHotkey.AllowCharacterKey.get -> bool
+Trailblazor.TbHotkey.AllowCharacterKey.set -> void
+Trailblazor.TbHotkey.Description.get -> string?
+Trailblazor.TbHotkey.Description.set -> void
+Trailblazor.TbHotkey.Disabled.get -> bool
+Trailblazor.TbHotkey.Disabled.set -> void
+Trailblazor.TbHotkey.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbHotkey.Group.get -> string?
+Trailblazor.TbHotkey.Group.set -> void
+Trailblazor.TbHotkey.Keys.get -> string!
+Trailblazor.TbHotkey.Keys.set -> void
+Trailblazor.TbHotkey.OnPress.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.TbHotkey.OnPress.set -> void
+Trailblazor.TbHotkey.Scope.get -> Trailblazor.HotkeyScope
+Trailblazor.TbHotkey.Scope.set -> void
+Trailblazor.TbHotkey.TbHotkey() -> void
+Trailblazor.TbHotkey.TelemetryName.get -> string?
+Trailblazor.TbHotkey.TelemetryName.set -> void
+Trailblazor.TbHotkeysHelp
+Trailblazor.TbHotkeysHelp.Dispose() -> void
+Trailblazor.TbHotkeysHelp.Keys.get -> string?
+Trailblazor.TbHotkeysHelp.Keys.set -> void
+Trailblazor.TbHotkeysHelp.Labels.get -> Trailblazor.HotkeysHelpLabels!
+Trailblazor.TbHotkeysHelp.Labels.set -> void
+Trailblazor.TbHotkeysHelp.Open.get -> bool
+Trailblazor.TbHotkeysHelp.Open.set -> void
+Trailblazor.TbHotkeysHelp.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbHotkeysHelp.OpenChanged.set -> void
+Trailblazor.TbHotkeysHelp.TbHotkeysHelp() -> void
+const Trailblazor.TbStrings.HotkeysHelpAction = "HotkeysHelp.Action" -> string!
+const Trailblazor.TbStrings.HotkeysHelpGeneral = "HotkeysHelp.General" -> string!
+const Trailblazor.TbStrings.HotkeysHelpKeys = "HotkeysHelp.Keys" -> string!
+const Trailblazor.TbStrings.HotkeysHelpShow = "HotkeysHelp.Show" -> string!
+const Trailblazor.TbStrings.HotkeysHelpTitle = "HotkeysHelp.Title" -> string!
+override Trailblazor.HotkeysHelpLabels.Equals(object? obj) -> bool
+override Trailblazor.HotkeysHelpLabels.GetHashCode() -> int
+override Trailblazor.HotkeysHelpLabels.ToString() -> string!
+override Trailblazor.TbHotkey.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbHotkey.OnInitialized() -> void
+override Trailblazor.TbHotkey.OnParametersSet() -> void
+override Trailblazor.TbHotkeysHelp.OnInitialized() -> void
+override Trailblazor.TbHotkeysHelp.OnParametersSet() -> void
+static Trailblazor.HotkeysHelpLabels.operator !=(Trailblazor.HotkeysHelpLabels? left, Trailblazor.HotkeysHelpLabels? right) -> bool
+static Trailblazor.HotkeysHelpLabels.operator ==(Trailblazor.HotkeysHelpLabels? left, Trailblazor.HotkeysHelpLabels? right) -> bool
+~override Trailblazor.TbHotkey.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbHotkeysHelp.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

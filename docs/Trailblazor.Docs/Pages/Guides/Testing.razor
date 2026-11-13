@@ -160,6 +160,10 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Hotkey(keys).PressAsync()</code></th>
+                        <td>Runs a hotkey as a press of its keys would, and throws for a disabled one.</td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>ContextMenu(name).On(key).ChooseAsync(path)</code></th>
                         <td>
                             Opens the menu for the element with this <code>data-context-key</code>, or, without
@@ -723,6 +727,8 @@
             + "`OnCancel` may still be running. An `OnConfirm` that waits for the user, such as one that opens a "
             + "dialog, would keep the helper waiting, so click the confirm button instead."),
         new("Menu", "Its trigger", "`Menu(trigger).ChooseAsync(path)` chooses an item through its submenus."),
+        new("Hotkey", "Its keys", "`Hotkey(keys).PressAsync()` waits until the hotkey listens, then presses its "
+            + "keys, with Mod as `ControlOrMeta`."),
         new("Context menu", "An element in its area", "`ContextMenu(element).ChooseAsync(path)` right-clicks the "
             + "element and chooses an item through its submenus, from the items drawn for that element's key."),
         new("Tabs", "Their list's name", "`Tabs(name).SelectAsync(tab)` selects a tab by its name."),

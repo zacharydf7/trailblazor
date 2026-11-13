@@ -86,6 +86,22 @@ public static class TbStrings
     /// </summary>
     public const string CommandPaletteResults = "CommandPalette.Results";
 
+    /// <summary>"Keyboard shortcuts": the title of the dialog that lists the page's hotkeys.</summary>
+    public const string HotkeysHelpTitle = "HotkeysHelp.Title";
+
+    /// <summary>"Show keyboard shortcuts": what the hotkey that opens the list of hotkeys does, as the list shows it.
+    /// </summary>
+    public const string HotkeysHelpShow = "HotkeysHelp.Show";
+
+    /// <summary>"General": the heading of the hotkeys that have no group.</summary>
+    public const string HotkeysHelpGeneral = "HotkeysHelp.General";
+
+    /// <summary>"Keys": the heading screen readers hear for the column of keys in the list of hotkeys.</summary>
+    public const string HotkeysHelpKeys = "HotkeysHelp.Keys";
+
+    /// <summary>"Action": the heading screen readers hear for the column that says what each hotkey does.</summary>
+    public const string HotkeysHelpAction = "HotkeysHelp.Action";
+
     /// <summary>"Choose a color": names the button that opens a color picker's panel.</summary>
     public const string ColorPickerOpen = "ColorPicker.Open";
 
@@ -1039,6 +1055,11 @@ public static class TbStrings
         [CommandPalettePlaceholder] = "Type a command or search",
         [CommandPaletteNoResults] = "No matching commands",
         [CommandPaletteResults] = "Results: {0}",
+        [HotkeysHelpTitle] = "Keyboard shortcuts",
+        [HotkeysHelpShow] = "Show keyboard shortcuts",
+        [HotkeysHelpGeneral] = "General",
+        [HotkeysHelpKeys] = "Keys",
+        [HotkeysHelpAction] = "Action",
         [ColorPickerOpen] = "Choose a color",
         [ColorPickerEyedropper] = "Pick a color from the screen",
         [ColorPickerClear] = "Clear",

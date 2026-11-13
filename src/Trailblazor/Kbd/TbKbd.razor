@@ -16,7 +16,16 @@
             {
                 <span class="tb-kbd__plus">+</span>
             }
-            <kbd data-part="key" class="tb-kbd__key">@_parts[index]</kbd>
+            @if (_parts[index].Equals("Mod", StringComparison.OrdinalIgnoreCase))
+            {
+                <kbd data-part="key" class="tb-kbd__key">
+                    <span class="tb-kbd__mod-other">Ctrl</span><span class="tb-kbd__mod-apple">⌘</span>
+                </kbd>
+            }
+            else
+            {
+                <kbd data-part="key" class="tb-kbd__key">@_parts[index]</kbd>
+            }
         }
     }
 </kbd>
@@ -25,7 +34,8 @@
     private string[] _parts = [];
 
     /// <summary>Keys pressed together, joined by plus signs, such as <c>"Ctrl+K"</c>. Each key gets its own keycap;
-    /// write the plus key itself as <c>"Plus"</c>.</summary>
+    /// write the plus key itself as <c>"Plus"</c>. <c>Mod</c> shows as ⌘ on Apple devices and Ctrl elsewhere, as
+    /// hotkeys and the command palette read it.</summary>
     [Parameter]
     public string? Keys { get; set; }
 

@@ -114,6 +114,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbCommandPalette</c> with this label, or the only one in the scope.</summary>
     public TbCommandPaletteLocator CommandPalette(string? name = null) => new(scope, name);
 
+    /// <summary>The <c>TbHotkey</c> with these keys, written as the hotkey's <c>Keys</c> are, such as
+    /// <c>"Mod+S"</c>.</summary>
+    public TbHotkeyLocator Hotkey(string keys) => new(scope, keys);
+
     /// <summary>The <c>TbSortable</c> with this label.</summary>
     public TbSortableLocator Sortable(string name) => new(scope, name);
 

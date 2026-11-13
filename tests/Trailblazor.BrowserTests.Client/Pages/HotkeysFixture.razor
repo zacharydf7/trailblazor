@@ -1,0 +1,37 @@
+@page "/hotkeys"
+
+<div style="display: grid; gap: 1rem; padding: 2rem">
+    <TbHotkey Keys="Mod+S" Description="Save" OnPress="@(() => _pressed.Add("save"))" />
+    <TbHotkey Keys="Mod+Space" Description="Search" OnPress="@(() => _pressed.Add("search"))" />
+    <TbHotkey Keys="g" AllowCharacterKey Description="Go to trails" OnPress="@(() => _pressed.Add("go"))" />
+    <TbHotkey Keys="Alt+D" Disabled="_off" OnPress="@(() => _pressed.Add("disabled"))" />
+    <TbHotkeysHelp Keys="?" />
+    <input aria-label="Note" />
+    <button type="button" @onclick="() => _off = !_off">Toggle Alt+D</button>
+    <section aria-label="Editor" style="border: 1px solid; padding: 1rem">
+        @* A Parent hotkey fires only with focus inside this section, and wins over the page's Mod+S there. *@
+        <TbHotkey Keys="Mod+S" Scope="HotkeyScope.Parent" Description="Save the draft" Group="Editor"
+                  OnPress="@(() => _pressed.Add("save draft"))" />
+        <TbHotkey Keys="Mod+B" Scope="HotkeyScope.Parent" Description="Bold" Group="Editor"
+                  OnPress="@(() => _pressed.Add("bold"))" />
+        <TbHotkey Keys="Shift+Enter" Scope="HotkeyScope.Parent" Description="New line" Group="Editor"
+                  OnPress="@(() => _pressed.Add("new line"))" />
+        <input aria-label="Draft" />
+    </section>
+    <button type="button" @onclick="() => _dialog = true">Open dialog</button>
+    <TbDialog Title="Trail" @bind-Open="_dialog">
+        <TbHotkey Keys="Mod+Enter" Description="Done" OnPress="@(() => _pressed.Add("done"))" />
+        <input aria-label="Trail name" />
+    </TbDialog>
+    @* A page hotkey deeper in the page than the editor's, which the editor's Parent hotkey still wins over. *@
+    <div><div><div><div><div><div>
+        <TbHotkey Keys="Mod+B" OnPress="@(() => _pressed.Add("page bold"))" />
+    </div></div></div></div></div></div>
+    <output data-testid="pressed">@string.Join(", ", _pressed)</output>
+</div>
+
+@code {
+    private readonly List<string> _pressed = [];
+    private bool _off = true;
+    private bool _dialog;
+}

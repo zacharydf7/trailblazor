@@ -1,8 +1,6 @@
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
-
-// Chromium on macOS reports "macOS", and other browsers "MacIntel", "iPhone" or "iPad".
-const isApple = /mac|iphone|ipad/i.test(navigator.userAgentData?.platform ?? navigator.platform);
+import { matchesShortcut, parseShortcut } from './shortcuts.js';
 
 // The listener each marker's data-ready belongs to. A replaced listener can be disposed after its replacement attached,
 // and must leave the replacement's mark alone.
@@ -98,26 +96,15 @@ export function attachPalette(scope) {
     };
 }
 
-// Opens the palette from anywhere on the page, with a shortcut such as "Mod+K", where Mod is ⌘ on Apple devices and
-// Ctrl elsewhere. With Alt held, a Mac types a symbol, so the letter's key is matched as well as its character.
+// Opens the palette from anywhere on the page, with a shortcut such as "Mod+K".
 export function attachShortcut(marker, shortcut, events) {
     if (!marker) {
         return null;
     }
 
-    const parts = shortcut.split('+').map(part => part.trim().toLowerCase());
-    const key = parts.pop();
-    const mod = parts.includes('mod');
-    const wanted = {
-        ctrlKey: parts.includes('ctrl') || (mod && !isApple),
-        metaKey: parts.includes('meta') || (mod && isApple),
-        altKey: parts.includes('alt'),
-        shiftKey: parts.includes('shift'),
-    };
+    const wanted = parseShortcut(shortcut);
     const onKeyDown = event => {
-        if (event.defaultPrevented || event.repeat || isComposing(event)
-            || Object.entries(wanted).some(([modifier, held]) => event[modifier] !== held)
-            || (event.key?.toLowerCase() !== key && event.code?.toLowerCase() !== `key${key}`)) {
+        if (event.defaultPrevented || !matchesShortcut(event, wanted)) {
             return;
         }
 

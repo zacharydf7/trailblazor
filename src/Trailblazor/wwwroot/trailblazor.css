@@ -1804,6 +1804,16 @@
         color: var(--tb-color-text-muted);
     }
 
+    /* Mod is ⌘ on Apple devices and Ctrl elsewhere, which the script marks on the root once the page loads. */
+    .tb-kbd__mod-apple,
+    :root[data-tb-apple] .tb-kbd__mod-other {
+        display: none;
+    }
+
+    :root[data-tb-apple] .tb-kbd__mod-apple {
+        display: inline;
+    }
+
     /* An empty state sits centered in the space it stands in for, with a muted icon above its title. */
     .tb-empty-state {
         --tb-empty-state-icon-size: 3rem;
@@ -4603,6 +4613,30 @@
     .tb-drawer .tb-dialog__body {
         display: flex;
         flex-direction: column;
+    }
+
+    /* Each group of hotkeys is a table: the keys in a narrow column, and what they do beside them. */
+    .tb-hotkeys-help__group {
+        inline-size: 100%;
+        border-collapse: collapse;
+        margin-block-end: var(--tb-space-4);
+    }
+
+    .tb-hotkeys-help__caption {
+        padding-block: var(--tb-space-2);
+        font-weight: var(--tb-font-weight-semibold);
+        text-align: start;
+    }
+
+    .tb-hotkeys-help__group td {
+        padding-block: var(--tb-space-1);
+        vertical-align: baseline;
+    }
+
+    .tb-hotkeys-help__keys {
+        inline-size: 1%;
+        padding-inline-end: var(--tb-space-4);
+        white-space: nowrap;
     }
 
     /* A command palette is a search box over its results, with no padding between them and the dialog's edge. */

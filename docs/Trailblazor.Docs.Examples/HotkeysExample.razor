@@ -1,0 +1,18 @@
+<TbStack Gap="3">
+    <TbHotkey Keys="Alt+Shift+S" Description="Save the trail" Group="Trail" OnPress="@(() => _last = "Saved")" />
+    <TbHotkey Keys="Alt+Shift+N" Description="Add a waypoint" Group="Trail"
+              OnPress="@(() => _last = "Waypoint added")" />
+    <TbHotkeysHelp Keys="?" @bind-Open="_help" />
+    <TbText>
+        Press <TbKbd Keys="Alt+Shift+S" /> or <TbKbd Keys="Alt+Shift+N" />, or <TbKbd Keys="?" /> for the list.
+    </TbText>
+    <TbStack Row Gap="3" Align="Align.Center">
+        <TbButton Variant="Variant.Outlined" OnClick="() => _help = true">Keyboard shortcuts</TbButton>
+        <output aria-label="Last shortcut">@_last</output>
+    </TbStack>
+</TbStack>
+
+@code {
+    private bool _help;
+    private string _last = "";
+}

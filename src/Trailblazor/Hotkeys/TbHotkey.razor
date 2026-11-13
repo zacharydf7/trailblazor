@@ -1,0 +1,155 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+@inject HotkeyRegistry Registry
+
+@* The marker shows nothing. It stands where the hotkey is, which sets its scope, and its script tells it of presses. *@
+<span @ref="_marker" @attributes="AdditionalAttributes" hidden data-part="hotkey" data-keys="@Keys"
+      data-disabled="@(Disabled ? "" : null)" class="@ClassNames.Join("tb-hotkey", Class)" style="@Style"
+      @ontbhotkey="PressAsync"></span>
+
+@code {
+    private ElementReference _marker;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _handle;
+    private (string Keys, HotkeyScope Scope)? _attached;
+    private int _attaches;
+    private bool _disposed;
+    private ControlTelemetry? _telemetry;
+
+    /// <summary>The keys, such as <c>"Mod+S"</c> or <c>"Alt+Shift+N"</c>: any of Mod, Ctrl, Alt, Shift and Meta, then
+    /// one key, joined by plus signs. Mod is ⌘ on Apple devices and Ctrl elsewhere. Name Space and the plus key as
+    /// <c>Space</c> and <c>Plus</c>. Required.</summary>
+    [Parameter, EditorRequired]
+    public string Keys { get; set; } = "";
+
+    /// <summary>Raised when the keys are pressed where the hotkey fires.</summary>
+    [Parameter]
+    public EventCallback OnPress { get; set; }
+
+    /// <summary>What the hotkey does, such as "Save", which a <see cref="TbHotkeysHelp"/> lists. A hotkey without one,
+    /// or a disabled one, isn't listed.</summary>
+    [Parameter]
+    public string? Description { get; set; }
+
+    /// <summary>The heading a <see cref="TbHotkeysHelp"/> lists the hotkey under, such as "Editing".</summary>
+    [Parameter]
+    public string? Group { get; set; }
+
+    /// <summary>Where the hotkey fires. Defaults to <see cref="HotkeyScope.Page"/>. Of two hotkeys with the same keys
+    /// that both fire, a Parent hotkey wins over a Page one; otherwise the one deeper in the page wins.</summary>
+    [Parameter]
+    public HotkeyScope Scope { get; set; } = HotkeyScope.Page;
+
+    /// <summary>Allows a key people type, such as <c>"?"</c> or <c>"Shift+G"</c>, without Mod, Ctrl, Alt or Meta.
+    /// It never fires while someone types in a field, and the app must let people turn it off or change it
+    /// (WCAG 2.1.4). A named key such as Escape or F2 needs no opt-in.</summary>
+    [Parameter]
+    public bool AllowCharacterKey { get; set; }
+
+    /// <summary>Stops the hotkey from firing, such as when people have turned it off. The keys then reach the page.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>A label the hotkey's use is counted under, such as <c>"save-shortcut"</c>, through the
+    /// <c>Trailblazor</c> meter: shown when it first renders, and used each time it fires. It names what the hotkey
+    /// does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Registry.Add(this);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (!KeyShortcut.IsValid(Keys))
+        {
+            throw new InvalidOperationException($"{nameof(TbHotkey)} can't read the keys \"{Keys}\": end them with one "
+                + "key, after any of Mod, Ctrl, Alt, Shift and Meta, as in \"Mod+S\" or \"Ctrl+Shift+P\".");
+        }
+
+        if (KeyShortcut.IsCharacterKey(Keys) && !AllowCharacterKey)
+        {
+            throw new InvalidOperationException($"{nameof(TbHotkey)} \"{Keys}\" is a key people type, with no Mod, "
+                + $"Ctrl, Alt or Meta. Set {nameof(AllowCharacterKey)}, and let people turn it off.");
+        }
+
+        Registry.Update();
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Telemetry.Rendered(TelemetryName);
+        if (_attached == (Keys, Scope))
+        {
+            return;
+        }
+
+        // New keys or a new scope attach the script again. A render during the wait may change them again, and then
+        // only the latest render's handle is kept.
+        var wanted = (Keys, Scope);
+        _attached = wanted;
+        var attach = ++_attaches;
+        try
+        {
+            if (_handle is { } previous)
+            {
+                _handle = null;
+                await previous.DisposeHandleAsync();
+            }
+
+            _module ??= await Modules.ImportAsync("./_content/Trailblazor/hotkeys.js");
+            if (_disposed || attach != _attaches)
+            {
+                return;
+            }
+
+            var handle = await _module.InvokeAsync<IJSObjectReference?>("attachHotkey", _marker, wanted.Keys,
+                wanted.Scope.ToString());
+            if (handle is not null && (_disposed || attach != _attaches))
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the hotkey went with it.
+        }
+    }
+
+    private Task PressAsync()
+    {
+        if (Disabled)
+        {
+            return Task.CompletedTask;
+        }
+
+        Telemetry.Used(TelemetryName);
+        return OnPress.InvokeAsync();
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        Registry.Remove(this);
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+    }
+}

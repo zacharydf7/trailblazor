@@ -18,6 +18,7 @@ import './throttled-input.js';
 import './debounced-input.js';
 import './message-hold.js';
 import { measurePageScrollbar } from './page-scroll.js';
+import { isApple } from './shortcuts.js';
 // Every module that another one imports loads here too, so a component's module finds its imports already loaded.
 import '../Trailblazor.Primitives/anchored-position.js';
 import '../Trailblazor.Primitives/composing.js';
@@ -33,6 +34,14 @@ import './option-filter.js';
 import './typeahead.js';
 import './unnamed-options.js';
 
+// Keys show Mod as ⌘ on Apple devices, which the styles read from this mark.
+const markPlatform = () => {
+    if (isApple) {
+        document.documentElement.dataset.tbApple = '';
+    }
+};
+markPlatform();
+
 // Blazor Web Apps call afterWebStarted; standalone WebAssembly and older hosts call afterStarted.
 export function afterWebStarted(blazor) {
     registerEvents(blazor);
@@ -42,8 +51,9 @@ export function afterWebStarted(blazor) {
             Object.assign(document.documentElement.dataset, globalThis.trailblazorTheme);
         }
 
-        // The navigation removed the root's inline style too, and the root may not have resized.
+        // The navigation removed the root's inline style and marks too, and the root may not have resized.
         measurePageScrollbar();
+        markPlatform();
     });
 }
 
@@ -134,6 +144,7 @@ function registerEvents(blazor) {
         createEventArgs: event => ({ order: event.detail.order }),
     });
     blazor.registerCustomEventType('tbselectall', { browserEventName: 'tb-select-all', createEventArgs: () => ({}) });
+    blazor.registerCustomEventType('tbhotkey', { browserEventName: 'tb-hotkey', createEventArgs: () => ({}) });
     blazor.registerCustomEventType('tbtreefilterdown', {
         browserEventName: 'tb-tree-filter-down',
         createEventArgs: () => ({}),

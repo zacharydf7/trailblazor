@@ -44,4 +44,15 @@ public class TbKbdTests : BunitContext
         Assert.Throws<InvalidOperationException>(() => Render<TbKbd>(parameters => parameters
             .Add(kbd => kbd.Keys, keys)));
     }
+
+    // Both Ctrl and ⌘ are drawn, and the page's styles show the one that fits the device.
+    [Fact]
+    public void Render_ShouldDrawModAsCtrlAndCommand_WhenAKeyIsMod()
+    {
+        var cut = Render<TbKbd>(parameters => parameters.Add(kbd => kbd.Keys, "Mod+S"));
+
+        Assert.Equal("Ctrl", cut.Find(".tb-kbd__mod-other").TextContent);
+        Assert.Equal("⌘", cut.Find(".tb-kbd__mod-apple").TextContent);
+        Assert.DoesNotContain("Mod", cut.Markup);
+    }
 }

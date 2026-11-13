@@ -325,7 +325,8 @@ public static class ExampleCatalog
             Sections =
             [
                 new("basic", "Kbd", "`Keys` shows keys pressed together, such as `\"Ctrl+K\"`, each as its own keycap "
-                    + "with a plus between them. `ChildContent` shows a single key, such as `Esc`.",
+                    + "with a plus between them, and shows `Mod` as ⌘ on Apple devices and Ctrl elsewhere. "
+                    + "`ChildContent` shows a single key, such as `Esc`.",
                     typeof(KbdExample)),
             ],
             Api = [typeof(TbKbd)],
@@ -6215,6 +6216,92 @@ public static class ExampleCatalog
                 "With a `TelemetryName`, such as `\"app-commands\"`, it counts `trailblazor.control.shown` as it "
                     + "first renders, and `trailblazor.control.used` with the action `choose` and the input `pointer` "
                     + "or `keyboard` each time the user runs a command. Which command is never recorded.",
+            ],
+        },
+        new("hotkeys", "Hotkeys", ExampleCategory.Actions,
+            "Keyboard shortcuts for the whole page or one part of it, with a dialog that lists them.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for actions people repeat often enough to want a key for, such as saving or adding an item.",
+            ],
+            WhenNotToUse =
+            [
+                "As the only way to an action: offer each one as a button or menu item too.",
+                "To find any action by name, use a [command palette](components/command-palette), which can show "
+                    + "each command's keys.",
+            ],
+            Related = ["command-palette", "kbd", "dialog"],
+            Sections =
+            [
+                new("page", "Keys for the page", "A `TbHotkey` runs `OnPress` when its `Keys` are pressed, such as "
+                    + "`\"Alt+Shift+S\"`: any of Mod, Ctrl, Alt, Shift and Meta, then one key, where Mod is ⌘ on Apple "
+                    + "devices and Ctrl elsewhere. It shows nothing. `TbHotkeysHelp` lists every enabled hotkey that "
+                    + "has a `Description`, under its `Group`, in a dialog. Its own `Keys`, here `\"?\"`, open it, and "
+                    + "so does `@bind-Open`, such as from a button. While a modal dialog is open, only the hotkeys "
+                    + "inside it fire.",
+                    typeof(HotkeysExample)),
+                new("scope", "Keys for one part of the page", "`Scope=\"HotkeyScope.Parent\"` makes a hotkey fire only "
+                    + "while focus is inside the element it sits in, such as an editor. There it wins over a page "
+                    + "hotkey with the same keys, so a part can take over keys the page also uses.",
+                    typeof(HotkeysScopeExample)),
+            ],
+            Api = [typeof(TbHotkey), typeof(HotkeyScope), typeof(TbHotkeysHelp), typeof(HotkeysHelpLabels)],
+            Keyboard =
+            [
+                new(["A hotkey's keys"], "Runs its `OnPress`.") { When = "Where its scope applies" },
+                new(["The help's keys"], "Opens the list of hotkeys, or closes it.") { When = "Anywhere on the page" },
+            ],
+            Labeling =
+            [
+                "The help is a `dialog` named by `Labels.Title`, \"Keyboard shortcuts\" by default.",
+            ],
+            Announcements =
+            [
+                "Each group is a `table` named by its caption, with a column of keys and a column of what they do.",
+            ],
+            Accessibility =
+            [
+                "A key people type, such as \"?\" or \"Shift+G\", without Mod, Ctrl, Alt or Meta, is a character key "
+                    + "shortcut. A hotkey throws for one unless `AllowCharacterKey` is set, and even then it never "
+                    + "fires while someone types in a field. A named key such as Escape or F2 isn't one.",
+                "A hotkey stops the browser's own action for its keys, so a shortcut such as Mod+S no longer saves "
+                    + "the page.",
+                "The help shows Mod as ⌘ on Apple devices and Ctrl elsewhere, as a [kbd](components/kbd) does.",
+            ],
+            AppDuties =
+            [
+                "Let people turn character key hotkeys off, such as with a setting bound to `Disabled` or to the "
+                    + "help's `Keys` (WCAG 2.1.4).",
+                "Keep clear of keys the browser, the operating system or screen readers use, such as Ctrl+T, Alt+F4 "
+                    + "or Insert.",
+            ],
+            Modes = new(ModeSupport.None, ModeSupport.None),
+            BeforeInteractive =
+            [
+                "Until the page is interactive, hotkeys don't fire, and the browser handles their keys as usual.",
+            ],
+            Ready = new("[data-part=hotkey]", "the hotkey's hidden marker"),
+            Target = new("button", "Keyboard shortcuts"),
+            Blocks = ["tb-hotkeys-help"],
+            DataParts =
+            [
+                new("hotkey", "A hotkey's hidden marker, with its keys in `data-keys`."),
+                new("group", "A group's table in the help."),
+                new("row", "One hotkey's row in the help."),
+            ],
+            TestingTip = "`await page.Tb().Hotkey(\"Alt+Shift+S\").PressAsync()` from `Trailblazor.Testing.Playwright` "
+                + "waits until the hotkey's marker has `data-ready` set to its keys, then presses them, with Mod as "
+                + "`ControlOrMeta`. Focus what the hotkey needs first, such as a field inside a `Parent` hotkey's "
+                + "element. In bUnit, `await cut.Tb().Hotkey(\"Alt+Shift+S\").PressAsync()` runs it as a press would. "
+                + "Find the help by role: `GetByRole(AriaRole.Dialog, new() { Name = \"Keyboard shortcuts\" })`. A "
+                + "Mod key shows as both `.tb-kbd__mod-other` (Ctrl) and `.tb-kbd__mod-apple` (⌘), and the page "
+                + "styles hide the one that doesn't fit the device.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"save-shortcut\"`, a hotkey counts `trailblazor.control.shown` as "
+                    + "it first renders and `trailblazor.control.used` each time it fires.",
             ],
         },
         new("dialog", "Dialog", ExampleCategory.Overlays,

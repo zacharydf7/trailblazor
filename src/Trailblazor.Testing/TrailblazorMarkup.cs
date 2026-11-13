@@ -104,6 +104,15 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
     public TbMenuDriver Menu(string trigger) => new(trigger, _findAll);
 
+    /// <summary>The <c>TbHotkey</c> with these keys, written as its <c>Keys</c> are, such as <c>"Mod+S"</c>.</summary>
+    public TbHotkeyDriver Hotkey(string keys) => new(() =>
+    {
+        var hotkeys = _findAll("[data-part=hotkey]").Where(hotkey => hotkey.GetAttribute("data-keys") == keys).ToList();
+        return hotkeys.Count == 1 ? hotkeys[0]
+            : throw new InvalidOperationException($"Expected one hotkey with the keys \"{keys}\", found "
+                + $"{hotkeys.Count}; write the keys as its Keys are, or use Within when several match.");
+    });
+
     /// <summary>The <c>TbContextMenu</c> whose menu has this <c>AriaLabel</c>, or the only one in the markup when no
     /// name is given.</summary>
     public TbContextMenuDriver ContextMenu(string? name = null) => new(() =>
@@ -1513,6 +1522,24 @@ public sealed class TbTabsDriver
     private IElement Find(string tab) =>
         _find().QuerySelectorAll("[role=tab]").SingleOrDefault(element => element.TextContent.Trim() == tab)
             ?? throw new InvalidOperationException($"No tab reads \"{tab}\".");
+}
+
+/// <summary>A <c>TbHotkey</c>, found by its keys.</summary>
+public sealed class TbHotkeyDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbHotkeyDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>Fires the hotkey as its script does when its keys are pressed where it applies. Throws for a disabled
+    /// hotkey, whose keys reach the page instead.</summary>
+    public Task PressAsync()
+    {
+        var hotkey = _find();
+        return hotkey.HasAttribute("data-disabled")
+            ? throw new InvalidOperationException($"The hotkey \"{hotkey.GetAttribute("data-keys")}\" is disabled.")
+            : hotkey.TriggerEventAsync("ontbhotkey", EventArgs.Empty);
+    }
 }
 
 /// <summary>A <c>TbContextMenu</c>, found by its menu's name.</summary>

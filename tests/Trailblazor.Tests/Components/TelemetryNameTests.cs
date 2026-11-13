@@ -133,6 +133,18 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task Hotkey_ShouldCountEachPress_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbHotkey>(parameters => parameters.Add(hotkey => hotkey.Keys, "Mod+S")
+            .Add(hotkey => hotkey.TelemetryName, "save-shortcut"));
+
+        await cut.Find("[data-part=hotkey]").TriggerEventAsync("ontbhotkey", EventArgs.Empty);
+
+        Assert.Equal(["save-shortcut"], Names(_shown));
+        Assert.Equal([("save-shortcut", "TbHotkey", null)], Uses());
+    }
+
+    [Fact]
     public async Task SpeedDial_ShouldCountItsOpensAndItsActionsChosen_WhenTheyHaveTelemetryNames()
     {
         var cut = Render<TbSpeedDial>(parameters => parameters.Add(dial => dial.Label, "Add")

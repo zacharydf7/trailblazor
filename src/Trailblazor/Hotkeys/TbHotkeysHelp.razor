@@ -1,0 +1,100 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IDisposable
+@inject HotkeyRegistry Registry
+@inject ITbLocalizer Localizer
+
+<TbDialog @attributes="AdditionalAttributes" Title="@(Labels.Title ?? Localizer[TbStrings.HotkeysHelpTitle])"
+          Open="_open" OpenChanged="SetOpenAsync" Class="@ClassNames.Join("tb-hotkeys-help", Class)" Style="@Style">
+    @foreach (var group in Groups)
+    {
+        <table class="tb-hotkeys-help__group" data-part="group">
+            <caption class="tb-hotkeys-help__caption">@group.Key</caption>
+            <thead class="tb-visually-hidden">
+                <tr>
+                    <th scope="col">@(Labels.Keys ?? Localizer[TbStrings.HotkeysHelpKeys])</th>
+                    <th scope="col">@(Labels.Action ?? Localizer[TbStrings.HotkeysHelpAction])</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var hotkey in group)
+                {
+                    <tr data-part="row">
+                        <td class="tb-hotkeys-help__keys"><TbKbd Keys="@hotkey.Keys" /></td>
+                        <td>@hotkey.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    @if (Keys is not null)
+    {
+        @* The page's hotkeys don't fire under the open dialog, so the same keys close it from inside. *@
+        <TbHotkey Keys="@Keys" AllowCharacterKey OnPress="() => SetOpenAsync(false)" />
+    }
+</TbDialog>
+@if (Keys is not null)
+{
+    <TbHotkey Keys="@Keys" AllowCharacterKey Description="@(Labels.Show ?? Localizer[TbStrings.HotkeysHelpShow])"
+              OnPress="() => SetOpenAsync(!_open)" />
+}
+
+@code {
+    private bool _open;
+    private bool _lastOpen;
+
+    /// <summary>Whether the help is open. Bind it with <c>@bind-Open</c> to open it from a button or a menu.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised when the user opens or closes the help.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>Keys that open and close the help from anywhere on the page, such as <c>"?"</c>, which the help also
+    /// lists. A key without Mod, Ctrl, Alt or Meta is allowed here, as for a <see cref="TbHotkey"/> with
+    /// <see cref="TbHotkey.AllowCharacterKey"/>, so let people turn it off by setting this to null.</summary>
+    [Parameter]
+    public string? Keys { get; set; }
+
+    /// <summary>The words the help shows and says to screen readers. Each one left null uses the app's text.</summary>
+    [Parameter]
+    public HotkeysHelpLabels Labels { get; set; } = new();
+
+    // The described hotkeys that fire, under their groups, with the ones that have no group first.
+    private IEnumerable<IGrouping<string, TbHotkey>> Groups => Registry.Hotkeys
+        .Where(hotkey => hotkey.Description is not null && !hotkey.Disabled)
+        .GroupBy(hotkey => hotkey.Group ?? Labels.General ?? Localizer[TbStrings.HotkeysHelpGeneral])
+        .OrderBy(group => group.First().Group is null ? 0 : 1);
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Registry.Changed += OnHotkeysChanged;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Only a new value from the parent opens or closes the help.
+        if (Open != _lastOpen)
+        {
+            _lastOpen = Open;
+            _open = Open;
+        }
+    }
+
+    private void OnHotkeysChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task SetOpenAsync(bool open)
+    {
+        if (open == _open)
+        {
+            return;
+        }
+
+        _open = open;
+        StateHasChanged();
+        await OpenChanged.InvokeAsync(open);
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Registry.Changed -= OnHotkeysChanged;
+}

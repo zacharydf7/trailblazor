@@ -1,0 +1,17 @@
+<TbStack Gap="3">
+    <TbSurface Outlined role="region" aria-label="Trail notes" style="padding: 1rem">
+        @* Fires only while focus is inside this area, such as in the field below. *@
+        <TbHotkey Keys="Alt+Shift+B" Scope="HotkeyScope.Parent" Description="Mark the note important" Group="Notes"
+                  OnPress="() => _important = !_important" />
+        <TbTextField Label="Note" @bind-Value="_note" />
+    </TbSurface>
+    <TbText>
+        With focus in the note, press <TbKbd Keys="Alt+Shift+B" />. Outside it, the keys do nothing.
+    </TbText>
+    <output aria-label="Note marked">@(_important ? "Important" : "Not marked")</output>
+</TbStack>
+
+@code {
+    private string _note = "Bring extra water.";
+    private bool _important;
+}
