@@ -1,0 +1,27 @@
+@page "/grid-columns"
+
+@* A grid that draws only the columns in view, with forty sensor columns between a pinned Id column and a pinned total,
+   and the first sensor 10rem wide. A button below it removes every row. *@
+<TbDataGrid TItem="Reading" Items="_readings" AriaLabel="Readings" KeySelector="reading => reading.Id" VirtualizeColumns
+            CellNavigation>
+    <TbColumn Field="reading => reading.Id" Pinned="ColumnPin.Start" />
+    @for (var at = 0; at < 40; at++)
+    {
+        var sensor = at;
+        <TbColumn @key="sensor" TItem="Reading" Id="@($"s{sensor}")" Title="@($"Sensor {sensor}")"
+                  Width="@(sensor == 0 ? "10rem" : null)">
+            <CellTemplate>@context.Values[sensor]</CellTemplate>
+        </TbColumn>
+    }
+    <TbColumn TItem="Reading" Id="total" Title="Total" Pinned="ColumnPin.End">
+        <CellTemplate>@context.Values.Sum()</CellTemplate>
+    </TbColumn>
+</TbDataGrid>
+<TbButton OnClick="() => _readings = []">Remove the readings</TbButton>
+
+@code {
+    private Reading[] _readings =
+        [.. Enumerable.Range(1, 3).Select(id => new Reading(id, [.. Enumerable.Range(0, 40).Select(at => id * 100 + at)]))];
+
+    public sealed record Reading(int Id, int[] Values);
+}

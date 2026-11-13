@@ -1,0 +1,21 @@
+<TbDataGrid TItem="Station" Items="_stations" AriaLabel="Daily rainfall" KeySelector="station => station.Name"
+            VirtualizeColumns CellNavigation>
+    <TbColumn Field="station => station.Name" Title="Station" Pinned="ColumnPin.Start" Width="10rem" />
+    @for (var at = 0; at < Days; at++)
+    {
+        var day = at;
+        <TbColumn @key="day" TItem="Station" Id="@($"day-{day + 1}")" Title="@($"Day {day + 1}")" Width="6rem">
+            <CellTemplate>@context.Rainfall[day] mm</CellTemplate>
+        </TbColumn>
+    }
+</TbDataGrid>
+
+@code {
+    private const int Days = 365;
+
+    private readonly Station[] _stations =
+        [.. new[] { "Pine Hollow", "Eagle Ridge", "Cedar Flats", "Fern Gully" }.Select((name, at) => new Station(name,
+            [.. Enumerable.Range(0, Days).Select(day => (day * 7 + at * 13) % 23)]))];
+
+    public sealed record Station(string Name, int[] Rainfall);
+}

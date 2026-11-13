@@ -139,6 +139,10 @@ function registerEvents(blazor) {
         browserEventName: 'tb-signature-stroke',
         createEventArgs: event => ({ points: event.detail.points }),
     });
+    blazor.registerCustomEventType('tbcolumnwindow', {
+        browserEventName: 'tb-column-window',
+        createEventArgs: event => event.detail,
+    });
     blazor.registerCustomEventType('tbtreedrop', {
         browserEventName: 'tb-tree-drop',
         createEventArgs: event => event.detail,

@@ -263,7 +263,8 @@
                             no clipboard permission needed.
                             Finds a cell with <code>Cell</code>, and reads the column headers with <code>Columns</code>,
                             a column's total with <code>Total</code> and each group's totals with
-                            <code>GroupTotals</code>.
+                            <code>GroupTotals</code>. In a grid with <code>VirtualizeColumns</code>, these helpers see
+                            only the columns drawn, so move focus to a column or scroll it into view first.
                         </td>
                     </tr>
                 </tbody>

@@ -9,7 +9,7 @@
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
                 Height is null ? null : "tb-data-grid--scrolls", Virtualize ? "tb-data-grid--virtual" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
-    @{ CheckColumnKeys(); ArrangeColumns(); ArrangeForColumns(); UpdateRange(); DrawRowsForReorder(); }
+    @{ CheckColumnKeys(); ArrangeColumns(); ArrangeDrawnColumns(); ArrangeForColumns(); UpdateRange(); DrawRowsForReorder(); }
     @if (HasGroupBy || HideableColumns || Exportable)
     {
         <div data-part="toolbar" class="@ClassNames.Join("tb-data-grid__toolbar", Classes?.Toolbar)">
@@ -93,6 +93,10 @@
                aria-multiselectable="@(IsGrid && (SelectionMode == SelectionMode.Multiple || CellSelection) ? "true" : null)"
                data-cell-selection="@(CellSelection ? "" : null)" data-cell-range="@(HasRange ? "" : null)"
                @ontbcellrange="OnCellRange" @ontbcellrange:stopPropagation
+               aria-colcount="@(VirtualizeColumns ? ColumnCount : null)" data-virtual-columns="@(VirtualizeColumns ? "" : null)"
+               data-column-keys="@UnpinnedKeys" data-column-widths="@UnpinnedWidths"
+               data-column-window="@(VirtualizeColumns ? $"{_columnWindow.First},{_columnWindow.Last}" : null)"
+               @ontbcolumnwindow="OnColumnWindow" @ontbcolumnwindow:stopPropagation
                @ontbcellscopy="OnCellsCopied" @ontbcellscopy:stopPropagation
                data-selection="@(SelectionMode == SelectionMode.Multiple ? "multiple" : null)"
                data-select-all="@(SelectionMode == SelectionMode.Multiple && CanSelectAll ? "" : null)"
@@ -104,17 +108,25 @@
                aria-busy="@(IsLoading ? "true" : null)"
                aria-rowcount="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) + (HasTotals ? 1 : 0)
                                   : null)"
-               class="@ClassNames.Join("tb-data-grid__table", HasFixedWidths ? "tb-data-grid__table--fixed" : null)">
-            @if (BandDepth > 0)
+               class="@ClassNames.Join("tb-data-grid__table",
+                          HasFixedWidths || VirtualizeColumns ? "tb-data-grid__table--fixed" : null)">
+            @if (BandDepth > 0 || VirtualizeColumns)
             {
-                @* A fixed table takes its widths from its first row, here group headings, so the <col>s carry them. *@
+                @* A fixed table takes its widths from its first row, here group headings or a spacer, so the <col>s carry
+                   them. *@
                 <colgroup>
                     @for (var lead = 0; lead < LeadCount; lead++)
                     {
                         <col />
                     }
-                    @foreach (var column in _shownColumns)
+                    @foreach (var drawn in _drawnColumns)
                     {
+                        if (drawn.Column is not { } column)
+                        {
+                            <col @key="drawn.SpacerKey" style="@SpacerStyle(drawn)" />
+                            continue;
+                        }
+
                         <col @key="column.Key" data-column="@column.Key"
                              style="@(WidthOf(column) is { } width ? $"width: {width}" : null)" />
                     }
@@ -172,12 +184,19 @@
                             <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridSelect]</span>
                         </th>
                     }
-                    @foreach (var column in _shownColumns)
+                    @foreach (var drawn in _drawnColumns)
                     {
+                        if (drawn.Column is not { } column)
+                        {
+                            @SpacerCell(drawn)
+                            continue;
+                        }
+
                         var at = _sorts.FindIndex(sort => sort.Column == column.Key);
                         var sort = at < 0 ? null : _sorts[at];
                         @* Keyed, so a moved column's header, and the menu and button in it, move with it. *@
                         <th @key="column.Key" scope="col" data-column="@column.Key" data-title="@column.Heading"
+                            aria-colindex="@ColumnIndexOf(column)"
                             data-filtered="@(IsFiltered(column) ? "" : null)" aria-sort="@AriaSort(at, sort)"
                             data-pinned="@PinSide(column)" data-width="@KeptWidth(column)"
                             style="@HeaderStyle(column)"
@@ -207,9 +226,15 @@
                     <tr data-part="filters" aria-rowindex="@(Virtualize ? BandDepth + 2 : null)"
                         class="tb-data-grid__filters">
                         @BlankLeadCells
-                        @foreach (var column in _shownColumns)
+                        @foreach (var drawn in _drawnColumns)
                         {
-                            <td @key="column.Key" data-column="@column.Key" data-part="filter"
+                            if (drawn.Column is not { } column)
+                            {
+                                @SpacerCell(drawn)
+                                continue;
+                            }
+
+                            <td @key="column.Key" data-column="@column.Key" data-part="filter" aria-colindex="@ColumnIndexOf(column)"
                                 data-value="@FilterText(column)"
                                 data-pinned="@PinSide(column)" style="@PinStyle(column)" class="@FilterClass(column)">
                                 @if (column.CanFilter)
@@ -230,7 +255,7 @@
                 {
                     <tr data-part="failed" aria-rowindex="@(Virtualize ? HeaderRowCount + 1 : null)"
                         class="tb-data-grid__status">
-                        <td colspan="@ColumnCount">
+                        <td colspan="@DrawnCount">
                             <span>@LoadFailedLabel</span>
                             <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="RefreshAsync">
                                 @(Labels.Retry ?? Localizer[TbStrings.DataGridRetry])
@@ -242,14 +267,14 @@
                 {
                     <tr data-part="loading" aria-rowindex="@(Virtualize ? HeaderRowCount + 1 : null)"
                         class="tb-data-grid__status">
-                        <td colspan="@ColumnCount">@(Labels.Loading ?? Localizer[TbStrings.DataGridLoading])</td>
+                        <td colspan="@DrawnCount">@(Labels.Loading ?? Localizer[TbStrings.DataGridLoading])</td>
                     </tr>
                 }
                 else if (HasNoRows)
                 {
                     <tr data-part="empty" aria-rowindex="@(Virtualize ? HeaderRowCount + 1 : null)"
                         class="tb-data-grid__status">
-                        <td colspan="@ColumnCount">
+                        <td colspan="@DrawnCount">
                             @if (EmptyContent is null)
                             {
                                 @EmptyLabel
@@ -387,13 +412,22 @@
                            @onchange="_choose.For(key)" />
                 </td>
             }
-            @foreach (var column in _shownColumns)
+            @foreach (var drawn in _drawnColumns)
             {
+                if (drawn.Column is not { } column)
+                {
+                    @SpacerCell(drawn)
+                    continue;
+                }
+
                 var editable = CanEdit(column);
                 var treeCell = tree is not null && column == _shownColumns[0];
                 var change = ChangeOf(key, column);
                 var inRange = InRange(key, column);
-                <td data-column="@column.Key" data-part="@(treeCell ? "tree-cell" : null)" data-pinned="@PinSide(column)"
+                @* Keyed, so a cell stays with its column, and keeps focus, as a grid that draws only the columns in view
+                   scrolls. *@
+                <td @key="column.Key" data-column="@column.Key" data-part="@(treeCell ? "tree-cell" : null)"
+                    data-pinned="@PinSide(column)" aria-colindex="@ColumnIndexOf(column)"
                     style="@PinStyle(column)" data-editable="@(editable ? "" : null)"
                     data-changed="@(change is null ? null : "")" aria-describedby="@(change is null ? null : _changedId)"
                     aria-selected="@(CellSelection ? inRange ? "true" : "false" : null)"
@@ -516,7 +550,7 @@
     private RenderFragment GroupRow(GroupHeading group, int at) =>
         @<tr data-part="group" data-level="@group.Level" aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)"
              class="@ClassNames.Join("tb-data-grid__group", Classes?.Group)">
-            <td colspan="@ColumnCount" style="--tb-data-grid-group-level: @(group.Level - 1)"
+            <td colspan="@DrawnCount" style="--tb-data-grid-group-level: @(group.Level - 1)"
                 class="tb-data-grid__group-cell">
                 <button type="button" data-part="group-toggle" aria-expanded="@(group.Open ? "true" : "false")"
                         class="tb-data-grid__group-toggle" @onclick="_toggleGroup.For(group.Key)">
@@ -530,7 +564,7 @@
     // A row Virtualize hasn't loaded yet holds its place, and says nothing to screen readers.
     private RenderFragment<PlaceholderContext> VirtualPlaceholder => _ =>
         @<tr data-part="placeholder" aria-hidden="true" class="tb-data-grid__placeholder">
-            <td colspan="@ColumnCount"></td>
+            <td colspan="@DrawnCount"></td>
         </tr>;
 
     // A text filter applies when typing pauses; the other fields apply as soon as they change.
@@ -661,11 +695,17 @@
     private RenderFragment TotalCells(Dictionary<string, object?> totals, string name) =>
         @<text>
             @BlankLeadCells
-            @foreach (var column in _shownColumns)
+            @foreach (var drawn in _drawnColumns)
             {
+                if (drawn.Column is not { } column)
+                {
+                    @SpacerCell(drawn)
+                    continue;
+                }
+
                 <td @key="column.Key" data-column="@column.Key" data-pinned="@PinSide(column)"
-                    style="@PinStyle(column)" class="@column.CellClass">
-                    @if (column == _shownColumns[0])
+                    aria-colindex="@ColumnIndexOf(column)" style="@PinStyle(column)" class="@column.CellClass">
+                    @if (column == FirstDrawn)
                     {
                         <span data-part="totals-name" class="tb-visually-hidden">@name</span>
                         @(" ")

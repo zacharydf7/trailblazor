@@ -7914,6 +7914,14 @@ public static class ExampleCatalog
                     + "row held in memory. With a `DataProvider`, rows load as they scroll into view, and "
                     + "`ScrollToAsync` finds only a loaded row.",
                     typeof(DataGridVirtualExample)),
+                new("virtual-columns", "Virtual columns", "With `VirtualizeColumns`, the grid draws only the "
+                    + "columns in view and two either side, so it can hold hundreds of columns, such as one for each "
+                    + "day of a year. "
+                    + "Pinned columns are always drawn. Each column takes the width the user resized it to, or else its "
+                    + "`Width` in px or rem, or else 160px, so the grid knows where every column sits before drawing it. "
+                    + "The arrow keys, Home and End reach columns not drawn yet, and screen readers hear each cell's "
+                    + "place among all the columns. It can't be combined with column groups.",
+                    typeof(DataGridColumnVirtualExample)),
                 new("cell-navigation", "Cell navigation", "With `CellNavigation`, the grid is one stop for Tab, and "
                     + "the arrow keys move between its cells. A cell holding just a button, link, checkbox or radio "
                     + "button hands focus to it, and Enter goes into any other cell's fields.",
@@ -8197,6 +8205,8 @@ public static class ExampleCatalog
                 new("save-changes", "The batch bar's Save changes button."),
                 new("discard-changes", "The batch bar's Discard changes button."),
                 new("copy", "A hidden table of the selected range's text, which Ctrl+C copies."),
+                new("column-spacer", "A cell that holds the width of the columns a grid with `VirtualizeColumns` "
+                    + "doesn't draw."),
                 new("select", "The cell that holds a row's checkbox or radio, and its header cell."),
                 new("order", "The header cell of the column that holds the rows' drag handles."),
                 new("handle", "A row's drag handle."),

@@ -5286,3 +5286,13 @@ static Trailblazor.SignatureStroke.operator ==(Trailblazor.SignatureStroke? left
 ~override Trailblazor.SignaturePoint.ToString() -> string
 ~override Trailblazor.TbSignaturePad.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 override Trailblazor.TbSignaturePad.OnParametersSet() -> void
+Trailblazor.Internal.Events.ColumnWindowEventArgs
+Trailblazor.Internal.Events.ColumnWindowEventArgs.ColumnWindowEventArgs() -> void
+Trailblazor.Internal.Events.ColumnWindowEventArgs.First.get -> int
+Trailblazor.Internal.Events.ColumnWindowEventArgs.First.set -> void
+Trailblazor.Internal.Events.ColumnWindowEventArgs.Last.get -> int
+Trailblazor.Internal.Events.ColumnWindowEventArgs.Last.set -> void
+Trailblazor.TbDataGrid<TItem>.VirtualizeColumns.get -> bool
+Trailblazor.TbDataGrid<TItem>.VirtualizeColumns.set -> void
+Trailblazor.Internal.Events.ColumnWindowEventArgs.RemPixels.get -> double
+Trailblazor.Internal.Events.ColumnWindowEventArgs.RemPixels.set -> void

@@ -535,6 +535,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private int ColumnCount => _shownColumns.Count + LeadCount;
 
+    // The cells a row draws, counting the spacers of a grid that draws only the columns in view.
+    private int DrawnCount => _drawnColumns.Count + LeadCount;
+
     private bool HasTotals => _shownColumns.Any(column => column.HasTotal);
 
     private Dictionary<string, object?> TotalsOf(IReadOnlyList<TItem> rows) =>
@@ -906,7 +909,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         builder.AddAttribute(11, "data-part", "detail");
         builder.AddAttribute(12, "class", "tb-data-grid__detail");
         builder.OpenElement(13, "td");
-        builder.AddAttribute(14, "colspan", ColumnCount);
+        builder.AddAttribute(14, "colspan", DrawnCount);
         builder.AddAttribute(15, "data-part", "detail-cell");
         builder.AddAttribute(16, "class", "tb-data-grid__detail-cell");
         builder.AddContent(17, DetailTemplate!(item));
@@ -1485,8 +1488,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         Styles.Join(WidthOf(column) is { } width ? $"width: {width}" : null,
             CanResize(column) ? $"min-inline-size: {column.MinWidth ?? "8rem"}" : null, PinStyle(column));
 
-    private string? WidthOf(TbColumn<TItem> column) => _widths.TryGetValue(column.Key, out var width)
-        ? $"{width.ToString(CultureInfo.InvariantCulture)}px" : column.Width;
+    private string? WidthOf(TbColumn<TItem> column) => VirtualizeColumns
+        ? $"{PixelsOf(column).ToString(CultureInfo.InvariantCulture)}px"
+        : _widths.TryGetValue(column.Key, out var width) ? $"{width.ToString(CultureInfo.InvariantCulture)}px" : column.Width;
 
     private bool CanResize(TbColumn<TItem> column) => ResizableColumns && column.Resizable;
 
@@ -1510,9 +1514,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         _measuring = false;
-        // The script measures only the columns it shows, so a hidden column keeps the width it had.
-        var widths = _widths.Where(width => _arrangedColumns.Any(column => column.Key == width.Key
-            && !_shownColumns.Contains(column))).ToDictionary(width => width.Key, width => width.Value);
+        // The script measures only the columns it draws, so a column it doesn't report, hidden or out of view, keeps
+        // the width it had.
+        var widths = _widths.Where(width => !e.Widths.ContainsKey(width.Key)
+                && _arrangedColumns.Any(column => column.Key == width.Key))
+            .ToDictionary(width => width.Key, width => width.Value);
         foreach (var width in e.Widths.Where(width => _columns.Any(column => column.Key == width.Key)))
         {
             widths[width.Key] = Math.Round(width.Value);
@@ -1578,18 +1584,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private async Task OnColumnOrderAsync(ColumnOrderEventArgs e)
     {
         Telemetry.Used(TelemetryName, "reorder");
-        // The script reports only the columns it shows, so each hidden column keeps its place among them.
-        var moved = e.Order.Where(key => _shownColumns.Any(column => column.Key == key)).ToList();
-        if (moved.Count == _shownColumns.Count && _shownColumns.Count < _arrangedColumns.Count)
-        {
-            var next = new Queue<string>(moved);
-            _order = [.. _arrangedColumns.Select(column =>
-                _shownColumns.Contains(column) ? next.Dequeue() : column.Key)];
-        }
-        else
-        {
-            _order = [.. e.Order.Where(key => _columns.Any(column => column.Key == key))];
-        }
+        // The script reports only the columns it draws, so a column it doesn't report, hidden or out of view, keeps its
+        // place, and the reported ones take the places they held, in their new order.
+        var moved = e.Order.Where(key => _arrangedColumns.Any(column => column.Key == key)).Distinct().ToList();
+        var next = new Queue<string>(moved);
+        _order = [.. _arrangedColumns.Select(column => moved.Contains(column.Key) ? next.Dequeue() : column.Key)];
 
         // Rows draw again only when told, and their cells follow the columns' order.
         _rowVersion++;
@@ -1626,6 +1625,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // renders, once every column has its parameters, since columns reordered in a loop change one at a time.
     private void CheckColumnKeys()
     {
+        if (VirtualizeColumns && _members.Any(member => member is TbColumnGroup<TItem>))
+        {
+            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} that virtualizes its columns can't have "
+                + $"column groups; leave out {nameof(VirtualizeColumns)} or the {nameof(TbColumnGroup<TItem>)}s.");
+        }
+
         if (_columns.GroupBy(column => column.Key).FirstOrDefault(keys => keys.Count() > 1) is { } clash)
         {
             throw new InvalidOperationException($"{nameof(TbDataGrid<TItem>)} has two columns named \"{clash.Key}\"; " +

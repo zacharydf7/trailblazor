@@ -43,6 +43,46 @@ const startOf = cell => [...cell.parentElement.cells].slice(0, cell.cellIndex)
 const cellAt = (row, column) => [...row.cells].find(cell => startOf(cell) + cell.colSpan > column)
     ?? row.cells[row.cells.length - 1];
 
+// A grid that draws only the columns in view keeps its unpinned columns' keys and widths on the table. They start where
+// the first spacer does, after the columns pinned at the start.
+const drawsColumnsInView = table => table.hasAttribute('data-virtual-columns');
+const unpinnedKeys = table => JSON.parse(table.dataset.columnKeys ?? '[]');
+const unpinnedWidths = table => (table.dataset.columnWidths ?? '').split(',').filter(Boolean).map(Number);
+// Measured from the inline start, which is the right edge in a right-to-left grid.
+const unpinnedStart = table => {
+    const spacer = headerRowOf(table).querySelector(':scope > [data-part=column-spacer]');
+    if (!spacer) {
+        return 0;
+    }
+
+    return getComputedStyle(table).direction === 'rtl' ? table.offsetWidth - spacer.offsetLeft - spacer.offsetWidth
+        : spacer.offsetLeft;
+};
+const isSpacer = cell => cell?.dataset.part === 'column-spacer';
+
+// The first and last unpinned columns the box shows, by place among them.
+const columnsInView = (table, scroll) => {
+    const widths = unpinnedWidths(table);
+    // A right-to-left box scrolls into negative values, so the distance from the inline start is what counts.
+    const left = Math.abs(scroll.scrollLeft);
+    const right = left + scroll.clientWidth;
+    let [x, first, last] = [unpinnedStart(table), -1, widths.length - 1];
+    for (let at = 0; at < widths.length; at++) {
+        if (first < 0 && x + widths[at] > left) {
+            first = at;
+        }
+
+        if (x >= right) {
+            last = Math.max(at - 1, 0);
+            break;
+        }
+
+        x += widths[at];
+    }
+
+    return [Math.max(first, 0), last];
+};
+
 // A spreadsheet pastes either tab-separated lines, with a field that holds a tab, line break or quote put in quotes, or
 // an HTML table.
 const tsvField = text => /[\t\r\n"]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
@@ -184,7 +224,43 @@ export function createDataGrid(table, waitForReorder) {
         watch.observe(table.tBodies[0], { childList: true, subtree: true, attributeFilter: ['data-key'] });
     });
 
-    const navigation = createCellNavigation(table, scroll, rowHeight, waitFor);
+    const navigation = createCellNavigation(table, scroll, rowHeight, waitFor, () => reportAfterReveal());
+
+    // The server draws only the unpinned columns the box shows, so tell it which those are whenever they differ from
+    // the ones it last drew.
+    let sentWindow = '';
+    let sentRem = 0;
+    const reportColumnWindow = () => {
+        if (!drawsColumnsInView(table) || unpinnedWidths(table).length === 0 || navigation.revealing()) {
+            return;
+        }
+
+        const [first, last] = columnsInView(table, scroll);
+        const shown = `${first},${last}`;
+        const remPixels = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        if ((shown !== table.dataset.columnWindow && shown !== sentWindow) || remPixels !== sentRem) {
+            sentWindow = shown;
+            sentRem = remPixels;
+            table.dispatchEvent(new CustomEvent('tb-column-window', { bubbles: true,
+                detail: { first, last, remPixels } }));
+        }
+    };
+    let windowFrame = 0;
+    const onHorizontalScroll = () => {
+        cancelAnimationFrame(windowFrame);
+        windowFrame = requestAnimationFrame(reportColumnWindow);
+    };
+    // A reveal draws only the columns around its own, so once it ends the box's window is sent again, even when it's
+    // the one sent last.
+    const reportAfterReveal = () => {
+        sentWindow = '';
+        onHorizontalScroll();
+    };
+    scroll.addEventListener('scroll', onHorizontalScroll, { passive: true });
+    const windowWidths = new MutationObserver(reportColumnWindow);
+    windowWidths.observe(table, { attributes: true, attributeFilter: ['data-column-widths', 'data-virtual-columns'] });
+    const windowResizes = new ResizeObserver(onHorizontalScroll);
+    windowResizes.observe(scroll);
 
     // A resize reports every column's width, so the columns the user didn't touch keep the widths they have.
     const columnHeaders = () => [...headers.cells].filter(cell => cell.dataset.column);
@@ -479,6 +555,10 @@ export function createDataGrid(table, waitForReorder) {
             resizes.disconnect();
             names.disconnect();
             columns.disconnect();
+            scroll.removeEventListener('scroll', onHorizontalScroll);
+            cancelAnimationFrame(windowFrame);
+            windowWidths.disconnect();
+            windowResizes.disconnect();
             navigation.dispose();
             table.removeEventListener('keydown', keepPageFormUnsubmitted);
             table.removeEventListener('keydown', keepEscapeInEdit);
@@ -494,7 +574,7 @@ export function createDataGrid(table, waitForReorder) {
 
 // With cell navigation the grid is one stop for Tab; fields in popups, such as a filter menu, keep their usual keys and
 // Tab order.
-function createCellNavigation(table, scroll, rowHeight, waitFor) {
+function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
     const isGrid = () => isGridRole(table);
     const isVirtual = () => table.hasAttribute('aria-rowcount');
     const originalTabIndex = element => 'tbTab' in element.dataset ? element.dataset.tbTab
@@ -524,6 +604,9 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
     let steering = false;
     let moves = 0;
     let holdsFocus = false;
+    // While a column is scrolled into view, the cell that had focus can leave with the columns behind it; focus waits
+    // for the column rather than falling back to the place it left.
+    let revealing = false;
 
     // A grid that selects cells keeps the cell its range started at; the server marks the cells from it to focus.
     const selectsCells = () => table.hasAttribute('data-cell-selection');
@@ -685,6 +768,10 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             }
 
             for (const cell of row.cells) {
+                if (isSpacer(cell)) {
+                    continue;
+                }
+
                 const controls = controlsOf(cell);
                 for (const control of controls) {
                     if (!('tbTab' in control.dataset)) {
@@ -709,11 +796,27 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
 
             const row = rows.find(line => place.key !== null && line.dataset.key === place.key)
                 ?? rowAt(placeIndex(rows), rows) ?? rows.at(-1);
-            stop = row ? stopOf(cellAt(row, place.column)) : null;
+            // A grid that draws only the columns in view finds the column by key, since its cells' places shift as it
+            // scrolls, and a spacer is never a stop.
+            const keyed = row && drawsColumnsInView(table) && place.columnKey != null
+                ? [...row.cells].find(one => one.dataset.column === place.columnKey) : null;
+            // A column the box scrolled away from mustn't pull focus to whichever column now holds its place.
+            const columnScrolledAway = drawsColumnsInView(table) && place.columnKey != null && !keyed
+                && unpinnedKeys(table).includes(place.columnKey);
+            const placed = row ? keyed ?? cellAt(row, place.column) : null;
+            stop = placed ? stopOf(isSpacer(placed) ? [...row.cells].find(one => !isSpacer(one)) : placed) : null;
             // Focus that fell to the page with its row goes to what takes the row's place. A virtualized grid also drops
             // rows as it scrolls, which leaves nothing in that place and mustn't pull focus back.
             if (document.activeElement === document.body) {
-                refocus = holdsFocus && (!isVirtual() || !!rowAt(placeIndex(rows), rows));
+                refocus = holdsFocus && !revealing && !columnScrolledAway
+                    && (!isVirtual() || !!rowAt(placeIndex(rows), rows));
+                // A window sent before focus moved can be drawn after it and drop the cell just focused; while that
+                // cell's column is still in view, it's drawn again and takes focus back.
+                const at = columnScrolledAway ? unpinnedKeys(table).indexOf(place.columnKey) : -1;
+                const [first, last] = at >= 0 ? columnsInView(table, scroll) : [0, -1];
+                if (holdsFocus && !revealing && row && at >= first && at <= last) {
+                    revealColumn(row, place.columnKey);
+                }
                 holdsFocus = refocus;
             }
         }
@@ -733,14 +836,78 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         }
     });
     observer.observe(table, { childList: true, subtree: true, attributeFilter: ['role', 'disabled'] });
-    updateTabStops();
 
     const focusCell = cell => {
+        ++moves;
         const element = stopOf(cell);
         makeStop(element, cell);
         steering = true;
         element.focus();
         steering = false;
+    };
+
+    // A column not drawn yet is drawn first; focusing it then scrolls it into view, and the window follows the box.
+    const columnCell = (row, key) => key == null ? null : [...row.cells].find(one => one.dataset.column === key);
+    const revealColumn = async (row, key) => {
+        if (key === undefined) {
+            return;
+        }
+
+        const move = ++moves;
+        // Windows sent before this one can still be drawn after it, so the cell counts only once the server has drawn
+        // this window, and in its own row, since a header or filter row can change while no body row does.
+        let drawn = () => columnCell(row, key);
+        if (!drawn()) {
+            const at = unpinnedKeys(table).indexOf(key);
+            table.dispatchEvent(new CustomEvent('tb-column-window', { bubbles: true, detail: { first: at, last: at } }));
+            drawn = () => table.dataset.columnWindow === `${at},${at}` ? columnCell(row, key) : null;
+        }
+
+        revealing = true;
+        const target = drawn() ?? await new Promise(resolve => {
+            const done = () => {
+                watch.disconnect();
+                clearTimeout(timer);
+                resolve(row.isConnected ? drawn() : null);
+            };
+            const watch = new MutationObserver(() => drawn() && done());
+            const timer = setTimeout(done, 5000);
+            watch.observe(row, { childList: true });
+            watch.observe(table, { attributes: true, attributeFilter: ['data-column-window'] });
+        });
+        revealing = false;
+        // A later key, or focus moving out of the grid, wins over a column that was slow to come.
+        const focused = document.activeElement;
+        if (move === moves && (!focused || focused === document.body || table.contains(focused)) && target) {
+            place.column = startOf(target);
+            place.columnKey = key;
+            focusCell(target);
+        }
+
+        revealed();
+    };
+    updateTabStops();
+    // A move onto a spacer goes on to the unpinned column beside the cell it left, or from a pinned or leading cell to
+    // the nearest unpinned column; Home and End go to the first or last.
+    const beyondSpacer = (from, step, edge) => {
+        const keys = unpinnedKeys(table);
+        const at = keys.indexOf(from.dataset.column);
+        return edge ? (step > 0 ? keys.at(-1) : keys[0]) : at >= 0 ? keys[at + step] : step > 0 ? keys[0] : keys.at(-1);
+    };
+    // The cell a move up or down lands on keeps the column, found by its key since the drawn columns may have moved.
+    const landingCell = row => {
+        const keyed = drawsColumnsInView(table) ? columnCell(row, place.columnKey) : null;
+        if (keyed) {
+            return keyed;
+        }
+
+        const cell = cellAt(row, place.column);
+        if (isSpacer(cell)) {
+            revealColumn(row, place.column === 0 ? unpinnedKeys(table)[0] : unpinnedKeys(table).at(-1));
+            return null;
+        }
+
+        return cell;
     };
 
     // A virtualized grid scrolls to a row it hasn't drawn and waits for it; a later key, or focus moving elsewhere,
@@ -759,8 +926,9 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             }
         }
 
-        if (row) {
-            focusCell(cellAt(row, place.column));
+        const cell = row && landingCell(row);
+        if (cell) {
+            focusCell(cell);
         }
 
         return row;
@@ -875,9 +1043,26 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         const row = cell.parentElement;
         const index = indexOf(row, rows);
         const rtl = getComputedStyle(table).direction === 'rtl';
-        const across = cellIndex => {
+        const across = (cellIndex, edge = false) => {
             const next = row.cells[Math.min(Math.max(cellIndex, 0), row.cells.length - 1)];
+            if (isSpacer(next)) {
+                const step = cellIndex > cell.cellIndex ? 1 : -1;
+                const key = beyondSpacer(cell, step, edge);
+                const over = row.cells[next.cellIndex + step];
+                // Past the first or last unpinned column, the move steps over the spacer to a pinned or leading cell.
+                if (key === undefined && over && !isSpacer(over)) {
+                    place.column = startOf(over);
+                    place.columnKey = over.dataset.column ?? null;
+                    focusCell(over);
+                } else {
+                    revealColumn(row, key);
+                }
+
+                return;
+            }
+
             place.column = startOf(next);
+            place.columnKey = next.dataset.column ?? null;
             focusCell(next);
         };
         const page = () => Math.max(1, Math.floor(Math.min(scroll.clientHeight, window.innerHeight)
@@ -982,18 +1167,20 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
                 break;
             case 'Home':
                 place.column = 0;
+                place.columnKey = null;
                 if (control) {
                     moveToRow(1, rows);
                 } else {
-                    across(0);
+                    across(0, true);
                 }
                 break;
             case 'End':
                 place.column = Number.MAX_SAFE_INTEGER;
+                place.columnKey = null;
                 if (control) {
                     moveToRow(rowCount(rows), rows);
                 } else {
-                    across(row.cells.length - 1);
+                    across(row.cells.length - 1, true);
                 }
                 break;
             case 'Enter':
@@ -1049,6 +1236,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             makeStop(stopOf(cell), cell);
             if (!steering) {
                 place.column = startOf(cell);
+                place.columnKey = cell.dataset.column ?? null;
             }
 
             if (extending && bodyCellOf(cell)) {
@@ -1074,11 +1262,15 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
     table.addEventListener('selectstart', keepCellsUnselected);
     return {
         focusCell,
+        // Reporting the box's columns while a column is being drawn for a key press would undo it before the column
+        // takes focus.
+        revealing: () => revealing,
         focusPlace() {
             const rows = linesOf(table);
             const row = rowAt(placeIndex(rows), rows) ?? rows.at(-1);
-            if (row) {
-                focusCell(cellAt(row, place.column));
+            const cell = row && landingCell(row);
+            if (cell) {
+                focusCell(cell);
             }
         },
         dispose() {

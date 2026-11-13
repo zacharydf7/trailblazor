@@ -100,6 +100,8 @@ public sealed class RichTextLinkEventArgs : EventArgs
 [EventHandler("ontbcellscopy", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbsignaturestroke", typeof(SignatureStrokeEventArgs), enableStopPropagation: true,
     enablePreventDefault: true)]
+[EventHandler("ontbcolumnwindow", typeof(ColumnWindowEventArgs), enableStopPropagation: true,
+    enablePreventDefault: true)]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class EventHandlers
 {
