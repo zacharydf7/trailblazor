@@ -238,6 +238,13 @@ public static class ExampleCatalog
         "A disabled or loading button counts as shown but not used. Without a `TelemetryName` it counts nothing.",
     ];
 
+    private const string InlineClickNote = "Blazor matches parameter names regardless of case, so `onclick` binds to "
+        + "the `OnClick` parameter: an inline script such as `onclick=\"reveal()\"` doesn't compile, and an `onclick` "
+        + "string passed through `@attributes` throws at runtime. To run JavaScript on a click before the page is "
+        + "interactive, give the control a `data-` attribute and handle the click from a listener on the document in "
+        + "your own script. Unlike an inline handler, that still works under a Content Security Policy that blocks "
+        + "inline scripts.";
+
     // What a checkbox reports, which a switch shares.
     private static readonly string[] CheckboxTelemetry =
     [
@@ -1056,6 +1063,7 @@ public static class ExampleCatalog
             [
                 "It renders as the same native element. A link already works, and a submit button posts its form. "
                     + "`OnClick` starts working once the page is interactive.",
+                InlineClickNote,
             ],
             Notes =
             [
@@ -1152,6 +1160,7 @@ public static class ExampleCatalog
             [
                 "It renders a native button, or a link with an `Href`. The link already works, and `OnClick` starts "
                     + "working once the page is interactive.",
+                InlineClickNote,
             ],
             Target = new("button", "Add"),
             Blocks = ["tb-button", "tb-icon-button"],
@@ -8953,6 +8962,7 @@ public static class ExampleCatalog
             BeforeInteractive =
             [
                 "A link with an `Href` already works. `OnClick` starts working once the page is interactive.",
+                InlineClickNote,
             ],
             Target = new("link", "theming guide"),
             Blocks = ["tb-link"],
