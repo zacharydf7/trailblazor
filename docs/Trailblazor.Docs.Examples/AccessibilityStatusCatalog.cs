@@ -99,6 +99,7 @@ public static class AccessibilityStatusCatalog
         new("accordion", Tested, NotYet, Tested),
         new("tree-view", Tested, Tested, Tested),
         new("data-grid", Tested, NotYet, NotYet),
+        new("tree-grid", Tested, NotYet, NotYet),
         new("table", None, NotYet, None),
         new("breadcrumbs", None, None, None),
         new("stepper", Tested, Tested, None),

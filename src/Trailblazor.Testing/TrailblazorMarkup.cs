@@ -1152,6 +1152,23 @@ public sealed class TbGridDriver
     public Task ClickRowAsync(string cell) =>
         Row(cell).TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
 
+    /// <summary>Opens the tree grid row with a cell whose text is exactly this, with its button, so its child rows
+    /// show. A row already open stays open.</summary>
+    public Task ExpandAsync(string row) => SetExpandedAsync(row, true);
+
+    /// <summary>Closes the tree grid row with a cell whose text is exactly this, with its button, so its child rows
+    /// hide. A row already closed stays closed.</summary>
+    public Task CollapseAsync(string row) => SetExpandedAsync(row, false);
+
+    private Task SetExpandedAsync(string row, bool expanded)
+    {
+        var found = Row(row);
+        var toggle = found.QuerySelector("[data-part=tree-toggle]") ?? throw new InvalidOperationException(
+            $"The row \"{row}\" has no child rows to show; a tree grid's row needs children from its ChildrenSelector.");
+        return found.GetAttribute("aria-expanded") == (expanded ? "true" : "false") ? Task.CompletedTask
+            : toggle.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
     /// <summary>Moves the row with a cell whose text is exactly <paramref name="row"/> to <paramref name="index"/>
     /// among all the rows, on every page, through its handle's menu as a user would: Move to start or Move to end for
     /// the first or last place, else Move up or Move down a place at a time, so <c>CanMoveRow</c> and

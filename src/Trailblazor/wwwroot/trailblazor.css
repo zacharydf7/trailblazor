@@ -7315,7 +7315,8 @@
         text-align: center;
     }
 
-    .tb-data-grid__detail-button {
+    .tb-data-grid__detail-button,
+    .tb-data-grid__tree-toggle {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -7327,6 +7328,16 @@
         background: none;
         color: inherit;
         cursor: pointer;
+    }
+
+    /* A tree row's first cell sets its toggle in by the row's depth; a row without children keeps the toggle's space. */
+    .tb-data-grid__tree {
+        display: inline-flex;
+        align-items: center;
+        min-inline-size: 24px;
+        margin-inline-start: calc(var(--tb-data-grid-tree-level, 0) * var(--tb-space-5));
+        margin-inline-end: var(--tb-space-1);
+        vertical-align: middle;
     }
 
     .tb-data-grid__detail-cell {
@@ -7427,30 +7438,35 @@
     }
 
     .tb-data-grid__group-toggle:hover,
-    .tb-data-grid__detail-button:hover {
+    .tb-data-grid__detail-button:hover,
+    .tb-data-grid__tree-toggle:hover {
         background: var(--tb-color-hover);
     }
 
     .tb-data-grid__group-toggle:focus-visible,
-    .tb-data-grid__detail-button:focus-visible {
+    .tb-data-grid__detail-button:focus-visible,
+    .tb-data-grid__tree-toggle:focus-visible {
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
         outline-offset: var(--tb-focus-ring-offset);
     }
 
     .tb-data-grid__group-chevron,
-    .tb-data-grid__detail-chevron {
+    .tb-data-grid__detail-chevron,
+    .tb-data-grid__tree-chevron {
         transition: transform var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
     }
 
     /* A closed group's or row's chevron points toward the reading direction's end; an open one points down either
        way. */
     .tb-data-grid__group-chevron:dir(rtl),
-    .tb-data-grid__detail-chevron:dir(rtl) {
+    .tb-data-grid__detail-chevron:dir(rtl),
+    .tb-data-grid__tree-chevron:dir(rtl) {
         transform: scaleX(-1);
     }
 
     .tb-data-grid__group-toggle[aria-expanded="true"] > .tb-data-grid__group-chevron,
-    .tb-data-grid__detail-button[aria-expanded="true"] > .tb-data-grid__detail-chevron {
+    .tb-data-grid__detail-button[aria-expanded="true"] > .tb-data-grid__detail-chevron,
+    .tb-data-grid__tree-toggle[aria-expanded="true"] > .tb-data-grid__tree-chevron {
         transform: rotate(90deg);
     }
 

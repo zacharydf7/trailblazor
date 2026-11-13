@@ -63,7 +63,7 @@
          role="@(ScrollIsTabStop && !string.IsNullOrEmpty(AriaLabel) ? "region" : null)"
          aria-label="@(ScrollIsTabStop ? AriaLabel : null)"
          tabindex="@(ScrollIsTabStop ? 0 : null)">
-        <table @ref="_table" role="@(IsGrid ? "grid" : null)" aria-label="@AriaLabel"
+        <table @ref="_table" role="@(IsGrid ? ChildrenSelector is null ? "grid" : "treegrid" : null)" aria-label="@AriaLabel"
                data-count="@(CanReorder ? _total : null)"
                aria-multiselectable="@(IsGrid && SelectionMode == SelectionMode.Multiple ? "true" : null)"
                data-selection="@(SelectionMode == SelectionMode.Multiple ? "multiple" : null)"
@@ -298,10 +298,14 @@
 
 @code {
     private RenderFragment Row(TItem item, object key, bool selected, int at, string? rowClass, string? label,
-        bool expanded) =>
+        bool expanded, TreePlace? tree) =>
         @<tr @ref="_rowRefs[key]" data-part="row" data-key="@IdOf(item)" data-selected="@(selected ? "" : null)"
              data-index="@(CanReorder ? at : null)"
              aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" aria-selected="@AriaSelected(selected)"
+             aria-level="@tree?.Level" aria-posinset="@tree?.Position" aria-setsize="@tree?.SetSize"
+             aria-expanded="@(tree?.Open is { } open ? open ? "true" : "false" : null)"
+             data-parent-row="@(Virtualize && tree is { ParentIndex: >= 0 } place ? HeaderRowCount + place.ParentIndex + 1
+                                 : null)"
              data-tb-focus-root="@(EditMode == GridEditMode.Row && RowEditOf(key) is not null ? "" : null)"
              @ontbfocusleave="@((EditMode == GridEditMode.Row && RowEditOf(key) is { } leaving ? LeftHandler(leaving)
                                  : null)!)"
@@ -343,10 +347,16 @@
             @foreach (var column in _shownColumns)
             {
                 var editable = CanEdit(column);
-                <td data-column="@column.Key" data-pinned="@PinSide(column)" style="@PinStyle(column)"
-                    data-editable="@(editable ? "" : null)" class="@ClassNames.Join(column.CellClass, Classes?.Cell)"
+                var treeCell = tree is not null && column == _shownColumns[0];
+                <td data-column="@column.Key" data-part="@(treeCell ? "tree-cell" : null)" data-pinned="@PinSide(column)"
+                    style="@PinStyle(column)" data-editable="@(editable ? "" : null)"
+                    class="@ClassNames.Join(column.CellClass, Classes?.Cell)"
                     @ondblclick="@((editable ? _startEdit.For((key, column)) : null)!)"
                     @ontbeditstart="@((editable ? _startEdit.For((key, column)) : null)!)">
+                    @if (treeCell)
+                    {
+                        @TreeToggle(tree!.Value, key, label ?? LabelOf(item))
+                    }
                     @if (RowEditOf(key) is { } edit && edit.CellOf(column) is { } cell)
                     {
                         @Editor(edit, cell)
@@ -366,6 +376,20 @@
                 </td>
             }
         </tr>;
+
+    // A tree row's first cell is set in by its depth and starts with a button for the rows under it, or a blank space
+    // when it has none.
+    private RenderFragment TreeToggle(TreePlace tree, object key, string label) =>
+        @<span class="tb-data-grid__tree" style="--tb-data-grid-tree-level: @(tree.Level - 1)">
+            @if (tree.Open is { } open)
+            {
+                <button type="button" data-part="tree-toggle" aria-expanded="@(open ? "true" : "false")"
+                        aria-label="@Format(TbStrings.DataGridRowsUnder, label)" class="tb-data-grid__tree-toggle"
+                        @onclick="_toggleChildren.For(key)" @ondblclick:stopPropagation>
+                    <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__tree-chevron" />
+                </button>
+            }
+        </span>;
 
     // A row's edit offers its own Save and Cancel, so a pointer can cancel it too, and Escape on them cancels. Why the
     // app turned the row down shows beside them, since it may not concern any one field.

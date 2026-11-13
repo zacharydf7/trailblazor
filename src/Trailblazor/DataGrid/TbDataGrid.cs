@@ -33,6 +33,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private List<string> _groups = [];
     // A group is open until the user closes it.
     private readonly HashSet<GroupKey> _closedGroups = [];
+    // A tree grid's open rows, by key. While filters apply, a row with matches under it is open unless the user closed
+    // it, and new filters open every such row again.
+    private readonly Dictionary<object, TItem> _openParents = [];
+    private IReadOnlyCollection<TItem>? _openParentsFromParent;
+    private readonly HashSet<object> _closedWhileFiltered = [];
+    private object? _closedWhileFilteredFor;
+    // Each tree row's parent, by key, so a row can be shown by opening the rows it's nested under.
+    private readonly Dictionary<object, TItem> _parentOf = [];
+    private int _treeVersion;
     // How many rows the filters leave; unlike _total, it doesn't count group headings.
     private int _matched;
     private int _total;
@@ -83,6 +92,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private readonly ItemHandlers<object, Func<RowExtendEventArgs, Task>> _rowExtend;
     private readonly ItemHandlers<object, Func<Task>> _choose;
     private readonly ItemHandlers<object, Func<Task>> _toggleDetail;
+    private readonly ItemHandlers<object, Func<Task>> _toggleChildren;
     private readonly Dictionary<object, TItem> _expanded = [];
     private readonly string _detailPrefix = $"tb-grid-detail-{Guid.NewGuid():N}";
     private IReadOnlyCollection<TItem>? _expandedFromParent;
@@ -106,6 +116,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _rowExtend = new(key => args => OnRowAsync(key, item => OnRowExtendedAsync(item, args)), byValue: true);
         _choose = new(key => () => OnRowAsync(key, ChooseAsync), byValue: true);
         _toggleDetail = new(key => () => OnRowAsync(key, ToggleDetailAsync), byValue: true);
+        _toggleChildren = new(key => () => OnRowAsync(key, ToggleChildrenAsync), byValue: true);
         _startEdit = new(cell => () => OnRowAsync(cell.Item1, item => StartEditAsync(item, cell.Item2)));
         _toggleGroup = new(key => () => ToggleGroup(key), byValue: true);
         _applyOnEnter = new(column => args => ApplyOnEnterAsync(column, args));
@@ -249,6 +260,24 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <summary>Raised when the user opens or closes a row's details.</summary>
     [Parameter]
     public EventCallback<IReadOnlyCollection<TItem>> ExpandedItemsChanged { get; set; }
+
+    /// <summary>Gives a row's child rows, which makes the grid a tree grid: <see cref="Items"/> are the top rows, and a
+    /// row with children starts its first column with a button that shows or hides them. Rows sort among their
+    /// siblings, and filters show the rows that match along with the rows they're nested under, opened to show them.
+    /// A tree grid takes its rows from <see cref="Items"/>, and can't group, move or page them.</summary>
+    [Parameter]
+    public Func<TItem, IEnumerable<TItem>?>? ChildrenSelector { get; set; }
+
+    /// <summary>The rows of a tree grid whose children show; every row starts closed. Bind it with
+    /// <c>@bind-ExpandedParents</c> to open or close rows from code and hear when the user does.</summary>
+    [Parameter]
+    public IReadOnlyCollection<TItem>? ExpandedParents { get; set; }
+
+    /// <summary>Raised when the user opens or closes a tree grid's row, or <see cref="ScrollToAsync"/> opens rows to
+    /// show one. Rows opened or closed while filters apply stay that way only until the filters change, so they don't
+    /// raise it.</summary>
+    [Parameter]
+    public EventCallback<IReadOnlyCollection<TItem>> ExpandedParentsChanged { get; set; }
 
     /// <summary>How many rows a page holds. Null, the default, shows every row with no pages.</summary>
     [Parameter]
@@ -459,8 +488,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private string? BandPinStyle(List<TbColumn<TItem>> columns) =>
         PinStyle(columns[0].Pinned == ColumnPin.End ? columns[^1] : columns[0]);
 
-    // Editing a cell, as much as moving between them, makes the table an ARIA grid.
-    private bool IsGrid => CellNavigation || _columns.Any(CanEdit);
+    // Editing a cell or opening a tree's rows, as much as moving between cells, makes the table an ARIA grid.
+    private bool IsGrid => CellNavigation || ChildrenSelector is not null || _columns.Any(CanEdit);
 
     private bool CanEdit(TbColumn<TItem> column) => column.Editor != ColumnEditor.None
         && (HasEditHandler || column.CanSet);
@@ -514,7 +543,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         where column.Key == key && column.CanGroup
         select column;
 
-    private bool HasGroupBy => Items is not null && _columns.Any(column => column.CanGroup);
+    private bool HasGroupBy => Items is not null && ChildrenSelector is null && _columns.Any(column => column.CanGroup);
 
     // A filter on a column that isn't there, or can't filter, is kept but hides no rows.
     private IEnumerable<(GridFilter Filter, TbColumn<TItem> Column)> AppliedFilters =>
@@ -544,6 +573,16 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             throw new InvalidOperationException($"{nameof(TbDataGrid<TItem>)} groups only rows held in " +
                 $"{nameof(Items)}, not rows from a {nameof(DataProvider)}.");
+        }
+
+        // A tree's rows follow their parents, which a provider's pages, groups or moved rows would break apart, and a
+        // page could start with a row whose parent is on the page before.
+        if (ChildrenSelector is not null && (DataProvider is not null || Groups is { Count: > 0 } || OnRowMove.HasDelegate
+            || PageSize is not null))
+        {
+            throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} with a {nameof(ChildrenSelector)} " +
+                $"takes its rows from {nameof(Items)}, and can't group them, move them or split them into pages; set " +
+                $"{nameof(Virtualize)} to show many rows.");
         }
 
         // A virtualized grid numbers its rows for screen readers, and a detail row has no number of its own.
@@ -611,6 +650,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         TakeSelectionFromParent();
         TakeExpandedFromParent();
+        TakeOpenParentsFromParent();
         await ShowAsync(force: false);
     }
 
@@ -724,7 +764,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     public async Task ScrollToAsync(TItem item)
     {
         var key = KeyOf(item);
-        var opened = Items is not null && OpenGroupsOf(item);
+        var opened = Items is not null && (ChildrenSelector is null ? OpenGroupsOf(item) : await OpenParentsOfAsync(item));
         if (Virtualize)
         {
             // Virtualize draws the opened groups' lines only once the grid renders, so the scroll waits for it.
@@ -787,7 +827,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
         else
         {
-            AddRow(builder, line.Item, line.Index);
+            AddRow(builder, line.Item, line.Index, line.Tree);
         }
     }
 
@@ -802,7 +842,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         builder.CloseComponent();
     }
 
-    private void AddRow(RenderTreeBuilder builder, TItem item, int at)
+    private void AddRow(RenderTreeBuilder builder, TItem item, int at, TreePlace? tree = null)
     {
         var key = KeyOf(item);
         var selected = IsSelected(item);
@@ -819,8 +859,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             _edit is { } edit && Equals(edit.Key, key) ? (edit, _editVersion) : null);
         var expanded = HasDetails && IsExpanded(item);
         builder.AddComponentParameter(7, nameof(GridRow<TItem>.Expanded), expanded);
-        builder.AddComponentParameter(8, nameof(GridRow<TItem>.ChildContent),
-            Row(item, key, selected, at, rowClass, label, expanded));
+        builder.AddComponentParameter(8, nameof(GridRow<TItem>.Tree), tree);
+        builder.AddComponentParameter(9, nameof(GridRow<TItem>.ChildContent),
+            Row(item, key, selected, at, rowClass, label, expanded, tree));
         builder.CloseComponent();
         if (expanded)
         {
@@ -1195,9 +1236,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         public string? Error { get; set; }
     }
 
-    // A line the grid draws: an item's row, a group's heading or a group's totals, with its place among all the lines.
+    // A line the grid draws: an item's row, a group's heading or a group's totals, with its place among all the lines,
+    // and a tree row's place in the tree.
     private readonly record struct GridLine(TItem Item, int Index, GroupHeading? Group = null,
-        GroupTotalsLine? Totals = null)
+        GroupTotalsLine? Totals = null, TreePlace? Tree = null)
     {
         public bool IsRow => Group is null && Totals is null;
     }
@@ -1736,9 +1778,19 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return;
         }
 
-        var arranged = Arranged().ToList();
+        List<TItem> arranged;
+        List<GridLine> lines;
+        if (ChildrenSelector is null)
+        {
+            arranged = Arranged().ToList();
+            lines = Lines(arranged);
+        }
+        else
+        {
+            (arranged, lines) = TreeLines();
+        }
+
         _totals = TotalsOf(arranged);
-        var lines = Lines(arranged);
         _matched = arranged.Count;
         _total = lines.Count;
         // A virtualized row shows its place among the lines, which may have moved, so the rows draw again.
@@ -1753,7 +1805,161 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     }
 
     private object ArrangedFor =>
-        (Items, _sorts, _filters, _groups, _page, _pageSize, _columnVersion, GroupTotals && HasTotals);
+        (Items, _sorts, _filters, _groups, _page, _pageSize, _columnVersion, GroupTotals && HasTotals, _treeVersion);
+
+    // A tree grid's lines, where each open row's children follow it. The rows that match the filters are counted and
+    // totaled at every level.
+    private (List<TItem> Matched, List<GridLine> Lines) TreeLines()
+    {
+        var filtering = AppliedFilters.Any();
+        if (!ReferenceEquals(_closedWhileFilteredFor, _filters))
+        {
+            _closedWhileFilteredFor = _filters;
+            _closedWhileFiltered.Clear();
+        }
+
+        List<TItem> matched = [];
+        List<GridLine> lines = [];
+        void Add(List<TreeNode> nodes, int level, int parent)
+        {
+            for (var at = 0; at < nodes.Count; at++)
+            {
+                var node = nodes[at];
+                var key = KeyOf(node.Item);
+                bool? open = node.Children.Count == 0 ? null
+                    : filtering ? !_closedWhileFiltered.Contains(key) : _openParents.ContainsKey(key);
+                var index = lines.Count;
+                lines.Add(new(node.Item, index, Tree: new(level, at + 1, nodes.Count, open, Virtualize ? parent : -1)));
+                if (open == true)
+                {
+                    Add(node.Children, level + 1, index);
+                }
+            }
+        }
+
+        Add(TreeOf(Matcher(filtered: true), matched), 1, -1);
+        return (matched, lines);
+    }
+
+    // A tree row with the rows under it that show: all of them, or with filters, those that match or have matches
+    // under them.
+    private sealed record TreeNode(TItem Item, List<TreeNode> Children);
+
+    // Walks the whole tree, so every row's parent is known and a key seen twice, as in a row under itself, is caught.
+    private List<TreeNode> TreeOf(Func<TItem, bool> matches, List<TItem> matched)
+    {
+        _parentOf.Clear();
+        HashSet<object> seen = [];
+        List<TreeNode> Level(IEnumerable<TItem> items, bool top, TItem parent)
+        {
+            List<TreeNode> nodes = [];
+            foreach (var item in Sorted(items))
+            {
+                var key = KeyOf(item);
+                if (!seen.Add(key))
+                {
+                    throw new InvalidOperationException($"{nameof(TbDataGrid<TItem>)} has two rows with the same key, " +
+                        $"or a row under itself; give it a {nameof(KeySelector)} that gives each item a different key, " +
+                        $"and make sure no row's {nameof(ChildrenSelector)} leads back to that row.");
+                }
+
+                if (!top)
+                {
+                    _parentOf[key] = parent;
+                }
+
+                var match = matches(item);
+                if (match)
+                {
+                    matched.Add(item);
+                }
+
+                var children = Level(ChildrenSelector!(item) ?? [], top: false, item);
+                if (match || children.Count > 0)
+                {
+                    nodes.Add(new(item, children));
+                }
+            }
+
+            return nodes;
+        }
+
+        return Level(Items ?? [], top: true, default!);
+    }
+
+    private static IEnumerable<TItem> Flattened(List<TreeNode> nodes) =>
+        nodes.SelectMany(node => Flattened(node.Children).Prepend(node.Item));
+
+    private void TakeOpenParentsFromParent()
+    {
+        if (!ReferenceEquals(ExpandedParents, _openParentsFromParent))
+        {
+            _openParentsFromParent = ExpandedParents;
+            _openParents.Clear();
+            foreach (var item in ExpandedParents ?? [])
+            {
+                _openParents[KeyOf(item)] = item;
+            }
+
+            _treeVersion++;
+        }
+    }
+
+    private async Task ToggleChildrenAsync(TItem item)
+    {
+        var key = KeyOf(item);
+        var filtering = AppliedFilters.Any();
+        bool open;
+        if (filtering)
+        {
+            open = _closedWhileFiltered.Remove(key);
+            if (!open)
+            {
+                _closedWhileFiltered.Add(key);
+            }
+        }
+        else
+        {
+            open = !_openParents.Remove(key);
+            if (open)
+            {
+                _openParents[key] = item;
+            }
+        }
+
+        Telemetry.Used(TelemetryName, open ? "expand" : "collapse");
+        Arrange(force: true);
+        if (!filtering)
+        {
+            await ExpandedParentsChanged.InvokeAsync([.. _openParents.Values]);
+        }
+    }
+
+    // A tree row under closed rows is shown before the grid goes to it.
+    private async Task<bool> OpenParentsOfAsync(TItem item)
+    {
+        var filtering = AppliedFilters.Any();
+        var opened = false;
+        var key = KeyOf(item);
+        while (_parentOf.TryGetValue(key, out var parent))
+        {
+            key = KeyOf(parent);
+            opened |= filtering ? _closedWhileFiltered.Remove(key) : _openParents.TryAdd(key, parent);
+        }
+
+        if (!opened)
+        {
+            return false;
+        }
+
+        Arrange(force: true);
+        if (!filtering)
+        {
+            await ExpandedParentsChanged.InvokeAsync([.. _openParents.Values]);
+        }
+
+        return true;
+    }
 
     // Each group starts with its heading; an open group then lists its inner groups, or its rows in their sorted
     // order. Groups sort by their first row's value, not their key, since a formatted column's key is text.
@@ -1892,6 +2098,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _rowExtend.KeepOnly(shown.Contains);
         _choose.KeepOnly(shown.Contains);
         _toggleDetail.KeepOnly(shown.Contains);
+        _toggleChildren.KeepOnly(shown.Contains);
         _startEdit.KeepOnly(cell => shown.Contains(cell.Item1) && _columns.Contains(cell.Item2));
         var groups = lines.Where(line => line.Group is not null).Select(line => line.Group!.Key).ToHashSet();
         _toggleGroup.KeepOnly(groups.Contains);
@@ -1902,14 +2109,20 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
     }
 
-    private IEnumerable<TItem> Arranged(bool filtered = true)
+    private IEnumerable<TItem> Arranged(bool filtered = true) => Sorted((Items ?? []).Where(Matcher(filtered)));
+
+    private Func<TItem, bool> Matcher(bool filtered)
     {
         var filters = filtered ? AppliedFilters.ToList() : [];
-        IEnumerable<TItem> items = (Items ?? []).Where(item => filters.All(applied =>
+        return item => filters.All(applied =>
         {
             var value = applied.Column.FilterValueOf(item);
             return FilterMatch.Matches(value, () => applied.Column.TextOf(value), applied.Filter);
-        }));
+        });
+    }
+
+    private IEnumerable<TItem> Sorted(IEnumerable<TItem> items)
+    {
         IOrderedEnumerable<TItem>? sorted = null;
         foreach (var sort in _sorts)
         {
@@ -2046,14 +2259,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private Task StateChangedAsync() => StateChanged.InvokeAsync(CurrentState);
 
-    // A virtualized grid has no pages, so a state's page and page size don't apply to it.
+    // A virtualized grid has no pages, so a state's page and page size don't apply to it. A tree grid can't page
+    // either, so it ignores the page size, which would turn paging on.
     private void TakeState(GridState state)
     {
         TakeSorts(state.Sorts);
         TakeFilters(state.Filters);
         TakeGroups(state.Groups);
         _page = Virtualize ? 1 : Math.Max(1, state.Page);
-        _pageSize = !Virtualize && state.PageSize is > 0 ? state.PageSize : null;
+        _pageSize = !Virtualize && ChildrenSelector is null && state.PageSize is > 0 ? state.PageSize : null;
         if (!GridState.SameWidths(state.ColumnWidths, _widths))
         {
             _widths = new(state.ColumnWidths);

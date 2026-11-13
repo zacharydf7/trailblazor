@@ -1,0 +1,44 @@
+@page "/tree-grid"
+
+@* A tree grid with its open rows read out, the same grid right to left, a virtualized one whose open row holds more
+   children than it draws, and one whose first column is editable. *@
+<TbDataGrid TItem="Folder" Items="Folders" AriaLabel="Folders" KeySelector="folder => folder.Name"
+            ChildrenSelector="folder => folder.Children" @bind-ExpandedParents="_open">
+    <TbColumn Field="folder => folder.Name" />
+    <TbColumn Field="folder => folder.Size" />
+</TbDataGrid>
+<output aria-label="Open rows">@string.Join(", ", _open.Select(folder => folder.Name).Order())</output>
+<div dir="rtl">
+    <TbDataGrid TItem="Folder" Items="Folders" AriaLabel="Folders right to left" KeySelector="folder => folder.Name"
+                ChildrenSelector="folder => folder.Children">
+        <TbColumn Field="folder => folder.Name" />
+        <TbColumn Field="folder => folder.Size" />
+    </TbDataGrid>
+</div>
+<TbDataGrid TItem="Folder" Items="Big" AriaLabel="Many files" KeySelector="folder => folder.Name"
+            ChildrenSelector="folder => folder.Children" Virtualize Height="12rem" ExpandedParents="Big">
+    <TbColumn Field="folder => folder.Name" />
+    <TbColumn Field="folder => folder.Size" />
+</TbDataGrid>
+
+<TbDataGrid TItem="Folder" Items="Folders" AriaLabel="Editable folders" KeySelector="folder => folder.Name"
+            ChildrenSelector="folder => folder.Children" OnCellEdit="(GridCellEdit<Folder> _) => { }">
+    <TbColumn Field="folder => folder.Name" Editable />
+    <TbColumn Field="folder => folder.Size" />
+</TbDataGrid>
+
+@code {
+    private IReadOnlyCollection<Folder> _open = [];
+
+    public sealed record Folder(string Name, int Size, IReadOnlyList<Folder>? Children = null);
+
+    private static readonly Folder[] Folders =
+    [
+        new("Docs", 5, [new("Notes", 3), new("Plans", 9, [new("Draft", 1)])]),
+        new("Photos", 20, [new("Trips", 12)]),
+        new("Music", 4),
+    ];
+
+    private static readonly Folder[] Big =
+        [new("Archive", 200, [.. Enumerable.Range(1, 200).Select(at => new Folder($"File {at}", at))])];
+}

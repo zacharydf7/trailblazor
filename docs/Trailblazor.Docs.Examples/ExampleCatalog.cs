@@ -7293,9 +7293,10 @@ public static class ExampleCatalog
             [
                 "To show and hide sections of content on a page, use an [accordion](components/accordion).",
                 "For a flat list of options to pick from, use a [list box](components/listbox).",
-                "For rows with several columns, use a [data grid](components/data-grid).",
+                "For rows with several columns, use a [data grid](components/data-grid), or a "
+                    + "[tree grid](components/tree-grid) when they nest.",
             ],
-            Related = ["accordion", "listbox", "data-grid", "menu"],
+            Related = ["accordion", "listbox", "data-grid", "tree-grid", "menu"],
             Pattern = new("tree view", "https://www.w3.org/WAI/ARIA/apg/patterns/treeview/"),
             Sections =
             [
@@ -7523,9 +7524,10 @@ public static class ExampleCatalog
             [
                 "For a few facts people only read, use a [table](components/table).",
                 "For a short set of items that each have their own actions, use a [list](components/list).",
-                "For items nested inside each other, use a [tree view](components/tree-view).",
+                "For items nested inside each other, use a [tree view](components/tree-view), or a "
+                    + "[tree grid](components/tree-grid) when they share columns of data.",
             ],
-            Related = ["table", "list", "tree-view", "pagination"],
+            Related = ["table", "list", "tree-view", "tree-grid", "pagination"],
             Sections =
             [
                 new("sort-page-and-select", "Sort, page and select", "Click a header to sort by it: the next click "
@@ -7860,6 +7862,8 @@ public static class ExampleCatalog
                 new("detail-toggle", "A row's button that opens and closes its details."),
                 new("detail", "The row of details under a row whose details are open."),
                 new("detail-cell", "The one cell of a detail row, which holds the `DetailTemplate`."),
+                new("tree-cell", "A tree grid row's first cell, which holds its button and is set in by its depth."),
+                new("tree-toggle", "A tree grid row's button that shows and hides its child rows."),
                 new("total-label", "The name of a total, such as \"Sum\", before its value."),
                 new("totals-name",
                     "A totals row's name for screen readers, hidden at the start of the first column's cell."),
@@ -7957,6 +7961,102 @@ public static class ExampleCatalog
                     + "`keyboard` made it.",
                 "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "
                     + "value, page, group, rows or width were used, or what value an edit saved, is never recorded.",
+            ],
+        },
+        new("tree-grid", "Tree grid", ExampleCategory.Content,
+            "A data grid whose rows hold child rows, which open and close under them.")
+        {
+            RightToLeftKeys = "On a row's first cell, Left opens the row and Right closes it or goes to its parent; "
+                + "elsewhere Left moves to the next cell and Right to the previous one.",
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for nested items that share columns of data, such as regions, their parks and the parks' "
+                    + "trails, each with a length.",
+            ],
+            WhenNotToUse =
+            [
+                "For nested items without columns that people open and pick from, use a "
+                    + "[tree view](components/tree-view).",
+                "For flat rows sorted into groups by a column's value, group a [data grid](components/data-grid)'s "
+                    + "rows.",
+            ],
+            Related = ["data-grid", "tree-view"],
+            Pattern = new("treegrid", "https://www.w3.org/WAI/ARIA/apg/patterns/treegrid/"),
+            Sections =
+            [
+                new("nested-rows", "Nested rows", "`ChildrenSelector` gives a row's children, which makes a "
+                    + "`TbDataGrid` a tree grid: `Items` are the top rows, and a row with children starts its first "
+                    + "column with a button that shows or hides them. Rows sort among their siblings, and a filter "
+                    + "shows the rows that match along with the rows they're nested under, opened to show them; "
+                    + "rows closed while a filter applies open again when the filters change. Totals and the count of "
+                    + "rows shown cover every row that matches, at every level, and an export lists them all in tree "
+                    + "order. Everything else a data grid does works too, except grouping rows, moving them, paging "
+                    + "them and loading them from a `DataProvider`; `Virtualize` shows a long tree.",
+                    typeof(TreeGridExample)),
+                new("open-rows", "Open rows from code", "`@bind-ExpandedParents` holds the rows whose children show. "
+                    + "Every row starts closed: set it to open rows, or to an empty list to close them all. "
+                    + "`ScrollToAsync` opens the rows a row is nested under before it scrolls to it.",
+                    typeof(TreeGridOpenExample)),
+            ],
+            Api = [typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(DataGridClasses)],
+            Keyboard =
+            [
+                new(["Tab"], "Reaches the grid once.") { When = "In the grid" },
+                new(["Up", "Down", "Left", "Right"], "Moves between cells.") { When = "In the grid" },
+                new(["Right"], "Opens a closed row; on an open row or one without children, moves to the next cell.")
+                    { When = "On a row's first cell" },
+                new(["Left"], "Closes an open row; on a closed row or one without children, goes to the row it's "
+                    + "under, or on a top row moves to the previous cell.") { When = "On a row's first cell" },
+                new(["Enter", "Space"], "Opens or closes the row.") { When = "On a row's button" },
+                new(["Home", "End"], "Goes to the ends of the row.") { When = "In the grid" },
+                new(["Ctrl+Home", "Ctrl+End"], "Goes to the first or last cell.") { When = "In the grid" },
+                new(["Page Up", "Page Down"], "Moves by a screenful.") { When = "In the grid" },
+            ],
+            Labeling =
+            [
+                "It is a native `table` with the ARIA `treegrid` role, named by `AriaLabel`.",
+                "A row's button is named \"Rows under\" followed by the row's label, which is its `RowLabel` or else "
+                    + "the text of the first column that has any.",
+            ],
+            Announcements =
+            [
+                "Each row says its depth, its place among its siblings and, when it has children, whether it is open, "
+                    + "through `aria-level`, `aria-posinset`, `aria-setsize` and `aria-expanded`.",
+            ],
+            Accessibility =
+            [
+                "A row's button reports its state with `aria-expanded`, as its row does, and focus stays on it as the "
+                    + "rows under it show or hide.",
+                "Rows are set in by their depth, and a row without children keeps the button's space, so names line "
+                    + "up by level.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "The top rows render as a table, and rows that `ExpandedParents` opens show their children, but rows "
+                    + "open and close only once the page is interactive.",
+            ],
+            Target = new("treegrid", "Trails by region"),
+            Blocks = ["tb-data-grid"],
+            DataParts =
+            [
+                new("tree-cell", "A row's first cell, which holds its button and is set in by its depth."),
+                new("tree-toggle", "A row's button that shows and hides its child rows."),
+            ],
+            TestingTips =
+            [
+                "In Playwright, `page.Tb().Grid(\"Trails by region\")` from `Trailblazor.Testing.Playwright` opens a row "
+                    + "with `ExpandAsync(\"North ridge\")` and closes it with `CollapseAsync`, each waiting for the row's "
+                    + "`aria-expanded`. In bUnit, `cut.Tb().Grid(\"Trails by region\")` has the same two.",
+                "Rows carry `aria-level`, from 1 for a top row, so a test can read a row's depth, and the rest of the "
+                    + "[data grid's](components/data-grid#testing) helpers work as they do there.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, it counts `trailblazor.control.used` with `trailblazor.action` `expand` or "
+                    + "`collapse` each time the user opens or closes a row, besides the data grid's other actions. "
+                    + "Rows `ScrollToAsync` opens aren't counted, and which row was opened or closed is never recorded.",
             ],
         },
         new("table", "Table", ExampleCategory.Content,

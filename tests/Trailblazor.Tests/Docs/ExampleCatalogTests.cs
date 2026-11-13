@@ -165,6 +165,7 @@ public class ExampleCatalogTests
     {
         ["Announcer"] = ["polite", "assertive"],
         ["ColorPicker"] = ["hue", "saturation", "brightness", "alpha", "red", "green", "blue"],
+        ["DataGrid"] = ["tree-cell"],
         ["Dialog"] = ["minimize", "maximize", "move", "resize"],
         ["Pagination"] = ["first", "previous", "next", "last"],
         ["Select"] = ["placeholder", "value"],

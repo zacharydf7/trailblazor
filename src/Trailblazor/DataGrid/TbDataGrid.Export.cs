@@ -62,6 +62,11 @@ public partial class TbDataGrid<TItem>
         var shown = rows == GridExportRows.Shown;
         List<TbColumn<TItem>> columns =
             [.. (shown ? _shownColumns : _arrangedColumns).Where(column => column.HasField)];
+        if (ChildrenSelector is not null)
+        {
+            return (columns, [.. Flattened(TreeOf(Matcher(shown), []))]);
+        }
+
         if (DataProvider is null)
         {
             List<TItem> arranged = [.. Arranged(filtered: shown)];

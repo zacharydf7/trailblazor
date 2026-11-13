@@ -738,6 +738,11 @@ public static class TbStrings
     /// <summary>"Details for {0}": names a row's button that opens and closes its details; {0} is the row's label.
     /// </summary>
     public const string DataGridDetailsFor = "DataGrid.DetailsFor";
+
+    /// <summary>"Rows under {0}": names a tree grid row's button that shows and hides its child rows; {0} is the row's
+    /// label.</summary>
+    public const string DataGridRowsUnder = "DataGrid.RowsUnder";
+
     /// <summary>"Export": names the data grid's menu that downloads its rows as a file.</summary>
     public const string DataGridExport = "DataGrid.Export";
 
@@ -1258,6 +1263,7 @@ public static class TbStrings
         [DataGridSelectRow] = "Select {0}",
         [DataGridDetails] = "Details",
         [DataGridDetailsFor] = "Details for {0}",
+        [DataGridRowsUnder] = "Rows under {0}",
         [DataGridExport] = "Export",
         [DataGridExportCsv] = "CSV",
         [DataGridExportExcel] = "Excel",

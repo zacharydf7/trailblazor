@@ -1,0 +1,28 @@
+<TbStack Gap="3">
+    <TbDataGrid @ref="_grid" TItem="Folder" Items="Folders" AriaLabel="Trail files" KeySelector="folder => folder.Name"
+                ChildrenSelector="folder => folder.Children" @bind-ExpandedParents="_open">
+        <TbColumn Field="folder => folder.Name" />
+        <TbColumn Field="folder => folder.Files" />
+    </TbDataGrid>
+    <TbStack Row>
+        <TbButton Variant="Variant.Outlined" OnClick="() => _grid.ScrollToAsync(Folders[1].Children![0].Children![0])">
+            Go to the winter maps
+        </TbButton>
+        <TbButton Variant="Variant.Outlined" OnClick="() => _open = []">Close all</TbButton>
+    </TbStack>
+    <TbText Muted>Open: @(_open.Count == 0 ? "none" : string.Join(", ", _open.Select(folder => folder.Name)))</TbText>
+</TbStack>
+
+@code {
+    private TbDataGrid<Folder> _grid = default!;
+    private IReadOnlyCollection<Folder> _open = [];
+
+    public sealed record Folder(string Name, int Files, IReadOnlyList<Folder>? Children = null);
+
+    private static readonly Folder[] Folders =
+    [
+        new("Photos", 120, [new("Summer", 80), new("Autumn", 40)]),
+        new("Maps", 12, [new("Seasonal", 8, [new("Winter maps", 5), new("Summer maps", 3)])]),
+        new("Permits", 4),
+    ];
+}

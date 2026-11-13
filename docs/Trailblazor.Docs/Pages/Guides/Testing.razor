@@ -239,7 +239,9 @@
                             <code>SelectAsync</code>, sorts by a column with <code>SortAsync</code>, pages with
                             <code>GoToPageAsync</code>, filters a column with <code>FilterAsync</code> or picks a
                             filter's values with <code>FilterChoicesAsync</code>, resizes a column with
-                            <code>ResizeColumnAsync</code>, and moves a row to a place with <code>MoveRowAsync</code>.
+                            <code>ResizeColumnAsync</code>, moves a row to a place with <code>MoveRowAsync</code>, and
+                            opens or closes a tree grid's row with <code>ExpandAsync</code> and
+                            <code>CollapseAsync</code>.
                             Finds a cell with <code>Cell</code>, and reads the column headers with <code>Columns</code>,
                             a column's total with <code>Total</code> and each group's totals with
                             <code>GroupTotals</code>.
@@ -710,7 +712,8 @@
             + "their path, `FilterAsync(text)` types in its filter box, and `TextAsync()` reads what the field shows."),
         new("Data grid", "Its name", "`Grid(name)` finds rows and cells by their text, and sorts, filters, selects "
             + "and pages. `MoveRowAsync(row, index)` moves a row through its handle's menu, and `DragRowBeforeAsync` "
-            + "and `DragRowAfterAsync` drag it onto another row; each waits for the app's answer."),
+            + "and `DragRowAfterAsync` drag it onto another row; each waits for the app's answer. `ExpandAsync(row)` "
+            + "and `CollapseAsync(row)` open and close a tree grid's row."),
         new("Command palette", "Its label", "`CommandPalette(name).OpenAsync()` presses its shortcut, "
             + "`SearchAsync(text)` types and waits for the results, `ResultsAsync()` reads them, and "
             + "`ChooseAsync(command)` runs one and waits until the app's `OnChoose` has run."),

@@ -4188,6 +4188,13 @@ Trailblazor.TbDataGrid<TItem>.SingleDetail.get -> bool
 Trailblazor.TbDataGrid<TItem>.SingleDetail.set -> void
 const Trailblazor.TbStrings.DataGridDetails = "DataGrid.Details" -> string!
 const Trailblazor.TbStrings.DataGridDetailsFor = "DataGrid.DetailsFor" -> string!
+const Trailblazor.TbStrings.DataGridRowsUnder = "DataGrid.RowsUnder" -> string!
+Trailblazor.TbDataGrid<TItem>.ChildrenSelector.get -> System.Func<TItem, System.Collections.Generic.IEnumerable<TItem>?>?
+Trailblazor.TbDataGrid<TItem>.ChildrenSelector.set -> void
+Trailblazor.TbDataGrid<TItem>.ExpandedParents.get -> System.Collections.Generic.IReadOnlyCollection<TItem>?
+Trailblazor.TbDataGrid<TItem>.ExpandedParents.set -> void
+Trailblazor.TbDataGrid<TItem>.ExpandedParentsChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyCollection<TItem>!>
+Trailblazor.TbDataGrid<TItem>.ExpandedParentsChanged.set -> void
 Trailblazor.GridExportRows
 Trailblazor.GridExportRows.All = 1 -> Trailblazor.GridExportRows
 Trailblazor.GridExportRows.Shown = 0 -> Trailblazor.GridExportRows

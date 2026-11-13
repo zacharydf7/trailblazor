@@ -918,9 +918,10 @@ public sealed class TbTransferListLocator(ILocator scope, string label)
 /// their cells, and columns by their header's title.</summary>
 public sealed class TbGridLocator(ILocator scope, string name)
 {
-    // With cell navigation the table is a grid to assistive technology.
+    // With cell navigation the table is a grid to assistive technology, and with child rows a tree grid.
     private ILocator Table => scope.GetByRole(AriaRole.Table, new() { Name = name, Exact = true })
-        .Or(scope.GetByRole(AriaRole.Grid, new() { Name = name, Exact = true }));
+        .Or(scope.GetByRole(AriaRole.Grid, new() { Name = name, Exact = true }))
+        .Or(scope.GetByRole(AriaRole.Treegrid, new() { Name = name, Exact = true }));
 
     private ILocator Root => Table.Locator("xpath=ancestor::*[@data-part='grid'][1]");
 
@@ -934,6 +935,26 @@ public sealed class TbGridLocator(ILocator scope, string name)
     {
         var id = await Header(column).GetAttributeAsync("data-column");
         return Row(row).Locator($"td[data-column=\"{id}\"]");
+    }
+
+    /// <summary>Opens the tree grid row with a cell whose text is exactly this, with its button, and waits for its
+    /// child rows to show. A row already open stays open.</summary>
+    public Task ExpandAsync(string row) => SetExpandedAsync(row, true);
+
+    /// <summary>Closes the tree grid row with a cell whose text is exactly this, with its button, and waits for its
+    /// child rows to hide. A row already closed stays closed.</summary>
+    public Task CollapseAsync(string row) => SetExpandedAsync(row, false);
+
+    private async Task SetExpandedAsync(string row, bool expanded)
+    {
+        var found = Row(row);
+        var wanted = expanded ? "true" : "false";
+        if (await found.GetAttributeAsync("aria-expanded") != wanted)
+        {
+            await found.Locator("[data-part=tree-toggle]").ClickAsync();
+        }
+
+        await Assertions.Expect(found).ToHaveAttributeAsync("aria-expanded", wanted);
     }
 
     /// <summary>Moves the row with a cell whose text is exactly <paramref name="row"/> to <paramref name="index"/>

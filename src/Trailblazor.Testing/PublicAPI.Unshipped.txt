@@ -152,6 +152,8 @@ Trailblazor.Testing.TrailblazorMarkupExtensions
 Trailblazor.Testing.TrailblazorMarkup.Grid(string? name = null) -> Trailblazor.Testing.TbGridDriver!
 Trailblazor.Testing.TbGridDriver
 Trailblazor.Testing.TbGridDriver.ClickRowAsync(string! cell) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.CollapseAsync(string! row) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.ExpandAsync(string! row) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.Row(string! cell) -> AngleSharp.Dom.IElement!
 Trailblazor.Testing.TbGridDriver.SelectAsync(string! row) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.FilterAsync(string! column, string! text) -> System.Threading.Tasks.Task!

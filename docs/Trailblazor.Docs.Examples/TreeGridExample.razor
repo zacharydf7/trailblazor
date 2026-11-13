@@ -1,0 +1,23 @@
+<TbDataGrid TItem="Place" Items="Places" AriaLabel="Trails by region" KeySelector="place => place.Name"
+            ChildrenSelector="place => place.Children">
+    <TbColumn Field="place => place.Name" Sortable Filterable />
+    <TbColumn Field="place => place.Kind" />
+    <TbColumn Field="place => place.LengthKm" Title="Length (km)" Format="N1" Sortable />
+</TbDataGrid>
+
+@code {
+    public sealed record Place(string Name, string Kind, double LengthKm, IReadOnlyList<Place>? Children = null);
+
+    // A park's and a region's lengths add up the trails under them.
+    private static Place Group(string name, string kind, params Place[] children) =>
+        new(name, kind, children.Sum(child => child.LengthKm), children);
+
+    private static readonly Place[] Places =
+    [
+        Group("North ridge", "Region",
+            Group("Pine park", "Park", new Place("Pine Hollow", "Trail", 6.4), new Place("Eagle Ridge", "Trail", 14.2)),
+            Group("Cedar park", "Park", new Place("Cedar Flats", "Trail", 3.1))),
+        Group("South valley", "Region",
+            Group("River park", "Park", new Place("Ridge Loop", "Trail", 8.5), new Place("Creek Path", "Trail", 4.0))),
+    ];
+}

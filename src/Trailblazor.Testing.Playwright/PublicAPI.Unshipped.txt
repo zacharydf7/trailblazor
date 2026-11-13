@@ -55,6 +55,8 @@ Trailblazor.Testing.Playwright.TbGridLocator.ColumnsAsync() -> System.Threading.
 Trailblazor.Testing.Playwright.TbGridLocator.GoToPageAsync(int number) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.ResizeColumnAsync(string! column, double width) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.Row(string! cell) -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbGridLocator.CollapseAsync(string! row) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbGridLocator.ExpandAsync(string! row) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.SelectAsync(string! row) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.SortAsync(string! column, bool descending = false) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.TbGridLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void

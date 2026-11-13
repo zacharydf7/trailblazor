@@ -32,6 +32,7 @@ const headerRowOf = table => [...table.tHead.rows].find(row => row.dataset.part 
 
 // A table's rows that hold cells, leaving out a virtualized grid's spacers and the rows it hides.
 const linesOf = table => [...table.rows].filter(row => row.cells.length > 0 && !row.hasAttribute('aria-hidden'));
+const isGridRole = table => ['grid', 'treegrid'].includes(table.getAttribute('role'));
 const selectsMany = table => table.dataset.selection === 'multiple';
 const extendTo = (row, from) => row.dispatchEvent(new CustomEvent('tb-row-extend', { bubbles: true, detail: from }));
 
@@ -89,7 +90,7 @@ export function createDataGrid(table, waitForReorder) {
     };
     // The box is a stop for Tab only when keys have something to scroll and cell navigation doesn't scroll it for them.
     const syncScrollStop = () => {
-        const stop = table.getAttribute('role') !== 'grid'
+        const stop = !isGridRole(table)
             && (scroll.scrollWidth > scroll.clientWidth || scroll.scrollHeight > scroll.clientHeight);
         if (stop) {
             scroll.setAttribute('tabindex', '0');
@@ -463,7 +464,7 @@ export function createDataGrid(table, waitForReorder) {
 // With cell navigation the grid is one stop for Tab; fields in popups, such as a filter menu, keep their usual keys and
 // Tab order.
 function createCellNavigation(table, scroll, rowHeight, waitFor) {
-    const isGrid = () => table.getAttribute('role') === 'grid';
+    const isGrid = () => isGridRole(table);
     const isVirtual = () => table.hasAttribute('aria-rowcount');
     const originalTabIndex = element => 'tbTab' in element.dataset ? element.dataset.tbTab
         : element.getAttribute('tabindex');
@@ -690,7 +691,9 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             return;
         }
 
-        if (cell.hasAttribute('data-editable') && ['Enter', 'F2'].includes(event.key)) {
+        // Enter on a tree row's button opens or closes the row, so only F2 edits the cell around it.
+        if (cell.hasAttribute('data-editable') && ['Enter', 'F2'].includes(event.key)
+            && !(event.key === 'Enter' && event.target.closest('[data-part=tree-toggle]'))) {
             if (!editing) {
                 startEdit(cell);
             }
@@ -713,7 +716,9 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
         }
 
         // A typed character starts the edit, but Space selects the row unless it's part of an edit already starting.
-        if (event.target === cell && cell.hasAttribute('data-editable') && event.key.length === 1
+        // A tree row's button holds its first cell's focus, so typing there edits the cell too.
+        const onCell = event.target === cell || event.target.closest('[data-part=tree-toggle]');
+        if (onCell && cell.hasAttribute('data-editable') && event.key.length === 1
             && !event.ctrlKey && !event.metaKey && (event.key !== ' ' || typed?.cell === cell)) {
             event.preventDefault();
             typed = { cell, text: (typed?.cell === cell ? typed.text : '') + event.key };
@@ -748,15 +753,48 @@ function createCellNavigation(table, scroll, rowHeight, waitFor) {
             return;
         }
 
+        // A tree row's aria-expanded changes as soon as a key toggles it, but its new rows arrive only once the server
+        // redraws its button to match.
+        const toggling = () => row.hasAttribute('aria-expanded') && row.getAttribute('aria-expanded')
+            !== row.querySelector('[data-part=tree-toggle]')?.getAttribute('aria-expanded');
         // Shift with an arrow extends the range to the row that takes focus, once a virtualized grid has drawn it.
         // A group's heading isn't a row to select, so the range holds at the row just left and picks up at the next row.
         const moveVertically = async to => {
-            const reached = await moveToRow(to, rows);
+            if (toggling()) {
+                await waitFor(() => !toggling() || null);
+            }
+
+            const reached = await moveToRow(to, linesOf(table));
             const target = reached?.dataset.part === 'row' ? reached : row;
             if (reached && event.shiftKey && selectsMany(table) && target.dataset.part === 'row') {
                 extendTo(target, row.dataset.key);
             }
         };
+        // On a tree row's first cell, the key toward the reading direction's end opens the row, and the key toward its
+        // start closes it, or on a closed row goes to the row's parent.
+        if (cell.dataset.part === 'tree-cell' && !control && !event.shiftKey
+            && (event.key === 'ArrowRight' || event.key === 'ArrowLeft')) {
+            const forward = (event.key === 'ArrowRight') !== rtl;
+            const open = row.getAttribute('aria-expanded');
+            // The row shows its new state before the server draws it, so a quick second press acts on that state.
+            if (open === (forward ? 'false' : 'true')) {
+                event.preventDefault();
+                cell.querySelector('[data-part=tree-toggle]').click();
+                row.setAttribute('aria-expanded', forward ? 'true' : 'false');
+                return;
+            }
+
+            const level = Number(row.getAttribute('aria-level'));
+            const parent = level > 1 ? rows.slice(0, rows.indexOf(row)).findLast(line =>
+                Number(line.getAttribute('aria-level')) === level - 1) : null;
+            const to = parent ? indexOf(parent, rows) : Number(row.dataset.parentRow ?? 0);
+            if (!forward && to > 0) {
+                event.preventDefault();
+                moveToRow(to, rows);
+                return;
+            }
+        }
+
         switch (event.key) {
             case 'ArrowRight':
                 across(cell.cellIndex + (rtl ? -1 : 1));

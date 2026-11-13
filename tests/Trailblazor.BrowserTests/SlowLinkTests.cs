@@ -146,3 +146,8 @@ public class SlowLinkListBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByText("Packing: ")).ToHaveTextAsync("Packing: Tent, Stove");
     }
 }
+
+public class SlowLinkTreeGridTests(BrowserFixture fixture) : TreeGridTests(fixture)
+{
+    protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(SlowLinkDelay.Value);
+}
