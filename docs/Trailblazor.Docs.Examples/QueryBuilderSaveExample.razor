@@ -1,0 +1,18 @@
+@using System.Text.Json
+
+<TbStack Gap="3">
+    <TbQueryBuilder Label="Saved search" Fields="Fields" MaxDepth="2" @bind-Value="_query" />
+    <TbText Muted>Saved as: <code>@JsonSerializer.Serialize(_query)</code></TbText>
+</TbStack>
+
+@code {
+    // A query read back from JSON, as from a user's saved searches.
+    private QueryGroup _query = JsonSerializer.Deserialize<QueryGroup>("""
+        {"Join":"Or","Conditions":[{"Column":"Region","Operator":"Contains","Value":"ridge"},
+        {"Column":"Opened","Operator":"GreaterThanOrEqualTo","Value":"2026-06-01"}]}
+        """)!;
+
+    public sealed record Trail(string Name, string Region, DateOnly Opened, bool Loop);
+
+    private static readonly IReadOnlyList<QueryField> Fields = QueryField.For<Trail>();
+}

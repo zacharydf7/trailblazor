@@ -5043,3 +5043,119 @@ override Trailblazor.ViewportLabels.GetHashCode() -> int
 override Trailblazor.ViewportLabels.ToString() -> string!
 static Trailblazor.ViewportLabels.operator !=(Trailblazor.ViewportLabels? left, Trailblazor.ViewportLabels? right) -> bool
 static Trailblazor.ViewportLabels.operator ==(Trailblazor.ViewportLabels? left, Trailblazor.ViewportLabels? right) -> bool
+const Trailblazor.TbStrings.QueryBuilderMatch = "QueryBuilder.Match" -> string!
+const Trailblazor.TbStrings.QueryBuilderAll = "QueryBuilder.All" -> string!
+const Trailblazor.TbStrings.QueryBuilderAny = "QueryBuilder.Any" -> string!
+const Trailblazor.TbStrings.QueryBuilderField = "QueryBuilder.Field" -> string!
+const Trailblazor.TbStrings.QueryBuilderComparison = "QueryBuilder.Comparison" -> string!
+const Trailblazor.TbStrings.QueryBuilderCondition = "QueryBuilder.Condition" -> string!
+const Trailblazor.TbStrings.QueryBuilderGroup = "QueryBuilder.Group" -> string!
+const Trailblazor.TbStrings.QueryBuilderAddCondition = "QueryBuilder.AddCondition" -> string!
+const Trailblazor.TbStrings.QueryBuilderAddGroup = "QueryBuilder.AddGroup" -> string!
+const Trailblazor.TbStrings.QueryBuilderRemoveCondition = "QueryBuilder.RemoveCondition" -> string!
+const Trailblazor.TbStrings.QueryBuilderRemoveGroup = "QueryBuilder.RemoveGroup" -> string!
+const Trailblazor.TbStrings.QueryBuilderIsAnyOf = "QueryBuilder.IsAnyOf" -> string!
+const Trailblazor.TbStrings.QueryBuilderBefore = "QueryBuilder.Before" -> string!
+const Trailblazor.TbStrings.QueryBuilderOnOrBefore = "QueryBuilder.OnOrBefore" -> string!
+const Trailblazor.TbStrings.QueryBuilderAfter = "QueryBuilder.After" -> string!
+const Trailblazor.TbStrings.QueryBuilderOnOrAfter = "QueryBuilder.OnOrAfter" -> string!
+Trailblazor.QueryChoice
+Trailblazor.QueryChoice.<Clone>$() -> Trailblazor.QueryChoice!
+Trailblazor.QueryChoice.Deconstruct(out object! Value, out string! Label) -> void
+Trailblazor.QueryChoice.Equals(Trailblazor.QueryChoice? other) -> bool
+Trailblazor.QueryChoice.Label.get -> string!
+Trailblazor.QueryChoice.Label.init -> void
+Trailblazor.QueryChoice.QueryChoice(object! Value, string! Label) -> void
+Trailblazor.QueryChoice.Value.get -> object!
+Trailblazor.QueryChoice.Value.init -> void
+Trailblazor.QueryField
+Trailblazor.QueryField.<Clone>$() -> Trailblazor.QueryField!
+Trailblazor.QueryField.Choices.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.QueryChoice!>!
+Trailblazor.QueryField.Choices.init -> void
+Trailblazor.QueryField.Deconstruct(out string! Key, out string! Label, out Trailblazor.QueryFieldKind Kind) -> void
+Trailblazor.QueryField.Equals(Trailblazor.QueryField? other) -> bool
+Trailblazor.QueryField.Key.get -> string!
+Trailblazor.QueryField.Key.init -> void
+Trailblazor.QueryField.Kind.get -> Trailblazor.QueryFieldKind
+Trailblazor.QueryField.Kind.init -> void
+Trailblazor.QueryField.Label.get -> string!
+Trailblazor.QueryField.Label.init -> void
+Trailblazor.QueryField.QueryField(string! Key, string! Label, Trailblazor.QueryFieldKind Kind) -> void
+Trailblazor.QueryFieldKind
+Trailblazor.QueryFieldKind.Choice = 4 -> Trailblazor.QueryFieldKind
+Trailblazor.QueryFieldKind.Date = 2 -> Trailblazor.QueryFieldKind
+Trailblazor.QueryFieldKind.Number = 1 -> Trailblazor.QueryFieldKind
+Trailblazor.QueryFieldKind.Text = 0 -> Trailblazor.QueryFieldKind
+Trailblazor.QueryFieldKind.YesNo = 3 -> Trailblazor.QueryFieldKind
+Trailblazor.QueryGroup
+Trailblazor.QueryGroup.Conditions.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.GridFilter!>!
+Trailblazor.QueryGroup.Conditions.init -> void
+Trailblazor.QueryGroup.Groups.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.QueryGroup!>!
+Trailblazor.QueryGroup.Groups.init -> void
+Trailblazor.QueryGroup.Join.get -> Trailblazor.QueryJoin
+Trailblazor.QueryGroup.Join.init -> void
+Trailblazor.QueryGroup.QueryGroup() -> void
+Trailblazor.QueryGroup.ToExpression<T>() -> System.Linq.Expressions.Expression<System.Func<T, bool>!>!
+Trailblazor.QueryJoin
+Trailblazor.QueryJoin.And = 0 -> Trailblazor.QueryJoin
+Trailblazor.QueryJoin.Or = 1 -> Trailblazor.QueryJoin
+Trailblazor.TbQueryBuilder
+Trailblazor.TbQueryBuilder.Fields.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.QueryField!>!
+Trailblazor.TbQueryBuilder.Fields.set -> void
+Trailblazor.TbQueryBuilder.Label.get -> string!
+Trailblazor.TbQueryBuilder.Label.set -> void
+Trailblazor.TbQueryBuilder.MaxDepth.get -> int
+Trailblazor.TbQueryBuilder.MaxDepth.set -> void
+Trailblazor.TbQueryBuilder.TbQueryBuilder() -> void
+Trailblazor.TbQueryBuilder.TelemetryName.get -> string?
+Trailblazor.TbQueryBuilder.TelemetryName.set -> void
+Trailblazor.TbQueryBuilder.Value.get -> Trailblazor.QueryGroup?
+Trailblazor.TbQueryBuilder.Value.set -> void
+Trailblazor.TbQueryBuilder.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.QueryGroup!>
+Trailblazor.TbQueryBuilder.ValueChanged.set -> void
+override Trailblazor.QueryChoice.Equals(object? obj) -> bool
+override Trailblazor.QueryChoice.GetHashCode() -> int
+override Trailblazor.QueryChoice.ToString() -> string!
+override Trailblazor.QueryField.Equals(object? obj) -> bool
+override Trailblazor.QueryField.GetHashCode() -> int
+override Trailblazor.QueryField.ToString() -> string!
+static Trailblazor.QueryChoice.operator !=(Trailblazor.QueryChoice? left, Trailblazor.QueryChoice? right) -> bool
+static Trailblazor.QueryChoice.operator ==(Trailblazor.QueryChoice? left, Trailblazor.QueryChoice? right) -> bool
+static Trailblazor.QueryField.For<T>() -> System.Collections.Generic.IReadOnlyList<Trailblazor.QueryField!>!
+static Trailblazor.QueryField.operator !=(Trailblazor.QueryField? left, Trailblazor.QueryField? right) -> bool
+static Trailblazor.QueryField.operator ==(Trailblazor.QueryField? left, Trailblazor.QueryField? right) -> bool
+Trailblazor.QueryBuilderLabels
+Trailblazor.QueryBuilderLabels.<Clone>$() -> Trailblazor.QueryBuilderLabels!
+Trailblazor.QueryBuilderLabels.AddCondition.get -> string?
+Trailblazor.QueryBuilderLabels.AddCondition.init -> void
+Trailblazor.QueryBuilderLabels.AddGroup.get -> string?
+Trailblazor.QueryBuilderLabels.AddGroup.init -> void
+Trailblazor.QueryBuilderLabels.All.get -> string?
+Trailblazor.QueryBuilderLabels.All.init -> void
+Trailblazor.QueryBuilderLabels.Any.get -> string?
+Trailblazor.QueryBuilderLabels.Any.init -> void
+Trailblazor.QueryBuilderLabels.Comparison.get -> string?
+Trailblazor.QueryBuilderLabels.Comparison.init -> void
+Trailblazor.QueryBuilderLabels.Condition.get -> string?
+Trailblazor.QueryBuilderLabels.Condition.init -> void
+Trailblazor.QueryBuilderLabels.Equals(Trailblazor.QueryBuilderLabels? other) -> bool
+Trailblazor.QueryBuilderLabels.Field.get -> string?
+Trailblazor.QueryBuilderLabels.Field.init -> void
+Trailblazor.QueryBuilderLabels.Group.get -> string?
+Trailblazor.QueryBuilderLabels.Group.init -> void
+Trailblazor.QueryBuilderLabels.Match.get -> string?
+Trailblazor.QueryBuilderLabels.Match.init -> void
+Trailblazor.QueryBuilderLabels.QueryBuilderLabels() -> void
+Trailblazor.QueryBuilderLabels.RemoveCondition.get -> string?
+Trailblazor.QueryBuilderLabels.RemoveCondition.init -> void
+Trailblazor.QueryBuilderLabels.RemoveGroup.get -> string?
+Trailblazor.QueryBuilderLabels.RemoveGroup.init -> void
+Trailblazor.QueryBuilderLabels.Value.get -> string?
+Trailblazor.QueryBuilderLabels.Value.init -> void
+Trailblazor.TbQueryBuilder.Labels.get -> Trailblazor.QueryBuilderLabels!
+Trailblazor.TbQueryBuilder.Labels.set -> void
+override Trailblazor.QueryBuilderLabels.Equals(object? obj) -> bool
+override Trailblazor.QueryBuilderLabels.GetHashCode() -> int
+override Trailblazor.QueryBuilderLabels.ToString() -> string!
+static Trailblazor.QueryBuilderLabels.operator !=(Trailblazor.QueryBuilderLabels? left, Trailblazor.QueryBuilderLabels? right) -> bool
+static Trailblazor.QueryBuilderLabels.operator ==(Trailblazor.QueryBuilderLabels? left, Trailblazor.QueryBuilderLabels? right) -> bool

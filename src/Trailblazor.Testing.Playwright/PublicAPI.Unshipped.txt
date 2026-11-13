@@ -227,3 +227,12 @@ Trailblazor.Testing.Playwright.TbViewportLocator.ZoomAsync() -> System.Threading
 Trailblazor.Testing.Playwright.TbViewportLocator.ZoomInAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbViewportLocator.ZoomOutAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TrailblazorPage.Viewport(string! label) -> Trailblazor.Testing.Playwright.TbViewportLocator!
+Trailblazor.Testing.Playwright.TbQueryBuilderLocator
+Trailblazor.Testing.Playwright.TbQueryBuilderLocator.AddConditionAsync(params int[]! group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbQueryBuilderLocator.AddGroupAsync(params int[]! group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbQueryBuilderLocator.Condition(int number, params int[]! group) -> Trailblazor.Testing.Playwright.TrailblazorPage!
+Trailblazor.Testing.Playwright.TbQueryBuilderLocator.JoinAsync(string! option, params int[]! group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbQueryBuilderLocator.RemoveGroupAsync(params int[]! group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbQueryBuilderLocator.RemoveConditionAsync(int number, params int[]! group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbQueryBuilderLocator.TbQueryBuilderLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.QueryBuilder(string! label) -> Trailblazor.Testing.Playwright.TbQueryBuilderLocator!

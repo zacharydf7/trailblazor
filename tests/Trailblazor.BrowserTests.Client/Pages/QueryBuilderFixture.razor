@@ -1,0 +1,27 @@
+@page "/query-builder"
+
+@* A query builder over four trails, with the trails its query matches read out. *@
+<TbQueryBuilder Label="Trail search" Fields="Fields" @bind-Value="_query" />
+<output aria-label="Matches">@string.Join(", ", Trails.AsQueryable().Where(_query.ToExpression<Trail>()).Select(trail => trail.Name))</output>
+
+@code {
+    private QueryGroup _query = new();
+
+    public enum Difficulty
+    {
+        Easy,
+        Hard,
+    }
+
+    public sealed record Trail(string Name, double LengthKm, bool Loop, Difficulty Difficulty);
+
+    private static readonly IReadOnlyList<QueryField> Fields = QueryField.For<Trail>();
+
+    private static readonly Trail[] Trails =
+    [
+        new("Pine Hollow", 6.4, true, Difficulty.Easy),
+        new("Eagle Ridge", 14.2, false, Difficulty.Hard),
+        new("Cedar Flats", 3.1, false, Difficulty.Easy),
+        new("Ridge Loop", 8.5, true, Difficulty.Hard),
+    ];
+}

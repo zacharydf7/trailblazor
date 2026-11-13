@@ -239,3 +239,11 @@ Trailblazor.Testing.TbViewportDriver.Zoom.get -> double
 Trailblazor.Testing.TbViewportDriver.ZoomInAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbViewportDriver.ZoomOutAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.Viewport(string? label = null) -> Trailblazor.Testing.TbViewportDriver!
+Trailblazor.Testing.TbQueryBuilderDriver
+Trailblazor.Testing.TbQueryBuilderDriver.AddConditionAsync(params int[]! group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbQueryBuilderDriver.AddGroupAsync(params int[]! group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbQueryBuilderDriver.Condition(int number, params int[]! group) -> Trailblazor.Testing.TrailblazorMarkup!
+Trailblazor.Testing.TbQueryBuilderDriver.JoinAsync(Trailblazor.QueryJoin join, params int[]! group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbQueryBuilderDriver.RemoveConditionAsync(int number, params int[]! group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbQueryBuilderDriver.RemoveGroupAsync(params int[]! group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.QueryBuilder(string? label = null) -> Trailblazor.Testing.TbQueryBuilderDriver!

@@ -276,6 +276,8 @@ public class ComponentContractTests : BunitContext
                 var type when type == typeof(Icon) => new Icon("<path d=\"M4 4h16v16H4z\" />"),
                 var type when type == typeof(IEnumerable<string>) => Array.Empty<string>(),
                 var type when type == typeof(IReadOnlyList<string>) => Array.Empty<string>(),
+                var type when type == typeof(IReadOnlyList<QueryField>) => new[] { new QueryField("Name", "Name",
+                    QueryFieldKind.Text) },
                 var type when type == typeof(RenderFragment<string>) =>
                     (RenderFragment<string>)(text => item => item.AddContent(0, text)),
                 var type when type == typeof(Func<string, object>) => (Func<string, object>)(text => text),

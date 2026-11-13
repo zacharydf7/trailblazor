@@ -1,0 +1,41 @@
+<TbStack Gap="4">
+    <TbQueryBuilder Label="Trail search" Fields="Fields" Value="_query" ValueChanged="Search" />
+    <TbDataGrid TItem="Trail" Items="_matches" AriaLabel="Matching trails" KeySelector="trail => trail.Name">
+        <TbColumn Field="trail => trail.Name" />
+        <TbColumn Field="trail => trail.Region" />
+        <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" Format="N1" />
+        <TbColumn Field="trail => trail.Difficulty" />
+    </TbDataGrid>
+</TbStack>
+
+@code {
+    private QueryGroup _query = new();
+    private IReadOnlyList<Trail> _matches = Trails;
+
+    public enum Difficulty
+    {
+        Easy,
+        Moderate,
+        Hard,
+    }
+
+    public sealed record Trail(string Name, string Region, double LengthKm, Difficulty Difficulty);
+
+    private static readonly IReadOnlyList<QueryField> Fields = QueryField.For<Trail>();
+
+    // The same expression filters an EF Core query on the server.
+    private void Search(QueryGroup query)
+    {
+        _query = query;
+        _matches = [.. Trails.AsQueryable().Where(query.ToExpression<Trail>())];
+    }
+
+    private static readonly Trail[] Trails =
+    [
+        new("Pine Hollow", "North ridge", 6.4, Difficulty.Easy),
+        new("Eagle Ridge", "North ridge", 14.2, Difficulty.Hard),
+        new("Cedar Flats", "River valley", 3.1, Difficulty.Easy),
+        new("Ridge Loop", "River valley", 8.5, Difficulty.Moderate),
+        new("Summit Trail", "High peaks", 11.0, Difficulty.Hard),
+    ];
+}

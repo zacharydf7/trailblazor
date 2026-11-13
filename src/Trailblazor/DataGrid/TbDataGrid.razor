@@ -718,7 +718,7 @@
                                         <TbOption Value="op">@OperatorLabel(op)</TbOption>
                                     }
                                 </TbSelect>
-                                @if (NeedsValue(draft.Operator))
+                                @if (Comparisons.NeedsValue(draft.Operator))
                                 {
                                     <div @onkeydown="_applyOnEnter.For(column)">
                                         @if (column.FilterKind == ColumnFilterKind.Number)

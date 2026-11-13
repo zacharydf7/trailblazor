@@ -183,6 +183,25 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task QueryBuilder_ShouldCountEachKindOfChange_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbQueryBuilder>(parameters => parameters.Add(builder => builder.Label, "Trail search")
+            .Add(builder => builder.TelemetryName, "trail-search")
+            .Add(builder => builder.Fields, [new QueryField("Name", "Name", QueryFieldKind.Text),
+                new QueryField("Loop", "Loop", QueryFieldKind.YesNo)]));
+        var search = cut.Tb().QueryBuilder("Trail search");
+
+        await search.AddConditionAsync();
+        await search.Condition(1).Select("Field").ChooseAsync("Loop");
+        await search.AddGroupAsync();
+        await search.RemoveConditionAsync(1);
+
+        Assert.Equal(["trail-search"], Names(_shown));
+        Assert.Equal([("trail-search", "TbQueryBuilder", "add_condition"), ("trail-search", "TbQueryBuilder", "change"),
+            ("trail-search", "TbQueryBuilder", "add_group"), ("trail-search", "TbQueryBuilder", "remove")], Uses());
+    }
+
+    [Fact]
     public async Task SpeedDial_ShouldCountItsOpensAndItsActionsChosen_WhenTheyHaveTelemetryNames()
     {
         var cut = Render<TbSpeedDial>(parameters => parameters.Add(dial => dial.Label, "Add")

@@ -28,6 +28,7 @@ public partial class LabelsRuleTests
         ["ItemMover"] = ["TbSortable", "TbDataGrid"],
         ["CalendarDates"] = ["TbCalendar", "TbDatePicker", "TbDateRangePicker", "TbDateTimePicker"],
         ["RichTextLinkDialog"] = ["TbRichTextEditor"],
+        ["Comparisons"] = ["TbDataGrid", "TbQueryBuilder"],
     };
 
     // Services outside any component, and base classes whose strings every subclass shares.

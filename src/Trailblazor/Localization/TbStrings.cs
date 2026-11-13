@@ -486,6 +486,54 @@ public static class TbStrings
     /// <summary>"Last page": names the last-page button.</summary>
     public const string PaginationLast = "Pagination.Last";
 
+    /// <summary>"Match": names a query builder group's list that picks whether an item must meet all of its conditions or any of them.</summary>
+    public const string QueryBuilderMatch = "QueryBuilder.Match";
+
+    /// <summary>"All of these": the choice that makes a query builder group match only items that meet all of its conditions.</summary>
+    public const string QueryBuilderAll = "QueryBuilder.All";
+
+    /// <summary>"Any of these": the choice that makes a query builder group match items that meet any of its conditions.</summary>
+    public const string QueryBuilderAny = "QueryBuilder.Any";
+
+    /// <summary>"Field": names a query builder condition's list of fields.</summary>
+    public const string QueryBuilderField = "QueryBuilder.Field";
+
+    /// <summary>"Comparison": names a query builder condition's list of comparisons, such as "Contains".</summary>
+    public const string QueryBuilderComparison = "QueryBuilder.Comparison";
+
+    /// <summary>"Condition {0}": names one condition of a query builder group; {0} is its number in the group.</summary>
+    public const string QueryBuilderCondition = "QueryBuilder.Condition";
+
+    /// <summary>"Group {0}": names a group inside a query builder group; {0} is its number among the inner groups.</summary>
+    public const string QueryBuilderGroup = "QueryBuilder.Group";
+
+    /// <summary>"Add condition": a query builder group's button that adds a condition to it.</summary>
+    public const string QueryBuilderAddCondition = "QueryBuilder.AddCondition";
+
+    /// <summary>"Add group": a query builder group's button that adds a group inside it.</summary>
+    public const string QueryBuilderAddGroup = "QueryBuilder.AddGroup";
+
+    /// <summary>"Remove condition {0}": names a query builder condition's remove button; {0} is its number.</summary>
+    public const string QueryBuilderRemoveCondition = "QueryBuilder.RemoveCondition";
+
+    /// <summary>"Remove group {0}": names a query builder group's remove button; {0} is its number.</summary>
+    public const string QueryBuilderRemoveGroup = "QueryBuilder.RemoveGroup";
+
+    /// <summary>"Is any of": the comparison that matches any of several chosen values.</summary>
+    public const string QueryBuilderIsAnyOf = "QueryBuilder.IsAnyOf";
+
+    /// <summary>"Before": the comparison that matches dates before a day.</summary>
+    public const string QueryBuilderBefore = "QueryBuilder.Before";
+
+    /// <summary>"On or before": the comparison that matches dates on or before a day.</summary>
+    public const string QueryBuilderOnOrBefore = "QueryBuilder.OnOrBefore";
+
+    /// <summary>"After": the comparison that matches dates after a day.</summary>
+    public const string QueryBuilderAfter = "QueryBuilder.After";
+
+    /// <summary>"On or after": the comparison that matches dates on or after a day.</summary>
+    public const string QueryBuilderOnOrAfter = "QueryBuilder.OnOrAfter";
+
     /// <summary>"Minimum": names a range slider's lower thumb, after the field's label.</summary>
     public const string RangeSliderStart = "RangeSlider.Start";
 
@@ -1357,6 +1405,22 @@ public static class TbStrings
         [TreeSelectFilter] = "Filter",
         [TreeSelectClear] = "Clear",
         [TreeSelectMore] = "{0} more",
+        [QueryBuilderMatch] = "Match",
+        [QueryBuilderAll] = "All of these",
+        [QueryBuilderAny] = "Any of these",
+        [QueryBuilderField] = "Field",
+        [QueryBuilderComparison] = "Comparison",
+        [QueryBuilderCondition] = "Condition {0}",
+        [QueryBuilderGroup] = "Group {0}",
+        [QueryBuilderAddCondition] = "Add condition",
+        [QueryBuilderAddGroup] = "Add group",
+        [QueryBuilderRemoveCondition] = "Remove condition {0}",
+        [QueryBuilderRemoveGroup] = "Remove group {0}",
+        [QueryBuilderIsAnyOf] = "Is any of",
+        [QueryBuilderBefore] = "Before",
+        [QueryBuilderOnOrBefore] = "On or before",
+        [QueryBuilderAfter] = "After",
+        [QueryBuilderOnOrAfter] = "On or after",
         [ViewportZoomIn] = "Zoom in",
         [ViewportZoomOut] = "Zoom out",
         [ViewportZoom] = "Zoom {0}",

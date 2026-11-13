@@ -5942,6 +5942,115 @@ public static class ExampleCatalog
                     + "changes a property. Which property and its value are never recorded.",
             ],
         },
+        new("query-builder", "Query builder", ExampleCategory.Inputs,
+            "Builds a filter from conditions on fields, joined in groups that match all or any of them.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it when people need to combine conditions on several fields in their own way, such as an "
+                    + "advanced search, a saved view or a rule that picks records.",
+            ],
+            WhenNotToUse =
+            [
+                "To filter a table by one condition per column, use a [data grid](components/data-grid)'s filters.",
+                "For a quick search on text, use a [text field](components/text-field) or an "
+                    + "[autocomplete](components/autocomplete).",
+            ],
+            Related = ["data-grid", "property-grid", "select"],
+            Sections =
+            [
+                new("conditions", "Conditions and groups", "`Fields` lists what conditions can be written on, and "
+                    + "`QueryField.For<T>()` builds them from a type's properties that hold text, a number, a date, yes "
+                    + "or no, or an enum's values. Each condition picks a field, then a comparison that suits it, such "
+                    + "as Contains for text or Before for a date, then a value in an editor made for that kind of field. "
+                    + "A group matches when all of its conditions do, or any of them, and Add group nests another "
+                    + "group with its own join. "
+                    + "`QueryGroup.ToExpression<T>()` turns the query into a filter for `Where`, here on a list for a "
+                    + "data grid, and the same works on an EF Core query.", typeof(QueryBuilderExample)),
+                new("save", "Save a query", "`@bind-Value` holds the query as a `QueryGroup`, which reads and writes as "
+                    + "JSON, so a saved search comes back as it was. `MaxDepth` limits how deep groups nest; here it's 2, "
+                    + "so the groups inside the outer one can't have groups of their own.", typeof(QueryBuilderSaveExample)),
+            ],
+            Api =
+            [
+                typeof(TbQueryBuilder), typeof(QueryBuilderLabels), typeof(QueryGroup), typeof(QueryJoin), typeof(QueryField), typeof(QueryFieldKind),
+                typeof(QueryChoice), typeof(GridFilter), typeof(FilterOperator),
+            ],
+            Keyboard =
+            [
+                new(["Tab", "Shift+Tab"], "Moves through each group's Match list, its conditions' fields and remove "
+                    + "buttons, and its Add buttons, in order.") { When = "In the query builder" },
+                new(["Enter", "Space"], "Adds a condition or a group, or removes one.") { When = "On a button" },
+            ],
+            Labeling =
+            [
+                "The query builder is a `group` named by `Label`. Each inner group is a `group` named \"Group\" and its "
+                    + "number, and each condition one named \"Condition\" and its number in its group.",
+                "A condition's fields are named Field, Comparison and Value, and its remove button \"Remove condition\" "
+                    + "and its number, so a screen reader hears which condition it's in as it moves.",
+                "`Labels` replaces all of these words, the Match list and its choices, and the Add buttons' text, "
+                    + "with `{0}` for a number.",
+            ],
+            Announcements =
+            [
+                "Adding a condition moves focus to its Field list, and adding a group to its Match list, so screen "
+                    + "readers say where the new part is.",
+            ],
+            Accessibility =
+            [
+                "Removing a condition or a group moves focus to its group's Add condition button, so focus isn't "
+                    + "lost when the remove button goes away.",
+                "Each field is the same select, number field, date picker or text field used elsewhere, with the same "
+                    + "keys.",
+            ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
+            BeforeInteractive =
+            [
+                "The query shows with its conditions and groups, but it can be changed only once the page is "
+                    + "interactive.",
+            ],
+            Target = new("group", "Trail search"),
+            Blocks = ["tb-query-builder"],
+            DataParts =
+            [
+                new("query-builder", "The query builder itself, which is the outer group."),
+                new("group-header", "A group's Match list and, for an inner group, its remove button."),
+                new("join", "A group's Match list, which picks all or any of its conditions."),
+                new("remove-group", "An inner group's remove button."),
+                new("conditions", "A group's list of conditions."),
+                new("condition", "One condition."),
+                new("condition-field", "A condition's list of fields."),
+                new("comparison", "A condition's list of comparisons."),
+                new("condition-value", "The field that holds a condition's value."),
+                new("remove-condition", "A condition's remove button."),
+                new("groups", "The groups inside a group."),
+                new("group", "An inner group."),
+                new("group-actions", "A group's Add condition and Add group buttons."),
+                new("add-condition", "The button that adds a condition to its group."),
+                new("add-group", "The button that adds a group inside its group."),
+            ],
+            TestingTips =
+            [
+                "In Playwright, `page.Tb().QueryBuilder(\"Trail search\")` from `Trailblazor.Testing.Playwright` adds "
+                    + "conditions and groups with `AddConditionAsync()` and `AddGroupAsync()`, and "
+                    + "`Condition(1).Select(\"Field\").ChooseAsync(\"Region\")` fills one in. A group is named by its path "
+                    + "of numbers, so `Condition(2, 1)` is the second condition of the first inner group, and "
+                    + "`JoinAsync(\"Any of these\", 1)` sets that group's join. `RemoveConditionAsync` and "
+                    + "`RemoveGroupAsync` remove them.",
+                "In bUnit, `cut.Tb().QueryBuilder(\"Trail search\")` from `Trailblazor.Testing` has the same methods, "
+                    + "with `JoinAsync(QueryJoin.Or, 1)` taking the join itself, and the bound `Value` holds the query to "
+                    + "assert on.",
+                "To test the filter itself, run `ToExpression<T>()` on a list of your own items; no rendering is "
+                    + "needed.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-search\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders, and `trailblazor.control.used` with the action `add_condition`, `add_group`, `remove` or "
+                    + "`change` each time the user does that. The fields and values are never recorded.",
+            ],
+        },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,
             "A short description that appears on hover or keyboard focus.")
         {

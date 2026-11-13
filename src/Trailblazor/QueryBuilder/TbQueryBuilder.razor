@@ -1,0 +1,141 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" role="group" aria-label="@Label" data-part="query-builder" style="@Style"
+     class="@ClassNames.Join("tb-query-builder", Class)">
+    @GroupContent(_root, null, 1, 0)
+</div>
+
+@code {
+    private RenderFragment GroupContent(Group group, Group? parent, int level, int number) =>
+        @<text>
+            <div data-part="group-header" class="tb-query-builder__header">
+                <TbSelect TValue="QueryJoin" AriaLabel="@Text(Labels.Match, TbStrings.QueryBuilderMatch)" Size="Size.Small"
+                          Value="group.Join" ValueChanged="join => JoinAsync(group, join)" AutoFocus="group == _added"
+                          data-part="join">
+                    <TbOption Value="QueryJoin.And">@Text(Labels.All, TbStrings.QueryBuilderAll)</TbOption>
+                    <TbOption Value="QueryJoin.Or">@Text(Labels.Any, TbStrings.QueryBuilderAny)</TbOption>
+                </TbSelect>
+                @if (parent is not null)
+                {
+                    <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@Format(Labels.RemoveGroup, TbStrings.QueryBuilderRemoveGroup, number)"
+                                  Size="Size.Small" Variant="Variant.Text" data-part="remove-group"
+                                  OnClick="() => RemoveGroupAsync(parent, group)" />
+                }
+            </div>
+            @if (group.Conditions.Count > 0)
+            {
+                <ol role="list" data-part="conditions" class="tb-query-builder__conditions">
+                    @for (var index = 0; index < group.Conditions.Count; index++)
+                    {
+                        var condition = group.Conditions[index];
+                        var conditionNumber = index + 1;
+                        <li @key="condition">
+                            <div role="group" aria-label="@Format(Labels.Condition, TbStrings.QueryBuilderCondition, conditionNumber)"
+                                 data-part="condition" class="tb-query-builder__condition">
+                                @ConditionContent(group, condition, conditionNumber)
+                            </div>
+                        </li>
+                    }
+                </ol>
+            }
+            @if (group.Groups.Count > 0)
+            {
+                <div data-part="groups" class="tb-query-builder__groups">
+                    @for (var index = 0; index < group.Groups.Count; index++)
+                    {
+                        var inner = group.Groups[index];
+                        var innerNumber = index + 1;
+                        <div @key="inner" role="group" aria-label="@Format(Labels.Group, TbStrings.QueryBuilderGroup, innerNumber)"
+                             data-part="group" data-level="@(level + 1)" class="tb-query-builder__group">
+                            @GroupContent(inner, group, level + 1, innerNumber)
+                        </div>
+                    }
+                </div>
+            }
+            <div data-part="group-actions" class="tb-query-builder__actions">
+                <TbButton @ref="_addButtons[group]" Variant="Variant.Text" Size="Size.Small" StartIcon="BuiltInIcons.Plus"
+                          data-part="add-condition" OnClick="() => AddConditionAsync(group)">
+                    @Text(Labels.AddCondition, TbStrings.QueryBuilderAddCondition)
+                </TbButton>
+                @if (level < MaxDepth)
+                {
+                    <TbButton Variant="Variant.Text" Size="Size.Small" StartIcon="BuiltInIcons.Plus"
+                              data-part="add-group" OnClick="() => AddGroupAsync(group)">
+                        @Text(Labels.AddGroup, TbStrings.QueryBuilderAddGroup)
+                    </TbButton>
+                }
+            </div>
+        </text>;
+
+    private RenderFragment ConditionContent(Group group, Condition condition, int number) =>
+        @<text>
+            <TbSelect TValue="string" AriaLabel="@Text(Labels.Field, TbStrings.QueryBuilderField)" Size="Size.Small"
+                      Value="@condition.Field.Key" ValueChanged="key => FieldAsync(condition, key)"
+                      AutoFocus="condition == _added" data-part="condition-field">
+                @foreach (var field in Fields)
+                {
+                    <TbOption Value="field.Key">@field.Label</TbOption>
+                }
+            </TbSelect>
+            <TbSelect TValue="FilterOperator" AriaLabel="@Text(Labels.Comparison, TbStrings.QueryBuilderComparison)" Size="Size.Small"
+                      Value="condition.Operator" ValueChanged="op => OperatorAsync(condition, op)" data-part="comparison">
+                @foreach (var op in OperatorsOf(condition.Field))
+                {
+                    <TbOption Value="op">@OperatorLabel(condition.Field, op)</TbOption>
+                }
+            </TbSelect>
+            @if (Comparisons.NeedsValue(condition.Operator))
+            {
+                @ValueEditor(condition)
+            }
+            <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@Format(Labels.RemoveCondition, TbStrings.QueryBuilderRemoveCondition, number)"
+                          Size="Size.Small" Variant="Variant.Text" data-part="remove-condition"
+                          OnClick="() => RemoveConditionAsync(group, condition)" />
+        </text>;
+
+    // Each kind of field takes its value in the field that suits it; a choice takes several for Is any of.
+    private RenderFragment ValueEditor(Condition condition) => condition.Field.Kind switch
+    {
+        QueryFieldKind.Number =>
+            @<TbNumberField TValue="decimal?" AriaLabel="@Text(Labels.Value, TbStrings.DataGridFilterValue)" Size="Size.Small"
+                            Value="condition.Value as decimal?" ValueChanged="number => ValueAsync(condition, number)"
+                            data-part="condition-value" />,
+        QueryFieldKind.Date =>
+            @<TbDatePicker TDate="DateOnly" AriaLabel="@Text(Labels.Value, TbStrings.DataGridFilterValue)" Size="Size.Small"
+                           Value="condition.Value as DateOnly?" ValueChanged="day => ValueAsync(condition, day)"
+                           data-part="condition-value" />,
+        QueryFieldKind.YesNo =>
+            @<TbSelect TValue="string" AriaLabel="@Text(Labels.Value, TbStrings.DataGridFilterValue)" Size="Size.Small"
+                       Value="@(condition.Value is bool yes ? yes ? "yes" : "no" : null)"
+                       ValueChanged="@(text => ValueAsync(condition, text is null ? null : text == "yes"))"
+                       data-part="condition-value">
+                <TbOption Value="@("yes")">@Localizer[TbStrings.DataGridFilterYes]</TbOption>
+                <TbOption Value="@("no")">@Localizer[TbStrings.DataGridFilterNo]</TbOption>
+            </TbSelect>,
+        QueryFieldKind.Choice when condition.Operator == FilterOperator.IsAnyOf =>
+            @<TbMultiSelect TItem="string" AriaLabel="@Text(Labels.Value, TbStrings.DataGridFilterValue)" Size="Size.Small"
+                            Value="ChoiceKeysOf(condition)" data-part="condition-value"
+                            ValueChanged="keys => ChoicesAsync(condition, keys)">
+                @Choices(condition.Field)
+            </TbMultiSelect>,
+        QueryFieldKind.Choice =>
+            @<TbSelect TValue="string" AriaLabel="@Text(Labels.Value, TbStrings.DataGridFilterValue)" Size="Size.Small"
+                       Value="@ChoiceKeyOf(condition.Field, condition.Value)"
+                       ValueChanged="key => ValueAsync(condition, ChoiceOf(condition.Field, key))" data-part="condition-value">
+                @Choices(condition.Field)
+            </TbSelect>,
+        _ =>
+            @<TbTextField TValue="string" AriaLabel="@Text(Labels.Value, TbStrings.DataGridFilterValue)" Size="Size.Small"
+                          Value="@(condition.Value as string)" ValueChanged="text => ValueAsync(condition, text)"
+                          data-part="condition-value" />,
+    };
+
+    private static RenderFragment Choices(QueryField field) =>
+        @<text>
+            @foreach (var (choice, at) in field.Choices.Select((choice, at) => (choice, at)))
+            {
+                <TbOption Value="@at.ToString(System.Globalization.CultureInfo.InvariantCulture)">@choice.Label</TbOption>
+            }
+        </text>;
+}

@@ -53,6 +53,18 @@ public sealed class TrailblazorMarkup
                 : $"Expected one viewport labeled \"{label}\", found {viewports.Count}.");
     }, _findAll);
 
+    /// <summary>The <c>TbQueryBuilder</c> with this <c>Label</c>, or the only one in the markup when no label is
+    /// given.</summary>
+    public TbQueryBuilderDriver QueryBuilder(string? label = null) => new(() =>
+    {
+        var builders = _findAll("[data-part=query-builder]")
+            .Where(builder => label is null || builder.GetAttribute("aria-label") == label).ToList();
+        return builders.Count == 1 ? builders[0]
+            : throw new InvalidOperationException(label is null
+                ? $"Expected one query builder, found {builders.Count}; name the one to use."
+                : $"Expected one query builder labeled \"{label}\", found {builders.Count}.");
+    }, _findAll);
+
     /// <summary>The <c>TbTextField</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbTextFieldDriver TextField(string label) =>
         new(() => Field(label, ".tb-text-field input[data-part=input]", ".tb-text-field textarea[data-part=input]"));
@@ -1692,6 +1704,70 @@ public sealed class TbViewportDriver
     {
         var trigger = Control("zoom-menu").QuerySelector("[aria-haspopup=menu]")!;
         return (trigger, _findAll($"[id='{trigger.GetAttribute("aria-controls")}']").Single());
+    }
+}
+
+/// <summary>A <c>TbQueryBuilder</c>, found by its <c>Label</c>. A group is named by its path of group numbers from
+/// the outer group, so no numbers is the outer group itself and <c>2, 1</c> is the first group inside the outer
+/// group's second group.</summary>
+public sealed class TbQueryBuilderDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+
+    internal TbQueryBuilderDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
+        (_find, _findAll) = (find, findAll);
+
+    /// <summary>The fields of a group's condition with this number, found by their labels, Field, Comparison and
+    /// Value: <c>Condition(1).Select("Field").ChooseAsync("Region")</c>.</summary>
+    public TrailblazorMarkup Condition(int number, params int[] group) =>
+        new TrailblazorMarkup(_findAll).Within(() => ConditionOf(number, group));
+
+    /// <summary>Clicks the group's Add condition button, which adds a condition on the first field.</summary>
+    public Task AddConditionAsync(params int[] group) => Click(GroupOf(group), "group-actions", "add-condition");
+
+    /// <summary>Clicks the group's Add group button, which adds a group with one condition inside it. Throws when the
+    /// group is at the deepest level.</summary>
+    public Task AddGroupAsync(params int[] group) => Click(GroupOf(group), "group-actions", "add-group");
+
+    /// <summary>Clicks the remove button of the group's condition with this number.</summary>
+    public Task RemoveConditionAsync(int number, params int[] group) =>
+        ConditionOf(number, group).QuerySelector("[data-part=remove-condition]")!.ClickAsync(new MouseEventArgs());
+
+    /// <summary>Clicks the remove button of the group at this path, which can't be the outer group.</summary>
+    public Task RemoveGroupAsync(params int[] group)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(group.Length, nameof(group));
+        return Click(GroupOf(group), "group-header", "remove-group");
+    }
+
+    /// <summary>Picks whether the group matches items that meet all of its conditions or any of them.</summary>
+    public Task JoinAsync(QueryJoin join, params int[] group)
+    {
+        var select = new TbSelectDriver(() => GroupOf(group).QuerySelector(":scope > [data-part=group-header] "
+            + "[role=combobox]")!, _findAll);
+        return select.ChooseAsync(select.Options[join == QueryJoin.And ? 0 : 1]);
+    }
+
+    private static Task Click(IElement group, string part, string button) =>
+        (group.QuerySelector($":scope > [data-part={part}] [data-part={button}]") ?? throw new InvalidOperationException(
+            $"The query builder's group has no {button.Replace('-', ' ')} button here.")).ClickAsync(new MouseEventArgs());
+
+    private IElement ConditionOf(int number, int[] group) =>
+        GroupOf(group).QuerySelectorAll(":scope > [data-part=conditions] > li > [data-part=condition]")
+            .ElementAtOrDefault(number - 1) ?? throw new InvalidOperationException(
+                $"The query builder's group has no condition {number}.");
+
+    private IElement GroupOf(int[] path)
+    {
+        var group = _find();
+        foreach (var number in path)
+        {
+            group = group.QuerySelectorAll(":scope > [data-part=groups] > [data-part=group]").ElementAtOrDefault(number - 1)
+                ?? throw new InvalidOperationException($"The query builder has no group {string.Join(", ", path)}.");
+        }
+
+        return group;
     }
 }
 

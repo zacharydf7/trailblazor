@@ -247,6 +247,7 @@ internal static class ContractRules
             && Samples(type.GetGenericArguments()[0]) is { } ends =>
             (Activator.CreateInstance(type, ends.First, ends.First)!,
                 Activator.CreateInstance(type, ends.First, ends.Second)!),
+        _ when type == typeof(QueryGroup) => (new QueryGroup(), new QueryGroup { Join = QueryJoin.Or }),
         _ when type == typeof(GridState) => (new GridState { Sorts = [new("Name", SortDirection.Ascending)] },
             new GridState { Sorts = [new("Name", SortDirection.Descending)] }),
         _ when type.IsAssignableFrom(typeof(string[])) => (new[] { "Pine" }, new[] { "Cedar" }),

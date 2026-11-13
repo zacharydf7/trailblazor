@@ -8437,6 +8437,43 @@
         cursor: grabbing;
     }
 
+    /* A group lists its conditions, then the groups inside it, each indented beside a line that shows which group it
+       belongs to. */
+    .tb-query-builder,
+    .tb-query-builder__conditions,
+    .tb-query-builder__groups,
+    .tb-query-builder__group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-query-builder__conditions {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .tb-query-builder__header,
+    .tb-query-builder__condition,
+    .tb-query-builder__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--tb-space-2);
+    }
+
+    /* A condition's fields share its row and wrap on a narrow screen; its remove button keeps its size. */
+    .tb-query-builder__condition > :not([data-part=remove-condition]) {
+        flex: 1 1 10rem;
+        min-inline-size: 8rem;
+    }
+
+    .tb-query-builder__group {
+        padding-inline-start: var(--tb-space-4);
+        border-inline-start: 2px solid var(--tb-border-subtle);
+    }
+
     .tb-sortable {
         position: relative;
     }

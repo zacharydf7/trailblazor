@@ -164,32 +164,10 @@ public partial class TbDataGrid<TItem>
     }
 
     private static IReadOnlyList<FilterOperator> FilterOperators(TbColumn<TItem> column) =>
-        column.FilterKind == ColumnFilterKind.Number
-            ? [FilterOperator.EqualTo, FilterOperator.NotEqualTo, FilterOperator.LessThan,
-                FilterOperator.LessThanOrEqualTo, FilterOperator.GreaterThan, FilterOperator.GreaterThanOrEqualTo,
-                FilterOperator.IsEmpty, FilterOperator.IsNotEmpty]
-            : [FilterOperator.Contains, FilterOperator.DoesNotContain, FilterOperator.StartsWith,
-                FilterOperator.EndsWith, FilterOperator.EqualTo, FilterOperator.NotEqualTo, FilterOperator.IsEmpty,
-                FilterOperator.IsNotEmpty];
+        column.FilterKind == ColumnFilterKind.Number ? Comparisons.ForNumbers : Comparisons.ForText;
 
-    private string OperatorLabel(FilterOperator op) => Localizer[op switch
-    {
-        FilterOperator.Contains => TbStrings.DataGridFilterContains,
-        FilterOperator.DoesNotContain => TbStrings.DataGridFilterDoesNotContain,
-        FilterOperator.StartsWith => TbStrings.DataGridFilterStartsWith,
-        FilterOperator.EndsWith => TbStrings.DataGridFilterEndsWith,
-        FilterOperator.EqualTo => TbStrings.DataGridFilterEqualTo,
-        FilterOperator.NotEqualTo => TbStrings.DataGridFilterNotEqualTo,
-        FilterOperator.LessThan => TbStrings.DataGridFilterLessThan,
-        FilterOperator.LessThanOrEqualTo => TbStrings.DataGridFilterAtMost,
-        FilterOperator.GreaterThan => TbStrings.DataGridFilterGreaterThan,
-        FilterOperator.GreaterThanOrEqualTo => TbStrings.DataGridFilterAtLeast,
-        FilterOperator.IsEmpty => TbStrings.DataGridFilterIsEmpty,
-        _ => TbStrings.DataGridFilterIsNotEmpty,
-    }];
+    private string OperatorLabel(FilterOperator op) => Localizer[Comparisons.TextKeyOf(op)];
 
-    private static bool NeedsValue(FilterOperator op) =>
-        op is not (FilterOperator.IsEmpty or FilterOperator.IsNotEmpty);
 
     // Enter in the value applies the menu, as Apply does, unless it confirms an IME composition. The value field
     // updates as the user types, so the draft already holds the text.
@@ -204,7 +182,7 @@ public partial class TbDataGrid<TItem>
             : string.IsNullOrEmpty(draft.Text) ? null : draft.Text;
         return SetFiltersAsync(column, HasChoiceList(column) ? AnyOf(column, draft.Chosen)
             : column.FilterKind == ColumnFilterKind.Date ? RangeFilters(column, draft.Range)
-            : !NeedsValue(draft.Operator) ? [new(column.Key, draft.Operator)]
+            : !Comparisons.NeedsValue(draft.Operator) ? [new(column.Key, draft.Operator)]
             : value is null ? [] : [new(column.Key, draft.Operator, value)]);
     }
 
