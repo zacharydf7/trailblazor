@@ -1,0 +1,23 @@
+@page "/tooltip-popups"
+
+@* Tooltips on the triggers of popups, which hand focus back to the trigger as they close. *@
+<TbMenu>
+    <Trigger>
+        <TbIconButton Icon="Square" AriaLabel="More actions" ShowTooltip @attributes="context.Attributes" />
+    </Trigger>
+    <ChildContent>
+        <TbMenuItem>Rename</TbMenuItem>
+    </ChildContent>
+</TbMenu>
+<TbPopover>
+    <Trigger>
+        <TbIconButton Icon="Square" AriaLabel="Share" ShowTooltip @attributes="context.Attributes" />
+    </Trigger>
+    <ChildContent>
+        <TbButton>Copy the link</TbButton>
+    </ChildContent>
+</TbPopover>
+
+@code {
+    private static readonly Icon Square = new("<path d=\"M5 5h14v14H5z\" />");
+}

@@ -98,7 +98,8 @@ document.addEventListener('pointerout', event => {
 document.addEventListener('focusin', event => {
     const anchor = anchorOf(event.target);
     if (anchor && event.target.matches(':focus-visible')) {
-        show(anchor);
+        // Focus a closing popup hands back arrives mid-hide, when showPopover() throws, so the show waits a task.
+        later(anchor, show, 0);
     }
 });
 document.addEventListener('focusout', event => hide(anchorOf(event.target)));

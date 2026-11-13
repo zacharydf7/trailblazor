@@ -6231,7 +6231,8 @@ public static class ExampleCatalog
             Sections =
             [
                 new("description", "Describing a control", "Wrap a tooltip around a control, and `Text` appears when "
-                    + "the pointer rests on the control or it takes keyboard focus.", typeof(TooltipExample)),
+                    + "the pointer rests on the control or it takes keyboard focus. On a menu or popover trigger, the "
+                    + "tooltip shows again when Escape closes the popup and hands focus back.", typeof(TooltipExample)),
                 new("placement", "Placement", "`Placement` picks the side a tooltip opens on, and it flips when "
                     + "there's no room. Placed to the side in a narrow window, it wraps to fit, or overlaps the control "
                     + "if its text can't wrap that far. `Align` lines it up with the control, and `ShowArrow` adds an "

@@ -41,6 +41,7 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 ## Focus
 
 - [x] Focus handed back after a mouse click, such as by a dialog closed with the mouse, shows no tooltip. `TooltipTests.Tooltip_ShouldStayClosed_WhenFocusReturnsToTheTriggerAfterAClickElsewhere`
+- [x] Focus handed back by a menu or popover that Escape closes shows the trigger's tooltip. `TooltipPopupTests.Tooltip_ShouldShowWithoutAnError_WhenEscapeClosesTheMenuOnItsTrigger`, `TooltipPopupTests.Tooltip_ShouldShowWithoutAnError_WhenEscapeClosesThePopoverOnItsTrigger`
 - [x] A text field shows its tooltip on any focus. `DialogTests.Dialog_ShouldHideTheTooltipFirstAndCancelNext_WhenEscapeIsPressedWithATooltipOpen`
 - [x] The tooltip's text is the trigger's description. `TooltipTests.Tooltip_ShouldDescribeTheTriggerWithItsContent_WhenGivenRichContent`
 - [x] The description comes back when the trigger re-renders. `TooltipTests.Tooltip_ShouldStillDescribeTheTrigger_WhenTheTriggerRewritesItsDescription`
