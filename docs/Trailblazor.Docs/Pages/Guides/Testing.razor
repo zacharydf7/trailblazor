@@ -153,6 +153,15 @@
                         <td>Picks a date as a user would, through the calendar's years, months and days.</td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>SignaturePad(label).DrawAsync(points)</code></th>
+                        <td>
+                            Draws a stroke through points in the signature's 600 by 200 space and waits until the pad
+                            has it. <code>UndoAsync</code>, <code>ClearAsync</code> and <code>TypeNameAsync(name)</code>
+                            use its buttons and name field, and <code>IsSigned</code> says whether anything is drawn or
+                            typed.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Menu(trigger).ChooseAsync(path)</code></th>
                         <td>
                             Clicks an item by its name, through the submenus named before it, and throws for a disabled
@@ -726,6 +735,9 @@
             + "`MoveBackAsync(items)` moves them back, and `ChosenAsync()` reads the chosen ones."),
         new("Calendar", "Its label", "`Calendar(label).ChooseAsync(date)` picks a date as a user would, through the "
             + "calendar's years, months and days."),
+        new("Signature pad", "Its label", "`SignaturePad(label).DrawAsync(points)` drags the mouse through points in "
+            + "the signature's 600 by 200 space and waits until the pad has the stroke; `UndoAsync()`, `ClearAsync()` "
+            + "and `TypeNameAsync(name)` use its buttons and name field."),
         new("Pagination", "Its name", "`Pagination(name).GoToPageAsync(number)` goes to a page."),
         new("Tree", "Its name", "`Tree(name)` expands, selects, checks and drags rows by the texts along their path."),
         new("Tree select", "Its label", "`TreeSelect(label)` chooses, checks and unchecks items by the texts along "
