@@ -547,6 +547,26 @@ public static class TbStrings
     /// <see cref="ITbLocalizer.Plural"/>, with <see cref="RatingStar"/> as its one-form.</summary>
     public const string RatingStars = "Rating.Stars";
 
+    /// <summary>"Undo": the signature pad's button that takes back the last stroke.</summary>
+    public const string SignaturePadUndo = "SignaturePad.Undo";
+
+    /// <summary>"Clear": the signature pad's button that clears the signature.</summary>
+    public const string SignaturePadClear = "SignaturePad.Clear";
+
+    /// <summary>"Type your name": the signature pad's toggle that switches to typing a name instead of drawing.
+    /// </summary>
+    public const string SignaturePadTypeName = "SignaturePad.TypeName";
+
+    /// <summary>"Your full name": the label of the signature pad's field for a typed name.</summary>
+    public const string SignaturePadTypedName = "SignaturePad.TypedName";
+
+    /// <summary>"{0}, nothing drawn": what screen readers hear for an empty signature pad; {0} is its label.</summary>
+    public const string SignaturePadBlank = "SignaturePad.Blank";
+
+    /// <summary>"{0}, signed": what screen readers hear for a signature pad with something drawn; {0} is its label.
+    /// </summary>
+    public const string SignaturePadDrawn = "SignaturePad.Drawn";
+
     /// <summary>"Filter": names a select's or a list box's filter box.</summary>
     public const string SelectFilter = "Select.Filter";
 
@@ -1272,6 +1292,12 @@ public static class TbStrings
         [RangeSliderEnd] = "Maximum",
         [RatingStar] = "1 star",
         [RatingStars] = "{0} stars",
+        [SignaturePadUndo] = "Undo",
+        [SignaturePadClear] = "Clear",
+        [SignaturePadTypeName] = "Type your name",
+        [SignaturePadTypedName] = "Your full name",
+        [SignaturePadBlank] = "{0}, nothing drawn",
+        [SignaturePadDrawn] = "{0}, signed",
         [SelectFilter] = "Filter",
         [SelectNoResults] = "No matches",
         [SelectEmpty] = "Nothing to choose from",

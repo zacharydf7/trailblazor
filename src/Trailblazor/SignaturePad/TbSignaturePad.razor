@@ -1,0 +1,65 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Internal.Events
+@using Trailblazor.Primitives
+@inherits TbFieldBase<Signature>
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+@* ARIA gives a group no required state, so a description says "required" to screen readers instead. *@
+<div @attributes="GroupRootAttributes" role="group" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
+     aria-describedby="@DescribedWithRequired(DescribedBy)" aria-invalid="@(ShowsInvalid ? "true" : null)" style="@Style"
+     class="@ClassNames.Join("tb-signature-pad", ShowsInvalid ? "tb-signature-pad--invalid" : null,
+                Disabled ? "tb-signature-pad--disabled" : null, Class)">
+    @if (ShownLabel is not null)
+    {
+        @* The info button shares the label's line, so when there is one, only the inner span names the group. *@
+        <span id="@(HasInfo ? null : LabelId)" data-part="label"
+              class="@ClassNames.Join("tb-signature-pad__label", LabelHiddenClass)">
+            <span id="@(HasInfo ? LabelId : null)">@ShownLabel</span> @RequiredMarker @InfoButton
+        </span>
+    }
+    @RequiredDescription
+    @if (_typing)
+    {
+        <label data-part="typed-name" class="tb-signature-pad__typed">
+            <span class="tb-signature-pad__typed-label">@(Labels.TypedName ?? Localizer[TbStrings.SignaturePadTypedName])</span>
+            <input @ref="_typedInput" type="text" class="tb-field__input" value="@Value?.TypedName" disabled="@Disabled"
+                   readonly="@ReadOnly" autocomplete="name" aria-invalid="@(ShowsInvalid ? "true" : null)"
+                   @onchange="TypeAsync" />
+        </label>
+    }
+    else
+    {
+        @* Drawn with a pointer; the typed name is the way in for keys and screen readers. *@
+        <div @ref="_surface" data-part="surface" role="img" aria-label="@SurfaceLabel"
+             data-locked="@(CantChange || ReadOnly ? "" : null)" class="tb-signature-pad__surface"
+             @ontbsignaturestroke="AddStrokeAsync" @ontbsignaturestroke:stopPropagation>
+            <svg viewBox="0 0 @Signature.Width @Signature.Height" class="tb-signature-pad__ink" aria-hidden="true">
+                @foreach (var stroke in Strokes)
+                {
+                    <path d="@stroke.PathData" />
+                }
+            </svg>
+            @* The script draws the stroke in progress here, and Blazor never writes inside it. *@
+            <svg data-part="draft" viewBox="0 0 @Signature.Width @Signature.Height" class="tb-signature-pad__ink"
+                 aria-hidden="true"></svg>
+        </div>
+    }
+    <div data-part="actions" class="tb-signature-pad__actions">
+        <TbButton Variant="Variant.Text" Size="Size.Small" data-part="undo" OnClick="UndoAsync"
+                  Disabled="@(CantChange || ReadOnly || Strokes.Count == 0)">
+            @(Labels.Undo ?? Localizer[TbStrings.SignaturePadUndo])
+        </TbButton>
+        <TbButton Variant="Variant.Text" Size="Size.Small" data-part="clear" OnClick="ClearAsync"
+                  Disabled="@(CantChange || ReadOnly || Value is null or { IsEmpty: true })">
+            @(Labels.Clear ?? Localizer[TbStrings.SignaturePadClear])
+        </TbButton>
+        <TbButton @ref="_modeButton" Variant="Variant.Text" Size="Size.Small" data-part="type-name"
+                  aria-pressed="@(_typing ? "true" : "false")" OnClick="ToggleTypingAsync"
+                  Disabled="@(CantChange || ReadOnly)">
+            @(Labels.TypeName ?? Localizer[TbStrings.SignaturePadTypeName])
+        </TbButton>
+    </div>
+    @Messages(null, null)
+</div>

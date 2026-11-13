@@ -4123,6 +4123,80 @@ public static class ExampleCatalog
                 + "`GetByRole(AriaRole.Radio, new() { Name = \"4 stars\" }).CheckAsync()` in Playwright. In bUnit, "
                 + "`Change(true)` on a star's `input` chooses it.",
         },
+        new("signature-pad", "Signature pad", ExampleCategory.Inputs,
+            "A pad people sign by drawing with a mouse, pen or finger, or by typing their name instead.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to collect a signature on a waiver, delivery or consent form.",
+            ],
+            WhenNotToUse =
+            [
+                "For proof of who someone is, use your sign-in; a drawn signature shows assent, not identity.",
+            ],
+            Related = ["text-field", "file-upload"],
+            Sections =
+            [
+                new("basic", "Signature pad", "`@bind-Value` is a `Signature`: either the strokes drawn or the name "
+                    + "typed instead, and null until there's one or the other. Strokes are kept in a space 600 wide and "
+                    + "200 high, whatever size the pad is shown at. Undo takes back the last stroke and Clear starts "
+                    + "over. Type your name switches to a field for the name, which is how people sign from the "
+                    + "keyboard or with a screen reader; switching either way starts the signature over.",
+                    typeof(SignaturePadExample)),
+                new("image", "Keep it as an image", "`ToSvg` turns the signature into an SVG image, drawn strokes or the "
+                    + "typed name in a handwriting font, and `ToPngAsync` on the pad has the browser turn it into a "
+                    + "PNG. `Required` treats an empty pad as missing.", typeof(SignaturePadImageExample)),
+            ],
+            Api = [typeof(TbSignaturePad), typeof(Signature), typeof(SignatureStroke), typeof(SignaturePoint),
+                typeof(SignaturePadLabels)],
+            Keyboard =
+            [
+                new(["Tab"], "Moves through Undo, Clear and Type your name, and into the name field once it shows."),
+                new(["Enter", "Space"], "Presses the focused button; on Type your name, switches between drawing and typing."),
+            ],
+            Labeling =
+            [
+                "The `Label` names the pad's group. The drawing area is an image that says whether anything is drawn, "
+                    + "such as \"Sign the trail waiver, nothing drawn\", and the name field has its own label, "
+                    + "\"Your full name\". `Labels` replaces any of these words.",
+            ],
+            Announcements =
+            [
+                "Type your name is a toggle button, so screen readers say whether it's pressed.",
+            ],
+            Accessibility =
+            [
+                "Drawing needs a pointer, so typing a name is offered as an equal way to sign, as WCAG 2.5.7 asks of "
+                    + "dragging. The drawing area is an image with a label rather than a control, since keys can't "
+                    + "draw.",
+                "Helper text and messages describe the pad, and `Required` treats an empty pad as missing.",
+                "The drawing area has a dashed border, and a press on it draws rather than scrolls the page.",
+            ],
+            Modes = new(ModeSupport.None, ModeSupport.None),
+            BeforeInteractive =
+            [
+                "Drawing and typing need the page to be interactive, so a statically rendered pad can't be signed.",
+            ],
+            Target = new("group", "Sign the trail waiver"),
+            Ready = new("[data-part=surface]", "the drawing area"),
+            Blocks = ["tb-signature-pad"],
+            DataParts =
+            [
+                new("label", "The pad's label."),
+                new("surface", "The drawing area."),
+                new("draft", "The layer the stroke being drawn shows in until the pad takes it."),
+                new("typed-name", "The field for a typed name, which shows instead of the drawing area."),
+                new("actions", "The row of buttons under the pad."),
+                new("undo", "The Undo button."),
+                new("clear", "The Clear button."),
+                new("type-name", "The Type your name toggle."),
+            ],
+            TestingTip = "In bUnit, `cut.Tb().SignaturePad(\"Signature\").DrawAsync((10, 20), (60, 40))` draws a "
+                + "stroke through points in the signature's space, and `UndoAsync`, `ClearAsync` and "
+                + "`TypeNameAsync(\"Ada Lovelace\")` do the rest. In Playwright, `page.Tb().SignaturePad(...)` "
+                + "draws with the mouse and waits until the pad has taken the stroke.",
+        },
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.")
         {

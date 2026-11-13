@@ -135,6 +135,10 @@ function registerEvents(blazor) {
         createEventArgs: event => event.detail,
     });
     blazor.registerCustomEventType('tbcellscopy', { browserEventName: 'tb-cells-copy', createEventArgs: () => ({}) });
+    blazor.registerCustomEventType('tbsignaturestroke', {
+        browserEventName: 'tb-signature-stroke',
+        createEventArgs: event => ({ points: event.detail.points }),
+    });
     blazor.registerCustomEventType('tbtreedrop', {
         browserEventName: 'tb-tree-drop',
         createEventArgs: event => event.detail,

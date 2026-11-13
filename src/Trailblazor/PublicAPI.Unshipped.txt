@@ -5198,3 +5198,91 @@ Trailblazor.TbDataGrid<TItem>.CellSelection.get -> bool
 Trailblazor.TbDataGrid<TItem>.CellSelection.set -> void
 const Trailblazor.TbStrings.DataGridExportPdf = "DataGrid.ExportPdf" -> string!
 Trailblazor.TbDataGrid<TItem>.ExportPdfAsync(Trailblazor.GridExportRows rows = Trailblazor.GridExportRows.Shown) -> System.Threading.Tasks.Task<byte[]!>!
+Trailblazor.Internal.Events.SignatureStrokeEventArgs
+Trailblazor.Internal.Events.SignatureStrokeEventArgs.Points.get -> double[]!
+Trailblazor.Internal.Events.SignatureStrokeEventArgs.Points.set -> void
+Trailblazor.Internal.Events.SignatureStrokeEventArgs.SignatureStrokeEventArgs() -> void
+Trailblazor.Signature
+Trailblazor.Signature.<Clone>$() -> Trailblazor.Signature!
+Trailblazor.Signature.Deconstruct(out System.Collections.Generic.IReadOnlyList<Trailblazor.SignatureStroke!>! Strokes, out string? TypedName) -> void
+Trailblazor.Signature.Equals(Trailblazor.Signature? other) -> bool
+Trailblazor.Signature.IsEmpty.get -> bool
+Trailblazor.Signature.Signature(System.Collections.Generic.IReadOnlyList<Trailblazor.SignatureStroke!>! Strokes, string? TypedName = null) -> void
+Trailblazor.Signature.Strokes.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.SignatureStroke!>!
+Trailblazor.Signature.Strokes.init -> void
+Trailblazor.Signature.ToSvg(string! color = "#000") -> string!
+Trailblazor.Signature.TypedName.get -> string?
+Trailblazor.Signature.TypedName.init -> void
+Trailblazor.SignaturePadLabels
+Trailblazor.SignaturePadLabels.<Clone>$() -> Trailblazor.SignaturePadLabels!
+Trailblazor.SignaturePadLabels.Blank.get -> string?
+Trailblazor.SignaturePadLabels.Blank.init -> void
+Trailblazor.SignaturePadLabels.Clear.get -> string?
+Trailblazor.SignaturePadLabels.Clear.init -> void
+Trailblazor.SignaturePadLabels.Deconstruct(out string? Undo, out string? Clear, out string? TypeName, out string? TypedName, out string? Blank, out string? Drawn) -> void
+Trailblazor.SignaturePadLabels.Drawn.get -> string?
+Trailblazor.SignaturePadLabels.Drawn.init -> void
+Trailblazor.SignaturePadLabels.Equals(Trailblazor.SignaturePadLabels? other) -> bool
+Trailblazor.SignaturePadLabels.SignaturePadLabels(string? Undo = null, string? Clear = null, string? TypeName = null, string? TypedName = null, string? Blank = null, string? Drawn = null) -> void
+Trailblazor.SignaturePadLabels.TypeName.get -> string?
+Trailblazor.SignaturePadLabels.TypeName.init -> void
+Trailblazor.SignaturePadLabels.TypedName.get -> string?
+Trailblazor.SignaturePadLabels.TypedName.init -> void
+Trailblazor.SignaturePadLabels.Undo.get -> string?
+Trailblazor.SignaturePadLabels.Undo.init -> void
+Trailblazor.SignaturePoint
+Trailblazor.SignaturePoint.Deconstruct(out double X, out double Y) -> void
+Trailblazor.SignaturePoint.Equals(Trailblazor.SignaturePoint other) -> bool
+Trailblazor.SignaturePoint.SignaturePoint() -> void
+Trailblazor.SignaturePoint.SignaturePoint(double X, double Y) -> void
+Trailblazor.SignaturePoint.X.get -> double
+Trailblazor.SignaturePoint.X.init -> void
+Trailblazor.SignaturePoint.Y.get -> double
+Trailblazor.SignaturePoint.Y.init -> void
+Trailblazor.SignatureStroke
+Trailblazor.SignatureStroke.<Clone>$() -> Trailblazor.SignatureStroke!
+Trailblazor.SignatureStroke.Deconstruct(out System.Collections.Generic.IReadOnlyList<Trailblazor.SignaturePoint>! Points) -> void
+Trailblazor.SignatureStroke.Equals(Trailblazor.SignatureStroke? other) -> bool
+Trailblazor.SignatureStroke.PathData.get -> string!
+Trailblazor.SignatureStroke.Points.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.SignaturePoint>!
+Trailblazor.SignatureStroke.Points.init -> void
+Trailblazor.SignatureStroke.SignatureStroke(System.Collections.Generic.IReadOnlyList<Trailblazor.SignaturePoint>! Points) -> void
+Trailblazor.TbSignaturePad
+Trailblazor.TbSignaturePad.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbSignaturePad.Labels.get -> Trailblazor.SignaturePadLabels!
+Trailblazor.TbSignaturePad.Labels.set -> void
+Trailblazor.TbSignaturePad.TbSignaturePad() -> void
+Trailblazor.TbSignaturePad.ToPngAsync() -> System.Threading.Tasks.Task<byte[]!>!
+const Trailblazor.Signature.Height = 200 -> double
+const Trailblazor.Signature.Width = 600 -> double
+const Trailblazor.TbStrings.SignaturePadBlank = "SignaturePad.Blank" -> string!
+const Trailblazor.TbStrings.SignaturePadClear = "SignaturePad.Clear" -> string!
+const Trailblazor.TbStrings.SignaturePadDrawn = "SignaturePad.Drawn" -> string!
+const Trailblazor.TbStrings.SignaturePadTypeName = "SignaturePad.TypeName" -> string!
+const Trailblazor.TbStrings.SignaturePadTypedName = "SignaturePad.TypedName" -> string!
+const Trailblazor.TbStrings.SignaturePadUndo = "SignaturePad.Undo" -> string!
+override Trailblazor.Signature.Equals(object? obj) -> bool
+override Trailblazor.Signature.GetHashCode() -> int
+override Trailblazor.Signature.ToString() -> string!
+override Trailblazor.SignaturePadLabels.Equals(object? obj) -> bool
+override Trailblazor.SignaturePadLabels.GetHashCode() -> int
+override Trailblazor.SignaturePadLabels.ToString() -> string!
+override Trailblazor.SignaturePoint.GetHashCode() -> int
+override Trailblazor.SignatureStroke.Equals(object? obj) -> bool
+override Trailblazor.SignatureStroke.GetHashCode() -> int
+override Trailblazor.SignatureStroke.ToString() -> string!
+override Trailblazor.TbSignaturePad.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbSignaturePad.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+static Trailblazor.Signature.Empty.get -> Trailblazor.Signature!
+static Trailblazor.Signature.operator !=(Trailblazor.Signature? left, Trailblazor.Signature? right) -> bool
+static Trailblazor.Signature.operator ==(Trailblazor.Signature? left, Trailblazor.Signature? right) -> bool
+static Trailblazor.SignaturePadLabels.operator !=(Trailblazor.SignaturePadLabels? left, Trailblazor.SignaturePadLabels? right) -> bool
+static Trailblazor.SignaturePadLabels.operator ==(Trailblazor.SignaturePadLabels? left, Trailblazor.SignaturePadLabels? right) -> bool
+static Trailblazor.SignaturePoint.operator !=(Trailblazor.SignaturePoint left, Trailblazor.SignaturePoint right) -> bool
+static Trailblazor.SignaturePoint.operator ==(Trailblazor.SignaturePoint left, Trailblazor.SignaturePoint right) -> bool
+static Trailblazor.SignatureStroke.operator !=(Trailblazor.SignatureStroke? left, Trailblazor.SignatureStroke? right) -> bool
+static Trailblazor.SignatureStroke.operator ==(Trailblazor.SignatureStroke? left, Trailblazor.SignatureStroke? right) -> bool
+~override Trailblazor.SignaturePoint.Equals(object obj) -> bool
+~override Trailblazor.SignaturePoint.ToString() -> string
+~override Trailblazor.TbSignaturePad.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+override Trailblazor.TbSignaturePad.OnParametersSet() -> void

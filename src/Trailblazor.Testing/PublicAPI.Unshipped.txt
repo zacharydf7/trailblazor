@@ -251,3 +251,10 @@ Trailblazor.Testing.TbGridDriver.DiscardChangesAsync() -> System.Threading.Tasks
 Trailblazor.Testing.TbGridDriver.SaveChangesAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.SelectCellsAsync(string! fromRow, string! fromColumn, string! toRow, string! toColumn) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbGridDriver.SelectedCells.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.TbSignaturePadDriver
+Trailblazor.Testing.TbSignaturePadDriver.ClearAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSignaturePadDriver.DrawAsync(params (double X, double Y)[]! points) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSignaturePadDriver.IsSigned.get -> bool
+Trailblazor.Testing.TbSignaturePadDriver.TypeNameAsync(string! name) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSignaturePadDriver.UndoAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.SignaturePad(string! label) -> Trailblazor.Testing.TbSignaturePadDriver!

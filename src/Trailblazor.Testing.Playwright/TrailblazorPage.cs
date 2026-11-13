@@ -72,6 +72,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbFileUpload</c> with this label.</summary>
     public TbFileUploadLocator FileUpload(string label) => new(scope, label);
 
+    /// <summary>The <c>TbSignaturePad</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
+    public TbSignaturePadLocator SignaturePad(string label) =>
+        new(scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) }));
+
     /// <summary>The <c>TbDateRangePicker</c> with this label.</summary>
     public TbDateRangePickerLocator DateRangePicker(string label) => new(scope, label);
 
@@ -438,6 +442,71 @@ public sealed partial class TbColorPickerLocator(ILocator scope, ILocator field)
 
     [GeneratedRegex("^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")]
     private static partial Regex HexColor();
+}
+
+/// <summary>A <c>TbSignaturePad</c>, found by its label.</summary>
+public sealed class TbSignaturePadLocator(ILocator root)
+{
+    private ILocator Strokes => root.Locator("[data-part=surface] > svg:not([data-part=draft]) > path");
+
+    /// <summary>Draws a stroke through these points, in the signature's space of 600 by 200, with the mouse, and waits
+    /// until the pad has taken it.</summary>
+    public async Task DrawAsync(params (double X, double Y)[] points)
+    {
+        var surface = root.Locator("[data-part=surface]");
+        if (await surface.CountAsync() == 0)
+        {
+            throw new InvalidOperationException("The signature pad is set to typing a name, so it can't be drawn on.");
+        }
+
+        // A press before the pad's script is ready would draw nothing.
+        await Assertions.Expect(surface).ToHaveAttributeAsync("data-ready", "");
+        var box = (await surface.BoundingBoxAsync())!;
+        var before = await Strokes.CountAsync();
+        var mouse = root.Page.Mouse;
+        (float X, float Y) At((double X, double Y) point) =>
+            ((float)(box.X + point.X / 600 * box.Width), (float)(box.Y + point.Y / 200 * box.Height));
+        await mouse.MoveAsync(At(points[0]).X, At(points[0]).Y);
+        await mouse.DownAsync();
+        foreach (var point in points.Skip(1))
+        {
+            await mouse.MoveAsync(At(point).X, At(point).Y, new() { Steps = 2 });
+        }
+
+        await mouse.UpAsync();
+        await Assertions.Expect(Strokes).ToHaveCountAsync(before + 1);
+    }
+
+    /// <summary>Clicks Undo, and waits until the last stroke is gone.</summary>
+    public async Task UndoAsync()
+    {
+        var before = await Strokes.CountAsync();
+        await root.Locator("[data-part=undo]").ClickAsync();
+        await Assertions.Expect(Strokes).ToHaveCountAsync(Math.Max(before - 1, 0));
+    }
+
+    /// <summary>Clicks Clear, and waits until the pad is empty.</summary>
+    public async Task ClearAsync()
+    {
+        await root.Locator("[data-part=clear]").ClickAsync();
+        await Assertions.Expect(root.Locator("[data-part=clear]")).ToBeDisabledAsync();
+    }
+
+    /// <summary>Switches to typing a name if the pad isn't already, and types this one, which the pad takes as focus
+    /// leaves the field.</summary>
+    public async Task TypeNameAsync(string name)
+    {
+        var toggle = root.Locator("[data-part=type-name]");
+        if (await toggle.GetAttributeAsync("aria-pressed") != "true")
+        {
+            await toggle.ClickAsync();
+        }
+
+        var field = root.Locator("[data-part=typed-name] input");
+        await field.FillAsync(name);
+        await field.BlurAsync();
+        await Assertions.Expect(root.Locator("[data-part=clear]")).ToBeEnabledAsync();
+    }
 }
 
 /// <summary>A <c>TbFileUpload</c>, found by its label.</summary>

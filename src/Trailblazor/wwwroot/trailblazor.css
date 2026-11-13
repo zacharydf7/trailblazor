@@ -5291,6 +5291,68 @@
         }
     }
 
+    .tb-signature-pad {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-2);
+        color: var(--tb-color-text);
+        font-family: var(--tb-font-family);
+    }
+
+    .tb-signature-pad__label,
+    .tb-signature-pad__typed-label {
+        font-size: var(--tb-font-size-sm);
+        font-weight: 600;
+    }
+
+    /* The pad keeps the signature's 3:1 shape at any width, and a press on it draws rather than scrolls. */
+    .tb-signature-pad__surface {
+        position: relative;
+        aspect-ratio: 3;
+        inline-size: 100%;
+        max-inline-size: 36rem;
+        border: 1px dashed var(--tb-border-strong);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-surface);
+        touch-action: none;
+        cursor: crosshair;
+    }
+
+    .tb-signature-pad__surface[data-locked] {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .tb-signature-pad--invalid .tb-signature-pad__surface {
+        border-color: var(--tb-color-danger);
+    }
+
+    .tb-signature-pad__ink {
+        position: absolute;
+        inset: 0;
+        inline-size: 100%;
+        block-size: 100%;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        pointer-events: none;
+    }
+
+    .tb-signature-pad__typed {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        max-inline-size: 36rem;
+    }
+
+    .tb-signature-pad__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tb-space-1);
+    }
+
     .tb-rating {
         --tb-rating-on: var(--tb-color-primary);
         --tb-rating-off: var(--tb-border-strong);

@@ -1,0 +1,13 @@
+<TbStack Gap="2">
+    <TbSignaturePad Label="Ranger's signature" @bind-Value="_signature" Required HelperText="Draw it, or type your name." />
+    @if (_signature is { IsEmpty: false } signature)
+    {
+        @* The SVG is the signature's own markup, so it's shown as an image rather than written into the page. *@
+        <img src="@($"data:image/svg+xml;base64,{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(signature.ToSvg()))}")"
+             alt="The signature as an image" width="300" height="100" />
+    }
+</TbStack>
+
+@code {
+    private Signature? _signature;
+}

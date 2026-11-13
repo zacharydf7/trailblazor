@@ -22,6 +22,7 @@ public static class TrailblazorServiceCollectionExtensions
     [DynamicDependency(Kept, typeof(RowClickEventArgs))]
     [DynamicDependency(Kept, typeof(RowExtendEventArgs))]
     [DynamicDependency(Kept, typeof(CellRangeEventArgs))]
+    [DynamicDependency(Kept, typeof(SignatureStrokeEventArgs))]
     [DynamicDependency(Kept, typeof(GridEditKeyEventArgs))]
     [DynamicDependency(Kept, typeof(ColumnWidthsEventArgs))]
     [DynamicDependency(Kept, typeof(ColumnOrderEventArgs))]

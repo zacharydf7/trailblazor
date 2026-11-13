@@ -241,3 +241,10 @@ Trailblazor.Testing.Playwright.TbGridLocator.SaveChangesAsync() -> System.Thread
 Trailblazor.Testing.Playwright.TbGridLocator.CopyAsync() -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TbGridLocator.SelectCellsAsync(string! fromRow, string! fromColumn, string! toRow, string! toColumn) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.SelectedCellsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string!>!>!>!
+Trailblazor.Testing.Playwright.TbSignaturePadLocator
+Trailblazor.Testing.Playwright.TbSignaturePadLocator.ClearAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSignaturePadLocator.DrawAsync(params (double X, double Y)[]! points) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSignaturePadLocator.TbSignaturePadLocator(Microsoft.Playwright.ILocator! root) -> void
+Trailblazor.Testing.Playwright.TbSignaturePadLocator.TypeNameAsync(string! name) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSignaturePadLocator.UndoAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TrailblazorPage.SignaturePad(string! label) -> Trailblazor.Testing.Playwright.TbSignaturePadLocator!

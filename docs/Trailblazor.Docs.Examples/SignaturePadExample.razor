@@ -1,0 +1,15 @@
+<TbStack Gap="2">
+    <TbSignaturePad Label="Sign the trail waiver" @bind-Value="_signature" />
+    <TbText Muted>@Status</TbText>
+</TbStack>
+
+@code {
+    private Signature? _signature;
+
+    private string Status => _signature switch
+    {
+        null => "Not signed yet.",
+        { TypedName: { } name } => $"Signed as {name}.",
+        _ => $"Signed in {_signature.Strokes.Count} strokes.",
+    };
+}

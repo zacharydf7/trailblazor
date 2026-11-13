@@ -1,0 +1,21 @@
+@page "/signature-pad"
+
+@* A signature pad half the signature's width, with its strokes or typed name and its first point read out, and a
+   button that turns the signature into a PNG. *@
+<TbSignaturePad @ref="_pad" Label="Signature" @bind-Value="_signature" Style="width: 300px" />
+<output aria-label="Signed">@(_signature switch { null => "nothing", { TypedName: { } name } => $"typed {name}", _ => $"{_signature.Strokes.Count} strokes" })</output>
+<output aria-label="First point">@(_signature?.Strokes.FirstOrDefault()?.Points[0] is { } point ? FormattableString.Invariant($"{point.X},{point.Y}") : "")</output>
+<TbButton OnClick="MakeImageAsync">Make image</TbButton>
+<output aria-label="Image">@_image</output>
+
+@code {
+    private TbSignaturePad? _pad;
+    private Signature? _signature;
+    private string _image = "";
+
+    private async Task MakeImageAsync()
+    {
+        var png = await _pad!.ToPngAsync();
+        _image = Convert.ToHexString(png[..4]);
+    }
+}

@@ -97,6 +97,12 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbCalendar</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbCalendarDriver Calendar(string label) => new(() => Field(label, ".tb-calendar"));
 
+    /// <summary>The <c>TbSignaturePad</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
+    public TbSignaturePadDriver SignaturePad(string label) => new(() =>
+        _findAll(".tb-signature-pad").Where(pad => pad.QuerySelector(":scope > [data-part=label]") is { } named
+            && LabelText(named) == label).ToList() is [var pad]
+            ? pad : throw new InvalidOperationException($"No signature pad is labeled \"{label}\"."));
+
     /// <summary>The <c>TbRichTextEditor</c> with this label, or with this <c>AriaLabel</c> when it has no label.
     /// </summary>
     public TbRichTextEditorDriver RichTextEditor(string label) =>
@@ -884,6 +890,51 @@ public sealed class TbTagInputDriver
 
     private IEnumerable<IElement> TagElements() =>
         _find().Closest("[data-part=control]")?.QuerySelectorAll("[data-part=tag]") ?? Enumerable.Empty<IElement>();
+}
+
+/// <summary>A <c>TbSignaturePad</c>, found by its label.</summary>
+public sealed class TbSignaturePadDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbSignaturePadDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>Whether something is drawn or a name is typed.</summary>
+    public bool IsSigned => _find().QuerySelector("[data-part=surface] > svg:not([data-part=draft]) > path") is not null
+        || !string.IsNullOrWhiteSpace(_find().QuerySelector("[data-part=typed-name] input")?.GetAttribute("value"));
+
+    /// <summary>Draws a stroke through these points, in the signature's space of 600 by 200, as a pointer pressed on the
+    /// first and lifted on the last would. Throws when the pad is switched to typing a name.</summary>
+    public Task DrawAsync(params (double X, double Y)[] points) =>
+        (_find().QuerySelector("[data-part=surface]")
+            ?? throw new InvalidOperationException("The signature pad is set to typing a name, so it can't be drawn on."))
+            .TriggerEventAsync("ontbsignaturestroke", new SignatureStrokeEventArgs
+            {
+                Points = [.. points.SelectMany(point => new[] { point.X, point.Y })],
+            });
+
+    /// <summary>Clicks Undo, which takes back the last stroke. Throws when there's nothing to take back or the pad is
+    /// disabled or read-only.</summary>
+    public Task UndoAsync() => Button("undo").ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    /// <summary>Clicks Clear. Throws when there's nothing to clear or the pad is disabled or read-only.</summary>
+    public Task ClearAsync() => Button("clear").ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    /// <summary>Switches to typing a name if the pad isn't already, and types this one, which the pad takes as the
+    /// field changes.</summary>
+    public async Task TypeNameAsync(string name)
+    {
+        if (_find().QuerySelector("[data-part=type-name]")?.GetAttribute("aria-pressed") != "true")
+        {
+            await Button("type-name").ClickAsync(new MouseEventArgs { Detail = 1 });
+        }
+
+        await _find().QuerySelector("[data-part=typed-name] input")!.ChangeAsync(new ChangeEventArgs { Value = name });
+    }
+
+    private IElement Button(string part) =>
+        _find().QuerySelector($"[data-part={part}]") is { } button && !button.HasAttribute("disabled")
+            ? button : throw new InvalidOperationException($"The signature pad's {part} button is disabled.");
 }
 
 /// <summary>A <c>TbCalendar</c>, found by its label.</summary>
