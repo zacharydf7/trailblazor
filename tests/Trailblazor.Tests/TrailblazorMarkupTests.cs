@@ -787,6 +787,42 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Sortable_ShouldMoveTheItemToTheEndOfAnotherListOrThrow_WhenMovedToAListOfItsGroup()
+    {
+        List<string> todo = ["Pack food", "Check weather"];
+        List<string> done = ["Book campsite"];
+        var cut = Render(builder =>
+        {
+            Column(builder, 0, "To do", todo);
+            Column(builder, 10, "Done", done);
+        });
+
+        await cut.Tb().Sortable("To do").MoveToListAsync("Check weather", "Done");
+
+        // The handler isn't a component's, so nothing redraws the lists; the app's data shows the move.
+        Assert.Equal(["Book campsite", "Check weather"], done);
+        Assert.Equal(["Pack food"], todo);
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Sortable("To do").MoveToListAsync("Pack food", "Archive"));
+        Assert.Contains("no other list in its group has that label", failure.Message);
+
+        void Column(RenderTreeBuilder builder, int sequence, string label, List<string> tasks)
+        {
+            builder.OpenComponent<TbSortable<string>>(sequence);
+            builder.AddComponentParameter(sequence + 1, nameof(TbSortable<string>.Items), tasks);
+            builder.AddComponentParameter(sequence + 2, nameof(TbSortable<string>.Label), label);
+            builder.AddComponentParameter(sequence + 3, nameof(TbSortable<string>.Group), "board");
+            builder.AddComponentParameter(sequence + 4, nameof(TbSortable<string>.ListId), label);
+            builder.AddComponentParameter(sequence + 5, nameof(TbSortable<string>.ItemTemplate),
+                (RenderFragment<string>)(task => content => content.AddContent(0, task)));
+            builder.AddComponentParameter(sequence + 6, nameof(TbSortable<string>.OnMove),
+                EventCallback.Factory.Create<SortableMove<string>>(this, move =>
+                    move.ApplyBetween(move.FromList == "To do" ? todo : done, move.ToList == "To do" ? todo : done)));
+            builder.CloseComponent();
+        }
+    }
+
+    [Fact]
     public async Task Grid_ShouldMoveARowAcrossPages_WhenMovedToAPlaceAmongAllTheRows()
     {
         List<Trail> trails = [new("Pine Hollow"), new("Cedar Flats"), new("Lake camp")];

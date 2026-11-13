@@ -221,7 +221,7 @@
                         <th scope="row"><code>Sortable(name).MoveAsync(item, index)</code></th>
                         <td>
                             Moves an item to <code>index</code> through its handle's menu, and <code>Items</code> reads
-                            the order.
+                            the order. <code>MoveToListAsync(item, list)</code> moves it to another list of its group.
                         </td>
                     </tr>
                     <tr>
@@ -707,7 +707,8 @@
             + "`SearchAsync(text)` types and waits for the results, `ResultsAsync()` reads them, and "
             + "`ChooseAsync(command)` runs one and waits until the app's `OnChoose` has run."),
         new("Sortable", "Its label", "`Sortable(name).MoveAsync(item, index)` moves an item through its handle's "
-            + "menu, `DragBeforeAsync` and `DragAfterAsync` drag it onto another item, and each waits for the app's "
+            + "menu, `DragBeforeAsync` and `DragAfterAsync` drag it onto another item, `MoveToListAsync(item, list)` "
+            + "and `DragToListAsync(item, list)` move it to another list of its group, and each waits for the app's "
             + "answer; `ItemsAsync()` reads the order."),
         new("Accordion", "An item's header", "`AccordionItem(header).ExpandAsync()` opens the item, waits until it "
             + "is open and hands back its panel; `CollapseAsync()` closes it."),

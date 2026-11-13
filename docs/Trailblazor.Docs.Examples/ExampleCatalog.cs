@@ -2490,12 +2490,21 @@ public static class ExampleCatalog
                 "To reorder nested items, use a [tree view](components/tree-view) with `OnMove`.",
             ],
             Related = ["data-grid", "tree-view", "list"],
+            RightToLeftKeys = "Left moves an item to the next list of its group, and Right to the one before.",
             Sections =
             [
                 new("order", "Put items in order", "`OnMove` gets each move and the app applies it. `CanMove` can "
                     + "refuse one and say why, as for the last rule here. `MoveAsync(from, to)` moves an item from the "
                     + "app's own buttons, such as Raise, with the same check and announcement.",
                     typeof(SortableExample)),
+                new("between-lists", "Between lists", "Lists with the same `Group` trade items, such as a board's "
+                    + "columns. Drag an item into another list, or press Left or Right on its handle to move it to the "
+                    + "same place in the previous or next list, or the end of a shorter one; its menu also offers each "
+                    + "other list by name, and moves the item to the end of that list. `ListId` names each list, and a "
+                    + "move's `FromList` and `ToList` say which lists it left and joined, so one `OnMove` can serve "
+                    + "them all, with `ApplyBetween(from, to)`. A move between lists goes only to the `OnMove` and "
+                    + "`CanMove` of the list the item goes to; here, Hiked refuses a trail that hasn't been planned.",
+                    typeof(SortableGroupExample)),
                 new("content", "Your own content", "`ItemTemplate` draws each item, and long text wraps inside it. "
                     + "`ItemLabel` names the handle when items aren't strings, and `KeySelector` tells items apart as "
                     + "they move.", typeof(SortableContentExample)),
@@ -2509,8 +2518,10 @@ public static class ExampleCatalog
             [
                 new(["Up", "Down"], "Moves the item one place, and focus stays on the handle.") { When = "On a handle" },
                 new(["Home", "End"], "Moves the item to the start or end.") { When = "On a handle" },
-                new(["Enter", "Space"], "Opens its menu: Move up, Move down, Move to the start and Move to the end.")
-                    { When = "On a handle" },
+                new(["Left", "Right"], "Moves the item to the same place in the list before or after it in its "
+                    + "`Group`, or to the end of a shorter one, and focus follows it.") { When = "On a handle" },
+                new(["Enter", "Space"], "Opens its menu: Move up, Move down, Move to the start and Move to the end, "
+                    + "then Move to each other list of its `Group`.") { When = "On a handle" },
                 new(["Escape"], "Cancels a drag.") { When = "While dragging" },
             ],
             Labeling =
@@ -2520,12 +2531,16 @@ public static class ExampleCatalog
                     + "its keys work.",
                 "`Labels` replaces the handle's name (with `{0}` for the item's text), its description, its menu's "
                     + "items and the announcement after a move (with `{0}` for the item's text, `{1}` for its new "
-                    + "position and `{2}` for the number of items).",
+                    + "position and `{2}` for the number of items). `MoveToList` words the menu item for each other "
+                    + "list, with that list's label as `{0}`, and `MovedToList` words the announcement after a move to "
+                    + "one, with `Moved`'s placeholders plus the list's label as `{3}`.",
             ],
             Announcements =
             [
                 "Each move is announced with the item's new position, such as \"Storm warning moved to position 1 of "
                     + "4.\"",
+                "A move to another list is announced with that list's label, such as \"Ridge loop moved to Planned, "
+                    + "position 2 of 2.\"",
                 "A move `CanMove` refuses is announced with its reason, which also shows beside the drop.",
             ],
             Accessibility =
@@ -2556,7 +2571,9 @@ public static class ExampleCatalog
                 + "a time: "
                 + "`page.Tb().Sortable(\"Trail alerts, first match wins\").MoveAsync(\"Storm warning\", 0)`, or "
                 + "`cut.Tb().Sortable()` in bUnit. In Playwright, `DragBeforeAsync` and `DragAfterAsync` drag it "
-                + "onto another item, and each waits for the app's answer. "
+                + "onto another item, and each waits for the app's answer. Between lists, "
+                + "`MoveToListAsync(\"Ridge loop\", \"Planned\")` moves an item through its handle's menu in both "
+                + "libraries, and `DragToListAsync` drags it there in Playwright. "
                 + "Without them, press keys on a handle, found as "
                 + "`GetByRole(AriaRole.Button, new() { Name = \"Move Storm warning\" })`, and check the order the "
                 + "app shows. To drag, move the mouse from the handle to the lower half of the item it should "

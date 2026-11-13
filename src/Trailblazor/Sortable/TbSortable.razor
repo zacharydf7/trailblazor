@@ -8,7 +8,7 @@
      class="@ClassNames.Join("tb-sortable", Disabled ? "tb-sortable--disabled" : null, Class)">
     @* Safari drops a list's semantics when its markers are hidden, so the role is set as well. *@
     <ul @ref="_list" role="list" aria-label="@Label" data-part="list" data-sortable
-        data-commits="@_answered" class="tb-sortable__list">
+        data-commits="@_answered" data-group="@Group" data-list-id="@ListId" class="tb-sortable__list">
         @for (var index = 0; index < Items.Count; index++)
         {
             var item = Items[index];
@@ -16,7 +16,8 @@
             <li @key="KeyOf(item)" data-part="item" data-key="@IdOf(item)" class="tb-sortable__item">
                 @((RenderFragment)(handle => MoveHandle.Add(handle, 0, HandleLabel(item), at, Items.Count, Disabled,
                     Labels, Localizer,
-                    (to, args) => UserMoveAsync(item, to, args.Detail > 0 ? "pointer" : "keyboard"))))
+                    (to, args) => UserMoveAsync(item, to, args.Detail > 0 ? "pointer" : "keyboard"),
+                    Group is null ? null : () => MoveTargets(item), GroupHint)))
                 <div class="tb-sortable__content">@ItemTemplate(item)</div>
             </li>
         }

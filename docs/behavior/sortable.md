@@ -16,12 +16,18 @@ Familiar apps: Trello's lists, Jira's backlog, a mail app's filter rules
 - [x] Enter or Space on a handle opens its menu of moves, for screen readers that keep the arrow keys. `MoveHandle.cs`
 - [x] A list inside an item moves only its own items. `SortableTests.Keys_ShouldMoveOnlyTheInnerItem_WhenPressedOnAListInsideAGridRow`
 - [x] A disabled list's handles are off and no key moves anything. `TbSortableTests.Moves_ShouldBeIgnored_WhenDisabled`
+- [x] In a list with a `Group`, Left and Right on a handle move the item to the same place in the list before or after, or to the end of a shorter one, and focus follows it; at the first or last list they do nothing. `SortableBoardTests.Keys_ShouldMoveTheItemToTheListBesideAndKeepFocusOnItsHandle_WhenLeftOrRightIsPressed`
+- [x] In right-to-left text, Left moves the item to the next list and Right to the one before. `SortableBoardTests.Keys_ShouldMoveTheItemTheOtherWay_WhenThePageIsRightToLeft`
+- [x] The handle's menu offers each other list of the group, and choosing one moves the item to the end of that list. `TbSortableGroupTests.Menu_ShouldOfferEachOtherListAndMoveTheItemToItsEnd_WhenOneIsChosen`
+- [x] The list an item goes to answers `CanMove`, and a disabled list takes nothing. `TbSortableGroupTests.Drop_ShouldAskTheListItGoesToAndSayWhy_WhenThatListRefuses`, `TbSortableGroupTests.Drop_ShouldBeRefused_WhenTheListItGoesToIsDisabled`
 
 ## Pointer
 
 - [x] Dragging a handle a few pixels starts a drag, and a line marks where the item will land. `SortableTests.Handle_ShouldMoveTheItemAfterTheOneItIsDroppedOn_WhenDraggedPastItsMiddle`
 - [x] A place the item may not go shows why, and a drop there changes nothing. `SortableTests.Handle_ShouldShowWhyAndLeaveTheOrder_WhenDraggedWhereTheItemMayNotGo`
 - [x] Letting go outside the list changes nothing. `sortable.js`
+- [x] Dragged over another list of its group, the item lands before or after the item under the pointer, or at the nearest gap between that list's items; a line marks the spot, or an outline marks the list when it's empty. `SortableBoardTests.Handle_ShouldMoveTheItemIntoAnotherListBeforeTheItemDroppedOn_WhenDraggedThere`, `SortableBoardTests.Handle_ShouldMoveTheItemIntoAnEmptyList_WhenDraggedOntoIt`
+- [x] A list of the group that refuses the item shows why beside the drop, and a drop there changes neither list. `SortableBoardTests.Handle_ShouldShowWhyAndLeaveBothLists_WhenTheListItGoesToRefuses`
 - [x] Escape during a drag cancels it. `sortable.js`
 - [x] A click on a handle opens its menu, but a drag's release doesn't. `sortable.js`
 - [x] The menu moves the item in one click, and offers no move that goes nowhere. `SortableTests.Menu_ShouldMoveTheItemWithOneClick_WhenAMoveIsChosenFromItsHandle`
@@ -43,6 +49,7 @@ Familiar apps: Trello's lists, Jira's backlog, a mail app's filter rules
 - [x] Focus goes back to the handle after a move chosen from its menu with the keyboard. `TbSortable.cs`
 - [x] Each handle is named for its item, and says how the keys work. `TbSortableTests.Render_ShouldNameTheListAndEachHandle_WhenGivenItems`
 - [x] Screen readers hear where the item landed. `TbSortableTests.Keys_ShouldMoveTheItemAndSaySo_WhenPressedOnItsHandle`
+- [x] After a move to another list, screen readers hear that list's name with the item's place there. `TbSortableGroupTests.ListKey_ShouldMoveTheItemToTheSamePlaceInTheListBesideAndSaySo_WhenPressed`
 - [x] `Labels` replaces the handle's name and description, its menu's items and the announcement after a move. `TbSortableTests.Labels_ShouldWordTheHandlesTheirMenuAndTheMove_WhenGiven`
 
 ## Not applicable
@@ -50,4 +57,4 @@ Familiar apps: Trello's lists, Jira's backlog, a mail app's filter rules
 - Pressing Space to lift an item before moving it, as some drag libraries do: the arrows move it at once, so there is no mode to enter or leave.
 - Dragging from anywhere on an item: only the handle starts a drag, so an item's text and controls keep their clicks.
 - A copy of the item following the pointer: the item dims in place and a line marks the drop.
-- Left and Right: the list is vertical.
+- Left and Right in a list without a `Group`: the list is vertical, and there's no other list to move to.

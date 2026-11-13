@@ -8394,6 +8394,25 @@
         outline-offset: -2px;
     }
 
+    /* A list that shares a group keeps room for one item when empty, so an item can be dragged into it, and an item
+       dragged into an empty list outlines the list. */
+    .tb-sortable__list[data-group] {
+        min-block-size: var(--tb-item-height);
+    }
+
+    .tb-sortable__list[data-drop="end"] {
+        --tb-sortable-drop: var(--tb-color-primary);
+        border-radius: var(--tb-radius-md);
+        outline: 2px solid var(--tb-sortable-drop);
+        outline-offset: -2px;
+    }
+
+    .tb-sortable__list[data-drop="end"][data-drop-refused] {
+        --tb-sortable-drop: var(--tb-color-danger-text);
+        outline-style: dashed;
+        cursor: not-allowed;
+    }
+
     .tb-sortable__reason {
         position: absolute;
         inset-inline-start: var(--tb-space-2);

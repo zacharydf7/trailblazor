@@ -1,0 +1,34 @@
+@page "/sortable-board"
+
+@* Doing starts empty, so an item can be dragged into a list with no items. *@
+<div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem">
+    @foreach (var column in _columns)
+    {
+        <section style="inline-size: 14rem">
+            <TbSortable TItem="string" Items="column.Tasks" Label="@column.Name" Group="board" ListId="@column.Id"
+                        OnMove="Move" CanMove="CheckAsync">
+                <ItemTemplate>@context</ItemTemplate>
+            </TbSortable>
+            <output data-testid="@column.Id">@string.Join(", ", column.Tasks)</output>
+        </section>
+    }
+</div>
+
+@code {
+    private readonly Column[] _columns =
+    [
+        new("todo", "To do", ["Pack food", "Check weather", "Fill water"]),
+        new("doing", "Doing", []),
+        new("done", "Done", ["Book campsite"]),
+    ];
+
+    private void Move(SortableMove<string> move) => move.ApplyBetween(Tasks(move.FromList), Tasks(move.ToList));
+
+    private List<string> Tasks(string? id) => _columns.Single(column => column.Id == id).Tasks;
+
+    private static Task<MoveCheck> CheckAsync(SortableMove<string> move) =>
+        Task.FromResult(move.Item == "Fill water" && move.ToList == "done"
+            ? MoveCheck.Refuse("Fill the water first.") : MoveCheck.Allow);
+
+    private sealed record Column(string Id, string Name, List<string> Tasks);
+}

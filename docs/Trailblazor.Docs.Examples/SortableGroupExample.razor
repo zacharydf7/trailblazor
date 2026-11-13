@@ -1,0 +1,33 @@
+<TbStack Row Gap="4" Wrap Align="Align.Start">
+    @foreach (var column in _columns)
+    {
+        <TbStack Gap="2" Style="inline-size: 14rem">
+            <TbText TextStyle="TextStyle.Label">@column.Name</TbText>
+            <TbSortable TItem="string" Items="column.Trails" Label="@column.Name" Group="trip" ListId="@column.Id"
+                        OnMove="Move" CanMove="CheckAsync">
+                <ItemTemplate>@context</ItemTemplate>
+            </TbSortable>
+        </TbStack>
+    }
+</TbStack>
+
+@code {
+    private readonly Column[] _columns =
+    [
+        new("ideas", "Ideas", ["Ridge loop", "Lake path", "Old mill trail"]),
+        new("planned", "Planned", ["Pine trail"]),
+        new("hiked", "Hiked", []),
+    ];
+
+    // One handler serves every column: FromList and ToList are the columns' ListIds.
+    private void Move(SortableMove<string> move) => move.ApplyBetween(Trails(move.FromList), Trails(move.ToList));
+
+    private List<string> Trails(string? id) => _columns.Single(column => column.Id == id).Trails;
+
+    // The column an item goes to is the one asked.
+    private static Task<MoveCheck> CheckAsync(SortableMove<string> move) =>
+        Task.FromResult(move.FromList == "ideas" && move.ToList == "hiked"
+            ? MoveCheck.Refuse("Plan a trail before you hike it.") : MoveCheck.Allow);
+
+    private sealed record Column(string Id, string Name, List<string> Trails);
+}

@@ -51,6 +51,7 @@ public static class TrailblazorServiceCollectionExtensions
         services.TryAddScoped<IToastService>(provider => provider.GetRequiredService<ToastService>());
         services.TryAddScoped<IBrowserService, BrowserService>();
         services.TryAddScoped<ITbLocalizer, TbLocalizer>();
+        services.TryAddScoped<SortableGroups>();
         services.TryAddScoped<IThemeService, ThemeService>();
         services.AddMetrics();
         services.TryAddSingleton<TelemetryInstruments>();

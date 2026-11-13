@@ -1550,7 +1550,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private Task<MoveCheck> OnRowDragOverAsync(string id, string targetId, bool before) =>
         CanReorder && ItemMover<TItem>.DropIndex(AllIndexOf(id), AllIndexOf(targetId), before) is { } to
-            ? Mover.CheckAsync(AllItems, AllIndexOf(id), to, CanMoveRow) : Task.FromResult(new MoveCheck(false));
+            ? Mover.CheckAsync(AllItems, AllIndexOf(id), to, CanMoveRow, list: null) : Task.FromResult(new MoveCheck(false));
 
     private Task OnRowDropAsync(string id, string targetId, bool before) =>
         ItemMover<TItem>.DropIndex(AllIndexOf(id), AllIndexOf(targetId), before) is { } to
@@ -1581,7 +1581,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private async Task MoveRowCoreAsync(int from, int to, string input)
     {
         if (!CanReorder || from < 0
-            || !await Mover.MoveAsync(() => AllItems, from, to, CanMoveRow, OnRowMove, LabelOf, moved: null))
+            || !await Mover.MoveAsync(() => AllItems, from, to, CanMoveRow, OnRowMove, LabelOf, moved: null, list: null))
         {
             return;
         }

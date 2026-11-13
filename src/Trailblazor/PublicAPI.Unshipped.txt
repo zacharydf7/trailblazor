@@ -4856,3 +4856,19 @@ static Trailblazor.ContextMenuContext.operator ==(Trailblazor.ContextMenuContext
 ~override Trailblazor.TbContextMenu.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 Trailblazor.Internal.Events.ContextMenuOpenEventArgs.Request.get -> int
 Trailblazor.Internal.Events.ContextMenuOpenEventArgs.Request.set -> void
+Trailblazor.SortableLabels.MoveToList.get -> string?
+Trailblazor.SortableLabels.MoveToList.init -> void
+Trailblazor.SortableLabels.MovedToList.get -> string?
+Trailblazor.SortableLabels.MovedToList.init -> void
+Trailblazor.SortableMove<TItem>.ApplyBetween(System.Collections.Generic.IList<TItem>! from, System.Collections.Generic.IList<TItem>! to) -> void
+Trailblazor.SortableMove<TItem>.FromList.get -> string?
+Trailblazor.SortableMove<TItem>.FromList.init -> void
+Trailblazor.SortableMove<TItem>.ToList.get -> string?
+Trailblazor.SortableMove<TItem>.ToList.init -> void
+Trailblazor.TbSortable<TItem>.Group.get -> string?
+Trailblazor.TbSortable<TItem>.Group.set -> void
+Trailblazor.TbSortable<TItem>.ListId.get -> string?
+Trailblazor.TbSortable<TItem>.ListId.set -> void
+const Trailblazor.TbStrings.SortableGroupHint = "Sortable.GroupHint" -> string!
+const Trailblazor.TbStrings.SortableMoveToList = "Sortable.MoveToList" -> string!
+const Trailblazor.TbStrings.SortableMovedToList = "Sortable.MovedToList" -> string!

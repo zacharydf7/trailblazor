@@ -8,7 +8,8 @@ public sealed record SortableLabels
     public string? Handle { get; init; }
 
     /// <summary>Describes a handle, telling screen reader users how to move the item. Leave it null for the app's text
-    /// for <see cref="TbStrings.SortableHint"/>.</summary>
+    /// for <see cref="TbStrings.SortableHint"/>, or in a list with a group, for
+    /// <see cref="TbStrings.SortableGroupHint"/>.</summary>
     public string? Hint { get; init; }
 
     /// <summary>The handle's menu item that moves the item up one place. Leave it null for the app's text for
@@ -31,4 +32,14 @@ public sealed record SortableLabels
     /// <c>{2}</c> for the number of items. Leave it null for the app's text for <see cref="TbStrings.SortableMoved"/>.
     /// </summary>
     public string? Moved { get; init; }
+
+    /// <summary>The handle's menu item that moves the item to the end of another list in its group, with <c>{0}</c>
+    /// for that list's label. Leave it null for the app's text for <see cref="TbStrings.SortableMoveToList"/>.
+    /// </summary>
+    public string? MoveToList { get; init; }
+
+    /// <summary>Read out after an item moves to another list in its group, with <c>{0}</c> for the item's text,
+    /// <c>{1}</c> for its position there, <c>{2}</c> for the number of items there and <c>{3}</c> for that list's
+    /// label. Leave it null for the app's text for <see cref="TbStrings.SortableMovedToList"/>.</summary>
+    public string? MovedToList { get; init; }
 }

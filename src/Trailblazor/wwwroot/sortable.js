@@ -12,7 +12,11 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
     }
 
     const root = list.closest('.tb-sortable, .tb-data-grid') ?? list;
-    const items = () => [...list.children].filter(item => item.matches(itemSelector));
+    const items = (of = list) => [...of.children].filter(item => item.matches(itemSelector));
+    // The lists of this list's group, which an item can move between, in the order they appear.
+    const group = list.dataset.group;
+    const groupLists = () => group
+        ? [...document.querySelectorAll('[data-sortable]')].filter(other => other.dataset.group === group) : [];
     // A list or grid inside an item has handles and items of its own, which are its business.
     const ownItem = element => {
         const item = element?.closest('[data-sortable]') === list ? element.closest(itemSelector) : null;
@@ -27,29 +31,64 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
     let draggedHandle = null;
 
     // A grid renders its reason box only once the app handles moves, so it is looked up when needed.
-    const reason = () => root.querySelector(':scope > [data-part="drop-reason"]');
+    const reason = (of = root) => of.querySelector(':scope > [data-part="drop-reason"]');
 
+    // A drag over another list of the group marks that list, or its item, and shows a refusal in its own box.
     const clearDrop = () => {
-        items().forEach(item => {
-            delete item.dataset.drop;
-            delete item.dataset.dropRefused;
+        const marked = over?.list ? [over.list, ...items(over.list)] : [];
+        [...items(), ...marked].forEach(element => {
+            delete element.dataset.drop;
+            delete element.dataset.dropRefused;
         });
-        const box = reason();
-        if (box) {
-            box.hidden = true;
+        for (const box of [reason(), over?.list && reason(over.list.closest('.tb-sortable'))]) {
+            if (box) {
+                box.hidden = true;
+            }
         }
 
         over = null;
     };
 
-    const showRefusal = (item, text) => {
-        item.dataset.dropRefused = '';
-        const box = reason();
+    const showRefusal = (element, text, of = root) => {
+        element.dataset.dropRefused = '';
+        const box = reason(of);
         if (box && text) {
             box.textContent = text;
-            box.style.insetBlockStart = `${item.getBoundingClientRect().bottom - root.getBoundingClientRect().top}px`;
+            box.style.insetBlockStart = `${element.getBoundingClientRect().bottom - of.getBoundingClientRect().top}px`;
             box.hidden = false;
         }
+    };
+
+    // Over another list of the group, the item goes before or after the item under the pointer, by the nearest gap
+    // between or past its items, or into the list when it's empty.
+    const dragOverList = (other, element, event) => {
+        let item = element;
+        while (item && item.parentElement !== other) {
+            item = item.parentElement;
+        }
+
+        const middle = element => {
+            const box = element.getBoundingClientRect();
+            return box.top + box.height / 2;
+        };
+        const all = items(other);
+        const target = (item?.matches(itemSelector) ? item : null)
+            ?? all.find(each => event.clientY < middle(each)) ?? all.at(-1) ?? null;
+        const before = !!target && event.clientY < middle(target);
+        if (over?.list === other && over.item === target && over.before === before) {
+            return;
+        }
+
+        clearDrop();
+        const marked = target ?? other;
+        marked.dataset.drop = target ? (before ? 'before' : 'after') : 'end';
+        const current = over = { list: other, item: target, before };
+        callDotNet(events, 'OnDragOverList', source.dataset.key, other.dataset.listId, target?.dataset.key ?? null,
+            before).then(check => {
+            if (over === current && check && !check.allowed) {
+                showRefusal(marked, check.reason, other.closest('.tb-sortable'));
+            }
+        });
     };
 
     // Heard before the menu's own keys, which would open it on the up and down arrows.
@@ -64,6 +103,24 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
         event.preventDefault();
         event.stopPropagation();
         callDotNet(events, 'OnKey', item.dataset.key, event.key);
+    };
+    // Left and Right move the item to the list before or after this one in its group, the other way around in
+    // right-to-left text. They're heard before the menu's own keys too.
+    const onSideKeyDown = event => {
+        const item = ownItem(event.target.closest?.('[data-part="handle"] [data-part="trigger"]'));
+        if (!item || !group || !['ArrowLeft', 'ArrowRight'].includes(event.key) || event.altKey || event.ctrlKey
+            || event.metaKey || event.shiftKey) {
+            return;
+        }
+
+        const lists = groupLists();
+        const forward = (event.key === 'ArrowRight') !== (getComputedStyle(list).direction === 'rtl');
+        const target = lists[lists.indexOf(list) + (forward ? 1 : -1)];
+        if (target) {
+            event.preventDefault();
+            event.stopPropagation();
+            callDotNet(events, 'OnListKey', item.dataset.key, target.dataset.listId);
+        }
     };
 
     // A drag's release would open the handle's menu, so that click goes nowhere.
@@ -88,7 +145,14 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
         // The item goes before the one under the pointer when it is over that item's first half, else after it.
         onMove: event => {
             // Anywhere over one of this list's items counts, a list inside the item included.
-            let item = document.elementFromPoint(event.clientX, event.clientY);
+            const element = document.elementFromPoint(event.clientX, event.clientY);
+            const other = element?.closest('[data-sortable]');
+            if (source && group && other && other !== list && other.dataset.group === group) {
+                dragOverList(other, element, event);
+                return;
+            }
+
+            let item = element;
             while (item && item.parentElement !== list) {
                 item = item.parentElement;
             }
@@ -126,7 +190,10 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
             const moved = source;
             draggedHandle = handleOf(triggerOf(moved));
             endDrag();
-            if (target && moved) {
+            if (target?.list && moved) {
+                callDotNet(events, 'OnDropList', moved.dataset.key, target.list.dataset.listId,
+                    target.item?.dataset.key ?? null, target.before);
+            } else if (target && moved) {
                 callDotNet(events, 'OnDrop', moved.dataset.key, target.item.dataset.key, target.before);
             }
         },
@@ -152,6 +219,7 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
     };
 
     list.addEventListener('keydown', onKeyDown, { capture: true });
+    list.addEventListener('keydown', onSideKeyDown, { capture: true });
     list.addEventListener('click', onClick, { capture: true });
     list.addEventListener('pointerdown', onPointerDown, { capture: true });
 
@@ -163,6 +231,7 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
         },
         dispose() {
             list.removeEventListener('keydown', onKeyDown, { capture: true });
+            list.removeEventListener('keydown', onSideKeyDown, { capture: true });
             list.removeEventListener('click', onClick, { capture: true });
             list.removeEventListener('pointerdown', onPointerDown, { capture: true });
             pointerDrag.dispose();

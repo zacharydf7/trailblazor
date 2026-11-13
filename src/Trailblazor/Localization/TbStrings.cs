@@ -973,6 +973,19 @@ public static class TbStrings
     /// its text, new position and the number of items.</summary>
     public const string SortableMoved = "Sortable.Moved";
 
+    /// <summary>"Up and Down move it, and Home and End move it to the start or end. Left and Right move it to the
+    /// previous or next list. Enter opens a menu of moves.": describes the move handle of a sortable list that shares a
+    /// group.</summary>
+    public const string SortableGroupHint = "Sortable.GroupHint";
+
+    /// <summary>"Move to {0}": a move handle's menu item that moves its item to the end of another list in its group,
+    /// with that list's name.</summary>
+    public const string SortableMoveToList = "Sortable.MoveToList";
+
+    /// <summary>"{0} moved to {3}, position {1} of {2}.": said after an item moves to another sortable list, with its
+    /// text, new position, the number of items in that list and the list's name.</summary>
+    public const string SortableMovedToList = "Sortable.MovedToList";
+
     /// <summary>"An item can't move into itself.": why a tree move into an item's own branch is refused.</summary>
     public const string TreeViewCantMoveIntoItself = "TreeView.CantMoveIntoItself";
 
@@ -1306,6 +1319,10 @@ public static class TbStrings
         [SortableMoveToStart] = "Move to the start",
         [SortableMoveToEnd] = "Move to the end",
         [SortableMoved] = "{0} moved to position {1} of {2}.",
+        [SortableGroupHint] = "Up and Down move it, and Home and End move it to the start or end. Left and Right move "
+            + "it to the previous or next list. Enter opens a menu of moves.",
+        [SortableMoveToList] = "Move to {0}",
+        [SortableMovedToList] = "{0} moved to {3}, position {1} of {2}.",
     }.ToFrozenDictionary();
 
     /// <summary>The key of <paramref name="key"/>'s one-form, such as <see cref="FileUploadChosenOne"/> for

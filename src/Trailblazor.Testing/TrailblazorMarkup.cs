@@ -1411,6 +1411,20 @@ public sealed class TbSortableDriver
         () => Item(item).Children.First(child => child.GetAttribute("data-part") == "handle"),
         () => ItemElements().IndexOf(Item(item)), ItemElements().Count, index, item);
 
+    /// <summary>Moves the item whose text is exactly <paramref name="item"/> to the end of the list labeled
+    /// <paramref name="list"/> in its group, through its handle's menu as a user would. Throws when either list is
+    /// disabled or no other list in the group has that label.</summary>
+    public Task MoveToListAsync(string item, string list)
+    {
+        var menu = Item(item).Children.First(child => child.GetAttribute("data-part") == "handle");
+        var trigger = HandleMenu.TriggerOf(menu, item);
+        var choice = menu.QuerySelectorAll("[role=menuitem][data-list]")
+            .FirstOrDefault(choice => choice.GetAttribute("data-list") == list)
+            ?? throw new InvalidOperationException($"\"{item}\" can't move to \"{list}\": no other list in its group "
+                + "has that label.");
+        return TbMenuDriver.ClickAsync(trigger, choice);
+    }
+
     private List<IElement> ItemElements() =>
         [.. _find().Children.Where(child => child.GetAttribute("data-part") == "item")];
 
@@ -1429,6 +1443,15 @@ public sealed class TbSortableDriver
 // in that order, so they're found by place, whatever the app's labels call them.
 internal static class HandleMenu
 {
+    // Finds the handle's menu button, and throws when its list is disabled.
+    internal static IElement TriggerOf(IElement menu, string name)
+    {
+        var trigger = menu.QuerySelector("[aria-haspopup=menu]")!;
+        return trigger.HasAttribute("disabled") || trigger.GetAttribute("aria-disabled") == "true"
+            ? throw new InvalidOperationException($"\"{name}\" can't move, because its list is disabled.")
+            : trigger;
+    }
+
     internal static async Task MoveAsync(Func<IElement> handle, Func<int> place, int count, int index, string name)
     {
         // A grid whose rows can't move has no count, so finding the row first throws the reason, not an out-of-range
@@ -1439,11 +1462,7 @@ internal static class HandleMenu
         while (from != index)
         {
             var menu = handle();
-            var trigger = menu.QuerySelector("[aria-haspopup=menu]")!;
-            if (trigger.HasAttribute("disabled") || trigger.GetAttribute("aria-disabled") == "true")
-            {
-                throw new InvalidOperationException($"\"{name}\" can't move, because its list is disabled.");
-            }
+            var trigger = TriggerOf(menu, name);
 
             var step = index == 0 ? 2 : index == count - 1 ? 3 : index < from ? 0 : 1;
             await TbMenuDriver.ClickAsync(trigger, menu.QuerySelectorAll("[role=menuitem]")[step]);
