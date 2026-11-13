@@ -1,0 +1,49 @@
+@namespace Trailblazor
+@using System.Globalization
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" @ref="_root" data-part="viewport"
+     data-zoom="@_zoom.ToString("0.####", CultureInfo.InvariantCulture)" data-fit="@_fit"
+     style="@ClassNames.Join($"--tb-viewport-zoom: {_zoom.ToString(CultureInfo.InvariantCulture)};",
+                Height is null ? null : $"--tb-viewport-height: {Height};", Style)"
+     class="@ClassNames.Join("tb-viewport", DragToPan ? "tb-viewport--drag" : null, Class)">
+    @if (ShowControls)
+    {
+        <div data-part="controls" class="tb-viewport__controls">
+            <TbIconButton Icon="BuiltInIcons.Minus" AriaLabel="@(Labels.ZoomOut ?? Localizer[TbStrings.ViewportZoomOut])"
+                          Size="Size.Small" Variant="Variant.Text" data-part="zoom-out" Disabled="_zoom <= MinZoom"
+                          FocusableWhenDisabled OnClick="ZoomOutAsync" />
+            @* The menu's name says what the percent on its button is. *@
+            <TbMenu Align="PlacementAlign.End" data-part="zoom-menu">
+                <Trigger>
+                    <TbButton Variant="Variant.Text" Size="Size.Small" aria-label="@ZoomLabel"
+                              @attributes="context.Attributes">
+                        <ChildContent>@Percent</ChildContent>
+                        <End><TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" /></End>
+                    </TbButton>
+                </Trigger>
+                <ChildContent>
+                    <TbMenuRadioGroup TValue="ViewportFit" Value="_fit" ValueChanged="FitAsync">
+                        <TbMenuRadioItem Value="ViewportFit.Width">
+                            @(Labels.FitWidth ?? Localizer[TbStrings.ViewportFitWidth])
+                        </TbMenuRadioItem>
+                        <TbMenuRadioItem Value="ViewportFit.Page">
+                            @(Labels.FitPage ?? Localizer[TbStrings.ViewportFitPage])
+                        </TbMenuRadioItem>
+                    </TbMenuRadioGroup>
+                    <TbMenuSeparator />
+                    <TbMenuItem OnClick="ActualSizeAsync">
+                        @(Labels.ActualSize ?? Localizer[TbStrings.ViewportActualSize])
+                    </TbMenuItem>
+                </ChildContent>
+            </TbMenu>
+            <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@(Labels.ZoomIn ?? Localizer[TbStrings.ViewportZoomIn])"
+                          Size="Size.Small" Variant="Variant.Text" data-part="zoom-in" Disabled="_zoom >= MaxZoom"
+                          FocusableWhenDisabled OnClick="ZoomInAsync" />
+        </div>
+    }
+    @* The box is a stop for Tab, so the keys reach it even when nothing inside can take focus. *@
+    <div data-part="surface" role="region" aria-label="@Label" tabindex="0" class="tb-viewport__surface">
+        <div data-part="content" class="tb-viewport__content">@ChildContent</div>
+    </div>
+</div>

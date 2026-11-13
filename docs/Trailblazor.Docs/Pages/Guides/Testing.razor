@@ -164,6 +164,13 @@
                         <td>Runs a hotkey as a press of its keys would, and throws for a disabled one.</td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Viewport(label)</code></th>
+                        <td>
+                            Zooms with the viewport's buttons and menu, waiting until the app has the zoom, and reads
+                            it with <code>ZoomAsync</code>.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>PropertyGrid(label)</code></th>
                         <td>Finds fields inside the property grid by their labels, as the helpers above do.</td>
                     </tr>
@@ -373,8 +380,8 @@
             parameters the component needs, the services it injects, stand-ins for the JavaScript calls it makes
             itself, and two sample values for any type it binds other than <code>string</code>, <code>bool</code>,
             the numeric types, <code>DateOnly</code>, <code>TimeOnly</code>, <code>DateTime</code>,
-            <code>DateTimeOffset</code>, <code>TimeSpan</code> and Trailblazor's own value types: date and slider
-            ranges, and the grid's state, sorts and filters.
+            <code>DateTimeOffset</code>, <code>TimeSpan</code>, enums with two or more values and Trailblazor's own
+            value types: date and slider ranges, and the grid's state, sorts and filters.
         </TbText>
         <CodeBlock Label="Checking your own component" Code="@Contract" />
 
@@ -736,6 +743,8 @@
         new("Menu", "Its trigger", "`Menu(trigger).ChooseAsync(path)` chooses an item through its submenus."),
         new("Hotkey", "Its keys", "`Hotkey(keys).PressAsync()` waits until the hotkey listens, then presses its "
             + "keys, with Mod as `ControlOrMeta`."),
+        new("Viewport", "Its label", "`Viewport(label).ZoomInAsync()`, `FitPageAsync()` and the other helpers "
+            + "zoom with its controls and wait until the app has the zoom, which `ZoomAsync()` reads."),
         new("Property grid", "Its label", "`PropertyGrid(label)` finds the fields inside it by their labels, as "
             + "`NumberField`, `Select` and the other helpers do anywhere else."),
         new("Context menu", "An element in its area", "`ContextMenu(element).ChooseAsync(path)` right-clicks the "

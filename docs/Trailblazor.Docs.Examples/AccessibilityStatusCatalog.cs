@@ -49,6 +49,7 @@ public static class AccessibilityStatusCatalog
         new("spacer", None, None, None),
         new("grid", None, None, None),
         new("splitter", Tested, Tested, NotYet),
+        new("viewport", Tested, NotYet, None),
         new("container", None, None, None),
         new("app-shell", Tested, Tested, NotYet),
         new("alert", None, NotYet, None),

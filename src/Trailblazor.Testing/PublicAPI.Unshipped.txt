@@ -231,3 +231,11 @@ Trailblazor.Testing.TbHotkeyDriver
 Trailblazor.Testing.TbHotkeyDriver.PressAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.Hotkey(string! keys) -> Trailblazor.Testing.TbHotkeyDriver!
 Trailblazor.Testing.TrailblazorMarkup.PropertyGrid(string! label) -> Trailblazor.Testing.TrailblazorMarkup!
+Trailblazor.Testing.TbViewportDriver
+Trailblazor.Testing.TbViewportDriver.ActualSizeAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbViewportDriver.Fit.get -> Trailblazor.ViewportFit
+Trailblazor.Testing.TbViewportDriver.FitAsync(Trailblazor.ViewportFit fit) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbViewportDriver.Zoom.get -> double
+Trailblazor.Testing.TbViewportDriver.ZoomInAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbViewportDriver.ZoomOutAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Viewport(string? label = null) -> Trailblazor.Testing.TbViewportDriver!

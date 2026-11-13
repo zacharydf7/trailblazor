@@ -1020,6 +1020,25 @@ public static class TbStrings
     /// many it leaves out.</summary>
     public const string TreeSelectMore = "TreeSelect.More";
 
+    /// <summary>"Zoom in": names a viewport's button that zooms in.</summary>
+    public const string ViewportZoomIn = "Viewport.ZoomIn";
+
+    /// <summary>"Zoom out": names a viewport's button that zooms out.</summary>
+    public const string ViewportZoomOut = "Viewport.ZoomOut";
+
+    /// <summary>"Zoom {0}": names a viewport's zoom menu, and is read out as the keys, the buttons or the menu zoom; {0} is the zoom,
+    /// such as "125%".</summary>
+    public const string ViewportZoom = "Viewport.Zoom";
+
+    /// <summary>"Fit width": the zoom menu item that fits a viewport's content to its width.</summary>
+    public const string ViewportFitWidth = "Viewport.FitWidth";
+
+    /// <summary>"Fit page": the zoom menu item that fits a viewport's whole content in view.</summary>
+    public const string ViewportFitPage = "Viewport.FitPage";
+
+    /// <summary>"Actual size": the zoom menu item that shows a viewport's content at 100%.</summary>
+    public const string ViewportActualSize = "Viewport.ActualSize";
+
     // Each Plural key's one-form, which the default Plural gives for a count of 1.
     private static readonly FrozenDictionary<string, string> OneForms = new Dictionary<string, string>
     {
@@ -1338,6 +1357,12 @@ public static class TbStrings
         [TreeSelectFilter] = "Filter",
         [TreeSelectClear] = "Clear",
         [TreeSelectMore] = "{0} more",
+        [ViewportZoomIn] = "Zoom in",
+        [ViewportZoomOut] = "Zoom out",
+        [ViewportZoom] = "Zoom {0}",
+        [ViewportFitWidth] = "Fit width",
+        [ViewportFitPage] = "Fit page",
+        [ViewportActualSize] = "Actual size",
         [SortableHandle] = "Move {0}",
         [SortableHint] =
             "Arrow keys move it, and Home and End move it to the start or end. Enter opens a menu of moves.",

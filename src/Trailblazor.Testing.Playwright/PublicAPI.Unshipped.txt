@@ -217,3 +217,13 @@ Trailblazor.Testing.Playwright.TbHotkeyLocator.PressAsync() -> System.Threading.
 Trailblazor.Testing.Playwright.TbHotkeyLocator.TbHotkeyLocator(Microsoft.Playwright.ILocator! scope, string! keys) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Hotkey(string! keys) -> Trailblazor.Testing.Playwright.TbHotkeyLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.PropertyGrid(string! label) -> Trailblazor.Testing.Playwright.TrailblazorPage!
+Trailblazor.Testing.Playwright.TbViewportLocator
+Trailblazor.Testing.Playwright.TbViewportLocator.ActualSizeAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbViewportLocator.FitPageAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbViewportLocator.FitWidthAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbViewportLocator.Surface.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbViewportLocator.TbViewportLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TbViewportLocator.ZoomAsync() -> System.Threading.Tasks.Task<double>!
+Trailblazor.Testing.Playwright.TbViewportLocator.ZoomInAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbViewportLocator.ZoomOutAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TrailblazorPage.Viewport(string! label) -> Trailblazor.Testing.Playwright.TbViewportLocator!

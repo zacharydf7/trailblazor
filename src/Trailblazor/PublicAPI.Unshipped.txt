@@ -4981,3 +4981,65 @@ override Trailblazor.PropertyGridField.ToString() -> string!
 static Trailblazor.PropertyGridField.For<TModel>(TModel! model) -> System.Collections.Generic.IReadOnlyList<Trailblazor.PropertyGridField!>!
 static Trailblazor.PropertyGridField.operator !=(Trailblazor.PropertyGridField? left, Trailblazor.PropertyGridField? right) -> bool
 static Trailblazor.PropertyGridField.operator ==(Trailblazor.PropertyGridField? left, Trailblazor.PropertyGridField? right) -> bool
+Trailblazor.TbViewport
+Trailblazor.TbViewport.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbViewport.ChildContent.set -> void
+Trailblazor.TbViewport.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbViewport.DragToPan.get -> bool
+Trailblazor.TbViewport.DragToPan.set -> void
+Trailblazor.TbViewport.Fit.get -> Trailblazor.ViewportFit
+Trailblazor.TbViewport.Fit.set -> void
+Trailblazor.TbViewport.FitChanged.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.ViewportFit>
+Trailblazor.TbViewport.FitChanged.set -> void
+Trailblazor.TbViewport.Height.get -> string?
+Trailblazor.TbViewport.Height.set -> void
+Trailblazor.TbViewport.Label.get -> string!
+Trailblazor.TbViewport.Label.set -> void
+Trailblazor.TbViewport.Labels.get -> Trailblazor.ViewportLabels!
+Trailblazor.TbViewport.Labels.set -> void
+Trailblazor.TbViewport.MaxZoom.get -> double
+Trailblazor.TbViewport.MaxZoom.set -> void
+Trailblazor.TbViewport.MinZoom.get -> double
+Trailblazor.TbViewport.MinZoom.set -> void
+Trailblazor.TbViewport.ShowControls.get -> bool
+Trailblazor.TbViewport.ShowControls.set -> void
+Trailblazor.TbViewport.TbViewport() -> void
+Trailblazor.TbViewport.TelemetryName.get -> string?
+Trailblazor.TbViewport.TelemetryName.set -> void
+Trailblazor.TbViewport.Zoom.get -> double
+Trailblazor.TbViewport.Zoom.set -> void
+Trailblazor.TbViewport.ZoomChanged.get -> Microsoft.AspNetCore.Components.EventCallback<double>
+Trailblazor.TbViewport.ZoomChanged.set -> void
+Trailblazor.TbViewport.ZoomStep.get -> double
+Trailblazor.TbViewport.ZoomStep.set -> void
+Trailblazor.ViewportFit
+Trailblazor.ViewportFit.None = 0 -> Trailblazor.ViewportFit
+Trailblazor.ViewportFit.Page = 2 -> Trailblazor.ViewportFit
+Trailblazor.ViewportFit.Width = 1 -> Trailblazor.ViewportFit
+Trailblazor.ViewportLabels
+Trailblazor.ViewportLabels.<Clone>$() -> Trailblazor.ViewportLabels!
+Trailblazor.ViewportLabels.ActualSize.get -> string?
+Trailblazor.ViewportLabels.ActualSize.init -> void
+Trailblazor.ViewportLabels.Equals(Trailblazor.ViewportLabels? other) -> bool
+Trailblazor.ViewportLabels.FitPage.get -> string?
+Trailblazor.ViewportLabels.FitPage.init -> void
+Trailblazor.ViewportLabels.FitWidth.get -> string?
+Trailblazor.ViewportLabels.FitWidth.init -> void
+Trailblazor.ViewportLabels.ViewportLabels() -> void
+Trailblazor.ViewportLabels.Zoom.get -> string?
+Trailblazor.ViewportLabels.Zoom.init -> void
+Trailblazor.ViewportLabels.ZoomIn.get -> string?
+Trailblazor.ViewportLabels.ZoomIn.init -> void
+Trailblazor.ViewportLabels.ZoomOut.get -> string?
+Trailblazor.ViewportLabels.ZoomOut.init -> void
+const Trailblazor.TbStrings.ViewportActualSize = "Viewport.ActualSize" -> string!
+const Trailblazor.TbStrings.ViewportFitPage = "Viewport.FitPage" -> string!
+const Trailblazor.TbStrings.ViewportFitWidth = "Viewport.FitWidth" -> string!
+const Trailblazor.TbStrings.ViewportZoom = "Viewport.Zoom" -> string!
+const Trailblazor.TbStrings.ViewportZoomIn = "Viewport.ZoomIn" -> string!
+const Trailblazor.TbStrings.ViewportZoomOut = "Viewport.ZoomOut" -> string!
+override Trailblazor.ViewportLabels.Equals(object? obj) -> bool
+override Trailblazor.ViewportLabels.GetHashCode() -> int
+override Trailblazor.ViewportLabels.ToString() -> string!
+static Trailblazor.ViewportLabels.operator !=(Trailblazor.ViewportLabels? left, Trailblazor.ViewportLabels? right) -> bool
+static Trailblazor.ViewportLabels.operator ==(Trailblazor.ViewportLabels? left, Trailblazor.ViewportLabels? right) -> bool

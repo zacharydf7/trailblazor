@@ -1,0 +1,29 @@
+@page "/viewport"
+@using System.Globalization
+
+@* A viewport over an 800 by 600 map with a marker and an image in view and a button of its own, with its zoom and
+   fit read out. *@
+<div id="frame" style="inline-size: 400px">
+    <TbViewport Label="Trail map" @bind-Zoom="_zoom" @bind-Fit="_fit" Height="300px">
+        <div style="position: relative; inline-size: 800px; block-size: 600px; background: #dde8d8">
+            <span id="marker" @onclick="() => _markerClicks++" style="position: absolute; inset-inline-start: 150px; inset-block-start: 120px;
+                                     inline-size: 10px; block-size: 10px; background: #305030"></span>
+            <img id="photo" alt="Ridge" width="120" height="90" style="position: absolute; inset: 160px auto auto 40px"
+                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23887755'/%3E%3C/svg%3E" />
+            <button type="button" style="position: absolute; inset: 20px auto auto 20px" @onclick="() => _clicks++">
+                Summit
+            </button>
+        </div>
+    </TbViewport>
+</div>
+<output aria-label="Zoom">@_zoom.ToString("0.###", CultureInfo.InvariantCulture)</output>
+<output aria-label="Fit">@_fit</output>
+<output aria-label="Clicks">@_clicks</output>
+<output aria-label="Marker clicks">@_markerClicks</output>
+
+@code {
+    private double _zoom = 1;
+    private ViewportFit _fit;
+    private int _clicks;
+    private int _markerClicks;
+}

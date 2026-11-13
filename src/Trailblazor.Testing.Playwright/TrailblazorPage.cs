@@ -84,6 +84,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbSplitter</c> separator with this name, such as "Resize Trails".</summary>
     public TbSplitterLocator Splitter(string separator) => new(scope, separator);
 
+    /// <summary>The <c>TbViewport</c> whose box has this <c>Label</c>.</summary>
+    public TbViewportLocator Viewport(string label) => new(scope, label);
+
     /// <summary>The <c>TbSlider</c> with this label.</summary>
     public TbSliderLocator Slider(string label) => new(scope, label);
 

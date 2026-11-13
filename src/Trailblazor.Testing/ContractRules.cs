@@ -233,6 +233,8 @@ internal static class ContractRules
         _ when type == typeof(double) => (30d, 40d),
         _ when type == typeof(decimal) => (30m, 40m),
         _ when type == typeof(bool) => (false, true),
+        { IsEnum: true } when Enum.GetNames(type) is { Length: >= 2 } names =>
+            (Enum.Parse(type, names[0]), Enum.Parse(type, names[1])),
         _ when type == typeof(DateOnly) => (new DateOnly(2026, 6, 3), new DateOnly(2026, 7, 10)),
         _ when type == typeof(TimeOnly) => (new TimeOnly(8, 30), new TimeOnly(14, 45)),
         _ when type == typeof(DateTime) => (new DateTime(2026, 6, 3, 8, 30, 0), new DateTime(2026, 7, 10, 14, 45, 0)),

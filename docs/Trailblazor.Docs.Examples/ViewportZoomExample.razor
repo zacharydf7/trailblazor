@@ -1,0 +1,30 @@
+@using System.Globalization
+
+<TbStack Gap="3">
+    <TbStack Row>
+        <TbButton Variant="Variant.Outlined" OnClick="() => { _zoom = 2; _fit = ViewportFit.None; }">
+            Show at 200%
+        </TbButton>
+        <TbButton Variant="Variant.Outlined" OnClick="() => _fit = ViewportFit.Width">Fit the width</TbButton>
+    </TbStack>
+    <TbViewport Label="Campground plan" @bind-Zoom="_zoom" @bind-Fit="_fit" ShowControls="false" Height="16rem">
+        <svg width="600" height="400" viewBox="0 0 600 400" role="img" aria-label="Plan of the campground sites">
+            <rect width="600" height="400" fill="#eef1e6" />
+            @for (var site = 0; site < 12; site++)
+            {
+                var (x, y) = (40 + site % 6 * 90, 80 + site / 6 * 160);
+                <g>
+                    <rect x="@x" y="@y" width="70" height="90" rx="8" fill="#c9d8b6" stroke="#4d6b3c"
+                          stroke-width="2" />
+                    <text x="@(x + 35)" y="@(y + 52)" font-size="20" text-anchor="middle" fill="#1f2a1f">@(site + 1)</text>
+                </g>
+            }
+        </svg>
+    </TbViewport>
+    <TbText Muted>Zoom: @_zoom.ToString("P0", CultureInfo.CurrentCulture), fit: @_fit</TbText>
+</TbStack>
+
+@code {
+    private double _zoom = 1;
+    private ViewportFit _fit;
+}

@@ -1970,6 +1970,118 @@ public static class ExampleCatalog
                 + "= \"Resize Trails\" }); await separator.FocusAsync(); await page.Keyboard.PressAsync(\"End\");`, "
                 + "then check `ToHaveAttributeAsync(\"aria-valuenow\", \"40\")`.",
         },
+        new("viewport", "Viewport", ExampleCategory.Layout,
+            "A box that pans and zooms its content, such as a map, a diagram or a scanned page, and fits it to the "
+                + "box.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for content larger or more detailed than the space it gets, which people zoom into and move "
+                    + "around, such as a map, a floor plan, a diagram or an image.",
+            ],
+            WhenNotToUse =
+            [
+                "For text people read, let the page scroll and the browser zoom, so the text reflows.",
+                "For a slideshow of images, use a [carousel](components/carousel).",
+            ],
+            Related = ["carousel", "splitter"],
+            Sections =
+            [
+                new("pan-and-zoom", "Pan and zoom", "Put the content inside at its own size. The buttons above the box "
+                    + "zoom out and in by `ZoomStep`, and the menu between them fits the content's width or the whole "
+                    + "content, or shows it at its actual size. With focus on the box, + and - zoom and 0 goes back "
+                    + "to 100%, Ctrl with the wheel or a trackpad's pinch zooms around the pointer, a drag pans, and "
+                    + "two fingers pinch. A zoom stays between `MinZoom` and `MaxZoom`, and keeps the point under the "
+                    + "pointer, or at the box's center, where it was. Here `Fit=\"ViewportFit.Page\"` starts with the "
+                    + "whole map in view.", typeof(ViewportExample)),
+                new("zoom-from-code", "Zoom from code", "`@bind-Zoom` and `@bind-Fit` read and set the zoom and the "
+                    + "fit. A fit sets the zoom itself, again whenever the box or the content resizes, until the user "
+                    + "zooms, which sets the fit back to `None`. `ShowControls=\"false\"` leaves the controls to the "
+                    + "app, as here, and `DragToPan=\"false\"` leaves the box to scroll as any other does, for content "
+                    + "whose text people select.", typeof(ViewportZoomExample)),
+            ],
+            Api = [typeof(TbViewport), typeof(ViewportFit), typeof(ViewportLabels)],
+            Keyboard =
+            [
+                new(["+", "="], "Zooms in by `ZoomStep`.") { When = "On the box" },
+                new(["-"], "Zooms out by `ZoomStep`.") { When = "On the box" },
+                new(["0"], "Shows the content at 100%.") { When = "On the box" },
+                new(["Up", "Down", "Left", "Right", "Page Up", "Page Down", "Home", "End"], "Scrolls the content, as "
+                    + "in any box that scrolls.") { When = "On the box" },
+                new(["Enter", "Space"], "Zooms out or in, or opens the zoom menu.") { When = "On a control" },
+            ],
+            Labeling =
+            [
+                "The box is a focusable `region` named by `Label`, so the keys reach it even when nothing inside can "
+                    + "take focus.",
+                "The buttons are named \"Zoom out\" and \"Zoom in\", and the menu's button by the zoom, as in \"Zoom "
+                    + "125%\", with the percent it shows inside its name. `Labels` replaces these words and the menu's "
+                    + "items.",
+            ],
+            Announcements =
+            [
+                "Each zoom from the keys, the buttons or the menu is read out, as in \"Zoom 125%\". A zoom from the "
+                    + "wheel or a pinch isn't, since the user is looking at it.",
+            ],
+            Accessibility =
+            [
+                "The + and - and 0 keys work only while the box has focus, so they don't take those keys from the rest "
+                    + "of the page (WCAG 2.1.4).",
+                "The buttons and the menu zoom without dragging or pinching (WCAG 2.5.7), and a zoom button at its "
+                    + "limit keeps focus, marked `aria-disabled`.",
+                "Content with buttons or links of its own keeps them: a press on one clicks it rather than starting a "
+                    + "pan.",
+            ],
+            AppDuties =
+            [
+                "Give each image or drawing inside the viewport its own text alternative, such as an `alt` or a "
+                    + "`role=\"img\"` with an `aria-label`.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "The content renders at `Zoom`, and the box scrolls with the keys and the pointer as any box does. The "
+                    + "controls, the zoom keys, a fit and dragging start working once the page is interactive.",
+            ],
+            Ready = new("[data-part=viewport]", "the viewport"),
+            Target = new("region", "Ridge trail map"),
+            Blocks = ["tb-viewport"],
+            DataParts =
+            [
+                new("viewport", "The viewport itself, whose `data-zoom` holds the zoom and `data-fit` the fit."),
+                new("controls", "The zoom out and zoom in buttons and the zoom menu, above the box."),
+                new("zoom-out", "The button that zooms out."),
+                new("zoom-menu", "The menu of fits and the actual size, whose button shows the zoom."),
+                new("zoom-in", "The button that zooms in."),
+                new("surface", "The box that scrolls and holds focus for the keys."),
+                new("content", "The content, scaled by the zoom."),
+            ],
+            Anatomy = """
+                <TbViewport Label="…" @bind-Zoom="_zoom" @bind-Fit="_fit">
+                    …
+                </TbViewport>
+                """,
+            TestingTips =
+            [
+                "In Playwright, `page.Tb().Viewport(\"Ridge trail map\")` from `Trailblazor.Testing.Playwright` has "
+                    + "`ZoomInAsync`, `ZoomOutAsync`, `FitWidthAsync`, `FitPageAsync` and `ActualSizeAsync`, each "
+                    + "waiting until the app has the new zoom, which `ZoomAsync()` reads. Its `Surface` is the box to "
+                    + "focus for the keys.",
+                "In bUnit, `cut.Tb().Viewport(\"Ridge trail map\")` from `Trailblazor.Testing` clicks the same "
+                    + "controls, with `FitAsync(ViewportFit.Width)` for a fit, and reads `Zoom` and `Fit`. The keys, "
+                    + "the wheel and a drag need a browser, and so does a fit's zoom, which the browser works out.",
+                "Without the helpers, wait for the viewport's `data-ready` before pressing keys on the box, and read "
+                    + "the zoom from its `data-zoom`.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-map\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders, and `trailblazor.control.used` with the action `zoom` and the input `keyboard` or "
+                    + "`pointer` each time the user zooms, or `fit` each time they pick a fit. Panning, and a fit "
+                    + "following a resize, aren't counted, and the zoom itself is never recorded.",
+            ],
+        },
         new("container", "Container", ExampleCategory.Layout,
             "Centers content and caps its width at a readable size.")
         {

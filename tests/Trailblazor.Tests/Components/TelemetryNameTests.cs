@@ -162,6 +162,27 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task Viewport_ShouldCountZoomsAndFitsButNotResizes_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbViewport>(parameters => parameters.Add(viewport => viewport.Label, "Trail map")
+            .Add(viewport => viewport.TelemetryName, "trail-map"));
+        var report = ((DotNetObjectReference<ViewportReport>)JSInterop.Invocations["attachViewport"].Single()
+            .Arguments[1]!).Value;
+
+        await cut.Tb().Viewport().ZoomInAsync();
+        await cut.InvokeAsync(() => report.OnZoom(2, "None", "keyboard"));
+        await cut.InvokeAsync(() => report.OnZoom(1.5, "Page", "resize"));
+        await cut.Tb().Viewport().FitAsync(ViewportFit.Width);
+        await cut.Tb().Viewport().ActualSizeAsync();
+
+        Assert.Equal(["trail-map"], Names(_shown));
+        Assert.Equal([("trail-map", "TbViewport", "zoom"), ("trail-map", "TbViewport", "zoom"),
+            ("trail-map", "TbViewport", "fit"), ("trail-map", "TbViewport", "zoom")], Uses());
+        Assert.Equal(["pointer", "keyboard", null, "pointer"],
+            _used.GetMeasurementSnapshot().Select(measurement => measurement.Tags.GetValueOrDefault("trailblazor.input")));
+    }
+
+    [Fact]
     public async Task SpeedDial_ShouldCountItsOpensAndItsActionsChosen_WhenTheyHaveTelemetryNames()
     {
         var cut = Render<TbSpeedDial>(parameters => parameters.Add(dial => dial.Label, "Add")

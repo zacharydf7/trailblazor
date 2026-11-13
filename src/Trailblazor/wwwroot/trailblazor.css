@@ -8387,6 +8387,56 @@
         outline-offset: var(--tb-focus-ring-offset);
     }
 
+    /* The controls sit above the box, which scrolls over the zoomed content and centers it while it's smaller. */
+    .tb-viewport {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        block-size: var(--tb-viewport-height, 24rem);
+    }
+
+    .tb-viewport__controls {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-viewport__surface {
+        display: flex;
+        flex: 1;
+        min-block-size: 0;
+        overflow: auto;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+        border: 1px solid var(--tb-border-subtle);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-surface-sunken);
+    }
+
+    .tb-viewport__surface:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-viewport__content {
+        flex: none;
+        margin: auto;
+        zoom: var(--tb-viewport-zoom, 1);
+    }
+
+    /* A drag pans and two fingers pinch, so the browser leaves touches and text selection to the viewport. */
+    .tb-viewport--drag > .tb-viewport__surface {
+        cursor: grab;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    .tb-viewport[data-panning] > .tb-viewport__surface {
+        cursor: grabbing;
+    }
+
     .tb-sortable {
         position: relative;
     }

@@ -41,6 +41,18 @@ public sealed class TrailblazorMarkup
             : throw new InvalidOperationException($"Expected one property grid labeled \"{label}\", found {grids.Count}.");
     });
 
+    /// <summary>The <c>TbViewport</c> whose box has this <c>Label</c>, or the only one in the markup when no label is
+    /// given.</summary>
+    public TbViewportDriver Viewport(string? label = null) => new(() =>
+    {
+        var viewports = _findAll("[data-part=viewport]").Where(viewport => label is null
+            || viewport.QuerySelector(":scope > [data-part=surface]")?.GetAttribute("aria-label") == label).ToList();
+        return viewports.Count == 1 ? viewports[0]
+            : throw new InvalidOperationException(label is null
+                ? $"Expected one viewport, found {viewports.Count}; name the one to use."
+                : $"Expected one viewport labeled \"{label}\", found {viewports.Count}.");
+    }, _findAll);
+
     /// <summary>The <c>TbTextField</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbTextFieldDriver TextField(string label) =>
         new(() => Field(label, ".tb-text-field input[data-part=input]", ".tb-text-field textarea[data-part=input]"));
@@ -1624,6 +1636,63 @@ public sealed class TbContextMenuDriver
 
     internal static IElement Menu(IElement target) =>
         target.Children.Single(child => child.GetAttribute("role") == "menu");
+}
+
+/// <summary>A <c>TbViewport</c>, found by its box's <c>Label</c>. Its controls are clicked as a pointer would; the
+/// keys, the wheel and a drag need a browser.</summary>
+public sealed class TbViewportDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+
+    internal TbViewportDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
+        (_find, _findAll) = (find, findAll);
+
+    /// <summary>The zoom, where 1 shows the content at its own size.</summary>
+    public double Zoom => double.Parse(_find().GetAttribute("data-zoom")!, CultureInfo.InvariantCulture);
+
+    /// <summary>The fit the zoom follows, or <see cref="ViewportFit.None"/>.</summary>
+    public ViewportFit Fit => Enum.Parse<ViewportFit>(_find().GetAttribute("data-fit")!);
+
+    /// <summary>Clicks the zoom in button. Throws when the zoom is at its largest or the viewport shows no controls.
+    /// </summary>
+    public Task ZoomInAsync() => ZoomAsync("zoom-in");
+
+    /// <summary>Clicks the zoom out button. Throws when the zoom is at its smallest or the viewport shows no
+    /// controls.</summary>
+    public Task ZoomOutAsync() => ZoomAsync("zoom-out");
+
+    private Task ZoomAsync(string part)
+    {
+        var button = Control(part);
+        return button.GetAttribute("aria-disabled") == "true"
+            ? throw new InvalidOperationException("The viewport can't zoom any further that way.")
+            : button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    /// <summary>Picks <see cref="ViewportFit.Width"/> or <see cref="ViewportFit.Page"/> from the zoom menu.</summary>
+    public Task FitAsync(ViewportFit fit)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(fit, ViewportFit.None);
+        var (trigger, list) = Menu();
+        return TbMenuDriver.ClickAsync(trigger, list.QuerySelectorAll("[role=menuitemradio]")[fit == ViewportFit.Width ? 0 : 1]);
+    }
+
+    /// <summary>Picks Actual size from the zoom menu, which shows the content at 100%.</summary>
+    public Task ActualSizeAsync()
+    {
+        var (trigger, list) = Menu();
+        return TbMenuDriver.ClickAsync(trigger, list.QuerySelector("[role=menuitem]")!);
+    }
+
+    private IElement Control(string part) => _find().QuerySelector($"[data-part=controls] [data-part={part}]")
+        ?? throw new InvalidOperationException("The viewport shows no controls; set ShowControls.");
+
+    private (IElement Trigger, IElement List) Menu()
+    {
+        var trigger = Control("zoom-menu").QuerySelector("[aria-haspopup=menu]")!;
+        return (trigger, _findAll($"[id='{trigger.GetAttribute("aria-controls")}']").Single());
+    }
 }
 
 /// <summary>A <c>TbMenu</c>, found by its trigger's name.</summary>
