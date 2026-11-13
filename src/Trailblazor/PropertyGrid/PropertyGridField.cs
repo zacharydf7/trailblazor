@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Trailblazor;
 
@@ -35,9 +34,6 @@ public sealed record PropertyGridField
     /// <summary>The heading the property is listed under. Properties without one come first.</summary>
     public string? Group { get; init; }
 
-    // ASP.NET Core's default Order for a property without one, so a small Order puts a property before the rest.
-    private const int UnsetOrder = 10000;
-
     /// <summary>The fields for <paramref name="model"/>'s public properties, sorted by
     /// <see cref="DisplayAttribute.Order"/>, where a property without one counts as 10000, and in declaration order
     /// among equal orders. <see cref="DisplayAttribute"/>,
@@ -50,33 +46,19 @@ public sealed record PropertyGridField
         where TModel : class
     {
         ArgumentNullException.ThrowIfNull(model);
-        return [.. typeof(TModel).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(property => property.CanRead && property.GetIndexParameters().Length == 0
-                && property.GetCustomAttribute<BrowsableAttribute>()?.Browsable != false
-                && property.GetCustomAttribute<DisplayAttribute>()?.GetAutoGenerateField() != false)
-            .OrderBy(property => property.GetCustomAttribute<DisplayAttribute>()?.GetOrder() ?? UnsetOrder)
-            .Select(property => FieldOf(property, model))];
+        return [.. ModelProperties.Of(typeof(TModel)).Select(property => FieldOf(property, model))];
     }
 
-    private static PropertyGridField FieldOf(PropertyInfo property, object model)
+    private static PropertyGridField FieldOf(PropertyInfo property, object model) => new()
     {
-        var display = property.GetCustomAttribute<DisplayAttribute>();
-        // An init accessor sets a property only as its object is made, so it doesn't make the property editable.
-        var editable = property.SetMethod is { IsPublic: true } setter
-            && !setter.ReturnParameter.GetRequiredCustomModifiers().Contains(typeof(IsExternalInit))
-            && property.GetCustomAttribute<ReadOnlyAttribute>()?.IsReadOnly != true
-            && property.GetCustomAttribute<EditableAttribute>()?.AllowEdit != false;
-        return new()
-        {
-            Name = property.Name,
-            Type = property.PropertyType,
-            Get = () => property.GetValue(model),
-            Set = editable ? value => property.SetValue(model, value) : null,
-            Label = display?.GetName() ?? property.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName,
-            Description = display?.GetDescription() ?? property.GetCustomAttribute<DescriptionAttribute>()?.Description,
-            Group = display?.GetGroupName() ?? property.GetCustomAttribute<CategoryAttribute>()?.Category,
-        };
-    }
+        Name = property.Name,
+        Type = property.PropertyType,
+        Get = () => property.GetValue(model),
+        Set = ModelProperties.IsEditable(property) ? value => property.SetValue(model, value) : null,
+        Label = ModelProperties.LabelOf(property),
+        Description = ModelProperties.DescriptionOf(property),
+        Group = ModelProperties.GroupOf(property),
+    };
 
     internal string LabelText => Label ?? NameWords.Of(Name);
 }

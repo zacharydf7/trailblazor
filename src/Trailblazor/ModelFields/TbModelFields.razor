@@ -1,0 +1,35 @@
+@namespace Trailblazor
+@typeparam TModel where TModel : class
+@inherits TbComponentBase
+
+<CascadingValue Value="_overrides" IsFixed="true">@ChildContent</CascadingValue>
+<div @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-model-fields", Class)" style="@RootStyle">
+    <div class="tb-model-fields__grid">
+        @foreach (var group in Groups())
+        {
+            @if (group.Key is null)
+            {
+                @Fields(group)
+            }
+            else
+            {
+                <fieldset @key="group.Key" class="tb-model-fields__group" data-part="group">
+                    <legend class="tb-model-fields__group-label" data-part="group-label">@group.Key</legend>
+                    <div class="tb-model-fields__grid">@Fields(group)</div>
+                </fieldset>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private RenderFragment Fields(IEnumerable<ModelFieldPlace> places) => @<text>
+        @foreach (var place in places)
+        {
+            <div @key="place.Property.Name" class="tb-model-fields__field" data-part="field"
+                 data-name="@place.Property.Name" style="@SpanStyle(place)">
+                @Editor(place)
+            </div>
+        }
+    </text>;
+}

@@ -5296,3 +5296,52 @@ Trailblazor.TbDataGrid<TItem>.VirtualizeColumns.get -> bool
 Trailblazor.TbDataGrid<TItem>.VirtualizeColumns.set -> void
 Trailblazor.Internal.Events.ColumnWindowEventArgs.RemPixels.get -> double
 Trailblazor.Internal.Events.ColumnWindowEventArgs.RemPixels.set -> void
+Trailblazor.ModelFieldContext
+Trailblazor.ModelFieldContext.<Clone>$() -> Trailblazor.ModelFieldContext!
+Trailblazor.ModelFieldContext.Deconstruct(out string! Name, out string! Label, out string? HelperText, out bool ReadOnly) -> void
+Trailblazor.ModelFieldContext.Equals(Trailblazor.ModelFieldContext? other) -> bool
+Trailblazor.ModelFieldContext.HelperText.get -> string?
+Trailblazor.ModelFieldContext.HelperText.init -> void
+Trailblazor.ModelFieldContext.Label.get -> string!
+Trailblazor.ModelFieldContext.Label.init -> void
+Trailblazor.ModelFieldContext.ModelFieldContext(string! Name, string! Label, string? HelperText, bool ReadOnly) -> void
+Trailblazor.ModelFieldContext.Name.get -> string!
+Trailblazor.ModelFieldContext.Name.init -> void
+Trailblazor.ModelFieldContext.ReadOnly.get -> bool
+Trailblazor.ModelFieldContext.ReadOnly.init -> void
+Trailblazor.TbModelField
+Trailblazor.TbModelField.Dispose() -> void
+Trailblazor.TbModelField.Editor.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.ModelFieldContext!>?
+Trailblazor.TbModelField.Editor.set -> void
+Trailblazor.TbModelField.HelperText.get -> string?
+Trailblazor.TbModelField.HelperText.set -> void
+Trailblazor.TbModelField.Hidden.get -> bool
+Trailblazor.TbModelField.Hidden.set -> void
+Trailblazor.TbModelField.Label.get -> string?
+Trailblazor.TbModelField.Label.set -> void
+Trailblazor.TbModelField.Name.get -> string!
+Trailblazor.TbModelField.Name.set -> void
+Trailblazor.TbModelField.Order.get -> int?
+Trailblazor.TbModelField.Order.set -> void
+Trailblazor.TbModelField.ReadOnly.get -> bool
+Trailblazor.TbModelField.ReadOnly.set -> void
+Trailblazor.TbModelField.Span.get -> int
+Trailblazor.TbModelField.Span.set -> void
+Trailblazor.TbModelField.TbModelField() -> void
+Trailblazor.TbModelFields<TModel>
+Trailblazor.TbModelFields<TModel>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbModelFields<TModel>.ChildContent.set -> void
+Trailblazor.TbModelFields<TModel>.Columns.get -> int
+Trailblazor.TbModelFields<TModel>.Columns.set -> void
+Trailblazor.TbModelFields<TModel>.Model.get -> TModel?
+Trailblazor.TbModelFields<TModel>.Model.set -> void
+Trailblazor.TbModelFields<TModel>.TbModelFields() -> void
+Trailblazor.TbModelFields<TModel>.TelemetryName.get -> string?
+Trailblazor.TbModelFields<TModel>.TelemetryName.set -> void
+override Trailblazor.ModelFieldContext.Equals(object? obj) -> bool
+override Trailblazor.ModelFieldContext.GetHashCode() -> int
+override Trailblazor.ModelFieldContext.ToString() -> string!
+static Trailblazor.ModelFieldContext.operator !=(Trailblazor.ModelFieldContext? left, Trailblazor.ModelFieldContext? right) -> bool
+static Trailblazor.ModelFieldContext.operator ==(Trailblazor.ModelFieldContext? left, Trailblazor.ModelFieldContext? right) -> bool
+Trailblazor.TbModelFields<TModel>.OnChange.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
+Trailblazor.TbModelFields<TModel>.OnChange.set -> void

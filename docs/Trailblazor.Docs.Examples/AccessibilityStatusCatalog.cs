@@ -86,6 +86,7 @@ public static class AccessibilityStatusCatalog
         new("transfer-list", Tested, NotYet, None),
         new("code-field", Tested, NotYet, None),
         new("property-grid", Tested, NotYet, None),
+        new("model-fields", None, None, None),
         new("query-builder", Tested, NotYet, None),
         new("tooltip", Tested, NotYet, None),
         new("menu", Tested, NotYet, None),

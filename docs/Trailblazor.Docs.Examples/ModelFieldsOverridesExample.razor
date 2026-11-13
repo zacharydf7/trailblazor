@@ -1,0 +1,40 @@
+@using System.ComponentModel.DataAnnotations
+
+<TbForm Model="_review" DataAnnotations OnValidSubmit="() => _saved = true" aria-label="Trail review"
+        Style="max-inline-size: 36rem">
+    <TbStack Gap="4">
+        <TbModelFields Model="_review" Columns="2">
+            <TbModelField Name="@nameof(Review.Stars)" Order="0">
+                <Editor>
+                    <TbRating Label="@context.Label" HelperText="@context.HelperText" @bind-Value="_review.Stars" />
+                </Editor>
+            </TbModelField>
+            <TbModelField Name="@nameof(Review.Comment)" Label="What stood out?" Span="2" />
+            <TbModelField Name="@nameof(Review.Id)" Hidden />
+        </TbModelFields>
+        <TbButton Type="ButtonType.Submit" Variant="Variant.Filled" Tone="Tone.Primary">Post review</TbButton>
+        <output>@(_saved ? $"Posted {_review.Stars} stars." : "")</output>
+    </TbStack>
+</TbForm>
+
+@code {
+    private readonly Review _review = new();
+    private bool _saved;
+
+    public sealed class Review
+    {
+        public int Id { get; set; } = 42;
+
+        [Required, Display(Name = "Trail")]
+        public string? Trail { get; set; }
+
+        [Display(Name = "Hiked on")]
+        public DateOnly? HikedOn { get; set; }
+
+        [Range(1, 5), Display(Description = "One to five.")]
+        public int Stars { get; set; } = 4;
+
+        [DataType(DataType.MultilineText)]
+        public string? Comment { get; set; }
+    }
+}

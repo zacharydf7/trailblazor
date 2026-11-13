@@ -11,7 +11,6 @@ public sealed partial class TbPropertyGrid<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TModel> : TbComponentBase
     where TModel : class
 {
-    private const DynamicallyAccessedMemberTypes Component = DynamicallyAccessedMemberTypes.All;
     private ControlTelemetry? _telemetry;
     private IReadOnlyList<PropertyGridField> _fields = [];
 
@@ -71,102 +70,14 @@ public sealed partial class TbPropertyGrid<
     /// <inheritdoc />
     protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
 
-    // An emptied editor leaves a property that can't hold null as it was.
-    private async Task ChangeAsync<TValue>(PropertyGridField field, TValue value)
+    private async Task ChangeAsync(PropertyGridField field, object? value)
     {
-        if (value is null && field.Type.IsValueType && Nullable.GetUnderlyingType(field.Type) is null)
-        {
-            return;
-        }
-
         field.Set?.Invoke(value);
         Telemetry.Used(TelemetryName, "change");
         await OnChange.InvokeAsync(field);
     }
 
-    // The editor for the field's type. Each is named here, rather than made from the type at run time, so trimming
-    // keeps them.
-    private void AddEditor(RenderTreeBuilder builder, PropertyGridField field)
-    {
-        var type = field.Type;
-        if (type == typeof(string)) Add<string>(builder, typeof(TbTextField<string>), field);
-        else if (type == typeof(bool)) Add<bool>(builder, typeof(TbSwitch), field);
-        else if (type == typeof(int)) Add<int>(builder, typeof(TbNumberField<int>), field);
-        else if (type == typeof(int?)) Add<int?>(builder, typeof(TbNumberField<int?>), field);
-        else if (type == typeof(long)) Add<long>(builder, typeof(TbNumberField<long>), field);
-        else if (type == typeof(long?)) Add<long?>(builder, typeof(TbNumberField<long?>), field);
-        else if (type == typeof(double)) Add<double>(builder, typeof(TbNumberField<double>), field);
-        else if (type == typeof(double?)) Add<double?>(builder, typeof(TbNumberField<double?>), field);
-        else if (type == typeof(decimal)) Add<decimal>(builder, typeof(TbNumberField<decimal>), field);
-        else if (type == typeof(decimal?)) Add<decimal?>(builder, typeof(TbNumberField<decimal?>), field);
-        // The pickers take a nullable value for a property of either kind.
-        else if (type == typeof(DateOnly) || type == typeof(DateOnly?))
-        {
-            Add<DateOnly?>(builder, typeof(TbDatePicker<DateOnly>), field);
-        }
-        else if (type == typeof(DateTime) || type == typeof(DateTime?))
-        {
-            Add<DateTime?>(builder, typeof(TbDateTimePicker<DateTime>), field);
-        }
-        else if (type == typeof(TimeOnly) || type == typeof(TimeOnly?))
-        {
-            Add<TimeOnly?>(builder, typeof(TbTimePicker<TimeOnly>), field);
-        }
-        else if ((Nullable.GetUnderlyingType(type) ?? type) is { IsEnum: true } enumType
-            && !enumType.IsDefined(typeof(FlagsAttribute), inherit: false))
-        {
-            AddEnum(builder, field);
-        }
-        else AddText(builder, field);
-    }
-
-    private void Add<TValue>(RenderTreeBuilder builder, [DynamicallyAccessedMembers(Component)] Type component,
-        PropertyGridField field)
-    {
-        builder.OpenComponent(0, component);
-        builder.AddComponentParameter(1, nameof(TbFieldBase<TValue>.Label), field.LabelText);
-        builder.AddComponentParameter(2, nameof(TbFieldBase<TValue>.HelperText), field.Description);
-        builder.AddComponentParameter(3, nameof(TbFieldBase<TValue>.ReadOnly), ReadOnly || field.Set is null);
-        builder.AddComponentParameter(10, nameof(TbFieldBase<TValue>.Value), (TValue?)field.Get());
-        builder.AddComponentParameter(11, nameof(TbFieldBase<TValue>.ValueChanged),
-            EventCallback.Factory.Create<TValue>(this, value => ChangeAsync(field, value)));
-        builder.CloseComponent();
-    }
-
-    // An enum is a select of its values, each shown as its name split into words. A nullable enum can also be cleared.
-    private void AddEnum(RenderTreeBuilder builder, PropertyGridField field)
-    {
-        var type = Nullable.GetUnderlyingType(field.Type) ?? field.Type;
-        builder.OpenComponent<TbSelect<string>>(0);
-        builder.AddComponentParameter(1, nameof(TbSelect<string>.Label), field.LabelText);
-        builder.AddComponentParameter(2, nameof(TbSelect<string>.HelperText), field.Description);
-        builder.AddComponentParameter(3, nameof(TbSelect<string>.ReadOnly), ReadOnly || field.Set is null);
-        builder.AddComponentParameter(10, nameof(TbSelect<string>.Value), field.Get()?.ToString());
-        builder.AddComponentParameter(11, nameof(TbSelect<string>.ValueChanged), EventCallback.Factory.Create<string?>(
-            this, name => ChangeAsync<object?>(field, name is null ? null : Enum.Parse(type, name))));
-        builder.AddComponentParameter(12, nameof(TbSelect<string>.Clearable), field.Type != type);
-        builder.AddComponentParameter(13, nameof(TbSelect<string>.ChildContent), (RenderFragment)(options =>
-        {
-            foreach (var name in Enum.GetNames(type))
-            {
-                options.OpenComponent<TbOption<string>>(0);
-                options.SetKey(name);
-                options.AddComponentParameter(1, nameof(TbOption<string>.Value), name);
-                options.AddComponentParameter(2, nameof(TbOption<string>.Text), NameWords.Of(name));
-                options.CloseComponent();
-            }
-        }));
-        builder.CloseComponent();
-    }
-
-    // A type with no editor of its own shows its text, read-only.
-    private void AddText(RenderTreeBuilder builder, PropertyGridField field)
-    {
-        builder.OpenComponent<TbTextField<string>>(0);
-        builder.AddComponentParameter(1, nameof(TbTextField<string>.Label), field.LabelText);
-        builder.AddComponentParameter(2, nameof(TbTextField<string>.HelperText), field.Description);
-        builder.AddComponentParameter(3, nameof(TbTextField<string>.ReadOnly), true);
-        builder.AddComponentParameter(10, nameof(TbTextField<string>.Value), field.Get()?.ToString());
-        builder.CloseComponent();
-    }
+    private void AddEditor(RenderTreeBuilder builder, PropertyGridField field) =>
+        new PropertyEditor(field.Type, field.LabelText, field.Description, ReadOnly || field.Set is null, field.Get,
+            value => ChangeAsync(field, value)).Add(builder, this);
 }

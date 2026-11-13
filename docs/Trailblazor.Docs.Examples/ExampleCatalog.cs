@@ -6016,6 +6016,92 @@ public static class ExampleCatalog
                     + "changes a property. Which property and its value are never recorded.",
             ],
         },
+        new("model-fields", "Form from a model", ExampleCategory.Inputs,
+            "A form's fields built from a model's properties and data annotations, where any field's label, editor, "
+                + "place or width can be changed in markup.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for forms that edit one model and mostly follow its properties, such as settings, records in "
+                    + "an admin page, or a step of a wizard.",
+            ],
+            WhenNotToUse =
+            [
+                "When most fields need their own wording or layout, write the [form](components/form) out field by "
+                    + "field; it's clearer than overriding nearly every one.",
+                "To inspect and change an object's settings in a panel, with no submit, use a "
+                    + "[property grid](components/property-grid).",
+            ],
+            Related = ["form", "property-grid", "text-field", "number-field"],
+            Sections =
+            [
+                new("basic", "From a model", "`TbModelFields` sits in a `TbForm` and shows one field per public "
+                    + "property of `Model`, with an editor for its type: text, a number, a switch, a list of an "
+                    + "enum's values, a date, a date and time, or a time. `[Display]` names, describes, orders and "
+                    + "groups them, and its `Prompt` is a text field's placeholder. `[DataType]`, `[EmailAddress]`, "
+                    + "`[Phone]` and `[Url]` pick a text field's kind, and `[Range]` limits a number. With the form's "
+                    + "`DataAnnotations`, `[Required]` marks a field that can be left empty as required, and each "
+                    + "annotation's message shows under its field. An enum's list, and a date or time field that can't "
+                    + "be empty, show only the required message; their other messages appear only in the form's "
+                    + "`Errors`. `Columns` lays the fields out side by side; they stack when there's no room. "
+                    + "`OnChange` gets the name of each property the user changes, after its new value is set.",
+                    typeof(ModelFieldsExample)),
+                new("overrides", "Change a field", "A `TbModelField` inside names a property and changes how it "
+                    + "shows: `Label` and `HelperText` replace what the annotations say, `Order` moves it, `Span` "
+                    + "widens it across columns, `ReadOnly` locks it and `Hidden` leaves it out. `Editor` draws a "
+                    + "field of your own in its place, such as a rating, with the label and helper text it would have "
+                    + "had in its context.", typeof(ModelFieldsOverridesExample)),
+            ],
+            Api = [typeof(TbModelFields<>), typeof(TbModelField), typeof(ModelFieldContext)],
+            Labeling =
+            [
+                "Each field is labeled by its property's display name or, without one, by its name split into words.",
+                "A group of properties is a `fieldset` named by its `legend`, the group's name.",
+            ],
+            Announcements =
+            [
+                "Each field is announced as it would be on its own, with its description as its help text and its "
+                    + "messages linked to it, apart from the cases the first example lists.",
+            ],
+            Accessibility =
+            [
+                "The fields come in the order they show, so Tab moves through them as they read, row by row.",
+                "Required fields are marked with `aria-required`, as a field given `Required` is.",
+            ],
+            AppDuties =
+            [
+                "Name the form, as with any form, and give it a submit button.",
+                "Check that each label reads well on its own; a property name split into words, such as \"Leader "
+                    + "email\", may need a `[Display(Name = ...)]`.",
+                "Don't hide a `[Required]` property with `Hidden` unless it's always set: if it's empty, the form "
+                    + "won't submit and there's no field to show why.",
+            ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
+            BeforeInteractive =
+            [
+                "The fields and their values render, but changes need the page to be interactive.",
+            ],
+            Target = new("form", "New hike"),
+            Blocks = ["tb-model-fields"],
+            DataParts =
+            [
+                new("field", "One property's field, with its name in `data-name`."),
+                new("group", "The `fieldset` around a group's fields."),
+                new("group-label", "A group's `legend`."),
+            ],
+            TestingTip = "Find each field by its label with the driver for its kind, as anywhere else: "
+                + "`page.Tb().TextField(\"Trail name\").FillAsync(\"Ridge loop\")` in Playwright, or "
+                + "`cut.Tb().NumberField(\"Length (km)\").EnterAsync(\"12\")` in bUnit. A property's field is in "
+                + "`[data-part=field][data-name=LengthKm]`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"new-hike\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders and `trailblazor.control.used` with the action `change` each time the user changes a "
+                    + "field it drew; a field from an `Editor` counts under its own `TelemetryName`. Which field and "
+                    + "its value are never recorded.",
+            ],
+        },
         new("query-builder", "Query builder", ExampleCategory.Inputs,
             "Builds a filter from conditions on fields, joined in groups that match all or any of them.")
         {

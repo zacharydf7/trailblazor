@@ -1,0 +1,31 @@
+@page "/model-fields"
+@using System.ComponentModel.DataAnnotations
+
+@* Fields built from a hike in two columns, with its notes across both, in a form that saves only when it's valid. *@
+<TbForm Model="_hike" DataAnnotations OnValidSubmit="() => _saved = true" aria-label="New hike">
+    <TbModelFields Model="_hike" Columns="2">
+        <TbModelField Name="@nameof(Hike.Notes)" Span="2" />
+    </TbModelFields>
+    <TbButton Type="ButtonType.Submit">Save</TbButton>
+</TbForm>
+<output aria-label="Saved">@(_saved ? "saved" : "")</output>
+
+@code {
+    private readonly Hike _hike = new();
+    private bool _saved;
+
+    public sealed class Hike
+    {
+        [Required, Display(Name = "Trail name")]
+        public string? Name { get; set; }
+
+        [Range(1, 50), Display(Name = "Length (km)")]
+        public int Length { get; set; } = 5;
+
+        [DataType(DataType.MultilineText)]
+        public string? Notes { get; set; }
+
+        [EmailAddress, Display(GroupName = "Contact")]
+        public string? Email { get; set; }
+    }
+}

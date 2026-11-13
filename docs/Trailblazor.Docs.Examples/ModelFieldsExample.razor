@@ -1,0 +1,45 @@
+@using System.ComponentModel.DataAnnotations
+
+<TbForm Model="_hike" DataAnnotations OnValidSubmit="() => _saved = _hike.Name" aria-label="New hike"
+        Style="max-inline-size: 36rem">
+    <TbStack Gap="4">
+        <TbModelFields Model="_hike" Columns="2" />
+        <TbButton Type="ButtonType.Submit" Variant="Variant.Filled" Tone="Tone.Primary">Save hike</TbButton>
+        <output>@(_saved is null ? "" : $"Saved {_saved}.")</output>
+    </TbStack>
+</TbForm>
+
+@code {
+    private readonly Hike _hike = new();
+    private string? _saved;
+
+    public enum Pace
+    {
+        Easy,
+        Steady,
+        Brisk,
+    }
+
+    public sealed class Hike
+    {
+        [Required, Display(Name = "Trail name", Prompt = "Ridge loop")]
+        public string? Name { get; set; }
+
+        [Display(Name = "Date")]
+        public DateOnly? Date { get; set; }
+
+        [Range(1, 60), Display(Name = "Length (km)")]
+        public int LengthKm { get; set; } = 8;
+
+        public Pace Pace { get; set; } = Pace.Steady;
+
+        [DataType(DataType.MultilineText), Display(Description = "Weather, wildlife, anything worth remembering.")]
+        public string? Notes { get; set; }
+
+        [EmailAddress, Display(Name = "Email", GroupName = "Leader")]
+        public string? LeaderEmail { get; set; }
+
+        [Display(Name = "Phone", GroupName = "Leader"), Phone]
+        public string? LeaderPhone { get; set; }
+    }
+}
