@@ -20,7 +20,12 @@ export function createMenu(root, menu, options, events) {
         return null;
     }
 
-    const trigger = root.querySelector('[aria-haspopup="menu"]');
+    // By the menu's id, since a submenu's button inside it also has aria-haspopup.
+    const trigger = root.querySelector(`[aria-controls="${menu.id}"]`);
+    if (!trigger) {
+        throw new Error('A custom TbMenu trigger needs context.Attributes on its button.');
+    }
+
     trigger.setAttribute('aria-expanded', String(menu.matches(':popover-open')));
     // Set once the page is interactive, so tests know a click on an item reaches the server.
     trigger.dataset.ready = '';

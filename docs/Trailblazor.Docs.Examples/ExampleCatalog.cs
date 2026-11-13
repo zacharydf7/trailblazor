@@ -6338,7 +6338,9 @@ public static class ExampleCatalog
                     + "screen readers so. `NewTabHint` changes what they hear.", typeof(MenuLinkExample)),
                 new("custom-trigger", "A custom trigger", "Put `@attributes=\"context.Attributes\"` on your own "
                     + "button inside `Trigger`. It takes the place of the menu's button and gets the built-in "
-                    + "trigger's behavior and attributes. Give it a name too, such as an `aria-label` on an avatar.",
+                    + "trigger's behavior and attributes. Give it a name too, such as an `aria-label` on an avatar. "
+                    + "Without `context.Attributes`, the menu can't find its trigger, and once its script attaches it "
+                    + "throws an error that says so.",
                     typeof(MenuTriggerExample)),
                 new("trigger-style", "The trigger's look", "`Variant` sets how a menu's text trigger looks, and `Size` "
                     + "how big its built-in trigger is.",

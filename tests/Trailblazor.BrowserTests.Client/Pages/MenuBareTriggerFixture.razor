@@ -1,0 +1,13 @@
+@page "/menu-bare-trigger"
+
+@* A custom trigger that leaves out context.Attributes, so the menu can't find it; the submenu's button mustn't stand in. *@
+<TbMenu>
+    <Trigger>
+        <button type="button">Actions</button>
+    </Trigger>
+    <ChildContent>
+        <TbSubMenu Label="Share">
+            <TbMenuItem>Copy the link</TbMenuItem>
+        </TbSubMenu>
+    </ChildContent>
+</TbMenu>

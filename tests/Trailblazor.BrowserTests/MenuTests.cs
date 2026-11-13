@@ -1204,6 +1204,25 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(keyboard, await trigger.EvaluateAsync<bool>("button => button.matches(':focus-visible')"));
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldSayWhatIsMissing_WhenACustomTriggerLeavesOutItsAttributes(string browser)
+    {
+        var from = Fixture.ServerLogs.GetSnapshot().Count;
+
+        await OpenAsync(browser, "/menu-bare-trigger");
+
+        // The script's error ends the circuit, and the server logs it once the menu attaches.
+        var said = false;
+        for (var waited = 0; !said && waited < 5000; waited += 100)
+        {
+            await Task.Delay(100, TestContext.Current.CancellationToken);
+            said = Fixture.ServerLogs.GetSnapshot().Skip(from).Any(record => record.Exception?.Message
+                .Contains("A custom TbMenu trigger needs context.Attributes on its button.") == true);
+        }
+
+        Assert.True(said, "The server log should name the missing context.Attributes.");
+    }
+
     public static TheoryData<string, bool> ChosenBy => new(
         from browser in AllBrowsers.Names from keyboard in new[] { true, false } select (browser, keyboard));
 }
