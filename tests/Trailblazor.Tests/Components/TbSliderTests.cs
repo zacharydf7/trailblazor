@@ -304,6 +304,41 @@ public class TbSliderTests : BunitContext
         Assert.Contains(modifier, range.Find(".tb-slider").ClassList);
     }
 
+    [Fact]
+    public async Task Sliding_ShouldReachTheSlider_WhenItRendersBetweenATestReadingTheThumbAndRaisingItsEvents()
+    {
+        var committed = new List<int>();
+        var cut = RenderSlider(40, onCommit: committed.Add);
+        var input = cut.Find("input");
+        var slid = HandlerIds.Read(input, "oninput");
+        var changed = HandlerIds.Read(input, "onchange");
+
+        // Stands in for a background continuation rendering the slider after the test has read its handler ids.
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, slid, cut.ComponentId, "75", new ChangeEventArgs { Value = "75" });
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, changed, cut.ComponentId, "75", new ChangeEventArgs { Value = "75" });
+
+        Assert.Equal(75, Brightness);
+        Assert.Equal([75], committed);
+    }
+
+    [Fact]
+    public async Task Sliding_ShouldReachEachThumb_WhenTheRangeSliderRendersBetweenATestReadingItAndRaisingItsEvents()
+    {
+        var cut = RenderRange(new(1000, 3000));
+        var start = HandlerIds.Read(cut.Find("[data-part=start-thumb]"), "oninput");
+        var end = HandlerIds.Read(cut.Find("[data-part=end-thumb]"), "oninput");
+
+        // Stands in for a background continuation rendering the slider after the test has read its handler ids.
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, start, cut.ComponentId, "500", new ChangeEventArgs { Value = "500" });
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, end, cut.ComponentId, "3500", new ChangeEventArgs { Value = "3500" });
+
+        Assert.Equal(new SliderRange<int>(500, 3500), Elevation);
+    }
+
     private IRenderedComponent<TbSlider<int>> RenderSlider(int value, Action<int>? onCommit = null,
         Func<int, string>? formatter = null)
     {

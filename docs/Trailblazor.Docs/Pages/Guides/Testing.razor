@@ -511,8 +511,8 @@
                 An element you found keeps working after the component renders again, so you can click a button twice
                 without finding it a second time. Blazor keeps an event handler's id only while each render passes an
                 equal delegate: the same method on the same object. Trailblazor's text, number, code and autocomplete
-                fields and its command palette don't use <code>@@bind</code>, so their boxes keep working too. Its other
-                inputs, such as the date, color and slider fields, still do for now, so find those again before
+                fields, its sliders and its command palette don't use <code>@@bind</code>, so their inputs keep working
+                too. Its other inputs, such as the date and color fields, still do for now, so find those again before
                 raising a second event. In your
                 own components, <code>@@bind</code> and a lambda that captures a loop variable make a new delegate on
                 every render: if background work renders the component after a test finds an element but before the

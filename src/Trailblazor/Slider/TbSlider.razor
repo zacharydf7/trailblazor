@@ -3,19 +3,44 @@
 @inherits TbSliderBase<TValue>
 
 @Layout(InputId, null, Fraction(Number), @<text>
-    @* @bind keeps the thumb where the user put it during a round trip; data-value shows tests when it's done. *@
-    <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
-           type="range" data-value="@Invariant(Number)" data-static="@StaticMark" data-ready="@ReadyMark"
-           min="@Invariant(Min)" max="@Invariant(Max)" step="@Invariant(Step)" @bind:get="Invariant(Number)"
-           @bind:set="SetAsync" @bind:event="oninput" @onchange="CommitAsync" disabled="@CantChange"
-           aria-valuetext="@ValueText" aria-readonly="@(ReadOnly ? "true" : null)"
-           aria-invalid="@(ShowsInvalid ? "true" : null)"
-           aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-slider__input", Classes?.Input)" />
+    @Input
     @Bubble(Fraction(Number), ValueText)
 </text>)
 
 @code {
     private ElementReference _input;
+
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment Input => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddMultipleAttributes(1, ControlAttributes);
+        builder.AddAttribute(2, "data-part", "input");
+        builder.AddAttribute(3, "id", InputId);
+        builder.AddAttribute(4, "name", InputNameAttribute);
+        builder.AddAttribute(5, "type", "range");
+        // Tests read data-value to know a round trip is done.
+        builder.AddAttribute(6, "data-value", Invariant(Number));
+        builder.AddAttribute(7, "data-static", StaticMark);
+        builder.AddAttribute(8, "data-ready", ReadyMark);
+        builder.AddAttribute(9, "min", Invariant(Min));
+        builder.AddAttribute(10, "max", Invariant(Max));
+        builder.AddAttribute(11, "step", Invariant(Step));
+        builder.AddAttribute(12, "value", Invariant(Number));
+        builder.AddAttribute(13, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, OnSlideAsync));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(14, "onchange", EventCallback.Factory.Create(this, CommitAsync));
+        builder.AddAttribute(15, "disabled", CantChange);
+        builder.AddAttribute(16, "aria-valuetext", ValueText);
+        builder.AddAttribute(17, "aria-readonly", ReadOnly ? "true" : null);
+        builder.AddAttribute(18, "aria-invalid", ShowsInvalid ? "true" : null);
+        builder.AddAttribute(19, "aria-describedby", InputDescribedBy);
+        builder.AddAttribute(20, "class", ClassNames.Join("tb-slider__input", Classes?.Input));
+        builder.AddElementReferenceCapture(21, input => _input = input);
+        builder.CloseElement();
+    };
+
+    private Task OnSlideAsync(ChangeEventArgs args) => SetAsync(args.Value as string);
 
     /// <summary>Turns a value into the text shown above the thumb and read by screen readers, such as "40%".
     /// Defaults to the number itself.</summary>
