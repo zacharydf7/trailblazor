@@ -1925,6 +1925,31 @@ public sealed class TbGridDriver
     internal TbGridDriver(Func<string, IReadOnlyList<IElement>> findAll, Func<IElement> find, ScriptCalls scripts) =>
         (_findAll, _find, _scripts) = (findAll, find, scripts);
 
+    /// <summary>The rows the grid shows on its current page, each as its data cells' texts, in the order of
+    /// <see cref="Columns"/>.</summary>
+    public IReadOnlyList<IReadOnlyList<string>> Rows => Texts(OwnRows);
+
+    /// <summary>How many rows the grid shows on its current page.</summary>
+    public int RowCount => _find().QuerySelectorAll(OwnRows).Length;
+
+    /// <summary>The selected rows the grid shows on its current page, each as its data cells' texts, in the order of
+    /// <see cref="Columns"/>.</summary>
+    public IReadOnlyList<IReadOnlyList<string>> Selected => Texts($"{OwnRows}[data-selected]");
+
+    /// <summary>Whether the grid is loading rows, as it marks with <c>aria-busy</c>.</summary>
+    public bool IsBusy => _find().GetAttribute("aria-busy") == "true";
+
+    /// <summary>Waits until the grid has loaded its rows, such as from a <c>DataProvider</c> that answers later.
+    /// </summary>
+    public Task WaitForRowsAsync() => _scripts.WaitForAsync(() => !IsBusy);
+
+    // A grid nested in a detail row has rows of its own, which aren't this grid's.
+    private const string OwnRows = ":scope > tbody > tr[data-part=row]";
+
+    private IReadOnlyList<IReadOnlyList<string>> Texts(string rows) => [.. _find().QuerySelectorAll(rows)
+        .Select(row => (IReadOnlyList<string>)[.. row.Children.Where(cell => cell.HasAttribute("data-column"))
+            .Select(cell => cell.TextContent.Trim())])];
+
     /// <summary>The row with a cell whose text is exactly this.</summary>
     public IElement Row(string cell)
     {

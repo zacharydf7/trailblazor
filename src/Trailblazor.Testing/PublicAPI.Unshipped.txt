@@ -347,3 +347,8 @@ Trailblazor.Testing.TbMenuDriver.CloseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbMenuDriver.IsOpen.get -> bool
 Trailblazor.Testing.TbMenuDriver.OpenAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTabsDriver.Panel(string! tab) -> Trailblazor.Testing.TrailblazorMarkup!
+Trailblazor.Testing.TbGridDriver.IsBusy.get -> bool
+Trailblazor.Testing.TbGridDriver.RowCount.get -> int
+Trailblazor.Testing.TbGridDriver.Rows.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.TbGridDriver.Selected.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.TbGridDriver.WaitForRowsAsync() -> System.Threading.Tasks.Task!

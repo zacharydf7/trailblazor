@@ -1252,6 +1252,32 @@ public sealed class TbGridLocator(ILocator scope, string? name)
 
     private ILocator Root => Table.Locator("xpath=ancestor::*[@data-part='grid'][1]");
 
+    // A grid nested in a detail row has rows of its own, which aren't this grid's.
+    private const string OwnRows = ":scope > tbody > tr[data-part=row]";
+
+    private const string Texts = "rows => rows.map(row => [...row.querySelectorAll(':scope > td[data-column]')]"
+        + ".map(cell => cell.textContent.trim()))";
+
+    /// <summary>The rows the grid shows on its current page, each as its data cells' texts, in the order of
+    /// <see cref="ColumnsAsync"/>.</summary>
+    public async Task<IReadOnlyList<IReadOnlyList<string>>> RowsAsync() =>
+        await Table.Locator(OwnRows).EvaluateAllAsync<string[][]>(Texts);
+
+    /// <summary>How many rows the grid shows on its current page.</summary>
+    public Task<int> RowCountAsync() => Table.Locator(OwnRows).CountAsync();
+
+    /// <summary>The selected rows the grid shows on its current page, each as its data cells' texts, in the order of
+    /// <see cref="ColumnsAsync"/>.</summary>
+    public async Task<IReadOnlyList<IReadOnlyList<string>>> SelectedAsync() =>
+        await Table.Locator($"{OwnRows}[data-selected]").EvaluateAllAsync<string[][]>(Texts);
+
+    /// <summary>Whether the grid is loading rows, as it marks with <c>aria-busy</c>.</summary>
+    public async Task<bool> IsBusyAsync() => await Table.GetAttributeAsync("aria-busy") == "true";
+
+    /// <summary>Waits until the grid has loaded its rows, such as from a <c>DataProvider</c> that answers later.
+    /// </summary>
+    public Task WaitForRowsAsync() => Assertions.Expect(Table).Not.ToHaveAttributeAsync("aria-busy", "true");
+
     /// <summary>The row with a cell whose text is exactly this.</summary>
     public ILocator Row(string cell) => Table.Locator("tbody tr[data-part=row] > td")
         .Filter(new() { HasTextRegex = new Regex($"^{Regex.Escape(cell)}$") }).Locator("xpath=parent::tr");
@@ -1430,7 +1456,7 @@ public sealed class TbGridLocator(ILocator scope, string? name)
         }
 
         await Assertions.Expect(header).ToHaveAttributeAsync("aria-sort", wanted);
-        await RowsLoadedAsync();
+        await WaitForRowsAsync();
     }
 
     /// <summary>Selects the row with a cell whose text is exactly this, with its checkbox or radio button.</summary>
@@ -1477,7 +1503,7 @@ public sealed class TbGridLocator(ILocator scope, string? name)
             await Assertions.Expect(cell).ToHaveAttributeAsync("data-value", applied);
         }
 
-        await RowsLoadedAsync();
+        await WaitForRowsAsync();
     }
 
     /// <summary>In the filter menu of the column with this title, chooses the condition with this name, such as
@@ -1519,7 +1545,7 @@ public sealed class TbGridLocator(ILocator scope, string? name)
                 await new TbSelectLocator(scope, cell.Locator("[role=combobox]")).ChooseAsync(choices);
             }
 
-            await RowsLoadedAsync();
+            await WaitForRowsAsync();
             return;
         }
 
@@ -1574,7 +1600,7 @@ public sealed class TbGridLocator(ILocator scope, string? name)
 
         await panel.Locator("[data-part=filter-apply]").ClickAsync();
         await Assertions.Expect(panel).ToBeHiddenAsync();
-        await RowsLoadedAsync();
+        await WaitForRowsAsync();
     }
 
     /// <summary>Goes to this page of the rows and waits until it is current and a <c>DataProvider</c>'s rows have
@@ -1584,11 +1610,8 @@ public sealed class TbGridLocator(ILocator scope, string? name)
         var pages = Root.Locator("[data-part=pager] nav");
         await Assertions.Expect(pages).ToHaveAttributeAsync("aria-label", new Regex("."));
         await new TbPaginationLocator(scope, (await pages.GetAttributeAsync("aria-label"))!).GoToPageAsync(number);
-        await RowsLoadedAsync();
+        await WaitForRowsAsync();
     }
-
-    // The render that changes the header or pager marks the table busy until the rows load.
-    private Task RowsLoadedAsync() => Assertions.Expect(Table).Not.ToHaveAttributeAsync("aria-busy", "true");
 
     /// <summary>The columns' titles, in the order they show.</summary>
     public async Task<IReadOnlyList<string>> ColumnsAsync() => await Table.Locator("thead th[data-title]")

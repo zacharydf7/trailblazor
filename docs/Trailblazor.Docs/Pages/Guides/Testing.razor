@@ -355,7 +355,10 @@
                             Discard changes buttons. In a grid with <code>CellSelection</code>,
                             <code>SelectCellsAsync</code> selects a range, <code>SelectedCells</code> reads its text,
                             and in Playwright <code>CopyAsync</code> presses Ctrl+C and returns what was copied, with
-                            no clipboard permission needed.
+                            no clipboard permission needed. <code>Rows</code> and <code>Selected</code> read the rows
+                            shown and the selected ones, <code>RowCount</code> counts the rows shown,
+                            <code>IsBusy</code> reads whether rows are loading, and <code>WaitForRowsAsync</code> waits
+                            until they've loaded.
                             Finds a cell with <code>Cell</code>, and reads the column headers with <code>Columns</code>,
                             a column's total with <code>Total</code> and each group's totals with
                             <code>GroupTotals</code>. In a grid with <code>VirtualizeColumns</code>, these helpers see
@@ -922,7 +925,9 @@
             + "and pages, and `ClickRowAsync(cell)` clicks a row. `MoveRowAsync(row, index)` moves a row through its "
             + "handle's menu, and `DragRowBeforeAsync` "
             + "and `DragRowAfterAsync` drag it onto another row; each waits for the app's answer. `ExpandAsync(row)` "
-            + "and `CollapseAsync(row)` open and close a tree grid's row."),
+            + "and `CollapseAsync(row)` open and close a tree grid's row. `RowsAsync()` and `SelectedAsync()` read the "
+            + "rows shown and the selected ones as their data cells' texts, `RowCountAsync()` counts the rows shown, "
+            + "`IsBusyAsync()` reads whether rows are loading, and `WaitForRowsAsync()` waits until they've loaded."),
         new("Command palette", "Its label", "`CommandPalette(name).OpenAsync()` presses its shortcut, "
             + "`SearchAsync(text)` types and waits for the results, `ResultsAsync()` reads them, "
             + "`ChooseAsync(command)` runs one and waits until the app's `OnChoose` has run, and `IsOpenAsync()` says "

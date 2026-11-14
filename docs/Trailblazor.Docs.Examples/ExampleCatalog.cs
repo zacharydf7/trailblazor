@@ -8535,7 +8535,11 @@ public static class ExampleCatalog
                     + "`data-pinned`, `start` or `end`, and a filter cell's `data-value` holds its applied values as "
                     + "invariant text, with a range's two dates separated by a space.",
                 "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync`, "
-                    + "`SortAsync` and `FilterAsync`, and `Cell(row, column)` finds a cell. "
+                    + "`SortAsync` and `FilterAsync`, and `Cell(row, column)` finds a cell. In both packages, with "
+                    + "`Async` names in Playwright, `Rows` and `Selected` read the rows shown and the selected ones "
+                    + "as their data cells' texts, and `RowCount` counts the rows shown. `IsBusy` reads whether rows "
+                    + "are loading, from a `DataProvider` or while `Loading` is set, and `WaitForRowsAsync()` waits "
+                    + "until they've loaded. "
                     + "With that driver as `grid`, `cut.Tb().Within(() => grid.Row(\"Cedar Flats\"))` finds the "
                     + "fields in one row.",
                 "In bUnit, `await cut.Tb().Menu(\"Export\").ChooseAsync(\"CSV\")` downloads the file into "

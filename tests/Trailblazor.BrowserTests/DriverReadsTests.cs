@@ -99,6 +99,37 @@ public class DriverReadsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldReadItsRowsAndSelection_WhenAsked(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-select");
+        var boxes = page.Tb().Grid("Boxes only");
+
+        await boxes.SelectAsync("Birch");
+
+        Assert.Equal(6, await boxes.RowCountAsync());
+        Assert.Equal([["Ash"], ["Birch"], ["Cedar"], ["Dogwood"], ["Elm"], ["Fir"]], await boxes.RowsAsync());
+        Assert.Equal([["Birch"]], await boxes.SelectedAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldReadBusyUntilItsRowsLoad_WhenItReloads(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-reload");
+        var trails = page.Tb().Grid("Trails");
+        var reload = page.GetByRole(AriaRole.Button, new() { Name = "Reload" });
+        await reload.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Table, new() { Name = "Trails", Exact = true }))
+            .ToHaveAttributeAsync("aria-busy", "true");
+        var busy = await trails.IsBusyAsync();
+
+        await reload.ClickAsync();
+        await trails.WaitForRowsAsync();
+
+        Assert.True(busy);
+        Assert.False(await trails.IsBusyAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Reads_ShouldGiveWhatTheComponentsShow_WhenAsked(string browser)
     {
         var tabs = await OpenAsync(browser, "/examples/tabs");

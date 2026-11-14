@@ -58,6 +58,32 @@ public class TbDataGridDetailTests : BunitContext
     }
 
     [Fact]
+    public void GridDriver_ShouldReadOnlyTheGridsOwnRows_WhenAnOpenDetailHoldsAGrid()
+    {
+        var cut = RenderHikes(detail: hike => builder =>
+        {
+            builder.OpenComponent<TbDataGrid<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbDataGrid<string>.Items), new[] { "Stage 1", "Stage 2" });
+            builder.AddComponentParameter(2, nameof(TbDataGrid<string>.AriaLabel), $"Stages of {hike.Name}");
+            builder.AddComponentParameter(3, nameof(TbDataGrid<string>.ChildContent), (RenderFragment)(columns =>
+            {
+                columns.OpenComponent<TbColumn<string>>(0);
+                columns.AddComponentParameter(1, nameof(TbColumn<string>.Field),
+                    (System.Linq.Expressions.Expression<Func<string, object?>>)(stage => stage));
+                columns.AddComponentParameter(2, nameof(TbColumn<string>.Title), "Stage");
+                columns.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        Toggle(cut, "Eagle Ridge").Click();
+
+        var hikes = cut.Tb().Grid("Hikes");
+        Assert.Equal(3, hikes.RowCount);
+        Assert.Equal([["Pine Hollow"], ["Eagle Ridge"], ["Cedar Flats"]], hikes.Rows);
+    }
+
+    [Fact]
     public void Toggle_ShouldShowTheRowsDetailsUnderItAcrossEveryColumn_WhenItsButtonIsClicked()
     {
         var cut = RenderHikes();

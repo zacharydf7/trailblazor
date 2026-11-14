@@ -856,8 +856,28 @@ public class TrailblazorMarkupTests : BunitContext
 
         Assert.Equal("Cedar Flats", clicked?.Name);
         Assert.Equal(["Cedar Flats", "Lake camp"], selected.Select(trail => trail.Name).Order());
+        Assert.Equal(3, grid.RowCount);
+        Assert.Equal([["Pine Hollow"], ["Cedar Flats"], ["Lake camp"]], grid.Rows);
+        Assert.Equal([["Cedar Flats"], ["Lake camp"]], grid.Selected);
         Assert.Throws<InvalidOperationException>(() => grid.Row("Elk Pass"));
         Assert.Throws<InvalidOperationException>(() => cut.Tb().Grid("Camps").Row("Lake camp"));
+    }
+
+    [Fact]
+    public async Task Grid_ShouldReadBusyUntilTheRowsLoad_WhenItsDataProviderAnswersLater()
+    {
+        var rows = new TaskCompletionSource<GridResult<Trail>>();
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
+            .Add(grid => grid.DataProvider, (_, _) => rows.Task).Add(grid => grid.ChildContent, NameColumn));
+        var grid = cut.Tb().Grid("Trails");
+        var busy = grid.IsBusy;
+
+        rows.SetResult(new GridResult<Trail>([new("Pine Hollow"), new("Cedar Flats")], 2));
+        await grid.WaitForRowsAsync();
+
+        Assert.True(busy);
+        Assert.False(grid.IsBusy);
+        Assert.Equal(2, grid.RowCount);
     }
 
     [Fact]
