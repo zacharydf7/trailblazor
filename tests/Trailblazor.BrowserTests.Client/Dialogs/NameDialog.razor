@@ -1,5 +1,9 @@
 @inherits TbDialogContent<string>
 
+@if (HeaderActions)
+{
+    <TbDialogHeaderActions><span data-testid="draft">Draft</span><TbButton>Help</TbButton></TbDialogHeaderActions>
+}
 <TbTextField Label="Name" @bind-Value="Name" />
 <TbDialogActions>
     <TbButton OnClick="() => Dialog.CloseAsync(Name ?? string.Empty)">Save</TbButton>
@@ -8,4 +12,7 @@
 @code {
     [Parameter]
     public string? Name { get; set; }
+
+    [Parameter]
+    public bool HeaderActions { get; set; }
 }

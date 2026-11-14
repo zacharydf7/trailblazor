@@ -4,7 +4,8 @@ namespace Trailblazor;
 
 /// <summary>Shows richer content, such as an icon or a status beside the text, in place of the dialog's title in its
 /// header. Put it anywhere in the dialog's content. The content becomes the dialog's accessible name, so keep the
-/// title's text in it; without the header, the title's text still names the dialog.</summary>
+/// title's text in it and put buttons in <see cref="TbDialogHeaderActions"/> instead. Without the header, the title's
+/// text still names the dialog.</summary>
 public sealed class TbDialogTitle : ComponentBase, IDisposable
 {
     [CascadingParameter]

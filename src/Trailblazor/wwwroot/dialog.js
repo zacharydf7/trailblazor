@@ -322,14 +322,16 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
     const handleOf = element => element.closest?.('[data-part="trigger"]')
         ?.closest('[data-part="move"], [data-part="resize"]');
 
-    // The header moves the dialog, apart from its buttons other than Move and an open Move menu; the grip resizes it.
+    // The header moves the dialog, except from its actions, an open Move menu or a button other than Move; the grip
+    // resizes it.
     const onDragStart = event => {
         draggedHandle = null;
         const button = event.target.closest('button');
         const handle = button && handleOf(button);
         const grip = resizable() && handle?.dataset.part === 'resize';
         const header = draggable() && event.target.closest('[data-part="header"]');
-        if (event.button !== 0 || !isNormal() || event.target.closest('[data-part="menu"]')
+        if (event.button !== 0 || !isNormal()
+            || event.target.closest('[data-part="menu"], [data-part="header-actions"]')
             || !(grip || (header && (!button || handle)))) {
             return;
         }

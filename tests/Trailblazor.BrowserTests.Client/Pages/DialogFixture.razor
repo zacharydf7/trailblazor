@@ -15,6 +15,7 @@
     <TbButton OnClick="() => NotesAsync(DialogSize.Medium)">Notes</TbButton>
     <TbButton OnClick="() => NotesAsync(DialogSize.Full)">Full notes</TbButton>
     <TbButton OnClick="MovableAsync">Movable</TbButton>
+    <TbButton OnClick="AnnotatedAsync">Annotated</TbButton>
     <TbButton OnClick="WideAsync">Wide</TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<SizedDialog, string>("Sized", options: new() { Width = "600px" })'>
         Sized
@@ -133,6 +134,10 @@
         {
             Modal = false, Draggable = true, Resizable = true, Minimizable = true, Maximizable = true,
         });
+
+    private async Task AnnotatedAsync() =>
+        await Dialogs.ShowAsync<NameDialog, string>("Annotated", p => p.Set(d => d.HeaderActions, true),
+            new() { Modal = false, Draggable = true });
 
     private async Task WideAsync() =>
         await Dialogs.ShowAsync<NameDialog, string>("Wide",

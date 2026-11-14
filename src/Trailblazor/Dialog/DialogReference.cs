@@ -16,6 +16,7 @@ public abstract class DialogReference
     private bool _dismissing;
     private bool _showHeader;
     private bool _closeButton;
+    private TbDialogHeaderActions? _headerActionsOwner;
 
     private protected DialogReference(string? title, DialogOptions options,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type? component,
@@ -145,10 +146,13 @@ public abstract class DialogReference
     // Set while a TbDialogTitle is in the dialog, so the header shows it in place of the title's text.
     internal RenderFragment? TitleContent { get; private set; }
 
+    // Set while a TbDialogHeaderActions is in the dialog, so the header shows it after the title.
+    internal RenderFragment? HeaderActions { get; private set; }
+
     internal event Action? Changed;
 
     // Only the header listens, since a frame-wide change would draw a markup dialog's TbDialogTitle again, endlessly.
-    internal event Action? TitleContentChanged;
+    internal event Action? HeaderContentChanged;
 
     // Raised when the dialog starts or stops blocking the page, so toasts and announcements move with it.
     internal event Action? BlockingChanged;
@@ -203,14 +207,32 @@ public abstract class DialogReference
         _defaultTitle = title;
         if (string.IsNullOrWhiteSpace(_title))
         {
-            TitleContentChanged?.Invoke();
+            HeaderContentChanged?.Invoke();
         }
     }
 
     internal void SetTitleContent(RenderFragment? content)
     {
         TitleContent = content;
-        TitleContentChanged?.Invoke();
+        HeaderContentChanged?.Invoke();
+    }
+
+    internal void SetHeaderActions(TbDialogHeaderActions owner, RenderFragment? content)
+    {
+        _headerActionsOwner = owner;
+        HeaderActions = content;
+        HeaderContentChanged?.Invoke();
+    }
+
+    // An instance swapped in sets its actions before the one it replaces is disposed, so only the latest clears them.
+    internal void ClearHeaderActions(TbDialogHeaderActions owner)
+    {
+        if (_headerActionsOwner == owner)
+        {
+            _headerActionsOwner = null;
+            HeaderActions = null;
+            HeaderContentChanged?.Invoke();
+        }
     }
 
     internal void SetDescribed(bool described)

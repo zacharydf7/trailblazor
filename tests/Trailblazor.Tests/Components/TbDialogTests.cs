@@ -200,6 +200,53 @@ public class TbDialogTests : BunitContext
     }
 
     [Fact]
+    public void HeaderActions_ShouldShowBetweenTheTitleAndTheCloseButton_WhenAddedAndRemoved()
+    {
+        var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Replace lists")
+            .AddChildContent<TbDialogHeaderActions>(actions => actions.AddChildContent("<button>Help</button>")));
+
+        cut.WaitForAssertion(() => Assert.Equal(["title", "header-actions", "close"],
+            cut.FindAll("[data-part=header] > *").Select(part => part.GetAttribute("data-part"))));
+        var title = cut.Find("[data-part=title]");
+        Assert.Equal(title.Id, cut.Find("dialog").GetAttribute("aria-labelledby"));
+        Assert.Equal("Replace lists", title.TextContent);
+        cut.Render(parameters => parameters.Add(d => d.ChildContent, (RenderFragment)(_ => { })));
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("[data-part=header-actions]")));
+    }
+
+    [Fact]
+    public void HeaderActions_ShouldShowTheNewActions_WhenTheContentSwapsOneSetForAnother()
+    {
+        RenderFragment Actions(string label) => builder =>
+        {
+            builder.OpenComponent<TbDialogHeaderActions>(0);
+            builder.SetKey(label);
+            builder.AddComponentParameter(1, nameof(TbDialogHeaderActions.ChildContent),
+                (RenderFragment)(actions => actions.AddMarkupContent(0, $"<button>{label}</button>")));
+            builder.CloseComponent();
+        };
+        var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Notes")
+            .Add(d => d.ChildContent, Actions("Edit")));
+        cut.WaitForAssertion(() => Assert.Equal("Edit", cut.Find("[data-part=header-actions]").TextContent));
+
+        cut.Render(parameters => parameters.Add(d => d.ChildContent, Actions("Save")));
+
+        cut.WaitForAssertion(() => Assert.Equal("Save", cut.Find("[data-part=header-actions]").TextContent));
+    }
+
+    [Fact]
+    public void HeaderActions_ShouldShowNothing_WhenTheHeaderIsHidden()
+    {
+        var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Replace lists")
+            .Add(d => d.Options, new DialogOptions { ShowHeader = false })
+            .AddChildContent<TbDialogHeaderActions>(actions => actions.AddChildContent("<button>Help</button>")));
+
+        cut.WaitForElement("dialog");
+
+        Assert.Empty(cut.FindAll("button"));
+    }
+
+    [Fact]
     public async Task CloseButton_ShouldKeepTheDialogOpen_WhenCanDismissRefuses()
     {
         var asked = new List<DialogDismissReason>();

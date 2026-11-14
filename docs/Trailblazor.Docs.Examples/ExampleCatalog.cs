@@ -6857,7 +6857,9 @@ public static class ExampleCatalog
                     + "the dialog. `CloseButton = false` removes the close button. `TbDialogTitle` shows richer "
                     + "content in place of the title; keep the title's text in it, since it names the dialog. "
                     + "`TbDialogTitle` renders inside an `h2`, so keep its content inline: text, icons and badges, but "
-                    + "no block elements.",
+                    + "no block elements. `TbDialogHeaderActions` puts buttons or a menu in the header, after the "
+                    + "title and before the window buttons; it stays out of the dialog's name, and a drag that "
+                    + "starts on it doesn't move the dialog.",
                     typeof(DialogHeaderExample)),
                 new("first-focus", "Where focus starts", "A dialog starts where Tab would, on its first field or "
                     + "button or a group's chosen radio, or on an element marked `autofocus`. "
@@ -6897,8 +6899,8 @@ public static class ExampleCatalog
             Api =
             [
                 typeof(IDialogService), typeof(DialogReference<>), typeof(DialogOptions), typeof(DialogSettings),
-                typeof(TbDialog), typeof(TbDialogActions), typeof(TbDialogTitle), typeof(TbDialogDescription),
-                typeof(DialogClasses),
+                typeof(TbDialog), typeof(TbDialogActions), typeof(TbDialogTitle), typeof(TbDialogHeaderActions),
+                typeof(TbDialogDescription), typeof(DialogClasses),
             ],
             Keyboard =
             [
@@ -6974,8 +6976,9 @@ public static class ExampleCatalog
             DataParts =
             [
                 new("dialog", "The dialog window."),
-                new("header", "The title bar, with the title and the window buttons."),
+                new("header", "The title bar, with the title, the header actions and the window buttons."),
                 new("title", "The dialog's title, in its header."),
+                new("header-actions", "The buttons or menu from `TbDialogHeaderActions`, after the title."),
                 new("icon", "The tone icon beside a confirmation dialog's message."),
                 new("move", "The Move menu: its button and its list of places for the dialog."),
                 new("minimize", "The button that minimizes the dialog."),
@@ -7000,6 +7003,7 @@ public static class ExampleCatalog
                 @* A dialog written in the page's markup *@
                 <TbDialog Title="…" @bind-Open="_open">
                     <TbDialogTitle>…</TbDialogTitle>
+                    <TbDialogHeaderActions>…</TbDialogHeaderActions>
                     …
                     <TbDialogActions>…</TbDialogActions>
                 </TbDialog>

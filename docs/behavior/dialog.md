@@ -47,6 +47,7 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] Focus moving into a dialog nested in one behind another brings them both forward. `DialogWindowsTests.Window_ShouldComeToTheFront_WhenFocusMovesIntoAWindowNestedInIt`
 - [x] On the page layer, a modal or non-modal dialog opened later stays above one that came to the front, and a modal restored after another dialog opened draws above that dialog. `DialogWindowsTests.Modal_ShouldOpenAboveARaisedWindow_WhenOnThePageLayer`, `DialogWindowsTests.Window_ShouldOpenAboveARaisedWindow_WhenOnThePageLayer`, `DialogWindowsTests.Modal_ShouldDrawAboveALaterWindow_WhenRestoredOnThePageLayer`
 - [x] Dragging the header moves the dialog, and it stays inside the window. `DialogMoveAndResizeTests.Dialog_ShouldStayInsideTheWindow_WhenDraggedPastItsEdges`
+- [x] A drag that starts on the header's actions leaves the dialog where it is, and the actions stay out of its name. `DialogMoveAndResizeTests.Dialog_ShouldStayPut_WhenADragStartsOnItsHeaderActions`, `TbDialogTests.HeaderActions_ShouldShowBetweenTheTitleAndTheCloseButton_WhenAddedAndRemoved`
 - [x] Dragging the grip resizes it from its bottom-end corner. `DialogMoveAndResizeTests.Dialog_ShouldGrowFromItsBottomEndCorner_WhenTheGripIsDragged`
 - [x] Minimize collapses it to its header in the corner. `DialogTests.Dialog_ShouldCollapseToItsHeaderInTheCornerAndKeepFocus_WhenMinimized`
 - [x] Maximize fills the window, and Restore brings it back. `DialogTests.Dialog_ShouldFillTheWindowAndComeBack_WhenMaximizedAndRestored`

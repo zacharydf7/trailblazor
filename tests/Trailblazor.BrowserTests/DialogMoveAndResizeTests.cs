@@ -45,6 +45,21 @@ public class DialogMoveAndResizeTests(BrowserFixture fixture) : BrowserTest(fixt
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldStayPut_WhenADragStartsOnItsHeaderActions(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Annotated" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Annotated", Exact = true });
+        await Expect(dialog).ToBeVisibleAsync();
+        var before = await DialogTests.BoxAsync(page, "Annotated");
+
+        await DragAsync(page, dialog.GetByTestId("draft"), 80, 60);
+
+        var after = await DialogTests.BoxAsync(page, "Annotated");
+        AssertNear([before.X, before.Y], [after.X, after.Y]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldMoveAStepPerArrowKey_WhenItsMoveButtonHasFocus(string browser)
     {
         var page = await OpenMovableAsync(browser);

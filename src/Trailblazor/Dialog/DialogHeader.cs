@@ -26,7 +26,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
     protected override void OnInitialized()
     {
         Dialog.Changed += OnChanged;
-        Dialog.TitleContentChanged += OnChanged;
+        Dialog.HeaderContentChanged += OnChanged;
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -66,16 +66,25 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         }
 
         builder.CloseElement();
+        if (Dialog.HeaderActions is { } actions)
+        {
+            builder.OpenElement(19, "div");
+            builder.AddAttribute(20, "data-part", "header-actions");
+            builder.AddAttribute(21, "class", "tb-dialog__header-actions");
+            builder.AddContent(22, actions);
+            builder.CloseElement();
+        }
+
         var state = Dialog.WindowState;
         if (Dialog.Options.Draggable && !Dialog.IsBlocking && state == DialogWindowState.Normal)
         {
-            DialogMenus.AddMove(builder, 19, Dialog, Localizer);
+            DialogMenus.AddMove(builder, 23, Dialog, Localizer);
         }
 
         if (Dialog.Options.Minimizable)
         {
             var minimized = state == DialogWindowState.Minimized;
-            AddWindowButton(builder, 27, "minimize",
+            AddWindowButton(builder, 31, "minimize",
                 Localizer[minimized ? TbStrings.DialogRestore : TbStrings.DialogMinimize],
                 minimized ? BuiltInIcons.Restore : BuiltInIcons.Minus,
                 minimized ? DialogWindowState.Normal : DialogWindowState.Minimized);
@@ -84,7 +93,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         if (Dialog.Options.Maximizable)
         {
             var maximized = state == DialogWindowState.Maximized;
-            AddWindowButton(builder, 34, "maximize",
+            AddWindowButton(builder, 38, "maximize",
                 Localizer[maximized ? TbStrings.DialogRestore : TbStrings.DialogMaximize],
                 maximized ? BuiltInIcons.Restore : BuiltInIcons.Maximize,
                 maximized ? DialogWindowState.Normal : DialogWindowState.Maximized);
@@ -92,18 +101,18 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
 
         if (Dialog.CloseButton)
         {
-            builder.OpenComponent<TbIconButton>(41);
-            builder.AddComponentParameter(42, nameof(TbIconButton.Icon), BuiltInIcons.Close);
-            builder.AddComponentParameter(43, nameof(TbIconButton.AriaLabel), Localizer[TbStrings.DialogClose]);
-            builder.AddComponentParameter(44, nameof(TbIconButton.Size), Size.Small);
-            builder.AddComponentParameter(45, nameof(TbIconButton.OnClick),
+            builder.OpenComponent<TbIconButton>(45);
+            builder.AddComponentParameter(46, nameof(TbIconButton.Icon), BuiltInIcons.Close);
+            builder.AddComponentParameter(47, nameof(TbIconButton.AriaLabel), Localizer[TbStrings.DialogClose]);
+            builder.AddComponentParameter(48, nameof(TbIconButton.Size), Size.Small);
+            builder.AddComponentParameter(49, nameof(TbIconButton.OnClick),
                 EventCallback.Factory.Create<MouseEventArgs>(this, CloseAsync));
-            builder.AddComponentParameter(46, nameof(TbIconButton.Class), classes?.Close);
-            builder.AddAttribute(47, "data-part", "close");
+            builder.AddComponentParameter(50, nameof(TbIconButton.Class), classes?.Close);
+            builder.AddAttribute(51, "data-part", "close");
             if (!RendererInfo.IsInteractive)
             {
-                builder.AddAttribute(48, "command", "close");
-                builder.AddAttribute(49, "commandfor", DialogId);
+                builder.AddAttribute(52, "command", "close");
+                builder.AddAttribute(53, "commandfor", DialogId);
             }
 
             builder.CloseComponent();
@@ -150,6 +159,6 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
     public void Dispose()
     {
         Dialog.Changed -= OnChanged;
-        Dialog.TitleContentChanged -= OnChanged;
+        Dialog.HeaderContentChanged -= OnChanged;
     }
 }

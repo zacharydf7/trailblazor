@@ -20,6 +20,7 @@ public class DisposeContractTests : BunitContext
         [typeof(TbToggleItem<>)] = typeof(TbToggleGroup<>), [typeof(TbSplitterPane)] = typeof(TbSplitter),
         [typeof(TbTreeItem<>)] = typeof(TbTreeView<,>), [typeof(TbMenuRadioItem<>)] = typeof(TbMenuRadioGroup<>),
         [typeof(TbDialogDescription)] = typeof(TbDialog), [typeof(TbDialogTitle)] = typeof(TbDialog),
+        [typeof(TbDialogHeaderActions)] = typeof(TbDialog),
         [typeof(TbColumn<>)] = typeof(TbDataGrid<>), [typeof(TbTableOfContentsItem)] = typeof(TbTableOfContents),
         [typeof(TbBreadcrumb)] = typeof(TbBreadcrumbs), [typeof(TbNavLink)] = typeof(TbNavMenu),
         [typeof(TbNavGroup)] = typeof(TbNavMenu), [typeof(TbStep)] = typeof(TbStepper),

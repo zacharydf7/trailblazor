@@ -2,6 +2,7 @@
     <TbButton Variant="Variant.Outlined" OnClick="() => _noHeader = true">Without a header</TbButton>
     <TbButton Variant="Variant.Outlined" OnClick="() => _noClose = true">Without a close button</TbButton>
     <TbButton Variant="Variant.Outlined" OnClick="() => _rich = true">With an icon in the title</TbButton>
+    <TbButton Variant="Variant.Outlined" OnClick="() => _actions = true">With header actions</TbButton>
 </TbStack>
 
 <TbDialog @bind-Open="_noHeader" Title="Trail closed" Options="new() { ShowHeader = false }">
@@ -17,9 +18,21 @@
     <TbText>The icon sits beside the title and is hidden from screen readers.</TbText>
     <TbDialogActions><TbButton OnClick="() => _rich = false">Done</TbButton></TbDialogActions>
 </TbDialog>
+<TbDialog @bind-Open="_actions" Title="Trail notes" Options="new() { Modal = false, Draggable = true }">
+    <TbDialogHeaderActions>
+        <TbMenu AriaLabel="Note options" Icon="ExampleIcons.ChevronDown" Size="Size.Small" Align="PlacementAlign.End">
+            <TbMenuItem>Pin the notes</TbMenuItem>
+            <TbMenuItem>Copy a link</TbMenuItem>
+        </TbMenu>
+    </TbDialogHeaderActions>
+    <TbText>The menu sits in the header but stays out of the dialog's name, and dragging the header moves the
+        dialog.</TbText>
+    <TbDialogActions><TbButton OnClick="() => _actions = false">Done</TbButton></TbDialogActions>
+</TbDialog>
 
 @code {
     private bool _noHeader;
     private bool _noClose;
     private bool _rich;
+    private bool _actions;
 }
