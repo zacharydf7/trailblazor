@@ -209,8 +209,8 @@ public abstract class DialogReference
     // Called when the user dismisses the dialog, in place of canceling it; set by its content.
     internal Func<DialogDismissReason, Task>? Dismiss { get; set; }
 
-    // Set while a TbDialogTitle is in the dialog, so the header shows it in place of the title's text.
-    internal RenderFragment? TitleContent { get; private set; }
+    // Filled while a TbDialogTitle is in the dialog, so the header shows it in place of the title's text.
+    internal DialogSlot TitleContent { get; } = new();
 
     // Filled while a TbDialogHeaderActions is in the dialog, so the header shows it after the title.
     internal DialogSlot HeaderActions { get; } = new();
@@ -291,12 +291,6 @@ public abstract class DialogReference
         {
             HeaderContentChanged?.Invoke();
         }
-    }
-
-    internal void SetTitleContent(RenderFragment? content)
-    {
-        TitleContent = content;
-        HeaderContentChanged?.Invoke();
     }
 
     internal void Fill(DialogSlot slot, object owner, RenderFragment? content)

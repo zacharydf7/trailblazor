@@ -215,6 +215,26 @@ public class TbDialogTests : BunitContext
     }
 
     [Fact]
+    public void Title_ShouldShowTheNewTitle_WhenTheContentSwapsOneTitleForAnother()
+    {
+        RenderFragment Title(string text) => builder =>
+        {
+            builder.OpenComponent<TbDialogTitle>(0);
+            builder.SetKey(text);
+            builder.AddComponentParameter(1, nameof(TbDialogTitle.ChildContent),
+                (RenderFragment)(title => title.AddMarkupContent(0, $"<b>{text}</b> report")));
+            builder.CloseComponent();
+        };
+        var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Report")
+            .Add(d => d.ChildContent, Title("Draft")));
+        cut.WaitForAssertion(() => Assert.Equal("Draft", cut.Find("[data-part=header] h2 b").TextContent));
+
+        cut.Render(parameters => parameters.Add(d => d.ChildContent, Title("Final")));
+
+        cut.WaitForAssertion(() => Assert.Equal("Final", cut.Find("[data-part=header] h2 b").TextContent));
+    }
+
+    [Fact]
     public void HeaderActions_ShouldShowTheNewActions_WhenTheContentSwapsOneSetForAnother()
     {
         RenderFragment Actions(string label) => builder =>

@@ -63,7 +63,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         builder.AddAttribute(14, "id", TitleId);
         builder.AddAttribute(15, "data-part", "title");
         builder.AddAttribute(16, "class", ClassNames.Join("tb-dialog__title", classes?.Title));
-        if (Dialog.TitleContent is { } title)
+        if (Dialog.TitleContent.Content is { } title)
         {
             builder.AddContent(17, title);
         }

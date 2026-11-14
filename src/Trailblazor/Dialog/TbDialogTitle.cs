@@ -28,7 +28,7 @@ public sealed class TbDialogTitle : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        Reference.SetTitleContent(ChildContent);
+        Reference.Fill(Reference.TitleContent, this, ChildContent);
         if (!Reference.ShowHeader && !_warned)
         {
             _warned = true;
@@ -39,5 +39,5 @@ public sealed class TbDialogTitle : ComponentBase, IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose() => Dialog?.SetTitleContent(null);
+    public void Dispose() => Dialog?.Empty(Dialog.TitleContent, this);
 }
