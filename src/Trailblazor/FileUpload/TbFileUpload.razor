@@ -68,7 +68,6 @@
         @<label data-part="label" id="@LabelId" for="@InputId" aria-hidden="@(Hidden ? "true" : null)"
                 class="@ClassNames.Join("tb-field__label", Hidden ? "tb-visually-hidden" : LabelHiddenClass,
                            Classes?.Label)">
-            @ShownLabel
-            @RequiredMarker
+            @ShownLabel@RequiredMarker
         </label>;
 }

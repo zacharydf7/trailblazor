@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
@@ -95,7 +94,7 @@ public class PopconfirmTests(BrowserFixture fixture) : BrowserTest(fixture)
         var panel = await page.Tb().Popover("Archive Cedar Flats").OpenAsync();
         await panel.Locator("[data-part=confirm]").ClickAsync();
 
-        await Expect(archive.Locator("[data-part=confirm]")).ToHaveClassAsync(new Regex("tb-button--loading"));
+        await Expect(archive.Locator("[data-part=confirm]")).ToHaveAttributeAsync("aria-busy", "true");
         await Expect(archive).ToBeVisibleAsync();
         await Expect(page.GetByText("Archived.")).ToBeVisibleAsync();
         await Expect(archive).ToBeHiddenAsync();

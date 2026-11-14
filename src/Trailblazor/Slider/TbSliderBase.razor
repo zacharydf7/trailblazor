@@ -9,8 +9,7 @@
     private RenderFragment SliderLabel(string? labelFor) =>
         @<label data-part="label" id="@LabelId" for="@labelFor"
                 class="@ClassNames.Join("tb-slider__label", LabelHiddenClass, Classes?.Label)">
-            @ShownLabel
-            @RequiredMarker
+            @ShownLabel@RequiredMarker
         </label>;
 
     private protected RenderFragment Layout(string? labelFor, double? from, double to, RenderFragment thumbs) =>

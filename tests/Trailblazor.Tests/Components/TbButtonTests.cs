@@ -70,6 +70,7 @@ public class TbButtonTests : BunitContext
         Assert.False(button.HasAttribute("disabled"));
         Assert.Equal("true", button.GetAttribute("aria-disabled"));
         Assert.Equal("true", button.GetAttribute("aria-busy"));
+        Assert.DoesNotContain("tb-button--loading", button.ClassList);
         Assert.NotNull(cut.Find("[data-part=spinner]"));
     }
 

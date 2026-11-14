@@ -210,7 +210,7 @@ public class TbCheckboxGroupTests : BunitContext
         Assert.Equal(["Pick at least one.", "required"], fieldset.GetAttribute("aria-describedby")!.Split(' ')
             .Select(id => cut.Find($"#{id}").TextContent.Trim()));
         Assert.Null(fieldset.GetAttribute("aria-required"));
-        Assert.Equal("Days *", cut.Find("legend").TextContent.Trim());
+        Assert.Equal("Days*", cut.Find("legend").TextContent.Trim());
     }
 
     [Fact]

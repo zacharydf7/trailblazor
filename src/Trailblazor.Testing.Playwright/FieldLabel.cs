@@ -4,7 +4,7 @@ namespace Trailblazor.Testing.Playwright;
 
 internal static class FieldLabel
 {
-    // A Required field's label text ends in an asterisk, and unlike a string, a regex sees the markup's raw whitespace.
+    // A Required label ends in an asterisk, which the caller may also pass, spaced or not; a regex sees raw whitespace.
     public static Regex Matching(string label) =>
-        new($@"^\s*{Regex.Escape(label).Replace(@"\ ", @"\s+")}(\s*\*)?\s*$");
+        new($@"^\s*{Regex.Escape(label.TrimEnd().TrimEnd('*').TrimEnd()).Replace(@"\ ", @"\s+")}(\s*\*)?\s*$");
 }

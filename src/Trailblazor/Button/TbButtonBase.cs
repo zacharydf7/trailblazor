@@ -103,7 +103,7 @@ public abstract partial class TbButtonBase : TbComponentBase
 
     private string RootClass(string? extra) => ClassNames.Join("tb-button",
         ClassNames.Modifier("tb-button", ShownVariant), ClassNames.Modifier("tb-button", ShownTone),
-        ClassNames.Modifier("tb-button", ShownSize), Loading ? "tb-button--loading" : null, extra, Class);
+        ClassNames.Modifier("tb-button", ShownSize), extra, Class);
 
     private object? Theirs(string attribute) => AdditionalAttributes?.GetValueOrDefault(attribute);
 

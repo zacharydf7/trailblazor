@@ -171,8 +171,7 @@
     private RenderFragment CalendarLabel =>
         @<label data-part="label" id="@LabelId" for="@(RendererInfo.IsInteractive ? null : InputId)"
                 class="@ClassNames.Join("tb-field__label", LabelHiddenClass, Classes?.Label)">
-            @ShownLabel
-            @RequiredMarker
+            @ShownLabel@RequiredMarker
         </label>;
 
     private string DayContentId(DateOnly date) => $"{FieldId}-{Iso(date)}-content";

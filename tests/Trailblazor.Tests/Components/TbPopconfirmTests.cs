@@ -63,7 +63,7 @@ public class TbPopconfirmTests : BunitContext
         var cut = RenderConfirm(() => save.Task, parameters => parameters.Add(confirm => confirm.Open, true));
 
         var confirming = cut.Find("[data-part=confirm]").ClickAsync(new());
-        cut.WaitForAssertion(() => Assert.Contains("tb-button--loading", cut.Find("[data-part=confirm]").ClassList));
+        cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("[data-part=confirm]").GetAttribute("aria-busy")));
         Assert.True(cut.Find("[data-part=cancel]").HasAttribute("disabled"));
         Assert.Empty(Events);
 
@@ -111,7 +111,7 @@ public class TbPopconfirmTests : BunitContext
 
         var confirming = cut.Find("[data-part=confirm]").ClickAsync(new());
 
-        cut.WaitForAssertion(() => Assert.Contains("tb-button--loading", cut.Find("[data-part=confirm]").ClassList));
+        cut.WaitForAssertion(() => Assert.Equal("true", cut.Find("[data-part=confirm]").GetAttribute("aria-busy")));
         Assert.True(cut.Instance.Renders > 1);
         Assert.True(cut.FindComponent<TbPopover>().Instance.Open);
         cut.Instance.Save.SetResult();

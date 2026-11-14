@@ -16,7 +16,7 @@
         @* The info button shares the label's line, so when there is one, only the inner span names the group. *@
         <span id="@(HasInfo ? null : LabelId)" data-part="label"
               class="@ClassNames.Join("tb-signature-pad__label", LabelHiddenClass)">
-            <span id="@(HasInfo ? LabelId : null)">@ShownLabel</span> @RequiredMarker @InfoButton
+            <span id="@(HasInfo ? LabelId : null)">@ShownLabel</span>@RequiredMarker @InfoButton
         </span>
     }
     @RequiredDescription

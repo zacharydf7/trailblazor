@@ -10,6 +10,33 @@ public class FieldRequiredTests : BunitContext
 {
     public FieldRequiredTests() => this.AddTrailblazor();
 
+    [Theory]
+    [InlineData(typeof(TbTextField<string>))]
+    [InlineData(typeof(TbCheckbox<bool>))]
+    [InlineData(typeof(TbCheckboxGroup<string>))]
+    [InlineData(typeof(TbRadioGroup<string>))]
+    [InlineData(typeof(TbRating))]
+    [InlineData(typeof(TbSignaturePad))]
+    [InlineData(typeof(TbSlider<int>))]
+    [InlineData(typeof(TbTransferList<string>))]
+    [InlineData(typeof(TbFileUpload))]
+    [InlineData(typeof(TbCalendar<DateOnly>))]
+    [InlineData(typeof(TbLabel))]
+    public void Label_ShouldPutTheRequiredMarkRightAfterItsText_WhenTheFieldIsRequired(Type field)
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent(0, field);
+            builder.AddAttribute(1, field == typeof(TbLabel) ? "Text" : "Label", "Trail");
+            builder.AddAttribute(2, "Required", true);
+            builder.CloseComponent();
+        });
+
+        var mark = cut.Find(".tb-field__required, .tb-label__required");
+        Assert.False(mark.PreviousSibling is AngleSharp.Dom.IText text && text.Data.Length > 0
+            && char.IsWhiteSpace(text.Data[^1]), $"A space comes before the mark in {mark.ParentElement!.OuterHtml}");
+    }
+
     [Fact]
     public void TextField_ShouldMarkItselfRequired_WhenTheBoundPropertyHasRequired()
     {

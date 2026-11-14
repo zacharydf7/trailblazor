@@ -1081,8 +1081,9 @@ public static class ExampleCatalog
                 new("spinner", "The spinner shown while the button is loading."),
                 new("end", "The end icon or content, after the label."),
             ],
-            TestingTip = "Check a toggle with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`, and a disabled "
-                + "button with `ToBeDisabledAsync()`, which also passes for `aria-disabled`. To move focus to a "
+            TestingTip = "Check a toggle with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`, a `Loading` "
+                + "button with `ToHaveAttributeAsync(\"aria-busy\", \"true\")`, and a disabled button with "
+                + "`ToBeDisabledAsync()`, which also passes for `aria-disabled`. To move focus to a "
                 + "button from code, `@ref` it and call `FocusAsync()`.",
             Telemetry = ButtonTelemetry("TbButton"),
         },

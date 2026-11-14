@@ -30,8 +30,8 @@
     private RenderFragment FieldLabel(FieldClasses? classes) =>
         @<label data-part="label" id="@LabelId" for="@(LabelTargetsInput ? InputId : null)"
                 class="@ClassNames.Join("tb-field__label", LabelHiddenClass, classes?.Label)">
-            @ShownLabel
-            @RequiredMarker
+            @* The mark's margin is its only gap, so it follows the text with no space. *@
+            @ShownLabel@RequiredMarker
         </label>;
 
     private protected RenderFragment RequiredMarker =>

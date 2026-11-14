@@ -17,7 +17,7 @@
     {
         @* The info button sits in the legend to share its line; the fieldset is named by the span alone. *@
         <legend data-part="label" class="@ClassNames.Join("tb-rating__label", LabelHiddenClass, Classes?.Label)">
-            <span id="@(HasInfo ? LabelId : null)">@ShownLabel</span> @RequiredMarker @InfoButton
+            <span id="@(HasInfo ? LabelId : null)">@ShownLabel</span>@RequiredMarker @InfoButton
         </legend>
     }
     <div data-part="stars" class="tb-rating__stars">
