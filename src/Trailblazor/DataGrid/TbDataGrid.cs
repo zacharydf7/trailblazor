@@ -1083,7 +1083,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private async Task OnEditLeftAsync(GridEdit edit, FieldFocusEventArgs args)
     {
-        if (args.CrossesField && _edit == edit)
+        if (args.CrossesEdit && _edit == edit)
         {
             await SaveEditAsync(refocus: false);
         }

@@ -11,8 +11,25 @@
     <TbColumn Field="note => note.Tag" Editable />
 </TbDataGrid>
 
+@* A row edit whose first field has an OnBlur, so the field's own focus root sits inside the row's. *@
+<TbDataGrid TItem="Note" Items="_rows" AriaLabel="Note rows" KeySelector="note => note.Id" EditMode="GridEditMode.Row"
+            OnRowEdit="() => _rowSaves++">
+    <TbColumn Field="note => note.Text" Editable>
+        <EditTemplate>
+            <TbTextField TValue="string" AriaLabel="Row text" AutoFocus Value="@(context.Value as string)"
+                         ValueChanged="text => context.SetValue(text)" OnBlur="() => _blurs++" />
+        </EditTemplate>
+    </TbColumn>
+    <TbColumn Field="note => note.Tag" Editable />
+</TbDataGrid>
+<output data-testid="row-saves">@_rowSaves</output>
+<output data-testid="blurs">@_blurs</output>
+
 @code {
     private readonly List<Note> _notes = [new() { Id = 1, Text = "Old text", Tag = "Trail" }];
+    private readonly List<Note> _rows = [new() { Id = 1, Text = "Row text", Tag = "Ridge" }];
+    private int _rowSaves;
+    private int _blurs;
 
     private sealed class Note
     {

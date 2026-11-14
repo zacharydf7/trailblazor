@@ -123,10 +123,11 @@ public abstract class TbFieldDriver
     public Task LeaveAsync()
     {
         // Only the field's own root raises OnBlur, and only when the app set one; the nearest root may instead be a
-        // grid's editor or row.
+        // grid's editor or row. Focus going nowhere leaves the grid's edit around the field too, as a blur does.
         var root = _control().Closest("[data-tb-focus-root]");
         return root?.GetAttribute("data-tb-focus-root") == "field" && root.HasAttribute("blazor:ontbfocusleave")
-            ? root.TriggerEventAsync("ontbfocusleave", new FieldFocusEventArgs { CrossesField = true })
+            ? root.TriggerEventAsync("ontbfocusleave",
+                new FieldFocusEventArgs { CrossesField = true, CrossesEdit = true })
             : Task.CompletedTask;
     }
 

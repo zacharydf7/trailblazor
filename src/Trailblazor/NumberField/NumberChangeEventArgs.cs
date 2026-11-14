@@ -39,6 +39,10 @@ public sealed class FieldFocusEventArgs : EventArgs
 {
     /// <summary>Whether focus came from, or went to, somewhere outside the field.</summary>
     public bool CrossesField { get; set; }
+
+    /// <summary>Whether focus came from, or went to, somewhere outside the data grid edit around the field; true when
+    /// the field isn't in one.</summary>
+    public bool CrossesEdit { get; set; }
 }
 
 /// <summary>HTML a rich text editor's script sent: its new value, or what was pasted for the app's paste transform.

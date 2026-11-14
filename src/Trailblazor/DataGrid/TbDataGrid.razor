@@ -376,7 +376,7 @@
              aria-expanded="@(tree?.Open is { } open ? open ? "true" : "false" : null)"
              data-parent-row="@(Virtualize && tree is { ParentIndex: >= 0 } place ? HeaderRowCount + place.ParentIndex + 1
                                  : null)"
-             data-tb-focus-root="@(EditMode == GridEditMode.Row && RowEditOf(key) is not null ? "" : null)"
+             data-tb-focus-root="@(EditMode == GridEditMode.Row && RowEditOf(key) is not null ? "edit" : null)"
              @ontbfocusleave="@((EditMode == GridEditMode.Row && RowEditOf(key) is { } leaving ? LeftHandler(leaving)
                                  : null)!)"
              @ontbrowclick="_rowClick.For(key)"
@@ -506,7 +506,7 @@
     // A cell being edited holds its field, saved when focus leaves it, or in row mode when focus leaves the row; like
     // the filters, a page's form doesn't own it, and its keys go no further than the edit.
     private RenderFragment Editor(GridEdit edit, CellEdit cell) =>
-        @<div data-part="editor" data-tb-focus-root="@(EditMode != GridEditMode.Row ? "" : null)"
+        @<div data-part="editor" data-tb-focus-root="@(EditMode != GridEditMode.Row ? "edit" : null)"
               class="tb-data-grid__editor" @ontbeditkey="OnEditKeyAsync" @onkeydown:stopPropagation
               @ontbfocusleave="@((EditMode != GridEditMode.Row ? LeftHandler(edit) : null)!)">
             <CascadingValue TValue="EditContext" Value="null">

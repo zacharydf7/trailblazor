@@ -26,6 +26,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] Enter saves an edit, and when a value fails its check, the edit stays open and says why. `TbDataGridEditTests.Enter_ShouldKeepTheEditOpenWithWhy_WhenACheckFails`, `DataGridTests.CellEdit_ShouldSaveAndFocusTheCellAgain_WhenEnterStartsAndEndsIt`
 - [x] Escape cancels an edit and doesn't also close a dialog around the grid. `DataGridTests.CellEdit_ShouldLeaveTheValue_WhenEscapeCancelsAChange`
 - [x] In a row's edit, Tab stays among its fields and its Save and Cancel buttons. `DataGridTests.RowEdit_ShouldKeepTabInTheRowAndSaveItWhole_WhenEnterIsPressed`
+- [x] In a row's edit, Tab from a field with its own `OnBlur` to another field in the row keeps the edit open; the field's `OnBlur` still fires. `GridEditKeysTests.RowEdit_ShouldStayOpen_WhenTabMovesFromAFieldWithOnBlurToAnotherInTheRow`, `TbDataGridEditTests.FocusLeavingAFieldInTheEdit_ShouldKeepTheEditOpen_WhenFocusStaysInTheEdit`
 - [x] Enter in a filter or an edit doesn't submit a form around the grid. `DataGridTests.Filters_ShouldApplyWithoutSubmittingThePagesForm_WhenEnterIsPressedInThem`, `data-grid.js`
 - [x] Enter in a filter menu's value applies it, and Escape closes the menu without applying. `DataGridTests.FilterMenu_ShouldApplyTheValue_WhenEnterIsPressedInIt`
 - [x] Arrows, Home and End on a row's handle move the row. `SortableTests.GridRows_ShouldReorderByKeysAndByDragging_WhenTheGridLetsRowsMove`

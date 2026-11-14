@@ -251,9 +251,57 @@ public class TbDataGridEditTests : BunitContext
         await cut.Find("[data-part=editor] input").InputAsync(new ChangeEventArgs { Value = "Pine Hollow loop" });
 
         await cut.Find("[data-part=editor]").TriggerEventAsync("ontbfocusleave",
-            new FieldFocusEventArgs { CrossesField = true });
+            new FieldFocusEventArgs { CrossesField = true, CrossesEdit = true });
 
         Assert.Equal("Pine Hollow loop", _hikes[0].Name);
+    }
+
+    [Fact]
+    public async Task LeaveAsync_ShouldRaiseOnBlurAndSaveTheEdit_WhenTheEditorsFieldListensForBlur()
+    {
+        var blurs = 0;
+        RenderFragment<GridCellEditContext<Hike>> editor = context => field =>
+        {
+            field.OpenComponent<TbTextField<string>>(0);
+            field.AddComponentParameter(1, nameof(TbTextField<string>.AriaLabel), "Hike name");
+            field.AddComponentParameter(2, nameof(TbTextField<string>.Value), context.Value as string);
+            field.AddComponentParameter(3, nameof(TbTextField<string>.ValueChanged),
+                EventCallback.Factory.Create<string>(this, text => context.SetValue(text)));
+            field.AddComponentParameter(4, nameof(TbTextField<string>.OnBlur),
+                EventCallback.Factory.Create<FocusEventArgs>(this, () => blurs++));
+            field.CloseComponent();
+        };
+        var cut = Render<TbDataGrid<Hike>>(parameters => parameters.Add(grid => grid.Items, _hikes)
+            .Add(grid => grid.AriaLabel, "Hikes").Add(grid => grid.KeySelector, hike => hike.Id)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Hike>>(0);
+                builder.AddComponentParameter(1, nameof(TbColumn<Hike>.Field), Field(hike => hike.Name));
+                builder.AddComponentParameter(2, nameof(TbColumn<Hike>.Editable), true);
+                builder.AddComponentParameter(3, nameof(TbColumn<Hike>.EditTemplate), editor);
+                builder.CloseComponent();
+            })));
+        await Cell(cut, 1, "Name").DoubleClickAsync(new());
+        await cut.Find("[data-part=editor] input").ChangeAsync(new ChangeEventArgs { Value = "Pine Hollow loop" });
+
+        await cut.Tb().TextField("Hike name").LeaveAsync();
+
+        Assert.Equal(1, blurs);
+        Assert.Equal("Pine Hollow loop", _hikes[0].Name);
+    }
+
+    [Fact]
+    public async Task FocusLeavingAFieldInTheEdit_ShouldKeepTheEditOpen_WhenFocusStaysInTheEdit()
+    {
+        var cut = RenderHikes();
+        await Cell(cut, 1, "Name").DoubleClickAsync(new());
+        await cut.Find("[data-part=editor] input").InputAsync(new ChangeEventArgs { Value = "Pine Hollow loop" });
+
+        await cut.Find("[data-part=editor]").TriggerEventAsync("ontbfocusleave",
+            new FieldFocusEventArgs { CrossesField = true, CrossesEdit = false });
+
+        Assert.Equal("Pine Hollow", _hikes[0].Name);
+        Assert.Single(cut.FindAll("[data-part=editor]"));
     }
 
     [Fact]
@@ -325,7 +373,7 @@ public class TbDataGridEditTests : BunitContext
         // Both saves wait on the handler, so they are awaited once it has finished.
         var enter = EditorKeyAsync(cut, "Enter");
         var leave = cut.Find("[data-part=editor]").TriggerEventAsync("ontbfocusleave",
-            new FieldFocusEventArgs { CrossesField = true });
+            new FieldFocusEventArgs { CrossesField = true, CrossesEdit = true });
         await cut.InvokeAsync(server.SetResult);
         await Task.WhenAll(enter, leave);
 

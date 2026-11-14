@@ -242,6 +242,31 @@ public class GridEditKeysTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RowEdit_ShouldStayOpen_WhenTabMovesFromAFieldWithOnBlurToAnotherInTheRow(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-edit-keys");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Note rows" });
+        await Expect(page.Locator("[data-part=grid]").Filter(new() { Has = grid }))
+            .ToHaveAttributeAsync("data-ready", "");
+        await grid.Locator("tr[data-key='1'] td[data-column=Text]").DblClickAsync();
+        var text = grid.GetByRole(AriaRole.Textbox, new() { Name = "Row text" });
+        await Expect(text).ToBeFocusedAsync();
+
+        var tag = grid.Locator("tr[data-key='1'] td[data-column=Tag] input");
+
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(tag).ToBeFocusedAsync();
+        await Expect(page.GetByTestId("blurs")).ToHaveTextAsync("1");
+        // If the Tab had started a save, it would land before Escape's own trip to the server does; with the edit still
+        // open, Escape cancels it instead.
+        await tag.FillAsync("Pass");
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(grid.Locator("tr[data-key='1'] td[data-column=Tag]")).ToHaveTextAsync("Ridge");
+        await Expect(page.GetByTestId("row-saves")).ToHaveTextAsync("0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tab_ShouldSaveWhatWasTyped_WhenTheEditorsFieldCommitsOnChange(string browser)
     {
         var page = await OpenAsync(browser, "/grid-edit-keys");

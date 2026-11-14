@@ -88,10 +88,15 @@ function registerEvents(blazor) {
     blazor.registerCustomEventType('tbnumberstep',
         { browserEventName: 'tb-number-step', createEventArgs: event => event.detail });
 
-    // A field's OnFocus and OnBlur count only focus that crosses its root, not moves between its own parts.
+    // A field's OnFocus and OnBlur count only focus that crosses its root, not moves between its own parts. A data
+    // grid's edit around such a field has a root of its own, and Blazor hands every handler the same arguments, so
+    // each root gets its own answer.
     const fieldFocusEventArgs = event => {
-        const root = event.target.closest?.('[data-tb-focus-root]');
-        return { crossesField: !root || !root.contains(event.relatedTarget) };
+        const crosses = root => !root || !root.contains(event.relatedTarget);
+        return {
+            crossesField: crosses(event.target.closest?.('[data-tb-focus-root]')),
+            crossesEdit: crosses(event.target.closest?.('[data-tb-focus-root="edit"]')),
+        };
     };
     blazor.registerCustomEventType('tbfocusenter', { browserEventName: 'focusin', createEventArgs: fieldFocusEventArgs });
     // A text field's OnEnter hears an Enter pressed and released in the same field, after the change it commits; the
