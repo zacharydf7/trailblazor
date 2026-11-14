@@ -1,0 +1,15 @@
+@page "/heading-font"
+
+@* Every part that takes the heading font, beside body text that keeps the main one, and a heading in a region that
+   sets its own main font. *@
+<TbText TextStyle="TextStyle.Display">Display</TbText>
+<TbText TextStyle="TextStyle.Headline">Headline</TbText>
+<TbText TextStyle="TextStyle.Title">Title</TbText>
+<TbText>Body</TbText>
+<TbCard Title="Card" />
+<TbEmptyState Title="Empty" />
+<TbAccordionItem Title="Accordion" />
+<TbDialog Open Title="Dialog" Options="new() { Modal = false }" />
+<section style="--tb-font-family: Courier, monospace">
+    <TbText TextStyle="TextStyle.Title" data-testid="region">In a region</TbText>
+</section>

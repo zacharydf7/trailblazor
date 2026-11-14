@@ -102,6 +102,19 @@
         </TbText>
         <CodeBlock Label="Your own font, everywhere" Code="@Font" Language="CodeLanguage.Css" />
 
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">A font for headings</TbText>
+        <TbText>
+            The display, headline and title text styles, along with the titles of cards, dialogs, empty states and
+            accordion items, take <code>--tb-font-family-heading</code>, which is <code>--tb-font-family</code>
+            unless you set it. Set it to give those headings a display font while body text, subtitles and controls
+            keep the main font. Heading weights still come from <code>--tb-font-weight-*</code>. Wherever you set
+            <code>--tb-font-family</code> on an element other than <code>:root</code>, set
+            <code>--tb-font-family-heading</code> on it too. Otherwise, inside an element whose <code>style</code>
+            attribute sets the main font, headings take that main font, and inside one where a rule in your own
+            stylesheet sets it, headings keep the page's heading font.
+        </TbText>
+        <CodeBlock Label="A font for headings" Code="@HeadingFont" Language="CodeLanguage.Css" />
+
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Your own type for the page</TbText>
         <TbText>
             To keep the page's type your own instead, set it on <code>html</code> or <code>body</code> in your
@@ -510,6 +523,12 @@
     private const string Font = """
         :root {
             --tb-font-family: "Inter", system-ui, sans-serif;
+        }
+        """;
+
+    private const string HeadingFont = """
+        :root {
+            --tb-font-family-heading: "Fraunces", Georgia, serif;
         }
         """;
 

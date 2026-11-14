@@ -130,6 +130,39 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task HeadingFont_ShouldSetEveryHeadingPartButNotBodyText_WhenTheTokenIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/heading-font");
+        await Expect(page.Locator(".tb-dialog__title")).ToBeVisibleAsync();
+        const string Fonts = """
+            () => [".tb-text--display", ".tb-text--headline", ".tb-text--title", ".tb-card__title",
+                ".tb-empty-state__title", ".tb-accordion__trigger", ".tb-dialog__title", ".tb-text--body"]
+                .map(part => getComputedStyle(document.querySelector(part)).fontFamily)
+            """;
+        var main = (await page.EvaluateAsync<string[]>(Fonts)).Distinct();
+
+        await page.AddStyleTagAsync(new() { Content = ":root { --tb-font-family-heading: Georgia, serif; }" });
+        var fonts = await page.EvaluateAsync<string[]>(Fonts);
+
+        // Until the token is set, headings take the main font.
+        Assert.Single(main);
+        Assert.All(fonts[..^1], font => Assert.Equal("Georgia, serif", font));
+        Assert.Equal(main.Single(), fonts[^1]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task HeadingFont_ShouldFollowTheMainFont_WhenOnlyTheMainFontIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/heading-font");
+        const string Fonts = "() => [document.querySelector('.tb-card__title'), "
+            + "document.querySelector('[data-testid=region]')].map(part => getComputedStyle(part).fontFamily)";
+
+        await page.AddStyleTagAsync(new() { Content = ":root { --tb-font-family: Georgia, serif; }" });
+
+        Assert.Equal(["Georgia, serif", "Courier, monospace"], await page.EvaluateAsync<string[]>(Fonts));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task GraphiteStrongBorder_ShouldLighten_WhenTheThemeIsDark(string browser)
     {
         var page = await OpenAsync(browser, "/examples/button");

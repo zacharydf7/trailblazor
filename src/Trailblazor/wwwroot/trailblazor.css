@@ -415,6 +415,11 @@
         --tb-control-height-lg: calc(var(--tb-control-height) + 8px);
     }
 
+    /* Derived again where the main font is set inline, which a value derived on :root alone would miss. */
+    :where(:root, [style*="--tb-font-family:"]) {
+        --tb-font-family-heading: var(--tb-font-family);
+    }
+
     @media (prefers-reduced-motion: reduce) {
         :root {
             --tb-motion-duration-fast: 0ms;
@@ -755,18 +760,21 @@
     }
 
     .tb-text--display {
+        font-family: var(--tb-font-family-heading);
         font-size: var(--tb-font-size-3xl);
         font-weight: var(--tb-font-weight-bold);
         line-height: var(--tb-line-height-tight);
     }
 
     .tb-text--headline {
+        font-family: var(--tb-font-family-heading);
         font-size: var(--tb-font-size-2xl);
         font-weight: var(--tb-font-weight-semibold);
         line-height: var(--tb-line-height-tight);
     }
 
     .tb-text--title {
+        font-family: var(--tb-font-family-heading);
         font-size: var(--tb-font-size-xl);
         font-weight: var(--tb-font-weight-semibold);
         line-height: var(--tb-line-height-tight);
@@ -1852,6 +1860,7 @@
     }
 
     .tb-empty-state__title {
+        font-family: var(--tb-font-family-heading);
         margin: 0;
         font-size: var(--tb-font-size-lg);
         font-weight: var(--tb-font-weight-semibold);
@@ -1895,6 +1904,7 @@
     }
 
     .tb-card__title {
+        font-family: var(--tb-font-family-heading);
         margin: 0;
         font-size: var(--tb-font-size-md);
         font-weight: var(--tb-font-weight-semibold);
@@ -4548,6 +4558,7 @@
     }
 
     .tb-dialog__title {
+        font-family: var(--tb-font-family-heading);
         flex: 1 1 auto;
         margin: 0;
         font-size: var(--tb-font-size-lg);
@@ -6701,6 +6712,7 @@
     .tb-accordion__heading {
         margin: 0;
         font: inherit;
+        font-family: var(--tb-font-family-heading);
     }
 
     .tb-accordion__header {
