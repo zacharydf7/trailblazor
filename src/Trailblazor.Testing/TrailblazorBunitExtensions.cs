@@ -44,6 +44,8 @@ public static class TrailblazorBunitExtensions
                     || path.StartsWith("./_content/Trailblazor.Primitives/", StringComparison.Ordinal)),
             isCatchAllHandler: true);
         modules.Mode = JSRuntimeMode.Loose;
+        // Showing a dialog, toast or announcement with no TbRoot calls console.warn, so plan for that call.
+        context.JSInterop.SetupVoid("console.warn");
         context.ComponentFactories.Add(new InteractiveByDefault(context));
         return context;
     }

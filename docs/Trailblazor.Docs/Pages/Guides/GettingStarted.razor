@@ -146,7 +146,9 @@
         <ul>
             <li>
                 If a page shows a dialog, toast or announcement and no <code>TbRoot</code> in its session hosts it
-                within a second, Trailblazor logs a warning saying so.
+                within a second, Trailblazor logs a warning saying so. With Interactive Server, once the page is
+                connected, the browser's console shows it too, with the page's address, so you can see it while you
+                look at the page. With WebAssembly, the log itself already writes to the browser's console.
             </li>
             <li>The dialog and toast services can be called from any thread, such as a SignalR hub handler.</li>
         </ul>

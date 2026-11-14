@@ -1,13 +1,15 @@
 using System.Collections.Immutable;
 using System.Globalization;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 
 namespace Trailblazor;
 
 internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptions, IAnnouncer announcer,
-    ITbLocalizer localizer, TimeProvider time, Telemetry telemetry, ILogger<ToastService>? logger = null)
-    : IToastService
+    ITbLocalizer localizer, TimeProvider time, Telemetry telemetry, ILogger<ToastService>? logger = null,
+    IJSRuntime? js = null, NavigationManager? navigation = null) : IToastService
 {
     // An app can show toasts off the dispatcher, such as from a hub handler, while the hosts render them, so the list
     // is replaced rather than changed.
@@ -16,7 +18,7 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
 
     public IReadOnlyList<ToastReference> Toasts => _toasts;
 
-    internal HostCheck Hosts { get; } = new("A toast", time, logger);
+    internal HostCheck Hosts { get; } = new("A toast", time, logger, js, navigation);
 
     public ToastSettings Settings => trailblazorOptions.Value.Toasts;
 

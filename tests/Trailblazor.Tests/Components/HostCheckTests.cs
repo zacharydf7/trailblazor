@@ -25,6 +25,8 @@ public class HostCheckTests : BunitContext
 
     private IDialogService Dialogs => Services.GetRequiredService<IDialogService>();
 
+    private string ConsoleWarning => (string)Assert.Single(JSInterop.Invocations["console.warn"]).Arguments[0]!;
+
     private IReadOnlyList<string> Warnings => _logs.GetSnapshot().Where(log => log.Level == LogLevel.Warning)
         .Select(log => log.Message).ToList();
 
@@ -56,6 +58,20 @@ public class HostCheckTests : BunitContext
 
         Assert.Equal("Saved", host.WaitForElement("[data-part=toast] [data-part=message]").TextContent);
         Assert.Empty(Warnings);
+        Assert.Empty(JSInterop.Invocations["console.warn"]);
+    }
+
+    [Fact]
+    public void Show_ShouldAlsoWarnInTheBrowsersConsoleWithThePage_WhenNoHostAttaches()
+    {
+        Render<AnnouncerHost>();
+        Toasts.Show("Saved");
+
+        _time.Advance(TimeSpan.FromSeconds(1));
+
+        Assert.StartsWith("Trailblazor: A toast was shown on http://localhost/, but no TbRoot is rendering",
+            ConsoleWarning);
+        Assert.Contains("HostRenderMode", ConsoleWarning);
     }
 
     [Fact]
@@ -93,6 +109,7 @@ public class HostCheckTests : BunitContext
         _time.Advance(TimeSpan.FromSeconds(1));
 
         Assert.StartsWith("A dialog was shown", Assert.Single(Warnings));
+        Assert.StartsWith("Trailblazor: A dialog was shown on http://localhost/", ConsoleWarning);
     }
 
     [Fact]
@@ -113,5 +130,6 @@ public class HostCheckTests : BunitContext
         _time.Advance(TimeSpan.FromSeconds(1));
 
         Assert.StartsWith("An announcement was shown", Assert.Single(Warnings));
+        Assert.StartsWith("Trailblazor: An announcement was shown on http://localhost/", ConsoleWarning);
     }
 }

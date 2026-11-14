@@ -4,11 +4,13 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 
 namespace Trailblazor;
 
 internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOptions, ITbLocalizer localizer,
-    TimeProvider time, Telemetry telemetry, ILogger<DialogService>? logger = null) : IDialogService
+    TimeProvider time, Telemetry telemetry, ILogger<DialogService>? logger = null, IJSRuntime? js = null,
+    NavigationManager? navigation = null) : IDialogService
 {
     // An app can open dialogs off the dispatcher, such as from a hub handler, while the host renders them, so the list
     // is replaced rather than changed.
@@ -17,7 +19,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
 
     public IReadOnlyList<DialogReference> OpenDialogs => _open;
 
-    internal HostCheck Hosts { get; } = new("A dialog", time, logger);
+    internal HostCheck Hosts { get; } = new("A dialog", time, logger, js, navigation);
 
     // A modal makes the rest of the page inert, so toasts and announcements go inside the topmost one.
     public DialogReference? TopmostModal => _open.LastOrDefault(dialog => dialog.IsBlocking && !dialog.IsClosing);

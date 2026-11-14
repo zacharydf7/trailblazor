@@ -1,10 +1,12 @@
 using System.Collections.Immutable;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Trailblazor;
 
-internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogger<Announcer>? logger = null)
-    : IAnnouncer
+internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogger<Announcer>? logger = null,
+    IJSRuntime? js = null, NavigationManager? navigation = null) : IAnnouncer
 {
     // Enough to hear messages that arrive together; older ones are dropped, which screen readers don't announce.
     private const int Kept = 5;
@@ -21,7 +23,7 @@ internal sealed class Announcer(DialogService dialogs, TimeProvider time, ILogge
 
     public IReadOnlyList<Announcement> AssertiveMessages => _assertive;
 
-    internal HostCheck Hosts { get; } = new("An announcement", time, logger);
+    internal HostCheck Hosts { get; } = new("An announcement", time, logger, js, navigation);
 
     // Raised when a message is added or removed, so the hosts re-render.
     public event Action? Changed;
