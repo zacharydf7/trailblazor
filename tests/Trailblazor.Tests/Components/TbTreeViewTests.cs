@@ -234,6 +234,16 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public void Tree_ShouldShowNoMessageButStayANamedGroup_WhenShowEmptyIsOff()
+    {
+        var cut = RenderPlaces([], parameters => parameters.Add(tree => tree.ShowEmpty, false));
+
+        Assert.Empty(cut.FindAll("[data-part=empty]"));
+        var tree = cut.Find(".tb-tree");
+        Assert.Equal(("group", "Places"), (tree.GetAttribute("role"), tree.GetAttribute("aria-label")));
+    }
+
+    [Fact]
     public void Tree_ShouldLeaveOutMultiselectable_WhenItHasNoRows()
     {
         var cut = RenderPlaces([], parameters => parameters.Add(tree => tree.SelectionMode, SelectionMode.Multiple));

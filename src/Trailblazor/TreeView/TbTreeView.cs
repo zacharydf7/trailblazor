@@ -257,6 +257,12 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public RenderFragment? EmptyContent { get; set; }
 
+    /// <summary>Whether a tree with no rows shows a message: <see cref="EmptyContent"/>, or the default one when that
+    /// isn't set. Defaults to true; turn it off when the page already says the tree is empty, or when an empty tree
+    /// should take no room.</summary>
+    [Parameter]
+    public bool ShowEmpty { get; set; } = true;
+
     /// <summary>Raised when <see cref="LoadChildren"/> fails; the row offers to try again.</summary>
     [Parameter]
     public EventCallback<Exception> OnLoadFailed { get; set; }
@@ -425,8 +431,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private object BuiltFor => (Items, ChildContent, KeySelector?.Method, ChildrenSelector?.Method,
         ParentKeySelector?.Method, HasChildren?.Method, LoadChildren is null);
 
-    // A tree must hold rows, so one with none is a group around its message, which can hold a button of the app's own.
-    private bool ShowsEmpty => _rows.Count == 0 && (ChildContent is null || _itemsRegistered);
+    // A tree must hold rows, so one with none is a group; its message, when shown, can hold a button of the app's own.
+    private bool IsEmpty => _rows.Count == 0 && (ChildContent is null || _itemsRegistered);
 
     private object FlattenedFor => (FilterKeepsDescendants, Checkable, CascadeChecks, _expanded, _checked);
 

@@ -73,6 +73,18 @@
         </TbTreeItem>
     </TbTreeView>
     <output data-testid="sections">@string.Join(", ", _sections)</output>
+    @* A long name in a narrow tree, drawn by the row's own content in the documented text part. *@
+    <div style="inline-size: 10rem">
+        <TbTreeView TItem="string" TKey="string" AriaLabel="Long names">
+            <TbTreeItem Value="@("long")" Text="Pine Hollow loop">
+                <TextContent><span class="tb-tree__text">Pine Hollow loop by the north ridge</span></TextContent>
+            </TbTreeItem>
+        </TbTreeView>
+    </div>
+    @* Rows deeper than a narrow box is wide. *@
+    <div data-testid="deep" style="inline-size: 9rem; overflow-x: auto">
+        <TbTreeView TItem="string" TKey="string" AriaLabel="Deep" InitialExpandDepth="9">@Deep(1)</TbTreeView>
+    </div>
 </TbStack>
 
 @code {
@@ -82,4 +94,15 @@
     private readonly List<string> _trails = ["Pine Hollow", "Eagle Ridge", "Cedar Flats"];
     private IReadOnlyCollection<string> _outline = [];
     private IReadOnlyCollection<string> _sections = [];
+
+    private static RenderFragment Deep(int level) =>
+        @<TbTreeItem Value="@($"deep-{level}")" Text="@($"Level {level} trail")">
+            <ChildContent>
+                @if (level < 9)
+                {
+                    @Deep(level + 1)
+                }
+            </ChildContent>
+            <End><span>12</span></End>
+        </TbTreeItem>;
 }

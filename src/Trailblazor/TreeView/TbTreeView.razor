@@ -11,8 +11,8 @@
 @{ _version++; }
 <CascadingValue Value="Scope" IsFixed="true">
 <CascadingValue Value="_version" Name="@TreeVersion">
-<div @ref="_tree" @attributes="AdditionalAttributes" role="@(ShowsEmpty ? "group" : "tree")" aria-label="@AriaLabel"
-     aria-multiselectable="@(!ShowsEmpty && SelectionMode == SelectionMode.Multiple ? "true" : null)"
+<div @ref="_tree" @attributes="AdditionalAttributes" role="@(IsEmpty ? "group" : "tree")" aria-label="@AriaLabel"
+     aria-multiselectable="@(!IsEmpty && SelectionMode == SelectionMode.Multiple ? "true" : null)"
      aria-disabled="@(Disabled ? "true" : null)" aria-busy="@(Building ? "true" : null)"
      @ontbtreedrop="OnDropAsync" @ontbtreedrop:stopPropagation
      data-virtual="@(Virtualize ? "" : null)" data-rows="@(Virtualize ? _rows.Count : null)"
@@ -21,10 +21,9 @@
      data-row-size="@(Virtualize ? RowSize : null)"
      style="@(Virtualize ? Styles.Join($"--tb-tree-row-size: {RowSize}px", Style) : Style)"
      class="@ClassNames.Join("tb-tree", Disabled ? "tb-tree--disabled" : null,
-                Virtualize ? "tb-tree--virtual" : null, InsertTemplate is null ? null : "tb-tree--inserts", Class)"
-     @onclick:stopPropagation="Nested" @ondblclick:stopPropagation="Nested">
+                Virtualize ? "tb-tree--virtual" : null, InsertTemplate is null ? null : "tb-tree--inserts", Class)">
     @ChildContent
-    @if (ShowsEmpty)
+    @if (ShowEmpty && IsEmpty)
     {
         <div data-part="empty" class="@ClassNames.Join("tb-tree__empty", Classes?.Empty)">
             @if (EmptyContent is null)
@@ -84,7 +83,8 @@
                 <div @key="@($"{node.Id}-loading")" role="treeitem" aria-level="@(node.Level + 1)" aria-setsize="1"
                      aria-posinset="1" aria-disabled="true" aria-busy="true" tabindex="-1" data-part="loading"
                      data-index="@place" data-inside="@(Virtualize ? _inside[index] : null)"
-                     style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status">
+                     style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status"
+                     @onclick:stopPropagation="Nested" @ondblclick:stopPropagation="Nested">
                     <span class="tb-tree__toggle" aria-hidden="true"></span>
                     <span class="tb-tree__spinner" aria-hidden="true"></span>
                     <span>@LoadingLabel</span>
@@ -95,7 +95,8 @@
                 <div @key="@($"{node.Id}-failed")" role="treeitem" aria-level="@(node.Level + 1)" aria-setsize="1"
                      aria-posinset="1" aria-disabled="true" tabindex="-1" data-part="failed" data-index="@place"
                      data-inside="@(Virtualize ? _inside[index] : null)"
-                     style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status">
+                     style="@($"--tb-tree-level: {node.Level}")" class="tb-tree__item tb-tree__item--status"
+                     @onclick:stopPropagation="Nested" @ondblclick:stopPropagation="Nested">
                     <span class="tb-tree__toggle" aria-hidden="true"></span>
                     <span class="tb-tree__failed">@LoadFailedLabel</span>
                     <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="() => RetryAsync(node)">
@@ -134,7 +135,8 @@
              class="@ClassNames.Join("tb-tree__item", context.Selected ? "tb-tree__item--selected" : null,
                         context.Matches ? "tb-tree__item--match" : null, Classes?.Item, declared?.Class,
                         valued ? ItemClass?.Invoke(node.Item) : null)"
-             @onclick="_rowClick.For(node.Key)" @ondblclick="_rowDoubleClick.For(node.Key)">
+             @onclick="_rowClick.For(node.Key)" @ondblclick="_rowDoubleClick.For(node.Key)"
+             @onclick:stopPropagation="Nested" @ondblclick:stopPropagation="Nested">
             <span data-part="toggle" aria-hidden="true" class="@ClassNames.Join("tb-tree__toggle", Classes?.Toggle)"
                   @onclick="_toggle.For(node.Key)" @onclick:stopPropagation @ondblclick:stopPropagation>
                 @if (node.HasChildren)

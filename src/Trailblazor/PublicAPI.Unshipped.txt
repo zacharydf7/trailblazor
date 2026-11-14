@@ -5429,3 +5429,5 @@ override Trailblazor.TbToolbarSeparator.OnInitialized() -> void
 ~override Trailblazor.TbToolbarSeparator.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 Trailblazor.TbAutocomplete<TValue>.OpenOnFocus.get -> bool
 Trailblazor.TbAutocomplete<TValue>.OpenOnFocus.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ShowEmpty.get -> bool
+Trailblazor.TbTreeView<TItem, TKey>.ShowEmpty.set -> void

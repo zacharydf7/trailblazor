@@ -7934,12 +7934,13 @@
         cursor: pointer;
     }
 
+    /* A deep row's content keeps a few characters, so the row overflows sideways instead of shrinking to nothing. */
     .tb-tree__content {
         display: flex;
         flex: 1 1 auto;
         align-items: center;
         gap: var(--tb-space-2);
-        min-width: 0;
+        min-width: var(--tb-tree-text-min-width, 6ch);
     }
 
     .tb-tree__text {
@@ -8011,18 +8012,19 @@
        there, which the rows' padding keeps clear of their content; once shown, all of it takes clicks. */
     .tb-tree--inserts .tb-tree__item {
         box-sizing: border-box;
-        padding-block: 0.25rem;
+        padding-block: calc(var(--tb-tree-insert-band, 0.5rem) / 2);
     }
 
     .tb-tree__insert {
         position: absolute;
         inset-block-end: 0;
-        inset-inline-start: calc(var(--tb-tree-level) * var(--tb-tree-indent) + 1.5rem + var(--tb-space-2));
+        inset-inline-start: calc(var(--tb-tree-level) * var(--tb-tree-indent)
+            + var(--tb-tree-insert-offset, 1.5rem + var(--tb-space-2)));
         z-index: 1;
         display: flex;
         translate: 0 50%;
         opacity: 0;
-        clip-path: inset(calc(50% - 0.25rem) 0);
+        clip-path: inset(calc(50% - var(--tb-tree-insert-band, 0.5rem) / 2) 0);
         transition: opacity var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
     }
 

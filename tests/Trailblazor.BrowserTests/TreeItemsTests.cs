@@ -74,6 +74,51 @@ public class TreeItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NestedTree_ShouldPassAClickOffItsRowsToTheRowAroundIt_WhenClicked(string browser)
+    {
+        var page = await OpenItemsAsync(browser);
+        var sections = page.GetByRole(AriaRole.Tree, new() { Name = "Sections" });
+        await Expect(sections).ToHaveAttributeAsync("data-ready", "");
+
+        await sections.DispatchEventAsync("click");
+
+        await Expect(page.GetByTestId("outline")).ToHaveTextAsync("chapter");
+        await Expect(page.GetByTestId("sections")).ToHaveTextAsync("");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Text_ShouldKeepItsEllipsis_WhenARowsContentUsesTheTextPart(string browser)
+    {
+        var page = await OpenItemsAsync(browser);
+        var text = page.GetByRole(AriaRole.Tree, new() { Name = "Long names" }).Locator(".tb-tree__text");
+
+        var shown = await text.EvaluateAsync<string>(
+            "text => `${text.scrollWidth > text.clientWidth} ${getComputedStyle(text).textOverflow}`");
+
+        Assert.Equal("true ellipsis", shown);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Text_ShouldKeepAFewCharactersClearOfTheEnd_WhenARowIsDeeperThanTheTreeIsWide(
+        string browser)
+    {
+        var page = await OpenItemsAsync(browser);
+        var deep = page.GetByRole(AriaRole.Tree, new() { Name = "Deep" });
+        var row = deep.Locator("[role=treeitem][data-key='deep-9']");
+        var text = row.Locator(":scope > .tb-tree__content > .tb-tree__text");
+        await Expect(text).ToBeVisibleAsync();
+
+        var width = await text.EvaluateAsync<double>("text => text.getBoundingClientRect().width");
+        var clear = await row.EvaluateAsync<bool>("""
+            row => row.querySelector(':scope > .tb-tree__content > .tb-tree__text').getBoundingClientRect().right
+                <= row.querySelector(':scope > .tb-tree__end').getBoundingClientRect().left
+            """);
+
+        Assert.True(width >= 30, $"The text is {width}px wide.");
+        Assert.True(clear);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task NestedTree_ShouldKeepItsKeysAndClicksToItself_WhenInsideAnotherTreesRow(string browser)
     {
         var page = await OpenItemsAsync(browser);

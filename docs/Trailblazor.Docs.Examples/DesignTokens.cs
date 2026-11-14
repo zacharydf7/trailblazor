@@ -21,7 +21,8 @@ public static partial class DesignTokens
         "--tb-field-border-color", "--tb-field-border-width", "--tb-field-height", "--tb-field-radius",
         "--tb-menu-item-height", "--tb-menu-radius", "--tb-popover-radius", "--tb-table-row-height",
         "--tb-table-sticky-top", "--tb-tabs-indicator-color", "--tb-tabs-indicator-size", "--tb-tooltip-max-width",
-        "--tb-tree-item-height", "--tb-tree-item-radius",
+        "--tb-tree-insert-band", "--tb-tree-insert-offset", "--tb-tree-item-height", "--tb-tree-item-radius",
+        "--tb-tree-text-min-width",
     ];
 
     private static readonly string[] Tones =

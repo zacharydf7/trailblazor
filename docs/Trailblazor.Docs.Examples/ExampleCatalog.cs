@@ -7865,7 +7865,12 @@ public static class ExampleCatalog
                 new("disabled", "Disabled rows", "`ItemDisabled` turns off single rows, and `Disabled` turns off the "
                     + "whole tree.", typeof(TreeViewDisabledExample)),
                 new("item-template", "Item template", "`ItemTemplate` draws a row's content. Keep `ItemText` so typing "
-                    + "still finds the row.", typeof(TreeViewTemplateExample)),
+                    + "still finds the row, and put the text in an element with the `tb-tree__text` class, directly in "
+                    + "the template, to keep the row's ellipsis. To draw a row's text and its controls from one "
+                    + "component of your own, render it in both `ItemTemplate` and `ItemEndTemplate` with a parameter "
+                    + "saying which part to draw; each slot gets its own instance, so keep any state they share on the "
+                    + "item rather than in the component.",
+                    typeof(TreeViewTemplateExample)),
                 new("flat-data", "Flat data", "`ParentKeySelector` builds the tree from one list of every item, each "
                     + "naming its parent's key, with null for a root. Children keep the list's order.",
                     typeof(TreeViewFlatExample)),
@@ -7877,7 +7882,8 @@ public static class ExampleCatalog
                     + "shows while they load. If the load fails, a row offers to try again, and `OnLoadFailed` gets the "
                     + "exception.", typeof(TreeViewLoadExample)),
                 new("empty", "Empty", "With no rows, the tree says so. `EmptyContent` shows your own content, such as "
-                    + "a way to add the first row.", typeof(TreeViewEmptyExample)),
+                    + "a way to add the first row. `ShowEmpty=\"false\"` shows nothing, for a page that already says "
+                    + "the tree is empty.", typeof(TreeViewEmptyExample)),
                 new("move-and-insert", "Move and insert", "With `OnMove`, rows move by dragging with a mouse, pen or "
                     + "finger, or with Alt+Shift and the arrows. A finger holds still for a moment first, so a swipe "
                     + "still scrolls. `OnMove` says what moved and where, and the app applies it, so it can be undone "
@@ -8013,7 +8019,14 @@ public static class ExampleCatalog
                     + "where it is written, followed by a `group` holding what is written inside it, so other content "
                     + "between rows shows in place and hides with its parent."),
                 new("A tree inside another tree's row is a tree of its own: its rows take their own keys, focus, clicks "
-                    + "and drags, the outer tree's arrows pass over them, and the outer row isn't selected by them."),
+                    + "and drags, the outer tree's arrows pass over them, and the outer row isn't selected by them. A "
+                    + "click on the inner tree outside its rows reaches the outer row."),
+                new("A row's content keeps a minimum width of about six characters (`--tb-tree-text-min-width`), so "
+                    + "a row deeper than the tree is wide overflows sideways into the scrolling box around the tree "
+                    + "instead of shrinking to an ellipsis."),
+                new("`--tb-tree-insert-offset` sets how far past its row's indent the insert slot starts, and "
+                    + "`--tb-tree-insert-band` sets the height of the band around a row's edge that reveals it. Rows "
+                    + "with insert slots are padded by half the band, which keeps the band clear of their content."),
                 new("With cascading checks, a `TbTreeItem` with no `Value` checks the rows inside it. Such a row is "
                     + "never in the bound keys, so several of them can share a text without needing keys."),
                 new("`ExpandAllAsync` opens rows with `HasChildren` too, and the rows that appear in them."),
@@ -8036,7 +8049,8 @@ public static class ExampleCatalog
                 new("toggle", "The arrow that opens and closes a row."),
                 new("check", "A checkable tree's checkbox."),
                 new("content", "The row's text or template."),
-                new("text", "The row's text, inside its content, when the row has no template."),
+                new("text", "The row's text, inside its content. A template keeps the ellipsis by giving its text "
+                    + "the `tb-tree__text` class."),
                 new("end", "Content at the end of the row, such as a count or a menu."),
                 new("insert", "The slot between rows that holds InsertTemplate content, such as an add button."),
                 new("loading", "The message shown while rows load."),

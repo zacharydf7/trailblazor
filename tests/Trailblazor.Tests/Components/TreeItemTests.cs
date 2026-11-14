@@ -85,6 +85,25 @@ public class TreeItemTests : BunitContext
         Assert.Equal(["true", null, null, null], rows.Select(row => row.GetAttribute("aria-expanded")));
     }
 
+    [Theory]
+    [InlineData(".tb-tree[aria-label=Inner]", true)]
+    [InlineData("[data-key=inner]", false)]
+    public void NestedTree_ShouldPassOnlyClicksOffItsRowsToTheRowAroundIt_WhenClicked(string target, bool passed)
+    {
+        var cut = RenderFiles([new Row("docs", [])], content: _ => builder =>
+        {
+            builder.OpenComponent<TbTreeView<string, string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeView<string, string>.AriaLabel), "Inner");
+            builder.AddComponentParameter(2, nameof(TbTreeView<string, string>.ChildContent),
+                Fragment([new Row("inner", [])], null));
+            builder.CloseComponent();
+        });
+
+        cut.Find(target).Click(new() { Detail = 1 });
+
+        Assert.Equal(passed, _selectedChanges.Any(keys => keys.Contains("docs")));
+    }
+
     [Fact]
     public void TreeItem_ShouldThrow_WhenOutsideATree()
     {

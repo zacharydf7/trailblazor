@@ -1,10 +1,8 @@
 <TbTreeView TItem="Place" TKey="int" AriaLabel="Regions and hours" Items="Regions" KeySelector="place => place.Id"
             ItemText="place => place.Name">
     <ItemTemplate>
-        <TbStack Row Gap="2" Align="Align.Center">
-            <strong>@context.Item.Name</strong>
-            <span>@context.Item.Hours</span>
-        </TbStack>
+        <strong class="tb-tree__text">@context.Item.Name</strong>
+        <span>@context.Item.Hours</span>
     </ItemTemplate>
 </TbTreeView>
 
