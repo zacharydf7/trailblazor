@@ -87,18 +87,20 @@ public sealed class FakeDialogService : IDialogService
 
     /// <inheritdoc />
     public async Task<bool> ConfirmAsync(string title, string message, string? confirmText = null,
-        string? cancelText = null, Tone tone = Tone.Primary, string? telemetryName = null)
+        string? cancelText = null, Tone tone = Tone.Primary, string? telemetryName = null,
+        DialogOptions? options = null)
     {
-        var dialog = Record(_dialogs.OpenConfirm(title, message, confirmText, cancelText, tone, telemetryName));
+        var dialog = Record(
+            _dialogs.OpenConfirm(title, message, confirmText, cancelText, tone, telemetryName, options));
         await AnswerAsync(dialog);
         return (await dialog.Result).Confirmed;
     }
 
     /// <inheritdoc />
     public async Task AlertAsync(string title, string message, string? okText = null, Tone tone = Tone.Info,
-        string? telemetryName = null)
+        string? telemetryName = null, DialogOptions? options = null)
     {
-        var dialog = Record(_dialogs.OpenAlert(title, message, okText, tone, telemetryName));
+        var dialog = Record(_dialogs.OpenAlert(title, message, okText, tone, telemetryName, options));
         await AnswerAsync(dialog);
         await dialog.Result;
     }

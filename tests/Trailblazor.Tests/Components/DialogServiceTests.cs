@@ -102,6 +102,24 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void ConfirmAndAlert_ShouldTakeTheOptionsAndKeepTheDefaultsTheyLeaveOut_WhenGivenOptions()
+    {
+        _ = Dialogs.ConfirmAsync("Delete?", "This can't be undone.", telemetryName: "delete",
+            options: new() { Size = DialogSize.Large, Position = DialogPosition.Top, DismissOnEscape = false });
+        _ = Dialogs.AlertAsync("Saved", "Your report was saved.", telemetryName: "report-saved",
+            options: new() { DismissOnBackdrop = true, TelemetryName = "saved" });
+        _ = Dialogs.AlertAsync("Moved", "Your report was moved.", options: new() { TelemetryName = "moved" });
+
+        var (confirm, alert) = (Dialogs.OpenDialogs[0], Dialogs.OpenDialogs[1]);
+        Assert.Equal((DialogSize.Large, DialogPosition.Top, false, false, "delete"), (confirm.Options.Size,
+            confirm.Options.Position, confirm.Options.DismissOnEscape, confirm.Options.DismissOnBackdrop,
+            confirm.Options.TelemetryName));
+        Assert.Equal((DialogSize.Small, true, "report-saved"),
+            (alert.Options.Size, alert.Options.DismissOnBackdrop, alert.Options.TelemetryName));
+        Assert.Equal("moved", Dialogs.OpenDialogs[2].Options.TelemetryName);
+    }
+
+    [Fact]
     public void ShowAsync_ShouldKeepItsOwnDismissalOptions_WhenTheyDifferFromTheAppWideSettings()
     {
         Services.Configure<TrailblazorOptions>(options => options.Dialogs.DismissOnEscape = false);

@@ -55,11 +55,11 @@ Trailblazor.Testing.FakeBrowserService.ScrolledTo.get -> System.Collections.Gene
 Trailblazor.Testing.FakeBrowserService.ScrollIntoViewAsync(Microsoft.AspNetCore.Components.ElementReference element, Trailblazor.ScrollAlignment alignment = Trailblazor.ScrollAlignment.Nearest, bool smooth = false) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.FakeBrowserService.Viewport.get -> Trailblazor.Viewport!
 Trailblazor.Testing.FakeDialogService
-Trailblazor.Testing.FakeDialogService.AlertAsync(string! title, string! message, string? okText = null, Trailblazor.Tone tone = Trailblazor.Tone.Info, string? telemetryName = null) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.FakeDialogService.AlertAsync(string! title, string! message, string? okText = null, Trailblazor.Tone tone = Trailblazor.Tone.Info, string? telemetryName = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.FakeDialogService.Answer.get -> System.Func<Trailblazor.DialogReference!, bool?>?
 Trailblazor.Testing.FakeDialogService.Answer.set -> void
 Trailblazor.Testing.FakeDialogService.CloseAllAsync() -> System.Threading.Tasks.Task!
-Trailblazor.Testing.FakeDialogService.ConfirmAsync(string! title, string! message, string? confirmText = null, string? cancelText = null, Trailblazor.Tone tone = Trailblazor.Tone.Primary, string? telemetryName = null) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.FakeDialogService.ConfirmAsync(string! title, string! message, string? confirmText = null, string? cancelText = null, Trailblazor.Tone tone = Trailblazor.Tone.Primary, string? telemetryName = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.FakeDialogService.Last<TDialog, TResult>() -> Trailblazor.DialogReference<TResult>!
 Trailblazor.Testing.FakeDialogService.Last<TDialog>() -> Trailblazor.DialogReference<bool>!
 Trailblazor.Testing.FakeDialogService.LastConfirm() -> Trailblazor.DialogReference<bool>!

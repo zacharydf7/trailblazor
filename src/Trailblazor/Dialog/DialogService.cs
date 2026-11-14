@@ -91,15 +91,17 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         ShowDynamic<TResult>(dialog, title, parameters, options).Result;
 
     public async Task<bool> ConfirmAsync(string title, string message, string? confirmText = null,
-        string? cancelText = null, Tone tone = Tone.Primary, string? telemetryName = null) =>
-        (await OpenConfirm(title, message, confirmText, cancelText, tone, telemetryName).Result).Confirmed;
+        string? cancelText = null, Tone tone = Tone.Primary, string? telemetryName = null,
+        DialogOptions? options = null) =>
+        (await OpenConfirm(title, message, confirmText, cancelText, tone, telemetryName, options).Result).Confirmed;
 
     public async Task AlertAsync(string title, string message, string? okText = null, Tone tone = Tone.Info,
-        string? telemetryName = null) => await OpenAlert(title, message, okText, tone, telemetryName).Result;
+        string? telemetryName = null, DialogOptions? options = null) =>
+        await OpenAlert(title, message, okText, tone, telemetryName, options).Result;
 
     // The dialogs behind ConfirmAsync and AlertAsync, which FakeDialogService records and answers.
     internal DialogReference<bool> OpenConfirm(string title, string message, string? confirmText, string? cancelText,
-        Tone tone, string? telemetryName)
+        Tone tone, string? telemetryName, DialogOptions? options)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
         var parameters = new Dictionary<string, object?>
@@ -109,13 +111,12 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             [nameof(ConfirmDialog.CancelText)] = cancelText ?? localizer[TbStrings.DialogCancel],
             [nameof(ConfirmDialog.Tone)] = tone,
         };
-        // A click that misses the dialog shouldn't answer it.
-        return Open<bool>(title, typeof(ConfirmDialog), parameters,
-            new() { Size = DialogSize.Small, DismissOnBackdrop = false, TelemetryName = telemetryName }, isAlert: true);
+        return Open<bool>(title, typeof(ConfirmDialog), parameters, AnswerOptions(options, telemetryName),
+            isAlert: true);
     }
 
     internal DialogReference<bool> OpenAlert(string title, string message, string? okText, Tone tone,
-        string? telemetryName)
+        string? telemetryName, DialogOptions? options)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
         var parameters = new Dictionary<string, object?>
@@ -125,10 +126,18 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             [nameof(ConfirmDialog.Tone)] = tone,
             [nameof(ConfirmDialog.ShowIcon)] = true,
         };
-        // A click that misses the dialog shouldn't answer it.
-        return Open<bool>(title, typeof(ConfirmDialog), parameters,
-            new() { Size = DialogSize.Small, DismissOnBackdrop = false, TelemetryName = telemetryName }, isAlert: true);
+        return Open<bool>(title, typeof(ConfirmDialog), parameters, AnswerOptions(options, telemetryName),
+            isAlert: true);
     }
+
+    // Small, and a click that misses the dialog shouldn't answer it, unless the options say otherwise.
+    private static DialogOptions AnswerOptions(DialogOptions? options, string? telemetryName) =>
+        (options ?? new()) with
+        {
+            Size = options?.Size ?? DialogSize.Small,
+            DismissOnBackdrop = options?.DismissOnBackdrop ?? false,
+            TelemetryName = telemetryName ?? options?.TelemetryName,
+        };
 
     public async Task CloseAllAsync()
     {

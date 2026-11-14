@@ -48,6 +48,19 @@ public class FakeDialogServiceTests : BunitContext
     }
 
     [Fact]
+    public async Task Opened_ShouldRecordTheOptionsAConfirmOrAlertWasGiven_WhenTheyAreAnswered()
+    {
+        Dialogs.Answer = _ => true;
+
+        await Dialogs.ConfirmAsync("Delete trail?", "This can't be undone.",
+            options: new() { Size = DialogSize.Large });
+        await Dialogs.AlertAsync("Deleted", "The trail is gone.", options: new() { Position = DialogPosition.Top });
+
+        Assert.Equal((DialogSize.Large, DialogPosition.Top), (Dialogs.Opened[0].Options.Size,
+            Dialogs.Opened[1].Options.Position));
+    }
+
+    [Fact]
     public async Task Answer_ShouldLeaveTheConfirmOpenForTheTestToAnswer_WhenItAnswersNull()
     {
         Dialogs.Answer = dialog => dialog.Title == "Delete trail?" ? null : false;

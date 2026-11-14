@@ -1361,9 +1361,9 @@ Trailblazor.IconButtonClasses.IconButtonClasses() -> void
 Trailblazor.IconButtonClasses.Spinner.get -> string?
 Trailblazor.IconButtonClasses.Spinner.init -> void
 Trailblazor.IDialogService
-Trailblazor.IDialogService.AlertAsync(string! title, string! message, string? okText = null, Trailblazor.Tone tone = Trailblazor.Tone.Info, string? telemetryName = null) -> System.Threading.Tasks.Task!
+Trailblazor.IDialogService.AlertAsync(string! title, string! message, string? okText = null, Trailblazor.Tone tone = Trailblazor.Tone.Info, string? telemetryName = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task!
 Trailblazor.IDialogService.CloseAllAsync() -> System.Threading.Tasks.Task!
-Trailblazor.IDialogService.ConfirmAsync(string! title, string! message, string? confirmText = null, string? cancelText = null, Trailblazor.Tone tone = Trailblazor.Tone.Primary, string? telemetryName = null) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.IDialogService.ConfirmAsync(string! title, string! message, string? confirmText = null, string? cancelText = null, Trailblazor.Tone tone = Trailblazor.Tone.Primary, string? telemetryName = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.IDialogService.OpenDialogs.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DialogReference!>!
 Trailblazor.IDialogService.Show<TDialog, TResult>(string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> Trailblazor.DialogReference<TResult>!
 Trailblazor.IDialogService.ShowAsync<TDialog, TResult>(string? title = null, System.Action<Trailblazor.DialogParameters<TDialog!>!>? parameters = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!

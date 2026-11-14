@@ -6825,7 +6825,9 @@ public static class ExampleCatalog
                 new("confirming", "Confirming and alerting", "`ConfirmAsync` asks a question with two buttons, and "
                     + "`AlertAsync` tells the user something with one. Focus starts on the first button, so a "
                     + "confirmation dialog starts on Cancel, and Enter doesn't confirm by accident. The alert's tone "
-                    + "icon is decorative, so say what happened in the message.", typeof(DialogConfirmExample)),
+                    + "icon is decorative, so say what happened in the message. They open small, and a click outside "
+                    + "doesn't answer them; `DialogOptions` can change that or anything else, such as "
+                    + "`options: new() { Size = DialogSize.Medium }`.", typeof(DialogConfirmExample)),
                 new("in-markup", "Written in markup", "`TbDialog` opens with `@bind-Open`, for a dialog that needs no "
                     + "class of its own, and its content sees the page's fields. `TbDialogDescription` describes any "
                     + "dialog, in markup or opened from code, so screen readers read that text with the title as the "
@@ -6954,7 +6956,7 @@ public static class ExampleCatalog
                     + "the window's right edge holds still too if it adds `var(--tb-scroll-lock-offset, 0px)` to its "
                     + "`right`.",
                 "A click that starts and ends on the backdrop cancels a modal. `ConfirmAsync` and `AlertAsync` dialogs "
-                    + "ignore it, so a stray click can't answer them.",
+                    + "ignore it, so a stray click can't answer them, unless their options set `DismissOnBackdrop`.",
                 "A non-modal dialog comes to the front when it's pressed or takes focus, along with any dialog nested "
                     + "in it.",
                 "A dialog fades in and out with the motion tokens; reduced motion opens and closes it at once. As it "
