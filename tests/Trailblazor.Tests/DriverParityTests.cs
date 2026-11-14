@@ -20,9 +20,11 @@ public class DriverParityTests
         ["TbAccordionItem"] = "AccordionItem", ["TbCalendar"] = "Calendar", ["TbCommandPalette"] = "CommandPalette",
         ["TbContextMenu"] = "ContextMenu", ["TbDataGrid"] = "Grid", ["TbDatePicker"] = "DatePicker",
         ["TbDateRangePicker"] = "DateRangePicker", ["TbDateTimePicker"] = "DateTimePicker", ["TbHotkey"] = "Hotkey",
-        ["TbListBox"] = "ListBox", ["TbMultiListBox"] = "ListBox", ["TbMenu"] = "Menu",
-        ["TbNumberField"] = "NumberField", ["TbPagination"] = "Pagination", ["TbPopconfirm"] = "Popconfirm",
-        ["TbPropertyGrid"] = "PropertyGrid", ["TbQueryBuilder"] = "QueryBuilder",
+        ["TbListBox"] = "ListBox", ["TbMultiListBox"] = "ListBox", ["TbMenu"] = "Menu", ["TbCheckbox"] = "Checkbox",
+        ["TbSwitch"] = "Switch", ["TbCheckboxGroup"] = "CheckboxGroup", ["TbRadioGroup"] = "RadioGroup",
+        ["TbToggleGroup"] = "ToggleGroup", ["TbMultiToggleGroup"] = "ToggleGroup", ["TbList"] = "List",
+        ["TbTextField"] = "TextField", ["TbNumberField"] = "NumberField", ["TbPagination"] = "Pagination",
+        ["TbPopconfirm"] = "Popconfirm", ["TbPropertyGrid"] = "PropertyGrid", ["TbQueryBuilder"] = "QueryBuilder",
         ["TbRichTextEditor"] = "RichTextEditor", ["TbSelect"] = "Select", ["TbMultiSelect"] = "Select",
         ["TbSignaturePad"] = "SignaturePad", ["TbSortable"] = "Sortable", ["TbTabs"] = "Tabs",
         ["TbTagInput"] = "TagInput", ["TbTransferList"] = "TransferList", ["TbTreeView"] = "Tree",
@@ -72,10 +74,8 @@ public class DriverParityTests
         ["TbTimePicker"] = FollowUp, ["TbToolbar"] = FollowUp, ["TbTooltip"] = FollowUp,
         ["TbVirtualList"] = FollowUp,
 
-        ["TbAutocomplete"] = PartTwo, ["TbCheckbox"] = PartTwo, ["TbCheckboxGroup"] = PartTwo,
-        ["TbColorPicker"] = PartTwo, ["TbDialog"] = PartTwo, ["TbFileUpload"] = PartTwo, ["TbList"] = PartTwo,
-        ["TbMultiToggleGroup"] = PartTwo, ["TbRadioGroup"] = PartTwo, ["TbSlider"] = PartTwo, ["TbSwitch"] = PartTwo,
-        ["TbTextField"] = PartTwo, ["TbToggleGroup"] = PartTwo,
+        ["TbAutocomplete"] = PartTwo, ["TbColorPicker"] = PartTwo, ["TbDialog"] = PartTwo, ["TbFileUpload"] = PartTwo,
+        ["TbSlider"] = PartTwo,
     };
 
     // Members only one package has, by type and member name, and why.
@@ -90,7 +90,7 @@ public class DriverParityTests
             + "SelectedCells",
         ["TrailblazorPage.Autocomplete"] = PartTwo, ["TrailblazorPage.ColorPicker"] = PartTwo,
         ["TrailblazorPage.Dialog"] = PartTwo, ["TrailblazorPage.FileUpload"] = PartTwo,
-        ["TrailblazorPage.Slider"] = PartTwo, ["TrailblazorMarkup.TextField"] = PartTwo,
+        ["TrailblazorPage.Slider"] = PartTwo,
     };
 
     [Fact]

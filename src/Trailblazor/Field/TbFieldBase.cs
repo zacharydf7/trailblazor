@@ -31,6 +31,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // Counts the commits the field has finished handling, whether it took a new value, kept the same one or refused
     // the text, so a test can wait until its own lands. Updates while typing don't count: leaving the field commits.
     private int _commits;
+
+    private protected int Commits => _commits;
     // The change a typed update is still delivering, which the commit on leaving the field waits for before it counts.
     private Task _typedChange = Task.CompletedTask;
     private string? _unparsedText;

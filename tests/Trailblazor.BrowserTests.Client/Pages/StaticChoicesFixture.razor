@@ -1,0 +1,25 @@
+@page "/static-choices"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Fields on a static page, where the helpers use the native inputs, plus a read-only box and a toggle group they
+   refuse, a rating that shares the radio group's label, and a radio and a toggle item with text that screen readers
+   don't hear. *@
+<TbCheckbox Label="Email me updates" @bind-Value="_updates" />
+<TbCheckbox Label="Locked in" Value="true" ReadOnly />
+<TbRadioGroup Label="Paper size" @bind-Value="_paper">
+    <TbRadio Value="@("Letter")">Letter</TbRadio>
+    <TbRadio Value="@("A4")"><span aria-hidden="true">~ </span>A4</TbRadio>
+</TbRadioGroup>
+<TbRating Label="Paper size" />
+<TbTextField Label="Name" @bind-Value="_name" />
+<TbToggleGroup @bind-Value="_view" AriaLabel="Map view">
+    <TbToggleItem Value="@("Trails")"><span aria-hidden="true">~ </span>Trails</TbToggleItem>
+    <TbToggleItem Value="@("Satellite")" Text="Satellite" />
+</TbToggleGroup>
+
+@code {
+    private bool _updates;
+    private string? _paper;
+    private string? _name;
+    private string? _view = "Trails";
+}

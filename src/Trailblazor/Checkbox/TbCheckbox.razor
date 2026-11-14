@@ -7,7 +7,9 @@
 
 @* In a static-SSR form an unchecked box posts nothing, so a bool? left unchecked posts as null rather than false. *@
 
-<div @attributes="RootAttributes" style="@Style"
+<div @attributes="RootAttributes" style="@Style" data-commits="@Commits"
+     data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+     data-ready="@(RendererInfo.IsInteractive ? "" : null)"
      class="@ClassNames.Join(Block, ClassNames.Modifier(Block, Tone), ClassNames.Modifier(Block, Size),
                 ShowsInvalid ? $"{Block}--invalid" : null,
                 Disabled ? $"{Block}--disabled" : null, Class)">

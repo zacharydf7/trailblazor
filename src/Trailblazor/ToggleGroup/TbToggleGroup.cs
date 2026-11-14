@@ -32,6 +32,10 @@ public class TbToggleGroup<TValue> : TbToggleGroupBase<TValue>
 
     private protected override bool IsPressed(object? item) => OptionValues.Same(Comparer, item, Value);
 
+    private protected override bool TakesSeveral => false;
+
+    private protected override bool LetsGo => Clearable;
+
     // Pressing the pressed item clears the group only when it is clearable.
     private protected override TValue? Toggle(object? item) =>
         IsPressed(item) ? (Clearable ? default : Value) : (TValue?)item;

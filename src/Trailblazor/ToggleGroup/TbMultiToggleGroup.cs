@@ -14,6 +14,10 @@ public class TbMultiToggleGroup<TItem> : TbToggleGroupBase<IReadOnlyList<TItem>>
 
     private protected override Type ItemType => Nullable.GetUnderlyingType(typeof(TItem)) ?? typeof(TItem);
 
+    private protected override bool TakesSeveral => true;
+
+    private protected override bool LetsGo => true;
+
     private protected override bool IsPressed(object? item) =>
         Value?.Any(pressed => OptionValues.Same(Comparer, pressed, item)) ?? false;
 

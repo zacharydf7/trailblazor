@@ -1446,7 +1446,10 @@ public static class ExampleCatalog
             ],
             TestingTip = "Press an item by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Satellite\" })`, "
                 + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Focusing an icon-only item shows "
-                + "a `tooltip` role with its name.",
+                + "a `tooltip` role with its name. In bUnit and Playwright, "
+                + "`Tb().ToggleGroup(\"Map view\").ChooseAsync(\"Satellite\")` presses items by name, `UnchooseAsync` "
+                + "releases them in a multiple or `Clearable` group, and `Chosen` (`ChosenAsync()` in Playwright) "
+                + "reads the pressed ones.",
             Telemetry =
             [
                 "With a `TelemetryName` on an item, such as `\"view-as-list\"`, the item counts "
@@ -1542,7 +1545,9 @@ public static class ExampleCatalog
             TestingTip = "Each segment is a native radio, so Playwright's `CheckAsync()` works on "
                 + "`GetByRole(AriaRole.Radio, new() { Name = \"Hard\" })` inside the group, as on a radio group. The "
                 + "radio covers its segment's text, so click the radio rather than the text. In bUnit, `Change(true)` on "
-                + "a segment's `input` chooses it.",
+                + "a segment's `input` chooses it. In bUnit and Playwright, "
+                + "`Tb().RadioGroup(\"Trail difficulty\").ChooseAsync(\"Hard\")` chooses a segment by its text, "
+                + "refusing a read-only or disabled one, and `Chosen` (`ChosenAsync()` in Playwright) reads it.",
         },
         new("theme-picker", "Theme picker", ExampleCategory.Actions,
             "Lets people choose a light or dark page, or follow their device, and remembers the choice.")
@@ -2598,7 +2603,9 @@ public static class ExampleCatalog
             ],
             TestingTip = "Find an item by the start of its name, as `GetByRole(AriaRole.Button, new() { NameRegex = "
                 + "new Regex(\"^Pine Hollow\") })`, and check the current one with "
-                + "`ToHaveAttributeAsync(\"aria-current\", \"true\")`.",
+                + "`ToHaveAttributeAsync(\"aria-current\", \"true\")`. The helpers name items by their text alone: in "
+                + "bUnit and Playwright, `Tb().List(\"Campsites\").ClickAsync(\"Pine Hollow\")` clicks one, refusing a "
+                + "disabled item, and `Items` (`ItemsAsync()` in Playwright) reads them.",
         },
         new("sortable", "Sortable", ExampleCategory.Content,
             "A list the user puts in order, by dragging an item's handle or with the arrow keys, such as rules whose "
@@ -3224,8 +3231,9 @@ public static class ExampleCatalog
             TestingTip = "A field with `UpdateDelay` takes its value once typing pauses, so assert with Playwright's "
                 + "`Expect`, which waits, or press Enter to update it at once. In bUnit, which runs no browser, the "
                 + "value updates on each input, so there's nothing to wait for. "
-                + "`await cut.Tb().TextField(\"Trail\").EnterAsync(\"Pine Hollow\")` from `Trailblazor.Testing` types "
-                + "the text and commits it.",
+                + "`await cut.Tb().TextField(\"Trail\").EnterAsync(\"Pine Hollow\")` types the text and commits it, "
+                + "and `page.Tb()` does the same in Playwright, waiting until the app has it; `Text` (`TextAsync()` "
+                + "in Playwright) reads what the field shows.",
         },
         new("rich-text-editor", "Rich text editor", ExampleCategory.Inputs,
             "A labeled field for formatted text, with a toolbar, shortcuts, undo and paste cleanup.")
@@ -3621,7 +3629,10 @@ public static class ExampleCatalog
                 + "`GetByRole(AriaRole.Checkbox, ...)`, and `ToBeCheckedAsync(new() { Indeterminate = true })` waits "
                 + "for the mixed state, which a script sets after rendering. In bUnit, `Change(true)` on the `input` "
                 + "checks it, but a browser script is what stops a `ReadOnly` box from changing, so a `Change` on one "
-                + "still changes the value. Test read-only behavior in Playwright.",
+                + "still changes the value. Test read-only behavior in Playwright. In bUnit and Playwright, "
+                + "`Tb().Checkbox(\"Email me updates\").CheckAsync()` and `UncheckAsync()` refuse a read-only or "
+                + "disabled box and, in Playwright, wait until the app has the value; `Checked` (`CheckedAsync()` in "
+                + "Playwright) reads it.",
             Telemetry = CheckboxTelemetry,
         },
         new("checkbox-group", "Checkbox group", ExampleCategory.Inputs,
@@ -3725,7 +3736,10 @@ public static class ExampleCatalog
                 """,
             TestingTip = "Each option is a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work "
                 + "on `GetByRole(AriaRole.Checkbox, ...)` inside the group. In bUnit, `Change(true)` or "
-                + "`Change(false)` on an option's `input` checks or unchecks it.",
+                + "`Change(false)` on an option's `input` checks or unchecks it. The helpers name options by their "
+                + "text: in bUnit and Playwright, "
+                + "`Tb().CheckboxGroup(\"Trail days\").CheckAsync(\"Monday\", \"Friday\")` and `UncheckAsync` change "
+                + "them, and `Checked` (`CheckedAsync()` in Playwright) reads the checked ones.",
         },
         new("switch", "Switch", ExampleCategory.Inputs,
             "Turns a setting on or off right away.")
@@ -3815,7 +3829,9 @@ public static class ExampleCatalog
             TestingTip = "It's a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work on "
                 + "`GetByRole(AriaRole.Switch, ...)`. In bUnit, `Change(true)` on the `input` turns it on, but a "
                 + "browser script is what stops a `ReadOnly` switch from changing, so a `Change` on one still changes "
-                + "the value. Test read-only behavior in Playwright.",
+                + "the value. Test read-only behavior in Playwright. In bUnit and Playwright, "
+                + "`Tb().Switch(\"Auto-save\").CheckAsync()` and `UncheckAsync()` turn it on and off, refusing a "
+                + "read-only or disabled switch, and `Checked` (`CheckedAsync()` in Playwright) reads it.",
             Telemetry = CheckboxTelemetry,
         },
         new("slider", "Slider", ExampleCategory.Inputs,
@@ -4053,7 +4069,9 @@ public static class ExampleCatalog
                 """,
             TestingTip = "Each option is a native radio, so Playwright's `CheckAsync()` works on "
                 + "`GetByRole(AriaRole.Radio, ...)` inside the group. In bUnit, `Change(true)` on an option's `input` "
-                + "chooses it.",
+                + "chooses it. In bUnit and Playwright, `Tb().RadioGroup(\"Paper size\").ChooseAsync(\"A4\")` chooses "
+                + "an option by its text, refusing a read-only or disabled one, and `Chosen` (`ChosenAsync()` in "
+                + "Playwright) reads it.",
         },
         new("rating", "Rating", ExampleCategory.Inputs,
             "A row of stars people choose from to rate something, such as a trail out of five.")

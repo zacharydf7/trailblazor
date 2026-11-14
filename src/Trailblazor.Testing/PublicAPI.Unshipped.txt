@@ -264,3 +264,27 @@ Trailblazor.Testing.TbGridDriver.DragRowBeforeAsync(string! row, string! target)
 Trailblazor.Testing.TbSortableDriver.DragAfterAsync(string! item, string! target) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbSortableDriver.DragBeforeAsync(string! item, string! target) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbSortableDriver.DragToListAsync(string! item, string! list, string? before = null) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCheckboxDriver
+Trailblazor.Testing.TbCheckboxDriver.CheckAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCheckboxDriver.Checked.get -> bool
+Trailblazor.Testing.TbCheckboxDriver.UncheckAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCheckboxGroupDriver
+Trailblazor.Testing.TbCheckboxGroupDriver.CheckAsync(params string![]! options) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCheckboxGroupDriver.Checked.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbCheckboxGroupDriver.UncheckAsync(params string![]! options) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbListDriver
+Trailblazor.Testing.TbListDriver.ClickAsync(string! item) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbListDriver.Items.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbRadioGroupDriver
+Trailblazor.Testing.TbRadioGroupDriver.ChooseAsync(string! option) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbRadioGroupDriver.Chosen.get -> string?
+Trailblazor.Testing.TbToggleGroupDriver
+Trailblazor.Testing.TbToggleGroupDriver.ChooseAsync(params string![]! items) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbToggleGroupDriver.Chosen.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbToggleGroupDriver.UnchooseAsync(params string![]! items) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Checkbox(string! label) -> Trailblazor.Testing.TbCheckboxDriver!
+Trailblazor.Testing.TrailblazorMarkup.CheckboxGroup(string! label) -> Trailblazor.Testing.TbCheckboxGroupDriver!
+Trailblazor.Testing.TrailblazorMarkup.List(string? name = null) -> Trailblazor.Testing.TbListDriver!
+Trailblazor.Testing.TrailblazorMarkup.RadioGroup(string! label) -> Trailblazor.Testing.TbRadioGroupDriver!
+Trailblazor.Testing.TrailblazorMarkup.Switch(string! label) -> Trailblazor.Testing.TbCheckboxDriver!
+Trailblazor.Testing.TrailblazorMarkup.ToggleGroup(string! label) -> Trailblazor.Testing.TbToggleGroupDriver!

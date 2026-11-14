@@ -56,6 +56,11 @@ public abstract partial class TbToggleGroupBase<TValue> : TbComponentBase, ITogg
 
     private protected abstract bool IsPressed(object? item);
 
+    // Whether several items can be pressed, and whether pressing a pressed item releases it; test helpers read both.
+    private protected abstract bool TakesSeveral { get; }
+
+    private protected abstract bool LetsGo { get; }
+
     // The group's value after the user presses this item.
     private protected abstract TValue? Toggle(object? item);
 

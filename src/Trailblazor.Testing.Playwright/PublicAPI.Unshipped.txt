@@ -260,3 +260,36 @@ Trailblazor.Testing.Playwright.TbTabsLocator.TabsAsync() -> System.Threading.Tas
 Trailblazor.Testing.Playwright.TbTreeLocator.TextsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbGridLocator.ClickRowAsync(string! cell) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbViewportLocator.FitAsync() -> System.Threading.Tasks.Task<Trailblazor.ViewportFit>!
+Trailblazor.Testing.Playwright.TbCheckboxGroupLocator
+Trailblazor.Testing.Playwright.TbCheckboxGroupLocator.CheckAsync(params string![]! options) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbCheckboxGroupLocator.CheckedAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbCheckboxGroupLocator.TbCheckboxGroupLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TbCheckboxGroupLocator.UncheckAsync(params string![]! options) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbCheckboxLocator
+Trailblazor.Testing.Playwright.TbCheckboxLocator.CheckAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbCheckboxLocator.CheckedAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbCheckboxLocator.UncheckAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbListLocator
+Trailblazor.Testing.Playwright.TbListLocator.ClickAsync(string! item) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbListLocator.ItemsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbListLocator.TbListLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TbRadioGroupLocator
+Trailblazor.Testing.Playwright.TbRadioGroupLocator.ChooseAsync(string! option) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRadioGroupLocator.ChosenAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbRadioGroupLocator.TbRadioGroupLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TbTextFieldLocator
+Trailblazor.Testing.Playwright.TbTextFieldLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTextFieldLocator.TbTextFieldLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TbTextFieldLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbToggleGroupLocator
+Trailblazor.Testing.Playwright.TbToggleGroupLocator.ChooseAsync(params string![]! items) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbToggleGroupLocator.ChosenAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbToggleGroupLocator.TbToggleGroupLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TbToggleGroupLocator.UnchooseAsync(params string![]! items) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TrailblazorPage.Checkbox(string! label) -> Trailblazor.Testing.Playwright.TbCheckboxLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.CheckboxGroup(string! label) -> Trailblazor.Testing.Playwright.TbCheckboxGroupLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.List(string? name = null) -> Trailblazor.Testing.Playwright.TbListLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.RadioGroup(string! label) -> Trailblazor.Testing.Playwright.TbRadioGroupLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Switch(string! label) -> Trailblazor.Testing.Playwright.TbCheckboxLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.TextField(string! label) -> Trailblazor.Testing.Playwright.TbTextFieldLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.ToggleGroup(string! label) -> Trailblazor.Testing.Playwright.TbToggleGroupLocator!

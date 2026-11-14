@@ -180,6 +180,28 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>What the page's components say to screen readers.</summary>
     public TbAnnouncementsLocator Announcements => new(Scope.Document(scope));
 
+    /// <summary>The <c>TbTextField</c> with this label.</summary>
+    public TbTextFieldLocator TextField(string label) => new(scope, label);
+
+    /// <summary>The <c>TbCheckbox</c> with this label.</summary>
+    public TbCheckboxLocator Checkbox(string label) => new(scope, label, isSwitch: false);
+
+    /// <summary>The <c>TbSwitch</c> with this label.</summary>
+    public TbCheckboxLocator Switch(string label) => new(scope, label, isSwitch: true);
+
+    /// <summary>The <c>TbCheckboxGroup</c> with this label.</summary>
+    public TbCheckboxGroupLocator CheckboxGroup(string label) => new(scope, label);
+
+    /// <summary>The <c>TbRadioGroup</c> with this label.</summary>
+    public TbRadioGroupLocator RadioGroup(string label) => new(scope, label);
+
+    /// <summary>The <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c> with this <c>AriaLabel</c>.</summary>
+    public TbToggleGroupLocator ToggleGroup(string label) => new(scope, label);
+
+    /// <summary>The <c>TbList</c> with this <c>aria-label</c>, or the only one in the scope when no name is given.
+    /// </summary>
+    public TbListLocator List(string? name = null) => new(scope, name);
+
     /// <summary>The <c>TbNumberField</c> with this label.</summary>
     public TbNumberFieldLocator NumberField(string label) => new(scope, label);
 
@@ -1568,6 +1590,12 @@ internal static class Choices
 
     public const string ChosenNames = "list => [...list.querySelectorAll("
         + "'[role=option][aria-selected=true]:not([data-part=select-all])')].map(" + NameOf + ")";
+
+    public const string PressedNames = "group => [...group.querySelectorAll("
+        + "'[data-part=item][aria-pressed=true]')].map(" + NameOf + ")";
+
+    public const string CheckedNames = "group => [...group.querySelectorAll("
+        + "'[data-part=options] label:has(input:checked) > [data-part=label]')].map(" + NameOf + ")";
 
     // Leaves out the message an empty list shows, and a native select's placeholder and the option that keeps a value
     // no option has.

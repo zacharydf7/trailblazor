@@ -3,6 +3,9 @@
 @inherits TbComponentBase
 
 <div @attributes="AdditionalAttributes" @ref="_group" role="group" aria-label="@AriaLabel" style="@Style"
+     data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+     data-multiple="@(TakesSeveral ? "" : null)" data-clearable="@(LetsGo ? "" : null)"
+     data-ready="@(RendererInfo.IsInteractive ? "" : null)"
      class="@ClassNames.Join("tb-toggle-group", Vertical ? "tb-toggle-group--vertical" : null, Class)">
     @* Not fixed, so every item re-renders with the group and its pressed state follows the value. *@
     <CascadingValue Value="(IToggleGroup)this">@ChildContent</CascadingValue>

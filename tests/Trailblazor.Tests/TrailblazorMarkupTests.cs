@@ -1346,6 +1346,212 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Checkbox_ShouldCheckAndUncheckIt_WhenTheHelperIsUsed()
+    {
+        var updates = false;
+        var cut = Render<TbCheckbox<bool>>(parameters => parameters.Add(box => box.Label, "Email me updates")
+            .Add(box => box.Value, updates).Add(box => box.ValueChanged, (bool value) => updates = value));
+
+        await cut.Tb().Checkbox("Email me updates").CheckAsync();
+        Assert.True(updates);
+        cut.Render(parameters => parameters.Add(box => box.Value, updates));
+        Assert.True(cut.Tb().Checkbox("Email me updates").Checked);
+        await cut.Tb().Checkbox("Email me updates").UncheckAsync();
+
+        Assert.False(updates);
+    }
+
+    [Fact]
+    public async Task Switch_ShouldTurnItOnAndRefuseADisabledOne_WhenTheHelperIsUsed()
+    {
+        var on = false;
+        var cut = Render<TbSwitch>(parameters => parameters.Add(toggle => toggle.Label, "Auto-save")
+            .Add(toggle => toggle.ValueChanged, (bool value) => on = value));
+
+        await cut.Tb().Switch("Auto-save").CheckAsync();
+        Assert.True(on);
+        Assert.Throws<InvalidOperationException>(() => cut.Tb().Checkbox("Auto-save").Checked);
+        cut.Render(parameters => parameters.Add(toggle => toggle.Disabled, true));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Switch("Auto-save").UncheckAsync());
+    }
+
+    [Fact]
+    public async Task Checkbox_ShouldSayItPostsWithItsForm_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbCheckbox<bool>>(parameters => parameters.Add(box => box.Label, "Email me updates"));
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Checkbox("Email me updates").CheckAsync());
+
+        Assert.Contains("static page", failure.Message);
+    }
+
+    [Fact]
+    public async Task CheckboxGroup_ShouldCheckAndUncheckOptionsByName_WhenTheHelperIsUsed()
+    {
+        IReadOnlyList<string> days = [];
+        var cut = Render<TbCheckboxGroup<string>>(parameters => parameters.Add(group => group.Label, "Trail days")
+            .Add(group => group.ValueChanged, (IReadOnlyList<string> value) => days = value)
+            .AddChildContent<TbCheckboxItem<string>>(item => item.Add(day => day.Value, "Monday")
+                .AddChildContent("Monday"))
+            .AddChildContent<TbCheckboxItem<string>>(item => item.Add(day => day.Value, "Friday")
+                .AddChildContent("Friday")));
+
+        await cut.Tb().CheckboxGroup("Trail days").CheckAsync("Monday", "Friday");
+        Assert.Equal(["Monday", "Friday"], days);
+        cut.Render(parameters => parameters.Add(group => group.Value, days));
+        Assert.Equal(["Monday", "Friday"], cut.Tb().CheckboxGroup("Trail days").Checked);
+        await cut.Tb().CheckboxGroup("Trail days").UncheckAsync("Monday");
+
+        Assert.Equal(["Friday"], days);
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().CheckboxGroup("Trail days").CheckAsync("Sunday"));
+    }
+
+    [Fact]
+    public void CheckboxGroup_ShouldBeFoundByItsLabelAndNameOptionsByTheirOwn_WhenItHasInfoAndRichOptions()
+    {
+        var cut = Render<TbCheckboxGroup<string>>(parameters => parameters.Add(group => group.Label, "Gear to carry")
+            .Add(group => group.Info, "What the trip needs.").Add(group => group.Value, ["kit"])
+            .AddChildContent<TbCheckboxItem<string>>(item => item.Add(gear => gear.Value, "kit")
+                .AddChildContent(content =>
+            {
+                content.OpenElement(0, "span");
+                content.AddAttribute(1, "aria-hidden", "true");
+                content.AddContent(2, "+ ");
+                content.CloseElement();
+                content.AddContent(3, "First-aid kit");
+                content.OpenElement(4, "span");
+                content.AddAttribute(5, "data-part", "label");
+                content.AddContent(6, " Recommended");
+                content.CloseElement();
+            })));
+
+        Assert.Equal(["First-aid kit Recommended"], cut.Tb().CheckboxGroup("Gear to carry").Checked);
+    }
+
+    [Fact]
+    public async Task ToggleGroup_ShouldRefuseWhatItsGroupDoesntAllow_WhenPressingOrReleasing()
+    {
+        var cut = Render<TbToggleGroup<string>>(parameters => parameters.Add(group => group.AriaLabel, "Map view")
+            .Add(group => group.Value, "Trails")
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(view => view.Value, "Trails")
+                .Add(view => view.Text, "Trails"))
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(view => view.Value, "Huts")
+                .Add(view => view.Text, "Huts")));
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => cut.Tb().ToggleGroup("Map view").ChooseAsync("Trails", "Huts"));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().ToggleGroup("Map view").UnchooseAsync("Trails"));
+        cut.Render(parameters => parameters.Add(group => group.Clearable, true));
+        await cut.Tb().ToggleGroup("Map view").UnchooseAsync("Trails");
+
+        Assert.Empty(cut.Tb().ToggleGroup("Map view").Chosen);
+    }
+
+    [Fact]
+    public async Task ToggleGroup_ShouldSayItCantBePressed_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbToggleGroup<string>>(parameters => parameters.Add(group => group.AriaLabel, "Map view")
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(view => view.Value, "Trails")
+                .Add(view => view.Text, "Trails")));
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().ToggleGroup("Map view").ChooseAsync("Trails"));
+
+        Assert.Contains("static page", failure.Message);
+    }
+
+    [Fact]
+    public async Task RadioGroup_ShouldChooseAnOptionAndRefuseADisabledOne_WhenTheHelperIsUsed()
+    {
+        string? paper = null;
+        var cut = Render<TbRadioGroup<string>>(parameters => parameters.Add(group => group.Label, "Paper size")
+            .Add(group => group.ValueChanged, (string value) => paper = value)
+            .AddChildContent<TbRadio<string>>(radio => radio.Add(size => size.Value, "Letter")
+                .AddChildContent("<span aria-hidden=\"true\">~ </span>Letter"))
+            .AddChildContent<TbRadio<string>>(radio => radio.Add(size => size.Value, "Legal")
+                .Add(size => size.Disabled, true)
+                .AddChildContent("Legal")));
+
+        await cut.Tb().RadioGroup("Paper size").ChooseAsync("Letter");
+        Assert.Equal("Letter", paper);
+        cut.Render(parameters => parameters.Add(group => group.Value, paper));
+
+        Assert.Equal("Letter", cut.Tb().RadioGroup("Paper size").Chosen);
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().RadioGroup("Paper size").ChooseAsync("Legal"));
+    }
+
+    [Fact]
+    public async Task ToggleGroup_ShouldPressAndLetGoOfItemsByName_WhenTheHelperIsUsed()
+    {
+        IReadOnlyList<string> layers = [];
+        var cut = Render<TbMultiToggleGroup<string>>(parameters => parameters.Add(group => group.AriaLabel, "Layers")
+            .Add(group => group.ValueChanged, (IReadOnlyList<string> value) => layers = value)
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(layer => layer.Value, "Trails")
+                .Add(layer => layer.Text, "Trails"))
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(layer => layer.Value, "Huts")
+                .Add(layer => layer.Text, "Huts")));
+
+        await cut.Tb().ToggleGroup("Layers").ChooseAsync("Trails", "Huts");
+        Assert.Equal(["Trails", "Huts"], cut.Tb().ToggleGroup("Layers").Chosen);
+        await cut.Tb().ToggleGroup("Layers").UnchooseAsync("Trails");
+
+        Assert.Equal(["Huts"], layers);
+    }
+
+    [Fact]
+    public async Task List_ShouldReadTheItemsAndClickOne_WhenTheHelperIsUsed()
+    {
+        string? shown = null;
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbList>(0);
+            builder.AddAttribute(1, "aria-label", "Campsites");
+            builder.AddComponentParameter(2, nameof(TbList.ChildContent), (RenderFragment)(items =>
+            {
+                Item(items, 0, "Pine Hollow", disabled: false);
+                Item(items, 10, "Cedar Flats", disabled: true);
+                items.OpenComponent<TbListItem>(20);
+                items.AddComponentParameter(21, nameof(TbListItem.Href), "/camps/lake");
+                items.AddComponentParameter(22, nameof(TbListItem.Disabled), true);
+                items.AddComponentParameter(23, nameof(TbListItem.ChildContent), (RenderFragment)(text =>
+                    text.AddContent(0, "Lake camp")));
+                items.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        Assert.Equal(["Pine Hollow", "Cedar Flats", "Lake camp"], cut.Tb().List("Campsites").Items);
+        await cut.Tb().List().ClickAsync("Pine Hollow");
+
+        Assert.Equal("Pine Hollow", shown);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().List().ClickAsync("Cedar Flats"));
+        // A disabled item that would be a link draws as plain content.
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().List().ClickAsync("Lake camp"));
+        Assert.Contains("is disabled", failure.Message);
+
+        void Item(RenderTreeBuilder items, int sequence, string name, bool disabled)
+        {
+            items.OpenComponent<TbListItem>(sequence);
+            items.AddComponentParameter(sequence + 1, nameof(TbListItem.Disabled), disabled);
+            items.AddComponentParameter(sequence + 2, nameof(TbListItem.Description), (RenderFragment)(text =>
+                text.AddContent(0, "4 sites")));
+            items.AddComponentParameter(sequence + 3, nameof(TbListItem.OnClick),
+                EventCallback.Factory.Create<MouseEventArgs>(this, () => shown = name));
+            items.AddComponentParameter(sequence + 4, nameof(TbListItem.ChildContent), (RenderFragment)(text =>
+                text.AddContent(0, name)));
+            items.CloseComponent();
+        }
+    }
+
+    [Fact]
     public async Task CommandPalette_ShouldSearchAndRunACommand_WhenItIsOpen()
     {
         string? chosen = null;

@@ -130,6 +130,35 @@
                         <td>Types a number and waits until the app has it.</td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Checkbox(label).CheckAsync()</code></th>
+                        <td>
+                            Checks it, and <code>UncheckAsync</code> unchecks it; <code>Checked</code> reads it.
+                            <code>Switch(label)</code> works the same way. Both refuse a read-only or disabled box.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>CheckboxGroup(label).CheckAsync(options)</code></th>
+                        <td>
+                            Checks options by their text, <code>UncheckAsync</code> unchecks them, and
+                            <code>Checked</code> reads the checked ones.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>RadioGroup(label).ChooseAsync(option)</code></th>
+                        <td>Chooses an option by its text, and <code>Chosen</code> reads it.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>ToggleGroup(label).ChooseAsync(items)</code></th>
+                        <td>
+                            Presses items by name, <code>UnchooseAsync</code> releases them, and <code>Chosen</code>
+                            reads the pressed ones.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>List(name).ClickAsync(item)</code></th>
+                        <td>Clicks an item by its text, and <code>Items</code> reads them.</td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>TagInput(label).AddAsync(text)</code></th>
                         <td>
                             Adds a tag, or shows the field's message for one it refuses, and waits for the app's
@@ -758,6 +787,18 @@
             + "renders as Trailblazor's list or, on a static page, as a native `<select>`. `UnchooseAsync(options)` "
             + "unchooses options in a multiple select, `ClearAsync()` clears a `Clearable` one, `TextAsync()` reads "
             + "what it shows, `ChosenAsync()` reads the chosen options, and `OptionsAsync()` reads them all."),
+        new("Text field", "Its label", "`TextField(label).EnterAsync(text)` types the text and waits until the app "
+            + "has it, and `TextAsync()` reads what the field shows."),
+        new("Checkbox and switch", "Its label", "`Checkbox(label).CheckAsync()` and `UncheckAsync()` wait until the "
+            + "app has the value, and `CheckedAsync()` reads it. `Switch(label)` works the same way."),
+        new("Checkbox group", "Its label", "`CheckboxGroup(label).CheckAsync(options)` and `UncheckAsync(options)` "
+            + "change options by name, and `CheckedAsync()` reads the checked ones."),
+        new("Radio group", "Its label", "`RadioGroup(label).ChooseAsync(option)` chooses an option by name, and "
+            + "`ChosenAsync()` reads it."),
+        new("Toggle group", "Its `AriaLabel`", "`ToggleGroup(label).ChooseAsync(items)` presses items by name, "
+            + "`UnchooseAsync(items)` releases them, and `ChosenAsync()` reads the pressed ones."),
+        new("List", "Its `aria-label`", "`List(name).ClickAsync(item)` clicks an item by its text, and "
+            + "`ItemsAsync()` reads them."),
         new("Autocomplete", "Its label",
             "`Autocomplete(label).ChooseAsync(text, option)` types and picks an option."),
         new("List box", "Its label", "`ListBox(label).ChooseAsync(options)` chooses by option names, "

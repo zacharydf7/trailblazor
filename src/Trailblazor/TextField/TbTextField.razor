@@ -140,7 +140,10 @@
         builder.AddAttribute(18, "aria-invalid", ShowsInvalid ? "true" : null);
         builder.AddAttribute(19, "aria-describedby", InputDescribedBy);
         builder.AddAttribute(20, "class", ClassNames.Join("tb-field__input", Classes?.Input));
-        builder.AddElementReferenceCapture(21, element => _input = element);
+        // Tests wait for data-ready before typing, since a prerendered field is replaced and loses the text.
+        builder.AddAttribute(21, "data-static", AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null);
+        builder.AddAttribute(22, "data-ready", RendererInfo.IsInteractive ? "" : null);
+        builder.AddElementReferenceCapture(23, element => _input = element);
         builder.CloseElement();
     };
 

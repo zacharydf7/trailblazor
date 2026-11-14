@@ -126,6 +126,37 @@ public sealed class TrailblazorMarkup
             ? $"No transfer list is labeled \"{label}\"." : $"{lists.Count} transfer lists are labeled \"{label}\".");
     });
 
+    /// <summary>The <c>TbCheckbox</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
+    public TbCheckboxDriver Checkbox(string label) =>
+        new(() => Field(label, "input[type=checkbox][data-part=input]:not([role=switch])"));
+
+    /// <summary>The <c>TbSwitch</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
+    public TbCheckboxDriver Switch(string label) => new(() => Field(label, "input[type=checkbox][role=switch]"));
+
+    /// <summary>The <c>TbCheckboxGroup</c> with this label.</summary>
+    public TbCheckboxGroupDriver CheckboxGroup(string label) => new(() => Group(label, "fieldset.tb-checkbox-group"));
+
+    /// <summary>The <c>TbRadioGroup</c> with this label.</summary>
+    public TbRadioGroupDriver RadioGroup(string label) => new(() => Group(label, "fieldset.tb-radio-group"));
+
+    /// <summary>The <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c> with this <c>AriaLabel</c>.</summary>
+    public TbToggleGroupDriver ToggleGroup(string label) => new(() =>
+        _findAll(".tb-toggle-group[role=group]").Where(group => group.GetAttribute("aria-label") == label).ToList()
+            is [var group] ? group
+            : throw new InvalidOperationException($"Expected one toggle group named \"{label}\"."));
+
+    /// <summary>The <c>TbList</c> with this <c>aria-label</c>, or the only one in the markup when no name is given.
+    /// </summary>
+    public TbListDriver List(string? name = null) => new(() =>
+    {
+        var lists = _findAll(".tb-list[role=list]")
+            .Where(list => name is null || list.GetAttribute("aria-label") == name).ToList();
+        return lists.Count == 1 ? lists[0]
+            : throw new InvalidOperationException(lists.Count == 0 ? "No list is in the markup."
+                : name is null ? $"Expected one list, found {lists.Count}; name the one to use."
+                : $"Expected one list named \"{name}\", found {lists.Count}.");
+    });
+
     /// <summary>The <c>TbNumberField</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbNumberFieldDriver NumberField(string label) =>
         new(() => Field(label, "input[type=number]", "input[role=spinbutton]"));
@@ -300,9 +331,20 @@ public sealed class TrailblazorMarkup
         };
     }
 
+    // A checkbox's label holds its input.
     private IElement? ControlOf(IElement label) => label.GetAttribute("for") is { Length: > 0 } target
         ? _findAll($"[id='{target}']").FirstOrDefault()
-        : _findAll($"[aria-labelledby~='{label.Id}']").FirstOrDefault();
+        : _findAll($"[aria-labelledby~='{label.Id}']").FirstOrDefault() ?? label.QuerySelector("input");
+
+    // A group is named by the text in its legend, not the info button beside it.
+    private IElement Group(string label, string selector)
+    {
+        var groups = _findAll(selector).Where(group =>
+            group.QuerySelector(":scope > legend[data-part=label] > span") is { } name && LabelText(name) == label)
+            .ToList();
+        return groups.Count == 1 ? groups[0] : throw new InvalidOperationException(groups.Count == 0
+            ? $"No group is labeled \"{label}\"." : $"{groups.Count} groups are labeled \"{label}\".");
+    }
 
     private static string LabelText(IElement label) => label.TextContent.Trim().TrimEnd('*').Trim();
 }
@@ -527,7 +569,8 @@ public sealed class TbTransferListDriver
         ?? throw new InvalidOperationException("The transfer list isn't interactive yet.");
 }
 
-// What choosing in a select and a list box share, with the Playwright helpers' rules.
+// What the choice helpers share: picking options, reading names and refusing locked inputs, by the same rules as
+// the Playwright helpers.
 internal static class Choices
 {
     // Clicks each named option whose state differs: one not yet chosen to choose it, or a chosen one to unchoose it.
@@ -572,6 +615,22 @@ internal static class Choices
             .Where(text => text.ParentElement?.Closest("[aria-hidden=true]") is not { } hidden
                 || !element.Contains(hidden))
             .Select(text => text.Data)).Trim();
+
+    // A checkbox or radio a user can't change, or one on a static page, which posts with its form.
+    internal static void ThrowIfLocked(IElement input)
+    {
+        if (input.HasAttribute("disabled") || input.Closest("fieldset[disabled]") is not null
+            || input.GetAttribute("aria-readonly") == "true")
+        {
+            throw new InvalidOperationException("This input is read-only or disabled, so a user can't change it.");
+        }
+
+        if (input.Closest("[data-static]") is not null)
+        {
+            throw new InvalidOperationException("On a static page this input posts with its form; render it on an "
+                + "interactive page to change it.");
+        }
+    }
 
     internal static void ThrowIfStaticOrDisabled(IElement control)
     {
@@ -890,6 +949,195 @@ public sealed class TbTextFieldDriver
             await _find().ChangeAsync(new ChangeEventArgs { Value = text });
         }
     }
+}
+
+/// <summary>A <c>TbCheckbox</c> or <c>TbSwitch</c>, found by its label.</summary>
+public sealed class TbCheckboxDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbCheckboxDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>Whether it's checked, or on for a switch.</summary>
+    public bool Checked => _find().HasAttribute("checked");
+
+    /// <summary>Checks it, as clicking it does, unless it's checked already. A read-only or disabled one throws, and so
+    /// does one on a static page, which posts with its form.</summary>
+    public Task CheckAsync() => SetAsync(true);
+
+    /// <summary>Unchecks it, as clicking it does, unless it's unchecked already, and throws as
+    /// <see cref="CheckAsync"/> does.</summary>
+    public Task UncheckAsync() => SetAsync(false);
+
+    private Task SetAsync(bool on)
+    {
+        var box = _find();
+        Choices.ThrowIfLocked(box);
+        return Checked == on ? Task.CompletedTask : box.ChangeAsync(new ChangeEventArgs { Value = on });
+    }
+}
+
+/// <summary>A <c>TbCheckboxGroup</c>, found by its label. Its options are named by their text.</summary>
+public sealed class TbCheckboxGroupDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbCheckboxGroupDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The checked options' names, in order.</summary>
+    public IReadOnlyList<string> Checked => [.. Options().Where(option => option.Input.HasAttribute("checked"))
+        .Select(option => option.Name)];
+
+    /// <summary>Checks the options with these names, as clicking them does, leaving the others as they are. A
+    /// disabled group or option throws, and so does a group on a static page.</summary>
+    public Task CheckAsync(params string[] options) => SetAsync(options, on: true);
+
+    /// <summary>Unchecks the options with these names, leaving the others as they are, and throws as
+    /// <see cref="CheckAsync"/> does.</summary>
+    public Task UncheckAsync(params string[] options) => SetAsync(options, on: false);
+
+    private async Task SetAsync(string[] names, bool on)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(names.Length, nameof(names));
+        foreach (var name in names)
+        {
+            var input = Option(name);
+            Choices.ThrowIfLocked(input);
+            if (input.HasAttribute("checked") != on)
+            {
+                await input.ChangeAsync(new ChangeEventArgs { Value = on });
+            }
+        }
+    }
+
+    private IElement Option(string name) => Options().Where(option => option.Name == name).ToList() is [var option]
+        ? option.Input : throw new InvalidOperationException($"The group has no option named \"{name}\".");
+
+    private IEnumerable<(string Name, IElement Input)> Options() => _find()
+        .QuerySelectorAll("[data-part=options] input[data-part=input]")
+        .Select(input => (Choices.NameOf(input.ParentElement!.QuerySelector(":scope > [data-part=label]")!), input));
+}
+
+/// <summary>A <c>TbRadioGroup</c>, found by its label. Its options are named by their text.</summary>
+public sealed class TbRadioGroupDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbRadioGroupDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The chosen option's name, or null when none is chosen.</summary>
+    public string? Chosen => Options().FirstOrDefault(option => option.Input.HasAttribute("checked")).Name;
+
+    /// <summary>Chooses the option with this name, as clicking it does. A read-only or disabled group or option
+    /// throws, and so does a group on a static page.</summary>
+    public Task ChooseAsync(string option)
+    {
+        var input = Options().Where(each => each.Name == option).ToList() is [var found] ? found.Input
+            : throw new InvalidOperationException($"The group has no option named \"{option}\".");
+        if (_find().GetAttribute("aria-readonly") == "true")
+        {
+            throw new InvalidOperationException("This group is read-only, so its options can't be chosen.");
+        }
+
+        Choices.ThrowIfLocked(input);
+        return input.HasAttribute("checked") ? Task.CompletedTask : input.ChangeAsync(new ChangeEventArgs());
+    }
+
+    private IEnumerable<(string Name, IElement Input)> Options() => _find()
+        .QuerySelectorAll("[data-part=options] input[type=radio]")
+        .Select(input => (Choices.NameOf(input.ParentElement!.QuerySelector(":scope > [data-part=label]")!), input));
+}
+
+/// <summary>A <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c>, found by its <c>AriaLabel</c>. Its items are
+/// named by their text, or by their <c>AriaLabel</c> when they show only an icon.</summary>
+public sealed class TbToggleGroupDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbToggleGroupDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The pressed items' names, in order.</summary>
+    public IReadOnlyList<string> Chosen => [.. Items().Where(item => item.GetAttribute("aria-pressed") == "true")
+        .Select(Choices.NameOf)];
+
+    /// <summary>Presses the items with these names that aren't pressed yet, as clicking them does. Give a
+    /// <c>TbToggleGroup</c> just one, since it keeps one item pressed. A disabled item throws, and so does a group on a
+    /// static page.</summary>
+    public Task ChooseAsync(params string[] items) => SetAsync(items, pressed: true);
+
+    /// <summary>Releases the pressed items with these names by pressing them again, which a <c>TbMultiToggleGroup</c>
+    /// or a <c>Clearable</c> <c>TbToggleGroup</c> allows, and throws as <see cref="ChooseAsync"/> does.</summary>
+    public Task UnchooseAsync(params string[] items) => SetAsync(items, pressed: false);
+
+    private async Task SetAsync(string[] names, bool pressed)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(names.Length, nameof(names));
+        var group = _find();
+        if (group.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("A toggle group on a static page can't be pressed; render it on an "
+                + "interactive page.");
+        }
+
+        if (pressed && names.Length > 1 && !group.HasAttribute("data-multiple"))
+        {
+            throw new ArgumentException("A TbToggleGroup has one item pressed at a time, so choose just one.",
+                nameof(names));
+        }
+
+        if (!pressed && !group.HasAttribute("data-clearable"))
+        {
+            throw new InvalidOperationException("This TbToggleGroup can't release its pressed item; make it Clearable "
+                + "to allow that.");
+        }
+
+        foreach (var name in names)
+        {
+            var item = Items().Where(each => Choices.NameOf(each) == name).ToList() is [var found] ? found
+                : throw new InvalidOperationException($"The toggle group has no item named \"{name}\".");
+            if (item.HasAttribute("disabled") || item.GetAttribute("aria-disabled") == "true")
+            {
+                throw new InvalidOperationException($"\"{name}\" is disabled.");
+            }
+
+            if ((item.GetAttribute("aria-pressed") == "true") != pressed)
+            {
+                await item.ClickAsync(new MouseEventArgs { Detail = 1 });
+            }
+        }
+    }
+
+    private IEnumerable<IElement> Items() => _find().QuerySelectorAll("[data-part=item]");
+}
+
+/// <summary>A <c>TbList</c>, found by its <c>aria-label</c>. Its items are named by their text, leaving out their
+/// description and end content.</summary>
+public sealed class TbListDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbListDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The items' names, in order.</summary>
+    public IReadOnlyList<string> Items => [.. ItemElements().Select(NameOf)];
+
+    /// <summary>Clicks the item with this text. The item must be a button or a link, which it is when it has an
+    /// <c>OnClick</c> or an <c>Href</c>. A disabled item throws.</summary>
+    public Task ClickAsync(string item)
+    {
+        var found = ItemElements().Where(each => NameOf(each) == item).ToList() is [var one] ? one
+            : throw new InvalidOperationException($"The list has no item that reads \"{item}\".");
+        var action = found.QuerySelector(":scope > [data-part=action]");
+        return action is null || action.HasAttribute("disabled")
+            ? throw new InvalidOperationException(action is not null || found.QuerySelector(
+                ":scope > [data-part=content][aria-disabled=true]") is not null ? $"\"{item}\" is disabled."
+                : $"\"{item}\" is neither a button nor a link; give it an OnClick or an Href.")
+            : action.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private IEnumerable<IElement> ItemElements() => _find().Children.Where(child => child.LocalName == "li");
+
+    private static string NameOf(IElement item) => item.QuerySelector("[data-part=text]")?.TextContent.Trim() ?? "";
 }
 
 /// <summary>A <c>TbNumberField</c>, found by its label.</summary>

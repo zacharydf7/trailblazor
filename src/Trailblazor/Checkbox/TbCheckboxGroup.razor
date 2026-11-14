@@ -9,7 +9,9 @@
 @* ARIA gives a group no required state, so a description says "required" to screen readers instead. The
    invalid state goes on the group and on each checkbox, where screen readers announce it. *@
 <fieldset aria-labelledby="@(HasInfo ? LabelId : null)" @attributes="GroupRootAttributes" @ref="_group"
-          disabled="@Disabled" style="@Style"
+          disabled="@Disabled" style="@Style" data-commits="@Commits"
+          data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+          data-ready="@(RendererInfo.IsInteractive ? "" : null)"
           aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@DescribedWithRequired(DescribedBy)"
           class="@ClassNames.Join("tb-checkbox-group", ClassNames.Modifier("tb-checkbox-group", Tone),
                      ClassNames.Modifier("tb-checkbox-group", Size),

@@ -9,6 +9,23 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(TimeSpan.FromMilliseconds(400));
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Choices_ShouldReturnOnceTheAppHasTheValue_WhenCheckedOrChosen(string browser)
+    {
+        var boxes = await OpenAsync(browser, "/examples/checkbox");
+        var groups = await OpenAsync(browser, "/examples/checkbox-group");
+        var radios = await OpenAsync(browser, "/examples/radio-group");
+
+        await boxes.Tb().Checkbox("Email me updates").CheckAsync();
+        await groups.Tb().CheckboxGroup("Trail days").CheckAsync("Monday");
+        await radios.Tb().RadioGroup("Paper size").ChooseAsync("A4");
+
+        Assert.Equal(1, await boxes.GetByText("Updates value: True", new() { Exact = true }).CountAsync());
+        Assert.Equal(1,
+            await groups.GetByText("Trail days value: Saturday, Monday", new() { Exact = true }).CountAsync());
+        Assert.Equal(1, await radios.GetByText("Paper size value: A4", new() { Exact = true }).CountAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task NumberField_ShouldReturnOnceTheAppHasTheValue_WhenEntered(string browser)
     {
         var page = await OpenAsync(browser, "/examples/number-field");
