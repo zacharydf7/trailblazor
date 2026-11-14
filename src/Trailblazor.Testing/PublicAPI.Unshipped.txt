@@ -343,3 +343,6 @@ Trailblazor.Testing.FakeDialogService.AnswerWith<TDialog, TResult>(TResult resul
 Trailblazor.Testing.FakeDialogService.AnswerWithCancel<TDialog>() -> void
 static Trailblazor.Testing.DialogReferenceExtensions.get_Message(Trailblazor.DialogReference! dialog) -> string?
 Trailblazor.Testing.FakeDialogService.AnswerWithCancel<TDialog, TResult>() -> void
+Trailblazor.Testing.TbMenuDriver.CloseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbMenuDriver.IsOpen.get -> bool
+Trailblazor.Testing.TbMenuDriver.OpenAsync() -> System.Threading.Tasks.Task!

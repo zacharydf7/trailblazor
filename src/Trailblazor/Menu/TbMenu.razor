@@ -315,7 +315,7 @@
         {
             Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = 4,
         };
-        _events = DotNetObjectReference.Create(new MenuEvents(OnToggleAsync));
+        _events = DotNetObjectReference.Create(new MenuEvents(OnToggleAsync, MenuId));
         _attachedWith = (Placement, Align);
         var handle = await module.InvokeAsync<IJSObjectReference?>("createMenu", _root, _menu, options, _events);
         if (handle is null)

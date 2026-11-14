@@ -206,7 +206,8 @@
                         <th scope="row"><code>Menu(trigger).ChooseAsync(path)</code></th>
                         <td>
                             Clicks an item by its name, through the submenus named before it, and throws for a disabled
-                            menu or item.
+                            menu or item. <code>OpenAsync()</code> and <code>CloseAsync()</code> open and close the
+                            menu, and <code>IsOpen</code> reads whether it's open.
                         </td>
                     </tr>
                     <tr>
@@ -939,7 +940,8 @@
             + "the app's `OnConfirm` has run; `CancelAsync()` cancels and waits until it closes, though an async "
             + "`OnCancel` may still be running. An `OnConfirm` that waits for the user, such as one that opens a "
             + "dialog, would keep the helper waiting, so click the confirm button instead."),
-        new("Menu", "Its trigger", "`Menu(trigger).ChooseAsync(path)` chooses an item through its submenus."),
+        new("Menu", "Its trigger", "`Menu(trigger).ChooseAsync(path)` chooses an item through its submenus. "
+            + "`OpenAsync()` and `CloseAsync()` open and close the menu, and `IsOpenAsync()` reads whether it's open."),
         new("Hotkey", "Its keys", "`Hotkey(keys).PressAsync()` waits until the hotkey listens, then presses its "
             + "keys, with Mod as `ControlOrMeta`."),
         new("Viewport", "Its label", "`Viewport(label).ZoomInAsync()`, `FitAsync(ViewportFit.Page)` and the other "

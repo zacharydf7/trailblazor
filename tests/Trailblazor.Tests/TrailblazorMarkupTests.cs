@@ -492,6 +492,71 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Menu_ShouldOpenAndCloseTheMenuAndTellTheApp_WhenAskedThroughItsDriver(bool attachOnFirstUse)
+    {
+        var heard = new List<bool>();
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.AttachOnFirstUse, attachOnFirstUse).Add(menu => menu.OpenChanged, heard.Add)
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename")));
+        var menu = cut.Tb().Menu("Actions");
+
+        await menu.OpenAsync();
+        var opened = menu.IsOpen;
+        await menu.CloseAsync();
+
+        Assert.True(opened);
+        Assert.False(menu.IsOpen);
+        Assert.Equal([true, false], heard);
+    }
+
+    [Fact]
+    public async Task Menu_ShouldLeaveAClosedMenuAsItIs_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions"));
+
+        var failure = await Record.ExceptionAsync(() => cut.Tb().Menu("Actions").CloseAsync());
+
+        Assert.Null(failure);
+    }
+
+    [Fact]
+    public async Task Menu_ShouldCloseADisabledMenu_WhenTheAppOpenedIt()
+    {
+        var heard = new List<bool>();
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.Disabled, true).Add(menu => menu.Open, true).Add(menu => menu.OpenChanged, heard.Add));
+
+        await cut.Tb().Menu("Actions").CloseAsync();
+
+        Assert.Equal([false], heard);
+    }
+
+    [Fact]
+    public async Task Menu_ShouldThrowOnOpening_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions"));
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Menu("Actions").OpenAsync());
+
+        Assert.Contains("static page", failure.Message);
+    }
+
+    [Fact]
+    public async Task Menu_ShouldThrowOnOpening_WhenTheMenuIsDisabled()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.Disabled, true));
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Menu("Actions").OpenAsync());
+
+        Assert.Contains("is disabled", failure.Message);
+    }
+
+    [Theory]
     [InlineData("Actions", "Archive", "is disabled")]
     [InlineData("Actions", "Print", "no item named")]
     [InlineData("Actions", "PDF", "no item named")]

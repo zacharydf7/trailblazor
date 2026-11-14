@@ -47,6 +47,14 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             ?? throw new InvalidOperationException("The dialog's script hasn't attached, as it does once the dialog "
                 + "renders interactively.");
 
+    // The events the menu script calls back for the menu that opens the list with this id.
+    public MenuEvents Menu(string? listId) => Js.Invocations["createMenu"]
+        .Select(call => call.Arguments.ElementAtOrDefault(3) as DotNetObjectReference<MenuEvents>)
+        .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
+        .LastOrDefault(events => events.ListId == listId)
+            ?? throw new InvalidOperationException("The menu's script hasn't attached, as it does once the menu "
+                + "renders interactively.");
+
     // The file input with this id, which the browser hands the files a user picks or drops.
     public IRenderedComponent<InputFile> InputFile(string id) => inputFiles()
         .SingleOrDefault(input => input.Instance.AdditionalAttributes?.TryGetValue("id", out var given) == true
@@ -311,7 +319,7 @@ public sealed class TrailblazorMarkup
     public TbPopconfirmDriver Popconfirm(string trigger) => new(trigger, _findAll);
 
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
-    public TbMenuDriver Menu(string trigger) => new(trigger, _findAll);
+    public TbMenuDriver Menu(string trigger) => new(trigger, _findAll, _scripts);
 
     /// <summary>The <c>TbHotkey</c> with these keys, written as its <c>Keys</c> are, such as <c>"Mod+S"</c>.</summary>
     public TbHotkeyDriver Hotkey(string keys) => new(() =>
@@ -2740,9 +2748,22 @@ public sealed class TbMenuDriver
 
     private readonly string _trigger;
     private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
 
-    internal TbMenuDriver(string trigger, Func<string, IReadOnlyList<IElement>> findAll) =>
-        (_trigger, _findAll) = (trigger, findAll);
+    internal TbMenuDriver(string trigger, Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts) =>
+        (_trigger, _findAll, _scripts) = (trigger, findAll, scripts);
+
+    /// <summary>Whether the menu is open. Its items are in the markup either way, so this reads the menu's own state.
+    /// </summary>
+    public bool IsOpen => ListOf(Trigger()).HasAttribute("data-open");
+
+    /// <summary>Opens the menu, as clicking its trigger does. An open menu is left as it is. Throws for a disabled
+    /// menu, or one on a static page, which opens natively, without the script that tells the app it's open.</summary>
+    public Task OpenAsync() => SetOpenAsync(true);
+
+    /// <summary>Closes the menu, as pressing Escape does. A closed menu is left as it is. Throws for an open menu on
+    /// a static page, as <see cref="OpenAsync"/> does.</summary>
+    public Task CloseAsync() => SetOpenAsync(false);
 
     /// <summary>Clicks the item with this name, through the submenus named before it, as in
     /// <c>ChooseAsync("Export", "PDF")</c>. A checkbox or radio item is clicked the same way. Throws for a disabled
@@ -2750,12 +2771,7 @@ public sealed class TbMenuDriver
     public Task ChooseAsync(params string[] path)
     {
         ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
-        var trigger = Trigger();
-        if (trigger.HasAttribute("disabled") || trigger.GetAttribute("aria-disabled") == "true")
-        {
-            throw new InvalidOperationException($"The menu \"{_trigger}\" is disabled.");
-        }
-
+        var trigger = EnabledTrigger();
         var list = ListOf(trigger);
         foreach (var name in path[..^1])
         {
@@ -2781,10 +2797,42 @@ public sealed class TbMenuDriver
         return item.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 
+    // The script tells the menu it opened or closed; a menu that attaches on first use does so as it's focused.
+    private async Task SetOpenAsync(bool open)
+    {
+        if (IsOpen == open)
+        {
+            return;
+        }
+
+        // Escape still closes a disabled menu that the app opened from code.
+        var trigger = open ? EnabledTrigger() : Trigger();
+        if (trigger.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException($"The menu \"{_trigger}\" is on a static page, where it opens without "
+                + "its script; render it on an interactive page.");
+        }
+
+        if (trigger.HasAttribute("data-attach-on-use"))
+        {
+            await trigger.FocusAsync(new FocusEventArgs());
+        }
+
+        var events = _scripts.Menu(trigger.GetAttribute("aria-controls"));
+        await _scripts.InvokeAsync(() => events.OnToggle(open));
+    }
+
     // The name the Playwright helpers match, with runs of whitespace collapsed, since a new-tab link's hint follows a
     // line break.
     private static string NameOf(IElement element) =>
         string.Join(' ', Choices.NameOf(element).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
+    private IElement EnabledTrigger()
+    {
+        var trigger = Trigger();
+        return trigger.HasAttribute("disabled") || trigger.GetAttribute("aria-disabled") == "true"
+            ? throw new InvalidOperationException($"The menu \"{_trigger}\" is disabled.") : trigger;
+    }
 
     private IElement Trigger()
     {

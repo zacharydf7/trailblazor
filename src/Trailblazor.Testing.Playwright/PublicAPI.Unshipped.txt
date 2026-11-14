@@ -332,3 +332,6 @@ static Trailblazor.Testing.Playwright.OptionInfo.operator ==(Trailblazor.Testing
 Trailblazor.Testing.Playwright.TrailblazorPage.Autocomplete(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbAutocompleteLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.NumberField(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbNumberFieldLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.TextField(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbTextFieldLocator!
+Trailblazor.Testing.Playwright.TbMenuLocator.CloseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbMenuLocator.IsOpenAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbMenuLocator.OpenAsync() -> System.Threading.Tasks.Task!

@@ -6541,7 +6541,10 @@ public static class ExampleCatalog
                 + "click on an item reaches the server; `await page.Tb().Menu(\"More options\").ChooseAsync(\"Share\", "
                 + "\"Email\")` from `Trailblazor.Testing.Playwright` waits for it, opens the menu and its submenus, "
                 + "and clicks the item. With `AttachOnFirstUse`, the trigger gets `data-ready` only once it's "
-                + "first focused, pointed at or clicked, so `ChooseAsync` focuses it first.",
+                + "first focused, pointed at or clicked, so `ChooseAsync` focuses it first. In both packages, "
+                + "`OpenAsync()` and `CloseAsync()` open and close the menu, and `IsOpen` (`IsOpenAsync()` in "
+                + "Playwright) reads whether it's open. In bUnit, check `IsOpen` rather than the items, which are in "
+                + "the markup whether the menu is open or not.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"row-actions\"`, it counts `trailblazor.control.shown` as it "

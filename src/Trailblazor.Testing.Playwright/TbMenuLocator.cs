@@ -15,6 +15,43 @@ public sealed class TbMenuLocator(ILocator scope, string trigger)
     public async Task ChooseAsync(params string[] path)
     {
         ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        await ChooseFromAsync(scope, await OpenMenuAsync(), path);
+    }
+
+    /// <summary>Opens the menu, as clicking its trigger does, and waits until its items show. An open menu is left as
+    /// it is. On a statically rendered page the menu opens natively.</summary>
+    public Task OpenAsync() => OpenMenuAsync();
+
+    /// <summary>Closes the menu by pressing Escape once for each open submenu and once for the menu, then waits until
+    /// it's hidden. A closed menu is left as it is.</summary>
+    public async Task CloseAsync()
+    {
+        var menu = await MenuAsync();
+        // Each Escape closes the topmost open list, so it stops as soon as none is open: once the menu closes, focus is
+        // back on the page and another Escape would reach it.
+        const string OpenLists =
+            "menu => menu.matches(':popover-open') + menu.querySelectorAll(':popover-open').length";
+        for (var open = await menu.EvaluateAsync<int>(OpenLists); open > 0; open--)
+        {
+            if (await menu.EvaluateAsync<int>(OpenLists) == 0)
+            {
+                break;
+            }
+
+            await scope.Page.Keyboard.PressAsync("Escape");
+        }
+
+        await Assertions.Expect(menu).ToBeHiddenAsync();
+    }
+
+    /// <summary>Whether the menu is showing.</summary>
+    public async Task<bool> IsOpenAsync() => await (await MenuAsync()).IsVisibleAsync();
+
+    private async Task<ILocator> MenuAsync() =>
+        Scope.Document(scope).Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");
+
+    private async Task<ILocator> OpenMenuAsync()
+    {
         // The menu opens natively before its script attaches, but its items' clicks reach the server only after.
         var scripted = await Trigger.GetAttributeAsync("data-static") is null;
         if (scripted)
@@ -22,7 +59,7 @@ public sealed class TbMenuLocator(ILocator scope, string trigger)
             await Scope.ReadyAsync(scope, Trigger);
         }
 
-        var menu = Scope.Document(scope).Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");
+        var menu = await MenuAsync();
         if (!await menu.IsVisibleAsync())
         {
             // A data-open left from the last open would pass the wait below before this open's items are drawn.
@@ -40,7 +77,7 @@ public sealed class TbMenuLocator(ILocator scope, string trigger)
             await Assertions.Expect(menu).ToHaveAttributeAsync("data-open", "");
         }
 
-        await ChooseFromAsync(scope, menu, path);
+        return menu;
     }
 
     // Clicks the item at the end of the path in an open menu, opening the submenus named before it.

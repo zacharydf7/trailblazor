@@ -8,6 +8,34 @@ namespace Trailblazor.BrowserTests;
 public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CloseAsync_ShouldCloseTheMenu_WhenOneOfItsSubmenusIsOpen(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        var more = page.Tb().Menu("More options");
+        await more.OpenAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Share" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Email" })).ToBeVisibleAsync();
+
+        await more.CloseAsync();
+
+        Assert.False(await more.IsOpenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task OpenAsync_ShouldShowTheMenuUntilClosed_WhenUsedFromTheTestingHelpers(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        var actions = page.Tb().Menu("Actions");
+
+        await actions.OpenAsync();
+        var opened = await actions.IsOpenAsync();
+        await actions.CloseAsync();
+
+        Assert.True(opened);
+        Assert.False(await actions.IsOpenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldFollowALink_WhenTheMenuIsStatic(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-menu");
