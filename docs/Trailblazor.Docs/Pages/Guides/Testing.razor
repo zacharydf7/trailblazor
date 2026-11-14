@@ -419,13 +419,24 @@
                 <code>Last&lt;TDialog&gt;()</code> finds one with no result. A title from the content's
                 <code>DefaultTitle</code> is there only once a rendered <code>TbRoot</code> shows the dialog.
             </li>
-            <li><code>LastConfirm()</code> finds the last confirm or alert.</li>
+            <li>
+                <code>LastConfirm()</code> finds the last confirm or alert; its <code>Message</code> is the text it
+                shows.
+            </li>
             <li>
                 <code>Answer</code> answers each confirm and alert as it opens: true confirms, false cancels, and null
                 leaves it open.
             </li>
+            <li>
+                <code>AnswerWith&lt;TDialog, TResult&gt;(result)</code> closes each <code>TDialog</code> with
+                <code>result</code> as it opens, and <code>AnswerWithCancel&lt;TDialog, TResult&gt;()</code> cancels
+                each one, or <code>AnswerWithCancel&lt;TDialog&gt;()</code> one with no result, so a click that awaits
+                it finishes.
+            </li>
         </ul>
-        <TbText>A click whose handler awaits a dialog finishes only once the dialog closes, so:</TbText>
+        <TbText>
+            Without an answer, a click whose handler awaits a dialog finishes only once the dialog closes, so:
+        </TbText>
         <ol>
             <li>Start the click without awaiting it.</li>
             <li>Find the dialog and close it.</li>
@@ -1038,6 +1049,10 @@
 
         dialogs.Answer = confirm => confirm.Title == "Delete trail?";
         await page.Find("button.delete").ClickAsync(new());
+        Assert.Equal("This can't be undone.", dialogs.LastConfirm().Message);
+
+        dialogs.AnswerWith<RenameDialog, string>("Cedar Flats");
+        await page.Find("button.rename").ClickAsync(new());
         """;
 
     private const string PageDialogControls = """

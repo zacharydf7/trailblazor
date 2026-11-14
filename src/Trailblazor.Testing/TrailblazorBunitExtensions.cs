@@ -103,13 +103,13 @@ public static class TrailblazorBunitExtensions
     /// <summary>Opens a dialog with no result in a <see cref="TbRoot"/> the test rendered itself.</summary>
     public static Task<TestDialog<TDialog, bool>> ShowDialogAsync<TDialog>(this IRenderedComponent<TbRoot> root,
         string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
-        where TDialog : TbDialogContent => root.ShowDialogAsync<TDialog, bool>(title, parameters, options);
+        where TDialog : TbDialogContent<bool> => root.ShowDialogAsync<TDialog, bool>(title, parameters, options);
 
     /// <summary>Opens a dialog with no result for a test, as <c>ShowDialogAsync&lt;TDialog, TResult&gt;</c> does.
     /// </summary>
     public static Task<TestDialog<TDialog, bool>> ShowDialogAsync<TDialog>(this BunitContext context,
         string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
-        where TDialog : TbDialogContent => context.ShowDialogAsync<TDialog, bool>(title, parameters, options);
+        where TDialog : TbDialogContent<bool> => context.ShowDialogAsync<TDialog, bool>(title, parameters, options);
 #pragma warning restore RS0026
 
     // bUnit consults its factories as it creates each component, after the services are fixed; this one creates none.

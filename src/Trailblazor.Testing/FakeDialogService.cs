@@ -12,12 +12,14 @@ public sealed class FakeDialogService : IDialogService
     private readonly DialogService _dialogs;
     private readonly Lock _lock = new();
     private ImmutableList<DialogReference> _opened = [];
+    private ImmutableDictionary<Type, Func<DialogReference, Task>> _answers =
+        ImmutableDictionary<Type, Func<DialogReference, Task>>.Empty;
 
     internal FakeDialogService(DialogService dialogs) => _dialogs = dialogs;
 
     /// <summary>Every dialog opened through <see cref="IDialogService"/>, oldest first, closed ones included; a
-    /// <see cref="TbDialog"/> written in markup opens itself and isn't here. A confirm or alert has its message in
-    /// <see cref="DialogReference.Parameters"/> as <c>Message</c>.</summary>
+    /// <see cref="TbDialog"/> written in markup opens itself and isn't here. <c>Message</c>, from
+    /// <see cref="DialogReferenceExtensions"/>, reads a confirm's or alert's message.</summary>
     public IReadOnlyList<DialogReference> Opened => _opened;
 
     /// <summary>Answers each confirm and alert as it opens, so a click that awaits one finishes: true confirms, false
@@ -26,6 +28,22 @@ public sealed class FakeDialogService : IDialogService
 
     /// <inheritdoc />
     public IReadOnlyList<DialogReference> OpenDialogs => _dialogs.OpenDialogs;
+
+    /// <summary>Closes each <typeparamref name="TDialog"/> with <paramref name="result"/> as it opens, so a click that
+    /// awaits one finishes, as <see cref="Answer"/> does for confirms and alerts. A dialog with no result is a
+    /// <c>TbDialogContent&lt;bool&gt;</c>, so <c>AnswerWith&lt;TDialog, bool&gt;(true)</c> confirms it. A later answer
+    /// for the same dialog type replaces this one.</summary>
+    public void AnswerWith<TDialog, TResult>(TResult result) where TDialog : TbDialogContent<TResult> =>
+        SetAnswer(typeof(TDialog), dialog => ((DialogReference<TResult>)dialog).CloseAsync(result));
+
+    /// <summary>Cancels each <typeparamref name="TDialog"/> as it opens, as clicking Cancel would, so a click that
+    /// awaits one finishes. A later answer for the same dialog type replaces this one.</summary>
+    public void AnswerWithCancel<TDialog, TResult>() where TDialog : TbDialogContent<TResult> =>
+        SetAnswer(typeof(TDialog), dialog => dialog.CancelAsync());
+
+    /// <summary>Cancels each <typeparamref name="TDialog"/>, a dialog with no result, as it opens, as clicking Cancel
+    /// would. A later answer for the same dialog type replaces this one.</summary>
+    public void AnswerWithCancel<TDialog>() where TDialog : TbDialogContent<bool> => AnswerWithCancel<TDialog, bool>();
 
     /// <summary>The last <typeparamref name="TDialog"/> opened, to check its title and parameters and close it. A title
     /// from the content's <c>DefaultTitle</c> is there only once a rendered <see cref="TbRoot"/> shows the dialog.
@@ -39,7 +57,7 @@ public sealed class FakeDialogService : IDialogService
     /// parameters and close it: <c>CloseAsync(true)</c> confirms and <c>CancelAsync()</c> cancels. A title from the
     /// content's <c>DefaultTitle</c> is there only once a rendered <see cref="TbRoot"/> shows the dialog.</summary>
     /// <exception cref="InvalidOperationException">No <typeparamref name="TDialog"/> was opened.</exception>
-    public DialogReference<bool> Last<TDialog>() where TDialog : TbDialogContent => Last<TDialog, bool>();
+    public DialogReference<bool> Last<TDialog>() where TDialog : TbDialogContent<bool> => Last<TDialog, bool>();
 
     /// <summary>The last confirm or alert opened, to check its title and message and answer it:
     /// <c>CloseAsync(true)</c> confirms and <c>CancelAsync()</c> cancels.</summary>
@@ -111,12 +129,32 @@ public sealed class FakeDialogService : IDialogService
     // An app can open a dialog off the dispatcher, as the real service allows, while a test reads Opened.
     private DialogReference<TResult> Record<TResult>(DialogReference<TResult> dialog)
     {
+        Func<DialogReference, Task>? answer = null;
         lock (_lock)
         {
             _opened = _opened.Add(dialog);
+            if (dialog.ContentType is { } content)
+            {
+                _answers.TryGetValue(content, out answer);
+            }
+        }
+
+        // The dialog's result is set even if closing fails, so the caller awaiting it finishes either way; a close that
+        // has already failed throws here, as one for a confirm does.
+        if (answer?.Invoke(dialog) is { IsFaulted: true } failed)
+        {
+            failed.GetAwaiter().GetResult();
         }
 
         return dialog;
+    }
+
+    private void SetAnswer(Type dialog, Func<DialogReference, Task> answer)
+    {
+        lock (_lock)
+        {
+            _answers = _answers.SetItem(dialog, answer);
+        }
     }
 
     private Task AnswerAsync(DialogReference<bool> dialog) => Answer?.Invoke(dialog) switch

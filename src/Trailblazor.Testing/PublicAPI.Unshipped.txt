@@ -336,3 +336,10 @@ override Trailblazor.Testing.OptionInfo.GetHashCode() -> int
 override Trailblazor.Testing.OptionInfo.ToString() -> string!
 static Trailblazor.Testing.OptionInfo.operator !=(Trailblazor.Testing.OptionInfo? left, Trailblazor.Testing.OptionInfo? right) -> bool
 static Trailblazor.Testing.OptionInfo.operator ==(Trailblazor.Testing.OptionInfo? left, Trailblazor.Testing.OptionInfo? right) -> bool
+Trailblazor.Testing.DialogReferenceExtensions
+Trailblazor.Testing.DialogReferenceExtensions.extension(Trailblazor.DialogReference!)
+Trailblazor.Testing.DialogReferenceExtensions.extension(Trailblazor.DialogReference!).Message.get -> string?
+Trailblazor.Testing.FakeDialogService.AnswerWith<TDialog, TResult>(TResult result) -> void
+Trailblazor.Testing.FakeDialogService.AnswerWithCancel<TDialog>() -> void
+static Trailblazor.Testing.DialogReferenceExtensions.get_Message(Trailblazor.DialogReference! dialog) -> string?
+Trailblazor.Testing.FakeDialogService.AnswerWithCancel<TDialog, TResult>() -> void

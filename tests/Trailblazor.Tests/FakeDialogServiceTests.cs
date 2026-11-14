@@ -43,7 +43,7 @@ public class FakeDialogServiceTests : BunitContext
 
         Assert.Equal(status, page.Find("output").TextContent);
         var confirm = Assert.Single(Dialogs.Opened);
-        Assert.Equal(("Delete trail?", "This can't be undone."), (confirm.Title, confirm.Parameters["Message"]));
+        Assert.Equal(("Delete trail?", "This can't be undone."), (confirm.Title, confirm.Message));
         Assert.Empty(Dialogs.OpenDialogs);
     }
 
@@ -125,6 +125,62 @@ public class FakeDialogServiceTests : BunitContext
         Assert.Equal("Trail notice", Assert.Single(Dialogs.Opened).Title);
     }
 
+    [Fact]
+    public async Task AnswerWith_ShouldCloseTheDialogWithTheResultAtOnce_WhenTheDialogOpens()
+    {
+        Dialogs.AnswerWith<RenameDialog, string>("Eagle Ridge");
+        var page = Render<TrailPage>();
+
+        await page.Find("[data-testid=rename]").ClickAsync(new());
+
+        Assert.Equal("Renamed to Eagle Ridge", page.Find("output").TextContent);
+        Assert.Empty(Dialogs.OpenDialogs);
+        var rename = Dialogs.Last<RenameDialog, string>();
+        Assert.Equal(("Pine Hollow", null), (rename.Parameters[nameof(RenameDialog.Name)], rename.Message));
+    }
+
+    [Fact]
+    public async Task AnswerWithCancel_ShouldCancelTheDialogAtOnce_WhenTheDialogOpens()
+    {
+        Dialogs.AnswerWithCancel<RenameDialog, string>();
+        var page = Render<TrailPage>();
+
+        await page.Find("[data-testid=rename]").ClickAsync(new());
+
+        Assert.Equal("Not renamed", page.Find("output").TextContent);
+        Assert.Empty(Dialogs.OpenDialogs);
+    }
+
+    [Fact]
+    public async Task AnswerWithCancel_ShouldCancelADialogWithNoResult_WhenItOpens()
+    {
+        Dialogs.AnswerWithCancel<NoticeDialog>();
+
+        Assert.False(await Dialogs.ShowAsync<NoticeDialog>("Trail notice"));
+    }
+
+    [Fact]
+    public async Task AnswerWith_ShouldLeaveTheDialogOpen_WhenTheAnswerIsForAnotherDialog()
+    {
+        Dialogs.AnswerWith<OtherDialog, string>("Eagle Ridge");
+
+        var showing = Dialogs.ShowAsync<RenameDialog, string>("Rename trail");
+
+        Assert.Single(Dialogs.OpenDialogs);
+        await Dialogs.Last<RenameDialog, string>().CancelAsync();
+        await showing;
+    }
+
+    [Fact]
+    public async Task Last_ShouldFindADialogWithABooleanResult_WhenItIsATbDialogContentOfBool()
+    {
+        var showing = Dialogs.ShowAsync<KeepGoingDialog, bool>("Keep going?");
+
+        await Dialogs.Last<KeepGoingDialog>().CloseAsync(true);
+
+        Assert.True((await showing).Value);
+    }
+
     private sealed class TrailPage : ComponentBase
     {
         private string _status = "";
@@ -138,7 +194,7 @@ public class FakeDialogServiceTests : BunitContext
             {
                 var result = await DialogService.ShowAsync<RenameDialog, string>("Rename trail",
                     parameters => parameters.Set(rename => rename.Name, "Pine Hollow"));
-                _status = $"Renamed to {result.Value}";
+                _status = result.Confirmed ? $"Renamed to {result.Value}" : "Not renamed";
             });
             AddButton(builder, 10, "delete", async () =>
                 _status = await DialogService.ConfirmAsync("Delete trail?", "This can't be undone.") ? "Deleted"
@@ -171,4 +227,6 @@ public class FakeDialogServiceTests : BunitContext
     private sealed class OtherDialog : TbDialogContent<string>;
 
     private sealed class NoticeDialog : TbDialogContent;
+
+    private sealed class KeepGoingDialog : TbDialogContent<bool>;
 }

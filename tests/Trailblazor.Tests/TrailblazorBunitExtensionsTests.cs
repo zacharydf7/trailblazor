@@ -142,6 +142,17 @@ public class TrailblazorBunitExtensionsTests : BunitContext
     }
 
     [Fact]
+    public async Task ShowDialogAsync_ShouldOpenADialogWithABooleanResult_WhenItIsATbDialogContentOfBool()
+    {
+        this.AddTrailblazor();
+
+        var dialog = await this.ShowDialogAsync<KeepGoingDialog>("Keep going?");
+        await dialog.Reference.CloseAsync(true);
+
+        Assert.True((await dialog.Reference.Result).Value);
+    }
+
+    [Fact]
     public async Task RootTb_ShouldDriveTheDialogAPageOpens_WhenTheTestRendersTheRootBesideThePage()
     {
         this.AddTrailblazor();
@@ -243,6 +254,8 @@ public class TrailblazorBunitExtensionsTests : BunitContext
     }
 
     private sealed class NoticeDialog : TbDialogContent;
+
+    private sealed class KeepGoingDialog : TbDialogContent<bool>;
 
     private sealed class DistancePage : ComponentBase
     {
