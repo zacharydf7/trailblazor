@@ -1716,23 +1716,45 @@ public sealed class TbRichTextEditorDriver : TbFieldDriver
     }
 }
 
-/// <summary>A <c>TbTreeView</c>, found by its accessible name. Rows are found by their path of texts from a root,
-/// such as <c>("Docs", "Guide")</c>, with the same names as the Playwright helpers.</summary>
+/// <summary>A <c>TbTreeView</c>, found by its accessible name, with the same helper names as the Playwright locator.
+/// Rows are found by their path of texts from a root, such as <c>("Docs", "Guide")</c>, or from a branch's row.
+/// </summary>
 public sealed class TbTreeDriver
 {
     private readonly Func<IElement> _find;
+    private readonly string[] _branch;
 
-    internal TbTreeDriver(Func<IElement> find) => _find = find;
+    internal TbTreeDriver(Func<IElement> find) : this(find, []) { }
 
-    /// <summary>The texts of the rows that show, in order.</summary>
-    public IReadOnlyList<string> Texts => [.. OwnRows().Select(row => row.GetAttribute("data-text") ?? "")];
+    private TbTreeDriver(Func<IElement> find, string[] branch) => (_find, _branch) = (find, branch);
+
+    /// <summary>The texts of the rows that show, in order. In a branch, only the rows inside it count.</summary>
+    public IReadOnlyList<string> Texts => [.. Shown().Select(row => row.GetAttribute("data-text") ?? "")];
+
+    /// <summary>The rows inside the row at this path, as a driver whose paths start there, such as
+    /// <c>Branch("Docs").SelectAsync("Guide")</c>. Its steps open the branch's row as they open the rows above.
+    /// </summary>
+    public TbTreeDriver Branch(params string[] path) => new(_find, [.. _branch, .. path]);
+
+    /// <summary>The row with this text at any depth, which must be showing. It throws when no row or several rows show
+    /// the text; <see cref="Item"/> tells them apart by their path.</summary>
+    public IElement Row(string text)
+    {
+        List<IElement> rows = [.. Shown().Where(row => row.GetAttribute("data-text") == text)];
+        return rows.Count == 1 ? rows[0] : throw new InvalidOperationException(rows.Count == 0
+            ? $"No row shows {text}." : $"{rows.Count} rows show {text}, so find it by its path with Item.");
+    }
 
     /// <summary>The row at this path, which must be showing. When several rows match, it is the first.</summary>
-    public IElement Item(params string[] path) => Items(path).FirstOrDefault()
-        ?? throw new InvalidOperationException($"No row shows at {string.Join(" > ", path)}.");
+    public IElement Item(params string[] path) => At([.. _branch, .. path]);
 
     /// <summary>Every row at this path, for rows that share their text. Their parents must be open.</summary>
-    public IReadOnlyList<IElement> Items(params string[] path)
+    public IReadOnlyList<IElement> Items(params string[] path) => Find([.. _branch, .. path]);
+
+    private IElement At(string[] path) => Find(path).FirstOrDefault()
+        ?? throw new InvalidOperationException($"No row shows at {string.Join(" > ", path)}.");
+
+    private List<IElement> Find(string[] path)
     {
         var rows = OwnRows();
         List<IElement> found = [];
@@ -1768,9 +1790,10 @@ public sealed class TbTreeDriver
     /// <summary>Opens each row along the path, as clicking its toggle does.</summary>
     public async Task ExpandAsync(params string[] path)
     {
-        for (var depth = 1; depth <= path.Length; depth++)
+        string[] full = [.. _branch, .. path];
+        for (var depth = 1; depth <= full.Length; depth++)
         {
-            var row = Item(path[..depth]);
+            var row = At(full[..depth]);
             if (row.GetAttribute("aria-expanded") == "false")
             {
                 await row.QuerySelector("[data-part=toggle]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
@@ -1778,15 +1801,38 @@ public sealed class TbTreeDriver
         }
     }
 
-    /// <summary>Opens every row, and the rows that appear inside them as they open.</summary>
+    /// <summary>Closes the row at this path, as clicking its toggle does. It must be showing.</summary>
+    public async Task CollapseAsync(params string[] path)
+    {
+        var row = Item(path);
+        if (row.GetAttribute("aria-expanded") == "true")
+        {
+            await row.QuerySelector("[data-part=toggle]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
+        }
+    }
+
+    /// <summary>Opens the rows above the one at this path and activates it, as double-clicking it does. That raises
+    /// the tree's <c>OnActivate</c>, and opens or closes a row with children.</summary>
+    public async Task ActivateAsync(params string[] path)
+    {
+        await ExpandAsync(path[..^1]);
+        // A double-click starts with two clicks, which can select the row or open one that can't be selected.
+        await Item(path).ClickAsync(new MouseEventArgs { Detail = 1 });
+        await Item(path).ClickAsync(new MouseEventArgs { Detail = 2 });
+        await Item(path).DoubleClickAsync(new MouseEventArgs { Detail = 2 });
+    }
+
+    /// <summary>Opens every row, and the rows that appear inside them as they open. In a branch, it opens the branch's
+    /// row and the rows inside it.</summary>
     public async Task ExpandAllAsync()
     {
-        while (OwnRows().FirstOrDefault(row => row.GetAttribute("aria-expanded") == "false") is { } row)
+        await ExpandAsync();
+        while (Shown().FirstOrDefault(row => row.GetAttribute("aria-expanded") == "false") is { } row)
         {
             var key = row.GetAttribute("data-key");
             await row.QuerySelector("[data-part=toggle]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
             // A disabled tree doesn't open, so the same row would be clicked forever.
-            if (OwnRows().Any(again => again.GetAttribute("data-key") == key
+            if (Shown().Any(again => again.GetAttribute("data-key") == key
                 && again.GetAttribute("aria-expanded") == "false"))
             {
                 throw new InvalidOperationException($"The row {row.GetAttribute("data-text")} didn't open.");
@@ -1903,8 +1949,21 @@ public sealed class TbTreeDriver
             return places.Contains("inside") ? TreeMovePosition.Inside
                 : places.Contains("before") ? TreeMovePosition.Before : TreeMovePosition.After;
         }
+    }
 
-        static int Level(IElement other) => int.Parse(other.GetAttribute("aria-level")!, CultureInfo.InvariantCulture);
+    private static int Level(IElement row) => int.Parse(row.GetAttribute("aria-level")!, CultureInfo.InvariantCulture);
+
+    // This tree's rows, or in a branch the rows after its row that sit deeper than it.
+    private List<IElement> Shown()
+    {
+        var rows = OwnRows();
+        if (_branch.Length == 0)
+        {
+            return rows;
+        }
+
+        var branch = At(_branch);
+        return [.. rows.SkipWhile(row => row != branch).Skip(1).TakeWhile(row => Level(row) > Level(branch))];
     }
 
     // Leaves out the rows of a tree nested inside one of this tree's rows.

@@ -53,6 +53,17 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldMoveARowWithinABranch_WhenDraggedByPathsInsideIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view");
+
+        await page.Tb().Tree(Plan).Branch("Day 1").DragBeforeAsync(["Lake camp"], ["Pine Hollow"]);
+
+        await Expect(Rows(page)).ToHaveTextAsync(["Day 1", "Trailhead", "Lake camp", "Pine Hollow", "Day 2",
+            "Eagle Ridge", "Summit Gate"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tree_ShouldMoveARowIntoAnother_WhenItIsDraggedOntoTheOthersMiddle(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-view");

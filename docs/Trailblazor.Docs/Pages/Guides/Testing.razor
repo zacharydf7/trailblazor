@@ -253,10 +253,15 @@
                     <tr>
                         <th scope="row"><code>Tree(name)</code></th>
                         <td>
-                            Opens, selects, checks or drags a row by the texts along its path, with
-                            <code>ExpandAsync</code>, <code>SelectAsync</code>, <code>CheckAsync</code> and the drag steps
+                            Opens, closes, selects, checks, activates or drags a row by the texts along its path, with
+                            <code>ExpandAsync</code>, <code>CollapseAsync</code>, <code>SelectAsync</code>,
+                            <code>CheckAsync</code>, <code>ActivateAsync</code> and the drag steps
                             <code>DragBeforeAsync</code>, <code>DragAfterAsync</code> and <code>DragIntoAsync</code>.
-                            <code>Texts</code> reads the rows that show.
+                            <code>Texts</code> reads the rows that show, <code>Row(text)</code> finds the one row that
+                            shows a text at any depth, and <code>Branch(path)</code> scopes the helpers to a row's
+                            branch, with paths that start inside it. A
+                            <code>TbTreeItem</code> works only inside a <code>TbTreeView</code>, so render the view
+                            around it.
                         </td>
                     </tr>
                     <tr>
@@ -915,8 +920,10 @@
             + "is drawn or typed."),
         new("Pagination", "Its name", "`Pagination(name).GoToPageAsync(number)` goes to a page, and `PageAsync()` "
             + "reads the current one."),
-        new("Tree", "Its name", "`Tree(name)` expands, selects, checks and drags rows by the texts along their path, "
-            + "and `TextsAsync()` reads the rows that show."),
+        new("Tree", "Its name", "`Tree(name)` expands, collapses, selects, checks, activates and drags rows by the "
+            + "texts along their path, and `TextsAsync()` reads the rows that show. `RowAsync(text)` finds the one row "
+            + "that shows a text at any depth, and `Branch(path)` scopes the helpers to a row's branch, with paths "
+            + "that start inside it."),
         new("Tree select", "Its label", "`TreeSelect(label)` chooses, checks and unchecks items by the texts along "
             + "their path, `FilterAsync(text)` types in its filter box, and `TextAsync()` reads what the field shows. "
             + "`DisabledAsync()` reads whether it's disabled, `OpenAsync()` and `CloseAsync()` open and close its "

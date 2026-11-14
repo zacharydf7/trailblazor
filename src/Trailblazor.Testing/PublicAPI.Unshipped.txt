@@ -352,3 +352,7 @@ Trailblazor.Testing.TbGridDriver.RowCount.get -> int
 Trailblazor.Testing.TbGridDriver.Rows.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.TbGridDriver.Selected.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.TbGridDriver.WaitForRowsAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.ActivateAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.Branch(params string![]! path) -> Trailblazor.Testing.TbTreeDriver!
+Trailblazor.Testing.TbTreeDriver.CollapseAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTreeDriver.Row(string! text) -> AngleSharp.Dom.IElement!

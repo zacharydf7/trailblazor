@@ -341,3 +341,7 @@ Trailblazor.Testing.Playwright.TbGridLocator.RowCountAsync() -> System.Threading
 Trailblazor.Testing.Playwright.TbGridLocator.RowsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string!>!>!>!
 Trailblazor.Testing.Playwright.TbGridLocator.SelectedAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string!>!>!>!
 Trailblazor.Testing.Playwright.TbGridLocator.WaitForRowsAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTreeLocator.ActivateAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTreeLocator.Branch(params string![]! path) -> Trailblazor.Testing.Playwright.TbTreeLocator!
+Trailblazor.Testing.Playwright.TbTreeLocator.CollapseAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTreeLocator.RowAsync(string! text) -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!

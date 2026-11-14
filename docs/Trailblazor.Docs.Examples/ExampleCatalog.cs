@@ -8056,6 +8056,9 @@ public static class ExampleCatalog
                     + "`SelectAsync(...)`, `CheckAsync(...)` and `ItemAsync(...)`.",
                 "`ItemsAsync(...)` returns every row at a path, for rows that share their text. `ExpandAllAsync()` "
                     + "opens every row, waiting for rows that load or that a `TbTreeItem` renders once open.",
+                "`CollapseAsync(...)` closes a row, and `ActivateAsync(...)` double-clicks one, which raises "
+                    + "`OnActivate`. `RowAsync(text)` finds the one row that shows a text, at any depth. "
+                    + "`Branch(\"River valley\")` gives the same helpers with paths that start inside that row.",
                 "`DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync` drag one row's path onto another's.",
                 "The helpers follow only the tree's own rows, not those of a tree inside a row.",
                 "In a virtualized tree, the helpers scroll until the row renders, and a drag needs both rows in view "
@@ -8068,10 +8071,11 @@ public static class ExampleCatalog
                     + "toggle at `#trail-12 > [data-part=\"toggle\"]`.",
                 "A tree of `TbTreeItem`s sets `aria-busy` while items it has just been given become rows.",
                 "In bUnit, `cut.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing` has the same `ExpandAsync`, "
-                    + "`ExpandAllAsync`, `SelectAsync`, `CheckAsync`, `DragBeforeAsync`, `DragAfterAsync` and "
-                    + "`DragIntoAsync`, with `Texts` for the rows that show and `Item` and `Items` to find rows. A drag "
-                    + "step moves what a drag in the browser would, selected rows included, and goes through `CanMove` "
-                    + "and `OnMove`.",
+                    + "`CollapseAsync`, `ExpandAllAsync`, `SelectAsync`, `CheckAsync`, `ActivateAsync`, `Branch`, "
+                    + "`DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync`, with `Texts` for the rows that show "
+                    + "and `Row`, `Item` and `Items` to find rows. A drag step moves what a drag in the browser would, "
+                    + "selected rows included, and goes through `CanMove` and `OnMove`.",
+                "A `TbTreeItem` works only inside a `TbTreeView`, so a test has to render the view around it.",
             ],
             Telemetry =
             [

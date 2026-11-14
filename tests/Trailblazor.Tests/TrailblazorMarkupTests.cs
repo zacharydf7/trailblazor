@@ -1597,6 +1597,117 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Tree_ShouldCollapseAndActivateRows_WhenAskedByPath()
+    {
+        string? activated = null;
+        IReadOnlyCollection<string> selected = [];
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Sections")
+            .Add(tree => tree.OnActivate, (string item) => activated = item)
+            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<string> keys) => selected = keys)
+            .Add(tree => tree.ChildContent, Section("docs", "Docs", Items(("guide", "Guide"), ("intro", "Intro")))));
+        var tree = cut.Tb().Tree("Sections");
+        await tree.ExpandAsync("Docs");
+
+        await tree.CollapseAsync("Docs");
+        var collapsed = tree.Texts;
+        await tree.ActivateAsync("Docs", "Guide");
+
+        Assert.Equal(["Docs"], collapsed);
+        Assert.Equal("guide", activated);
+        Assert.Equal(["guide"], selected);
+        Assert.Equal(["Docs", "Guide", "Intro"], tree.Texts);
+    }
+
+    [Fact]
+    public async Task Tree_ShouldOpenAParentThatCantBeSelectedOnce_WhenActivatingIt()
+    {
+        string? activated = null;
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Sections")
+            .Add(tree => tree.SelectionMode, SelectionMode.None)
+            .Add(tree => tree.OnActivate, (string item) => activated = item)
+            .Add(tree => tree.ChildContent, Section("docs", "Docs", Items(("guide", "Guide")))));
+        var tree = cut.Tb().Tree("Sections");
+
+        await tree.ActivateAsync("Docs");
+
+        Assert.Equal("docs", activated);
+        Assert.Equal(["Docs", "Guide"], tree.Texts);
+    }
+
+    [Fact]
+    public async Task Tree_ShouldFindARowByItsTextAtAnyDepth_WhenOneRowShowsIt()
+    {
+        var cut = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Sections")
+            .Add(tree => tree.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.AddContent(0, Section("docs", "Docs", Items(("docs-guide", "Guide"), ("intro", "Intro"))));
+                builder.AddContent(1, Section("blog", "Blog", Items(("blog-guide", "Guide"))));
+            })));
+        var tree = cut.Tb().Tree("Sections");
+
+        await tree.ExpandAllAsync();
+
+        Assert.Equal("intro", tree.Row("Intro").GetAttribute("data-key"));
+        Assert.Contains("2 rows show Guide", Assert.Throws<InvalidOperationException>(() => tree.Row("Guide")).Message);
+        Assert.Contains("No row shows Notes",
+            Assert.Throws<InvalidOperationException>(() => tree.Row("Notes")).Message);
+    }
+
+    [Fact]
+    public async Task Tree_ShouldStartPathsInsideTheRow_WhenGivenABranch()
+    {
+        IReadOnlyCollection<string> selected = [];
+        var cut = RenderSections(parameters => parameters
+            .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<string> keys) => selected = keys));
+        var tree = cut.Tb().Tree("Sections");
+        var blog = tree.Branch("Blog");
+        await tree.ExpandAsync("Docs");
+
+        await blog.Branch("Posts").SelectAsync("Guide");
+        var guide = blog.Row("Guide").GetAttribute("data-key");
+        var item = blog.Item("Posts", "Guide").GetAttribute("data-key");
+        await blog.CollapseAsync("Posts");
+
+        Assert.Equal(["blog-guide"], selected);
+        Assert.Equal("blog-guide", guide);
+        Assert.Equal("blog-guide", item);
+        Assert.Equal(["Posts"], blog.Texts);
+    }
+
+    [Fact]
+    public async Task Tree_ShouldOpenOnlyTheBranchsRows_WhenExpandingAllInABranch()
+    {
+        var cut = RenderSections();
+
+        await cut.Tb().Tree("Sections").Branch("Blog").ExpandAllAsync();
+
+        Assert.Equal(["Docs", "Blog", "Posts", "Guide"], cut.Tb().Tree("Sections").Texts);
+    }
+
+    private IRenderedComponent<TbTreeView<string, string>> RenderSections(
+        Action<ComponentParameterCollectionBuilder<TbTreeView<string, string>>>? configure = null) =>
+        Render<TbTreeView<string, string>>(parameters =>
+        {
+            var posts = Section("posts", "Posts", Items(("blog-guide", "Guide")));
+            parameters.Add(tree => tree.AriaLabel, "Sections")
+                .Add(tree => tree.ChildContent, (RenderFragment)(builder =>
+                {
+                    builder.AddContent(0, Section("docs", "Docs", Items(("docs-guide", "Guide"))));
+                    builder.AddContent(1, Section("blog", "Blog", posts));
+                }));
+            configure?.Invoke(parameters);
+        });
+
+    private static RenderFragment Section(string value, string text, RenderFragment rows) => builder =>
+    {
+        builder.OpenComponent<TbTreeItem<string>>(0);
+        builder.AddAttribute(1, nameof(TbTreeItem<string>.Value), value);
+        builder.AddAttribute(2, nameof(TbTreeItem<string>.Text), text);
+        builder.AddAttribute(3, nameof(TbTreeItem<string>.ChildContent), rows);
+        builder.CloseComponent();
+    };
+
+    [Fact]
     public async Task Tree_ShouldFollowTheRowThatLeadsOn_WhenTheFirstRowWithTheTextDoesnt()
     {
         RenderFragment Part(string child) => builder =>

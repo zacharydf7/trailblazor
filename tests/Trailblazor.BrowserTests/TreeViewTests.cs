@@ -96,6 +96,42 @@ public class TreeViewTests(BrowserFixture fixture) : TreeViewKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldCollapseAndActivateByPath_WhenGivenTheRowsTexts(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-view");
+        var places = page.Tb().Tree("Places");
+        await places.ExpandAsync("North");
+
+        await places.CollapseAsync("North");
+        var collapsed = await places.TextsAsync();
+        await places.ActivateAsync("North", "Ridge", "Summit");
+
+        Assert.Equal(["North", "South"], collapsed);
+        await Expect(page.GetByTestId("activated")).ToHaveTextAsync("Summit");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldStartPathsInsideTheRow_WhenGivenABranch(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-view");
+        var places = page.Tb().Tree("Places");
+        var north = places.Branch("North");
+
+        await north.ExpandAllAsync();
+        var opened = await places.TextsAsync();
+        await places.ExpandAsync("South");
+        await north.Branch("Ridge").SelectAsync("Summit");
+        var summit = await (await north.RowAsync("Summit")).GetAttributeAsync("data-key");
+        await north.CollapseAsync("Ridge");
+
+        Assert.Equal(["North", "Ridge", "Summit", "Pass", "South"], opened);
+        Assert.Equal("3", summit);
+        await Expect(page.GetByTestId("selected")).ToHaveTextAsync("3");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => north.RowAsync("Lake"));
+        Assert.Equal(["Ridge", "Pass"], await north.TextsAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tree_ShouldHaveNoAccessibilityViolations_WhenOpenSelectedAndChecked(string browser)
     {
         var page = await OpenTreeAsync(browser);

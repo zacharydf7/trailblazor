@@ -795,23 +795,42 @@ public sealed class TbDateRangePickerLocator(ILocator scope, string label) : TbF
 }
 
 /// <summary>A <c>TbTreeView</c>, found by its accessible name. Rows are named by their path of texts from a root,
-/// such as <c>("North", "Ridge")</c>.</summary>
+/// such as <c>("North", "Ridge")</c>, or from a branch's row.</summary>
 public sealed class TbTreeLocator(ILocator scope, string? name)
 {
     private int? _depth;
+    private string[] _branch = [];
 
     // A tree with no rows is a group, so that it can hold its message.
     private ILocator Tree => Scope.ByRole(scope, AriaRole.Tree, name).Or(Scope.ByRole(scope, AriaRole.Group, name))
         .And(scope.Locator(".tb-tree"));
 
-    /// <summary>The texts of the rows that show, in order.</summary>
+    /// <summary>The texts of the rows that show, in order. In a branch, only the rows inside it count.</summary>
     public async Task<IReadOnlyList<string>> TextsAsync()
     {
         // Wait for the tree, not a row, since a tree with no rows has none.
         await Tree.WaitForAsync();
         await Assertions.Expect(Tree).Not.ToHaveAttributeAsync("aria-busy", "true");
-        return await Tree.EvaluateAsync<string[]>("tree => [...tree.querySelectorAll('[role=treeitem][data-key]')]"
-            + ".filter(row => row.closest('[role=tree]') === tree).map(row => row.dataset.text ?? '')");
+        return await Tree.EvaluateAsync<string[]>($"(tree, key) => ({ShownRows})(tree, key)"
+            + ".map(row => row.dataset.text ?? '')", await BranchKeyAsync());
+    }
+
+    /// <summary>The rows inside the row at this path, as a locator whose paths start there, such as
+    /// <c>Branch("North").SelectAsync("Ridge")</c>. Its steps open the branch's row as they open the rows above.
+    /// </summary>
+    public TbTreeLocator Branch(params string[] path) => new(scope, name) { _branch = [.. _branch, .. path] };
+
+    /// <summary>The row with this text at any depth, which must be showing. It throws when no row or several rows show
+    /// the text; <see cref="ItemAsync"/> tells them apart by their path. A virtualized tree doesn't render every row,
+    /// so it can't look through them.</summary>
+    public async Task<ILocator> RowAsync(string text)
+    {
+        await EveryRowRenderedAsync("look through every row for a text");
+        var keys = await Tree.EvaluateAsync<string[]>($"(tree, [key, text]) => ({ShownRows})(tree, key)"
+            + ".filter(row => row.dataset.text === text).map(row => row.dataset.key)",
+            new object?[] { await BranchKeyAsync(), text });
+        return keys.Length == 1 ? await RowByKeyAsync(keys[0]) : throw new InvalidOperationException(keys.Length == 0
+            ? $"No row shows {text}." : $"{keys.Length} rows show {text}, so find it by its path with ItemAsync.");
     }
 
     /// <summary>The row at this path, which must be showing. When several rows match, as rows with the same text
@@ -822,27 +841,54 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
     /// parents must be open. A virtualized tree doesn't render every row, so it can't list them.</summary>
     public async Task<IReadOnlyList<ILocator>> ItemsAsync(params string[] path)
     {
-        await RowsBuiltAsync();
-        if (await Tree.GetAttributeAsync("data-virtual") is not null)
-        {
-            throw new InvalidOperationException(
-                $"The tree{Scope.Called(name)} is virtualized, so it can't list every row at a path.");
-        }
-
-        var keys = await Tree.EvaluateAsync<string[]>(FindRows, path);
+        await EveryRowRenderedAsync("list every row at a path");
+        var keys = await Tree.EvaluateAsync<string[]>(FindRows, Full(path));
         return [.. await Task.WhenAll(keys.Select(RowByKeyAsync))];
     }
 
+    private async Task EveryRowRenderedAsync(string task)
+    {
+        await RowsBuiltAsync();
+        if (await Tree.GetAttributeAsync("data-virtual") is not null)
+        {
+            throw new InvalidOperationException($"The tree{Scope.Called(name)} is virtualized, so it can't {task}.");
+        }
+    }
+
+    private string[] Full(string[] path) => [.. _branch, .. path];
+
+    private async Task<string?> BranchKeyAsync() => _branch.Length == 0 ? null : await Key(_branch);
+
+    // This tree's rows, or in a branch the rows after its row that sit deeper than it.
+    private const string ShownRows = """
+        (tree, key) => {
+            const rows = [...tree.querySelectorAll('[role=treeitem][data-key]')]
+                .filter(row => row.closest('[role=tree]') === tree);
+            if (key === null) {
+                return rows;
+            }
+
+            const at = rows.findIndex(row => row.dataset.key === key);
+            if (at < 0) {
+                throw new Error("The branch's row isn't showing.");
+            }
+
+            const level = Number(rows[at].getAttribute('aria-level'));
+            const end = rows.findIndex((row, index) => index > at && Number(row.getAttribute('aria-level')) <= level);
+            return rows.slice(at + 1, end < 0 ? rows.length : end);
+        }
+        """;
+
     /// <summary>Opens every row, and the rows that appear inside them as they open, waiting for children that load. A
-    /// virtualized tree opens the rows it has rendered.</summary>
+    /// virtualized tree opens the rows it has rendered. In a branch, it opens the branch's row and the rows inside it.
+    /// </summary>
     public async Task ExpandAllAsync()
     {
-        await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
+        await ExpandAsync();
         await Assertions.Expect(Tree).Not.ToHaveAttributeAsync("aria-busy", "true");
-        while (await Tree.EvaluateAsync<string?>("""
-                   tree => [...tree.querySelectorAll('[role=treeitem][aria-expanded=false]')]
-                       .find(row => row.closest('[role=tree]') === tree)?.dataset.key ?? null
-                   """) is { } key)
+        while (await Tree.EvaluateAsync<string?>($"(tree, key) => ({ShownRows})(tree, key)"
+                   + ".find(row => row.getAttribute('aria-expanded') === 'false')?.dataset.key ?? null",
+                   await BranchKeyAsync()) is { } key)
         {
             var row = await RowByKeyAsync(key);
             await row.Locator("[data-part=toggle]").ClickAsync();
@@ -864,9 +910,10 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
     public async Task ExpandAsync(params string[] path)
     {
         await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
-        for (var depth = 1; depth <= path.Length; depth++)
+        var full = Full(path);
+        for (var depth = 1; depth <= full.Length; depth++)
         {
-            var row = await RowAsync(path[..depth]);
+            var row = await RowByKeyAsync(await Key(full[..depth]));
             if (await row.GetAttributeAsync("aria-expanded") == "false")
             {
                 await row.Locator("[data-part=toggle]").ClickAsync();
@@ -875,6 +922,27 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
             await Assertions.Expect(row).ToHaveAttributeAsync("aria-expanded", "true");
             await Assertions.Expect(Tree.Locator("[data-part=loading]")).ToHaveCountAsync(0);
         }
+    }
+
+    /// <summary>Closes the row at this path, as clicking its toggle does. It must be showing.</summary>
+    public async Task CollapseAsync(params string[] path)
+    {
+        await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
+        var row = await RowAsync(path);
+        if (await row.GetAttributeAsync("aria-expanded") == "true")
+        {
+            await row.Locator("[data-part=toggle]").ClickAsync();
+        }
+
+        await Assertions.Expect(row).Not.ToHaveAttributeAsync("aria-expanded", "true");
+    }
+
+    /// <summary>Opens the rows above the one at this path and activates it, as double-clicking it does. That raises
+    /// the tree's <c>OnActivate</c>, and opens or closes a row with children.</summary>
+    public async Task ActivateAsync(params string[] path)
+    {
+        await ExpandAsync(path[..^1]);
+        await (await RowAsync(path)).DblClickAsync();
     }
 
     /// <summary>Opens the rows above the one at this path, clicks it, and waits until it is selected.</summary>
@@ -914,7 +982,7 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
     private async Task DragAsync(string[] row, string[] target, float at)
     {
         await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
-        var sourceKey = await Key(row);
+        var sourceKey = await Key(Full(row));
         var source = await RowByKeyAsync(sourceKey);
         var destination = await RowAsync(target);
         await destination.EvaluateAsync("row => row.scrollIntoView({ block: 'center' })");
@@ -952,7 +1020,7 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
         await row.BoundingBoxAsync() ?? throw new InvalidOperationException(
             $"The row {string.Join(" > ", path)} isn't showing.");
 
-    private async Task<ILocator> RowAsync(string[] path) => await RowByKeyAsync(await Key(path));
+    private async Task<ILocator> RowAsync(string[] path) => await RowByKeyAsync(await Key(Full(path)));
 
     // A tree inside a row numbers its keys afresh, so this tree's rows are the ones inside as many trees as this tree
     // is.
