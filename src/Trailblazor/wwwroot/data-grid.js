@@ -1112,7 +1112,12 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         // A group's heading isn't a row to select, so the range holds at the row just left and picks up at the next row.
         const moveVertically = async to => {
             if (toggling()) {
+                // A cell chosen while the toggled row's children arrive wins over the move, as it does for a row still on its way.
+                const before = moves;
                 await waitFor(() => !toggling() || null);
+                if (moves !== before) {
+                    return;
+                }
             }
 
             const reached = await moveToRow(to, linesOf(table));
@@ -1234,7 +1239,13 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         if (isGrid() && cell?.closest('table') === table && !event.target.closest('[popover]')) {
             holdsFocus = true;
             makeStop(stopOf(cell), cell);
+            // Focus the grid didn't move itself, such as a click, wins over a row still on its way. A column on its way
+            // is left to land, since the window that draws it can drop a cell chosen meanwhile (#513).
             if (!steering) {
+                if (!revealing) {
+                    ++moves;
+                }
+
                 place.column = startOf(cell);
                 place.columnKey = cell.dataset.column ?? null;
             }

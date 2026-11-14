@@ -430,6 +430,28 @@ public abstract class DataGridKeysTests(BrowserFixture fixture) : BrowserTest(fi
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldLeaveFocusOnTheCellChosen_WhenItTakesFocusBeforeTheRowIsDrawn(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-keys");
+        var grid = page.GetByRole(AriaRole.Grid, new() { Name = "Many numbers" });
+        await Expect(page.Locator("[data-part=grid]").First).ToHaveAttributeAsync("data-ready", "");
+        await Expect(grid.Locator("tbody td[data-column=Number]").First).ToBeVisibleAsync();
+
+        // Focusing a header stands in for a click on it while the server is still drawing the row Control+End moved to.
+        await grid.EvaluateAsync("""
+            grid => {
+                const cell = grid.querySelector('tbody td[data-column=Number]');
+                cell.focus();
+                cell.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', ctrlKey: true, bubbles: true }));
+                grid.querySelector('thead th').focus();
+            }
+            """);
+
+        await Expect(grid.Locator("tr[aria-rowindex='301']")).ToHaveCountAsync(1);
+        await Expect(grid.Locator("thead th").First).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task CellNavigation_ShouldScrollToRowsNotYetDrawn_WhenControlEndAndHomeArePressed(string browser)
     {
         var page = await OpenAsync(browser, "/grid-keys");

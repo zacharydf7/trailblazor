@@ -5,6 +5,30 @@ namespace Trailblazor.BrowserTests;
 public class TreeGridTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Keys_ShouldLeaveFocusOnTheCellChosen_WhenItTakesFocusBeforeTheOpenedRowsChildrenArrive(
+        string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        var grid = page.Tb().Grid("Folders");
+        await Toggle(page, "Folders", "Docs").FocusAsync();
+
+        // Focusing Music's size stands in for a click on it while the server is still drawing Docs' children.
+        await page.EvaluateAsync("""
+            () => {
+                const toggle = document.activeElement;
+                for (const key of ['ArrowRight', 'ArrowDown']) {
+                    toggle.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+                }
+
+                document.querySelector("[aria-label='Folders'] tr[data-key='Music'] td:last-child").focus();
+            }
+            """);
+
+        await Expect(grid.Row("Notes")).ToHaveCountAsync(1);
+        await Expect(await grid.CellAsync("Music", "Size")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Keys_ShouldOpenAndCloseRowsAndGoToTheirParent_WhenPressedOnTheFirstCell(string browser)
     {
         var page = await OpenReadyAsync(browser);
