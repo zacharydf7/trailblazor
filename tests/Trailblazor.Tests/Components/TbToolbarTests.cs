@@ -38,6 +38,41 @@ public class TbToolbarTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldDrawASeparatorAcrossTheToolbarsDirection_WhenGivenOne()
+    {
+        var row = Render<TbToolbar>(parameters => parameters.Add(toolbar => toolbar.AriaLabel, "Notes")
+            .AddChildContent<TbToolbarSeparator>());
+        var column = Render<TbToolbar>(parameters => parameters.Add(toolbar => toolbar.AriaLabel, "Notes")
+            .Add(toolbar => toolbar.Vertical, true).AddChildContent<TbToolbarSeparator>());
+
+        Assert.Equal("vertical", row.Find("[role=separator]").GetAttribute("aria-orientation"));
+        Assert.Equal("horizontal", column.Find("[role=separator]").GetAttribute("aria-orientation"));
+        Assert.NotNull(row.Find("[role=separator]").GetAttribute("data-toolbar-item"));
+    }
+
+    [Fact]
+    public async Task Overflow_ShouldTurnSeparatorsIntoMenuLinesBetweenItems_WhenTheyMoveWithTheButtons()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/toolbar.js");
+        module.SetupModule("attachToolbar", _ => true);
+        var cut = Render<TbToolbar>(parameters => parameters.Add(toolbar => toolbar.AriaLabel, "Notes")
+            .AddChildContent<TbToolbarSeparator>()
+            .AddChildContent<TbToolbarButton>(button => button.Add(b => b.Label, "Bold"))
+            .AddChildContent<TbToolbarSeparator>().AddChildContent<TbToolbarSeparator>()
+            .AddChildContent<TbToolbarButton>(button => button.Add(b => b.Label, "Link"))
+            .AddChildContent<TbToolbarSeparator>());
+        var overflow =
+            (DotNetObjectReference<ToolbarOverflow>)module.Invocations["attachToolbar"].Single().Arguments[2]!;
+        var moved = cut.FindAll("[data-toolbar-item]").Select(item => item.GetAttribute("data-toolbar-item")!).ToArray();
+
+        await cut.InvokeAsync(() => overflow.Value.OnOverflow(moved));
+
+        // The leading, trailing and doubled separators would draw lines at the menu's edges or twice.
+        var menu = cut.Find("[role=menu]").Children.Select(item => item.GetAttribute("role")).ToList();
+        Assert.Equal(["menuitem", "separator", "menuitem"], menu);
+    }
+
+    [Fact]
     public async Task Overflow_ShouldListTheMovedButtonsInTheMenu_WhenTheBrowserReportsThem()
     {
         var clicks = new List<string>();

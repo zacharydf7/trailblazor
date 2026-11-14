@@ -66,6 +66,69 @@ public class TbMenuTests : BunitContext
         Assert.Contains("my-item", cut.Find("a[role=menuitem]").ClassList);
     }
 
+    [Fact]
+    public void Render_ShouldShowTheIconBeforeTheLabel_WhenGivenBoth()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Export")
+            .Add(menu => menu.Icon, BuiltInIcons.Plus)
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("CSV")));
+
+        var trigger = cut.Find("[data-part=trigger]");
+        Assert.Equal("Export", trigger.TextContent.Trim());
+        Assert.NotNull(trigger.QuerySelector("[data-part=start] svg"));
+        Assert.Null(trigger.GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Render_ShouldColorTheTriggerByItsToneOrElseItsGroups_WhenATriggerToneIsSetOrLeftOut()
+    {
+        var cut = Render<TbButtonGroup>(parameters => parameters.Add(group => group.Tone, Tone.Success)
+            .AddChildContent<TbMenu>(menu => menu.Add(m => m.Label, "Grouped"))
+            .AddChildContent<TbMenu>(menu => menu.Add(m => m.Label, "Own").Add(m => m.Tone, Tone.Danger)));
+
+        var triggers = cut.FindAll("[data-part=trigger]");
+        Assert.Contains("tb-button--success", triggers[0].ClassList);
+        Assert.Contains("tb-button--danger", triggers[1].ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldKeepAnIconTriggerNeutral_WhenNoToneIsSet()
+    {
+        var plain = Render<TbMenu>(parameters => parameters.Add(menu => menu.Icon, BuiltInIcons.Close)
+            .Add(menu => menu.AriaLabel, "More"));
+        var toned = Render<TbMenu>(parameters => parameters.Add(menu => menu.Icon, BuiltInIcons.Close)
+            .Add(menu => menu.AriaLabel, "Remove").Add(menu => menu.Tone, Tone.Danger));
+
+        Assert.Contains("tb-button--neutral", plain.Find("[data-part=trigger]").ClassList);
+        Assert.Contains("tb-button--danger", toned.Find("[data-part=trigger]").ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldPutAnItemsEndContentAfterItsText_WhenGivenEnd()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Inbox")
+                .Add(i => i.End, (RenderFragment)(end => end.AddContent(0, "12")))));
+
+        var parts = cut.Find("[role=menuitem]").Children.Select(part => part.GetAttribute("data-part"));
+        Assert.Equal(["label", "end"], parts);
+        Assert.Equal("12", cut.Find("[role=menuitem] [data-part=end]").TextContent);
+    }
+
+    [Fact]
+    public async Task ChooseAsync_ShouldFindAnItemByItsTextAndEnd_WhenTheItemHasEndContent()
+    {
+        var chosen = false;
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .AddChildContent<TbMenuItem>(item => item.AddChildContent("Delete")
+                .Add(i => i.End, (RenderFragment)(end => end.AddContent(0, "3")))
+                .Add(i => i.OnClick, () => chosen = true)));
+
+        await cut.Tb().Menu("Actions").ChooseAsync("Delete 3");
+
+        Assert.True(chosen);
+    }
+
     private static void AssertEachHas(IRenderedComponent<TbMenu> cut, string selector, int count, string className)
     {
         var parts = cut.FindAll(selector);
@@ -239,10 +302,10 @@ public class TbMenuTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldThrow_WhenAnIconTriggerHasALabelButNoAriaLabel()
+    public void Render_ShouldThrow_WhenAnIconTriggerHasABlankLabelAndNoAriaLabel()
     {
         var error = Assert.Throws<InvalidOperationException>(() => Render<TbMenu>(parameters => parameters
-            .Add(menu => menu.Label, "More options")
+            .Add(menu => menu.Label, " ")
             .Add(menu => menu.Icon, new Icon("<path d=\"M4 4h16v16H4z\" />"))));
 
         Assert.Contains("AriaLabel", error.Message);

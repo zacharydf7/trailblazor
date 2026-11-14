@@ -31,6 +31,7 @@ Familiar apps: Google Docs' toolbar and its overflow menu, the editor actions in
 - [x] When it narrows, the last buttons move into the More menu, still work, and move back when it widens. `ToolbarTests.Toolbar_ShouldMoveButtonsIntoTheMoreMenuAndBack_WhenItNarrowsAndWidens`
 - [x] The More menu keeps each button's icon, disabled state and order. `TbToolbarTests.Overflow_ShouldGiveTheMenuItemsTheButtonsIconsAndStateInTheOrderReported_WhenButtonsMove`
 - [x] A moved button's menu item follows its text. `TbToolbarTests.Overflow_ShouldFollowAMovedButtonsText_WhenTheButtonRendersOnItsOwn`
+- [x] A `TbToolbarSeparator` that moves becomes a menu line, but only between two items. `TbToolbarTests.Overflow_ShouldTurnSeparatorsIntoMenuLinesBetweenItems_WhenTheyMoveWithTheButtons`
 - [x] Resting on an icon button shows its text in a tooltip, and a click doesn't leave it open. `tooltip.js`
 
 ## Touch
@@ -51,5 +52,5 @@ Familiar apps: Google Docs' toolbar and its overflow menu, the editor actions in
 
 - Up and Down moving on from a vertical toolbar's menu button: they open the menu, and Escape comes back to the button.
 - Keeping plain disabled controls focusable: the pattern allows it, but a native disabled button can't take focus, so the arrows skip them.
-- Moving other content into the menu: only a `TbToolbarButton` moves, since a toggle group or a field has no menu item form.
+- Moving other content into the menu: only a `TbToolbarButton` and a `TbToolbarSeparator` move, since a toggle group or a field has no menu item form.
 - Overflow in a vertical toolbar: it grows with its content.

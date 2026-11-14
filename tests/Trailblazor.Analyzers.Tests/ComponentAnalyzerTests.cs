@@ -57,7 +57,9 @@ public class ComponentAnalyzerTests
     }
 
     [Theory]
-    [InlineData("TbMenu", "Icon", "Label", "TbMenu has no accessible name. Set AriaLabel or Trigger.")]
+    [InlineData("TbMenu", "Icon", "Label", "")]
+    [InlineData("TbPopover", "Icon", "Label", "")]
+    [InlineData("TbPopconfirm", "Icon", "Label", "TbPopconfirm has no accessible name. Set AriaLabel or Trigger.")]
     [InlineData("TbMenu", "Icon", "AriaLabel", "")]
     [InlineData("TbPopover", "", "AriaLabel", "TbPopover has no accessible name. Set Label or Trigger.")]
     [InlineData("TbPopover", "", "Label", "")]

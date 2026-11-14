@@ -42,6 +42,9 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
     internal static readonly string[] Labeled =
         ["Trailblazor.TbToolbarButton", "Trailblazor.TbMenu", "Trailblazor.TbPopover", "Trailblazor.TbPopconfirm"];
 
+    // A menu's or popover's trigger shows its Icon beside a Label, so the label still names it.
+    private static readonly string[] IconBesideLabel = ["Trailblazor.TbMenu", "Trailblazor.TbPopover"];
+
     // An id lets a TbLabel elsewhere name the field's native input. Other attributes written on a field go on its
     // wrapper, not its input, so they don't name it.
     private static readonly string[] FieldNames = ["Label", "AriaLabel", "InputAttributes", "id"];
@@ -197,11 +200,12 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    // Repeats the component's own check: with an Icon it needs an AriaLabel, and without one a Label. When the Icon
-    // may be null at run time, either name will do.
+    // Repeats the component's own check: with an Icon it needs an AriaLabel, and without one a Label; a menu or
+    // popover may set a Label beside its Icon instead. When the Icon may be null at run time, either name will do.
     private static void CheckLabelOrIcon(OperationAnalysisContext context, ComponentUsage usage)
     {
-        string[] names = !usage.Has("Icon") ? ["Label"]
+        var besideLabel = usage.Has("Label") && IconBesideLabel.Contains(usage.Component.ToDisplayString());
+        string[] names = !usage.Has("Icon") || besideLabel ? ["Label"]
             : IsSurelyAnIcon(usage.Parameters["Icon"].Value) ? ["AriaLabel"] : ["Label", "AriaLabel"];
         var shown = Property(usage.Component, "Trigger") is null || names.Length > 1 ? names : [.. names, "Trigger"];
         CheckName(context, usage, names, Rules.NoAccessibleName, usage.Component.Name, string.Join(" or ", shown));

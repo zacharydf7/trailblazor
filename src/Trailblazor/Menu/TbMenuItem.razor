@@ -39,6 +39,11 @@ else
     [Parameter]
     public Icon? Icon { get; set; }
 
+    /// <summary>Content at the item's end, such as a badge, a count or a hint. It's part of the item's name, so keep
+    /// it short.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
     /// <summary>Keeps the item in the menu but stops it from being chosen.</summary>
     [Parameter]
     public bool Disabled { get; set; }
@@ -78,6 +83,11 @@ else
             <TbIcon Icon="icon" Size="Size.Small" Class="@Classes?.Icon" data-part="icon" />
         }
         <span data-part="label" class="@Classes?.Label">@ChildContent</span>
+        @if (End is not null)
+        {
+            @* Razor drops the whitespace here, so this space keeps the label and end apart in the item's name. *@
+            @(" ")<span data-part="end" class="tb-menu__end">@End</span>
+        }
     </text>;
 
     // These come after the consumer's attributes, so they carry the consumer's own target and rel along.

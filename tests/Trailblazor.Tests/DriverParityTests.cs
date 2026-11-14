@@ -52,6 +52,7 @@ public class DriverParityTests
         ["TbSplitterPane"] = "part of TbSplitter", ["TbStep"] = "part of TbStepper", ["TbTab"] = "part of TbTabs",
         ["TbTableOfContentsItem"] = "part of TbTableOfContents", ["TbTimelineItem"] = "part of TbTimeline",
         ["TbToggleItem"] = "part of TbToggleGroup", ["TbToolbarButton"] = "part of TbToolbar",
+        ["TbToolbarSeparator"] = "part of TbToolbar",
         ["TbTreeItem"] = "part of TbTreeView",
 
         ["TbAppBar"] = NotInteractive, ["TbAppShell"] = NotInteractive, ["TbAvatar"] = NotInteractive,

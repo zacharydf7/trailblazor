@@ -4191,8 +4191,14 @@
         outline-offset: calc(-1 * var(--tb-focus-ring-width));
     }
 
-    .tb-menu__item [data-part="chevron"] {
+    .tb-menu__item [data-part="chevron"],
+    .tb-menu__end {
         margin-inline-start: auto;
+    }
+
+    .tb-menu__end {
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-xs);
     }
 
     .tb-menu__item [data-part="chevron"]:dir(rtl) {
@@ -5948,6 +5954,18 @@
 
     .tb-toolbar__overflow {
         margin-inline-start: auto;
+    }
+
+    .tb-toolbar__separator {
+        align-self: stretch;
+        margin-inline: var(--tb-space-1);
+        border-inline-start: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-toolbar--vertical > .tb-toolbar__separator {
+        margin: var(--tb-space-1) 0;
+        border-inline-start: none;
+        border-block-start: 1px solid var(--tb-border-subtle);
     }
 
     .tb-pagination__list {

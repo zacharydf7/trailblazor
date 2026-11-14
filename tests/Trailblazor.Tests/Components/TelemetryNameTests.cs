@@ -272,7 +272,8 @@ public class TelemetryNameTests : BunitContext
             .AddChildContent<TbToolbarButton>(button => button.Add(b => b.Label, "Export")
                 .Add(b => b.TelemetryName, "export-csv").Add(b => b.OnClick, () => { })));
         var button = cut.FindComponent<TbToolbarButton>().Instance;
-        var overflow = Render<OverflowMenuItems>(parameters => parameters.Add(items => items.Buttons, () => [button]));
+        var overflow = Render<OverflowMenuItems>(parameters => parameters.Add(items => items.Items,
+            () => [new OverflowItem(button.Id, button)]));
 
         cut.Find("button").Click();
         overflow.Find("[role=menuitem]").Click();

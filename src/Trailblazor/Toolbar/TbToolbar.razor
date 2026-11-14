@@ -22,6 +22,7 @@
 
 @code {
     private readonly List<TbToolbarButton> _buttons = [];
+    private readonly HashSet<string> _separators = [];
     private IReadOnlyList<string> _overflowed = [];
     private bool _attachedVertical;
     private ElementReference _toolbar;
@@ -35,8 +36,8 @@
     [Parameter, EditorRequired]
     public string AriaLabel { get; set; } = "";
 
-    /// <summary>The toolbar's content: <see cref="TbToolbarButton"/>s, other buttons, toggle groups, menus, text or a
-    /// <see cref="TbSpacer"/>.</summary>
+    /// <summary>The toolbar's content: <see cref="TbToolbarButton"/>s, <see cref="TbToolbarSeparator"/>s, other
+    /// buttons, toggle groups, menus, text or a <see cref="TbSpacer"/>.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -59,9 +60,10 @@
     private RenderFragment OverflowItems => builder =>
     {
         builder.OpenComponent<OverflowMenuItems>(0);
-        builder.AddComponentParameter(1, nameof(OverflowMenuItems.Buttons),
-            (Func<IEnumerable<TbToolbarButton>>)(() =>
-                _overflowed.Select(id => _buttons.Find(button => button.Id == id)).OfType<TbToolbarButton>()));
+        builder.AddComponentParameter(1, nameof(OverflowMenuItems.Items), (Func<IEnumerable<OverflowItem>>)(() =>
+            _overflowed.Select(id => _separators.Contains(id) ? new OverflowItem(id, null)
+                : _buttons.Find(button => button.Id == id) is { } button ? new OverflowItem(id, button) : null)
+                .OfType<OverflowItem>()));
         builder.AddComponentReferenceCapture(2, items => _menuItems = (OverflowMenuItems)items);
         builder.CloseComponent();
     };
@@ -127,6 +129,10 @@
     internal void Add(TbToolbarButton button) => _buttons.Add(button);
 
     internal void Remove(TbToolbarButton button) => _buttons.Remove(button);
+
+    internal void Add(TbToolbarSeparator separator) => _separators.Add(separator.Id);
+
+    internal void Remove(TbToolbarSeparator separator) => _separators.Remove(separator.Id);
 
     // A moved button's menu item follows the button's text, icon and state.
     internal void Refresh(TbToolbarButton button)

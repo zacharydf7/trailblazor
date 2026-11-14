@@ -11,14 +11,15 @@
     {
         @Trigger(new PopoverTrigger { Attributes = TriggerAttributes })
     }
-    else if (Icon is { } icon)
+    else if (Icon is { } icon && string.IsNullOrWhiteSpace(Label))
     {
         <TbIconButton Icon="icon" AriaLabel="@(AriaLabel ?? "")" Variant="TriggerVariant" Size="TriggerSize"
                       Disabled="Disabled" @attributes="TriggerAttributes" />
     }
     else
     {
-        <TbButton Variant="TriggerVariant" Size="TriggerSize" Disabled="Disabled" @attributes="TriggerAttributes">
+        <TbButton Variant="TriggerVariant" Size="TriggerSize" Disabled="Disabled" StartIcon="Icon"
+                  @attributes="TriggerAttributes">
             @Label
         </TbButton>
     }
@@ -58,11 +59,12 @@
     public string? Label { get; set; }
 
     /// <summary>The icon trigger's accessible name, which screen readers read and which is never shown. Required
-    /// with an <see cref="Icon"/>.</summary>
+    /// with an <see cref="Icon"/> and no <see cref="Label"/>.</summary>
     [Parameter]
     public string? AriaLabel { get; set; }
 
-    /// <summary>Shows an icon button as the trigger instead of a text button.</summary>
+    /// <summary>The trigger's icon. It shows before the <see cref="Label"/>, or, without a label, makes the trigger
+    /// an icon button named by <see cref="AriaLabel"/>.</summary>
     [Parameter]
     public Icon? Icon { get; set; }
 
@@ -213,10 +215,11 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Trigger is null && Icon is not null && string.IsNullOrWhiteSpace(AriaLabel))
+        if (Trigger is null && Icon is not null && string.IsNullOrWhiteSpace(Label)
+            && string.IsNullOrWhiteSpace(AriaLabel))
         {
-            throw new InvalidOperationException($"{nameof(TbPopover)} with an {nameof(Icon)} needs an "
-                + $"{nameof(AriaLabel)}, which names the icon button; {nameof(Label)} is for a text trigger.");
+            throw new InvalidOperationException($"{nameof(TbPopover)} with an {nameof(Icon)} needs a "
+                + $"{nameof(Label)} to show beside it, or an {nameof(AriaLabel)} to name the icon button.");
         }
 
         if (Trigger is null && Icon is null && string.IsNullOrWhiteSpace(Label))

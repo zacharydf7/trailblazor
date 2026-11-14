@@ -13,6 +13,18 @@ public class TbPopoverTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldShowTheIconBeforeTheLabel_WhenGivenBoth()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.Icon, BuiltInIcons.Plus).AddChildContent("Pick the trails to show."));
+
+        var trigger = cut.Find("[data-part=trigger]");
+        Assert.Equal("Filters", trigger.TextContent.Trim());
+        Assert.NotNull(trigger.QuerySelector("[data-part=start] svg"));
+        Assert.Null(trigger.GetAttribute("aria-label"));
+    }
+
+    [Fact]
     public void Render_ShouldNameTheIconTriggerWithTheAriaLabel_WhenAnIconIsSet()
     {
         var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.AriaLabel, "Filters")
@@ -86,10 +98,10 @@ public class TbPopoverTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldThrow_WhenAnIconTriggerHasALabelButNoAriaLabel()
+    public void Render_ShouldThrow_WhenAnIconTriggerHasABlankLabelAndNoAriaLabel()
     {
         var error = Assert.Throws<InvalidOperationException>(() => Render<TbPopover>(parameters => parameters
-            .Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.Label, " ")
             .Add(popover => popover.Icon, new Icon("<path d=\"M4 4h16v16H4z\" />"))));
 
         Assert.Contains("AriaLabel", error.Message);

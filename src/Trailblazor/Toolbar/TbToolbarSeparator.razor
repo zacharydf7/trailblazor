@@ -1,0 +1,21 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IDisposable
+
+@* data-toolbar-item lets it move into the overflow menu with the buttons around it, where it becomes a menu line. *@
+<div @attributes="AdditionalAttributes" role="separator"
+     aria-orientation="@(Toolbar?.Vertical == true ? "horizontal" : "vertical")" data-toolbar-item="@Id"
+     style="@Style" class="@ClassNames.Join("tb-toolbar__separator", Class)"></div>
+
+@code {
+    [CascadingParameter]
+    private TbToolbar? Toolbar { get; set; }
+
+    internal string Id { get; } = $"tb-toolbar-separator-{Guid.NewGuid():N}";
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Toolbar?.Add(this);
+
+    /// <inheritdoc />
+    public void Dispose() => Toolbar?.Remove(this);
+}

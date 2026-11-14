@@ -1653,8 +1653,10 @@ public static class ExampleCatalog
             Sections =
             [
                 new("overflow", "Buttons that move into a menu", "A `TbToolbarButton` with no room moves into a menu "
-                    + "at the toolbar's end, keeping its text and action. Other content, such as a toggle group, never "
-                    + "moves. Drag the frame's corner here to see it happen.", typeof(ToolbarExample)),
+                    + "at the toolbar's end, keeping its text and action. A `TbToolbarSeparator` draws a line between "
+                    + "groups of buttons, and becomes a line in the menu when buttons on both sides of it move. Other "
+                    + "content, such as a toggle group, never moves. Drag the frame's corner here to see it happen.",
+                    typeof(ToolbarExample)),
                 new("overflow-label", "Naming the menu", "`OverflowLabel` names the button that opens the overflow "
                     + "menu. The name is \"More\" unless set.", typeof(ToolbarOverflowExample)),
                 new("vertical", "Vertical", "`Vertical` stacks the controls in a column, and the up and down arrows "
@@ -1664,7 +1666,7 @@ public static class ExampleCatalog
                     + "button's. It sizes the toolbar buttons and the More button, but a `TbToolbarButton` with its "
                     + "own `Size` keeps it.", typeof(ToolbarSizeExample)),
             ],
-            Api = [typeof(TbToolbar), typeof(TbToolbarButton)],
+            Api = [typeof(TbToolbar), typeof(TbToolbarButton), typeof(TbToolbarSeparator)],
             Keyboard =
             [
                 new(["Tab"], "Moves into the toolbar and out of it, as one tab stop."),
@@ -1688,6 +1690,9 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "In the overflow menu, each button is a `menuitem` with the same text and action.",
+                "A `TbToolbarSeparator` is a `separator` whose `aria-orientation` is `vertical` in a horizontal "
+                    + "toolbar and `horizontal` in a vertical one. When it moves into the overflow menu between "
+                    + "buttons, it's a `separator` there too.",
                 "When the focused button moves into the overflow menu, focus moves to the menu's button. When that "
                     + "button goes away, focus moves to the last control.",
             ],
@@ -1711,6 +1716,7 @@ public static class ExampleCatalog
             Anatomy = """
                 <TbToolbar AriaLabel="…">
                     <TbToolbarButton AriaLabel="…" Icon="…" OnClick="…" />
+                    <TbToolbarSeparator />
                     <TbToolbarButton AriaLabel="…" Icon="…" OnClick="…" />
                 </TbToolbar>
                 """,
@@ -6391,8 +6397,9 @@ public static class ExampleCatalog
             Sections =
             [
                 new("items", "Items", "A menu's items run `OnClick` when chosen, which closes the menu. `Icon` adds an "
-                    + "icon, and `Disabled` turns an item off but keeps it focusable, marked `aria-disabled`, so "
-                    + "people can still find it.", typeof(MenuExample)),
+                    + "icon, and `End` puts a count or hint at the item's end, which screen readers read as part of "
+                    + "the item's name. `Disabled` turns an item off but keeps it focusable, marked `aria-disabled`, "
+                    + "so people can still find it.", typeof(MenuExample)),
                 new("submenus", "Submenus", "`TbSubMenu` opens a second list beside an item. Resting the pointer on "
                     + "the item opens the list without moving focus into it, and on the way there the pointer can "
                     + "cross other items without the submenu closing. This menu also sets `Icon`, which makes its "
@@ -6413,9 +6420,10 @@ public static class ExampleCatalog
                     + "Without `context.Attributes`, the menu can't find its trigger, and once its script attaches it "
                     + "throws an error that says so.",
                     typeof(MenuTriggerExample)),
-                new("trigger-style", "The trigger's look", "`Variant` sets how a menu's text trigger looks, and `Size` "
-                    + "how big its built-in trigger is.",
-                    typeof(MenuStyleExample)),
+                new("trigger-style", "The trigger's look", "`Variant` sets how a menu's text trigger looks, and `Tone` and "
+                    + "`Size` set the color and size of its built-in trigger. With a `Label`, an `Icon` shows before "
+                    + "the text. In a button group, the trigger takes the group's `Variant`, `Tone` and `Size` unless "
+                    + "the menu sets its own.", typeof(MenuStyleExample)),
                 new("placement", "Placement and width", "`Placement` picks the side a menu opens on, and `Align` lines "
                     + "it up with the trigger. Placed to the side in a narrow window, a menu or submenu wraps to fit, "
                     + "or overlaps what opened it if its items can't wrap that far. `FullWidth` stretches the trigger, "
@@ -6459,7 +6467,7 @@ public static class ExampleCatalog
             ],
             Labeling =
             [
-                "The trigger is named by `Label`, or with an `Icon`, by `AriaLabel`.",
+                "The trigger is named by `Label`, or, with an `Icon` and no `Label`, by `AriaLabel`.",
             ],
             Announcements =
             [
@@ -6492,6 +6500,7 @@ public static class ExampleCatalog
                 new("menu", "The menu popup."),
                 new("icon", "An item's icon."),
                 new("label", "An item's text."),
+                new("end", "An item's `End` content, such as a count."),
                 new("indicator", "The check or dot a checkbox or radio item shows."),
                 new("chevron", "The arrow that shows an item opens a submenu."),
                 new("submenu-trigger", "The item that opens a submenu."),
@@ -6513,7 +6522,8 @@ public static class ExampleCatalog
                 </TbMenu>
                 """,
             TestingTip = "Open the menu with its trigger, then find items by role: `GetByRole(AriaRole.Menuitem)`, "
-                + "`Menuitemcheckbox` or `Menuitemradio`, with `ToBeCheckedAsync` for the last two. A group is "
+                + "`Menuitemcheckbox` or `Menuitemradio`, with `ToBeCheckedAsync` for the last two. An item's `End` "
+                + "text is part of its name, so name an item with its count, such as \"Delete 3\". A group is "
                 + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`. The trigger gets `data-ready` once a "
                 + "click on an item reaches the server; `await page.Tb().Menu(\"More options\").ChooseAsync(\"Share\", "
                 + "\"Email\")` from `Trailblazor.Testing.Playwright` waits for it, opens the menu and its submenus, "
@@ -7291,9 +7301,9 @@ public static class ExampleCatalog
             Related = ["menu", "tooltip", "dialog"],
             Sections =
             [
-                new("trigger", "The trigger", "`Label` is the text on a popover's trigger. `Icon` makes the trigger an "
-                    + "icon button, named by `AriaLabel`, and `Variant` and `Size` set how it looks.",
-                    typeof(PopoverExample)),
+                new("trigger", "The trigger", "`Label` is the text on a popover's trigger, and an `Icon` with it shows "
+                    + "before the text. An `Icon` alone makes the trigger an icon button, named by `AriaLabel`. "
+                    + "`Variant` and `Size` set how it looks.", typeof(PopoverExample)),
                 new("title", "Title", "`Title` adds a heading to the top of a popover's panel and names the panel for "
                     + "screen readers. Without one, the trigger names it.", typeof(PopoverTitleExample)),
                 new("hover", "Opening on hover", "`OpenOnHover` also opens a popover when the pointer rests on its "
@@ -7348,6 +7358,12 @@ public static class ExampleCatalog
                 "The trigger already opens the panel on click, Enter or Space, and Escape closes it. Until the page is "
                     + "interactive, hover doesn't open it, focus doesn't move into it, and it shows at the corner of "
                     + "the window rather than beside the button.",
+            ],
+            Notes =
+            [
+                new("The panel is at most 24rem wide. To change that, give the popover a `Class`, such as `wide-help`, "
+                    + "and set `max-inline-size` on `.wide-help [data-part=\"panel\"]` in your stylesheet, as the "
+                    + "[Theming guide](guides/theming#restyle) describes for popups."),
             ],
             Ready = new("[data-part=trigger]", "the trigger"),
             Target = new("dialog", "Filter the report") { OpenedBy = new("button", "Filters") },

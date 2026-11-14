@@ -12,15 +12,15 @@
     {
         @Trigger(new MenuTrigger { Attributes = TriggerAttributes })
     }
-    else if (Icon is { } icon)
+    else if (Icon is { } icon && string.IsNullOrWhiteSpace(Label))
     {
-        <TbIconButton Icon="icon" AriaLabel="@(AriaLabel ?? "")" Size="TriggerSize" Disabled="Disabled"
-                      Class="@Classes?.Trigger" @attributes="TriggerAttributes" />
+        <TbIconButton Icon="icon" AriaLabel="@(AriaLabel ?? "")" Tone="IconTriggerTone" Size="TriggerSize"
+                      Disabled="Disabled" Class="@Classes?.Trigger" @attributes="TriggerAttributes" />
     }
     else
     {
-        <TbButton Variant="TriggerVariant" Size="TriggerSize" Disabled="Disabled" Class="@Classes?.Trigger"
-                  @attributes="TriggerAttributes">
+        <TbButton Variant="TriggerVariant" Tone="TriggerTone" Size="TriggerSize" Disabled="Disabled" StartIcon="Icon"
+                  Class="@Classes?.Trigger" @attributes="TriggerAttributes">
             <ChildContent>@Label</ChildContent>
             <End><TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" /></End>
         </TbButton>
@@ -57,7 +57,7 @@
     public string? Label { get; set; }
 
     /// <summary>The icon trigger's accessible name, which screen readers read and which is never shown. Required
-    /// with an <see cref="Icon"/>.</summary>
+    /// with an <see cref="Icon"/> and no <see cref="Label"/>.</summary>
     [Parameter]
     public string? AriaLabel { get; set; }
 
@@ -79,13 +79,19 @@
     [Parameter]
     public EventCallback<bool> OpenChanged { get; set; }
 
-    /// <summary>Shows an icon button as the trigger instead of a text button.</summary>
+    /// <summary>The trigger's icon. It shows before the <see cref="Label"/>, or, without a label, makes the trigger
+    /// an icon button named by <see cref="AriaLabel"/>.</summary>
     [Parameter]
     public Icon? Icon { get; set; }
 
     /// <summary>How the text trigger is drawn. Defaults to <see cref="Trailblazor.Variant.Outlined"/>.</summary>
     [Parameter]
     public Variant Variant { get; set; } = Variant.Outlined;
+
+    /// <summary>The trigger's color, as a button's <see cref="TbButtonBase.Tone"/>. In a button group, it follows the
+    /// group's unless set.</summary>
+    [Parameter]
+    public Tone Tone { get; set; }
 
     /// <summary>How big the trigger is. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
     [Parameter]
@@ -140,12 +146,18 @@
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     private bool _givenVariant;
+    private bool _givenTone;
     private bool _givenSize;
 
     [CascadingParameter]
     private TbButtonGroup? Group { get; set; }
 
     private Variant TriggerVariant => TbButtonGroup.Choose(_givenVariant, Variant, Group?.Variant);
+
+    private Tone TriggerTone => TbButtonGroup.Choose(_givenTone, Tone, Group?.Tone);
+
+    // An icon button is neutral by default, so it takes a tone only when the menu or its group sets one.
+    private Tone IconTriggerTone => _givenTone || Group?.Tone is not null ? TriggerTone : Tone.Neutral;
 
     private Size TriggerSize => TbButtonGroup.Choose(_givenSize, Size, Group?.Size);
 
@@ -154,6 +166,7 @@
     {
         // In a button group, the trigger takes the group's settings unless the menu was given its own.
         _givenVariant = parameters.TryGetValue<Variant>(nameof(Variant), out _);
+        _givenTone = parameters.TryGetValue<Tone>(nameof(Tone), out _);
         _givenSize = parameters.TryGetValue<Size>(nameof(Size), out _);
         return base.SetParametersAsync(parameters);
     }
@@ -212,10 +225,11 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Trigger is null && Icon is not null && string.IsNullOrWhiteSpace(AriaLabel))
+        if (Trigger is null && Icon is not null && string.IsNullOrWhiteSpace(Label)
+            && string.IsNullOrWhiteSpace(AriaLabel))
         {
-            throw new InvalidOperationException($"{nameof(TbMenu)} with an {nameof(Icon)} needs an "
-                + $"{nameof(AriaLabel)}, which names the icon button; {nameof(Label)} is for a text trigger.");
+            throw new InvalidOperationException($"{nameof(TbMenu)} with an {nameof(Icon)} needs a "
+                + $"{nameof(Label)} to show beside it, or an {nameof(AriaLabel)} to name the icon button.");
         }
 
         if (Trigger is null && Icon is null && string.IsNullOrWhiteSpace(Label))

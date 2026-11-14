@@ -3,7 +3,10 @@
         <TbMenuItem Icon="ExampleIcons.Plus" OnClick="@(() => _last = "Duplicate")">Duplicate</TbMenuItem>
         <TbMenuItem OnClick="@(() => _last = "Rename")">Rename</TbMenuItem>
         <TbMenuItem Disabled OnClick="@(() => _last = "Archive")">Archive</TbMenuItem>
-        <TbMenuItem Icon="ExampleIcons.Trash" OnClick="@(() => _last = "Delete")">Delete</TbMenuItem>
+        <TbMenuItem Icon="ExampleIcons.Trash" OnClick="@(() => _last = "Delete")">
+            <ChildContent>Delete</ChildContent>
+            <End>3</End>
+        </TbMenuItem>
     </TbMenu>
     <output aria-label="Last action">@_last</output>
 </TbStack>
