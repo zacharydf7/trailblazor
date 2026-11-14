@@ -354,7 +354,7 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field) : TbFieldLoc
 {
     /// <summary>Chooses the options with these names: the one option of a select, or each one not yet chosen in a
     /// multiple select, keeping what is already chosen. A statically rendered select is a native one, and is chosen
-    /// the native way; one still prerendering is waited for.</summary>
+    /// the native way; one still prerendering is waited for. A disabled or read-only select throws.</summary>
     public async Task ChooseAsync(params string[] options)
     {
         ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
@@ -368,7 +368,8 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field) : TbFieldLoc
 
     /// <summary>Unchooses the options with these names in a multiple select, as clicking them again does, leaving the
     /// others chosen. A select that takes one option throws; clear it with <see cref="ClearAsync"/>. On a static page
-    /// this throws too, since a native select posts with its form.</summary>
+    /// this throws too, since a native select posts with its form. A disabled or read-only select throws as well.
+    /// </summary>
     public async Task UnchooseAsync(params string[] options)
     {
         ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
@@ -409,6 +410,62 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field) : TbFieldLoc
     /// throws.</summary>
     public async Task<IReadOnlyList<string>> OptionsAsync() =>
         await (await ListAsync()).EvaluateAsync<string[]>(Choices.OptionNames);
+
+    /// <summary>The option with this name, and whether it's disabled and chosen. Throws if no option or more than one
+    /// option has this name, or if the list has more than 100 options, since it then shows only those in view.
+    /// </summary>
+    public async Task<OptionInfo> OptionAsync(string name) => await Choices.DescribeAsync(await ListAsync(), name);
+
+    /// <summary>Whether the select is disabled, so its options can't be chosen. If the select is still prerendering,
+    /// this waits for it first.</summary>
+    public async Task<bool> DisabledAsync()
+    {
+        var control = Control;
+        await Assertions.Expect(control).Not.ToHaveAttributeAsync("data-prerender", "");
+        return await control.EvaluateAsync<bool>(Choices.Disabled);
+    }
+
+    /// <summary>Whether the select's list is showing.</summary>
+    public async Task<bool> IsOpenAsync() => await (await ListboxAsync(Control)).IsVisibleAsync();
+
+    /// <summary>Opens the select's list, as pressing Down on it does, and waits until it shows. A statically rendered,
+    /// disabled or read-only select throws, since its list can't open.</summary>
+    public async Task OpenAsync()
+    {
+        var control = Control;
+        await NativeSelect.ThrowIfStaticAsync(control, "open its list");
+        // The keys work once the select's script has attached.
+        await Scope.ReadyAsync(scope, control);
+        if (await control.EvaluateAsync<bool>(Choices.Disabled)
+            || await control.GetAttributeAsync("aria-readonly") == "true")
+        {
+            throw new InvalidOperationException("This select is disabled or read-only, so its list can't open.");
+        }
+
+        var listbox = await ListboxAsync(control);
+        // The keyboard opens the list, since a click could land on a chip's remove button.
+        if (!await listbox.IsVisibleAsync())
+        {
+            await control.FocusAsync();
+            await control.PressAsync("ArrowDown");
+        }
+
+        await Assertions.Expect(listbox).ToBeVisibleAsync();
+    }
+
+    /// <summary>Closes the select's list, as pressing Escape does, and waits until it's hidden. A closed list is left
+    /// as it is.</summary>
+    public async Task CloseAsync()
+    {
+        var listbox = await ListboxAsync(Control);
+        if (await listbox.IsVisibleAsync())
+        {
+            // Focus may be in a filterable select's filter box, which closes the list on Escape too.
+            await scope.Page.Keyboard.PressAsync("Escape");
+        }
+
+        await Assertions.Expect(listbox).ToBeHiddenAsync();
+    }
 
     /// <summary>The names of the chosen options, in order. A list of more than 100 options shows only those in view,
     /// so for one that long this throws; read <see cref="TextAsync"/> instead.</summary>
@@ -467,13 +524,7 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field) : TbFieldLoc
             throw new InvalidOperationException("A select that takes one option can't unchoose it; clear it instead.");
         }
 
-        // The keyboard opens the list, since a click could land on a chip's remove button.
-        if (!await listbox.IsVisibleAsync())
-        {
-            await control.FocusAsync();
-            await control.PressAsync("ArrowDown");
-        }
-
+        await OpenAsync();
         var state = choose ? "true" : "false";
         foreach (var name in options)
         {
@@ -1074,6 +1125,23 @@ public sealed class TbListBoxLocator(ILocator scope, string label) : TbFieldLoca
         // A prerendered list box is replaced by the interactive one.
         await Assertions.Expect(Field).Not.ToHaveAttributeAsync("data-prerender", "");
         return await Field.EvaluateAsync<string[]>(Choices.OptionNames);
+    }
+
+    /// <summary>The option with this name, and whether it's disabled and chosen. Throws if no option or more than one
+    /// option has this name.</summary>
+    public async Task<OptionInfo> OptionAsync(string name)
+    {
+        // A prerendered list box is replaced by the interactive one.
+        await Assertions.Expect(Field).Not.ToHaveAttributeAsync("data-prerender", "");
+        return await Choices.DescribeAsync(Field, name);
+    }
+
+    /// <summary>Whether the list box is disabled, so its options can't be chosen.</summary>
+    public async Task<bool> DisabledAsync()
+    {
+        // A prerendered list box is replaced by the interactive one.
+        await Assertions.Expect(Field).Not.ToHaveAttributeAsync("data-prerender", "");
+        return await Field.EvaluateAsync<bool>(Choices.Disabled);
     }
 
     /// <summary>The names of the chosen options, in order.</summary>
@@ -1688,6 +1756,30 @@ internal static class Choices
     // no option has.
     public const string OptionNames = "list => [...list.querySelectorAll('[role=option]:not([data-part=status]), "
         + "option:not([value=\"\"]):not([data-unmatched]):not([data-part=status])')].map(" + NameOf + ")";
+
+    // An interactive field or option is turned off the ARIA way, and a static one natively.
+    public const string Disabled =
+        "element => element.getAttribute('aria-disabled') === 'true' || element.disabled === true";
+
+    private const string State = "option => [(" + Disabled + ")(option), "
+        + "option.getAttribute('aria-selected') === 'true' || option.selected === true]";
+
+    public static async Task<OptionInfo> DescribeAsync(ILocator list, string name)
+    {
+        // A select's list is hidden while closed, so hidden options are read too. It skips the same options
+        // OptionNames does.
+        var option = list.GetByRole(AriaRole.Option, new() { Name = name, Exact = true, IncludeHidden = true })
+            .And(list.Locator(":not([data-part=status]):not([value='']):not([data-unmatched])"));
+        var count = await option.CountAsync();
+        if (count != 1)
+        {
+            throw new InvalidOperationException(count == 0 ? $"No option reads \"{name}\"."
+                : $"{count} options read \"{name}\"; give each option a name of its own.");
+        }
+
+        var state = await option.EvaluateAsync<bool[]>(State);
+        return new(name, state[0], state[1]);
+    }
 }
 
 // What the select and listbox helpers share: a statically rendered field is the browser's own select.
@@ -1696,13 +1788,13 @@ internal static class NativeSelect
     // The chosen options, less a static select's placeholder and the option that keeps a value no option has.
     public const string Chosen = "option:checked:not([value='']):not([data-unmatched])";
 
-    public static async Task ThrowIfStaticAsync(ILocator field)
+    public static async Task ThrowIfStaticAsync(ILocator field, string action = "unchoose or clear options")
     {
         if (await field.EvaluateAsync<bool>(
                 "field => field.localName === 'select' && !field.hasAttribute('data-prerender')"))
         {
             throw new InvalidOperationException("On a static page this field renders as a native select, which posts "
-                + "with its form; render it on an interactive page to unchoose or clear options.");
+                + $"with its form; render it on an interactive page to {action}.");
         }
     }
 

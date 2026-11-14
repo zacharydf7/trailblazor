@@ -302,3 +302,30 @@ Trailblazor.Testing.Playwright.TbNumberFieldLocator.StepAsync(int count) -> Syst
 Trailblazor.Testing.Playwright.TbDatePickerLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.EnterAsync(string? start, string? end) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.OptionInfo
+Trailblazor.Testing.Playwright.OptionInfo.<Clone>$() -> Trailblazor.Testing.Playwright.OptionInfo!
+Trailblazor.Testing.Playwright.OptionInfo.Chosen.get -> bool
+Trailblazor.Testing.Playwright.OptionInfo.Chosen.init -> void
+Trailblazor.Testing.Playwright.OptionInfo.Deconstruct(out string! Text, out bool Disabled, out bool Chosen) -> void
+Trailblazor.Testing.Playwright.OptionInfo.Disabled.get -> bool
+Trailblazor.Testing.Playwright.OptionInfo.Disabled.init -> void
+Trailblazor.Testing.Playwright.OptionInfo.Equals(Trailblazor.Testing.Playwright.OptionInfo? other) -> bool
+Trailblazor.Testing.Playwright.OptionInfo.OptionInfo(string! Text, bool Disabled, bool Chosen) -> void
+Trailblazor.Testing.Playwright.OptionInfo.Text.get -> string!
+Trailblazor.Testing.Playwright.OptionInfo.Text.init -> void
+Trailblazor.Testing.Playwright.TbListBoxLocator.DisabledAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbListBoxLocator.OptionAsync(string! name) -> System.Threading.Tasks.Task<Trailblazor.Testing.Playwright.OptionInfo!>!
+Trailblazor.Testing.Playwright.TbSelectLocator.CloseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSelectLocator.DisabledAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbSelectLocator.IsOpenAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbSelectLocator.OpenAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSelectLocator.OptionAsync(string! name) -> System.Threading.Tasks.Task<Trailblazor.Testing.Playwright.OptionInfo!>!
+Trailblazor.Testing.Playwright.TbTreeSelectLocator.CloseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTreeSelectLocator.DisabledAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbTreeSelectLocator.IsOpenAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbTreeSelectLocator.OpenAsync() -> System.Threading.Tasks.Task!
+override Trailblazor.Testing.Playwright.OptionInfo.Equals(object? obj) -> bool
+override Trailblazor.Testing.Playwright.OptionInfo.GetHashCode() -> int
+override Trailblazor.Testing.Playwright.OptionInfo.ToString() -> string!
+static Trailblazor.Testing.Playwright.OptionInfo.operator !=(Trailblazor.Testing.Playwright.OptionInfo? left, Trailblazor.Testing.Playwright.OptionInfo? right) -> bool
+static Trailblazor.Testing.Playwright.OptionInfo.operator ==(Trailblazor.Testing.Playwright.OptionInfo? left, Trailblazor.Testing.Playwright.OptionInfo? right) -> bool

@@ -1965,6 +1965,65 @@ public class TrailblazorMarkupTests : BunitContext
         }
     };
 
+    [Fact]
+    public void Option_ShouldTellWhetherAnOptionIsDisabledOrChosen_WhenASelectOrListBoxReadsIt()
+    {
+        RenderFragment options = builder =>
+        {
+            builder.OpenComponent<TbOption<string>>(0);
+            builder.AddAttribute(1, nameof(TbOption<string>.Value), "Lakeside");
+            builder.CloseComponent();
+            builder.OpenComponent<TbOption<string>>(2);
+            builder.AddAttribute(3, nameof(TbOption<string>.Value), "Meadow");
+            builder.AddAttribute(4, nameof(TbOption<string>.Disabled), true);
+            builder.CloseComponent();
+        };
+        var select = Render<TbSelect<string>>(parameters => parameters.Add(field => field.Label, "Camp")
+            .Add(field => field.Value, "Lakeside").Add(field => field.ChildContent, options));
+        var list = Render<TbListBox<string>>(parameters => parameters.Add(field => field.Label, "Site")
+            .Add(field => field.Value, "Lakeside").Add(field => field.ChildContent, options));
+
+        var (camp, site) = (select.Tb().Select("Camp"), list.Tb().ListBox("Site"));
+        Assert.Equal(new OptionInfo("Lakeside", Disabled: false, Chosen: true), camp.Option("Lakeside"));
+        Assert.Equal(new OptionInfo("Meadow", Disabled: true, Chosen: false), camp.Option("Meadow"));
+        Assert.Equal(new OptionInfo("Lakeside", Disabled: false, Chosen: true), site.Option("Lakeside"));
+        Assert.Equal(new OptionInfo("Meadow", Disabled: true, Chosen: false), site.Option("Meadow"));
+    }
+
+    [Theory]
+    [InlineData(typeof(TbSelect<string>), "Select")]
+    [InlineData(typeof(TbListBox<string>), "ListBox")]
+    [InlineData(typeof(TbTreeSelect<string, string>), "TreeSelect")]
+    public void Disabled_ShouldBeTrueOnlyForTheDisabledField_WhenReadFromItsHelper(Type field, string helper)
+    {
+        var cut = Render(builder =>
+        {
+            foreach (var (label, disabled) in new[] { ("Open camp", false), ("Closed camp", true) })
+            {
+                builder.OpenComponent(0, field);
+                builder.AddAttribute(1, nameof(TbSelect<string>.Label), label);
+                builder.AddAttribute(2, nameof(TbSelect<string>.Disabled), disabled);
+                if (helper == "TreeSelect")
+                {
+                    builder.AddAttribute(3, nameof(TbTreeSelect<string, string>.ItemText),
+                        (Func<string, string>)(item => item));
+                }
+
+                builder.CloseComponent();
+            }
+        });
+
+        bool Disabled(string label) => helper switch
+        {
+            "Select" => cut.Tb().Select(label).Disabled,
+            "ListBox" => cut.Tb().ListBox(label).Disabled,
+            _ => cut.Tb().TreeSelect(label).Disabled,
+        };
+
+        Assert.False(Disabled("Open camp"));
+        Assert.True(Disabled("Closed camp"));
+    }
+
     private static RenderFragment Options(params string[] values) => builder =>
     {
         foreach (var (index, value) in values.Index())

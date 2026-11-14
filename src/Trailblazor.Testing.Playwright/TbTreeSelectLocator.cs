@@ -16,7 +16,7 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
     /// has taken it and closed.</summary>
     public async Task ChooseAsync(params string[] path)
     {
-        var tree = await OpenAsync();
+        var tree = await OpenTreeAsync();
         await tree.ExpandAsync(path[..^1]);
         await (await tree.ItemAsync(path)).ClickAsync();
         // The field closes in the same render that takes the choice.
@@ -35,7 +35,7 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
     /// tree stays open, so its items can then be chosen.</summary>
     public async Task FilterAsync(string text)
     {
-        await OpenAsync();
+        await OpenTreeAsync();
         var filter = (await PanelAsync()).Locator("[data-part=filter]");
         if (await filter.CountAsync() == 0)
         {
@@ -44,6 +44,38 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
 
         await filter.FillAsync(text);
         await Assertions.Expect(filter).ToHaveAttributeAsync("data-filtered", text.Trim());
+    }
+
+    /// <summary>Opens the tree and waits until it shows. A disabled or read-only tree select throws, since it has no
+    /// tree to open.</summary>
+    public Task OpenAsync() => OpenTreeAsync();
+
+    /// <summary>Closes the tree, as pressing Escape does, and waits until it's hidden. A closed tree is left as it
+    /// is.</summary>
+    public async Task CloseAsync()
+    {
+        if (await Trigger.GetAttributeAsync("aria-expanded") == "true")
+        {
+            await scope.Page.Keyboard.PressAsync("Escape");
+            await Assertions.Expect(Trigger).ToHaveAttributeAsync("aria-expanded", "false");
+        }
+    }
+
+    /// <summary>Whether the tree is showing.</summary>
+    public async Task<bool> IsOpenAsync() => await Trigger.GetAttributeAsync("aria-expanded") == "true";
+
+    /// <summary>Whether the tree select is disabled, so its tree can't open. A prerendered field is replaced once the
+    /// page is interactive, so this waits for that.</summary>
+    public async Task<bool> DisabledAsync()
+    {
+        // A read-only field's button opens nothing, and a static field's button never turns on.
+        if (await Trigger.GetAttributeAsync("aria-controls") is not null
+            && await Trigger.GetAttributeAsync("data-static") is null)
+        {
+            await Assertions.Expect(Trigger).ToHaveAttributeAsync("data-ready", "");
+        }
+
+        return await Trigger.IsDisabledAsync();
     }
 
     /// <summary>The text the field shows for its value, or null while it shows its placeholder.</summary>
@@ -57,7 +89,7 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
     // A partly checked row checks everything under it first, so unchecking it takes a second click.
     private async Task SetCheckedAsync(string[] path, string wanted)
     {
-        var tree = await OpenAsync();
+        var tree = await OpenTreeAsync();
         await tree.ExpandAsync(path[..^1]);
         var row = await tree.ItemAsync(path);
         for (var clicks = 0; await row.GetAttributeAsync("aria-checked") is var state && state != wanted; clicks++)
@@ -78,7 +110,7 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
     // The tree is named by the field's label, and its keys and clicks work once the field's script has attached. A
     // read-only field's button opens nothing. A button can also be disabled only because the page isn't interactive
     // yet, so the disabled check waits for the script.
-    private async Task<TbTreeLocator> OpenAsync()
+    private async Task<TbTreeLocator> OpenTreeAsync()
     {
         if (await Trigger.GetAttributeAsync("aria-controls") is null)
         {
@@ -103,15 +135,6 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
 
     private static InvalidOperationException Closed() =>
         new("This tree select is disabled or read-only, so its tree can't be used.");
-
-    private async Task CloseAsync()
-    {
-        if (await Trigger.GetAttributeAsync("aria-expanded") == "true")
-        {
-            await scope.Page.Keyboard.PressAsync("Escape");
-            await Assertions.Expect(Trigger).ToHaveAttributeAsync("aria-expanded", "false");
-        }
-    }
 
     private async Task<ILocator> PanelAsync() =>
         Scope.Document(scope).Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");

@@ -315,3 +315,24 @@ Trailblazor.Testing.TbNumberFieldDriver.StepAsync(int count) -> System.Threading
 Trailblazor.Testing.TbDatePickerDriver.EnterAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDateRangePickerDriver.EnterAsync(string? start, string? end) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDateTimePickerDriver.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.OptionInfo
+Trailblazor.Testing.OptionInfo.<Clone>$() -> Trailblazor.Testing.OptionInfo!
+Trailblazor.Testing.OptionInfo.Chosen.get -> bool
+Trailblazor.Testing.OptionInfo.Chosen.init -> void
+Trailblazor.Testing.OptionInfo.Deconstruct(out string! Text, out bool Disabled, out bool Chosen) -> void
+Trailblazor.Testing.OptionInfo.Disabled.get -> bool
+Trailblazor.Testing.OptionInfo.Disabled.init -> void
+Trailblazor.Testing.OptionInfo.Equals(Trailblazor.Testing.OptionInfo? other) -> bool
+Trailblazor.Testing.OptionInfo.OptionInfo(string! Text, bool Disabled, bool Chosen) -> void
+Trailblazor.Testing.OptionInfo.Text.get -> string!
+Trailblazor.Testing.OptionInfo.Text.init -> void
+Trailblazor.Testing.TbListBoxDriver.Disabled.get -> bool
+Trailblazor.Testing.TbListBoxDriver.Option(string! name) -> Trailblazor.Testing.OptionInfo!
+Trailblazor.Testing.TbSelectDriver.Disabled.get -> bool
+Trailblazor.Testing.TbSelectDriver.Option(string! name) -> Trailblazor.Testing.OptionInfo!
+Trailblazor.Testing.TbTreeSelectDriver.Disabled.get -> bool
+override Trailblazor.Testing.OptionInfo.Equals(object? obj) -> bool
+override Trailblazor.Testing.OptionInfo.GetHashCode() -> int
+override Trailblazor.Testing.OptionInfo.ToString() -> string!
+static Trailblazor.Testing.OptionInfo.operator !=(Trailblazor.Testing.OptionInfo? left, Trailblazor.Testing.OptionInfo? right) -> bool
+static Trailblazor.Testing.OptionInfo.operator ==(Trailblazor.Testing.OptionInfo? left, Trailblazor.Testing.OptionInfo? right) -> bool

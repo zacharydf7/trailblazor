@@ -18,6 +18,69 @@ public class DriverReadsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Option_ShouldTellWhetherAnOptionIsDisabledOrChosen_WhenASelectOrListBoxReadsIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/select");
+        var listBoxes = await OpenAsync(browser, "/examples/listbox");
+        await page.Tb().Select("Shipping").ChooseAsync("Express (1 day)");
+
+        Assert.Equal(new OptionInfo("Express (1 day)", Disabled: false, Chosen: true),
+            await page.Tb().Select("Shipping").OptionAsync("Express (1 day)"));
+        Assert.Equal(new OptionInfo("Overnight", Disabled: true, Chosen: false),
+            await page.Tb().Select("Shipping").OptionAsync("Overnight"));
+        Assert.Equal(new OptionInfo("Creek path", Disabled: false, Chosen: true),
+            await listBoxes.Tb().ListBox("Trail").OptionAsync("Creek path"));
+        Assert.Equal(new OptionInfo("Lakeshore", Disabled: true, Chosen: false),
+            await listBoxes.Tb().ListBox("Trail").OptionAsync("Lakeshore"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Option_ShouldLeaveOutTheNativePlaceholder_WhenAStaticSelectReadsIt(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-select");
+
+        Assert.Equal(new OptionInfo("Small", Disabled: false, Chosen: false),
+            await page.Tb().Select("Size").OptionAsync("Small"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Select("Size").OptionAsync("Pick a size"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Disabled_ShouldBeTrueOnlyForTheDisabledField_WhenReadFromItsHelper(string browser)
+    {
+        var selects = await OpenAsync(browser, "/examples/select");
+        var listBoxes = await OpenAsync(browser, "/examples/listbox");
+        var trees = await OpenAsync(browser, "/tree-select-states");
+
+        Assert.Equal((false, true), (await selects.Tb().Select("Region").DisabledAsync(),
+            await selects.Tb().Select("Country").DisabledAsync()));
+        Assert.Equal((false, true), (await listBoxes.Tb().ListBox("Trail").DisabledAsync(),
+            await listBoxes.Tb().ListBox("Truck").DisabledAsync()));
+        Assert.Equal((false, false, true), (await trees.Tb().TreeSelect("Plain trail").DisabledAsync(),
+            await trees.Tb().TreeSelect("Fixed trail").DisabledAsync(),
+            await trees.Tb().TreeSelect("Closed trail").DisabledAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task OpenAsync_ShouldShowTheListUntilClosed_WhenASelectOrTreeSelectOpens(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/select");
+        var trees = await OpenAsync(browser, "/tree-select-states");
+        var select = page.Tb().Select("Shipping");
+        var tree = trees.Tb().TreeSelect("Plain trail");
+
+        await select.OpenAsync();
+        await tree.OpenAsync();
+        var open = (await select.IsOpenAsync(), await tree.IsOpenAsync());
+        await select.CloseAsync();
+        await tree.CloseAsync();
+
+        Assert.Equal((true, true), open);
+        Assert.Equal((false, false), (await select.IsOpenAsync(), await tree.IsOpenAsync()));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Select("Country").OpenAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Select("Region").OpenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Reads_ShouldGiveWhatTheComponentsShow_WhenAsked(string browser)
     {
         var tabs = await OpenAsync(browser, "/examples/tabs");

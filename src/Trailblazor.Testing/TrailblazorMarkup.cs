@@ -461,6 +461,13 @@ public sealed class TbSelectDriver : TbFieldDriver
     /// named by its <c>Text</c>.</summary>
     public IReadOnlyList<string> Options => OptionElements().Select(Choices.NameOf).ToList();
 
+    /// <summary>The option with this name, and whether it's disabled and chosen. Throws if no option or more than one
+    /// option has this name.</summary>
+    public OptionInfo Option(string name) => Choices.Describe(OptionElements(), name);
+
+    /// <summary>Whether the select is disabled, so its options can't be chosen.</summary>
+    public bool Disabled => Choices.IsDisabled(_find());
+
     /// <summary>The name of the select's value, as a screen reader hears it, or null while it shows its placeholder. A
     /// multiple select's chosen options are joined with ", ".</summary>
     public string? Text
@@ -552,6 +559,9 @@ public sealed class TbTreeSelectDriver : TbFieldDriver
     public string? Text => _find().QuerySelector("[data-part=value]") is { } value
         && !value.ClassList.Contains("tb-select__placeholder") ? value.TextContent.Trim() : null;
 
+    /// <summary>Whether the tree select is disabled, so its tree can't open.</summary>
+    public bool Disabled => Choices.IsDisabled(_find());
+
     /// <summary>Opens the rows above the item at this path and chooses it, as clicking it does.</summary>
     public Task ChooseAsync(params string[] path) => Tree().SelectAsync(path);
 
@@ -610,6 +620,13 @@ public sealed class TbListBoxDriver : TbFieldDriver
     /// <summary>The options' names, in order, leaving out the message an empty list shows. An option with content of
     /// its own is named by its <c>Text</c>.</summary>
     public IReadOnlyList<string> Options => OptionElements(_find()).Select(Choices.NameOf).ToList();
+
+    /// <summary>The option with this name, and whether it's disabled and chosen. Throws if no option or more than one
+    /// option has this name.</summary>
+    public OptionInfo Option(string name) => Choices.Describe(OptionElements(_find()), name);
+
+    /// <summary>Whether the list box is disabled, so its options can't be chosen.</summary>
+    public bool Disabled => Choices.IsDisabled(_find());
 
     /// <summary>The names of the chosen options, in order.</summary>
     public IReadOnlyList<string> Chosen => _find()
@@ -695,6 +712,17 @@ internal static class Choices
                 await option.ClickAsync(new MouseEventArgs { Detail = 1 });
             }
         }
+    }
+
+    // An interactive field or option is turned off the ARIA way, and a static one natively.
+    internal static bool IsDisabled(IElement element) =>
+        element.GetAttribute("aria-disabled") == "true" || element.HasAttribute("disabled");
+
+    internal static OptionInfo Describe(IEnumerable<IElement> options, string text)
+    {
+        var option = Named(options.ToList(), text);
+        return new(text, IsDisabled(option),
+            option.GetAttribute("aria-selected") == "true" || option.HasAttribute("selected"));
     }
 
     // The one option with this name, or an error that lists the names there are.

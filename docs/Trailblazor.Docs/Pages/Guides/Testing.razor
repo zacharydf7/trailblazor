@@ -96,7 +96,11 @@
                     </tr>
                     <tr>
                         <th scope="row"><code>Select(label).Text</code></th>
-                        <td>Reads what the select shows, and <code>Chosen</code> reads the chosen options.</td>
+                        <td>
+                            Reads what the select shows, and <code>Chosen</code> reads the chosen options.
+                            <code>Option(name)</code> reads whether an option is <code>Disabled</code> and
+                            <code>Chosen</code>, and <code>Disabled</code> reads the select.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>Select(label).UnchooseAsync(options)</code></th>
@@ -110,7 +114,8 @@
                         <td>
                             Chooses options in a list box by their text, and <code>Chosen</code> reads the chosen ones.
                             In a multiple list box, <code>UnchooseAsync(options)</code> unchooses some and
-                            <code>ClearAsync()</code> unchooses all.
+                            <code>ClearAsync()</code> unchooses all. <code>Option(name)</code> and
+                            <code>Disabled</code> read an option and the list box, as for a select.
                         </td>
                     </tr>
                     <tr>
@@ -256,7 +261,7 @@
                             Chooses an item by the texts along its path with <code>ChooseAsync</code>, checks and
                             unchecks items with <code>CheckAsync</code> and <code>UncheckAsync</code>, types in the
                             field's filter box with <code>FilterAsync</code>, and reads what the field shows with
-                            <code>Text</code>.
+                            <code>Text</code> and whether it's disabled with <code>Disabled</code>.
                         </td>
                     </tr>
                     <tr>
@@ -834,7 +839,10 @@
         new("Select", "Its label", "`Select(label).ChooseAsync(options)` chooses by option names, whether the select "
             + "renders as Trailblazor's list or, on a static page, as a native `<select>`. `UnchooseAsync(options)` "
             + "unchooses options in a multiple select, `ClearAsync()` clears a `Clearable` one, `TextAsync()` reads "
-            + "what it shows, `ChosenAsync()` reads the chosen options, and `OptionsAsync()` reads them all."),
+            + "what it shows, `ChosenAsync()` reads the chosen options, and `OptionsAsync()` reads them all. "
+            + "`OptionAsync(name)` reads whether an option is disabled and chosen, and `DisabledAsync()` reads the "
+            + "select. `OpenAsync()` and `CloseAsync()` open and close its list, and `IsOpenAsync()` reads whether "
+            + "it's open."),
         new("Text field", "Its label", "`TextField(label).EnterAsync(text)` types the text and waits until the app "
             + "has it, and `TextAsync()` reads what the field shows."),
         new("Checkbox and switch", "Its label", "`Checkbox(label).CheckAsync()` and `UncheckAsync()` wait until the "
@@ -852,7 +860,8 @@
             "`Autocomplete(label).ChooseAsync(text, option)` types and picks an option."),
         new("List box", "Its label", "`ListBox(label).ChooseAsync(options)` chooses by option names, "
             + "`ChosenAsync()` reads the chosen ones, and `OptionsAsync()` reads them all. In a multiple list box, "
-            + "`UnchooseAsync(options)` unchooses some and `ClearAsync()` unchooses all."),
+            + "`UnchooseAsync(options)` unchooses some and `ClearAsync()` unchooses all. `OptionAsync(name)` and "
+            + "`DisabledAsync()` read an option and the list box."),
         new("Color picker", "Its label", "`ColorPicker(label).ChooseAsync(color)` picks a color."),
         new("File upload", "Its label", "`FileUpload(label).ChooseAsync(paths)` chooses files."),
         new("Date picker", "Its label", "`DatePicker(label).ChooseAsync(date)` types the date in the field's format "
@@ -888,7 +897,9 @@
         new("Tree", "Its name", "`Tree(name)` expands, selects, checks and drags rows by the texts along their path, "
             + "and `TextsAsync()` reads the rows that show."),
         new("Tree select", "Its label", "`TreeSelect(label)` chooses, checks and unchecks items by the texts along "
-            + "their path, `FilterAsync(text)` types in its filter box, and `TextAsync()` reads what the field shows."),
+            + "their path, `FilterAsync(text)` types in its filter box, and `TextAsync()` reads what the field shows. "
+            + "`DisabledAsync()` reads whether it's disabled, `OpenAsync()` and `CloseAsync()` open and close its "
+            + "tree, and `IsOpenAsync()` reads whether it's open."),
         new("Data grid", "Its name", "`Grid(name)` finds rows and cells by their text, and sorts, filters, selects "
             + "and pages, and `ClickRowAsync(cell)` clicks a row. `MoveRowAsync(row, index)` moves a row through its "
             + "handle's menu, and `DragRowBeforeAsync` "

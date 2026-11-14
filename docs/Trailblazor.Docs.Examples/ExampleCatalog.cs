@@ -4524,7 +4524,10 @@ public static class ExampleCatalog
                 + "`Trailblazor.Testing` does the same, and `cut.Tb().Select(\"Shipping\").Text` reads what it shows. "
                 + "\"Select all\" is an option like the others, so `ChooseAsync(\"Select all\")` chooses it. With "
                 + "`AttachOnFirstUse`, the combobox gets `data-ready` only when it's first focused or pointed at, so "
-                + "`ChooseAsync` focuses it first.",
+                + "`ChooseAsync` focuses it first. `Option(\"Overnight\")` reads whether an option is `Disabled` and "
+                + "`Chosen`, and `Disabled` reads the select; in Playwright they're `OptionAsync` and `DisabledAsync()`. "
+                + "Playwright also has `OpenAsync()`, `CloseAsync()` and `IsOpenAsync()`, so a test can open the list "
+                + "once and look at several options; bUnit's markup has the list whether it's open or not.",
             Telemetry =
             [
                 "The select also counts `trailblazor.control.used` for each choice, with `trailblazor.input` `pointer` "
@@ -4658,6 +4661,8 @@ public static class ExampleCatalog
                     + "`FilterAsync` work the same way, and `TextAsync()` reads what the field shows.",
                 "In bUnit, `await cut.Tb().TreeSelect(\"Trail\").ChooseAsync(\"River valley\", \"Cedar Flats\")` "
                     + "from `Trailblazor.Testing` does the same, and `Text` reads the field.",
+                "`Disabled` reads whether the field is disabled (`DisabledAsync()` in Playwright). Playwright also "
+                    + "has `OpenAsync()`, `CloseAsync()` and `IsOpenAsync()` for the tree.",
                 "The field's button is named by its label and its choice together, as in \"Trail Cedar Flats\", so "
                     + "a locator that expects the exact name \"Trail\" misses it once something is chosen; "
                     + "`TreeSelect(label)` finds it by the label alone.",
@@ -5842,7 +5847,8 @@ public static class ExampleCatalog
                 + "`Trailblazor.Testing.Playwright` picks them and waits for the page, and it works on the native "
                 + "`<select>` too. For object values loaded again, give the list box a `Comparer`. In bUnit, "
                 + "`await cut.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from `Trailblazor.Testing` "
-                + "does the same.",
+                + "does the same. `Option(\"Stove\")` reads whether an option is `Disabled` and `Chosen`, and "
+                + "`Disabled` reads the list box; in Playwright they're `OptionAsync` and `DisabledAsync()`.",
             Telemetry =
             [
                 "An option with a `TelemetryName`, such as `\"size-large\"`, counts `trailblazor.control.used` each "

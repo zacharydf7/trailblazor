@@ -11,6 +11,7 @@ namespace Trailblazor.Tests;
 public class DriverParityTests
 {
     private const string FollowUp = "a driver in both packages follows in #516";
+    private const string InMarkup = "bUnit's markup holds the list whether it's open or not";
     private const string NotInteractive = "not interactive, or a plain button or link found by its role";
 
     // The helper in both packages that finds each component.
@@ -89,6 +90,9 @@ public class DriverParityTests
             + "SelectedCells",
         ["TbFileUploadLocator.Choose"] =
             "a FilePayload is Playwright's file made in the test; bUnit picks files by path",
+        ["TbSelectLocator.Open"] = InMarkup, ["TbSelectLocator.Close"] = InMarkup,
+        ["TbSelectLocator.IsOpen"] = InMarkup, ["TbTreeSelectLocator.Open"] = InMarkup,
+        ["TbTreeSelectLocator.Close"] = InMarkup, ["TbTreeSelectLocator.IsOpen"] = InMarkup,
     };
 
     [Fact]
