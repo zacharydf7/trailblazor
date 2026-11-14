@@ -117,7 +117,7 @@
         var draggable = CanDragRow(node);
         var nameId = $"{TreeId}-row{index}";
         @* A row is named by all it shows, its end slot included, as the tree pattern's rows are. *@
-        <div @attributes="declared?.AdditionalAttributes" @key="node.Key" @ref="_rowRefs[node.Key]" role="treeitem"
+        <div @attributes="RowAttributes(node, declared, valued)" @key="node.Key" @ref="_rowRefs[node.Key]" role="treeitem"
              data-part="item" data-key="@node.Id" data-index="@place"
              data-inside="@(Virtualize ? _inside[index] : null)"
              data-text="@TextOf(node)" data-level="@node.Level" aria-level="@node.Level"

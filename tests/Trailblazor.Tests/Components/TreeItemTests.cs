@@ -156,6 +156,16 @@ public class TreeItemTests : BunitContext
     }
 
     [Fact]
+    public void TreeItem_ShouldTakeItsItemsAttributesButKeepItsOwnOverThem_WhenTheTreeHasItemAttributes()
+    {
+        var cut = RenderFiles([new Row("docs", [], Class: "row-class")], parameters => parameters.Add(
+            tree => tree.ItemAttributes,
+            value => new Dictionary<string, object> { ["id"] = value, ["data-testid"] = $"{value}-item" }));
+
+        Assert.Equal("docs-row", cut.Find("#docs").GetAttribute("data-testid"));
+    }
+
+    [Fact]
     public void TreeItem_ShouldShowMatchesAndTheirParents_WhenTheTreeFilters()
     {
         var cut = RenderFiles(Docs, parameters => parameters.Add(tree => tree.Filter, value => value == "api"));

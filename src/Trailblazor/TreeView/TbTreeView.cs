@@ -152,6 +152,15 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public Func<TItem, string?>? ItemClass { get; set; }
 
+    /// <summary>Extra attributes for an item's row, such as an <c>id</c> a test finds the row by, or the attributes a
+    /// context menu needs. Any attribute the tree sets itself wins, such as its role, ARIA attributes, <c>data-*</c>
+    /// hooks, <c>tabindex</c>, <c>style</c> and <c>class</c>; use <see cref="ItemClass"/> to add classes. On a
+    /// <see cref="TbTreeItem{TItem}"/> with a value, the item's own attributes win over these. A row's toggle is its
+    /// <c>[data-part="toggle"]</c> child, so a row given the id <c>trail-12</c> has its toggle at
+    /// <c>#trail-12 > [data-part="toggle"]</c>.</summary>
+    [Parameter]
+    public Func<TItem, IReadOnlyDictionary<string, object>?>? ItemAttributes { get; set; }
+
     /// <summary>Extra CSS classes for the tree's inner parts.</summary>
     [Parameter]
     public TreeViewClasses? Classes { get; set; }
@@ -412,8 +421,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     // What a row shows beyond its context. Markup makes new functions and templates on every render, so they're
     // compared by method.
     private object RowsFor => (BuiltFor, Classes, Disabled, SelectionMode, Checkable, CascadeChecks, Virtualize,
-        (ItemText?.Method, ItemIcon?.Method, ItemClass?.Method, IsSelectable?.Method, ItemDisabled?.Method,
-            CanMoveItem?.Method, OnMove.HasDelegate),
+        (ItemText?.Method, ItemIcon?.Method, ItemClass?.Method, ItemAttributes?.Method, IsSelectable?.Method,
+            ItemDisabled?.Method, CanMoveItem?.Method, OnMove.HasDelegate),
         (ItemTemplate?.Method, ItemEndTemplate?.Method, InsertTemplate?.Method));
 
     /// <summary>Draws every row again. Call it after changing page state that a template, or a function such as
@@ -473,6 +482,30 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     // A declared row with no value is keyed by its TbTreeItem, which stays inside the tree and out of the bound keys.
     private static bool HasValue(TreeNode<TItem> node) => node.Key is not TbTreeItem<TItem>;
+
+    // ItemAttributes first, then the declared row's own, which win on a clash because they're set closer to the row.
+    private IReadOnlyDictionary<string, object>? RowAttributes(TreeNode<TItem> node, TbTreeItem<TItem>? declared,
+        bool valued)
+    {
+        var own = declared?.AdditionalAttributes;
+        if (!valued || ItemAttributes?.Invoke(node.Item) is not { } item)
+        {
+            return own;
+        }
+
+        if (own is null)
+        {
+            return item;
+        }
+
+        var merged = new Dictionary<string, object>(item);
+        foreach (var (name, value) in own)
+        {
+            merged[name] = value;
+        }
+
+        return merged;
+    }
 
     // A row with no value is checked only through the rows inside it, as its own check would mean nothing. A row a
     // tree select can't choose gets a checkbox only while checks cascade and it may hold rows, as otherwise its check

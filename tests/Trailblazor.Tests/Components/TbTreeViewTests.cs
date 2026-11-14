@@ -796,6 +796,37 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldGiveEachRowItsItemsAttributesButKeepTheTreesOwn_WhenGivenItemAttributes()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.ItemAttributes,
+            place => new Dictionary<string, object>
+            {
+                ["id"] = $"place-{place.Id}", ["role"] = "button", ["tabindex"] = "5", ["class"] = "wrong",
+                ["aria-expanded"] = "true", ["aria-selected"] = "true", ["aria-level"] = "9",
+            }));
+
+        var row = cut.Find("#place-1");
+        Assert.Equal("1", row.GetAttribute("data-key"));
+        Assert.Equal(("treeitem", "0"), (row.GetAttribute("role"), row.GetAttribute("tabindex")));
+        Assert.Equal(("false", "1"), (row.GetAttribute("aria-expanded"), row.GetAttribute("aria-level")));
+        Assert.NotEqual("true", row.GetAttribute("aria-selected"));
+        Assert.DoesNotContain("wrong", row.ClassList);
+        // The toggle the docs point tests to: Find throws when nothing matches.
+        cut.Find("#place-1 > [data-part=toggle]");
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveOutAnAriaStateTheTreeOmits_WhenItemAttributesSetIt()
+    {
+        var cut = RenderPlaces(Flat, parameters => parameters.Add(tree => tree.ItemAttributes,
+            _ => new Dictionary<string, object> { ["aria-expanded"] = "true" }), nested: false);
+
+        var rows = cut.FindAll("[role=treeitem]");
+        Assert.NotEmpty(rows);
+        Assert.All(rows, row => Assert.False(row.HasAttribute("aria-expanded")));
+    }
+
+    [Fact]
     public void Render_ShouldGiveTheFirstSelectedRowTheTabStop_WhenNoRowHasBeenFocused()
     {
         var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.SelectedKeys, [4]));

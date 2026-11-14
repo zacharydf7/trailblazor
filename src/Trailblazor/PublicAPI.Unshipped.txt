@@ -3039,6 +3039,8 @@ Trailblazor.TbTreeView<TItem, TKey>.ItemDisabled.get -> System.Func<TItem, bool>
 Trailblazor.TbTreeView<TItem, TKey>.ItemDisabled.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.IsSelectable.get -> System.Func<TItem, bool>?
 Trailblazor.TbTreeView<TItem, TKey>.IsSelectable.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ItemAttributes.get -> System.Func<TItem, System.Collections.Generic.IReadOnlyDictionary<string!, object!>?>?
+Trailblazor.TbTreeView<TItem, TKey>.ItemAttributes.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ItemClass.get -> System.Func<TItem, string?>?
 Trailblazor.TbTreeView<TItem, TKey>.ItemClass.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ItemEndTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.TreeItemContext<TItem, TKey>!>?

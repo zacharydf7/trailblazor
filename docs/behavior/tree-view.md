@@ -59,6 +59,6 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 
 ## Not applicable
 
-- Context menus: the tree has no menu of its own, and an app can attach one through a row's template or attributes.
+- Context menus: the tree has no menu of its own, and an app can attach one through a row's template, a `TbTreeItem`'s attributes or `ItemAttributes`.
 - Page Up and Page Down: they scroll as the browser does, and the pattern doesn't ask for more.
 - Plain arrows moving a multiple selection, as in File Explorer: in a multiple-selection tree the arrows only move focus, as in the pattern's recommended model.

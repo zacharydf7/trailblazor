@@ -33,6 +33,17 @@ public class TreeVirtualizeTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldGiveEachRenderedRowItsItemsAttributes_WhenVirtualized()
+    {
+        var cut = RenderPlaces(Flat, parameters => parameters.Add(tree => tree.ItemAttributes,
+            place => new Dictionary<string, object> { ["id"] = $"place-{place.Id}" }));
+
+        var rows = cut.FindAll("[role=treeitem]");
+        Assert.NotEmpty(rows);
+        Assert.All(rows, row => Assert.Equal($"place-{row.GetAttribute("data-key")}", row.GetAttribute("id")));
+    }
+
+    [Fact]
     public async Task OnView_ShouldRenderTheRowsInViewBesideTheFocusedOnes_WhenTheBrowserReportsThem()
     {
         var cut = RenderPlaces(Flat);

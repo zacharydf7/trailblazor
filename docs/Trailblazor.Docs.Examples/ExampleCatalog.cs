@@ -7919,6 +7919,9 @@ public static class ExampleCatalog
                     + "together. Rows also carry `data-index` and `data-inside`, the number of rows in their branch.",
                 "Every row carries `data-key`, `data-level` and `data-text`, and a row being dragged over carries "
                     + "`data-drop`.",
+                "`ItemAttributes` adds attributes to an item's row, such as an `id` a test can find the row by. "
+                    + "A row's toggle is its `[data-part=\"toggle\"]` child, so a row with the id `trail-12` has its "
+                    + "toggle at `#trail-12 > [data-part=\"toggle\"]`.",
                 "A tree of `TbTreeItem`s sets `aria-busy` while items it has just been given become rows.",
                 "In bUnit, `cut.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing` has the same `ExpandAsync`, "
                     + "`ExpandAllAsync`, `SelectAsync`, `CheckAsync`, `DragBeforeAsync`, `DragAfterAsync` and "
