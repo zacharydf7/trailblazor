@@ -6885,8 +6885,8 @@ public static class ExampleCatalog
                     + "`WindowState` opens the dialog minimized or maximized.",
                     typeof(DialogWindowExample), typeof(RenameDialog)),
                 new("changing", "Changing an open dialog's window", "An open dialog can change. Set `Modal`, `Size`, "
-                    + "`Position`, `WindowState`, `ShowHeader`, `CloseButton`, `Minimizable`, `Maximizable`, "
-                    + "`Draggable` or `Resizable` on its reference, or on `Dialog` from inside a "
+                    + "`Width`, `Position`, `WindowState`, `ShowHeader`, `CloseButton`, `Minimizable`, "
+                    + "`Maximizable`, `Draggable` or `Resizable` on its reference, or on `Dialog` from inside a "
                     + "`TbDialogContent<TResult>`, as this notes dialog does. Turning `Minimizable` off restores a "
                     + "minimized dialog. The reference's `WindowStateChanged` event reports each new window state, "
                     + "whether the user pressed a header button or code set it.",

@@ -11,6 +11,7 @@ public abstract class DialogReference
     private Func<string>? _defaultTitle;
     private bool _modal;
     private DialogSize _size;
+    private string? _width;
     private DialogPosition _position;
     private DialogWindowState _windowState;
     private bool _dismissing;
@@ -40,6 +41,7 @@ public abstract class DialogReference
         _resizable = options.Resizable;
         _modal = options.Modal;
         _size = options.Size ?? DialogSize.Medium;
+        _width = string.IsNullOrWhiteSpace(options.Width) ? null : options.Width;
         _position = options.Position;
         WindowState = options.WindowState;
     }
@@ -72,14 +74,28 @@ public abstract class DialogReference
     }
 
     /// <summary>How wide the dialog is. It starts as <see cref="DialogOptions.Size"/>, and setting it resizes the open
-    /// dialog, replacing any size the user dragged it to.</summary>
+    /// dialog, replacing any size the user dragged it to, and clears <see cref="Width"/>.</summary>
     public DialogSize Size
     {
         get => _size;
         set
         {
             _size = value;
+            _width = null;
             ResizeRequested?.Invoke(value);
+        }
+    }
+
+    /// <summary>The widest the dialog grows, as a CSS length such as <c>40rem</c>, in place of its
+    /// <see cref="Size"/>'s width. It starts as <see cref="DialogOptions.Width"/>, and setting it resizes the open
+    /// dialog, replacing any size the user dragged it to; null goes back to the size's width.</summary>
+    public string? Width
+    {
+        get => _width;
+        set
+        {
+            _width = string.IsNullOrWhiteSpace(value) ? null : value;
+            WidthRequested?.Invoke(_width);
         }
     }
 
@@ -217,6 +233,8 @@ public abstract class DialogReference
     internal event Action<DialogPosition>? MoveRequested;
 
     internal event Action<DialogSize>? ResizeRequested;
+
+    internal event Action<string?>? WidthRequested;
 
     /// <summary>Closes the dialog as canceled, without asking it first. Does nothing once it has closed.</summary>
     public Task CancelAsync() => CloseAsync(false, null);

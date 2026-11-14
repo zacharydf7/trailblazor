@@ -492,6 +492,17 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
             dialog.classList.replace(from, to);
             keepInside();
         },
+        // A CSS length in place of the size's width, or null for the size's own.
+        setWidth(width) {
+            delete dialog.dataset.sized;
+            if (width) {
+                dialog.style.setProperty('--tb-dialog-width', width);
+            } else {
+                dialog.style.removeProperty('--tb-dialog-width');
+            }
+
+            keepInside();
+        },
         // The window state is 'normal', 'minimized' or 'maximized'.
         async setState(state, modal) {
             // A dialog that is closing has left the stack and the tray, and mustn't open again.

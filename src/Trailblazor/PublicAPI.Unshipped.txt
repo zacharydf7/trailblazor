@@ -1199,6 +1199,8 @@ Trailblazor.DialogReference.Minimizable.get -> bool
 Trailblazor.DialogReference.Minimizable.set -> void
 Trailblazor.DialogReference.Resizable.get -> bool
 Trailblazor.DialogReference.Resizable.set -> void
+Trailblazor.DialogReference.Width.get -> string?
+Trailblazor.DialogReference.Width.set -> void
 Trailblazor.DialogReference.WindowState.get -> Trailblazor.DialogWindowState
 Trailblazor.DialogReference.WindowStateChanged -> System.Action<Trailblazor.DialogWindowState>?
 Trailblazor.DialogReference.WindowState.set -> void

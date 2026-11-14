@@ -19,6 +19,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     private DialogPosition _position;
     private DialogSize _size;
     private bool _resized;
+    private bool _widened;
+    private string? _openingWidth;
     private bool _disposed;
 
     [Parameter, EditorRequired]
@@ -65,8 +67,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         builder.AddAttribute(3, "data-part", "dialog");
         builder.AddAttribute(4, "aria-labelledby", TitleId);
         builder.AddAttribute(5, "tabindex", "-1");
-        builder.AddAttribute(6, "style", string.IsNullOrWhiteSpace(options.Width) ? Style
-            : Styles.Join($"--tb-dialog-width: {options.Width}", Style));
+        builder.AddAttribute(6, "style", string.IsNullOrWhiteSpace(_openingWidth) ? Style
+            : Styles.Join($"--tb-dialog-width: {_openingWidth}", Style));
         builder.AddAttribute(7, "class", ClassNames.Join("tb-dialog", SizeClass(Dialog.Size),
             PositionClass(Dialog.Position),
             Draggable ? "tb-dialog--draggable" : null, Resizable ? "tb-dialog--resizable" : null,
@@ -151,6 +153,12 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
                 {
                     await handle.InvokeVoidAsync("resizeTo", SizeClass(_size), SizeClass(_size));
                 }
+
+                // A size set later clears the width, so this leaves whichever was set last.
+                if (_widened)
+                {
+                    await handle.InvokeVoidAsync("setWidth", Dialog.Width);
+                }
             }
 
             // The open dialog joins the accessibility tree with the next frame, so its live regions wait for that.
@@ -174,6 +182,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         Dialog.Changed += OnChanged;
         Dialog.MoveRequested += OnMoveRequested;
         Dialog.ResizeRequested += OnResizeRequested;
+        Dialog.WidthRequested += OnWidthRequested;
+        _openingWidth = Dialog.Width;
     }
 
     // The browser closed the dialog by itself, so there is nothing left to ask.
@@ -247,12 +257,34 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         _resized = true;
         InvokeAsync(() =>
         {
+            // A size replaces the width, and until the script is called the width lives only in the markup.
+            if (_self is null)
+            {
+                _openingWidth = null;
+            }
+
             StateHasChanged();
             return CallAsync("resizeTo", from, SizeClass(size));
         });
     }
 
-    private async Task CallAsync(string method, string from, string to)
+    // Once the script is called the markup keeps its width, since a new style would drop what the script set on it.
+    private void OnWidthRequested(string? width)
+    {
+        _widened = true;
+        InvokeAsync(() =>
+        {
+            if (_self is null)
+            {
+                _openingWidth = width;
+                StateHasChanged();
+            }
+
+            return CallAsync("setWidth", width);
+        });
+    }
+
+    private async Task CallAsync(string method, params object?[] args)
     {
         if (_handle is null)
         {
@@ -261,7 +293,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
         try
         {
-            await _handle.InvokeVoidAsync(method, from, to);
+            await _handle.InvokeVoidAsync(method, args);
         }
         catch (JSDisconnectedException)
         {
@@ -294,6 +326,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         Dialog.Changed -= OnChanged;
         Dialog.MoveRequested -= OnMoveRequested;
         Dialog.ResizeRequested -= OnResizeRequested;
+        Dialog.WidthRequested -= OnWidthRequested;
         Dialog.CloseInBrowserAsync = null;
         if (_handle is not null)
         {

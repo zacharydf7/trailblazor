@@ -243,6 +243,22 @@ public class DialogMoveAndResizeTests(BrowserFixture fixture) : BrowserTest(fixt
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldTakeTheNewWidthInPlaceOfTheDraggedSize_WhenItsWidthIsSetWhileOpen(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Wide", Exact = true }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Wide" });
+        await Expect(dialog).ToBeVisibleAsync();
+        await DragAsync(page, dialog.GetByRole(AriaRole.Button, new() { Name = "Resize" }), 60, 0);
+        Assert.Equal(660, (await DialogTests.BoxAsync(page, "Wide")).Width, tolerance: 1);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Narrow it" }).ClickAsync();
+
+        await Expect(dialog).Not.ToHaveAttributeAsync("data-sized", new Regex(".*"));
+        Assert.Equal(400, (await DialogTests.BoxAsync(page, "Wide")).Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldTakeTheSizeItsContentSets_WhenItWasOpenedWithAWidth(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");

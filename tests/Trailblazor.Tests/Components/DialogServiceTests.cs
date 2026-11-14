@@ -680,6 +680,72 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public async Task Width_ShouldWidenTheOpenDialogAndASizeShouldClearIt_WhenSetFromTheReference()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
+        var handle = module.SetupModule("openDialog", _ => true);
+        handle.SetupVoid("setWidth", _ => true).SetVoidResult();
+        handle.SetupVoid("resizeTo", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Width = "600px" });
+        host.WaitForElement("dialog");
+        var dialog = Dialogs.OpenDialogs.Single();
+
+        await host.InvokeAsync(() => dialog.Width = "40rem");
+        host.WaitForAssertion(() => Assert.Equal(["40rem"], handle.VerifyInvoke("setWidth").Arguments));
+        await host.InvokeAsync(() => dialog.Size = DialogSize.Large);
+
+        Assert.Null(dialog.Width);
+        // The markup keeps the width it opened with, so a render doesn't undo what the script set.
+        Assert.Contains("--tb-dialog-width: 600px", host.Find("dialog").GetAttribute("style"));
+    }
+
+    [Theory]
+    [InlineData(false, null)]
+    [InlineData(true, "30rem")]
+    public void Width_ShouldReachTheMarkupAndTheScript_WhenTheContentSetsItAsItStarts(bool sizeFirst, string? width)
+    {
+        var calls = new List<string>();
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
+        var handle = module.SetupModule("openDialog", _ => true);
+        handle.SetupVoid("setWidth", _ => { calls.Add("setWidth"); return true; }).SetVoidResult();
+        handle.SetupVoid("resizeTo", _ => { calls.Add("resizeTo"); return true; }).SetVoidResult();
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<WideningDialog, string>("Notes", p => p.Set(d => d.SizeFirst, sizeFirst));
+
+        // The script gets the size before the width, and a size set last has cleared the width, so whichever was set
+        // last wins.
+        host.WaitForAssertion(() => Assert.Equal(["resizeTo", "setWidth"], calls));
+        Assert.Equal([width], handle.Invocations["setWidth"][^1].Arguments);
+        Assert.Equal(width is not null,
+            host.Find("dialog").GetAttribute("style")?.Contains("--tb-dialog-width: 30rem") == true);
+    }
+
+    [Fact]
+    public void Width_ShouldCountABlankWidthAsUnset_WhenSetFromTheReference()
+    {
+        var dialog = Dialogs.Show<GreetingDialog, string>("Notes", options: new() { Width = "600px" });
+
+        dialog.Width = " ";
+
+        Assert.Null(dialog.Width);
+    }
+
+    [Fact]
+    public void Width_ShouldOpenTheDialogAtTheNewWidth_WhenSetBeforeItsFrameRenders()
+    {
+        var dialog = Dialogs.Show<GreetingDialog, string>("Notes", options: new() { Width = "600px" });
+        dialog.Width = "30rem";
+
+        var host = Render<DialogHost>();
+
+        Assert.Contains("--tb-dialog-width: 30rem", host.WaitForElement("dialog").GetAttribute("style"));
+    }
+
+    [Fact]
     public async Task SizeAndPosition_ShouldResizeAndMoveTheOpenDialog_WhenSetFromTheReference()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
@@ -1195,6 +1261,26 @@ public class DialogServiceTests : BunitContext
                 builder.AddComponentParameter(1, nameof(TbDialogTitle.ChildContent),
                     (RenderFragment)(title => title.AddContent(0, $"Delete Pine Hollow ({trips} trips)")));
                 builder.CloseComponent();
+            }
+        }
+    }
+
+    private sealed class WideningDialog : TbDialogContent<string>
+    {
+        [Parameter]
+        public bool SizeFirst { get; set; }
+
+        protected override void OnInitialized()
+        {
+            if (SizeFirst)
+            {
+                Dialog.Size = DialogSize.Large;
+                Dialog.Width = "30rem";
+            }
+            else
+            {
+                Dialog.Width = "30rem";
+                Dialog.Size = DialogSize.Large;
             }
         }
     }

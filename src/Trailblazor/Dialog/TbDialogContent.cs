@@ -42,8 +42,9 @@ public abstract class TbDialogContent<TResult> : ComponentBase
     // as CloseDialogAsync or Size.Large, stay free.
     /// <summary>The open dialog, so the content can close it, with <c>Dialog.CloseAsync(value)</c> or
     /// <c>Dialog.CancelAsync()</c>, and change it while it's open: set its <see cref="DialogReference.Size"/>,
-    /// <see cref="DialogReference.Modal"/>, <see cref="DialogReference.Position"/>,
-    /// <see cref="DialogReference.WindowState"/>, <see cref="DialogReference.ShowHeader"/>,
+    /// <see cref="DialogReference.Width"/>, <see cref="DialogReference.Modal"/>,
+    /// <see cref="DialogReference.Position"/>, <see cref="DialogReference.WindowState"/>,
+    /// <see cref="DialogReference.ShowHeader"/>,
     /// <see cref="DialogReference.CloseButton"/>, <see cref="DialogReference.Minimizable"/>,
     /// <see cref="DialogReference.Maximizable"/>, <see cref="DialogReference.Draggable"/> or
     /// <see cref="DialogReference.Resizable"/>, as in <c>Dialog.Size = DialogSize.Large</c>.</summary>

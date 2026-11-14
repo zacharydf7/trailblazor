@@ -20,6 +20,7 @@
     <TbButton OnClick="() => TuckedAsync(modal: false)">Tucked window</TbButton>
     <TbButton OnClick="StillAsync">Still</TbButton>
     <TbButton OnClick="() => Dialogs.OpenDialogs[^1].Draggable = true">Let it move</TbButton>
+    <TbButton OnClick='() => Dialogs.OpenDialogs[^1].Width = "400px"'>Narrow it</TbButton>
     <TbButton OnClick="WideAsync">Wide</TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<SizedDialog, string>("Sized", options: new() { Width = "600px" })'>
         Sized
