@@ -115,7 +115,8 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     private const string FieldTesting = "A field's error messages sit in `[data-part=error]`, each in its own "
         + "`[data-part=message]`. Where the testing packages have a helper for the field, it reads them: `Error` is the "
         + "first one, `Errors` all of them in order, and `Invalid` whether the field is marked invalid. In Playwright "
-        + "they're `ErrorAsync()`, `ErrorsAsync()` and `InvalidAsync()`.";
+        + "they're `ErrorAsync()`, `ErrorsAsync()` and `InvalidAsync()`. `LeaveAsync()` moves focus out of the field, "
+        + "which raises its `OnBlur`.";
 
     private const string FieldLabeling = "With no room for a label, an `AriaLabel` names the field through a label "
         + "only screen readers see. A field with neither gets build warning TB004.";

@@ -316,6 +316,18 @@ public abstract class TbFieldLocator
     private const string Marked =
         "control => control.matches('[aria-invalid=true]') || !!control.querySelector('[aria-invalid=true]')";
 
+    // Blurs whatever has focus inside the field, as tabbing away would; focus elsewhere is left alone. A grid's editor
+    // or row has a root of its own, which isn't the field's.
+    private const string Leave = """
+        control => {
+            const root = control.closest('[data-tb-focus-root]');
+            const field = root?.dataset.tbFocusRoot === 'field' ? root : control;
+            if (field.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+        }
+        """;
+
     private protected TbFieldLocator()
     {
     }
@@ -331,6 +343,10 @@ public abstract class TbFieldLocator
     /// <summary>Whether the field's control, or a part of it such as a date range's end, is marked invalid through
     /// <c>aria-invalid</c>, which screen readers announce.</summary>
     public Task<bool> InvalidAsync() => Control.EvaluateAsync<bool>(Marked);
+
+    /// <summary>Moves focus out of the field, as tabbing away does, which raises its <c>OnBlur</c>. Does nothing when
+    /// focus isn't in the field. Wait for what the app does next with <c>Expect</c>.</summary>
+    public Task LeaveAsync() => Control.EvaluateAsync(Leave);
 }
 
 /// <summary>A <c>TbSelect</c> or <c>TbMultiSelect</c>, found by its label or a locator.</summary>

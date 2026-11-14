@@ -111,6 +111,17 @@ public abstract class TbFieldDriver
     public bool Invalid => _control() is var control
         && (control.GetAttribute("aria-invalid") == "true" || control.QuerySelector("[aria-invalid=true]") is not null);
 
+    /// <summary>Moves focus out of the field, as tabbing away does, which raises its <c>OnBlur</c>.</summary>
+    public Task LeaveAsync()
+    {
+        // Only the field's own root raises OnBlur, and only when the app set one; the nearest root may instead be a
+        // grid's editor or row.
+        var root = _control().Closest("[data-tb-focus-root]");
+        return root?.GetAttribute("data-tb-focus-root") == "field" && root.HasAttribute("blazor:ontbfocusleave")
+            ? root.TriggerEventAsync("ontbfocusleave", new FieldFocusEventArgs { CrossesField = true })
+            : Task.CompletedTask;
+    }
+
     // A calendar's driver holds its whole box, and the part users act on inside it carries the description.
     private static IElement Described(IElement control) => control.HasAttribute("aria-describedby") ? control
         : control.QuerySelector("[aria-describedby]") ?? control;
@@ -1038,6 +1049,8 @@ public sealed class TbTextFieldDriver : TbFieldDriver
         {
             await _find().ChangeAsync(new ChangeEventArgs { Value = text });
         }
+
+        await LeaveAsync();
     }
 }
 
@@ -1251,6 +1264,7 @@ public sealed class TbNumberFieldDriver : TbFieldDriver
         Typing.ThrowIfLocked(input, "a number");
         await (input.GetAttribute("role") == "spinbutton" ? input.ChangeAsync(new ChangeEventArgs { Value = text })
             : input.TriggerEventAsync("ontbnumberchange", new NumberChangeEventArgs { Value = text }));
+        await LeaveAsync();
     }
 }
 

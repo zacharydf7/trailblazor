@@ -14,6 +14,33 @@ public class FieldDriverTests(BrowserFixture fixture) : BrowserTest(fixture)
     ];
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task LeaveAsync_ShouldMoveFocusOutAndRaiseOnBlur_WhenTheFieldHasFocus(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var campsite = page.Tb().TextField("Campsite");
+        await page.GetByLabel("Campsite").FillAsync("Pine");
+
+        await campsite.LeaveAsync();
+
+        await Expect(page.GetByText("Checked on leaving: Pine.", new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(page.GetByLabel("Campsite")).Not.ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task LeaveAsync_ShouldLeaveFocusAlone_WhenAnotherFieldInTheSameGridRowHasIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        var row = page.GetByRole(AriaRole.Grid, new() { Name = "Trail rows" }).Locator("tr[data-key='2']");
+        await row.Locator("td[data-column=Name]").DblClickAsync();
+        await row.GetByRole(AriaRole.Spinbutton).FocusAsync();
+
+        await row.Tb().TextField("Name").LeaveAsync();
+
+        await Expect(row.GetByRole(AriaRole.Spinbutton)).ToBeFocusedAsync();
+        await Expect(page.GetByLabel("Last row saved")).ToHaveTextAsync("No row saved yet.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Locators_ShouldReadEachFieldsMessageAndInvalidMark_WhenTheFieldsShowAnError(string browser)
     {
         var page = await OpenAsync(browser, "/field-errors");

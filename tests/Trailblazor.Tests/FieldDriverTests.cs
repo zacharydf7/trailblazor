@@ -1,5 +1,7 @@
 using System.Globalization;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Trailblazor.Testing;
 using Trailblazor.Tests.Contract;
 
@@ -39,6 +41,44 @@ public class FieldDriverTests : BunitContext
         Assert.Equal((null, true), (driver.Error, driver.Invalid));
     }
 
+    [Theory, MemberData(nameof(FieldsWithDrivers))]
+    public async Task LeaveAsync_ShouldRaiseOnBlur_WhenTheFieldListensForIt(Type field)
+    {
+        var left = 0;
+        var driver = Drive(field, error: null, onBlur: () => left++);
+
+        await driver.LeaveAsync();
+
+        Assert.Equal(1, left);
+    }
+
+    [Theory, MemberData(nameof(FieldsWithDrivers))]
+    public async Task LeaveAsync_ShouldNotThrow_WhenTheFieldDoesntListenForIt(Type field)
+    {
+        var driver = Drive(field, error: null);
+
+        var failure = await Record.ExceptionAsync(driver.LeaveAsync);
+
+        Assert.Null(failure);
+    }
+
+    [Fact]
+    public async Task EnterAsync_ShouldLeaveTheFieldOnceTheTextIsCommitted_WhenTypingIntoATextOrNumberField()
+    {
+        var heard = new List<string>();
+        string? trail = null;
+        var text = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.ValueChanged, (string value) => trail = value)
+            .Add(field => field.OnBlur, () => heard.Add($"trail {trail}")));
+        var number = Render<TbNumberField<int?>>(parameters => parameters.Add(field => field.Label, "Nights")
+            .Add(field => field.OnBlur, () => heard.Add("nights")));
+
+        await text.Tb().TextField("Trail").EnterAsync("Pine Hollow");
+        await number.Tb().NumberField("Nights").EnterAsync("3");
+
+        Assert.Equal(["trail Pine Hollow", "nights"], heard);
+    }
+
     [Fact]
     public void Invalid_ShouldBeTrue_WhenOnlyADateRangesEndIsMarkedInvalid()
     {
@@ -65,7 +105,7 @@ public class FieldDriverTests : BunitContext
         Assert.Equal(["That name is taken.", "Use at least 3 letters."], cut.Tb().TextField("Trail").Errors);
     }
 
-    private TbFieldDriver Drive(Type field, string? error, bool invalid = false)
+    private TbFieldDriver Drive(Type field, string? error, bool invalid = false, Action? onBlur = null)
     {
         var cut = Render(builder =>
         {
@@ -73,7 +113,13 @@ public class FieldDriverTests : BunitContext
             builder.AddAttribute(1, nameof(TbTextField<string>.Label), "Trail");
             builder.AddAttribute(2, nameof(TbTextField<string>.Error), error);
             builder.AddAttribute(3, nameof(TbTextField<string>.Invalid), invalid);
-            var sequence = 4;
+            if (onBlur is not null)
+            {
+                builder.AddAttribute(4, nameof(TbTextField<string>.OnBlur),
+                    EventCallback.Factory.Create<FocusEventArgs>(this, onBlur));
+            }
+
+            var sequence = 5;
             foreach (var (name, value) in ComponentContractTests.RequiredParameters(field))
             {
                 builder.AddAttribute(sequence++, name, value);

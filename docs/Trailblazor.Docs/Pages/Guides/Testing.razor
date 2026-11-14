@@ -364,8 +364,11 @@
         </ul>
         <TbText>
             Every field's helper reads the field's error messages: <code>Error</code> is the first one,
-            <code>Errors</code> all of them in order, and <code>Invalid</code> whether the field is marked invalid. In Playwright they're
-            <code>ErrorAsync()</code>, <code>ErrorsAsync()</code> and <code>InvalidAsync()</code>.
+            <code>Errors</code> all of them in order, and <code>Invalid</code> whether the field is marked invalid.
+            In Playwright they're <code>ErrorAsync()</code>, <code>ErrorsAsync()</code> and
+            <code>InvalidAsync()</code>. <code>LeaveAsync()</code> moves focus out of the field, which raises its
+            <code>OnBlur</code>. A text or number field's <code>EnterAsync</code> also leaves the field after typing,
+            as a user moving on would.
         </TbText>
         <DocsCallout Title="Check a field's error in the field">
             A field's error is also announced in <code>TbRoot</code>'s live region. To check that an error has

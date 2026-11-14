@@ -921,7 +921,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         }
 
         var withEvents = attributes?.ToDictionary() ?? [];
-        withEvents["data-tb-focus-root"] = "";
+        // "field" tells a test helper this is the field's own root, not a grid's editor or row around it.
+        withEvents["data-tb-focus-root"] = "field";
         if (OnFocus.HasDelegate)
         {
             withEvents["ontbfocusenter"] = EventCallback.Factory.Create<FieldFocusEventArgs>(this, crossing =>
