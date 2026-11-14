@@ -361,6 +361,24 @@ public class TbDateRangePickerTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=clear]"));
     }
 
+    [Fact]
+    public async Task Typing_ShouldReachEachBox_WhenThePickerRendersBetweenATestReadingItAndRaisingItsEvents()
+    {
+        var cut = RenderPicker(June3To10);
+        var start = HandlerIds.Read(cut.Find("[data-part=start-input]"), "onchange");
+        var end = HandlerIds.Read(cut.Find("[data-part=end-input]"), "onchange");
+
+        // Stands in for a background continuation rendering the picker after the test has read its handler ids.
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, start, cut.ComponentId, "6/1/2026",
+            new ChangeEventArgs { Value = "6/1/2026" });
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, end, cut.ComponentId, "6/12/2026",
+            new ChangeEventArgs { Value = "6/12/2026" });
+
+        Assert.Equal(new DateRange<DateOnly>(new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 12)), _changes[^1]);
+    }
+
     private IRenderedComponent<TbDateRangePicker<DateOnly>> RenderPicker(DateRange<DateOnly> value,
         Action<ComponentParameterCollectionBuilder<TbDateRangePicker<DateOnly>>>? configure = null,
         CultureInfo? culture = null) =>

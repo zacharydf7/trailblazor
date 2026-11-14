@@ -401,6 +401,20 @@ public class TbDateTimePickerTests : BunitContext
         Assert.False(cut.FindComponent<TbPopover>().Instance.Open);
     }
 
+    [Fact]
+    public async Task Typing_ShouldReachThePicker_WhenItRendersBetweenATestReadingTheDateBoxAndRaisingItsEvent()
+    {
+        var cut = RenderPicker(June3At2);
+        var handler = HandlerIds.Read(DateBox(cut), "onchange");
+
+        // Stands in for a background continuation rendering the picker after the test has read its handler id.
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, handler, cut.ComponentId, "6/4/2026",
+            new ChangeEventArgs { Value = "6/4/2026" });
+
+        Assert.Equal([new DateTime(2026, 6, 4, 14, 30, 0)], _changes);
+    }
+
     private IRenderedComponent<TbDateTimePicker<DateTime>> RenderPicker(DateTime? value,
         Action<ComponentParameterCollectionBuilder<TbDateTimePicker<DateTime>>>? configure = null,
         CultureInfo? culture = null) =>

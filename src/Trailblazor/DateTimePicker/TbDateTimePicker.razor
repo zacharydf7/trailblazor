@@ -14,14 +14,7 @@
         <div role="group" aria-labelledby="@(ShownLabel is null ? null : LabelId)" data-format="@DateFormat"
              data-culture="@DateCulture.Name" data-value="@(Chosen is { } chosen ? Iso(chosen) : "")"
              class="tb-date-time__boxes">
-            <input @attributes="ControlAttributes" @ref="_dateInput" data-part="date-input" id="@DateId"
-                   name="@NameOf("Date")" type="text" autocomplete="off" @bind:get="DateText"
-                   @bind:set="SetDateTextAsync"
-                   placeholder="@(Placeholder ?? CalendarDates.FormatHint(DateFormat, Localizer))"
-                   disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(DateId)"
-                   aria-required="@AriaRequired" aria-invalid="@AriaInvalid(_dateBad)"
-                   aria-describedby="@InputDescribedBy"
-                   class="@ClassNames.Join("tb-field__input", "tb-date-time__date", Classes?.Input)" />
+            @DateInput
             <TbPopover Icon="BuiltInIcons.Calendar" AriaLabel="@OpenLabel" Size="Size.Small"
                        Variant="Trailblazor.Variant.Text" Disabled="@(Disabled || ReadOnly)" Open="_open"
                        OpenChanged="OnOpenChangedAsync" data-part="popover">
@@ -66,6 +59,33 @@
 </text>, null, null)
 
 @code {
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment DateInput => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddMultipleAttributes(1, ControlAttributes);
+        builder.AddAttribute(2, "data-part", "date-input");
+        builder.AddAttribute(3, "id", DateId);
+        builder.AddAttribute(4, "name", NameOf("Date"));
+        builder.AddAttribute(5, "type", "text");
+        builder.AddAttribute(6, "autocomplete", "off");
+        builder.AddAttribute(7, "value", DateText);
+        builder.AddAttribute(8, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, OnDateChangedAsync));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(9, "placeholder", Placeholder ?? CalendarDates.FormatHint(DateFormat, Localizer));
+        builder.AddAttribute(10, "disabled", Disabled);
+        builder.AddAttribute(11, "readonly", ReadOnly);
+        builder.AddAttribute(12, "aria-labelledby", Names(DateId));
+        builder.AddAttribute(13, "aria-required", AriaRequired);
+        builder.AddAttribute(14, "aria-invalid", AriaInvalid(_dateBad));
+        builder.AddAttribute(15, "aria-describedby", InputDescribedBy);
+        builder.AddAttribute(16, "class", ClassNames.Join("tb-field__input", "tb-date-time__date", Classes?.Input));
+        builder.AddElementReferenceCapture(17, input => _dateInput = input);
+        builder.CloseElement();
+    };
+
+    private Task OnDateChangedAsync(ChangeEventArgs args) => SetDateTextAsync(args.Value as string);
+
     private string Names(string box) => ShownLabel is null ? $"{box}-name" : $"{LabelId} {box}-name";
 
     private string? NameOf(string part) => InputNameAttribute is null ? null : $"{InputNameAttribute}.{part}";

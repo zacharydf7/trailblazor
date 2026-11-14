@@ -12,21 +12,9 @@
          class="tb-date-range__boxes">
         @if (RendererInfo.IsInteractive)
         {
-            <input @attributes="InputAttributes" @ref="_startInput" data-part="start-input" id="@StartId"
-                   data-tb-autofocus="@AutoFocusMark" name="@NameOf("Start")" type="text" autocomplete="off"
-                   @bind:get="StartText" @bind:set="SetStartTextAsync"
-                   placeholder="@(StartPlaceholder ?? FormatHint)" disabled="@Disabled" readonly="@ReadOnly"
-                   aria-labelledby="@Names(StartId)" aria-required="@AriaRequired"
-                   aria-invalid="@AriaInvalid(_startBad)" aria-describedby="@InputDescribedBy"
-                   class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
+            @DateInput(start: true)
             <span class="tb-date-range__dash" aria-hidden="true">–</span>
-            <input @attributes="InputAttributes" data-part="end-input" id="@EndId" name="@NameOf("End")" type="text"
-                   autocomplete="off" @bind:get="EndText" @bind:set="SetEndTextAsync"
-                   placeholder="@(EndPlaceholder ?? FormatHint)"
-                   disabled="@Disabled" readonly="@ReadOnly" aria-labelledby="@Names(EndId)"
-                   aria-required="@AriaRequired"
-                   aria-invalid="@AriaInvalid(_endBad)" aria-describedby="@InputDescribedBy"
-                   class="@ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input)" />
+            @DateInput(start: false)
         }
         else
         {
@@ -99,6 +87,43 @@
 </text>, null, null)
 
 @code {
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment DateInput(bool start) => builder =>
+    {
+        var id = start ? StartId : EndId;
+        builder.OpenElement(0, "input");
+        builder.AddMultipleAttributes(1, InputAttributes);
+        builder.AddAttribute(2, "data-part", start ? "start-input" : "end-input");
+        builder.AddAttribute(3, "id", id);
+        builder.AddAttribute(4, "data-tb-autofocus", start ? AutoFocusMark : null);
+        builder.AddAttribute(5, "name", NameOf(start ? "Start" : "End"));
+        builder.AddAttribute(6, "type", "text");
+        builder.AddAttribute(7, "autocomplete", "off");
+        builder.AddAttribute(8, "value", start ? StartText : EndText);
+        builder.AddAttribute(9, "onchange", start
+            ? EventCallback.Factory.Create<ChangeEventArgs>(this, OnStartChangedAsync)
+            : EventCallback.Factory.Create<ChangeEventArgs>(this, OnEndChangedAsync));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(10, "placeholder", (start ? StartPlaceholder : EndPlaceholder) ?? FormatHint);
+        builder.AddAttribute(11, "disabled", Disabled);
+        builder.AddAttribute(12, "readonly", ReadOnly);
+        builder.AddAttribute(13, "aria-labelledby", Names(id));
+        builder.AddAttribute(14, "aria-required", AriaRequired);
+        builder.AddAttribute(15, "aria-invalid", AriaInvalid(start ? _startBad : _endBad));
+        builder.AddAttribute(16, "aria-describedby", InputDescribedBy);
+        builder.AddAttribute(17, "class", ClassNames.Join("tb-field__input", "tb-date-range__input", Classes?.Input));
+        if (start)
+        {
+            builder.AddElementReferenceCapture(18, input => _startInput = input);
+        }
+
+        builder.CloseElement();
+    };
+
+    private Task OnStartChangedAsync(ChangeEventArgs args) => SetStartTextAsync(args.Value as string);
+
+    private Task OnEndChangedAsync(ChangeEventArgs args) => SetEndTextAsync(args.Value as string);
+
     // Only the first month's title speaks, so paging through months reads each once.
     private RenderFragment Month(int offset)
     {
