@@ -120,15 +120,16 @@ public abstract class TbFieldDriver
         && (control.GetAttribute("aria-invalid") == "true" || control.QuerySelector("[aria-invalid=true]") is not null);
 
     /// <summary>Moves focus out of the field, as tabbing away does, which raises its <c>OnBlur</c>.</summary>
-    public Task LeaveAsync()
+    public async Task LeaveAsync()
     {
         // Only the field's own root raises OnBlur, and only when the app set one; the nearest root may instead be a
         // grid's editor or row. Focus going nowhere leaves the grid's edit around the field too, as a blur does.
         var root = _control().Closest("[data-tb-focus-root]");
-        return root?.GetAttribute("data-tb-focus-root") == "field" && root.HasAttribute("blazor:ontbfocusleave")
-            ? root.TriggerEventAsync("ontbfocusleave",
-                new FieldFocusEventArgs { CrossesField = true, CrossesEdit = true })
-            : Task.CompletedTask;
+        if (root?.GetAttribute("data-tb-focus-root") == "field" && root.HasAttribute("blazor:ontbfocusleave"))
+        {
+            await root.TriggerEventAsync("ontbfocusleave",
+                new FieldFocusEventArgs { CrossesField = true, CrossesEdit = true });
+        }
     }
 
     // A calendar's driver holds its whole box, and the part users act on inside it carries the description.
@@ -497,7 +498,8 @@ public sealed class TbSelectDriver : TbFieldDriver
     /// <summary>Chooses the options with these names, as clicking them does: the one option of a select, or each one
     /// not yet chosen in a multiple select, keeping what is already chosen. On a static page the select is a native
     /// one that posts with its form, so this throws, as it does for a disabled select.</summary>
-    public Task ChooseAsync(params string[] options) => Choices.SetChosenAsync(Choosable, options, choose: true);
+    public async Task ChooseAsync(params string[] options) =>
+        await Choices.SetChosenAsync(Choosable, options, choose: true);
 
     /// <summary>The names of the chosen options, in order. A list of more than 100 options shows only those in view,
     /// so for one that long this throws; read <see cref="Text"/> instead.</summary>
@@ -523,19 +525,20 @@ public sealed class TbSelectDriver : TbFieldDriver
     /// <summary>Unchooses the options with these names in a multiple select, as clicking them again does, leaving the
     /// others chosen. A select that takes one option throws; clear it with <see cref="ClearAsync"/>. On a static page,
     /// or when the select is disabled, this throws too, as <see cref="ChooseAsync"/> does.</summary>
-    public Task UnchooseAsync(params string[] options) => Choices.SetChosenAsync(Choosable, options, choose: false);
+    public async Task UnchooseAsync(params string[] options) =>
+        await Choices.SetChosenAsync(Choosable, options, choose: false);
 
     /// <summary>Clears the select with its clear button, as a user does. A select that isn't <c>Clearable</c>, or has
     /// nothing chosen, shows no clear button, so this throws, as it does on a static page or for a disabled select.
     /// </summary>
-    public Task ClearAsync()
+    public async Task ClearAsync()
     {
         var control = _find();
         Choices.ThrowIfStaticOrDisabled(control);
         var clear = control.Closest(".tb-field")?.QuerySelector("[data-part=clear]")
             ?? throw new InvalidOperationException(
                 "The select shows no clear button; make it Clearable, and choose an option first.");
-        return clear.ClickAsync(new MouseEventArgs { Detail = 1 });
+        await clear.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 
     private (IEnumerable<IElement> Options, bool Multiple) Choosable()
@@ -575,7 +578,7 @@ public sealed class TbTreeSelectDriver : TbFieldDriver
     public bool Disabled => Choices.IsDisabled(_find());
 
     /// <summary>Opens the rows above the item at this path and chooses it, as clicking it does.</summary>
-    public Task ChooseAsync(params string[] path) => Tree().SelectAsync(path);
+    public async Task ChooseAsync(params string[] path) => await Tree().SelectAsync(path);
 
     /// <summary>Opens the rows above the item at this path, and reads its text and whether it's disabled and chosen,
     /// which in a multi tree select means checked. A disabled or read-only tree select throws, since it has no tree to
@@ -590,14 +593,14 @@ public sealed class TbTreeSelectDriver : TbFieldDriver
 
     /// <summary>Opens the rows above the item at this path and, unless it is checked already, checks it in a multi
     /// tree select as clicking its box does.</summary>
-    public Task CheckAsync(params string[] path) => SetCheckedAsync(path, true);
+    public async Task CheckAsync(params string[] path) => await SetCheckedAsync(path, true);
 
     /// <summary>Opens the rows above the item at this path and, unless it is unchecked already, unchecks it in a
     /// multi tree select as clicking its box does.</summary>
-    public Task UncheckAsync(params string[] path) => SetCheckedAsync(path, false);
+    public async Task UncheckAsync(params string[] path) => await SetCheckedAsync(path, false);
 
     /// <summary>Types this text in the field's filter box, as the user does, so the tree shows what matches.</summary>
-    public Task FilterAsync(string text) => (Panel().QuerySelector("[data-part=filter]")
+    public async Task FilterAsync(string text) => await (Panel().QuerySelector("[data-part=filter]")
         ?? throw new InvalidOperationException("This tree select has no filter box; set Filterable to add one."))
         .InputAsync(new ChangeEventArgs { Value = text });
 
@@ -659,15 +662,23 @@ public sealed class TbListBoxDriver : TbFieldDriver
     /// <summary>Chooses the options with these names, as clicking them does: the one option of a list box, or each one
     /// not yet chosen in a multiple list box, keeping what is already chosen. On a static page, or when the list box is
     /// disabled, this throws, as for a select.</summary>
-    public Task ChooseAsync(params string[] options) => Choices.SetChosenAsync(Choosable, options, choose: true);
+    public async Task ChooseAsync(params string[] options) =>
+        await Choices.SetChosenAsync(Choosable, options, choose: true);
 
     /// <summary>Unchooses the options with these names in a multiple list box, as clicking them again does, leaving
     /// the others chosen. A list box that takes one option throws, since a click can't unchoose its option, and so
     /// does a static or disabled one, as for <see cref="ChooseAsync"/>.</summary>
-    public Task UnchooseAsync(params string[] options) => Choices.SetChosenAsync(Choosable, options, choose: false);
+    public async Task UnchooseAsync(params string[] options) =>
+        await Choices.SetChosenAsync(Choosable, options, choose: false);
 
     /// <summary>Unchooses every chosen option in a multiple list box.</summary>
-    public Task ClearAsync() => Chosen.Count == 0 ? Task.CompletedTask : UnchooseAsync([.. Chosen]);
+    public async Task ClearAsync()
+    {
+        if (Chosen.Count > 0)
+        {
+            await UnchooseAsync([.. Chosen]);
+        }
+    }
 
     private (IEnumerable<IElement> Options, bool Multiple) Choosable()
     {
@@ -691,11 +702,11 @@ public sealed class TbTransferListDriver : TbFieldDriver
     public IReadOnlyList<string> Chosen => new TbListBoxDriver(() => List("chosen")).Options;
 
     /// <summary>Marks the available items with this text and moves them to the chosen list with its button.</summary>
-    public Task MoveAsync(params string[] items) => MoveAsync("available", "move-chosen", items);
+    public async Task MoveAsync(params string[] items) => await MoveAsync("available", "move-chosen", items);
 
     /// <summary>Marks the chosen items with this text and moves them back to the available list with its button.
     /// </summary>
-    public Task MoveBackAsync(params string[] items) => MoveAsync("chosen", "move-available", items);
+    public async Task MoveBackAsync(params string[] items) => await MoveAsync("chosen", "move-available", items);
 
     private async Task MoveAsync(string from, string button, string[] items)
     {
@@ -822,20 +833,20 @@ public sealed class TbDatePickerDriver : TbFieldDriver
     /// <summary>Types the date in the field's own format and commits it, as typing and leaving the field does; null
     /// clears it. A date the field can't take shows its error, as in a browser. On a static page, or when the field is
     /// read-only or disabled, this throws.</summary>
-    public Task ChooseAsync(DateOnly? date)
+    public async Task ChooseAsync(DateOnly? date)
     {
         var input = _find();
-        return EnterAsync(date?.ToString(input.GetAttribute("data-format"), Dates.CultureOf(input)) ?? "");
+        await EnterAsync(date?.ToString(input.GetAttribute("data-format"), Dates.CultureOf(input)) ?? "");
     }
 
     /// <summary>Types this text in the field as it is and commits it, as typing and leaving the field does, so a test
     /// can enter text the field can't read and see its error. On a static page, or when the field is read-only or
     /// disabled, this throws.</summary>
-    public Task EnterAsync(string text)
+    public async Task EnterAsync(string text)
     {
         var input = _find();
         Dates.ThrowIfStaticOrLocked(input);
-        return input.ChangeAsync(new ChangeEventArgs { Value = text });
+        await input.ChangeAsync(new ChangeEventArgs { Value = text });
     }
 }
 
@@ -877,12 +888,12 @@ public sealed class TbDateTimePickerDriver : TbFieldDriver
     /// <summary>Types this text in the date box as it is and commits it, as leaving the box does, so a test can enter
     /// text the field can't read and see its error; the time is left unchanged. On a static page, or when the field
     /// is read-only or disabled, this throws.</summary>
-    public Task EnterAsync(string text)
+    public async Task EnterAsync(string text)
     {
         var group = _find();
         var dateInput = group.QuerySelector("[data-part=date-input]")!;
         Dates.ThrowIfStaticOrLocked(group.HasAttribute("data-static") ? group : dateInput);
-        return dateInput.ChangeAsync(new ChangeEventArgs { Value = text });
+        await dateInput.ChangeAsync(new ChangeEventArgs { Value = text });
     }
 }
 
@@ -906,12 +917,12 @@ public sealed class TbDateRangePickerDriver : TbFieldDriver
 
     /// <summary>Types both dates in the field's own format and commits them, as typing in each box and leaving it does;
     /// null clears that end. On a static page, or when the field is read-only or disabled, this throws.</summary>
-    public Task ChooseAsync(DateOnly? start, DateOnly? end)
+    public async Task ChooseAsync(DateOnly? start, DateOnly? end)
     {
         var group = _find();
         var format = group.GetAttribute("data-format");
         var culture = Dates.CultureOf(group);
-        return EnterAsync(start?.ToString(format, culture) ?? "", end?.ToString(format, culture) ?? "");
+        await EnterAsync(start?.ToString(format, culture) ?? "", end?.ToString(format, culture) ?? "");
     }
 
     /// <summary>Types this text in each box as it is and commits it, as typing in the box and leaving it does, so a
@@ -1053,7 +1064,7 @@ public sealed class TbAccordionItemDriver
     }
 
     /// <summary>Closes the item, if it's open. Throws for a disabled item that is open.</summary>
-    public Task CollapseAsync() => SetAsync(false);
+    public async Task CollapseAsync() => await SetAsync(false);
 
     private Task SetAsync(bool expanded)
     {
@@ -1080,10 +1091,10 @@ public sealed class TbPopconfirmDriver
 
     /// <summary>Presses the confirm button, which raises <c>OnConfirm</c>. In bUnit the button works without
     /// opening the panel first. A disabled popconfirm throws, since a user can't open it.</summary>
-    public Task ConfirmAsync() => PressAsync("confirm");
+    public async Task ConfirmAsync() => await PressAsync("confirm");
 
     /// <summary>Presses the cancel button, which raises <c>OnCancel</c>. A disabled popconfirm throws.</summary>
-    public Task CancelAsync() => PressAsync("cancel");
+    public async Task CancelAsync() => await PressAsync("cancel");
 
     private Task PressAsync(string part)
     {
@@ -1137,11 +1148,11 @@ public sealed class TbTextFieldDriver : TbFieldDriver
 
     /// <summary>Shows the password with the field's show-password button, as a user does, unless it shows already. A
     /// field that isn't <c>Revealable</c>, or is read-only or disabled, throws.</summary>
-    public Task ShowPasswordAsync() => RevealAsync(true);
+    public async Task ShowPasswordAsync() => await RevealAsync(true);
 
     /// <summary>Hides the password with the field's show-password button, unless it's hidden already, and throws as
     /// <see cref="ShowPasswordAsync"/> does.</summary>
-    public Task HidePasswordAsync() => RevealAsync(false);
+    public async Task HidePasswordAsync() => await RevealAsync(false);
 
     private IElement? RevealButton() => _find().Closest(".tb-field")?.QuerySelector("[data-part=reveal]");
 
@@ -1173,11 +1184,11 @@ public sealed class TbCheckboxDriver : TbFieldDriver
 
     /// <summary>Checks it, as clicking it does, unless it's checked already. A read-only or disabled one throws, and so
     /// does one on a static page, which posts with its form.</summary>
-    public Task CheckAsync() => SetAsync(true);
+    public async Task CheckAsync() => await SetAsync(true);
 
     /// <summary>Unchecks it, as clicking it does, unless it's unchecked already, and throws as
     /// <see cref="CheckAsync"/> does.</summary>
-    public Task UncheckAsync() => SetAsync(false);
+    public async Task UncheckAsync() => await SetAsync(false);
 
     private Task SetAsync(bool on)
     {
@@ -1200,11 +1211,11 @@ public sealed class TbCheckboxGroupDriver : TbFieldDriver
 
     /// <summary>Checks the options with these names, as clicking them does, leaving the others as they are. A
     /// disabled group or option throws, and so does a group on a static page.</summary>
-    public Task CheckAsync(params string[] options) => SetAsync(options, on: true);
+    public async Task CheckAsync(params string[] options) => await SetAsync(options, on: true);
 
     /// <summary>Unchecks the options with these names, leaving the others as they are, and throws as
     /// <see cref="CheckAsync"/> does.</summary>
-    public Task UncheckAsync(params string[] options) => SetAsync(options, on: false);
+    public async Task UncheckAsync(params string[] options) => await SetAsync(options, on: false);
 
     private async Task SetAsync(string[] names, bool on)
     {
@@ -1240,7 +1251,7 @@ public sealed class TbRadioGroupDriver : TbFieldDriver
 
     /// <summary>Chooses the option with this name, as clicking it does. A read-only or disabled group or option
     /// throws, and so does a group on a static page.</summary>
-    public Task ChooseAsync(string option)
+    public async Task ChooseAsync(string option)
     {
         var input = Options().Where(each => each.Name == option).ToList() is [var found] ? found.Input
             : throw new InvalidOperationException($"The group has no option named \"{option}\".");
@@ -1250,7 +1261,10 @@ public sealed class TbRadioGroupDriver : TbFieldDriver
         }
 
         Choices.ThrowIfLocked(input);
-        return input.HasAttribute("checked") ? Task.CompletedTask : input.ChangeAsync(new ChangeEventArgs());
+        if (!input.HasAttribute("checked"))
+        {
+            await input.ChangeAsync(new ChangeEventArgs());
+        }
     }
 
     private IEnumerable<(string Name, IElement Input)> Options() => _find()
@@ -1274,11 +1288,11 @@ public sealed class TbToggleGroupDriver
     /// <summary>Presses the items with these names that aren't pressed yet, as clicking them does. Give a
     /// <c>TbToggleGroup</c> just one, since it keeps one item pressed. A disabled item throws, and so does a group on a
     /// static page.</summary>
-    public Task ChooseAsync(params string[] items) => SetAsync(items, pressed: true);
+    public async Task ChooseAsync(params string[] items) => await SetAsync(items, pressed: true);
 
     /// <summary>Releases the pressed items with these names by pressing them again, which a <c>TbMultiToggleGroup</c>
     /// or a <c>Clearable</c> <c>TbToggleGroup</c> allows, and throws as <see cref="ChooseAsync"/> does.</summary>
-    public Task UnchooseAsync(params string[] items) => SetAsync(items, pressed: false);
+    public async Task UnchooseAsync(params string[] items) => await SetAsync(items, pressed: false);
 
     private async Task SetAsync(string[] names, bool pressed)
     {
@@ -1334,16 +1348,19 @@ public sealed class TbListDriver
 
     /// <summary>Clicks the item with this text. The item must be a button or a link, which it is when it has an
     /// <c>OnClick</c> or an <c>Href</c>. A disabled item throws.</summary>
-    public Task ClickAsync(string item)
+    public async Task ClickAsync(string item)
     {
         var found = ItemElements().Where(each => NameOf(each) == item).ToList() is [var one] ? one
             : throw new InvalidOperationException($"The list has no item that reads \"{item}\".");
         var action = found.QuerySelector(":scope > [data-part=action]");
-        return action is null || action.HasAttribute("disabled")
-            ? throw new InvalidOperationException(action is not null || found.QuerySelector(
+        if (action is null || action.HasAttribute("disabled"))
+        {
+            throw new InvalidOperationException(action is not null || found.QuerySelector(
                 ":scope > [data-part=content][aria-disabled=true]") is not null ? $"\"{item}\" is disabled."
-                : $"\"{item}\" is neither a button nor a link; give it an OnClick or an Href.")
-            : action.ClickAsync(new MouseEventArgs { Detail = 1 });
+                : $"\"{item}\" is neither a button nor a link; give it an OnClick or an Href.");
+        }
+
+        await action.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 
     private IEnumerable<IElement> ItemElements() => _find().Children.Where(child => child.LocalName == "li");
@@ -1476,7 +1493,7 @@ public sealed partial class TbColorPickerDriver : TbFieldDriver
     /// <summary>Types the color, as <c>#rrggbb</c>, or <c>#rrggbbaa</c> for a field with <c>Alpha</c>, and commits it,
     /// as typing it and pressing Enter does. On a static page the field is a plain input that posts with its form, so
     /// this throws, as it does for a disabled or read-only field.</summary>
-    public Task ChooseAsync(string color)
+    public async Task ChooseAsync(string color)
     {
         if (!HexColor().IsMatch(color))
         {
@@ -1491,7 +1508,7 @@ public sealed partial class TbColorPickerDriver : TbFieldDriver
                 + "form; render it on an interactive page to choose a color.");
         }
 
-        return input.ChangeAsync(new ChangeEventArgs { Value = color });
+        await input.ChangeAsync(new ChangeEventArgs { Value = color });
     }
 
     [System.Text.RegularExpressions.GeneratedRegex("^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")]
@@ -1527,7 +1544,7 @@ public sealed class TbFileUploadDriver : TbFieldDriver
     /// other an empty type; to set the type yourself, pass an <c>InputFileContent</c> to bUnit's <c>UploadFiles</c>.
     /// On a static page the field is a native one that posts with its form, so this throws, as it does for a disabled
     /// or read-only field.</summary>
-    public Task ChooseAsync(params string[] paths)
+    public async Task ChooseAsync(params string[] paths)
     {
         ArgumentOutOfRangeException.ThrowIfZero(paths.Length, nameof(paths));
         var input = _find();
@@ -1541,7 +1558,6 @@ public sealed class TbFileUploadDriver : TbFieldDriver
         _scripts.InputFile(input.Id!).UploadFiles([.. paths.Select(path => InputFileContent.CreateFromBinary(
             File.ReadAllBytes(path), Path.GetFileName(path), File.GetLastWriteTimeUtc(path),
             Types.GetValueOrDefault(Path.GetExtension(path), "")))]);
-        return Task.CompletedTask;
     }
 }
 
@@ -1558,7 +1574,7 @@ public sealed class TbDialogDriver
 
     /// <summary>Returns the open dialog, without waiting, to find what it shows. A dialog on a static page opens and
     /// closes in the browser, so this throws for one, as it does when no dialog with the title is open.</summary>
-    public Task<IElement> WaitForAsync() => Task.FromResult(Find());
+    public async Task<IElement> WaitForAsync() => Find();
 
     /// <summary>Clicks the dialog's button with this name, such as a confirm's <c>Delete</c> or a form's <c>Save</c>.
     /// </summary>
@@ -1576,7 +1592,7 @@ public sealed class TbDialogDriver
 
     /// <summary>Dismisses the dialog with Escape, as a keyboard user does. This throws for a dialog whose options
     /// don't let Escape dismiss it.</summary>
-    public Task CancelAsync()
+    public async Task CancelAsync()
     {
         var frame = _scripts.Dialog(Find());
         if (frame.Dialog.Options.DismissOnEscape != true)
@@ -1584,7 +1600,7 @@ public sealed class TbDialogDriver
             throw new InvalidOperationException("This dialog's options don't let Escape dismiss it.");
         }
 
-        return _scripts.InvokeAsync(() => frame.Dismiss(DialogDismissReason.Escape));
+        await _scripts.InvokeAsync(() => frame.Dismiss(DialogDismissReason.Escape));
     }
 
     // A static page's dialog has the browser close it.
@@ -1618,7 +1634,7 @@ public sealed class TbTagInputDriver : TbFieldDriver
     /// <summary>Adds this text as a tag, through the same event the field's script raises on Enter, so a duplicate,
     /// a tag past the limit or one the field's check refuses shows its message, as in a browser. A disabled or
     /// read-only field throws, since the user can't type in it.</summary>
-    public Task AddAsync(string text)
+    public async Task AddAsync(string text)
     {
         var input = _find();
         if (input.HasAttribute("disabled") || input.HasAttribute("readonly"))
@@ -1626,17 +1642,17 @@ public sealed class TbTagInputDriver : TbFieldDriver
             throw new InvalidOperationException("This tag input is disabled or read-only, so tags can't be added.");
         }
 
-        return input.TriggerEventAsync("ontbtagadd", new TagAddEventArgs { Text = text });
+        await input.TriggerEventAsync("ontbtagadd", new TagAddEventArgs { Text = text });
     }
 
     /// <summary>Removes this tag with its remove button, as a click does. A tag the field doesn't show, or one it
     /// shows without a remove button because the field is disabled or read-only, throws.</summary>
-    public Task RemoveAsync(string tag)
+    public async Task RemoveAsync(string tag)
     {
         var button = TagElements().FirstOrDefault(element => TextOf(element) == tag)
                 ?.QuerySelector("[data-part=remove]")
             ?? throw new InvalidOperationException($"The tag input has no tag \"{tag}\" that can be removed.");
-        return button.ClickAsync(new MouseEventArgs { Detail = 1 });
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 
     private static string TextOf(IElement tag) => tag.QuerySelector(".tb-chip__label")!.TextContent.Trim();
@@ -1658,8 +1674,8 @@ public sealed class TbSignaturePadDriver : TbFieldDriver
 
     /// <summary>Draws a stroke through these points, in the signature's space of 600 by 200, as a pointer pressed on the
     /// first and lifted on the last would. Throws when the pad is switched to typing a name.</summary>
-    public Task DrawAsync(params (double X, double Y)[] points) =>
-        (_find().QuerySelector("[data-part=surface]")
+    public async Task DrawAsync(params (double X, double Y)[] points) =>
+        await (_find().QuerySelector("[data-part=surface]")
             ?? throw new InvalidOperationException("The signature pad is set to typing a name, so it can't be drawn on."))
             .TriggerEventAsync("ontbsignaturestroke", new SignatureStrokeEventArgs
             {
@@ -1668,10 +1684,10 @@ public sealed class TbSignaturePadDriver : TbFieldDriver
 
     /// <summary>Clicks Undo, which takes back the last stroke. Throws when there's nothing to take back or the pad is
     /// disabled or read-only.</summary>
-    public Task UndoAsync() => Button("undo").ClickAsync(new MouseEventArgs { Detail = 1 });
+    public async Task UndoAsync() => await Button("undo").ClickAsync(new MouseEventArgs { Detail = 1 });
 
     /// <summary>Clicks Clear. Throws when there's nothing to clear or the pad is disabled or read-only.</summary>
-    public Task ClearAsync() => Button("clear").ClickAsync(new MouseEventArgs { Detail = 1 });
+    public async Task ClearAsync() => await Button("clear").ClickAsync(new MouseEventArgs { Detail = 1 });
 
     /// <summary>Switches to typing a name if the pad isn't already, and types this one, which the pad takes as the
     /// field changes.</summary>
@@ -1747,7 +1763,7 @@ public sealed class TbRichTextEditorDriver : TbFieldDriver
     /// <summary>Replaces the editor's text with this HTML and commits it, through the same event the editor's script
     /// raises in a browser, so the value keeps only the formats the editor allows. A disabled or read-only editor
     /// throws, since the user can't change it.</summary>
-    public Task EnterAsync(string html)
+    public async Task EnterAsync(string html)
     {
         var editor = _find();
         if (editor.GetAttribute("aria-disabled") == "true" || editor.GetAttribute("aria-readonly") == "true")
@@ -1755,7 +1771,7 @@ public sealed class TbRichTextEditorDriver : TbFieldDriver
             throw new InvalidOperationException("This editor is disabled or read-only, so its text can't be changed.");
         }
 
-        return editor.TriggerEventAsync("ontbrichtextchange", new RichTextChangeEventArgs { Html = html });
+        await editor.TriggerEventAsync("ontbrichtextchange", new RichTextChangeEventArgs { Html = html });
     }
 }
 
@@ -1902,18 +1918,21 @@ public sealed class TbTreeDriver
     /// <summary>Drops the row at <paramref name="row"/> where dragging it onto the top edge of the row at
     /// <paramref name="target"/> does: just before it, or where the tree's <c>MovePositions</c> sends that edge. Both
     /// rows must be showing, and the row must be one the tree lets move.</summary>
-    public Task DragBeforeAsync(string[] row, string[] target) => DragAsync(row, target, TreeMovePosition.Before);
+    public async Task DragBeforeAsync(string[] row, string[] target) =>
+        await DragAsync(row, target, TreeMovePosition.Before);
 
     /// <summary>Drops the row at <paramref name="row"/> where dragging it onto the bottom edge of the row at
     /// <paramref name="target"/> does: just after it, which for an open row means above its first child, or where the
     /// tree's <c>MovePositions</c> sends that edge. Both rows must be showing, and the row must be one the tree lets
     /// move.</summary>
-    public Task DragAfterAsync(string[] row, string[] target) => DragAsync(row, target, TreeMovePosition.After);
+    public async Task DragAfterAsync(string[] row, string[] target) =>
+        await DragAsync(row, target, TreeMovePosition.After);
 
     /// <summary>Drops the row at <paramref name="row"/> where dragging it onto the middle of the row at
     /// <paramref name="target"/> does: inside it, or where the tree's <c>MovePositions</c> sends the middle. Both rows
     /// must be showing, and the row must be one the tree lets move.</summary>
-    public Task DragIntoAsync(string[] row, string[] target) => DragAsync(row, target, TreeMovePosition.Inside);
+    public async Task DragIntoAsync(string[] row, string[] target) =>
+        await DragAsync(row, target, TreeMovePosition.Inside);
 
     // Follows the tree's script: a selected row brings the other selected rows that can move, where a drop on a row's
     // top edge, middle or bottom edge goes depends on the places the tree allows, a drop below an open row goes above
@@ -2043,7 +2062,7 @@ public sealed class TbGridDriver
 
     /// <summary>Waits until the grid has loaded its rows, such as from a <c>DataProvider</c> that answers later.
     /// </summary>
-    public Task WaitForRowsAsync() => _scripts.WaitForAsync(() => !IsBusy);
+    public async Task WaitForRowsAsync() => await _scripts.WaitForAsync(() => !IsBusy);
 
     // A grid nested in a detail row has rows of its own, which aren't this grid's.
     private const string OwnRows = ":scope > tbody > tr[data-part=row]";
@@ -2073,7 +2092,7 @@ public sealed class TbGridDriver
     /// to the one under <paramref name="toColumn"/> in the row <paramref name="toRow"/>, as a drag across them does. Each
     /// row is found by a cell whose text is exactly that value. Throws when the grid's <c>CellSelection</c> is off.
     /// </summary>
-    public Task SelectCellsAsync(string fromRow, string fromColumn, string toRow, string toColumn)
+    public async Task SelectCellsAsync(string fromRow, string fromColumn, string toRow, string toColumn)
     {
         var table = _find();
         if (!table.HasAttribute("data-cell-selection"))
@@ -2082,7 +2101,7 @@ public sealed class TbGridDriver
         }
 
         var (from, to) = (Cell(fromRow, fromColumn), Cell(toRow, toColumn));
-        return table.TriggerEventAsync("ontbcellrange", new CellRangeEventArgs
+        await table.TriggerEventAsync("ontbcellrange", new CellRangeEventArgs
         {
             FromRow = from.ParentElement!.GetAttribute("data-key"),
             FromColumn = from.GetAttribute("data-column"),
@@ -2122,30 +2141,32 @@ public sealed class TbGridDriver
 
     /// <summary>Goes to this page with the grid's pager, as <see cref="TbPaginationDriver.GoToPageAsync"/> does.
     /// </summary>
-    public Task GoToPageAsync(int number)
+    public async Task GoToPageAsync(int number)
     {
         var pager = new TbPaginationDriver(() =>
             _find().Closest("[data-part=grid]")?.QuerySelector(":scope > [data-part=pager] nav")
             ?? throw new InvalidOperationException(
                 "The grid shows no page buttons; it needs a PageSize and more than one page of rows."));
-        return pager.GoToPageAsync(number);
+        await pager.GoToPageAsync(number);
     }
 
     /// <summary>Clicks the row with a cell whose text is exactly this, as the browser reports a click on a plain cell
     /// away from the row's controls: the grid raises <c>OnRowClick</c> and, with <c>RowClickSelects</c>, selects it.
     /// </summary>
-    public Task ClickRowAsync(string cell) =>
-        Row(cell).TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
+    public async Task ClickRowAsync(string cell) =>
+        await Row(cell).TriggerEventAsync("ontbrowclick", new RowClickEventArgs());
 
     /// <summary>Clicks the Save changes button of a grid whose <c>EditMode</c> is <c>Batch</c>. Throws when the grid
     /// holds no changes or doesn't edit in batches; an edit still open doesn't count as a change until it ends.
     /// </summary>
-    public Task SaveChangesAsync() => BatchButton("save-changes").ClickAsync(new MouseEventArgs { Detail = 1 });
+    public async Task SaveChangesAsync() =>
+        await BatchButton("save-changes").ClickAsync(new MouseEventArgs { Detail = 1 });
 
     /// <summary>Clicks the Discard changes button of a grid whose <c>EditMode</c> is <c>Batch</c>. Throws when the grid
     /// holds no changes or doesn't edit in batches; an edit still open doesn't count as a change until it ends.
     /// </summary>
-    public Task DiscardChangesAsync() => BatchButton("discard-changes").ClickAsync(new MouseEventArgs { Detail = 1 });
+    public async Task DiscardChangesAsync() =>
+        await BatchButton("discard-changes").ClickAsync(new MouseEventArgs { Detail = 1 });
 
     private IElement BatchButton(string part)
     {
@@ -2157,11 +2178,11 @@ public sealed class TbGridDriver
 
     /// <summary>Opens the tree grid row with a cell whose text is exactly this, with its button, so its child rows
     /// show. A row already open stays open.</summary>
-    public Task ExpandAsync(string row) => SetExpandedAsync(row, true);
+    public async Task ExpandAsync(string row) => await SetExpandedAsync(row, true);
 
     /// <summary>Closes the tree grid row with a cell whose text is exactly this, with its button, so its child rows
     /// hide. A row already closed stays closed.</summary>
-    public Task CollapseAsync(string row) => SetExpandedAsync(row, false);
+    public async Task CollapseAsync(string row) => await SetExpandedAsync(row, false);
 
     private Task SetExpandedAsync(string row, bool expanded)
     {
@@ -2178,7 +2199,7 @@ public sealed class TbGridDriver
     /// <c>OnRowMove</c> see each step. A step the app refuses ends the move. The row must be on the page shown, and the
     /// grid shows the page it lands on. Throws when the rows can't move or <paramref name="index"/> is past the last
     /// row.</summary>
-    public Task MoveRowAsync(string row, int index) => HandleMenu.MoveAsync(
+    public async Task MoveRowAsync(string row, int index) => await HandleMenu.MoveAsync(
         () => MovableRow(row).Children.First(cell => cell.ClassList.Contains("tb-data-grid__handle"))
             .FirstElementChild!,
         () => int.Parse(MovableRow(row).GetAttribute("data-index")!, CultureInfo.InvariantCulture),
@@ -2192,12 +2213,12 @@ public sealed class TbGridDriver
     /// of the row with a cell whose text is exactly <paramref name="target"/>, to move it just before that row,
     /// reporting the drag and the drop as the grid's script would. Both rows must be on the page shown, and the grid
     /// needs a name no other grid or sortable list shares, by which the drag reaches its script.</summary>
-    public Task DragRowBeforeAsync(string row, string target) => DragRowAsync(row, target, before: true);
+    public async Task DragRowBeforeAsync(string row, string target) => await DragRowAsync(row, target, before: true);
 
     /// <summary>Drags the row with a cell whose text is exactly <paramref name="row"/> by its handle onto the bottom
     /// half of the row with a cell whose text is exactly <paramref name="target"/>, to move it just after that row,
     /// reporting the drag and the drop as the grid's script would. Both rows must be on the page shown.</summary>
-    public Task DragRowAfterAsync(string row, string target) => DragRowAsync(row, target, before: false);
+    public async Task DragRowAfterAsync(string row, string target) => await DragRowAsync(row, target, before: false);
 
     private Task DragRowAsync(string row, string target, bool before)
     {
@@ -2210,12 +2231,15 @@ public sealed class TbGridDriver
 
     /// <summary>Selects the row with a cell whose text is exactly this, with its checkbox or radio button, unless it
     /// is selected already.</summary>
-    public Task SelectAsync(string row)
+    public async Task SelectAsync(string row)
     {
         var found = Row(row);
         var box = found.QuerySelector("[data-part=select] input")
             ?? throw new InvalidOperationException("The grid's rows can't be selected; set its SelectionMode.");
-        return found.HasAttribute("data-selected") ? Task.CompletedTask : box.ChangeAsync(new ChangeEventArgs());
+        if (!found.HasAttribute("data-selected"))
+        {
+            await box.ChangeAsync(new ChangeEventArgs());
+        }
     }
 
     /// <summary>Filters the column with this title by this text. In the filter row, it types the text and commits it,
@@ -2355,7 +2379,7 @@ public sealed class TbGridDriver
     /// <summary>Resizes the column with this title to this many pixels, as the grid's script reports a drag of its
     /// header's edge. bUnit has no layout, so the other columns keep only the widths the grid already gave them, and
     /// the column's <c>MinWidth</c>, which the browser measures, doesn't apply.</summary>
-    public Task ResizeColumnAsync(string column, double width)
+    public async Task ResizeColumnAsync(string column, double width)
     {
         var header = Header(column);
         if (header.QuerySelector("[data-part=resize]") is null)
@@ -2368,7 +2392,7 @@ public sealed class TbGridDriver
             other => other.GetAttribute("data-column")!,
             other => double.Parse(other.GetAttribute("data-width")!, CultureInfo.InvariantCulture));
         widths[header.GetAttribute("data-column")!] = width;
-        return _find().TriggerEventAsync("ontbcolumnwidths", new ColumnWidthsEventArgs { Widths = widths });
+        await _find().TriggerEventAsync("ontbcolumnwidths", new ColumnWidthsEventArgs { Widths = widths });
     }
 
     private IElement Header(string column) => _find().QuerySelectorAll("thead th")
@@ -2419,7 +2443,7 @@ public sealed class TbCommandPaletteDriver
     /// <summary>Opens the palette as its shortcut, such as Ctrl+K, does. For an open palette it does nothing, since
     /// pressing the shortcut again would close it. Throws for a palette with no shortcut; click the app's own button
     /// instead.</summary>
-    public Task OpenAsync()
+    public async Task OpenAsync()
     {
         var marker = _find();
         if (!marker.HasAttribute("data-shortcut"))
@@ -2428,25 +2452,31 @@ public sealed class TbCommandPaletteDriver
                 "This command palette has no shortcut; open it with the app's own button.");
         }
 
-        return IsOpen ? Task.CompletedTask : marker.TriggerEventAsync("ontbhotkey", EventArgs.Empty);
+        if (!IsOpen)
+        {
+            await marker.TriggerEventAsync("ontbhotkey", EventArgs.Empty);
+        }
     }
 
     /// <summary>The names of the commands it shows, in order.</summary>
     public IReadOnlyList<string> Results => [.. Listbox().QuerySelectorAll("[data-part=option]").Select(NameOf)];
 
     /// <summary>Types this text in the search box, as the user does, so the list shows what matches.</summary>
-    public Task SearchAsync(string text) => Open().InputAsync(new ChangeEventArgs { Value = text });
+    public async Task SearchAsync(string text) => await Open().InputAsync(new ChangeEventArgs { Value = text });
 
     /// <summary>Runs the command with this name, as clicking it does, and returns once the app's <c>OnChoose</c> has
     /// run. Throws for a closed palette, or a command it doesn't show or that is disabled.</summary>
-    public Task ChooseAsync(string name)
+    public async Task ChooseAsync(string name)
     {
         var option = Listbox().QuerySelectorAll("[data-part=option]")
             .SingleOrDefault(option => NameOf(option) == name)
             ?? throw new InvalidOperationException($"The command palette shows no command named \"{name}\".");
-        return option.GetAttribute("aria-disabled") == "true"
-            ? throw new InvalidOperationException($"The command \"{name}\" is disabled.")
-            : option.ClickAsync(new MouseEventArgs { Detail = 1 });
+        if (option.GetAttribute("aria-disabled") == "true")
+        {
+            throw new InvalidOperationException($"The command \"{name}\" is disabled.");
+        }
+
+        await option.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 
     // A component inside a template can have a label part of its own, so only the palette's own label counts.
@@ -2486,7 +2516,7 @@ public sealed class TbSortableDriver
     /// a user would: Move to start or Move to end for the first or last place, else Move up or Move down a place at a
     /// time, so <c>CanMove</c> and <c>OnMove</c> see each step. A step the app refuses ends the move. Throws when the
     /// list is disabled or <paramref name="index"/> is past its last item.</summary>
-    public Task MoveAsync(string item, int index) => HandleMenu.MoveAsync(
+    public async Task MoveAsync(string item, int index) => await HandleMenu.MoveAsync(
         () => Item(item).Children.First(child => child.GetAttribute("data-part") == "handle"),
         () => ItemElements().IndexOf(Item(item)), ItemElements().Count, index, item);
 
@@ -2507,12 +2537,12 @@ public sealed class TbSortableDriver
     /// <summary>Drags the item named <paramref name="item"/> by its handle onto the top half of the item
     /// <paramref name="target"/>, to move it just before that item, reporting the drag and the drop as the list's
     /// script would.</summary>
-    public Task DragBeforeAsync(string item, string target) => DragAsync(item, target, before: true);
+    public async Task DragBeforeAsync(string item, string target) => await DragAsync(item, target, before: true);
 
     /// <summary>Drags the item named <paramref name="item"/> by its handle onto the bottom half of the item
     /// <paramref name="target"/>, to move it just after that item, reporting the drag and the drop as the list's
     /// script would.</summary>
-    public Task DragAfterAsync(string item, string target) => DragAsync(item, target, before: false);
+    public async Task DragAfterAsync(string item, string target) => await DragAsync(item, target, before: false);
 
     /// <summary>Drags the item named <paramref name="item"/> by its handle into the list labeled
     /// <paramref name="list"/> in its group, onto the top half of the item <paramref name="before"/> to land just
@@ -2662,21 +2692,21 @@ public sealed class TbTabsDriver
     public string? Selected => _find().QuerySelector("[role=tab][aria-selected=true]")?.TextContent.Trim();
 
     /// <summary>Selects the tab with this text, as clicking it does.</summary>
-    public Task SelectAsync(string tab) => Find(tab).ClickAsync(new MouseEventArgs { Detail = 1 });
+    public async Task SelectAsync(string tab) => await Find(tab).ClickAsync(new MouseEventArgs { Detail = 1 });
 
     /// <summary>Closes the tab with this text, as clicking its close mark does. Throws for a tab that can't be closed.
     /// </summary>
-    public Task CloseAsync(string tab) =>
-        (Find(tab).QuerySelector("[data-part=close]")
+    public async Task CloseAsync(string tab) =>
+        await (Find(tab).QuerySelector("[data-part=close]")
             ?? throw new InvalidOperationException($"The tab \"{tab}\" can't be closed."))
         .ClickAsync(new MouseEventArgs { Detail = 1 });
 
     /// <summary>Clicks the add button that follows the tab list. Throws for tabs with no add button.</summary>
-    public Task AddAsync()
+    public async Task AddAsync()
     {
         var add = _find().ParentElement?.Children.FirstOrDefault(cell => cell.ClassName == "tb-tabs__actions")
             ?.QuerySelector("[data-part=add]");
-        return (add ?? throw new InvalidOperationException("The tabs have no add button."))
+        await (add ?? throw new InvalidOperationException("The tabs have no add button."))
             .ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 
@@ -2694,12 +2724,15 @@ public sealed class TbHotkeyDriver
 
     /// <summary>Fires the hotkey as its script does when its keys are pressed where it applies. Throws for a disabled
     /// hotkey, whose keys reach the page instead.</summary>
-    public Task PressAsync()
+    public async Task PressAsync()
     {
         var hotkey = _find();
-        return hotkey.HasAttribute("data-disabled")
-            ? throw new InvalidOperationException($"The hotkey \"{hotkey.GetAttribute("data-keys")}\" is disabled.")
-            : hotkey.TriggerEventAsync("ontbhotkey", EventArgs.Empty);
+        if (hotkey.HasAttribute("data-disabled"))
+        {
+            throw new InvalidOperationException($"The hotkey \"{hotkey.GetAttribute("data-keys")}\" is disabled.");
+        }
+
+        await hotkey.TriggerEventAsync("ontbhotkey", EventArgs.Empty);
     }
 }
 
@@ -2778,11 +2811,11 @@ public sealed class TbViewportDriver
 
     /// <summary>Clicks the zoom in button. Throws when the zoom is at its largest or the viewport shows no controls.
     /// </summary>
-    public Task ZoomInAsync() => ZoomAsync("zoom-in");
+    public async Task ZoomInAsync() => await ZoomAsync("zoom-in");
 
     /// <summary>Clicks the zoom out button. Throws when the zoom is at its smallest or the viewport shows no
     /// controls.</summary>
-    public Task ZoomOutAsync() => ZoomAsync("zoom-out");
+    public async Task ZoomOutAsync() => await ZoomAsync("zoom-out");
 
     private Task ZoomAsync(string part)
     {
@@ -2793,18 +2826,19 @@ public sealed class TbViewportDriver
     }
 
     /// <summary>Picks <see cref="ViewportFit.Width"/> or <see cref="ViewportFit.Page"/> from the zoom menu.</summary>
-    public Task FitAsync(ViewportFit fit)
+    public async Task FitAsync(ViewportFit fit)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(fit, ViewportFit.None);
         var (trigger, list) = Menu();
-        return TbMenuDriver.ClickAsync(trigger, list.QuerySelectorAll("[role=menuitemradio]")[fit == ViewportFit.Width ? 0 : 1]);
+        await TbMenuDriver.ClickAsync(trigger,
+            list.QuerySelectorAll("[role=menuitemradio]")[fit == ViewportFit.Width ? 0 : 1]);
     }
 
     /// <summary>Picks Actual size from the zoom menu, which shows the content at 100%.</summary>
-    public Task ActualSizeAsync()
+    public async Task ActualSizeAsync()
     {
         var (trigger, list) = Menu();
-        return TbMenuDriver.ClickAsync(trigger, list.QuerySelector("[role=menuitem]")!);
+        await TbMenuDriver.ClickAsync(trigger, list.QuerySelector("[role=menuitem]")!);
     }
 
     private IElement Control(string part) => _find().QuerySelector($"[data-part=controls] [data-part={part}]")
@@ -2835,29 +2869,31 @@ public sealed class TbQueryBuilderDriver
         new TrailblazorMarkup(_findAll, _scripts).Within(() => ConditionOf(number, group));
 
     /// <summary>Clicks the group's Add condition button, which adds a condition on the first field.</summary>
-    public Task AddConditionAsync(params int[] group) => Click(GroupOf(group), "group-actions", "add-condition");
+    public async Task AddConditionAsync(params int[] group) =>
+        await Click(GroupOf(group), "group-actions", "add-condition");
 
     /// <summary>Clicks the group's Add group button, which adds a group with one condition inside it. Throws when the
     /// group is at the deepest level.</summary>
-    public Task AddGroupAsync(params int[] group) => Click(GroupOf(group), "group-actions", "add-group");
+    public async Task AddGroupAsync(params int[] group) => await Click(GroupOf(group), "group-actions", "add-group");
 
     /// <summary>Clicks the remove button of the group's condition with this number.</summary>
-    public Task RemoveConditionAsync(int number, params int[] group) =>
-        ConditionOf(number, group).QuerySelector("[data-part=remove-condition]")!.ClickAsync(new MouseEventArgs());
+    public async Task RemoveConditionAsync(int number, params int[] group) =>
+        await ConditionOf(number, group).QuerySelector("[data-part=remove-condition]")!
+            .ClickAsync(new MouseEventArgs());
 
     /// <summary>Clicks the remove button of the group at this path, which can't be the outer group.</summary>
-    public Task RemoveGroupAsync(params int[] group)
+    public async Task RemoveGroupAsync(params int[] group)
     {
         ArgumentOutOfRangeException.ThrowIfZero(group.Length, nameof(group));
-        return Click(GroupOf(group), "group-header", "remove-group");
+        await Click(GroupOf(group), "group-header", "remove-group");
     }
 
     /// <summary>Picks whether the group matches items that meet all of its conditions or any of them.</summary>
-    public Task JoinAsync(QueryJoin join, params int[] group)
+    public async Task JoinAsync(QueryJoin join, params int[] group)
     {
         var select = new TbSelectDriver(() => GroupOf(group).QuerySelector(":scope > [data-part=group-header] "
             + "[role=combobox]")!, _findAll);
-        return select.ChooseAsync(select.Options[join == QueryJoin.And ? 0 : 1]);
+        await select.ChooseAsync(select.Options[join == QueryJoin.And ? 0 : 1]);
     }
 
     private static Task Click(IElement group, string part, string button) =>
@@ -2901,16 +2937,16 @@ public sealed class TbMenuDriver
 
     /// <summary>Opens the menu, as clicking its trigger does. An open menu is left as it is. Throws for a disabled
     /// menu, or one on a static page, which opens natively, without the script that tells the app it's open.</summary>
-    public Task OpenAsync() => SetOpenAsync(true);
+    public async Task OpenAsync() => await SetOpenAsync(true);
 
     /// <summary>Closes the menu, as pressing Escape does. A closed menu is left as it is. Throws for an open menu on
     /// a static page, as <see cref="OpenAsync"/> does.</summary>
-    public Task CloseAsync() => SetOpenAsync(false);
+    public async Task CloseAsync() => await SetOpenAsync(false);
 
     /// <summary>Clicks the item with this name, through the submenus named before it, as in
     /// <c>ChooseAsync("Export", "PDF")</c>. A checkbox or radio item is clicked the same way. Throws for a disabled
     /// menu or item, a name the menu doesn't have, or a button item on a static page, where only links work.</summary>
-    public Task ChooseAsync(params string[] path)
+    public async Task ChooseAsync(params string[] path)
     {
         ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
         var trigger = EnabledTrigger();
@@ -2920,7 +2956,7 @@ public sealed class TbMenuDriver
             list = ListOf(Find(list, name, "[data-part=submenu-trigger]", "submenu"));
         }
 
-        return ClickAsync(trigger, Find(list, path[^1], Items, "item"));
+        await ClickAsync(trigger, Find(list, path[^1], Items, "item"));
     }
 
     internal static Task ClickAsync(IElement trigger, IElement item)

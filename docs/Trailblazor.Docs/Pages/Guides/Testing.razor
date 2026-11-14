@@ -380,6 +380,11 @@
         <ul>
             <li>As in Playwright, choosing refuses a disabled field.</li>
             <li>
+                When a helper refuses, or can't find its component, it faults the task it returns rather than throwing
+                at the call, so a test that holds the task, or passes it to <code>Task.WhenAll</code>, sees the error
+                where it awaits. Wherever these notes say a helper throws, it throws this way.
+            </li>
+            <li>
                 Choosing needs an interactive page, since a static select is a native one that posts with its form. The
                 slider, autocomplete, color picker and file upload helpers throw on a static page for the same reason.
             </li>
