@@ -6,7 +6,8 @@ namespace Trailblazor;
 /// layout to host the dialogs.</summary>
 public interface IDialogService
 {
-    /// <summary>The open dialogs, oldest first; the last one is on top.</summary>
+    /// <summary>The open dialogs, oldest first; the last one is on top. A closing dialog stays in the list, with
+    /// <see cref="DialogReference.IsClosing"/> set, until it has faded out.</summary>
     IReadOnlyList<DialogReference> OpenDialogs { get; }
 
     // The overloads differ in their type parameter count, so no call is ambiguous.

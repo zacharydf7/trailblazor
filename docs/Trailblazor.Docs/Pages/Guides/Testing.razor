@@ -482,10 +482,14 @@
                     <tr>
                         <th scope="row">The page</th>
                         <td>
-                            A marker your layout sets once it's interactive, such as <code>main[data-interactive]</code>
-                            below, checked after each navigation. That works when <code>Routes</code> is interactive;
-                            when interactivity is set page by page, the layout stays static, so put the marker on each
-                            interactive page's root instead.
+                            <code>page.Tb().InteractiveAsync()</code>, which waits for the
+                            <code>[data-tb-interactive]</code> mark <code>TbRoot</code> renders once its dialogs,
+                            toasts and announcements run interactively. When <code>Routes</code> is interactive, that's
+                            when the page is. When interactivity is set page by page, the mark appears with the first
+                            interactive session and stays through later navigation, so it can't tell you the next page
+                            is ready. Put a marker such as
+                            <code>data-interactive="@@RendererInfo.IsInteractive"</code> on each interactive page's
+                            root instead, and wait for it after each navigation.
                         </td>
                     </tr>
                     <tr>
@@ -946,11 +950,8 @@
         """;
 
     private const string Waiting = """
-        <!-- MainLayout.razor -->
-        <main data-interactive="@RendererInfo.IsInteractive">@Body</main>
-
-        // The test, after each navigation
-        await page.Locator("main[data-interactive]").WaitForAsync();
+        // The test, once the page has loaded, when Routes is interactive
+        await page.Tb().InteractiveAsync();
         await Expect(page.Locator(".tb-tree[data-ready]")).ToBeVisibleAsync();
         """;
 

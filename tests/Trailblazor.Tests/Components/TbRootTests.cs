@@ -32,10 +32,31 @@ public class TbRootTests : BunitContext
         Assert.All(ModesOfTheHosts(cut), Assert.Null);
     }
 
+    [Fact]
+    public void Render_ShouldMarkThePageInteractive_WhenTheHostsRunInteractively()
+    {
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+
+        var cut = Render<TbRoot>();
+
+        Assert.Single(cut.FindAll("[data-tb-interactive]"));
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveThePageUnmarked_WhenTheHostsRenderStatically()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbRoot>();
+
+        Assert.Empty(cut.FindAll("[data-tb-interactive]"));
+    }
+
     private static IEnumerable<object?> ModesOfTheHosts(IRenderedComponent<TbRoot> cut) =>
         new IComponent[]
         {
             cut.FindComponent<DialogHost>().Instance, cut.FindComponent<ToastHost>().Instance,
             cut.FindComponent<AnnouncerHost>().Instance, cut.FindComponent<StylesheetCheck>().Instance,
+            cut.FindComponent<InteractiveMark>().Instance,
         }.Select(host => AssignedRenderMode.GetValue(host));
 }

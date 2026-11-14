@@ -29,7 +29,7 @@ public class ApiDocsTests
 
         Assert.Equal(["Title { get; set; }", "Options { get; }", "Modal { get; set; }", "Size { get; set; }",
             "Position { get; set; }", "WindowState { get; set; }", "ShowHeader { get; set; }",
-            "CloseButton { get; set; }", "ContentType { get; }", "Parameters { get; }",
+            "CloseButton { get; set; }", "ContentType { get; }", "Parameters { get; }", "IsClosing { get; }",
             "Result { get; }", "CancelAsync()", "ConfirmAsync()",
             "CloseAsync(TResult? value)", "Update<TDialog>(Action<DialogParameters<TDialog>> parameters)"],
             reference.Select(member => member.Name));

@@ -248,3 +248,4 @@ Trailblazor.Testing.Playwright.TbSignaturePadLocator.TbSignaturePadLocator(Micro
 Trailblazor.Testing.Playwright.TbSignaturePadLocator.TypeNameAsync(string! name) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbSignaturePadLocator.UndoAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TrailblazorPage.SignaturePad(string! label) -> Trailblazor.Testing.Playwright.TbSignaturePadLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.InteractiveAsync() -> System.Threading.Tasks.Task!

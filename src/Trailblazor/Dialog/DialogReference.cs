@@ -236,8 +236,10 @@ public abstract class DialogReference
 
     internal Task CloseAsync(bool confirmed, object? value) => _close(this, confirmed, value);
 
-    // Set once closing starts, so a second close while the dialog fades out does nothing.
-    internal bool Closing { get; set; }
+    /// <summary>Whether the dialog has started to close. A closing dialog stays in
+    /// <see cref="IDialogService.OpenDialogs"/> while it fades out, until its result is set, so leave out the closing
+    /// ones to find the dialogs still open.</summary>
+    public bool IsClosing { get; internal set; }
 
     // A second request while the content is still deciding, such as a double click on the backdrop, is ignored.
     internal async Task DismissAsync(DialogDismissReason reason)
@@ -257,7 +259,7 @@ public abstract class DialogReference
         {
             _dismissing = false;
             // A dialog the content kept open isn't counted as dismissed if it closes some other way later.
-            if (!Closing)
+            if (!IsClosing)
             {
                 DismissedBy = null;
             }

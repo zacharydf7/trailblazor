@@ -5347,3 +5347,4 @@ Trailblazor.TbModelFields<TModel>.OnChange.get -> Microsoft.AspNetCore.Component
 Trailblazor.TbModelFields<TModel>.OnChange.set -> void
 override Trailblazor.TbNumberField<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 Trailblazor.TbNumberField<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.DialogReference.IsClosing.get -> bool
