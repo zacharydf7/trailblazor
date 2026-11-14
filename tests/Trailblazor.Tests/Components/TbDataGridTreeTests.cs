@@ -259,6 +259,17 @@ public class TbDataGridTreeTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldNameTheKeyAndBothRows_WhenTwoChildRowsShareAKey()
+    {
+        Folder[] items = [new(1, "Docs", 5, [new(2, "Notes", 3), new(2, "Plans", 9)])];
+
+        var error = Assert.Throws<InvalidOperationException>(() => RenderFolders(grid => grid
+            .Add(folder => folder.RowLabel, folder => folder.Name), items));
+
+        Assert.Contains("the same key (2): \"Notes\" and \"Plans\"", error.Message);
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenARowIsUnderItself()
     {
         List<Folder> children = [];

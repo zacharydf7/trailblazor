@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Trailblazor.Internal.Events;
 using Trailblazor.Primitives;
@@ -115,6 +117,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private int _answered;
     private object? _arrangedFor;
     private object? _rowOptions;
+    private IEnumerable<TItem>? _itemsSeen;
+    private int? _itemsCountSeen;
+    private bool _warnedInPlace;
 
     /// <summary>Creates the data grid.</summary>
     public TbDataGrid()
@@ -679,6 +684,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         // Rows draw again for a new collection, whose items may have changed in place, or when the selection mode,
         // cell navigation, cell selection or part classes change a row's markup. Each row compares its own class and
         // label, which may read from outside the item.
+        WarnIfChangedInPlace();
         object rowOptions = (Items, SelectionMode, CellNavigation, CellSelection, Classes);
         if (!rowOptions.Equals(_rowOptions))
         {
@@ -781,6 +787,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// after they changed in place.</summary>
     public async Task RefreshAsync()
     {
+        (_itemsSeen, _itemsCountSeen) = (Items, ItemsCount);
         _rowVersion++;
         await ShowAsync(force: true);
         StateHasChanged();
@@ -1979,6 +1986,32 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _arrangedFor = ArrangedFor;
     }
 
+    private int? ItemsCount => Items?.TryGetNonEnumeratedCount(out var count) == true ? count : null;
+
+    // RefreshAsync records the count, so the same collection with another count was changed in place without it, and
+    // the rows are stale. It warns once, not on every render after.
+    private void WarnIfChangedInPlace()
+    {
+        var count = ItemsCount;
+        if (!_warnedInPlace && Items is not null && ReferenceEquals(Items, _itemsSeen) && count != _itemsCountSeen)
+        {
+            _warnedInPlace = true;
+            Services.GetService<ILogger<TbDataGrid<TItem>>>()?.LogWarning("The grid {Grid} got the same Items "
+                + "collection back with {Count} items instead of {Before}, so it was changed in place, and the grid "
+                + "still shows the rows it had. Pass a new collection, or call RefreshAsync after each change.",
+                AriaLabel ?? nameof(TbDataGrid<TItem>), count, _itemsCountSeen);
+        }
+
+        (_itemsSeen, _itemsCountSeen) = (Items, count);
+    }
+
+    // A row's own data can be private, so only its RowLabel names it, and a key only when it's text or a value, as
+    // its data-key already shows; by default the key is the item itself.
+    private InvalidOperationException SameKey(object key, TItem first, TItem second, string fix) =>
+        new($"{nameof(TbDataGrid<TItem>)} has two rows with the same key"
+            + (key is string or IFormattable ? $" ({Convert.ToString(key, CultureInfo.InvariantCulture)})" : "")
+            + (RowLabel is null ? "" : $": \"{RowLabel(first)}\" and \"{RowLabel(second)}\"") + $". {fix}");
+
     private object ArrangedFor =>
         (Items, _sorts, _filters, _groups, _page, _pageSize, _columnVersion, GroupTotals && HasTotals, _treeVersion);
 
@@ -2024,18 +2057,18 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private List<TreeNode> TreeOf(Func<TItem, bool> matches, List<TItem> matched)
     {
         _parentOf.Clear();
-        HashSet<object> seen = [];
+        Dictionary<object, TItem> seen = [];
         List<TreeNode> Level(IEnumerable<TItem> items, bool top, TItem parent)
         {
             List<TreeNode> nodes = [];
             foreach (var item in Sorted(items))
             {
                 var key = KeyOf(item);
-                if (!seen.Add(key))
+                if (!seen.TryAdd(key, item))
                 {
-                    throw new InvalidOperationException($"{nameof(TbDataGrid<TItem>)} has two rows with the same key, " +
-                        $"or a row under itself; give it a {nameof(KeySelector)} that gives each item a different key, " +
-                        $"and make sure no row's {nameof(ChildrenSelector)} leads back to that row.");
+                    throw SameKey(key, seen[key], item, $"If both are the same row, it's listed twice, under two "
+                        + $"parents or under itself; check the items and what {nameof(ChildrenSelector)} returns. "
+                        + $"Otherwise, give the grid a {nameof(KeySelector)} that gives each item a different key.");
                 }
 
                 if (!top)
@@ -2263,8 +2296,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         var shown = rows.Select(KeyOf).ToHashSet();
         if (shown.Count != rows.Count)
         {
-            throw new InvalidOperationException($"{nameof(TbDataGrid<TItem>)} has two rows with the same key; " +
-                $"give it a {nameof(KeySelector)} that gives each item a different key, such as its id.");
+            var clash = rows.GroupBy(KeyOf).First(group => group.Count() > 1);
+            throw SameKey(clash.Key, clash.First(), clash.ElementAt(1), $"Give the grid a {nameof(KeySelector)} that "
+                + "gives each item a different key, such as its id.");
         }
 
         _rows = rows;

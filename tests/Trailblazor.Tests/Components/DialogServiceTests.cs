@@ -1,6 +1,8 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Trailblazor.Tests.Components;
 
@@ -27,6 +29,23 @@ public class DialogServiceTests : BunitContext
         })));
 
         Assert.Equal(4000, dialogs.OpenDialogs.Distinct().Count());
+    }
+
+    [Theory]
+    [InlineData(false, 1)]
+    [InlineData(true, 0)]
+    public async Task TbDialogTitle_ShouldWarnOnlyOnceAndOnlyWithoutAHeader_WhenTheHeaderIsHiddenOrShown(
+        bool showHeader, int warnings)
+    {
+        var logs = new FakeLogCollector();
+        Services.AddSingleton<ILogger<TbDialogTitle>>(new FakeLogger<TbDialogTitle>(logs));
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.Show<TitledDialog, bool>("Delete Pine Hollow", options: new() { ShowHeader = showHeader });
+        var title = host.WaitForComponent<TitledDialog>();
+        await title.InvokeAsync(() => title.Instance.Trips = 4);
+
+        Assert.Equal(warnings, logs.GetSnapshot().Count(log => log.Level == LogLevel.Warning));
     }
 
     [Fact]

@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Trailblazor;
 
@@ -15,11 +17,26 @@ public sealed class TbDialogTitle : ComponentBase, IDisposable
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private bool _warned;
+
     private DialogReference Reference => Dialog
         ?? throw new InvalidOperationException($"Put {nameof(TbDialogTitle)} inside a dialog.");
 
     /// <inheritdoc />
-    protected override void OnParametersSet() => Reference.SetTitleContent(ChildContent);
+    protected override void OnParametersSet()
+    {
+        Reference.SetTitleContent(ChildContent);
+        if (!Reference.ShowHeader && !_warned)
+        {
+            _warned = true;
+            Services.GetService<ILogger<TbDialogTitle>>()?.LogWarning("The dialog {Title} has a TbDialogTitle, but "
+                + "ShowHeader is off, so the title content doesn't show. Show the header, or put the content in the "
+                + "dialog's body.", Reference.Title);
+        }
+    }
 
     /// <inheritdoc />
     public void Dispose() => Dialog?.SetTitleContent(null);

@@ -6,6 +6,8 @@ using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.JSInterop;
 using Trailblazor.Testing;
 
@@ -54,6 +56,39 @@ public class TbDataGridTests : BunitContext
     ];
 
     [Fact]
+    public void Render_ShouldWarnOnce_WhenTheSameItemsCollectionComesBackWithAnotherCount()
+    {
+        var logs = new FakeLogCollector();
+        Services.AddSingleton<ILogger<TbDataGrid<Trail>>>(new FakeLogger<TbDataGrid<Trail>>(logs));
+        List<Trail> trails = [.. Trails];
+        var cut = RenderTrails(trails);
+
+        cut.Render(parameters => parameters.Add(grid => grid.Items, trails));
+        trails.Add(trails[0] with { Id = 99 });
+        cut.Render(parameters => parameters.Add(grid => grid.Items, trails));
+        trails.Add(trails[0] with { Id = 100 });
+        cut.Render(parameters => parameters.Add(grid => grid.Items, trails));
+
+        var warning = Assert.Single(logs.GetSnapshot(), log => log.Level == LogLevel.Warning);
+        Assert.Contains("RefreshAsync", warning.Message);
+    }
+
+    [Fact]
+    public async Task Render_ShouldNotWarn_WhenTheItemsChangedInPlaceAreRefreshed()
+    {
+        var logs = new FakeLogCollector();
+        Services.AddSingleton<ILogger<TbDataGrid<Trail>>>(new FakeLogger<TbDataGrid<Trail>>(logs));
+        List<Trail> trails = [.. Trails];
+        var cut = RenderTrails(trails);
+
+        trails.Add(trails[0] with { Id = 99 });
+        await cut.InvokeAsync(cut.Instance.RefreshAsync);
+        cut.Render(parameters => parameters.Add(grid => grid.Items, trails));
+
+        Assert.Empty(logs.GetSnapshot());
+    }
+
+    [Fact]
     public void Render_ShouldTitleFormatAndAlignEachColumn_WhenGivenFields()
     {
         var culture = CultureInfo.CurrentCulture;
@@ -79,9 +114,22 @@ public class TbDataGridTests : BunitContext
     [Fact]
     public void Render_ShouldThrow_WhenTwoRowsHaveTheSameKey()
     {
-        var error = Assert.Throws<InvalidOperationException>(() => RenderTrails([Trails[0], Trails[0] with { }]));
+        var error = Assert.Throws<InvalidOperationException>(() => RenderTrails(
+            [Trails[0], Trails[1] with { Id = Trails[0].Id }],
+            grid => grid.Add(trail => trail.RowLabel, trail => trail.Name)));
 
         Assert.Contains("KeySelector", error.Message);
+        Assert.Contains($"the same key ({Trails[0].Id}): \"{Trails[0].Name}\" and \"{Trails[1].Name}\"", error.Message);
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveTheRowsDataOutOfTheError_WhenTwoRowsAreEqualItemsWithNoKeySelector()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<TbDataGrid<Trail>>(parameters => parameters
+            .Add(grid => grid.Items, [Trails[0], Trails[0] with { }]).Add(grid => grid.AriaLabel, "Trails")));
+
+        Assert.Contains("the same key.", error.Message);
+        Assert.DoesNotContain(Trails[0].Name, error.Message);
     }
 
     [Fact]

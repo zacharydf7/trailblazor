@@ -6941,7 +6941,8 @@ public static class ExampleCatalog
                     + "set.", typeof(DialogPositionExample)),
                 new("header", "The header", "`ShowHeader = false` hides a dialog's header, and the title still names "
                     + "the dialog. `CloseButton = false` removes the close button. `TbDialogTitle` shows richer "
-                    + "content in place of the title; keep the title's text in it, since it names the dialog. "
+                    + "content in place of the title; keep the title's text in it, since it names the dialog. With "
+                    + "the header hidden, `TbDialogTitle` shows nothing and logs a warning. "
                     + "`TbDialogTitle` renders inside an `h2`, so keep its content inline: text, icons and badges, but "
                     + "no block elements. `TbDialogHeaderActions` puts buttons or a menu in the header, after the "
                     + "title and before the window buttons; it stays out of the dialog's name, and a drag that "
@@ -7869,9 +7870,10 @@ public static class ExampleCatalog
                     + "finger, or with Alt+Shift and the arrows. A finger holds still for a moment first, so a swipe "
                     + "still scrolls. `OnMove` says what moved and where, and the app applies it, so it can be undone "
                     + "like any other change. A drag that rests on a closed row opens it. `CanMove` can refuse a move "
-                    + "and say why. `InsertTemplate` puts content on each row's edge, such as the buttons here that "
-                    + "add a row. It shows when the pointer reaches that edge or the content has keyboard focus, and "
-                    + "on a touch screen for the focused row.",
+                    + "and say why, and `CanMoveItem` decides which rows can be moved at all; it runs as each row "
+                    + "renders, so keep it fast and don't let it throw. `InsertTemplate` puts content on each row's "
+                    + "edge, such as the buttons here that add a row. It shows when the pointer reaches that edge or "
+                    + "the content has keyboard focus, and on a touch screen for the focused row.",
                     typeof(TreeViewMoveExample)),
                 new("reorder-only", "No drops into a row", "`MovePositions` sets where rows may go. With "
                     + "`TreeMovePositions.Before | TreeMovePositions.After`, a drop on a row's top half goes before it "
@@ -8422,7 +8424,8 @@ public static class ExampleCatalog
                 new("A row draws again only when its item, its selection, its `RowClass`, its `RowLabel` or the "
                     + "columns change. When a `CellTemplate` shows something else, call `RenderRows` after it "
                     + "changes. After changing `Items` in place, or after the page changes a filter of its own, call "
-                    + "`RefreshAsync`.") { Pitfall = true },
+                    + "`RefreshAsync`. When the same collection comes back with a different count and no "
+                    + "`RefreshAsync`, the grid logs a warning once.") { Pitfall = true },
                 new("Each move handle is a menu with a script of its own, so set a `PageSize` on a grid with many rows "
                     + "that can move."),
                 new("A row's `data-key` is its key's text for a string, number or date key, and a made-up id such as "

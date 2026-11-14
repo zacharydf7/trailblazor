@@ -280,7 +280,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public EventCallback<TreeMove<TItem>> OnMove { get; set; }
 
-    /// <summary>Decides which rows can be moved. When null, every row that isn't disabled can be moved.</summary>
+    /// <summary>Decides which rows can be moved. When null, every row that isn't disabled can be moved. It runs as each
+    /// row renders, so keep it fast, and don't let it throw: an exception there takes the page down.</summary>
     [Parameter]
     public Func<TItem, bool>? CanMoveItem { get; set; }
 
