@@ -2197,10 +2197,11 @@
         color: var(--tb-button-text);
     }
 
-    /* The toggle group's quiet look: no edge, and pressing an item gives a tint deeper than its hover. */
+    /* The quiet look: no edge, a tint deeper than hover, and body text, as neutral text falls under 4.5:1 on it. */
     .tb-toggle-group .tb-button--text[aria-pressed="true"] {
         border-color: transparent;
         background: color-mix(in oklch, var(--tb-button-subtle), var(--tb-button-text) 18%);
+        color: var(--tb-color-text);
     }
 
     /* A mixed toggle, on for only part of what it acts on, takes the light fill and a dashed edge in every variant. */

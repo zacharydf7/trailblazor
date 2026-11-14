@@ -413,7 +413,7 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
-    public async Task PressedToggle_ShouldStandOutFromThePageAndAHoveredOne_WhenAPaletteAndThemeAreApplied(
+    public async Task PressedToggle_ShouldStandOutAndKeepItsTextReadable_WhenAPaletteAndThemeAreApplied(
         string browser, string palette, string theme)
     {
         var page = await OpenAsync(browser, "/tokens", new() { ReducedMotion = ReducedMotion.Reduce });
@@ -449,6 +449,12 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         foreach (var (variant, minimum) in new[] { ("outlined", 3.0), ("text", 1.25) })
         {
             var pressed = await FillLuminanceAsync(page, $"{variant}-on");
+            var text = ContrastRatio(await FillLuminanceAsync(page, $"{variant}-on", "color"), pressed);
+            if (text < 4.5)
+            {
+                failures.Add($"{variant}: its text is {text:F2} on the pressed fill");
+            }
+
             await page.GetByTestId($"{variant}-off").HoverAsync();
             var hovered = await FillLuminanceAsync(page, $"{variant}-off");
             var (onPage, onHover) = (ContrastRatio(pressed, background), ContrastRatio(pressed, hovered));
