@@ -4375,6 +4375,23 @@ Trailblazor.TabsClasses.Tab.init -> void
 Trailblazor.TabsClasses.TabsClasses() -> void
 Trailblazor.TbTabs.Classes.get -> Trailblazor.TabsClasses?
 Trailblazor.TbTabs.Classes.set -> void
+Trailblazor.DialogAttributes
+Trailblazor.DialogAttributes.Close.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Trailblazor.DialogAttributes.Close.init -> void
+Trailblazor.DialogAttributes.DialogAttributes() -> void
+Trailblazor.DialogAttributes.Maximize.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Trailblazor.DialogAttributes.Maximize.init -> void
+Trailblazor.DialogAttributes.Minimize.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Trailblazor.DialogAttributes.Minimize.init -> void
+Trailblazor.DialogAttributes.<Clone>$() -> Trailblazor.DialogAttributes!
+Trailblazor.DialogAttributes.Equals(Trailblazor.DialogAttributes? other) -> bool
+override Trailblazor.DialogAttributes.Equals(object? obj) -> bool
+override Trailblazor.DialogAttributes.GetHashCode() -> int
+override Trailblazor.DialogAttributes.ToString() -> string!
+static Trailblazor.DialogAttributes.operator !=(Trailblazor.DialogAttributes? left, Trailblazor.DialogAttributes? right) -> bool
+static Trailblazor.DialogAttributes.operator ==(Trailblazor.DialogAttributes? left, Trailblazor.DialogAttributes? right) -> bool
+Trailblazor.DialogOptions.Attributes.get -> Trailblazor.DialogAttributes?
+Trailblazor.DialogOptions.Attributes.init -> void
 Trailblazor.DialogClasses
 Trailblazor.DialogClasses.Body.get -> string?
 Trailblazor.DialogClasses.Body.init -> void

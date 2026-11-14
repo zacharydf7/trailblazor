@@ -499,6 +499,28 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void ShowAsync_ShouldGiveEachHeaderButtonItsAttributes_WhenTheOptionsSetThem()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new()
+        {
+            Modal = false, Minimizable = true, Maximizable = true,
+            Attributes = new()
+            {
+                Minimize = new Dictionary<string, object> { ["id"] = "notes-minimize" },
+                Maximize = new Dictionary<string, object> { ["id"] = "notes-maximize" },
+                Close = new Dictionary<string, object> { ["id"] = "notes-close", ["data-testid"] = "close-notes" },
+            },
+        });
+
+        Assert.Equal("minimize", host.WaitForElement("#notes-minimize").GetAttribute("data-part"));
+        Assert.Equal("maximize", host.Find("#notes-maximize").GetAttribute("data-part"));
+        var close = host.Find("#notes-close");
+        Assert.Equal(("close", "close-notes"), (close.GetAttribute("data-part"), close.GetAttribute("data-testid")));
+    }
+
+    [Fact]
     public async Task MoveButton_ShouldGoAway_WhenTheDialogIsMinimized()
     {
         var host = Render<DialogHost>();

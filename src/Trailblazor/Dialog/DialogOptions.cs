@@ -67,6 +67,10 @@ public sealed record DialogOptions
     /// <summary>Extra CSS classes for the dialog and its inner parts.</summary>
     public DialogClasses? Classes { get; init; }
 
+    /// <summary>Extra attributes, such as an <c>id</c>, for the header's minimize, maximize and close buttons.
+    /// </summary>
+    public DialogAttributes? Attributes { get; init; }
+
     /// <summary>A label the dialog's use is counted under, such as <c>"delete-trail"</c>, through the
     /// <c>Trailblazor</c> meter: shown each time it opens, and counted in <c>trailblazor.dialog.closed</c> and
     /// <c>trailblazor.dialog.duration</c> with how it closed: <c>confirmed</c>, <c>cancelled</c>, <c>escape</c>,

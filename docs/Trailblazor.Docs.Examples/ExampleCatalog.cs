@@ -6904,7 +6904,7 @@ public static class ExampleCatalog
             [
                 typeof(IDialogService), typeof(DialogReference<>), typeof(DialogOptions), typeof(DialogSettings),
                 typeof(TbDialog), typeof(TbDialogActions), typeof(TbDialogTitle), typeof(TbDialogHeaderActions),
-                typeof(TbDialogDescription), typeof(DialogClasses),
+                typeof(TbDialogDescription), typeof(DialogClasses), typeof(DialogAttributes),
             ],
             Keyboard =
             [
@@ -7027,7 +7027,8 @@ public static class ExampleCatalog
                 + "open, `ChooseAsync(\"Delete\")` clicks a button, and `CancelAsync()` presses Escape. Those two "
                 + "wait until the dialog has faded out and left the page, which is when the app gets the answer. A "
                 + "dialog that's fading carries `data-leaving`, so if you write your own wait, wait for the dialog to "
-                + "be gone, not hidden.",
+                + "be gone, not hidden. To give the header's minimize, maximize and close buttons an `id` or other "
+                + "attributes a test can find them by, set `DialogOptions.Attributes`.",
             Telemetry =
             [
                 "With `DialogOptions.TelemetryName`, such as `\"delete-trail\"`, or the `telemetryName` of "
