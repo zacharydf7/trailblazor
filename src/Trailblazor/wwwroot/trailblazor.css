@@ -4488,8 +4488,9 @@
         touch-action: none;
     }
 
-    /* The Move menu and the header's actions sit in the header but aren't drag handles. */
-    .tb-dialog--draggable .tb-dialog__header :is(.tb-menu__list, .tb-dialog__header-actions) {
+    /* The Move menu, the header's actions and the native controls of a custom header aren't drag handles. */
+    .tb-dialog--draggable .tb-dialog__header :is(.tb-menu__list, .tb-dialog__header-actions, input, textarea, select,
+        label, summary, a[href], [contenteditable]:not([contenteditable="false"])) {
         cursor: auto;
         -webkit-user-select: auto;
         user-select: auto;
@@ -4523,6 +4524,11 @@
         gap: var(--tb-space-3);
         padding: var(--tb-space-3) var(--tb-space-3) var(--tb-space-3) var(--tb-space-5);
         border-block-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-dialog__header-content {
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .tb-dialog__header-actions {

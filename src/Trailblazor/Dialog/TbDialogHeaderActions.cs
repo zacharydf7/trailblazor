@@ -19,8 +19,8 @@ public sealed class TbDialogHeaderActions : ComponentBase, IDisposable
         ?? throw new InvalidOperationException($"Put {nameof(TbDialogHeaderActions)} inside a dialog.");
 
     /// <inheritdoc />
-    protected override void OnParametersSet() => Reference.SetHeaderActions(this, ChildContent);
+    protected override void OnParametersSet() => Reference.Fill(Reference.HeaderActions, this, ChildContent);
 
     /// <inheritdoc />
-    public void Dispose() => Dialog?.ClearHeaderActions(this);
+    public void Dispose() => Dialog?.Empty(Dialog.HeaderActions, this);
 }

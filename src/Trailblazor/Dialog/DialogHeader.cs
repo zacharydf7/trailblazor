@@ -49,6 +49,13 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         }
 
         var classes = Dialog.Options.Classes;
+        var state = Dialog.WindowState;
+        if (Dialog.CustomHeader.Content is { } custom)
+        {
+            AddCustomHeader(builder, custom, state);
+            return;
+        }
+
         builder.OpenElement(10, "header");
         builder.AddAttribute(11, "data-part", "header");
         builder.AddAttribute(12, "class", ClassNames.Join("tb-dialog__header", classes?.Header));
@@ -66,7 +73,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         }
 
         builder.CloseElement();
-        if (Dialog.HeaderActions is { } actions)
+        if (Dialog.HeaderActions.Content is { } actions)
         {
             builder.OpenElement(19, "div");
             builder.AddAttribute(20, "data-part", "header-actions");
@@ -75,8 +82,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
             builder.CloseElement();
         }
 
-        var state = Dialog.WindowState;
-        if (Dialog.Draggable && !Dialog.IsBlocking && state == DialogWindowState.Normal)
+        if (CanMove(state))
         {
             DialogMenus.AddMove(builder, 23, Dialog, Localizer);
         }
@@ -117,6 +123,36 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
             }
 
             builder.CloseComponent();
+        }
+
+        builder.CloseElement();
+    }
+
+    private bool CanMove(DialogWindowState state) =>
+        Dialog.Draggable && !Dialog.IsBlocking && state == DialogWindowState.Normal;
+
+    // The app's header in place of the title and the buttons, with the title kept as the dialog's name and Move kept
+    // for the keyboard.
+    private void AddCustomHeader(RenderTreeBuilder builder, RenderFragment content, DialogWindowState state)
+    {
+        builder.OpenElement(60, "header");
+        builder.AddAttribute(61, "data-part", "header");
+        builder.AddAttribute(62, "class", ClassNames.Join("tb-dialog__header", Dialog.Options.Classes?.Header));
+        // Hidden rather than visually hidden, so a screen reader doesn't read the title twice; aria-labelledby still
+        // names the dialog from it.
+        builder.OpenElement(63, "span");
+        builder.AddAttribute(64, "id", TitleId);
+        builder.AddAttribute(65, "hidden", true);
+        builder.AddContent(66, Dialog.Title);
+        builder.CloseElement();
+        builder.OpenElement(67, "div");
+        builder.AddAttribute(68, "data-part", "header-content");
+        builder.AddAttribute(69, "class", "tb-dialog__header-content");
+        builder.AddContent(70, content);
+        builder.CloseElement();
+        if (CanMove(state))
+        {
+            DialogMenus.AddMove(builder, 71, Dialog, Localizer);
         }
 
         builder.CloseElement();

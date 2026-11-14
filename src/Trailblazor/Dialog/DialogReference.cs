@@ -21,7 +21,6 @@ public abstract class DialogReference
     private bool _maximizable;
     private bool _draggable;
     private bool _resizable;
-    private TbDialogHeaderActions? _headerActionsOwner;
 
     private protected DialogReference(string? title, DialogOptions options,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type? component,
@@ -112,17 +111,17 @@ public abstract class DialogReference
     }
 
     /// <summary>Whether the dialog shows at its own size, minimized or maximized, as its header's buttons set it. It
-    /// starts as <see cref="DialogOptions.WindowState"/>. Minimizing needs <see cref="Minimizable"/> and the header,
-    /// whose button restores it.</summary>
+    /// starts as <see cref="DialogOptions.WindowState"/>. Minimizing needs the header, with a control to restore it:
+    /// the button <see cref="Minimizable"/> shows, or the app's own in a <see cref="TbDialogHeader"/>.</summary>
     public DialogWindowState WindowState
     {
         get => _windowState;
         set
         {
-            if (value == DialogWindowState.Minimized && !(Minimizable && ShowHeader))
+            if (value == DialogWindowState.Minimized && !CanMinimize)
             {
-                throw new InvalidOperationException(
-                    $"Only a dialog with {nameof(DialogOptions.Minimizable)} and its header can be minimized.");
+                throw new InvalidOperationException($"Only a dialog that shows its header and has "
+                    + $"{nameof(DialogOptions.Minimizable)} or a rendered {nameof(TbDialogHeader)} can be minimized.");
             }
 
             Change(() => _windowState = value);
@@ -154,10 +153,7 @@ public abstract class DialogReference
         set => Change(() =>
         {
             _minimizable = value;
-            if (!value && _windowState == DialogWindowState.Minimized)
-            {
-                _windowState = DialogWindowState.Normal;
-            }
+            RestoreIfStuck();
         });
     }
 
@@ -186,6 +182,9 @@ public abstract class DialogReference
         set => Change(() => _resizable = value);
     }
 
+    // A minimized dialog shows only its header, which then needs a control to restore it: its own or the app's.
+    private bool CanMinimize => ShowHeader && (Minimizable || CustomHeader.Content is not null);
+
     // A minimized modal leaves the page usable, so it counts as modeless until it is restored.
     internal bool IsBlocking => _modal && _windowState != DialogWindowState.Minimized;
 
@@ -213,8 +212,11 @@ public abstract class DialogReference
     // Set while a TbDialogTitle is in the dialog, so the header shows it in place of the title's text.
     internal RenderFragment? TitleContent { get; private set; }
 
-    // Set while a TbDialogHeaderActions is in the dialog, so the header shows it after the title.
-    internal RenderFragment? HeaderActions { get; private set; }
+    // Filled while a TbDialogHeaderActions is in the dialog, so the header shows it after the title.
+    internal DialogSlot HeaderActions { get; } = new();
+
+    // Filled while a TbDialogHeader is in the dialog, so the header shows it in place of its own content.
+    internal DialogSlot CustomHeader { get; } = new();
 
     /// <summary>Raised with the new state each time <see cref="WindowState"/> changes.</summary>
     public event Action<DialogWindowState>? WindowStateChanged;
@@ -251,13 +253,15 @@ public abstract class DialogReference
         _showHeader = showHeader;
         _closeButton = closeButton;
         // The Restore button goes with the header, so a minimized dialog comes back rather than stay stuck.
-        Change(() =>
+        Change(RestoreIfStuck);
+    }
+
+    private void RestoreIfStuck()
+    {
+        if (_windowState == DialogWindowState.Minimized && !CanMinimize)
         {
-            if (!showHeader && _windowState == DialogWindowState.Minimized)
-            {
-                _windowState = DialogWindowState.Normal;
-            }
-        });
+            _windowState = DialogWindowState.Normal;
+        }
     }
 
     private void Change(Action change)
@@ -295,21 +299,29 @@ public abstract class DialogReference
         HeaderContentChanged?.Invoke();
     }
 
-    internal void SetHeaderActions(TbDialogHeaderActions owner, RenderFragment? content)
+    internal void Fill(DialogSlot slot, object owner, RenderFragment? content)
     {
-        _headerActionsOwner = owner;
-        HeaderActions = content;
-        HeaderContentChanged?.Invoke();
+        slot.Set(owner, content);
+        OnHeaderContentChanged();
     }
 
-    // An instance swapped in sets its actions before the one it replaces is disposed, so only the latest clears them.
-    internal void ClearHeaderActions(TbDialogHeaderActions owner)
+    internal void Empty(DialogSlot slot, object owner)
     {
-        if (_headerActionsOwner == owner)
+        if (slot.Clear(owner))
         {
-            _headerActionsOwner = null;
-            HeaderActions = null;
-            HeaderContentChanged?.Invoke();
+            OnHeaderContentChanged();
+        }
+    }
+
+    // Removing a custom header may take the only Restore control with it.
+    private void OnHeaderContentChanged()
+    {
+        HeaderContentChanged?.Invoke();
+        // Only an open dialog can be left stuck minimized; a closing one takes its header with it, and a state change
+        // would redraw the frame and a markup dialog's content for nothing.
+        if (_windowState == DialogWindowState.Minimized && !CanMinimize && !IsClosing)
+        {
+            Change(() => _windowState = DialogWindowState.Normal);
         }
     }
 

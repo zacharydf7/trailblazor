@@ -333,16 +333,24 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
     const handleOf = element => element.closest?.('[data-part="trigger"]')
         ?.closest('[data-part="move"], [data-part="resize"]');
 
-    // The header moves the dialog, except from its actions, an open Move menu or a button other than Move; the grip
-    // resizes it.
+    // A custom header can hold any control, so a press on one of these goes to it rather than starting a drag.
+    const headerControls = 'a[href], input, textarea, select, label, summary, [tabindex]:not([tabindex="-1"]), '
+        + '[contenteditable]:not([contenteditable="false"]), [role=button], [role=link], [role=checkbox], [role=radio], '
+        + '[role=switch], [role=slider], [role=spinbutton], [role=textbox], [role=searchbox], [role=combobox], '
+        + '[role=listbox], [role=option], [role=tab], [role^=menuitem]';
+
+    // The header moves the dialog, except from its actions, an open Move menu, a control or a button other than Move;
+    // the grip resizes it.
     const onDragStart = event => {
         draggedHandle = null;
         const button = event.target.closest('button');
         const handle = button && handleOf(button);
         const grip = resizable() && handle?.dataset.part === 'resize';
         const header = draggable() && event.target.closest('[data-part="header"]');
+        const control = header && !handle && event.target.closest(headerControls);
         if (event.button !== 0 || !isNormal()
             || event.target.closest('[data-part="menu"], [data-part="header-actions"]')
+            || (control && header.contains(control))
             || !(grip || (header && (!button || handle)))) {
             return;
         }

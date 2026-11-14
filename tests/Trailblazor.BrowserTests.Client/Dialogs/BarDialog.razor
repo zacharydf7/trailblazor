@@ -1,0 +1,18 @@
+@inherits TbDialogContent<string>
+
+@* The app's own title bar and window controls, in a toolbar that isn't a control itself, so dragging it still
+   moves the dialog. *@
+<TbDialogHeader>
+    <TbStack Row Gap="2" Align="Align.Center" role="toolbar" aria-label="Note tools">
+        <span data-testid="bar-title">Field notes</span>
+        <input aria-label="Filter notes" />
+        <TbCheckbox Label="Pinned" @bind-Value="_pinned" />
+        <TbButton Size="Size.Small" OnClick="() => Dialog.WindowState = DialogWindowState.Minimized">Tuck</TbButton>
+        <TbButton Size="Size.Small" OnClick="() => Dialog.WindowState = DialogWindowState.Normal">Unfold</TbButton>
+    </TbStack>
+</TbDialogHeader>
+<TbTextField TValue="string" Label="Note" />
+
+@code {
+    private bool _pinned;
+}

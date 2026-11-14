@@ -118,6 +118,26 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldKeepItsTbDialogHeaderInTheCorner_WhenTheAppMinimizesAndRestoresIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Barred" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Barred", Exact = true });
+
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Tuck" }).ClickAsync();
+
+        await Expect(dialog).ToHaveAttributeAsync("data-window-state", "minimized");
+        await Expect(dialog.GetByLabel("Note", new() { Exact = true })).ToBeHiddenAsync();
+        await Expect(dialog.GetByTestId("bar-title")).ToBeVisibleAsync();
+        var box = await BoxAsync(page, "Barred");
+        var (width, height) = await ViewportAsync(page);
+        Assert.Equal(width - EdgeGap, box.X + box.Width, tolerance: 1);
+        Assert.Equal(height - EdgeGap, box.Y + box.Height, tolerance: 1);
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Unfold" }).ClickAsync();
+        await Expect(dialog.GetByLabel("Note", new() { Exact = true })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldSitBesideTheOtherMinimizedDialogAndMoveOver_WhenTheOtherCloses(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");

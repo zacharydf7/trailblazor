@@ -521,6 +521,66 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void CustomHeader_ShouldShowInPlaceOfTheTitleAndButtonsAndKeepMove_WhenTheContentHasATbDialogHeader()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<BarDialog, string>("Notes",
+            options: new() { Modal = false, Draggable = true, Maximizable = true });
+
+        var header = host.WaitForElement("[data-part=header]");
+        Assert.Equal(["Notes", "TuckUnfoldClose", "Move"],
+            header.Children.Select(part => part.QuerySelector("[aria-label]")?.GetAttribute("aria-label")
+                ?? part.TextContent.Trim()));
+        Assert.Equal(header.FirstElementChild!.Id, host.Find("dialog").GetAttribute("aria-labelledby"));
+        Assert.Empty(host.FindAll("[data-part=title], [data-part=maximize], [data-part=close]"));
+    }
+
+    [Fact]
+    public async Task CustomHeader_ShouldLetTheAppMinimizeAndRestoreTheDialogOnItsGoing_WhenItIsNotMinimizable()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<BarDialog, string>("Notes", options: new() { Modal = false });
+        var dialog = Dialogs.OpenDialogs.Single();
+
+        await host.WaitForElement("[data-testid=tuck]").ClickAsync(new());
+        Assert.Equal(DialogWindowState.Minimized, dialog.WindowState);
+        await host.Find("[data-testid=drop-header]").ClickAsync(new());
+
+        Assert.Equal(DialogWindowState.Normal, dialog.WindowState);
+        host.WaitForAssertion(() => Assert.Equal("Notes", host.Find("[data-part=title]").TextContent));
+    }
+
+    [Fact]
+    public async Task CustomHeader_ShouldLeaveTheWindowStateAlone_WhenTheAppClosesTheDialogItHasMinimized()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<BarDialog, string>("Notes", options: new() { Modal = false });
+        var dialog = Dialogs.OpenDialogs.Single();
+        var states = new List<DialogWindowState>();
+        dialog.WindowStateChanged += states.Add;
+        await host.WaitForElement("[data-testid=tuck]").ClickAsync(new());
+
+        await host.Find("[data-testid=close]").ClickAsync(new());
+
+        host.WaitForAssertion(() => Assert.Empty(Dialogs.OpenDialogs));
+        Assert.Equal([DialogWindowState.Minimized], states);
+    }
+
+    [Fact]
+    public async Task CustomHeader_ShouldRestoreTheDialog_WhenItsContentGoesWhileTheAppHasItMinimized()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<BarDialog, string>("Notes", options: new() { Modal = false });
+        var dialog = Dialogs.OpenDialogs.Single();
+        await host.WaitForElement("[data-testid=tuck]").ClickAsync(new());
+
+        await host.Find("[data-testid=empty-header]").ClickAsync(new());
+
+        Assert.Equal(DialogWindowState.Normal, dialog.WindowState);
+    }
+
+    [Fact]
     public async Task MoveButton_ShouldGoAway_WhenTheDialogIsMinimized()
     {
         var host = Render<DialogHost>();
@@ -1282,6 +1342,41 @@ public class DialogServiceTests : BunitContext
                 Dialog.Width = "30rem";
                 Dialog.Size = DialogSize.Large;
             }
+        }
+    }
+
+    private sealed class BarDialog : TbDialogContent<string>
+    {
+        private bool _bar = true;
+        private bool _empty;
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            if (_bar)
+            {
+                builder.OpenComponent<TbDialogHeader>(0);
+                builder.AddComponentParameter(1, nameof(TbDialogHeader.ChildContent), _empty ? null : (RenderFragment)(
+                    bar =>
+                    {
+                        AddButton(bar, 0, "tuck", "Tuck", () => Dialog.WindowState = DialogWindowState.Minimized);
+                        AddButton(bar, 10, "unfold", "Unfold", () => Dialog.WindowState = DialogWindowState.Normal);
+                        AddButton(bar, 20, "close", "Close", () => Dialog.CancelAsync());
+                    }));
+                builder.CloseComponent();
+            }
+
+            AddButton(builder, 30, "drop-header", "Drop the header", () => _bar = false);
+            AddButton(builder, 40, "empty-header", "Empty the header", () => _empty = true);
+        }
+
+        private void AddButton(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int sequence,
+            string testId, string text, Action onClick)
+        {
+            builder.OpenElement(sequence, "button");
+            builder.AddAttribute(sequence + 1, "data-testid", testId);
+            builder.AddAttribute(sequence + 2, "onclick", EventCallback.Factory.Create(this, onClick));
+            builder.AddContent(sequence + 3, text);
+            builder.CloseElement();
         }
     }
 

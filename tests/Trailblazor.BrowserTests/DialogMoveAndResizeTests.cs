@@ -62,6 +62,53 @@ public class DialogMoveAndResizeTests(BrowserFixture fixture) : BrowserTest(fixt
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldFollowThePointerAndTheMoveKeys_WhenItsTbDialogHeaderIsDragged(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Barred" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Barred", Exact = true });
+        await Expect(dialog).ToBeVisibleAsync();
+        var before = await DialogTests.BoxAsync(page, "Barred");
+
+        await DragAsync(page, dialog.GetByTestId("bar-title"), 80, 60);
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Move" }).FocusAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        var after = await DialogTests.BoxAsync(page, "Barred");
+        AssertNear([before.X + 80 + KeyStep, before.Y + 60], [after.X, after.Y]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldStayPutAndLetTheFieldTakeFocus_WhenADragStartsOnAFieldInItsTbDialogHeader(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Barred" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Barred", Exact = true });
+        await Expect(dialog).ToBeVisibleAsync();
+        var before = await DialogTests.BoxAsync(page, "Barred");
+        var filter = dialog.GetByLabel("Filter notes");
+
+        await DragAsync(page, filter, 80, 60);
+
+        var after = await DialogTests.BoxAsync(page, "Barred");
+        AssertNear([before.X, before.Y], [after.X, after.Y]);
+        await Expect(filter).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldLetACheckboxInItsTbDialogHeaderToggle_WhenItsLabelIsClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Barred" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Barred", Exact = true });
+
+        await dialog.GetByText("Pinned").ClickAsync();
+
+        await Expect(dialog.GetByRole(AriaRole.Checkbox, new() { Name = "Pinned" })).ToBeCheckedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldStayPut_WhenADragStartsOnItsHeaderActions(string browser)
     {
         var page = await OpenAsync(browser, "/dialogs");

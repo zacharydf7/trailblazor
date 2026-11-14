@@ -3430,6 +3430,11 @@ Trailblazor.TbTooltip.Disabled.get -> bool
 Trailblazor.TbTooltip.Disabled.set -> void
 Trailblazor.TbTooltip.MaxWidth.get -> string?
 Trailblazor.TbTooltip.MaxWidth.set -> void
+Trailblazor.TbDialogHeader
+Trailblazor.TbDialogHeader.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDialogHeader.ChildContent.set -> void
+Trailblazor.TbDialogHeader.Dispose() -> void
+Trailblazor.TbDialogHeader.TbDialogHeader() -> void
 Trailblazor.TbDialogHeaderActions
 Trailblazor.TbDialogHeaderActions.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbDialogHeaderActions.ChildContent.set -> void
