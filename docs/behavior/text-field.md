@@ -16,7 +16,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 - [x] In a mask, typing or deleting mid-text keeps the caret in place. `TextFieldTests.TextField_ShouldKeepTheCaretInPlace_WhenADigitIsTypedOrDeletedMidMask`
 - [x] In a mask, Backspace just after a literal removes the character before it. `text-mask.js`
 - [x] In a read-only field, the keys move the caret but change nothing. `ReadOnlyTests.ReadOnlyField_ShouldKeepItsValueButTakeFocus_WhenTheUserTriesToEditIt`
-- [ ] In Safari, Enter in a masked field commits the fitted text before `OnEnter` runs or the form submits. UNCONFIRMED: `TextFieldTests.OnEnter_ShouldSeeTheFittedText_WhenEnterIsPressedInAMaskedField` needs a WebKit run.
+- [ ] In Safari, Enter in a masked field commits the fitted text before `OnEnter` runs or the form submits; `TextFieldTests.OnEnter_ShouldSeeTheFittedText_WhenEnterIsPressedInAMaskedField` checks it once WebKit runs it. UNCONFIRMED
 
 ## Pointer
 
