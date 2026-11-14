@@ -306,3 +306,7 @@ Trailblazor.Testing.TrailblazorMarkup.ColorPicker(string! label) -> Trailblazor.
 Trailblazor.Testing.TrailblazorMarkup.Dialog(string! title) -> Trailblazor.Testing.TbDialogDriver!
 Trailblazor.Testing.TrailblazorMarkup.FileUpload(string! label) -> Trailblazor.Testing.TbFileUploadDriver!
 Trailblazor.Testing.TrailblazorMarkup.Slider(string! label) -> Trailblazor.Testing.TbSliderDriver!
+Trailblazor.Testing.TbFieldDriver
+Trailblazor.Testing.TbFieldDriver.Error.get -> string?
+Trailblazor.Testing.TbFieldDriver.Errors.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbFieldDriver.Invalid.get -> bool

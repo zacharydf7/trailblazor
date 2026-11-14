@@ -186,9 +186,9 @@
             {
                 <TbText>@DocsText.Render(tip)</TbText>
             }
-            @if (example.TestingTips.Count > 0)
+            @if (example.TestingTipsShown.Count > 0)
             {
-                @Notes("Testing tips", example.TestingTips)
+                @Notes("Testing tips", example.TestingTipsShown)
             }
             @if (example.DataParts.Count > 0)
             {

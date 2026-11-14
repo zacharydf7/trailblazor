@@ -297,8 +297,44 @@ public sealed class TbPopconfirmLocator
     }
 }
 
+/// <summary>What every field's locator reads: the messages the field shows and whether it's marked invalid.</summary>
+public abstract class TbFieldLocator
+{
+    // The messages of the error that describes the control, or the part inside it that users act on.
+    private const string Messages = """
+        control => {
+            const described = control.hasAttribute('aria-describedby') ? control
+                : control.querySelector('[aria-describedby]') ?? control;
+            return (described.getAttribute('aria-describedby') ?? '').split(/\s+/)
+                .map(id => document.getElementById(id)).filter(error => error?.dataset.part === 'error')
+                .flatMap(error => [...error.querySelectorAll('[data-part=message]')])
+                .map(message => message.textContent.trim());
+        }
+        """;
+
+    // Whether the control, or a part of it such as a date range's end, is marked invalid.
+    private const string Marked =
+        "control => control.matches('[aria-invalid=true]') || !!control.querySelector('[aria-invalid=true]')";
+
+    private protected TbFieldLocator()
+    {
+    }
+
+    private protected abstract ILocator Control { get; }
+
+    /// <summary>The field's first error message, such as "Name is required.", or null when it shows none.</summary>
+    public async Task<string?> ErrorAsync() => (await ErrorsAsync()).FirstOrDefault();
+
+    /// <summary>The error messages the field shows, in order.</summary>
+    public async Task<IReadOnlyList<string>> ErrorsAsync() => await Control.EvaluateAsync<string[]>(Messages);
+
+    /// <summary>Whether the field's control, or a part of it such as a date range's end, is marked invalid through
+    /// <c>aria-invalid</c>, which screen readers announce.</summary>
+    public Task<bool> InvalidAsync() => Control.EvaluateAsync<bool>(Marked);
+}
+
 /// <summary>A <c>TbSelect</c> or <c>TbMultiSelect</c>, found by its label or a locator.</summary>
-public sealed class TbSelectLocator(ILocator scope, ILocator field)
+public sealed class TbSelectLocator(ILocator scope, ILocator field) : TbFieldLocator
 {
     /// <summary>Chooses the options with these names: the one option of a select, or each one not yet chosen in a
     /// multiple select, keeping what is already chosen. A statically rendered select is a native one, and is chosen
@@ -390,7 +426,7 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field)
     }
 
     // The list shares the label, so only the combobox, or the native select it replaces, counts as the field.
-    private ILocator Control => @field.And(scope.Locator("[role=combobox], select"));
+    private protected override ILocator Control => @field.And(scope.Locator("[role=combobox], select"));
 
     // A filterable select points to the dialog that holds its filter and listbox.
     private async Task<ILocator> ListboxAsync(ILocator control)
@@ -444,13 +480,16 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field)
 }
 
 /// <summary>A <c>TbAutocomplete</c>, found by its label.</summary>
-public sealed class TbAutocompleteLocator(ILocator scope, string label)
+public sealed class TbAutocompleteLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control =>
+        scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
+
     /// <summary>Types the text, waits for the suggestions, and chooses the option with this name, waiting until the
     /// field has taken it. A statically rendered field is a plain input, which just gets the text.</summary>
     public async Task ChooseAsync(string text, string option)
     {
-        var input = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
+        var input = Control;
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await input.FillAsync(text);
@@ -469,8 +508,10 @@ public sealed class TbAutocompleteLocator(ILocator scope, string label)
 }
 
 /// <summary>A <c>TbColorPicker</c>, found by its label or a locator.</summary>
-public sealed partial class TbColorPickerLocator(ILocator scope, ILocator field)
+public sealed partial class TbColorPickerLocator(ILocator scope, ILocator field) : TbFieldLocator
 {
+    private protected override ILocator Control => @field.And(scope.Locator("input"));
+
     /// <summary>Types the color, as <c>#rrggbb</c>, or <c>#rrggbbaa</c> for a field with <c>Alpha</c>, and waits until
     /// the field has taken it. A statically rendered field just gets the text.</summary>
     public async Task ChooseAsync(string color)
@@ -480,7 +521,7 @@ public sealed partial class TbColorPickerLocator(ILocator scope, ILocator field)
             throw new ArgumentException($"Pass the color as #rrggbb or #rrggbbaa, not {color}.", nameof(color));
         }
 
-        var input = field.And(scope.Locator("input"));
+        var input = Control;
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await input.FillAsync(color);
@@ -502,8 +543,10 @@ public sealed partial class TbColorPickerLocator(ILocator scope, ILocator field)
 }
 
 /// <summary>A <c>TbSignaturePad</c>, found by its label.</summary>
-public sealed class TbSignaturePadLocator(ILocator root)
+public sealed class TbSignaturePadLocator(ILocator root) : TbFieldLocator
 {
+    private protected override ILocator Control => root;
+
     private ILocator Strokes => root.Locator("[data-part=surface] > svg:not([data-part=draft]) > path");
 
     /// <summary>Whether something is drawn or a name is typed.</summary>
@@ -575,8 +618,11 @@ public sealed class TbSignaturePadLocator(ILocator root)
 }
 
 /// <summary>A <c>TbFileUpload</c>, found by its label.</summary>
-public sealed class TbFileUploadLocator(ILocator scope, string label)
+public sealed class TbFileUploadLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control =>
+        scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[type=file]"));
+
     /// <summary>Chooses the files at these paths, as dropping them or picking them in the file dialog would, and waits
     /// until the field has taken the choice. A statically rendered field just gets the files.</summary>
     public Task ChooseAsync(params string[] paths) => ChooseAsync(input => input.SetInputFilesAsync(paths));
@@ -587,7 +633,7 @@ public sealed class TbFileUploadLocator(ILocator scope, string label)
 
     private async Task ChooseAsync(Func<ILocator, Task> choose)
     {
-        var input = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[type=file]"));
+        var input = Control;
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await choose(input);
@@ -604,13 +650,15 @@ public sealed class TbFileUploadLocator(ILocator scope, string label)
 }
 
 /// <summary>A <c>TbDateRangePicker</c>, found by its label.</summary>
-public sealed class TbDateRangePickerLocator(ILocator scope, string label)
+public sealed class TbDateRangePickerLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true });
+
     /// <summary>Types both dates in the field's own format and waits until the field has taken them; null leaves a
     /// box empty. A statically rendered field gets them in the browser's own date boxes.</summary>
     public async Task ChooseAsync(DateOnly? start, DateOnly? end)
     {
-        var group = scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true });
+        var group = Control;
         var boxes = group.Locator("input");
         if (await boxes.First.GetAttributeAsync("data-static") is not null)
         {
@@ -633,7 +681,7 @@ public sealed class TbDateRangePickerLocator(ILocator scope, string label)
     /// field, this reads the browser's own date boxes.</summary>
     public async Task<(DateOnly? Start, DateOnly? End)> RangeAsync()
     {
-        var group = scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true });
+        var group = Control;
         var boxes = group.Locator("input");
         if (await boxes.First.GetAttributeAsync("data-static") is not null)
         {
@@ -948,8 +996,10 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
 }
 
 /// <summary>A <c>TbListBox</c> or <c>TbMultiListBox</c>, found by its label.</summary>
-public sealed class TbListBoxLocator(ILocator scope, string label)
+public sealed class TbListBoxLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Field;
+
     /// <summary>Chooses the options with these names: the one option of a list box, or each one not yet chosen in a
     /// multiple list box, keeping what is already chosen. A statically rendered list box is a native list, and is
     /// chosen the native way; one still prerendering is waited for.</summary>
@@ -1035,8 +1085,10 @@ public sealed class TbListBoxLocator(ILocator scope, string label)
 }
 
 /// <summary>A <c>TbTransferList</c>, found by its label.</summary>
-public sealed class TbTransferListLocator(ILocator scope, string label)
+public sealed class TbTransferListLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Root;
+
     private ILocator Root => scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) })
         .And(scope.Locator("fieldset.tb-transfer-list"));
 

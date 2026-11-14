@@ -109,6 +109,14 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // ends its notes with them.
     public IReadOnlyList<ExampleNote> NotesShown => Api.Any(IsField) ? [.. Notes, new(FieldNote)] : Notes;
 
+    // Every field shows its messages the same way, so a field's page ends its testing tips with how to read them.
+    public IReadOnlyList<string> TestingTipsShown => Api.Any(IsField) ? [.. TestingTips, FieldTesting] : TestingTips;
+
+    private const string FieldTesting = "A field's error messages sit in `[data-part=error]`, each in its own "
+        + "`[data-part=message]`. Where the testing packages have a helper for the field, it reads them: `Error` is the "
+        + "first one, `Errors` all of them in order, and `Invalid` whether the field is marked invalid. In Playwright "
+        + "they're `ErrorAsync()`, `ErrorsAsync()` and `InvalidAsync()`.";
+
     private const string FieldLabeling = "With no room for a label, an `AriaLabel` names the field through a label "
         + "only screen readers see. A field with neither gets build warning TB004.";
 
@@ -260,7 +268,8 @@ public static class ExampleCatalog
         new("start", "Content before the input, such as an icon or a prefix."),
         new("end", "Content after the input, such as a unit or a button."),
         new("helper", "The help text under the field."),
-        new("error", "The validation message, shown while the value is invalid."),
+        new("error", "The validation messages, shown while the value is invalid."),
+        new("message", "One validation message, inside the error part."),
     ];
 
     public static IReadOnlyList<Example> All { get; } =

@@ -3,8 +3,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbTextField</c>, found by its label.</summary>
-public sealed class TbTextFieldLocator(ILocator scope, string label)
+public sealed class TbTextFieldLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Input;
+
     private ILocator Input => scope.GetByLabel(FieldLabel.Matching(label))
         .And(scope.Locator(".tb-text-field input[data-part=input], .tb-text-field textarea[data-part=input]"));
 

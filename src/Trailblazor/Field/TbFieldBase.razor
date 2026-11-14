@@ -65,7 +65,7 @@
                 <div data-part="error" id="@ErrorId" class="@ClassNames.Join("tb-field__error", errorClass)">
                     @foreach (var error in Errors)
                     {
-                        <div>@error</div>
+                        <div data-part="message">@error</div>
                     }
                 </div>
             }

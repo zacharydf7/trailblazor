@@ -4,8 +4,10 @@ namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c>, found by its label. Items are named by their path of
 /// texts from a root, such as <c>("North ridge", "Pine Hollow")</c>.</summary>
-public sealed class TbTreeSelectLocator(ILocator scope, string label)
+public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Trigger;
+
     // The field's label names its button, which also carries the chosen text.
     private ILocator Trigger =>
         scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator(".tb-tree-select__trigger"));

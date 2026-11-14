@@ -4,8 +4,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbSlider</c>, found by its label.</summary>
-public sealed class TbSliderLocator(ILocator scope, string label)
+public sealed class TbSliderLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Input;
+
     /// <summary>The slider's range input.</summary>
     public ILocator Input => scope.GetByRole(AriaRole.Slider, new() { NameRegex = FieldLabel.Matching(label) });
 
@@ -18,8 +20,10 @@ public sealed class TbSliderLocator(ILocator scope, string label)
 }
 
 /// <summary>A <c>TbRangeSlider</c>, found by its label.</summary>
-public sealed class TbRangeSliderLocator(ILocator scope, string label)
+public sealed class TbRangeSliderLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Field;
+
     // Found from its label upward, since a Has filter on the scope would look for the scope inside each match.
     private ILocator Field => scope.Locator(".tb-slider--range label")
         .Filter(new() { HasTextRegex = FieldLabel.Matching(label) })

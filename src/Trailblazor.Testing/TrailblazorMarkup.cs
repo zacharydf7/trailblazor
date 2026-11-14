@@ -76,6 +76,46 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
     }
 }
 
+/// <summary>What every field's driver reads: the messages the field shows and whether it's marked invalid.</summary>
+public abstract class TbFieldDriver
+{
+    private readonly Func<IElement> _control;
+
+    private protected TbFieldDriver(Func<IElement> control) => _control = control;
+
+    /// <summary>The field's first error message, such as "Name is required.", or null when it shows none.</summary>
+    public string? Error => Errors.FirstOrDefault();
+
+    /// <summary>The error messages the field shows, in order.</summary>
+    public IReadOnlyList<string> Errors
+    {
+        get
+        {
+            // The control is described by the field's error, which holds each message in a part of its own.
+            var control = Described(_control());
+            var top = control;
+            while (top.ParentElement is { } parent)
+            {
+                top = parent;
+            }
+
+            return (control.GetAttribute("aria-describedby") ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Select(id => top.QuerySelector($"[id='{id}'][data-part=error]")).OfType<IElement>()
+                .SelectMany(error => error.QuerySelectorAll("[data-part=message]"))
+                .Select(message => message.TextContent.Trim()).ToList();
+        }
+    }
+
+    /// <summary>Whether the field's control, or a part of it such as a date range's end, is marked invalid through
+    /// <c>aria-invalid</c>, which screen readers announce.</summary>
+    public bool Invalid => _control() is var control
+        && (control.GetAttribute("aria-invalid") == "true" || control.QuerySelector("[aria-invalid=true]") is not null);
+
+    // A calendar's driver holds its whole box, and the part users act on inside it carries the description.
+    private static IElement Described(IElement control) => control.HasAttribute("aria-describedby") ? control
+        : control.QuerySelector("[aria-describedby]") ?? control;
+}
+
 /// <summary>The Trailblazor components in a rendered component's markup. Each helper finds its component again on every
 /// call, so it sees the markup as it is after the last render.</summary>
 public sealed class TrailblazorMarkup
@@ -397,12 +437,12 @@ public sealed class TrailblazorMarkup
 }
 
 /// <summary>A <c>TbSelect</c> or <c>TbMultiSelect</c>, found by its label.</summary>
-public sealed class TbSelectDriver
+public sealed class TbSelectDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
     private readonly Func<string, IReadOnlyList<IElement>> _findAll;
 
-    internal TbSelectDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
+    internal TbSelectDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) : base(find) =>
         (_find, _findAll) = (find, findAll);
 
     /// <summary>The options' names, in order, leaving out a static select's placeholder, the extra option it adds to
@@ -489,12 +529,12 @@ public sealed class TbSelectDriver
 
 /// <summary>A <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c>, found by its label. Items are named by their path of
 /// texts from a root, such as <c>("North ridge", "Pine Hollow")</c>.</summary>
-public sealed class TbTreeSelectDriver
+public sealed class TbTreeSelectDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
     private readonly Func<string, IReadOnlyList<IElement>> _findAll;
 
-    internal TbTreeSelectDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
+    internal TbTreeSelectDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) : base(find) =>
         (_find, _findAll) = (find, findAll);
 
     /// <summary>The text the field shows for its value, or null while it shows its placeholder.</summary>
@@ -550,11 +590,11 @@ public sealed class TbTreeSelectDriver
 }
 
 /// <summary>A <c>TbListBox</c> or <c>TbMultiListBox</c>, found by its label.</summary>
-public sealed class TbListBoxDriver
+public sealed class TbListBoxDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbListBoxDriver(Func<IElement> find) => _find = find;
+    internal TbListBoxDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The options' names, in order, leaving out the message an empty list shows. An option with content of
     /// its own is named by its <c>Text</c>.</summary>
@@ -590,11 +630,11 @@ public sealed class TbListBoxDriver
 }
 
 /// <summary>A <c>TbTransferList</c>, found by its label.</summary>
-public sealed class TbTransferListDriver
+public sealed class TbTransferListDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbTransferListDriver(Func<IElement> find) => _find = find;
+    internal TbTransferListDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The chosen items' text, in order.</summary>
     public IReadOnlyList<string> Chosen => new TbListBoxDriver(() => List("chosen")).Options;
@@ -698,11 +738,11 @@ internal static class Choices
 }
 
 /// <summary>A <c>TbDatePicker</c>, found by its label.</summary>
-public sealed class TbDatePickerDriver
+public sealed class TbDatePickerDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbDatePickerDriver(Func<IElement> find) => _find = find;
+    internal TbDatePickerDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The date the field holds, or null when it has none.</summary>
     public DateOnly? Value
@@ -729,11 +769,11 @@ public sealed class TbDatePickerDriver
 }
 
 /// <summary>A <c>TbDateTimePicker</c>, found by its label.</summary>
-public sealed class TbDateTimePickerDriver
+public sealed class TbDateTimePickerDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbDateTimePickerDriver(Func<IElement> find) => _find = find;
+    internal TbDateTimePickerDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The date and time the field holds, or null when it has none.</summary>
     public DateTime? Value
@@ -770,11 +810,11 @@ public sealed class TbDateTimePickerDriver
 }
 
 /// <summary>A <c>TbDateRangePicker</c>, found by its label.</summary>
-public sealed class TbDateRangePickerDriver
+public sealed class TbDateRangePickerDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbDateRangePickerDriver(Func<IElement> find) => _find = find;
+    internal TbDateRangePickerDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The range the field holds; either end is null when it has none.</summary>
     public (DateOnly? Start, DateOnly? End) Range
@@ -974,11 +1014,11 @@ public sealed class TbPopconfirmDriver
 }
 
 /// <summary>A <c>TbTextField</c>, found by its label.</summary>
-public sealed class TbTextFieldDriver
+public sealed class TbTextFieldDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbTextFieldDriver(Func<IElement> find) => _find = find;
+    internal TbTextFieldDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The text the field shows.</summary>
     public string? Text => _find().GetAttribute("value");
@@ -1002,11 +1042,11 @@ public sealed class TbTextFieldDriver
 }
 
 /// <summary>A <c>TbCheckbox</c> or <c>TbSwitch</c>, found by its label.</summary>
-public sealed class TbCheckboxDriver
+public sealed class TbCheckboxDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbCheckboxDriver(Func<IElement> find) => _find = find;
+    internal TbCheckboxDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>Whether it's checked, or on for a switch.</summary>
     public bool Checked => _find().HasAttribute("checked");
@@ -1028,11 +1068,11 @@ public sealed class TbCheckboxDriver
 }
 
 /// <summary>A <c>TbCheckboxGroup</c>, found by its label. Its options are named by their text.</summary>
-public sealed class TbCheckboxGroupDriver
+public sealed class TbCheckboxGroupDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbCheckboxGroupDriver(Func<IElement> find) => _find = find;
+    internal TbCheckboxGroupDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The checked options' names, in order.</summary>
     public IReadOnlyList<string> Checked => [.. Options().Where(option => option.Input.HasAttribute("checked"))
@@ -1069,11 +1109,11 @@ public sealed class TbCheckboxGroupDriver
 }
 
 /// <summary>A <c>TbRadioGroup</c>, found by its label. Its options are named by their text.</summary>
-public sealed class TbRadioGroupDriver
+public sealed class TbRadioGroupDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbRadioGroupDriver(Func<IElement> find) => _find = find;
+    internal TbRadioGroupDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The chosen option's name, or null when none is chosen.</summary>
     public string? Chosen => Options().FirstOrDefault(option => option.Input.HasAttribute("checked")).Name;
@@ -1192,11 +1232,11 @@ public sealed class TbListDriver
 }
 
 /// <summary>A <c>TbNumberField</c>, found by its label.</summary>
-public sealed class TbNumberFieldDriver
+public sealed class TbNumberFieldDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbNumberFieldDriver(Func<IElement> find) => _find = find;
+    internal TbNumberFieldDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The text the field shows.</summary>
     public string? Text => _find().GetAttribute("value");
@@ -1215,11 +1255,11 @@ public sealed class TbNumberFieldDriver
 }
 
 /// <summary>A <c>TbSlider</c>, found by its label.</summary>
-public sealed class TbSliderDriver
+public sealed class TbSliderDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbSliderDriver(Func<IElement> find) => _find = find;
+    internal TbSliderDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The value the field holds.</summary>
     public decimal Value => decimal.Parse(_find().GetAttribute("data-value")!, CultureInfo.InvariantCulture);
@@ -1249,14 +1289,14 @@ public sealed class TbSliderDriver
 }
 
 /// <summary>A <c>TbAutocomplete</c>, found by its label.</summary>
-public sealed class TbAutocompleteDriver
+public sealed class TbAutocompleteDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
     private readonly Func<string, IReadOnlyList<IElement>> _findAll;
     private readonly ScriptCalls _scripts;
 
     internal TbAutocompleteDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll,
-        ScriptCalls scripts) => (_find, _findAll, _scripts) = (find, findAll, scripts);
+        ScriptCalls scripts) : base(find) => (_find, _findAll, _scripts) = (find, findAll, scripts);
 
     /// <summary>Types the text, as a user does, waits for the suggestions, and chooses the option with this name. On a
     /// static page the field is a plain input that posts with its form, so this throws, as it does for a disabled or
@@ -1285,11 +1325,11 @@ public sealed class TbAutocompleteDriver
 }
 
 /// <summary>A <c>TbColorPicker</c>, found by its label.</summary>
-public sealed partial class TbColorPickerDriver
+public sealed partial class TbColorPickerDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbColorPickerDriver(Func<IElement> find) => _find = find;
+    internal TbColorPickerDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>Types the color, as <c>#rrggbb</c>, or <c>#rrggbbaa</c> for a field with <c>Alpha</c>, and commits it,
     /// as typing it and pressing Enter does. On a static page the field is a plain input that posts with its form, so
@@ -1317,7 +1357,7 @@ public sealed partial class TbColorPickerDriver
 }
 
 /// <summary>A <c>TbFileUpload</c>, found by its label.</summary>
-public sealed class TbFileUploadDriver
+public sealed class TbFileUploadDriver : TbFieldDriver
 {
     // The types a browser gives the files a test is most likely to pick; any other extension gets an empty type.
     private static readonly Dictionary<string, string> Types = new(StringComparer.OrdinalIgnoreCase)
@@ -1338,7 +1378,7 @@ public sealed class TbFileUploadDriver
     private readonly Func<IElement> _find;
     private readonly ScriptCalls _scripts;
 
-    internal TbFileUploadDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+    internal TbFileUploadDriver(Func<IElement> find, ScriptCalls scripts) : base(find) => (_find, _scripts) = (find, scripts);
 
     /// <summary>Chooses the files at these paths, as dropping them or picking them in the file dialog does. A file
     /// with a common extension takes the type a browser gives it, such as <c>image/png</c> for a <c>.png</c>, and any
@@ -1424,11 +1464,11 @@ public sealed class TbDialogDriver
 }
 
 /// <summary>A <c>TbTagInput</c>, found by its label.</summary>
-public sealed class TbTagInputDriver
+public sealed class TbTagInputDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbTagInputDriver(Func<IElement> find) => _find = find;
+    internal TbTagInputDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The tags the field shows, in order.</summary>
     public IReadOnlyList<string> Tags => [.. TagElements().Select(TextOf)];
@@ -1464,11 +1504,11 @@ public sealed class TbTagInputDriver
 }
 
 /// <summary>A <c>TbSignaturePad</c>, found by its label.</summary>
-public sealed class TbSignaturePadDriver
+public sealed class TbSignaturePadDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbSignaturePadDriver(Func<IElement> find) => _find = find;
+    internal TbSignaturePadDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>Whether something is drawn or a name is typed.</summary>
     public bool IsSigned => _find().QuerySelector("[data-part=surface] > svg:not([data-part=draft]) > path") is not null
@@ -1509,11 +1549,11 @@ public sealed class TbSignaturePadDriver
 }
 
 /// <summary>A <c>TbCalendar</c>, found by its label.</summary>
-public sealed class TbCalendarDriver
+public sealed class TbCalendarDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbCalendarDriver(Func<IElement> find) => _find = find;
+    internal TbCalendarDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>Picks this date as a user would: up to the years, over to its decade, then down through its year and
     /// month to the day. A disabled or read-only calendar, or a date it can't choose, throws.</summary>
@@ -1556,11 +1596,11 @@ public sealed class TbCalendarDriver
 }
 
 /// <summary>A <c>TbRichTextEditor</c>, found by its label.</summary>
-public sealed class TbRichTextEditorDriver
+public sealed class TbRichTextEditorDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
 
-    internal TbRichTextEditorDriver(Func<IElement> find) => _find = find;
+    internal TbRichTextEditorDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>Replaces the editor's text with this HTML and commits it, through the same event the editor's script
     /// raises in a browser, so the value keeps only the formats the editor allows. A disabled or read-only editor

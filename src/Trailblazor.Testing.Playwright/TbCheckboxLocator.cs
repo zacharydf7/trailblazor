@@ -3,8 +3,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbCheckbox</c> or <c>TbSwitch</c>, found by its label.</summary>
-public sealed class TbCheckboxLocator
+public sealed class TbCheckboxLocator : TbFieldLocator
 {
+    private protected override ILocator Control => _box;
+
     private readonly ILocator _box;
 
     internal TbCheckboxLocator(ILocator scope, string label, bool isSwitch) =>

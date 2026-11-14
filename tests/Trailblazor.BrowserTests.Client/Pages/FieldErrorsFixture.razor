@@ -1,0 +1,40 @@
+@page "/field-errors"
+
+@* Every field with a driver, each labeled by its helper's name and showing the parent's error, then a valid field
+   and a range the parent marks invalid with no message. *@
+<TbStack Gap="4" Style="max-inline-size: 30rem">
+    <TbSelect TValue="string" Label="Select" Error="@Taken" />
+    <TbTreeSelect TItem="string" TKey="string" Label="TreeSelect" Items="Trails" ItemText="text => text"
+                  Error="@Taken" />
+    <TbListBox TValue="string" Label="ListBox" Error="@Taken" />
+    <TbTransferList TItem="string" Label="TransferList" Items="Trails" Error="@Taken" />
+    <TbDatePicker TDate="DateOnly" Label="DatePicker" Error="@Taken" />
+    <TbDateTimePicker TDateTime="DateTime" Label="DateTimePicker" Error="@Taken" />
+    <TbDateRangePicker TDate="DateOnly" Label="DateRangePicker" Error="@Taken" />
+    <TbTextField TValue="string" Label="TextField" Error="@Taken" />
+    <TbCheckbox TValue="bool" Label="Checkbox" Error="@Taken" />
+    <TbSwitch TValue="bool" Label="Switch" Error="@Taken" />
+    <TbCheckboxGroup TItem="string" Label="CheckboxGroup" Error="@Taken">
+        <TbCheckboxItem Value="@("Tent")">Tent</TbCheckboxItem>
+    </TbCheckboxGroup>
+    <TbRadioGroup TValue="string" Label="RadioGroup" Error="@Taken">
+        <TbRadio Value="@("Tent")">Tent</TbRadio>
+    </TbRadioGroup>
+    <TbNumberField TValue="int?" Label="NumberField" Error="@Taken" />
+    <TbSlider TValue="int" Label="Slider" Error="@Taken" />
+    <TbRangeSlider TValue="int" Label="RangeSlider" Error="@Taken" />
+    <TbAutocomplete TValue="string" Label="Autocomplete" Items="Trails" Error="@Taken" />
+    <TbColorPicker Label="ColorPicker" Error="@Taken" />
+    <TbFileUpload Label="FileUpload" Error="@Taken" />
+    <TbTagInput Label="TagInput" Error="@Taken" />
+    <TbSignaturePad Label="SignaturePad" Error="@Taken" />
+    <TbCalendar TDate="DateOnly" Label="Calendar" Error="@Taken" />
+    <TbRichTextEditor Label="RichTextEditor" Error="@Taken" />
+    <TbTextField TValue="string" Label="Valid" />
+    <TbDateRangePicker TDate="DateOnly" Label="Marked" Invalid />
+</TbStack>
+
+@code {
+    private const string Taken = "That name is taken.";
+    private static readonly string[] Trails = ["Pine Hollow", "Eagle Ridge"];
+}

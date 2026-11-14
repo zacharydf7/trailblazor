@@ -3,8 +3,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbCheckboxGroup</c>, found by its label. Its options are named by their text.</summary>
-public sealed class TbCheckboxGroupLocator(ILocator scope, string label)
+public sealed class TbCheckboxGroupLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Group;
+
     private ILocator Group => scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) })
         .And(scope.Locator("fieldset.tb-checkbox-group"));
 

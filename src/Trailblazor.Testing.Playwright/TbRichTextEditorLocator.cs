@@ -3,8 +3,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbRichTextEditor</c>, found by its label.</summary>
-public sealed class TbRichTextEditorLocator(ILocator scope, string label)
+public sealed class TbRichTextEditorLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Input;
+
     /// <summary>The editing area, for typing into and reading its text.</summary>
     public ILocator Input => scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("[contenteditable]"));
 

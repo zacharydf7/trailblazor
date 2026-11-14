@@ -4,8 +4,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbCalendar</c>, found by its label.</summary>
-public sealed class TbCalendarLocator(ILocator scope, string label)
+public sealed class TbCalendarLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Root;
+
     private ILocator Root => scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) })
         .And(scope.Locator(".tb-calendar"));
 

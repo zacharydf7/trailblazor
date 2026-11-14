@@ -362,9 +362,14 @@
                 bUnit's <code>Change</code> doesn't reach. <code>EnterAsync</code> types into either kind.
             </li>
         </ul>
+        <TbText>
+            Every field's helper reads the field's error messages: <code>Error</code> is the first one,
+            <code>Errors</code> all of them in order, and <code>Invalid</code> whether the field is marked invalid. In Playwright they're
+            <code>ErrorAsync()</code>, <code>ErrorsAsync()</code> and <code>InvalidAsync()</code>.
+        </TbText>
         <DocsCallout Title="Check a field's error in the field">
             A field's error is also announced in <code>TbRoot</code>'s live region. To check that an error has
-            cleared, look in the field, not the whole page.
+            cleared, look in the field, not the whole page, as the field's helper's <code>Error</code> does.
         </DocsCallout>
 
         <DocsHeading Id="bunit-dialogs" Text="Test dialogs in bUnit" Class="docs-section" />

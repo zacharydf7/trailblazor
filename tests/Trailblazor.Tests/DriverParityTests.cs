@@ -14,7 +14,7 @@ public class DriverParityTests
     private const string NotInteractive = "not interactive, or a plain button or link found by its role";
 
     // The helper in both packages that finds each component.
-    private static readonly Dictionary<string, string> Helpers = new()
+    internal static readonly Dictionary<string, string> Helpers = new()
     {
         ["TbAccordionItem"] = "AccordionItem", ["TbCalendar"] = "Calendar", ["TbCommandPalette"] = "CommandPalette",
         ["TbContextMenu"] = "ContextMenu", ["TbDataGrid"] = "Grid", ["TbDatePicker"] = "DatePicker",
@@ -173,9 +173,10 @@ public class DriverParityTests
         }
     }
 
-    // A Playwright member that takes a locator points at an element the Playwright way, and has no bUnit twin.
+    // A Playwright member that takes a locator points at an element the Playwright way, and has no bUnit twin. Members
+    // a field's driver inherits, such as its errors, count too.
     private static Dictionary<string, Type> Members(Type type) => type
-        .GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+        .GetMembers(BindingFlags.Public | BindingFlags.Instance).Where(member => IsDriver(member.DeclaringType!))
         .Where(member => member is PropertyInfo || member is MethodInfo { IsSpecialName: false } method
             && method.GetParameters().All(parameter => parameter.ParameterType != typeof(ILocator)))
         .Select(member => member is PropertyInfo property ? (Key: $"{property.Name}()", Type: property.PropertyType)

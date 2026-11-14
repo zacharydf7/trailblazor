@@ -3,8 +3,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbRadioGroup</c>, found by its label. Its options are named by their text.</summary>
-public sealed class TbRadioGroupLocator(ILocator scope, string label)
+public sealed class TbRadioGroupLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Group;
+
     private ILocator Group => scope.GetByRole(AriaRole.Radiogroup, new() { NameRegex = FieldLabel.Matching(label) })
         .And(scope.Locator("fieldset.tb-radio-group"));
 

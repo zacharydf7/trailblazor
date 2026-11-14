@@ -5,8 +5,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbDateTimePicker</c>, found by its label.</summary>
-public sealed class TbDateTimePickerLocator(ILocator scope, string label)
+public sealed class TbDateTimePickerLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Group;
+
     /// <summary>The group that holds the date box, the calendar button and the time box.</summary>
     public ILocator Group => scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) });
 

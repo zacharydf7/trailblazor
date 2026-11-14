@@ -293,3 +293,7 @@ Trailblazor.Testing.Playwright.TrailblazorPage.RadioGroup(string! label) -> Trai
 Trailblazor.Testing.Playwright.TrailblazorPage.Switch(string! label) -> Trailblazor.Testing.Playwright.TbCheckboxLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.TextField(string! label) -> Trailblazor.Testing.Playwright.TbTextFieldLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.ToggleGroup(string! label) -> Trailblazor.Testing.Playwright.TbToggleGroupLocator!
+Trailblazor.Testing.Playwright.TbFieldLocator
+Trailblazor.Testing.Playwright.TbFieldLocator.ErrorAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbFieldLocator.ErrorsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbFieldLocator.InvalidAsync() -> System.Threading.Tasks.Task<bool>!

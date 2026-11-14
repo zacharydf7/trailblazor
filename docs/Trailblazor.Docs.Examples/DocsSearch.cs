@@ -130,7 +130,7 @@ public static class DocsSearch
         yield return page.Passage("Telemetry", $"{path}#telemetry", "Telemetry", Plain(example.TelemetryNotes),
             SearchMatch.Heading);
         yield return page.Passage("Testing", $"{path}#testing", "Testing",
-            Plain([example.TestingTip ?? "", .. example.TestingTips]), SearchMatch.Heading);
+            Plain([example.TestingTip ?? "", .. example.TestingTipsShown]), SearchMatch.Heading);
         foreach (var passage in MemberPassages(page, $"{path}/api", example.Api))
         {
             yield return passage;

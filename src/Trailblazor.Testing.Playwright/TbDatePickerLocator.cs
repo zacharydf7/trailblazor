@@ -5,8 +5,10 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbDatePicker</c>, found by its label.</summary>
-public sealed class TbDatePickerLocator(ILocator scope, string label)
+public sealed class TbDatePickerLocator(ILocator scope, string label) : TbFieldLocator
 {
+    private protected override ILocator Control => Input;
+
     /// <summary>The box the date is typed in.</summary>
     public ILocator Input => scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
 
