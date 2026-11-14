@@ -175,6 +175,16 @@
             var attributes = AdditionalAttributes?.ToDictionary() ?? [];
             attributes["onreset"] = EventCallback.Factory.Create(this, ResetAsync);
             attributes["__internal_preventDefault_onreset"] = true;
+            // With no circuit, static-form.js marks the submit button busy and focuses the first error a post left.
+            if (!RendererInfo.IsInteractive)
+            {
+                attributes["data-tb-static"] = "";
+                if (_focusError)
+                {
+                    attributes["data-tb-focus-error"] = "";
+                }
+            }
+
             return attributes;
         }
     }
@@ -409,7 +419,7 @@
         await OnInvalidSubmit.InvokeAsync(context);
     }
 
-    // A statically rendered form has no script, and the browser's own focus stays where it was.
+    // On a static page, the form's data-tb-focus-error mark lets static-form.js focus the first error instead.
     private async Task FocusFirstErrorAsync()
     {
         if (!RendererInfo.IsInteractive)

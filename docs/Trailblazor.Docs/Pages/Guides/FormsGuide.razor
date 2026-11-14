@@ -249,8 +249,13 @@
                 couldn't convert stays in its field.
             </li>
             <li>
-                With no script running, focus doesn't move to the first error, nothing is read out, and
-                <code>@@bind-IsValid</code> doesn't update.
+                While a post is on its way, for up to 10 seconds, the submit button shows a spinner and is marked busy,
+                as it is with <code>Loading</code>, and a second press doesn't send the form again. A form posted with
+                <code>data-enhance</code> is left to Blazor, which doesn't show the spinner.
+            </li>
+            <li>
+                When the post comes back with errors, focus moves to the first one, as it does on an interactive page.
+                Nothing is read out, though, and <code>@@bind-IsValid</code> doesn't update.
             </li>
             <li>
                 Numbers and dates post in the invariant culture, as

@@ -23,6 +23,7 @@ Familiar apps: sign-in and checkout forms on the web, the settings forms in clou
 - [x] On a disabled or read-only field, or one that code emptied before the field checked itself, the validator's default `[Required]` message shows as the field's own required message, both in the field and in the form's `Errors`. `TbFormTests.Validate_ShouldShowTheFieldsRequiredMessage_WhenTheModelRequiresAFieldTheUserCantChange`, `TbFormTests.Field_ShouldShowItsRequiredMessage_WhenCodeEmptiesTheModelBeforeTheFieldChecksIt`
 - [x] A field disabled after it checked itself shows its required message once, the default message is still replaced when the model renames the member with `[Display]`, and two fields bound to members with the same name each keep their own wording. `TbFormTests.Field_ShouldShowOneRequiredMessage_WhenItBecomesDisabledAfterItCheckedItself`, `TbFormTests.Field_ShouldShowItsRequiredMessage_WhenTheModelNamesTheMemberWithDisplay`, `TbFormTests.Errors_ShouldWordEachFieldsMessageItsOwnWay_WhenTwoFieldsMembersShareAName`
 - [x] Clicking a `Loading` submit button doesn't submit again. `ButtonTests.Button_ShouldNotSubmitTheForm_WhenLoadingOrDisabledButFocusable`
+- [x] While a native static post is on its way, the submit button shows a spinner and is marked busy, and a second press doesn't send another, for up to 10 seconds. `FormTests.Form_ShouldMarkItsSubmitButtonBusyAndSendOnce_WhenAStaticPostIsUnderWay`, `FormTests.Form_ShouldLetItsSubmitButtonGoAfterTenSeconds_WhenAStaticPostLeavesThePageInPlace`, `FormTests.Form_ShouldLeaveItsSubmitButtonAlone_WhenAnotherListenerCancelsTheStaticPost`
 - [x] A button with `Type="ButtonType.Reset"` resets the fields and their bound values together and hides their messages. `FormTests.Form_ShouldPutFieldsAndTheirValuesBack_WhenItsResetButtonIsPressed`, `TbFormTests.Reset_ShouldPutTheValueBackAndHideTheMessages_WhenTheFormResets`
 - [x] A reset goes back to the last value the parent set, even one set in answer to an edit. `TbFormTests.Reset_ShouldGoBackToTheParentsLatestValue_WhenTheParentSetOneAfterTheFirstRender`, `TbFormTests.Reset_ShouldGoBackToAValueTheParentRewrote_WhenItAnsweredAnEdit`
 - [x] A field reset to a value that would fail shows no message, from its own checks or from a validator that wasn't showing one, even beside a parent's `Error`. `TbFormTests.Reset_ShouldShowNoMessage_WhenTheFirstValueWouldFail`, `TbFormTests.Reset_ShouldNotAddAValidatorsMessage_WhenItWasntShowingOne`, `TbFormTests.Reset_ShouldNotAddAValidatorsMessage_WhenOnlyTheParentsErrorIsShowing`
@@ -53,10 +54,10 @@ Familiar apps: sign-in and checkout forms on the web, the settings forms in clou
 - [x] With `OnSubmit`, focus is left for the handler, for example to move to an error summary. `FormTests.FormExample_ShouldMoveFocusToTheErrorSummary_WhenSubmittedWithErrors`
 - [x] A successful submit leaves focus where it was. `TbForm.razor`
 - [x] A reset leaves focus on its button when pressed from the keyboard. `FormTests.Form_ShouldPutFieldsAndTheirValuesBack_WhenItsResetButtonIsPressed`
+- [x] After a static post that fails, focus moves to the first error once the page comes back, whether it reloads or an enhanced post patches it. `FormTests.Form_ShouldFocusTheFirstErrorAfterThePageReloads_WhenAStaticPostFails`, `FormTests.Form_ShouldFocusTheFirstErrorEachTime_WhenAnEnhancedStaticPostFails`
 
 ## Not applicable
 
 - Blocking a second submit while the handler runs: the app sets `Loading` on the submit button, which covers clicks and Enter.
 - Checking a field as focus leaves it: the fields check on change and on submit, and an app can use a field's `OnBlur`.
-- Moving focus after a static form post: there is no script, and the page reloads.
 - Warning about unsaved changes on leaving the page: the app decides when to ask, from the form's `IsDirty`.

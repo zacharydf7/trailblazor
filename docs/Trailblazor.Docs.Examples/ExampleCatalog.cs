@@ -1011,7 +1011,9 @@ public static class ExampleCatalog
                     + "button's name, and slot content adds to it only if it has text of its own.",
                     typeof(ButtonIconExample)),
                 new("loading", "Loading", "`Loading` shows a spinner and ignores clicks, so a slow action can't run "
-                    + "twice. The button stays focusable, so focus isn't lost while it waits.",
+                    + "twice. The button stays focusable, so focus isn't lost while it waits. On a static page, a "
+                    + "`TbForm`'s submit button also shows a spinner and ignores a second press while its post is on "
+                    + "its way, for up to 10 seconds.",
                     typeof(ButtonLoadingExample)),
                 new("disabled", "Disabled", "`Disabled` turns the button off and takes it out of the tab order. With "
                     + "`FocusableWhenDisabled` it stays a tab stop, so its tooltip can say why it is off.",

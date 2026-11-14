@@ -26,6 +26,118 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldFocusTheFirstErrorAfterThePageReloads_WhenAStaticPostFails(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-form-submit");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Save" }).ClickAsync();
+
+        var ranger = page.GetByLabel("Ranger");
+        await Expect(ranger).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(ranger).ToBeFocusedAsync();
+        await Expect(page.GetByTestId("saved")).ToBeEmptyAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldFocusTheFirstErrorEachTime_WhenAnEnhancedStaticPostFails(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-form-enhanced");
+        var save = page.GetByRole(AriaRole.Button, new() { Name = "Save" });
+        var ranger = page.GetByLabel("Ranger");
+
+        await save.ClickAsync();
+        await Expect(ranger).ToBeFocusedAsync();
+        await save.ClickAsync();
+
+        await Expect(save).Not.ToBeFocusedAsync();
+        await Expect(ranger).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldMarkItsSubmitButtonBusyAndSendOnce_WhenAStaticPostIsUnderWay(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-form-submit");
+        var posts = 0;
+        await page.RouteAsync("**/static-form-submit", async route =>
+        {
+            // The first post is held long enough for a second press to land while it is on its way.
+            if (route.Request.Method == "POST" && ++posts == 1)
+            {
+                await Task.Delay(1500, TestContext.Current.CancellationToken);
+            }
+
+            await route.ContinueAsync();
+        });
+
+        // Playwright waits for a navigation to finish before it reads the page, so the page itself records the button
+        // at each submit and makes the second press. Importing the script first gets the same module the startup
+        // script loads, so its listener is in place by then.
+        await page.EvaluateAsync("""
+            async () => {
+                await import(new URL('_content/Trailblazor/static-form.js', document.baseURI));
+                window.addEventListener('submit', event => sessionStorage.setItem('busy', [
+                    event.submitter.getAttribute('aria-busy'),
+                    !!event.submitter.querySelector('[data-part=spinner]')].join(' ')));
+                const form = document.querySelector('form');
+                const save = form.querySelector('button[type=submit]');
+                form.requestSubmit(save);
+                setTimeout(() => form.requestSubmit(save), 500);
+            }
+            """);
+
+        await Expect(page.GetByLabel("Ranger")).ToHaveAttributeAsync("aria-invalid", "true");
+        Assert.Equal("true true", await page.EvaluateAsync<string>("() => sessionStorage.getItem('busy')"));
+        Assert.Equal(1, posts);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldLetItsSubmitButtonGoAfterTenSeconds_WhenAStaticPostLeavesThePageInPlace(
+        string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-form-submit");
+        // An answer with no content keeps the page, as a stopped post or a download would. Playwright waits on the
+        // navigation that never finishes, so the page is read with script.
+        await page.RouteAsync("**/static-form-submit", route => route.Request.Method == "POST"
+            ? route.FulfillAsync(new() { Status = 204 }) : route.ContinueAsync());
+        const string Busy = "() => [document.querySelector('button[type=submit]').getAttribute('aria-busy'), "
+            + "'tbSubmitting' in document.querySelector('form').dataset].join(' ')";
+        await page.EvaluateAsync("""
+            async () => {
+                await import(new URL('_content/Trailblazor/static-form.js', document.baseURI));
+                document.querySelector('form').requestSubmit(document.querySelector('button[type=submit]'));
+            }
+            """);
+        await page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve, 50))");
+        Assert.Equal("true true", await page.EvaluateAsync<string>(Busy));
+
+        // Waited out for real: after an answer like this, Chromium no longer runs Playwright's fake timers.
+        await page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve, 10500))");
+
+        Assert.Equal(" false", await page.EvaluateAsync<string>(Busy));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldLeaveItsSubmitButtonAlone_WhenAnotherListenerCancelsTheStaticPost(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-form-submit");
+        var save = page.GetByRole(AriaRole.Button, new() { Name = "Save" });
+
+        // A listener after the library's, on the window, cancels the post once.
+        await page.EvaluateAsync("""
+            async () => {
+                await import(new URL('_content/Trailblazor/static-form.js', document.baseURI));
+                window.addEventListener('submit', event => event.preventDefault(), { once: true });
+                document.querySelector('form').requestSubmit(document.querySelector('button[type=submit]'));
+            }
+            """);
+        await page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve, 50))");
+        Assert.Null(await save.GetAttributeAsync("aria-busy"));
+        await save.ClickAsync();
+
+        await Expect(page.GetByLabel("Ranger")).ToHaveAttributeAsync("aria-invalid", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Form_ShouldFocusTheGroupsFirstRadio_WhenASubmitFailsOnARadioGroupFirst(string browser)
     {
         var page = await OpenAsync(browser, "/form-group-first");

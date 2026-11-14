@@ -1,0 +1,19 @@
+@page "/static-form-submit"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* With no circuit, only the library's startup script can show the post under way and focus the first error afterward. *@
+<TbForm aria-label="Trail report" FormName="static-submit" OnValidSubmit="() => _saved = true">
+    <TbTextField Label="Trail" Name="trail" @bind-Value="_trail" />
+    <TbTextField Label="Ranger" Name="ranger" @bind-Value="_ranger" Required />
+    @* Fields named id and target, which the form's own id and target properties would hand back instead. *@
+    <input type="hidden" name="id" value="12" />
+    <input type="hidden" name="target" value="field-notes" />
+    <TbButton Type="ButtonType.Submit">Save</TbButton>
+</TbForm>
+<output data-testid="saved">@(_saved ? "saved" : "")</output>
+
+@code {
+    private string? _trail = "Ridge loop";
+    private string? _ranger;
+    private bool _saved;
+}

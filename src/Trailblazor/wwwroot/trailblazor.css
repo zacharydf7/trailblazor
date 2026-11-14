@@ -2411,6 +2411,11 @@
         }
     }
 
+    /* While a static post is on its way, an icon button shows the spinner in place of its icon, as Loading does. */
+    .tb-icon-button[data-tb-submitting] > [data-part="icon"] {
+        display: none;
+    }
+
     @keyframes tb-spin {
         to {
             transform: rotate(360deg);

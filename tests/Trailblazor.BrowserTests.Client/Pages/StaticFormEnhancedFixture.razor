@@ -1,0 +1,14 @@
+@page "/static-form-enhanced"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* An enhanced post patches the page in place, keeping the form, so the first error must take focus again each time. *@
+<TbForm aria-label="Trail report" FormName="static-enhanced" data-enhance OnValidSubmit="() => { }">
+    <TbTextField Label="Trail" Name="trail" @bind-Value="_trail" />
+    <TbTextField Label="Ranger" Name="ranger" @bind-Value="_ranger" Required />
+    <TbButton Type="ButtonType.Submit">Save</TbButton>
+</TbForm>
+
+@code {
+    private string? _trail = "Ridge loop";
+    private string? _ranger;
+}
