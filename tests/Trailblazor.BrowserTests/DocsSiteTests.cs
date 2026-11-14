@@ -96,7 +96,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             "", "components/dialog", "components/form", "components/select", "components/tree-view",
             "components/data-grid/api", "preview/tree-view/many-rows", "guides/getting-started", "guides/forms",
             "guides/accessibility", "guides/wrapping", "guides/theming", "guides/palettes",
-            "guides/spacing", "guides/browser", "guides/testing",
+            "guides/spacing", "guides/browser", "guides/testing", "guides/migrating-tests",
             "guides/announcements", "guides/rich-text", "guides/icons", "guides/localization", "guides/right-to-left", "guides/telemetry",
             "guides/analyzers",
             "search?q=dialog",

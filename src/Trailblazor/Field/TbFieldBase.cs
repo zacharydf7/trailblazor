@@ -62,8 +62,9 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     [Parameter]
     public TValue? Value { get; set; }
 
-    /// <summary>Raised, and awaited, when the user changes the value. Setting <see cref="Value"/> never raises it.
-    /// </summary>
+    /// <summary>Raised, and awaited, when the user changes the value. Setting <see cref="Value"/> never raises it, and
+    /// neither does the user choosing a value that <c>Equals</c> the current one, unless the field was showing text it
+    /// couldn't read.</summary>
     [Parameter]
     public EventCallback<TValue> ValueChanged { get; set; }
 
@@ -81,11 +82,13 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     public string? HelperText { get; set; }
 
     /// <summary>Text an info button beside the label shows, explaining the field. Line breaks are kept. It needs a
-    /// <see cref="Label"/>, which also names the button; the field's own name is still just the label.</summary>
+    /// <see cref="Label"/>, which also names the button; the field's own name is still just the label. It stays in the
+    /// page while the button's popover is closed.</summary>
     [Parameter]
     public string? Info { get; set; }
 
-    /// <summary>Content the info button shows instead of <see cref="Info"/>, such as a link to more help.</summary>
+    /// <summary>Content the info button shows instead of <see cref="Info"/>, such as a link to more help. It stays in
+    /// the page while the button's popover is closed.</summary>
     [Parameter]
     public RenderFragment? InfoContent { get; set; }
 

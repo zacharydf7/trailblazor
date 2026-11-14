@@ -68,6 +68,16 @@ public class FileUploadTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Choose_ShouldGiveAHiddenFieldItsFiles_WhenTheHelperFindsItByItsLabel(string browser)
+    {
+        var page = await OpenAsync(browser, "/file-upload");
+
+        await page.Tb().FileUpload("Import").ChooseAsync(File("trail.json", "{}", "application/json"));
+
+        await Expect(page.GetByTestId("imported")).ToHaveTextAsync("trail.json");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Choose_ShouldListTheFilesAndKeepThemReadable_WhenTheyAreChosen(string browser)
     {
         var page = await OpenAsync(browser, "/file-upload");

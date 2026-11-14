@@ -60,7 +60,8 @@
     [Parameter]
     public bool Disabled { get; set; }
 
-    /// <summary>The content shown while the item is open.</summary>
+    /// <summary>The content shown while the item is open. It stays in the page while the item is closed, inert,
+    /// so fields in it keep what was typed.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 

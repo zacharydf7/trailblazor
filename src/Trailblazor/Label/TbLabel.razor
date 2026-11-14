@@ -48,11 +48,13 @@
     [CascadingParameter(Name = TbForm.HiddenMarkersCascade)]
     private bool MarkersHidden { get; set; }
 
-    /// <summary>Text the info button shows, explaining the setting. Line breaks are kept.</summary>
+    /// <summary>Text the info button shows, explaining the setting. Line breaks are kept. It stays in the page while
+    /// the button's popover is closed.</summary>
     [Parameter]
     public string? Info { get; set; }
 
-    /// <summary>Content the info button shows instead of <see cref="Info"/>, such as a link to more help.</summary>
+    /// <summary>Content the info button shows instead of <see cref="Info"/>, such as a link to more help. It stays in
+    /// the page while the button's popover is closed.</summary>
     [Parameter]
     public RenderFragment? InfoContent { get; set; }
 

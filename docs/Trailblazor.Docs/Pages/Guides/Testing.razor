@@ -14,6 +14,7 @@
         <TbTableOfContentsItem TargetId="slow-link" Text="Test over a slow link" />
         <TbTableOfContentsItem TargetId="time" Text="Time and motion" />
         <TbTableOfContentsItem TargetId="finding" Text="Find components" />
+        <TbTableOfContentsItem TargetId="recipes" Text="Recipes" />
         <TbTableOfContentsItem TargetId="related" Text="Related" />
     </Contents>
     <Header>
@@ -736,8 +737,9 @@
                     <tr>
                         <th scope="row">Transitions</th>
                         <td>
-                            In Playwright, open pages with <code>ReducedMotion = ReducedMotion.Reduce</code>, and they
-                            finish at once.
+                            In Playwright, open a page with <code>ReducedMotion = ReducedMotion.Reduce</code>, and they
+                            finish at once. Use it only in the tests that need it: it also hides what happens while a
+                            transition runs, such as a dialog that never finishes closing because its fade never ends.
                         </td>
                     </tr>
                 </tbody>
@@ -843,8 +845,37 @@
         </DocsCallout>
         <CodeBlock Label="Finding components" Code="@Locators" />
 
+        <DocsHeading Id="recipes" Text="Recipes" Class="docs-section" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">A file upload opened from a menu or button</TbText>
+        <TbText>
+            A <code>Hidden</code> file upload that your own button or menu item opens still has its label, so
+            <code>FileUpload(label).ChooseAsync(path)</code> gives it files in both packages. To check that the button
+            opens the browser's file dialog, wait for the field's input to carry <code>data-ready</code>, then click
+            the button inside Playwright's <code>RunAndWaitForFileChooserAsync</code> and set the files on the chooser.
+        </TbText>
+        <CodeBlock Label="A file upload opened from a button" Code="@HiddenUpload" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">One tab's fields when every panel renders</TbText>
+        <TbText>
+            With <code>RenderAllPanels</code>, every tab's panel is in the page, so a field that each panel has matches
+            more than once. <code>Tabs(name).Panel(tab)</code> scopes the helpers to that tab's panel. In Playwright,
+            select the tab first, since the other panels are hidden; bUnit reads hidden panels too.
+        </TbText>
+        <CodeBlock Label="One tab's fields" Code="@OneTab" />
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Output that settles a render later</TbText>
+        <TbText>
+            Some output changes a render after the event that causes it, such as a count the app updates once a save
+            it awaits has finished. A read made straight after the event can still see the old output, so retry the
+            check: <code>cut.WaitForAssertion</code> retries it after each render in bUnit, and Playwright's
+            <code>Expect</code> retries until the page shows it.
+        </TbText>
+        <CodeBlock Label="Output that settles later" Code="@Settles" />
+
         <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
+            <li>
+                <a href="guides/migrating-tests">Migrating tests</a>: moving a suite over from another component
+                library.
+            </li>
             <li><a href="guides/browser">Browser</a>: the fake browser service and what it records.</li>
             <li><a href="guides/announcements">Announcements</a>: the live regions tests read.</li>
             <li><a href="guides/telemetry">Telemetry</a>: counting what people use.</li>
@@ -1134,11 +1165,37 @@
         this.AddTrailblazor();
         time.Advance(TimeSpan.FromSeconds(5));
 
-        // Playwright: a page with no transitions.
+        // Playwright: a page with no transitions, only for a test that needs it.
         var page = await browser.NewPageAsync(new()
         {
             ReducedMotion = ReducedMotion.Reduce,
         });
+        """;
+
+    private const string HiddenUpload = """
+        // Both packages: the hidden field is still found by its label.
+        await page.Tb().FileUpload("Import a route").ChooseAsync("ridge.gpx");
+
+        // Playwright: the button opens the browser's file dialog.
+        await Expect(page.GetByLabel("Import a route")).ToHaveAttributeAsync("data-ready", "");
+        var chooser = await page.RunAndWaitForFileChooserAsync(
+            () => page.GetByRole(AriaRole.Button, new() { Name = "Import a route" }).ClickAsync());
+        await chooser.SetFilesAsync("ridge.gpx");
+        """;
+
+    private const string OneTab = """
+        var settings = page.Tb().Tabs("Trail settings");
+        await settings.SelectAsync("Route");
+        var route = settings.Panel("Route");
+        await route.TextField("Name").EnterAsync("Ridge loop");
+        """;
+
+    private const string Settles = """
+        // bUnit
+        cut.WaitForAssertion(() => Assert.Equal("1 saved", cut.Find("output").TextContent));
+
+        // Playwright
+        await Expect(page.Locator("output")).ToHaveTextAsync("1 saved");
         """;
 
     private const string Locators = """

@@ -1,0 +1,108 @@
+@page "/guides/migrating-tests"
+
+<PageTitle>Migrating tests · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="what-changes" Text="What changes" />
+        <TbTableOfContentsItem TargetId="names" Text="Match names exactly" />
+        <TbTableOfContentsItem TargetId="roles" Text="Find parts by role" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Migrating tests</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Moving a test suite over from another component library? Most of what its tests set up, mock or read has a
+            Trailblazor helper, fake or role-based lookup to take its place.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="what-changes" Text="What changes" Class="docs-section" />
+        <div class="docs-api" tabindex="0" role="region" aria-label="What changes">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">In the old tests</th>
+                        <th scope="col">With Trailblazor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">A popover or dialog provider rendered in each test</th>
+                        <td>
+                            Nothing to render for popovers, menus and selects: they render in place, and
+                            <code>this.AddTrailblazor()</code> sets up what they need. A dialog opened from code shows
+                            in a <code>TbRoot</code>, which <code>this.ShowDialogAsync&lt;TDialog&gt;()</code> renders
+                            for you.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A mocked message box or dialog service</th>
+                        <td>
+                            The <code>FakeDialogService</code> that <code>AddTrailblazor()</code> registers. It records
+                            each dialog, and <code>Answer</code> or <code>AnswerWith</code> answers them as they open.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A component's state, read from <code>cut.Instance</code></th>
+                        <td>
+                            The helpers read what the user sees, such as a select's <code>Text</code> and
+                            <code>Options</code>, a grid's <code>Rows</code> or a tree's <code>Texts</code>. The
+                            Playwright helpers read the same, with <code>Async</code> names.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">The library's CSS classes as selectors</th>
+                        <td>
+                            Roles and accessible names, the helpers, or the <code>data-part</code> hooks each
+                            component's page lists. The <code>tb-*</code> classes are for styling and can change between
+                            versions.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <CodeBlock Label="Before and after" Code="@BeforeAndAfter" />
+
+        <DocsHeading Id="names" Text="Match names exactly" Class="docs-section" />
+        <TbText>
+            The helpers find options, rows and tabs by their text exactly as it shows, so "Cedar flats" and "Cedar"
+            don't find "Cedar Flats". A test that matched part of a name, or ignored case, needs the full name. An
+            option with content of its own is named by its <code>Text</code>.
+        </TbText>
+
+        <DocsHeading Id="roles" Text="Find parts by role" Class="docs-section" />
+        <TbText>
+            Find a dialog by its title with <code>page.Tb().Dialog(title)</code> in Playwright, or
+            <code>root.Tb().Dialog(title)</code> in bUnit, rather than with a <code>[role=dialog]</code> selector. A
+            Trailblazor dialog is a native <code>&lt;dialog&gt;</code> element, which has the dialog role without the
+            attribute, so the selector misses it and finds popover panels instead. A confirm or alert has the
+            <code>alertdialog</code> role, so a role query needs <code>AriaRole.Alertdialog</code> for those; the
+            helpers find both. The same goes for other native elements, such as a <code>&lt;button&gt;</code>: find
+            them by role.
+        </TbText>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li><a href="guides/testing">Testing</a>: every helper, fake and wait.</li>
+            <li>
+                <a href="guides/testing#bunit-dialogs">Test dialogs in bUnit</a>: <code>ShowDialogAsync</code> and the
+                fake dialog service.
+            </li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+
+@code {
+    private const string BeforeAndAfter = """
+        // Before: reading the component and finding its parts by the library's classes.
+        Assert.Equal("Cedar Flats", cut.FindComponent<OtherSelect<string>>().Instance.Value);
+        cut.Find(".other-select-item:nth-child(2)").Click();
+
+        // After: reading and choosing what the user sees.
+        var trail = cut.Tb().Select("Trail");
+        Assert.Equal("Cedar Flats", trail.Text);
+        await trail.ChooseAsync("Pine Hollow");
+        """;
+}

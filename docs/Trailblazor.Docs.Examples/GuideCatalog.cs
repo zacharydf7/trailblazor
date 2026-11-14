@@ -50,6 +50,9 @@ public static class GuideCatalog
             "Mirror layouts and arrow keys for right-to-left languages, and show numbers and dates in each culture."),
         new("guides/testing", "Testing",
             "Test pages built with Trailblazor in bUnit and Playwright, and find components the way users do."),
+        new("guides/migrating-tests", "Migrating tests",
+            "Move tests over from another component library: what replaces its providers, mocks, state reads and "
+                + "class selectors."),
         new("guides/wrapping", "Wrapping components",
             "Give a component your app's defaults in a wrapper of your own, and pass everything else through."),
         new("guides/analyzers", "Analyzers",

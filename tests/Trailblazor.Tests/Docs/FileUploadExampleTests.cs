@@ -84,6 +84,26 @@ public class FileUploadExampleTests : DocsTest
     }
 
     [Fact]
+    public async Task OwnButtonExample_ShouldTakeAFileFromTheTestHelpers_WhenTheFieldIsHidden()
+    {
+        var folder = Directory.CreateTempSubdirectory();
+        try
+        {
+            var route = Path.Combine(folder.FullName, "ridge.gpx");
+            await File.WriteAllBytesAsync(route, new byte[3], Xunit.TestContext.Current.CancellationToken);
+            var cut = Render<FileUploadOwnButtonExample>();
+
+            await cut.Tb().FileUpload("Import a route").ChooseAsync(route);
+
+            Assert.Contains("Route value: ridge.gpx", cut.Markup);
+        }
+        finally
+        {
+            folder.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public void OwnButtonExample_ShouldForgetTheRoute_WhenItIsCleared()
     {
         var cut = Render<FileUploadOwnButtonExample>();

@@ -92,7 +92,7 @@ public class DocsSearchTests
     [InlineData("guides",
         new[] { "Getting started", "Forms and validation", "Accessibility", "Theming", "Palettes", "Spacing",
             "Browser", "Announcements", "Rich text", "Icons", "Localization", "Right-to-left and culture", "Testing",
-            "Wrapping components", "Analyzers",
+            "Migrating tests", "Wrapping components", "Analyzers",
             "Telemetry" })]
     public void Find_ShouldRankEverythingInACategoryAsATitleMatch_WhenGivenItsName(string category, string[] titles)
     {

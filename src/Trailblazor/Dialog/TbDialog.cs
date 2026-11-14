@@ -18,7 +18,7 @@ public sealed class TbDialog : TbComponentBase, IAsyncDisposable
     private DialogService Dialogs { get; set; } = default!;
 
     /// <summary>Whether the dialog is open. Bind it with <c>@bind-Open</c>: it turns false when the user dismisses
-    /// the dialog.</summary>
+    /// the dialog. Once closed, the dialog stays in the page with <c>data-leaving</c> while it fades out.</summary>
     [Parameter]
     public bool Open { get; set; }
 
