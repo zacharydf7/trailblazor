@@ -7,6 +7,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 ## Keyboard
 
 - [x] Enter in a single-line field commits the text and submits its form. `FormTests.Form_ShouldSubmit_WhenEnterIsPressedInASingleLineField`
+- [x] Enter in a single-line field raises `OnEnter` after the value updates, and only for an Enter pressed in the field. `TextFieldTests.OnEnter_ShouldSeeTheTypedValue_WhenEnterIsPressedBeforeTheFieldLosesFocus`, `TextFieldTests.OnEnter_ShouldStaySilent_WhenEnterWasPressedOutsideTheField`
 - [x] Enter in a text area adds a line. `TbTextField.razor`
 - [x] Tab out of the field commits the text. `TextFieldTests.TextField_ShouldUpdateAtOnce_WhenEnterOrLeavingTheFieldEndsTheDelay`
 - [x] With `UpdateDelay`, quick typing sends the server only the text typed before the pause. `TextFieldTests.TextField_ShouldSendOnlyTheTextTypedBeforeAPause_WhenGivenAnUpdateDelay`
@@ -15,7 +16,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 - [x] In a mask, typing or deleting mid-text keeps the caret in place. `TextFieldTests.TextField_ShouldKeepTheCaretInPlace_WhenADigitIsTypedOrDeletedMidMask`
 - [x] In a mask, Backspace just after a literal removes the character before it. `text-mask.js`
 - [x] In a read-only field, the keys move the caret but change nothing. `ReadOnlyTests.ReadOnlyField_ShouldKeepItsValueButTakeFocus_WhenTheUserTriesToEditIt`
-- [ ] In Safari, Enter in a masked field commits the fitted text before the form submits. UNCONFIRMED
+- [ ] In Safari, Enter in a masked field commits the fitted text before `OnEnter` runs or the form submits. UNCONFIRMED: `TextFieldTests.OnEnter_ShouldSeeTheFittedText_WhenEnterIsPressedInAMaskedField` needs a WebKit run.
 
 ## Pointer
 

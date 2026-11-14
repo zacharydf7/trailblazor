@@ -57,6 +57,30 @@ public class TbFormTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldHideTheRequiredMarksButKeepTheFieldsRequired_WhenRequiredMarkersIsOff()
+    {
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.ChildContent, builder =>
+        {
+            builder.OpenComponent<TbTextField<string>>(0);
+            builder.AddAttribute(1, nameof(TbTextField<string>.Label), "Name");
+            builder.AddAttribute(2, nameof(TbTextField<string>.Required), true);
+            builder.CloseComponent();
+            builder.OpenComponent<TbLabel>(3);
+            builder.AddAttribute(4, nameof(TbLabel.Text), "Trail");
+            builder.AddAttribute(5, nameof(TbLabel.Required), true);
+            builder.CloseComponent();
+        }));
+        Assert.Equal(2, cut.FindAll(".tb-field__required, .tb-label__required").Count);
+
+        cut.Render(parameters => parameters.Add(form => form.RequiredMarkers, false));
+        cut.Find("form").Submit();
+
+        Assert.Empty(cut.FindAll(".tb-field__required, .tb-label__required"));
+        Assert.Equal("true", cut.Find("input").GetAttribute("aria-required"));
+        Assert.Equal("Name is required.", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
+    [Fact]
     public void Submit_ShouldDoNothingAndTurnOffItsButtons_WhenTheFormIsDisabled()
     {
         var valid = 0;

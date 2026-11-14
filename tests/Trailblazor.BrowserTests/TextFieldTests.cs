@@ -1,7 +1,53 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task OnEnter_ShouldSeeTheTypedValue_WhenEnterIsPressedBeforeTheFieldLosesFocus(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var stop = page.GetByLabel("Add a stop");
+
+        await stop.FillAsync("Summit");
+        await stop.PressAsync("Enter");
+
+        await Expect(page.GetByText("Stops: Trailhead, Summit", new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(stop).ToHaveValueAsync("");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task OnEnter_ShouldSeeTheFittedText_WhenEnterIsPressedInAMaskedField(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-field-enter");
+        var phone = page.GetByLabel("Phone");
+        await Expect(phone).ToHaveAttributeAsync("data-ready", "");
+
+        await phone.PressSequentiallyAsync("5551234567");
+        await phone.PressAsync("Enter");
+
+        await Expect(page.GetByText("Calls: 1; last: 5551234567", new() { Exact = true })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task OnEnter_ShouldStaySilent_WhenEnterWasPressedOutsideTheField(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-field-enter");
+        var phone = page.GetByLabel("Phone");
+        await page.Tb().TextField("Phone").EnterAsync("5551234567");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Edit" }).FocusAsync();
+
+        // The button's Enter moves focus to the field, where the key is released.
+        await page.Keyboard.DownAsync("Enter");
+        await Expect(phone).ToBeFocusedAsync();
+        await page.Keyboard.UpAsync("Enter");
+        // Events reach the app in order, so a stray call would be counted before this Enter's.
+        await phone.PressAsync("Enter");
+
+        await Expect(page.GetByText("Calls: 1; last: 5551234567", new() { Exact = true })).ToBeVisibleAsync();
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldPostItsValue_WhenSubmittedInAStaticForm(string browser)
     {

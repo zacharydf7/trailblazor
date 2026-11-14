@@ -39,10 +39,14 @@
     [Parameter]
     public string? TextId { get; set; }
 
-    /// <summary>Shows a marker that the control needs a value. The control itself must say so too, for example
-    /// with <c>Required</c> on a Trailblazor field.</summary>
+    /// <summary>Shows a marker that the control needs a value, unless the <c>TbForm</c> around it turns
+    /// <c>RequiredMarkers</c> off. The control itself must say so too, for example with <c>Required</c> on a
+    /// Trailblazor field.</summary>
     [Parameter]
     public bool Required { get; set; }
+
+    [CascadingParameter(Name = TbForm.HiddenMarkersCascade)]
+    private bool MarkersHidden { get; set; }
 
     /// <summary>Text the info button shows, explaining the setting. Line breaks are kept.</summary>
     [Parameter]
@@ -80,7 +84,7 @@
             {
                 @ChildContent
             }
-            @if (Required)
+            @if (Required && !MarkersHidden)
             {
                 <span class="tb-label__required" aria-hidden="true">*</span>
             }

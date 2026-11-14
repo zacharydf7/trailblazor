@@ -106,12 +106,21 @@ export function createMask(input, pattern) {
             input.dispatchEvent(new Event('change', { bubbles: true }));
         }
     };
+    // Enter commits the text too, so OnEnter and the form's submit, which come after it, see the fitted text.
+    const onKeyDown = event => {
+        if (event.key === 'Enter' && !changed && input.value !== focused) {
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+            focused = input.value;
+            changed = false;
+        }
+    };
 
     input.addEventListener('beforeinput', onBeforeInput);
     input.addEventListener('input', onInput);
     input.addEventListener('focus', onFocus);
     input.addEventListener('change', onChange);
     input.addEventListener('blur', onBlur);
+    input.addEventListener('keydown', onKeyDown);
     input.dataset.ready = '';
     const mask = {
         dispose() {
@@ -123,6 +132,7 @@ export function createMask(input, pattern) {
             input.removeEventListener('beforeinput', onBeforeInput);
             input.removeEventListener('input', onInput);
             input.removeEventListener('focus', onFocus);
+            input.removeEventListener('keydown', onKeyDown);
             input.removeEventListener('change', onChange);
             input.removeEventListener('blur', onBlur);
         },

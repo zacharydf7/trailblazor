@@ -47,13 +47,17 @@
                 clears an earlier success message, so that message doesn't come back once the errors are fixed.
             </li>
             <li>
-                <code>InputAttributes</code> puts attributes on the input itself, such as <code>autocomplete</code>, so
-                the browser can fill in what it knows.
+                Attributes only an input takes reach the input when written on a field with one input:
+                <code>autocomplete</code>, so the browser can fill in what it knows, and <code>maxlength</code>,
+                <code>minlength</code>, <code>pattern</code>, <code>inputmode</code>, <code>enterkeyhint</code>,
+                <code>spellcheck</code> and <code>autocapitalize</code>. <code>InputAttributes</code> puts any other
+                attribute on the input itself.
             </li>
             <li>
                 Pressing Enter in a single-line field submits the form, as in any HTML form, so a one-field prompt such
                 as a search needs no key handling. A form with no submit button submits this way only when it has a
-                single such field.
+                single such field. A text field's <code>OnEnter</code> runs on Enter too, in a form or outside one,
+                after the value updates.
             </li>
             <li>
                 <code>AutoFocus</code> moves focus to a field as it appears, on a static page too. Use it on one field at
@@ -77,6 +81,11 @@
             default, and the <a href="guides/localization">localization guide</a> shows how to change it for the whole
             app. A message of your own can say what to do, as <a href="guides/forms#wording">wording</a> explains. A
             disabled or read-only field isn't checked, since the user can't fill it in.
+        </TbText>
+        <TbText>
+            When every field in a form is required, the asterisks say nothing. Set <code>RequiredMarkers="false"</code>
+            on the <code>TbForm</code> and say once, above the form, that every field is required. The fields still
+            tell screen readers they're required, and still show their message when left empty.
         </TbText>
 
         <DocsHeading Id="custom-validation" Text="Custom validation" Class="docs-section" />

@@ -146,7 +146,10 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     [Parameter]
     public Func<TValue?, CancellationToken, Task<IEnumerable<string>>>? ValidationAsync { get; set; }
 
-    /// <summary>Attributes for the input element itself, such as <c>autocomplete</c> or <c>name</c>.</summary>
+    /// <summary>Attributes for the input element itself, such as <c>name</c> or <c>data-*</c> ones. On a field with
+    /// one input, the attributes only an input takes, <c>autocomplete</c>, <c>maxlength</c>, <c>minlength</c>,
+    /// <c>pattern</c>, <c>inputmode</c>, <c>enterkeyhint</c>, <c>spellcheck</c> and <c>autocapitalize</c>, reach it
+    /// when written on the field too; when one is set both ways, the value here wins.</summary>
     [Parameter]
     public IReadOnlyDictionary<string, object>? InputAttributes { get; set; }
 
@@ -187,6 +190,9 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     [CascadingParameter]
     private TbForm? Form { get; set; }
 
+    [CascadingParameter(Name = TbForm.HiddenMarkersCascade)]
+    private bool MarkersHidden { get; set; }
+
     [CascadingParameter]
     private FormMappingContext? MappingContext { get; set; }
 
@@ -215,9 +221,22 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 
     private string? IdOfControl => IdNamesControl ? GivenId : null;
 
-    // The root's attributes, less an id that names the control.
-    private protected IReadOnlyDictionary<string, object>? RootAttributes =>
-        WithFocusEvents(IdOfControl is null ? AdditionalAttributes : AttributesWithoutId);
+    // Attributes only an input takes, which people write on the field itself; a field with one control passes them on.
+    private static readonly HashSet<string> InputOnly = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "autocomplete", "maxlength", "minlength", "pattern", "inputmode", "enterkeyhint", "spellcheck", "autocapitalize",
+    };
+
+    // The root's attributes, less an id that names the control and the attributes the control takes.
+    private protected IReadOnlyDictionary<string, object>? RootAttributes
+    {
+        get
+        {
+            var attributes = IdOfControl is null ? AdditionalAttributes : AttributesWithoutId;
+            return WithFocusEvents(IdNamesControl && attributes?.Keys.Any(InputOnly.Contains) == true
+                ? attributes.Where(attribute => !InputOnly.Contains(attribute.Key)).ToDictionary() : attributes);
+        }
+    }
 
     // A group's root keeps its id, since its items each have their own, and carries the group's autofocus.
     private protected IReadOnlyDictionary<string, object>? GroupRootAttributes =>
@@ -375,7 +394,22 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
             throw new InvalidOperationException($"A field needs a {nameof(Label)} to show an info button.");
         }
 
-        ControlAttributes = AutoFocus ? WithAutofocus(InputAttributes) : InputAttributes;
+        var control = InputAttributes;
+        if (IdNamesControl && AdditionalAttributes?.Where(attribute => InputOnly.Contains(attribute.Key)).ToList() is
+            { Count: > 0 } forwarded)
+        {
+            // HTML attribute names ignore case, and InputAttributes wins when an attribute is set both ways.
+            var merged = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (name, value) in
+                forwarded.Concat(InputAttributes ?? Enumerable.Empty<KeyValuePair<string, object>>()))
+            {
+                merged[name] = value;
+            }
+
+            control = merged;
+        }
+
+        ControlAttributes = AutoFocus ? WithAutofocus(control) : control;
         // A value the field didn't report itself came from the parent, and a form reset goes back to it.
         if (!EqualityComparer<TValue>.Default.Equals(Value, _lastValue))
         {

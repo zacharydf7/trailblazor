@@ -94,6 +94,20 @@ function registerEvents(blazor) {
         return { crossesField: !root || !root.contains(event.relatedTarget) };
     };
     blazor.registerCustomEventType('tbfocusenter', { browserEventName: 'focusin', createEventArgs: fieldFocusEventArgs });
+    // A text field's OnEnter hears an Enter pressed and released in the same field, after the change it commits; the
+    // server hears no other key. An Enter that ends an input method composition doesn't count, and Safari marks it only
+    // with keyCode 229.
+    let enterDown = null;
+    document.addEventListener('keydown', event => {
+        enterDown = event.key === 'Enter' && !event.isComposing && event.keyCode !== 229 ? event.target : null;
+    }, true);
+    document.addEventListener('keyup', event => {
+        if (event.key === 'Enter' && event.target === enterDown) {
+            enterDown = null;
+            event.target.dispatchEvent(new CustomEvent('tb-enter', { bubbles: true }));
+        }
+    }, true);
+    blazor.registerCustomEventType('tbenter', { browserEventName: 'tb-enter' });
     blazor.registerCustomEventType('tbfocusleave', { browserEventName: 'focusout', createEventArgs: fieldFocusEventArgs });
     // A label can't take focus, so pressing one sends focus to the page, then back when its click focuses the box.
     // In a field that already holds focus, the press leaves focus where it is, so moving between options isn't leaving.

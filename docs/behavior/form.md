@@ -55,6 +55,7 @@ Familiar apps: sign-in and checkout forms on the web, the settings forms in clou
 - [x] A successful submit leaves focus where it was. `TbForm.razor`
 - [x] A reset leaves focus on its button when pressed from the keyboard. `FormTests.Form_ShouldPutFieldsAndTheirValuesBack_WhenItsResetButtonIsPressed`
 - [x] After a static post that fails, focus moves to the first error once the page comes back, whether it reloads or an enhanced post patches it. `FormTests.Form_ShouldFocusTheFirstErrorAfterThePageReloads_WhenAStaticPostFails`, `FormTests.Form_ShouldFocusTheFirstErrorEachTime_WhenAnEnhancedStaticPostFails`
+- [x] With `RequiredMarkers="false"`, required fields show no asterisk but still tell screen readers they're required and still show their message when left empty. `TbFormTests.Render_ShouldHideTheRequiredMarksButKeepTheFieldsRequired_WhenRequiredMarkersIsOff`
 
 ## Not applicable
 

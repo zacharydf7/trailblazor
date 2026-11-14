@@ -3143,10 +3143,14 @@ public static class ExampleCatalog
                     + "as the handle does here when it changes. When a handle is taken, `SelectTextAsync` selects it, "
                     + "so typing replaces it. To compare two fields, as with the gate codes, compute one field's "
                     + "`Error` from both values and set `Invalid` on the other.", typeof(TextFieldValidationExample)),
-                new("types", "Types", "`Type` sets the keyboard people get, and `InputAttributes` puts attributes "
-                    + "such as `autocomplete` on the input. Bind the field to a number or date instead of a string, and "
+                new("types", "Types", "`Type` sets the keyboard people get. Attributes only an input takes, such "
+                    + "as `autocomplete` and `maxlength`, reach it when written on the field, and `InputAttributes` "
+                    + "puts any other attribute on the input. Bind the field to a number or date instead of a string, and "
                     + "text that doesn't convert shows an error.",
                     typeof(TextFieldTypesExample)),
+                new("enter", "Enter", "`OnEnter` runs when someone presses Enter in a single-line field, after the "
+                    + "value updates, so a list can take entries one at a time, as the stops do here. Inside a `TbForm`, "
+                    + "Enter submits the form as well.", typeof(TextFieldEnterExample)),
                 new("search-and-clearing", "Search and clearing", "`UpdateOnInput` updates the value while typing, "
                     + "and `UpdateDelay` waits for a pause, so a search doesn't run on every keystroke. `Clearable` "
                     + "adds a button that empties the field, and `Labels.Clear` names that button. The button sets "
@@ -3175,7 +3179,8 @@ public static class ExampleCatalog
             Api = [typeof(TbTextField<>), typeof(TextFieldLabels), typeof(FieldClasses)],
             Keyboard =
             [
-                new(["Enter"], "In a single-line field, updates the value at once and submits its form."),
+                new(["Enter"], "In a single-line field, updates the value at once, raises `OnEnter` and submits its "
+                    + "form."),
                 new(["Backspace"], "Just after a mask's parenthesis or dash, removes the character before it."),
             ],
             Labeling =
@@ -3247,7 +3252,9 @@ public static class ExampleCatalog
                 + "value updates on each input, so there's nothing to wait for. "
                 + "`await cut.Tb().TextField(\"Trail\").EnterAsync(\"Pine Hollow\")` types the text and commits it, "
                 + "and `page.Tb()` does the same in Playwright, waiting until the app has it; `Text` (`TextAsync()` "
-                + "in Playwright) reads what the field shows.",
+                + "in Playwright) reads what the field shows. To raise `OnEnter`, press Enter in Playwright, or in bUnit "
+                + "commit the text and then `await cut.Find(\"input\").TriggerEventAsync(\"ontbenter\", "
+                + "EventArgs.Empty)`, the event the browser sends.",
         },
         new("rich-text-editor", "Rich text editor", ExampleCategory.Inputs,
             "A labeled field for formatted text, with a toolbar, shortcuts, undo and paste cleanup.")

@@ -1,5 +1,5 @@
 <TbStack Gap="4" Style="max-inline-size: 24rem">
-    <TbTextField Label="Email" @bind-Value="_email" Type="TextFieldType.Email" InputAttributes="EmailAttributes" />
+    <TbTextField Label="Email" @bind-Value="_email" Type="TextFieldType.Email" autocomplete="email" />
     <TbTextField Label="Password" @bind-Value="_password" Type="TextFieldType.Password" />
     <TbTextField Label="Website" @bind-Value="_website" Type="TextFieldType.Url" />
     <TbTextField Label="Age" @bind-Value="_age">
@@ -9,8 +9,6 @@
 </TbStack>
 
 @code {
-    private static readonly Dictionary<string, object> EmailAttributes = new() { ["autocomplete"] = "email" };
-
     private string? _email;
     private string? _password;
     private string? _website;

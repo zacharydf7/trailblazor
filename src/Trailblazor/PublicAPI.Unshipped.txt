@@ -5414,3 +5414,7 @@ Trailblazor.TbToggleGroupBase<TValue>.HelperText.get -> string?
 Trailblazor.TbToggleGroupBase<TValue>.HelperText.set -> void
 Trailblazor.TbToggleGroupBase<TValue>.Label.get -> string?
 Trailblazor.TbToggleGroupBase<TValue>.Label.set -> void
+Trailblazor.TbForm.RequiredMarkers.get -> bool
+Trailblazor.TbForm.RequiredMarkers.set -> void
+Trailblazor.TbTextField<TValue>.OnEnter.get -> Microsoft.AspNetCore.Components.EventCallback
+Trailblazor.TbTextField<TValue>.OnEnter.set -> void

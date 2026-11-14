@@ -4,6 +4,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Trailblazor.Tests.Components;
@@ -13,6 +14,68 @@ public class TbTextFieldTests : BunitContext
     public TbTextFieldTests()
     {
         this.AddTrailblazor();
+    }
+
+    [Fact]
+    public void Render_ShouldPutTheInputsOwnAttributesOnTheInput_WhenTheyAreWrittenOnTheField()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Email")
+            .AddUnmatched("autocomplete", "email").AddUnmatched("MaxLength", "40").AddUnmatched("data-testid", "email")
+            .AddUnmatched("inputmode", "email")
+            .Add(field => field.InputAttributes, new Dictionary<string, object> { ["maxlength"] = "60" }));
+
+        var input = cut.Find("input");
+        var root = cut.Find("[data-testid=email]");
+        // InputAttributes win over the same attribute written on the field, whatever its case.
+        Assert.Equal(("email", "60", "email"),
+            (input.GetAttribute("autocomplete"), input.GetAttribute("maxlength"), input.GetAttribute("inputmode")));
+        Assert.False(root.HasAttribute("autocomplete") || root.HasAttribute("maxlength"));
+        Assert.Equal("tb-field", root.ClassList[0]);
+    }
+
+    [Fact]
+    public void Render_ShouldTakeTheInputModeWrittenOnTheField_WhenItsMaskTakesDigits()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Code")
+            .Add(field => field.Mask, "000").AddUnmatched("inputmode", "tel"));
+
+        Assert.Equal("tel", cut.Find("input").GetAttribute("inputmode"));
+    }
+
+    [Fact]
+    public void Render_ShouldKeepTheInputsOwnAttributesOffTheRoot_WhenTheFieldHasAnId()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Email")
+            .AddUnmatched("id", "email").AddUnmatched("spellcheck", "false"));
+
+        Assert.Equal("false", cut.Find("input#email").GetAttribute("spellcheck"));
+        Assert.Empty(cut.FindAll("[spellcheck]:not(input)"));
+    }
+
+    [Fact]
+    public async Task Enter_ShouldRaiseOnEnterOnceTheValueIsCommitted_WhenTheBrowserSendsIt()
+    {
+        string? name = null;
+        var heard = new List<string?>();
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Name")
+            .Add(field => field.ValueChanged, (string value) => name = value)
+            .Add(field => field.OnEnter, () => heard.Add(name)));
+
+        // The browser sends the change Enter commits, then its own event once the key is released.
+        cut.Find("input").Change("Ada");
+        await cut.Find("input").TriggerEventAsync("ontbenter", EventArgs.Empty);
+
+        Assert.Equal(["Ada"], heard);
+        Assert.False(cut.Find("input").HasAttribute("blazor:onkeydown"));
+    }
+
+    [Fact]
+    public void Render_ShouldNotListenForEnter_WhenTheFieldTakesSeveralLines()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Notes")
+            .Add(field => field.Lines, 3).Add(field => field.OnEnter, () => { }));
+
+        Assert.False(cut.Find("textarea").HasAttribute("blazor:ontbenter"));
     }
 
     [Theory]

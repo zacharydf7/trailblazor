@@ -36,6 +36,12 @@
     [Parameter]
     public bool UpdateOnInput { get; set; }
 
+    /// <summary>Raised when the user presses Enter in a single-line field, after the value updates. In a
+    /// <c>TbForm</c>, Enter also submits the form. A multi-line field takes Enter as a new line and doesn't raise
+    /// this.</summary>
+    [Parameter]
+    public EventCallback OnEnter { get; set; }
+
     /// <summary>The number of text lines. More than one renders a multi-line text area.</summary>
     [Parameter]
     public int Lines { get; set; } = 1;
@@ -93,7 +99,7 @@
 
     // A mask of digits brings up a number keyboard, unless the page asked for another.
     private object? InputMode =>
-        InputAttributes?.GetValueOrDefault("inputmode") ?? (_mask?.DigitsOnly == true ? "numeric" : null);
+        ControlAttributes?.GetValueOrDefault("inputmode") ?? (_mask?.DigitsOnly == true ? "numeric" : null);
 
     // debounced-input.js holds keystrokes back in the browser until typing pauses this long, so the server hears one
     // input per pause.
@@ -143,7 +149,12 @@
         // Tests wait for data-ready before typing, since a prerendered field is replaced and loses the text.
         builder.AddAttribute(21, "data-static", AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null);
         builder.AddAttribute(22, "data-ready", RendererInfo.IsInteractive ? "" : null);
-        builder.AddElementReferenceCapture(23, element => _input = element);
+        if (!area && OnEnter.HasDelegate)
+        {
+            builder.AddAttribute(23, "ontbenter", OnEnter);
+        }
+
+        builder.AddElementReferenceCapture(24, element => _input = element);
         builder.CloseElement();
     };
 

@@ -36,7 +36,7 @@
 
     private protected RenderFragment RequiredMarker =>
         @<text>
-            @if (IsRequired)
+            @if (IsRequired && !MarkersHidden)
             {
                 <span class="tb-field__required" aria-hidden="true">*</span>
             }

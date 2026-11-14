@@ -1,0 +1,17 @@
+@page "/text-field-enter"
+
+@* A masked field whose OnEnter reads the value, and a button whose Enter moves focus into it. *@
+<TbButton OnClick="EditAsync">Edit</TbButton>
+<TbTextField @ref="_field" Label="Phone" @bind-Value="_phone" Mask="(000) 000-0000" OnEnter="Call" />
+<output>Calls: @_calls; last: @(_called ?? "none")</output>
+
+@code {
+    private TbTextField<string>? _field;
+    private string? _phone;
+    private string? _called;
+    private int _calls;
+
+    private void Call() => (_calls, _called) = (_calls + 1, _phone);
+
+    private async Task EditAsync() => await _field!.FocusAsync();
+}
