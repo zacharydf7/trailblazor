@@ -130,8 +130,11 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
             }
 
             _self = DotNetObjectReference.Create(this);
+            // Read now, since the content may change them as it first renders.
+            _blocking = Dialog.IsBlocking;
+            _windowState = Dialog.WindowState;
             var handle = await module.InvokeAsync<IJSObjectReference?>("openDialog", _element, _self, Dialog.Options,
-                Settings.Value.Dialogs.OutsidePopups);
+                Settings.Value.Dialogs.OutsidePopups, _blocking, WindowStateName(_windowState));
             if (handle is not null)
             {
                 if (_disposed)
@@ -166,7 +169,6 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
     protected override void OnInitialized()
     {
-        _blocking = Dialog.Options.Modal;
         _position = Dialog.Position;
         _size = Dialog.Size;
         Dialog.Changed += OnChanged;
@@ -213,7 +215,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         {
             // Turning modal waits for a frame, which a hidden tab doesn't draw, so it has no time limit.
             await _handle.InvokeVoidAsync("setState", Timeout.InfiniteTimeSpan,
-                [_windowState.ToString().ToLowerInvariant(), _blocking]);
+                [WindowStateName(_windowState), _blocking]);
             if (turnsModal)
             {
                 _announcer?.Show();
@@ -271,6 +273,8 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
         ClassNames.Modifier("tb-dialog", "position", position);
 
     private static string SizeClass(DialogSize size) => ClassNames.Modifier("tb-dialog", size);
+
+    private static string WindowStateName(DialogWindowState state) => state.ToString().ToLowerInvariant();
 
     private async Task CloseInBrowserAsync()
     {

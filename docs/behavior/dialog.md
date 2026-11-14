@@ -50,6 +50,8 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] A drag that starts on the header's actions leaves the dialog where it is, and the actions stay out of its name. `DialogMoveAndResizeTests.Dialog_ShouldStayPut_WhenADragStartsOnItsHeaderActions`, `TbDialogTests.HeaderActions_ShouldShowBetweenTheTitleAndTheCloseButton_WhenAddedAndRemoved`
 - [x] Dragging the grip resizes it from its bottom-end corner. `DialogMoveAndResizeTests.Dialog_ShouldGrowFromItsBottomEndCorner_WhenTheGripIsDragged`
 - [x] Minimize collapses it to its header in the corner. `DialogTests.Dialog_ShouldCollapseToItsHeaderInTheCornerAndKeepFocus_WhenMinimized`
+- [x] A dialog opened minimized starts in the corner with focus on Restore and leaves the page usable, even when it's modal. `DialogTests.Dialog_ShouldOpenInTheCornerAndLeaveThePageUsable_WhenItStartsMinimized`
+- [x] The reference reports each new window state, from the header's buttons or from code. `DialogServiceTests.WindowStateChanged_ShouldReportEachNewState_WhenTheHeaderOrCodeChangesIt`, `DialogServiceTests.WindowStateChanged_ShouldReportTheRestore_WhenHidingTheHeaderRestoresAMinimizedDialog`
 - [x] Maximize fills the window, and Restore brings it back. `DialogTests.Dialog_ShouldFillTheWindowAndComeBack_WhenMaximizedAndRestored`
 - [x] A long dialog keeps its header in view and scrolls its body. `DialogExtrasTests.Dialog_ShouldScrollItsBodyAndKeepItsHeaderInView_WhenItsContentIsLong`
 

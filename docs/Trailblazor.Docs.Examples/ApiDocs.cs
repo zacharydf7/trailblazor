@@ -65,7 +65,8 @@ public static partial class ApiDocs
                     .Select(property => InterfaceProperty(property, context, id))], false),
                 new("Events", [.. type.GetEvents().OrderBy(eventInfo => eventInfo.MetadataToken)
                     .Select(eventInfo => new ApiMember($"event {eventInfo.Name}", eventInfo.Name,
-                        TypeName(eventInfo.EventHandlerType!), "", Summary($"E:{DocId(type)}.{eventInfo.Name}"), false,
+                        TypeName(eventInfo.EventHandlerType!), "",
+                        Summary($"E:{DocId(Definition(eventInfo.DeclaringType!))}.{eventInfo.Name}"), false,
                         Anchor(id, eventInfo.Name), []))], false),
                 // A record's Equals, ToString and Deconstruct come from the compiler, not the library's API.
                 new("Methods", Methods(type.GetMethods().Where(method => method.DeclaringType != typeof(object)

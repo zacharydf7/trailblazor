@@ -457,6 +457,97 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void ShowAsync_ShouldOpenTheDialogInTheTrayAndLeaveThePageUsable_WhenItStartsMinimized()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        var handle = module.SetupModule("openDialog", _ => true);
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes",
+            options: new() { Minimizable = true, WindowState = DialogWindowState.Minimized });
+
+        // It opens modeless and minimized, with nothing left to switch once it's open.
+        host.WaitForAssertion(() => Assert.Equal([false, "minimized"],
+            module.VerifyInvoke("openDialog").Arguments.Skip(4)));
+        Assert.Empty(handle.Invocations["setState"]);
+        Assert.Equal("Restore", host.Find("[data-part=minimize]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void ShowAsync_ShouldOpenTheDialogAtItsOwnSize_WhenItsContentHidesTheHeaderAsItStartsMinimized()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame").SetVoidResult();
+        var handle = module.SetupModule("openDialog", _ => true);
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<HeaderlessDialog, string>("Notes",
+            options: new() { Minimizable = true, WindowState = DialogWindowState.Minimized });
+
+        host.WaitForAssertion(() => Assert.Equal([true, "normal"],
+            module.VerifyInvoke("openDialog").Arguments.Skip(4)));
+        Assert.Empty(handle.Invocations["setState"]);
+    }
+
+    [Fact]
+    public void ShowAsync_ShouldOpenTheDialogMaximizedAndStillModal_WhenItStartsMaximized()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame").SetVoidResult();
+        var handle = module.SetupModule("openDialog", _ => true);
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes",
+            options: new() { Maximizable = true, WindowState = DialogWindowState.Maximized });
+
+        host.WaitForAssertion(() => Assert.Equal([true, "maximized"],
+            module.VerifyInvoke("openDialog").Arguments.Skip(4)));
+        Assert.Empty(handle.Invocations["setState"]);
+        Assert.Equal("Restore", host.Find("[data-part=maximize]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Show_ShouldRefuseToOpenMinimized_WhenTheDialogIsNotMinimizable()
+    {
+        Assert.Throws<InvalidOperationException>(() => Dialogs.Show<GreetingDialog, string>("Notes",
+            options: new() { WindowState = DialogWindowState.Minimized }));
+
+        Assert.Empty(Dialogs.OpenDialogs);
+    }
+
+    [Fact]
+    public async Task WindowStateChanged_ShouldReportEachNewState_WhenTheHeaderOrCodeChangesIt()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes",
+            options: new() { Modal = false, Minimizable = true, Maximizable = true });
+        var dialog = Dialogs.OpenDialogs.Single();
+        var states = new List<DialogWindowState>();
+        dialog.WindowStateChanged += states.Add;
+
+        await host.WaitForElement("[data-part=minimize]").ClickAsync(new());
+        await host.InvokeAsync(() => dialog.WindowState = DialogWindowState.Normal);
+        await host.InvokeAsync(() => dialog.WindowState = DialogWindowState.Normal);
+        await host.Find("[data-part=maximize]").ClickAsync(new());
+
+        Assert.Equal([DialogWindowState.Minimized, DialogWindowState.Normal, DialogWindowState.Maximized], states);
+    }
+
+    [Fact]
+    public async Task WindowStateChanged_ShouldReportTheRestore_WhenHidingTheHeaderRestoresAMinimizedDialog()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<HeaderDialog, string>("Settings", options: new() { Modal = false, Minimizable = true });
+        var states = new List<DialogWindowState>();
+        Dialogs.OpenDialogs.Single().WindowStateChanged += states.Add;
+        await host.WaitForElement("[data-part=minimize]").ClickAsync(new());
+
+        await host.Find("[data-testid=toggle-header]").ClickAsync(new());
+
+        Assert.Equal([DialogWindowState.Minimized, DialogWindowState.Normal], states);
+    }
+
+    [Fact]
     public async Task Minimize_ShouldLeaveThePageUsableUntilRestored_WhenTheDialogIsModal()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
@@ -1015,6 +1106,11 @@ public class DialogServiceTests : BunitContext
                 builder.CloseComponent();
             }
         }
+    }
+
+    private sealed class HeaderlessDialog : TbDialogContent<string>
+    {
+        protected override void OnInitialized() => Dialog.ShowHeader = false;
     }
 
     private sealed class EditableDialog : TbDialogContent<bool>

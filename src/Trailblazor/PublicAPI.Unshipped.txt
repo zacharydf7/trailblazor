@@ -1192,6 +1192,7 @@ Trailblazor.DialogReference.Size.set -> void
 Trailblazor.DialogReference.Title.get -> string!
 Trailblazor.DialogReference.Title.set -> void
 Trailblazor.DialogReference.WindowState.get -> Trailblazor.DialogWindowState
+Trailblazor.DialogReference.WindowStateChanged -> System.Action<Trailblazor.DialogWindowState>?
 Trailblazor.DialogReference.WindowState.set -> void
 Trailblazor.DialogReference<TResult>
 Trailblazor.DialogReference<TResult>.CloseAsync(TResult value) -> System.Threading.Tasks.Task!
@@ -3432,6 +3433,8 @@ Trailblazor.TbDialogTitle.TbDialogTitle() -> void
 virtual Trailblazor.TbDialogContent<TResult>.DefaultTitle.get -> string!
 virtual Trailblazor.TbDialogContent<TResult>.OnDismissAsync(Trailblazor.DialogDismissReason reason) -> System.Threading.Tasks.Task!
 Trailblazor.DialogOptions.Width.get -> string?
+Trailblazor.DialogOptions.WindowState.get -> Trailblazor.DialogWindowState
+Trailblazor.DialogOptions.WindowState.init -> void
 Trailblazor.DialogOptions.Width.init -> void
 Trailblazor.DialogOptions.TopLayer.get -> bool?
 Trailblazor.DialogOptions.TopLayer.init -> void

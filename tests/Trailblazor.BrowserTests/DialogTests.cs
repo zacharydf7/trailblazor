@@ -85,6 +85,38 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(dialog.GetByLabel("Name")).ToBeVisibleAsync();
     }
 
+    public static TheoryData<string, bool> ModalOrNot()
+    {
+        var data = new TheoryData<string, bool>();
+        foreach (var browser in AllBrowsers.Names)
+        {
+            data.Add(browser, true);
+            data.Add(browser, false);
+        }
+
+        return data;
+    }
+
+    [Theory, MemberData(nameof(ModalOrNot))]
+    public async Task Dialog_ShouldOpenInTheCornerAndLeaveThePageUsable_WhenItStartsMinimized(string browser, bool modal)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = modal ? "Tucked" : "Tucked window", Exact = true })
+            .ClickAsync();
+
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Tucked" });
+        await Expect(dialog).ToHaveAttributeAsync("data-window-state", "minimized");
+        await Expect(dialog.GetByLabel("Name")).ToBeHiddenAsync();
+        await Expect(dialog.GetByRole(AriaRole.Button, new() { Name = "Restore" })).ToBeFocusedAsync();
+        var box = await BoxAsync(page, "Tucked");
+        var (width, height) = await ViewportAsync(page);
+        Assert.Equal(width - EdgeGap, box.X + box.Width, tolerance: 1);
+        Assert.Equal(height - EdgeGap, box.Y + box.Height, tolerance: 1);
+        await page.GetByTestId("page-button").ClickAsync();
+        await Expect(page.GetByTestId("page-clicks")).ToHaveTextAsync("1");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldSitBesideTheOtherMinimizedDialogAndMoveOver_WhenTheOtherCloses(string browser)
     {

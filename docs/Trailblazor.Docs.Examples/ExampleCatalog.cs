@@ -6881,11 +6881,14 @@ public static class ExampleCatalog
                 new("non-modal", "Non-modal dialogs", "`Modal = false` leaves the page usable and undimmed. Such a "
                     + "dialog can be `Draggable` by its header and `Resizable` by its bottom-end grip. Neither needs "
                     + "dragging: the header gains a Move button whose menu picks a place, and the grip is a Resize "
-                    + "button whose menu picks a size. `Minimizable` and `Maximizable` add header buttons.",
+                    + "button whose menu picks a size. `Minimizable` and `Maximizable` add header buttons, and "
+                    + "`WindowState` opens the dialog minimized or maximized.",
                     typeof(DialogWindowExample), typeof(RenameDialog)),
                 new("changing", "Changing an open dialog's window", "An open dialog can change. Set `Modal`, `Size`, "
                     + "`Position`, `WindowState`, `ShowHeader` or `CloseButton` on its reference, or on `Dialog` from "
-                    + "inside a `TbDialogContent<TResult>`, as this notes dialog does.",
+                    + "inside a `TbDialogContent<TResult>`, as this notes dialog does. The reference's "
+                    + "`WindowStateChanged` event reports each new window state, whether the user pressed a header "
+                    + "button or code set it.",
                     typeof(DialogChangingExample), typeof(NotesDialog)),
                 new("top-layer", "On the page instead of the top layer", "A dialog opens in the browser's top layer, "
                     + "above everything on the page. A popup another library adds to the page's body then opens "

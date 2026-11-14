@@ -52,6 +52,10 @@ public sealed record DialogOptions
     /// <summary>Shows a button in the header that makes the dialog fill the window.</summary>
     public bool Maximizable { get; init; }
 
+    /// <summary>Whether the dialog opens at its own size, minimized or maximized. Opening it minimized needs
+    /// <see cref="Minimizable"/> and the header. Defaults to <see cref="DialogWindowState.Normal"/>.</summary>
+    public DialogWindowState WindowState { get; init; }
+
     /// <summary>Lets the user move a dialog that isn't <see cref="Modal"/> by dragging its header, or with the arrow
     /// keys on the move button the header gains.</summary>
     public bool Draggable { get; init; }

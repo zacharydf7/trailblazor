@@ -167,7 +167,9 @@ function firstListItem(list) {
     return list.trim();
 }
 
-export function openDialog(dialog, dotNet, options, outsidePopups) {
+// Modal says whether it blocks the page as it opens, which a minimized modal doesn't; the window state is 'normal',
+// 'minimized' or 'maximized'.
+export function openDialog(dialog, dotNet, options, outsidePopups, modal, windowState) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!dialog) {
         return null;
@@ -184,13 +186,22 @@ export function openDialog(dialog, dotNet, options, outsidePopups) {
         dialog.dataset.layer = 'page';
     }
 
-    show(dialog, options.modal, topLayer);
+    dialog.dataset.windowState = windowState;
+    show(dialog, modal, topLayer);
     // Whether it is modal now, which can change while it's open.
-    const entry = { dialog, options, modal: options.modal, topLayer, usable };
+    const entry = { dialog, options, modal, topLayer, usable };
     stack.push(entry);
     numberLevels();
     blockPage();
-    focusForLastInput(dialogFocusTarget(dialog, options));
+    if (windowState === 'minimized') {
+        tray.push(dialog);
+        layOutTray();
+    }
+
+    // A minimized dialog shows only its header, so focus goes to its Restore button, as when an open one is
+    // minimized.
+    focusForLastInput(windowState === 'minimized' ? dialog.querySelector('[data-part="minimize"]')
+        : dialogFocusTarget(dialog, options));
 
     let finished = false;
     let pressedOnBackdrop = false;

@@ -33,6 +33,7 @@ public abstract class DialogReference
         _modal = options.Modal;
         _size = options.Size ?? DialogSize.Medium;
         _position = options.Position;
+        WindowState = options.WindowState;
     }
 
     /// <summary>The dialog's title, which is also its accessible name: the one it was opened with, or else its
@@ -86,8 +87,9 @@ public abstract class DialogReference
         }
     }
 
-    /// <summary>Whether the dialog shows at its own size, minimized or maximized, as its header's buttons set it.
-    /// Minimizing needs <see cref="DialogOptions.Minimizable"/> and the header, whose button restores it.</summary>
+    /// <summary>Whether the dialog shows at its own size, minimized or maximized, as its header's buttons set it. It
+    /// starts as <see cref="DialogOptions.WindowState"/>. Minimizing needs <see cref="DialogOptions.Minimizable"/> and
+    /// the header, whose button restores it.</summary>
     public DialogWindowState WindowState
     {
         get => _windowState;
@@ -149,6 +151,9 @@ public abstract class DialogReference
     // Set while a TbDialogHeaderActions is in the dialog, so the header shows it after the title.
     internal RenderFragment? HeaderActions { get; private set; }
 
+    /// <summary>Raised with the new state each time <see cref="WindowState"/> changes.</summary>
+    public event Action<DialogWindowState>? WindowStateChanged;
+
     internal event Action? Changed;
 
     // Only the header listens, since a frame-wide change would draw a markup dialog's TbDialogTitle again, endlessly.
@@ -191,11 +196,17 @@ public abstract class DialogReference
     private void Change(Action change)
     {
         var wasBlocking = IsBlocking;
+        var windowState = _windowState;
         change();
         Changed?.Invoke();
         if (IsBlocking != wasBlocking)
         {
             BlockingChanged?.Invoke();
+        }
+
+        if (_windowState != windowState)
+        {
+            WindowStateChanged?.Invoke(_windowState);
         }
     }
 
