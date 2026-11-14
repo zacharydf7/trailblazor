@@ -1157,6 +1157,83 @@ public class ComponentAnalyzerTests
         Assert.Empty(missing);
     }
 
+    [Theory]
+    [InlineData("GetLabel()", "private string GetLabel() => \"Trail\";")]
+    [InlineData("_model.Name", "private readonly (string Name, int Id) _model = (\"Trail\", 1);")]
+    [InlineData("_label", "private string _label = \"Trail\";")]
+    [InlineData("Labels.For(1)", "private static class Labels { public static string For(int id) => \"Trail\"; }")]
+    public async Task ComponentAnalyzer_ShouldReportCodeAsText_WhenAStringParameterGetsCodeThePageCanSeeAsText(
+        string text, string members)
+    {
+        var diagnostics = await RunAsync($$"""
+            __builder.OpenComponent<TbTextField<string>>(0);
+            __builder.AddComponentParameter(1, nameof(TbTextField<string>.Label), "{{text}}");
+            __builder.CloseComponent();
+            """, members);
+
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("TB010", diagnostic.Id);
+        Assert.Equal($"TbTextField's Label is the text \"{text}\". To use it as code, write Label=\"@{text}\".",
+            diagnostic.GetMessage());
+    }
+
+    [Theory]
+    [InlineData("e.g.", "")]
+    [InlineData("app.css", "")]
+    [InlineData("Size(cm)", "")]
+    [InlineData("Trailhead", "")]
+    [InlineData("Name", "private string Name => \"Trail\";")]
+    [InlineData("Pine Hollow (3)", "private string Pine => \"Trail\";")]
+    [InlineData("Program.cs", "private sealed class Program { }")]
+    [InlineData("Name(s)", "private string Name => \"Trail\";")]
+    [InlineData("App.razor", "private const string App = \"App\";")]
+    [InlineData("Trailblazor.Testing", "")]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenAStringParametersTextOnlyLooksLikeCode(string text,
+        string members)
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<TbTextField<string>>(0);
+            __builder.AddComponentParameter(1, nameof(TbTextField<string>.Label), "{{text}}");
+            __builder.CloseComponent();
+            """, members);
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenTextShapedLikeCodeIsWrittenAsCSharp()
+    {
+        var ids = await IdsAsync("""
+            __builder.OpenComponent<TbTextField<string>>(0);
+            #line 3 "Page.razor"
+            __builder.AddComponentParameter(1, nameof(TbTextField<string>.Label), "GetLabel()");
+            #line default
+            __builder.CloseComponent();
+            """, "private string GetLabel() => \"Trail\";");
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenAComponentOutsideTrailblazorGetsTextShapedLikeCode()
+    {
+        var ids = await IdsAsync("""
+            __builder.OpenComponent<Heading>(0);
+            __builder.AddComponentParameter(1, nameof(Heading.Text), "GetLabel()");
+            __builder.CloseComponent();
+            """, """
+            private string GetLabel() => "Trail";
+
+            public class Heading : ComponentBase
+            {
+                [Parameter]
+                public string? Text { get; set; }
+            }
+            """);
+
+        Assert.Empty(ids);
+    }
+
     [Fact]
     public void ComponentAnalyzer_ShouldNameOnlyComponentsThatExist_WhenItsHostTableIsRead()
     {

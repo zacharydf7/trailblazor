@@ -16,7 +16,8 @@
             in the <code>.razor</code> file, about a control or field screen readers can't name, a dialog with no title,
             a value that snaps back after the user changes it, a type parameter given under the wrong name, a
             component written outside the one it belongs in, an option whose value isn't its list's type, a slider of
-            something other than a number, and a tree view whose parameters don't go together.
+            something other than a number, a tree view whose parameters don't go together, and code written as plain
+            text without its <code>@@</code>.
         </TbText>
     </Header>
     <ChildContent>
@@ -126,6 +127,15 @@
                             <code>KeySelector</code>.
                         </td>
                     </tr>
+                    <tr>
+                        <th scope="row">TB010</th>
+                        <td>
+                            A <code>string</code> parameter is given text that looks like code written without its
+                            <code>@@</code>, such as <code>Value="GetColor()"</code>, which passes the words
+                            <code>GetColor()</code> rather than calling the method.
+                        </td>
+                        <td>Add the <code>@@</code>: <code>Value="@@GetColor()"</code>.</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -205,6 +215,13 @@
                 sets it. A selector, <code>Items</code> or <code>TbTreeItem</code>s passed along from one of your
                 component's own parameters, or chosen with <code>?:</code>, may be <code>null</code> as the page runs,
                 so TB009 doesn't count it.
+            </li>
+            <li>
+                TB010 checks only Trailblazor's components, and reports only text shaped like a call, a member path or
+                a field starting with <code>_</code>, such as <code>GetColor()</code>, <code>_model.Name</code> or
+                <code>_title</code>, when it names a value or a method the page can see. Text such as "e.g.",
+                "app.css" or "Program.cs" isn't reported, and neither is a C# string literal written after an
+                <code>@@</code>.
             </li>
         </ul>
 

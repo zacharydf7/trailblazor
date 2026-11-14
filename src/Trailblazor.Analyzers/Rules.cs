@@ -54,4 +54,11 @@ internal static class Rules
         "from Items or from TbTreeItems written inside it, finds children through either a ParentKeySelector or a " +
         "ChildrenSelector and LoadChildren, virtualizes only Items, and needs a KeySelector unless its items are " +
         "their own keys. Any other setup throws as it renders.");
+
+    public static readonly DiagnosticDescriptor CodeAsText = new("TB010", "A parameter's text looks like code",
+        "{0}'s {1} is the text \"{2}\". To use it as code, write {1}=\"@{2}\".", Usage, DiagnosticSeverity.Warning,
+        isEnabledByDefault: true, "Razor passes an attribute written without @ to a string parameter as plain " +
+        "text, so Value=\"GetColor()\" shows the words GetColor() instead of calling the method. Only text shaped " +
+        "like a call, a member path or a field starting with _ is reported, when it names a value or a method the " +
+        "page can see.");
 }

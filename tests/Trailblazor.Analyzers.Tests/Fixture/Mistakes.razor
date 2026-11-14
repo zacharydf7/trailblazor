@@ -11,9 +11,13 @@
 <TbTreeView TItem="string" TKey="int" AriaLabel="Trails" Items="_trails" />
 @* <TbTagInput /> *@<TbTagInput />
 <TbSelect TValue="string"><TbOption Value="@("1")">One</TbOption></TbSelect>
+<TbTextField Label="GetLabel()" @bind-Value="_trail" />
+<TbTextField Label="@("GetLabel()")" @bind-Value="_trail" />
 
 @code {
     private string? _trail;
     private bool _agree;
     private readonly string[] _trails = [];
+
+    private string GetLabel() => "Trail";
 }

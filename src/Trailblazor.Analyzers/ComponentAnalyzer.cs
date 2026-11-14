@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,8 +10,8 @@ namespace Trailblazor.Analyzers;
 
 /// <summary>Reports Trailblazor controls and fields with no accessible name, dialogs with no title, inputs given a
 /// Value without ValueChanged, attributes that look like a misnamed type parameter, components written outside the
-/// one they belong in, items whose value isn't their list's type, sliders of something other than a number, and
-/// tree views whose parameters don't go together.</summary>
+/// one they belong in, items whose value isn't their list's type, sliders of something other than a number, tree
+/// views whose parameters don't go together, and string parameters given text that looks like code.</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ComponentAnalyzer : DiagnosticAnalyzer
 {
@@ -103,7 +104,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         Rules.NoAccessibleName, Rules.NoDialogTitle, Rules.ValueWithoutValueChanged, Rules.NoFieldLabel,
         Rules.TypeParameterAsAttribute, Rules.OutsideItsParent, Rules.ItemTypeMismatch, Rules.SliderNotANumber,
-        Rules.TreeSetup);
+        Rules.TreeSetup, Rules.CodeAsText);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -188,6 +189,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         CheckItemType(context, invocation, usage, types.Listed);
         CheckSliderType(context, invocation, usage, types.Sliders);
         CheckTreeSetup(context, invocation, usage, types.TreeView);
+        CheckCodeAsText(context, invocation, usage);
 
         if (component.ContainingNamespace.ToDisplayString() == "Trailblazor" && Property(component, "Value") is not null
             && Property(component, "ValueChanged") is not null && usage.Has("Value") && !usage.Has("ValueChanged")
@@ -310,6 +312,48 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
             context.ReportDiagnostic(Diagnostic.Create(Rules.SliderNotANumber, usage.Location, usage.Component.Name,
                 Shown(type)));
         }
+    }
+
+    // A call such as GetColor(), a member path such as _model.Name, or a field such as _title.
+    private static readonly Regex CodeShape =
+        new(@"^(?<first>[A-Za-z_]\w*)(?<path>(\.[A-Za-z_]\w*)*)(?<call>\(.*\))?$", RegexOptions.CultureInvariant);
+
+    // Markup text given to a string parameter that's almost certainly meant as code, such as Value="GetColor()":
+    // shaped like code, and naming a value or a method the page can see. Razor maps a value written in C#, such as
+    // @("GetColor()"), back to the .razor file but leaves markup text unmapped, so a C# string literal isn't reported.
+    private static void CheckCodeAsText(OperationAnalysisContext context, IInvocationOperation open,
+        ComponentUsage usage)
+    {
+        if (usage.Component.ContainingNamespace.ToDisplayString() != "Trailblazor")
+        {
+            return;
+        }
+
+        var component = ComponentNesting.Resolved(usage.Component, open);
+        foreach (var parameter in usage.Parameters)
+        {
+            if (Property(component, parameter.Key)?.Type.SpecialType == SpecialType.System_String
+                && Unwrap(parameter.Value.Value) is { ConstantValue: { HasValue: true, Value: string text } } value
+                && !value.Syntax.GetLocation().GetMappedLineSpan().HasMappedPath
+                && CodeShape.Match(text) is { Success: true } shape
+                && (shape.Groups["path"].Length > 0 || shape.Groups["call"].Success || text[0] == '_')
+                && Binds(value, text))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(Rules.CodeAsText, parameter.Value.Location,
+                    usage.Component.Name, parameter.Key, text));
+            }
+        }
+    }
+
+    // Whether the text, read as C# where the page wrote it, names a value or a method. A file name such as Program.cs
+    // or App.razor starts with a type the page sees but names nothing, and "Size(cm)" doesn't call the Size enum.
+    private static bool Binds(IOperation value, string text)
+    {
+        var bound = value.SemanticModel!.GetSpeculativeSymbolInfo(value.Syntax.SpanStart,
+            SyntaxFactory.ParseExpression(text), SpeculativeBindingOption.BindAsExpression);
+        var symbols = bound.Symbol is { } symbol ? [symbol] : bound.CandidateSymbols;
+        return symbols.Any(found =>
+            found is IMethodSymbol or IFieldSymbol or IPropertySymbol or ILocalSymbol or IParameterSymbol);
     }
 
     // Repeats the checks the tree view makes as it renders, in the same order, for the parameters set in markup.
