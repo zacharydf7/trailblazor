@@ -23,6 +23,7 @@ internal static class ContractRules
         ["ondblclick"] = part => part.DoubleClickAsync(new MouseEventArgs { Detail = 2 }),
         ["onchange"] = part => part.ChangeAsync(new ChangeEventArgs
             { Value = part.GetAttribute("type") == "checkbox" ? true : part.GetAttribute("value") }),
+        ["oninput"] = part => part.InputAsync(new ChangeEventArgs { Value = part.GetAttribute("value") }),
         ["onkeydown"] = part => part.KeyDownAsync(new KeyboardEventArgs { Key = "Shift" }),
         ["onkeyup"] = part => part.KeyUpAsync(new KeyboardEventArgs { Key = "Shift" }),
         ["ontbrowclick"] = part => part.TriggerEventAsync("ontbrowclick", new RowClickEventArgs()),
@@ -138,9 +139,7 @@ internal static class ContractRules
     }
 
     // Each part keeps its event handlers from render to render, so a test can use a part, let the component render
-    // again and use the same found part again. A text box's input and change events are left out: Blazor's @bind gives
-    // them a new handler on every render, so a test has to find the box again anyway. Other custom events, such as
-    // ontbfocusleave, aren't raised.
+    // again and use the same found part again. Custom events not in Events, such as ontbfocusleave, aren't raised.
     public static async Task<List<string>> CheckHandlersAsync(IRenderedComponent<DynamicComponent> cut)
     {
         var failures = new List<string>();
@@ -284,13 +283,11 @@ internal static class ContractRules
         }
     }
 
-    // Raises each event the part handles, unless an earlier event removed the part. Change is raised only on checkboxes
-    // and radio buttons, which a click changes; a text box's change comes from @bind.
+    // Raises each event the part handles, unless an earlier event removed the part.
     private static async Task UsePartAsync(IRenderedComponent<DynamicComponent> cut, IElement part, int at,
         HashSet<string> later, List<string> failures)
     {
-        foreach (var (name, raise) in Events.Where(pair => part.HasAttribute($"blazor:{pair.Key}")
-            && (pair.Key != "onchange" || part.Matches("[type=checkbox], [type=radio]"))))
+        foreach (var (name, raise) in Events.Where(pair => part.HasAttribute($"blazor:{pair.Key}")))
         {
             if (cut.FindAll(Handled).ElementAtOrDefault(at) is not { } shown || !IsSamePart(part, shown)
                 || later.Contains(HandlerIdsOf(shown)))

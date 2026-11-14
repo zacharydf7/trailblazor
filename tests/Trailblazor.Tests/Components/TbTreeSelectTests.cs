@@ -265,6 +265,20 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
+    public async Task Filter_ShouldReachTheSelect_WhenItRendersBetweenATestReadingTheFilterAndRaisingItsEvent()
+    {
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true));
+        var handler = HandlerIds.Read(cut.Find("[data-part=filter]"), "oninput");
+
+        // Stands in for a background continuation rendering the select after the test has read its handler id.
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, handler, cut.FindComponent<TbPopover>().ComponentId, "cedar",
+            new ChangeEventArgs { Value = "cedar" });
+
+        Assert.Equal(["River valley", "Cedar Flats"], cut.FindAll("[role=treeitem]").Select(ItemName));
+    }
+
+    [Fact]
     public void Filter_ShouldIgnoreAccents_WhenTyped()
     {
         var cut = Render<TbTreeSelect<string, string>>(parameters => parameters.Add(select => select.Label, "Stop")

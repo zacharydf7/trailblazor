@@ -169,6 +169,7 @@ public class ExampleCatalogTests
         ["Dialog"] = ["minimize", "maximize", "move", "resize"],
         ["Pagination"] = ["first", "previous", "next", "last"],
         ["Select"] = ["placeholder", "value"],
+        ["Slider"] = ["start-thumb", "end-thumb"],
     };
 
     // Folders whose bases and children other components render, and the components whose pages may list their parts.

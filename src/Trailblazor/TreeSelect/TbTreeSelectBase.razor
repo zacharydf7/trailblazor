@@ -34,11 +34,7 @@
                 @if (Filterable)
                 {
                     @* The filter waits for a pause in typing, and Down Arrow is the only key it sends to the server. *@
-                    <input type="search" data-part="filter" autocomplete="off" aria-label="@FilterText"
-                           placeholder="@FilterText" @bind="_filter" @bind:event="oninput" @bind:after="Filtered"
-                           data-input-delay="@FilterDelay" data-filtered="@(_filter?.Trim() ?? "")"
-                           @ontbtreefilterdown="FilterDownAsync"
-                           class="tb-select__filter tb-tree-select__filter" />
+                    @Filter
                 }
                 <CascadingValue TValue="ITreeChoice" Value="this" IsFixed="true">
                     <TbTreeView @ref="_tree" TItem="TItem" TKey="TKey" Items="Items" KeySelector="KeySelector"
@@ -212,6 +208,31 @@
         List<TItem> children = [.. await LoadChildren!(item, cancel)];
         children.ForEach(child => _loaded[KeyOf(child)] = child);
         return children;
+    }
+
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment Filter => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "search");
+        builder.AddAttribute(2, "data-part", "filter");
+        builder.AddAttribute(3, "autocomplete", "off");
+        builder.AddAttribute(4, "aria-label", FilterText);
+        builder.AddAttribute(5, "placeholder", FilterText);
+        builder.AddAttribute(6, "value", _filter);
+        builder.AddAttribute(7, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, OnFilterInput));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(8, "data-input-delay", FilterDelay);
+        builder.AddAttribute(9, "data-filtered", _filter?.Trim() ?? "");
+        builder.AddAttribute(10, "ontbtreefilterdown", EventCallback.Factory.Create(this, FilterDownAsync));
+        builder.AddAttribute(11, "class", "tb-select__filter tb-tree-select__filter");
+        builder.CloseElement();
+    };
+
+    private void OnFilterInput(ChangeEventArgs args)
+    {
+        _filter = args.Value as string;
+        Filtered();
     }
 
     // A live region that joins the page already holding its text isn't spoken, so the announcer says it.

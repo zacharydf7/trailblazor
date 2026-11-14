@@ -1,17 +1,11 @@
 @namespace Trailblazor
+@using System.Globalization
 @inherits TbBoxedFieldBase<string?>
 
 @if (RendererInfo.IsInteractive)
 {
     @Layout(Classes, @<text>
-        @* Tests wait for data-value to show the color they typed has been taken. *@
-        <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId"
-               name="@InputNameAttribute" type="text" autocomplete="off" spellcheck="false" data-value="@Value"
-               @bind:get="Text" @bind:set="SetTextAsync"
-               placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly"
-               aria-required="@AriaRequired"
-               aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
-               class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
+        @Input
     </text>, Preview, Buttons)
 }
 else
@@ -86,17 +80,17 @@ else
                              style="@PadStyle">
                             <span class="tb-color-picker__pad-thumb"></span>
                         </div>
-                        @Slider(HueLabel, "hue", 360, _hue, SetHueAsync, "°")
-                        @Slider(SaturationLabel, "saturation", 100, _saturation * 100, SetSaturationAsync, "%")
-                        @Slider(BrightnessLabel, "brightness", 100, _brightness * 100, SetBrightnessAsync, "%")
+                        @Slider(HueLabel, "hue", 360, _hue, OnHueInputAsync, "°")
+                        @Slider(SaturationLabel, "saturation", 100, _saturation * 100, OnSaturationInputAsync, "%")
+                        @Slider(BrightnessLabel, "brightness", 100, _brightness * 100, OnBrightnessInputAsync, "%")
                         @if (Alpha)
                         {
-                            @Slider(AlphaLabel, "alpha", 100, _alpha / 255d * 100, SetAlphaAsync, "%")
+                            @Slider(AlphaLabel, "alpha", 100, _alpha / 255d * 100, OnAlphaInputAsync, "%")
                         }
                         <div class="tb-color-picker__channels">
-                            @Channel(RedLabel, "red", Color?.R, (color, red) => color with { R = red })
-                            @Channel(GreenLabel, "green", Color?.G, (color, green) => color with { G = green })
-                            @Channel(BlueLabel, "blue", Color?.B, (color, blue) => color with { B = blue })
+                            @Channel(RedLabel, "red", Color?.R, OnRedChangedAsync)
+                            @Channel(GreenLabel, "green", Color?.G, OnGreenChangedAsync)
+                            @Channel(BlueLabel, "blue", Color?.B, OnBlueChangedAsync)
                         </div>
                     }
                 </div>
@@ -114,21 +108,64 @@ else
         + $"--tb-color-picker-bright: {ColorValue.FromHsv(_hue, _saturation, 1, 255).ToHex(false)}; "
         + $"--tb-color-picker-opaque: {Picked.ToHex(false)}";
 
-    private RenderFragment Slider(string label, string part, int max, double value, Func<string?, Task> set,
-        string unit) =>
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment Input => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddMultipleAttributes(1, ControlAttributes);
+        builder.AddAttribute(2, "data-part", "input");
+        builder.AddAttribute(3, "id", InputId);
+        builder.AddAttribute(4, "name", InputNameAttribute);
+        builder.AddAttribute(5, "type", "text");
+        builder.AddAttribute(6, "autocomplete", "off");
+        builder.AddAttribute(7, "spellcheck", "false");
+        // Tests wait for data-value to show the color they typed has been taken.
+        builder.AddAttribute(8, "data-value", Value);
+        builder.AddAttribute(9, "value", Text);
+        builder.AddAttribute(10, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, OnTextChangedAsync));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(11, "placeholder", Placeholder);
+        builder.AddAttribute(12, "disabled", Disabled);
+        builder.AddAttribute(13, "readonly", ReadOnly);
+        builder.AddAttribute(14, "aria-required", AriaRequired);
+        builder.AddAttribute(15, "aria-invalid", ShowsInvalid ? "true" : null);
+        builder.AddAttribute(16, "aria-describedby", InputDescribedBy);
+        builder.AddAttribute(17, "class", ClassNames.Join("tb-field__input", Classes?.Input));
+        builder.AddElementReferenceCapture(18, input => _input = input);
+        builder.CloseElement();
+    };
+
+    private RenderFragment Slider(string label, string part, int max, double value,
+        Func<ChangeEventArgs, Task> slide, string unit) =>
         @<label class="tb-color-picker__row">
             <span class="tb-color-picker__row-label">@label</span>
-            <input type="range" data-part="@part" min="0" max="@max" step="1" @bind:get="Invariant(value)"
-                   @bind:set="set" @bind:event="oninput" disabled="@(Disabled || ReadOnly)"
-                   aria-valuetext="@($"{Invariant(value)}{unit}")"
-                   class="@($"tb-color-picker__slider tb-color-picker__slider--{part}")" />
+            @ChannelInput("range", part, max, Invariant(value), slide, $"{Invariant(value)}{unit}",
+                $"tb-color-picker__slider tb-color-picker__slider--{part}")
         </label>;
 
-    private RenderFragment Channel(string label, string part, byte? value, Func<ColorValue, byte, ColorValue> with) =>
+    private RenderFragment Channel(string label, string part, byte? value, Func<ChangeEventArgs, Task> change) =>
         @<label class="tb-color-picker__channel">
             <span class="tb-color-picker__row-label">@label</span>
-            <input type="number" data-part="@part" min="0" max="255" step="1" @bind:get="value?.ToString()"
-                   @bind:set="text => SetChannelAsync(text, with)" disabled="@(Disabled || ReadOnly)"
-                   class="tb-color-picker__number" />
+            @ChannelInput("number", part, 255, value?.ToString(CultureInfo.InvariantCulture), change, null,
+                "tb-color-picker__number")
         </label>;
+
+    // Each handler is one of the picker's own methods, so its id survives renders; a slider updates as it moves.
+    private RenderFragment ChannelInput(string type, string part, int max, string? value,
+        Func<ChangeEventArgs, Task> handler, string? valueText, string className) => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", type);
+        builder.AddAttribute(2, "data-part", part);
+        builder.AddAttribute(3, "min", "0");
+        builder.AddAttribute(4, "max", max);
+        builder.AddAttribute(5, "step", "1");
+        builder.AddAttribute(6, "value", value);
+        builder.AddAttribute(7, type == "range" ? "oninput" : "onchange", EventCallback.Factory.Create(this, handler));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(8, "disabled", Disabled || ReadOnly);
+        builder.AddAttribute(9, "aria-valuetext", valueText);
+        builder.AddAttribute(10, "class", className);
+        builder.CloseElement();
+    };
 }

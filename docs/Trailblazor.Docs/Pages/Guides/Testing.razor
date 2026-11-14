@@ -510,13 +510,11 @@
             <li>
                 An element you found keeps working after the component renders again, so you can click a button twice
                 without finding it a second time. Blazor keeps an event handler's id only while each render passes an
-                equal delegate: the same method on the same object. Trailblazor's text, number, code and autocomplete
-                fields, its sliders, its date, time, date-time and date range pickers and its command palette don't use
-                <code>@@bind</code>, so their inputs keep working too. Its color picker and tree select's filter still
-                do for now, so find those again before raising a second event. In your
-                own components, <code>@@bind</code> and a lambda that captures a loop variable make a new delegate on
-                every render: if background work renders the component after a test finds an element but before the
-                test raises its event, bUnit throws "There is no event handler with ID". Pass a method, such as
+                equal delegate: the same method on the same object. Trailblazor's own inputs don't use
+                <code>@@bind</code>, so they keep working too. In your own components, <code>@@bind</code> and a lambda
+                that captures a loop variable make a new delegate on every render: if background work renders the
+                component after a test finds an element but before the test raises its event, bUnit throws "There is
+                no event handler with ID". Pass a method, such as
                 <code>@@onchange="OnNameChanged"</code>, instead.
             </li>
         </ul>

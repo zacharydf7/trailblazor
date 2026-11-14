@@ -198,18 +198,31 @@ public partial class TbColorPicker : IAsyncDisposable
         StateHasChanged();
     }
 
-    private Task SetHueAsync(string? text) => SetFromSliderAsync(text, value => _hue = value);
+    private Task OnTextChangedAsync(ChangeEventArgs args) => SetTextAsync(args.Value as string);
 
-    private Task SetSaturationAsync(string? text) => SetFromSliderAsync(text, value => _saturation = value / 100);
+    private Task OnHueInputAsync(ChangeEventArgs args) => SetFromSliderAsync(args, value => _hue = value);
 
-    private Task SetBrightnessAsync(string? text) => SetFromSliderAsync(text, value => _brightness = value / 100);
+    private Task OnSaturationInputAsync(ChangeEventArgs args) =>
+        SetFromSliderAsync(args, value => _saturation = value / 100);
 
-    private Task SetAlphaAsync(string? text) =>
-        SetFromSliderAsync(text, value => _alpha = (byte)Math.Round(value / 100 * 255));
+    private Task OnBrightnessInputAsync(ChangeEventArgs args) =>
+        SetFromSliderAsync(args, value => _brightness = value / 100);
 
-    private Task SetFromSliderAsync(string? text, Action<double> set)
+    private Task OnAlphaInputAsync(ChangeEventArgs args) =>
+        SetFromSliderAsync(args, value => _alpha = (byte)Math.Round(value / 100 * 255));
+
+    private Task OnRedChangedAsync(ChangeEventArgs args) =>
+        SetChannelAsync(args, (color, red) => color with { R = red });
+
+    private Task OnGreenChangedAsync(ChangeEventArgs args) =>
+        SetChannelAsync(args, (color, green) => color with { G = green });
+
+    private Task OnBlueChangedAsync(ChangeEventArgs args) =>
+        SetChannelAsync(args, (color, blue) => color with { B = blue });
+
+    private Task SetFromSliderAsync(ChangeEventArgs args, Action<double> set)
     {
-        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+        if (!double.TryParse(args.Value as string, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
         {
             return Task.CompletedTask;
         }
@@ -218,9 +231,9 @@ public partial class TbColorPicker : IAsyncDisposable
         return SetColorAsync(Picked);
     }
 
-    private Task SetChannelAsync(string? text, Func<ColorValue, byte, ColorValue> with)
+    private Task SetChannelAsync(ChangeEventArgs args, Func<ColorValue, byte, ColorValue> with)
     {
-        if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+        if (!int.TryParse(args.Value as string, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
         {
             return Task.CompletedTask;
         }

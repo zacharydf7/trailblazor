@@ -262,6 +262,26 @@ public class TbColorPickerTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=clear]"));
     }
 
+    [Fact]
+    public async Task Editing_ShouldReachThePicker_WhenItRendersBetweenATestReadingItsInputsAndRaisingTheirEvents()
+    {
+        var cut = RenderPicker("#336699");
+        var typed = HandlerIds.Read(cut.Find("[data-part=input]"), "onchange");
+        var slid = HandlerIds.Read(cut.Find("[data-part=hue]"), "oninput");
+        var red = HandlerIds.Read(cut.Find("[data-part=red]"), "onchange");
+
+        // Stands in for a background continuation rendering the picker after the test has read its handler ids.
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, typed, cut.ComponentId, "rgb(255, 0, 0)",
+            new ChangeEventArgs { Value = "rgb(255, 0, 0)" });
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, slid, cut.ComponentId, "120", new ChangeEventArgs { Value = "120" });
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, red, cut.ComponentId, "255", new ChangeEventArgs { Value = "255" });
+
+        Assert.Equal(["#ff0000", "#00ff00", "#ffff00"], _changes);
+    }
+
     private IRenderedComponent<TbColorPicker> RenderPicker(string? value,
         Action<ComponentParameterCollectionBuilder<TbColorPicker>>? configure = null) =>
         Render<TbColorPicker>(parameters =>
