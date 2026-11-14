@@ -4720,6 +4720,10 @@ public static class ExampleCatalog
                     + "stops typing for `DebounceDelay`, and at once when they choose a suggestion or clear the field. "
                     + "Use it to filter other content while they type, as this list does.",
                     typeof(AutocompleteFilterExample)),
+                new("open-on-focus", "Opening on focus", "`OpenOnFocus` opens the list as focus comes into the field, "
+                    + "with suggestions for the text already there or for an empty field, so people can pick without "
+                    + "typing. Focus coming back from within the field, such as after a choice or a clear, doesn't open "
+                    + "it again.", typeof(AutocompleteOpenOnFocusExample)),
                 new("clearing", "Clearing", "`Clearable` shows a button that clears the field, and a nullable value "
                     + "clears to `null`.", typeof(AutocompleteClearExample)),
                 new("start", "Start content", "`Start` puts content before the input, usually an icon.",

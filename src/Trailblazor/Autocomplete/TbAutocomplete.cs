@@ -63,6 +63,12 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter]
     public bool FreeText { get; set; }
 
+    /// <summary>Opens the list as focus comes into the input from elsewhere on the page, with suggestions for the
+    /// text already there or for an empty field, so people can pick without typing. Focus moving within the field,
+    /// such as back from the list, doesn't open it again, and a read-only or disabled field stays closed.</summary>
+    [Parameter]
+    public bool OpenOnFocus { get; set; }
+
     /// <summary>How long the user must stop typing before <see cref="Search"/> runs. Defaults to 200 milliseconds;
     /// zero searches at once. With a <see cref="Search"/>, the browser does the waiting, so the server hears nothing
     /// while the user types; without one, <see cref="OnTextChanged"/> waits on the app's <see cref="TimeProvider"/>.

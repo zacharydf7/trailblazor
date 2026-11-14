@@ -78,6 +78,56 @@ public class AutocompleteTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Field(IPage page, string name) =>
         page.GetByRole(AriaRole.Combobox, new() { Name = name, Exact = true });
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task OpenOnFocus_ShouldShowTheSuggestions_WhenTheFieldGetsFocus(string browser)
+    {
+        var page = await OpenFieldsAsync(browser);
+        var viewpoint = Field(page, "Viewpoint");
+        await Expect(viewpoint).ToHaveAttributeAsync("data-ready", "");
+
+        await viewpoint.ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Listbox, new() { Name = "Viewpoint" }).GetByRole(AriaRole.Option))
+            .ToHaveCountAsync(3);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task OpenOnFocus_ShouldLeaveTheListClosed_WhenFocusComesBackFromWithinTheField(string browser)
+    {
+        var page = await OpenFieldsAsync(browser);
+        var viewpoint = Field(page, "Viewpoint");
+        var list = page.GetByRole(AriaRole.Listbox, new() { Name = "Viewpoint" });
+        await Expect(viewpoint).ToHaveAttributeAsync("data-ready", "");
+        await viewpoint.ClickAsync();
+        await list.GetByRole(AriaRole.Option, new() { Name = "Lookout Point" }).ClickAsync();
+        await Expect(viewpoint).ToHaveValueAsync("Lookout Point");
+
+        // A click on the clear button takes focus from the input, and the clear brings it back from inside the field.
+        await viewpoint.Locator("xpath=ancestor::*[@data-part='control'][1]").Locator("[data-part=clear]").ClickAsync();
+
+        await Expect(viewpoint).ToHaveValueAsync("");
+        await Expect(viewpoint).ToBeFocusedAsync();
+        await Expect(list).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task OpenOnFocus_ShouldLeaveTheListClosed_WhenFocusTabsBackFromTheClearButton(string browser)
+    {
+        var page = await OpenFieldsAsync(browser);
+        var viewpoint = Field(page, "Viewpoint");
+        var list = page.GetByRole(AriaRole.Listbox, new() { Name = "Viewpoint" });
+        await Expect(viewpoint).ToHaveAttributeAsync("data-ready", "");
+        await viewpoint.ClickAsync();
+        await list.GetByRole(AriaRole.Option, new() { Name = "Lookout Point" }).ClickAsync();
+        var clear = viewpoint.Locator("xpath=ancestor::*[@data-part='control'][1]").Locator("[data-part=clear]");
+        await clear.FocusAsync();
+
+        await page.Keyboard.PressAsync("Shift+Tab");
+
+        await Expect(viewpoint).ToBeFocusedAsync();
+        await Expect(list).ToBeHiddenAsync();
+    }
+
     private async Task<IPage> OpenFieldsAsync(string browser)
     {
         var page = await OpenAsync(browser, "/examples/autocomplete");

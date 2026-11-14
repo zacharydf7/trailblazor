@@ -156,6 +156,21 @@ export function createAutocomplete(input, listbox, events) {
         pressedOutside = false;
         document.removeEventListener('keydown', onDocumentKeyDown, true);
     };
+    // A click on the clear button is remembered: Safari doesn't focus a pressed button, so focus drops to the page and
+    // the clear's refocus would look as if it came from outside.
+    let clearing = false;
+    const onControlClick = event => {
+        clearing = event.target.closest('[data-part="clear"]') !== null;
+    };
+    // With OpenOnFocus, focus coming into the input from outside the field opens and browses the list as the arrow keys
+    // do; focus back from within the field, such as from the list or the clear button, doesn't.
+    const onFocusIn = event => {
+        const fromClear = clearing;
+        clearing = false;
+        if (input.hasAttribute('data-open-on-focus') && !fromClear && !control.contains(event.relatedTarget)) {
+            open(true);
+        }
+    };
     // A primary press elsewhere is left to onDocumentClick, so a button that toggles the list doesn't reopen it.
     const onFocusOut = event => {
         if (!listbox.contains(event.relatedTarget) && !pressedOutside) {
@@ -187,7 +202,9 @@ export function createAutocomplete(input, listbox, events) {
     observer.observe(listbox, { childList: true, subtree: true });
     input.addEventListener('input', onInput);
     input.addEventListener('keydown', onKeyDown);
+    input.addEventListener('focusin', onFocusIn);
     input.addEventListener('focusout', onFocusOut);
+    control.addEventListener('click', onControlClick);
     listbox.addEventListener('pointerdown', onListboxPointerDown);
     listbox.addEventListener('click', onListboxClick);
     listbox.addEventListener('pointermove', onListboxPointerMove);
@@ -211,7 +228,9 @@ export function createAutocomplete(input, listbox, events) {
             observer.disconnect();
             input.removeEventListener('input', onInput);
             input.removeEventListener('keydown', onKeyDown);
+            input.removeEventListener('focusin', onFocusIn);
             input.removeEventListener('focusout', onFocusOut);
+            control.removeEventListener('click', onControlClick);
             listbox.removeEventListener('pointerdown', onListboxPointerDown);
             listbox.removeEventListener('click', onListboxClick);
             listbox.removeEventListener('pointermove', onListboxPointerMove);

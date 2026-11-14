@@ -1,0 +1,7 @@
+<TbAutocomplete @bind-Value="_viewpoint" Label="Viewpoint" Items="Viewpoints" OpenOnFocus Clearable />
+
+@code {
+    private static readonly string[] Viewpoints = ["Eagle Rock", "Lookout Point", "Sunset Ridge"];
+
+    private string? _viewpoint;
+}

@@ -322,6 +322,17 @@ public class TbAutocompleteTests : BunitContext
         cut.WaitForAssertion(() => Assert.Equal(4, cut.FindAll("[role=option]").Count));
     }
 
+    [Theory]
+    [InlineData(true, "")]
+    [InlineData(false, null)]
+    public void Render_ShouldMarkTheInputForTheScriptToOpenOnFocus_WhenOpenOnFocusIsSet(bool openOnFocus, string? mark)
+    {
+        var cut = Render<TbAutocomplete<string>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Items, Trails).Add(field => field.OpenOnFocus, openOnFocus));
+
+        Assert.Equal(mark, cut.Find("input").GetAttribute("data-open-on-focus"));
+    }
+
     [Fact]
     public void Open_ShouldShowTheSuggestions_WhenTheParentOpensTheList()
     {

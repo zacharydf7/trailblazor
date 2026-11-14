@@ -51,6 +51,8 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - [x] Leaving the field puts back the chosen value's text, unless it's `FreeText`. `AutocompleteTests.Autocomplete_ShouldCloseAndPutBackTheChosenText_WhenEscapeIsPressedAndTheFieldIsLeft`
 - [x] Clearing moves focus to the field. `TbAutocompleteTests.Click_ShouldClearTheFieldAndFocusIt_WhenTheClearButtonIsClicked`
 - [x] A disabled or read-only field doesn't open the list. `autocomplete.js`
+- [x] With `OpenOnFocus`, focus coming into the field opens the list with suggestions for its text. `AutocompleteTests.OpenOnFocus_ShouldShowTheSuggestions_WhenTheFieldGetsFocus`
+- [x] With `OpenOnFocus`, focus coming back from within the field, such as after a choice or a clear, doesn't open the list again. `AutocompleteTests.OpenOnFocus_ShouldLeaveTheListClosed_WhenFocusComesBackFromWithinTheField`, `AutocompleteTests.OpenOnFocus_ShouldLeaveTheListClosed_WhenFocusTabsBackFromTheClearButton`
 - [x] A read-only field can't take a suggestion left over from before it became read-only. `AutocompleteTests.Autocomplete_ShouldNotActivateAnOption_WhenAnArrowIsPressedAfterTheFieldTurnedReadOnly`, `TbAutocompleteTests.Click_ShouldLeaveTheValue_WhenTheFieldTurnedReadOnlyOrDisabledWithTheListShowing`
 - [x] Text typed before the field turned read-only isn't committed, and the value's text comes back. `TbAutocompleteTests.Change_ShouldPutBackTheValuesText_WhenTheFieldTurnedReadOnlyWithTextTyped`
 
@@ -58,8 +60,8 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 
 - Down moving to an option on a list not yet loaded: it only opens the list, as the docs say, since the suggestions aren't there yet.
 - Alt+Up closing an open list: it moves up instead; the pattern lists closing as optional, and few people know it in a text field.
-- A click on the field opening the list: it suggests as the user types, and a known list belongs in a select.
-- A tap on the field opening the list: the same reason as a click.
+- A click on the field opening the list without `OpenOnFocus`: it suggests as the user types, and a known list belongs in a select.
+- A tap on the field opening the list without `OpenOnFocus`: the same reason as a click.
 - Page Up, Page Down, Home and End in the list: they're optional in the pattern, and Home and End stay with the text.
 - Tab choosing the active option: the pattern's example doesn't, and the field settles what was typed.
 - Escape clearing a closed field: it's optional in the pattern.
