@@ -1,0 +1,14 @@
+<div style="block-size: 16rem">
+    <TbDataGrid TItem="Marker" Items="Markers" AriaLabel="Markers to fill" KeySelector="marker => marker.Id" Fill
+                PageSize="40" Size="Size.Small">
+        <TbColumn Field="marker => marker.Id" Title="Marker" />
+        <TbColumn Field="marker => marker.Trail" />
+    </TbDataGrid>
+</div>
+
+@code {
+    private static readonly Marker[] Markers =
+        [.. Enumerable.Range(1, 60).Select(id => new Marker(id, id % 2 == 0 ? "Pine Hollow loop" : "Cedar Flats"))];
+
+    private sealed record Marker(int Id, string Trail);
+}

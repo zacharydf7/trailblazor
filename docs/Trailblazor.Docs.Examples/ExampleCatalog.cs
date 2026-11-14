@@ -6880,6 +6880,12 @@ public static class ExampleCatalog
                     + "and its body scrolls, and the buttons in `TbDialogActions` scroll with the body. Give long "
                     + "content that has no controls `tabindex=\"0\"` and a name, so keyboard users can scroll it.",
                     typeof(DialogLongExample)),
+                new("full-window", "Filling the window", "In a `DialogSize.Full` or maximized dialog, the buttons in "
+                    + "`TbDialogActions` stay at the bottom of the window while the body scrolls. `Fill` on `TbTabs` "
+                    + "and `TbDataGrid` makes them as tall as the body, so the tab list and the grid's header stay "
+                    + "in view and only the rows scroll. With actions, such a dialog's body lays its content out in "
+                    + "a column, so put text in a `TbText` rather than straight in the body.",
+                    typeof(DialogFullWindowExample)),
                 new("saving", "Saving and errors", "While a dialog saves, set `Loading` on its button, and "
                     + "`CanDismiss` can keep it open until the work ends. Show a failure in the dialog with an alert, "
                     + "so the user keeps what they typed and can try again.", typeof(DialogSavingExample)),
@@ -7485,6 +7491,9 @@ public static class ExampleCatalog
                     + "`--tb-tabs-indicator-size` restyle the underline.", typeof(TabsVariantExample)),
                 new("vertical", "Vertical", "`Vertical` stands a tab list beside its panel, and `Icon` adds an icon to "
                     + "a tab. The icon isn't read out.", typeof(TabsVerticalExample)),
+                new("fill", "Filling a container", "`Fill` makes the tabs as tall as their container, which "
+                    + "needs a height of its own. The tab list stays in place, and the shown panel takes the rest and "
+                    + "scrolls.", typeof(TabsFillExample)),
                 new("by-index", "Selecting by position", "`@bind-ActiveIndex` tracks the selected tab by its position, "
                     + "from 0, for tabs that have no `Key`.", typeof(TabsIndexExample)),
                 new("activation", "Manual activation", "With `Activation=\"TabActivation.Manual\"`, the arrow keys "
@@ -8062,14 +8071,17 @@ public static class ExampleCatalog
                     + "hides one from its own menu; at least one column always shows, and `Hideable=\"false\"` keeps "
                     + "a column in view. `State` keeps the widths, the order and the hidden columns.",
                     typeof(DataGridResizeExample)),
-                new("height", "Fixed height and scrolling to a row", "`Height` gives the rows a box of their own to "
-                    + "scroll in, under headers that stay in view. Without cell navigation, Tab reaches the box when the rows "
-                    + "overflow it, so the arrow keys can scroll it. `ScrollToAsync` goes to the page that holds a row "
-                    + "and scrolls to it.",
+                new("height", "A maximum height and scrolling to a row", "`Height` gives the rows a box of their "
+                    + "own that grows up to that height and then scrolls, under headers that stay in view. Without "
+                    + "cell navigation, Tab reaches the box when the rows overflow it, so the arrow keys can scroll it. "
+                    + "`ScrollToAsync` goes to the page that holds a row and scrolls to it.",
                     typeof(DataGridHeightExample)),
-                new("virtual-rows", "Virtual rows", "With `Virtualize` and a `Height`, only the rows in view are "
-                    + "drawn, so the grid can hold thousands of rows without pages. `ScrollToAsync` scrolls to any "
-                    + "row held in memory. With a `DataProvider`, rows load as they scroll into view, and "
+                new("fill", "Filling a container", "`Fill` makes the grid as tall as its container, which needs a "
+                    + "height of its own, as a full dialog's body has. The rows scroll in the room the pager leaves.",
+                    typeof(DataGridFillExample)),
+                new("virtual-rows", "Virtual rows", "With `Virtualize` and a `Height` or `Fill`, only the rows in "
+                    + "view are drawn, so the grid can hold thousands of rows without pages. `ScrollToAsync` scrolls "
+                    + "to any row held in memory. With a `DataProvider`, rows load as they scroll into view, and "
                     + "`ScrollToAsync` finds only a loaded row.",
                     typeof(DataGridVirtualExample)),
                 new("virtual-columns", "Virtual columns", "With `VirtualizeColumns`, the grid draws only the "

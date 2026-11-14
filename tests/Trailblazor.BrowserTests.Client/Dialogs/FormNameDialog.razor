@@ -1,0 +1,13 @@
+@inherits TbDialogContent<string>
+
+@* A short form whose actions are inside it, as an edit dialog's are. *@
+<TbForm Model="this" OnValidSubmit="() => Dialog.CloseAsync(Name ?? string.Empty)">
+    <TbTextField Label="Name" @bind-Value="Name" />
+    <TbDialogActions>
+        <TbButton Type="ButtonType.Submit">Save</TbButton>
+    </TbDialogActions>
+</TbForm>
+
+@code {
+    public string? Name { get; set; }
+}

@@ -4655,10 +4655,21 @@
         translate: var(--tb-drawer-from);
     }
 
-    /* Its body stacks its content, so the actions can sit at the bottom however little there is above them. */
-    .tb-drawer .tb-dialog__body {
+    /* A drawer's body stacks its content, and so does the body of a full-window dialog with actions, so the actions
+       can sit at the bottom however little there is above them. */
+    .tb-drawer > .tb-dialog__body,
+    :is(.tb-dialog--full:not([data-window-state="minimized"]), .tb-dialog[data-window-state="maximized"])
+        > .tb-dialog__body:has(> .tb-dialog__actions, > .tb-form > .tb-dialog__actions) {
         display: flex;
         flex-direction: column;
+    }
+
+    /* A form that holds the actions takes the rest of the body, so the actions still reach the bottom, and can shrink
+       to fit the body around a filling grid. */
+    :is(.tb-drawer, .tb-dialog--full, .tb-dialog[data-window-state="maximized"])
+        > .tb-dialog__body > .tb-form:has(> .tb-dialog__actions) {
+        flex-grow: 1;
+        min-block-size: 0;
     }
 
     /* Each group of hotkeys is a table: the keys in a narrow column, and what they do beside them. */
@@ -4796,11 +4807,13 @@
 
     /* The sticky actions cover the bottom of the body, so a field that Tab reaches scrolls to rest above them (WCAG
        2.4.11). The padding fits one row of actions; a second row covers part of the field. */
-    .tb-drawer .tb-dialog__body:has(.tb-dialog__actions) {
+    :is(.tb-drawer, .tb-dialog--full, .tb-dialog[data-window-state="maximized"])
+        > .tb-dialog__body:has(.tb-dialog__actions) {
         scroll-padding-block-end: calc(var(--tb-control-height) + 2 * var(--tb-space-3) + 1px);
     }
 
-    .tb-drawer .tb-dialog__actions {
+    :is(.tb-drawer, .tb-dialog--full, .tb-dialog[data-window-state="maximized"])
+        > .tb-dialog__body .tb-dialog__actions {
         position: sticky;
         inset-block-end: calc(-1 * var(--tb-space-5));
         margin-block-start: auto;
@@ -6504,6 +6517,26 @@
         grid-row: 1 / span 2;
     }
 
+    /* Filling tabs keep the list in place and give the shown panel the rest of the height, scrolling inside it. */
+    .tb-tabs--fill {
+        block-size: 100%;
+        min-block-size: 0;
+    }
+
+    .tb-tabs--fill:not(.tb-tabs--vertical, .tb-tabs--actions, .tb-tabs--scrolls) {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tb-tabs--fill > .tb-tabs__panel {
+        flex: 1;
+        overflow: auto;
+    }
+
+    .tb-tabs--fill.tb-tabs--vertical > .tb-tabs__list {
+        overflow-y: auto;
+    }
+
     /* Sizes follow density as a button's do, and reach only this list's tabs, not a nested tab list's. */
     .tb-tabs--small > .tb-tabs__list > .tb-tabs__tab {
         min-height: var(--tb-control-height-sm);
@@ -7116,6 +7149,18 @@
     .tb-data-grid__scroll {
         position: relative;
         overflow: auto;
+    }
+
+    /* A filling grid is as tall as its container, and its rows' box takes the room the toolbar and pager leave. */
+    .tb-data-grid--fill {
+        display: flex;
+        flex-direction: column;
+        block-size: 100%;
+        min-block-size: 0;
+    }
+
+    .tb-data-grid--fill > .tb-data-grid__scroll {
+        flex: 1;
     }
 
     .tb-data-grid__scroll:focus-visible {

@@ -362,15 +362,21 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public Size Size { get; set; } = Size.Medium;
 
-    /// <summary>The height the rows scroll in, as CSS, such as <c>"24rem"</c>; the header stays in view above them.
-    /// </summary>
+    /// <summary>The tallest the rows grow before they scroll, as CSS, such as <c>"24rem"</c>; the header stays in view
+    /// above them. Fewer rows take less. To fill a container instead, use <see cref="Fill"/>.</summary>
     [Parameter]
     public string? Height { get; set; }
 
+    /// <summary>Makes the grid as tall as its container, which needs a height of its own, as a full or maximized
+    /// dialog's body has. The rows scroll in the room the toolbar and pager leave, under a header that stays in view.
+    /// </summary>
+    [Parameter]
+    public bool Fill { get; set; }
+
     /// <summary>Draws only the rows scrolled into view, and a few around them, instead of pages, so the grid can hold
-    /// thousands of rows. It needs a <see cref="Height"/> for the rows to scroll in, and can't have a
-    /// <see cref="PageSize"/>. With a <see cref="DataProvider"/>, rows load as they scroll into view, and the header
-    /// has no box that selects every row, since most of them aren't loaded.</summary>
+    /// thousands of rows. It needs a <see cref="Height"/> or <see cref="Fill"/> for the rows to scroll in, and can't
+    /// have a <see cref="PageSize"/>. With a <see cref="DataProvider"/>, rows load as they scroll into view, and the
+    /// header has no box that selects every row, since most of them aren't loaded.</summary>
     [Parameter]
     public bool Virtualize { get; set; }
 
@@ -623,10 +629,10 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         // Without a height the rows' box grows with them, so every row would count as in view.
-        if (Virtualize && (Height is null || PageSize is not null))
+        if (Virtualize && (!Scrolls || PageSize is not null))
         {
             throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} that virtualizes its rows needs a " +
-                $"{nameof(Height)} and no {nameof(PageSize)}.");
+                $"{nameof(Height)} or {nameof(Fill)}, and no {nameof(PageSize)}.");
         }
 
         if (!ReferenceEquals(Sorts, _sortsFromParent))
@@ -1416,7 +1422,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private sealed record GroupKey(GroupKey? Outer, string Column, object? Value);
 
     // What the first render guesses, since only data-grid.js can measure whether the box overflows.
-    private bool ScrollIsTabStop => Height is not null && !IsGrid;
+    private bool ScrollIsTabStop => Scrolls && !IsGrid;
+
+    private bool Scrolls => Height is not null || Fill;
 
     private bool _sortKeyHasShift;
 

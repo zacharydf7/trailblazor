@@ -1,0 +1,30 @@
+@page "/tabs-fill-mode"
+
+@* Filling tabs in fixed-height boxes, each panel taller than the room left for it. *@
+<div data-testid="Filling" style="block-size: 12rem">
+    <TbTabs AriaLabel="Filling" Fill>
+        <TbTab Text="Notes"><div style="block-size: 30rem">Tall notes.</div></TbTab>
+        <TbTab Text="Gear">Gear list.</TbTab>
+    </TbTabs>
+</div>
+<div data-testid="Filling with an add button" style="block-size: 12rem">
+    <TbTabs AriaLabel="Filling with an add button" Fill OnAdd="() => { }">
+        <TbTab Text="Notes"><div style="block-size: 30rem">Tall notes.</div></TbTab>
+        <TbTab Text="Gear">Gear list.</TbTab>
+    </TbTabs>
+</div>
+<div data-testid="Filling with scroll buttons" style="block-size: 12rem">
+    <TbTabs AriaLabel="Filling with scroll buttons" Fill ScrollButtons>
+        <TbTab Text="Notes"><div style="block-size: 30rem">Tall notes.</div></TbTab>
+        <TbTab Text="Gear">Gear list.</TbTab>
+    </TbTabs>
+</div>
+<div data-testid="Filling in a column" style="block-size: 12rem">
+    <TbTabs AriaLabel="Filling in a column" Fill Vertical OnAdd="() => { }">
+        <TbTab Text="Notes"><div style="block-size: 30rem">Tall notes.</div></TbTab>
+        @foreach (var name in new[] { "Gear", "Camps", "Water", "Maps", "Permits", "Weather" })
+        {
+            <TbTab Text="@name">@name list.</TbTab>
+        }
+    </TbTabs>
+</div>

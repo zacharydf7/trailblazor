@@ -59,6 +59,8 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] The reference reports each new window state, from the header's buttons or from code. `DialogServiceTests.WindowStateChanged_ShouldReportEachNewState_WhenTheHeaderOrCodeChangesIt`, `DialogServiceTests.WindowStateChanged_ShouldReportTheRestore_WhenHidingTheHeaderRestoresAMinimizedDialog`
 - [x] Maximize fills the window, and Restore brings it back. `DialogTests.Dialog_ShouldFillTheWindowAndComeBack_WhenMaximizedAndRestored`
 - [x] A long dialog keeps its header in view and scrolls its body. `DialogExtrasTests.Dialog_ShouldScrollItsBodyAndKeepItsHeaderInView_WhenItsContentIsLong`
+- [x] A full or maximized dialog, or a drawer, keeps its actions at the bottom of the window, even when a form holds them. `DialogTests.Dialog_ShouldPinItsActionsToTheBottomOfTheWindow_WhenFullOrMaximized`
+- [x] In a full dialog with actions, a filling grid scrolls only its own rows, whether it sits straight in the body, in filling tabs or in a form. `DialogTests.Dialog_ShouldScrollOnlyTheGridsRows_WhenAFullDialogHoldsAFillingGridAndActions`
 
 ## Touch
 

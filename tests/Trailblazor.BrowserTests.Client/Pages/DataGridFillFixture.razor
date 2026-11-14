@@ -1,0 +1,25 @@
+@page "/data-grid-fill"
+
+@* Filling grids with more rows than fit: one with a pager in a fixed-height box, and one in filling tabs inside a
+   flex column. *@
+<div data-testid="Box" style="block-size: 16rem">
+    <TbDataGrid TItem="string" Items="Trails" AriaLabel="Paged trails" KeySelector="trail => trail" Fill PageSize="30">
+        <TbColumn TItem="string" Field="trail => trail" Title="Name" />
+    </TbDataGrid>
+</div>
+<div data-testid="Column" style="display: flex; flex-direction: column; block-size: 20rem">
+    <p>Trip planner</p>
+    <div style="flex: 1; min-block-size: 0">
+        <TbTabs AriaLabel="Planner" Fill>
+            <TbTab Text="Trails">
+                <TbDataGrid TItem="string" Items="Trails" AriaLabel="Planned trails" KeySelector="trail => trail" Fill>
+                    <TbColumn TItem="string" Field="trail => trail" Title="Name" />
+                </TbDataGrid>
+            </TbTab>
+        </TbTabs>
+    </div>
+</div>
+
+@code {
+    private static readonly string[] Trails = [.. Enumerable.Range(1, 40).Select(number => $"Trail {number}")];
+}

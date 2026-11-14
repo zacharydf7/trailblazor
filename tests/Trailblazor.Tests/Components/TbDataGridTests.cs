@@ -877,6 +877,21 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void ScrollBox_ShouldStartAsANamedTabStopWithNoMaximum_WhenTheGridFills()
+    {
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
+            .Add(grid => grid.AriaLabel, "Trails").Add(grid => grid.Fill, true)
+            .Add(grid => grid.KeySelector, trail => trail.Id).AddChildContent(Columns));
+
+        var scroll = cut.Find("[data-part=scroll]");
+
+        Assert.Equal(("0", "region", null), (scroll.GetAttribute("tabindex"), scroll.GetAttribute("role"),
+            scroll.GetAttribute("style")));
+        Assert.Superset(new HashSet<string> { "tb-data-grid--fill", "tb-data-grid--scrolls" },
+            cut.Find("[data-part=grid]").ClassList.ToHashSet());
+    }
+
+    [Fact]
     public void ScrollBox_ShouldStartAsATabStopWithNoRegion_WhenTheGridHasNoName()
     {
         var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.Items, Trails)
@@ -1363,6 +1378,15 @@ public class TbDataGridTests : BunitContext
             .Add(grid => grid.Virtualize, true).Add(grid => grid.Height, height).Add(grid => grid.PageSize, pageSize)));
 
         Assert.Contains("Height", error.Message);
+    }
+
+    [Fact]
+    public void Virtualize_ShouldCountEveryRow_WhenTheGridFillsInsteadOfHavingAHeight()
+    {
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.Virtualize, true)
+            .Add(grid => grid.Fill, true));
+
+        Assert.Equal("6", cut.Find("table").GetAttribute("aria-rowcount"));
     }
 
     [Fact]

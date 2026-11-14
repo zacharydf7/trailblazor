@@ -318,6 +318,34 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldFillItsContainerAndScrollItsRows_WhenFillIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/data-grid-fill");
+
+        // The grid is as tall as what holds it, its rows' box scrolls under a header in view, and only the rows' box
+        // scrolls: not a filling tab's panel, and not the page.
+        foreach (var (container, grid) in new[] { ("Box", "Paged trails"), ("Column", "Planned trails") })
+        {
+            var layout = await ScrollBox(page, grid).EvaluateAsync<string>("""
+                (box, container) => {
+                    const grid = box.closest('[data-part=grid]'), holder = grid.parentElement;
+                    box.scrollTop = 200;
+                    const head = grid.querySelector('thead').getBoundingClientRect().top;
+                    return [Math.abs(grid.offsetHeight - holder.clientHeight
+                            + parseFloat(getComputedStyle(holder).paddingBlockStart)
+                            + parseFloat(getComputedStyle(holder).paddingBlockEnd)) < 1,
+                        box.scrollTop > 0, Math.abs(head - box.getBoundingClientRect().top) < 1,
+                        holder.scrollHeight <= holder.clientHeight,
+                        grid.getBoundingClientRect().bottom <= document.querySelector(`[data-testid=${container}]`)
+                            .getBoundingClientRect().bottom + 1].join(' ');
+                }
+                """, container);
+
+            Assert.True(layout == "true true true true true", $"{grid}: {layout}");
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ScrollBox_ShouldNotBeATabStop_WhenItsHeightLeavesTheRowsRoom(string browser)
     {
         var page = await OpenAsync(browser, "/data-grid-scroll");

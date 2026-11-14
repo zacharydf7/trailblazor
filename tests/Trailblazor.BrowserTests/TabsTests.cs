@@ -693,4 +693,30 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
             Assert.True(clipped.Length == 0, $"{tabs}: {string.Join(", ", clipped)}.");
         }
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldFillTheirBoxAndScrollThePanel_WhenFillIsSet(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs-fill-mode");
+
+        foreach (var tabs in new[]
+            { "Filling", "Filling with an add button", "Filling with scroll buttons", "Filling in a column" })
+        {
+            // The tabs are as tall as the box, the shown panel ends at its bottom and scrolls, and the list stays inside.
+            var layout = await page.GetByTestId(tabs).EvaluateAsync<string>("""
+                box => {
+                    const tabs = box.firstElementChild, list = tabs.querySelector('[role=tablist]');
+                    const panel = tabs.querySelector('[role=tabpanel]:not([hidden])');
+                    panel.scrollTop = 200;
+                    const outer = box.getBoundingClientRect();
+                    return [tabs.offsetHeight === box.clientHeight,
+                        Math.abs(panel.getBoundingClientRect().bottom - outer.bottom) < 1, panel.scrollTop > 0,
+                        list.getBoundingClientRect().bottom <= outer.bottom + 1,
+                        list.getBoundingClientRect().top === outer.top].join(' ');
+                }
+                """);
+
+            Assert.True(layout == "true true true true true", $"{tabs}: {layout}");
+        }
+    }
 }

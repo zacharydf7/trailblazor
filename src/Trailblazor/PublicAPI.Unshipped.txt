@@ -1893,6 +1893,8 @@ Trailblazor.TbDataGrid<TItem>.DataProvider.set -> void
 Trailblazor.TbDataGrid<TItem>.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Trailblazor.TbDataGrid<TItem>.EmptyContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbDataGrid<TItem>.EmptyContent.set -> void
+Trailblazor.TbDataGrid<TItem>.Fill.get -> bool
+Trailblazor.TbDataGrid<TItem>.Fill.set -> void
 Trailblazor.TbDataGrid<TItem>.Height.get -> string?
 Trailblazor.TbDataGrid<TItem>.Height.set -> void
 Trailblazor.TbDataGrid<TItem>.Items.get -> System.Collections.Generic.IEnumerable<TItem>?
@@ -2782,6 +2784,8 @@ Trailblazor.TbTabs.Centered.set -> void
 Trailblazor.TbTabs.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbTabs.ChildContent.set -> void
 Trailblazor.TbTabs.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbTabs.Fill.get -> bool
+Trailblazor.TbTabs.Fill.set -> void
 Trailblazor.TbTabs.KeepAlive.get -> bool
 Trailblazor.TbTabs.KeepAlive.set -> void
 Trailblazor.TbTabs.TbTabs() -> void

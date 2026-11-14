@@ -17,7 +17,7 @@ Familiar apps: the filter panel on a shop's search results, and the share sheet 
 - [x] A drawer at the start or end fills the window's height against its edge. `DrawerTests.Drawer_ShouldFillTheWindowsHeightAtItsEnd_WhenOpened`
 - [x] A drawer at the start opens on the right in right-to-left text. `DrawerTests.Drawer_ShouldOpenOnTheRight_WhenItsAtTheStartOfRightToLeftText`
 - [x] A bottom sheet spans the window's width at its bottom edge. `DrawerTests.Drawer_ShouldSpanTheBottomOfTheWindow_WhenItIsABottomSheet`
-- [x] The actions stay at the bottom of the drawer, however short the content is. `DrawerTests.Drawer_ShouldKeepItsActionsAtTheBottom_WhenItsContentIsShort`
+- [x] The actions stay at the bottom of the drawer, however short the content is, even when a form holds them. `DrawerTests.Drawer_ShouldKeepItsActionsAtTheBottom_WhenItsContentIsShort`, `DialogTests.Dialog_ShouldPinItsActionsToTheBottomOfTheWindow_WhenFullOrMaximized`
 - [x] A drawer that isn't modal leaves the page usable beside it. `DrawerTests.Drawer_ShouldLeaveThePageUsable_WhenItIsNotModal`
 
 ## Touch

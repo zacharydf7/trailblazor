@@ -1,0 +1,30 @@
+<TbButton Variant="Variant.Outlined" OnClick="() => _open = true">Plan a trip</TbButton>
+
+<TbDialog @bind-Open="_open" Title="Trip planner" Options="new() { Size = DialogSize.Full }">
+    <TbTabs AriaLabel="Trip" Fill>
+        <TbTab Text="Stops">
+            <TbDataGrid TItem="Stop" Items="Stops" AriaLabel="Stops" KeySelector="stop => stop.Mile" Fill
+                        Size="Size.Small">
+                <TbColumn Field="stop => stop.Mile" />
+                <TbColumn Field="stop => stop.Name" Title="Stop" />
+            </TbDataGrid>
+        </TbTab>
+        <TbTab Text="Notes">
+            <TbTextField Label="Notes" Lines="4" @bind-Value="_notes" />
+        </TbTab>
+    </TbTabs>
+    <TbDialogActions>
+        <TbButton Variant="Variant.Text" OnClick="() => _open = false">Cancel</TbButton>
+        <TbButton OnClick="() => _open = false">Save</TbButton>
+    </TbDialogActions>
+</TbDialog>
+
+@code {
+    private static readonly Stop[] Stops =
+        [.. Enumerable.Range(1, 80).Select(mile => new Stop(mile, mile % 5 == 0 ? "Water and shade" : "Trail marker"))];
+
+    private bool _open;
+    private string? _notes;
+
+    private sealed record Stop(int Mile, string Name);
+}

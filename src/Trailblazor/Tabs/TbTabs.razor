@@ -8,8 +8,8 @@
 
 <div @attributes="AdditionalAttributes" style="@Style"
      class="@ClassNames.Join("tb-tabs", ClassNames.Modifier("tb-tabs", Variant), ClassNames.Modifier("tb-tabs", Size),
-                Vertical ? "tb-tabs--vertical" : null, ShowsAdd ? "tb-tabs--actions" : null,
-                ShowsScrollButtons ? "tb-tabs--scrolls" : null, Class)">
+                Vertical ? "tb-tabs--vertical" : null, Fill ? "tb-tabs--fill" : null,
+                ShowsAdd ? "tb-tabs--actions" : null, ShowsScrollButtons ? "tb-tabs--scrolls" : null, Class)">
     @* Hidden until the script finds the row overflowing. *@
     @if (ShowsScrollButtons)
     {
@@ -117,6 +117,11 @@
     /// <summary>Stacks the tabs in a column beside their panels, moved between with Up and Down.</summary>
     [Parameter]
     public bool Vertical { get; set; }
+
+    /// <summary>Makes the tabs as tall as their container, which needs a height of its own, as a full or maximized
+    /// dialog's body has. The tab list stays in place, and the shown panel takes the rest and scrolls.</summary>
+    [Parameter]
+    public bool Fill { get; set; }
 
     /// <summary>
     /// The height of the tabs and the size of their text. Defaults to <see cref="Trailblazor.Size.Medium"/>.

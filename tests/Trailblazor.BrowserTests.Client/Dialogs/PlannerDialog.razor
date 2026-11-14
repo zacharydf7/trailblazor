@@ -1,0 +1,43 @@
+@inherits TbDialogContent<bool>
+
+@* A filling grid with more rows than fit, in filling tabs or straight in the body, then the actions, as a full-window
+   editor has them, and all of it in a form when `Form` is set. *@
+@if (Form)
+{
+    <TbForm Model="this">@Content</TbForm>
+}
+else
+{
+    @Content
+}
+
+@code {
+    private static readonly string[] Miles = [.. Enumerable.Range(1, 80).Select(mile => $"Mile {mile}")];
+
+    [Parameter]
+    public bool Tabs { get; set; }
+
+    [Parameter]
+    public bool Form { get; set; }
+
+    private RenderFragment Content => @<text>
+        @if (Tabs)
+        {
+            <TbTabs AriaLabel="Trip" Fill>
+                <TbTab Text="Stops">@Stops</TbTab>
+            </TbTabs>
+        }
+        else
+        {
+            @Stops
+        }
+        <TbDialogActions>
+            <TbButton OnClick="() => Dialog.CloseAsync(true)">Save</TbButton>
+        </TbDialogActions>
+    </text>;
+
+    private static RenderFragment Stops => @<TbDataGrid TItem="string" Items="Miles" AriaLabel="Stops"
+                                                        KeySelector="stop => stop" Fill>
+        <TbColumn TItem="string" Field="stop => stop" Title="Stop" />
+    </TbDataGrid>;
+}

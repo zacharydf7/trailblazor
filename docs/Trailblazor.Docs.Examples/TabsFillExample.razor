@@ -1,0 +1,15 @@
+<div style="block-size: 14rem">
+    <TbTabs AriaLabel="Trail guide" Fill>
+        <TbTab Text="Directions">
+            <TbStack Gap="2">
+                @foreach (var step in Enumerable.Range(1, 20))
+                {
+                    <TbText>Step @step: follow the blue blazes to the next junction.</TbText>
+                }
+            </TbStack>
+        </TbTab>
+        <TbTab Text="Gear">
+            <TbText>Water, a map and a warm layer.</TbText>
+        </TbTab>
+    </TbTabs>
+</div>

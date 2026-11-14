@@ -265,6 +265,63 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(normal.Width, (await BoxAsync(page, "Notes 1")).Width, tolerance: 1);
     }
 
+    public static TheoryData<string, string> WindowFillingDialogs() => new(AllBrowsers.Names.SelectMany(browser =>
+        new[] { (browser, "Notes"), (browser, "Full notes"), (browser, "Form name"), (browser, "Full form name"),
+            (browser, "Form drawer") }));
+
+    [Theory]
+    [MemberData(nameof(WindowFillingDialogs))]
+    public async Task Dialog_ShouldPinItsActionsToTheBottomOfTheWindow_WhenFullOrMaximized(string browser,
+        string button)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = button, Exact = true }).ClickAsync();
+        var name = button is "Notes" or "Full notes" ? "Notes 1" : button;
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = name });
+
+        // A full dialog and a drawer fill the window already; the others are maximized. The forms hold their actions.
+        if (button is "Notes" or "Form name")
+        {
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Maximize" }).ClickAsync();
+            await Expect(dialog).ToHaveAttributeAsync("data-window-state", "maximized");
+        }
+
+        var (_, height) = await ViewportAsync(page);
+        var actions = (await dialog.Locator("[data-part=actions]").BoundingBoxAsync())!;
+        Assert.Equal(height, actions.Y + actions.Height, tolerance: 1);
+    }
+
+    public static TheoryData<string, string> FillingDialogs() => new(AllBrowsers.Names.SelectMany(browser =>
+        new[] { (browser, "Planner"), (browser, "Stops"), (browser, "Form planner") }));
+
+    [Theory]
+    [MemberData(nameof(FillingDialogs))]
+    public async Task Dialog_ShouldScrollOnlyTheGridsRows_WhenAFullDialogHoldsAFillingGridAndActions(string browser,
+        string button)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = button, Exact = true }).ClickAsync();
+
+        // The body doesn't scroll, the tab list (if any) is at its top, and the grid ends above the actions, its rows
+        // scrolling.
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = button });
+        await Expect(dialog.GetByRole(AriaRole.Table, new() { Name = "Stops" })).ToBeVisibleAsync();
+        var layout = await dialog.EvaluateAsync<string>("""
+            dialog => {
+                const body = dialog.querySelector('.tb-dialog__body');
+                const list = (dialog.querySelector('[role=tablist]') ?? body).getBoundingClientRect();
+                const grid = dialog.querySelector('[data-part=grid]').getBoundingClientRect();
+                const rows = dialog.querySelector('.tb-data-grid__scroll');
+                const actions = dialog.querySelector('[data-part=actions]').getBoundingClientRect();
+                return [body.scrollHeight <= body.clientHeight, list.top >= body.getBoundingClientRect().top,
+                    grid.bottom <= actions.top + 1, rows.scrollHeight > rows.clientHeight].join(' ');
+            }
+            """);
+
+        Assert.Equal("true true true true", layout);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldFocusItself_WhenItsInitialFocusIsTheDialog(string browser)
     {

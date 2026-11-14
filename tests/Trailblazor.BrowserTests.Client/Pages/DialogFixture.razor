@@ -14,6 +14,27 @@
     <TbButton OnClick="AboutAsync">About</TbButton>
     <TbButton OnClick="() => NotesAsync(DialogSize.Medium)">Notes</TbButton>
     <TbButton OnClick="() => NotesAsync(DialogSize.Full)">Full notes</TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<FormNameDialog, string>("Form name",
+                  options: new() { Modal = false, Maximizable = true })'>
+        Form name
+    </TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<FormNameDialog, string>("Full form name",
+                  options: new() { Size = DialogSize.Full })'>
+        Full form name
+    </TbButton>
+    <TbButton OnClick="() => _formDrawer = true">Form drawer</TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<PlannerDialog, bool>("Planner", p => p.Set(d => d.Tabs, true),
+                  options: new() { Size = DialogSize.Full })'>
+        Planner
+    </TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<PlannerDialog, bool>("Stops",
+                  options: new() { Size = DialogSize.Full })'>
+        Stops
+    </TbButton>
+    <TbButton OnClick='() => Dialogs.ShowAsync<PlannerDialog, bool>("Form planner",
+                  p => p.Set(d => d.Tabs, true).Set(d => d.Form, true), options: new() { Size = DialogSize.Full })'>
+        Form planner
+    </TbButton>
     <TbButton OnClick="MovableAsync">Movable</TbButton>
     <TbButton OnClick="AnnotatedAsync">Annotated</TbButton>
     <TbButton OnClick="() => TuckedAsync(modal: true)">Tucked</TbButton>
@@ -74,6 +95,13 @@
 <TbDrawer @bind-Open="_drawer" Title="Fit drawer" Size="DialogSize.Fit" Width="10rem">
     <p style="white-space: nowrap">@string.Join(" ", Enumerable.Repeat("Wider than the drawer.", 4))</p>
 </TbDrawer>
+@* A short form whose actions are inside it. *@
+<TbDrawer @bind-Open="_formDrawer" Title="Form drawer">
+    <TbForm Model="this">
+        <TbTextField Label="Trail" @bind-Value="_trail" />
+        <TbDialogActions><TbButton Type="ButtonType.Submit">Save</TbButton></TbDialogActions>
+    </TbForm>
+</TbDrawer>
 <output data-testid="page-clicks">@_pageClicks</output>
 @* Tall enough to scroll, so the scroll lock can be seen. *@
 <div style="height: 200vh"></div>
@@ -87,6 +115,8 @@
     private bool _small;
     private bool _fitted;
     private bool _drawer;
+    private bool _formDrawer;
+    private string? _trail;
     private bool _inner;
     private int _pageClicks;
 
