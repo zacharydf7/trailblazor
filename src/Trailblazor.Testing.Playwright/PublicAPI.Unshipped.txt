@@ -299,3 +299,6 @@ Trailblazor.Testing.Playwright.TbFieldLocator.ErrorsAsync() -> System.Threading.
 Trailblazor.Testing.Playwright.TbFieldLocator.InvalidAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbFieldLocator.LeaveAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbNumberFieldLocator.StepAsync(int count) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDatePickerLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDateRangePickerLocator.EnterAsync(string? start, string? end) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDateTimePickerLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!

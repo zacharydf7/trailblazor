@@ -48,6 +48,16 @@ public sealed class TbDateTimePickerLocator(ILocator scope, string label) : TbFi
             new Regex($"^{chosen.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture)}"));
     }
 
+    /// <summary>Types this text in the date box as it is, leaves the box and waits until the field has taken it, so a
+    /// test can enter text the field can't read and see its error; the time is left unchanged. A statically rendered
+    /// field throws, and so does a read-only or disabled one.</summary>
+    public async Task EnterAsync(string text)
+    {
+        var staticBox = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[data-static]"));
+        await Dates.EnterAsync(await staticBox.CountAsync() > 0 ? staticBox : DateInput, text,
+            () => Assertions.Expect(Group).ToHaveAttributeAsync("data-format", new Regex(".+")));
+    }
+
     /// <summary>The date and time the field holds, or null when it has none. For a statically rendered field, this
     /// reads the browser's own date and time box.</summary>
     public async Task<DateTime?> ValueAsync()

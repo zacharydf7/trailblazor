@@ -771,11 +771,17 @@ public sealed class TbDatePickerDriver : TbFieldDriver
     public Task ChooseAsync(DateOnly? date)
     {
         var input = _find();
+        return EnterAsync(date?.ToString(input.GetAttribute("data-format"), Dates.CultureOf(input)) ?? "");
+    }
+
+    /// <summary>Types this text in the field as it is and commits it, as typing and leaving the field does, so a test
+    /// can enter text the field can't read and see its error. On a static page, or when the field is read-only or
+    /// disabled, this throws.</summary>
+    public Task EnterAsync(string text)
+    {
+        var input = _find();
         Dates.ThrowIfStaticOrLocked(input);
-        return input.ChangeAsync(new ChangeEventArgs
-        {
-            Value = date?.ToString(input.GetAttribute("data-format"), Dates.CultureOf(input)) ?? "",
-        });
+        return input.ChangeAsync(new ChangeEventArgs { Value = text });
     }
 }
 
@@ -804,12 +810,7 @@ public sealed class TbDateTimePickerDriver : TbFieldDriver
     public async Task ChooseAsync(DateTime? value)
     {
         var group = _find();
-        var dateInput = group.QuerySelector("[data-part=date-input]")!;
-        Dates.ThrowIfStaticOrLocked(group.HasAttribute("data-static") ? group : dateInput);
-        await dateInput.ChangeAsync(new ChangeEventArgs
-        {
-            Value = value?.ToString(group.GetAttribute("data-format"), Dates.CultureOf(group)) ?? "",
-        });
+        await EnterAsync(value?.ToString(group.GetAttribute("data-format"), Dates.CultureOf(group)) ?? "");
         if (value is { } chosen)
         {
             await _find().QuerySelector("[data-part=time-input]")!.ChangeAsync(new ChangeEventArgs
@@ -817,6 +818,17 @@ public sealed class TbDateTimePickerDriver : TbFieldDriver
                 Value = chosen.ToString(chosen.Second == 0 ? "HH:mm" : "HH:mm:ss", CultureInfo.InvariantCulture),
             });
         }
+    }
+
+    /// <summary>Types this text in the date box as it is and commits it, as leaving the box does, so a test can enter
+    /// text the field can't read and see its error; the time is left unchanged. On a static page, or when the field
+    /// is read-only or disabled, this throws.</summary>
+    public Task EnterAsync(string text)
+    {
+        var group = _find();
+        var dateInput = group.QuerySelector("[data-part=date-input]")!;
+        Dates.ThrowIfStaticOrLocked(group.HasAttribute("data-static") ? group : dateInput);
+        return dateInput.ChangeAsync(new ChangeEventArgs { Value = text });
     }
 }
 
@@ -840,16 +852,27 @@ public sealed class TbDateRangePickerDriver : TbFieldDriver
 
     /// <summary>Types both dates in the field's own format and commits them, as typing in each box and leaving it does;
     /// null clears that end. On a static page, or when the field is read-only or disabled, this throws.</summary>
-    public async Task ChooseAsync(DateOnly? start, DateOnly? end)
+    public Task ChooseAsync(DateOnly? start, DateOnly? end)
     {
         var group = _find();
-        Dates.ThrowIfStaticOrLocked(group.QuerySelector("[data-part=start-input]")!);
         var format = group.GetAttribute("data-format");
         var culture = Dates.CultureOf(group);
-        await group.QuerySelector("[data-part=start-input]")!.ChangeAsync(
-            new ChangeEventArgs { Value = start?.ToString(format, culture) ?? "" });
-        await _find().QuerySelector("[data-part=end-input]")!.ChangeAsync(
-            new ChangeEventArgs { Value = end?.ToString(format, culture) ?? "" });
+        return EnterAsync(start?.ToString(format, culture) ?? "", end?.ToString(format, culture) ?? "");
+    }
+
+    /// <summary>Types this text in each box as it is and commits it, as typing in the box and leaving it does, so a
+    /// test can enter text the field can't read and see its error; null leaves that box unchanged. On a static page,
+    /// or when the field is read-only or disabled, this throws.</summary>
+    public async Task EnterAsync(string? start, string? end)
+    {
+        Dates.ThrowIfStaticOrLocked(_find().QuerySelector("[data-part=start-input]")!);
+        foreach (var (part, text) in new[] { ("start-input", start), ("end-input", end) })
+        {
+            if (text is not null)
+            {
+                await _find().QuerySelector($"[data-part={part}]")!.ChangeAsync(new ChangeEventArgs { Value = text });
+            }
+        }
     }
 }
 

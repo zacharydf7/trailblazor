@@ -312,3 +312,6 @@ Trailblazor.Testing.TbFieldDriver.Errors.get -> System.Collections.Generic.IRead
 Trailblazor.Testing.TbFieldDriver.Invalid.get -> bool
 Trailblazor.Testing.TbFieldDriver.LeaveAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbNumberFieldDriver.StepAsync(int count) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDatePickerDriver.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDateRangePickerDriver.EnterAsync(string? start, string? end) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDateTimePickerDriver.EnterAsync(string! text) -> System.Threading.Tasks.Task!

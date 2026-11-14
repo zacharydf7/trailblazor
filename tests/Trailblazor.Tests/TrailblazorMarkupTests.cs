@@ -1262,6 +1262,47 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task DatePickers_ShouldShowTheFieldsError_WhenTextTheyCantReadIsEntered()
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbDatePicker<DateOnly>>(0);
+            builder.AddAttribute(1, nameof(TbDatePicker<DateOnly>.Label), "Start");
+            builder.CloseComponent();
+            builder.OpenComponent<TbDateTimePicker<DateTime>>(2);
+            builder.AddAttribute(3, nameof(TbDateTimePicker<DateTime>.Label), "Departs");
+            builder.CloseComponent();
+            builder.OpenComponent<TbDateRangePicker<DateOnly>>(4);
+            builder.AddAttribute(5, nameof(TbDateRangePicker<DateOnly>.Label), "Trip");
+            builder.CloseComponent();
+        });
+
+        var time = cut.Find("[data-part=time-input]").GetAttribute("value");
+        await cut.Tb().DatePicker("Start").EnterAsync("not a date");
+        await cut.Tb().DateTimePicker("Departs").EnterAsync("soon");
+        await cut.Tb().DateRangePicker("Trip").EnterAsync("someday", null);
+
+        Assert.All(new TbFieldDriver[] { cut.Tb().DatePicker("Start"), cut.Tb().DateTimePicker("Departs"),
+            cut.Tb().DateRangePicker("Trip") }, field => Assert.True(field.Invalid));
+        Assert.Equal("not a date", cut.Find("[data-part=input]").GetAttribute("value"));
+        Assert.Equal("soon", cut.Find("[data-part=date-input]").GetAttribute("value"));
+        Assert.Equal(time, cut.Find("[data-part=time-input]").GetAttribute("value"));
+    }
+
+    [Fact]
+    public async Task DateRangePicker_ShouldLeaveABoxAsItIs_WhenItsTextIsNull()
+    {
+        var cut = Render<TbDateRangePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Label, "Trip"));
+        await cut.Tb().DateRangePicker("Trip").ChooseAsync(new DateOnly(2026, 3, 14), new DateOnly(2026, 3, 20));
+        var start = cut.Find("[data-part=start-input]").GetAttribute("value");
+
+        await cut.Tb().DateRangePicker("Trip").EnterAsync(null, "someday");
+
+        Assert.Equal(start, cut.Find("[data-part=start-input]").GetAttribute("value"));
+        Assert.Equal("someday", cut.Find("[data-part=end-input]").GetAttribute("value"));
+    }
+
+    [Fact]
     public async Task DatePickers_ShouldTypeInTheFieldsCultureAndCalendar_WhenItsCultureIsGiven()
     {
         var thai = CultureInfo.GetCultureInfo("th-TH");

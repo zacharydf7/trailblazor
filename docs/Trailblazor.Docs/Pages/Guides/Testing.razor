@@ -265,6 +265,8 @@
                             Types the date in the field's own format, and <code>Value</code> reads it.
                             <code>DateTimePicker</code> and <code>DateRangePicker</code> work the same way; the first
                             reads with <code>Value</code> and the second with <code>Range</code>.
+                            <code>EnterAsync</code> types text as it is, such as a date the field can't read, to test
+                            its error.
                         </td>
                     </tr>
                     <tr>
@@ -854,11 +856,13 @@
         new("Color picker", "Its label", "`ColorPicker(label).ChooseAsync(color)` picks a color."),
         new("File upload", "Its label", "`FileUpload(label).ChooseAsync(paths)` chooses files."),
         new("Date picker", "Its label", "`DatePicker(label).ChooseAsync(date)` types the date in the field's format "
-            + "and waits until the field has it, and `ValueAsync()` reads it."),
+            + "and waits until the field has it, and `ValueAsync()` reads it. `EnterAsync(text)` types text as it is, "
+            + "such as a date the field can't read, to test its error."),
         new("Date-time picker", "Its label", "`DateTimePicker(label).ChooseAsync(value)` types the date and fills the "
-            + "time, and `ValueAsync()` reads them."),
+            + "time, and `ValueAsync()` reads them. `EnterAsync(text)` types text as it is in the date box."),
         new("Date range picker", "Its label", "`DateRangePicker(label).ChooseAsync(start, end)` picks the dates, and "
-            + "`RangeAsync()` reads them."),
+            + "`RangeAsync()` reads them. `EnterAsync(start, end)` types text as it is in each box, and null leaves a "
+            + "box unchanged."),
         new("Number field", "Its label", "`NumberField(label).EnterAsync(text)` types a number and waits until the "
             + "app has it, and `TextAsync()` reads what the field shows."),
         new("Slider", "Its label", "`Slider(label).SetAsync(value)` moves it and waits until the field has the value, "

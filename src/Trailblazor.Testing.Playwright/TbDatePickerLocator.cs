@@ -33,6 +33,12 @@ public sealed class TbDatePickerLocator(ILocator scope, string label) : TbFieldL
             date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "");
     }
 
+    /// <summary>Types this text in the field as it is, leaves the field and waits until the field has taken it, so a
+    /// test can enter text the field can't read and see its error. A statically rendered field, whose date box is the
+    /// browser's own, throws, and so does a read-only or disabled one.</summary>
+    public Task EnterAsync(string text) => Dates.EnterAsync(Input, text,
+        () => Assertions.Expect(Input).ToHaveAttributeAsync("data-format", new Regex(".+")));
+
     /// <summary>The date the field holds, or null when it has none. For a statically rendered field, this reads the
     /// browser's own date box.</summary>
     public async Task<DateOnly?> ValueAsync()
@@ -50,4 +56,33 @@ public sealed class TbDatePickerLocator(ILocator scope, string label) : TbFieldL
 
     internal static DateOnly? ReadIso(string? text) => string.IsNullOrEmpty(text) ? null
         : DateOnly.ParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+}
+
+internal static class Dates
+{
+    // The field is ready once it reads typed text, which each field shows its own way.
+    public static async Task EnterAsync(ILocator box, string text, Func<Task> ready)
+    {
+        if (await box.GetAttributeAsync("data-static") is not null)
+        {
+            throw new InvalidOperationException("This field renders as the browser's own date box on a static page, "
+                + "which takes only dates; render it on an interactive page to type text into it.");
+        }
+
+        if (!await box.IsEditableAsync())
+        {
+            throw new InvalidOperationException(
+                "This field is read-only or disabled, so a date can't be typed into it.");
+        }
+
+        // A prerendered field is replaced once the page is interactive, and would lose the text.
+        await ready();
+        await Commit.WaitAsync(box, async () =>
+        {
+            var changes = await box.InputValueAsync() != text;
+            await box.FillAsync(text);
+            await box.PressAsync("Tab");
+            return changes;
+        });
+    }
 }

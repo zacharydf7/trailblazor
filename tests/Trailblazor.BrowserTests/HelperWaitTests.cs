@@ -59,6 +59,42 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task DatePickers_ShouldReturnOnceTheFieldShowsItsError_WhenTextItCantReadIsEntered(string browser)
+    {
+        var dates = await OpenAsync(browser, "/date-picker");
+        var times = await OpenAsync(browser, "/examples/date-time-picker");
+        var ranges = await OpenAsync(browser, "/examples/date-range-picker");
+
+        await dates.Tb().DatePicker("Start date").EnterAsync("not a date");
+        await times.Tb().DateTimePicker("Guided hike starts").EnterAsync("soon");
+        await ranges.Tb().DateRangePicker("Trip dates").EnterAsync(null, "someday");
+
+        Assert.True(await dates.Tb().DatePicker("Start date").InvalidAsync());
+        Assert.True(await times.Tb().DateTimePicker("Guided hike starts").InvalidAsync());
+        Assert.True(await ranges.Tb().DateRangePicker("Trip dates").InvalidAsync());
+        await Expect(times.Tb().DateTimePicker("Guided hike starts").DateInput).ToHaveValueAsync("soon");
+        await Expect(ranges.GetByRole(AriaRole.Textbox, new() { Name = "Trip dates End date" }))
+            .ToHaveValueAsync("someday");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task DatePickers_ShouldThrowOnEntering_WhenTheFieldIsStaticReadOnlyOrDisabled(string browser)
+    {
+        var statics = await OpenStaticAsync(browser, "/static-date-picker");
+        var staticTimes = await OpenStaticAsync(browser, "/static-date-time-picker");
+        var states = await OpenAsync(browser, "/examples/date-picker");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => statics.Tb().DatePicker("Start date").EnterAsync("x"));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => staticTimes.Tb().DateTimePicker("Starts").EnterAsync("x"));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => states.Tb().DatePicker("Season opens").EnterAsync("x"));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => states.Tb().DatePicker("Last season opened").EnterAsync("x"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task NumberField_ShouldReturnOnceTheAppHasEachValue_WhenItUpdatesAsTextIsTyped(string browser)
     {
         var page = await OpenAsync(browser, "/number-live");

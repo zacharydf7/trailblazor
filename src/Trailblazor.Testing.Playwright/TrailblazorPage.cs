@@ -693,6 +693,24 @@ public sealed class TbDateRangePickerLocator(ILocator scope, string label) : TbF
         await Assertions.Expect(group).ToHaveAttributeAsync("data-value", $"{Iso(start)}/{Iso(end)}");
     }
 
+    /// <summary>Types this text in each box as it is, leaving the box, and waits until the field has taken it, so a
+    /// test can enter text the field can't read and see its error; null leaves that box unchanged. A statically
+    /// rendered field throws, and so does a read-only or disabled one.</summary>
+    public async Task EnterAsync(string? start, string? end)
+    {
+        var group = Control;
+        var boxes = group.Locator("input");
+        foreach (var (box, text) in new[] { (boxes.Nth(0), start), (boxes.Nth(1), end) })
+        {
+            if (text is not null)
+            {
+                // The boxes read typed text once the calendar's script is ready, which marks the trigger.
+                await Dates.EnterAsync(box, text, () => Assertions.Expect(group.Locator("[data-part=trigger]"))
+                    .ToHaveAttributeAsync("data-ready", ""));
+            }
+        }
+    }
+
     /// <summary>The range the field holds; either date is null when the field has none. For a statically rendered
     /// field, this reads the browser's own date boxes.</summary>
     public async Task<(DateOnly? Start, DateOnly? End)> RangeAsync()
