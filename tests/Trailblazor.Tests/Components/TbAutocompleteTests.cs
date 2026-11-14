@@ -729,6 +729,27 @@ public class TbAutocompleteTests : BunitContext
         }
     }
 
+    [Fact]
+    public async Task Typing_ShouldReachTheField_WhenItRendersBetweenATestReadingTheInputAndRaisingItsEvents()
+    {
+        string? chosen = null;
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Items, Trails).Add(field => field.ValueChanged, (string? value) => chosen = value));
+        var input = cut.Find("input");
+        var typed = HandlerIds.Read(input, "oninput");
+        var changed = HandlerIds.Read(input, "onchange");
+
+        // Stands in for a background continuation rendering the field after the test has read its handler ids.
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, typed, cut.ComponentId, "Cedar Flats",
+            new ChangeEventArgs { Value = "Cedar Flats" });
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, changed, cut.ComponentId, "Cedar Flats",
+            new ChangeEventArgs { Value = "Cedar Flats" });
+
+        Assert.Equal("Cedar Flats", chosen);
+    }
+
     private IRenderedComponent<TbAutocomplete<string?>> RenderTrails(string? value = null,
         Action<string?>? onChange = null, int? maxItems = null, int minCharacters = 0, bool clearable = false) =>
         Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Trail")

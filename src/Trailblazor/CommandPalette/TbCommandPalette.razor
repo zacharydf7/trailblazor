@@ -13,14 +13,35 @@
       @ontbhotkey="OnShortcutAsync" @ontbhotkey:stopPropagation></span>
 
 @code {
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment Input => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "id", InputId);
+        builder.AddAttribute(2, "type", "text");
+        builder.AddAttribute(3, "role", "combobox");
+        builder.AddAttribute(4, "aria-expanded", "true");
+        builder.AddAttribute(5, "aria-autocomplete", "list");
+        builder.AddAttribute(6, "aria-controls", ListboxId);
+        builder.AddAttribute(7, "aria-label", LabelText);
+        builder.AddAttribute(8, "autocomplete", "off");
+        builder.AddAttribute(9, "spellcheck", "false");
+        builder.AddAttribute(10, "placeholder", Placeholder ?? Localizer[TbStrings.CommandPalettePlaceholder]);
+        builder.AddAttribute(11, "data-part", "input");
+        builder.AddAttribute(12, "class", "tb-command-palette__input");
+        builder.AddAttribute(13, "value", _query);
+        builder.AddAttribute(14, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, OnQueryInput));
+        builder.SetUpdatesAttributeName("value");
+        builder.CloseElement();
+    };
+
+    private void OnQueryInput(ChangeEventArgs args) => SetQuery(args.Value as string);
+
     // The search box and its list, whose arrow-key and Enter handling comes from the component that holds them.
     private RenderFragment Search => @<text>
         @* The list always shows, so the box says it's expanded; the script keeps aria-activedescendant on the active
            option and sets data-ready once the keys work. *@
-        <input id="@InputId" type="text" role="combobox" aria-expanded="true" aria-autocomplete="list"
-               aria-controls="@ListboxId" aria-label="@LabelText" autocomplete="off" spellcheck="false"
-               placeholder="@(Placeholder ?? Localizer[TbStrings.CommandPalettePlaceholder])" data-part="input"
-               class="tb-command-palette__input" @bind:get="_query" @bind:set="SetQuery" @bind:event="oninput" />
+        @Input
         @* data-query says which search the results are for, so a test knows they have caught up with its typing. *@
         <div id="@ListboxId" role="listbox" aria-label="@LabelText" data-part="listbox"
              data-query="@_query" class="tb-command-palette__listbox">

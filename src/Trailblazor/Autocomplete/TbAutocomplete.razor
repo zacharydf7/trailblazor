@@ -3,19 +3,7 @@
 @inherits TbBoxedFieldBase<TValue>
 
 @Layout(Classes, @<text>
-    @* @bind keeps what the user typed while a round trip is in flight; leaving or Enter commits it. *@
-    <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
-           type="text" autocomplete="off" @bind:get="_text" @bind:set="OnTypedAsync" @bind:event="oninput"
-           @onchange="CommitAsync" data-input-delay="@InputDelay" data-open-on-focus="@(OpenOnFocus ? "" : null)"
-           placeholder="@Placeholder" disabled="@Disabled"
-           readonly="@ReadOnly"
-           data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
-           role="@(RendererInfo.IsInteractive ? "combobox" : null)"
-           aria-autocomplete="@(RendererInfo.IsInteractive ? "list" : null)"
-           aria-expanded="@(RendererInfo.IsInteractive ? "false" : null)"
-           aria-controls="@(RendererInfo.IsInteractive ? ListboxId : null)"
-           aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
-           aria-describedby="@InputDescribedBy" class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
+    @Input
     @if (RendererInfo.IsInteractive)
     {
         <div @ref="_listbox" id="@ListboxId" popover="manual" role="listbox" data-part="listbox"
@@ -52,6 +40,41 @@
 </text>, Start, End)
 
 @code {
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment Input => builder =>
+    {
+        var interactive = RendererInfo.IsInteractive;
+        builder.OpenElement(0, "input");
+        builder.AddMultipleAttributes(1, ControlAttributes);
+        builder.AddAttribute(2, "data-part", "input");
+        builder.AddAttribute(3, "id", InputId);
+        builder.AddAttribute(4, "name", InputNameAttribute);
+        builder.AddAttribute(5, "type", "text");
+        builder.AddAttribute(6, "autocomplete", "off");
+        builder.AddAttribute(7, "value", _text);
+        builder.AddAttribute(8, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, OnTypedInputAsync));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(9, "onchange", EventCallback.Factory.Create(this, CommitAsync));
+        builder.AddAttribute(10, "data-input-delay", InputDelay);
+        builder.AddAttribute(11, "data-open-on-focus", OpenOnFocus ? "" : null);
+        builder.AddAttribute(12, "placeholder", Placeholder);
+        builder.AddAttribute(13, "disabled", Disabled);
+        builder.AddAttribute(14, "readonly", ReadOnly);
+        builder.AddAttribute(15, "data-static", AssignedRenderMode is null && !interactive ? "" : null);
+        builder.AddAttribute(16, "role", interactive ? "combobox" : null);
+        builder.AddAttribute(17, "aria-autocomplete", interactive ? "list" : null);
+        builder.AddAttribute(18, "aria-expanded", interactive ? "false" : null);
+        builder.AddAttribute(19, "aria-controls", interactive ? ListboxId : null);
+        builder.AddAttribute(20, "aria-required", AriaRequired);
+        builder.AddAttribute(21, "aria-invalid", ShowsInvalid ? "true" : null);
+        builder.AddAttribute(22, "aria-describedby", InputDescribedBy);
+        builder.AddAttribute(23, "class", ClassNames.Join("tb-field__input", Classes?.Input));
+        builder.AddElementReferenceCapture(24, input => _input = input);
+        builder.CloseElement();
+    };
+
+    private Task OnTypedInputAsync(ChangeEventArgs args) => OnTypedAsync(args.Value as string);
+
     private RenderFragment? End => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(_text) ? null :
         @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.AutocompleteClear])"
                        aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="ClearAsync"

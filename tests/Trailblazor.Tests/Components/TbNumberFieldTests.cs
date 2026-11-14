@@ -18,21 +18,13 @@ public class TbNumberFieldTests : BunitContext
         int? copies = null;
         var cut = Render<TbNumberField<int?>>(parameters => parameters.Add(field => field.Format, format)
             .Add(field => field.ValueChanged, (int? value) => copies = value));
-        var handler = ulong.Parse(cut.Find("[data-part=input]").GetAttribute($"blazor:{committing}")!,
-            CultureInfo.InvariantCulture);
+        var handler = HandlerIds.Read(cut.Find("[data-part=input]"), committing);
 
         // As when a background continuation renders the field while a test is raising the event it found.
         cut.Render();
         EventArgs change = format is null ? new NumberChangeEventArgs { Value = "12" }
             : new ChangeEventArgs { Value = "12" };
-#pragma warning disable BL0006 // Dispatching by handler id, as the browser does, needs RenderTree's EventFieldInfo.
-        var field = new Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo
-        {
-            ComponentId = cut.ComponentId,
-            FieldValue = "12",
-        };
-        await Renderer.DispatchEventAsync(handler, field, change);
-#pragma warning restore BL0006
+        await HandlerIds.DispatchAsync(Renderer, handler, cut.ComponentId, "12", change);
 
         Assert.Equal(12, copies);
     }

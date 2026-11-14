@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Linq.Expressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -144,19 +143,12 @@ public class TbTextFieldTests : BunitContext
             .Add(field => field.UpdateOnInput, updateOnInput)
             .Add(field => field.UpdateDelay, delay is { } ms ? TimeSpan.FromMilliseconds(ms) : null)
             .Add(field => field.ValueChanged, (string value) => name = value));
-        var handler = ulong.Parse(cut.Find("[data-part=input]").GetAttribute($"blazor:{committing}")!,
-            CultureInfo.InvariantCulture);
+        var handler = HandlerIds.Read(cut.Find("[data-part=input]"), committing);
 
         // As when a background continuation renders the field while a test is raising the event it found.
         cut.Render();
-#pragma warning disable BL0006 // Dispatching by handler id, as the browser does, needs RenderTree's EventFieldInfo.
-        var field = new Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo
-        {
-            ComponentId = cut.ComponentId,
-            FieldValue = "Ada",
-        };
-        await Renderer.DispatchEventAsync(handler, field, new ChangeEventArgs { Value = "Ada" });
-#pragma warning restore BL0006
+        await HandlerIds.DispatchAsync(Renderer, handler, cut.ComponentId, "Ada",
+            new ChangeEventArgs { Value = "Ada" });
 
         Assert.Equal("Ada", name);
     }

@@ -147,6 +147,21 @@ public class TbCommandPaletteTests : BunitContext
     }
 
     [Fact]
+    public async Task Typing_ShouldReachThePalette_WhenItRendersBetweenATestReadingTheInputAndRaisingItsEvent()
+    {
+        var cut = Render<TbCommandPalette<Command>>(parameters => parameters.Add(palette => palette.Items, Commands)
+            .Add(palette => palette.Open, true).Add(palette => palette.ItemText, command => command.Name));
+        var handler = HandlerIds.Read(cut.Find("[role=combobox]"), "oninput");
+
+        // Stands in for a background continuation rendering the palette after the test has read its handler id.
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, handler, cut.ComponentId, "tab",
+            new ChangeEventArgs { Value = "tab" });
+
+        Assert.Equal("tab", cut.Find("[data-part=listbox]").GetAttribute("data-query"));
+    }
+
+    [Fact]
     public void Render_ShouldShowEachCommandsParts_WhenGivenThem()
     {
         var cut = Render<TbCommandPalette<Command>>(parameters => parameters.Add(palette => palette.Items, Commands)
