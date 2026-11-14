@@ -346,3 +346,6 @@ Trailblazor.Testing.Playwright.TbTreeLocator.Branch(params string![]! path) -> T
 Trailblazor.Testing.Playwright.TbTreeLocator.CollapseAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeLocator.RowAsync(string! text) -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
 Trailblazor.Testing.Playwright.TbTreeSelectLocator.OptionAsync(params string![]! path) -> System.Threading.Tasks.Task<Trailblazor.Testing.Playwright.OptionInfo!>!
+Trailblazor.Testing.Playwright.TbTextFieldLocator.HidePasswordAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTextFieldLocator.PasswordShownAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbTextFieldLocator.ShowPasswordAsync() -> System.Threading.Tasks.Task!

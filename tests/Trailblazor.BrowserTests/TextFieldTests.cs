@@ -143,6 +143,48 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldKeepFocusAndTheSelection_WhenTheShowPasswordButtonIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var code = page.GetByLabel("Trail pass code");
+        await Expect(code).ToHaveAttributeAsync("data-ready", "");
+        await code.PressSequentiallyAsync("ridge-42");
+        await code.EvaluateAsync("input => input.setSelectionRange(2, 5)");
+        var toggle = page.GetByRole(AriaRole.Button, new() { Name = "Show password" });
+
+        foreach (var (type, pressed) in new[] { ("text", "true"), ("password", "false") })
+        {
+            await toggle.ClickAsync();
+
+            await Expect(toggle).ToHaveAttributeAsync("aria-pressed", pressed);
+            await Expect(code).ToHaveAttributeAsync("type", type);
+            await Expect(code).ToBeFocusedAsync();
+            var selection = await code.EvaluateAsync<int[]>("input => [input.selectionStart, input.selectionEnd]");
+            Assert.Equal([2, 5], selection);
+        }
+
+        await Expect(code).ToHaveValueAsync("ridge-42");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextFieldLocator_ShouldShowAndHideThePassword_WhenAsked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var code = page.Tb().TextField("Trail pass code");
+
+        await code.ShowPasswordAsync();
+        var shown = await code.PasswordShownAsync();
+        await code.HidePasswordAsync();
+
+        Assert.True(shown);
+        Assert.False(await code.PasswordShownAsync());
+        await Expect(page.GetByLabel("Trail pass code")).ToHaveAttributeAsync("type", "password");
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(
+            page.Tb().TextField("Password").ShowPasswordAsync);
+        Assert.Contains("make it Revealable", refused.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldSendOnlyTheTextTypedBeforeAPause_WhenGivenAnUpdateDelay(string browser)
     {
         var page = await OpenAsync(browser, "/delayed-search");

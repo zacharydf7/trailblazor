@@ -7,6 +7,10 @@ public sealed record TextFieldLabels
     /// <see cref="TbStrings.TextFieldClear"/>.</summary>
     public string? Clear { get; init; }
 
+    /// <summary>Names the show-password button, which the field's label describes. Leave it null for the app's text
+    /// for <see cref="TbStrings.TextFieldShowPassword"/>.</summary>
+    public string? ShowPassword { get; init; }
+
     /// <summary>The message for a masked field that holds only part of its pattern, with <c>{0}</c> for the field's
     /// label. Leave it null for the app's text for <see cref="TbStrings.TextFieldMaskIncomplete"/>.</summary>
     public string? MaskIncomplete { get; init; }

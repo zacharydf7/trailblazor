@@ -164,7 +164,8 @@
             <li>
                 <strong>Fields:</strong> every field takes a <code>TelemetryName</code>, shown as it renders and counted
                 in <code>trailblazor.field.invalid</code> each time its <code>TbForm</code> is submitted while it has an
-                error, so the fields people trip over stand out. No value is ever recorded.
+                error, so the fields people trip over stand out. A <code>Revealable</code> text field also counts as
+                used, with the action <code>reveal</code>, each time its password is shown. No value is ever recorded.
             </li>
             <li>
                 <strong>Forms:</strong> a labeled form counts each submit it validates in

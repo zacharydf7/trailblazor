@@ -3166,6 +3166,10 @@ public static class ExampleCatalog
                     + "puts any other attribute on the input. Bind the field to a number or date instead of a string, and "
                     + "text that doesn't convert shows an error.",
                     typeof(TextFieldTypesExample)),
+                new("show-password", "Show password", "`Revealable` adds a button to a password field that shows and "
+                    + "hides what was typed, so people can check a password before they send it. `Labels.ShowPassword` "
+                    + "names the button. The password goes back to dots when the field turns read-only or disabled.",
+                    typeof(TextFieldPasswordExample)),
                 new("enter", "Enter", "`OnEnter` runs when someone presses Enter in a single-line field, after the "
                     + "value updates, so a list can take entries one at a time, as the stops do here. Inside a `TbForm`, "
                     + "Enter submits the form as well.", typeof(TextFieldEnterExample)),
@@ -3195,6 +3199,11 @@ public static class ExampleCatalog
                     + "suits checking or saving what was entered as someone moves on.", typeof(TextFieldBlurExample)),
             ],
             Api = [typeof(TbTextField<>), typeof(TextFieldLabels), typeof(FieldClasses)],
+            Telemetry =
+            [
+                "A `Revealable` field also counts `trailblazor.control.used` with the action `reveal` each time the "
+                    + "password is shown; hiding it isn't counted.",
+            ],
             Keyboard =
             [
                 new(["Enter"], "In a single-line field, updates the value at once, raises `OnEnter` and submits its "
@@ -3222,6 +3231,9 @@ public static class ExampleCatalog
                 "Screen readers hear a `ReadOnly` field as read only.",
                 "The clear button is named \"Clear\", or `Labels.Clear`, and described by the field's label. It shows "
                     + "while the field holds text it can change, and pressing it puts focus back in the field.",
+                "The show-password button is named \"Show password\", or `Labels.ShowPassword`, described by the "
+                    + "field's label, and pressed while the password shows. It stays in the tab order, so keyboard "
+                    + "users can reach it, and a press with the pointer leaves focus and the caret in the field.",
                 "The `Filled` variant keeps a line with 3:1 contrast along the box's bottom, red when the field is invalid "
                     + "and dashed when it's read only.",
             ],
@@ -3255,6 +3267,10 @@ public static class ExampleCatalog
                 new("With a `Mask`, empty slots make the field invalid, the placeholder shows the pattern, and a pattern "
                     + "of digits brings up a number keyboard."),
                 new("Each `Size` is set from the theme's density, as a button's is."),
+                new("A shown password turns off spell checking, autocorrect and capitalization, so the browser doesn't "
+                    + "send it to a spelling service or change what was typed. A static page leaves the show-password "
+                    + "button out, since switching the type needs an interactive page; in Edge, the browser's own "
+                    + "button shows there instead."),
             ],
             Ready = new("[data-part=input]", "a masked field's input"),
             Target = new("textbox", "Name"),
@@ -3264,16 +3280,19 @@ public static class ExampleCatalog
                 .. FieldParts,
                 new("input", "The text input."),
                 new("clear", "The button that clears the text."),
+                new("reveal", "The button that shows and hides a password."),
             ],
             TestingTip = "A field with `UpdateDelay` takes its value once typing pauses, so assert with Playwright's "
                 + "`Expect`, which waits, or press Enter to update it at once. In bUnit, which runs no browser, the "
                 + "value updates on each input, so there's nothing to wait for. "
                 + "`await cut.Tb().TextField(\"Trail\").EnterAsync(\"Pine Hollow\")` types the text and commits it, "
                 + "and `page.Tb()` does the same in Playwright, waiting until the app has it; `Text` (`TextAsync()` "
-                + "in Playwright) reads what the field shows. To raise `OnEnter`, press Enter in Playwright, or in bUnit "
-                + "commit the text and then `await cut.Find(\"input\").TriggerEventAsync(\"ontbenter\", "
-                + "EventArgs.Empty)`, the event the browser sends. For fields that share a label, pass a locator in "
-                + "Playwright, as `TextField(row.GetByLabel(\"Name\"))`.",
+                + "in Playwright) reads what the field shows. `ShowPasswordAsync()` and "
+                + "`HidePasswordAsync()` press a `Revealable` field's button, and `PasswordShown` "
+                + "(`PasswordShownAsync()` in Playwright) says whether the password shows. To raise `OnEnter`, press "
+                + "Enter in Playwright, or in bUnit commit the text and then `await cut.Find(\"input\")"
+                + ".TriggerEventAsync(\"ontbenter\", EventArgs.Empty)`, the event the browser sends. For fields that "
+                + "share a label, pass a locator in Playwright, as `TextField(row.GetByLabel(\"Name\"))`.",
         },
         new("rich-text-editor", "Rich text editor", ExampleCategory.Inputs,
             "A labeled field for formatted text, with a toolbar, shortcuts, undo and paste cleanup.")

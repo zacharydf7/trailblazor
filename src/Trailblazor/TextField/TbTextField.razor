@@ -15,6 +15,7 @@
     private IJSObjectReference? _maskHandle;
     private string? _maskAttached;
     private bool _disposed;
+    private bool _revealed;
 
     /// <summary>Content before the input, usually an icon.</summary>
     [Parameter]
@@ -55,8 +56,14 @@
     [Parameter]
     public bool Clearable { get; set; }
 
-    /// <summary>The words the field shows and says to screen readers: the clear button's name and the message for an
-    /// incomplete mask. Each one left null uses the app's text.</summary>
+    /// <summary>Adds a button that shows and hides the password; the button is pressed while the password shows. It
+    /// needs <see cref="Type"/> set to <see cref="TextFieldType.Password"/>. A read-only or disabled field keeps it
+    /// hidden, and a static page leaves the button out.</summary>
+    [Parameter]
+    public bool Revealable { get; set; }
+
+    /// <summary>The words the field shows and says to screen readers: the clear and show-password buttons' names and
+    /// the message for an incomplete mask. Each one left null uses the app's text.</summary>
     [Parameter]
     public TextFieldLabels Labels { get; set; } = new();
 
@@ -97,6 +104,8 @@
 
     private bool Grows => Lines > 1 && MaxLines > Lines;
 
+    private bool StaticPage => AssignedRenderMode is null && !RendererInfo.IsInteractive;
+
     // A mask of digits brings up a number keyboard, unless the page asked for another.
     private object? InputMode =>
         ControlAttributes?.GetValueOrDefault("inputmode") ?? (_mask?.DigitsOnly == true ? "numeric" : null);
@@ -124,7 +133,7 @@
         }
         else
         {
-            builder.AddAttribute(8, "type", Type.ToString().ToLowerInvariant());
+            builder.AddAttribute(8, "type", _revealed ? "text" : Type.ToString().ToLowerInvariant());
             builder.AddAttribute(9, "inputmode", InputMode);
         }
 
@@ -147,24 +156,48 @@
         builder.AddAttribute(19, "aria-describedby", InputDescribedBy);
         builder.AddAttribute(20, "class", ClassNames.Join("tb-field__input", Classes?.Input));
         // Tests wait for data-ready before typing, since a prerendered field is replaced and loses the text.
-        builder.AddAttribute(21, "data-static", AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null);
+        builder.AddAttribute(21, "data-static", StaticPage ? "" : null);
         builder.AddAttribute(22, "data-ready", RendererInfo.IsInteractive ? "" : null);
         if (!area && OnEnter.HasDelegate)
         {
             builder.AddAttribute(23, "ontbenter", OnEnter);
         }
 
-        builder.AddElementReferenceCapture(24, element => _input = element);
+        // A shown password is still a password, so the browser mustn't check, correct or capitalize it.
+        if (_revealed)
+        {
+            builder.AddAttribute(24, "spellcheck", "false");
+            builder.AddAttribute(25, "autocorrect", "off");
+            builder.AddAttribute(26, "autocapitalize", "off");
+        }
+
+        builder.AddElementReferenceCapture(27, element => _input = element);
         builder.CloseElement();
     };
 
     private Task OnTextAsync(ChangeEventArgs change) => SetTextAsync(change.Value as string);
 
-    private RenderFragment? EndWithClear => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(Text) ? End :
+    private bool ShowsClear => Clearable && !Disabled && !ReadOnly && !string.IsNullOrEmpty(Text);
+
+    // A static page can't switch the type, so it keeps the browser's own show-password button, if any.
+    private bool ShowsReveal => Revealable && !StaticPage;
+
+    private RenderFragment? EndWithClear => !ShowsClear && !ShowsReveal ? End :
         @<text>
-            <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.TextFieldClear])"
-                          aria-describedby="@ClearDescribedBy"
-                          Size="Size.Small" OnClick="ClearAsync" data-part="clear" />
+            @if (ShowsClear)
+            {
+                <TbIconButton Icon="BuiltInIcons.Close"
+                              AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.TextFieldClear])"
+                              aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="ClearAsync"
+                              data-part="clear" />
+            }
+            @if (ShowsReveal)
+            {
+                <TbIconButton Icon="@(_revealed ? BuiltInIcons.EyeOff : BuiltInIcons.Eye)"
+                              AriaLabel="@(Labels.ShowPassword ?? Localizer[TbStrings.TextFieldShowPassword])"
+                              aria-describedby="@ClearDescribedBy" Size="Size.Small" Pressed="_revealed"
+                              PressedChanged="Reveal" Disabled="@(Disabled || ReadOnly)" data-part="reveal" />
+            }
             @End
         </text>;
 
@@ -182,6 +215,17 @@
         if (Mask is not null && Lines > 1)
         {
             throw new InvalidOperationException("A mask fits one line of text, so a text area can't have one.");
+        }
+
+        if (Revealable && (Type != TextFieldType.Password || Lines > 1))
+        {
+            throw new InvalidOperationException(
+                "Only a one-line password field can show and hide its text, so Revealable needs Type set to Password.");
+        }
+
+        if (!Revealable || Disabled || ReadOnly)
+        {
+            _revealed = false;
         }
 
         _mask = Mask is null ? null : _mask?.Pattern == Mask ? _mask : new TextMask(Mask);
@@ -252,6 +296,15 @@
         }
 
         return base.TryParse(IncludeMaskLiterals ? shown : slotted, out value, out error);
+    }
+
+    private void Reveal(bool shown)
+    {
+        _revealed = shown;
+        if (shown)
+        {
+            Telemetry.Used(TelemetryName, "reveal");
+        }
     }
 
     private async Task ClearAsync()

@@ -401,6 +401,20 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task TextField_ShouldCountShowingThePasswordButNotHidingIt_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Password")
+            .Add(field => field.Type, TextFieldType.Password).Add(field => field.Revealable, true)
+            .Add(field => field.TelemetryName, "sign-in-password"));
+        var field = cut.Tb().TextField("Password");
+
+        await field.ShowPasswordAsync();
+        await field.HidePasswordAsync();
+
+        Assert.Equal([("sign-in-password", "TbTextField", "reveal")], Uses());
+    }
+
+    [Fact]
     public void Chip_ShouldCountAClickAndARemovalApart_WhenItHasATelemetryName()
     {
         var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Open trails")

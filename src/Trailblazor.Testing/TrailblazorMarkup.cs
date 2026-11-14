@@ -1131,6 +1131,34 @@ public sealed class TbTextFieldDriver : TbFieldDriver
 
         await LeaveAsync();
     }
+
+    /// <summary>Whether a <c>Revealable</c> password field shows its password.</summary>
+    public bool PasswordShown => RevealButton()?.GetAttribute("aria-pressed") == "true";
+
+    /// <summary>Shows the password with the field's show-password button, as a user does, unless it shows already. A
+    /// field that isn't <c>Revealable</c>, or is read-only or disabled, throws.</summary>
+    public Task ShowPasswordAsync() => RevealAsync(true);
+
+    /// <summary>Hides the password with the field's show-password button, unless it's hidden already, and throws as
+    /// <see cref="ShowPasswordAsync"/> does.</summary>
+    public Task HidePasswordAsync() => RevealAsync(false);
+
+    private IElement? RevealButton() => _find().Closest(".tb-field")?.QuerySelector("[data-part=reveal]");
+
+    private async Task RevealAsync(bool shown)
+    {
+        var button = RevealButton() ?? throw new InvalidOperationException(
+            "The field has no show-password button; make it Revealable, with Type set to Password.");
+        if (button.HasAttribute("disabled"))
+        {
+            throw new InvalidOperationException("The field is read-only or disabled, so its password stays hidden.");
+        }
+
+        if (PasswordShown != shown)
+        {
+            await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+        }
+    }
 }
 
 /// <summary>A <c>TbCheckbox</c> or <c>TbSwitch</c>, found by its label.</summary>

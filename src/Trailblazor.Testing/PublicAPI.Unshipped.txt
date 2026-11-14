@@ -357,3 +357,6 @@ Trailblazor.Testing.TbTreeDriver.Branch(params string![]! path) -> Trailblazor.T
 Trailblazor.Testing.TbTreeDriver.CollapseAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTreeDriver.Row(string! text) -> AngleSharp.Dom.IElement!
 Trailblazor.Testing.TbTreeSelectDriver.OptionAsync(params string![]! path) -> System.Threading.Tasks.Task<Trailblazor.Testing.OptionInfo!>!
+Trailblazor.Testing.TbTextFieldDriver.HidePasswordAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTextFieldDriver.PasswordShown.get -> bool
+Trailblazor.Testing.TbTextFieldDriver.ShowPasswordAsync() -> System.Threading.Tasks.Task!

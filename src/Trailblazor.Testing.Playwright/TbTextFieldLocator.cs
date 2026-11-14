@@ -10,6 +10,9 @@ public sealed class TbTextFieldLocator(ILocator scope, ILocator field) : TbField
     private ILocator Input =>
         @field.And(scope.Locator(".tb-text-field input[data-part=input], .tb-text-field textarea[data-part=input]"));
 
+    private ILocator RevealButton =>
+        Input.Locator("xpath=ancestor::*[@data-part='control'][1]").Locator("[data-part=reveal]");
+
     /// <summary>The text the field shows.</summary>
     public Task<string> TextAsync() => Input.InputValueAsync();
 
@@ -38,5 +41,42 @@ public sealed class TbTextFieldLocator(ILocator scope, ILocator field) : TbField
             await input.BlurAsync();
             return changes;
         });
+    }
+
+    /// <summary>Whether a <c>Revealable</c> password field shows its password.</summary>
+    public async Task<bool> PasswordShownAsync() =>
+        await RevealButton.CountAsync() > 0 && await RevealButton.GetAttributeAsync("aria-pressed") == "true";
+
+    /// <summary>Shows the password with the field's show-password button, as a user does, unless it shows already, and
+    /// waits until it shows. A field that isn't <c>Revealable</c>, or is read-only or disabled, throws.</summary>
+    public Task ShowPasswordAsync() => RevealAsync(true);
+
+    /// <summary>Hides the password with the field's show-password button, unless it's hidden already, and waits until
+    /// it's hidden. It throws as <see cref="ShowPasswordAsync"/> does.</summary>
+    public Task HidePasswordAsync() => RevealAsync(false);
+
+    private async Task RevealAsync(bool shown)
+    {
+        var button = RevealButton;
+        if (await button.CountAsync() == 0)
+        {
+            throw new InvalidOperationException(
+                "The field has no show-password button; make it Revealable, with Type set to Password.");
+        }
+
+        if (await button.IsDisabledAsync())
+        {
+            throw new InvalidOperationException("The field is read-only or disabled, so its password stays hidden.");
+        }
+
+        if (await PasswordShownAsync() == shown)
+        {
+            return;
+        }
+
+        // A prerendered field's button does nothing until the page is interactive.
+        await Assertions.Expect(Input).ToHaveAttributeAsync("data-ready", "");
+        await button.ClickAsync();
+        await Assertions.Expect(button).ToHaveAttributeAsync("aria-pressed", shown ? "true" : "false");
     }
 }

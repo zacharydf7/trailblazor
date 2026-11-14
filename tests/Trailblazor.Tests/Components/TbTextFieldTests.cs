@@ -305,6 +305,113 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldAddAShowPasswordButtonThatDoesntSubmit_WhenRevealable()
+    {
+        var cut = RenderPassword();
+
+        var button = cut.Find("[data-part=reveal]");
+        Assert.Equal(("button", "Show password", "false", cut.Find("label").Id),
+            (button.GetAttribute("type"), button.GetAttribute("aria-label"), button.GetAttribute("aria-pressed"),
+                button.GetAttribute("aria-describedby")));
+        Assert.Equal("password", cut.Find("input").GetAttribute("type"));
+    }
+
+    [Fact]
+    public async Task Reveal_ShouldShowThePasswordUntilPressedAgain_WhenPressed()
+    {
+        var cut = RenderPassword();
+        var field = cut.Tb().TextField("Password");
+
+        await field.ShowPasswordAsync();
+        var shown = cut.Find("input");
+        Assert.Equal(("text", "false", "off", "off", "true"), (shown.GetAttribute("type"),
+            shown.GetAttribute("spellcheck"), shown.GetAttribute("autocorrect"), shown.GetAttribute("autocapitalize"),
+            cut.Find("[data-part=reveal]").GetAttribute("aria-pressed")));
+        Assert.True(field.PasswordShown);
+
+        await field.HidePasswordAsync();
+        var hidden = cut.Find("input");
+        Assert.Equal(("password", null, null), (hidden.GetAttribute("type"), hidden.GetAttribute("spellcheck"),
+            hidden.GetAttribute("autocorrect")));
+        Assert.False(field.PasswordShown);
+    }
+
+    [Theory]
+    [InlineData(TextFieldType.Text, 1)]
+    [InlineData(TextFieldType.Email, 1)]
+    [InlineData(TextFieldType.Password, 3)]
+    public void Render_ShouldThrow_WhenARevealableFieldIsntAOneLinePassword(TextFieldType type, int lines)
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<TbTextField<string>>(parameters => parameters
+            .Add(field => field.Revealable, true).Add(field => field.Type, type).Add(field => field.Lines, lines)));
+
+        Assert.Contains("Revealable needs Type set to Password", error.Message);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task Render_ShouldHideThePasswordAndTurnTheButtonOff_WhenTheFieldCantChange(bool disabled,
+        bool readOnly)
+    {
+        var cut = RenderPassword();
+        var field = cut.Tb().TextField("Password");
+        await field.ShowPasswordAsync();
+
+        cut.Render(parameters => parameters.Add(password => password.Disabled, disabled)
+            .Add(password => password.ReadOnly, readOnly));
+
+        Assert.Equal("password", cut.Find("input").GetAttribute("type"));
+        Assert.True(cut.Find("[data-part=reveal]").HasAttribute("disabled"));
+        Assert.False(field.PasswordShown);
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(field.ShowPasswordAsync);
+        Assert.Contains("read-only or disabled", refused.Message);
+    }
+
+    [Fact]
+    public async Task Render_ShouldHideThePassword_WhenTheFieldStopsBeingRevealable()
+    {
+        var cut = RenderPassword();
+        await cut.Tb().TextField("Password").ShowPasswordAsync();
+
+        cut.Render(parameters => parameters.Add(password => password.Revealable, false));
+
+        var input = cut.Find("input");
+        Assert.Equal(("password", null), (input.GetAttribute("type"), input.GetAttribute("spellcheck")));
+        Assert.Empty(cut.FindAll("[data-part=reveal]"));
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveTheShowPasswordButtonOut_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", false));
+
+        var cut = RenderPassword();
+
+        Assert.Empty(cut.FindAll("[data-part=reveal]"));
+    }
+
+    [Fact]
+    public void Render_ShouldNameTheShowPasswordButtonFromLabels_WhenGiven()
+    {
+        var cut = RenderPassword(new TextFieldLabels { ShowPassword = "Show passphrase" });
+
+        Assert.Equal("Show passphrase", cut.Find("[data-part=reveal]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public async Task ShowPasswordAsync_ShouldThrow_WhenTheFieldIsntRevealable()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Password")
+            .Add(field => field.Type, TextFieldType.Password));
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(
+            cut.Tb().TextField("Password").ShowPasswordAsync);
+
+        Assert.Contains("make it Revealable", refused.Message);
+    }
+
+    [Fact]
     public async Task Clear_ShouldEmptyTheFieldAndFocusIt_WhenPressed()
     {
         var values = new List<string?>();
@@ -926,4 +1033,9 @@ public class TbTextFieldTests : BunitContext
             _error = name == "robin" ? "That username is taken." : null;
         }
     }
+
+    private IRenderedComponent<TbTextField<string>> RenderPassword(TextFieldLabels? labels = null) =>
+        Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Password")
+            .Add(field => field.Type, TextFieldType.Password).Add(field => field.Revealable, true)
+            .Add(field => field.Value, "ridge-42").Add(field => field.Labels, labels ?? new()));
 }

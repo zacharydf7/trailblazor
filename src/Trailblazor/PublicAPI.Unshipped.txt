@@ -5436,3 +5436,8 @@ Trailblazor.ColorPickerLabels.NotInPalette.init -> void
 const Trailblazor.TbStrings.ColorPickerNotInPalette = "ColorPicker.NotInPalette" -> string!
 Trailblazor.Internal.Events.FieldFocusEventArgs.CrossesEdit.get -> bool
 Trailblazor.Internal.Events.FieldFocusEventArgs.CrossesEdit.set -> void
+Trailblazor.TbTextField<TValue>.Revealable.get -> bool
+Trailblazor.TbTextField<TValue>.Revealable.set -> void
+Trailblazor.TextFieldLabels.ShowPassword.get -> string?
+Trailblazor.TextFieldLabels.ShowPassword.init -> void
+const Trailblazor.TbStrings.TextFieldShowPassword = "TextField.ShowPassword" -> string!

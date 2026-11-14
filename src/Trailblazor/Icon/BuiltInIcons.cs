@@ -56,6 +56,13 @@ internal static class BuiltInIcons
 
     public static Icon PageLast { get; } = new("<path d=\"M5.6 7.4 10.2 12l-4.6 4.6L7 18l6-6-6-6zM16 6h2v12h-2z\" />");
 
+    public static Icon Eye { get; } = new("<path fill-rule=\"evenodd\" d=\"M12 5C6.5 5 2.7 8.6 1 12c1.7 3.4 5.5 7 "
+        + "11 7s9.3-3.6 11-7c-1.7-3.4-5.5-7-11-7zm0 2c4.2 0 7.3 2.6 8.8 5-1.5 2.4-4.6 5-8.8 5s-7.3-2.6-8.8-5C4.7 9.6 "
+        + "7.8 7 12 7zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z\" />");
+
+    // The eye, struck through.
+    public static Icon EyeOff { get; } = new(Eye.Svg + "<path d=\"M3.4 2 2 3.4 20.6 22l1.4-1.4z\" />");
+
     public static Icon Minus { get; } = new("<path d=\"M5 11h14v2H5z\" />");
 
     // Two columns of dots, the usual sign that a row can be dragged.

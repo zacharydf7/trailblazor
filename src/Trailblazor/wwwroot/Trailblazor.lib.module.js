@@ -127,6 +127,14 @@ function registerEvents(blazor) {
         }
     }, true);
 
+    // A press on a field's show-password button leaves focus, and the caret, in the field.
+    document.addEventListener('mousedown', event => {
+        if (event.button === 0 && event.target.closest?.('.tb-field [data-part="reveal"]')?.closest('.tb-field')
+            ?.contains(document.activeElement)) {
+            event.preventDefault();
+        }
+    }, true);
+
     // A click on a data grid row says whether the row should ignore it, as when it landed on a control in the row, whose
     // click is the control's own.
     const rowControls = 'a[href], button, input, select, textarea, label, summary, [contenteditable], '

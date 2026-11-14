@@ -13,6 +13,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 - [x] With `UpdateDelay`, quick typing sends the server only the text typed before the pause. `TextFieldTests.TextField_ShouldSendOnlyTheTextTypedBeforeAPause_WhenGivenAnUpdateDelay`
 - [x] Keystrokes aren't lost while updates are slow to come back. `TextFieldTests.TextField_ShouldKeepEveryKeystroke_WhenEachUpdateIsSlowToComeBack`
 - [x] Tab reaches the clear button, and Enter or Space presses it. `TbTextField.razor`
+- [x] Tab reaches the show-password button, and Enter or Space shows or hides the password. `TbTextField.razor`
 - [x] In a mask, typing or deleting mid-text keeps the caret in place. `TextFieldTests.TextField_ShouldKeepTheCaretInPlace_WhenADigitIsTypedOrDeletedMidMask`
 - [x] In a mask, Backspace just after a literal removes the character before it. `text-mask.js`
 - [x] In a read-only field, the keys move the caret but change nothing. `ReadOnlyTests.ReadOnlyField_ShouldKeepItsValueButTakeFocus_WhenTheUserTriesToEditIt`
@@ -24,6 +25,9 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 - [x] Clicking anywhere in the box outside its controls, such as its padding or a start icon, focuses the input. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`, `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsStartIconIsPressed`
 - [x] The clear button empties the field and puts focus back in the input. `TextFieldTests.TextField_ShouldEmptyAndKeepFocus_WhenTheClearButtonIsPressed`
 - [x] The clear button shows only for text that can change. `TbTextFieldTests.Render_ShouldShowTheClearButtonOnlyForTextThatCanChange_WhenClearable`
+- [x] The show-password button shows and hides the password, leaving focus and the selection in the input. `TextFieldTests.TextField_ShouldKeepFocusAndTheSelection_WhenTheShowPasswordButtonIsPressed`
+- [x] A read-only or disabled field hides its password and disables the show-password button. `TbTextFieldTests.Render_ShouldHideThePasswordAndTurnTheButtonOff_WhenTheFieldCantChange`
+- [x] A field shows Edge's own show-password button only when it has none of its own and nothing else in the `End` slot. `trailblazor.css`
 - [x] Pasted text fits the mask, and a short paste says so. `TextFieldTests.TextField_ShouldFitPastedTextAndFlagAShortOne_WhenItHasAMask`
 - [x] Text that doesn't parse stays in the input with its message, so it can be fixed. `TextFieldTests.TextField_ShouldKeepTheTextAndExplain_WhenTheTextDoesNotParse`
 
@@ -31,6 +35,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 
 - [ ] A tap on the box's padding focuses the input. UNCONFIRMED
 - [x] A tap focuses the native input and opens the on-screen keyboard, which `Type` chooses. `TbTextField.razor`
+- [ ] A tap on the show-password button keeps the on-screen keyboard open. UNCONFIRMED
 - [x] A mask of digits asks for the number keyboard. `TextFieldMaskTests.Render_ShouldShowTheValueInTheMaskAndHintItsShape_WhenGivenAMask`
 
 ## Focus
@@ -46,5 +51,4 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 ## Not applicable
 
 - Escape: a plain text box has no action for it. A browser's search box may clear on it, and `Clearable` adds a button.
-- A show-password button: an app can put one in the `End` slot. Of the browsers, only Edge adds its own, and the field hides Edge's whenever the `End` slot holds the app's content, so people never see two.
 - Ctrl+Enter to submit from a text area: a chat convention, which an app can add.

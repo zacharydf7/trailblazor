@@ -667,6 +667,10 @@ public static class TbStrings
     /// <summary>"Clear": names a text field's clear button.</summary>
     public const string TextFieldClear = "TextField.Clear";
 
+    /// <summary>"Show password": names a password field's button that shows and hides the password; the button is
+    /// pressed while the password shows.</summary>
+    public const string TextFieldShowPassword = "TextField.ShowPassword";
+
     /// <summary>"{0} isn't complete.": shown when a masked text field has empty slots; {0} is the field's label.
     /// </summary>
     public const string TextFieldMaskIncomplete = "TextField.MaskIncomplete";
@@ -1333,6 +1337,7 @@ public static class TbStrings
         [TagInputTooMany] = "You can add up to {0} tags.",
         [TagInputTooManyOne] = "You can add only one tag.",
         [TextFieldClear] = "Clear",
+        [TextFieldShowPassword] = "Show password",
         [TextFieldMaskIncomplete] = "{0} isn't complete.",
         [RichTextEditorToolbar] = "Formatting",
         [RichTextEditorBold] = "Bold",
