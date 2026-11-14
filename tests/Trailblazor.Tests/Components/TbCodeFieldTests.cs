@@ -66,6 +66,23 @@ public class TbCodeFieldTests : BunitContext
         Assert.Equal("Verification code wants 4 numbers.", cut.Find("[data-part=error]").TextContent.Trim());
     }
 
+    [Theory]
+    [InlineData("oninput")]
+    [InlineData("onchange")]
+    public async Task Input_ShouldReachTheField_WhenItRendersBetweenATestReadingTheInputAndRaisingItsEvent(
+        string eventName)
+    {
+        var cut = RenderCode();
+        var handler = HandlerIds.Read(cut.Find("[data-part=input]"), eventName);
+
+        // Stands in for a background continuation rendering the field after the test has read its handler id.
+        cut.Render();
+        await HandlerIds.DispatchAsync(Renderer, handler, cut.ComponentId, "123456",
+            new ChangeEventArgs { Value = "123456" });
+
+        Assert.Equal(["123456"], Values);
+    }
+
     [Fact]
     public void Input_ShouldKeepOnlyTheCodesCharactersAndRaiseOnComplete_WhenTyped()
     {

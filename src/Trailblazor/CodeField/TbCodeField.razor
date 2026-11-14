@@ -8,22 +8,47 @@
 @inject JsModuleLoader Modules
 
 @Layout(Classes, @<text>
-    <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
-           type="text" dir="ltr" @bind:get="Text" @bind:set="OnInputAsync" @bind:event="oninput"
-           @onchange="OnCommitAsync" autocomplete="one-time-code"
-           inputmode="@(Characters == CodeCharacters.Digits ? "numeric" : "text")"
-           autocapitalize="@(Characters == CodeCharacters.Digits ? null : "characters")" spellcheck="false"
-           maxlength="@Length" data-characters="@(Characters == CodeCharacters.Digits ? "digits" : "letters")"
-           disabled="@Disabled" readonly="@ReadOnly"
-           aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
-           aria-describedby="@(InputDescribedBy is null ? LengthId : $"{InputDescribedBy} {LengthId}")"
-           style="--tb-code-field-length: @Length"
-           class="@ClassNames.Join("tb-field__input", "tb-code-field__input", Classes?.Input)" />
+    @Input
     @* Only the boxes show the length, and maxlength isn't read out, so the input is described by it. *@
     <span id="@LengthId" hidden>@LengthText</span>
 </text>, null, null)
 
 @code {
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment Input => builder =>
+    {
+        var digits = Characters == CodeCharacters.Digits;
+        builder.OpenElement(0, "input");
+        builder.AddMultipleAttributes(1, ControlAttributes);
+        builder.AddAttribute(2, "data-part", "input");
+        builder.AddAttribute(3, "id", InputId);
+        builder.AddAttribute(4, "name", InputNameAttribute);
+        builder.AddAttribute(5, "type", "text");
+        builder.AddAttribute(6, "dir", "ltr");
+        builder.AddAttribute(7, "value", Text);
+        builder.AddAttribute(8, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, OnTypedAsync));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(9, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, OnCommitAsync));
+        builder.AddAttribute(10, "autocomplete", "one-time-code");
+        builder.AddAttribute(11, "inputmode", digits ? "numeric" : "text");
+        builder.AddAttribute(12, "autocapitalize", digits ? null : "characters");
+        builder.AddAttribute(13, "spellcheck", "false");
+        builder.AddAttribute(14, "maxlength", Length);
+        builder.AddAttribute(15, "data-characters", digits ? "digits" : "letters");
+        builder.AddAttribute(16, "disabled", Disabled);
+        builder.AddAttribute(17, "readonly", ReadOnly);
+        builder.AddAttribute(18, "aria-required", AriaRequired);
+        builder.AddAttribute(19, "aria-invalid", ShowsInvalid ? "true" : null);
+        builder.AddAttribute(20, "aria-describedby",
+            InputDescribedBy is null ? LengthId : $"{InputDescribedBy} {LengthId}");
+        builder.AddAttribute(21, "style", $"--tb-code-field-length: {Length}");
+        builder.AddAttribute(22, "class", ClassNames.Join("tb-field__input", "tb-code-field__input", Classes?.Input));
+        builder.AddElementReferenceCapture(23, input => _input = input);
+        builder.CloseElement();
+    };
+
+    private Task OnTypedAsync(ChangeEventArgs args) => OnInputAsync(args.Value as string);
+
     private ElementReference _input;
     private IJSObjectReference? _handle;
     private bool _disposed;
