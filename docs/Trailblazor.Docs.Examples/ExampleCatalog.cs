@@ -3571,7 +3571,8 @@ public static class ExampleCatalog
                 + "from `Trailblazor.Testing` types into either kind. In Playwright, "
                 + "`await page.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` from "
                 + "`Trailblazor.Testing.Playwright` waits for the field's `data-ready`, types, leaves it and waits "
-                + "until the app has the value.",
+                + "until the app has the value. In both, `StepAsync(2)` clicks the increase button twice and "
+                + "`StepAsync(-2)` the decrease button, stopping at `Min` or `Max`.",
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.")

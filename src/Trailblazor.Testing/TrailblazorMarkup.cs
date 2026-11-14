@@ -877,9 +877,11 @@ internal static class Dates
 // A user can't type into a read-only or disabled field, so the drivers that type refuse it too.
 internal static class Typing
 {
+    internal static bool IsLocked(IElement input) => input.HasAttribute("readonly") || input.HasAttribute("disabled");
+
     internal static void ThrowIfLocked(IElement input, string what)
     {
-        if (input.HasAttribute("readonly") || input.HasAttribute("disabled"))
+        if (IsLocked(input))
         {
             throw new InvalidOperationException(
                 $"This field is read-only or disabled, so {what} can't be typed into it.");
@@ -1265,6 +1267,27 @@ public sealed class TbNumberFieldDriver : TbFieldDriver
         await (input.GetAttribute("role") == "spinbutton" ? input.ChangeAsync(new ChangeEventArgs { Value = text })
             : input.TriggerEventAsync("ontbnumberchange", new NumberChangeEventArgs { Value = text }));
         await LeaveAsync();
+    }
+
+    /// <summary>Clicks the field's increase button this many times, or its decrease button for a negative count.
+    /// Stepping stops at <c>Min</c> or <c>Max</c>, where the button turns off, as in a browser. A read-only or disabled
+    /// field throws, and so does one with <c>HideStepButtons</c>; type into that one with <see cref="EnterAsync"/>.
+    /// </summary>
+    public async Task StepAsync(int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(count);
+        var part = count < 0 ? "decrement" : "increment";
+        if (Typing.IsLocked(_find()))
+        {
+            throw new InvalidOperationException("This field is read-only or disabled, so it can't be stepped.");
+        }
+
+        for (var step = 0; step < Math.Abs(count); step++)
+        {
+            var button = _find().Closest("[data-part=control]")?.QuerySelector($"[data-part={part}]")
+                ?? throw new InvalidOperationException("This field hides its step buttons; use EnterAsync instead.");
+            await button.ClickAsync(new MouseEventArgs());
+        }
     }
 }
 

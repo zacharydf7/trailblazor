@@ -127,7 +127,11 @@
                     </tr>
                     <tr>
                         <th scope="row"><code>NumberField(label).EnterAsync(text)</code></th>
-                        <td>Types a number and waits until the app has it.</td>
+                        <td>
+                            Types a number and waits until the app has it. <code>StepAsync(count)</code> clicks the
+                            increase button that many times, or the decrease button for a negative count, and stops at
+                            <code>Min</code> or <code>Max</code>.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>Checkbox(label).CheckAsync()</code></th>

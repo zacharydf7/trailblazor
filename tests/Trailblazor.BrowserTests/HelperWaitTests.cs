@@ -36,6 +36,29 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldReturnOnceTheAppHasEachStepAndStopAtItsLimit_WhenStepped(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/number-field");
+        var quantity = page.Tb().NumberField("Quantity");
+
+        await quantity.StepAsync(3);
+        var stepped = await page.GetByText("Quantity value: 4", new() { Exact = true }).CountAsync();
+        await quantity.StepAsync(-10);
+
+        Assert.Equal(1, stepped);
+        Assert.Equal(1, await page.GetByText("Quantity value: 0", new() { Exact = true }).CountAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldThrowOnStepping_WhenTheFieldIsReadOnlyOrHidesItsButtons(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/number-field");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().NumberField("Permit limit").StepAsync(1));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().NumberField("Year").StepAsync(1));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task NumberField_ShouldReturnOnceTheAppHasEachValue_WhenItUpdatesAsTextIsTyped(string browser)
     {
         var page = await OpenAsync(browser, "/number-live");

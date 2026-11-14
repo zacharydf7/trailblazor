@@ -415,6 +415,45 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task NumberField_ShouldStepUntilItsLimit_WhenStepped()
+    {
+        var changes = new List<int?>();
+        var cut = Render<TbNumberField<int?>>(parameters => parameters.Add(field => field.Label, "Nights")
+            .Add(field => field.Min, 1m).Add(field => field.Max, 4m)
+            .Bind(field => field.Value, 2, changes.Add));
+        var field = cut.Tb().NumberField("Nights");
+
+        await field.StepAsync(5);
+        await field.StepAsync(-1);
+
+        Assert.Equal([3, 4, 3], changes);
+    }
+
+    [Theory]
+    [InlineData(nameof(TbNumberField<int>.ReadOnly))]
+    [InlineData(nameof(TbNumberField<int>.HideStepButtons))]
+    public async Task NumberField_ShouldThrowOnStepping_WhenTheFieldCantBeStepped(string setting)
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbNumberField<int>>(0);
+            builder.AddAttribute(1, nameof(TbNumberField<int>.Label), "Nights");
+            builder.AddAttribute(2, setting, true);
+            builder.CloseComponent();
+        });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().NumberField("Nights").StepAsync(1));
+    }
+
+    [Fact]
+    public async Task NumberField_ShouldThrowOnStepping_WhenTheCountIsZero()
+    {
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Label, "Nights"));
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => cut.Tb().NumberField("Nights").StepAsync(0));
+    }
+
+    [Fact]
     public async Task RichTextEditor_ShouldSetTheValueToWhatTheEditorAllows_WhenHtmlIsEntered()
     {
         string? notes = null;

@@ -298,3 +298,4 @@ Trailblazor.Testing.Playwright.TbFieldLocator.ErrorAsync() -> System.Threading.T
 Trailblazor.Testing.Playwright.TbFieldLocator.ErrorsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbFieldLocator.InvalidAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbFieldLocator.LeaveAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbNumberFieldLocator.StepAsync(int count) -> System.Threading.Tasks.Task!

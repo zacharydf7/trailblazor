@@ -311,3 +311,4 @@ Trailblazor.Testing.TbFieldDriver.Error.get -> string?
 Trailblazor.Testing.TbFieldDriver.Errors.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbFieldDriver.Invalid.get -> bool
 Trailblazor.Testing.TbFieldDriver.LeaveAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbNumberFieldDriver.StepAsync(int count) -> System.Threading.Tasks.Task!
