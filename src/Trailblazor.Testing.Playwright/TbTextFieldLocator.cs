@@ -2,13 +2,13 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbTextField</c>, found by its label.</summary>
-public sealed class TbTextFieldLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbTextField</c>, found by its label or a locator.</summary>
+public sealed class TbTextFieldLocator(ILocator scope, ILocator field) : TbFieldLocator
 {
     private protected override ILocator Control => Input;
 
-    private ILocator Input => scope.GetByLabel(FieldLabel.Matching(label))
-        .And(scope.Locator(".tb-text-field input[data-part=input], .tb-text-field textarea[data-part=input]"));
+    private ILocator Input =>
+        @field.And(scope.Locator(".tb-text-field input[data-part=input], .tb-text-field textarea[data-part=input]"));
 
     /// <summary>The text the field shows.</summary>
     public Task<string> TextAsync() => Input.InputValueAsync();

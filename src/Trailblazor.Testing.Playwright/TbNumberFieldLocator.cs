@@ -2,12 +2,12 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbNumberField</c>, found by its label.</summary>
-public sealed class TbNumberFieldLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbNumberField</c>, found by its label or a locator.</summary>
+public sealed class TbNumberFieldLocator(ILocator scope, ILocator field) : TbFieldLocator
 {
     private protected override ILocator Control => Input;
 
-    private ILocator Input => scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
+    private ILocator Input => @field.And(scope.Locator("input"));
 
     /// <summary>The text the field shows.</summary>
     public Task<string> TextAsync() => Input.InputValueAsync();

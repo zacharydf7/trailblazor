@@ -3270,7 +3270,8 @@ public static class ExampleCatalog
                 + "and `page.Tb()` does the same in Playwright, waiting until the app has it; `Text` (`TextAsync()` "
                 + "in Playwright) reads what the field shows. To raise `OnEnter`, press Enter in Playwright, or in bUnit "
                 + "commit the text and then `await cut.Find(\"input\").TriggerEventAsync(\"ontbenter\", "
-                + "EventArgs.Empty)`, the event the browser sends.",
+                + "EventArgs.Empty)`, the event the browser sends. For fields that share a label, pass a locator in "
+                + "Playwright, as `TextField(row.GetByLabel(\"Name\"))`.",
         },
         new("rich-text-editor", "Rich text editor", ExampleCategory.Inputs,
             "A labeled field for formatted text, with a toolbar, shortcuts, undo and paste cleanup.")
@@ -3578,7 +3579,8 @@ public static class ExampleCatalog
                 + "`await page.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` from "
                 + "`Trailblazor.Testing.Playwright` waits for the field's `data-ready`, types, leaves it and waits "
                 + "until the app has the value. In both, `StepAsync(2)` clicks the increase button twice and "
-                + "`StepAsync(-2)` the decrease button, stopping at `Min` or `Max`.",
+                + "`StepAsync(-2)` the decrease button, stopping at `Min` or `Max`. For fields that share a label, "
+                + "pass a locator in Playwright, as `NumberField(row.GetByLabel(\"Count\"))`.",
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.")
@@ -4807,7 +4809,8 @@ public static class ExampleCatalog
                 + "so in bUnit, which has no browser, `Search` runs and `OnTextChanged` fires on each input. Without a "
                 + "`Search`, `OnTextChanged` fires once `DebounceDelay` has passed on the app's `TimeProvider`, so advance a "
                 + "`FakeTimeProvider` past it, or set it to `TimeSpan.Zero`. Only the first `MaxItems` matches, 50 by "
-                + "default, become options, so type enough to bring the one you want into the list.",
+                + "default, become options, so type enough to bring the one you want into the list. For fields that "
+                + "share a label, pass a locator in Playwright, as `Autocomplete(row.GetByLabel(\"Town\"))`.",
         },
         new("tag-input", "Tag input", ExampleCategory.Inputs,
             "A field where people type any number of short labels, such as a trail's features, each shown as a chip.")

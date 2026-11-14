@@ -61,7 +61,11 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbSelectLocator Select(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbAutocomplete</c> with this label.</summary>
-    public TbAutocompleteLocator Autocomplete(string label) => new(scope, label);
+    public TbAutocompleteLocator Autocomplete(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbAutocomplete</c> this finds, inside the scope, such as one in a row of fields that share their
+    /// labels, as <c>row.GetByLabel("Town")</c>, or one with an id, as <c>page.Locator("#town")</c>.</summary>
+    public TbAutocompleteLocator Autocomplete(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label.</summary>
     public TbListBoxLocator ListBox(string label) => new(scope, label);
@@ -181,7 +185,11 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbAnnouncementsLocator Announcements => new(Scope.Document(scope));
 
     /// <summary>The <c>TbTextField</c> with this label.</summary>
-    public TbTextFieldLocator TextField(string label) => new(scope, label);
+    public TbTextFieldLocator TextField(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbTextField</c> this finds, inside the scope, such as one in a row of fields that share their
+    /// labels, as <c>row.GetByLabel("Name")</c>, or one with an id, as <c>page.Locator("#name")</c>.</summary>
+    public TbTextFieldLocator TextField(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbCheckbox</c> with this label.</summary>
     public TbCheckboxLocator Checkbox(string label) => new(scope, label, isSwitch: false);
@@ -204,7 +212,11 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbListLocator List(string? name = null) => new(scope, name);
 
     /// <summary>The <c>TbNumberField</c> with this label.</summary>
-    public TbNumberFieldLocator NumberField(string label) => new(scope, label);
+    public TbNumberFieldLocator NumberField(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbNumberField</c> this finds, inside the scope, such as one in a row of fields that share their
+    /// labels, as <c>row.GetByLabel("Count")</c>, or one with an id, as <c>page.Locator("#count")</c>.</summary>
+    public TbNumberFieldLocator NumberField(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbTagInput</c> with this label.</summary>
     public TbTagInputLocator TagInput(string label) => new(scope, label);
@@ -546,11 +558,10 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field) : TbFieldLoc
     }
 }
 
-/// <summary>A <c>TbAutocomplete</c>, found by its label.</summary>
-public sealed class TbAutocompleteLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbAutocomplete</c>, found by its label or a locator.</summary>
+public sealed class TbAutocompleteLocator(ILocator scope, ILocator field) : TbFieldLocator
 {
-    private protected override ILocator Control =>
-        scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
+    private protected override ILocator Control => @field.And(scope.Locator("input"));
 
     /// <summary>Types the text, waits for the suggestions, and chooses the option with this name, waiting until the
     /// field has taken it. A statically rendered field is a plain input, which just gets the text.</summary>

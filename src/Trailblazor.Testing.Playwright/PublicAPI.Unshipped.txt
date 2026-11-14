@@ -17,7 +17,7 @@ Trailblazor.Testing.Playwright.TbAnnouncementsLocator.Polite.get -> Microsoft.Pl
 Trailblazor.Testing.Playwright.TbAnnouncementsLocator.TbAnnouncementsLocator(Microsoft.Playwright.ILocator! scope) -> void
 Trailblazor.Testing.Playwright.TbAutocompleteLocator
 Trailblazor.Testing.Playwright.TbAutocompleteLocator.ChooseAsync(string! text, string! option) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbAutocompleteLocator.TbAutocompleteLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TbAutocompleteLocator.TbAutocompleteLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
 Trailblazor.Testing.Playwright.TbCalendarLocator
 Trailblazor.Testing.Playwright.TbCalendarLocator.ChooseAsync(System.DateOnly date) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbCalendarLocator.TbCalendarLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
@@ -70,7 +70,7 @@ Trailblazor.Testing.Playwright.TbMenuLocator.ChooseAsync(params string![]! path)
 Trailblazor.Testing.Playwright.TbMenuLocator.TbMenuLocator(Microsoft.Playwright.ILocator! scope, string! trigger) -> void
 Trailblazor.Testing.Playwright.TbNumberFieldLocator
 Trailblazor.Testing.Playwright.TbNumberFieldLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbNumberFieldLocator.TbNumberFieldLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TbNumberFieldLocator.TbNumberFieldLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
 Trailblazor.Testing.Playwright.TbPaginationLocator
 Trailblazor.Testing.Playwright.TbPaginationLocator.GoToPageAsync(int number) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbPaginationLocator.TbPaginationLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
@@ -279,7 +279,7 @@ Trailblazor.Testing.Playwright.TbRadioGroupLocator.ChosenAsync() -> System.Threa
 Trailblazor.Testing.Playwright.TbRadioGroupLocator.TbRadioGroupLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbTextFieldLocator
 Trailblazor.Testing.Playwright.TbTextFieldLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbTextFieldLocator.TbTextFieldLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TbTextFieldLocator.TbTextFieldLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
 Trailblazor.Testing.Playwright.TbTextFieldLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TbToggleGroupLocator
 Trailblazor.Testing.Playwright.TbToggleGroupLocator.ChooseAsync(params string![]! items) -> System.Threading.Tasks.Task!
@@ -329,3 +329,6 @@ override Trailblazor.Testing.Playwright.OptionInfo.GetHashCode() -> int
 override Trailblazor.Testing.Playwright.OptionInfo.ToString() -> string!
 static Trailblazor.Testing.Playwright.OptionInfo.operator !=(Trailblazor.Testing.Playwright.OptionInfo? left, Trailblazor.Testing.Playwright.OptionInfo? right) -> bool
 static Trailblazor.Testing.Playwright.OptionInfo.operator ==(Trailblazor.Testing.Playwright.OptionInfo? left, Trailblazor.Testing.Playwright.OptionInfo? right) -> bool
+Trailblazor.Testing.Playwright.TrailblazorPage.Autocomplete(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbAutocompleteLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.NumberField(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbNumberFieldLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.TextField(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbTextFieldLocator!

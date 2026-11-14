@@ -17,6 +17,23 @@ public class ScopedHelpersTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tb_ShouldDriveTheFieldTheLocatorFinds_WhenGivenALocatorInsteadOfALabel(string browser)
+    {
+        var page = await OpenAsync(browser, "/scoped-helpers");
+        var texts = await OpenAsync(browser, "/examples/text-field");
+        var towns = await OpenAsync(browser, "/examples/autocomplete");
+        var stove = page.GetByRole(AriaRole.Row).Filter(new() { HasText = "Stove" });
+
+        await page.Tb().NumberField(stove.GetByLabel("Count")).EnterAsync("3");
+        await texts.Tb().TextField(texts.GetByLabel("Campsite")).EnterAsync("Pine");
+        await towns.Tb().Autocomplete(towns.GetByLabel("Trailhead")).ChooseAsync("cedar", "Cedar Flats River valley");
+
+        await Expect(page.GetByTestId("counts")).ToHaveTextAsync("0,3");
+        await Expect(texts.GetByLabel("Campsite")).ToHaveValueAsync("Pine");
+        await Expect(towns.GetByText("Starting at:")).ToHaveTextAsync("Starting at: Cedar Flats");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tb_ShouldFindTheFieldInTheRow_WhenAGridRowIsTheScope(string browser)
     {
         var page = await OpenAsync(browser, "/scoped-helpers");

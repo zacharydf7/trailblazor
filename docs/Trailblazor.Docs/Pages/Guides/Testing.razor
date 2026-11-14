@@ -545,8 +545,10 @@
             </table>
         </div>
         <DocsCallout Title="Fields that share a label">
-            A select or color picker that shares its label with others, as in the rows of an editable list, is found by
-            a locator instead, such as <code>page.Tb().Select(row.GetByLabel("Size"))</code>.
+            When a select, color picker, text field, number field or autocomplete shares its label with others, as in
+            the rows of an editable list, pass a locator instead of the label, such as
+            <code>page.Tb().Select(row.GetByLabel("Size"))</code>, or scope the helpers to the row with
+            <code>row.Tb()</code>. In bUnit, <code>cut.Tb().Within(() =&gt; row)</code> scopes them the same way.
         </DocsCallout>
         <TbText>
             Check what a helper's action changes, such as a value shown elsewhere on the page, with Playwright's
