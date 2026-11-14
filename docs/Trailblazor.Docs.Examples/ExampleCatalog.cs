@@ -7661,7 +7661,7 @@ public static class ExampleCatalog
             DataParts =
             [
                 new("accordion", "The accordion itself."),
-                new("item", "One section."),
+                new("item", "One section, with `data-state` set to `opening`, `open`, `closing` or `closed`."),
                 new("header", "A section's header, with its button and actions."),
                 new("heading", "The heading that holds a section's button."),
                 new("trigger", "The button that opens and closes a section."),
@@ -7677,9 +7677,12 @@ public static class ExampleCatalog
                 """,
             TestingTip = "`await page.Tb().AccordionItem(\"Sizing\").ExpandAsync()` from "
                 + "`Trailblazor.Testing.Playwright` opens an item, in an accordion or on its own, once the page is "
-                + "interactive, and hands back its panel. On a static page, click the item's header instead. In "
+                + "interactive, and hands back its panel once it has finished opening; `CollapseAsync` waits until "
+                + "it has finished closing. An item's `data-state` reads `opening` or `closing` while its panel "
+                + "moves, then `open` or `closed`. On a static page, click the item's header instead. In "
                 + "bUnit, `cut.Tb().AccordionItem(\"Sizing\")` from `Trailblazor.Testing` has the same `ExpandAsync` "
-                + "and `CollapseAsync`.",
+                + "and `CollapseAsync`; bUnit runs no script, so an item it opens or closes stays `opening` or "
+                + "`closing`.",
         },
         new("tree-view", "Tree view", ExampleCategory.Navigation,
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "

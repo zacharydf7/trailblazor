@@ -532,6 +532,16 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row">An accordion item opening or closing</th>
+                        <td>
+                            The item's <code>data-state</code> to read <code>open</code> or <code>closed</code>. The
+                            header's <code>aria-expanded</code> changes first, and the item reads <code>opening</code> or
+                            <code>closing</code> while the panel grows or shrinks, so waiting for
+                            <code>aria-expanded</code> ends too soon. <code>ExpandAsync</code> and
+                            <code>CollapseAsync</code> wait for <code>data-state</code>.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row">The result of an action</th>
                         <td>
                             The result itself, asserted with <code>Expect</code>, which retries until it shows, even

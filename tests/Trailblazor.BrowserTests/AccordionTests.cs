@@ -125,6 +125,60 @@ public class AccordionTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AccordionItem_ShouldMarkItselfOpenOnceItsPanelStops_WhenItOpensAndCloses(string browser)
+    {
+        var page = await OpenAsync(browser, "/accordion");
+        var policy = page.Tb().AccordionItem("Return policy");
+        var item = policy.Trigger.Locator("xpath=ancestor::*[@data-part='item'][1]");
+        // Whether the panel is still animating, checked once rather than retried like Expect.
+        const string Moving = "item => item.querySelector(':scope > [data-part=panel]').getAnimations().length > 0";
+
+        var panel = await policy.ExpandAsync();
+        Assert.Equal("open", await item.GetAttributeAsync("data-state"));
+        Assert.False(await item.EvaluateAsync<bool>(Moving));
+        await Expect(panel).ToBeVisibleAsync();
+        await policy.CollapseAsync();
+
+        Assert.Equal("closed", await item.GetAttributeAsync("data-state"));
+        Assert.False(await item.EvaluateAsync<bool>(Moving));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AccordionItem_ShouldMarkItselfOpenOnlyOnceItsLastMoveStops_WhenItIsReversedPartway(string browser)
+    {
+        var page = await OpenAsync(browser, "/accordion");
+        // Slow enough that each click lands before the move it reverses has stopped.
+        await page.AddStyleTagAsync(new() { Content = ":root { --tb-motion-duration-normal: 2s; }" });
+        var policy = page.Tb().AccordionItem("Return policy");
+        var item = policy.Trigger.Locator("xpath=ancestor::*[@data-part='item'][1]");
+        await Expect(policy.Trigger).ToHaveAttributeAsync("data-ready", "");
+
+        // Open, close and open again, each reversing the move before it.
+        for (var click = 0; click < 3; click++)
+        {
+            await policy.Trigger.ClickAsync();
+            await Expect(item).ToHaveAttributeAsync("data-state", click % 2 == 0 ? "opening" : "closing");
+        }
+
+        await Expect(item).ToHaveAttributeAsync("data-state", "open");
+        Assert.False(await item.EvaluateAsync<bool>(
+            "item => item.querySelector(':scope > [data-part=panel]').getAnimations().length > 0"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AccordionItem_ShouldMarkItselfOpenAtOnce_WhenMotionIsReduced(string browser)
+    {
+        var page = await OpenAsync(browser, "/accordion", new() { ReducedMotion = ReducedMotion.Reduce });
+        var item = page.Tb().AccordionItem("Return policy").Trigger.Locator("xpath=ancestor::*[@data-part='item'][1]");
+        // Held, so the fallback timer can't be what marks it open.
+        await HoldTimersAsync(page);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Return policy" }).ClickAsync();
+
+        await Expect(item).ToHaveAttributeAsync("data-state", "open");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task AccordionPanel_ShouldSlideOnlyWhenMotionIsAllowed_WhenAnItemOpens(string browser)
     {
         var moving = await OpenAsync(browser, "/accordion");

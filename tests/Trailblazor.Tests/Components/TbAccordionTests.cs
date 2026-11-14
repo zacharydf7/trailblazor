@@ -76,6 +76,24 @@ public class TbAccordionTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldMarkTheItemOpeningOrClosing_WhenItsHeaderOrItsParentMovesIt()
+    {
+        var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Warranty")
+            .Add(item => item.Expanded, true));
+        var item = cut.Find("[data-part=item]");
+        Assert.Equal("open", item.GetAttribute("data-state"));
+
+        cut.Find("[data-part=trigger]").Click();
+        Assert.Equal("closing", item.GetAttribute("data-state"));
+        cut.Render(parameters => parameters.Add(state => state.Expanded, false));
+        Assert.Equal("closing", item.GetAttribute("data-state"));
+        cut.Render(parameters => parameters.Add(state => state.Expanded, true));
+
+        // accordion.js marks it open or closed once the panel stops, which bUnit has no browser to do.
+        Assert.Equal("opening", item.GetAttribute("data-state"));
+    }
+
+    [Fact]
     public void Render_ShouldKeepAClickedItemOpen_WhenTheParentRendersAgainWithTheOldValue()
     {
         var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Warranty"));

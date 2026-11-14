@@ -1,12 +1,40 @@
-// Focus inside a panel that turns inert would fall to the page, so it moves to the panel's header instead. The JS
-// initializer imports this at startup, since an item on its own has no accordion to load it.
+// Focus inside a panel that turns inert would fall to the page, so it moves to the panel's header instead. An item
+// marked opening or closing is marked open or closed once its panel stops moving. The JS initializer imports this at
+// startup, since an item on its own has no accordion to load it.
 new MutationObserver(records => {
-    for (const { target: panel } of records) {
-        if (panel.inert && panel.matches('.tb-accordion__panel') && panel.contains(document.activeElement)) {
-            document.getElementById(panel.getAttribute('aria-labelledby')).focus();
+    for (const { target, attributeName } of records) {
+        if (attributeName === 'inert' && target.inert && target.matches('.tb-accordion__panel')
+            && target.contains(document.activeElement)) {
+            document.getElementById(target.getAttribute('aria-labelledby')).focus();
+        } else if (attributeName === 'data-state' && target.matches('.tb-accordion__item')) {
+            settleLater(target);
         }
     }
-}).observe(document.documentElement, { attributeFilter: ['inert'], subtree: true });
+}).observe(document.documentElement, { attributeFilter: ['inert', 'data-state'], subtree: true });
+
+const moving = item => item.dataset.state === 'opening' || item.dataset.state === 'closing';
+const settle = item => {
+    if (moving(item)) {
+        item.dataset.state = item.classList.contains('tb-accordion__item--expanded') ? 'open' : 'closed';
+    }
+};
+// The panel's transitions end the move. With none, as under reduced motion, it's over at once; a hidden tab may hold
+// them back, so the wait has a limit. Only an item's latest move settles it, since a reversed one starts its own wait.
+const latestMoves = new WeakMap();
+const settleLater = item => {
+    const move = {};
+    latestMoves.set(item, move);
+    const transitions = item.querySelector(':scope > .tb-accordion__panel').getAnimations();
+    if (!moving(item) || transitions.length === 0) {
+        settle(item);
+        return;
+    }
+
+    const longest = Math.max(...transitions.map(transition => transition.effect.getComputedTiming().endTime));
+    Promise.race([Promise.allSettled(transitions.map(transition => transition.finished)),
+        new Promise(resolve => setTimeout(resolve, longest + 100))])
+        .then(() => latestMoves.get(item) === move && settle(item));
+};
 
 // The accordion or item whose panel holds this item; only an accordion's own items close one another.
 const ownerOf = item => item.parentElement.closest('.tb-accordion, .tb-accordion__item');
@@ -44,6 +72,7 @@ function expand(trigger, open) {
     }
 
     item.classList.toggle('tb-accordion__item--expanded', open);
+    item.dataset.state = open ? 'opening' : 'closing';
     trigger.setAttribute('aria-expanded', open);
     const panel = document.getElementById(trigger.getAttribute('aria-controls'));
     if (open) {

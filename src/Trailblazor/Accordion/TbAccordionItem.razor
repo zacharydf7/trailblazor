@@ -2,7 +2,9 @@
 @inherits TbComponentBase
 @implements IDisposable
 
-<div @attributes="AdditionalAttributes" data-part="item" style="@Style"
+@* data-state shows opening or closing while the panel moves, and accordion.js marks it open or closed once it stops.
+   A render that changes nothing keeps the value, so it doesn't undo the script's. *@
+<div @attributes="AdditionalAttributes" data-part="item" data-state="@_state" style="@Style"
      class="@ClassNames.Join("tb-accordion__item", _expanded ? "tb-accordion__item--expanded" : null, Class)">
     @if (HeaderActions is null)
     {
@@ -34,6 +36,7 @@
 @code {
     private readonly string _id = $"tb-accordion-item-{Guid.NewGuid():N}";
     private bool _expanded;
+    private string _state = "closed";
     private bool? _lastExpanded;
 
     /// <summary>The header's text. <see cref="TitleContent"/> replaces it when set.</summary>
@@ -126,8 +129,18 @@
         // Only a new value from the parent opens or closes the item, so re-rendering with the old one keeps a click.
         if (Expanded != _lastExpanded)
         {
+            // The first value is where the item starts, so it doesn't move.
+            if (_lastExpanded is null)
+            {
+                _expanded = Expanded;
+                _state = Expanded ? "open" : "closed";
+            }
+            else
+            {
+                SetExpanded(Expanded);
+            }
+
             _lastExpanded = Expanded;
-            _expanded = Expanded;
         }
     }
 
@@ -138,18 +151,27 @@
             return;
         }
 
-        _expanded = false;
+        SetExpanded(false);
         StateHasChanged();
         await ExpandedChanged.InvokeAsync(false);
     }
 
     private async Task ToggleAsync()
     {
-        _expanded = !_expanded;
+        SetExpanded(!_expanded);
         await ExpandedChanged.InvokeAsync(_expanded);
         if (_expanded && Accordion is not null)
         {
             await Accordion.ExpandedAsync(this);
+        }
+    }
+
+    private void SetExpanded(bool expanded)
+    {
+        if (expanded != _expanded)
+        {
+            _expanded = expanded;
+            _state = expanded ? "opening" : "closing";
         }
     }
 
