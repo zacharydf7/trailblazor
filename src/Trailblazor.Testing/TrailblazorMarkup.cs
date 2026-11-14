@@ -1123,23 +1123,27 @@ public sealed class TbTreeDriver
             .ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 
-    /// <summary>Drops the row at <paramref name="row"/> just before the row at <paramref name="target"/>, as dragging
-    /// it onto that row's top edge does. Both rows must be showing, and the row must be one the tree lets move.
-    /// </summary>
+    /// <summary>Drops the row at <paramref name="row"/> where dragging it onto the top edge of the row at
+    /// <paramref name="target"/> does: just before it, or where the tree's <c>MovePositions</c> sends that edge. Both
+    /// rows must be showing, and the row must be one the tree lets move.</summary>
     public Task DragBeforeAsync(string[] row, string[] target) => DragAsync(row, target, TreeMovePosition.Before);
 
-    /// <summary>Drops the row at <paramref name="row"/> just after the row at <paramref name="target"/>, as dragging it
-    /// onto that row's bottom edge does, which for an open row means above its first child. Both rows must be
-    /// showing, and the row must be one the tree lets move.</summary>
+    /// <summary>Drops the row at <paramref name="row"/> where dragging it onto the bottom edge of the row at
+    /// <paramref name="target"/> does: just after it, which for an open row means above its first child, or where the
+    /// tree's <c>MovePositions</c> sends that edge. Both rows must be showing, and the row must be one the tree lets
+    /// move.</summary>
     public Task DragAfterAsync(string[] row, string[] target) => DragAsync(row, target, TreeMovePosition.After);
 
-    /// <summary>Drops the row at <paramref name="row"/> inside the row at <paramref name="target"/>, as dragging it
-    /// onto that row's middle does. Both rows must be showing, and the row must be one the tree lets move.</summary>
+    /// <summary>Drops the row at <paramref name="row"/> where dragging it onto the middle of the row at
+    /// <paramref name="target"/> does: inside it, or where the tree's <c>MovePositions</c> sends the middle. Both rows
+    /// must be showing, and the row must be one the tree lets move.</summary>
     public Task DragIntoAsync(string[] row, string[] target) => DragAsync(row, target, TreeMovePosition.Inside);
 
-    // Follows the tree's script: a selected row brings the other selected rows that can move, a drop below an open
-    // row goes above its first child, and a drop on a moving row does nothing. The tree then checks it with CanMove.
-    private async Task DragAsync(string[] row, string[] target, TreeMovePosition position)
+    // Follows the tree's script: a selected row brings the other selected rows that can move, where a drop on a row's
+    // top edge, middle or bottom edge goes depends on the places the tree allows, a drop below an open row goes above
+    // its first child (or into the row when Before isn't allowed), and a drop on a moving row does nothing. The tree
+    // then checks it with CanMove.
+    private async Task DragAsync(string[] row, string[] target, TreeMovePosition gesture)
     {
         var source = Item(row);
         if (!source.HasAttribute("data-draggable"))
@@ -1158,11 +1162,29 @@ public sealed class TbTreeDriver
             return;
         }
 
+        var places = (_find().GetAttribute("data-move-positions") ?? "").Split(' ');
+        var position = PositionAt(gesture switch
+        {
+            TreeMovePosition.Before => 0.1,
+            TreeMovePosition.After => 0.9,
+            _ => 0.5,
+        }, places);
         var next = rows.ElementAtOrDefault(rows.IndexOf(onto) + 1);
         if (position == TreeMovePosition.After && onto.GetAttribute("aria-expanded") == "true" && next is not null
             && Level(next) > Level(onto))
         {
-            (onto, position) = (next, TreeMovePosition.Before);
+            if (places.Contains("before"))
+            {
+                (onto, position) = (next, TreeMovePosition.Before);
+            }
+            else if (places.Contains("inside"))
+            {
+                position = TreeMovePosition.Inside;
+            }
+            else
+            {
+                return;
+            }
         }
 
         if (!moved.Contains(onto))
@@ -1176,6 +1198,24 @@ public sealed class TbTreeDriver
         }
 
         static bool Selected(IElement other) => other.GetAttribute("aria-selected") == "true";
+
+        // As the script splits a row among the allowed places.
+        static TreeMovePosition PositionAt(double at, string[] places)
+        {
+            var edge = places.Contains("inside") ? 0.25 : 0.5;
+            if (places.Contains("before") && at < edge)
+            {
+                return TreeMovePosition.Before;
+            }
+
+            if (places.Contains("after") && at >= 1 - edge)
+            {
+                return TreeMovePosition.After;
+            }
+
+            return places.Contains("inside") ? TreeMovePosition.Inside
+                : places.Contains("before") ? TreeMovePosition.Before : TreeMovePosition.After;
+        }
 
         static int Level(IElement other) => int.Parse(other.GetAttribute("aria-level")!, CultureInfo.InvariantCulture);
     }

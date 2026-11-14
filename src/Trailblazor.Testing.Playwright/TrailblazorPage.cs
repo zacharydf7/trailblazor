@@ -683,15 +683,18 @@ public sealed class TbTreeLocator(ILocator scope, string name)
     }
 
     /// <summary>Drags the row at <paramref name="row"/> onto the top edge of the row at <paramref name="target"/>,
-    /// to move it just before that row. Both rows must be showing, with their parents open.</summary>
+    /// to move it just before that row, or where the tree's <c>MovePositions</c> sends that edge. Both rows must be
+    /// showing, with their parents open.</summary>
     public Task DragBeforeAsync(string[] row, string[] target) => DragAsync(row, target, 0.1f);
 
     /// <summary>Drags the row at <paramref name="row"/> onto the bottom edge of the row at <paramref name="target"/>,
-    /// to move it just after that row. Both rows must be showing, with their parents open.</summary>
+    /// to move it just after that row, or where the tree's <c>MovePositions</c> sends that edge. Both rows must be
+    /// showing, with their parents open.</summary>
     public Task DragAfterAsync(string[] row, string[] target) => DragAsync(row, target, 0.9f);
 
     /// <summary>Drags the row at <paramref name="row"/> onto the middle of the row at <paramref name="target"/>, to
-    /// move it inside that row. Both rows must be showing, with their parents open.</summary>
+    /// move it inside that row, or where the tree's <c>MovePositions</c> sends the middle. Both rows must be showing,
+    /// with their parents open.</summary>
     public Task DragIntoAsync(string[] row, string[] target) => DragAsync(row, target, 0.5f);
 
     // A drag near the window's edge scrolls the page, so the target is brought to the middle first.

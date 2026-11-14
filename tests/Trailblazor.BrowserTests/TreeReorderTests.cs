@@ -20,6 +20,39 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldMoveARowAfterTheBottomHalf_WhenOnlyBeforeAndAfterAreAllowed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view");
+        var tree = page.GetByRole(AriaRole.Tree, new() { Name = "Packing order" });
+        await Expect(tree).ToHaveAttributeAsync("data-ready", "");
+        await tree.EvaluateAsync("tree => tree.scrollIntoView({ block: 'center' })");
+        var from = (await tree.GetByRole(AriaRole.Treeitem, new() { Name = "Map" }).BoundingBoxAsync())!;
+        var to = (await tree.GetByRole(AriaRole.Treeitem, new() { Name = "Tent" }).BoundingBoxAsync())!;
+
+        // Below the middle but well above the bottom edge, which without Inside goes after the row.
+        await page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2 - 8, new() { Steps = 2 });
+        await page.Mouse.MoveAsync(to.X + to.Width / 2, to.Y + to.Height * 0.7f, new() { Steps = 10 });
+        await page.Mouse.UpAsync();
+
+        await Expect(tree.GetByRole(AriaRole.Treeitem)).ToHaveTextAsync(["Tent", "Map", "Stove", "Water"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldFileARowIntoAnotherFromItsEdgeAndSaySo_WhenOnlyInsideIsAllowed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view");
+
+        await page.Tb().Tree("Trail files").DragBeforeAsync(["Maps", "Lake map"], ["Permits"]);
+
+        await Expect(page.GetByRole(AriaRole.Tree, new() { Name = "Trail files" }).GetByRole(AriaRole.Treeitem))
+            .ToHaveTextAsync(["Maps", "Ridge map", "Permits", "Fishing permit", "Lake map"]);
+        await Expect(page.Locator("[data-part=announcer] [role=status] p"))
+            .ToHaveTextAsync("Lake map filed under Permits.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tree_ShouldMoveARowIntoAnother_WhenItIsDraggedOntoTheOthersMiddle(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-view");

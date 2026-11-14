@@ -1,0 +1,18 @@
+@* Rows that only change order: each row's top half goes before it and its bottom half after. *@
+<TbTreeView TItem="string" TKey="string" AriaLabel="Packing order" Items="_items" KeySelector="item => item"
+            ItemText="item => item" MovePositions="TreeMovePositions.Before | TreeMovePositions.After" OnMove="Move" />
+
+@code {
+    private readonly List<string> _items = ["Tent", "Stove", "Map", "Water"];
+
+    private void Move(TreeMove<string> move)
+    {
+        foreach (var item in move.Items)
+        {
+            _items.Remove(item);
+        }
+
+        var at = _items.IndexOf(move.Target) + (move.Position == TreeMovePosition.After ? 1 : 0);
+        _items.InsertRange(at, move.Items);
+    }
+}

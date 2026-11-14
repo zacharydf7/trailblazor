@@ -168,6 +168,122 @@ public class TreeReorderTests : BunitContext
         Assert.Empty(_drops);
     }
 
+    [Theory]
+    [InlineData(TreeMovePositions.Before, "2", "MoveDown", false)]
+    [InlineData(TreeMovePositions.After, "6", "MoveUp", false)]
+    [InlineData(TreeMovePositions.Before | TreeMovePositions.After, "6", "MoveUp", true)]
+    [InlineData(TreeMovePositions.Before | TreeMovePositions.After, "6", "Indent", false)]
+    public async Task Keys_ShouldMoveOnlyToAnAllowedPlace_WhenMovePositionsLimitThem(TreeMovePositions positions,
+        string key, string move, bool moves)
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.InitialExpandDepth, 2)
+            .Add(tree => tree.MovePositions, positions));
+
+        await cut.InvokeAsync(() => Events().OnKey(key, move, false, false));
+
+        Assert.Equal(moves ? 1 : 0, _drops.Count);
+    }
+
+    [Theory]
+    [InlineData(TreeMovePositions.All, "before inside after")]
+    [InlineData(TreeMovePositions.Before | TreeMovePositions.After, "before after")]
+    [InlineData(TreeMovePositions.Before, "before")]
+    [InlineData(TreeMovePositions.Inside, "inside")]
+    public void Render_ShouldTellTheScriptWhereRowsMayGo_WhenMovePositionsAreSet(TreeMovePositions positions,
+        string shared)
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.MovePositions, positions));
+
+        Assert.Equal(shared, cut.Find(".tb-tree").GetAttribute("data-move-positions"));
+    }
+
+    [Fact]
+    public void Render_ShouldLetNoRowBeDragged_WhenMovePositionsAreNone()
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.MovePositions, TreeMovePositions.None));
+
+        Assert.Empty(cut.FindAll("[data-draggable]"));
+    }
+
+    [Theory]
+    [InlineData("MoveUp", "Summit", null)]
+    [InlineData("MoveUp", "Ridge", "Summit")]
+    [InlineData("MoveDown", "South", null)]
+    public async Task Keys_ShouldFileTheRowIntoTheNearestRowThatTakesIt_WhenOnlyInsideIsAllowed(string move,
+        string target, string? refused)
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.InitialExpandDepth, 2)
+            .Add(tree => tree.MovePositions, TreeMovePositions.Inside)
+            .Add(tree => tree.CanMove, (TreeMove<Place> drop) => Task.FromResult(drop.Target.Name == refused
+                ? MoveCheck.Refuse("Not there.") : MoveCheck.Allow)));
+
+        await cut.InvokeAsync(() => Events().OnKey("6", move, false, false));
+
+        var drop = Assert.Single(_drops);
+        Assert.Equal((target, TreeMovePosition.Inside), (drop.Target.Name, drop.Position));
+    }
+
+    [Fact]
+    public async Task Keys_ShouldFileTheRowIntoItsParentsParent_WhenLeftIsPressedAndOnlyInsideIsAllowed()
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.InitialExpandDepth, 2)
+            .Add(tree => tree.MovePositions, TreeMovePositions.Inside));
+
+        await cut.InvokeAsync(() => Events().OnKey("3", "Outdent", false, false));
+
+        Assert.Equal("North", Assert.Single(_drops).Target.Name);
+    }
+
+    [Fact]
+    public async Task Keys_ShouldSayWhyTheNearestRowRefused_WhenNoRowTakesTheRowAndOnlyInsideIsAllowed()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.InitialExpandDepth, 2)
+            .Add(tree => tree.MovePositions, TreeMovePositions.Inside)
+            .Add(tree => tree.CanMove, (TreeMove<Place> drop) => Task.FromResult(
+                MoveCheck.Refuse($"{drop.Target.Name} is full."))));
+
+        await cut.InvokeAsync(() => Events().OnKey("6", "MoveUp", false, false));
+
+        Assert.Empty(_drops);
+        announcer.WaitForAssertion(() => Assert.Equal("Summit is full.",
+            announcer.Find("[role=status] p").TextContent));
+    }
+
+    [Theory]
+    [InlineData(TreeMovePositions.Inside, "Pass", "South", TreeMovePosition.Inside)]
+    [InlineData(TreeMovePositions.After | TreeMovePositions.Inside, "South", "North", TreeMovePosition.Inside)]
+    [InlineData(TreeMovePositions.Before | TreeMovePositions.After, "South", "North", TreeMovePosition.Before)]
+    public async Task DragBeforeOrAfter_ShouldDropWhereTheBrowserWould_WhenMovePositionsLimitThePlaces(
+        TreeMovePositions positions, string row, string target, TreeMovePosition position)
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.InitialExpandDepth, 1)
+            .Add(tree => tree.MovePositions, positions));
+        var tree = cut.Tb().Tree("Places");
+        string[] from = row == "Pass" ? ["North", "Pass"] : [row];
+
+        // The top edge with only Inside, and an open row's bottom edge otherwise.
+        await (positions == TreeMovePositions.Inside ? tree.DragBeforeAsync(from, [target])
+            : tree.DragAfterAsync(from, [target]));
+
+        var drop = Assert.Single(_drops);
+        Assert.Equal(position, drop.Position);
+    }
+
+    [Fact]
+    public async Task Drop_ShouldSayTheAppsWords_WhenTheLabelsGiveAMoveAnnouncement()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.Labels,
+            new TreeViewLabels { MovedInside = "{0} filed under {1}." }));
+
+        await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
+            new TreeDropEventArgs { Rows = ["6"], Target = "4", Position = TreeMovePosition.Inside });
+
+        announcer.WaitForAssertion(() => Assert.Equal("Pass filed under South.",
+            announcer.Find("[role=status] p").TextContent));
+    }
+
     [Fact]
     public async Task Drop_ShouldMoveOnlyTheOutermostRows_WhenARowAndOneInsideItAreBothDragged()
     {

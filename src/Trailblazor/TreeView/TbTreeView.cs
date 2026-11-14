@@ -290,6 +290,17 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public Func<TreeMove<TItem>, Task<MoveCheck>>? CanMove { get; set; }
 
+    /// <summary>Where rows may move to, relative to the row they're dropped on: before it, after it or into it. A
+    /// drag splits each row among the allowed places: with Before and After but not
+    /// <see cref="TreeMovePositions.Inside"/>, a drop on a row's top half goes before it and on its bottom half after
+    /// it, and a single allowed place takes the whole row. A move key for a place that isn't allowed does nothing. With
+    /// only Inside, though, Alt+Shift with Up or Down files the row into the nearest showing row that takes it, and
+    /// Alt+Shift+Left files it into its parent's parent. Before and After can still move a row to another parent;
+    /// refuse that with <see cref="CanMove"/> to keep rows where they are. Defaults to
+    /// <see cref="TreeMovePositions.All"/>.</summary>
+    [Parameter]
+    public TreeMovePositions MovePositions { get; set; } = TreeMovePositions.All;
+
     /// <summary>A slot below each row, such as an "insert here" button, which shows while the pointer is on the row's
     /// lower edge or the slot has keyboard focus. Until it shows, it takes the pointer only on that edge, clear of the
     /// rows' content, so a click on a row's text selects the row. Its context says where an item inserted there would
@@ -1216,8 +1227,22 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     private IEnumerable<TreeNode<TItem>> Siblings(TreeNode<TItem> node) => node.Parent?.Children ?? _roots;
 
-    private bool CanDragRow(TreeNode<TItem> node) => OnMove.HasDelegate && HasValue(node) && !Disabled
-        && !IsItemDisabled(node) && CanMoveItem?.Invoke(node.Item) != false;
+    private bool CanDragRow(TreeNode<TItem> node) => OnMove.HasDelegate && MovePositions != TreeMovePositions.None
+        && HasValue(node) && !Disabled && !IsItemDisabled(node) && CanMoveItem?.Invoke(node.Item) != false;
+
+    private bool Allows(TreeMovePosition position) => MovePositions.HasFlag(position switch
+    {
+        TreeMovePosition.Before => TreeMovePositions.Before,
+        TreeMovePosition.After => TreeMovePositions.After,
+        _ => TreeMovePositions.Inside,
+    });
+
+    // The allowed places, which the script splits each row into as drop zones.
+    private string MovePositionsAttribute => string.Join(' ', new[]
+    {
+        Allows(TreeMovePosition.Before) ? "before" : null, Allows(TreeMovePosition.Inside) ? "inside" : null,
+        Allows(TreeMovePosition.After) ? "after" : null,
+    }.OfType<string>());
 
     // A slot below a row inserts as its first child when its children show under it, and otherwise just after it. A
     // row with no value can't be named as the parent, so no slot goes inside one.
@@ -1243,8 +1268,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private async Task<MoveCheck> CheckDropAsync(IReadOnlyList<TreeNode<TItem>> sources, TreeNode<TItem> target,
         TreeMovePosition position)
     {
-        // A row with no value can't be named to the app as the place a move goes.
-        if (sources.Count == 0 || !sources.All(CanDragRow) || !HasValue(target))
+        // A row with no value can't be named to the app as the place a move goes, and a place the tree doesn't allow
+        // is refused without a reason, as there is nothing the user could change.
+        if (sources.Count == 0 || !sources.All(CanDragRow) || !HasValue(target) || !Allows(position))
         {
             return new(false);
         }
@@ -1276,6 +1302,12 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     // parent.
     private async Task MoveByKeyAsync(TreeNode<TItem> node, string key)
     {
+        if (MovePositions == TreeMovePositions.Inside && key != "Indent")
+        {
+            await FileByKeyAsync(node, key);
+            return;
+        }
+
         var siblings = Siblings(node).Where(sibling => Filter is null || _keep.Contains(sibling.Key)).ToList();
         var index = siblings.IndexOf(node);
         var (target, position) = key switch
@@ -1288,6 +1320,37 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         if (target is not null)
         {
             await DropAsync([node], target, position, keepFocus: true);
+        }
+    }
+
+    // A tree whose rows only go into others files a row into the nearest showing row that takes it (Up, Down) or into
+    // its parent's parent (Left), so the keys reach what a drag can; Right files it into the row above as usual.
+    private async Task FileByKeyAsync(TreeNode<TItem> node, string key)
+    {
+        var shown = _rows.Where(row => row.IsItem).Select(row => row.Node).ToList();
+        var at = shown.IndexOf(node);
+        IEnumerable<TreeNode<TItem>> targets = key switch
+        {
+            "MoveUp" => shown.Take(at).Reverse().Where(row => row != node.Parent),
+            "MoveDown" => shown.Skip(at + 1).Where(row => !row.Ancestors().Contains(node)),
+            _ => node.Parent?.Parent is { } grandparent ? [grandparent] : [],
+        };
+        string? refusal = null;
+        foreach (var target in targets)
+        {
+            var check = await CheckDropAsync([node], target, TreeMovePosition.Inside);
+            if (check.Allowed)
+            {
+                await DropAsync([node], target, TreeMovePosition.Inside, keepFocus: true);
+                return;
+            }
+
+            refusal ??= check.Reason;
+        }
+
+        if (refusal is not null)
+        {
+            Announcer.Polite(refusal);
         }
     }
 
@@ -1311,9 +1374,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
                 sources.Count);
         var said = position switch
         {
-            TreeMovePosition.Before => TbStrings.TreeViewMovedBefore,
-            TreeMovePosition.After => TbStrings.TreeViewMovedAfter,
-            _ => TbStrings.TreeViewMovedInside,
+            TreeMovePosition.Before => Labels.MovedBefore ?? Localizer[TbStrings.TreeViewMovedBefore],
+            TreeMovePosition.After => Labels.MovedAfter ?? Localizer[TbStrings.TreeViewMovedAfter],
+            _ => Labels.MovedInside ?? Localizer[TbStrings.TreeViewMovedInside],
         };
         Telemetry.Used(TelemetryName, "move");
         await OnMove.InvokeAsync(new([.. sources.Select(source => source.Item)], target.Item, position));
@@ -1321,7 +1384,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         _rowVersion++;
         Rebuild();
         StateHasChanged();
-        Announcer.Polite(string.Format(CultureInfo.CurrentCulture, Localizer[said], moved, TextOf(target)));
+        Announcer.Polite(string.Format(CultureInfo.CurrentCulture, said, moved, TextOf(target)));
         if (position == TreeMovePosition.Inside)
         {
             await ExpandAsync((TKey)target.Key);

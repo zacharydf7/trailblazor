@@ -7766,6 +7766,17 @@ public static class ExampleCatalog
                     + "add a row. It shows when the pointer reaches that edge or the content has keyboard focus, and "
                     + "on a touch screen for the focused row.",
                     typeof(TreeViewMoveExample)),
+                new("reorder-only", "No drops into a row", "`MovePositions` sets where rows may go. With "
+                    + "`TreeMovePositions.Before | TreeMovePositions.After`, a drop on a row's top half goes before it "
+                    + "and on its bottom half after it. Alt+Shift+Right, which would move a row into the one above, "
+                    + "does nothing. In a nested tree, rows can still move to another parent; refuse that with "
+                    + "`CanMove` to keep them where they are.",
+                    typeof(TreeViewReorderExample)),
+                new("file-into", "Drop onto a row", "With `TreeMovePositions.Inside`, a drop anywhere on a row files "
+                    + "what moved under it. Alt+Shift with Up or Down files the row into the nearest row above or "
+                    + "below that takes it, with Right into the row above, and with Left into its parent's parent. "
+                    + "`Labels` changes what is read out after a move, here with `MovedInside`.",
+                    typeof(TreeViewFileIntoExample)),
                 new("many-rows", "Many rows", "With `Virtualize`, only the rows in view render, so ten thousand rows "
                     + "scroll smoothly. Every row is `ItemSize` pixels tall, and the rows scroll in a tree given a "
                     + "height or in the page's own scroll. Here `SelectionFollowsFocus`, which applies to single "
@@ -7814,6 +7825,15 @@ public static class ExampleCatalog
                 new(["Alt+Shift+Up", "Alt+Shift+Down"], "Moves the row past its neighbor.") { When = "Moving rows" },
                 new(["Alt+Shift+Right"], "Moves the row into the row above.") { When = "Moving rows" },
                 new(["Alt+Shift+Left"], "Moves the row out of its parent.") { When = "Moving rows" },
+                new(["Alt+Shift+Up", "Alt+Shift+Down"],
+                    "Files the row into the nearest row above or below that takes it.")
+                {
+                    When = "Moving rows, with only Inside allowed",
+                },
+                new(["Alt+Shift+Left"], "Files the row into its parent's parent.")
+                {
+                    When = "Moving rows, with only Inside allowed",
+                },
                 new(["Escape"], "Cancels a drag.") { When = "Moving rows" },
             ],
             Labeling =
@@ -7826,7 +7846,11 @@ public static class ExampleCatalog
             Announcements =
             [
                 "A load that fails is read out.",
-                "A move is read out, such as \"Lake camp moved before Pine Hollow.\"",
+                "A move is read out, such as \"Lake camp moved before Pine Hollow.\" `Labels` changes the words with "
+                    + "`MovedBefore`, `MovedAfter` and `MovedInside`, so they can say what the app's move does.",
+                "A move key for a place `MovePositions` doesn't allow does nothing, and nothing is read out. With "
+                    + "only `TreeMovePositions.Inside`, the reason the nearest row refuses is read out when no row "
+                    + "takes it.",
                 "The reason `CanMove` gives for refusing a place is read out when the move is tried.",
             ],
             Accessibility =

@@ -3308,6 +3308,20 @@ Trailblazor.TreeItemContext<TItem, TKey>.Selected.init -> void
 Trailblazor.TreeItemContext<TItem, TKey>.TreeItemContext(TItem Item, TKey Key, int Level, bool Expanded, bool Selected, bool? Checked, bool HasChildren, bool Loading, bool Matches) -> void
 Trailblazor.TreeViewLabels
 Trailblazor.TreeViewLabels.<Clone>$() -> Trailblazor.TreeViewLabels!
+Trailblazor.TbTreeView<TItem, TKey>.MovePositions.get -> Trailblazor.TreeMovePositions
+Trailblazor.TbTreeView<TItem, TKey>.MovePositions.set -> void
+Trailblazor.TreeMovePositions
+Trailblazor.TreeMovePositions.After = 2 -> Trailblazor.TreeMovePositions
+Trailblazor.TreeMovePositions.All = Trailblazor.TreeMovePositions.Before | Trailblazor.TreeMovePositions.After | Trailblazor.TreeMovePositions.Inside -> Trailblazor.TreeMovePositions
+Trailblazor.TreeMovePositions.Before = 1 -> Trailblazor.TreeMovePositions
+Trailblazor.TreeMovePositions.Inside = 4 -> Trailblazor.TreeMovePositions
+Trailblazor.TreeMovePositions.None = 0 -> Trailblazor.TreeMovePositions
+Trailblazor.TreeViewLabels.MovedAfter.get -> string?
+Trailblazor.TreeViewLabels.MovedAfter.init -> void
+Trailblazor.TreeViewLabels.MovedBefore.get -> string?
+Trailblazor.TreeViewLabels.MovedBefore.init -> void
+Trailblazor.TreeViewLabels.MovedInside.get -> string?
+Trailblazor.TreeViewLabels.MovedInside.init -> void
 Trailblazor.TreeViewLabels.Empty.get -> string?
 Trailblazor.TreeViewLabels.Empty.init -> void
 Trailblazor.TreeViewLabels.Equals(Trailblazor.TreeViewLabels? other) -> bool

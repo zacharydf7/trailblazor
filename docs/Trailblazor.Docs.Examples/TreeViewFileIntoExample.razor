@@ -1,0 +1,31 @@
+@* Rows that only go into others: a drop anywhere on a folder files what moved under it, and says so. *@
+<TbTreeView TItem="Entry" TKey="int" AriaLabel="Trail files" Items="_folders" KeySelector="entry => entry.Id"
+            ChildrenSelector="entry => entry.Children" ItemText="entry => entry.Name" InitialExpandDepth="1"
+            MovePositions="TreeMovePositions.Inside" CanMove="CheckMoveAsync" OnMove="Move"
+            Labels="@(new() { MovedInside = "{0} filed under {1}." })" />
+
+@code {
+    private readonly List<Entry> _folders =
+    [
+        new(1, "Maps", [new(2, "Ridge map"), new(3, "Lake map")]),
+        new(4, "Permits", [new(5, "Fishing permit")]),
+    ];
+
+    // A folder holds files; a file holds nothing.
+    private sealed record Entry(int Id, string Name, List<Entry>? Children = null);
+
+    private static Task<MoveCheck> CheckMoveAsync(TreeMove<Entry> move) => Task.FromResult(
+        move.Target.Children is null ? MoveCheck.Refuse("Only a folder holds files.")
+            : move.Items.Any(entry => entry.Children is not null) ? MoveCheck.Refuse("A folder stays where it is.")
+            : MoveCheck.Allow);
+
+    private void Move(TreeMove<Entry> move)
+    {
+        foreach (var entry in move.Items)
+        {
+            _folders.First(folder => folder.Children!.Contains(entry)).Children!.Remove(entry);
+        }
+
+        move.Target.Children!.AddRange(move.Items);
+    }
+}

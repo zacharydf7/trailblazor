@@ -345,6 +345,22 @@ export function createTreeView(tree, events) {
         }
     };
     const selected = row => row.getAttribute('aria-selected') === 'true';
+    // The places the app allows share the row: its edges go before and after it, and the rest into it. Without Inside
+    // the halves go before and after, and a single place takes the whole row.
+    const allowed = () => (tree.dataset.movePositions ?? '').split(' ');
+    const positionAt = at => {
+        const places = allowed();
+        const edge = places.includes('inside') ? 0.25 : 0.5;
+        if (places.includes('before') && at < edge) {
+            return 'Before';
+        }
+
+        if (places.includes('after') && at >= 1 - edge) {
+            return 'After';
+        }
+
+        return places.includes('inside') ? 'Inside' : places.includes('before') ? 'Before' : 'After';
+    };
     const pointerDrag = createPointerDrag(tree, {
         itemSelector: '[role="treeitem"][data-draggable]',
         ownsPress: owns,
@@ -366,15 +382,23 @@ export function createTreeView(tree, events) {
             }
 
             const box = row.getBoundingClientRect();
-            const at = (event.clientY - box.top) / box.height;
-            let position = at < 0.25 ? 'Before' : at > 0.75 ? 'After' : 'Inside';
-            // Below an open row is above its first child, so that is where the drop goes.
+            let position = positionAt((event.clientY - box.top) / box.height);
+            // Below an open row is above its first child, so the drop goes there, or into the row when Before isn't
+            // allowed. An After drop there would land below all of its children, away from the line, so with only
+            // After there is no drop.
             const list = rows();
             const next = list[list.indexOf(row) + 1];
             if (position === 'After' && row.getAttribute('aria-expanded') === 'true' && next
                 && level(next) > level(row)) {
-                row = next;
-                position = 'Before';
+                if (allowed().includes('before')) {
+                    row = next;
+                    position = 'Before';
+                } else if (allowed().includes('inside')) {
+                    position = 'Inside';
+                } else {
+                    clearDrop();
+                    return;
+                }
             }
 
             if (sources.includes(row)) {
