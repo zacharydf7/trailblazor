@@ -15,14 +15,24 @@ public sealed class TbCommandPaletteLocator(ILocator scope, string? name)
     private ILocator Listbox => name is null ? Scope.Document(scope).Locator(".tb-command-palette__listbox")
         : Scope.Document(scope).GetByRole(AriaRole.Listbox, new() { Name = name, Exact = true });
 
+    /// <summary>Whether the palette is open.</summary>
+    public Task<bool> IsOpenAsync() => Search.IsVisibleAsync();
+
     /// <summary>Presses the palette's shortcut, such as Ctrl+K, and waits until its search box has focus and its keys
-    /// work. Throws for a palette with no shortcut; click the app's own button instead.</summary>
+    /// work. For an open palette it only waits for the keys, since pressing the shortcut again would close it. Throws
+    /// for a palette with no shortcut; click the app's own button instead.</summary>
     public async Task OpenAsync()
     {
         if (await Marker.GetAttributeAsync("data-shortcut") is null)
         {
             throw new InvalidOperationException(
                 "This command palette has no shortcut; open it with the app's own button.");
+        }
+
+        if (await IsOpenAsync())
+        {
+            await Assertions.Expect(Search).ToHaveAttributeAsync("data-ready", "");
+            return;
         }
 
         // The app can change the shortcut as the page turns interactive, so it's read again once a listener is ready,

@@ -9,7 +9,8 @@
 @* The palette shows nothing until it opens, so this marks where it is and the shortcut that opens it. The script sets
    data-ready here to the shortcut once it works, and data-commits counts the choices the app has handled, which tests
    wait for. *@
-<span @ref="_marker" hidden data-command-palette="@LabelText" data-shortcut="@Shortcut" data-commits="@_chosen"></span>
+<span @ref="_marker" hidden data-command-palette="@LabelText" data-shortcut="@Shortcut" data-commits="@_chosen"
+      @ontbhotkey="OnShortcutAsync" @ontbhotkey:stopPropagation></span>
 
 @code {
     // The search box and its list, whose arrow-key and Enter handling comes from the component that holds them.

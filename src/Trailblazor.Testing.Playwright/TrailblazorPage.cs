@@ -27,6 +27,13 @@ internal static class Scope
     // announcer, can be outside a scope, so they're found in the scope's document.
     public static ILocator Document(ILocator scope) => scope.Locator("xpath=ancestor-or-self::html").First;
 
+    // With no name, any element with the role, so a scope with one component finds it without naming it.
+    public static ILocator ByRole(ILocator scope, AriaRole role, string? name) =>
+        name is null ? scope.GetByRole(role) : scope.GetByRole(role, new() { Name = name, Exact = true });
+
+    // A component's name for a message, or nothing for one found without a name.
+    public static string Called(string? name) => name is null ? "" : $" \"{name}\"";
+
     // A trigger that waits for its first use, such as a move handle's menu, is marked once interactive and starts its
     // script on focus; blurring first makes sure a trigger that already has focus fires a focus event.
     public static async Task ReadyAsync(ILocator scope, ILocator trigger)
@@ -88,11 +95,13 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbSplitter</c> separator with this name, such as "Resize Trails".</summary>
     public TbSplitterLocator Splitter(string separator) => new(scope, separator);
 
-    /// <summary>The <c>TbQueryBuilder</c> with this <c>Label</c>.</summary>
-    public TbQueryBuilderLocator QueryBuilder(string label) => new(scope, label);
+    /// <summary>The <c>TbQueryBuilder</c> with this <c>Label</c>, or the only one in the scope when no label is
+    /// given.</summary>
+    public TbQueryBuilderLocator QueryBuilder(string? label = null) => new(scope, label);
 
-    /// <summary>The <c>TbViewport</c> whose box has this <c>Label</c>.</summary>
-    public TbViewportLocator Viewport(string label) => new(scope, label);
+    /// <summary>The <c>TbViewport</c> whose box has this <c>Label</c>, or the only one in the scope when no label is
+    /// given.</summary>
+    public TbViewportLocator Viewport(string? label = null) => new(scope, label);
 
     /// <summary>The <c>TbSlider</c> with this label.</summary>
     public TbSliderLocator Slider(string label) => new(scope, label);
@@ -112,14 +121,17 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c> with this label.</summary>
     public TbTreeSelectLocator TreeSelect(string label) => new(scope, label);
 
-    /// <summary>The <c>TbTreeView</c> with this accessible name.</summary>
-    public TbTreeLocator Tree(string name) => new(scope, name);
+    /// <summary>The <c>TbTreeView</c> with this accessible name, or the only one in the scope when no name is
+    /// given.</summary>
+    public TbTreeLocator Tree(string? name = null) => new(scope, name);
 
-    /// <summary>The <c>TbPagination</c> with this accessible name.</summary>
-    public TbPaginationLocator Pagination(string name) => new(scope, name);
+    /// <summary>The <c>TbPagination</c> with this accessible name, or the only one in the scope when no name is
+    /// given.</summary>
+    public TbPaginationLocator Pagination(string? name = null) => new(scope, name);
 
-    /// <summary>The <c>TbDataGrid</c> whose table has this accessible name.</summary>
-    public TbGridLocator Grid(string name) => new(scope, name);
+    /// <summary>The <c>TbDataGrid</c> whose table has this accessible name, or the only one in the scope when no name
+    /// is given.</summary>
+    public TbGridLocator Grid(string? name = null) => new(scope, name);
 
     /// <summary>The <c>TbCommandPalette</c> with this label, or the only one in the scope.</summary>
     public TbCommandPaletteLocator CommandPalette(string? name = null) => new(scope, name);
@@ -128,8 +140,8 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <c>"Mod+S"</c>.</summary>
     public TbHotkeyLocator Hotkey(string keys) => new(scope, keys);
 
-    /// <summary>The <c>TbSortable</c> with this label.</summary>
-    public TbSortableLocator Sortable(string name) => new(scope, name);
+    /// <summary>The <c>TbSortable</c> with this label, or the only one in the scope when no label is given.</summary>
+    public TbSortableLocator Sortable(string? name = null) => new(scope, name);
 
     /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
     public TbPopoverLocator Popover(string trigger) => new(scope, trigger);
@@ -145,9 +157,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
     public TbMenuLocator Menu(string trigger) => new(scope, trigger);
 
-    /// <summary>The <c>TbContextMenu</c> that opens on this element, such as <c>page.GetByText("Ridge loop")</c>.
-    /// </summary>
-    public TbContextMenuLocator ContextMenu(ILocator at) => new(scope, at);
+    /// <summary>The <c>TbContextMenu</c> whose menu has this <c>AriaLabel</c>, or the only one in the scope when no
+    /// name is given. It opens on its whole area, or on an element in it picked with <c>On</c>.</summary>
+    public TbContextMenuLocator ContextMenu(string? name = null) => TbContextMenuLocator.Named(scope, name);
 
     /// <summary>The dialog with this title.</summary>
     public TbDialogLocator Dialog(string title) => new(Scope.Document(scope), title);
@@ -316,16 +328,32 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field)
         return shown.Length > 0 ? string.Join(", ", shown) : null;
     }
 
+    /// <summary>The options' names, in order, leaving out a static select's placeholder, the extra option it adds to
+    /// keep a value that matches no option, and the message an empty list shows. An option with content of its own is
+    /// named by its <c>Text</c>. A list of more than 100 options shows only those in view, so for one that long this
+    /// throws.</summary>
+    public async Task<IReadOnlyList<string>> OptionsAsync() =>
+        await (await ListAsync()).EvaluateAsync<string[]>(Choices.OptionNames);
+
     /// <summary>The names of the chosen options, in order. A list of more than 100 options shows only those in view,
     /// so for one that long this throws; read <see cref="TextAsync"/> instead.</summary>
     public async Task<IReadOnlyList<string>> ChosenAsync()
+    {
+        var list = await ListAsync();
+        return await list.EvaluateAsync<bool>("list => list.localName === 'select'")
+            ? await list.Locator(NativeSelect.Chosen).AllInnerTextsAsync()
+            : await list.EvaluateAsync<string[]>(Choices.ChosenNames);
+    }
+
+    // The native select itself, or the listbox an interactive one shows.
+    private async Task<ILocator> ListAsync()
     {
         var control = Control;
         // A prerendered select is replaced by the interactive one, which holds its own list.
         await Assertions.Expect(control).Not.ToHaveAttributeAsync("data-prerender", "");
         if (await control.EvaluateAsync<bool>("control => control.localName === 'select'"))
         {
-            return await control.Locator(NativeSelect.Chosen).AllInnerTextsAsync();
+            return control;
         }
 
         var listbox = await ListboxAsync(control);
@@ -335,7 +363,7 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field)
                 "The list shows only the options in view, so their names can't all be read; read TextAsync instead.");
         }
 
-        return await listbox.EvaluateAsync<string[]>(Choices.ChosenNames);
+        return listbox;
     }
 
     // The list shares the label, so only the combobox, or the native select it replaces, counts as the field.
@@ -454,6 +482,14 @@ public sealed partial class TbColorPickerLocator(ILocator scope, ILocator field)
 public sealed class TbSignaturePadLocator(ILocator root)
 {
     private ILocator Strokes => root.Locator("[data-part=surface] > svg:not([data-part=draft]) > path");
+
+    /// <summary>Whether something is drawn or a name is typed.</summary>
+    public async Task<bool> IsSignedAsync()
+    {
+        var typed = root.Locator("[data-part=typed-name] input");
+        return await Strokes.CountAsync() > 0
+            || (await typed.CountAsync() > 0 && !string.IsNullOrWhiteSpace(await typed.InputValueAsync()));
+    }
 
     /// <summary>Draws a stroke through these points, in the signature's space of 600 by 200, with the mouse, and waits
     /// until the pad has taken it.</summary>
@@ -593,13 +629,23 @@ public sealed class TbDateRangePickerLocator(ILocator scope, string label)
 
 /// <summary>A <c>TbTreeView</c>, found by its accessible name. Rows are named by their path of texts from a root,
 /// such as <c>("North", "Ridge")</c>.</summary>
-public sealed class TbTreeLocator(ILocator scope, string name)
+public sealed class TbTreeLocator(ILocator scope, string? name)
 {
     private int? _depth;
 
     // A tree with no rows is a group, so that it can hold its message.
-    private ILocator Tree => scope.GetByRole(AriaRole.Tree, new() { Name = name, Exact = true })
-        .Or(scope.GetByRole(AriaRole.Group, new() { Name = name, Exact = true }).And(scope.Locator(".tb-tree")));
+    private ILocator Tree => Scope.ByRole(scope, AriaRole.Tree, name).Or(Scope.ByRole(scope, AriaRole.Group, name))
+        .And(scope.Locator(".tb-tree"));
+
+    /// <summary>The texts of the rows that show, in order.</summary>
+    public async Task<IReadOnlyList<string>> TextsAsync()
+    {
+        // Wait for the tree, not a row, since a tree with no rows has none.
+        await Tree.WaitForAsync();
+        await Assertions.Expect(Tree).Not.ToHaveAttributeAsync("aria-busy", "true");
+        return await Tree.EvaluateAsync<string[]>("tree => [...tree.querySelectorAll('[role=treeitem][data-key]')]"
+            + ".filter(row => row.closest('[role=tree]') === tree).map(row => row.dataset.text ?? '')");
+    }
 
     /// <summary>The row at this path, which must be showing. When several rows match, as rows with the same text
     /// do, it is the first.</summary>
@@ -613,7 +659,7 @@ public sealed class TbTreeLocator(ILocator scope, string name)
         if (await Tree.GetAttributeAsync("data-virtual") is not null)
         {
             throw new InvalidOperationException(
-                $"The tree {name} is virtualized, so it can't list every row at a path.");
+                $"The tree{Scope.Called(name)} is virtualized, so it can't list every row at a path.");
         }
 
         var keys = await Tree.EvaluateAsync<string[]>(FindRows, path);
@@ -707,7 +753,8 @@ public sealed class TbTreeLocator(ILocator scope, string name)
         await destination.EvaluateAsync("row => row.scrollIntoView({ block: 'center' })");
         if (!await ShowsAsync(sourceKey))
         {
-            throw new InvalidOperationException($"The tree {name} can't show {string.Join(" > ", row)} and "
+            throw new InvalidOperationException(
+                $"The tree{Scope.Called(name)} can't show {string.Join(" > ", row)} and "
                 + $"{string.Join(" > ", target)} together, so one can't be dragged onto the other.");
         }
 
@@ -863,7 +910,7 @@ public sealed class TbTreeLocator(ILocator scope, string name)
     }
 
     private InvalidOperationException NoRow(string[] path) =>
-        new($"The tree {name} shows no row at {string.Join(" > ", path)}; open the rows above it first.");
+        new($"The tree{Scope.Called(name)} shows no row at {string.Join(" > ", path)}; open the rows above it first.");
 
     // Where a walk through a virtualized tree has reached; Found is the row's key, or empty when there's no such row.
     // Playwright fills in a result's properties, so they are settable.
@@ -911,6 +958,15 @@ public sealed class TbListBoxLocator(ILocator scope, string label)
         {
             await UnchooseAsync([.. chosen]);
         }
+    }
+
+    /// <summary>The options' names, in order, leaving out the message an empty list shows. An option with content of
+    /// its own is named by its <c>Text</c>.</summary>
+    public async Task<IReadOnlyList<string>> OptionsAsync()
+    {
+        // A prerendered list box is replaced by the interactive one.
+        await Assertions.Expect(Field).Not.ToHaveAttributeAsync("data-prerender", "");
+        return await Field.EvaluateAsync<string[]>(Choices.OptionNames);
     }
 
     /// <summary>The names of the chosen options, in order.</summary>
@@ -1000,12 +1056,11 @@ public sealed class TbTransferListLocator(ILocator scope, string label)
 
 /// <summary>A <c>TbDataGrid</c>, found by its table's accessible name. Rows are found by the exact text of one of
 /// their cells, and columns by their header's title.</summary>
-public sealed class TbGridLocator(ILocator scope, string name)
+public sealed class TbGridLocator(ILocator scope, string? name)
 {
     // With cell navigation the table is a grid to assistive technology, and with child rows a tree grid.
-    private ILocator Table => scope.GetByRole(AriaRole.Table, new() { Name = name, Exact = true })
-        .Or(scope.GetByRole(AriaRole.Grid, new() { Name = name, Exact = true }))
-        .Or(scope.GetByRole(AriaRole.Treegrid, new() { Name = name, Exact = true }));
+    private ILocator Table => Scope.ByRole(scope, AriaRole.Table, name).Or(Scope.ByRole(scope, AriaRole.Grid, name))
+        .Or(Scope.ByRole(scope, AriaRole.Treegrid, name)).And(scope.Locator(".tb-data-grid__table"));
 
     private ILocator Root => Table.Locator("xpath=ancestor::*[@data-part='grid'][1]");
 
@@ -1133,6 +1188,15 @@ public sealed class TbGridLocator(ILocator scope, string name)
     public Task MoveRowAsync(string row, int index) => HandleMoves.MoveAsync(Root, Handle(row), () => PlaceAsync(row),
         async () => int.Parse(await Table.GetAttributeAsync("data-count") ?? "0", CultureInfo.InvariantCulture), index,
         row);
+
+    /// <summary>Clicks the cell whose text is exactly this, away from the row's controls: the grid raises
+    /// <c>OnRowClick</c> and, with <c>RowClickSelects</c>, selects the row.</summary>
+    public async Task ClickRowAsync(string cell)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var exactly = new Regex($"^\\s*{Regex.Escape(cell)}\\s*$");
+        await Row(cell).Locator(":scope > td").Filter(new() { HasTextRegex = exactly }).First.ClickAsync();
+    }
 
     /// <summary>Drags the row with a cell whose text is exactly <paramref name="row"/> by its handle onto the top half
     /// of the row with a cell whose text is exactly <paramref name="target"/>, to move it just before that row, and
@@ -1407,9 +1471,13 @@ public sealed class TbGridLocator(ILocator scope, string name)
 }
 
 /// <summary>A <c>TbPagination</c>, found by its accessible name.</summary>
-public sealed class TbPaginationLocator(ILocator scope, string name)
+public sealed class TbPaginationLocator(ILocator scope, string? name)
 {
-    private ILocator Navigation => scope.GetByRole(AriaRole.Navigation, new() { Name = name, Exact = true });
+    private ILocator Navigation => Scope.ByRole(scope, AriaRole.Navigation, name).And(scope.Locator(".tb-pagination"));
+
+    /// <summary>The page shown.</summary>
+    public async Task<int> PageAsync() =>
+        int.Parse((await Navigation.GetAttributeAsync("data-page"))!, CultureInfo.InvariantCulture);
 
     /// <summary>Goes to this page and waits until it is current. A compact pagination gets the number typed into its
     /// box; otherwise the page's button is clicked, after stepping toward it through the shown pages when it isn't
@@ -1423,7 +1491,8 @@ public sealed class TbPaginationLocator(ILocator scope, string name)
         var count = int.Parse((await Navigation.GetAttributeAsync("data-page-count"))!, CultureInfo.InvariantCulture);
         if (number > count)
         {
-            throw new ArgumentOutOfRangeException(nameof(number), number, $"{name} has {count} pages.");
+            throw new ArgumentOutOfRangeException(nameof(number), number,
+                $"The pagination{Scope.Called(name)} has {count} pages.");
         }
 
         var box = Navigation.Locator("[data-part=page-box] input");
@@ -1499,6 +1568,11 @@ internal static class Choices
 
     public const string ChosenNames = "list => [...list.querySelectorAll("
         + "'[role=option][aria-selected=true]:not([data-part=select-all])')].map(" + NameOf + ")";
+
+    // Leaves out the message an empty list shows, and a native select's placeholder and the option that keeps a value
+    // no option has.
+    public const string OptionNames = "list => [...list.querySelectorAll('[role=option]:not([data-part=status]), "
+        + "option:not([value=\"\"]):not([data-unmatched]):not([data-part=status])')].map(" + NameOf + ")";
 }
 
 // What the select and listbox helpers share: a statically rendered field is the browser's own select.

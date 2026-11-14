@@ -4,12 +4,11 @@ using Microsoft.Playwright;
 namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbViewport</c>, found by its box's <c>Label</c>. Each zoom waits until the app has it.</summary>
-public sealed class TbViewportLocator(ILocator scope, string label)
+public sealed class TbViewportLocator(ILocator scope, string? label)
 {
     /// <summary>The box that scrolls the content. Focus it to zoom with the keys: + and - zoom in and out, and 0 shows
     /// the content at 100%.</summary>
-    public ILocator Surface => scope.GetByRole(AriaRole.Region, new() { Name = label, Exact = true })
-        .And(scope.Locator("[data-part=surface]"));
+    public ILocator Surface => Scope.ByRole(scope, AriaRole.Region, label).And(scope.Locator("[data-part=surface]"));
 
     private ILocator Root => Surface.Locator("xpath=parent::*");
 
@@ -23,11 +22,15 @@ public sealed class TbViewportLocator(ILocator scope, string label)
     /// <summary>Clicks the zoom out button. Throws when the zoom is at its smallest.</summary>
     public Task ZoomOutAsync() => ClickAsync("zoom-out");
 
-    /// <summary>Picks Fit width from the zoom menu.</summary>
-    public Task FitWidthAsync() => ChooseAsync("[role=menuitemradio] >> nth=0", "Width");
+    /// <summary>The fit the zoom follows, or <see cref="ViewportFit.None"/>.</summary>
+    public async Task<ViewportFit> FitAsync() => Enum.Parse<ViewportFit>((await Root.GetAttributeAsync("data-fit"))!);
 
-    /// <summary>Picks Fit page from the zoom menu.</summary>
-    public Task FitPageAsync() => ChooseAsync("[role=menuitemradio] >> nth=1", "Page");
+    /// <summary>Picks <see cref="ViewportFit.Width"/> or <see cref="ViewportFit.Page"/> from the zoom menu.</summary>
+    public Task FitAsync(ViewportFit fit)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(fit, ViewportFit.None);
+        return ChooseAsync($"[role=menuitemradio] >> nth={(fit == ViewportFit.Width ? 0 : 1)}", fit.ToString());
+    }
 
     /// <summary>Picks Actual size from the zoom menu, which shows the content at 100%.</summary>
     public async Task ActualSizeAsync()
@@ -42,7 +45,7 @@ public sealed class TbViewportLocator(ILocator scope, string label)
         var button = Root.Locator($"[data-part=controls] [data-part={part}]");
         if (await button.GetAttributeAsync("aria-disabled") == "true")
         {
-            throw new InvalidOperationException($"The viewport \"{label}\" can't zoom any further that way.");
+            throw new InvalidOperationException($"The viewport{Scope.Called(label)} can't zoom any further that way.");
         }
 
         var before = await Root.GetAttributeAsync("data-zoom");

@@ -1705,7 +1705,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private async Task AttachReorderAsync()
     {
         _moveEvents = DotNetObjectReference.Create(new SortableEvents(OnRowDragOverAsync, OnRowDropAsync,
-            OnRowKeyAsync));
+            OnRowKeyAsync) { Name = () => AriaLabel });
         // A grid marked ready before its rows could move isn't ready again until they can.
         if (_handle is not null && !_createdWaitingForReorder)
         {

@@ -9,4 +9,8 @@
     <PackageReference Include="Microsoft.Playwright" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Trailblazor\Trailblazor.csproj" />
+  </ItemGroup>
+
 </Project>

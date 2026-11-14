@@ -26,7 +26,6 @@ public sealed partial class TbCommandPalette<TItem> : TbComponentBase, IAsyncDis
     private IJSObjectReference? _shortcut;
     private string? _attachedShortcut;
     private int _attaches;
-    private DotNetObjectReference<CommandPaletteEvents>? _events;
     private ControlTelemetry? _telemetry;
     private bool _disposed;
 
@@ -202,8 +201,7 @@ public sealed partial class TbCommandPalette<TItem> : TbComponentBase, IAsyncDis
                 return;
             }
 
-            _events ??= DotNetObjectReference.Create(new CommandPaletteEvents(OnShortcutAsync));
-            var handle = await _module.InvokeAsync<IJSObjectReference?>("attachShortcut", _marker, wanted, _events);
+            var handle = await _module.InvokeAsync<IJSObjectReference?>("attachShortcut", _marker, wanted);
             if (handle is not null && (_disposed || attach != _attaches))
             {
                 await handle.DisposeHandleAsync();
@@ -332,8 +330,6 @@ public sealed partial class TbCommandPalette<TItem> : TbComponentBase, IAsyncDis
         {
             await _shortcut.DisposeHandleAsync();
         }
-
-        _events?.Dispose();
     }
 
     private sealed record Result(TItem Item, int[] Places, int Score);

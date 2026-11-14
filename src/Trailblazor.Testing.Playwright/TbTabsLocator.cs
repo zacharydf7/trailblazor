@@ -5,8 +5,18 @@ namespace Trailblazor.Testing.Playwright;
 /// <summary>A <c>TbTabs</c>, found by its accessible name, or the only one in the scope.</summary>
 public sealed class TbTabsLocator(ILocator scope, string? name)
 {
-    private ILocator List => name is null ? scope.GetByRole(AriaRole.Tablist)
-        : scope.GetByRole(AriaRole.Tablist, new() { Name = name, Exact = true });
+    private ILocator List => Scope.ByRole(scope, AriaRole.Tablist, name);
+
+    /// <summary>The tabs' texts, in order.</summary>
+    public async Task<IReadOnlyList<string>> TabsAsync() =>
+        [.. (await List.GetByRole(AriaRole.Tab).AllTextContentsAsync()).Select(text => text.Trim())];
+
+    /// <summary>The selected tab's text.</summary>
+    public async Task<string?> SelectedAsync()
+    {
+        var selected = List.Locator("[role=tab][aria-selected=true]");
+        return await selected.CountAsync() == 0 ? null : (await selected.TextContentAsync())?.Trim();
+    }
 
     /// <summary>Clicks the tab with this name and waits until it is selected.</summary>
     public async Task SelectAsync(string tab)

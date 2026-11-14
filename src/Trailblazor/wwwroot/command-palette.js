@@ -1,5 +1,4 @@
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
-import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { matchesShortcut, parseShortcut } from './shortcuts.js';
 
 // The listener each marker's data-ready belongs to. A replaced listener can be disposed after its replacement attached,
@@ -96,8 +95,8 @@ export function attachPalette(scope) {
     };
 }
 
-// Opens the palette from anywhere on the page, with a shortcut such as "Mod+K".
-export function attachShortcut(marker, shortcut, events) {
+// Opens the palette from anywhere on the page, with a shortcut such as "Mod+K", through the event its marker hears.
+export function attachShortcut(marker, shortcut) {
     if (!marker) {
         return null;
     }
@@ -109,7 +108,7 @@ export function attachShortcut(marker, shortcut, events) {
         }
 
         event.preventDefault();
-        callDotNet(events, 'OnShortcut');
+        marker.dispatchEvent(new CustomEvent('tb-hotkey', { bubbles: true }));
     };
 
     document.addEventListener('keydown', onKeyDown);

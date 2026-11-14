@@ -5,10 +5,9 @@ namespace Trailblazor.Testing.Playwright;
 
 /// <summary>A <c>TbSortable</c>, found by its label. Its items are named by the list's <c>ItemLabel</c>, or by their
 /// text when it has none.</summary>
-public sealed class TbSortableLocator(ILocator scope, string name)
+public sealed class TbSortableLocator(ILocator scope, string? name)
 {
-    private ILocator List => scope.GetByRole(AriaRole.List, new() { Name = name, Exact = true })
-        .And(scope.Locator("[data-sortable]"));
+    private ILocator List => Scope.ByRole(scope, AriaRole.List, name).And(scope.Locator("[data-sortable]"));
 
     private ILocator Items => List.Locator(":scope > [data-part=item]");
 

@@ -35,6 +35,9 @@ public static class TrailblazorBunitExtensions
         context.Services.TryAddScoped(provider => new FakeAnnouncer(provider.GetRequiredService<Announcer>()));
         context.Services.TryAddScoped<IAnnouncer>(provider => provider.GetRequiredService<FakeAnnouncer>());
         context.Services.AddTrailblazor(configure);
+        // The drivers find what a component handed its script, such as a list's drag events, among the recorded JS
+        // interop calls.
+        context.Services.TryAddSingleton(context.JSInterop);
         var modules = context.JSInterop.SetupModule(
             invocation => invocation.Arguments.FirstOrDefault() is string path
                 && (path.StartsWith("./_content/Trailblazor/", StringComparison.Ordinal)

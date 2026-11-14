@@ -72,9 +72,9 @@ public class ContextMenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenReadyAsync(browser);
         var lake = page.GetByRole(AriaRole.Button, new() { Name = "Lake path" });
 
-        await page.Tb().ContextMenu(page.GetByRole(AriaRole.Button, new() { Name = "Ridge loop" }))
+        await page.Tb().ContextMenu().On(page.GetByRole(AriaRole.Button, new() { Name = "Ridge loop" }))
             .ChooseAsync("Rename Ridge loop");
-        await page.Tb().ContextMenu(lake).ChooseAsync("Move to", "Archive");
+        await page.Tb().ContextMenu().On(lake).ChooseAsync("Move to", "Archive");
 
         await Expect(page.GetByTestId("chosen")).ToHaveTextAsync("Archive Lake path");
     }

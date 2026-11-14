@@ -28,7 +28,7 @@ public class QueryBuilderTests(BrowserFixture fixture) : BrowserTest(fixture)
         await search.Condition(1).Select("Field").ChooseAsync("Loop");
         await search.Condition(1).Select("Value").ChooseAsync("Yes");
         await search.AddGroupAsync();
-        await search.JoinAsync("Any of these", 1);
+        await search.JoinAsync(QueryJoin.Or, 1);
         var name = page.GetByRole(AriaRole.Group, new() { Name = "Group 1" })
             .GetByRole(AriaRole.Group, new() { Name = "Condition 1" }).GetByLabel("Value");
         await name.FillAsync("pine");

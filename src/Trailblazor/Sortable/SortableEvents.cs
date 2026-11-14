@@ -10,6 +10,9 @@ internal sealed class SortableEvents(Func<string, string, bool, Task<MoveCheck>>
     Func<string, string, string?, bool, Task<MoveCheck>>? onDragOverList = null,
     Func<string, string, string?, bool, Task>? onDropList = null, Func<string, string, Task>? onListKey = null)
 {
+    // The list's or grid's accessible name, by which the bUnit drivers tell whose drags these are.
+    public Func<string?> Name { get; init; } = () => null;
+
     [JSInvokable]
     public Task<MoveCheck> OnDragOver(string id, string targetId, bool before) => onDragOver(id, targetId, before);
 

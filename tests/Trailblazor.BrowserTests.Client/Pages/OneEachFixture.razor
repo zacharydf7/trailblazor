@@ -1,0 +1,18 @@
+@page "/one-each"
+
+@* One each of pagination, grid and tree, beside look-alikes that aren't Trailblazor's (a site nav, a plain table and a
+   plain ARIA tree), so a helper given no name has to find its own component and skip them. *@
+<nav aria-label="Site"><a href="#top">Home</a></nav>
+<ul role="tree" aria-label="Site map"><li role="treeitem" aria-selected="false">Home</li></ul>
+<TbTreeView TItem="string" TKey="string" AriaLabel="Days" Items="Trails" KeySelector="day => day"
+            ItemText="day => day" />
+<TbPagination AriaLabel="Trail reports" PageCount="5" @bind-Page="_page" />
+<table aria-label="Plain"><tbody><tr><td>Not a grid</td></tr></tbody></table>
+<TbDataGrid TItem="string" Items="Trails" AriaLabel="Trails">
+    <TbColumn TItem="string" Field="trail => trail" Title="Trail" Sortable />
+</TbDataGrid>
+
+@code {
+    private static readonly string[] Trails = ["Ridge loop", "Lake path"];
+    private int _page = 2;
+}

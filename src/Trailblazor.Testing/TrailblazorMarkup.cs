@@ -3,6 +3,8 @@ using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Trailblazor.Internal.Events;
 
 namespace Trailblazor.Testing;
@@ -13,7 +15,43 @@ public static class TrailblazorMarkupExtensions
 {
     /// <summary>The Trailblazor components in this rendered markup.</summary>
     public static TrailblazorMarkup Tb<TComponent>(this IRenderedComponent<TComponent> rendered)
-        where TComponent : IComponent => new(selector => rendered.FindAll(selector));
+        where TComponent : IComponent =>
+        new(selector => rendered.FindAll(selector), new ScriptCalls(rendered.Services, rendered.InvokeAsync));
+}
+
+// Calls the .NET object a component handed its script, as the script would, for what only a script sees, such as
+// where a drag drops.
+internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Task> invoke)
+{
+    // The drag events of the sortable list or grid with this accessible name, among those still in use.
+    public SortableEvents Sortable(string? name)
+    {
+        var js = services.GetService<BunitJSInterop>() ?? throw new InvalidOperationException(
+            "Call AddTrailblazor on the test's BunitContext before rendering.");
+        var events = js.Invocations["attachSortable"]
+            .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<SortableEvents>)
+            .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
+            .Where(handed => handed.Name() == name).Distinct().ToList();
+        return events.Count == 1 ? events[0] : throw new InvalidOperationException(events.Count == 0
+            ? "The component's script hasn't attached, as it does once the component renders interactively."
+            : $"{events.Count} sortable lists or grids are named \"{name}\"; give each its own name to drag in it.");
+    }
+
+    public Task InvokeAsync(Func<Task> work) => invoke(work);
+
+    // A component disposes its reference when it goes, after which reading it throws.
+    private static bool IsLive(DotNetObjectReference<SortableEvents> handed)
+    {
+        try
+        {
+            _ = handed.Value;
+            return true;
+        }
+        catch (ObjectDisposedException)
+        {
+            return false;
+        }
+    }
 }
 
 /// <summary>The Trailblazor components in a rendered component's markup. Each helper finds its component again on every
@@ -21,15 +59,17 @@ public static class TrailblazorMarkupExtensions
 public sealed class TrailblazorMarkup
 {
     private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
 
-    internal TrailblazorMarkup(Func<string, IReadOnlyList<IElement>> findAll) => _findAll = findAll;
+    internal TrailblazorMarkup(Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts) =>
+        (_findAll, _scripts) = (findAll, scripts);
 
     /// <summary>The Trailblazor components inside the element <paramref name="scope"/> finds, such as a grid's row,
     /// so a field that repeats in every row can be told apart:
     /// <c>cut.Tb().Within(() =&gt; cut.Tb().Grid("Orders").Row("Tent")).Select("Size")</c>. The element is found again
     /// each time a helper looks for a component, since one found before a render is stale after it.</summary>
     public TrailblazorMarkup Within(Func<IElement> scope) =>
-        new(selector => scope().QuerySelectorAll(selector).ToList());
+        new(selector => scope().QuerySelectorAll(selector).ToList(), _scripts);
 
     /// <summary>The fields of the <c>TbPropertyGrid</c> with this label, found by their labels as anywhere else:
     /// <c>cut.Tb().PropertyGrid("Trail properties").NumberField("Length (km)")</c>.</summary>
@@ -63,7 +103,7 @@ public sealed class TrailblazorMarkup
             : throw new InvalidOperationException(label is null
                 ? $"Expected one query builder, found {builders.Count}; name the one to use."
                 : $"Expected one query builder labeled \"{label}\", found {builders.Count}.");
-    }, _findAll);
+    }, _findAll, _scripts);
 
     /// <summary>The <c>TbTextField</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbTextFieldDriver TextField(string label) =>
@@ -205,10 +245,10 @@ public sealed class TrailblazorMarkup
             : throw new InvalidOperationException(name is null
                 ? $"Expected one data grid, found {tables.Count}; name the one to use."
                 : $"No data grid is named \"{name}\".");
-    });
+    }, _scripts);
 
     /// <summary>The <c>TbCommandPalette</c> with this label, or the only one in the markup when no label is given.
-    /// Open it as the app does, such as with its button, since the shortcut needs a browser.</summary>
+    /// </summary>
     public TbCommandPaletteDriver CommandPalette(string? name = null) => new(() =>
     {
         var markers = _findAll("[data-command-palette]")
@@ -229,7 +269,7 @@ public sealed class TrailblazorMarkup
             : throw new InvalidOperationException(name is null
                 ? $"Expected one sortable list, found {lists.Count}; name the one to use."
                 : $"No sortable list is named \"{name}\".");
-    });
+    }, _findAll, _scripts);
 
     // A field's label names its control by for or aria-labelledby; a required field's label ends with an asterisk. A
     // field with no label, such as one editing a grid's cell, is named by its aria-label, as Playwright finds it too.
@@ -1233,9 +1273,10 @@ public sealed class TbGridDriver
 {
     private readonly Func<IElement> _find;
     private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
 
-    internal TbGridDriver(Func<string, IReadOnlyList<IElement>> findAll, Func<IElement> find) =>
-        (_findAll, _find) = (findAll, find);
+    internal TbGridDriver(Func<string, IReadOnlyList<IElement>> findAll, Func<IElement> find, ScriptCalls scripts) =>
+        (_findAll, _find, _scripts) = (findAll, find, scripts);
 
     /// <summary>The row with a cell whose text is exactly this.</summary>
     public IElement Row(string cell)
@@ -1372,6 +1413,26 @@ public sealed class TbGridDriver
     private IElement MovableRow(string cell) => Row(cell) is var row && row.HasAttribute("data-index") ? row
         : throw new InvalidOperationException("The grid's rows can't move: it needs an OnRowMove and in-memory Items, "
             + "and mustn't be sorted, filtered or grouped.");
+
+    /// <summary>Drags the row with a cell whose text is exactly <paramref name="row"/> by its handle onto the top half
+    /// of the row with a cell whose text is exactly <paramref name="target"/>, to move it just before that row,
+    /// reporting the drag and the drop as the grid's script would. Both rows must be on the page shown, and the grid
+    /// needs a name no other grid or sortable list shares, by which the drag reaches its script.</summary>
+    public Task DragRowBeforeAsync(string row, string target) => DragRowAsync(row, target, before: true);
+
+    /// <summary>Drags the row with a cell whose text is exactly <paramref name="row"/> by its handle onto the bottom
+    /// half of the row with a cell whose text is exactly <paramref name="target"/>, to move it just after that row,
+    /// reporting the drag and the drop as the grid's script would. Both rows must be on the page shown.</summary>
+    public Task DragRowAfterAsync(string row, string target) => DragRowAsync(row, target, before: false);
+
+    private Task DragRowAsync(string row, string target, bool before)
+    {
+        var (source, onto) = (MovableRow(row), MovableRow(target));
+        HandleMenu.TriggerOf(source.Children.First(cell => cell.ClassList.Contains("tb-data-grid__handle"))
+            .FirstElementChild!, row);
+        return Drag.DropAsync(_scripts, _find().GetAttribute("aria-label"), source, onto, before);
+    }
+
 
     /// <summary>Selects the row with a cell whose text is exactly this, with its checkbox or radio button, unless it
     /// is selected already.</summary>
@@ -1581,6 +1642,21 @@ public sealed class TbCommandPaletteDriver
     /// <summary>Whether the palette is open.</summary>
     public bool IsOpen => SearchBox() is not null;
 
+    /// <summary>Opens the palette as its shortcut, such as Ctrl+K, does. For an open palette it does nothing, since
+    /// pressing the shortcut again would close it. Throws for a palette with no shortcut; click the app's own button
+    /// instead.</summary>
+    public Task OpenAsync()
+    {
+        var marker = _find();
+        if (!marker.HasAttribute("data-shortcut"))
+        {
+            throw new InvalidOperationException(
+                "This command palette has no shortcut; open it with the app's own button.");
+        }
+
+        return IsOpen ? Task.CompletedTask : marker.TriggerEventAsync("ontbhotkey", EventArgs.Empty);
+    }
+
     /// <summary>The names of the commands it shows, in order.</summary>
     public IReadOnlyList<string> Results => [.. Listbox().QuerySelectorAll("[data-part=option]").Select(NameOf)];
 
@@ -1618,12 +1694,16 @@ public sealed class TbCommandPaletteDriver
 }
 
 /// <summary>A <c>TbSortable</c>, found by its label. Its items are named by the list's <c>ItemLabel</c>, or by their
-/// text when it has none.</summary>
+/// text when it has none. Its drags reach the list's script by that label, so they need one no other sortable list or
+/// grid shares.</summary>
 public sealed class TbSortableDriver
 {
     private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
 
-    internal TbSortableDriver(Func<IElement> find) => _find = find;
+    internal TbSortableDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts)
+        => (_find, _findAll, _scripts) = (find, findAll, scripts);
 
     /// <summary>The items' names, in the order they show.</summary>
     public IReadOnlyList<string> Items => [.. ItemElements().Select(NameOf)];
@@ -1650,6 +1730,70 @@ public sealed class TbSortableDriver
         await TbMenuDriver.ClickAsync(trigger, choice);
     }
 
+    /// <summary>Drags the item named <paramref name="item"/> by its handle onto the top half of the item
+    /// <paramref name="target"/>, to move it just before that item, reporting the drag and the drop as the list's
+    /// script would.</summary>
+    public Task DragBeforeAsync(string item, string target) => DragAsync(item, target, before: true);
+
+    /// <summary>Drags the item named <paramref name="item"/> by its handle onto the bottom half of the item
+    /// <paramref name="target"/>, to move it just after that item, reporting the drag and the drop as the list's
+    /// script would.</summary>
+    public Task DragAfterAsync(string item, string target) => DragAsync(item, target, before: false);
+
+    /// <summary>Drags the item named <paramref name="item"/> by its handle into the list labeled
+    /// <paramref name="list"/> in its group, onto the top half of the item <paramref name="before"/> to land just
+    /// before it, or below that list's last item (onto the list itself when it's empty) when
+    /// <paramref name="before"/> is null, reporting the drag and the drop as the lists' script would. Throws when
+    /// either list is disabled, when no other list in its group has that label, or when the item
+    /// <paramref name="before"/> isn't there.</summary>
+    public async Task DragToListAsync(string item, string list, string? before = null)
+    {
+        var source = Item(item);
+        Handle(source, item);
+        var others = _findAll("[data-part=list][data-sortable]")
+            .Where(other => other.GetAttribute("aria-label") == list).ToList();
+        if (others is not [var other])
+        {
+            throw new InvalidOperationException($"Expected one sortable list labeled \"{list}\", but found "
+                + $"{others.Count}.");
+        }
+
+        // Only another list of the item's group takes it.
+        var group = _find().GetAttribute("data-group");
+        if (other.GetAttribute("data-list-id") == _find().GetAttribute("data-list-id") || group is null
+            || other.GetAttribute("data-group") != group)
+        {
+            throw new InvalidOperationException($"\"{item}\" can't move to \"{list}\", which isn't another list of its "
+                + "group.");
+        }
+
+        if (other.ParentElement?.ClassList.Contains("tb-sortable--disabled") == true)
+        {
+            throw new InvalidOperationException($"\"{item}\" can't move to \"{list}\", because that list is disabled.");
+        }
+
+        var targets = new TbSortableDriver(() => other, _findAll, _scripts);
+        var target = before is not null ? targets.Item(before) : targets.ItemElements().LastOrDefault();
+        var (id, listId) = (source.GetAttribute("data-key")!, other.GetAttribute("data-list-id")!);
+        var events = _scripts.Sortable(_find().GetAttribute("aria-label"));
+        await _scripts.InvokeAsync(async () =>
+        {
+            await events.OnDragOverList(id, listId, target?.GetAttribute("data-key"), before is not null);
+            await events.OnDropList(id, listId, target?.GetAttribute("data-key"), before is not null);
+        });
+    }
+
+    private Task DragAsync(string item, string target, bool before)
+    {
+        var (source, onto) = (Item(item), Item(target));
+        Handle(source, item);
+        return Drag.DropAsync(_scripts, _find().GetAttribute("aria-label"), source, onto, before);
+    }
+
+    // Finds the item's handle, and throws when its list is disabled.
+    private static void Handle(IElement item, string name) => HandleMenu.TriggerOf(
+        item.Children.First(child => child.GetAttribute("data-part") == "handle"), name);
+
     private List<IElement> ItemElements() =>
         [.. _find().Children.Where(child => child.GetAttribute("data-part") == "item")];
 
@@ -1661,6 +1805,21 @@ public sealed class TbSortableDriver
         var items = ItemElements().Where(item => NameOf(item) == name).ToList();
         return items.Count == 1 ? items[0]
             : throw new InvalidOperationException($"Expected one item named \"{name}\", found {items.Count}.");
+    }
+}
+
+// A drag by a handle within one list or grid: the script reports the item over the target, then drops it there.
+internal static class Drag
+{
+    public static async Task DropAsync(ScriptCalls scripts, string? list, IElement item, IElement target, bool before)
+    {
+        var events = scripts.Sortable(list);
+        var (id, targetId) = (item.GetAttribute("data-key")!, target.GetAttribute("data-key")!);
+        await scripts.InvokeAsync(async () =>
+        {
+            await events.OnDragOver(id, targetId, before);
+            await events.OnDrop(id, targetId, before);
+        });
     }
 }
 
@@ -1879,14 +2038,15 @@ public sealed class TbQueryBuilderDriver
 {
     private readonly Func<IElement> _find;
     private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
 
-    internal TbQueryBuilderDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
-        (_find, _findAll) = (find, findAll);
+    internal TbQueryBuilderDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll,
+        ScriptCalls scripts) => (_find, _findAll, _scripts) = (find, findAll, scripts);
 
     /// <summary>The fields of a group's condition with this number, found by their labels, Field, Comparison and
     /// Value: <c>Condition(1).Select("Field").ChooseAsync("Region")</c>.</summary>
     public TrailblazorMarkup Condition(int number, params int[] group) =>
-        new TrailblazorMarkup(_findAll).Within(() => ConditionOf(number, group));
+        new TrailblazorMarkup(_findAll, _scripts).Within(() => ConditionOf(number, group));
 
     /// <summary>Clicks the group's Add condition button, which adds a condition on the first field.</summary>
     public Task AddConditionAsync(params int[] group) => Click(GroupOf(group), "group-actions", "add-condition");

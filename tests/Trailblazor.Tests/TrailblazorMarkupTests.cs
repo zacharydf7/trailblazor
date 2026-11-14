@@ -863,6 +863,132 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Sortable_ShouldAskAndMoveTheItemWhereItsDropped_WhenDraggedBeforeOrAfterAnother()
+    {
+        List<string> rules = ["Block spam", "Flag invoices", "Star the team", "Catch-all"];
+        var asked = new List<string>();
+        var cut = RenderSortable(rules, move => move.ApplyTo(rules), move =>
+        {
+            asked.Add(move.Item);
+            return Task.FromResult(MoveCheck.Allow);
+        });
+
+        await cut.Tb().Sortable("Rules").DragBeforeAsync("Catch-all", "Block spam");
+        await cut.Tb().Sortable("Rules").DragAfterAsync("Catch-all", "Star the team");
+
+        // Each drag is asked about as it hovers and again as it drops.
+        Assert.Equal(["Block spam", "Flag invoices", "Star the team", "Catch-all"], rules);
+        Assert.Equal(["Catch-all", "Catch-all", "Catch-all", "Catch-all"], asked);
+    }
+
+    [Fact]
+    public async Task Sortable_ShouldDragInTheListShownNow_WhenAnEarlierListWithItsNameIsGone()
+    {
+        RenderSortable(["Block spam", "Flag invoices"], _ => { });
+        await DisposeComponentsAsync();
+        List<string> rules = ["Block spam", "Flag invoices"];
+
+        var cut = RenderSortable(rules, move => move.ApplyTo(rules));
+        await cut.Tb().Sortable("Rules").DragBeforeAsync("Flag invoices", "Block spam");
+
+        Assert.Equal(["Flag invoices", "Block spam"], rules);
+    }
+
+    [Fact]
+    public async Task Sortable_ShouldAskForAnotherName_WhenDraggingInAListWhoseNameAnotherListShares()
+    {
+        var cut = Render(builder =>
+        {
+            foreach (var card in new[] { 0, 10 })
+            {
+                builder.OpenElement(card, "section");
+                builder.OpenComponent<TbSortable<string>>(card + 1);
+                builder.AddComponentParameter(card + 2, nameof(TbSortable<string>.Label), "Tags");
+                builder.AddComponentParameter(card + 3, nameof(TbSortable<string>.Items), new[] { "Lake", "Ridge" });
+                builder.AddComponentParameter(card + 4, nameof(TbSortable<string>.ItemTemplate),
+                    (RenderFragment<string>)(tag => content => content.AddContent(0, tag)));
+                builder.AddComponentParameter(card + 5, nameof(TbSortable<string>.OnMove),
+                    EventCallback.Factory.Create<SortableMove<string>>(this, _ => { }));
+                builder.CloseComponent();
+                builder.CloseElement();
+            }
+        });
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb()
+            .Within(() => cut.FindAll("section")[0]).Sortable("Tags").DragBeforeAsync("Ridge", "Lake"));
+
+        Assert.Contains("give each its own name", failure.Message);
+    }
+
+    [Fact]
+    public async Task Sortable_ShouldThrow_WhenDraggingInADisabledList()
+    {
+        List<string> rules = ["Block spam", "Flag invoices"];
+        var cut = RenderSortable(rules, move => move.ApplyTo(rules));
+        cut.Render(parameters => parameters.Add(sortable => sortable.Disabled, true));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Sortable("Rules").DragBeforeAsync("Flag invoices", "Block spam"));
+
+        Assert.Equal(["Block spam", "Flag invoices"], rules);
+    }
+
+    [Fact]
+    public async Task Sortable_ShouldDropTheItemInAnotherListOrThrow_WhenDraggedToAListOfItsGroup()
+    {
+        List<string> todo = ["Pack food", "Check weather", "Fill water"];
+        List<string> done = ["Book campsite"];
+        var cut = Render(builder =>
+        {
+            Column(builder, 0, "To do", todo);
+            Column(builder, 10, "Done", done);
+        });
+
+        await cut.Tb().Sortable("To do").DragToListAsync("Check weather", "Done");
+        await cut.Tb().Sortable("To do").DragToListAsync("Pack food", "Done", before: "Book campsite");
+
+        Assert.Equal(["Pack food", "Book campsite", "Check weather"], done);
+        Assert.Equal(["Fill water"], todo);
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Sortable("To do").DragToListAsync("Fill water", "Archive"));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Sortable("To do").DragToListAsync("Fill water", "To do"));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Sortable("To do").DragToListAsync("Fill water", "Done", before: "Sleep"));
+
+        void Column(RenderTreeBuilder builder, int sequence, string label, List<string> tasks)
+        {
+            builder.OpenComponent<TbSortable<string>>(sequence);
+            builder.AddComponentParameter(sequence + 1, nameof(TbSortable<string>.Items), tasks);
+            builder.AddComponentParameter(sequence + 2, nameof(TbSortable<string>.Label), label);
+            builder.AddComponentParameter(sequence + 3, nameof(TbSortable<string>.Group), "board");
+            builder.AddComponentParameter(sequence + 4, nameof(TbSortable<string>.ListId), label);
+            builder.AddComponentParameter(sequence + 5, nameof(TbSortable<string>.ItemTemplate),
+                (RenderFragment<string>)(task => content => content.AddContent(0, task)));
+            builder.AddComponentParameter(sequence + 6, nameof(TbSortable<string>.OnMove),
+                EventCallback.Factory.Create<SortableMove<string>>(this, move =>
+                    move.ApplyBetween(move.FromList == "To do" ? todo : done, move.ToList == "To do" ? todo : done)));
+            builder.CloseComponent();
+        }
+    }
+
+    [Fact]
+    public async Task Grid_ShouldMoveARowWhereItsDropped_WhenDraggedBeforeOrAfterAnother()
+    {
+        List<Trail> trails = [new("Pine Hollow"), new("Cedar Flats"), new("Lake camp")];
+        var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
+            .Add(grid => grid.Items, trails)
+            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
+            .Add(grid => grid.ChildContent, NameColumn));
+
+        await cut.Tb().Grid("Trails").DragRowBeforeAsync("Lake camp", "Pine Hollow");
+        Assert.Equal(["Lake camp", "Pine Hollow", "Cedar Flats"], trails.Select(trail => trail.Name));
+        await cut.Tb().Grid("Trails").DragRowAfterAsync("Lake camp", "Cedar Flats");
+
+        Assert.Equal(["Pine Hollow", "Cedar Flats", "Lake camp"], trails.Select(trail => trail.Name));
+    }
+
+    [Fact]
     public async Task Grid_ShouldMoveARowAcrossPages_WhenMovedToAPlaceAmongAllTheRows()
     {
         List<Trail> trails = [new("Pine Hollow"), new("Cedar Flats"), new("Lake camp")];
@@ -1234,6 +1360,19 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task CommandPalette_ShouldOpenAndStayOpen_WhenItsShortcutIsPressed()
+    {
+        var cut = RenderCommandPalette(open: false, _ => { });
+
+        await cut.Tb().CommandPalette().OpenAsync();
+        await cut.Tb().CommandPalette().OpenAsync();
+
+        Assert.True(cut.Tb().CommandPalette().IsOpen);
+        cut.Render(parameters => parameters.Add(palette => palette.Open, false).Add(palette => palette.Shortcut, null));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().CommandPalette().OpenAsync());
+    }
+
+    [Fact]
     public async Task CommandPalette_ShouldThrow_WhenClosedOrTheCommandIsDisabled()
     {
         var cut = RenderCommandPalette(open: false, _ => { });
@@ -1268,6 +1407,14 @@ public class TrailblazorMarkupTests : BunitContext
 
         Assert.Equal("Pine loop", chosen);
     }
+
+    private static RenderFragment NameColumn => builder =>
+    {
+        builder.OpenComponent<TbColumn<Trail>>(0);
+        builder.AddAttribute(1, nameof(TbColumn<Trail>.Field),
+            (System.Linq.Expressions.Expression<Func<Trail, object?>>)(trail => trail.Name));
+        builder.CloseComponent();
+    };
 
     private IRenderedComponent<TbCommandPalette<string>> RenderCommandPalette(bool open, Action<string> chosen) =>
         Render<TbCommandPalette<string>>(parameters => parameters

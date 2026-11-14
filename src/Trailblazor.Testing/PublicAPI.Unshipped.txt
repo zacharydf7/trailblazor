@@ -258,3 +258,9 @@ Trailblazor.Testing.TbSignaturePadDriver.IsSigned.get -> bool
 Trailblazor.Testing.TbSignaturePadDriver.TypeNameAsync(string! name) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbSignaturePadDriver.UndoAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.SignaturePad(string! label) -> Trailblazor.Testing.TbSignaturePadDriver!
+Trailblazor.Testing.TbCommandPaletteDriver.OpenAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.DragRowAfterAsync(string! row, string! target) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbGridDriver.DragRowBeforeAsync(string! row, string! target) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSortableDriver.DragAfterAsync(string! item, string! target) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSortableDriver.DragBeforeAsync(string! item, string! target) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSortableDriver.DragToListAsync(string! item, string! list, string? before = null) -> System.Threading.Tasks.Task!

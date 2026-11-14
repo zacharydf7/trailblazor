@@ -5,10 +5,9 @@ namespace Trailblazor.Testing.Playwright;
 /// <summary>A <c>TbQueryBuilder</c>, found by its <c>Label</c>. A group is named by its path of group numbers from
 /// the outer group, so no numbers is the outer group itself and <c>2, 1</c> is the first group inside the outer
 /// group's second group. Each change waits until the app has drawn it.</summary>
-public sealed class TbQueryBuilderLocator(ILocator scope, string label)
+public sealed class TbQueryBuilderLocator(ILocator scope, string? label)
 {
-    private ILocator Root => scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true })
-        .And(scope.Locator("[data-part=query-builder]"));
+    private ILocator Root => Scope.ByRole(scope, AriaRole.Group, label).And(scope.Locator("[data-part=query-builder]"));
 
     /// <summary>The fields of a group's condition with this number, found by their labels, Field, Comparison and
     /// Value: <c>Condition(1).Select("Field").ChooseAsync("Region")</c>.</summary>
@@ -51,10 +50,13 @@ public sealed class TbQueryBuilderLocator(ILocator scope, string label)
         await Assertions.Expect(siblings).ToHaveCountAsync(count - 1);
     }
 
-    /// <summary>Picks the option of the group's Match list with this name, such as "Any of these".</summary>
-    public Task JoinAsync(string option, params int[] group) =>
-        new TbSelectLocator(scope, GroupOf(group).Locator(":scope > [data-part=group-header] [role=combobox]"))
-            .ChooseAsync(option);
+    /// <summary>Picks whether the group matches items that meet all of its conditions or any of them.</summary>
+    public async Task JoinAsync(QueryJoin join, params int[] group)
+    {
+        var select = new TbSelectLocator(scope,
+            GroupOf(group).Locator(":scope > [data-part=group-header] [role=combobox]"));
+        await select.ChooseAsync((await select.OptionsAsync())[join == QueryJoin.And ? 0 : 1]);
+    }
 
     private ILocator Conditions(int[] group) =>
         GroupOf(group).Locator(":scope > [data-part=conditions] > li > [data-part=condition]");

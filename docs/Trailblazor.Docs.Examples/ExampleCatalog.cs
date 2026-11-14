@@ -2077,7 +2077,7 @@ public static class ExampleCatalog
             TestingTips =
             [
                 "In Playwright, `page.Tb().Viewport(\"Ridge trail map\")` from `Trailblazor.Testing.Playwright` has "
-                    + "`ZoomInAsync`, `ZoomOutAsync`, `FitWidthAsync`, `FitPageAsync` and `ActualSizeAsync`, each "
+                    + "`ZoomInAsync`, `ZoomOutAsync`, `FitAsync(ViewportFit.Page)` and `ActualSizeAsync`, each "
                     + "waiting until the app has the new zoom, which `ZoomAsync()` reads. Its `Surface` is the box to "
                     + "focus for the keys.",
                 "In bUnit, `cut.Tb().Viewport(\"Ridge trail map\")` from `Trailblazor.Testing` clicks the same "
@@ -2695,10 +2695,10 @@ public static class ExampleCatalog
             TestingTip = "The helpers move an item through its handle's menu, straight to either end or a place at "
                 + "a time: "
                 + "`page.Tb().Sortable(\"Trail alerts, first match wins\").MoveAsync(\"Storm warning\", 0)`, or "
-                + "`cut.Tb().Sortable()` in bUnit. In Playwright, `DragBeforeAsync` and `DragAfterAsync` drag it "
-                + "onto another item, and each waits for the app's answer. Between lists, "
-                + "`MoveToListAsync(\"Ridge loop\", \"Planned\")` moves an item through its handle's menu in both "
-                + "libraries, and `DragToListAsync` drags it there in Playwright. The helpers name an item by "
+                + "`cut.Tb().Sortable()` in bUnit. `DragBeforeAsync` and `DragAfterAsync` drag it onto another item, "
+                + "and in Playwright each waits for the app's answer. Between lists, "
+                + "`MoveToListAsync(\"Ridge loop\", \"Planned\")` moves an item through its handle's menu, and "
+                + "`DragToListAsync` drags it there. The helpers name an item by "
                 + "`ItemLabel`, or by its text when the list has none, so give a list whose items hold a field an "
                 + "`ItemLabel`. "
                 + "Without them, press keys on a handle, found as "
@@ -6213,11 +6213,10 @@ public static class ExampleCatalog
                     + "conditions and groups with `AddConditionAsync()` and `AddGroupAsync()`, and "
                     + "`Condition(1).Select(\"Field\").ChooseAsync(\"Region\")` fills one in. A group is named by its path "
                     + "of numbers, so `Condition(2, 1)` is the second condition of the first inner group, and "
-                    + "`JoinAsync(\"Any of these\", 1)` sets that group's join. `RemoveConditionAsync` and "
+                    + "`JoinAsync(QueryJoin.Or, 1)` sets that group's join. `RemoveConditionAsync` and "
                     + "`RemoveGroupAsync` remove them.",
                 "In bUnit, `cut.Tb().QueryBuilder(\"Trail search\")` from `Trailblazor.Testing` has the same methods, "
-                    + "with `JoinAsync(QueryJoin.Or, 1)` taking the join itself, and the bound `Value` holds the query to "
-                    + "assert on.",
+                    + "and the bound `Value` holds the query to assert on.",
                 "To test the filter itself, run `ToExpression<T>()` on a list of your own items; no rendering is "
                     + "needed.",
             ],
@@ -6583,7 +6582,7 @@ public static class ExampleCatalog
                 + "[menu](components/menu). The area gets `data-ready` once the page is interactive and a right-click "
                 + "will open the menu. The menu gets `data-open` in the render that draws its items as it opens, and "
                 + "`data-key` with the key those items were drawn for. "
-                + "`await page.Tb().ContextMenu(page.GetByText(\"Ridge loop\")).ChooseAsync(\"Remove\")` from "
+                + "`await page.Tb().ContextMenu().On(page.GetByText(\"Ridge loop\")).ChooseAsync(\"Remove\")` from "
                 + "`Trailblazor.Testing.Playwright` waits for it, right-clicks the element and clicks the item. In "
                 + "bUnit, `await cut.Tb().ContextMenu().On(\"Ridge loop\").ChooseAsync(\"Remove\")` draws the items for "
                 + "that key and clicks one.",
@@ -6683,11 +6682,11 @@ public static class ExampleCatalog
             ],
             TestingTip = "The helpers open, search and run commands: "
                 + "`page.Tb().CommandPalette().OpenAsync()` presses its shortcut, then `SearchAsync(\"trail\")` and "
-                + "`ChooseAsync(\"New trail\")` wait for the results and for `OnChoose`; in bUnit, open it as the app "
-                + "does and use `cut.Tb().CommandPalette()`. Without the helpers, wait until `[data-command-palette]` has "
-                + "`data-ready` set to its shortcut, such as `Mod+K`, then press `ControlOrMeta+K`, or click the "
-                + "app's own button. Each `option`'s text includes its shortcut's keys, so match its "
-                + "`.tb-command-palette__text > [data-part=label]` for the name alone.",
+                + "`ChooseAsync(\"New trail\")` wait for the results and for `OnChoose`, and "
+                + "`cut.Tb().CommandPalette()` does the same in bUnit. Without the helpers, wait until "
+                + "`[data-command-palette]` has `data-ready` set to its shortcut, such as `Mod+K`, then press "
+                + "`ControlOrMeta+K`, or click the app's own button. Each `option`'s text includes its shortcut's "
+                + "keys, so match its `.tb-command-palette__text > [data-part=label]` for the name alone.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"app-commands\"`, it counts `trailblazor.control.shown` as it "
@@ -8415,7 +8414,7 @@ public static class ExampleCatalog
                 "A row's details button is named for the row: `GetByRole(AriaRole.Button, new() { Name = \"Details "
                     + "for Cedar Flats\" })`. Its `aria-controls` names the `[data-part=detail]` row it opens.",
                 "With `OnRowMove`, `page.Tb().Grid(\"Route stops\").MoveRowAsync(\"Trailhead\", 2)` moves a row "
-                    + "through its handle's menu, straight to either end or a place at a time, and in Playwright "
+                    + "through its handle's menu, straight to either end or a place at a time, and "
                     + "`DragRowBeforeAsync` and `DragRowAfterAsync` drag it onto another row. Rows that can move "
                     + "carry `data-index`, their place among all the rows.",
                 "Without the helpers, wait for the table's `aria-busy` to clear before clicking a row. A row's move "

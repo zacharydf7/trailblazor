@@ -189,9 +189,8 @@ public class CommandPaletteTests(BrowserFixture fixture) : BrowserTest(fixture)
             async () => {
                 const palette = await import('/_content/Trailblazor/command-palette.js');
                 const marker = document.createElement('span');
-                const events = { invokeMethodAsync: () => Promise.resolve() };
-                const old = palette.attachShortcut(marker, 'Alt+Q', events);
-                const replacement = palette.attachShortcut(marker, 'Alt+W', events);
+                const old = palette.attachShortcut(marker, 'Alt+Q');
+                const replacement = palette.attachShortcut(marker, 'Alt+W');
                 old.dispose();
                 const kept = marker.dataset.ready;
                 replacement.dispose();

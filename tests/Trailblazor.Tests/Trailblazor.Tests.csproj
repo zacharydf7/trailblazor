@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\docs\Trailblazor.Docs.Examples\Trailblazor.Docs.Examples.csproj" />
     <ProjectReference Include="..\..\src\Trailblazor.Icons.Material\Trailblazor.Icons.Material.csproj" />
     <ProjectReference Include="..\..\src\Trailblazor.Testing\Trailblazor.Testing.csproj" />
+    <ProjectReference Include="..\..\src\Trailblazor.Testing.Playwright\Trailblazor.Testing.Playwright.csproj" />
     <ProjectReference Include="..\..\tools\Trailblazor.Docs.Markdown\Trailblazor.Docs.Markdown.csproj" />
   </ItemGroup>
 

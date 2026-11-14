@@ -16,6 +16,10 @@ An issue is done when all of these hold:
   stops and writes a hang dump and a `TestResults/*_hang.log` that lists the tests still running.
   `TRAILBLAZOR_RENDER_MODE=webassembly` (or `auto`) runs the test host's pages in that render mode instead of on the
   server; the circuit tests still need the server.
+- An interactive component has a driver in both `Trailblazor.Testing` (bUnit) and `Trailblazor.Testing.Playwright`,
+  with the same names: a bUnit read such as `Text` is `TextAsync()` in Playwright. `DriverParityTests` fails when
+  either package lacks one or their names differ; a component without a driver goes in its exemption list, with the
+  reason.
 - A new component has a behavior checklist in `docs/behavior`, written before it's built, and a change to a component's
   behavior updates its checklist. See [the format](docs/behavior/README.md).
 - The docs site is updated: a new or changed component, parameter or behavior has its page, interactive example, API
