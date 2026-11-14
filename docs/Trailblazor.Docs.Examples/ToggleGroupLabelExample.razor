@@ -1,0 +1,8 @@
+<TbToggleGroup @bind-Value="_elevation" Label="Elevation in" HelperText="Used for every climb on the map.">
+    <TbToggleItem Value="@("Feet")" Text="Feet" />
+    <TbToggleItem Value="@("Meters")" Text="Meters" />
+</TbToggleGroup>
+
+@code {
+    private string? _elevation = "Feet";
+}

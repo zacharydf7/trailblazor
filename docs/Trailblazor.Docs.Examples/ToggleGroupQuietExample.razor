@@ -1,0 +1,9 @@
+<TbMultiToggleGroup @bind-Value="_styles" AriaLabel="Note style" Variant="Variant.Text">
+    <TbToggleItem Value="@("Bold")" Text="Bold" />
+    <TbToggleItem Value="@("Italic")" Text="Italic" />
+    <TbToggleItem Value="@("Underline")" Text="Underline" />
+</TbMultiToggleGroup>
+
+@code {
+    private IReadOnlyList<string> _styles = ["Bold"];
+}

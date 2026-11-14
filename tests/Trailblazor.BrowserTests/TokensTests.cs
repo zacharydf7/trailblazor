@@ -412,6 +412,79 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         });
     }
 
+    [Theory, MemberData(nameof(BrowsersPalettesAndThemes))]
+    public async Task PressedToggle_ShouldStandOutFromThePageAndAHoveredOne_WhenAPaletteAndThemeAreApplied(
+        string browser, string palette, string theme)
+    {
+        var page = await OpenAsync(browser, "/tokens", new() { ReducedMotion = ReducedMotion.Reduce });
+        await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
+        await SetThemeAsync(page, theme);
+        // The default outlined neutral group and the quiet text one, each with a pressed item and one to hover, and a
+        // pressed text toggle on its own.
+        await page.EvaluateAsync("""
+            () => {
+                ['outlined', 'text'].forEach(variant => {
+                    const group = document.createElement('div');
+                    group.className = 'tb-toggle-group';
+                    for (const on of [true, false]) {
+                        const item = group.appendChild(document.createElement('button'));
+                        item.className = `tb-button tb-button--${variant} tb-button--neutral`;
+                        item.setAttribute('aria-pressed', String(on));
+                        item.dataset.testid = `${variant}-${on ? 'on' : 'off'}`;
+                        item.textContent = 'Trails';
+                    }
+                    document.querySelector('main').append(group);
+                });
+                const alone = document.querySelector('main').appendChild(document.createElement('button'));
+                alone.className = 'tb-button tb-button--text tb-button--neutral';
+                alone.setAttribute('aria-pressed', 'true');
+                alone.dataset.testid = 'alone';
+                alone.textContent = 'Pin';
+            }
+            """);
+        var background = await GetLuminanceAsync(page, "--tb-color-background");
+        var failures = new List<string>();
+
+        // The default look meets the 3:1 a control's state needs; the quiet look is a tint, below that by design.
+        foreach (var (variant, minimum) in new[] { ("outlined", 3.0), ("text", 1.25) })
+        {
+            var pressed = await FillLuminanceAsync(page, $"{variant}-on");
+            await page.GetByTestId($"{variant}-off").HoverAsync();
+            var hovered = await FillLuminanceAsync(page, $"{variant}-off");
+            var (onPage, onHover) = (ContrastRatio(pressed, background), ContrastRatio(pressed, hovered));
+            if (onPage < minimum || onHover < minimum)
+            {
+                failures.Add($"{variant}: {onPage:F2} on the page, {onHover:F2} beside a hovered item");
+            }
+        }
+
+        // Out of a group, a text toggle keeps an edge that tells pressed from off.
+        var edge = ContrastRatio(await FillLuminanceAsync(page, "alone", "borderTopColor"), background);
+        if (edge < 3)
+        {
+            failures.Add($"a text toggle on its own: its edge is {edge:F2} on the page");
+        }
+
+        Assert.Empty(failures);
+    }
+
+    // An element's fill painted over the page background, since a translucent fill lets the page show through.
+    private static async Task<double> FillLuminanceAsync(IPage page, string testId,
+        string property = "backgroundColor") =>
+        Luminance(await page.EvaluateAsync<double[]>("""
+            ([testId, property]) => {
+                const probe = document.querySelector('main').appendChild(document.createElement('div'));
+                probe.style.color = 'var(--tb-color-background)';
+                const context = document.createElement('canvas').getContext('2d');
+                context.fillStyle = getComputedStyle(probe).color;
+                probe.remove();
+                context.fillRect(0, 0, 1, 1);
+                context.fillStyle = getComputedStyle(document.querySelector(`[data-testid=${testId}]`))[property];
+                context.fillRect(0, 0, 1, 1);
+                return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3);
+            }
+            """, new[] { testId, property }));
+
     private static double Luminance(double[] channels) =>
         0.2126 * Linear((int)channels[0]) + 0.7152 * Linear((int)channels[1]) + 0.0722 * Linear((int)channels[2]);
 

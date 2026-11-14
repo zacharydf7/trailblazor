@@ -829,7 +829,8 @@
             + "change options by name, and `CheckedAsync()` reads the checked ones."),
         new("Radio group", "Its label", "`RadioGroup(label).ChooseAsync(option)` chooses an option by name, and "
             + "`ChosenAsync()` reads it."),
-        new("Toggle group", "Its `AriaLabel`", "`ToggleGroup(label).ChooseAsync(items)` presses items by name, "
+        new("Toggle group", "Its label, or its `AriaLabel`",
+            "`ToggleGroup(label).ChooseAsync(items)` presses items by name, "
             + "`UnchooseAsync(items)` releases them, and `ChosenAsync()` reads the pressed ones."),
         new("List", "Its `aria-label`", "`List(name).ClickAsync(item)` clicks an item by its text, and "
             + "`ItemsAsync()` reads them."),

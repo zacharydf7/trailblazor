@@ -2156,8 +2156,8 @@
         color: var(--tb-button-text);
     }
 
-    .tb-button--outlined:hover:not(:disabled, [aria-disabled="true"]),
-    .tb-button--text:hover:not(:disabled, [aria-disabled="true"]) {
+    .tb-button--outlined:hover:not(:disabled, [aria-disabled="true"], [aria-pressed="true"]),
+    .tb-button--text:hover:not(:disabled, [aria-disabled="true"], [aria-pressed="true"]) {
         background: var(--tb-button-subtle);
     }
 
@@ -2174,27 +2174,33 @@
         background: color-mix(in oklch, var(--tb-button-subtle), var(--tb-button-text) 18%);
     }
 
-    /* A pressed toggle takes the next stronger fill, so on and off differ in every variant. */
+    /* A pressed toggle takes the solid fill, well past the light fill an off one shows when hovered. */
     .tb-button[aria-pressed="true"] {
-        border-color: var(--tb-button-text);
-        background: var(--tb-button-subtle);
-        color: var(--tb-button-text);
-    }
-
-    /* Hovering an off toggle gives it the pressed fill, so a thicker edge, not a color, tells a pressed one apart. */
-    .tb-button--outlined[aria-pressed="true"] {
-        box-shadow: inset 0 0 0 1px var(--tb-button-text);
-    }
-
-    .tb-button--filled[aria-pressed="true"],
-    .tb-button--soft[aria-pressed="true"] {
         border-color: transparent;
         background: var(--tb-button-fill);
         color: var(--tb-button-on-fill);
     }
 
+    .tb-button[aria-pressed="true"]:hover:not(:disabled, [aria-disabled="true"], .tb-button--text) {
+        background: var(--tb-button-fill-hover);
+    }
+
+    /* A filled button is solid when off too, so an inner ring marks it pressed. */
     .tb-button--filled[aria-pressed="true"] {
         box-shadow: inset 0 0 0 2px var(--tb-button-on-fill);
+    }
+
+    /* A text toggle on its own marks pressed with an edge in its text color, which meets 3:1 where a fill can't. */
+    .tb-button--text[aria-pressed="true"] {
+        border-color: var(--tb-button-text);
+        background: var(--tb-button-subtle);
+        color: var(--tb-button-text);
+    }
+
+    /* The toggle group's quiet look: no edge, and pressing an item gives a tint deeper than its hover. */
+    .tb-toggle-group .tb-button--text[aria-pressed="true"] {
+        border-color: transparent;
+        background: color-mix(in oklch, var(--tb-button-subtle), var(--tb-button-text) 18%);
     }
 
     /* A mixed toggle, on for only part of what it acts on, takes the light fill and a dashed edge in every variant. */
@@ -2435,6 +2441,14 @@
     .tb-button-group,
     .tb-toggle-group {
         display: inline-flex;
+    }
+
+    .tb-toggle-group-field {
+        display: inline-flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        color: var(--tb-color-text);
+        font-size: var(--tb-font-size-sm);
     }
 
     /* A group's items are its buttons, or the menus, popovers and tooltips around them, whose own buttons join. */

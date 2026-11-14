@@ -2,10 +2,35 @@
 @typeparam TValue
 @inherits TbComponentBase
 
-<div @attributes="AdditionalAttributes" @ref="_group" role="group" aria-label="@AriaLabel" style="@Style"
-     data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
-     data-multiple="@(TakesSeveral ? "" : null)" data-clearable="@(LetsGo ? "" : null)"
-     class="@ClassNames.Join("tb-toggle-group", Vertical ? "tb-toggle-group--vertical" : null, Class)">
-    @* Not fixed, so every item re-renders with the group and its pressed state follows the value. *@
-    <CascadingValue Value="(IToggleGroup)this">@ChildContent</CascadingValue>
-</div>
+@if (!Wrapped)
+{
+    @Group(AdditionalAttributes, Style, Class)
+}
+else
+{
+    @* The joined items need the group to hold only them, so the label and helper text sit outside it. *@
+    <div @attributes="AdditionalAttributes" style="@Style" class="@ClassNames.Join("tb-toggle-group-field", Class)">
+        @if (ShownLabel is not null)
+        {
+            <span id="@LabelId" data-part="label" class="tb-field__label">@ShownLabel</span>
+        }
+        @Group(null, null, null)
+        @if (HelperText is not null)
+        {
+            <div id="@HelperId" data-part="helper" class="tb-field__helper">@HelperText</div>
+        }
+    </div>
+}
+
+@code {
+    private RenderFragment Group(IReadOnlyDictionary<string, object>? attributes, string? style, string? @class) =>
+        @<div @attributes="attributes" @ref="_group" role="group" aria-label="@(ShownLabel is null ? AriaLabel : null)"
+              aria-labelledby="@(ShownLabel is null ? null : LabelId)"
+              aria-describedby="@(HelperText is null ? null : HelperId)" style="@style"
+              data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+              data-multiple="@(TakesSeveral ? "" : null)" data-clearable="@(LetsGo ? "" : null)"
+              class="@ClassNames.Join("tb-toggle-group", Vertical ? "tb-toggle-group--vertical" : null, @class)">
+            @* Not fixed, so every item re-renders with the group and its pressed state follows the value. *@
+            <CascadingValue Value="(IToggleGroup)this">@ChildContent</CascadingValue>
+        </div>;
+}

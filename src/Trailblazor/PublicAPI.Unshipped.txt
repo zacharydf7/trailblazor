@@ -5410,3 +5410,7 @@ Trailblazor.TbModelFields<TModel>.OnChange.set -> void
 override Trailblazor.TbNumberField<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 Trailblazor.TbNumberField<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Trailblazor.DialogReference.IsClosing.get -> bool
+Trailblazor.TbToggleGroupBase<TValue>.HelperText.get -> string?
+Trailblazor.TbToggleGroupBase<TValue>.HelperText.set -> void
+Trailblazor.TbToggleGroupBase<TValue>.Label.get -> string?
+Trailblazor.TbToggleGroupBase<TValue>.Label.set -> void

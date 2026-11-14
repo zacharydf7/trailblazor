@@ -14,9 +14,10 @@ public class ToggleItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
         return page;
     }
 
-    // What tells on from off under the pointer, where both have the same fill.
-    private static Task<string> EdgeAsync(ILocator item) =>
-        item.EvaluateAsync<string>("item => getComputedStyle(item).boxShadow");
+    // The item's fill once it has finished fading, which is what tells pressed, hovered and off apart.
+    private static Task<string> FillAsync(ILocator item) => item.EvaluateAsync<string>(
+        "async item => { await Promise.all(item.getAnimations().map(fade => fade.finished)); "
+        + "return getComputedStyle(item).backgroundColor; }");
 
     // The name of the item on top at a point, where two joined items overlap by their border.
     private static Task<string?> NameOnTopAsync(IPage page, double x, double y) => page.EvaluateAsync<string?>(
@@ -26,11 +27,11 @@ public class ToggleItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Item_ShouldLookDifferentFromAPressedOne_WhenItIsHovered(string browser)
     {
         var page = await OpenReadyAsync(browser);
-        var pressed = await EdgeAsync(Item(page, "Layers", "Roads"));
+        var pressed = await FillAsync(Item(page, "Layers", "Roads"));
 
         await Item(page, "Layers", "Rivers").HoverAsync();
 
-        Assert.NotEqual(pressed, await EdgeAsync(Item(page, "Layers", "Rivers")));
+        Assert.NotEqual(pressed, await FillAsync(Item(page, "Layers", "Rivers")));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -39,12 +40,12 @@ public class ToggleItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenReadyAsync(browser);
         var item = Item(page, "Layers", "Roads");
         await item.HoverAsync();
-        var pressed = await EdgeAsync(item);
+        var pressed = await FillAsync(item);
 
         await item.ClickAsync();
         await Expect(item).ToHaveAttributeAsync("aria-pressed", "false");
 
-        Assert.NotEqual(pressed, await EdgeAsync(item));
+        Assert.NotEqual(pressed, await FillAsync(item));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -148,12 +149,12 @@ public class ToggleItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
         var picker = Group(page, "Theme");
         var pressed = picker.Locator("[aria-pressed=true]");
         await Expect(pressed).ToHaveCountAsync(1);
-        var edge = await EdgeAsync(pressed);
+        var fill = await FillAsync(pressed);
         var other = picker.Locator("[aria-pressed=false]").First;
 
         await other.HoverAsync();
 
-        Assert.NotEqual(edge, await EdgeAsync(other));
+        Assert.NotEqual(fill, await FillAsync(other));
         await Expect(page.GetByRole(AriaRole.Tooltip))
             .ToHaveTextAsync((await other.GetAttributeAsync("aria-label"))!);
     }

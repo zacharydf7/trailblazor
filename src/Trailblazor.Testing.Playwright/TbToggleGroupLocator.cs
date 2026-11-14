@@ -2,8 +2,9 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c>, found by its <c>AriaLabel</c>. Its items are
-/// named by their text, or by their <c>AriaLabel</c> when they show only an icon.</summary>
+/// <summary>A <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c>, found by its label, or by its <c>AriaLabel</c>
+/// when it has no label. Its items are named by their text, or by their <c>AriaLabel</c> when they show only an icon.
+/// </summary>
 public sealed class TbToggleGroupLocator(ILocator scope, string label)
 {
     private ILocator Group => scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true })

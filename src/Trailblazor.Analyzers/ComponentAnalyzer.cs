@@ -21,7 +21,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         ("Trailblazor.TbIconButton", ["AriaLabel"]),
         ("Trailblazor.TbChipGroup", ["AriaLabel"]),
         ("Trailblazor.TbToolbar", ["AriaLabel"]),
-        ("Trailblazor.TbToggleGroupBase`1", ["AriaLabel"]),
+        ("Trailblazor.TbToggleGroupBase`1", ["Label", "AriaLabel"]),
         ("Trailblazor.TbProgress", ["Label", "AriaLabel"]),
         ("Trailblazor.TbTab", ["Text", "TextContent"]),
         ("Trailblazor.TbTreeView`2", ["AriaLabel", "aria-labelledby"]),

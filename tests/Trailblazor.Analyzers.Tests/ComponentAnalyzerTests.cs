@@ -79,6 +79,22 @@ public class ComponentAnalyzerTests
     }
 
     [Theory]
+    [InlineData("Label", "")]
+    [InlineData("AriaLabel", "")]
+    [InlineData("", "TbToggleGroup has no accessible name. Set Label or AriaLabel.")]
+    public async Task ComponentAnalyzer_ShouldReportAToggleGroupOnlyWithoutEitherName_WhenGivenOneOrNone(string name,
+        string expected)
+    {
+        var diagnostics = await RunAsync($$"""
+            __builder.OpenComponent<TbToggleGroup<string>>(0);
+            {{(name == "" ? "" : $"__builder.AddComponentParameter(1, \"{name}\", \"Map view\");")}}
+            __builder.CloseComponent();
+            """);
+
+        Assert.Equal(expected == "" ? [] : [expected], diagnostics.Select(diagnostic => diagnostic.GetMessage()));
+    }
+
+    [Theory]
     [InlineData("_compact ? default(Icon) : null")]
     [InlineData("_icon")]
     public async Task ComponentAnalyzer_ShouldTakeEitherName_WhenTheIconMayBeNullAsThePageRuns(string icon)

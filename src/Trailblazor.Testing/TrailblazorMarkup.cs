@@ -161,10 +161,12 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbRadioGroup</c> with this label.</summary>
     public TbRadioGroupDriver RadioGroup(string label) => new(() => Group(label, "fieldset.tb-radio-group"));
 
-    /// <summary>The <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c> with this <c>AriaLabel</c>.</summary>
+    /// <summary>The <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c> with this label, or with this
+    /// <c>AriaLabel</c> when it has no label.</summary>
     public TbToggleGroupDriver ToggleGroup(string label) => new(() =>
-        _findAll(".tb-toggle-group[role=group]").Where(group => group.GetAttribute("aria-label") == label).ToList()
-            is [var group] ? group
+        _findAll(".tb-toggle-group[role=group]").Where(group => (group.GetAttribute("aria-label")
+                ?? _findAll($"[id='{group.GetAttribute("aria-labelledby")}']").SingleOrDefault()?.TextContent.Trim())
+            == label).ToList() is [var group] ? group
             : throw new InvalidOperationException($"Expected one toggle group named \"{label}\"."));
 
     /// <summary>The <c>TbList</c> with this <c>aria-label</c>, or the only one in the markup when no name is given.
@@ -1096,8 +1098,9 @@ public sealed class TbRadioGroupDriver
         .Select(input => (Choices.NameOf(input.ParentElement!.QuerySelector(":scope > [data-part=label]")!), input));
 }
 
-/// <summary>A <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c>, found by its <c>AriaLabel</c>. Its items are
-/// named by their text, or by their <c>AriaLabel</c> when they show only an icon.</summary>
+/// <summary>A <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c>, found by its label, or by its <c>AriaLabel</c>
+/// when it has no label. Its items are named by their text, or by their <c>AriaLabel</c> when they show only an icon.
+/// </summary>
 public sealed class TbToggleGroupDriver
 {
     private readonly Func<IElement> _find;

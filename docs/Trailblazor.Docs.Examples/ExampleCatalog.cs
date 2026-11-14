@@ -1371,6 +1371,9 @@ public static class ExampleCatalog
                     typeof(ToggleGroupExample)),
                 new("any-number", "Pick any number", "`TbMultiToggleGroup` lets any number of items stay pressed, and "
                     + "`Value` holds them.", typeof(ToggleGroupMultipleExample)),
+                new("label", "Label and helper text", "`Label` shows above the items and names the group, so it takes "
+                    + "the place of `AriaLabel`. `HelperText` shows under them, and screen readers read it with the "
+                    + "group.", typeof(ToggleGroupLabelExample)),
                 new("items", "Items", "In either group, an item shows its `Text`, or `ChildContent` for richer content. "
                     + "It can have an `Icon` or be `Disabled`, and one with only an icon needs an `AriaLabel`.",
                     typeof(ToggleGroupItemsExample)),
@@ -1380,11 +1383,15 @@ public static class ExampleCatalog
                     + "between them.", typeof(ToggleGroupVerticalExample)),
                 new("style", "Variant, tone and size", "`Variant`, `Tone` and `Size` apply to every item.",
                     typeof(ToggleGroupStyleExample)),
+                new("quiet", "Quiet look", "`Variant.Text` suits a toolbar of formatting toggles: the items draw no "
+                    + "edge, and a pressed one takes a tint. The tint falls short of the 3:1 contrast the default look "
+                    + "gives a pressed item, so keep the quiet look for toggles whose effect shows on the page.",
+                    typeof(ToggleGroupQuietExample)),
                 new("disabled", "Disabled", "`Disabled` turns the whole group off.", typeof(ToggleGroupDisabledExample)),
             ],
             Api = [typeof(TbToggleGroup<>), typeof(TbMultiToggleGroup<>), typeof(TbToggleItem<>)],
             Anatomy = """
-                <TbToggleGroup AriaLabel="…" @bind-Value="_value">
+                <TbToggleGroup Label="…" HelperText="…" @bind-Value="_value">
                     <TbToggleItem Value="…" Text="…" />
                     <TbToggleItem Value="…" Text="…" />
                 </TbToggleGroup>
@@ -1404,9 +1411,10 @@ public static class ExampleCatalog
             ],
             Labeling =
             [
-                "A `group` named by its required `AriaLabel`. An item with only an icon needs an `AriaLabel` of its "
-                    + "own, which also shows in a tooltip on hover and keyboard focus. A blank label on either throws "
-                    + "when it renders.",
+                "A `group` named by its `Label` through `aria-labelledby`, or by its `AriaLabel` when it has no "
+                    + "label, and described by its `HelperText`. A group with neither name throws when it renders. An "
+                    + "item with only an icon needs an `AriaLabel` of its own, which also shows in a tooltip on hover "
+                    + "and keyboard focus, and a blank one throws.",
             ],
             Announcements =
             [
@@ -1414,11 +1422,15 @@ public static class ExampleCatalog
             ],
             Accessibility =
             [
+                "In the default outlined neutral look, a pressed item takes the solid neutral fill, which stands out "
+                    + "from the page and from a hovered item by at least 3:1 in every palette, light and dark. The "
+                    + "quiet look's tint falls below that.",
                 "In forced-colors mode a pressed item takes the system highlight.",
             ],
             AppDuties =
             [
-                "Give the group an `AriaLabel` that says what people are choosing, such as \"Map view\".",
+                "Give the group a `Label`, or an `AriaLabel` where no label shows, that says what people are "
+                    + "choosing, such as \"Map view\".",
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
@@ -1443,6 +1455,8 @@ public static class ExampleCatalog
             DataParts =
             [
                 new("item", "One toggle button in the group."),
+                new("label", "The `Label`, above the group."),
+                new("helper", "The `HelperText`, under the group."),
             ],
             TestingTip = "Press an item by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Satellite\" })`, "
                 + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Focusing an icon-only item shows "

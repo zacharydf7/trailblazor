@@ -30,6 +30,76 @@ public class TbToggleGroupTests : BunitContext
     }
 
     [Fact]
+    public async Task Render_ShouldNameTheGroupByItsLabelAndDescribeItByItsHelperText_WhenGivenBoth()
+    {
+        var cut = Render<TbToggleGroup<string>>(parameters => parameters.Add(group => group.Label, "Map view")
+            .Add(group => group.HelperText, "Changes the base layer.").Add(group => group.Value, "Trails")
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(view => view.Value, "Trails")
+                .Add(view => view.Text, "Trails"))
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(view => view.Value, "Satellite")
+                .Add(view => view.Text, "Satellite")));
+
+        var group = cut.Find("[role=group]");
+        Assert.Null(group.GetAttribute("aria-label"));
+        Assert.Equal("Map view", cut.Find($"[id='{group.GetAttribute("aria-labelledby")}']").TextContent);
+        Assert.Equal("Changes the base layer.", cut.Find($"[id='{group.GetAttribute("aria-describedby")}']")
+            .TextContent.Trim());
+        await cut.Tb().ToggleGroup("Map view").ChooseAsync("Satellite");
+        Assert.Equal(["Satellite"], cut.Tb().ToggleGroup("Map view").Chosen);
+    }
+
+    [Fact]
+    public void Render_ShouldPutItsAttributesOnTheWrapperAndKeepTheGroupToItsItems_WhenGivenALabel()
+    {
+        var cut = Render<TbToggleGroup<string>>(parameters => parameters.Add(group => group.Label, "Map view")
+            .Add(group => group.Class, "map-views").AddUnmatched("data-testid", "views")
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(view => view.Value, "Trails")
+                .Add(view => view.Text, "Trails")));
+
+        var wrapper = cut.Find("[data-testid=views]");
+        Assert.Equal(["tb-toggle-group-field", "map-views"], wrapper.ClassList);
+        Assert.Equal(["tb-toggle-group"], cut.Find("[role=group]").ClassList);
+        Assert.All(cut.Find("[role=group]").Children, item => Assert.Equal("item", item.GetAttribute("data-part")));
+    }
+
+    [Fact]
+    public void Render_ShouldNameTheGroupByItsAriaLabel_WhenTheLabelIsBlank()
+    {
+        var cut = Render<TbToggleGroup<string>>(parameters => parameters.Add(group => group.Label, " ")
+            .Add(group => group.AriaLabel, "Map view")
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(view => view.Value, "Trails")
+                .Add(view => view.Text, "Trails")));
+
+        var group = cut.Find("[role=group]");
+        Assert.Equal(("Map view", null), (group.GetAttribute("aria-label"), group.GetAttribute("aria-labelledby")));
+        Assert.Empty(cut.FindAll(".tb-toggle-group-field"));
+    }
+
+    [Fact]
+    public void Render_ShouldAttachTheKeysToTheNewGroup_WhenHelperTextComesAndGoes()
+    {
+        var cut = Render<TbToggleGroup<string>>(parameters => parameters.Add(group => group.AriaLabel, "Map view")
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(view => view.Value, "Trails")
+                .Add(view => view.Text, "Trails")));
+
+        cut.Render(parameters => parameters.Add(group => group.HelperText, "Uses more data."));
+        cut.Render(parameters => parameters.Add(group => group.HelperText, "Uses less data."));
+        cut.Render(parameters => parameters.Add(group => group.HelperText, null));
+
+        // One attach on first render, then one each time adding or removing the helper text rebuilds the group;
+        // changing the text alone keeps it.
+        Assert.Equal(3, JSInterop.Invocations["attachToggleGroup"].Count);
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenTheGroupHasNeitherALabelNorAnAriaLabel()
+    {
+        var failure = Assert.Throws<InvalidOperationException>(() => Render<TbToggleGroup<string>>());
+
+        Assert.Equal("A toggle group needs a Label or an AriaLabel.", failure.Message);
+    }
+
+    [Fact]
     public void Click_ShouldPressOnlyTheClickedItem_WhenAnotherItemIsClicked()
     {
         var cut = RenderGroup("Trails");

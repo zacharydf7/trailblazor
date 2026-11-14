@@ -8,12 +8,25 @@ namespace Trailblazor;
 /// <see cref="TbToggleItem{TValue}"/> buttons that is one tab stop, with the arrow keys moving between them.</summary>
 public abstract partial class TbToggleGroupBase<TValue> : TbComponentBase, IToggleGroup, IAsyncDisposable
 {
+    private readonly string _id = $"tb-toggle-group-{Guid.NewGuid():N}";
     private ElementReference _group;
     private IJSObjectReference? _handle;
+    private bool? _attachedWrapped;
+    private int _attaches;
     private bool _disposed;
 
-    /// <summary>The group's accessible name, such as "Text alignment". Required.</summary>
-    [Parameter, EditorRequired]
+    /// <summary>A visible label above the items, which also names the group. A group needs a label or an
+    /// <see cref="AriaLabel"/>.</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>A hint shown under the items and read by screen readers with the group.</summary>
+    [Parameter]
+    public string? HelperText { get; set; }
+
+    /// <summary>The group's accessible name, such as "Text alignment", for a group with no
+    /// <see cref="Label"/>.</summary>
+    [Parameter]
     public string AriaLabel { get; set; } = "";
 
     /// <summary>The <see cref="TbToggleItem{TValue}"/>s.</summary>
@@ -64,33 +77,51 @@ public abstract partial class TbToggleGroupBase<TValue> : TbComponentBase, ITogg
     // The group's value after the user presses this item.
     private protected abstract TValue? Toggle(object? item);
 
+    private string? ShownLabel => string.IsNullOrWhiteSpace(Label) ? null : Label;
+
+    private bool Wrapped => ShownLabel is not null || HelperText is not null;
+
+    private string LabelId => $"{_id}-label";
+
+    private string HelperId => $"{_id}-helper";
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (string.IsNullOrWhiteSpace(AriaLabel))
+        if (ShownLabel is null && string.IsNullOrWhiteSpace(AriaLabel))
         {
-            throw new InvalidOperationException($"A toggle group needs an {nameof(AriaLabel)}.");
+            throw new InvalidOperationException($"A toggle group needs a {nameof(Label)} or an {nameof(AriaLabel)}.");
         }
     }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        // Adding or removing the label or helper text rebuilds the group element, which needs its script again. If
+        // another render rebuilds it while this one awaits JS, only the latest render's handle is kept.
+        if (_attachedWrapped == Wrapped)
         {
             return;
         }
 
+        _attachedWrapped = Wrapped;
+        var attach = ++_attaches;
         try
         {
+            if (_handle is { } previous)
+            {
+                _handle = null;
+                await previous.DisposeHandleAsync();
+            }
+
             var module = await Modules.ImportAsync("./_content/Trailblazor/toggle-group.js");
-            if (_disposed)
+            if (_disposed || attach != _attaches)
             {
                 return;
             }
 
             var handle = await module.InvokeAsync<IJSObjectReference?>("attachToggleGroup", _group);
-            if (handle is not null && _disposed)
+            if (handle is not null && (_disposed || attach != _attaches))
             {
                 await handle.DisposeHandleAsync();
                 return;
