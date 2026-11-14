@@ -721,6 +721,29 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void Loading_ShouldShowTheMessageAndNoBar_WhenThereAreNoRowsYet()
+    {
+        var cut = RenderTrails([], configure: parameters => parameters.Add(grid => grid.Loading, true));
+
+        Assert.Equal("Loading…", cut.Find("[data-part=loading]").TextContent.Trim());
+        Assert.DoesNotContain("tb-data-grid--reloading", cut.Find("[data-part=grid]").ClassList);
+    }
+
+    [Fact]
+    public void Loading_ShouldShowTheBarAndKeepTheRows_WhenRowsReload()
+    {
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.Loading, true));
+
+        Assert.Contains("tb-data-grid--reloading", cut.Find("[data-part=grid]").ClassList);
+        Assert.Equal(Trails.Count, cut.FindAll("[data-part=row]").Count);
+        Assert.Empty(cut.FindAll("[data-part=loading]"));
+        Assert.Equal("true", cut.Find("table").GetAttribute("aria-busy"));
+        cut.Render(parameters => parameters.Add(grid => grid.Loading, false));
+
+        Assert.DoesNotContain("tb-data-grid--reloading", cut.Find("[data-part=grid]").ClassList);
+    }
+
+    [Fact]
     public void DataProvider_ShouldCancelTheLastRequest_WhenANewOneStartsFirst()
     {
         var tokens = new List<CancellationToken>();

@@ -4,7 +4,8 @@
         <TbColumn Field="camp => camp.Sites" />
     </TbDataGrid>
     <TbStack Row>
-        <TbButton Variant="Variant.Outlined" OnClick="LoadAsync">Load the camps</TbButton>
+        <TbButton Variant="Variant.Outlined" OnClick="() => LoadAsync(clear: true)">Load the camps</TbButton>
+        <TbButton Variant="Variant.Outlined" OnClick="() => LoadAsync(clear: false)">Reload them</TbButton>
     </TbStack>
 </TbStack>
 
@@ -13,9 +14,9 @@
     private bool _loading;
 
     // Stands in for reading the camps from somewhere slow.
-    private async Task LoadAsync()
+    private async Task LoadAsync(bool clear)
     {
-        _camps = [];
+        _camps = clear ? [] : _camps;
         _loading = true;
         await Task.Delay(1500);
         _camps = [new(1, "Pine Hollow", 4), new(2, "Eagle Ridge", 2), new(3, "Lake camp", 9)];

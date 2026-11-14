@@ -7,6 +7,7 @@
 <div @attributes="AdditionalAttributes" data-part="grid" data-commits="@_answered" style="@Style"
      class="@ClassNames.Join("tb-data-grid", ClassNames.Modifier("tb-data-grid", Size),
                 Striped ? "tb-data-grid--striped" : null, IsLoading ? "tb-data-grid--loading" : null,
+                IsLoading && !HasNoRows ? "tb-data-grid--reloading" : null,
                 Scrolls ? "tb-data-grid--scrolls" : null, Fill ? "tb-data-grid--fill" : null,
                 Virtualize ? "tb-data-grid--virtual" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>

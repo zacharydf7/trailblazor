@@ -1,0 +1,18 @@
+@page "/grid-reload"
+
+@* Grids whose rows reload in place, one with no height and one whose wide rows scroll both ways under a sticky header. *@
+<TbDataGrid TItem="string" Items="Trails" AriaLabel="Trails" Loading="_loading">
+    <TbColumn TItem="string" Field="trail => trail" Title="Trail" />
+</TbDataGrid>
+<TbDataGrid TItem="string" Items="Trails" AriaLabel="Scrolling trails" Loading="_loading" Height="6rem">
+    <TbColumn TItem="string" Field="trail => trail" Title="Trail" />
+    <TbColumn TItem="string" Title="Notes" Id="notes">
+        <CellTemplate><span style="display: inline-block; inline-size: 2400px">@context</span></CellTemplate>
+    </TbColumn>
+</TbDataGrid>
+<TbButton OnClick="() => _loading = !_loading">Reload</TbButton>
+
+@code {
+    private static readonly string[] Trails = ["Ridge loop", "Lake path", "Pine hollow", "Cedar flats"];
+    private bool _loading;
+}

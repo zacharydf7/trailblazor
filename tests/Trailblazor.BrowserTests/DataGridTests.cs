@@ -346,6 +346,36 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldRunABarUnderItsHeaderWithoutMovingTheRows_WhenRowsReload(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-reload");
+        // Whether the rows' box, which draws the bar, is what's just inside the header's bottom edge at its far end,
+        // and where the first row is, with the scrolling grid's rows scrolled down and sideways.
+        const string Layout = """
+            table => {
+                const box = table.closest('[data-part=scroll]');
+                box.scrollTop = 20;
+                box.scrollLeft = 200;
+                const hit = document.elementFromPoint(box.getBoundingClientRect().left + box.clientWidth - 5,
+                    table.tHead.getBoundingClientRect().bottom - 1);
+                return `${hit === box} ${table.tBodies[0].rows[0].getBoundingClientRect().top}`;
+            }
+            """;
+        var tables = new[] { "Trails", "Scrolling trails" }
+            .Select(name => page.GetByRole(AriaRole.Table, new() { Name = name, Exact = true })).ToArray();
+        var before = await Task.WhenAll(tables.Select(table => table.EvaluateAsync<string>(Layout)));
+        Assert.All(before, at => Assert.StartsWith("false", at));
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Reload" }).ClickAsync();
+
+        foreach (var (table, at) in tables.Zip(before))
+        {
+            await Expect(table).ToHaveAttributeAsync("aria-busy", "true");
+            Assert.Equal(at.Replace("false", "true"), await table.EvaluateAsync<string>(Layout));
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ScrollBox_ShouldNotBeATabStop_WhenItsHeightLeavesTheRowsRoom(string browser)
     {
         var page = await OpenAsync(browser, "/data-grid-scroll");

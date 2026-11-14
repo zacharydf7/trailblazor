@@ -8136,7 +8136,8 @@ public static class ExampleCatalog
                     + "a way to add the first row.",
                     typeof(DataGridEmptyExample)),
                 new("loading", "Loading", "Set `Loading` while the rows for `Items` are on their way. The table is "
-                    + "`aria-busy`, and with no rows yet a message shows. A `DataProvider` does this by itself.",
+                    + "`aria-busy`. With no rows yet a message shows, and when rows are already there a bar runs under "
+                    + "the header while they reload. A `DataProvider` does this by itself.",
                     typeof(DataGridLoadingExample)),
                 new("failed-load", "A failed load", "When a `DataProvider` fails, the grid says so and offers to try "
                     + "again, and `OnLoadFailed` gets the exception. `RefreshAsync` loads again from code.",

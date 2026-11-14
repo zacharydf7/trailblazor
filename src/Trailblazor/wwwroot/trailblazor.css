@@ -7678,6 +7678,52 @@
         opacity: 0.55;
     }
 
+    /* Sticky at the header height the script measures, and its negative margin keeps the table from moving. */
+    .tb-data-grid--reloading > .tb-data-grid__scroll::before {
+        content: "";
+        position: sticky;
+        inset-block-start: calc(var(--tb-data-grid-header-size, 0px) - 0.125rem);
+        inset-inline-start: 0;
+        z-index: 3;
+        display: block;
+        block-size: 0.125rem;
+        margin-block-end: -0.125rem;
+        background: linear-gradient(var(--tb-color-primary-text), var(--tb-color-primary-text)) no-repeat;
+        background-size: 40% 100%;
+        animation: tb-data-grid-reload 1.4s var(--tb-motion-easing-standard) infinite;
+    }
+
+    .tb-data-grid--reloading > .tb-data-grid__scroll:dir(rtl)::before {
+        animation-direction: reverse;
+    }
+
+    /* The segment is 40% of the bar's width, and these positions start and end it just outside the bar. */
+    @keyframes tb-data-grid-reload {
+        from {
+            background-position: -67% 0;
+        }
+
+        to {
+            background-position: 167% 0;
+        }
+    }
+
+    /* A still segment would read as a real value, so reduced motion fills the bar and pulses, as a progress bar does. */
+    @media (prefers-reduced-motion: reduce) {
+        .tb-data-grid--reloading > .tb-data-grid__scroll::before,
+        .tb-data-grid--reloading > .tb-data-grid__scroll:dir(rtl)::before {
+            background-size: 100% 100%;
+            animation: tb-progress-pulse 2s ease-in-out infinite alternate;
+        }
+    }
+
+    @media (forced-colors: active) {
+        .tb-data-grid--reloading > .tb-data-grid__scroll::before {
+            forced-color-adjust: none;
+            background-image: linear-gradient(Highlight, Highlight);
+        }
+    }
+
     .tb-data-grid__pager {
         display: flex;
         flex-wrap: wrap;

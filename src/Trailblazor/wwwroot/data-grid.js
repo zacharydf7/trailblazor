@@ -148,7 +148,13 @@ export function createDataGrid(table, waitForReorder) {
         }
 
         const scrolls = scroll.parentElement.classList.contains('tb-data-grid--scrolls');
-        const top = scrolls ? `${table.tHead.getBoundingClientRect().height}px` : '';
+        const head = `${table.tHead.getBoundingClientRect().height}px`;
+        // Where a reloading grid's bar runs, under the header.
+        if (scroll.style.getPropertyValue('--tb-data-grid-header-size') !== head) {
+            scroll.style.setProperty('--tb-data-grid-header-size', head);
+        }
+
+        const top = scrolls ? head : '';
         if (scroll.style.scrollPaddingBlockStart !== top) {
             scroll.style.scrollPaddingBlockStart = top;
         }

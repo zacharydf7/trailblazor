@@ -422,7 +422,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// user leaves the page.</summary>
     public bool HasChanges => _changes.Count > 0;
 
-    /// <summary>Shows the rows as loading, such as while the page fetches <see cref="Items"/>.</summary>
+    /// <summary>Shows the rows as loading, such as while the page fetches <see cref="Items"/>: a message while there
+    /// are no rows yet, and a bar under the header while rows already shown reload. A grid with a
+    /// <see cref="DataProvider"/> shows its own loading state, so it doesn't need this.</summary>
     [Parameter]
     public bool Loading { get; set; }
 
