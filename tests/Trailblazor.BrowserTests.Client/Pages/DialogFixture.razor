@@ -18,6 +18,8 @@
     <TbButton OnClick="AnnotatedAsync">Annotated</TbButton>
     <TbButton OnClick="() => TuckedAsync(modal: true)">Tucked</TbButton>
     <TbButton OnClick="() => TuckedAsync(modal: false)">Tucked window</TbButton>
+    <TbButton OnClick="StillAsync">Still</TbButton>
+    <TbButton OnClick="() => Dialogs.OpenDialogs[^1].Draggable = true">Let it move</TbButton>
     <TbButton OnClick="WideAsync">Wide</TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<SizedDialog, string>("Sized", options: new() { Width = "600px" })'>
         Sized
@@ -144,6 +146,9 @@
     private async Task TuckedAsync(bool modal) =>
         await Dialogs.ShowAsync<NameDialog, string>("Tucked",
             options: new() { Modal = modal, Minimizable = true, WindowState = DialogWindowState.Minimized });
+
+    private async Task StillAsync() =>
+        await Dialogs.ShowAsync<NameDialog, string>("Still", options: new() { Modal = false });
 
     private async Task WideAsync() =>
         await Dialogs.ShowAsync<NameDialog, string>("Wide",

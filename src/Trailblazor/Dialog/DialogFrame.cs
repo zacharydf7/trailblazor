@@ -49,9 +49,9 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     private string TitleId => $"{_id}-title";
 
     // A modal can't be moved or resized: it already blocks the page, so there's nothing to uncover.
-    private bool Draggable => Dialog.Options.Draggable && !Dialog.IsBlocking;
+    private bool Draggable => Dialog.Draggable && !Dialog.IsBlocking;
 
-    private bool Resizable => Dialog.Options.Resizable && !Dialog.IsBlocking;
+    private bool Resizable => Dialog.Resizable && !Dialog.IsBlocking;
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {

@@ -16,6 +16,10 @@ public abstract class DialogReference
     private bool _dismissing;
     private bool _showHeader;
     private bool _closeButton;
+    private bool _minimizable;
+    private bool _maximizable;
+    private bool _draggable;
+    private bool _resizable;
     private TbDialogHeaderActions? _headerActionsOwner;
 
     private protected DialogReference(string? title, DialogOptions options,
@@ -30,6 +34,10 @@ public abstract class DialogReference
         _close = close;
         _showHeader = options.ShowHeader;
         _closeButton = options.CloseButton ?? true;
+        _minimizable = options.Minimizable;
+        _maximizable = options.Maximizable;
+        _draggable = options.Draggable;
+        _resizable = options.Resizable;
         _modal = options.Modal;
         _size = options.Size ?? DialogSize.Medium;
         _position = options.Position;
@@ -88,14 +96,14 @@ public abstract class DialogReference
     }
 
     /// <summary>Whether the dialog shows at its own size, minimized or maximized, as its header's buttons set it. It
-    /// starts as <see cref="DialogOptions.WindowState"/>. Minimizing needs <see cref="DialogOptions.Minimizable"/> and
-    /// the header, whose button restores it.</summary>
+    /// starts as <see cref="DialogOptions.WindowState"/>. Minimizing needs <see cref="Minimizable"/> and the header,
+    /// whose button restores it.</summary>
     public DialogWindowState WindowState
     {
         get => _windowState;
         set
         {
-            if (value == DialogWindowState.Minimized && !(Options.Minimizable && ShowHeader))
+            if (value == DialogWindowState.Minimized && !(Minimizable && ShowHeader))
             {
                 throw new InvalidOperationException(
                     $"Only a dialog with {nameof(DialogOptions.Minimizable)} and its header can be minimized.");
@@ -119,6 +127,47 @@ public abstract class DialogReference
     {
         get => _closeButton;
         set => SetHeader(_showHeader, value);
+    }
+
+    /// <summary>Whether the header has a button that minimizes the dialog. It starts as
+    /// <see cref="DialogOptions.Minimizable"/>, and setting it changes the open dialog; turning it off restores a
+    /// minimized dialog, since the button that would restore it is removed.</summary>
+    public bool Minimizable
+    {
+        get => _minimizable;
+        set => Change(() =>
+        {
+            _minimizable = value;
+            if (!value && _windowState == DialogWindowState.Minimized)
+            {
+                _windowState = DialogWindowState.Normal;
+            }
+        });
+    }
+
+    /// <summary>Whether the header has a button that maximizes the dialog. It starts as
+    /// <see cref="DialogOptions.Maximizable"/>, and setting it changes the open dialog; turning it off leaves a
+    /// maximized dialog maximized.</summary>
+    public bool Maximizable
+    {
+        get => _maximizable;
+        set => Change(() => _maximizable = value);
+    }
+
+    /// <summary>Whether the user can move a dialog that isn't <see cref="Modal"/>. It starts as
+    /// <see cref="DialogOptions.Draggable"/>, and setting it changes the open dialog.</summary>
+    public bool Draggable
+    {
+        get => _draggable;
+        set => Change(() => _draggable = value);
+    }
+
+    /// <summary>Whether the user can resize a dialog that isn't <see cref="Modal"/>. It starts as
+    /// <see cref="DialogOptions.Resizable"/>, and setting it changes the open dialog.</summary>
+    public bool Resizable
+    {
+        get => _resizable;
+        set => Change(() => _resizable = value);
     }
 
     // A minimized modal leaves the page usable, so it counts as modeless until it is restored.

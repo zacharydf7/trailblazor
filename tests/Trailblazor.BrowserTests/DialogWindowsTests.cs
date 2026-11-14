@@ -14,6 +14,25 @@ public class DialogWindowsTests(BrowserFixture fixture) : BrowserTest(fixture)
         return page;
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldMoveOnlyTheDialogWrittenInsideIt_WhenAnArrowKeyIsPressedOnThatDialogsMoveButton(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/dialog-windows");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open back" }).ClickAsync();
+        await Dialog(page, "Back").GetByRole(AriaRole.Button, new() { Name = "Open inner" }).ClickAsync();
+        var back = (await Dialog(page, "Back").BoundingBoxAsync())!;
+        var inner = (await Dialog(page, "Inner").BoundingBoxAsync())!;
+        await Dialog(page, "Inner").GetByRole(AriaRole.Button, new() { Name = "Move" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        var innerAfter = (await Dialog(page, "Inner").BoundingBoxAsync())!;
+        var backAfter = (await Dialog(page, "Back").BoundingBoxAsync())!;
+        Assert.Equal(inner.X + 16, innerAfter.X, tolerance: 1);
+        Assert.Equal((back.X, back.Y), (backAfter.X, backAfter.Y));
+    }
+
     private static ILocator Dialog(IPage page, string title) =>
         page.GetByRole(AriaRole.Dialog, new() { Name = title, Exact = true });
 

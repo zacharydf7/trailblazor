@@ -388,7 +388,9 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
         draggedHandle = null;
         const step = steps[event.key];
         const handle = handleOf(event.target);
-        if (!step || !handle || event.altKey || event.ctrlKey || event.metaKey || !isNormal()) {
+        // A dialog nested in this one has its own handles, which its own listener moves.
+        if (!step || !handle || handle.closest('dialog') !== dialog || event.altKey || event.ctrlKey || event.metaKey
+            || !isNormal()) {
             return;
         }
 
@@ -416,15 +418,14 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
     dialog.addEventListener('close', onClose);
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('click', onClick);
-    if (options.draggable || options.resizable) {
-        dialog.addEventListener('pointerdown', onDragStart);
-        dialog.addEventListener('pointermove', onDragMove);
-        dialog.addEventListener('pointerup', onDragEnd);
-        dialog.addEventListener('pointercancel', onDragEnd);
-        dialog.addEventListener('click', onClickAfterDrag, { capture: true });
-        dialog.addEventListener('keydown', onArrowKey, { capture: true });
-        window.addEventListener('resize', keepInside);
-    }
+    // Always, since an open dialog can become draggable or resizable.
+    dialog.addEventListener('pointerdown', onDragStart);
+    dialog.addEventListener('pointermove', onDragMove);
+    dialog.addEventListener('pointerup', onDragEnd);
+    dialog.addEventListener('pointercancel', onDragEnd);
+    dialog.addEventListener('click', onClickAfterDrag, { capture: true });
+    dialog.addEventListener('keydown', onArrowKey, { capture: true });
+    window.addEventListener('resize', keepInside);
 
     // Removes the listeners and the stack entry once, however the dialog ends; true the first time.
     function finish() {

@@ -430,6 +430,75 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public async Task DraggableAndResizable_ShouldAddAndRemoveTheMoveButtonAndTheGrip_WhenSetOnTheOpenDialog()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Modal = false });
+        var dialog = Dialogs.OpenDialogs.Single();
+        host.WaitForElement("dialog");
+
+        await host.InvokeAsync(() => (dialog.Draggable, dialog.Resizable) = (true, true));
+        host.WaitForAssertion(() => Assert.Equal(2, host.FindAll("[data-part=move], [data-part=resize]").Count));
+        Assert.Contains("tb-dialog--draggable", host.Find("dialog").ClassList);
+        Assert.Contains("tb-dialog--resizable", host.Find("dialog").ClassList);
+        await host.InvokeAsync(() => (dialog.Draggable, dialog.Resizable) = (false, false));
+
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("[data-part=move], [data-part=resize]")));
+        Assert.DoesNotContain("tb-dialog--draggable", host.Find("dialog").ClassList);
+        Assert.DoesNotContain("tb-dialog--resizable", host.Find("dialog").ClassList);
+    }
+
+    [Fact]
+    public async Task Minimizable_ShouldAddTheButtonAndRestoreTheDialogAsItGoes_WhenSetOnAndOff()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Modal = false });
+        var dialog = Dialogs.OpenDialogs.Single();
+        host.WaitForElement("dialog");
+        Assert.Empty(host.FindAll("[data-part=minimize]"));
+
+        await host.InvokeAsync(() => dialog.Minimizable = true);
+        await host.WaitForElement("[data-part=minimize]").ClickAsync(new());
+        Assert.Equal(DialogWindowState.Minimized, dialog.WindowState);
+        await host.InvokeAsync(() => dialog.Minimizable = false);
+
+        Assert.Equal(DialogWindowState.Normal, dialog.WindowState);
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("[data-part=minimize]")));
+    }
+
+    [Fact]
+    public async Task Minimizable_ShouldBlockThePageAgain_WhenTurnedOffWhileAModalIsMinimized()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame").SetVoidResult();
+        var handle = module.SetupModule("openDialog", _ => true);
+        handle.SetupVoid("setState", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new() { Minimizable = true });
+        await host.WaitForElement("[data-part=minimize]").ClickAsync(new());
+        var dialog = Dialogs.OpenDialogs.Single();
+
+        await host.InvokeAsync(() => dialog.Minimizable = false);
+
+        host.WaitForAssertion(() => Assert.Equal(["normal", true], handle.Invocations["setState"][^1].Arguments));
+    }
+
+    [Fact]
+    public async Task Maximizable_ShouldAddAndRemoveTheButton_WhenSetOnTheOpenDialog()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes");
+        var dialog = Dialogs.OpenDialogs.Single();
+        host.WaitForElement("dialog");
+
+        await host.InvokeAsync(() => dialog.Maximizable = true);
+        host.WaitForElement("[data-part=maximize]");
+        await host.InvokeAsync(() => dialog.Maximizable = false);
+
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("[data-part=maximize]")));
+    }
+
+    [Fact]
     public async Task MoveButton_ShouldGoAway_WhenTheDialogIsMinimized()
     {
         var host = Render<DialogHost>();

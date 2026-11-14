@@ -76,12 +76,12 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         }
 
         var state = Dialog.WindowState;
-        if (Dialog.Options.Draggable && !Dialog.IsBlocking && state == DialogWindowState.Normal)
+        if (Dialog.Draggable && !Dialog.IsBlocking && state == DialogWindowState.Normal)
         {
             DialogMenus.AddMove(builder, 23, Dialog, Localizer);
         }
 
-        if (Dialog.Options.Minimizable)
+        if (Dialog.Minimizable)
         {
             var minimized = state == DialogWindowState.Minimized;
             AddWindowButton(builder, 31, "minimize",
@@ -90,7 +90,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
                 minimized ? DialogWindowState.Normal : DialogWindowState.Minimized);
         }
 
-        if (Dialog.Options.Maximizable)
+        if (Dialog.Maximizable)
         {
             var maximized = state == DialogWindowState.Maximized;
             AddWindowButton(builder, 38, "maximize",
