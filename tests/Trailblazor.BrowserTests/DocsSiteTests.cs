@@ -387,7 +387,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(contents.GetByRole(AriaRole.Link)).ToHaveTextAsync(["Usage", "Filter, select and open",
             "Multiple selection", "Checkboxes", "Independent checks", "Disabled rows", "Item template", "Flat data",
-            "Type-ahead", "Children that load when opened", "Empty", "Move and insert", "Many rows",
+            "Type-ahead", "Children that load when opened", "Empty", "Move and insert", "No drops into a row",
+            "Drop onto a row", "Many rows",
             "Content instead of rows", "Open state kept on your items", "Built-in text", "Accessibility",
             "Notes and limitations", "Telemetry", "Design tokens", "Testing", "Related"]);
         await contents.GetByRole(AriaRole.Link, new() { Name = "Many rows" }).ClickAsync();
