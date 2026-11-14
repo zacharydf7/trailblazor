@@ -2628,8 +2628,8 @@ public static class ExampleCatalog
                 new("description", "The item's second line, under its text."),
                 new("content", "The start content, text and description of an item that doesn't act."),
                 new("end", "Content after the item's text, such as a badge or a menu."),
-                new("action",
-                    "The button or link around the start content, text and description of an item that acts."),
+                new("action", "The button or link around the start content, text and description of an item that "
+                    + "acts. It takes the item's `id`."),
             ],
             TestingTip = "Find an item by the start of its name, as `GetByRole(AriaRole.Button, new() { NameRegex = "
                 + "new Regex(\"^Pine Hollow\") })`, and check the current one with "
@@ -2811,9 +2811,11 @@ public static class ExampleCatalog
             DataParts =
             [
                 new("badge", "The badge itself, over or beside what it marks."),
+                new("count", "The number the badge shows, such as \"99+\"."),
             ],
-            TestingTip = "The badge's element has `data-part=\"badge\"`. Its text holds the count, then the `Label` "
-                + "when there is one, so check it with `ToContainTextAsync`.",
+            TestingTip = "The badge's element has `data-part=\"badge\"` and carries the full `Count` in `data-count`, "
+                + "such as `120`. Its `data-part=\"count\"` child holds the number it shows, such as \"99+\", and its "
+                + "text also holds the `Label` when there is one.",
         },
         new("progress", "Progress", ExampleCategory.Feedback,
             "Shows how far along work is, as a bar or a circle, or that it is still going.")
@@ -8020,6 +8022,7 @@ public static class ExampleCatalog
                 new("toggle", "The arrow that opens and closes a row."),
                 new("check", "A checkable tree's checkbox."),
                 new("content", "The row's text or template."),
+                new("text", "The row's text, inside its content, when the row has no template."),
                 new("end", "Content at the end of the row, such as a count or a menu."),
                 new("insert", "The slot between rows that holds InsertTemplate content, such as an add button."),
                 new("loading", "The message shown while rows load."),
@@ -8046,8 +8049,9 @@ public static class ExampleCatalog
                 "The helpers follow only the tree's own rows, not those of a tree inside a row.",
                 "In a virtualized tree, the helpers scroll until the row renders, and a drag needs both rows in view "
                     + "together. Rows also carry `data-index` and `data-inside`, the number of rows in their branch.",
-                "Every row carries `data-key`, `data-level` and `data-text`, and a row being dragged over carries "
-                    + "`data-drop`.",
+                "Every row carries `data-key`, `data-level` and `data-text`, which holds the row's `ItemText`, or a "
+                    + "`TbTreeItem`'s `Text`. The helpers' paths match it even when a template shows something else. A "
+                    + "row being dragged over carries `data-drop`.",
                 "`ItemAttributes` adds attributes to an item's row, such as an `id` a test can find the row by. "
                     + "A row's toggle is its `[data-part=\"toggle\"]` child, so a row with the id `trail-12` has its "
                     + "toggle at `#trail-12 > [data-part=\"toggle\"]`.",

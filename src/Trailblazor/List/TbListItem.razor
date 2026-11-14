@@ -1,17 +1,20 @@
 @namespace Trailblazor
 @inherits TbComponentBase
 
-<li @attributes="AdditionalAttributes" aria-current="@(Selected && !IsAction ? "true" : null)" style="@Style"
+@* An item that acts puts its id on its link or button, the part users act on. *@
+<li @attributes="IsAction ? AttributesWithoutId : AdditionalAttributes"
+    aria-current="@(Selected && !IsAction ? "true" : null)" style="@Style"
     class="@ClassNames.Join("tb-list__item", Selected ? "tb-list__item--selected" : null,
                Disabled ? "tb-list__item--disabled" : null, Class)">
     @if (Href is not null && !Disabled)
     {
-        <a href="@Href" data-part="action" class="tb-list__action" aria-current="@(Selected ? "page" : null)"
+        <a id="@GivenId" href="@Href" data-part="action" class="tb-list__action"
+           aria-current="@(Selected ? "page" : null)"
            @onclick="OnClickAsync">@Body</a>
     }
     else if (OnClick.HasDelegate)
     {
-        <button type="button" data-part="action" class="tb-list__action" disabled="@Disabled"
+        <button id="@GivenId" type="button" data-part="action" class="tb-list__action" disabled="@Disabled"
                 aria-current="@(Selected ? "true" : null)" @onclick="OnClickAsync">@Body</button>
     }
     else

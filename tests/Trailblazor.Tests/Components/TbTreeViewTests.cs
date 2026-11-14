@@ -911,6 +911,20 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldMarkEachRowsText_WhenTheRowsHaveNoTemplate()
+    {
+        var bound = RenderPlaces([new(1, "North"), new(2, "East")], nested: false);
+        var declared = Render<TbTreeView<string, string>>(parameters => parameters.Add(tree => tree.AriaLabel, "Areas")
+            .AddChildContent<TbTreeItem<string>>(item => item.Add(row => row.Value, "north")
+                .Add(row => row.Text, "North"))
+            .AddChildContent<TbTreeItem<string>>(item => item.Add(row => row.Value, "east")
+                .Add(row => row.Text, "East")));
+
+        Assert.Equal(["North", "East"], bound.FindAll("[data-part=text]").Select(text => text.TextContent));
+        Assert.Equal(["North", "East"], declared.FindAll("[data-part=text]").Select(text => text.TextContent));
+    }
+
+    [Fact]
     public async Task RenderRows_ShouldDrawEveryRowAgain_WhenPageStateTheRowsReadChanged()
     {
         var names = new Dictionary<int, string> { [1] = "North", [2] = "East" };

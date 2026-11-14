@@ -165,7 +165,7 @@
                     {
                         <TbIcon Icon="icon" Size="Size.Small" />
                     }
-                    <span class="tb-tree__text">@TextOf(node)</span>
+                    <span data-part="text" class="tb-tree__text">@TextOf(node)</span>
                 }
             </span>
             @if ((declared?.End ?? (ItemEndTemplate is not null && valued ? ItemEndTemplate(context) : null))

@@ -34,6 +34,25 @@ public class TbListTests : BunitContext
         Assert.Equal("3", cut.Find("li > [data-part=end]").TextContent);
     }
 
+    [Theory]
+    [InlineData("guides", true, "a")]
+    [InlineData(null, true, "button")]
+    [InlineData(null, false, "li")]
+    public void Render_ShouldPutTheIdOnTheActionOrElseTheItem_WhenGivenAnId(string? href, bool clickable, string holder)
+    {
+        var cut = Render<TbListItem>(parameters =>
+        {
+            parameters.Add(item => item.ChildContent, "Pine Hollow").Add(item => item.Href, href)
+                .AddUnmatched("id", "pine-hollow");
+            if (clickable)
+            {
+                parameters.Add(item => item.OnClick, () => { });
+            }
+        });
+
+        Assert.Equal(holder, Assert.Single(cut.FindAll("#pine-hollow")).LocalName);
+    }
+
     [Fact]
     public void Click_ShouldRaiseOnClick_WhenTheItemIsChosen()
     {

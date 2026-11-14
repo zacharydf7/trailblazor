@@ -9,7 +9,8 @@
     @if (Visible && (Count != 0 || ShowZero))
     {
         @* On a button, the button's own name says what the badge does, so screen readers needn't hear it twice. *@
-        <span data-part="badge" aria-hidden="@(ChildContent is not null && Label is null ? "true" : null)"
+        <span data-part="badge" data-count="@Count"
+              aria-hidden="@(ChildContent is not null && Label is null ? "true" : null)"
               class="@ClassNames.Join("tb-badge", ClassNames.Modifier("tb-badge", Tone),
                          ChildContent is null ? null : ClassNames.Modifier("tb-badge", "placement", Placement),
                          ChildContent is null ? null : ClassNames.Modifier("tb-badge", Overlap),
@@ -17,7 +18,7 @@
             @if (Count is int count)
             {
                 @* With a label, screen readers hear the label instead of the bare number. *@
-                <span aria-hidden="@(Label is null ? null : "true")">
+                <span data-part="count" aria-hidden="@(Label is null ? null : "true")">
                     @(count > Max ? $"{Max}+" : count.ToString(CultureInfo.CurrentCulture))
                 </span>
             }

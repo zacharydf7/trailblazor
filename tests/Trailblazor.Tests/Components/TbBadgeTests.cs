@@ -29,6 +29,16 @@ public class TbBadgeTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldMarkTheShownNumberApartFromTheLabel_WhenBothAreGiven()
+    {
+        var cut = Render<TbBadge>(parameters => parameters.Add(badge => badge.Count, 120)
+            .Add(badge => badge.Label, "120 unread"));
+
+        Assert.Equal("99+", cut.Find("[data-part=count]").TextContent.Trim());
+        Assert.Equal("120", cut.Find("[data-part=badge]").GetAttribute("data-count"));
+    }
+
+    [Fact]
     public void Render_ShouldSitOnTheChildAndSpeakTheLabelInsteadOfTheNumber_WhenBothAreGiven()
     {
         var cut = Render<TbBadge>(parameters => parameters.Add(badge => badge.Count, 3)

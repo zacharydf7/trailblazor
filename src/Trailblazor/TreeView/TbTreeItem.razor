@@ -135,8 +135,9 @@ else
         }
 
         builder.OpenElement(3, "span");
-        builder.AddAttribute(4, "class", "tb-tree__text");
-        builder.AddContent(5, Text ?? (HasValue ? Value?.ToString() : null));
+        builder.AddAttribute(4, "data-part", "text");
+        builder.AddAttribute(5, "class", "tb-tree__text");
+        builder.AddContent(6, Text ?? (HasValue ? Value?.ToString() : null));
         builder.CloseElement();
     });
 
