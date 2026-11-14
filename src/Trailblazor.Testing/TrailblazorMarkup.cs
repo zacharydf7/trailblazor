@@ -347,13 +347,16 @@ public sealed class TrailblazorMarkup
     /// </summary>
     public TbTabsDriver Tabs(string? name = null) => new(() =>
     {
-        var lists = _findAll("[role=tablist]")
-            .Where(list => name is null || list.GetAttribute("aria-label") == name).ToList();
+        // With no name, only outer tab lists count, so tabs nested in a panel don't make the lookup ambiguous. A
+        // panel outside the scope doesn't count, so the helpers scoped to a panel find the tabs in it.
+        var panels = _findAll("[role=tabpanel]");
+        var lists = _findAll("[role=tablist]").Where(list => name is null
+            ? !panels.Any(panel => panel.Contains(list)) : list.GetAttribute("aria-label") == name).ToList();
         return lists.Count == 1 ? lists[0]
             : throw new InvalidOperationException(name is null
                 ? $"Expected one tab list, found {lists.Count}; name the one to use."
                 : $"No tab list is named \"{name}\".");
-    });
+    }, _findAll, _scripts);
 
     /// <summary>The <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c> with this label, or with this <c>AriaLabel</c>
     /// when it has no label.</summary>
@@ -2509,8 +2512,20 @@ internal static class HandleMenu
 public sealed class TbTabsDriver
 {
     private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
 
-    internal TbTabsDriver(Func<IElement> find) => _find = find;
+    internal TbTabsDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts) =>
+        (_find, _findAll, _scripts) = (find, findAll, scripts);
+
+    /// <summary>The helpers inside the panel of the tab with this text, such as
+    /// <c>cut.Tb().Tabs().Panel("Route").TextField("Start")</c>, so a field that every panel has can be told apart.
+    /// Throws when the tab's panel isn't in the markup, as happens for a panel not yet shown unless
+    /// <c>RenderAllPanels</c> is set.</summary>
+    public TrailblazorMarkup Panel(string tab) => new TrailblazorMarkup(_findAll, _scripts).Within(() =>
+        Find(tab).GetAttribute("aria-controls") is { } panel ? _findAll($"[id='{panel}']").Single()
+            : throw new InvalidOperationException($"The panel of the tab \"{tab}\" isn't in the markup; select the "
+                + "tab first, or set RenderAllPanels."));
 
     /// <summary>The tabs' texts, in order.</summary>
     public IReadOnlyList<string> Tabs =>

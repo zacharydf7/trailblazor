@@ -7705,7 +7705,12 @@ public static class ExampleCatalog
                 + "clicks the close mark of a tab with an `OnClose`, and `AddAsync()`, which clicks the add button; "
                 + "in a browser, each waits until the app's handler has run. A handler that waits for the user, such "
                 + "as one that opens a dialog, would keep the helper waiting, so click `[data-part=add]` or "
-                + "`[data-part=close]` instead and answer the dialog.",
+                + "`[data-part=close]` instead and answer the dialog. When every panel has a field with the same "
+                + "label, `Tabs().Panel(\"Summary\").TextField(\"Notes\")` finds the one in that tab's panel. Select "
+                + "the tab first: a browser can't use a hidden panel's fields, and in bUnit a panel not yet shown "
+                + "isn't in the markup unless `RenderAllPanels` is set. With no name, `Tabs()` ignores nested tab "
+                + "lists: in bUnit, any inside a panel; in Playwright, only those inside a hidden panel. So in a "
+                + "browser, name the outer list when a shown panel holds another.",
             Telemetry =
             [
                 "A tab with a `TelemetryName`, such as `\"billing-tab\"`, counts `trailblazor.control.shown` as its "

@@ -244,8 +244,11 @@
                     </tr>
                     <tr>
                         <th scope="row"><code>Tabs(name).SelectAsync(tab)</code></th>
-                        <td>Selects a tab by its name; <code>Tabs</code> reads the tabs and <code>Selected</code> the
-                            selected one.</td>
+                        <td>
+                            Selects a tab by its name; <code>Tabs</code> reads the tabs and <code>Selected</code> the
+                            selected one. <code>Panel(tab)</code> scopes the helpers to that tab's panel, and
+                            <code>Tabs()</code> with no name ignores tab lists nested in a panel.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>Tree(name)</code></th>
@@ -958,7 +961,9 @@
             + "that key. `On(element)` right-clicks a given element instead, and without `On` it right-clicks the "
             + "whole area."),
         new("Tabs", "Their list's name", "`Tabs(name).SelectAsync(tab)` selects a tab by its name, `TabsAsync()` "
-            + "reads the tabs and `SelectedAsync()` the selected one."),
+            + "reads the tabs and `SelectedAsync()` the selected one. `Panel(tab)` scopes the helpers to that tab's "
+            + "panel; select the tab first, since a hidden panel's fields can't be used. With no name, `Tabs()` finds "
+            + "the visible tab list, so name the outer list when a shown panel holds another."),
         new("Dialog", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name, and "
             + "`CancelAsync()` dismisses it with Escape; both wait until the dialog has left the page, or, on a static "
             + "page, until it closes."),

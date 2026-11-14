@@ -5,7 +5,14 @@ namespace Trailblazor.Testing.Playwright;
 /// <summary>A <c>TbTabs</c>, found by its accessible name, or the only one in the scope.</summary>
 public sealed class TbTabsLocator(ILocator scope, string? name)
 {
+    // With no name, only visible tab lists count, so tabs nested in a hidden panel don't make the lookup ambiguous.
     private ILocator List => Scope.ByRole(scope, AriaRole.Tablist, name);
+
+    /// <summary>The helpers inside the panel of the tab with this name, such as
+    /// <c>page.Tb().Tabs().Panel("Route").TextField("Start")</c>, so a field that every panel has can be told apart.
+    /// Only the selected tab's panel is visible, so select the tab before using its fields.</summary>
+    public TrailblazorPage Panel(string tab) => new(List.Locator("xpath=../*[@role='tabpanel']")
+        .And(scope.GetByRole(AriaRole.Tabpanel, new() { Name = tab, Exact = true, IncludeHidden = true })));
 
     /// <summary>The tabs' texts, in order.</summary>
     public async Task<IReadOnlyList<string>> TabsAsync() =>

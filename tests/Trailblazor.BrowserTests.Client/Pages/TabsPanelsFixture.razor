@@ -1,0 +1,26 @@
+@page "/tabs-panels"
+
+@* Every panel has a Notes field, and the second panel holds a tab list of its own that reuses a tab's text and field. *@
+<TbTabs AriaLabel="Trip" RenderAllPanels>
+    <TbTab Text="Gear">
+        <TbTextField Label="Notes" @bind-Value="_gear" />
+        <TbTextField Label="Stops" @bind-Value="_stops" />
+    </TbTab>
+    <TbTab Text="Route">
+        <TbTextField Label="Notes" @bind-Value="_route" />
+        <TbTabs AriaLabel="Legs">
+            <TbTab Text="Gear">
+                <TbTextField Label="Stops" @bind-Value="_legStops" />
+            </TbTab>
+            <TbTab Text="South" />
+        </TbTabs>
+    </TbTab>
+</TbTabs>
+<output data-testid="notes">@($"{_gear}|{_route}|{_stops}|{_legStops}")</output>
+
+@code {
+    private string? _gear;
+    private string? _route;
+    private string? _stops;
+    private string? _legStops;
+}

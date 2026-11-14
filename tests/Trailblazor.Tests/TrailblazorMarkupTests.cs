@@ -739,6 +739,61 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Tabs_ShouldFindAFieldInOneTabsPanel_WhenEveryPanelHasOneWithTheSameLabel()
+    {
+        var notes = new List<string>();
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.RenderAllPanels, true)
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+            {
+                foreach (var tab in new[] { "Gear", "Route" })
+                {
+                    builder.OpenComponent<TbTab>(0);
+                    builder.AddAttribute(1, nameof(TbTab.Text), tab);
+                    builder.AddAttribute(2, nameof(TbTab.ChildContent), (RenderFragment)(panel =>
+                    {
+                        panel.OpenComponent<TbTextField<string>>(0);
+                        panel.AddAttribute(1, nameof(TbTextField<string>.Label), "Notes");
+                        panel.AddAttribute(2, nameof(TbTextField<string>.ValueChanged),
+                            EventCallback.Factory.Create<string>(this, (string value) => notes.Add($"{tab} {value}")));
+                        panel.CloseComponent();
+                    }));
+                    builder.CloseComponent();
+                }
+            })));
+
+        await cut.Tb().Tabs().Panel("Route").TextField("Notes").EnterAsync("Steep");
+
+        Assert.Equal(["Route Steep"], notes);
+    }
+
+    [Fact]
+    public void Tabs_ShouldFindTheOuterList_WhenAnUnnamedListHasTabsNestedInAPanel()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+        {
+            builder.OpenComponent<TbTab>(0);
+            builder.AddAttribute(1, nameof(TbTab.Text), "Route");
+            builder.AddAttribute(2, nameof(TbTab.ChildContent), (RenderFragment)(panel =>
+            {
+                panel.OpenComponent<TbTabs>(0);
+                panel.AddAttribute(1, nameof(TbTabs.AriaLabel), "Legs");
+                panel.AddAttribute(2, nameof(TbTabs.ChildContent), (RenderFragment)(legs =>
+                {
+                    legs.OpenComponent<TbTab>(0);
+                    legs.AddAttribute(1, nameof(TbTab.Text), "North");
+                    legs.CloseComponent();
+                }));
+                panel.CloseComponent();
+            }));
+            builder.CloseComponent();
+        })));
+
+        Assert.Equal(["Route"], cut.Tb().Tabs().Tabs);
+        Assert.Equal(["North"], cut.Tb().Tabs("Legs").Tabs);
+        Assert.Equal(["North"], cut.Tb().Tabs().Panel("Route").Tabs().Tabs);
+    }
+
+    [Fact]
     public async Task Tabs_ShouldThrow_WhenAskedToCloseATabThatIsNotClosable()
     {
         var cut = RenderForm();

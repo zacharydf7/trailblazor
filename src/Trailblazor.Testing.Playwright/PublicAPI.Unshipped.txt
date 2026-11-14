@@ -335,3 +335,4 @@ Trailblazor.Testing.Playwright.TrailblazorPage.TextField(Microsoft.Playwright.IL
 Trailblazor.Testing.Playwright.TbMenuLocator.CloseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbMenuLocator.IsOpenAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbMenuLocator.OpenAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTabsLocator.Panel(string! tab) -> Trailblazor.Testing.Playwright.TrailblazorPage!

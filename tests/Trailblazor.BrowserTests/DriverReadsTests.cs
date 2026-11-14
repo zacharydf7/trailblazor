@@ -81,6 +81,24 @@ public class DriverReadsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldFindAFieldAndTheTabsInOneListsPanel_WhenPanelsShareLabelsAndNestTabs(string browser)
+    {
+        var page = await OpenAsync(browser, "/tabs-panels");
+        var trip = page.Tb().Tabs("Trip");
+        await trip.SelectAsync("Route");
+
+        await trip.Panel("Route").TextField("Notes").EnterAsync("Steep");
+        var legs = await trip.Panel("Route").Tabs().TabsAsync();
+        await trip.SelectAsync("Gear");
+        await trip.Panel("Gear").TextField("Notes").EnterAsync("Tent");
+        await trip.Panel("Gear").TextField("Stops").EnterAsync("2");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("Tent|Steep|2|");
+        Assert.Equal(["Gear", "South"], legs);
+        Assert.Equal(["Gear", "Route"], await page.Tb().Tabs().TabsAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Reads_ShouldGiveWhatTheComponentsShow_WhenAsked(string browser)
     {
         var tabs = await OpenAsync(browser, "/examples/tabs");
