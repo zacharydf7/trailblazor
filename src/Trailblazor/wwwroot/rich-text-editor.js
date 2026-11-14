@@ -1,4 +1,5 @@
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { isApple } from '../Trailblazor.Primitives/platform.js';
 // The rich text editor's engine. The browser types, composes and spellchecks natively and the engine reads the result
 // back; every other edit the engine makes on its own model and renders. It never uses document.execCommand.
 // A paragraph is { kind, level, runs }, never changed in place; a run is { text, marks in MARKS order, link or null };
@@ -43,7 +44,6 @@ const BLOCK_ELEMENTS = 'p, h1, h2, h3, li, hr';
 const TYPING_PAUSE = 1000;
 // Keeps each part under Blazor Server's default 32 KB message limit, even at 6 bytes of JSON per control character.
 const MAX_PART = 5000;
-const isMac = /Mac|iPhone|iPad/.test(navigator.userAgentData?.platform ?? navigator.platform);
 
 // options: { formats, blocks, links, transformsPaste, readOnly, updateOnInput, updateDelay }, with formats as mark
 // names, blocks as kinds and links as URL schemes split by spaces, links null where links aren't allowed, and
@@ -121,7 +121,7 @@ class Editor {
             const anchor = event.target.closest?.('a[href]');
             if (!anchor || !root.contains(anchor)) return;
             event.preventDefault();
-            if (isMac ? event.metaKey : event.ctrlKey) window.open(anchor.href, '_blank', 'noopener');
+            if (isApple() ? event.metaKey : event.ctrlKey) window.open(anchor.href, '_blank', 'noopener');
         });
         on(document, 'selectionchange', () => this.onSelectionChange());
         // The label names the editor without a for attribute, so a click on it doesn't focus the editor by itself.
@@ -348,9 +348,9 @@ class Editor {
         }
 
         if (event.key !== 'Tab' && event.key !== 'Shift') this.tabLeaves = false;
-        const mod = isMac ? event.metaKey : event.ctrlKey;
+        const mod = isApple() ? event.metaKey : event.ctrlKey;
         // Many keyboards type characters with AltGr, which Windows reports as Ctrl+Alt.
-        const altGraph = !isMac && event.getModifierState('AltGraph');
+        const altGraph = !isApple() && event.getModifierState('AltGraph');
         const kind = mod && event.altKey && !event.shiftKey && !altGraph ? ALT_BLOCK_KEYS[event.code]
             : mod && event.shiftKey && !event.altKey ? SHIFT_BLOCK_KEYS[event.code] : undefined;
         if (kind) {
@@ -433,7 +433,7 @@ class Editor {
         this.readBack();
         let target = this.positionOf(node, point?.offset ?? range.startOffset);
         if (this.doc[target.block].kind === 'rule') target = this.outOfRule(target, false);
-        const copy = isMac ? event.altKey : event.ctrlKey;
+        const copy = isApple() ? event.altKey : event.ctrlKey;
         if (!dragged || copy) {
             this.root.focus();
             this.selection = { anchor: target, head: target };

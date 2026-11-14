@@ -21,7 +21,7 @@ import './throttled-input.js';
 import './debounced-input.js';
 import './message-hold.js';
 import { measurePageScrollbar } from './page-scroll.js';
-import { isApple } from './shortcuts.js';
+import { isApple } from '../Trailblazor.Primitives/platform.js';
 // Every module that another one imports loads here too, so a component's module finds its imports already loaded.
 import '../Trailblazor.Primitives/anchored-position.js';
 import '../Trailblazor.Primitives/composing.js';
@@ -40,7 +40,7 @@ import './unnamed-options.js';
 
 // Keys show Mod as ⌘ on Apple devices, which the styles read from this mark.
 const markPlatform = () => {
-    if (isApple) {
+    if (isApple()) {
         document.documentElement.dataset.tbApple = '';
     }
 };

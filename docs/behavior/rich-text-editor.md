@@ -8,7 +8,7 @@ Familiar apps: Google Docs, Word for the web, Gmail's compose box, Outlook's mes
 ## Keyboard
 
 - [x] Typed text goes in at the caret and takes the formats of the text before it. `RichTextEditorTests.Typing_ShouldLandAsShownAndTakeTheMarksBefore_WhenTypingInsideAndAfterAMarkedRun`, `RichTextEditorTests.Typing_ShouldPlaceTheTextAtTheCaret_WhenTheSameCharacterRepeatsAcrossAMarkBoundary`
-- [x] Ctrl+B, Ctrl+I and Ctrl+U (Cmd on macOS) turn bold, italic and underline on or off for the selection, or for the next text typed when nothing is selected. `RichTextEditorTests.Shortcuts_ShouldToggleEachFormat_WhenPressedOverARangeOrBeforeTyping`
+- [x] Ctrl+B, Ctrl+I and Ctrl+U (Cmd on macOS) turn bold, italic and underline on or off for the selection, or for the next text typed when nothing is selected. `RichTextEditorTests.Shortcuts_ShouldToggleEachFormat_WhenPressedOverARangeOrBeforeTyping`, `RichTextEditorTests.Shortcuts_ShouldTakeCommand_WhenChromiumOnAMacReportsItsPlatformAsMacOS`
 - [x] Strikethrough (Ctrl+Shift+X), subscript (Ctrl+,) and superscript (Ctrl+.) have shortcuts too, and each button's `aria-keyshortcuts` names its shortcut. `RichTextEditorTests.Shortcuts_ShouldToggleEachFormat_WhenPressedOverARangeOrBeforeTyping`, `RichTextEditorTests.Formats_ShouldOfferOnlyThoseAllowed_WhenTheEditorAllowsSome`, `TbRichTextEditorTests.Render_ShouldShowAButtonForEachAllowedFormat_WhenGivenFormats`
 - [x] Enter starts a new paragraph, and Shift+Enter breaks the line. `RichTextEditorTests.Paragraphs_ShouldSplitBreakAndJoin_WhenEnterShiftEnterBackspaceAndDeleteArePressed`
 - [x] Ctrl+E (Cmd on macOS) turns inline code on or off. `RichTextEditorTests.Code_ShouldToggle_WhenItsButtonOrShortcutIsPressed`

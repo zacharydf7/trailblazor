@@ -97,6 +97,23 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Shortcuts_ShouldTakeCommand_WhenChromiumOnAMacReportsItsPlatformAsMacOS(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        await page.AddInitScriptAsync("""
+            Object.defineProperty(navigator, 'userAgentData', { get: () => ({ platform: 'macOS' }) });
+            """);
+        await page.ReloadAsync();
+        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        var notes = await SetAsync(page, "<p>word</p>", "word");
+
+        await SelectAsync(notes, 0, 0, 0, 4);
+        await page.Keyboard.PressAsync("Meta+b");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p><strong>word</strong></p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Formats_ShouldOfferOnlyThoseAllowed_WhenTheEditorAllowsSome(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-editor");

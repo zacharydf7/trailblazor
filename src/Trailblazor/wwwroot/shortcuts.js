@@ -1,7 +1,5 @@
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
-
-// Chromium on macOS reports "macOS", and other browsers "MacIntel", "iPhone" or "iPad".
-export const isApple = /mac|iphone|ipad/i.test(navigator.userAgentData?.platform ?? navigator.platform);
+import { isApple } from '../Trailblazor.Primitives/platform.js';
 
 // Keys a shortcut names by a word, as their own character would be a separator or blank.
 const named = { space: ' ', plus: '+' };
@@ -15,8 +13,8 @@ export function parseShortcut(text) {
     const mod = parts.includes('mod');
     return {
         key,
-        ctrlKey: parts.includes('ctrl') || (mod && !isApple),
-        metaKey: parts.includes('meta') || (mod && isApple),
+        ctrlKey: parts.includes('ctrl') || (mod && !isApple()),
+        metaKey: parts.includes('meta') || (mod && isApple()),
         altKey: parts.includes('alt'),
         shiftKey: parts.includes('shift'),
         // A symbol such as "?" takes Shift on some keyboard layouts and not on others, so Shift isn't matched for it.

@@ -648,6 +648,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         page.PageError += (_, error) => errors.Add(error);
         await Expect(page.Locator("html[data-shortcuts]")).ToHaveCountAsync(1);
         await page.EvaluateAsync("() => Object.defineProperty(navigator, 'platform', { get: () => 'MacIntel' })");
+        await page.EvaluateAsync("() => Object.defineProperty(navigator, 'userAgentData', { get: () => undefined })");
         // Autofill sends keydown events without a key.
         await page.EvaluateAsync("() => document.dispatchEvent(new Event('keydown'))");
 
