@@ -343,6 +343,11 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
     // the grip resizes it.
     const onDragStart = event => {
         draggedHandle = null;
+        // A dialog written inside this one drags itself by its own header, Move button and grip.
+        if (event.target.closest('dialog') !== dialog) {
+            return;
+        }
+
         const button = event.target.closest('button');
         const handle = button && handleOf(button);
         const grip = resizable() && handle?.dataset.part === 'resize';

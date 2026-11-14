@@ -78,10 +78,10 @@
     <TbButton OnClick="() => _drawer = true">Fit drawer</TbButton>
 </TbStack>
 <output data-testid="result">@_result</output>
-@* A modeless dialog with another written inside it, so the inner one is in the outer one's markup. *@
-<TbDialog @bind-Open="_outer" Title="Outer" Options="Modeless">
+@* A modeless dialog with another written inside it, so the inner one is in the outer one's markup; both are draggable. *@
+<TbDialog @bind-Open="_outer" Title="Outer" Options="MovableModeless">
     <TbButton OnClick="() => _inner = true">Inner</TbButton>
-    <TbDialog @bind-Open="_inner" Title="Inner" Options="Modeless">
+    <TbDialog @bind-Open="_inner" Title="Inner" Options="MovableModeless">
         <TbButton>Inside</TbButton>
     </TbDialog>
 </TbDialog>
@@ -108,6 +108,7 @@
 
 @code {
     private static readonly DialogOptions Modeless = new() { Modal = false };
+    private static readonly DialogOptions MovableModeless = new() { Modal = false, Draggable = true };
     private static readonly DialogOptions SmallModeless = new() { Modal = false, Size = DialogSize.Small };
     private static readonly DialogOptions FitModeless = new() { Modal = false, Size = DialogSize.Fit };
     private string _result = "";

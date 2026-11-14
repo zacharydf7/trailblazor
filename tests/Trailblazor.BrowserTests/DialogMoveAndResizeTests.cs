@@ -33,6 +33,26 @@ public class DialogMoveAndResizeTests(BrowserFixture fixture) : BrowserTest(fixt
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldStayPut_WhenADialogWrittenInsideItIsDraggedByItsHeader(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Outer" }).ClickAsync();
+        var outer = page.GetByRole(AriaRole.Dialog, new() { Name = "Outer" });
+        await outer.GetByRole(AriaRole.Button, new() { Name = "Inner" }).ClickAsync();
+        var inner = page.GetByRole(AriaRole.Dialog, new() { Name = "Inner" });
+        await Expect(inner).ToBeVisibleAsync();
+        var (outerBefore, innerBefore) =
+            (await DialogTests.BoxAsync(page, "Outer"), await DialogTests.BoxAsync(page, "Inner"));
+
+        await DragAsync(page, inner.GetByRole(AriaRole.Heading, new() { Name = "Inner" }), 80, 60);
+
+        var (outerAfter, innerAfter) =
+            (await DialogTests.BoxAsync(page, "Outer"), await DialogTests.BoxAsync(page, "Inner"));
+        AssertNear([outerBefore.X, outerBefore.Y], [outerAfter.X, outerAfter.Y]);
+        AssertNear([innerBefore.X + 80, innerBefore.Y + 60], [innerAfter.X, innerAfter.Y]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldStayPut_WhenADragStartsOnAHeaderButtonOtherThanMove(string browser)
     {
         var page = await OpenMovableAsync(browser);
