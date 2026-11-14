@@ -3955,7 +3955,8 @@ public static class ExampleCatalog
                 + "`RangeSlider(\"Elevation\").SetAsync(1000, 3000)` does the same for both thumbs. With "
                 + "`GetByRole(AriaRole.Slider).FillAsync(\"80\")` alone, `ToHaveValueAsync(\"80\")` passes before the "
                 + "app hears of the change. A range slider's thumbs are named \"Elevation Minimum\" and \"Elevation "
-                + "Maximum\".",
+                + "Maximum\". In bUnit, `cut.Tb().Slider(\"Map brightness\").SetAsync(80)` moves the slider as a drag "
+                + "does, landing on the nearest step, and `Value` reads it.",
         },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.")
@@ -4758,7 +4759,8 @@ public static class ExampleCatalog
             ],
             TestingTip = "To choose a suggestion, `await page.Tb().Autocomplete(\"Trailhead\").ChooseAsync(\"pine\", "
                 + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "
-                + "search, and clicks the option by its name. With a `Search`, the browser waits out `DebounceDelay`, "
+                + "search, and clicks the option by its name. In bUnit, `cut.Tb().Autocomplete(...)` does the same. "
+                + "With a `Search`, the browser waits out `DebounceDelay`, "
                 + "so in bUnit, which has no browser, `Search` runs and `OnTextChanged` fires on each input. Without a "
                 + "`Search`, `OnTextChanged` fires once `DebounceDelay` has passed on the app's `TimeProvider`, so advance a "
                 + "`FakeTimeProvider` past it, or set it to `TimeSpan.Zero`. Only the first `MaxItems` matches, 50 by "
@@ -4988,8 +4990,9 @@ public static class ExampleCatalog
             TestingTip = "`await page.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` from "
                 + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it; for "
                 + "pickers that share a label, pass a locator, as `ColorPicker(row.GetByLabel(\"Color\"))`. In bUnit, "
-                + "set `FakeBrowserService.PickedColor` to test the eyedropper. `@bind-Open` opens the color panel from "
-                + "code.",
+                + "`cut.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` types and commits the color, and "
+                + "setting `FakeBrowserService.PickedColor` tests the eyedropper. `@bind-Open` opens the color panel "
+                + "from code.",
         },
         new("file-upload", "File upload", ExampleCategory.Inputs,
             "Chooses files by clicking or dropping them on a drop zone, and lists them with a way to remove each.")
@@ -5099,7 +5102,9 @@ public static class ExampleCatalog
             ],
             TestingTip = "`await page.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` from "
                 + "`Trailblazor.Testing.Playwright` takes file paths or `FilePayload`s and waits until the field has "
-                + "taken them. In bUnit, `FindComponent<InputFile>().UploadFiles(...)` chooses files. The field is "
+                + "taken them. In bUnit, `cut.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` chooses files "
+                + "from disk, giving each the type a browser would for its extension, and "
+                + "`FindComponent<InputFile>().UploadFiles(...)` chooses files made in the test. The field is "
                 + "ready as soon as `Render` returns, with nothing left to run, so a test can raise events at once.",
         },
         new("calendar", "Calendar", ExampleCategory.Inputs,
@@ -7055,8 +7060,11 @@ public static class ExampleCatalog
                 + "finishes when the dialog closes, and whose `ContentType` and `Parameters` say what it shows. In "
                 + "bUnit, `FakeDialogService` records the dialogs opened through it, finds one with `Last<TDialog, "
                 + "TResult>()`, `Last<TDialog>()` or `LastConfirm()`, "
-                + "and answers confirms and alerts with `Answer`, as the Testing guide shows. In Playwright, "
-                + "`page.Tb().Dialog(\"Delete report?\")` from "
+                + "and answers confirms and alerts with `Answer`, as the Testing guide shows. "
+                + "`root.Tb().Dialog(\"Delete report?\")` finds an open dialog in the markup of the `TbRoot` that "
+                + "shows it: `ChooseAsync(\"Delete\")` clicks a button, and `CancelAsync()` dismisses it as Escape "
+                + "does. In "
+                + "Playwright, `page.Tb().Dialog(\"Delete report?\")` from "
                 + "`Trailblazor.Testing.Playwright` finds a dialog by its title: `WaitForAsync()` returns it once "
                 + "open, `ChooseAsync(\"Delete\")` clicks a button, and `CancelAsync()` presses Escape. Those two "
                 + "wait until the dialog has faded out and left the page, which is when the app gets the answer. A "

@@ -268,6 +268,8 @@ public partial class TbColorPicker : IAsyncDisposable
 
     private static string Invariant(double value) => Math.Round(value).ToString(CultureInfo.InvariantCulture);
 
+    private protected override string FieldModifiers => ClassNames.Join(base.FieldModifiers, "tb-color-picker");
+
     /// <inheritdoc />
     private protected override string? FormatValue(string? value) =>
         ColorValue.TryParse(value, Alpha, out var color) ? color.ToHex(Alpha) : value;

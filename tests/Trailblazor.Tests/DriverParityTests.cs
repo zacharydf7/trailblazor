@@ -11,7 +11,6 @@ namespace Trailblazor.Tests;
 public class DriverParityTests
 {
     private const string FollowUp = "a driver in both packages follows in #516";
-    private const string PartTwo = "a driver in both packages comes in part 2 of #498";
     private const string NotInteractive = "not interactive, or a plain button or link found by its role";
 
     // The helper in both packages that finds each component.
@@ -29,6 +28,8 @@ public class DriverParityTests
         ["TbSignaturePad"] = "SignaturePad", ["TbSortable"] = "Sortable", ["TbTabs"] = "Tabs",
         ["TbTagInput"] = "TagInput", ["TbTransferList"] = "TransferList", ["TbTreeView"] = "Tree",
         ["TbTreeSelect"] = "TreeSelect", ["TbMultiTreeSelect"] = "TreeSelect", ["TbViewport"] = "Viewport",
+        ["TbAutocomplete"] = "Autocomplete", ["TbColorPicker"] = "ColorPicker", ["TbDialog"] = "Dialog",
+        ["TbFileUpload"] = "FileUpload", ["TbSlider"] = "Slider",
     };
 
     // Why every other component has no helper of its own.
@@ -73,9 +74,6 @@ public class DriverParityTests
         ["TbSplitter"] = FollowUp, ["TbStepper"] = FollowUp, ["TbThemePicker"] = FollowUp,
         ["TbTimePicker"] = FollowUp, ["TbToolbar"] = FollowUp, ["TbTooltip"] = FollowUp,
         ["TbVirtualList"] = FollowUp,
-
-        ["TbAutocomplete"] = PartTwo, ["TbColorPicker"] = PartTwo, ["TbDialog"] = PartTwo, ["TbFileUpload"] = PartTwo,
-        ["TbSlider"] = PartTwo,
     };
 
     // Members only one package has, by type and member name, and why.
@@ -88,9 +86,8 @@ public class DriverParityTests
         ["TrailblazorPage.Splitter"] = FollowUp,
         ["TbGridLocator.Copy"] = "pressing Ctrl+C needs the browser's copy event; bUnit reads the same text with "
             + "SelectedCells",
-        ["TrailblazorPage.Autocomplete"] = PartTwo, ["TrailblazorPage.ColorPicker"] = PartTwo,
-        ["TrailblazorPage.Dialog"] = PartTwo, ["TrailblazorPage.FileUpload"] = PartTwo,
-        ["TrailblazorPage.Slider"] = PartTwo,
+        ["TbFileUploadLocator.Choose"] =
+            "a FilePayload is Playwright's file made in the test; bUnit picks files by path",
     };
 
     [Fact]

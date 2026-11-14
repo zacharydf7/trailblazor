@@ -227,6 +227,8 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     private protected override bool SameValue(TValue? value, TValue? other) =>
         OptionValues.Same(Comparer, value, other);
 
+    private protected override string FieldModifiers => ClassNames.Join(base.FieldModifiers, "tb-autocomplete");
+
     // Each keystroke cancels the search before it, so only the latest text's suggestions are shown.
     private async Task OnTypedAsync(string? text)
     {

@@ -294,6 +294,37 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Slider(label).SetAsync(value)</code></th>
+                        <td>
+                            Moves the slider as a drag does, landing on the nearest step within its range, and
+                            <code>Value</code> reads it.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Autocomplete(label).ChooseAsync(text, option)</code></th>
+                        <td>Types the text and chooses a suggestion by its name.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>ColorPicker(label).ChooseAsync(color)</code></th>
+                        <td>Types a color, as <code>#rrggbb</code> or <code>#rrggbbaa</code>, and commits it.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>FileUpload(label).ChooseAsync(paths)</code></th>
+                        <td>
+                            Chooses the files at these paths. A file with a common extension gets the type a browser
+                            gives it, such as <code>image/png</code> for a <code>.png</code>, and any other file an
+                            empty type.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Dialog(title).ChooseAsync(button)</code></th>
+                        <td>
+                            Clicks an open dialog's button by its name, and <code>CancelAsync()</code> dismisses the
+                            dialog as Escape does. Call it on the markup of the <code>TbRoot</code> that shows the
+                            dialog; see <a href="guides/testing#bunit-dialogs">Test dialogs in bUnit</a>.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Grid(name)</code></th>
                         <td>
                             Clicks or selects a row by a cell's text, with <code>ClickRowAsync</code> and
@@ -322,7 +353,10 @@
         <CodeBlock Label="Driving fields in bUnit" Code="@BunitDrivers" />
         <ul>
             <li>As in Playwright, choosing refuses a disabled field.</li>
-            <li>Choosing needs an interactive page, since a static select is a native one that posts with its form.</li>
+            <li>
+                Choosing needs an interactive page, since a static select is a native one that posts with its form. The
+                slider, autocomplete, color picker and file upload helpers throw on a static page for the same reason.
+            </li>
             <li>
                 A number field without a <code>Format</code> reads what was typed through its own change event, which
                 bUnit's <code>Change</code> doesn't reach. <code>EnterAsync</code> types into either kind.
@@ -381,8 +415,8 @@
         <CodeBlock Label="Checking the dialogs a page opens" Code="@FakeDialogs" />
         <TbText>
             To use a dialog's own controls, render a <code>TbRoot</code> before the page, as a layout does. The dialog
-            shows in the root's markup, so <code>root.Tb()</code> finds its fields and <code>root.Find</code> its
-            buttons.
+            shows in the root's markup, so <code>root.Tb()</code> finds its fields, and
+            <code>root.Tb().Dialog(title)</code> clicks its buttons by name or dismisses it as Escape does.
         </TbText>
         <CodeBlock Label="Using a dialog's controls in bUnit" Code="@PageDialogControls" />
 
@@ -982,7 +1016,7 @@
 
         var click = page.Find("button.edit").ClickAsync(new());
         await root.Tb().Select("Region").ChooseAsync("North ridge");
-        await root.Find("[data-testid=save]").ClickAsync(new());
+        await root.Tb().Dialog("Edit trail").ChooseAsync("Save");
         await click;
         """;
 

@@ -48,7 +48,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
     [Inject]
     private IOptions<TrailblazorOptions> Settings { get; set; } = default!;
 
-    private string TitleId => $"{_id}-title";
+    internal string TitleId => $"{_id}-title";
 
     // A modal can't be moved or resized: it already blocks the page, so there's nothing to uncover.
     private bool Draggable => Dialog.Draggable && !Dialog.IsBlocking;

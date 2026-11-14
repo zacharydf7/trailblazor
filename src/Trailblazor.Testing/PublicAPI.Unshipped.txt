@@ -288,3 +288,21 @@ Trailblazor.Testing.TrailblazorMarkup.List(string? name = null) -> Trailblazor.T
 Trailblazor.Testing.TrailblazorMarkup.RadioGroup(string! label) -> Trailblazor.Testing.TbRadioGroupDriver!
 Trailblazor.Testing.TrailblazorMarkup.Switch(string! label) -> Trailblazor.Testing.TbCheckboxDriver!
 Trailblazor.Testing.TrailblazorMarkup.ToggleGroup(string! label) -> Trailblazor.Testing.TbToggleGroupDriver!
+Trailblazor.Testing.TbAutocompleteDriver
+Trailblazor.Testing.TbAutocompleteDriver.ChooseAsync(string! text, string! option) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbColorPickerDriver
+Trailblazor.Testing.TbColorPickerDriver.ChooseAsync(string! color) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDialogDriver
+Trailblazor.Testing.TbDialogDriver.CancelAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDialogDriver.ChooseAsync(string! button) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDialogDriver.WaitForAsync() -> System.Threading.Tasks.Task<AngleSharp.Dom.IElement!>!
+Trailblazor.Testing.TbFileUploadDriver
+Trailblazor.Testing.TbFileUploadDriver.ChooseAsync(params string![]! paths) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSliderDriver
+Trailblazor.Testing.TbSliderDriver.SetAsync(decimal value) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSliderDriver.Value.get -> decimal
+Trailblazor.Testing.TrailblazorMarkup.Autocomplete(string! label) -> Trailblazor.Testing.TbAutocompleteDriver!
+Trailblazor.Testing.TrailblazorMarkup.ColorPicker(string! label) -> Trailblazor.Testing.TbColorPickerDriver!
+Trailblazor.Testing.TrailblazorMarkup.Dialog(string! title) -> Trailblazor.Testing.TbDialogDriver!
+Trailblazor.Testing.TrailblazorMarkup.FileUpload(string! label) -> Trailblazor.Testing.TbFileUploadDriver!
+Trailblazor.Testing.TrailblazorMarkup.Slider(string! label) -> Trailblazor.Testing.TbSliderDriver!

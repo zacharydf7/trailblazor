@@ -2,8 +2,10 @@ using System.Globalization;
 using Bunit;
 using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Trailblazor.Tests;
 
@@ -17,6 +19,157 @@ public class TrailblazorMarkupTests : BunitContext
     private int? _budget;
 
     public TrailblazorMarkupTests() => this.AddTrailblazor();
+
+    [Fact]
+    public async Task Slider_ShouldLandOnTheNearestStepWithinTheRange_WhenSetBetweenStepsOrPastAnEnd()
+    {
+        var committed = new List<int>();
+        var cut = Render<TbSlider<int>>(parameters => parameters.Add(field => field.Label, "Group size")
+            .Add(field => field.Min, 2).Add(field => field.Max, 21).Add(field => field.Step, 4)
+            .Add(field => field.OnValueCommitted, (int size) => committed.Add(size)));
+
+        await cut.Tb().Slider("Group size").SetAsync(13);
+        var between = cut.Tb().Slider("Group size").Value;
+        await cut.Tb().Slider("Group size").SetAsync(40);
+
+        // From 2 in steps of 4, 13 lands on 14, and 40 lands on 18, the last step below the maximum of 21.
+        Assert.Equal((14m, 18m), (between, cut.Tb().Slider("Group size").Value));
+        Assert.Equal([14, 18], committed);
+    }
+
+    [Fact]
+    public async Task Slider_ShouldRefuseToMoveIt_WhenItIsReadOnlyOrOnAStaticPage()
+    {
+        var locked = Render<TbSlider<int>>(parameters => parameters.Add(field => field.Label, "Group size")
+            .Add(field => field.ReadOnly, true));
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var still = Render<TbSlider<int>>(parameters => parameters.Add(field => field.Label, "Group size"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => locked.Tb().Slider("Group size").SetAsync(5));
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => still.Tb().Slider("Group size").SetAsync(5));
+        Assert.Contains("static page", failure.Message);
+    }
+
+    [Fact]
+    public async Task Autocomplete_ShouldTypeAndChooseASuggestion_WhenTheOptionIsSuggested()
+    {
+        string? trail = null;
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Items, ["Pine Hollow", "Eagle Ridge", "Pine Bluff"])
+            .Add(field => field.ValueChanged, (string? chosen) => trail = chosen));
+
+        await cut.Tb().Autocomplete("Trail").ChooseAsync("pine", "Pine Bluff");
+        var missing = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Autocomplete("Trail").ChooseAsync("pine", "Eagle Ridge"));
+
+        Assert.Equal("Pine Bluff", trail);
+        Assert.Equal("No option reads \"Eagle Ridge\". The options read: \"Pine Hollow\", \"Pine Bluff\".",
+            missing.Message);
+    }
+
+    [Fact]
+    public async Task Autocomplete_ShouldChooseWithoutWaitingForTheTextReport_WhenTheAppsClockIsFake()
+    {
+        Services.AddSingleton<TimeProvider>(new Microsoft.Extensions.Time.Testing.FakeTimeProvider());
+        var reported = new List<string>();
+        string? trail = "Pine Bluff";
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Items, ["Pine Hollow", "Pine Bluff"]).Add(field => field.Value, trail)
+            .Add(field => field.ValueChanged, (string? chosen) => trail = chosen)
+            .Add(field => field.OnTextChanged, (string text) => reported.Add(text)));
+
+        // The field's report of the typed text waits out DebounceDelay on a clock that never moves, so a helper that
+        // waited for it would never return.
+        await cut.Tb().Autocomplete("Trail").ChooseAsync("pine", "Pine Bluff")
+            .WaitAsync(TimeSpan.FromSeconds(10), Xunit.TestContext.Current.CancellationToken);
+
+        Assert.Equal("Pine Bluff", cut.Find("input").GetAttribute("value"));
+        Assert.Equal(["Pine Bluff"], reported);
+    }
+
+    [Fact]
+    public async Task ColorPicker_ShouldTakeTheTypedColorAndRefuseAnotherFormat_WhenAColorIsChosen()
+    {
+        string? color = null;
+        var cut = Render<TbColorPicker>(parameters => parameters.Add(field => field.Label, "Trail color")
+            .Add(field => field.ValueChanged, (string? chosen) => color = chosen));
+
+        await cut.Tb().ColorPicker("Trail color").ChooseAsync("#336699");
+
+        Assert.Equal("#336699", color);
+        await Assert.ThrowsAsync<ArgumentException>(() => cut.Tb().ColorPicker("Trail color").ChooseAsync("blue"));
+    }
+
+    [Fact]
+    public async Task FileUpload_ShouldHandTheFieldTheFilesWithTheTypeTheirExtensionGives_WhenChosenByPath()
+    {
+        var folder = Directory.CreateTempSubdirectory();
+        try
+        {
+            var photo = Path.Combine(folder.FullName, "summit.png");
+            var map = Path.Combine(folder.FullName, "route.pdf");
+            await File.WriteAllBytesAsync(photo, new byte[12], Xunit.TestContext.Current.CancellationToken);
+            await File.WriteAllBytesAsync(map, new byte[3], Xunit.TestContext.Current.CancellationToken);
+            IReadOnlyList<IBrowserFile>? files = null;
+            var cut = Render<TbFileUpload>(parameters => parameters.Add(upload => upload.Label, "Photos")
+                .Add(upload => upload.Multiple, true).Add(upload => upload.Accept, "image/*")
+                .Add(upload => upload.ValueChanged, (IReadOnlyList<IBrowserFile>? chosen) => files = chosen));
+
+            await cut.Tb().FileUpload("Photos").ChooseAsync(photo, map);
+
+            // The map's type isn't an image, so the field turns it away, as it does in a browser.
+            var file = Assert.Single(files!);
+            Assert.Equal(("summit.png", "image/png", 12L), (file.Name, file.ContentType, file.Size));
+            Assert.Equal("route.pdf isn't one of image/*.", cut.Find("[data-part=rejected]").TextContent.Trim());
+        }
+        finally
+        {
+            folder.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Dialog_ShouldAnswerAConfirmByItsButtonOrEscape_WhenFoundByItsTitle()
+    {
+        var host = Render<DialogHost>();
+        var dialogs = Services.GetRequiredService<IDialogService>();
+        var deleting = dialogs.ConfirmAsync("Delete trail", "Delete it?", "Delete");
+        var leaving = dialogs.ConfirmAsync("Leave trip", "Leave it?", "Leave");
+
+        await host.Tb().Dialog("Leave trip").CancelAsync();
+        await host.Tb().Dialog("Delete trail").ChooseAsync("Delete");
+
+        Assert.True(await deleting);
+        Assert.False(await leaving);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => host.Tb().Dialog("Delete trail").WaitForAsync());
+    }
+
+    [Fact]
+    public async Task Dialog_ShouldFindAndCancelADialogByTheTitleItShows_WhenItsTitleIsRichContent()
+    {
+        Render<DialogHost>();
+        var open = true;
+        var cut = Render<TbDialog>(parameters => parameters.Add(dialog => dialog.Title, "Edit trail")
+            .Add(dialog => dialog.Open, true).Add(dialog => dialog.OpenChanged, (bool now) => open = now)
+            .AddChildContent<TbDialogTitle>(title => title.AddChildContent("Edit <em>North ridge</em>")));
+
+        await cut.Tb().Dialog("Edit North ridge").CancelAsync();
+
+        Assert.False(open);
+    }
+
+    [Fact]
+    public async Task Dialog_ShouldRefuseEscape_WhenItsOptionsDontLetEscapeDismissIt()
+    {
+        var host = Render<DialogHost>();
+        var dialogs = Services.GetRequiredService<IDialogService>();
+        _ = dialogs.ConfirmAsync("Delete trail", "Delete it?", options: new() { DismissOnEscape = false });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => host.Tb().Dialog("Delete trail").CancelAsync());
+
+        Assert.Single(dialogs.OpenDialogs);
+    }
 
     [Fact]
     public async Task Select_ShouldChooseTheOptionAndShowIt_WhenChosenByItsText()

@@ -2,6 +2,7 @@ using System.Globalization;
 using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -16,19 +17,20 @@ public static class TrailblazorMarkupExtensions
     /// <summary>The Trailblazor components in this rendered markup.</summary>
     public static TrailblazorMarkup Tb<TComponent>(this IRenderedComponent<TComponent> rendered)
         where TComponent : IComponent =>
-        new(selector => rendered.FindAll(selector), new ScriptCalls(rendered.Services, rendered.InvokeAsync));
+        new(selector => rendered.FindAll(selector), new ScriptCalls(rendered.Services, rendered.InvokeAsync,
+            done => rendered.WaitForStateAsync(done), () => ((IRenderedComponent<IComponent>)rendered)
+                .FindComponents<ListeningInputFile>().Select(input => (IRenderedComponent<InputFile>)input)));
 }
 
 // Calls the .NET object a component handed its script, as the script would, for what only a script sees, such as
 // where a drag drops.
-internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Task> invoke)
+internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Task> invoke,
+    Func<Func<bool>, Task> waitFor, Func<IEnumerable<IRenderedComponent<InputFile>>> inputFiles)
 {
     // The drag events of the sortable list or grid with this accessible name, among those still in use.
     public SortableEvents Sortable(string? name)
     {
-        var js = services.GetService<BunitJSInterop>() ?? throw new InvalidOperationException(
-            "Call AddTrailblazor on the test's BunitContext before rendering.");
-        var events = js.Invocations["attachSortable"]
+        var events = Js.Invocations["attachSortable"]
             .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<SortableEvents>)
             .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
             .Where(handed => handed.Name() == name).Distinct().ToList();
@@ -37,10 +39,30 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             : $"{events.Count} sortable lists or grids are named \"{name}\"; give each its own name to drag in it.");
     }
 
+    // The open dialog element's frame, as handed to the dialog script, which calls it back when Escape is pressed.
+    public DialogFrame Dialog(IElement dialog) => Js.Invocations["openDialog"]
+        .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<DialogFrame>)
+        .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
+        .FirstOrDefault(frame => frame.TitleId == dialog.GetAttribute("aria-labelledby"))
+            ?? throw new InvalidOperationException("The dialog's script hasn't attached, as it does once the dialog "
+                + "renders interactively.");
+
+    // The file input with this id, which the browser hands the files a user picks or drops.
+    public IRenderedComponent<InputFile> InputFile(string id) => inputFiles()
+        .SingleOrDefault(input => input.Instance.AdditionalAttributes?.TryGetValue("id", out var given) == true
+            && Equals(given, id))
+        ?? throw new InvalidOperationException("The file input isn't in the rendered component.");
+
     public Task InvokeAsync(Func<Task> work) => invoke(work);
 
+    public Task WaitForAsync(Func<bool> done) => waitFor(done);
+
+    private BunitJSInterop Js => services.GetService<BunitJSInterop>() ?? throw new InvalidOperationException(
+        "Call AddTrailblazor on the test's BunitContext before rendering.");
+
     // A component disposes its reference when it goes, after which reading it throws.
-    private static bool IsLive(DotNetObjectReference<SortableEvents> handed)
+    private static bool IsLive<T>(DotNetObjectReference<T> handed)
+        where T : class
     {
         try
         {
@@ -160,6 +182,29 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbNumberField</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbNumberFieldDriver NumberField(string label) =>
         new(() => Field(label, "input[type=number]", "input[role=spinbutton]"));
+
+    /// <summary>The <c>TbSlider</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
+    public TbSliderDriver Slider(string label) => new(() => Field(label, "input[type=range][data-part=input]"));
+
+    /// <summary>The <c>TbAutocomplete</c> with this label, or with this <c>AriaLabel</c> when it has no label.
+    /// </summary>
+    public TbAutocompleteDriver Autocomplete(string label) =>
+        new(() => Field(label, ".tb-autocomplete input[data-part=input]"), _findAll, _scripts);
+
+    /// <summary>The <c>TbColorPicker</c> with this label, or with this <c>AriaLabel</c> when it has no label.
+    /// </summary>
+    public TbColorPickerDriver ColorPicker(string label) =>
+        new(() => Field(label, ".tb-color-picker input[data-part=input]"));
+
+    /// <summary>The <c>TbFileUpload</c> with this label, or with this <c>AriaLabel</c> when it has no label.
+    /// </summary>
+    public TbFileUploadDriver FileUpload(string label) =>
+        new(() => Field(label, "input[type=file][data-part=input]"), _scripts);
+
+    /// <summary>The open dialog with this title: a <c>TbDialog</c>, or one from <c>IDialogService</c> such as a
+    /// confirm. A dialog from the service renders in the <c>DialogHost</c> that <c>TbRoot</c> holds, so look for it in
+    /// the markup of the component that renders the host.</summary>
+    public TbDialogDriver Dialog(string title) => new(title, _findAll, _scripts);
 
     /// <summary>The <c>TbTagInput</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbTagInputDriver TagInput(string label) =>
@@ -590,17 +635,7 @@ internal static class Choices
 
         foreach (var text in texts)
         {
-            var options = find().Options.ToList();
-            var option = options.Where(option => NameOf(option) == text).ToList() switch
-            {
-                [var only] => only,
-                [] => throw new InvalidOperationException(options.Count == 0
-                    ? $"No option reads \"{text}\": there are none."
-                    : $"No option reads \"{text}\". The options read: "
-                        + string.Join(", ", options.Select(option => $"\"{NameOf(option)}\"")) + "."),
-                var several => throw new InvalidOperationException(
-                    $"{several.Count} options read \"{text}\"; give each option a name of its own."),
-            };
+            var option = Named(find().Options.ToList(), text);
             if (option.GetAttribute("aria-selected") == "true" != choose)
             {
                 // A click from a pointer has a count, which the option reports as pointer input.
@@ -609,6 +644,19 @@ internal static class Choices
         }
     }
 
+    // The one option with this name, or an error that lists the names there are.
+    internal static IElement Named(List<IElement> options, string text) =>
+        options.Where(option => NameOf(option) == text).ToList() switch
+        {
+            [var only] => only,
+            [] => throw new InvalidOperationException(options.Count == 0
+                ? $"No option reads \"{text}\": there are none."
+                : $"No option reads \"{text}\". The options read: "
+                    + string.Join(", ", options.Select(option => $"\"{NameOf(option)}\"")) + "."),
+            var several => throw new InvalidOperationException(
+                $"{several.Count} options read \"{text}\"; give each option a name of its own."),
+        };
+
     // What a screen reader reads, as the Playwright helpers find it: an aria-label, else the text outside hidden parts.
     internal static string NameOf(IElement element) => element.GetAttribute("aria-label")
         ?? string.Concat(element.Descendants<IText>()
@@ -616,7 +664,7 @@ internal static class Choices
                 || !element.Contains(hidden))
             .Select(text => text.Data)).Trim();
 
-    // A checkbox or radio a user can't change, or one on a static page, which posts with its form.
+    // An input a user can't change, or one on a static page, which posts with its form.
     internal static void ThrowIfLocked(IElement input)
     {
         if (input.HasAttribute("disabled") || input.Closest("fieldset[disabled]") is not null
@@ -1160,6 +1208,215 @@ public sealed class TbNumberFieldDriver
         Typing.ThrowIfLocked(input, "a number");
         await (input.GetAttribute("role") == "spinbutton" ? input.ChangeAsync(new ChangeEventArgs { Value = text })
             : input.TriggerEventAsync("ontbnumberchange", new NumberChangeEventArgs { Value = text }));
+    }
+}
+
+/// <summary>A <c>TbSlider</c>, found by its label.</summary>
+public sealed class TbSliderDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbSliderDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The value the field holds.</summary>
+    public decimal Value => decimal.Parse(_find().GetAttribute("data-value")!, CultureInfo.InvariantCulture);
+
+    /// <summary>Moves the slider to this value, as dragging its thumb does. A value between steps lands on the nearest
+    /// step, and one past an end on that end, as in a browser. On a static page the slider is a native one that posts
+    /// with its form, so this throws, as it does for a disabled or read-only slider.</summary>
+    public async Task SetAsync(decimal value)
+    {
+        var input = _find();
+        Choices.ThrowIfLocked(input);
+        var text = Snap(input, value).ToString("0.############################", CultureInfo.InvariantCulture);
+        await input.InputAsync(new ChangeEventArgs { Value = text });
+        await _find().ChangeAsync(new ChangeEventArgs { Value = text });
+    }
+
+    // A browser puts a range input's value on the step nearest it, counted from the minimum, within the range.
+    private static decimal Snap(IElement input, decimal value)
+    {
+        var (min, max, step) = (Attribute(input, "min"), Attribute(input, "max"), Attribute(input, "step"));
+        var steps = Math.Floor((Math.Clamp(value, min, max) - min) / step + 0.5m);
+        return min + Math.Min(steps, Math.Floor((max - min) / step)) * step;
+    }
+
+    private static decimal Attribute(IElement input, string name) =>
+        decimal.Parse(input.GetAttribute(name)!, CultureInfo.InvariantCulture);
+}
+
+/// <summary>A <c>TbAutocomplete</c>, found by its label.</summary>
+public sealed class TbAutocompleteDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
+
+    internal TbAutocompleteDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll,
+        ScriptCalls scripts) => (_find, _findAll, _scripts) = (find, findAll, scripts);
+
+    /// <summary>Types the text, as a user does, waits for the suggestions, and chooses the option with this name. On a
+    /// static page the field is a plain input that posts with its form, so this throws, as it does for a disabled or
+    /// read-only field.</summary>
+    public async Task ChooseAsync(string text, string option)
+    {
+        var input = _find();
+        Typing.ThrowIfLocked(input, "a search");
+        if (input.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("An autocomplete on a static page is a plain input that posts with its "
+                + "form; render it on an interactive page to choose a suggestion.");
+        }
+
+        // OnTextChanged may wait on the app's clock, so wait for the search to finish, not for the typing.
+        var typing = input.InputAsync(new ChangeEventArgs { Value = text });
+        await _scripts.WaitForAsync(() => typing.IsCompleted || (_find().GetAttribute("value") == text
+            && _findAll($"[id='{_find().GetAttribute("aria-controls")}'][aria-busy]").Count == 0));
+        // Click even when the field already holds this option, since the click puts its text back over what was typed.
+        await Choices.Named(Options().ToList(), option).ClickAsync(new MouseEventArgs { Detail = 1 });
+        await typing;
+    }
+
+    private IEnumerable<IElement> Options() =>
+        _findAll($"[id='{_find().GetAttribute("aria-controls")}'] [role=option][data-part=option]");
+}
+
+/// <summary>A <c>TbColorPicker</c>, found by its label.</summary>
+public sealed partial class TbColorPickerDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbColorPickerDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>Types the color, as <c>#rrggbb</c>, or <c>#rrggbbaa</c> for a field with <c>Alpha</c>, and commits it,
+    /// as typing it and pressing Enter does. On a static page the field is a plain input that posts with its form, so
+    /// this throws, as it does for a disabled or read-only field.</summary>
+    public Task ChooseAsync(string color)
+    {
+        if (!HexColor().IsMatch(color))
+        {
+            throw new ArgumentException($"Pass the color as #rrggbb or #rrggbbaa, not {color}.", nameof(color));
+        }
+
+        var input = _find();
+        Typing.ThrowIfLocked(input, "a color");
+        if (input.HasAttribute("data-static") || input.HasAttribute("data-prerender"))
+        {
+            throw new InvalidOperationException("A color picker on a static page is a plain input that posts with its "
+                + "form; render it on an interactive page to choose a color.");
+        }
+
+        return input.ChangeAsync(new ChangeEventArgs { Value = color });
+    }
+
+    [System.Text.RegularExpressions.GeneratedRegex("^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")]
+    private static partial System.Text.RegularExpressions.Regex HexColor();
+}
+
+/// <summary>A <c>TbFileUpload</c>, found by its label.</summary>
+public sealed class TbFileUploadDriver
+{
+    // The types a browser gives the files a test is most likely to pick; any other extension gets an empty type.
+    private static readonly Dictionary<string, string> Types = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [".avif"] = "image/avif", [".bmp"] = "image/bmp", [".csv"] = "text/csv", [".doc"] = "application/msword",
+        [".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        [".gif"] = "image/gif", [".html"] = "text/html", [".jpeg"] = "image/jpeg", [".jpg"] = "image/jpeg",
+        [".json"] = "application/json", [".mov"] = "video/quicktime", [".mp3"] = "audio/mpeg", [".mp4"] = "video/mp4",
+        [".ogg"] = "audio/ogg", [".pdf"] = "application/pdf", [".png"] = "image/png",
+        [".ppt"] = "application/vnd.ms-powerpoint",
+        [".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        [".svg"] = "image/svg+xml", [".txt"] = "text/plain", [".wav"] = "audio/wav", [".webm"] = "video/webm",
+        [".webp"] = "image/webp", [".xls"] = "application/vnd.ms-excel",
+        [".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", [".xml"] = "text/xml",
+        [".zip"] = "application/zip",
+    };
+
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbFileUploadDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>Chooses the files at these paths, as dropping them or picking them in the file dialog does. A file
+    /// with a common extension takes the type a browser gives it, such as <c>image/png</c> for a <c>.png</c>, and any
+    /// other an empty type; to set the type yourself, pass an <c>InputFileContent</c> to bUnit's <c>UploadFiles</c>.
+    /// On a static page the field is a native one that posts with its form, so this throws, as it does for a disabled
+    /// or read-only field.</summary>
+    public Task ChooseAsync(params string[] paths)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(paths.Length, nameof(paths));
+        var input = _find();
+        Choices.ThrowIfLocked(input);
+        if (input.HasAttribute("data-prerender"))
+        {
+            throw new InvalidOperationException("This file upload is prerendered; render it on an interactive page to "
+                + "choose files.");
+        }
+
+        _scripts.InputFile(input.Id!).UploadFiles([.. paths.Select(path => InputFileContent.CreateFromBinary(
+            File.ReadAllBytes(path), Path.GetFileName(path), File.GetLastWriteTimeUtc(path),
+            Types.GetValueOrDefault(Path.GetExtension(path), "")))]);
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>An open dialog, found by its title: a <c>TbDialog</c>, or one from <c>IDialogService</c> such as a
+/// confirm.</summary>
+public sealed class TbDialogDriver
+{
+    private readonly string _title;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
+
+    internal TbDialogDriver(string title, Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts) =>
+        (_title, _findAll, _scripts) = (title, findAll, scripts);
+
+    /// <summary>Returns the open dialog, without waiting, to find what it shows. A dialog on a static page opens and
+    /// closes in the browser, so this throws for one, as it does when no dialog with the title is open.</summary>
+    public Task<IElement> WaitForAsync() => Task.FromResult(Find());
+
+    /// <summary>Clicks the dialog's button with this name, such as a confirm's <c>Delete</c> or a form's <c>Save</c>.
+    /// </summary>
+    public async Task ChooseAsync(string button)
+    {
+        var buttons = Find().QuerySelectorAll("button").Where(found => Choices.NameOf(found) == button).ToList();
+        if (buttons is not [var only])
+        {
+            throw new InvalidOperationException($"Expected one button named \"{button}\" in the dialog, found "
+                + $"{buttons.Count}.");
+        }
+
+        await only.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    /// <summary>Dismisses the dialog with Escape, as a keyboard user does. This throws for a dialog whose options
+    /// don't let Escape dismiss it.</summary>
+    public Task CancelAsync()
+    {
+        var frame = _scripts.Dialog(Find());
+        if (frame.Dialog.Options.DismissOnEscape != true)
+        {
+            throw new InvalidOperationException("This dialog's options don't let Escape dismiss it.");
+        }
+
+        return _scripts.InvokeAsync(() => frame.Dismiss(DialogDismissReason.Escape));
+    }
+
+    // A static page's dialog has the browser close it.
+    private IElement Find()
+    {
+        var dialogs = _findAll("dialog[data-part=dialog]").Where(dialog => _findAll(
+                $"[id='{dialog.GetAttribute("aria-labelledby")}']").SingleOrDefault()?.TextContent.Trim() == _title)
+            .ToList();
+        if (dialogs.Any(dialog => dialog.HasAttribute("closedby")))
+        {
+            throw new InvalidOperationException("A dialog on a static page opens and closes in the browser; test it in "
+                + "Playwright.");
+        }
+
+        return dialogs.Count == 1 ? dialogs[0] : throw new InvalidOperationException(dialogs.Count == 0
+            ? $"No dialog titled \"{_title}\" is in the markup."
+            : $"{dialogs.Count} dialogs are titled \"{_title}\"; give each its own title.");
     }
 }
 
