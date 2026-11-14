@@ -576,6 +576,17 @@ public sealed class TbTreeSelectDriver : TbFieldDriver
     /// <summary>Opens the rows above the item at this path and chooses it, as clicking it does.</summary>
     public Task ChooseAsync(params string[] path) => Tree().SelectAsync(path);
 
+    /// <summary>Opens the rows above the item at this path, and reads its text and whether it's disabled and chosen,
+    /// which in a multi tree select means checked. A disabled or read-only tree select throws, since it has no tree to
+    /// read.</summary>
+    public async Task<OptionInfo> OptionAsync(params string[] path)
+    {
+        var tree = Tree();
+        await tree.ExpandAsync(path[..^1]);
+        var row = tree.Item(path);
+        return new(path[^1], Choices.IsDisabled(row), Choices.IsChosen(row));
+    }
+
     /// <summary>Opens the rows above the item at this path and, unless it is checked already, checks it in a multi
     /// tree select as clicking its box does.</summary>
     public Task CheckAsync(params string[] path) => SetCheckedAsync(path, true);
@@ -732,9 +743,12 @@ internal static class Choices
     internal static OptionInfo Describe(IEnumerable<IElement> options, string text)
     {
         var option = Named(options.ToList(), text);
-        return new(text, IsDisabled(option),
-            option.GetAttribute("aria-selected") == "true" || option.HasAttribute("selected"));
+        return new(text, IsDisabled(option), IsChosen(option));
     }
+
+    // A tree select's item is chosen when selected, or in a multi tree select when checked.
+    internal static bool IsChosen(IElement option) => option.GetAttribute("aria-selected") == "true"
+        || option.HasAttribute("selected") || option.GetAttribute("aria-checked") == "true";
 
     // The one option with this name, or an error that lists the names there are.
     internal static IElement Named(List<IElement> options, string text) =>

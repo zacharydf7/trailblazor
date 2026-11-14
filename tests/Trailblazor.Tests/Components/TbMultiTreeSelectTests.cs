@@ -128,6 +128,21 @@ public class TbMultiTreeSelectTests : BunitContext
     }
 
     [Fact]
+    public async Task TreeSelectDriver_ShouldReadAnItemAsChosen_WhenItIsChecked()
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.Value, ["pine"]));
+        var field = cut.Tb().TreeSelect("Trails");
+
+        var pine = await field.OptionAsync("North ridge", "Pine Hollow");
+        var eagle = await field.OptionAsync("North ridge", "Eagle Ridge");
+        var partly = await field.OptionAsync("North ridge");
+
+        Assert.True(pine.Chosen);
+        Assert.False(eagle.Chosen);
+        Assert.False(partly.Chosen);
+    }
+
+    [Fact]
     public async Task TreeSelectDriver_ShouldCheckAndUncheckItemsByTheirPaths_WhenCalled()
     {
         var cut = RenderPlaces();

@@ -23,6 +23,23 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
         await Assertions.Expect(Trigger).ToHaveAttributeAsync("aria-expanded", "false");
     }
 
+    /// <summary>Opens the tree and the rows above the item at this path, and reads its text and whether it's disabled
+    /// and chosen, which in a multi tree select means checked. A tree that was closed is closed again. A disabled or
+    /// read-only tree select throws, since it has no tree to read.</summary>
+    public async Task<OptionInfo> OptionAsync(params string[] path)
+    {
+        var open = await IsOpenAsync();
+        var tree = await OpenTreeAsync();
+        await tree.ExpandAsync(path[..^1]);
+        var state = await (await tree.ItemAsync(path)).EvaluateAsync<bool[]>(Choices.State);
+        if (!open)
+        {
+            await CloseAsync();
+        }
+
+        return new(path[^1], state[0], state[1]);
+    }
+
     /// <summary>Opens the tree, checks the item at this path in a multi tree select unless it is checked already, and
     /// closes the tree again.</summary>
     public Task CheckAsync(params string[] path) => SetCheckedAsync(path, "true");

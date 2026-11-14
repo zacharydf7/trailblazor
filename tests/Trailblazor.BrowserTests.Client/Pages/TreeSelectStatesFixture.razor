@@ -1,6 +1,7 @@
 @page "/tree-select-states"
 
-@* Tree selects that can't be used, one without a filter box, and one whose region starts partly checked. *@
+@* Tree selects that can't be used, one without a filter box, one with a choice and a disabled item, and one whose
+   region starts partly checked. *@
 <TbStack Gap="3">
     <TbTreeSelect TItem="Place" TKey="string" Label="Closed trail" Items="Places" KeySelector="place => place.Id"
                   ItemText="place => place.Name" ChildrenSelector="place => place.Children" Disabled />
@@ -9,6 +10,9 @@
                   Value="@("pine")" />
     <TbTreeSelect TItem="Place" TKey="string" Label="Plain trail" Items="Places" KeySelector="place => place.Id"
                   ItemText="place => place.Name" ChildrenSelector="place => place.Children" />
+    <TbTreeSelect TItem="Place" TKey="string" Label="Picked trail" Items="Places" KeySelector="place => place.Id"
+                  ItemText="place => place.Name" ChildrenSelector="place => place.Children" @bind-Value="_picked"
+                  ItemDisabled="@(place => place.Id == "eagle")" />
     <TbMultiTreeSelect TItem="Place" TKey="string" Label="Visited trails" Items="Places"
                        KeySelector="place => place.Id" ItemText="place => place.Name"
                        ChildrenSelector="place => place.Children" @bind-Value="_visited" />
@@ -21,6 +25,7 @@
         new("north", "North ridge", [new("pine", "Pine Hollow"), new("eagle", "Eagle Ridge")]),
     ];
 
+    private string? _picked = "pine";
     private IReadOnlyList<string> _visited = ["pine"];
 
     private sealed record Place(string Id, string Name, IReadOnlyList<Place>? Children = null);

@@ -356,3 +356,4 @@ Trailblazor.Testing.TbTreeDriver.ActivateAsync(params string![]! path) -> System
 Trailblazor.Testing.TbTreeDriver.Branch(params string![]! path) -> Trailblazor.Testing.TbTreeDriver!
 Trailblazor.Testing.TbTreeDriver.CollapseAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTreeDriver.Row(string! text) -> AngleSharp.Dom.IElement!
+Trailblazor.Testing.TbTreeSelectDriver.OptionAsync(params string![]! path) -> System.Threading.Tasks.Task<Trailblazor.Testing.OptionInfo!>!

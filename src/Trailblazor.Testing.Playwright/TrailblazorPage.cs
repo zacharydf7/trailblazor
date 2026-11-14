@@ -1863,8 +1863,10 @@ internal static class Choices
     public const string Disabled =
         "element => element.getAttribute('aria-disabled') === 'true' || element.disabled === true";
 
-    private const string State = "option => [(" + Disabled + ")(option), "
-        + "option.getAttribute('aria-selected') === 'true' || option.selected === true]";
+    // A tree select's item is chosen when selected, or in a multi tree select when checked.
+    public const string State = "option => [(" + Disabled + ")(option), "
+        + "option.getAttribute('aria-selected') === 'true' || option.selected === true "
+        + "|| option.getAttribute('aria-checked') === 'true']";
 
     public static async Task<OptionInfo> DescribeAsync(ILocator list, string name)
     {

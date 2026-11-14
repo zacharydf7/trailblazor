@@ -4667,6 +4667,9 @@ public static class ExampleCatalog
                     + "from `Trailblazor.Testing` does the same, and `Text` reads the field.",
                 "`Disabled` reads whether the field is disabled (`DisabledAsync()` in Playwright). Playwright also "
                     + "has `OpenAsync()`, `CloseAsync()` and `IsOpenAsync()` for the tree.",
+                "In both packages, `OptionAsync(\"River valley\", \"Cedar Flats\")` opens the rows above the item "
+                    + "and reads its text, and whether it's disabled and chosen, which in a `TbMultiTreeSelect` means "
+                    + "checked.",
                 "The field's button is named by its label and its choice together, as in \"Trail Cedar Flats\", so "
                     + "a locator that expects the exact name \"Trail\" misses it once something is chosen; "
                     + "`TreeSelect(label)` finds it by the label alone.",

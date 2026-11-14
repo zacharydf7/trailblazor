@@ -345,3 +345,4 @@ Trailblazor.Testing.Playwright.TbTreeLocator.ActivateAsync(params string![]! pat
 Trailblazor.Testing.Playwright.TbTreeLocator.Branch(params string![]! path) -> Trailblazor.Testing.Playwright.TbTreeLocator!
 Trailblazor.Testing.Playwright.TbTreeLocator.CollapseAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeLocator.RowAsync(string! text) -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
+Trailblazor.Testing.Playwright.TbTreeSelectLocator.OptionAsync(params string![]! path) -> System.Threading.Tasks.Task<Trailblazor.Testing.Playwright.OptionInfo!>!

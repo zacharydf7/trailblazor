@@ -61,6 +61,25 @@ public class DriverReadsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeSelectOption_ShouldReadAnItemsState_WhenGivenItsPath(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-select-states");
+        var picked = page.Tb().TreeSelect("Picked trail");
+        var visited = page.Tb().TreeSelect("Visited trails");
+
+        var pine = await picked.OptionAsync("North ridge", "Pine Hollow");
+        var eagle = await picked.OptionAsync("North ridge", "Eagle Ridge");
+        var checkedPine = await visited.OptionAsync("North ridge", "Pine Hollow");
+        var uncheckedEagle = await visited.OptionAsync("North ridge", "Eagle Ridge");
+
+        Assert.Equal(new OptionInfo("Pine Hollow", Disabled: false, Chosen: true), pine);
+        Assert.Equal(new OptionInfo("Eagle Ridge", Disabled: true, Chosen: false), eagle);
+        Assert.True(checkedPine.Chosen);
+        Assert.False(uncheckedEagle.Chosen);
+        Assert.False(await picked.IsOpenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task OpenAsync_ShouldShowTheListUntilClosed_WhenASelectOrTreeSelectOpens(string browser)
     {
         var page = await OpenAsync(browser, "/examples/select");

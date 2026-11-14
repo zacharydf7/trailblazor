@@ -396,6 +396,20 @@ public class TbTreeSelectTests : BunitContext
     }
 
     [Fact]
+    public async Task TreeSelectDriver_ShouldReadAnItemsState_WhenGivenItsPath()
+    {
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.ChildrenSelector, place => place.Children)
+            .Add(select => select.Value, "pine").Add(select => select.ItemDisabled, place => place.Id == "eagle"));
+        var field = cut.Tb().TreeSelect("Trail");
+
+        var chosen = await field.OptionAsync("North ridge", "Pine Hollow");
+        var disabled = await field.OptionAsync("North ridge", "Eagle Ridge");
+
+        Assert.Equal(new OptionInfo("Pine Hollow", Disabled: false, Chosen: true), chosen);
+        Assert.Equal(new OptionInfo("Eagle Ridge", Disabled: true, Chosen: false), disabled);
+    }
+
+    [Fact]
     public async Task TreeSelectDriver_ShouldNarrowTheTree_WhenFiltering()
     {
         var cut = RenderInMemory(parameters => parameters.Add(select => select.Filterable, true));
