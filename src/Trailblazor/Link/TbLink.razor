@@ -16,7 +16,8 @@ else
     <a @ref="_element" @attributes="AdditionalAttributes" href="@(Disabled ? null : Href)" target="@TargetAttribute"
        rel="@RelAttribute" role="@(Disabled ? "link" : AdditionalAttributes?.GetValueOrDefault("role"))"
        tabindex="@(Disabled ? null : AdditionalAttributes?.GetValueOrDefault("tabindex"))"
-       aria-disabled="@(Disabled ? "true" : null)" class="@ClassNames.Join("tb-link", Class)" style="@Style"
+       aria-disabled="@(Disabled ? "true" : null)" data-tb-force-load="@(ForceLoad ? "" : null)"
+       class="@ClassNames.Join("tb-link", Class)" style="@Style"
        @onclick="OnClickAsync">
         @ChildContent
         @if (NewTab)
@@ -43,6 +44,13 @@ else
     /// Defaults to the app's text for <see cref="TbStrings.NewTabHint"/>, "opens in a new tab" in English.</summary>
     [Parameter]
     public string? NewTabHint { get; set; }
+
+    /// <summary>Loads the address as a whole new page rather than letting Blazor swap in its content. Use it for a page
+    /// outside the app or one that must start afresh, such as signing in or out. The new page starts loading as the link
+    /// is clicked, so on an interactive page its <see cref="OnClick"/> and its use under <see cref="TelemetryName"/> may
+    /// not finish before the old page goes away.</summary>
+    [Parameter]
+    public bool ForceLoad { get; set; }
 
     /// <summary>Turns the link off: it keeps its text but loses its address, says it is disabled, and runs no
     /// <see cref="OnClick"/>.</summary>

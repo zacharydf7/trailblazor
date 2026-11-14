@@ -1,7 +1,57 @@
+using System.Text.RegularExpressions;
+
 namespace Trailblazor.BrowserTests;
 
 public class LinkTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    // A mark on the window survives Blazor's in-place navigation and is gone after a whole new page loads.
+    public static TheoryData<string, string, bool> Navigations()
+    {
+        var data = new TheoryData<string, string, bool>();
+        foreach (var browser in AllBrowsers.Names)
+        {
+            data.Add(browser, "/link", false);
+            data.Add(browser, "/link", true);
+            data.Add(browser, "/static-link", false);
+            data.Add(browser, "/static-link", true);
+        }
+
+        return data;
+    }
+
+    [Theory, MemberData(nameof(Navigations))]
+    public async Task Link_ShouldLoadAWholeNewPageOnlyWithForceLoad_WhenFollowed(string browser, string path,
+        bool forceLoad)
+    {
+        var page = path == "/link" ? await OpenAsync(browser, path) : await OpenStaticAsync(browser, path);
+        await page.EvaluateAsync("() => window.tbMark = true");
+        var name = (path, forceLoad) switch
+        {
+            ("/link", false) => "Open dialogs",
+            ("/link", true) => "Reload into dialogs",
+            (_, false) => "Read-only fields",
+            _ => "Reload into read-only fields",
+        };
+
+        await page.GetByRole(AriaRole.Link, new() { Name = name, Exact = true }).ClickAsync();
+
+        await Expect(page).ToHaveURLAsync(new Regex(path == "/link" ? "/dialogs$" : "/static-read-only$"));
+        Assert.Equal(!forceLoad, await page.EvaluateAsync<bool>("() => window.tbMark === true"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Link_ShouldStillOpenANewTab_WhenItHasForceLoadAndNewTab(string browser)
+    {
+        var page = await OpenAsync(browser, "/link");
+        await page.EvaluateAsync("() => window.tbMark = true");
+
+        var tab = await page.Context.RunAndWaitForPageAsync(() =>
+            page.GetByRole(AriaRole.Link, new() { Name = "Reload into dialogs in a new tab" }).ClickAsync());
+
+        await Expect(tab).ToHaveURLAsync(new Regex("/dialogs$"));
+        Assert.True(await page.EvaluateAsync<bool>("() => window.tbMark === true"));
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Link_ShouldStayUnderlinedAndShowAFocusRing_WhenFocused(string browser)
     {

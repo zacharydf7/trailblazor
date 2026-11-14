@@ -156,14 +156,14 @@ public class FieldFocusAndNameTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldNotMarkTheField_WhenThePageIsStatic()
+    public void Render_ShouldMarkTheField_WhenThePageIsStatic()
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
 
         var cut = Render<TbTextField<string>>(parameters => parameters
             .Add(field => field.Label, "Name").Add(field => field.AutoFocus, true));
 
-        Assert.Empty(cut.FindAll("[data-tb-autofocus]"));
+        Assert.True(cut.Find("input").HasAttribute("data-tb-autofocus"));
     }
 
     [Fact]

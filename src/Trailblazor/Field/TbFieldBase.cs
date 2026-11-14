@@ -165,9 +165,9 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     [Parameter]
     public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
-    /// <summary>Moves focus to the control, as a dialog or a search page does with its first field, when it appears on
-    /// an interactive page, unless the user is typing in another field by then. In a dialog or focus scope it takes
-    /// focus as that opens. Give it to one field at most.</summary>
+    /// <summary>Moves focus to the control when it appears, as the page loads or later, the way a dialog or a search
+    /// page does with its first field, unless the user is typing in another field by then. It works on a static page
+    /// too. In a dialog or focus scope it takes focus as that opens. Give it to one field at most.</summary>
     [Parameter]
     public bool AutoFocus { get; set; }
 
@@ -219,7 +219,7 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 
     // A group's root keeps its id, since its items each have their own, and carries the group's autofocus.
     private protected IReadOnlyDictionary<string, object>? GroupRootAttributes =>
-        WithFocusEvents(MarkAutoFocus ? WithAutofocus(AdditionalAttributes) : AdditionalAttributes);
+        WithFocusEvents(AutoFocus ? WithAutofocus(AdditionalAttributes) : AdditionalAttributes);
 
     private protected string LabelId => $"{FieldId}-label";
 
@@ -255,16 +255,13 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // "Clear", since a name holding the label would also match a test looking the field up by its label.
     private protected string? ClearDescribedBy => ShownLabel is null ? null : LabelId;
 
-    // The consumer's input attributes, marked for focus on an interactive page when asked, which the browser, dialogs
-    // and focus scopes look for. It isn't the native autofocus, which browsers act on even where a closed dialog or a
+    // The consumer's input attributes, marked for focus when asked, which the library's autofocus script, dialogs and
+    // focus scopes look for. It isn't the native autofocus, which browsers act on even where a closed dialog or a
     // focus scope should place focus. A field with several controls marks one itself: a group its root, a range its
     // first part.
     private protected IReadOnlyDictionary<string, object>? ControlAttributes { get; private set; }
 
-    private protected string? AutoFocusMark => MarkAutoFocus ? "" : null;
-
-    // RendererInfo is read only when asked for, since a test renderer may never set it.
-    private bool MarkAutoFocus => AutoFocus && RendererInfo.IsInteractive;
+    private protected string? AutoFocusMark => AutoFocus ? "" : null;
 
     // A label's for attribute works only on form controls; other inputs name themselves with aria-labelledby.
     private protected virtual bool LabelTargetsInput => true;
@@ -376,7 +373,7 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
             throw new InvalidOperationException($"A field needs a {nameof(Label)} to show an info button.");
         }
 
-        ControlAttributes = MarkAutoFocus ? WithAutofocus(InputAttributes) : InputAttributes;
+        ControlAttributes = AutoFocus ? WithAutofocus(InputAttributes) : InputAttributes;
         // A value the field didn't report itself came from the parent, and a form reset goes back to it.
         if (!EqualityComparer<TValue>.Default.Equals(Value, _lastValue))
         {

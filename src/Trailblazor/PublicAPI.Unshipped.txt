@@ -2238,6 +2238,8 @@ Trailblazor.TbLink.ChildContent.set -> void
 Trailblazor.TbLink.Disabled.get -> bool
 Trailblazor.TbLink.Disabled.set -> void
 Trailblazor.TbLink.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+Trailblazor.TbLink.ForceLoad.get -> bool
+Trailblazor.TbLink.ForceLoad.set -> void
 Trailblazor.TbLink.Href.get -> string?
 Trailblazor.TbLink.Href.set -> void
 Trailblazor.TbLink.NewTab.get -> bool

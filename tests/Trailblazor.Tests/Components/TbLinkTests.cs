@@ -19,6 +19,18 @@ public class TbLinkTests : BunitContext
         Assert.Equal("Theming", anchor.TextContent.Trim());
     }
 
+    [Theory]
+    [InlineData(true, "")]
+    [InlineData(false, null)]
+    public void Render_ShouldMarkTheAnchorForAWholePageLoadOnlyWithForceLoad_WhenGivenForceLoad(bool forceLoad,
+        string? mark)
+    {
+        var cut = Render<TbLink>(parameters => parameters.Add(link => link.Href, "account/sign-in")
+            .Add(link => link.ForceLoad, forceLoad).AddChildContent("Sign in"));
+
+        Assert.Equal(mark, cut.Find("a").GetAttribute("data-tb-force-load"));
+    }
+
     [Fact]
     public void Click_ShouldRunOnClickFromAButton_WhenHrefIsMissing()
     {

@@ -8967,6 +8967,11 @@ public static class ExampleCatalog
                     + "like a link, for an action in the middle of a sentence.", typeof(LinkButtonExample)),
                 new("moving-focus", "Moving focus", "`FocusAsync` moves focus to the link from code, such as after an "
                     + "action finishes.", typeof(LinkFocusExample)),
+                new("force-load", "A whole new page", "`ForceLoad` loads the address as a whole new page, from a static "
+                    + "page or an interactive one, rather than letting Blazor swap in the new page's content. Use it "
+                    + "for a page outside the app, or one that must start afresh, such as signing in or out. "
+                    + "Ctrl-click, middle-click and the like still do what they do on any link.",
+                    typeof(LinkForceLoadExample)),
                 new("disabled", "Disabled", "`Disabled` keeps the text but drops the address, so the link can't be "
                     + "followed or focused. It loses its underline and turns gray.", typeof(LinkDisabledExample)),
             ],

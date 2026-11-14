@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Trailblazor.BrowserTests;
 
 public class FieldFocusTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -33,6 +35,38 @@ public class FieldFocusTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/field-autofocus");
 
         await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AutoFocus_ShouldFocusTheField_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-autofocus");
+
+        await Expect(page.GetByLabel("Search trails")).ToBeFocusedAsync();
+    }
+
+    // From a page whose field the next one marks, and from one whose field already had the mark.
+    public static TheoryData<string, string> StaticStarts()
+    {
+        var data = new TheoryData<string, string>();
+        foreach (var browser in AllBrowsers.Names)
+        {
+            data.Add(browser, "/static-autofocus-start");
+            data.Add(browser, "/static-autofocus-again");
+        }
+
+        return data;
+    }
+
+    [Theory, MemberData(nameof(StaticStarts))]
+    public async Task AutoFocus_ShouldFocusTheField_WhenEnhancedNavigationReachesAStaticPage(string browser, string from)
+    {
+        var page = await OpenStaticAsync(browser, from);
+
+        await page.GetByRole(AriaRole.Link, new() { Name = "Search" }).ClickAsync();
+
+        await Expect(page).ToHaveURLAsync(new Regex("/static-autofocus$"));
+        await Expect(page.GetByLabel("Search trails")).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

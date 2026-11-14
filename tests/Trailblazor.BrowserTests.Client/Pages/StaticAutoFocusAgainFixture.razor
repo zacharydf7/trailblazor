@@ -1,0 +1,6 @@
+@page "/static-autofocus-again"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* The next page autofocuses the same field, which enhanced navigation keeps, so it must take focus again there. *@
+<TbTextField TValue="string" Label="Search trails" Name="search" AutoFocus />
+<TbLink Href="static-autofocus">Search</TbLink>

@@ -14,6 +14,7 @@ Familiar apps: any link in a browser
 
 - [x] Clicking a link goes to its address. `TbLinkTests.Render_ShouldRenderAnAnchorToTheAddress_WhenHrefIsSet`
 - [x] Ctrl, Cmd, Shift, middle and right clicks do what they do on any link, since nothing cancels them. `TbLink.razor`
+- [x] With `ForceLoad`, a link loads a whole new page, from a static or interactive page alike, while modified clicks and links that open elsewhere still go to the browser. `LinkTests.Link_ShouldLoadAWholeNewPageOnlyWithForceLoad_WhenFollowed`, `LinkTests.Link_ShouldStillOpenANewTab_WhenItHasForceLoadAndNewTab`, `TbLinkTests.Render_ShouldMarkTheAnchorForAWholePageLoadOnlyWithForceLoad_WhenGivenForceLoad`
 - [x] Clicking a link with no address runs its action. `TbLinkTests.Click_ShouldRunOnClickFromAButton_WhenHrefIsMissing`
 - [x] A link with no address doesn't submit a form around it. `TbLink.razor`
 - [x] `NewTab` opens the address in a new tab and tells screen readers so. `TbLinkTests.Render_ShouldOpenANewTabWithoutTheOpenerAndSaySo_WhenNewTabIsSet`

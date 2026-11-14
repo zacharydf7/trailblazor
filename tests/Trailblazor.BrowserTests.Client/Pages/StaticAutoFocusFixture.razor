@@ -1,0 +1,5 @@
+@page "/static-autofocus"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* No circuit runs here, so only the library's startup script can focus the field. *@
+<TbTextField TValue="string" Label="Search trails" Name="search" AutoFocus />
