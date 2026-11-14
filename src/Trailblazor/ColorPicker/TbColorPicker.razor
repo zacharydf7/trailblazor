@@ -21,7 +21,8 @@ else
        replace. *@
     @Layout(Classes, @<text>
         <input @attributes="ControlAttributes" data-part="input" id="@InputId" name="@InputNameAttribute" type="text"
-               value="@Text" placeholder="@Placeholder" pattern="@StaticPattern" title="@BadColorLabel"
+               value="@Text" placeholder="@Placeholder" pattern="@StaticPattern"
+               title="@(LimitsToPalette ? NotInPaletteLabel : BadColorLabel)"
                disabled="@Disabled" readonly="@ReadOnly"
                aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
                aria-describedby="@InputDescribedBy" data-static="@(AssignedRenderMode is null ? "" : null)"
@@ -31,8 +32,14 @@ else
 }
 
 @code {
-    // A static post binds the text as it is, so the browser lets through only the hex the interactive field writes.
-    private string StaticPattern => Alpha ? "#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?" : "#[0-9a-fA-F]{6}";
+    // A static post binds the text as it is, so the browser lets through only the hex the interactive field writes
+    // (with PaletteOnly, only the palette's colors); letters match in either case, as a pattern can't ignore case.
+    private string StaticPattern => LimitsToPalette
+        ? string.Join("|", Palette!.Select(swatch => string.Concat(Read(swatch).ToHex(Alpha)
+            .Select(digit => char.IsLetter(digit) ? $"[{digit}{char.ToUpperInvariant(digit)}]" : $"{digit}"))))
+        : Alpha ? "#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?" : "#[0-9a-fA-F]{6}";
+
+    private bool LimitsToPalette => PaletteOnly && Palette is { Count: > 0 };
 
     private RenderFragment Preview =>
         @<span data-part="swatch-preview" aria-hidden="true" class="tb-color-picker__preview"

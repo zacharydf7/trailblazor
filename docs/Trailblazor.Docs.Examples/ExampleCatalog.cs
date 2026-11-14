@@ -4942,12 +4942,14 @@ public static class ExampleCatalog
                 new("opacity", "Opacity", "`Alpha` adds an opacity slider and also allows `#rgba` and `#rrggbbaa`. A "
                     + "color that isn't fully opaque gets two more digits for its opacity, as in this "
                     + "`#2da44e66`.", typeof(ColorPickerAlphaExample)),
-                new("palette-only", "Palette only", "`PaletteOnly` hides the custom picker, leaving the swatches. It "
-                    + "doesn't limit the value: the text box and eyedropper still take any color, so add `Validation` "
-                    + "if only the palette's colors are allowed.",
+                new("palette-only", "Palette only", "`PaletteOnly` hides the custom picker and the eyedropper, "
+                    + "leaving the swatches. A color typed in the box must be one of the palette's, or the field says "
+                    + "so and keeps its value; on a static page, the browser checks it.",
                     typeof(ColorPickerPaletteOnlyExample)),
                 new("eyedropper", "Eyedropper", "A button takes a color from the screen, in browsers that have an "
-                    + "eyedropper. `Eyedropper=\"false\"` leaves it out.", typeof(ColorPickerEyedropperExample)),
+                    + "eyedropper. `Eyedropper=\"false\"` leaves it out. While the eyedropper is open, the scrims of "
+                    + "open dialogs clear, so the colors it samples aren't darkened.",
+                    typeof(ColorPickerEyedropperExample)),
                 new("clearing", "Clearing", "`Clearable` shows a button that sets the value to `null` and puts focus "
                     + "back in the text box. `Placeholder` shows while there's no color.",
                     typeof(ColorPickerClearExample)),
@@ -4969,7 +4971,8 @@ public static class ExampleCatalog
                 new("size-and-variant", "Size and variant", "`Variant` is `Outlined` or `Filled`, and `Size` is "
                     + "`Small`, `Medium` or `Large`.", typeof(ColorPickerSizeExample)),
                 new("labels", "Built-in text", "`Labels` replaces the words the field shows and reads out, such as the "
-                    + "picker button's name, the clear button's name and the message for text it can't read.",
+                    + "picker button's name, the clear button's name, the message for text it can't read, and the "
+                    + "message for a color outside a palette-only field's palette.",
                     typeof(ColorPickerLabelsExample)),
             ],
             Api = [typeof(TbColorPicker), typeof(ColorPickerLabels), typeof(FieldClasses)],
@@ -4997,7 +5000,9 @@ public static class ExampleCatalog
             ],
             Announcements =
             [
-                "A color the text box can't read marks it `aria-invalid`, and the message says the format to use.",
+                "A color the text box can't read marks it `aria-invalid`, and the message says the format to use. "
+                    + "With `PaletteOnly`, a color outside the palette does the same, and the message asks for one of "
+                    + "the palette's colors.",
                 "A validation message that appears as someone changes the color is read out once, and a failed submit "
                     + "reads none out, as on a [text field](components/text-field).",
                 "An `Error` your app sets is read out once when it appears, even after a submit.",

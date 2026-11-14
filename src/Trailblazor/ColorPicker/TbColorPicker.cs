@@ -46,7 +46,8 @@ public partial class TbColorPicker : IAsyncDisposable
     [Parameter]
     public Func<string, string>? SwatchName { get; set; }
 
-    /// <summary>Offers only the swatches, without the custom picker.</summary>
+    /// <summary>Offers only the swatches, without the custom picker or the eyedropper. A color typed in the box must
+    /// be one of <see cref="Palette"/>'s, on a static page too.</summary>
     [Parameter]
     public bool PaletteOnly { get; set; }
 
@@ -56,7 +57,8 @@ public partial class TbColorPicker : IAsyncDisposable
     public bool Alpha { get; set; }
 
     /// <summary>Shows a button that takes a color from the screen, in browsers that have an eyedropper. Defaults to
-    /// true.</summary>
+    /// true. While the eyedropper is open, the scrims of open dialogs clear, so they don't darken what's picked. <see
+    /// cref="PaletteOnly"/> leaves it out.</summary>
     [Parameter]
     public bool Eyedropper { get; set; } = true;
 
@@ -134,7 +136,7 @@ public partial class TbColorPicker : IAsyncDisposable
                 await AttachPadAsync();
             }
 
-            if (Eyedropper && await Browser.CanPickColorAsync())
+            if (Eyedropper && !PaletteOnly && await Browser.CanPickColorAsync())
             {
                 _canPickColor = true;
                 StateHasChanged();
@@ -287,6 +289,13 @@ public partial class TbColorPicker : IAsyncDisposable
         // The sliders follow a typed color at once, so they keep its hue rather than working it out again.
         if (ColorValue.TryParse(text, Alpha, out var color))
         {
+            if (LimitsToPalette && !Palette!.Any(swatch => Read(swatch) == color))
+            {
+                value = null;
+                error = NotInPaletteLabel;
+                return false;
+            }
+
             value = color.ToHex(Alpha);
             ShowColor(color);
             _shownValue = value;
@@ -324,4 +333,5 @@ public partial class TbColorPicker : IAsyncDisposable
     private string GreenLabel => Labels.Green ?? Localizer[TbStrings.ColorPickerGreen];
     private string BlueLabel => Labels.Blue ?? Localizer[TbStrings.ColorPickerBlue];
     private string BadColorLabel => Labels.BadColor ?? Localizer[TbStrings.ColorPickerBadColor];
+    private string NotInPaletteLabel => Labels.NotInPalette ?? Localizer[TbStrings.ColorPickerNotInPalette];
 }

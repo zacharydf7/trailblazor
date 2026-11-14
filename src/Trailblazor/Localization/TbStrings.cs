@@ -138,6 +138,10 @@ public static class TbStrings
     /// <summary>"Enter a color as #RRGGBB.": shown when the typed color can't be read.</summary>
     public const string ColorPickerBadColor = "ColorPicker.BadColor";
 
+    /// <summary>"Choose one of the palette's colors.": shown when a palette-only field is given another color.
+    /// </summary>
+    public const string ColorPickerNotInPalette = "ColorPicker.NotInPalette";
+
     /// <summary>"Previous month": names a calendar's button that shows the month before.</summary>
     public const string CalendarPreviousMonth = "Calendar.PreviousMonth";
 
@@ -1182,6 +1186,7 @@ public static class TbStrings
         [ColorPickerGreen] = "Green",
         [ColorPickerBlue] = "Blue",
         [ColorPickerBadColor] = "Enter a color as #RRGGBB.",
+        [ColorPickerNotInPalette] = "Choose one of the palette's colors.",
         [CalendarPreviousMonth] = "Previous month",
         [CalendarNextMonth] = "Next month",
         [CalendarPreviousYear] = "Previous year",

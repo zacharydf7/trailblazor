@@ -4375,6 +4375,15 @@
         transition: opacity var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
     }
 
+    /* A color picker's eyedropper samples the screen, so open dialogs' scrims clear while the eyedropper is open. */
+    .tb-dialog[data-picking]::backdrop {
+        background: transparent;
+    }
+
+    .tb-dialog[data-layer="page"][data-backdrop][data-picking] {
+        box-shadow: var(--tb-shadow-lg);
+    }
+
     /* A dialog fades in as it opens and out before dialog.js closes it, without moving, so its box can be measured at
        once for dragging. Reduced motion skips both. */
     .tb-dialog {

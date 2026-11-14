@@ -28,6 +28,8 @@ Familiar apps: a browser's color input, the color pickers in design tools and br
 - [x] The opacity slider shows and sets the alpha. `ColorPickerTests.Opacity_ShouldShowAndSetTheAlpha_WhenAlphaIsOn`
 - [x] The eyedropper takes a color from the screen, and only shows where the browser has one. `ColorPickerTests.Eyedropper_ShouldTakeTheColorFromTheScreen_WhenTheBrowserHasOne`
 - [x] Canceling the eyedropper keeps the color. `browser.js`
+- [x] While the eyedropper is open, open dialogs' scrims clear, in the top layer and on the page layer, so they don't darken what's picked. `ColorPickerTests.Eyedropper_ShouldClearTheScrimsOfOpenDialogs_WhileItIsOpen`, `ColorPickerTests.Eyedropper_ShouldClearAPageLayerDialogsScrim_WhileItIsOpen`
+- [x] With `PaletteOnly`, a typed color must be one of the palette's, and there's no eyedropper. `TbColorPickerTests.PaletteOnly_ShouldTurnDownATypedColor_WhenItIsntInThePalette`, `TbColorPickerTests.PaletteOnly_ShouldLeaveOutTheCustomPickerAndTheEyedropper_WhenSet`
 - [x] Clicking elsewhere closes the picker. `PopoverTests.Popover_ShouldCloseFromCodeAndOnAClickElsewhere_WhenItsOpenIsBound`
 
 ## Touch

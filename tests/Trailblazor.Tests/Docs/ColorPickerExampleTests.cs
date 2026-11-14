@@ -45,13 +45,13 @@ public class ColorPickerExampleTests : DocsTest
     }
 
     [Fact]
-    public void PaletteOnlyExample_ShouldStillTakeAnotherColor_WhenOneIsTyped()
+    public void PaletteOnlyExample_ShouldKeepItsColor_WhenAnotherIsTyped()
     {
         var cut = Render<ColorPickerPaletteOnlyExample>();
 
         cut.Find("[data-part=input]").Change("#123456");
 
-        Assert.Contains("Tent color value: #123456", cut.Markup);
+        Assert.Contains("Tent color value: #2da44e", cut.Markup);
     }
 
     [Fact]

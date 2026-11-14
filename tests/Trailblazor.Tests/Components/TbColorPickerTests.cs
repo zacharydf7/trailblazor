@@ -141,13 +141,37 @@ public class TbColorPickerTests : BunitContext
     }
 
     [Fact]
-    public void PaletteOnly_ShouldLeaveOutTheCustomPicker_WhenSet()
+    public void PaletteOnly_ShouldLeaveOutTheCustomPickerAndTheEyedropper_WhenSet()
     {
         var cut = RenderPicker("#336699", parameters => parameters.Add(picker => picker.Palette, ["#336699"])
             .Add(picker => picker.PaletteOnly, true));
 
-        Assert.Empty(cut.FindAll("[data-part=pad], [data-part=hue], [data-part=red]"));
+        Assert.Empty(cut.FindAll("[data-part=pad], [data-part=hue], [data-part=red], [data-part=eyedropper]"));
         Assert.Single(cut.FindAll("[data-part=swatch]"));
+    }
+
+    [Fact]
+    public void PaletteOnly_ShouldTurnDownATypedColor_WhenItIsntInThePalette()
+    {
+        var cut = RenderPicker("#336699", parameters => parameters.Add(picker => picker.Palette, ["#336699", "#c33"])
+            .Add(picker => picker.PaletteOnly, true));
+
+        cut.Find("[data-part=input]").Change("#123456");
+
+        Assert.Empty(_changes);
+        Assert.Equal("Choose one of the palette's colors.", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void PaletteOnly_ShouldTakeATypedColor_WhenItIsInThePalette()
+    {
+        var cut = RenderPicker("#336699", parameters => parameters.Add(picker => picker.Palette, ["#336699", "#c33"])
+            .Add(picker => picker.PaletteOnly, true));
+
+        cut.Find("[data-part=input]").Change("#CC3333");
+
+        Assert.Equal(["#cc3333"], _changes);
+        Assert.Empty(cut.FindAll("[data-part=error]"));
     }
 
     [Fact]
@@ -212,6 +236,19 @@ public class TbColorPickerTests : BunitContext
         var input = cut.Find("[data-part=input]");
         Assert.Equal(["text", "#ff000080", ""], new[] { "type", "value", "data-static" }.Select(input.GetAttribute));
         Assert.Empty(cut.FindAll("[data-part=panel]"));
+    }
+
+    [Fact]
+    public void Render_ShouldLetAStaticPostThroughOnlyThePalettesColors_WhenPaletteOnly()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderPicker("#336699", parameters => parameters.Add(picker => picker.Palette, ["#336699", "#c33"])
+            .Add(picker => picker.PaletteOnly, true));
+
+        var input = cut.Find("[data-part=input]");
+        Assert.Equal("#336699|#[cC][cC]3333", input.GetAttribute("pattern"));
+        Assert.Equal("Choose one of the palette's colors.", input.GetAttribute("title"));
     }
 
     [Fact]

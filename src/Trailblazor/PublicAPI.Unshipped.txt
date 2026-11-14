@@ -5431,3 +5431,6 @@ Trailblazor.TbAutocomplete<TValue>.OpenOnFocus.get -> bool
 Trailblazor.TbAutocomplete<TValue>.OpenOnFocus.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ShowEmpty.get -> bool
 Trailblazor.TbTreeView<TItem, TKey>.ShowEmpty.set -> void
+Trailblazor.ColorPickerLabels.NotInPalette.get -> string?
+Trailblazor.ColorPickerLabels.NotInPalette.init -> void
+const Trailblazor.TbStrings.ColorPickerNotInPalette = "ColorPicker.NotInPalette" -> string!

@@ -153,6 +153,72 @@ public class ColorPickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Eyedropper_ShouldClearTheScrimsOfOpenDialogs_WhileItIsOpen(string browser)
+    {
+        var page = await OpenWithHeldEyedropperAsync(browser);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Choose the tent color" }).ClickAsync();
+        var tent = page.GetByRole(AriaRole.Dialog, new() { Name = "Tent color" });
+        await tent.GetByRole(AriaRole.Button, new() { Name = "Choose the stripe color" }).ClickAsync();
+        var stripe = page.GetByRole(AriaRole.Dialog, new() { Name = "Stripe color" });
+        const string Scrim = "dialog => getComputedStyle(dialog, '::backdrop').backgroundColor";
+
+        await stripe.GetByRole(AriaRole.Button, new() { Name = "Pick a color from the screen" }).ClickAsync();
+        await Expect(tent).ToHaveAttributeAsync("data-picking", "");
+        await Expect(stripe).ToHaveAttributeAsync("data-picking", "");
+        var picking = (await tent.EvaluateAsync<string>(Scrim), await stripe.EvaluateAsync<string>(Scrim));
+        await FinishPickingAsync(page);
+
+        await Expect(page.GetByTestId("stripe")).ToHaveTextAsync("#123456");
+        await Expect(tent).Not.ToHaveAttributeAsync("data-picking", "");
+        await Expect(stripe).Not.ToHaveAttributeAsync("data-picking", "");
+        Assert.Equal(("rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)"), picking);
+        Assert.NotEqual("rgba(0, 0, 0, 0)", await stripe.EvaluateAsync<string>(Scrim));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Eyedropper_ShouldClearAPageLayerDialogsScrim_WhileItIsOpen(string browser)
+    {
+        var page = await OpenWithHeldEyedropperAsync(browser);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Choose the flag color" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Flag color" });
+        await Expect(dialog).ToHaveAttributeAsync("data-layer", "page");
+        const string Scrim = "dialog => getComputedStyle(dialog).boxShadow";
+        var shown = await dialog.EvaluateAsync<string>(Scrim);
+
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Pick a color from the screen" }).ClickAsync();
+        await Expect(dialog).ToHaveAttributeAsync("data-picking", "");
+        var picking = await dialog.EvaluateAsync<string>(Scrim);
+        await FinishPickingAsync(page);
+
+        await Expect(page.GetByTestId("flag")).ToHaveTextAsync("#123456");
+        await Expect(dialog).Not.ToHaveAttributeAsync("data-picking", "");
+        Assert.NotEqual(shown, picking);
+        Assert.Equal(shown, await dialog.EvaluateAsync<string>(Scrim));
+    }
+
+    // The eyedropper stays open until FinishPickingAsync picks #123456.
+    private async Task<IPage> OpenWithHeldEyedropperAsync(string browser)
+    {
+        var page = await OpenAsync(browser, "/color-picker");
+        await page.AddInitScriptAsync("""
+            window.EyeDropper = class {
+                open() {
+                    return new Promise(resolve => { window.finishPicking = () => resolve({ sRGBHex: '#123456' }); });
+                }
+            };
+            """);
+        await page.ReloadAsync();
+        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        return page;
+    }
+
+    private static async Task FinishPickingAsync(IPage page)
+    {
+        await page.WaitForFunctionAsync("() => typeof window.finishPicking === 'function'");
+        await page.EvaluateAsync("window.finishPicking()");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Eyedropper_ShouldBeLeftOut_WhenTheBrowserHasNone(string browser)
     {
         var page = await OpenAsync(browser, "/color-picker");

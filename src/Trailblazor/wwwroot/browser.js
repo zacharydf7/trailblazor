@@ -56,11 +56,14 @@ export function canPickColor() {
     return 'EyeDropper' in window;
 }
 
+// The eyedropper samples the screen as displayed, so open dialogs clear their scrims until it closes.
 export async function pickColor() {
     if (!canPickColor()) {
         return null;
     }
 
+    const dialogs = [...document.querySelectorAll('dialog.tb-dialog[open]')];
+    dialogs.forEach(dialog => dialog.setAttribute('data-picking', ''));
     try {
         return (await new EyeDropper().open()).sRGBHex;
     } catch (error) {
@@ -69,6 +72,8 @@ export async function pickColor() {
         }
 
         throw error;
+    } finally {
+        dialogs.forEach(dialog => dialog.removeAttribute('data-picking'));
     }
 }
 

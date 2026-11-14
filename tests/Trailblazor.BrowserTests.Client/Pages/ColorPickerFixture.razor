@@ -7,12 +7,35 @@
     <output data-testid="changes">@_changes</output>
     <TbColorPicker Label="Highlight" @bind-Value="_highlight" Alpha />
     <output data-testid="highlight">@(_highlight ?? "none")</output>
+    <TbButton OnClick="() => _tentOpen = true">Choose the tent color</TbButton>
+    <output data-testid="tent">@(_tent ?? "none")</output>
+    <TbButton OnClick="() => _flagOpen = true">Choose the flag color</TbButton>
+    <output data-testid="flag">@(_flag ?? "none")</output>
 </TbStack>
+
+<TbDialog @bind-Open="_tentOpen" Title="Tent color">
+    <TbColorPicker Label="Tent" @bind-Value="_tent" />
+    <TbButton OnClick="() => _stripeOpen = true">Choose the stripe color</TbButton>
+    <output data-testid="stripe">@(_stripe ?? "none")</output>
+    <TbDialog @bind-Open="_stripeOpen" Title="Stripe color">
+        <TbColorPicker Label="Stripe" @bind-Value="_stripe" />
+    </TbDialog>
+</TbDialog>
+
+<TbDialog @bind-Open="_flagOpen" Title="Flag color" Options="new() { TopLayer = false }">
+    <TbColorPicker Label="Flag" @bind-Value="_flag" />
+</TbDialog>
 
 @code {
     private readonly string[] _palette = ["#336699", "#cc3333", "#ffcc00"];
     private string? _accent = "#336699";
     private string? _highlight = "#ff000080";
+    private string? _tent;
+    private bool _tentOpen;
+    private string? _stripe;
+    private bool _stripeOpen;
+    private string? _flag;
+    private bool _flagOpen;
     private int _changes;
 
     private static string Name(string swatch) => swatch switch

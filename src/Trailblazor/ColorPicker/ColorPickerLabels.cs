@@ -50,4 +50,8 @@ public sealed record ColorPickerLabels
     /// <summary>The message for a typed color that can't be read. Leave it null for the app's text for <see
     /// cref="TbStrings.ColorPickerBadColor"/>.</summary>
     public string? BadColor { get; init; }
+
+    /// <summary>The message for a typed color that isn't one of a palette-only field's swatches. Leave it null for the
+    /// app's text for <see cref="TbStrings.ColorPickerNotInPalette"/>.</summary>
+    public string? NotInPalette { get; init; }
 }

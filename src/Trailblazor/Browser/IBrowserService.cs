@@ -27,7 +27,8 @@ public interface IBrowserService
     Task<bool> CanPickColorAsync();
 
     /// <summary>Lets the user pick a color from anywhere on the screen with the browser's eyedropper. Call it from a
-    /// click handler, since the browser opens the eyedropper only soon after the user acts.</summary>
+    /// click handler, since the browser opens the eyedropper only soon after the user acts. While it's open, the
+    /// scrims of open dialogs clear, so they don't darken what's picked.</summary>
     /// <returns>The color as <c>#rrggbb</c>, or null when the user cancels or the browser has no eyedropper.</returns>
     Task<string?> PickColorAsync();
 
