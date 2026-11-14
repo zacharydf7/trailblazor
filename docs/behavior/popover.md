@@ -24,6 +24,7 @@ Familiar apps: filter panels in Google Sheets and GitHub, Slack's profile cards
 - [x] With `OpenOnHover`, resting on the trigger opens the panel without taking focus. `PopoverTests.Popover_ShouldOpenWithoutTakingFocusAndCloseOnEscape_WhenHovered`
 - [x] With `OpenOnHover`, the panel closes a moment after the pointer leaves both it and the trigger. `popover.js`
 - [x] A click on the trigger keeps a panel the pointer opened, and moves focus in. `PopoverTests.Popover_ShouldStayOpenAndTakeFocus_WhenTheTriggerIsClickedAfterAHover`
+- [x] With `OpenOnHover`, a panel that's clicked open and closed with Escape before the hover delay ends stays closed. `PopoverTests.Popover_ShouldStayClosed_WhenEscapeClosesItBeforeTheHoverDelayEnds`
 - [x] Resting on a trigger doesn't close another popover that's open. `PopoverTests.Popover_ShouldNotCloseAnotherPopover_WhenAHoverTriggerIsRestedOn`
 - [x] A popover inside an open one opens on hover and leaves the outer one open. `PopoverTests.Popover_ShouldOpenOnHover_WhenItSitsInsideAnotherOpenPopover`
 - [x] The panel flips when there's no room. `AnchoredPositionTests.CreateAsync_ShouldFlipToTop_WhenThereIsNoRoomBelow`

@@ -1057,17 +1057,6 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
             }
             """, steps.Select(step => new[] { step.X, step.Y, step.Wait }).ToArray());
 
-    // The page's timers then fire only when the test runs the clock. The installed clock runs until the pause, which
-    // can't lie in its past, so the pause leaves room for a slow machine.
-    private static async Task HoldTimersAsync(IPage page)
-    {
-        var now = DateTime.Now;
-        await page.Clock.InstallAsync(new() { TimeDate = now });
-        await page.Clock.PauseAtAsync(now + PauseMargin);
-    }
-
-    private static readonly TimeSpan PauseMargin = TimeSpan.FromSeconds(5);
-
     private const string Transparent = "rgba(0, 0, 0, 0)";
 
     private static ILocator Output(IPage page, string name) =>

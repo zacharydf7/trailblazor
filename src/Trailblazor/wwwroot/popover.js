@@ -33,6 +33,8 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     const focusMark = () => panel.querySelector('[data-tb-popover-focus]');
     const takeFocus = () => ((focusMark() && markedTarget(focusMark())) ?? firstTabbable(panel) ?? panel).focus();
     const onBeforeToggle = event => {
+        // Not on toggle, which runs a task later: a hover timer firing in between would reopen what Escape closed.
+        clearTimeout(timer);
         // The browser gives focus back to what had it when the panel opened, which after a hover isn't the trigger.
         if (event.newState === 'closed') {
             returnFocus = panel.contains(document.activeElement);

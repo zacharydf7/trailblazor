@@ -109,6 +109,24 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldStayClosed_WhenEscapeClosesItBeforeTheHoverDelayEnds(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/popover");
+        var trigger = Trigger(page, "Keyboard shortcuts");
+        await Expect(trigger).ToHaveAttributeAsync("data-ready", "");
+        // The click's pointer starts the hover delay; a paused clock keeps Escape inside it even on a slow machine.
+        await HoldTimersAsync(page);
+
+        await trigger.ClickAsync();
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+        await page.Clock.RunForAsync(400);
+
+        Assert.Equal("false", await trigger.GetAttributeAsync("aria-expanded"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Popover_ShouldOpenWithoutTakingFocusAndCloseOnEscape_WhenHovered(string browser)
     {
         var page = await OpenAsync(browser, "/examples/popover");

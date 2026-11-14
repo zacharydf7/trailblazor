@@ -93,6 +93,17 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
             }
             """, theme);
 
+    // The page's timers then fire only when the test runs the clock. The installed clock runs until the pause, which
+    // can't lie in its past, so the pause leaves room for a slow machine.
+    protected static async Task HoldTimersAsync(IPage page)
+    {
+        var now = DateTime.Now;
+        await page.Clock.InstallAsync(new() { TimeDate = now });
+        await page.Clock.PauseAtAsync(now + PauseMargin);
+    }
+
+    private static readonly TimeSpan PauseMargin = TimeSpan.FromSeconds(5);
+
     // Waits out fades and color transitions before a check reads colors, but not infinite animations like a spinner.
     protected static Task WaitForFadesAsync(IPage page) => page.WaitForFunctionAsync("""
         () => document.getAnimations().every(animation => animation.playState !== 'running'
