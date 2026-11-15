@@ -1,10 +1,10 @@
 <TbStack Gap="4" Style="max-inline-size: 24rem">
     <TbTextField Label="Trail summary" @bind-Value="_summary" Lines="3" MaxLength="120" ShowCount
                  HelperText="A sentence or two for the trail list." />
-    <TbTextField Label="Nickname" @bind-Value="_nickname" ShowCount />
+    <TbTextField Label="Alias" @bind-Value="_alias" ShowCount />
 </TbStack>
 
 @code {
     private string? _summary;
-    private string? _nickname;
+    private string? _alias;
 }
