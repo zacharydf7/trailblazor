@@ -32,4 +32,256 @@ public sealed record DataGridLabels
     /// page and <c>{2}</c> for the total, such as "Trails {0} to {1} of {2}". Leave it null for the app's text for
     /// <see cref="TbStrings.DataGridRange"/>.</summary>
     public string? Range { get; init; }
+
+    /// <summary>The words of the row handles when rows can be moved: each handle's name, with <c>{0}</c> for the
+    /// row's label, and its hint, its menu's items and what's read out after a move.</summary>
+    public SortableLabels RowHandles { get; init; } = new();
+
+    /// <summary>The names of the comparisons a filter menu offers.</summary>
+    public ComparisonLabels Comparisons { get; init; } = new();
+
+    /// <summary>Labels the list of columns a data grid's rows can be grouped by: "Group by" in English. Leave it null
+    /// for the app's text for <see cref="TbStrings.DataGridGroupBy"/>.</summary>
+    public string? GroupBy { get; init; }
+
+    /// <summary>Names the menu above a data grid that shows and hides its columns: "Columns" in English. Leave it null
+    /// for the app's text for <see cref="TbStrings.DataGridColumns"/>.</summary>
+    public string? Columns { get; init; }
+
+    /// <summary>Names the data grid's menu that downloads its rows as a file: "Export" in English. Leave it null for
+    /// the app's text for <see cref="TbStrings.DataGridExport"/>.</summary>
+    public string? Export { get; init; }
+
+    /// <summary>The Export menu's item that downloads the rows as a CSV file: "CSV" in English. Leave it null for the
+    /// app's text for <see cref="TbStrings.DataGridExportCsv"/>.</summary>
+    public string? ExportCsv { get; init; }
+
+    /// <summary>The Export menu's item that downloads the rows as an Excel workbook: "Excel" in English. Leave it null
+    /// for the app's text for <see cref="TbStrings.DataGridExportExcel"/>.</summary>
+    public string? ExportExcel { get; init; }
+
+    /// <summary>The Export menu's item that downloads the rows as a PDF: "PDF" in English. Leave it null for the app's
+    /// text for <see cref="TbStrings.DataGridExportPdf"/>.</summary>
+    public string? ExportPdf { get; init; }
+
+    /// <summary>Names a data grid's pages; <c>{0}</c> is the grid's name: "Pages of {0}" in English. Leave it null for
+    /// the app's text for <see cref="TbStrings.DataGridPages"/>.</summary>
+    public string? Pages { get; init; }
+
+    /// <summary>Names the column of a data grid whose rows can be moved, which holds each row's move handle: "Order" in
+    /// English. Leave it null for the app's text for <see cref="TbStrings.DataGridOrder"/>.</summary>
+    public string? Order { get; init; }
+
+    /// <summary>Names the column of a data grid that holds each row's details button: "Details" in English. Leave it
+    /// null for the app's text for <see cref="TbStrings.DataGridDetails"/>.</summary>
+    public string? Details { get; init; }
+
+    /// <summary>Names a row's button that opens and closes its details; <c>{0}</c> is the row's label: "Details for
+    /// {0}" in English. Leave it null for the app's text for <see cref="TbStrings.DataGridDetailsFor"/>.</summary>
+    public string? DetailsFor { get; init; }
+
+    /// <summary>Names the column of a data grid's selection buttons: "Select" in English. Leave it null for the app's
+    /// text for <see cref="TbStrings.DataGridSelect"/>.</summary>
+    public string? Select { get; init; }
+
+    /// <summary>Names a row's selection box; <c>{0}</c> is the row's label: "Select {0}" in English. Leave it null for
+    /// the app's text for <see cref="TbStrings.DataGridSelectRow"/>.</summary>
+    public string? SelectRow { get; init; }
+
+    /// <summary>Names a tree grid row's button that shows and hides its child rows; <c>{0}</c> is the row's label:
+    /// "Rows under {0}" in English. Leave it null for the app's text for <see
+    /// cref="TbStrings.DataGridRowsUnder"/>.</summary>
+    public string? RowsUnder { get; init; }
+
+    /// <summary>Tells screen readers a batch grid's cell holds a change not yet saved: "Changed" in English. Leave it
+    /// null for the app's text for <see cref="TbStrings.DataGridChanged"/>.</summary>
+    public string? Changed { get; init; }
+
+    /// <summary>Says how many changes a batch grid holds; <c>{0}</c> is the count: "Unsaved changes: {0}" in English.
+    /// Leave it null for the app's text for <see cref="TbStrings.DataGridUnsavedChanges"/>.</summary>
+    public string? UnsavedChanges { get; init; }
+
+    /// <summary>The button that saves a batch grid's changes: "Save changes" in English. Leave it null for the app's
+    /// text for <see cref="TbStrings.DataGridSaveChanges"/>.</summary>
+    public string? SaveChanges { get; init; }
+
+    /// <summary>The button that drops a batch grid's changes: "Discard changes" in English. Leave it null for the app's
+    /// text for <see cref="TbStrings.DataGridDiscardChanges"/>.</summary>
+    public string? DiscardChanges { get; init; }
+
+    /// <summary>Read out once a batch grid's changes are saved: "Changes saved" in English. Leave it null for the app's
+    /// text for <see cref="TbStrings.DataGridChangesSaved"/>.</summary>
+    public string? ChangesSaved { get; init; }
+
+    /// <summary>The button that saves a data grid row's edit: "Save" in English. Leave it null for the app's text for
+    /// <see cref="TbStrings.DataGridSave"/>.</summary>
+    public string? Save { get; init; }
+
+    /// <summary>Names the button that saves a data grid row's edit; <c>{0}</c> is the row's label: "Save {0}" in
+    /// English. Leave it null for the app's text for <see cref="TbStrings.DataGridSaveRow"/>.</summary>
+    public string? SaveRow { get; init; }
+
+    /// <summary>The button that cancels a data grid row's edit: "Cancel" in English. Leave it null for the app's text
+    /// for <see cref="TbStrings.DataGridCancel"/>.</summary>
+    public string? Cancel { get; init; }
+
+    /// <summary>Names the button that cancels a data grid row's edit; <c>{0}</c> is the row's label: "Cancel editing
+    /// {0}" in English. Leave it null for the app's text for <see cref="TbStrings.DataGridCancelRow"/>.</summary>
+    public string? CancelRow { get; init; }
+
+    /// <summary>Shown when an edited data grid cell's value doesn't fit its field, such as a number too large;
+    /// <c>{0}</c> is the column: "{0} can't hold that value." in English. Leave it null for the app's text for <see
+    /// cref="TbStrings.DataGridEditInvalid"/>.</summary>
+    public string? EditInvalid { get; init; }
+
+    /// <summary>Shown when a cell edit leaves empty a column that needs a value; <c>{0}</c> is the column:
+    /// "{0} is required." in English. Leave it null for the app's text for <see cref="TbStrings.FieldRequired"/>.
+    /// </summary>
+    public string? EditRequired { get; init; }
+
+    /// <summary>Read out when a column sorts its rows smallest first; <c>{0}</c> is the column: "Sorted by {0},
+    /// ascending." in English. Leave it null for the app's text for <see
+    /// cref="TbStrings.DataGridSortedAscending"/>.</summary>
+    public string? SortedAscending { get; init; }
+
+    /// <summary>Read out when a column sorts its rows largest first; <c>{0}</c> is the column: "Sorted by {0},
+    /// descending." in English. Leave it null for the app's text for <see
+    /// cref="TbStrings.DataGridSortedDescending"/>.</summary>
+    public string? SortedDescending { get; init; }
+
+    /// <summary>Read out when a column stops sorting the rows; <c>{0}</c> is the column: "No longer sorted by {0}." in
+    /// English. Leave it null for the app's text for <see cref="TbStrings.DataGridUnsorted"/>.</summary>
+    public string? Unsorted { get; init; }
+
+    /// <summary>Tells which of several sorts a column is; <c>{0}</c> is its place, <c>{1}</c> the count and <c>{2}</c>
+    /// its direction: "sort {0} of {1}, {2}" in English. Leave it null for the app's text for <see
+    /// cref="TbStrings.DataGridSortPosition"/>.</summary>
+    public string? SortPosition { get; init; }
+
+    /// <summary>A sort from smallest to largest: "ascending" in English. Leave it null for the app's text for <see
+    /// cref="TbStrings.DataGridAscending"/>.</summary>
+    public string? Ascending { get; init; }
+
+    /// <summary>A sort from largest to smallest: "descending" in English. Leave it null for the app's text for <see
+    /// cref="TbStrings.DataGridDescending"/>.</summary>
+    public string? Descending { get; init; }
+
+    /// <summary>Names a data grid column's menu; <c>{0}</c> is the column: "Options for {0}" in English. Leave it null
+    /// for the app's text for <see cref="TbStrings.DataGridColumnMenu"/>.</summary>
+    public string? ColumnMenu { get; init; }
+
+    /// <summary>A column menu item that moves the column one place toward the start of the row; <c>{0}</c> is the
+    /// column: "Move {0} earlier" in English. Leave it null for the app's text for <see
+    /// cref="TbStrings.DataGridEarlier"/>.</summary>
+    public string? Earlier { get; init; }
+
+    /// <summary>A column menu item that moves the column one place toward the end of the row; <c>{0}</c> is the column:
+    /// "Move {0} later" in English. Leave it null for the app's text for <see
+    /// cref="TbStrings.DataGridLater"/>.</summary>
+    public string? Later { get; init; }
+
+    /// <summary>A column menu item that widens the column; <c>{0}</c> is the column: "Make {0} wider" in English. Leave
+    /// it null for the app's text for <see cref="TbStrings.DataGridWider"/>.</summary>
+    public string? Wider { get; init; }
+
+    /// <summary>A column menu item that narrows the column; <c>{0}</c> is the column: "Make {0} narrower" in English.
+    /// Leave it null for the app's text for <see cref="TbStrings.DataGridNarrower"/>.</summary>
+    public string? Narrower { get; init; }
+
+    /// <summary>A column menu item that gives every column back the width it started with: "Reset column widths" in
+    /// English. Leave it null for the app's text for <see cref="TbStrings.DataGridResetWidths"/>.</summary>
+    public string? ResetWidths { get; init; }
+
+    /// <summary>A column menu item that hides the column; <c>{0}</c> is the column: "Hide {0}" in English. Leave it
+    /// null for the app's text for <see cref="TbStrings.DataGridHide"/>.</summary>
+    public string? Hide { get; init; }
+
+    /// <summary>Read out after a column is hidden from its own menu; <c>{0}</c> is the column: "{0} hidden" in English.
+    /// Leave it null for the app's text for <see cref="TbStrings.DataGridColumnHidden"/>.</summary>
+    public string? ColumnHidden { get; init; }
+
+    /// <summary>Read out after a column moves from its menu; <c>{0}</c> is the column, <c>{1}</c> its new place,
+    /// counting from 1, and <c>{2}</c> how many columns there are: "{0} moved to column {1} of {2}" in English. Leave
+    /// it null for the app's text for <see cref="TbStrings.DataGridColumnMoved"/>.</summary>
+    public string? ColumnMoved { get; init; }
+
+    /// <summary>Names a data grid's filter for a column; <c>{0}</c> is the column: "Filter {0}" in English. Leave it
+    /// null for the app's text for <see cref="TbStrings.DataGridFilter"/>.</summary>
+    public string? Filter { get; init; }
+
+    /// <summary>Names a data grid's filter menu button while its column is filtered; <c>{0}</c> is the column: "Filter
+    /// {0}, on" in English. Leave it null for the app's text for <see cref="TbStrings.DataGridFilterOn"/>.</summary>
+    public string? FilterOn { get; init; }
+
+    /// <summary>Names the list of conditions in a data grid's filter menu: "Condition" in English. Leave it null for
+    /// the app's text for <see cref="TbStrings.DataGridFilterCondition"/>.</summary>
+    public string? FilterCondition { get; init; }
+
+    /// <summary>Names the value field in a data grid's filter menu: "Value" in English. Leave it null for the app's
+    /// text for <see cref="TbStrings.DataGridFilterValue"/>.</summary>
+    public string? FilterValue { get; init; }
+
+    /// <summary>Shown in a data grid's choice filter when it filters nothing: "Any" in English. Leave it null for the
+    /// app's text for <see cref="TbStrings.DataGridFilterAny"/>.</summary>
+    public string? FilterAny { get; init; }
+
+    /// <summary>The choice that shows a data grid's rows whose yes-or-no column is true: "Yes" in English. Leave it
+    /// null for the app's text for <see cref="TbStrings.DataGridFilterYes"/>.</summary>
+    public string? FilterYes { get; init; }
+
+    /// <summary>The choice that shows a data grid's rows whose yes-or-no column is false: "No" in English. Leave it
+    /// null for the app's text for <see cref="TbStrings.DataGridFilterNo"/>.</summary>
+    public string? FilterNo { get; init; }
+
+    /// <summary>The button that clears a data grid column's filter: "Clear" in English. Leave it null for the app's
+    /// text for <see cref="TbStrings.DataGridFilterClear"/>.</summary>
+    public string? FilterClear { get; init; }
+
+    /// <summary>The button that applies a data grid's filter menu: "Apply" in English. Leave it null for the app's text
+    /// for <see cref="TbStrings.DataGridFilterApply"/>.</summary>
+    public string? FilterApply { get; init; }
+
+    /// <summary>Read out when a data grid's filters change; <c>{0}</c> is how many rows meet them: "Rows shown: {0}."
+    /// in English. Leave it null for the app's text for <see cref="TbStrings.DataGridRowsShown"/>.</summary>
+    public string? RowsShown { get; init; }
+
+    /// <summary>Names a data grid's totals row for screen readers: "Totals" in English. Leave it null for the app's
+    /// text for <see cref="TbStrings.DataGridTotals"/>.</summary>
+    public string? Totals { get; init; }
+
+    /// <summary>Names a group's totals row for screen readers; <c>{0}</c> is the group's heading: "Totals for {0}" in
+    /// English. Leave it null for the app's text for <see cref="TbStrings.DataGridGroupTotals"/>.</summary>
+    public string? GroupTotals { get; init; }
+
+    /// <summary>A group's heading; <c>{0}</c> is the column and <c>{1}</c> the group's value: "{0}: {1}" in English.
+    /// Leave it null for the app's text for <see cref="TbStrings.DataGridGroupHeading"/>.</summary>
+    public string? GroupHeading { get; init; }
+
+    /// <summary>The value of a group whose rows have no value in its column: "None" in English. Leave it null for the
+    /// app's text for <see cref="TbStrings.DataGridGroupNone"/>.</summary>
+    public string? GroupNone { get; init; }
+
+    /// <summary>How many rows a group holds; <c>{0}</c> is the count: "Rows: {0}" in English. Leave it null for the
+    /// app's text for <see cref="TbStrings.DataGridGroupCount"/>.</summary>
+    public string? GroupCount { get; init; }
+
+    /// <summary>Names a column's total in a data grid's totals row when it adds up the values: "Sum" in English. Leave
+    /// it null for the app's text for <see cref="TbStrings.DataGridSum"/>.</summary>
+    public string? Sum { get; init; }
+
+    /// <summary>Names a column's total in a data grid's totals row when it is the mean of the values: "Average" in
+    /// English. Leave it null for the app's text for <see cref="TbStrings.DataGridAverage"/>.</summary>
+    public string? Average { get; init; }
+
+    /// <summary>Names a column's total in a data grid's totals row when it counts the rows with a value: "Count" in
+    /// English. Leave it null for the app's text for <see cref="TbStrings.DataGridCount"/>.</summary>
+    public string? Count { get; init; }
+
+    /// <summary>Names a column's total in a data grid's totals row when it is the smallest value: "Min" in English.
+    /// Leave it null for the app's text for <see cref="TbStrings.DataGridMin"/>.</summary>
+    public string? Min { get; init; }
+
+    /// <summary>Names a column's total in a data grid's totals row when it is the largest value: "Max" in English.
+    /// Leave it null for the app's text for <see cref="TbStrings.DataGridMax"/>.</summary>
+    public string? Max { get; init; }
 }

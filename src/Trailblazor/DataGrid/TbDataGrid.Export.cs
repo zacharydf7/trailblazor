@@ -77,17 +77,19 @@ public partial class TbDataGrid<TItem>
             return GroupsOf(rows, column).SelectMany(group =>
             {
                 var name = GroupName(column.Heading, column.TextOf(column.GroupValueOf(group.First())));
-                var heading = new PdfGroup(level + 1, $"{name} · {Format(TbStrings.DataGridGroupCount, group.Count())}");
+                var count = Format(Labels.GroupCount, TbStrings.DataGridGroupCount, group.Count());
+                var heading = new PdfGroup(level + 1, $"{name} · {count}");
                 var lines = Lines(group, level + 1).Prepend(heading);
                 return GroupTotals && columns.Any(one => one.HasTotal)
-                    ? lines.Append(PdfTotalsOf(columns, [.. group], Format(TbStrings.DataGridGroupTotals, name)))
+                    ? lines.Append(PdfTotalsOf(columns, [.. group],
+                        Format(Labels.GroupTotals, TbStrings.DataGridGroupTotals, name)))
                     : lines;
             });
         }
 
         var lines = Lines(items, 0);
         return columns.Any(column => column.HasTotal)
-            ? lines.Append(PdfTotalsOf(columns, items, Localizer[TbStrings.DataGridTotals])) : lines;
+            ? lines.Append(PdfTotalsOf(columns, items, Text(Labels.Totals, TbStrings.DataGridTotals))) : lines;
     }
 
     // The first column names the line, before its own total if it has one, and each total carries its aggregate's

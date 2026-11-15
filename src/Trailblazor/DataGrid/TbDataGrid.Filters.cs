@@ -32,7 +32,10 @@ public partial class TbDataGrid<TItem>
     private string FiltersKey => string.Join(",", _filters.Select(filter =>
         $"{filter.Column}|{filter.Operator}|{string.Join(";", filter.Values.Select(ChoiceKey))}"));
 
-    private string FilterLabel(TbColumn<TItem> column) => Format(TbStrings.DataGridFilter, column.Heading);
+    private string FilterLabel(TbColumn<TItem> column) =>
+        Format(Labels.Filter, TbStrings.DataGridFilter, column.Heading);
+
+    private string FilterValueLabel => Text(Labels.FilterValue, TbStrings.DataGridFilterValue);
 
     private object? FilterValue(TbColumn<TItem> column, FilterOperator op) =>
         _filters.FirstOrDefault(filter => filter.Column == column.Key && filter.Operator == op)?.Value;
@@ -64,8 +67,8 @@ public partial class TbDataGrid<TItem>
         column.FilterChoices is { } choices
             ? choices.OfType<object>().Select(value => (ChoiceKey(value), column.TextOf(value) ?? "", value))
             : column.FilterKind == ColumnFilterKind.YesNo
-                ? [(ChoiceKey(true), Localizer[TbStrings.DataGridFilterYes], true),
-                    (ChoiceKey(false), Localizer[TbStrings.DataGridFilterNo], false)]
+                ? [(ChoiceKey(true), Text(Labels.FilterYes, TbStrings.DataGridFilterYes), true),
+                    (ChoiceKey(false), Text(Labels.FilterNo, TbStrings.DataGridFilterNo), false)]
                 : column.Choices.Select(choice => (ChoiceKey(choice.Value), choice.Label, choice.Value));
 
     private Task FilterTextAsync(TbColumn<TItem> column, string? text) => SetFiltersAsync(column,
@@ -166,10 +169,7 @@ public partial class TbDataGrid<TItem>
     private static IReadOnlyList<FilterOperator> FilterOperators(TbColumn<TItem> column) =>
         column.FilterKind == ColumnFilterKind.Number ? Comparisons.ForNumbers : Comparisons.ForText;
 
-    private string OperatorLabel(FilterOperator op) => Comparisons.NameOf(op, FilterComparisonLabels, Localizer);
-
-    // The filter menus use the app's text, since DataGridLabels doesn't word them.
-    private static readonly ComparisonLabels FilterComparisonLabels = new();
+    private string OperatorLabel(FilterOperator op) => Comparisons.NameOf(op, Labels.Comparisons, Localizer);
 
 
     // Enter in the value applies the menu, as Apply does, unless it confirms an IME composition. The value field
@@ -223,7 +223,7 @@ public partial class TbDataGrid<TItem>
         // A provider that finds nothing says so itself.
         if (ReferenceEquals(next, _filters) && !_failed && (RowCount > 0 || DataProvider is null))
         {
-            Announcer.Polite(Format(TbStrings.DataGridRowsShown, RowCount));
+            Announcer.Polite(Format(Labels.RowsShown, TbStrings.DataGridRowsShown, RowCount));
         }
     }
 

@@ -21,7 +21,7 @@
                 <div data-part="group-by" class="tb-data-grid__group-by-bar">
                     <CascadingValue TValue="EditContext" Value="null">
                         <CascadingValue TValue="TbForm" Value="null">
-                            <TbMultiSelect TItem="string" Label="@Localizer[TbStrings.DataGridGroupBy]"
+                            <TbMultiSelect TItem="string" Label="@Text(Labels.GroupBy, TbStrings.DataGridGroupBy)"
                                            Size="Size.Small" Clearable Value="_groups" ValueChanged="GroupByAsync"
                                            class="tb-data-grid__group-by">
                                 @foreach (var column in _arrangedColumns.Where(column => column.CanGroup))
@@ -35,8 +35,9 @@
             }
             @if (HideableColumns)
             {
-                <TbMenu Label="@Localizer[TbStrings.DataGridColumns]" Variant="Variant.Text" Size="Size.Small"
-                        Align="PlacementAlign.End" data-part="column-chooser" Class="tb-data-grid__column-chooser">
+                <TbMenu Label="@Text(Labels.Columns, TbStrings.DataGridColumns)" Variant="Variant.Text"
+                        Size="Size.Small" Align="PlacementAlign.End" data-part="column-chooser"
+                        Class="tb-data-grid__column-chooser">
                     @foreach (var column in _arrangedColumns)
                     {
                         <TbMenuCheckboxItem KeepOpen Checked="_shownColumns.Contains(column)"
@@ -49,16 +50,16 @@
             }
             @if (Exportable)
             {
-                <TbMenu Label="@Localizer[TbStrings.DataGridExport]" Variant="Variant.Text" Size="Size.Small"
+                <TbMenu Label="@Text(Labels.Export, TbStrings.DataGridExport)" Variant="Variant.Text" Size="Size.Small"
                         Align="PlacementAlign.End" data-part="export" Class="tb-data-grid__export">
                     <TbMenuItem OnClick="() => ExportFromMenuAsync(ExportFormat.Csv)">
-                        @Localizer[TbStrings.DataGridExportCsv]
+                        @Text(Labels.ExportCsv, TbStrings.DataGridExportCsv)
                     </TbMenuItem>
                     <TbMenuItem OnClick="() => ExportFromMenuAsync(ExportFormat.Excel)">
-                        @Localizer[TbStrings.DataGridExportExcel]
+                        @Text(Labels.ExportExcel, TbStrings.DataGridExportExcel)
                     </TbMenuItem>
                     <TbMenuItem OnClick="() => ExportFromMenuAsync(ExportFormat.Pdf)">
-                        @Localizer[TbStrings.DataGridExportPdf]
+                        @Text(Labels.ExportPdf, TbStrings.DataGridExportPdf)
                     </TbMenuItem>
                 </TbMenu>
             }
@@ -68,9 +69,9 @@
     {
         @* The bar stays while there is nothing to save, so focus on its buttons isn't lost once the changes are saved. *@
         <div data-part="batch-bar" class="tb-data-grid__batch-bar">
-            <span id="@_changedId" hidden>@Localizer[TbStrings.DataGridChanged]</span>
+            <span id="@_changedId" hidden>@Text(Labels.Changed, TbStrings.DataGridChanged)</span>
             <span data-part="change-count" class="tb-data-grid__change-count">
-                @Format(TbStrings.DataGridUnsavedChanges, _changes.Count)
+                @Format(Labels.UnsavedChanges, TbStrings.DataGridUnsavedChanges, _changes.Count)
             </span>
             @if (_batchError is not null)
             {
@@ -78,11 +79,11 @@
             }
             <TbButton Size="Size.Small" Disabled="!HasChanges" FocusableWhenDisabled data-part="save-changes"
                       OnClick="SaveChangesFromBarAsync">
-                @Localizer[TbStrings.DataGridSaveChanges]
+                @Text(Labels.SaveChanges, TbStrings.DataGridSaveChanges)
             </TbButton>
             <TbButton Variant="Variant.Text" Size="Size.Small" Disabled="!HasChanges" FocusableWhenDisabled
                       data-part="discard-changes" OnClick="DiscardChangesFromBarAsync">
-                @Localizer[TbStrings.DataGridDiscardChanges]
+                @Text(Labels.DiscardChanges, TbStrings.DataGridDiscardChanges)
             </TbButton>
         </div>
     }
@@ -159,14 +160,14 @@
                     {
                         <th scope="col" data-part="order" data-pinned="@LeadPin" style="@LeadStyle(0)"
                             class="tb-data-grid__handle">
-                            <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridOrder]</span>
+                            <span class="tb-visually-hidden">@Text(Labels.Order, TbStrings.DataGridOrder)</span>
                         </th>
                     }
                     @if (HasDetails)
                     {
                         <th scope="col" data-pinned="@LeadPin" style="@LeadStyle(DetailSlot)"
                             class="tb-data-grid__detail-toggle">
-                            <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridDetails]</span>
+                            <span class="tb-visually-hidden">@Text(Labels.Details, TbStrings.DataGridDetails)</span>
                         </th>
                     }
                     @if (SelectionMode == SelectionMode.Multiple && CanSelectAll)
@@ -183,7 +184,7 @@
                     {
                         <th scope="col" data-part="select" data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)"
                             class="tb-data-grid__select">
-                            <span class="tb-visually-hidden">@Localizer[TbStrings.DataGridSelect]</span>
+                            <span class="tb-visually-hidden">@Text(Labels.Select, TbStrings.DataGridSelect)</span>
                         </th>
                     }
                     @foreach (var drawn in _drawnColumns)
@@ -305,7 +306,7 @@
                 <tfoot>
                     <tr data-part="totals" class="@ClassNames.Join("tb-data-grid__totals", Classes?.Totals)"
                         aria-rowindex="@(Virtualize ? HeaderRowCount + _total + (ShowsStatus ? 1 : 0) + 1 : null)">
-                        @TotalCells(_totals, Localizer[TbStrings.DataGridTotals])
+                        @TotalCells(_totals, Text(Labels.Totals, TbStrings.DataGridTotals))
                     </tr>
                 </tfoot>
             }
@@ -360,7 +361,8 @@
             {
                 <TbPagination Page="_page" PageChanged="PageFromPagerAsync" PageCount="PageCount" Size="Size.Small"
                               ShowFirstLast="ShowFirstLast" PageHref="@(StateHref is null ? null : PageLink)"
-                              AriaLabel="@(AriaLabel is null ? null : Format(TbStrings.DataGridPages, AriaLabel))" />
+                              AriaLabel="@(AriaLabel is null ? null
+                                  : Format(Labels.Pages, TbStrings.DataGridPages, AriaLabel))" />
             }
         </div>
     }
@@ -386,8 +388,9 @@
             @if (CanReorder)
             {
                 <td data-pinned="@LeadPin" style="@LeadStyle(0)" class="tb-data-grid__handle">
-                    @((RenderFragment)(handle => MoveHandle.Add(handle, 0, Format(TbStrings.SortableHandle,
-                        label ?? LabelOf(item)), at, _total, disabled: false, RowHandleLabels, Localizer,
+                    @((RenderFragment)(handle => MoveHandle.Add(handle, 0,
+                        Format(Labels.RowHandles.Handle, TbStrings.SortableHandle, label ?? LabelOf(item)), at,
+                        _total, disabled: false, Labels.RowHandles, Localizer,
                         (to, args) => MoveRowAsync(item, to, args.Detail > 0 ? "pointer" : "keyboard"))))
                 </td>
             }
@@ -396,7 +399,8 @@
                 <td data-pinned="@LeadPin" style="@LeadStyle(DetailSlot)" class="tb-data-grid__detail-toggle">
                     <button type="button" data-part="detail-toggle" aria-expanded="@(expanded ? "true" : "false")"
                             aria-controls="@(expanded ? DetailId(key) : null)"
-                            aria-label="@Format(TbStrings.DataGridDetailsFor, label ?? LabelOf(item))"
+                            aria-label="@Format(Labels.DetailsFor, TbStrings.DataGridDetailsFor,
+                                label ?? LabelOf(item))"
                             class="tb-data-grid__detail-button" @onclick="_toggleDetail.For(key)">
                         <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__detail-chevron" />
                     </button>
@@ -410,7 +414,7 @@
                            class="@(SelectionMode == SelectionMode.Single ? "tb-data-grid__check"
                                       : "tb-checkbox__input tb-data-grid__check")" checked="@selected"
                            name="@(SelectionMode == SelectionMode.Single ? _radioName : null)"
-                           aria-label="@Format(TbStrings.DataGridSelectRow, label ?? LabelOf(item))"
+                           aria-label="@Format(Labels.SelectRow, TbStrings.DataGridSelectRow, label ?? LabelOf(item))"
                            @onchange="_choose.For(key)" />
                 </td>
             }
@@ -475,7 +479,8 @@
             @if (tree.Open is { } open)
             {
                 <button type="button" data-part="tree-toggle" aria-expanded="@(open ? "true" : "false")"
-                        aria-label="@Format(TbStrings.DataGridRowsUnder, label)" class="tb-data-grid__tree-toggle"
+                        aria-label="@Format(Labels.RowsUnder, TbStrings.DataGridRowsUnder, label)"
+                        class="tb-data-grid__tree-toggle"
                         @onclick="_toggleChildren.For(key)" @ondblclick:stopPropagation>
                     <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__tree-chevron" />
                 </button>
@@ -491,13 +496,14 @@
             {
                 <span data-part="row-error" class="tb-data-grid__row-error">@edit.Error</span>
             }
-            <TbButton Size="Size.Small" aria-label="@Format(TbStrings.DataGridSaveRow, label)"
+            <TbButton Size="Size.Small" aria-label="@Format(Labels.SaveRow, TbStrings.DataGridSaveRow, label)"
                       OnClick="() => SaveEditAsync(refocus: true)">
-                @Localizer[TbStrings.DataGridSave]
+                @Text(Labels.Save, TbStrings.DataGridSave)
             </TbButton>
-            <TbButton Variant="Variant.Text" Size="Size.Small" aria-label="@Format(TbStrings.DataGridCancelRow, label)"
+            <TbButton Variant="Variant.Text" Size="Size.Small"
+                      aria-label="@Format(Labels.CancelRow, TbStrings.DataGridCancelRow, label)"
                       OnClick="CancelEditAsync">
-                @Localizer[TbStrings.DataGridCancel]
+                @Text(Labels.Cancel, TbStrings.DataGridCancel)
             </TbButton>
         </div>;
 
@@ -558,7 +564,9 @@
                         class="tb-data-grid__group-toggle" @onclick="_toggleGroup.For(group.Key)">
                     <TbIcon Icon="BuiltInIcons.ChevronEnd" Size="Size.Small" class="tb-data-grid__group-chevron" />
                     <span>@GroupName(group)</span>
-                    <span class="tb-data-grid__group-count">@Format(TbStrings.DataGridGroupCount, group.Count)</span>
+                    <span class="tb-data-grid__group-count">
+                        @Format(Labels.GroupCount, TbStrings.DataGridGroupCount, group.Count)
+                    </span>
                 </button>
             </td>
         </tr>;
@@ -576,8 +584,8 @@
         _ when column.FilterTemplate is { } template => template(FilterContext(column)),
         _ when column.FilterChoices is not null =>
             @<TbMultiSelect TItem="string" AriaLabel="@FilterLabel(column)" Size="Size.Small" Clearable
-                            Placeholder="@Localizer[TbStrings.DataGridFilterAny]" Value="ChoicesFilter(column)"
-                            ValueChanged="chosen => FilterChoicesAsync(column, chosen)">
+                            Placeholder="@Text(Labels.FilterAny, TbStrings.DataGridFilterAny)"
+                            Value="ChoicesFilter(column)" ValueChanged="chosen => FilterChoicesAsync(column, chosen)">
                 @foreach (var (key, label, _) in ChoicesOf(column))
                 {
                     <TbOption Value="key">@label</TbOption>
@@ -591,7 +599,7 @@
                                 Value="DateFilter(column)" ValueChanged="range => FilterDatesAsync(column, range)" />,
         ColumnFilterKind.Choice or ColumnFilterKind.YesNo =>
             @<TbSelect TValue="string" AriaLabel="@FilterLabel(column)" Size="Size.Small" Clearable
-                       Placeholder="@Localizer[TbStrings.DataGridFilterAny]" Value="ChoiceFilter(column)"
+                       Placeholder="@Text(Labels.FilterAny, TbStrings.DataGridFilterAny)" Value="ChoiceFilter(column)"
                        ValueChanged="choice => FilterChoiceAsync(column, choice)">
                 @foreach (var (key, label, _) in ChoicesOf(column))
                 {
@@ -656,9 +664,10 @@
                             <span data-part="sort-order" class="tb-data-grid__sort-order"
                                   aria-hidden="true">@(at + 1)</span>
                             <span class="tb-visually-hidden">
-                                @Format(TbStrings.DataGridSortPosition, at + 1, _sorts.Count,
-                                    Localizer[sort.Direction == SortDirection.Ascending
-                                        ? TbStrings.DataGridAscending : TbStrings.DataGridDescending])
+                                @Format(Labels.SortPosition, TbStrings.DataGridSortPosition, at + 1, _sorts.Count,
+                                    sort.Direction == SortDirection.Ascending
+                                        ? Text(Labels.Ascending, TbStrings.DataGridAscending)
+                                        : Text(Labels.Descending, TbStrings.DataGridDescending))
                             </span>
                         }
                     }
@@ -667,13 +676,15 @@
     private RenderFragment GroupTotalsRow(GroupTotalsLine totals, int at) =>
         @<tr data-part="group-totals" data-level="@totals.Group.Level"
              aria-rowindex="@(Virtualize ? HeaderRowCount + at + 1 : null)" class="tb-data-grid__group-totals">
-            @TotalCells(totals.Values, Format(TbStrings.DataGridGroupTotals, GroupName(totals.Group)))
+            @TotalCells(totals.Values,
+                Format(Labels.GroupTotals, TbStrings.DataGridGroupTotals, GroupName(totals.Group)))
         </tr>;
 
     private string GroupName(GroupHeading group) => GroupName(group.Column, group.Value);
 
     private string GroupName(string column, string? value) =>
-        Format(TbStrings.DataGridGroupHeading, column, value ?? Localizer[TbStrings.DataGridGroupNone]);
+        Format(Labels.GroupHeading, TbStrings.DataGridGroupHeading, column,
+            value ?? Text(Labels.GroupNone, TbStrings.DataGridGroupNone));
 
     // The handle, details and selection columns hold nothing in the rows that aren't items.
     private RenderFragment BlankLeadCells =>
@@ -741,34 +752,34 @@
         @<TbMenu Class="tb-data-grid__column-menu" data-part="column-menu">
             <Trigger>
                 <TbIconButton Icon="BuiltInIcons.More" Size="Size.Small" @attributes="context.Attributes"
-                              AriaLabel="@Format(TbStrings.DataGridColumnMenu, column.Heading)" />
+                              AriaLabel="@Format(Labels.ColumnMenu, TbStrings.DataGridColumnMenu, column.Heading)" />
             </Trigger>
             <ChildContent>
                 @if (ReorderableColumns)
                 {
                     <TbMenuItem Disabled="NeighborOf(column, -1) is null" OnClick="() => MoveColumnAsync(column, -1)">
-                        @Format(TbStrings.DataGridEarlier, column.Heading)
+                        @Format(Labels.Earlier, TbStrings.DataGridEarlier, column.Heading)
                     </TbMenuItem>
                     <TbMenuItem Disabled="NeighborOf(column, 1) is null" OnClick="() => MoveColumnAsync(column, 1)">
-                        @Format(TbStrings.DataGridLater, column.Heading)
+                        @Format(Labels.Later, TbStrings.DataGridLater, column.Heading)
                     </TbMenuItem>
                 }
                 @if (CanResize(column))
                 {
                     <TbMenuItem OnClick="() => StepWidthAsync(column, WidthStep)">
-                        @Format(TbStrings.DataGridWider, column.Heading)
+                        @Format(Labels.Wider, TbStrings.DataGridWider, column.Heading)
                     </TbMenuItem>
                     <TbMenuItem OnClick="() => StepWidthAsync(column, -WidthStep)">
-                        @Format(TbStrings.DataGridNarrower, column.Heading)
+                        @Format(Labels.Narrower, TbStrings.DataGridNarrower, column.Heading)
                     </TbMenuItem>
                     <TbMenuItem Disabled="_widths.Count == 0" OnClick="ResetWidthsAsync">
-                        @Localizer[TbStrings.DataGridResetWidths]
+                        @Text(Labels.ResetWidths, TbStrings.DataGridResetWidths)
                     </TbMenuItem>
                 }
                 @if (CanHide(column))
                 {
                     <TbMenuItem OnClick="() => HideFromMenuAsync(column)">
-                        @Format(TbStrings.DataGridHide, column.Heading)
+                        @Format(Labels.Hide, TbStrings.DataGridHide, column.Heading)
                     </TbMenuItem>
                 }
             </ChildContent>
@@ -778,7 +789,8 @@
     private RenderFragment FilterMenu(TbColumn<TItem> column)
     {
         var draft = DraftFor(column);
-        var label = IsFiltered(column) ? Format(TbStrings.DataGridFilterOn, column.Heading) : FilterLabel(column);
+        var label = IsFiltered(column) ? Format(Labels.FilterOn, TbStrings.DataGridFilterOn, column.Heading)
+            : FilterLabel(column);
         return @<TbPopover Icon="BuiltInIcons.Filter" AriaLabel="@label" Title="@FilterLabel(column)"
                            Variant="Variant.Text" Size="Size.Small" Open="draft.Open"
                            OpenChanged="open => OpenFilterMenu(column, open)" data-part="filter-menu"
@@ -805,13 +817,13 @@
                             }
                             else if (column.FilterKind == ColumnFilterKind.Date)
                             {
-                                <TbDateRangePicker TDate="DateOnly" Label="@Localizer[TbStrings.DataGridFilterValue]"
+                                <TbDateRangePicker TDate="DateOnly" Label="@FilterValueLabel"
                                                    Size="Size.Small" @bind-Value="draft.Range" />
                             }
                             else
                             {
-                                <TbSelect TValue="FilterOperator" Label="@Localizer[TbStrings.DataGridFilterCondition]"
-                                          Size="Size.Small" @bind-Value="draft.Operator">
+                                <TbSelect TValue="FilterOperator" Size="Size.Small" @bind-Value="draft.Operator"
+                                          Label="@Text(Labels.FilterCondition, TbStrings.DataGridFilterCondition)">
                                     @foreach (var op in FilterOperators(column))
                                     {
                                         <TbOption Value="op">@OperatorLabel(op)</TbOption>
@@ -823,12 +835,12 @@
                                         @if (column.FilterKind == ColumnFilterKind.Number)
                                         {
                                             <TbNumberField TValue="decimal?" Size="Size.Small" HideStepButtons
-                                                           Label="@Localizer[TbStrings.DataGridFilterValue]"
+                                                           Label="@FilterValueLabel"
                                                            UpdateOnInput @bind-Value="draft.Number" />
                                         }
                                         else
                                         {
-                                            <TbTextField TValue="string" Label="@Localizer[TbStrings.DataGridFilterValue]"
+                                            <TbTextField TValue="string" Label="@FilterValueLabel"
                                                          Size="Size.Small" UpdateOnInput @bind-Value="draft.Text" />
                                         }
                                     </div>
@@ -837,11 +849,11 @@
                             <div class="tb-data-grid__filter-actions">
                                 <TbButton Variant="Variant.Text" Size="Size.Small" data-part="filter-clear"
                                           OnClick="() => ClearFilterMenuAsync(column)">
-                                    @Localizer[TbStrings.DataGridFilterClear]
+                                    @Text(Labels.FilterClear, TbStrings.DataGridFilterClear)
                                 </TbButton>
                                 <TbButton Size="Size.Small" data-part="filter-apply"
                                           OnClick="() => ApplyFilterMenuAsync(column)">
-                                    @Localizer[TbStrings.DataGridFilterApply]
+                                    @Text(Labels.FilterApply, TbStrings.DataGridFilterApply)
                                 </TbButton>
                             </div>
                         </div>

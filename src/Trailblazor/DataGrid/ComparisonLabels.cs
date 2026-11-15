@@ -1,7 +1,8 @@
 namespace Trailblazor;
 
-/// <summary>The names of the comparisons a <see cref="TbQueryBuilder"/> offers, through
-/// <see cref="QueryBuilderLabels.Comparisons"/>.</summary>
+/// <summary>The names of the comparisons a <see cref="TbQueryBuilder"/> or a <see cref="TbDataGrid{TItem}"/>'s filter
+/// menus offer, through <see cref="QueryBuilderLabels.Comparisons"/> or <see cref="DataGridLabels.Comparisons"/>.
+/// </summary>
 public sealed record ComparisonLabels
 {
     /// <summary>Names <see cref="FilterOperator.EqualTo"/>. Leave it null for the app's text for

@@ -1,6 +1,8 @@
 namespace Trailblazor;
 
-/// <summary>The words a <see cref="TbSortable{TItem}"/>'s move handles show and say to screen readers.</summary>
+/// <summary>The words a <see cref="TbSortable{TItem}"/>'s move handles show and say to screen readers. A
+/// <see cref="TbDataGrid{TItem}"/> uses them for its row handles through <see cref="DataGridLabels.RowHandles"/>.
+/// </summary>
 public sealed record SortableLabels
 {
     /// <summary>Names an item's handle, with <c>{0}</c> for the item's text. Leave it null for the app's text for

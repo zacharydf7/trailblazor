@@ -34,7 +34,6 @@ public partial class LabelsRuleTests
     // Components with a Labels record that doesn't yet word every string, and why.
     private static readonly Dictionary<string, string> Unworded = new()
     {
-        ["TbDataGrid"] = "its record words a few strings; #451 gives it the rest",
     };
 
     // Internal parts that read strings for the components that render them.

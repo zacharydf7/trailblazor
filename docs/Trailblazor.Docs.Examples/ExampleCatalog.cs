@@ -8336,13 +8336,16 @@ public static class ExampleCatalog
                     + "the grid isn't sorted or filtered. Each row gets a handle in an \"Order\" column: drag it, press "
                     + "the arrow keys on it, or choose from its menu. Moves can cross pages, and the app applies each "
                     + "one. `CanMoveRow` can refuse a move and say why.", typeof(DataGridReorderExample)),
-                new("labels", "Built-in text", "`Labels` replaces the words the grid shows and reads out, such as the "
-                    + "header checkbox's name, the page size list's label and the count of rows shown.",
+                new("labels", "Built-in text", "`Labels` replaces every word the grid itself shows and reads out, "
+                    + "such as the header checkbox's name, the page size list's label and the count of rows shown. Its "
+                    + "`RowHandles` words the row handles and `Comparisons` names the filter menus' comparisons. The "
+                    + "page buttons and the lists and pickers inside the grid keep the app's text for their own words.",
                     typeof(DataGridLabelsExample)),
             ],
             Api =
             [
                 typeof(TbDataGrid<>), typeof(TbColumn<>), typeof(TbColumnGroup<>), typeof(DataGridLabels),
+                typeof(SortableLabels), typeof(ComparisonLabels),
                 typeof(DataGridClasses),
                 typeof(GridRequest),
                 typeof(GridResult<>), typeof(GridSort), typeof(GridFilter), typeof(FilterOperator),

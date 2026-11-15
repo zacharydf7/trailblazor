@@ -568,14 +568,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private string VirtualLoadKey => $"{string.Join(",", _sorts)}|{FiltersKey}|{AggregatesKey}";
 
-    private string AggregateLabel(ColumnAggregate aggregate) => Localizer[aggregate switch
+    private string AggregateLabel(ColumnAggregate aggregate) => aggregate switch
     {
-        ColumnAggregate.Sum => TbStrings.DataGridSum,
-        ColumnAggregate.Average => TbStrings.DataGridAverage,
-        ColumnAggregate.Count => TbStrings.DataGridCount,
-        ColumnAggregate.Min => TbStrings.DataGridMin,
-        _ => TbStrings.DataGridMax,
-    }];
+        ColumnAggregate.Sum => Text(Labels.Sum, TbStrings.DataGridSum),
+        ColumnAggregate.Average => Text(Labels.Average, TbStrings.DataGridAverage),
+        ColumnAggregate.Count => Text(Labels.Count, TbStrings.DataGridCount),
+        ColumnAggregate.Min => Text(Labels.Min, TbStrings.DataGridMin),
+        _ => Text(Labels.Max, TbStrings.DataGridMax),
+    };
 
     // Rows move among all the items, so only rows held in memory, all shown in their own order, can be moved.
     private bool CanReorder => OnRowMove.HasDelegate && Items is not null && _sorts.Count == 0
@@ -1270,7 +1270,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             }
         }
 
-        Announcer.Polite(Localizer[TbStrings.DataGridChangesSaved]);
+        Announcer.Polite(Text(Labels.ChangesSaved, TbStrings.DataGridChangesSaved));
         await RefreshAsync();
     }
 
@@ -1358,7 +1358,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         value = null;
         if (cell.Column.HoldsWholeNumbers && cell.Value is decimal number && number != decimal.Truncate(number))
         {
-            return Format(TbStrings.DataGridEditInvalid, cell.Column.Heading);
+            return Format(Labels.EditInvalid, TbStrings.DataGridEditInvalid, cell.Column.Heading);
         }
 
         try
@@ -1367,12 +1367,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
         catch (OverflowException)
         {
-            return Format(TbStrings.DataGridEditInvalid, cell.Column.Heading);
+            return Format(Labels.EditInvalid, TbStrings.DataGridEditInvalid, cell.Column.Heading);
         }
 
         if (value is null && !cell.Column.AcceptsNull)
         {
-            return Format(TbStrings.FieldRequired, cell.Column.Heading);
+            return Format(Labels.EditRequired, TbStrings.FieldRequired, cell.Column.Heading);
         }
 
         return cell.Column.AnnotationErrorOf(item, value) ?? cell.Column.Validate?.Invoke(item, value);
@@ -1591,7 +1591,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private async Task HideFromMenuAsync(TbColumn<TItem> column)
     {
         _focusColumnChooser = true;
-        Announcer.Polite(Format(TbStrings.DataGridColumnHidden, column.Heading));
+        Announcer.Polite(Format(Labels.ColumnHidden, TbStrings.DataGridColumnHidden, column.Heading));
         await SetColumnShownAsync(column, false);
     }
 
@@ -1629,7 +1629,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         (keys[from], keys[to]) = (keys[to], keys[from]);
         _focusColumnMenu = column.Key;
         // The announced place counts the selection and order columns, as screen readers do.
-        Announcer.Polite(Format(TbStrings.DataGridColumnMoved, column.Heading, LeadCount + to + 1,
+        Announcer.Polite(Format(Labels.ColumnMoved, TbStrings.DataGridColumnMoved, column.Heading, LeadCount + to + 1,
             LeadCount + keys.Count));
         await OnColumnOrderAsync(new() { Order = keys });
     }
@@ -1810,7 +1810,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private async Task MoveRowCoreAsync(int from, int to, string input)
     {
         if (!CanReorder || from < 0
-            || !await Mover.MoveAsync(() => AllItems, from, to, CanMoveRow, OnRowMove, LabelOf, moved: null, list: null))
+            || !await Mover.MoveAsync(() => AllItems, from, to, CanMoveRow, OnRowMove, LabelOf, Labels.RowHandles.Moved,
+                list: null))
         {
             return;
         }
@@ -2388,10 +2389,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         await StateChangedAsync();
 
-        Announcer.Polite(_sorts.FirstOrDefault(sort => sort.Column == column.Key) is { } now
-            ? Format(now.Direction == SortDirection.Ascending ? TbStrings.DataGridSortedAscending
-                : TbStrings.DataGridSortedDescending, column.Heading)
-            : Format(TbStrings.DataGridUnsorted, column.Heading));
+        Announcer.Polite(_sorts.FirstOrDefault(sort => sort.Column == column.Key) is not { } now
+            ? Format(Labels.Unsorted, TbStrings.DataGridUnsorted, column.Heading)
+            : now.Direction == SortDirection.Ascending
+                ? Format(Labels.SortedAscending, TbStrings.DataGridSortedAscending, column.Heading)
+                : Format(Labels.SortedDescending, TbStrings.DataGridSortedDescending, column.Heading));
         await show;
     }
 
@@ -2774,14 +2776,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private string LabelOf(TItem item) => RowLabel?.Invoke(item)
         ?? _columns.Select(column => column.TextOf(item)).FirstOrDefault(text => text is not null) ?? IdOf(item);
 
-    // The row handles use the app's text, since DataGridLabels doesn't word them.
-    private static readonly SortableLabels RowHandleLabels = new();
+    private string Text(string? label, string key) => label ?? Localizer[key];
 
-    private string Format(string key, params object?[] args) =>
-        string.Format(CultureInfo.CurrentCulture, Localizer[key], args);
+    private string Format(string? label, string key, params object?[] args) =>
+        string.Format(CultureInfo.CurrentCulture, Text(label, key), args);
 
-    private string RangeText(int first, int last) => string.Format(CultureInfo.CurrentCulture,
-        Labels.Range ?? Localizer[TbStrings.DataGridRange], first, last, _total);
+    private string RangeText(int first, int last) => Format(Labels.Range, TbStrings.DataGridRange, first, last, _total);
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
