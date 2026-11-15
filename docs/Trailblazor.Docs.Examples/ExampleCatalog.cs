@@ -3005,7 +3005,9 @@ public static class ExampleCatalog
             [
                 new("complete-form", "A complete form", "Fields go inside the form, and a submit button checks them "
                     + "all. Sign up stays on, so a submit can show what to fix; `@bind-IsValid` and `@bind-Errors` "
-                    + "drive the line under it, and `InputAttributes` lets the browser fill in the name.",
+                    + "drive the line under it, and `InputAttributes` lets the browser fill in the name. The form "
+                    + "stacks what it holds in a column with a gap between each item, so fields need no spacing of "
+                    + "their own.",
                     typeof(FormExample)),
                 new("your-own-checks", "Your own checks", "`Validation` checks one value and returns its messages. To "
                     + "compare two fields, as here when the largest group goes below the smallest, an `Error` works "
@@ -4343,7 +4345,9 @@ public static class ExampleCatalog
                     + "nothing is chosen, and `Disabled` on an option turns off that option alone. A value can be any "
                     + "type, such as an enum.", typeof(SelectExample)),
                 new("clearing", "Clearing", "`Clearable` adds a button that clears the choice. A nullable value clears "
-                    + "to `null`.", typeof(SelectClearExample)),
+                    + "to `null`. In a string select, an empty string counts as a choice, so binding `\"\"` shows "
+                    + "the clear button beside the placeholder. Bind `null` for nothing chosen.",
+                    typeof(SelectClearExample)),
                 new("multiple", "Multiple, Select all and chips", "`TbMultiSelect` binds a list. `SelectAll` starts the "
                     + "list with an option that chooses every enabled option, and is selected once they all are; "
                     + "choosing it then deselects them all. It hides while the filter has text. `Chips` shows each "
@@ -7646,7 +7650,8 @@ public static class ExampleCatalog
                 new("tabs", "Tabs and panels", "Each `TbTab` adds a tab and its panel. `Text` or `TextContent` is the "
                     + "tab's name, so a count inside it is read as part of the name, and `Disabled` turns a tab off. "
                     + "`Key` and `@bind-ActiveKey` track the selected tab by a key you choose. Once the page is "
-                    + "interactive, only the selected panel renders.",
+                    + "interactive, only the selected panel renders. An `id` on a `TbTab` goes on its tab, the button "
+                    + "people click, while `Class`, `Style` and other attributes go on its panel.",
                     typeof(TabsExample)),
                 new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`, and sets the tabs' height and text "
                     + "size, the same steps as a button's.", typeof(TabsSizeExample)),
@@ -7665,7 +7670,9 @@ public static class ExampleCatalog
                     typeof(TabsManualExample)),
                 new("keep-alive", "Keeping panels alive", "`KeepAlive` keeps a tab's panel rendered once it has been "
                     + "shown, and only hides it when another tab is selected, so what's typed in a field that isn't "
-                    + "bound survives switching tabs.",
+                    + "bound survives switching tabs. A tab that hasn't been shown yet still has no panel, so use "
+                    + "`RenderAllPanels` when a form has to check fields in every tab, or you need a reference into "
+                    + "every tab.",
                     typeof(TabsKeepAliveExample)),
                 new("centered", "Centered", "`Centered` centers a tab list in its row.", typeof(TabsCenteredExample)),
                 new("overflow", "Many tabs", "A tab list too long for its row scrolls sideways, and moving focus to a "

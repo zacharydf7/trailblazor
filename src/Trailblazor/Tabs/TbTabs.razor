@@ -143,8 +143,9 @@
     public TabActivation Activation { get; set; } = TabActivation.Automatic;
 
     /// <summary>Keeps a panel rendered, but hidden, once it has been shown, so its state survives switching tabs.
-    /// Without it, only the selected panel is rendered once the page is interactive; until then, every panel is.
-    /// </summary>
+    /// Without it, only the selected panel is rendered once the page is interactive; until then, every panel is. A
+    /// panel that hasn't been shown yet still isn't rendered, so when a form has to check fields in every tab, or you
+    /// need a reference into every tab, use <see cref="RenderAllPanels"/>.</summary>
     [Parameter]
     public bool KeepAlive { get; set; }
 

@@ -8,6 +8,7 @@
         <TbTableOfContentsItem TargetId="a-text-field" Text="A text field" />
         <TbTableOfContentsItem TargetId="a-button" Text="A button" />
         <TbTableOfContentsItem TargetId="what-to-pass-through" Text="What to pass through" />
+        <TbTableOfContentsItem TargetId="where-an-id-goes" Text="Where an id goes" />
         <TbTableOfContentsItem TargetId="testing" Text="Testing" />
         <TbTableOfContentsItem TargetId="related" Text="Related" />
     </Contents>
@@ -119,6 +120,58 @@
                     <tr>
                         <th scope="row">Methods, such as <code>FocusAsync</code></th>
                         <td>Take a <code>@@ref</code> and declare a method that calls it</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <DocsHeading Id="where-an-id-goes" Text="Where an id goes" Class="docs-section" />
+        <TbText>
+            An <code>id</code> set on a component usually lands on the element people use, so a <code>label</code>'s
+            <code>for</code>, a link to it and a test's lookup all reach that element. Groups, fields with two
+            controls and anything without one such element take it on their root or outer element.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="Where an id goes">
+            <table>
+                <thead>
+                    <tr><th scope="col">Component</th><th scope="col">Where the id goes</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">A field with one control, such as a text field or a select</th>
+                        <td>Its input, or the select's combobox</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            A group, such as a radio or checkbox group, a rating, a transfer list or a signature pad,
+                            or a field with two controls, such as the date range picker, the date and time picker or
+                            the range slider
+                        </th>
+                        <td>Its root, since each item or control has its own</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            A radio, a checkbox item, a list item that links or has <code>OnClick</code>, or an option
+                        </th>
+                        <td>
+                            A radio's or checkbox item's input, a list item's action, or the option itself. A list item
+                            with no <code>OnClick</code> and no enabled link keeps it on the item
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A menu or a popover</th>
+                        <td>
+                            Its trigger. On a trigger of your own, spread <code>context.Attributes</code> after the
+                            trigger's attributes, so the id you set replaces any id the trigger has
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A tab</th>
+                        <td>Its tab, the button people click; its other attributes go on its panel</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Anything else</th>
+                        <td>Its outer element</td>
                     </tr>
                 </tbody>
             </table>

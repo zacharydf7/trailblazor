@@ -237,6 +237,14 @@
             <code>RunAnalyzersDuringBuild</code> set to <code>false</code> turns off every analyzer as the project
             builds, Trailblazor's included.
         </TbText>
+        <TbText>
+            With <code>RunAnalyzersDuringBuild</code> on, as it is by default, ASP.NET Core's own Blazor analyzers run
+            too. In a project that treats warnings as errors, their warnings fail the build, most often BL0007 and
+            BL0008.
+            Keep them warnings with <code>WarningsNotAsErrors</code>, or set their severity in an
+            <code>.editorconfig</code>.
+        </TbText>
+        <CodeBlock Label="MyApp.csproj" Code="@WarningsNotAsErrors" />
 
         <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
@@ -248,6 +256,12 @@
 </DocsArticle>
 
 @code {
+    private const string WarningsNotAsErrors = """
+        <PropertyGroup>
+          <WarningsNotAsErrors>$(WarningsNotAsErrors);BL0007;BL0008</WarningsNotAsErrors>
+        </PropertyGroup>
+        """;
+
     private const string Mistakes = """
         @page "/search"
         <TbIconButton Icon="Icons.Search" AriaLabel="" />

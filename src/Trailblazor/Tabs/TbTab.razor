@@ -66,7 +66,8 @@
 
     /// <summary>Raised each time the user clicks the tab's header, or presses Enter or Space on it, whether or not it
     /// was already selected. It is raised after the tab is selected. The arrow keys select tabs without raising
-    /// it.</summary>
+    /// it, so to follow every tab the user selects, use the tabs' <see cref="TbTabs.ActiveIndexChanged"/>, or
+    /// <see cref="TbTabs.ActiveKeyChanged"/> when the tabs track the selected tab by <see cref="Key"/>.</summary>
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
