@@ -307,8 +307,9 @@ a:focus-visible {
     gap: var(--tb-space-2);
 }
 
-/* The heading takes the font its section sets, as a bare heading would. */
+/* The heading takes the font its section sets, as a bare heading would, and can shrink so a long name in it breaks. */
 .docs-heading > .tb-text {
+    min-inline-size: 0;
     font-family: inherit;
 }
 
