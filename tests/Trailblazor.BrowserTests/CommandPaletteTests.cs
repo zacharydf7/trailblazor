@@ -180,32 +180,23 @@ public class CommandPaletteTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Shortcut_ShouldLeaveTheNewListenersMark_WhenTheOldListenerIsDisposedAfterIt(string browser)
+    public async Task Shortcut_ShouldLeaveThePaletteClosed_WhenAnotherModalDialogIsOpen(string browser)
     {
         var page = await OpenReadyAsync(browser);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open picks" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Today's picks" })).ToBeFocusedAsync();
 
-        // .NET may dispose a replaced listener after its replacement attached, so the order is forced here.
-        var marks = await page.EvaluateAsync<string?[]>("""
-            async () => {
-                const palette = await import('/_content/Trailblazor/command-palette.js');
-                const marker = document.createElement('span');
-                const old = palette.attachShortcut(marker, 'Alt+Q');
-                const replacement = palette.attachShortcut(marker, 'Alt+W');
-                old.dispose();
-                const kept = marker.dataset.ready;
-                replacement.dispose();
-                return [kept, marker.dataset.ready ?? null];
-            }
-            """);
+        await page.Keyboard.PressAsync("ControlOrMeta+K");
 
-        Assert.Equal(["Alt+W", null], marks);
+        await Expect(page.GetByRole(AriaRole.Dialog)).ToHaveCountAsync(1);
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Command palette" })).ToHaveCountAsync(0);
     }
 
     private async Task<IPage> OpenReadyAsync(string browser)
     {
         var page = await OpenAsync(browser, "/command-palette");
-        await Expect(page.Locator("[data-command-palette='Command palette']")).ToHaveAttributeAsync("data-ready",
-            "Mod+K");
+        await Expect(page.Locator("[data-command-palette='Command palette'] [data-part=hotkey]"))
+            .ToHaveAttributeAsync("data-ready", "Mod+K");
         return page;
     }
 

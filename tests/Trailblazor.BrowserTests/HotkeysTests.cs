@@ -200,6 +200,29 @@ public class HotkeysTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(help).ToBeHiddenAsync();
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Hotkey_ShouldLeaveTheNewKeysMark_WhenTheOldHotkeyIsDisposedAfterIt(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+
+        // .NET may dispose a replaced hotkey after its replacement attached, so the order is forced here.
+        var marks = await page.EvaluateAsync<string?[]>("""
+            async () => {
+                const hotkeys = await import('/_content/Trailblazor/hotkeys.js');
+                const marker = document.createElement('span');
+                document.body.append(marker);
+                const old = hotkeys.attachHotkey(marker, 'Alt+Q', 'Page');
+                const replacement = hotkeys.attachHotkey(marker, 'Alt+W', 'Page');
+                old.dispose();
+                const kept = marker.dataset.ready;
+                replacement.dispose();
+                return [kept, marker.dataset.ready ?? null];
+            }
+            """);
+
+        Assert.Equal(["Alt+W", null], marks);
+    }
+
     private async Task<IPage> OpenReadyAsync(string browser)
     {
         var page = await OpenAsync(browser, "/hotkeys");

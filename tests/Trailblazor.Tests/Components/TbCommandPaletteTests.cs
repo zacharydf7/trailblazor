@@ -206,6 +206,38 @@ public class TbCommandPaletteTests : BunitContext
         Assert.Contains(shortcut, error.Message, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(null, "Search commands")]
+    [InlineData("Find a command", "Find a command")]
+    public void Shortcut_ShouldBeListedInTheHotkeysHelp_WhenThePaletteHasOne(string? label, string description)
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbCommandPalette<Command>>(0);
+            builder.AddComponentParameter(1, nameof(TbCommandPalette<Command>.Items), Commands);
+            builder.AddComponentParameter(2, nameof(TbCommandPalette<Command>.Labels),
+                new CommandPaletteLabels { Shortcut = label });
+            builder.CloseComponent();
+            builder.OpenComponent<TbHotkeysHelp>(3);
+            builder.AddComponentParameter(4, nameof(TbHotkeysHelp.Open), true);
+            builder.CloseComponent();
+        });
+
+        var row = Assert.Single(cut.FindAll("[data-part=row]"));
+        Assert.Equal(description, row.Children[1].TextContent);
+    }
+
+    [Fact]
+    public async Task Shortcut_ShouldCloseThePalette_WhenPressedWhileItIsOpen()
+    {
+        var cut = RenderPalette();
+
+        await cut.Find("dialog [data-part=hotkey]").TriggerEventAsync("ontbhotkey", EventArgs.Empty);
+
+        Assert.Equal([false], _openChanges);
+        Assert.False(cut.Tb().CommandPalette().IsOpen);
+    }
+
     private IRenderedComponent<TbCommandPalette<Command>> RenderPalette(bool open = true) =>
         Render<TbCommandPalette<Command>>(parameters => parameters.Add(palette => palette.Items, Commands)
             .Add(palette => palette.Open, open).Add(palette => palette.ItemText, command => command.Name)

@@ -630,8 +630,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenDocsAsync(browser, "components/command-palette");
         await Expect(page.Locator("html[data-shortcuts]")).ToHaveCountAsync(1);
-        await Expect(page.Locator("[data-command-palette='Command palette']")).ToHaveAttributeAsync("data-ready",
-            "Mod+K");
+        await Expect(page.Locator("[data-command-palette='Command palette'] [data-part=hotkey]"))
+            .ToHaveAttributeAsync("data-ready", "Mod+K");
 
         await page.Keyboard.PressAsync("Control+k");
 

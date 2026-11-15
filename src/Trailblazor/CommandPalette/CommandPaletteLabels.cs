@@ -11,4 +11,8 @@ public sealed record CommandPaletteLabels
     /// <summary>Read out when the number of results changes, with <c>{0}</c> for the number. Leave it null for the
     /// app's text for <see cref="TbStrings.CommandPaletteResults"/>.</summary>
     public string? Results { get; init; }
+
+    /// <summary>Describes the shortcut in a <see cref="TbHotkeysHelp"/>. Leave it null for the app's text for
+    /// <see cref="TbStrings.CommandPaletteShortcut"/>.</summary>
+    public string? Shortcut { get; init; }
 }

@@ -6757,8 +6757,9 @@ public static class ExampleCatalog
             Api = [typeof(TbCommandPalette<>), typeof(CommandPaletteLabels)],
             Keyboard =
             [
-                new(["Ctrl+K"], "Opens the palette, or closes it. ⌘K on a Mac; `Shortcut` changes it.")
-                    { When = "Anywhere on the page" },
+                new(["Ctrl+K"], "Opens the palette, or closes it, unless another modal dialog is open. ⌘K on a Mac; "
+                    + "`Shortcut` changes it. A `TbHotkeysHelp` lists it as \"Search commands\", or "
+                    + "`Labels.Shortcut`.") { When = "Anywhere on the page" },
                 new(["Down", "Up"], "Moves to the next or previous command, wrapping around and skipping disabled "
                     + "ones; focus stays in the search box.") { When = "In the search box" },
                 new(["Enter"], "Runs the active command.") { When = "In the search box" },
@@ -6771,8 +6772,8 @@ public static class ExampleCatalog
                     + "`aria-activedescendant`.",
                 "The results are a `listbox` of `option`s, with a `group` for each heading. A disabled command has "
                     + "`aria-disabled`.",
-                "`Labels` replaces the message shown when nothing matches and the count read out as results change "
-                    + "(with `{0}` for the number).",
+                "`Labels` replaces the message shown when nothing matches, the count read out as results change "
+                    + "(with `{0}` for the number) and the shortcut's description in a `TbHotkeysHelp`.",
             ],
             Announcements =
             [
@@ -6796,7 +6797,7 @@ public static class ExampleCatalog
                 "Nothing renders until the page is interactive, since the palette only opens from the shortcut or the "
                     + "app.",
             ],
-            Ready = new("[data-command-palette]", "the palette's hidden marker"),
+            Ready = new("[data-command-palette] [data-part=hotkey]", "the hotkey in the palette's hidden marker"),
             Target = new("combobox", "Command palette") { OpenedBy = new("button", "Search commands") },
             Blocks = ["tb-command-palette"],
             DataParts =
@@ -6815,9 +6816,9 @@ public static class ExampleCatalog
                 + "`page.Tb().CommandPalette().OpenAsync()` presses its shortcut, then `SearchAsync(\"trail\")` and "
                 + "`ChooseAsync(\"New trail\")` wait for the results and for `OnChoose`, and "
                 + "`cut.Tb().CommandPalette()` does the same in bUnit. Without the helpers, wait until "
-                + "`[data-command-palette]` has `data-ready` set to its shortcut, such as `Mod+K`, then press "
-                + "`ControlOrMeta+K`, or click the app's own button. Each `option`'s text includes its shortcut's "
-                + "keys, so match its `.tb-command-palette__text > [data-part=label]` for the name alone.",
+                + "`[data-command-palette] [data-part=hotkey]` has `data-ready` set to its shortcut, such as `Mod+K`, "
+                + "then press `ControlOrMeta+K`, or click the app's own button. Each `option`'s text includes its "
+                + "shortcut's keys, so match its `.tb-command-palette__text > [data-part=label]` for the name alone.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"app-commands\"`, it counts `trailblazor.control.shown` as it "

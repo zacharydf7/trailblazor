@@ -35,11 +35,12 @@ public sealed class TbCommandPaletteLocator(ILocator scope, string? name)
             return;
         }
 
-        // The app can change the shortcut as the page turns interactive, so it's read again once a listener is ready,
-        // and the helper waits for that shortcut's listener.
-        await Assertions.Expect(Marker).ToHaveAttributeAsync("data-ready", new Regex("."));
+        // The app can change the shortcut as the page turns interactive, so it's read again once a hotkey is ready,
+        // and the helper waits for that shortcut's hotkey.
+        var hotkey = Marker.Locator("[data-part=hotkey]");
+        await Assertions.Expect(hotkey).ToHaveAttributeAsync("data-ready", new Regex("."));
         var shortcut = (await Marker.GetAttributeAsync("data-shortcut"))!;
-        await Assertions.Expect(Marker).ToHaveAttributeAsync("data-ready", shortcut);
+        await Assertions.Expect(hotkey).ToHaveAttributeAsync("data-ready", shortcut);
         await scope.Page.Keyboard.PressAsync(string.Join('+', shortcut.Split('+').Select(KeyOf)));
         await Assertions.Expect(Search).ToBeFocusedAsync();
         await Assertions.Expect(Search).ToHaveAttributeAsync("data-ready", "");

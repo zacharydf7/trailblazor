@@ -1,7 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 using Trailblazor.Primitives;
 
 namespace Trailblazor;
@@ -10,11 +9,10 @@ namespace Trailblazor;
 /// Ctrl+K. Its search matches the letters in order, so "nwtb" finds "New tab", and puts the best matches first.
 /// </summary>
 /// <typeparam name="TItem">The type of the commands.</typeparam>
-public sealed partial class TbCommandPalette<TItem> : TbComponentBase, IAsyncDisposable
+public sealed partial class TbCommandPalette<TItem> : TbComponentBase
 {
     private readonly string _id = $"tb-command-palette-{Guid.NewGuid():N}";
     private readonly ItemHandlers<TItem, Func<MouseEventArgs, Task>> _choose;
-    private ElementReference _marker;
     private string _query = "";
     private List<Result> _results = [];
     private List<Group> _groups = [];
@@ -22,12 +20,7 @@ public sealed partial class TbCommandPalette<TItem> : TbComponentBase, IAsyncDis
     private bool _openParameter;
     private int? _announcedCount;
     private int _chosen;
-    private IJSObjectReference? _module;
-    private IJSObjectReference? _shortcut;
-    private string? _attachedShortcut;
-    private int _attaches;
     private ControlTelemetry? _telemetry;
-    private bool _disposed;
 
     /// <summary>Creates the command palette.</summary>
     public TbCommandPalette() => _choose = new(item => args => ChooseAsync(item, args));
@@ -90,8 +83,10 @@ public sealed partial class TbCommandPalette<TItem> : TbComponentBase, IAsyncDis
     public EventCallback<bool> OpenChanged { get; set; }
 
     /// <summary>The keys that open and close the palette anywhere on the page, such as <c>"Mod+K"</c>, the default:
-    /// Mod is ⌘ on Apple devices and Ctrl elsewhere, and Ctrl, Alt, Shift and Meta can be named too. Null leaves the
-    /// palette to <see cref="Open"/>.</summary>
+    /// Mod is ⌘ on Apple devices and Ctrl elsewhere, and Ctrl, Alt, Shift and Meta can be named too. They do nothing
+    /// while another modal dialog is open. A key without Mod, Ctrl, Alt or Meta is allowed, as for a
+    /// <see cref="TbHotkey"/> with <see cref="TbHotkey.AllowCharacterKey"/>, so let people turn it off. Null leaves
+    /// the palette to <see cref="Open"/>.</summary>
     [Parameter]
     public string? Shortcut { get; set; } = "Mod+K";
 
@@ -119,9 +114,6 @@ public sealed partial class TbCommandPalette<TItem> : TbComponentBase, IAsyncDis
 
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
-
-    [Inject]
-    private JsModuleLoader Modules { get; set; } = default!;
 
     [Inject]
     private ITbLocalizer Localizer { get; set; } = default!;
@@ -169,52 +161,7 @@ public sealed partial class TbCommandPalette<TItem> : TbComponentBase, IAsyncDis
     }
 
     /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        Telemetry.Rendered(TelemetryName);
-        if (Shortcut == _attachedShortcut)
-        {
-            return;
-        }
-
-        // The app can change the shortcut, such as to keys the user set, so the old listener is replaced. A render
-        // during the wait may change it again, even back, and then only the latest render's handle is kept.
-        var wanted = _attachedShortcut = Shortcut;
-        var attach = ++_attaches;
-        try
-        {
-            if (_shortcut is { } previous)
-            {
-                _shortcut = null;
-                await previous.DisposeHandleAsync();
-            }
-
-            if (wanted is null)
-            {
-                return;
-            }
-
-            _module ??= await Modules.ImportAsync("./_content/Trailblazor/command-palette.js");
-            // Nothing waits between here and the call, so attaches reach the browser in the order they were counted.
-            if (_disposed || attach != _attaches)
-            {
-                return;
-            }
-
-            var handle = await _module.InvokeAsync<IJSObjectReference?>("attachShortcut", _marker, wanted);
-            if (handle is not null && (_disposed || attach != _attaches))
-            {
-                await handle.DisposeHandleAsync();
-                return;
-            }
-
-            _shortcut = handle;
-        }
-        catch (JSDisconnectedException)
-        {
-            // The circuit is gone, and the palette went with it.
-        }
-    }
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
 
     private string TextOf(TItem item) => ItemText?.Invoke(item) ?? item?.ToString() ?? "";
 
@@ -319,16 +266,6 @@ public sealed partial class TbCommandPalette<TItem> : TbComponentBase, IAsyncDis
         {
             _chosen++;
             StateHasChanged();
-        }
-    }
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        _disposed = true;
-        if (_shortcut is not null)
-        {
-            await _shortcut.DisposeHandleAsync();
         }
     }
 

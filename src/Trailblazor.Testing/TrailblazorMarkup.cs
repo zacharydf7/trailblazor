@@ -2454,7 +2454,7 @@ public sealed class TbCommandPaletteDriver
 
         if (!IsOpen)
         {
-            await marker.TriggerEventAsync("ontbhotkey", EventArgs.Empty);
+            await marker.QuerySelector("[data-part=hotkey]")!.TriggerEventAsync("ontbhotkey", EventArgs.Empty);
         }
     }
 

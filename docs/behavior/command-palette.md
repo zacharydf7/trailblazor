@@ -7,7 +7,9 @@ Familiar apps: VS Code's command palette, GitHub's and Linear's Ctrl+K search, S
 ## Keyboard
 
 - [x] Ctrl+K, or ⌘K on Apple devices, opens the palette from anywhere on the page, and pressing it again closes it. `CommandPaletteTests.Shortcut_ShouldOpenThePaletteWithItsSearchFocused_WhenPressedAnywhere`
-- [x] The shortcut is left alone when something else already handled the key, while it's held down, and while an input method composes text. `command-palette.js`
+- [x] The shortcut is left alone when something else already handled the key, while it's held down, and while an input method composes text. `hotkeys.js`, `shortcuts.js`
+- [x] The shortcut does nothing while another modal dialog is open, as for every `TbHotkey`. `CommandPaletteTests.Shortcut_ShouldLeaveThePaletteClosed_WhenAnotherModalDialogIsOpen`
+- [x] A `TbHotkeysHelp` lists the shortcut. `TbCommandPaletteTests.Shortcut_ShouldBeListedInTheHotkeysHelp_WhenThePaletteHasOne`
 - [x] Typing narrows the commands to those whose letters appear in order, best matches first, and the first one is active. `CommandPaletteTests.Keys_ShouldMoveTheActiveCommandAndRunIt_WhenTheArrowsAndEnterArePressed`, `TbCommandPaletteTests.Input_ShouldPutTheBestMatchesFirstAndMarkTheirLetters_WhenTheUserTypes`
 - [x] Down and Up move the active command, skip disabled ones and wrap at the ends. `CommandPaletteTests.Keys_ShouldSkipADisabledCommandAndWrapAround_WhenTheArrowsMovePastIt`
 - [x] Enter runs the active command, closes the palette and returns focus to where it was. `CommandPaletteTests.Keys_ShouldMoveTheActiveCommandAndRunIt_WhenTheArrowsAndEnterArePressed`

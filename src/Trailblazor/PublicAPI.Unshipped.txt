@@ -4842,7 +4842,6 @@ Trailblazor.CommandPaletteLabels.NoResults.init -> void
 Trailblazor.CommandPaletteLabels.Results.get -> string?
 Trailblazor.CommandPaletteLabels.Results.init -> void
 Trailblazor.TbCommandPalette<TItem>
-Trailblazor.TbCommandPalette<TItem>.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Trailblazor.TbCommandPalette<TItem>.ItemDescription.get -> System.Func<TItem, string?>?
 Trailblazor.TbCommandPalette<TItem>.ItemDescription.set -> void
 Trailblazor.TbCommandPalette<TItem>.ItemDisabled.get -> System.Func<TItem, bool>?
@@ -5540,3 +5539,6 @@ Trailblazor.TreeViewLabels.ItemCount.get -> string?
 Trailblazor.TreeViewLabels.ItemCount.init -> void
 Trailblazor.TreeViewLabels.MoveHint.get -> string?
 Trailblazor.TreeViewLabels.MoveHint.init -> void
+Trailblazor.CommandPaletteLabels.Shortcut.get -> string?
+Trailblazor.CommandPaletteLabels.Shortcut.init -> void
+const Trailblazor.TbStrings.CommandPaletteShortcut = "CommandPalette.Shortcut" -> string!

@@ -86,6 +86,9 @@ public static class TbStrings
     /// </summary>
     public const string CommandPaletteResults = "CommandPalette.Results";
 
+    /// <summary>"Search commands": describes a command palette's shortcut in a hotkeys help.</summary>
+    public const string CommandPaletteShortcut = "CommandPalette.Shortcut";
+
     /// <summary>"Keyboard shortcuts": the title of the dialog that lists the page's hotkeys.</summary>
     public const string HotkeysHelpTitle = "HotkeysHelp.Title";
 
@@ -1210,6 +1213,7 @@ public static class TbStrings
         [CommandPalettePlaceholder] = "Type a command or search",
         [CommandPaletteNoResults] = "No matching commands",
         [CommandPaletteResults] = "Results: {0}",
+        [CommandPaletteShortcut] = "Search commands",
         [HotkeysHelpTitle] = "Keyboard shortcuts",
         [HotkeysHelpShow] = "Show keyboard shortcuts",
         [HotkeysHelpGeneral] = "General",

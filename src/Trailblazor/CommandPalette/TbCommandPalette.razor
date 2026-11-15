@@ -5,12 +5,22 @@
 <TbDialog Title="@LabelText" Open="_open" OpenChanged="OnDialogOpenChangedAsync" Options="DialogSettings"
           class="@ClassNames.Join("tb-command-palette", Class)" style="@Style" @attributes="AdditionalAttributes">
     @WithKeys(Search)
+    @if (Shortcut is not null)
+    {
+        @* The page's hotkeys don't fire under the open palette, so the same keys close it from inside. *@
+        <TbHotkey Keys="@Shortcut" AllowCharacterKey OnPress="OnShortcutAsync" />
+    }
 </TbDialog>
-@* The palette shows nothing until it opens, so this marks where it is and the shortcut that opens it. The script sets
-   data-ready here to the shortcut once it works, and data-commits counts the choices the app has handled, which tests
-   wait for. *@
-<span @ref="_marker" hidden data-command-palette="@LabelText" data-shortcut="@Shortcut" data-commits="@_chosen"
-      @ontbhotkey="OnShortcutAsync" @ontbhotkey:stopPropagation></span>
+@* The palette shows nothing until it opens, so this marks where it is and the shortcut that opens it. The hotkey
+   inside sets its own data-ready to the shortcut once it works, and data-commits counts the choices the app has
+   handled, which tests wait for. *@
+<span hidden data-command-palette="@LabelText" data-shortcut="@Shortcut" data-commits="@_chosen">
+    @if (Shortcut is not null)
+    {
+        <TbHotkey Keys="@Shortcut" AllowCharacterKey OnPress="OnShortcutAsync"
+                  Description="@(Labels.Shortcut ?? Localizer[TbStrings.CommandPaletteShortcut])" />
+    }
+</span>
 
 @code {
     // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.

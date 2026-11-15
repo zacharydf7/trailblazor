@@ -1,9 +1,4 @@
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
-import { matchesShortcut, parseShortcut } from './shortcuts.js';
-
-// The listener each marker's data-ready belongs to. A replaced listener can be disposed after its replacement attached,
-// and must leave the replacement's mark alone.
-const listeners = new WeakMap();
 
 // Focus stays in the search box while the arrow keys move an active option, which Enter clicks, as in a combobox. The
 // first option turns active whenever the results change, so Enter right after typing runs the best match.
@@ -91,38 +86,6 @@ export function attachPalette(scope) {
             input.removeEventListener('keydown', onKeyDown);
             listbox.removeEventListener('pointerdown', onPointerDown);
             listbox.removeEventListener('pointermove', onPointerMove);
-        },
-    };
-}
-
-// Opens the palette from anywhere on the page, with a shortcut such as "Mod+K", through the event its marker hears.
-export function attachShortcut(marker, shortcut) {
-    if (!marker) {
-        return null;
-    }
-
-    const wanted = parseShortcut(shortcut);
-    const onKeyDown = event => {
-        if (event.defaultPrevented || !matchesShortcut(event, wanted)) {
-            return;
-        }
-
-        event.preventDefault();
-        marker.dispatchEvent(new CustomEvent('tb-hotkey', { bubbles: true }));
-    };
-
-    document.addEventListener('keydown', onKeyDown);
-    // Marks which shortcut works, so a test waits for the one the app set last.
-    listeners.set(marker, onKeyDown);
-    marker.dataset.ready = shortcut;
-
-    return {
-        dispose() {
-            document.removeEventListener('keydown', onKeyDown);
-            if (listeners.get(marker) === onKeyDown) {
-                listeners.delete(marker);
-                delete marker.dataset.ready;
-            }
         },
     };
 }
