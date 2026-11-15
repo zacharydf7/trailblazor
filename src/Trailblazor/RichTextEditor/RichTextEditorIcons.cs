@@ -25,6 +25,10 @@ internal static class RichTextEditorIcons
     public static Icon Code { get; } =
         new($"<path {Lines} stroke-width=\"2\" d=\"M8 7l-5 5 5 5M16 7l5 5-5 5M14 5l-4 14\" />");
 
+    // Angle brackets in a page, set apart from Code's bare brackets.
+    public static Icon Source { get; } = new($"<path {Lines} stroke-width=\"1.8\" d=\"M5 3.5h14v17H5z\" />"
+        + $"<path {Lines} stroke-width=\"2\" d=\"M10 9l-3 3 3 3M14 9l3 3-3 3\" />");
+
     // Two rounded links of a chain, joined on the diagonal.
     public static Icon Link { get; } = new($"<path {Lines} stroke-width=\"2\" d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0"
         + "-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1\" />");

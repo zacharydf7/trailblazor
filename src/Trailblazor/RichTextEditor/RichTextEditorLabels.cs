@@ -136,4 +136,8 @@ public sealed record RichTextEditorLabels
     /// <summary>What's announced as the text nears the limit, with <c>{0}</c> for the characters left. Leave it null
     /// for the app's text for <see cref="TbStrings.TextFieldCharactersLeft"/>.</summary>
     public string? CharactersLeft { get; init; }
+
+    /// <summary>Names the HTML source button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorSource"/>.</summary>
+    public string? Source { get; init; }
 }

@@ -3415,6 +3415,10 @@ public static class ExampleCatalog
                     + "Paragraph and line breaks don't count. Typing past the limit isn't stopped, so nothing pasted "
                     + "is cut off; a longer value shows an error, and a form won't submit it.",
                     typeof(RichTextEditorCountExample)),
+                new("html-source", "HTML source", "`ShowSource` adds an HTML source button to the toolbar, which swaps "
+                    + "the editing area for a text area of the value's HTML. When focus leaves the text area, its HTML "
+                    + "is cleaned up the way a paste is, so it keeps only the formats and blocks the editor allows.",
+                    typeof(RichTextEditorSourceExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the text focusable, "
                     + "selectable and copyable. `Disabled` takes it out of the tab order. Both disable the toolbar.",
                     typeof(RichTextEditorStatesExample)),
@@ -3486,6 +3490,8 @@ public static class ExampleCatalog
                     + "and `aria-disabled` as they apply, and the placeholder as `aria-placeholder`.",
                 "With `ShowCount`, the count describes the editing area, and with a `MaxLength`, screen readers hear "
                     + "the characters left as they reach 20 and 0.",
+                "The HTML source button is a toggle with `aria-pressed`, and the text area takes the field's label, "
+                    + "so it is announced as the same field.",
                 "The toolbar is a [toolbar](components/toolbar), following its WAI-ARIA pattern: one Tab stop, with "
                     + "the arrow keys moving between its buttons. Each format and block button uses `aria-pressed` to "
                     + "report whether it applies to all of the selection, part of it (mixed) or none, and names its "
@@ -3531,6 +3537,8 @@ public static class ExampleCatalog
                 new("count", "The counter under the editor, with `ShowCount`."),
                 new("count-shown", "The counter's text, such as 12 / 200, which screen readers skip."),
                 new("count-said", "The counter's words for screen readers, such as 12 of 200 characters."),
+                new("source-toggle", "The HTML source button, with `ShowSource`."),
+                new("source", "The text area of the value's HTML, while the source shows."),
             ],
             TestingTips =
             [
@@ -3543,6 +3551,8 @@ public static class ExampleCatalog
                 "To add a link in Playwright, select the text and press `ControlOrMeta+k`, then fill the dialog's "
                     + "\"Link\" field and press Enter.",
                 "`TransformPaste` is a plain function, so test it on a `RichTextDocument` without the editor.",
+                "With `ShowSource`, press the \"HTML source\" button, fill the `source` part and press the button "
+                    + "again; the value updates when focus leaves the text area.",
                 "With `ShowCount`, read the count from the `count-shown` part, as `\"12 / 200\"` with a "
                     + "`MaxLength`; a value past the limit shows its error once the value updates, when focus leaves the "
                     + "editor, or when the form submits.",

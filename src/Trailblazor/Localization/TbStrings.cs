@@ -766,6 +766,9 @@ public static class TbStrings
     /// </summary>
     public const string RichTextEditorClearFormatting = "RichTextEditor.ClearFormatting";
 
+    /// <summary>"HTML source": names a rich text editor's button that shows its value's HTML to edit.</summary>
+    public const string RichTextEditorSource = "RichTextEditor.Source";
+
     /// <summary>"Link": names a rich text editor's link button.</summary>
     public const string RichTextEditorLink = "RichTextEditor.Link";
 
@@ -1406,6 +1409,7 @@ public static class TbStrings
         [RichTextEditorIndent] = "Indent",
         [RichTextEditorHorizontalRule] = "Horizontal line",
         [RichTextEditorClearFormatting] = "Clear formatting",
+        [RichTextEditorSource] = "HTML source",
         [RichTextEditorLink] = "Link",
         [RichTextEditorAddLink] = "Add link",
         [RichTextEditorEditLink] = "Edit link",

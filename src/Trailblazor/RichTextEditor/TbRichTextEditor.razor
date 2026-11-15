@@ -9,7 +9,7 @@
 
 @Layout(Classes, @<text>
     <div data-part="editor" class="tb-rich-text-editor">
-        @if (ShowToolbar && Tools.Count > 0)
+        @if (ShowToolbar && (Tools.Count > 0 || ShowSource))
         {
             <TbToolbar AriaLabel="@(Labels.Toolbar ?? Localizer[TbStrings.RichTextEditorToolbar])" data-part="toolbar"
                        aria-controls="@InputId" Class="tb-rich-text-editor__toolbar">
@@ -17,11 +17,17 @@
                 {
                     @* The script keeps aria-pressed up to date as the selection moves, so .NET never changes it. *@
                     <TbIconButton Icon="tool.Icon" AriaLabel="@tool.Label" ShowTooltip Size="Size.Small"
-                                  Disabled="@(Disabled || ReadOnly)" data-format="@tool.Format"
+                                  Disabled="@(Disabled || ReadOnly || _source)" data-format="@tool.Format"
                                   data-block="@tool.Block" data-command="@tool.Command"
                                   aria-pressed="@(tool.Command is null ? "false" : null)"
                                   aria-haspopup="@(tool.Command == "link" ? "dialog" : null)"
                                   aria-keyshortcuts="@tool.Shortcuts" />
+                }
+                @if (ShowSource)
+                {
+                    <TbIconButton Icon="RichTextEditorIcons.Source" ShowTooltip Size="Size.Small" Disabled="Disabled"
+                                  AriaLabel="@(Labels.Source ?? Localizer[TbStrings.RichTextEditorSource])"
+                                  Pressed="_source" PressedChanged="ShowSourceAsync" data-part="source-toggle" />
                 }
             </TbToolbar>
         }
@@ -34,10 +40,10 @@
              aria-multiline="true" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-describedby="@(ShowCount ? ClassNames.Join(InputDescribedBy, CountId) : InputDescribedBy)"
              aria-required="@AriaRequired"
-             aria-invalid="@(ShowsInvalid ? "true" : null)" aria-readonly="@(ReadOnly ? "true" : null)"
+             aria-invalid="@(ShowsInvalid && !_source ? "true" : null)" aria-readonly="@(ReadOnly ? "true" : null)"
              aria-disabled="@(Disabled ? "true" : null)" aria-placeholder="@Placeholder" data-placeholder="@Placeholder"
              contenteditable="@(Disabled || _handle is null ? "false" : "true")" tabindex="@(Disabled ? "-1" : "0")"
-             data-ready="@(_handle is null ? null : "")" data-count="@(ShowCount ? CountId : null)"
+             data-ready="@(_handle is null ? null : "")" data-count="@(ShowCount ? CountId : null)" hidden="@_source"
              @ontbcharactersleft="OnCharactersLeft"
              inputmode="@(ReadOnly ? "none" : null)" spellcheck="true"
              style="--tb-rich-text-editor-lines: @Lines; --tb-rich-text-editor-max-lines: @(MaxLines ?? 0)"
@@ -48,6 +54,17 @@
                 @((MarkupString)Canonical)
             }
         </div>
+        @if (_source)
+        {
+            @* Re-keyed whenever the parse cleans up an edit, so the text area shows what was kept even when the
+               value didn't change. *@
+            <textarea @key="_sourceChanges" @ref="_sourceArea" data-part="source"
+                      aria-labelledby="@(ShownLabel is null ? null : LabelId)"
+                      aria-describedby="@(ShowCount ? ClassNames.Join(InputDescribedBy, CountId) : InputDescribedBy)"
+                      aria-required="@AriaRequired" aria-invalid="@(ShowsInvalid ? "true" : null)"
+                      readonly="@ReadOnly" disabled="@Disabled" spellcheck="false" rows="@Lines" value="@_sent"
+                      @onchange="OnSourceChangedAsync" class="tb-field__input tb-rich-text-editor__source"></textarea>
+        }
     </div>
 </text>, null, null)
 
@@ -68,6 +85,9 @@
     private object? _sentOptions;
     private bool _disposed;
     private (string? Value, bool Missing)? _missing;
+    private bool _source;
+    private int _sourceChanges;
+    private ElementReference _sourceArea;
 
     /// <summary>The formats the editor allows: the toolbar has a button for each, and text pasted in keeps only these.
     /// <see cref="RichTextFormats.Link"/> adds a link button that opens a dialog, which needs a <see cref="TbRoot"/> in
@@ -127,6 +147,12 @@
     [Parameter]
     public bool ShowCount { get; set; }
 
+    /// <summary>Adds an HTML source button to the toolbar, which swaps the editing area for a text area of the value's
+    /// HTML. What's typed there goes through <see cref="RichTextDocument"/> like any other value, so it keeps only what
+    /// the editor allows.</summary>
+    [Parameter]
+    public bool ShowSource { get; set; }
+
     /// <summary>Updates the value on every change instead of when focus leaves the editor.</summary>
     [Parameter]
     public bool UpdateOnInput { get; set; }
@@ -145,7 +171,8 @@
     public FieldClasses? Classes { get; set; }
 
     /// <inheritdoc />
-    public override ValueTask FocusAsync(bool preventScroll = false) => _content.FocusAsync(preventScroll);
+    public override ValueTask FocusAsync(bool preventScroll = false) =>
+        (_source ? _sourceArea : _content).FocusAsync(preventScroll);
 
     // A button applies a format, sets a kind of block, or runs a command; the script reads which from its data.
     private sealed record Tool(string? Format, string? Block, string? Command, Icon Icon, string Label,
@@ -235,6 +262,30 @@
 
     private string CountId => $"{FieldId}-count";
 
+    // The editing area's text reaches .NET before the source shows it: flush sends it as a change.
+    private async Task ShowSourceAsync(bool show)
+    {
+        if (show && _handle is not null)
+        {
+            await _handle.InvokeVoidAsync("flush");
+        }
+
+        _source = show;
+    }
+
+    // The source is parsed the same way as anything the editor sends, so the value holds only what the editor allows.
+    private Task OnSourceChangedAsync(ChangeEventArgs change)
+    {
+        var html = change.Value as string;
+        var canonical = RichTextDocument.Parse(html, Schema).ToHtml();
+        if (canonical != html)
+        {
+            _sourceChanges++;
+        }
+
+        return TakeAsync(html, canonical, load: true);
+    }
+
     // The text's characters without its breaks, as text-count.js counts the editing area's text. Each render and each
     // check of a form asks again, so the last answer is kept.
     private (string? Value, RichTextSchema Schema, int Count)? _count;
@@ -296,6 +347,8 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        // A parent that takes away the source button or the toolbar takes the source away with it.
+        _source &= ShowSource && ShowToolbar;
         if (_handle is null)
         {
             return;
@@ -372,9 +425,14 @@
 
         var html = _parts.ToString();
         _parts.Clear();
-        var canonical = RichTextDocument.Parse(html, Schema).ToHtml();
+        await TakeAsync(html, RichTextDocument.Parse(html, Schema).ToHtml(), load: false);
+    }
+
+    // The script holds the canonical value, loaded when it differs from what it sent or when the source changed it.
+    private async Task TakeAsync(string? html, string canonical, bool load)
+    {
         _sent = canonical;
-        if (canonical != html && _handle is not null)
+        if ((load || canonical != html) && _handle is not null)
         {
             await _handle.InvokeVoidAsync("setValue", canonical);
         }

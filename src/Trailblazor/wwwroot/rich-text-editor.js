@@ -57,6 +57,8 @@ export function attachRichTextEditor(root, value, options) {
         setOptions: changed => editor.setOptions(changed),
         setLink: (url, text) => editor.setLink(url, text),
         insertPasted: html => editor.insertPasted(html),
+        // Sends the value now, as a change event that reaches .NET before this call returns.
+        flush: () => editor.send(),
         dispose: () => editor.dispose(),
     };
 }
@@ -126,7 +128,9 @@ class Editor {
         on(document, 'selectionchange', () => this.onSelectionChange());
         // The label names the editor without a for attribute, so a click on it doesn't focus the editor by itself.
         on(label, 'click', () => {
-            if (root.getAttribute('aria-disabled') !== 'true') root.focus();
+            // While the HTML source shows, the click goes to it instead.
+            const source = root.hidden ? root.parentElement.querySelector('[data-part="source"]') : null;
+            if (root.getAttribute('aria-disabled') !== 'true') (source ?? root).focus();
         });
         // Pressing a toolbar button must not take the selection out of the editor.
         on(toolbar, 'mousedown', event => {

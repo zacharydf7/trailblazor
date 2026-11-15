@@ -697,4 +697,93 @@ public class TbRichTextEditorTests : BunitContext
     {
         public string? Report { get; set; }
     }
+
+    [Fact]
+    public async Task ShowSource_ShouldFlushTheEditorAndSwapItForItsHtml_WhenTheSourceButtonIsPressed()
+    {
+        _handle.SetupVoid("flush", _ => true).SetVoidResult();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Trail report")
+            .Add(editor => editor.Value, "<p>Pine <b>Hollow</b></p>").Add(editor => editor.ShowSource, true));
+        var toggle = cut.Find("[data-part=source-toggle]");
+        Assert.Equal(("HTML source", "false"),
+            (toggle.GetAttribute("aria-label"), toggle.GetAttribute("aria-pressed")));
+
+        await toggle.ClickAsync(new());
+
+        var source = cut.Find("[data-part=source]");
+        Assert.Single(_handle.Invocations["flush"]);
+        Assert.Equal("<p>Pine <strong>Hollow</strong></p>", source.GetAttribute("value"));
+        Assert.Equal(cut.Find("[data-part=label]").Id, source.GetAttribute("aria-labelledby"));
+        Assert.True(cut.Find("[data-part=input]").HasAttribute("hidden"));
+        Assert.Equal("true", cut.Find("[data-part=source-toggle]").GetAttribute("aria-pressed"));
+        Assert.All(cut.FindAll("[role=toolbar] button[data-format]"),
+            button => Assert.True(button.HasAttribute("disabled")));
+    }
+
+    [Fact]
+    public async Task Source_ShouldKeepOnlyWhatTheEditorAllows_WhenItsHtmlIsChanged()
+    {
+        _handle.SetupVoid("flush", _ => true).SetVoidResult();
+        List<string> changes = [];
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Trail report")
+            .Add(editor => editor.Formats, RichTextFormats.Bold).Add(editor => editor.ShowSource, true)
+            .Add(editor => editor.ValueChanged, (string html) => changes.Add(html)));
+        await cut.Find("[data-part=source-toggle]").ClickAsync(new());
+
+        await cut.Find("[data-part=source]")
+            .ChangeAsync(new() { Value = "<p><b>Pine</b> <i>Hollow</i><script>x()</script></p>" });
+
+        Assert.Equal(["<p><strong>Pine</strong> Hollow</p>"], changes);
+        Assert.Equal("<p><strong>Pine</strong> Hollow</p>", _handle.Invocations["setValue"].Last().Arguments[0]);
+    }
+
+    [Fact]
+    public async Task ShowSource_ShouldBringBackTheEditingArea_WhenTheParentTakesTheSourceButtonAway()
+    {
+        _handle.SetupVoid("flush", _ => true).SetVoidResult();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Trail report")
+            .Add(editor => editor.ShowSource, true));
+        await cut.Find("[data-part=source-toggle]").ClickAsync(new());
+
+        cut.Render(parameters => parameters.Add(editor => editor.ShowSource, false));
+        var hidden = cut.FindAll("[data-part=source]").Count;
+        var enabled = cut.FindAll("[role=toolbar] button[data-format]").All(button => !button.HasAttribute("disabled"));
+        // Shown again, the button starts unpressed, so the next press sends the editor's text first.
+        cut.Render(parameters => parameters.Add(editor => editor.ShowSource, true));
+
+        Assert.Equal((0, true), (hidden, enabled));
+        Assert.Empty(cut.FindAll("[data-part=source]"));
+        Assert.False(cut.Find("[data-part=input]").HasAttribute("hidden"));
+        Assert.Equal("false", cut.Find("[data-part=source-toggle]").GetAttribute("aria-pressed"));
+    }
+
+    [Fact]
+    public async Task Source_ShouldTakeTheFieldsInvalidStateAndFocus_WhenItShowsAndTheFormFailsToSubmit()
+    {
+        _handle.SetupVoid("flush", _ => true).SetVoidResult();
+        var trip = new Trip();
+        var cut = Render<EditForm>(parameters => parameters.Add(form => form.Model, trip)
+            .Add(form => form.ChildContent, (EditContext _) => builder =>
+            {
+                builder.OpenComponent<TbRichTextEditor>(0);
+                builder.AddAttribute(1, "Value", trip.Report);
+                builder.AddAttribute(2, "ValueExpression", (Expression<Func<string>>)(() => trip.Report!));
+                builder.AddAttribute(3, "Label", "Trail report");
+                builder.AddAttribute(4, "Required", true);
+                builder.AddAttribute(5, "ShowSource", true);
+                builder.CloseComponent();
+            }));
+        var editor = cut.FindComponent<TbRichTextEditor>();
+        await cut.Find("[data-part=source-toggle]").ClickAsync(new());
+        // bUnit drops an element's reference mark once the submit renders again, so read it first.
+        var reference = cut.Find("[data-part=source]").GetAttribute("blazor:elementReference");
+
+        cut.Find("form").Submit();
+        await cut.InvokeAsync(() => editor.Instance.FocusAsync().AsTask());
+
+        var source = cut.Find("[data-part=source]");
+        Assert.Equal(("true", "true"), (source.GetAttribute("aria-invalid"), source.GetAttribute("aria-required")));
+        Assert.Null(cut.Find("[data-part=input]").GetAttribute("aria-invalid"));
+        Assert.Equal(reference, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+    }
 }

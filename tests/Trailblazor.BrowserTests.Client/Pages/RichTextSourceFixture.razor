@@ -1,0 +1,9 @@
+@page "/rich-text-source"
+
+@* An editor with an HTML source view, with its value shown below it. *@
+<TbRichTextEditor Label="Trail notes" @bind-Value="_notes" ShowSource />
+<output data-testid="notes">@_notes</output>
+
+@code {
+    private string? _notes = "<p>Pine</p>";
+}

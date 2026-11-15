@@ -59,6 +59,49 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Source_ShouldShowWhatWasTypedAndPutItsEditsBack_WhenTheSourceButtonIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-source");
+        var notes = page.GetByRole(AriaRole.Textbox, new() { Name = "Trail notes" });
+        await Expect(notes).ToHaveAttributeAsync("data-ready", "");
+        var toggle = page.GetByRole(AriaRole.Button, new() { Name = "HTML source" });
+        await notes.ClickAsync();
+        await page.Keyboard.PressAsync("Control+End");
+        await page.Keyboard.TypeAsync(" Hollow");
+
+        // The text hasn't left the editor yet, so the button has it sent first.
+        await toggle.ClickAsync();
+        var source = page.Locator("[data-part=source]");
+        await Expect(source).ToHaveValueAsync("<p>Pine Hollow</p>");
+        await source.FillAsync("<p><em>Ridge</em> <span style=\"color: red\">loop</span></p>");
+        await toggle.ClickAsync();
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p><em>Ridge</em> loop</p>");
+        await Expect(notes).ToBeVisibleAsync();
+        await Expect(notes.Locator("em")).ToHaveTextAsync("Ridge");
+        await Expect(toggle).ToHaveAttributeAsync("aria-pressed", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Source_ShouldShowWhatWasKept_WhenItsHtmlReadsBackAsTheValueItHad(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-source");
+        await Expect(page.GetByRole(AriaRole.Textbox, new() { Name = "Trail notes" }))
+            .ToHaveAttributeAsync("data-ready", "");
+        await page.GetByRole(AriaRole.Button, new() { Name = "HTML source" }).ClickAsync();
+        var source = page.Locator("[data-part=source]");
+        await Expect(source).ToHaveValueAsync("<p>Pine</p>");
+
+        // Clicking the label goes to the source while it shows.
+        await page.GetByText("Trail notes", new() { Exact = true }).ClickAsync();
+        await Expect(source).ToBeFocusedAsync();
+        await source.FillAsync("<p><span style=\"color: red\">Pine</span><script>x()</script></p>");
+        await source.BlurAsync();
+
+        await Expect(page.Locator("[data-part=source]")).ToHaveValueAsync("<p>Pine</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Typing_ShouldLandAsShownAndTakeTheMarksBefore_WhenTypingInsideAndAfterAMarkedRun(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-editor");

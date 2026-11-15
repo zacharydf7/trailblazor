@@ -1,0 +1,6 @@
+@* HTML typed in the source keeps only what the editor allows, as a paste does. *@
+<TbRichTextEditor Label="Ranger notice" @bind-Value="_notice" ShowSource />
+
+@code {
+    private string? _notice = "<p>The <strong>Cedar Flats</strong> bridge is closed until Friday.</p>";
+}

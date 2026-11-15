@@ -5729,3 +5729,8 @@ Trailblazor.TbRichTextEditor.MaxLength.get -> int?
 Trailblazor.TbRichTextEditor.MaxLength.set -> void
 Trailblazor.TbRichTextEditor.ShowCount.get -> bool
 Trailblazor.TbRichTextEditor.ShowCount.set -> void
+Trailblazor.RichTextEditorLabels.Source.get -> string?
+Trailblazor.RichTextEditorLabels.Source.init -> void
+Trailblazor.TbRichTextEditor.ShowSource.get -> bool
+Trailblazor.TbRichTextEditor.ShowSource.set -> void
+const Trailblazor.TbStrings.RichTextEditorSource = "RichTextEditor.Source" -> string!

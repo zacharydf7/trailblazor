@@ -3389,6 +3389,15 @@
         cursor: text;
     }
 
+    /* The HTML source fills the field's width; its rows match the editing area's starting lines. */
+    .tb-rich-text-editor__source {
+        box-sizing: border-box;
+        inline-size: 100%;
+        padding-inline: var(--tb-control-padding-inline);
+        font-family: var(--tb-font-family-mono);
+        font-size: var(--tb-font-size-sm);
+    }
+
     .tb-rich-text-editor__content--limited {
         max-block-size: calc(var(--tb-rich-text-editor-max-lines) * 1lh + 2 * var(--tb-field-padding-block));
         overflow-y: auto;
