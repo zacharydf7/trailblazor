@@ -6,8 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="bunit" />
-    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="bunit" VersionOverride="$(BunitMinimum)" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing"
+                      VersionOverride="$(TimeProviderTestingMinimum)" />
   </ItemGroup>
 
   <ItemGroup>

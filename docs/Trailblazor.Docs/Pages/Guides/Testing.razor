@@ -27,7 +27,10 @@
     <ChildContent>
         <DocsHeading Id="bunit" Text="Set up bUnit" Class="docs-section" />
         <ol>
-            <li>Reference <code>Trailblazor.Testing</code> from the test project, once it's available to install.</li>
+            <li>
+                Reference <code>Trailblazor.Testing</code> from the test project, once it's available to install. It
+                works with bUnit 2.8.6 or later and Microsoft.Extensions.TimeProvider.Testing 8.0.0 or later.
+            </li>
             <li>Register any services of your own, such as a <code>FakeTimeProvider</code>.</li>
             <li>
                 Call <code>this.AddTrailblazor()</code> before anything renders, usually in the test class's
@@ -539,9 +542,11 @@
         <DocsHeading Id="playwright" Text="Drive components in Playwright" Class="docs-section" />
         <TbText>
             Reference <code>Trailblazor.Testing.Playwright</code>, once it's available to install, and
-            <code>page.Tb()</code> drives components the way a person does. Each helper waits for its component to
-            be ready before it clicks or types. A helper the <a href="guides/testing#bunit-fields">bUnit helpers</a>
-            also have goes by the same name there, and the same ones can be found without a name.
+            <code>page.Tb()</code> drives components the way a person does. The package builds against
+            Microsoft.Playwright 1.48.0 or later, and its helpers are tested on the current release. Each helper waits
+            for its component to be ready before it clicks or types. A helper the
+            <a href="guides/testing#bunit-fields">bUnit helpers</a> also have goes by the same name there, and the same
+            ones can be found without a name.
         </TbText>
         <TbText>
             When a label is used more than once, as in an open dialog over a form or in every row of a grid, call

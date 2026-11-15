@@ -41,3 +41,19 @@ jobs:
           $TRAILBLAZOR_BROWSERS
       # One test project at a time, so the browser tests don't slow the timing tests in the others past their limit.
       - run: dotnet test --configuration Release --no-build --max-parallel-test-modules 1
+
+  # The testing packages promise the lowest versions in Directory.Packages.props, so the bUnit tests run against them.
+  minimums:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - run: dotnet restore -p:TestingMinimums=true
+      - run: dotnet build --configuration Release --no-restore -p:TestingMinimums=true
+      - run: dotnet test --configuration Release --no-build --project tests/Trailblazor.Tests

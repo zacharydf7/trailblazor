@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Bunit;
 using Trailblazor.Docs.Examples;
 
@@ -241,6 +242,20 @@ public class GuideTests : DocsTest
         Time.Advance(TimeSpan.FromSeconds(7));
 
         announcer.WaitForAssertion(() => Assert.Empty(Polite()));
+    }
+
+    [Fact]
+    public void TestingGuide_ShouldNameEachTestingPackagesLowestVersion_WhenOpened()
+    {
+        var versions = XDocument.Load(Path.Combine(Repository.Root, "Directory.Packages.props"));
+        string Minimum(string name) => versions.Descendants(name).Single().Value;
+
+        var text = Regex.Replace(PageAt("guides/testing").Find(".docs-article__body").TextContent, @"\s+", " ");
+
+        Assert.Contains($"bUnit {Minimum("BunitMinimum")} or later", text);
+        Assert.Contains($"Microsoft.Extensions.TimeProvider.Testing {Minimum("TimeProviderTestingMinimum")} or later",
+            text);
+        Assert.Contains($"Microsoft.Playwright {Minimum("PlaywrightMinimum")} or later", text);
     }
 }
 
