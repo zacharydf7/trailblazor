@@ -486,6 +486,45 @@ public class TbNumberFieldTests : BunitContext
     }
 
     [Theory]
+    [InlineData("N0", "en-US", "1e-30")]
+    [InlineData("N0", "en-US", "-5e-400")]
+    [InlineData("C0", "en-SZ", "E1e-30")]
+    [InlineData("C0", "en-SZ", "1E-30")]
+    [InlineData("C0", "en-SZ", "E1E-30")]
+    [InlineData("N0", "en-US", "1.e-30")]
+    [InlineData("N0", "de-DE", "1,e-30")]
+    public void Change_ShouldExplainAndKeepTheText_WhenAFormattedWholeNumberFieldGetsATinyExponent(string format,
+        string culture, string text)
+    {
+        var value = 3;
+        var cut = RenderFormatted<int>(format, culture, value, parameters => parameters
+            .Add(field => field.ValueChanged, (int number) => value = number));
+
+        cut.Find("input").Change(text);
+
+        Assert.Equal((3, text, "true"), (value, cut.Find("input").GetAttribute("value"),
+            cut.Find("input").GetAttribute("aria-invalid")));
+    }
+
+    [Theory]
+    [InlineData("N0", "en-US", "0e5")]
+    [InlineData("C0", "sq-AL", "0 Lekë")]
+    [InlineData("C0", "en-SZ", "E0")]
+    [InlineData("C0", "en-SL", "Le 0e5")]
+    [InlineData("C0", "en-US", "($0e5)")]
+    public void Change_ShouldReadAZero_WhenAFormattedWholeNumberFieldGetsOneWithAnEInIt(string format, string culture,
+        string text)
+    {
+        var value = 3;
+        var cut = RenderFormatted<int>(format, culture, value, parameters => parameters
+            .Add(field => field.ValueChanged, (int number) => value = number));
+
+        cut.Find("input").Change(text);
+
+        Assert.Equal(0, value);
+    }
+
+    [Theory]
     [InlineData(null)]
     [InlineData("N3")]
     public void Change_ShouldRoundToTheDecimalPlaces_WhenDecimalsIsSet(string? format)
