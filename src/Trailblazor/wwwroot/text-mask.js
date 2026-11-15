@@ -91,35 +91,28 @@ export function createMask(input, pattern) {
         }
     };
 
-    // WebKit sends no change for text a script rewrote, so leaving the field sends one when the text changed.
-    let focused = '';
-    let changed = false;
-    const onFocus = () => {
-        focused = input.value;
-        changed = false;
+    // WebKit sends no change for text a script rewrote, so blur sends one for text changed since the last commit.
+    let committed = input.value;
+    const onCommit = () => {
+        committed = input.value;
     };
-    const onChange = () => {
-        changed = true;
-    };
-    const onBlur = () => {
-        if (!changed && input.value !== focused) {
+    const commit = () => {
+        if (input.value !== committed) {
             input.dispatchEvent(new Event('change', { bubbles: true }));
         }
     };
     // Enter commits the text too, so OnEnter and the form's submit, which come after it, see the fitted text.
     const onKeyDown = event => {
-        if (event.key === 'Enter' && !changed && input.value !== focused) {
-            input.dispatchEvent(new Event('change', { bubbles: true }));
-            focused = input.value;
-            changed = false;
+        if (event.key === 'Enter') {
+            commit();
         }
     };
 
     input.addEventListener('beforeinput', onBeforeInput);
     input.addEventListener('input', onInput);
-    input.addEventListener('focus', onFocus);
-    input.addEventListener('change', onChange);
-    input.addEventListener('blur', onBlur);
+    input.addEventListener('focus', onCommit);
+    input.addEventListener('change', onCommit);
+    input.addEventListener('blur', commit);
     input.addEventListener('keydown', onKeyDown);
     input.dataset.ready = '';
     const mask = {
@@ -131,10 +124,10 @@ export function createMask(input, pattern) {
 
             input.removeEventListener('beforeinput', onBeforeInput);
             input.removeEventListener('input', onInput);
-            input.removeEventListener('focus', onFocus);
+            input.removeEventListener('focus', onCommit);
             input.removeEventListener('keydown', onKeyDown);
-            input.removeEventListener('change', onChange);
-            input.removeEventListener('blur', onBlur);
+            input.removeEventListener('change', onCommit);
+            input.removeEventListener('blur', commit);
         },
     };
     current.set(input, mask);

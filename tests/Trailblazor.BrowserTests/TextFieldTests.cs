@@ -431,6 +431,51 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldCommitTheTextTheMaskRewrote_WhenEnterCommittedEarlierInTheSameFocus(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var phone = page.GetByLabel("Phone");
+        await Expect(phone).ToHaveAttributeAsync("data-ready", "");
+        await phone.PressSequentiallyAsync("5551234567");
+        await phone.PressAsync("Enter");
+        await Expect(page.GetByText("Digits: 5551234567", new() { Exact = true })).ToBeVisibleAsync();
+
+        // The mask rewrites the inserted digits as "(555) 12", which only a commit flags as short.
+        await phone.SelectTextAsync();
+        await page.Keyboard.InsertTextAsync("55512");
+        await Expect(phone).ToHaveValueAsync("(555) 12");
+        await phone.BlurAsync();
+
+        await Expect(phone).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(phone).ToHaveAccessibleDescriptionAsync("Phone isn't complete.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Mask_ShouldCommitNothing_WhenItAttachesToAFocusedFieldThatIsLeftUnchanged(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        await Expect(page.GetByLabel("Phone")).ToHaveAttributeAsync("data-ready", "");
+
+        var changes = await page.EvaluateAsync<int>("""
+            async () => {
+                const { createMask } = await import(new URL('_content/Trailblazor/text-mask.js', document.baseURI));
+                const input = document.createElement('input');
+                input.value = '(555) 12';
+                document.body.append(input);
+                input.focus();
+                createMask(input, '(000) 000-0000');
+                let changes = 0;
+                input.addEventListener('change', () => changes++);
+                input.blur();
+                input.remove();
+                return changes;
+            }
+            """);
+
+        Assert.Equal(0, changes);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldKeepTheCaretInPlace_WhenADigitIsTypedOrDeletedMidMask(string browser)
     {
         var page = await OpenAsync(browser, "/examples/text-field");
