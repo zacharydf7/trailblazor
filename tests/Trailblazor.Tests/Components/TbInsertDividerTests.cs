@@ -4,6 +4,8 @@ namespace Trailblazor.Tests.Components;
 
 public class TbInsertDividerTests : BunitContext
 {
+    public TbInsertDividerTests() => this.AddTrailblazor();
+
     [Fact]
     public void Render_ShouldNameTheInsertButton_WhenGivenALabel()
     {
