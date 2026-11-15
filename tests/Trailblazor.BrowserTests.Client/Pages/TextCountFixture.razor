@@ -1,0 +1,19 @@
+@page "/text-count"
+
+@* A counted field whose text the server hears only once typing pauses for a long while. *@
+<TbTextField Label="Summary" @bind-Value="_summary" MaxLength="25" ShowCount UpdateOnInput
+             UpdateDelay="TimeSpan.FromSeconds(30)" />
+<output data-testid="summary">@_summary</output>
+
+@* A counted field the server can empty, with its clear button, or rename from code. *@
+<TbTextField Label="Camp" @bind-Value="_camp" MaxLength="25" ShowCount Clearable />
+<button type="button" @onclick="@(() => _camp = "Camps")">Name the camp</button>
+
+@* A counted number field whose text the server rewrites as the number it read, so 05 comes back as 5. *@
+<TbTextField TValue="int" Label="Group size" @bind-Value="_size" ShowCount />
+
+@code {
+    private string? _summary;
+    private string? _camp;
+    private int _size = 5;
+}

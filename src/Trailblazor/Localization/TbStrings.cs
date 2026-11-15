@@ -667,6 +667,39 @@ public static class TbStrings
     /// <summary>"Clear": names a text field's clear button.</summary>
     public const string TextFieldClear = "TextField.Clear";
 
+    /// <summary>"{0} can be at most {1} characters.": the error for a text field's value that is longer than its
+    /// MaxLength; {0} is the field's label and {1} the limit. Asked for through <see cref="ITbLocalizer.Plural"/>, with
+    /// <see cref="TextFieldTooLongOne"/> as its one-form.</summary>
+    public const string TextFieldTooLong = "TextField.TooLong";
+
+    /// <summary>"{0} can be at most {1} character.": the same error for a limit of one; {0} is the field's label and
+    /// {1} the limit.</summary>
+    public const string TextFieldTooLongOne = "TextField.TooLongOne";
+
+    /// <summary>"{0} characters": what screen readers hear for a text field's counter without a limit; {0} is how many
+    /// characters the field holds. Asked for through <see cref="ITbLocalizer.Plural"/>, with
+    /// <see cref="TextFieldCountOne"/> as its one-form.</summary>
+    public const string TextFieldCount = "TextField.Count";
+
+    /// <summary>"{0} character": the same for one character; {0} is the count.</summary>
+    public const string TextFieldCountOne = "TextField.CountOne";
+
+    /// <summary>"{0} of {1} characters": what screen readers hear for a text field's counter with a limit; {0} is how
+    /// many characters the field holds and {1} the limit. Asked for through <see cref="ITbLocalizer.Plural"/> with the
+    /// limit, with <see cref="TextFieldCountOfLimitOne"/> as its one-form.</summary>
+    public const string TextFieldCountOfLimit = "TextField.CountOfLimit";
+
+    /// <summary>"{0} of {1} character": the same for a limit of one.</summary>
+    public const string TextFieldCountOfLimitOne = "TextField.CountOfLimitOne";
+
+    /// <summary>"{0} characters left.": announced as a text field with a counter and a limit nears it; {0} is how many
+    /// characters are left. Asked for through <see cref="ITbLocalizer.Plural"/>, with
+    /// <see cref="TextFieldCharactersLeftOne"/> as its one-form.</summary>
+    public const string TextFieldCharactersLeft = "TextField.CharactersLeft";
+
+    /// <summary>"{0} character left.": the same for one character; {0} is the count.</summary>
+    public const string TextFieldCharactersLeftOne = "TextField.CharactersLeftOne";
+
     /// <summary>"Show password": names a password field's button that shows and hides the password; the button is
     /// pressed while the password shows.</summary>
     public const string TextFieldShowPassword = "TextField.ShowPassword";
@@ -1137,6 +1170,10 @@ public static class TbStrings
     private static readonly FrozenDictionary<string, string> OneForms = new Dictionary<string, string>
     {
         [CodeFieldIncomplete] = CodeFieldIncompleteOne,
+        [TextFieldTooLong] = TextFieldTooLongOne,
+        [TextFieldCount] = TextFieldCountOne,
+        [TextFieldCountOfLimit] = TextFieldCountOfLimitOne,
+        [TextFieldCharactersLeft] = TextFieldCharactersLeftOne,
         [CodeFieldDigits] = CodeFieldDigitsOne,
         [CodeFieldCharacters] = CodeFieldCharactersOne,
         [FileUploadChosen] = FileUploadChosenOne,
@@ -1338,6 +1375,14 @@ public static class TbStrings
         [TagInputTooManyOne] = "You can add only one tag.",
         [TextFieldClear] = "Clear",
         [TextFieldShowPassword] = "Show password",
+        [TextFieldTooLong] = "{0} can be at most {1} characters.",
+        [TextFieldTooLongOne] = "{0} can be at most {1} character.",
+        [TextFieldCount] = "{0} characters",
+        [TextFieldCountOne] = "{0} character",
+        [TextFieldCountOfLimit] = "{0} of {1} characters",
+        [TextFieldCountOfLimitOne] = "{0} of {1} character",
+        [TextFieldCharactersLeft] = "{0} characters left.",
+        [TextFieldCharactersLeftOne] = "{0} character left.",
         [TextFieldMaskIncomplete] = "{0} isn't complete.",
         [RichTextEditorToolbar] = "Formatting",
         [RichTextEditorBold] = "Bold",

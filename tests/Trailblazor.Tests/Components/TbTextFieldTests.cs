@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Trailblazor.Internal.Events;
 
 namespace Trailblazor.Tests.Components;
 
@@ -19,16 +20,16 @@ public class TbTextFieldTests : BunitContext
     public void Render_ShouldPutTheInputsOwnAttributesOnTheInput_WhenTheyAreWrittenOnTheField()
     {
         var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Email")
-            .AddUnmatched("autocomplete", "email").AddUnmatched("MaxLength", "40").AddUnmatched("data-testid", "email")
+            .AddUnmatched("autocomplete", "email").AddUnmatched("MinLength", "4").AddUnmatched("data-testid", "email")
             .AddUnmatched("inputmode", "email")
-            .Add(field => field.InputAttributes, new Dictionary<string, object> { ["maxlength"] = "60" }));
+            .Add(field => field.InputAttributes, new Dictionary<string, object> { ["minlength"] = "6" }));
 
         var input = cut.Find("input");
         var root = cut.Find("[data-testid=email]");
         // InputAttributes win over the same attribute written on the field, whatever its case.
-        Assert.Equal(("email", "60", "email"),
-            (input.GetAttribute("autocomplete"), input.GetAttribute("maxlength"), input.GetAttribute("inputmode")));
-        Assert.False(root.HasAttribute("autocomplete") || root.HasAttribute("maxlength"));
+        Assert.Equal(("email", "6", "email"),
+            (input.GetAttribute("autocomplete"), input.GetAttribute("minlength"), input.GetAttribute("inputmode")));
+        Assert.False(root.HasAttribute("autocomplete") || root.HasAttribute("minlength"));
         Assert.Equal("tb-field", root.ClassList[0]);
     }
 
@@ -409,6 +410,131 @@ public class TbTextFieldTests : BunitContext
             cut.Tb().TextField("Password").ShowPasswordAsync);
 
         Assert.Contains("make it Revealable", refused.Message);
+    }
+
+    [Theory]
+    [InlineData(1, "input")]
+    [InlineData(3, "textarea")]
+    public void Render_ShouldPutTheLimitOnTheBox_WhenGivenAMaxLength(int lines, string element)
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Note")
+            .Add(field => field.Lines, lines).Add(field => field.MaxLength, 40));
+
+        Assert.Equal("40", cut.Find(element).GetAttribute("maxlength"));
+    }
+
+    [Fact]
+    public void Render_ShouldKeepTheInputAttributesLimit_WhenMaxLengthIsntSet()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Note")
+            .Add(field => field.InputAttributes, new Dictionary<string, object> { ["MaxLength"] = "60" }));
+
+        Assert.Equal("60", cut.Find("input").GetAttribute("maxlength"));
+    }
+
+    [Theory]
+    [InlineData(null, "5", "5 characters")]
+    [InlineData(200, "5 / 200", "5 of 200 characters")]
+    public void Render_ShouldShowTheCountAndDescribeTheFieldWithIt_WhenShowCount(int? maxLength, string shown,
+        string said)
+    {
+        var cut = RenderCounted("Ridge", maxLength);
+
+        var count = cut.Find("[data-part=count]");
+        Assert.Equal((shown, said), (count.QuerySelector("[data-part=count-shown]")!.TextContent,
+            count.QuerySelector("[data-part=count-said]")!.TextContent));
+        Assert.Equal("true", count.QuerySelector("[data-part=count-shown]")!.GetAttribute("aria-hidden"));
+        Assert.Contains(count.Id, cut.Find("input").GetAttribute("aria-describedby")!.Split(' '));
+    }
+
+    [Fact]
+    public void Render_ShouldSayOneCharacterAndGiveTheScriptBothForms_WhenTheFieldHoldsOneWithoutALimit()
+    {
+        var cut = RenderCounted("R", maxLength: null);
+
+        var count = cut.Find("[data-part=count]");
+        Assert.Equal(("1 character", "{0} characters", "{0} character"),
+            (count.QuerySelector("[data-part=count-said]")!.TextContent, count.GetAttribute("data-said"),
+                count.GetAttribute("data-said-one")));
+    }
+
+    [Fact]
+    public void Render_ShouldGiveTheScriptTheWordsForTheLimit_WhenGivenAMaxLength()
+    {
+        var cut = RenderCounted("Ridge", 200);
+
+        var count = cut.Find("[data-part=count]");
+        Assert.Equal(("200", "{0} of 200 characters", null), (count.GetAttribute("data-limit"),
+            count.GetAttribute("data-said"), count.GetAttribute("data-said-one")));
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveTheCounterOut_WhenShowCountIsOff()
+    {
+        var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.MaxLength, 40));
+
+        Assert.Empty(cut.FindAll("[data-part=count]"));
+        Assert.Null(cut.Find("input").GetAttribute("data-count"));
+    }
+
+    [Fact]
+    public async Task CharactersLeft_ShouldAnnounceWhatsLeft_WhenTheScriptReportsAThreshold()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderCounted("Ridge", 200);
+
+        await cut.Find("input").TriggerEventAsync("ontbcharactersleft", new CharactersLeftEventArgs { Left = 20 });
+        await cut.Find("input").TriggerEventAsync("ontbcharactersleft", new CharactersLeftEventArgs { Left = 1 });
+
+        Assert.Equal(["20 characters left.", "1 character left."], Spoken(announcer));
+    }
+
+    [Fact]
+    public async Task Render_ShouldUseTheLabelsWords_WhenLabelsGiveThem()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderCounted("Ridge", 200, new TextFieldLabels
+        {
+            CountOfLimit = "{0} of {1} letters", CharactersLeft = "{0} letters to go",
+        });
+
+        await cut.Find("input").TriggerEventAsync("ontbcharactersleft", new CharactersLeftEventArgs { Left = 0 });
+
+        Assert.Equal("5 of 200 letters", cut.Find("[data-part=count-said]").TextContent);
+        Assert.Equal(["0 letters to go"], Spoken(announcer));
+    }
+
+    [Fact]
+    public void Submit_ShouldBlockTheFormAndExplain_WhenAValueSetFromCodeIsLongerThanMaxLength()
+    {
+        var model = new Person { Name = "Pine Hollow Ridge" };
+        var submitted = false;
+        var cut = Render<EditForm>(parameters => parameters.Add(form => form.Model, model)
+            .Add(form => form.OnValidSubmit, () => submitted = true)
+            .Add(form => form.ChildContent, (EditContext _) => builder =>
+            {
+                builder.OpenComponent<TbTextField<string>>(0);
+                builder.AddAttribute(1, "Value", model.Name);
+                builder.AddAttribute(2, "ValueExpression", (Expression<Func<string>>)(() => model.Name!));
+                builder.AddAttribute(3, "Label", "Name");
+                builder.AddAttribute(4, "MaxLength", 10);
+                builder.CloseComponent();
+            }));
+
+        cut.Find("form").Submit();
+
+        Assert.False(submitted);
+        Assert.Equal("Name can be at most 10 characters.", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenMaxLengthIsBelowOne()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<TbTextField<string>>(parameters =>
+            parameters.Add(field => field.MaxLength, 0)));
+
+        Assert.Contains("MaxLength has to be at least 1", error.Message);
     }
 
     [Fact]
@@ -1038,4 +1164,10 @@ public class TbTextFieldTests : BunitContext
         Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Password")
             .Add(field => field.Type, TextFieldType.Password).Add(field => field.Revealable, true)
             .Add(field => field.Value, "ridge-42").Add(field => field.Labels, labels ?? new()));
+
+    private IRenderedComponent<TbTextField<string>> RenderCounted(string text, int? maxLength,
+        TextFieldLabels? labels = null) =>
+        Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Value, text).Add(field => field.ShowCount, true)
+            .Add(field => field.MaxLength, maxLength).Add(field => field.Labels, labels ?? new()));
 }

@@ -185,6 +185,97 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldCountEachKeystrokeAndStopAtTheLimit_WhenItShowsACount(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-count");
+        var summary = page.GetByLabel("Summary");
+        var count = page.Locator("[data-part=count]").First;
+        await Expect(summary).ToHaveAttributeAsync("data-ready", "");
+
+        await summary.PressSequentiallyAsync("Ridge");
+
+        await Expect(count.Locator("[data-part=count-shown]")).ToHaveTextAsync("5 / 25");
+        await Expect(count.Locator("[data-part=count-said]")).ToHaveTextAsync("5 of 25 characters");
+        await Expect(page.GetByTestId("summary")).ToHaveTextAsync("");
+        await summary.PressSequentiallyAsync(" loop past the old fire lookout");
+        await Expect(summary).ToHaveValueAsync("Ridge loop past the old f");
+        await Expect(count.Locator("[data-part=count-shown]")).ToHaveTextAsync("25 / 25");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldCountTheServersText_WhenTheServerChangesItAfterTyping(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-count");
+        var camp = page.Tb().TextField("Camp");
+        var count = page.Locator("[data-part=count]").Nth(1);
+
+        await camp.EnterAsync("Ridge");
+        await Expect(count.Locator("[data-part=count-shown]")).ToHaveTextAsync("5 / 25");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Clear", Exact = true }).ClickAsync();
+
+        await Expect(page.GetByLabel("Camp")).ToHaveValueAsync("");
+        await Expect(count.Locator("[data-part=count-shown]")).ToHaveTextAsync("0 / 25");
+        await Expect(count.Locator("[data-part=count-said]")).ToHaveTextAsync("0 of 25 characters");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldCountTheServersText_WhenTheAppSetsTextOfTheSameLengthWhileTyping(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-count");
+        var camp = page.GetByLabel("Camp");
+        var count = page.Locator("[data-part=count]").Nth(1);
+        await page.Tb().TextField("Camp").EnterAsync("Ridge");
+
+        await camp.FocusAsync();
+        await camp.PressAsync("End");
+        await camp.PressSequentiallyAsync("s");
+        await Expect(count.Locator("[data-part=count-shown]")).ToHaveTextAsync("6 / 25");
+        // A click event that moves no focus, so the typed text isn't committed first.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Name the camp" }).DispatchEventAsync("click");
+
+        await Expect(camp).ToHaveValueAsync("Camps");
+        await Expect(count.Locator("[data-part=count-shown]")).ToHaveTextAsync("5 / 25");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldCountTheServersText_WhenACommitKeepsTheValue(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-count");
+        var size = page.GetByLabel("Group size");
+        var count = page.Locator("[data-part=count]").Nth(2);
+        await Expect(size).ToHaveAttributeAsync("data-ready", "");
+
+        await size.PressAsync("Home");
+        await size.PressSequentiallyAsync("0");
+        await Expect(count.Locator("[data-part=count-shown]")).ToHaveTextAsync("2");
+        await size.BlurAsync();
+
+        await Expect(size).ToHaveValueAsync("5");
+        await Expect(count.Locator("[data-part=count-shown]")).ToHaveTextAsync("1");
+        await Expect(count.Locator("[data-part=count-said]")).ToHaveTextAsync("1 character");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldAnnounceTheCharactersLeft_WhenTheTextReachesAThreshold(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var summary = page.GetByLabel("Trail summary");
+        await Expect(summary).ToHaveAttributeAsync("data-ready", "");
+        var polite = page.Locator("[data-part=polite]");
+
+        await summary.FillAsync(new string('a', 99));
+        await summary.PressAsync("b");
+        await Expect(page.Locator("[data-part=count-shown]").First).ToHaveTextAsync("100 / 120");
+        await summary.PressAsync("b");
+        await Expect(polite.GetByText("20 characters left.", new() { Exact = true })).ToHaveCountAsync(1);
+        await summary.PressSequentiallyAsync(new string('c', 19));
+
+        await Expect(polite.GetByText("0 characters left.", new() { Exact = true })).ToHaveCountAsync(1);
+        await Expect(polite.GetByText("20 characters left.", new() { Exact = true })).ToHaveCountAsync(1);
+        await Expect(page.Locator("[data-part=count-shown]").First).ToHaveTextAsync("120 / 120");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldSendOnlyTheTextTypedBeforeAPause_WhenGivenAnUpdateDelay(string browser)
     {
         var page = await OpenAsync(browser, "/delayed-search");

@@ -31,6 +31,7 @@ public static class TrailblazorServiceCollectionExtensions
     [DynamicDependency(Kept, typeof(RichTextLinkEventArgs))]
     [DynamicDependency(Kept, typeof(TagAddEventArgs))]
     [DynamicDependency(Kept, typeof(TagRemoveEventArgs))]
+    [DynamicDependency(Kept, typeof(CharactersLeftEventArgs))]
     [DynamicDependency(Kept, typeof(TreeDropEventArgs))]
     [DynamicDependency(Kept, typeof(ContextMenuOpenEventArgs))]
     [DynamicDependency(Kept, typeof(MoveCheck))]

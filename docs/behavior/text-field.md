@@ -24,6 +24,10 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 - [x] Clicking the label focuses the input. `TbTextFieldTests.Render_ShouldLinkTheLabelAndHelperToTheInput_WhenBothAreSet`
 - [x] Clicking anywhere in the box outside its controls, such as its padding or a start icon, focuses the input. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`, `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsStartIconIsPressed`
 - [x] The clear button empties the field and puts focus back in the input. `TextFieldTests.TextField_ShouldEmptyAndKeepFocus_WhenTheClearButtonIsPressed`
+- [x] Typing and pasting stop at `MaxLength`, and the counter follows each keystroke with no round trip, even while `UpdateDelay` holds the text back. `TextFieldTests.TextField_ShouldCountEachKeystrokeAndStopAtTheLimit_WhenItShowsACount`
+- [x] As the text nears the limit, the field announces the characters left at 20 and 0, once each. `TextFieldTests.TextField_ShouldAnnounceTheCharactersLeft_WhenTheTextReachesAThreshold`
+- [x] The counter follows the server's text after typing, such as when the clear button empties the field, a commit writes the value back or the app sets new text. `TextFieldTests.TextField_ShouldCountTheServersText_WhenTheServerChangesItAfterTyping`, `TextFieldTests.TextField_ShouldCountTheServersText_WhenACommitKeepsTheValue`, `TextFieldTests.TextField_ShouldCountTheServersText_WhenTheAppSetsTextOfTheSameLengthWhileTyping`
+- [x] A longer value set from code shows an error and blocks the form. `TbTextFieldTests.Submit_ShouldBlockTheFormAndExplain_WhenAValueSetFromCodeIsLongerThanMaxLength`
 - [x] The clear button shows only for text that can change. `TbTextFieldTests.Render_ShouldShowTheClearButtonOnlyForTextThatCanChange_WhenClearable`
 - [x] The show-password button shows and hides the password, leaving focus and the selection in the input. `TextFieldTests.TextField_ShouldKeepFocusAndTheSelection_WhenTheShowPasswordButtonIsPressed`
 - [x] A read-only or disabled field hides its password and disables the show-password button. `TbTextFieldTests.Render_ShouldHideThePasswordAndTurnTheButtonOff_WhenTheFieldCantChange`

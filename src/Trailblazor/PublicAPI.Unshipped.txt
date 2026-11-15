@@ -5441,3 +5441,27 @@ Trailblazor.TbTextField<TValue>.Revealable.set -> void
 Trailblazor.TextFieldLabels.ShowPassword.get -> string?
 Trailblazor.TextFieldLabels.ShowPassword.init -> void
 const Trailblazor.TbStrings.TextFieldShowPassword = "TextField.ShowPassword" -> string!
+Trailblazor.Internal.Events.CharactersLeftEventArgs
+Trailblazor.Internal.Events.CharactersLeftEventArgs.CharactersLeftEventArgs() -> void
+Trailblazor.Internal.Events.CharactersLeftEventArgs.Left.get -> int
+Trailblazor.Internal.Events.CharactersLeftEventArgs.Left.set -> void
+Trailblazor.TbTextField<TValue>.MaxLength.get -> int?
+Trailblazor.TbTextField<TValue>.MaxLength.set -> void
+Trailblazor.TbTextField<TValue>.ShowCount.get -> bool
+Trailblazor.TbTextField<TValue>.ShowCount.set -> void
+Trailblazor.TextFieldLabels.CharactersLeft.get -> string?
+Trailblazor.TextFieldLabels.CharactersLeft.init -> void
+Trailblazor.TextFieldLabels.Count.get -> string?
+Trailblazor.TextFieldLabels.Count.init -> void
+Trailblazor.TextFieldLabels.CountOfLimit.get -> string?
+Trailblazor.TextFieldLabels.CountOfLimit.init -> void
+Trailblazor.TextFieldLabels.TooLong.get -> string?
+Trailblazor.TextFieldLabels.TooLong.init -> void
+const Trailblazor.TbStrings.TextFieldCharactersLeft = "TextField.CharactersLeft" -> string!
+const Trailblazor.TbStrings.TextFieldCharactersLeftOne = "TextField.CharactersLeftOne" -> string!
+const Trailblazor.TbStrings.TextFieldCount = "TextField.Count" -> string!
+const Trailblazor.TbStrings.TextFieldCountOfLimit = "TextField.CountOfLimit" -> string!
+const Trailblazor.TbStrings.TextFieldCountOfLimitOne = "TextField.CountOfLimitOne" -> string!
+const Trailblazor.TbStrings.TextFieldCountOne = "TextField.CountOne" -> string!
+const Trailblazor.TbStrings.TextFieldTooLong = "TextField.TooLong" -> string!
+const Trailblazor.TbStrings.TextFieldTooLongOne = "TextField.TooLongOne" -> string!

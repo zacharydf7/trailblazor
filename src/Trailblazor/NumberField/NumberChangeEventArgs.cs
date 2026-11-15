@@ -70,6 +70,15 @@ public sealed class RichTextLinkEventArgs : EventArgs
     public bool Insert { get; set; }
 }
 
+/// <summary>A text field's counter crossing one of its thresholds near the limit, sent by its script. Raised by
+/// <see cref="TbTextField{TValue}"/>'s input; consumers don't normally handle it.</summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed class CharactersLeftEventArgs : EventArgs
+{
+    /// <summary>How many characters are left before the limit.</summary>
+    public int Left { get; set; }
+}
+
 /// <summary>Registers Trailblazor's custom browser events with Razor, which only reads them from a public class with
 /// this name. The browser side is in Trailblazor.lib.module.js.</summary>
 [EventHandler("ontbnumberchange", typeof(NumberChangeEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
@@ -82,6 +91,8 @@ public sealed class RichTextLinkEventArgs : EventArgs
 [EventHandler("ontbrowextend", typeof(RowExtendEventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbselectall", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbhotkey", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
+[EventHandler("ontbcharactersleft", typeof(CharactersLeftEventArgs), enableStopPropagation: true,
+    enablePreventDefault: true)]
 [EventHandler("ontbtreefilterdown", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbeditstart", typeof(EventArgs), enableStopPropagation: true, enablePreventDefault: true)]
 [EventHandler("ontbeditkey", typeof(GridEditKeyEventArgs), enableStopPropagation: true, enablePreventDefault: true)]

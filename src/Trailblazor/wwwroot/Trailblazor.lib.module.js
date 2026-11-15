@@ -19,6 +19,7 @@ import './chip.js';
 import './tooltip.js';
 import './throttled-input.js';
 import './debounced-input.js';
+import './text-count.js';
 import './message-hold.js';
 import { measurePageScrollbar } from './page-scroll.js';
 import { isApple } from '../Trailblazor.Primitives/platform.js';
@@ -195,6 +196,8 @@ function registerEvents(blazor) {
     });
     blazor.registerCustomEventType('tbselectall', { browserEventName: 'tb-select-all', createEventArgs: () => ({}) });
     blazor.registerCustomEventType('tbhotkey', { browserEventName: 'tb-hotkey', createEventArgs: () => ({}) });
+    blazor.registerCustomEventType('tbcharactersleft',
+        { browserEventName: 'tb-characters-left', createEventArgs: event => ({ left: event.detail }) });
     blazor.registerCustomEventType('tbtreefilterdown', {
         browserEventName: 'tb-tree-filter-down',
         createEventArgs: () => ({}),

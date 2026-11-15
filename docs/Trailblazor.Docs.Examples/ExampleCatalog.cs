@@ -3162,7 +3162,7 @@ public static class ExampleCatalog
                     + "so typing replaces it. To compare two fields, as with the gate codes, compute one field's "
                     + "`Error` from both values and set `Invalid` on the other.", typeof(TextFieldValidationExample)),
                 new("types", "Types", "`Type` sets the keyboard people get. Attributes only an input takes, such "
-                    + "as `autocomplete` and `maxlength`, reach it when written on the field, and `InputAttributes` "
+                    + "as `autocomplete` and `minlength`, reach it when written on the field, and `InputAttributes` "
                     + "puts any other attribute on the input. Bind the field to a number or date instead of a string, and "
                     + "text that doesn't convert shows an error.",
                     typeof(TextFieldTypesExample)),
@@ -3185,6 +3185,10 @@ public static class ExampleCatalog
                     + "in place. The value holds only what was typed into the slots, or the whole text, parentheses "
                     + "and dashes included, with `IncludeMaskLiterals`. A partly filled field shows that it isn't "
                     + "complete, or the message in `Labels.MaskIncomplete`.", typeof(TextFieldMaskExample)),
+                new("character-limit", "Character limit and count", "`MaxLength` stops typing and pasting at a "
+                    + "number of characters, and a longer value set from code shows an error. `ShowCount` puts a count "
+                    + "of the field's characters under it, out of the limit if there is one, and updates it in the "
+                    + "browser as you type.", typeof(TextFieldCountExample)),
                 new("several-lines", "Several lines", "`Lines` makes a text area, and `MaxLines` lets it grow with its "
                     + "text up to that many lines and then scroll.", typeof(TextFieldLinesExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the field focusable and posted "
@@ -3231,6 +3235,9 @@ public static class ExampleCatalog
                 "Screen readers hear a `ReadOnly` field as read only.",
                 "The clear button is named \"Clear\", or `Labels.Clear`, and described by the field's label. It shows "
                     + "while the field holds text it can change, and pressing it puts focus back in the field.",
+                "The counter describes the field, so screen readers hear \"5 of 120 characters\" with its name, or "
+                    + "`Labels.CountOfLimit`'s words. It isn't a live region; instead the field announces the "
+                    + "characters left, politely, as they reach 20 and 0.",
                 "The show-password button is named \"Show password\", or `Labels.ShowPassword`, described by the "
                     + "field's label, and pressed while the password shows. It stays in the tab order, so keyboard "
                     + "users can reach it, and a press with the pointer leaves focus and the caret in the field.",
@@ -3267,6 +3274,11 @@ public static class ExampleCatalog
                 new("With a `Mask`, empty slots make the field invalid, the placeholder shows the pattern, and a pattern "
                     + "of digits brings up a number keyboard."),
                 new("Each `Size` is set from the theme's density, as a button's is."),
+                new("`MaxLength` counts as the browser does, in UTF-16 code units, so an emoji can take two. On a "
+                    + "static page the counter shows the length the page was sent with."),
+                new("The counter's spoken words take their plural form from the limit. Without a limit, the browser "
+                    + "picks the one-form when the count is 1 and the other form otherwise, so an `ITbLocalizer` with "
+                    + "more plural forms is only asked for those two."),
                 new("A shown password turns off spell checking, autocorrect and capitalization, so the browser doesn't "
                     + "send it to a spelling service or change what was typed. A static page leaves the show-password "
                     + "button out, since switching the type needs an interactive page; in Edge, the browser's own "
@@ -3281,6 +3293,9 @@ public static class ExampleCatalog
                 new("input", "The text input."),
                 new("clear", "The button that clears the text."),
                 new("reveal", "The button that shows and hides a password."),
+                new("count", "The counter under the field, with `ShowCount`."),
+                new("count-shown", "The counter's text, such as 12 / 200, which screen readers skip."),
+                new("count-said", "The counter's words for screen readers, such as 12 of 200 characters."),
             ],
             TestingTip = "A field with `UpdateDelay` takes its value once typing pauses, so assert with Playwright's "
                 + "`Expect`, which waits, or press Enter to update it at once. In bUnit, which runs no browser, the "
@@ -3289,7 +3304,9 @@ public static class ExampleCatalog
                 + "and `page.Tb()` does the same in Playwright, waiting until the app has it; `Text` (`TextAsync()` "
                 + "in Playwright) reads what the field shows. `ShowPasswordAsync()` and "
                 + "`HidePasswordAsync()` press a `Revealable` field's button, and `PasswordShown` "
-                + "(`PasswordShownAsync()` in Playwright) says whether the password shows. To raise `OnEnter`, press "
+                + "(`PasswordShownAsync()` in Playwright) says whether the password shows. The counter's "
+                + "`[data-part=count-shown]` holds what it shows; in bUnit it holds the count the field was rendered "
+                + "with, since only the browser's script updates it as you type. To raise `OnEnter`, press "
                 + "Enter in Playwright, or in bUnit commit the text and then `await cut.Find(\"input\")"
                 + ".TriggerEventAsync(\"ontbenter\", EventArgs.Empty)`, the event the browser sends. For fields that "
                 + "share a label, pass a locator in Playwright, as `TextField(row.GetByLabel(\"Name\"))`.",

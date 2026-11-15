@@ -293,6 +293,9 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // A field drawn in a box adds its look and size.
     private protected virtual string? FieldModifiers => null;
 
+    // What a field shows under its helper text and messages, such as a text field's counter.
+    private protected virtual RenderFragment? AfterMessages => null;
+
     private protected string HelperId => $"{FieldId}-helper";
 
     private protected string ErrorId => $"{FieldId}-error";
