@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class StepperTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -21,6 +23,46 @@ public class StepperTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(trip).ToHaveAttributeAsync("aria-current", "step");
         await Expect(trip).ToBeFocusedAsync();
         await Expect(page.GetByText("Pick the trail and the dates.")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReadTheStepsAndGoBackToAFinishedOne_WhenTheStepperIsInteractive(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/stepper");
+        var booking = page.Tb().Stepper("Trip booking");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Next" }).First.ClickAsync();
+        await Expect(booking.Stepper.Locator("[aria-current=step]")).ToContainTextAsync("Gear");
+
+        await booking.GoToAsync("Trip");
+
+        Assert.Equal(["Trip", "Gear", "Payment"], await booking.StepsAsync());
+        Assert.Equal("Trip", await booking.CurrentAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => booking.GoToAsync("Payment"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReadOnlyTheStepsTitles_WhenAVerticalStepsContentHasATitle(string browser)
+    {
+        var page = await OpenAsync(browser, "/stepper-content");
+        var setup = page.Tb().Stepper("Trip setup");
+
+        var steps = await setup.StepsAsync();
+        var current = await setup.CurrentAsync();
+        await setup.GoToAsync("Gear");
+
+        Assert.Equal(["Gear", "Details"], steps);
+        Assert.Equal("Details", current);
+        Assert.Equal("Gear", await setup.CurrentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldGoToTheStepOnceInteractive_WhenThePageIsStillPrerendered(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/examples/stepper");
+
+        await page.Tb().Stepper("Trail report").GoToAsync("Trail");
+
+        Assert.Equal("Trail", await page.Tb().Stepper("Trail report").CurrentAsync());
     }
 
     // The Back button is off on the first step, so the next tab stop after the steps is Next.

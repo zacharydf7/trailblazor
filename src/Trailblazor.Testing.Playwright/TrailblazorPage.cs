@@ -132,6 +132,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// given.</summary>
     public TbTreeLocator Tree(string? name = null) => new(scope, name);
 
+    /// <summary>The <c>TbStepper</c> with this accessible name, or the only one in the scope when no name is
+    /// given.</summary>
+    public TbStepperLocator Stepper(string? name = null) => new(scope, name);
+
     /// <summary>The <c>TbBreadcrumbs</c> with this accessible name, or the only one in the scope when no name is
     /// given.</summary>
     public TbBreadcrumbsLocator Breadcrumbs(string? name = null) => new(scope, name);

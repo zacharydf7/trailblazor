@@ -402,3 +402,10 @@ Trailblazor.Testing.Playwright.TbBreadcrumbsLocator.ItemsAsync() -> System.Threa
 Trailblazor.Testing.Playwright.TbBreadcrumbsLocator.TbBreadcrumbsLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TbBreadcrumbsLocator.Trail.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Breadcrumbs(string? name = null) -> Trailblazor.Testing.Playwright.TbBreadcrumbsLocator!
+Trailblazor.Testing.Playwright.TbStepperLocator
+Trailblazor.Testing.Playwright.TbStepperLocator.CurrentAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbStepperLocator.GoToAsync(string! title) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbStepperLocator.Stepper.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbStepperLocator.StepsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbStepperLocator.TbStepperLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.Stepper(string? name = null) -> Trailblazor.Testing.Playwright.TbStepperLocator!

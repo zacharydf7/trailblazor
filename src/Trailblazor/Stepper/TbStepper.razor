@@ -5,7 +5,7 @@
 @* Safari drops the list role from a list without bullets, so it is set again. Screen readers hear each step's place
    in the list, as in "2 of 4", and the stylesheet numbers them in the same order. *@
 <ol @attributes="AdditionalAttributes" role="list" aria-label="@(AriaLabel ?? Localizer[TbStrings.StepperLabel])"
-    data-part="stepper" style="@Style"
+    data-part="stepper" data-ready="@(RendererInfo.IsInteractive ? "" : null)" style="@Style"
     class="@ClassNames.Join("tb-stepper", Vertical ? "tb-stepper--vertical" : null, Class)">
     <CascadingValue Value="this">@ChildContent</CascadingValue>
 </ol>

@@ -82,8 +82,8 @@
             <code>cut.Tb()</code> finds fields by their labels and drives them the way a user does. A helper the
             <a href="guides/testing#playwright">Playwright helpers</a> also have goes by the same name there: a read
             such as <code>Text</code> here is <code>TextAsync()</code> there. A grid, tree, sortable list,
-            pagination, breadcrumb trail, query builder, viewport, tabs, context menu or command palette that's the
-            only one of its kind can be found without its name, as in <code>Grid()</code>.
+            pagination, breadcrumb trail, stepper, query builder, viewport, tabs, context menu or command palette
+            that's the only one of its kind can be found without its name, as in <code>Grid()</code>.
         </TbText>
         <div class="docs-api" tabindex="0" role="region" aria-label="bUnit helpers">
             <table>
@@ -307,6 +307,13 @@
                     <tr>
                         <th scope="row"><code>AccordionItem(header).ExpandAsync()</code></th>
                         <td>Opens the item and hands back its panel; <code>CollapseAsync()</code> closes it.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Stepper(name).GoToAsync(title)</code></th>
+                        <td>
+                            Goes to a step as clicking its header does. <code>Steps</code> reads the steps' titles, and
+                            <code>Current</code> reads the current step's.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>Breadcrumbs(name).FollowAsync(item)</code></th>
@@ -1066,6 +1073,9 @@
             + "the tooltip's text once it shows."),
         new("Splitter", "Its separator's name", "`Splitter(\"Resize Trails\").ResizeAsync(percent)` resizes the pane "
             + "with the separator's keys and waits until the app has the size, and `SizeAsync()` reads it."),
+        new("Stepper", "Its name, or none for the only one", "`Stepper(name).GoToAsync(title)` goes to a step and "
+            + "waits until it's current, `StepsAsync()` reads the steps' titles, and `CurrentAsync()` reads the "
+            + "current step's."),
         new("Breadcrumbs", "Its name, or none for the only one", "`Breadcrumbs(name).FollowAsync(item)` follows an "
             + "item's link, `ItemsAsync()` reads each item's text, and `CurrentAsync()` reads the item marked as the "
             + "current page."),

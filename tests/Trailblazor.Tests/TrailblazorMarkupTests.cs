@@ -1906,6 +1906,29 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Stepper_ShouldReadTheStepsAndGoBackToAFinishedOne_WhenTheHelperIsUsed()
+    {
+        string? active = "Payment";
+        var cut = Render<TbStepper>(parameters => parameters.Add(stepper => stepper.AriaLabel, "Trip booking")
+            .Add(stepper => stepper.ActiveKey, active)
+            .Add(stepper => stepper.ActiveKeyChanged, (string? key) => active = key)
+            .AddChildContent<TbStep>(step => step.Add(each => each.Title, "Trip").Add(each => each.Completed, true))
+            .AddChildContent<TbStep>(step => step.Add(each => each.Title, "Gear").Add(each => each.Completed, true))
+            .AddChildContent<TbStep>(step => step.Add(each => each.Title, "Payment"))
+            .AddChildContent<TbStep>(step => step.Add(each => each.Title, "Review")));
+        var stepper = cut.Tb().Stepper("Trip booking");
+        var current = stepper.Current;
+
+        await stepper.GoToAsync("Gear");
+        // The steps are linear, so a step ahead that isn't finished can't be chosen.
+        var ahead = await Assert.ThrowsAsync<InvalidOperationException>(() => stepper.GoToAsync("Review"));
+
+        Assert.Equal(["Trip", "Gear", "Payment", "Review"], stepper.Steps);
+        Assert.Equal(("Payment", "Gear"), (current, active));
+        Assert.Contains("can't be chosen", ahead.Message);
+    }
+
+    [Fact]
     public async Task Breadcrumbs_ShouldReadTheTrailAndFollowALink_WhenTheHelperIsUsed()
     {
         var cut = Render<TbBreadcrumbs>(parameters => parameters

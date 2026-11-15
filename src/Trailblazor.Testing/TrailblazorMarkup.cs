@@ -363,6 +363,18 @@ public sealed class TrailblazorMarkup
                 : $"No breadcrumb trail is named \"{name}\".");
     }, _scripts);
 
+    /// <summary>The <c>TbStepper</c> with this accessible name, or the only one in the markup when no name is
+    /// given.</summary>
+    public TbStepperDriver Stepper(string? name = null) => new(() =>
+    {
+        var steppers = _findAll("ol[data-part=stepper]")
+            .Where(stepper => name is null || stepper.GetAttribute("aria-label") == name).ToList();
+        return steppers.Count == 1 ? steppers[0]
+            : throw new InvalidOperationException(name is null
+                ? $"Expected one stepper, found {steppers.Count}; name the one to use."
+                : $"No stepper is named \"{name}\".");
+    });
+
     /// <summary>The <c>TbAccordionItem</c>, in an accordion or on its own, whose header reads this.</summary>
     public TbAccordionItemDriver AccordionItem(string header) => new(header, _findAll);
 
@@ -1139,6 +1151,38 @@ public sealed class TbBreadcrumbsDriver
     // Each item holds its separator, then its link or its text.
     private IEnumerable<IElement> Labels() => _find().QuerySelectorAll(
         "[data-part=breadcrumb] > [data-part=link], [data-part=breadcrumb] > [data-part=text]");
+}
+
+/// <summary>A <c>TbStepper</c>, found by its name.</summary>
+public sealed class TbStepperDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbStepperDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The steps' titles, in order.</summary>
+    public IReadOnlyList<string> Steps => [.. StepElements().Select(TitleOf)];
+
+    /// <summary>The title of the current step, or null when no step is current.</summary>
+    public string? Current => StepElements().FirstOrDefault(step =>
+        step.QuerySelector(":scope > [aria-current=step]") is not null) is { } current ? TitleOf(current) : null;
+
+    /// <summary>Goes to the step with this title, as clicking its header does. A step a user can't go to throws: one
+    /// that's disabled, or, in a <c>Linear</c> stepper, one ahead that isn't finished.</summary>
+    public async Task GoToAsync(string title)
+    {
+        var steps = StepElements().Where(step => TitleOf(step) == title).ToList();
+        var step = steps.Count == 1 ? steps[0] : throw new InvalidOperationException(steps.Count == 0
+            ? $"The stepper has no step titled \"{title}\"." : $"{steps.Count} steps are titled \"{title}\".");
+        var button = step.QuerySelector(":scope > [data-part=step-button]") ?? throw new InvalidOperationException(
+            $"The step \"{title}\" can't be chosen: it's disabled, or ahead of the current step in a linear stepper.");
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private IEnumerable<IElement> StepElements() => _find().Children.Where(child =>
+        child.GetAttribute("data-part") == "step");
+
+    private static string TitleOf(IElement step) => step.QuerySelector("[data-part=title]")!.TextContent.Trim();
 }
 
 /// <summary>A <c>TbPagination</c>, found by its name.</summary>

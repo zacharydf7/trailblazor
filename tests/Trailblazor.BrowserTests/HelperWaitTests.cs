@@ -46,6 +46,19 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Stepper_ShouldReturnOnceTheStepIsCurrent_WhenChosen(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/stepper");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Next" }).First.ClickAsync();
+        await Expect(page.Tb().Stepper("Trip booking").Stepper.Locator("[aria-current=step]"))
+            .ToContainTextAsync("Gear");
+
+        await page.Tb().Stepper("Trip booking").GoToAsync("Trip");
+
+        Assert.Equal("Trip", await page.Tb().Stepper("Trip booking").CurrentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task NumberField_ShouldReturnOnceTheAppHasTheValue_WhenEntered(string browser)
     {
         var page = await OpenAsync(browser, "/examples/number-field");

@@ -1,0 +1,13 @@
+@page "/stepper-content"
+
+@* A vertical stepper whose current step holds an alert titled "Gear", the same as the first step's title. *@
+<TbStepper @bind-ActiveKey="_step" Vertical Linear="false" AriaLabel="Trip setup">
+    <TbStep Title="Gear" Completed />
+    <TbStep Title="Details">
+        <TbAlert Title="Gear">Check what you packed.</TbAlert>
+    </TbStep>
+</TbStepper>
+
+@code {
+    private string? _step = "Details";
+}

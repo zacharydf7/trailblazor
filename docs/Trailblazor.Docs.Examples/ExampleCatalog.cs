@@ -9028,10 +9028,11 @@ public static class ExampleCatalog
             ],
             TestingTips =
             [
-                "Find the current step with `Locator(\"[aria-current=step]\")`, and a step by its title with "
-                    + "`GetByRole(AriaRole.Button, new() { Name = \"Gear\" })`; a finished step's name ends in "
-                    + "\"Completed\", or `Labels.Completed`, as in \"Trip Completed\".",
-                "In bUnit, set `ActiveKey` and check `[aria-current=step]`.",
+                "`page.Tb().Stepper(\"Trip booking\")` in Playwright, or `cut.Tb().Stepper(...)` in bUnit, finds "
+                    + "the stepper: `GoToAsync(\"Gear\")` goes to a step by its title, `StepsAsync()` or `Steps` "
+                    + "reads the steps' titles, and `CurrentAsync()` or `Current` reads the current step's.",
+                "To find a finished step by role yourself, match its accessible name, which ends in \"Completed\", or "
+                    + "`Labels.Completed`, as in \"Trip Completed\".",
             ],
         },
         new("pagination", "Pagination", ExampleCategory.Navigation,
