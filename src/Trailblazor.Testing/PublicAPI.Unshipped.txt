@@ -360,3 +360,7 @@ Trailblazor.Testing.TbTreeSelectDriver.OptionAsync(params string![]! path) -> Sy
 Trailblazor.Testing.TbTextFieldDriver.HidePasswordAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTextFieldDriver.PasswordShown.get -> bool
 Trailblazor.Testing.TbTextFieldDriver.ShowPasswordAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbRangeSliderDriver
+Trailblazor.Testing.TbRangeSliderDriver.Range.get -> (decimal Start, decimal End)
+Trailblazor.Testing.TbRangeSliderDriver.SetAsync(decimal start, decimal end) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.RangeSlider(string! label) -> Trailblazor.Testing.TbRangeSliderDriver!

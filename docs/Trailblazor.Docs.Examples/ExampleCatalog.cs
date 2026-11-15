@@ -4046,7 +4046,8 @@ public static class ExampleCatalog
                 + "`GetByRole(AriaRole.Slider).FillAsync(\"80\")` alone, `ToHaveValueAsync(\"80\")` passes before the "
                 + "app hears of the change. A range slider's thumbs are named \"Elevation Minimum\" and \"Elevation "
                 + "Maximum\". In bUnit, `cut.Tb().Slider(\"Map brightness\").SetAsync(80)` moves the slider as a drag "
-                + "does, landing on the nearest step, and `Value` reads it.",
+                + "does, landing on the nearest step, and `Value` reads it; `RangeSlider(label).SetAsync(start, end)` "
+                + "moves both thumbs, and `Range` reads them.",
         },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.")

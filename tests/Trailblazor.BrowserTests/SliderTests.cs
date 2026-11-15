@@ -132,6 +132,18 @@ public class SliderTests(BrowserFixture fixture) : SliderKeysTests(fixture)
         await Expect(page.GetByText("Between")).ToHaveTextAsync("Between 200 and 900 m");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SetAsync_ShouldMoveTheEndFirst_WhenTheStartSnapsPastAnEndBetweenSteps(string browser)
+    {
+        var page = await OpenAsync(browser, "/range-slider");
+        var uneven = page.Tb().RangeSlider("Uneven");
+
+        // From 20 to 46 in steps of 10, a start of 45 lands on 50, past the end.
+        await uneven.SetAsync(45, 60);
+
+        Assert.Equal((50m, 60m), await uneven.RangeAsync());
+    }
+
     [Theory]
     [MemberData(nameof(TurnedOffSliders))]
     public async Task SetAsync_ShouldFail_WhenTheSliderIsDisabledOrReadOnly(string browser, string label)

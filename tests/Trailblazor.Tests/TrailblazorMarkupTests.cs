@@ -38,6 +38,51 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task RangeSlider_ShouldMoveBothThumbsInEitherOrder_WhenTheHelperIsUsed()
+    {
+        var committed = new List<SliderRange<int>>();
+        var cut = Render<TbRangeSlider<int>>(parameters => parameters.Add(field => field.Label, "Elevation")
+            .Add(field => field.Value, new(20, 40)).Add(field => field.Step, 5)
+            .Add(field => field.OnValueCommitted, (SliderRange<int> range) => committed.Add(range)));
+        var elevation = cut.Tb().RangeSlider("Elevation");
+
+        // From 20 to 40, a start of 62 is past the old end, so the end has to move first; 62 lands on 60.
+        await elevation.SetAsync(62, 90);
+        var past = elevation.Range;
+        await elevation.SetAsync(10, 30);
+
+        Assert.Equal(((60m, 90m), (10m, 30m)), (past, elevation.Range));
+        Assert.Equal([new SliderRange<int>(20, 90), new(60, 90), new(10, 90), new(10, 30)], committed);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => elevation.SetAsync(50, 40));
+    }
+
+    [Fact]
+    public async Task RangeSlider_ShouldMoveTheEndFirst_WhenTheStartSnapsPastAnEndBetweenSteps()
+    {
+        var cut = Render<TbRangeSlider<int>>(parameters => parameters.Add(field => field.Label, "Elevation")
+            .Add(field => field.Value, new(20, 46)).Add(field => field.Step, 10));
+
+        // From 20 to 46 in steps of 10, a start of 45 lands on 50, past the end.
+        await cut.Tb().RangeSlider("Elevation").SetAsync(45, 60);
+
+        Assert.Equal((50m, 60m), cut.Tb().RangeSlider("Elevation").Range);
+    }
+
+    [Fact]
+    public async Task RangeSlider_ShouldRefuseToMoveIt_WhenItIsReadOnlyOrOnAStaticPage()
+    {
+        var locked = Render<TbRangeSlider<int>>(parameters => parameters.Add(field => field.Label, "Elevation")
+            .Add(field => field.ReadOnly, true));
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var still = Render<TbRangeSlider<int>>(parameters => parameters.Add(field => field.Label, "Elevation"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => locked.Tb().RangeSlider("Elevation").SetAsync(5, 9));
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => still.Tb().RangeSlider("Elevation").SetAsync(5, 9));
+        Assert.Contains("static page", failure.Message);
+    }
+
+    [Fact]
     public async Task Slider_ShouldRefuseToMoveIt_WhenItIsReadOnlyOrOnAStaticPage()
     {
         var locked = Render<TbSlider<int>>(parameters => parameters.Add(field => field.Label, "Group size")

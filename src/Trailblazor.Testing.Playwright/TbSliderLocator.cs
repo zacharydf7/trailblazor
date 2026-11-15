@@ -36,7 +36,7 @@ public sealed class TbRangeSliderLocator(ILocator scope, string label) : TbField
     public ILocator End => Field.Locator("[data-part=end-thumb]");
 
     /// <summary>Moves both thumbs and waits until the field has taken the range. The thumbs can't pass each other, so
-    /// the end moves first when the new start is past the old end.</summary>
+    /// the end moves first when the new start lands past the old end.</summary>
     public async Task SetAsync(decimal start, decimal end)
     {
         if (start > end)
@@ -44,7 +44,7 @@ public sealed class TbRangeSliderLocator(ILocator scope, string label) : TbField
             throw new ArgumentOutOfRangeException(nameof(start), start, $"The start can't be after the end, {end}.");
         }
 
-        if (start > await SliderThumb.ValueAsync(End))
+        if (await SliderThumb.SnapAsync(Start, start) > await SliderThumb.ValueAsync(End))
         {
             await SliderThumb.MoveAsync(End, end);
             await SliderThumb.MoveAsync(Start, start);
@@ -87,6 +87,18 @@ internal static class SliderThumb
         // The browser snaps the value to a step, and the field writes back what it took.
         await Assertions.Expect(thumb).ToHaveAttributeAsync("data-value", await thumb.InputValueAsync());
     }
+
+    // A browser puts a range input's value on the step nearest it, counted from the minimum, within the range.
+    public static async Task<decimal> SnapAsync(ILocator thumb, decimal value)
+    {
+        var (min, max, step) = (await NumberAsync(thumb, "min"), await NumberAsync(thumb, "max"),
+            await NumberAsync(thumb, "step"));
+        var steps = Math.Floor((Math.Clamp(value, min, max) - min) / step + 0.5m);
+        return min + Math.Min(steps, Math.Floor((max - min) / step)) * step;
+    }
+
+    private static async Task<decimal> NumberAsync(ILocator thumb, string name) =>
+        decimal.Parse(await thumb.GetAttributeAsync(name) ?? "", CultureInfo.InvariantCulture);
 
     // A static slider has no round trip to write data-value back, so the input holds what the form will post.
     public static async Task<decimal> ValueAsync(ILocator thumb) => decimal.Parse(

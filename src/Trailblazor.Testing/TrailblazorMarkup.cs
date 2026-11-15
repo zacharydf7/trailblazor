@@ -249,6 +249,10 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbSlider</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbSliderDriver Slider(string label) => new(() => Field(label, "input[type=range][data-part=input]"));
 
+    /// <summary>The <c>TbRangeSlider</c> with this label.</summary>
+    public TbRangeSliderDriver RangeSlider(string label) =>
+        new(() => Field(label, "input[type=range][data-part=start-thumb]"));
+
     /// <summary>The <c>TbAutocomplete</c> with this label, or with this <c>AriaLabel</c> when it has no label.
     /// </summary>
     public TbAutocompleteDriver Autocomplete(string label) =>
@@ -1421,22 +1425,65 @@ public sealed class TbSliderDriver : TbFieldDriver
     internal TbSliderDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>The value the field holds.</summary>
-    public decimal Value => decimal.Parse(_find().GetAttribute("data-value")!, CultureInfo.InvariantCulture);
+    public decimal Value => SliderThumb.ValueOf(_find());
 
     /// <summary>Moves the slider to this value, as dragging its thumb does. A value between steps lands on the nearest
     /// step, and one past an end on that end, as in a browser. On a static page the slider is a native one that posts
     /// with its form, so this throws, as it does for a disabled or read-only slider.</summary>
-    public async Task SetAsync(decimal value)
+    public Task SetAsync(decimal value) => SliderThumb.MoveAsync(_find, value);
+}
+
+/// <summary>A <c>TbRangeSlider</c>, found by its label.</summary>
+public sealed class TbRangeSliderDriver : TbFieldDriver
+{
+    private readonly Func<IElement> _start;
+
+    internal TbRangeSliderDriver(Func<IElement> start) : base(start) => _start = start;
+
+    /// <summary>The start and end the field holds.</summary>
+    public (decimal Start, decimal End) Range => (SliderThumb.ValueOf(_start()), SliderThumb.ValueOf(End()));
+
+    /// <summary>Moves both thumbs, as dragging each does, landing each on the nearest step between the slider's
+    /// minimum and maximum. The thumbs can't pass each other, so the end moves first when the new start lands past the
+    /// old end. A start after the end throws, and so does a static page or a disabled or read-only slider.</summary>
+    public async Task SetAsync(decimal start, decimal end)
     {
-        var input = _find();
+        if (start > end)
+        {
+            throw new ArgumentOutOfRangeException(nameof(start), start, $"The start can't be after the end, {end}.");
+        }
+
+        if (SliderThumb.Snap(_start(), start) > Range.End)
+        {
+            await SliderThumb.MoveAsync(End, end);
+            await SliderThumb.MoveAsync(_start, start);
+            return;
+        }
+
+        await SliderThumb.MoveAsync(_start, start);
+        await SliderThumb.MoveAsync(End, end);
+    }
+
+    private IElement End() => _start().Closest(".tb-slider--range")!.QuerySelector("[data-part=end-thumb]")!;
+}
+
+internal static class SliderThumb
+{
+    internal static decimal ValueOf(IElement input) =>
+        decimal.Parse(input.GetAttribute("data-value")!, CultureInfo.InvariantCulture);
+
+    // Input then change, as a drag and its release do; the input event re-renders the thumb, so it's found again.
+    internal static async Task MoveAsync(Func<IElement> find, decimal value)
+    {
+        var input = find();
         Choices.ThrowIfLocked(input);
         var text = Snap(input, value).ToString("0.############################", CultureInfo.InvariantCulture);
         await input.InputAsync(new ChangeEventArgs { Value = text });
-        await _find().ChangeAsync(new ChangeEventArgs { Value = text });
+        await find().ChangeAsync(new ChangeEventArgs { Value = text });
     }
 
     // A browser puts a range input's value on the step nearest it, counted from the minimum, within the range.
-    private static decimal Snap(IElement input, decimal value)
+    internal static decimal Snap(IElement input, decimal value)
     {
         var (min, max, step) = (Attribute(input, "min"), Attribute(input, "max"), Attribute(input, "step"));
         var steps = Math.Floor((Math.Clamp(value, min, max) - min) / step + 0.5m);

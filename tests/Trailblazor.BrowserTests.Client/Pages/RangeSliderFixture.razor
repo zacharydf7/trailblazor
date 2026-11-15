@@ -8,6 +8,8 @@
 <TbRangeSlider TValue="int" Label="Bottom" Min="0" Max="100" Step="10" @bind-Value="_bottom" />
 <TbRangeSlider TValue="int" Label="Parted" Min="0" Max="100" Step="10" @bind-Value="_parted"
                OnValueCommitted="_ => _commits++" />
+@* The app sets the end between steps, so a start that snaps up to the next step can land past it. *@
+<TbRangeSlider TValue="int" Label="Uneven" Min="0" Max="100" Step="10" @bind-Value="_uneven" />
 <TbRangeSlider TValue="int" Label="Locked" Min="0" Max="100" Step="10" ReadOnly @bind-Value="_locked" />
 <TbRangeSlider TValue="int" Label="Off" Min="0" Max="100" Step="10" Disabled @bind-Value="_off" />
 <fieldset disabled>
@@ -27,6 +29,7 @@
     private SliderRange<int> _top = new(100, 100);
     private SliderRange<int> _bottom = new(0, 0);
     private SliderRange<int> _parted = new(20, 80);
+    private SliderRange<int> _uneven = new(20, 46);
     private SliderRange<int> _close = new(500, 503);
     private SliderRange<int> _locked = new(20, 80);
     private SliderRange<int> _off = new(20, 80);
