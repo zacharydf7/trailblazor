@@ -2017,6 +2017,50 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Rating_ShouldRateReadAndClearTheStars_WhenTheHelperIsUsed()
+    {
+        var stars = 0;
+        var cut = Render<TbRating>(parameters => parameters.Add(rating => rating.Label, "Rate the ridge loop")
+            .Add(rating => rating.Clearable, true).Add(rating => rating.ValueChanged, (int value) => stars = value));
+        var rating = cut.Tb().Rating("Rate the ridge loop");
+
+        await rating.RateAsync(4);
+        Assert.Equal(4, stars);
+        cut.Render(parameters => parameters.Add(field => field.Value, stars));
+        Assert.Equal((4, 5), (rating.Value, rating.Max));
+        await rating.ClearAsync();
+
+        Assert.Equal(0, stars);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => rating.RateAsync(6));
+    }
+
+    [Theory]
+    [InlineData(false, false, false, 4, false)]
+    [InlineData(true, true, false, 4, false)]
+    [InlineData(true, false, true, 4, false)]
+    [InlineData(true, false, true, 0, false)]
+    [InlineData(true, false, false, 0, true)]
+    public async Task Rating_ShouldRefuseWhatAUserCantDo_WhenTheRatingIsLockedOrCantClear(bool clearable,
+        bool readOnly, bool disabled, int stars, bool isStatic)
+    {
+        if (isStatic)
+        {
+            SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        }
+
+        var cut = Render<TbRating>(parameters => parameters.Add(rating => rating.Label, "Your last rating")
+            .Add(rating => rating.Value, stars).Add(rating => rating.Clearable, clearable)
+            .Add(rating => rating.ReadOnly, readOnly).Add(rating => rating.Disabled, disabled));
+        var rating = cut.Tb().Rating("Your last rating");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => rating.ClearAsync());
+        if (readOnly || disabled || isStatic)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => rating.RateAsync(4));
+        }
+    }
+
+    [Fact]
     public async Task ToggleGroup_ShouldPressAndLetGoOfItemsByName_WhenTheHelperIsUsed()
     {
         IReadOnlyList<string> layers = [];

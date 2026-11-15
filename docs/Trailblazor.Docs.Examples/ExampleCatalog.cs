@@ -4246,9 +4246,9 @@ public static class ExampleCatalog
                 new("helper", "The help text under the rating."),
                 new("error", "The validation message, shown while the value is invalid."),
             ],
-            TestingTip = "Each star is a native radio, so choose one with "
-                + "`GetByRole(AriaRole.Radio, new() { Name = \"4 stars\" }).CheckAsync()` in Playwright. In bUnit, "
-                + "`Change(true)` on a star's `input` chooses it.",
+            TestingTip = "`page.Tb().Rating(label)` in Playwright, or `cut.Tb().Rating(label)` in bUnit, finds a "
+                + "rating by its label: `RateAsync(stars)` chooses that many stars, `ClearAsync()` takes a "
+                + "`Clearable` rating back to none, and `Value` or `ValueAsync()` reads how many are chosen.",
         },
         new("signature-pad", "Signature pad", ExampleCategory.Inputs,
             "A pad people sign by drawing with a mouse, pen or finger, or by typing their name instead.")

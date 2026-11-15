@@ -364,3 +364,9 @@ Trailblazor.Testing.TbRangeSliderDriver
 Trailblazor.Testing.TbRangeSliderDriver.Range.get -> (decimal Start, decimal End)
 Trailblazor.Testing.TbRangeSliderDriver.SetAsync(decimal start, decimal end) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.RangeSlider(string! label) -> Trailblazor.Testing.TbRangeSliderDriver!
+Trailblazor.Testing.TbRatingDriver
+Trailblazor.Testing.TbRatingDriver.ClearAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbRatingDriver.Max.get -> int
+Trailblazor.Testing.TbRatingDriver.RateAsync(int stars) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbRatingDriver.Value.get -> int
+Trailblazor.Testing.TrailblazorMarkup.Rating(string! label) -> Trailblazor.Testing.TbRatingDriver!

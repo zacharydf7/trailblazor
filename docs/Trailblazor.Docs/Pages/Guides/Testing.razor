@@ -161,6 +161,13 @@
                         <td>Chooses an option by its text, and <code>Chosen</code> reads it.</td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Rating(label).RateAsync(stars)</code></th>
+                        <td>
+                            Chooses that many stars, <code>ClearAsync</code> takes a <code>Clearable</code> rating back
+                            to none, and <code>Value</code> reads how many are chosen.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>ToggleGroup(label).ChooseAsync(items)</code></th>
                         <td>
                             Presses items by name, <code>UnchooseAsync</code> releases them, and <code>Chosen</code>
@@ -923,6 +930,9 @@
             + "change options by name, and `CheckedAsync()` reads the checked ones."),
         new("Radio group", "Its label", "`RadioGroup(label).ChooseAsync(option)` chooses an option by name, and "
             + "`ChosenAsync()` reads it."),
+        new("Rating", "Its label", "`Rating(label).RateAsync(stars)` chooses that many stars and waits until the app "
+            + "has them, `ClearAsync()` takes a `Clearable` rating back to none, and `ValueAsync()` reads how many are "
+            + "chosen."),
         new("Toggle group", "Its label, or its `AriaLabel`",
             "`ToggleGroup(label).ChooseAsync(items)` presses items by name, "
             + "`UnchooseAsync(items)` releases them, and `ChosenAsync()` reads the pressed ones."),

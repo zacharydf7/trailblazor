@@ -1,0 +1,12 @@
+@page "/rating"
+
+@* Clearable ratings a user can't change: one disabled with no star chosen, and one inside a disabled fieldset. *@
+<TbRating Label="Off" Clearable Disabled @bind-Value="_off" />
+<fieldset disabled>
+    <TbRating Label="Fenced" Clearable @bind-Value="_fenced" />
+</fieldset>
+
+@code {
+    private int _off;
+    private int _fenced = 3;
+}

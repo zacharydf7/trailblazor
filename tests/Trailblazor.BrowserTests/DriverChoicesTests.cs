@@ -30,10 +30,13 @@ public class DriverChoicesTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Tb().Checkbox("Email me updates").CheckAsync();
         await page.Tb().RadioGroup("Paper size").ChooseAsync("A4");
         await page.Tb().TextField("Name").EnterAsync("Ada");
+        await page.Tb().Rating("Paper size").RateAsync(4);
 
         Assert.True(await page.Tb().Checkbox("Email me updates").CheckedAsync());
         Assert.Equal("A4", await page.Tb().RadioGroup("Paper size").ChosenAsync());
         Assert.Equal("Ada", await page.Tb().TextField("Name").TextAsync());
+        Assert.Equal(4, await page.Tb().Rating("Paper size").ValueAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Rating("Paper size").ClearAsync());
         Assert.Equal(["Trails"], await page.Tb().ToggleGroup("Map view").ChosenAsync());
         await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Checkbox("Locked in").UncheckAsync());
         await Assert.ThrowsAsync<InvalidOperationException>(

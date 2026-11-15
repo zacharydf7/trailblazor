@@ -349,3 +349,10 @@ Trailblazor.Testing.Playwright.TbTreeSelectLocator.OptionAsync(params string![]!
 Trailblazor.Testing.Playwright.TbTextFieldLocator.HidePasswordAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTextFieldLocator.PasswordShownAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbTextFieldLocator.ShowPasswordAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRatingLocator
+Trailblazor.Testing.Playwright.TbRatingLocator.ClearAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRatingLocator.MaxAsync() -> System.Threading.Tasks.Task<int>!
+Trailblazor.Testing.Playwright.TbRatingLocator.RateAsync(int stars) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRatingLocator.TbRatingLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TbRatingLocator.ValueAsync() -> System.Threading.Tasks.Task<int>!
+Trailblazor.Testing.Playwright.TrailblazorPage.Rating(string! label) -> Trailblazor.Testing.Playwright.TbRatingLocator!

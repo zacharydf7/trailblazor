@@ -203,6 +203,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbRadioGroup</c> with this label.</summary>
     public TbRadioGroupLocator RadioGroup(string label) => new(scope, label);
 
+    /// <summary>The <c>TbRating</c> with this label.</summary>
+    public TbRatingLocator Rating(string label) => new(scope, label);
+
     /// <summary>The <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c> with this label, or with this
     /// <c>AriaLabel</c> when it has no label.</summary>
     public TbToggleGroupLocator ToggleGroup(string label) => new(scope, label);

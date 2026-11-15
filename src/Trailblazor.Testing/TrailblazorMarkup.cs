@@ -222,6 +222,9 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbRadioGroup</c> with this label.</summary>
     public TbRadioGroupDriver RadioGroup(string label) => new(() => Group(label, "fieldset.tb-radio-group"));
 
+    /// <summary>The <c>TbRating</c> with this label.</summary>
+    public TbRatingDriver Rating(string label) => new(() => Group(label, "fieldset.tb-rating"));
+
     /// <summary>The <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c> with this label, or with this
     /// <c>AriaLabel</c> when it has no label.</summary>
     public TbToggleGroupDriver ToggleGroup(string label) => new(() =>
@@ -1274,6 +1277,65 @@ public sealed class TbRadioGroupDriver : TbFieldDriver
     private IEnumerable<(string Name, IElement Input)> Options() => _find()
         .QuerySelectorAll("[data-part=options] input[type=radio]")
         .Select(input => (Choices.NameOf(input.ParentElement!.QuerySelector(":scope > [data-part=label]")!), input));
+}
+
+/// <summary>A <c>TbRating</c>, found by its label.</summary>
+public sealed class TbRatingDriver : TbFieldDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbRatingDriver(Func<IElement> find) : base(find) => _find = find;
+
+    /// <summary>How many stars are chosen, or 0 when none are.</summary>
+    public int Value => Stars().FirstOrDefault(star => star.HasAttribute("checked")) is { } chosen
+        ? int.Parse(chosen.GetAttribute("value")!, CultureInfo.InvariantCulture) : 0;
+
+    /// <summary>How many stars there are.</summary>
+    public int Max => Stars().Count;
+
+    /// <summary>Chooses this many stars, as clicking the last of them does, unless they're chosen already. A
+    /// read-only or disabled rating throws, and so does one on a static page.</summary>
+    public async Task RateAsync(int stars)
+    {
+        var all = Stars();
+        ArgumentOutOfRangeException.ThrowIfLessThan(stars, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(stars, all.Count);
+        ThrowIfReadOnly();
+        Choices.ThrowIfLocked(all[stars - 1]);
+        if (!all[stars - 1].HasAttribute("checked"))
+        {
+            await all[stars - 1].ChangeAsync(new ChangeEventArgs());
+        }
+    }
+
+    /// <summary>Takes the rating back to no stars, as clicking the chosen star does, unless none are chosen. A
+    /// rating that isn't <c>Clearable</c> throws, and so does a read-only or disabled one, or one on a static page.
+    /// </summary>
+    public async Task ClearAsync()
+    {
+        if (!_find().HasAttribute("data-clearable"))
+        {
+            throw new InvalidOperationException("This rating isn't Clearable, so its stars can't be taken back.");
+        }
+
+        ThrowIfReadOnly();
+        // Past the read-only check, a star is locked only by a disabled fieldset or a static page.
+        Choices.ThrowIfLocked(Stars()[0]);
+        if (Stars().FirstOrDefault(star => star.HasAttribute("checked")) is { } chosen)
+        {
+            await chosen.ClickAsync(new MouseEventArgs());
+        }
+    }
+
+    private void ThrowIfReadOnly()
+    {
+        if (_find().GetAttribute("aria-readonly") == "true")
+        {
+            throw new InvalidOperationException("This rating is read-only, so its stars can't be changed.");
+        }
+    }
+
+    private List<IElement> Stars() => [.. _find().QuerySelectorAll("[data-part=stars] input[type=radio]")];
 }
 
 /// <summary>A <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c>, found by its label, or by its <c>AriaLabel</c>

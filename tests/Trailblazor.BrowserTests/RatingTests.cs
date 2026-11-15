@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class RatingTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -40,6 +42,32 @@ public class RatingTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByText("Not rated yet.")).ToBeVisibleAsync();
         await Expect(four).Not.ToBeCheckedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseToClear_WhenTheRatingOrAFieldsetAroundItIsDisabled(string browser)
+    {
+        var page = await OpenAsync(browser, "/rating");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Rating("Off").ClearAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Rating("Fenced").ClearAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRateReadAndClearTheStars_WhenTheRatingIsInteractive(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/rating");
+        var rating = page.Tb().Rating("Rate the ridge loop");
+
+        await rating.RateAsync(3);
+        Assert.Equal((3, 5), (await rating.ValueAsync(), await rating.MaxAsync()));
+        await Expect(page.GetByText("You gave it 3 of 5.")).ToBeVisibleAsync();
+        await rating.ClearAsync();
+
+        Assert.Equal(0, await rating.ValueAsync());
+        await Expect(page.GetByText("Not rated yet.")).ToBeVisibleAsync();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Rating("Your last rating").RateAsync(2));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Rating("Difficulty").ClearAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
