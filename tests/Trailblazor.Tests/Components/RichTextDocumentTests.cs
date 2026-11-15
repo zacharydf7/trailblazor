@@ -459,6 +459,9 @@ public class RichTextDocumentTests
         Assert.Equal(RichTextSchema.Default, new RichTextSchema());
         Assert.Equal(new RichTextSchema { LinkSchemes = ["https"] }, new RichTextSchema { LinkSchemes = ["HTTPS"] });
         Assert.NotEqual(new RichTextSchema { LinkSchemes = ["https"] }, new RichTextSchema { LinkSchemes = ["http"] });
+        Assert.Equal(new RichTextSchema { ImageSchemes = ["https"] }, new RichTextSchema { ImageSchemes = ["HTTPS"] });
+        Assert.NotEqual(new RichTextSchema { ImageSchemes = ["https"] },
+            new RichTextSchema { ImageSchemes = ["http"] });
     }
 
     [Theory]
@@ -481,5 +484,134 @@ public class RichTextDocumentTests
             new RichTextRun("a", RichTextFormats.Bold, "/a").Formats);
         Assert.NotEqual(new RichTextRun("a", link: "/a"), new RichTextRun("a", link: "/b"));
         Assert.Throws<ArgumentException>(() => new RichTextRun("a", RichTextFormats.Link));
+    }
+
+    private static readonly RichTextSchema WithImages =
+        new() { Blocks = RichTextSchema.Default.Blocks | RichTextBlocks.Images };
+
+    [Theory]
+    [InlineData("<img src=\"https://x/a.png\" alt=\"A\">", "<img src=\"https://x/a.png\" alt=\"A\">")]
+    [InlineData("<IMG SRC=\"http://x/a.png\" ALT=\"A\">", "<img src=\"http://x/a.png\" alt=\"A\">")]
+    [InlineData("<img src=\"/trails/a.png\">", "<img src=\"/trails/a.png\">")]
+    [InlineData("<img src=\"/trails/a.png\" alt>", "<img src=\"/trails/a.png\" alt=\"\">")]
+    [InlineData("<img src=\" https://x/a.png \" alt=\"\">", "<img src=\"https://x/a.png\" alt=\"\">")]
+    [InlineData("<img src=\"/a\" src=\"/b\" alt=\"A\" alt=\"B\">", "<img src=\"/a\" alt=\"A\">")]
+    [InlineData("<p>a <img src=\"/a\" alt=\"A\"> b</p>", "<p>a</p><img src=\"/a\" alt=\"A\"><p>b</p>")]
+    [InlineData("<h2><b>a<img src=\"/a\" alt=\"A\">b</b></h2>",
+        "<h2><strong>a</strong></h2><img src=\"/a\" alt=\"A\"><h2><strong>b</strong></h2>")]
+    [InlineData("<p><img src=\"/a\" alt=\"A\"></p>", "<img src=\"/a\" alt=\"A\">")]
+    [InlineData("<p><img src=\"/a\" alt=\"A\"><br></p>", "<img src=\"/a\" alt=\"A\">")]
+    [InlineData("<p>a<img src=\"/a\" alt=\"A\"><br>b</p>", "<p>a</p><img src=\"/a\" alt=\"A\"><p>b</p>")]
+    [InlineData("<img src=\"/a\" alt=\"A\"> <br><br>b", "<img src=\"/a\" alt=\"A\"><p><br>b</p>")]
+    [InlineData("<img src=\"/a\" alt=\"A\">b<br>c", "<img src=\"/a\" alt=\"A\"><p>b<br>c</p>")]
+    [InlineData("<p><img src=\"/a\" alt=\"A\"></p><p><br>b</p>", "<img src=\"/a\" alt=\"A\"><p><br>b</p>")]
+    [InlineData("<pre>a<img src=\"/a\" alt=\"A\">\nb</pre>", "<p>a</p><img src=\"/a\" alt=\"A\"><p>b</p>")]
+    [InlineData("<pre><img src=\"/a\" alt=\"A\">\n</pre>", "<img src=\"/a\" alt=\"A\">")]
+    [InlineData("<pre><img src=\"/a\" alt=\"A\">\n\nb</pre>", "<img src=\"/a\" alt=\"A\"><p><br>b</p>")]
+    [InlineData("<ul><li>a<img src=\"/a\" alt=\"A\">b</li></ul>",
+        "<ul><li>a</li></ul><img src=\"/a\" alt=\"A\"><ul><li>b</li></ul>")]
+    [InlineData("<blockquote><p>a</p><img src=\"/a\" alt=\"A\"></blockquote>",
+        "<blockquote><p>a</p></blockquote><img src=\"/a\" alt=\"A\">")]
+    [InlineData("<a href=\"/x\"><img src=\"/a\" alt=\"A\"></a>", "<img src=\"/a\" alt=\"A\">")]
+    [InlineData("<img src=\"/a\" alt=\"one\ntwo&#10;three\tfour\">", "<img src=\"/a\" alt=\"one two three four\">")]
+    [InlineData("<img src='/a?b=1&amp;c=\"2\"' alt='say \"hi\" &amp; <wave>'>",
+        "<img src=\"/a?b=1&amp;c=&quot;2&quot;\" alt=\"say &quot;hi&quot; &amp; <wave>\">")]
+    public void Parse_ShouldKeepAnImageAsItsOwnBlock_WhenTheSchemaAllowsImages(string html, string expected) =>
+        Assert.Equal(expected, RichTextDocument.Parse(html, WithImages).ToHtml());
+
+    [Theory]
+    [InlineData("<img src=\"javascript:alert(1)\" alt=\"A\">", "")]
+    [InlineData("<img src=\" JaVa&#9;ScRiPt:alert(1)\" alt=\"A\">", "")]
+    [InlineData("<img src=\"ftp://x/a.png\" alt=\"A\">", "")]
+    [InlineData("<img src=\"data:image/png;base64,AAAA\" alt=\"A\">", "")]
+    [InlineData("<img alt=\"A\"><img src=\"\" alt=\"B\"><img src=\" \">", "")]
+    [InlineData("<noscript><img src=\"/a\" alt=\"A\"></noscript>", "")]
+    [InlineData("a<img src=\"ftp://x/a.png\" alt=\"A\">b", "<p>ab</p>")]
+    public void Parse_ShouldDropTheImage_WhenItsSourceIsNotAllowed(string html, string expected) =>
+        Assert.Equal(expected, RichTextDocument.Parse(html, WithImages).ToHtml());
+
+    [Fact]
+    public void Parse_ShouldDropImages_WhenTheSchemaDoesNotAllowThem() =>
+        Assert.Equal("<p>ab</p>", RichTextDocument.Parse("<p>a<img src=\"https://x/a.png\" alt=\"A\">b</p>").ToHtml());
+
+    [Fact]
+    public void Parse_ShouldKeepOnlyTheSchemasImageSchemes_WhenGivenImageSchemes()
+    {
+        var schema = WithImages with { ImageSchemes = ["ftp", "javascript"] };
+
+        var document = RichTextDocument.Parse("<img src=\"ftp://x/a.png\" alt=\"A\"><img src=\"https://x/b.png\">"
+            + "<img src=\"javascript:alert(1)\"><img src=\"/c.png\" alt=\"C\">", schema);
+
+        Assert.Equal("<img src=\"ftp://x/a.png\" alt=\"A\"><img src=\"/c.png\" alt=\"C\">", document.ToHtml());
+    }
+
+    [Fact]
+    public void Parse_ShouldGiveBackTheSameImages_WhenReadingItsOwnHtml()
+    {
+        var document = new RichTextDocument([
+            new([new("a")], RichTextParagraphKind.BulletedItem),
+            new(new RichTextImage("https://x/a.png?b=1&c=\"2\"", "A \"quoted\" & <tagged> picture")),
+            new([new("b")], RichTextParagraphKind.Quote),
+            new(new RichTextImage("/b.png", "")),
+            new([new("c")]),
+            new(new RichTextImage("/c.png", null)),
+        ]);
+
+        var again = RichTextDocument.Parse(document.ToHtml(), WithImages);
+
+        Assert.Equal("<ul><li>a</li></ul><img src=\"https://x/a.png?b=1&amp;c=&quot;2&quot;\" "
+            + "alt=\"A &quot;quoted&quot; &amp; <tagged> picture\"><blockquote><p>b</p></blockquote>"
+            + "<img src=\"/b.png\" alt=\"\"><p>c</p><img src=\"/c.png\">",
+            document.ToHtml());
+        Assert.Equal(document.Paragraphs.Select(paragraph => (paragraph.Kind, paragraph.Text, paragraph.Image)),
+            again.Paragraphs.Select(paragraph => (paragraph.Kind, paragraph.Text, paragraph.Image)));
+    }
+
+    [Fact]
+    public void ToPlainText_ShouldGiveAnImageAnEmptyLine_WhenTheDocumentHasOne() =>
+        Assert.Equal("a\n\nb", new RichTextDocument([
+            new([new("a")]), new(new RichTextImage("/a.png", "A")), new([new("b")]),
+        ]).ToPlainText());
+
+    [Fact]
+    public void RichTextParagraph_ShouldBeAnImageWithNoRuns_WhenCreatedFromAnImage()
+    {
+        var image = new RichTextImage("/a.png", "A");
+
+        var paragraph = new RichTextParagraph(image);
+
+        Assert.Equal(RichTextParagraphKind.Image, paragraph.Kind);
+        Assert.Empty(paragraph.Runs);
+        Assert.Equal("", paragraph.Text);
+        Assert.Same(image, paragraph.Image);
+        Assert.Null(new RichTextParagraph([new("a")]).Image);
+        Assert.False(new RichTextDocument([paragraph]).IsEmpty);
+    }
+
+    [Fact]
+    public void RichTextParagraph_ShouldRejectTheKind_WhenItIsAnImageGivenRuns() =>
+        Assert.Throws<ArgumentException>(() => new RichTextParagraph([], RichTextParagraphKind.Image));
+
+    [Fact]
+    public void RichTextParagraph_ShouldThrow_WhenGivenANullImage() =>
+        Assert.Throws<ArgumentNullException>(() => new RichTextParagraph((RichTextImage)null!));
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" \n ")]
+    [InlineData("javascript:alert(1)")]
+    [InlineData(" VBScript:x")]
+    public void RichTextImage_ShouldRejectTheSource_WhenItIsEmptyOrWouldRunScript(string source) =>
+        Assert.Throws<ArgumentException>(() => new RichTextImage(source, "A"));
+
+    [Fact]
+    public void RichTextImage_ShouldCleanTheSourceAndAlt_WhenCreated()
+    {
+        var image = new RichTextImage(" /a.png\t\r\n", "one\r\ntwo\nthree\tfour\u0001");
+
+        Assert.Equal("/a.png", image.Source);
+        Assert.Equal("one two three four ", image.Alt);
+        Assert.Equal(new RichTextImage("/a.png", "A"), new RichTextImage(" /a.png", "A"));
+        Assert.Null(new RichTextImage("/a.png", null).Alt);
     }
 }

@@ -98,8 +98,9 @@
 
     /// <summary>The kinds of block the editor allows: the toolbar has a button for each (three for headings, and
     /// Horizontal line for <see cref="RichTextBlocks.Rules"/>), with outdent and indent buttons when it allows a list,
-    /// and text pasted in keeps only these. Defaults to all of them; <see cref="RichTextBlocks.None"/> allows only plain
-    /// paragraphs.</summary>
+    /// and text pasted in keeps only these. Defaults to all of them but <see cref="RichTextBlocks.Images"/>;
+    /// <see cref="RichTextBlocks.None"/> allows only plain paragraphs. The editor can't show images yet, so it leaves
+    /// them out even when this includes <see cref="RichTextBlocks.Images"/>.</summary>
     [Parameter]
     public RichTextBlocks Blocks { get; set; } = RichTextHtmlReader.AllBlocks;
 
@@ -252,9 +253,10 @@
         }
     }
 
+    // The editing script can't show images yet, so the editor leaves them out.
     private RichTextSchema Schema => new()
     {
-        Formats = Formats, Blocks = Blocks, LinkSchemes = LinkSchemes,
+        Formats = Formats, Blocks = Blocks & ~RichTextBlocks.Images, LinkSchemes = LinkSchemes,
     };
 
     // The value as the editor holds it: parsed, so only the allowed formats and safe markup reach the page.

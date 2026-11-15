@@ -131,6 +131,8 @@ internal sealed partial class RichTextHtmlReader
     private int _position;
     private int _opened;
     private bool _dropNewline;
+    // Set by a kept image until text follows it, since a <br> right after one only ends the image's line.
+    private bool _afterImage;
     private bool _started;
     private bool _inBody;
     // Without a standards doctype, a browser parses in quirks mode, where a table doesn't end a paragraph.
@@ -223,8 +225,8 @@ internal sealed partial class RichTextHtmlReader
         {
             _position++;
             var name = ReadName();
-            var (style, href, selfClosing) = ReadAttributes();
-            StartTag(name, style, href, selfClosing);
+            var (style, href, source, alt, selfClosing) = ReadAttributes();
+            StartTag(name, style, href, source, alt, selfClosing);
             if (RawText.Contains(name))
             {
                 ReadRawText(name);
@@ -237,7 +239,7 @@ internal sealed partial class RichTextHtmlReader
         }
     }
 
-    private void StartTag(string name, string style, string? href, bool selfClosing)
+    private void StartTag(string name, string style, string? href, string? source, string? alt, bool selfClosing)
     {
         _started = true;
         if (InOpenHead && !HeadContent.Contains(name))
@@ -287,6 +289,10 @@ internal sealed partial class RichTextHtmlReader
                 {
                     _paragraphs.Add(new RichTextParagraph([], RichTextParagraphKind.Rule));
                 }
+            }
+            else if (name == "img" && !InSkipped)
+            {
+                AddImage(source, alt);
             }
 
             return;
@@ -721,16 +727,45 @@ internal sealed partial class RichTextHtmlReader
         }
     }
 
+    // Unlike in a browser, an image is a block, so one kept inside a paragraph splits it in two.
+    private void AddImage(string? source, string? alt)
+    {
+        var url = RichTextSchema.CleanLink(source);
+        if (url is null || !_schema.Blocks.HasFlag(RichTextBlocks.Images) || !_schema.AllowsImage(url))
+        {
+            return;
+        }
+
+        FinishParagraph();
+        _paragraphs.Add(new RichTextParagraph(new RichTextImage(url, alt)));
+        _afterImage = true;
+    }
+
     private void AddBreak()
     {
-        if (!InSkipped)
+        if (InSkipped)
         {
-            AddPiece("\n", pre: false);
+            return;
         }
+
+        if (_afterImage)
+        {
+            _afterImage = false;
+            return;
+        }
+
+        AddPiece("\n", pre: false);
     }
 
     private void AddPiece(string text, bool pre)
     {
+        // In a <pre>, a newline right after an image only ends the image's line, as a <br> does.
+        if (_afterImage && pre && text.StartsWith('\n'))
+        {
+            (text, _afterImage) = (text[1..], false);
+        }
+
+        _afterImage &= text.AsSpan().IndexOfAnyExcept(" \t\n\f\r") < 0;
         Reconstruct();
         if (_runs is null)
         {
@@ -744,6 +779,7 @@ internal sealed partial class RichTextHtmlReader
 
     private void FinishParagraph()
     {
+        _afterImage = false;
         if (_runs is null)
         {
             return;
@@ -910,11 +946,13 @@ internal sealed partial class RichTextHtmlReader
             || (oldLoose && !doctype.Contains(".dtd", StringComparison.Ordinal));
     }
 
-    // Reads to the end of a start tag, keeping only the style and href attributes and whether the tag closed itself.
-    private (string Style, string? Href, bool SelfClosing) ReadAttributes()
+    // Reads to the end of a start tag, keeping only its style, href, src and alt and whether it closed itself.
+    private (string Style, string? Href, string? Source, string? Alt, bool SelfClosing) ReadAttributes()
     {
         string? style = null;
         string? href = null;
+        string? source = null;
+        string? alt = null;
         var selfClosing = false;
         while (_position < _html.Length)
         {
@@ -959,9 +997,17 @@ internal sealed partial class RichTextHtmlReader
             {
                 href = HtmlCharacterReferences.DecodeAttribute(value);
             }
+            else if (source is null && name.Equals("src", StringComparison.OrdinalIgnoreCase))
+            {
+                source = HtmlCharacterReferences.DecodeAttribute(value);
+            }
+            else if (alt is null && name.Equals("alt", StringComparison.OrdinalIgnoreCase))
+            {
+                alt = HtmlCharacterReferences.DecodeAttribute(value);
+            }
         }
 
-        return (style ?? "", href, selfClosing);
+        return (style ?? "", href, source, alt, selfClosing);
     }
 
     private string ReadAttributeValue()

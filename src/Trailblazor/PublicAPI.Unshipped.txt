@@ -5734,3 +5734,20 @@ Trailblazor.RichTextEditorLabels.Source.init -> void
 Trailblazor.TbRichTextEditor.ShowSource.get -> bool
 Trailblazor.TbRichTextEditor.ShowSource.set -> void
 const Trailblazor.TbStrings.RichTextEditorSource = "RichTextEditor.Source" -> string!
+Trailblazor.RichTextBlocks.Images = 32 -> Trailblazor.RichTextBlocks
+Trailblazor.RichTextParagraphKind.Image = 8 -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraph.RichTextParagraph(Trailblazor.RichTextImage! image) -> void
+Trailblazor.RichTextParagraph.Image.get -> Trailblazor.RichTextImage?
+Trailblazor.RichTextImage
+Trailblazor.RichTextImage.<Clone>$() -> Trailblazor.RichTextImage!
+Trailblazor.RichTextImage.Equals(Trailblazor.RichTextImage? other) -> bool
+Trailblazor.RichTextImage.RichTextImage(string! source, string? alt) -> void
+Trailblazor.RichTextImage.Source.get -> string!
+Trailblazor.RichTextImage.Alt.get -> string?
+override Trailblazor.RichTextImage.Equals(object? obj) -> bool
+override Trailblazor.RichTextImage.GetHashCode() -> int
+override Trailblazor.RichTextImage.ToString() -> string!
+static Trailblazor.RichTextImage.operator !=(Trailblazor.RichTextImage? left, Trailblazor.RichTextImage? right) -> bool
+static Trailblazor.RichTextImage.operator ==(Trailblazor.RichTextImage? left, Trailblazor.RichTextImage? right) -> bool
+Trailblazor.RichTextSchema.ImageSchemes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.RichTextSchema.ImageSchemes.init -> void

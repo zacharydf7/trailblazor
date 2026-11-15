@@ -52,14 +52,15 @@ public sealed class RichTextDocument
 
     /// <summary>Reads HTML into a document, keeping only what the schema allows.</summary>
     /// <remarks>Any HTML is accepted, and only text, blocks, line breaks, formats and links survive. Headings, block
-    /// quotes, list items and rules keep their kind; other blocks, such as table cells, become paragraphs. Formats
+    /// quotes, list items, rules and images keep their kind; other blocks, such as table cells, become paragraphs. An
+    /// image inside a paragraph ends it, and the text after the image starts another of the same kind. Formats
     /// come from tags (<c>b</c>, <c>strong</c>, <c>i</c>, <c>em</c>, <c>u</c>, <c>s</c>, <c>sub</c>, <c>sup</c>,
     /// <c>code</c> and similar) and from inline styles (font weight, font style, text decoration, vertical alignment
     /// and monospace fonts), as Word, Google Docs and browsers write them. Word's list paragraphs read as lists.
-    /// Everything else, including scripts, attributes, images and links with a scheme the schema doesn't allow,
-    /// becomes plain text or is dropped, so the result is safe to render. Tabs and no-break spaces read as plain
-    /// spaces. A few rare cases can still read differently from a browser, such as tags misnested beyond a simple
-    /// reorder and character references whose names HTML 4 lacks, which stay as written.</remarks>
+    /// Everything else, including scripts, attributes, images the schema doesn't allow and links with a scheme it
+    /// doesn't allow, becomes plain text or is dropped, so the result is safe to render. Tabs and no-break spaces read
+    /// as plain spaces. A few rare cases can still read differently from a browser, such as tags misnested beyond a
+    /// simple reorder and character references whose names HTML 4 lacks, which stay as written.</remarks>
     /// <param name="html">The HTML. Null or empty gives an empty document.</param>
     /// <param name="schema">What to keep. Formats it doesn't allow are dropped from the text that has them, and blocks
     /// it doesn't allow give way to an allowed block around them or a plain paragraph.</param>
@@ -72,11 +73,12 @@ public sealed class RichTextDocument
     /// <summary>Writes the document as canonical HTML: a <c>&lt;p&gt;</c> for each paragraph
     /// (<c>&lt;p&gt;&lt;br&gt;&lt;/p&gt;</c> when it's empty), <c>&lt;h1&gt;</c> to <c>&lt;h3&gt;</c> for headings,
     /// neighboring quote paragraphs in one <c>&lt;blockquote&gt;</c>, list items in <c>&lt;ul&gt;</c> and
-    /// <c>&lt;ol&gt;</c> with each nested list inside the item before it, and <c>&lt;hr&gt;</c> for a rule. Inside a
-    /// paragraph, <c>&lt;br&gt;</c> is a line break, a link is the outermost tag, the other formats follow in the order
-    /// of <see cref="RichTextFormats"/>, and <c>&amp;nbsp;</c> stands for each space HTML would otherwise collapse. An
-    /// empty document is <c>""</c>. Parsing the result with a schema that allows its formats, blocks and link schemes
-    /// gives back the same document.</summary>
+    /// <c>&lt;ol&gt;</c> with each nested list inside the item before it, <c>&lt;hr&gt;</c> for a rule, and
+    /// <c>&lt;img&gt;</c> with its <c>src</c> and <c>alt</c> for an image. Inside a paragraph, <c>&lt;br&gt;</c> is a
+    /// line break, a link is the outermost tag, the other formats follow in the order of
+    /// <see cref="RichTextFormats"/>, and <c>&amp;nbsp;</c> stands for each space HTML would otherwise collapse. An
+    /// empty document is <c>""</c>. Parsing the result with a schema that allows its formats, blocks, link schemes and
+    /// image schemes gives back the same document.</summary>
     public string ToHtml()
     {
         if (IsEmpty)
@@ -118,6 +120,18 @@ public sealed class RichTextDocument
 
                 html.Append("<li>");
                 WriteParagraph(html, paragraph);
+                continue;
+            }
+
+            if (paragraph.Image is { } image)
+            {
+                html.Append("<img src=\"").Append(Attribute(image.Source)).Append('"');
+                if (image.Alt is not null)
+                {
+                    html.Append(" alt=\"").Append(Attribute(image.Alt)).Append('"');
+                }
+
+                html.Append('>');
                 continue;
             }
 
@@ -183,8 +197,7 @@ public sealed class RichTextDocument
                 CloseLink();
                 if (run.Link is not null)
                 {
-                    html.Append("<a href=\"").Append(run.Link.Replace("&", "&amp;").Replace("\"", "&quot;"))
-                        .Append("\">");
+                    html.Append("<a href=\"").Append(Attribute(run.Link)).Append("\">");
                 }
 
                 openLink = run.Link;
@@ -224,6 +237,8 @@ public sealed class RichTextDocument
             }
         }
     }
+
+    private static string Attribute(string value) => value.Replace("&", "&amp;").Replace("\"", "&quot;");
 
     private static void WriteCharacter(StringBuilder html, string text, int i)
     {

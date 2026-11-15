@@ -1,19 +1,20 @@
 namespace Trailblazor;
 
 /// <summary>What a <see cref="RichTextDocument"/> may keep when it reads HTML: its formats, its kinds of block and the
-/// URL schemes its links may use. A format it doesn't allow is dropped while its text stays, a block it doesn't allow
-/// gives way to an allowed block around it or a plain paragraph, and a rule it doesn't allow is dropped.</summary>
+/// URL schemes its links and images may use. A format it doesn't allow is dropped while its text stays, a block it
+/// doesn't allow gives way to an allowed block around it or a plain paragraph, and a rule or image it doesn't allow is
+/// dropped.</summary>
 public sealed record RichTextSchema
 {
-    /// <summary>Every format and block, and links that use <c>http</c>, <c>https</c>, <c>mailto</c> or <c>tel</c>.
-    /// </summary>
+    /// <summary>Every format and every block but images, and links that use <c>http</c>, <c>https</c>, <c>mailto</c> or
+    /// <c>tel</c>.</summary>
     public static RichTextSchema Default { get; } = new();
 
     /// <summary>The formats to keep. Without <see cref="RichTextFormats.Link"/>, every link becomes plain text.
     /// Defaults to all of them.</summary>
     public RichTextFormats Formats { get; init; } = RichTextHtmlReader.AllFormats;
 
-    /// <summary>The kinds of block to keep. Defaults to all of them.</summary>
+    /// <summary>The kinds of block to keep. Defaults to all of them but <see cref="RichTextBlocks.Images"/>.</summary>
     public RichTextBlocks Blocks { get; init; } = RichTextHtmlReader.AllBlocks;
 
     /// <summary>The URL schemes a link may use, such as <c>https</c>. A relative URL, which has no scheme, is always
@@ -21,20 +22,31 @@ public sealed record RichTextSchema
     /// <c>vbscript:</c> even when listed here, since following it would run script.</summary>
     public IReadOnlyList<string> LinkSchemes { get; init; } = ["http", "https", "mailto", "tel"];
 
-    /// <summary>Whether this schema keeps the same formats, blocks and link schemes as another, listed in the same
-    /// order; schemes compare without regard to case.</summary>
+    /// <summary>The URL schemes an image's source may use, when <see cref="Blocks"/> has
+    /// <see cref="RichTextBlocks.Images"/>. A relative URL, which has no scheme, is always allowed. An image with any
+    /// other scheme is dropped, and so is one with a <c>javascript:</c> or <c>vbscript:</c> source even when listed
+    /// here. Defaults to <c>https</c> and <c>http</c>.</summary>
+    public IReadOnlyList<string> ImageSchemes { get; init; } = ["https", "http"];
+
+    /// <summary>Whether this schema keeps the same formats, blocks, link schemes and image schemes as another, listed
+    /// in the same order; schemes compare without regard to case.</summary>
     /// <param name="other">The schema to compare with.</param>
     public bool Equals(RichTextSchema? other) => other is not null && Formats == other.Formats
-        && Blocks == other.Blocks && LinkSchemes.SequenceEqual(other.LinkSchemes, StringComparer.OrdinalIgnoreCase);
+        && Blocks == other.Blocks && LinkSchemes.SequenceEqual(other.LinkSchemes, StringComparer.OrdinalIgnoreCase)
+        && ImageSchemes.SequenceEqual(other.ImageSchemes, StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc />
-    public override int GetHashCode() => HashCode.Combine(Formats, Blocks, LinkSchemes.Count);
+    public override int GetHashCode() => HashCode.Combine(Formats, Blocks, LinkSchemes.Count, ImageSchemes.Count);
 
-    internal bool AllowsLink(string url) => SchemeOf(url) switch
+    internal bool AllowsLink(string url) => Allows(LinkSchemes, url);
+
+    internal bool AllowsImage(string url) => Allows(ImageSchemes, url);
+
+    private static bool Allows(IReadOnlyList<string> schemes, string url) => SchemeOf(url) switch
     {
         null => true,
         "" => false,
-        var scheme => LinkSchemes.Contains(scheme, StringComparer.OrdinalIgnoreCase) && !RunsScript(scheme),
+        var scheme => schemes.Contains(scheme, StringComparer.OrdinalIgnoreCase) && !RunsScript(scheme),
     };
 
     internal static bool RunsScript(string? scheme) =>

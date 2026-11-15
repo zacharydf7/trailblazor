@@ -786,4 +786,14 @@ public class TbRichTextEditorTests : BunitContext
         Assert.Null(cut.Find("[data-part=input]").GetAttribute("aria-invalid"));
         Assert.Equal(reference, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
     }
+
+    [Fact]
+    public void Render_ShouldLeaveImagesOut_WhenTheBlocksAllowThem()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Trail report")
+            .Add(editor => editor.Blocks, RichTextBlocks.Images)
+            .Add(editor => editor.Value, "<p>Pine</p><img src=\"https://example.com/pine.png\" alt=\"Pine\">"));
+
+        Assert.Equal("<p>Pine</p>", _module.Invocations["attachRichTextEditor"].Single().Arguments[1]);
+    }
 }

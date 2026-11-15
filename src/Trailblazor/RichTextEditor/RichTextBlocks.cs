@@ -23,4 +23,8 @@ public enum RichTextBlocks
 
     /// <summary>Horizontal rules between paragraphs. Without this, rules are dropped.</summary>
     Rules = 16,
+
+    /// <summary>Images between paragraphs. Without this, images are dropped. Unlike the other blocks, it's off by
+    /// default, since an app needs somewhere to store the images.</summary>
+    Images = 32,
 }

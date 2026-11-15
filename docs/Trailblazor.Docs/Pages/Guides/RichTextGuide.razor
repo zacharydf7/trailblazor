@@ -44,6 +44,10 @@
                 around neighboring quote paragraphs, and <code>&lt;hr&gt;</code> for a rule
             </li>
             <li>
+                an <code>&lt;img&gt;</code> with its <code>src</code> and <code>alt</code> for an image, leaving
+                <code>alt</code> out when it has none
+            </li>
+            <li>
                 <code>&lt;ul&gt;</code> and <code>&lt;ol&gt;</code> around list items, with each nested list inside the
                 item before it
             </li>
@@ -57,8 +61,8 @@
             <li><code>""</code> for an empty document</li>
         </ul>
         <TbText>
-            Parsing that HTML with a schema that allows its formats, blocks and link schemes gives back the same
-            document, so two values with the same content compare equal as strings.
+            Parsing that HTML with a schema that allows its formats, blocks, and link and image schemes gives back the
+            same document, so two values with the same content compare equal as strings.
         </TbText>
 
         <DocsHeading Id="reading-html" Text="Reading HTML" Class="docs-section" />
@@ -69,8 +73,10 @@
         </TbText>
         <ul>
             <li>
-                Headings, block quotes, list items and rules keep their kind; <code>&lt;h4&gt;</code> to
+                Headings, block quotes, list items, rules and images keep their kind; <code>&lt;h4&gt;</code> to
                 <code>&lt;h6&gt;</code> read as third-level headings. Table cells and other blocks become paragraphs.
+                An image is kept only when the schema allows images, which the default doesn't, and is a block of its
+                own, so one inside a paragraph splits it in two.
             </li>
             <li>
                 A list item is numbered inside an <code>&lt;ol&gt;</code>, and nested one level for each list around its
@@ -95,23 +101,27 @@
             </li>
         </ul>
         <TbText>
-            Pass a <code>RichTextSchema</code> to say what to keep: its <code>Formats</code>, its <code>Blocks</code>
-            and the <code>LinkSchemes</code> links may use. A format it doesn't allow is dropped while its text stays,
-            a block it doesn't allow gives way to an allowed block around it or a plain paragraph, and a rule it
-            doesn't allow is dropped. For example, a short description might allow only bold and italic, in plain
-            paragraphs:
+            Pass a <code>RichTextSchema</code> to say what to keep: its <code>Formats</code>, its <code>Blocks</code>,
+            and the <code>LinkSchemes</code> and <code>ImageSchemes</code> that links and images may use. A format it
+            doesn't allow is dropped while its text stays, a block it doesn't allow gives way to an allowed block
+            around it or a plain paragraph, and a rule or image it doesn't allow is dropped. Images are kept only when
+            <code>Blocks</code> includes <code>RichTextBlocks.Images</code>, which it doesn't by default. For example,
+            a short description might allow only bold and italic, in plain paragraphs:
         </TbText>
         <CodeBlock Label="Keeping some formats" Code="@KeepingFormats" />
 
         <DocsHeading Id="safe-to-show" Text="Safe to show" Class="docs-section" />
         <TbText>
-            Everything other than text, blocks, line breaks, formats and links is dropped while reading: scripts,
-            styles, event handlers, images and every attribute but a link's <code>href</code>. A link keeps its target
-            only when it's relative or its scheme is one the schema allows: <code>http</code>, <code>https</code>,
-            <code>mailto</code> and <code>tel</code> by default. Any other link becomes plain text, and so does one to
+            Everything other than text, blocks, line breaks, formats, links and allowed images is dropped while
+            reading: scripts, styles, event handlers, and every attribute but a link's <code>href</code> and an
+            image's <code>src</code> and <code>alt</code>. A link keeps its target only when it's relative or its
+            scheme is one the schema allows: <code>http</code>, <code>https</code>, <code>mailto</code> and
+            <code>tel</code> by default. Any other link becomes plain text, and so does one to
             <code>javascript:</code> or <code>vbscript:</code> even when a schema lists it; a run built in code refuses
-            such a link. <code>ToHtml</code> escapes all the text and writes no tags
-            but its own, so its result is safe to render as markup, even when the HTML came from a user.
+            such a link. An image's <code>src</code> follows the same rule, checked against <code>ImageSchemes</code>
+            (<code>http</code> and <code>https</code> by default), except that an image it can't keep is dropped.
+            <code>ToHtml</code> escapes all the text and writes no tags but its own, so its result is safe to render
+            as markup, even when the HTML came from a user.
         </TbText>
         <CodeBlock Label="Showing stored HTML" Code="@Showing" />
         <DocsCallout Title="Read it on the server">
@@ -125,7 +135,8 @@
             A document is a flat list of paragraphs, and a paragraph is a list of runs: stretches of text that share one
             set of formats and link. A paragraph's <code>Kind</code> says what block it is, such as
             <code>Heading2</code> or <code>BulletedItem</code>, and a list item's <code>Level</code> how far it is
-            nested. A <code>'\n'</code> in a run's text is a line break. A run's <code>Formats</code> is a
+            nested. An image paragraph has no runs; its <code>Image</code> gives the source and alt text. A
+            <code>'\n'</code> in a run's text is a line break. A run's <code>Formats</code> is a
             <code>RichTextFormats</code> flags value, such as <code>Bold | Italic</code>, and its <code>Link</code> is
             the URL it links to, if any. Read the paragraphs and runs to turn the content into another format, or build
             them in code.
@@ -137,6 +148,7 @@
         <ApiTable Type="typeof(RichTextDocument)" />
         <ApiTable Type="typeof(RichTextParagraph)" />
         <ApiTable Type="typeof(RichTextRun)" />
+        <ApiTable Type="typeof(RichTextImage)" />
         <ApiTable Type="typeof(RichTextSchema)" />
 
         <DocsHeading Id="related" Text="Related" Class="docs-section" />
