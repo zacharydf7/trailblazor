@@ -11,6 +11,18 @@ public class CodeFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         return code;
     }
 
+    private static Task PasteAsync(ILocator code, string text) => code.EvaluateAsync("""
+        (input, text) => {
+            const data = new DataTransfer();
+            data.setData('text', text);
+            input.focus();
+            // Firefox ignores clipboardData passed to the constructor, so set it as a property instead.
+            const paste = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
+            Object.defineProperty(paste, 'clipboardData', { value: data });
+            input.dispatchEvent(paste);
+        }
+        """, text);
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldEnterTheCodeAndWaitUntilTheAppHasIt_WhenThePageIsInteractive(string browser)
     {
@@ -130,20 +142,50 @@ public class CodeFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/examples/code-field");
         var code = await OpenCodeAsync(page);
 
-        await code.EvaluateAsync("""
-            input => {
-                const data = new DataTransfer();
-                data.setData('text', '123-456');
-                input.focus();
-                // Firefox ignores clipboardData passed to the constructor, so set it as a property instead.
-                const paste = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
-                Object.defineProperty(paste, 'clipboardData', { value: data });
-                input.dispatchEvent(paste);
-            }
-            """);
+        await PasteAsync(code, "123-456");
 
         await Expect(code).ToHaveValueAsync("123456");
         await Expect(page.GetByLabel("Result")).ToHaveTextAsync("123456 isn't the code.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Enter_ShouldShowThatThePastedCodeIsIncompleteAndNotSubmit_WhenItsScriptPutTheTextIn(string browser)
+    {
+        var page = await OpenAsync(browser, "/code-field-form");
+        var code = await OpenCodeAsync(page);
+        await PasteAsync(code, "24-6");
+        await Expect(code).ToHaveValueAsync("246");
+
+        await code.PressAsync("Enter");
+
+        await Expect(code).ToHaveAttributeAsync("aria-invalid", "true");
+        await page.Tb().TextField("Verification code").EnterAsync("246810");
+        await code.PressAsync("Enter");
+        // Had the partial code been submitted, "sent" would read "246, 246810".
+        await Expect(page.GetByTestId("sent")).ToHaveTextAsync("246810");
+    }
+
+    // Safari marks the Enter that ends a composition only with keyCode 229.
+    public static TheoryData<string, string> ComposingEnters() => new(AllBrowsers.Names.SelectMany(browser =>
+        new[] { (browser, "isComposing: true"), (browser, "keyCode: 229") }));
+
+    [Theory, MemberData(nameof(ComposingEnters))]
+    public async Task Enter_ShouldCommitNothing_WhenItEndsAComposition(string browser, string composing)
+    {
+        var page = await OpenAsync(browser, "/code-field-form");
+        var code = await OpenCodeAsync(page);
+        await PasteAsync(code, "24-6");
+
+        var changes = await code.EvaluateAsync<int>($$"""
+            input => {
+                let changes = 0;
+                input.addEventListener('change', () => changes++);
+                input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, {{composing}} }));
+                return changes;
+            }
+            """);
+
+        Assert.Equal(0, changes);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

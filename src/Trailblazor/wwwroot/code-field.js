@@ -1,3 +1,5 @@
+import { isComposing } from '../Trailblazor.Primitives/composing.js';
+
 // Any decimal digit becomes its ASCII digit, as TbCodeField does. Each run of digits in Unicode counts 0 to 9 in order,
 // so a digit's value is its distance from the start of its run, modulo 10.
 const isDigit = character => /\p{Nd}/u.test(character);
@@ -53,14 +55,19 @@ export function attachCodeField(input) {
         }
     };
 
-    // The browser raises change only for a user's edits, so the script raises it on blur for text it put in.
+    // The browser raises change only for a user's edits, so the script raises it on blur and Enter for text it put in.
     let committed = input.value;
     const onCommit = () => {
         committed = input.value;
     };
-    const onBlur = () => {
+    const commit = () => {
         if (input.value !== committed) {
             input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    };
+    const onKeyDown = event => {
+        if (event.key === 'Enter' && !isComposing(event)) {
+            commit();
         }
     };
 
@@ -69,7 +76,8 @@ export function attachCodeField(input) {
     input.addEventListener('compositionend', onCompositionEnd);
     input.addEventListener('focus', onCommit);
     input.addEventListener('change', onCommit);
-    input.addEventListener('blur', onBlur);
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', onKeyDown);
     input.dataset.ready = '';
     return {
         dispose() {
@@ -78,7 +86,8 @@ export function attachCodeField(input) {
             input.removeEventListener('compositionend', onCompositionEnd);
             input.removeEventListener('focus', onCommit);
             input.removeEventListener('change', onCommit);
-            input.removeEventListener('blur', onBlur);
+            input.removeEventListener('blur', commit);
+            input.removeEventListener('keydown', onKeyDown);
         },
     };
 }

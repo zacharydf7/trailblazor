@@ -1,0 +1,13 @@
+@page "/code-field-form"
+
+@* A code field in a form that Enter submits. *@
+<TbForm aria-label="Sign in" OnValidSubmit="() => _sent.Add(_code)">
+    <TbCodeField Label="Verification code" @bind-Value="_code" />
+    <TbButton Type="ButtonType.Submit">Verify</TbButton>
+</TbForm>
+<p data-testid="sent">@string.Join(", ", _sent)</p>
+
+@code {
+    private string? _code;
+    private readonly List<string?> _sent = [];
+}
