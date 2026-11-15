@@ -150,6 +150,14 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbSortable</c> with this label, or the only one in the scope when no label is given.</summary>
     public TbSortableLocator Sortable(string? name = null) => new(scope, name);
 
+    /// <summary>The <c>TbAlert</c> whose text contains this, ignoring case and treating any run of whitespace as one
+    /// space.</summary>
+    public TbAlertLocator Alert(string text) => new(scope, text);
+
+    /// <summary>The <c>TbBanner</c> with this accessible name: its <c>Title</c>, or its <c>AriaLabel</c> when it has
+    /// no title.</summary>
+    public TbBannerLocator Banner(string name) => new(scope, name);
+
     /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
     public TbPopoverLocator Popover(string trigger) => new(scope, trigger);
 

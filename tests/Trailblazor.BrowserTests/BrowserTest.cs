@@ -36,6 +36,20 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         return (page, held);
     }
 
+    // The page stays prerendered until Blazor's script is let through, which the test does once the helper is waiting.
+    protected async Task<(IPage Page, TaskCompletionSource Held)> OpenHeldAsync(string browser, string path)
+    {
+        var held = new TaskCompletionSource();
+        var page = await OpenStaticAsync(browser, path);
+        await page.RouteAsync("**/_framework/blazor.web*.js", async route =>
+        {
+            await held.Task;
+            await route.ContinueAsync();
+        });
+        await page.ReloadAsync(new() { WaitUntil = WaitUntilState.Commit });
+        return (page, held);
+    }
+
     // For pages rendered as static SSR, which never become interactive.
     protected Task<IPage> OpenStaticAsync(string browser, string path, BrowserNewContextOptions? options = null) =>
         OpenAtAsync(browser, HostAddress(path), options);

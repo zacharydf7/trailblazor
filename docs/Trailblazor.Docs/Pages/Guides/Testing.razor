@@ -309,6 +309,13 @@
                         <td>Opens the item and hands back its panel; <code>CollapseAsync()</code> closes it.</td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Alert(text).CloseAsync()</code></th>
+                        <td>
+                            Presses the alert's close button, and <code>Text</code> reads its message.
+                            <code>Banner(name)</code> does the same for a banner, found by its title.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Toasts.WaitForAsync(text)</code></th>
                         <td>
                             Waits for a toast with this text and hands it back. Call it on the markup of the
@@ -1034,6 +1041,10 @@
             + "the tooltip's text once it shows."),
         new("Splitter", "Its separator's name", "`Splitter(\"Resize Trails\").ResizeAsync(percent)` resizes the pane "
             + "with the separator's keys and waits until the app has the size, and `SizeAsync()` reads it."),
+        new("Alert", "Its text", "`Alert(text).CloseAsync()` presses its close button once the page is interactive, "
+            + "and `TextAsync()` reads its message."),
+        new("Banner", "Its title", "`Banner(name).CloseAsync()` presses its close button once the page is "
+            + "interactive, and `TextAsync()` reads its message."),
         new("Popover", "Its trigger", "`Popover(trigger).OpenAsync()` opens it and hands back its panel."),
         new("Popconfirm", "Its trigger",
             "`Popconfirm(trigger).ConfirmAsync()` opens it, confirms and waits until it closes, which it does once "

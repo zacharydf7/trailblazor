@@ -148,18 +148,4 @@ public class DriverChoicesTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal("Ada", await page.Tb().TextField("Name").TextAsync());
         Assert.Equal(1, await page.GetByText("Name: Ada", new() { Exact = true }).CountAsync());
     }
-
-    // The page stays prerendered until Blazor's script is let through, which the test does once the helper is waiting.
-    private async Task<(IPage Page, TaskCompletionSource Held)> OpenHeldAsync(string browser, string path)
-    {
-        var held = new TaskCompletionSource();
-        var page = await OpenStaticAsync(browser, path);
-        await page.RouteAsync("**/_framework/blazor.web*.js", async route =>
-        {
-            await held.Task;
-            await route.ContinueAsync();
-        });
-        await page.ReloadAsync(new() { WaitUntil = WaitUntilState.Commit });
-        return (page, held);
-    }
 }

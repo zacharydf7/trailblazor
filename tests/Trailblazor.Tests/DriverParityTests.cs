@@ -31,7 +31,8 @@ public class DriverParityTests
         ["TbTreeSelect"] = "TreeSelect", ["TbMultiTreeSelect"] = "TreeSelect", ["TbViewport"] = "Viewport",
         ["TbAutocomplete"] = "Autocomplete", ["TbColorPicker"] = "ColorPicker", ["TbDialog"] = "Dialog",
         ["TbFileUpload"] = "FileUpload", ["TbSlider"] = "Slider", ["TbRangeSlider"] = "RangeSlider",
-        ["TbRating"] = "Rating", ["TbSplitter"] = "Splitter", ["TbPopover"] = "Popover",
+        ["TbRating"] = "Rating", ["TbSplitter"] = "Splitter", ["TbPopover"] = "Popover", ["TbAlert"] = "Alert",
+        ["TbBanner"] = "Banner",
         ["TbTimePicker"] = "TimePicker",
     };
 
@@ -71,7 +72,7 @@ public class DriverParityTests
         ["TbTable"] = NotInteractive, ["TbTableOfContents"] = NotInteractive, ["TbText"] = NotInteractive,
         ["TbThemeHead"] = NotInteractive, ["TbTimeline"] = NotInteractive,
 
-        ["TbAlert"] = FollowUp, ["TbBanner"] = FollowUp, ["TbBreadcrumbs"] = FollowUp, ["TbButton"] = FollowUp,
+        ["TbBreadcrumbs"] = FollowUp, ["TbButton"] = FollowUp,
         ["TbCarousel"] = FollowUp, ["TbChip"] = FollowUp, ["TbChipGroup"] = FollowUp, ["TbCodeField"] = FollowUp,
         ["TbDrawer"] = FollowUp, ["TbForm"] = FollowUp, ["TbInsertDivider"] = FollowUp, ["TbNavMenu"] = FollowUp,
         ["TbSpeedDial"] = FollowUp,

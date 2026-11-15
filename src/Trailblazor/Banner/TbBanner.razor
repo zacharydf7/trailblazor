@@ -4,6 +4,8 @@
 
 @* A region, so screen reader users can find the notice from the page's list of landmarks. *@
 <section @attributes="AdditionalAttributes" aria-labelledby="@(Title is null ? null : _titleId)"
+         data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+         data-ready="@(RendererInfo.IsInteractive ? "" : null)"
          aria-label="@(Title is null ? AriaLabel ?? Localizer[TbStrings.BannerLabel] : null)" style="@Style"
          class="@ClassNames.Join("tb-banner", ClassNames.Modifier("tb-banner", Tone), Class)">
     <div class="tb-banner__inner">

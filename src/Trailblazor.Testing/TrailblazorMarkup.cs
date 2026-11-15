@@ -351,6 +351,27 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbAccordionItem</c>, in an accordion or on its own, whose header reads this.</summary>
     public TbAccordionItemDriver AccordionItem(string header) => new(header, _findAll);
 
+    /// <summary>The <c>TbAlert</c> whose text contains this, ignoring case and treating any run of whitespace as one
+    /// space.</summary>
+    public TbAlertDriver Alert(string text) => new(() =>
+    {
+        var alerts = _findAll(".tb-alert").Where(alert => Notices.Collapsed(alert.TextContent)
+            .Contains(Notices.Collapsed(text), StringComparison.OrdinalIgnoreCase)).ToList();
+        return alerts.Count == 1 ? alerts[0] : throw new InvalidOperationException(alerts.Count == 0
+            ? $"No alert shows \"{text}\"." : $"{alerts.Count} alerts show \"{text}\".");
+    });
+
+    /// <summary>The <c>TbBanner</c> with this accessible name: its <c>Title</c>, or its <c>AriaLabel</c> when it has
+    /// no title.</summary>
+    public TbBannerDriver Banner(string name) => new(() =>
+    {
+        var banners = _findAll("section.tb-banner").Where(banner => (banner.GetAttribute("aria-labelledby") is { } id
+            ? banner.QuerySelector($"[id='{id}']")?.TextContent.Trim() : banner.GetAttribute("aria-label")) == name)
+            .ToList();
+        return banners.Count == 1 ? banners[0] : throw new InvalidOperationException(banners.Count == 0
+            ? $"No banner is named \"{name}\"." : $"{banners.Count} banners are named \"{name}\".");
+    });
+
     /// <summary>The <c>TbPopconfirm</c> whose trigger has this name.</summary>
     public TbPopconfirmDriver Popconfirm(string trigger) => new(trigger, _findAll);
 
@@ -1241,6 +1262,63 @@ internal static class PopoverTriggers
 
         return trigger;
     }
+}
+
+/// <summary>A <c>TbAlert</c>, found by its text.</summary>
+public sealed class TbAlertDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbAlertDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The alert's message, without its title, with runs of whitespace collapsed.</summary>
+    public string Text => Notices.Message(_find());
+
+    /// <summary>Presses the close button, which raises <c>OnClose</c>. Only an alert with an <c>OnClose</c> has the
+    /// button, so this throws for one without, and on a static page, where the button does nothing.</summary>
+    public async Task CloseAsync() => await Notices.CloseAsync(_find());
+}
+
+/// <summary>A <c>TbBanner</c>, found by its name.</summary>
+public sealed class TbBannerDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbBannerDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The banner's message, without its title, with runs of whitespace collapsed.</summary>
+    public string Text => Notices.Message(_find());
+
+    /// <summary>Presses the close button, which raises <c>OnClose</c>. Only a banner with an <c>OnClose</c> has the
+    /// button, so this throws for one without, and on a static page, where the button does nothing.</summary>
+    public async Task CloseAsync() => await Notices.CloseAsync(_find());
+}
+
+internal static class Notices
+{
+    // A banner's title sits inside its message part, so the text is read from a copy with the title removed.
+    internal static string Message(IElement notice)
+    {
+        var message = (IElement)notice.QuerySelector("[data-part=message]")!.Clone();
+        message.QuerySelector("[data-part=title]")?.Remove();
+        return Collapsed(message.TextContent);
+    }
+
+    internal static async Task CloseAsync(IElement notice)
+    {
+        if (notice.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("On a static page the close button does nothing; render the page "
+                + "interactively to close it.");
+        }
+
+        var close = notice.QuerySelector("[data-part=close]")
+            ?? throw new InvalidOperationException("There's no close button; it shows only when OnClose is set.");
+        await close.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    internal static string Collapsed(string text) =>
+        string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 }
 
 /// <summary>A <c>TbPopconfirm</c>, found by its trigger's name.</summary>

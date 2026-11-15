@@ -362,3 +362,15 @@ Trailblazor.Testing.Playwright.TbTimePickerLocator.Input.get -> Microsoft.Playwr
 Trailblazor.Testing.Playwright.TbTimePickerLocator.TbTimePickerLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbTimePickerLocator.ValueAsync() -> System.Threading.Tasks.Task<System.TimeOnly?>!
 Trailblazor.Testing.Playwright.TrailblazorPage.TimePicker(string! label) -> Trailblazor.Testing.Playwright.TbTimePickerLocator!
+Trailblazor.Testing.Playwright.TbAlertLocator
+Trailblazor.Testing.Playwright.TbAlertLocator.Alert.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbAlertLocator.CloseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAlertLocator.TbAlertLocator(Microsoft.Playwright.ILocator! scope, string! text) -> void
+Trailblazor.Testing.Playwright.TbAlertLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbBannerLocator
+Trailblazor.Testing.Playwright.TbBannerLocator.Banner.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbBannerLocator.CloseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbBannerLocator.TbBannerLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void
+Trailblazor.Testing.Playwright.TbBannerLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TrailblazorPage.Alert(string! text) -> Trailblazor.Testing.Playwright.TbAlertLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Banner(string! name) -> Trailblazor.Testing.Playwright.TbBannerLocator!

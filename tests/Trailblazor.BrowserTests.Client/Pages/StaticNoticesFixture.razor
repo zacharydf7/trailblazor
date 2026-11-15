@@ -1,0 +1,6 @@
+@page "/static-notices"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, where a close button has nothing to run its OnClose. *@
+<TbAlert OnClose="() => { }">Trail maps are offline.</TbAlert>
+<TbBanner Title="Maintenance tonight" OnClose="() => { }">Trail maps are offline.</TbBanner>

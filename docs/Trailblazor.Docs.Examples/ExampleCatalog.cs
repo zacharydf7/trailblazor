@@ -2383,9 +2383,10 @@ public static class ExampleCatalog
                 new("actions", "The buttons the alert offers."),
                 new("close", "The button that dismisses the alert."),
             ],
-            TestingTip = "A danger or warning alert has the `alert` role, and the other tones have `status`, so find "
-                + "one by its role and text: `GetByRole(AriaRole.Alert).Filter(new() { HasText = \"Danger alert.\" })` "
-                + "in Playwright, or `[role=alert]` in bUnit. The close button is `[data-part=close]`.",
+            TestingTip = "`page.Tb().Alert(\"Close this alert\")` in Playwright, or `cut.Tb().Alert(...)` in bUnit, "
+                + "finds an alert by its text: `CloseAsync()` presses its close button, and `TextAsync()` or `Text` "
+                + "reads its message. A danger or warning alert has the `alert` role, and the other tones have "
+                + "`status`.",
         },
         new("banner", "Banner", ExampleCategory.Feedback,
             "A strip across the top of the page or app with a notice for everyone using it, such as planned "
@@ -2448,8 +2449,9 @@ public static class ExampleCatalog
                 new("actions", "The links or buttons after the message."),
                 new("close", "The close button."),
             ],
-            TestingTip = "Find it as `GetByRole(AriaRole.Region, new() { Name = \"Maintenance tonight\" })`, and its "
-                + "close button as `GetByRole(AriaRole.Button, new() { Name = \"Dismiss\" })`.",
+            TestingTip = "`page.Tb().Banner(\"Maintenance tonight\")` in Playwright, or `cut.Tb().Banner(...)` in "
+                + "bUnit, finds the banner by its title: `CloseAsync()` presses its close button, and `TextAsync()` or "
+                + "`Text` reads its message.",
         },
         new("chip", "Chip", ExampleCategory.Content,
             "A compact label for a tag, a filter or a choice, which can be clicked, toggled or removed.")

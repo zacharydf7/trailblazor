@@ -1760,6 +1760,49 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Alert_ShouldReadAndCloseTheAlert_WhenTheHelperIsUsed()
+    {
+        var closes = 0;
+        var cut = Render<TbAlert>(parameters => parameters.Add(alert => alert.Title, "Trail closed")
+            .Add(alert => alert.OnClose, () => closes++).AddChildContent("Pine  Hollow is closed for repairs."));
+
+        var alert = cut.Tb().Alert("pine hollow");
+        var text = alert.Text;
+        await alert.CloseAsync();
+
+        Assert.Equal(("Pine Hollow is closed for repairs.", 1), (text, closes));
+    }
+
+    [Fact]
+    public async Task Banner_ShouldReadAndCloseTheBanner_WhenFoundByItsTitle()
+    {
+        var closes = 0;
+        var cut = Render<TbBanner>(parameters => parameters.Add(banner => banner.Title, "Maintenance tonight")
+            .Add(banner => banner.OnClose, () => closes++).AddChildContent("Trail maps are offline."));
+
+        var banner = cut.Tb().Banner("Maintenance tonight");
+        var text = banner.Text;
+        await banner.CloseAsync();
+
+        Assert.Equal(("Trail maps are offline.", 1), (text, closes));
+    }
+
+    [Fact]
+    public async Task Notices_ShouldRefuseToClose_WhenThereIsNoCloseButtonOrThePageIsStatic()
+    {
+        var open = Render<TbAlert>(parameters => parameters.AddChildContent("Pine Hollow is closed."));
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var still = Render<TbBanner>(parameters => parameters.Add(banner => banner.AriaLabel, "Notice")
+            .Add(banner => banner.OnClose, () => { }).AddChildContent("Trail maps are offline."));
+
+        var none = await Assert.ThrowsAsync<InvalidOperationException>(() => open.Tb().Alert("Pine").CloseAsync());
+        var stuck = await Assert.ThrowsAsync<InvalidOperationException>(() => still.Tb().Banner("Notice").CloseAsync());
+
+        Assert.Contains("OnClose", none.Message);
+        Assert.Contains("static page", stuck.Message);
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
     {
         var answers = new List<string>();

@@ -1,7 +1,22 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReadAndCloseTheAlert_WhenItHasOnClose(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/alert");
+
+        var text = await page.Tb().Alert("Close this alert").TextAsync();
+        await page.Tb().Alert("Close this alert").CloseAsync();
+
+        Assert.Equal("Close this alert with its button.", text);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Show the alert again" })).ToBeVisibleAsync();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Alert("Danger alert.").CloseAsync());
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Alert_ShouldClose_WhenItsCloseButtonIsActivatedByKeyboard(string browser)
     {

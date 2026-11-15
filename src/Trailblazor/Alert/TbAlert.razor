@@ -3,6 +3,8 @@
 @inject ITbLocalizer Localizer
 
 <div role="@(Tone is Tone.Danger or Tone.Warning ? "alert" : "status")" @attributes="AdditionalAttributes"
+     data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+     data-ready="@(RendererInfo.IsInteractive ? "" : null)"
      class="@ClassNames.Join("tb-alert", ClassNames.Modifier("tb-alert", Tone),
                 ClassNames.Modifier("tb-alert", Variant), Class)"
      style="@Style">
