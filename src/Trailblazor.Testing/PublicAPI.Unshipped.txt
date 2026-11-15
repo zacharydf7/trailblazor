@@ -377,3 +377,7 @@ Trailblazor.Testing.TrailblazorMarkup.Splitter(string! separator) -> Trailblazor
 Trailblazor.Testing.TbToastsDriver
 Trailblazor.Testing.TbToastsDriver.WaitForAsync(string! text) -> System.Threading.Tasks.Task<AngleSharp.Dom.IElement!>!
 Trailblazor.Testing.TrailblazorMarkup.Toasts.get -> Trailblazor.Testing.TbToastsDriver!
+Trailblazor.Testing.TbPopoverDriver
+Trailblazor.Testing.TbPopoverDriver.CloseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbPopoverDriver.OpenAsync() -> System.Threading.Tasks.Task<AngleSharp.Dom.IElement!>!
+Trailblazor.Testing.TrailblazorMarkup.Popover(string! trigger) -> Trailblazor.Testing.TbPopoverDriver!

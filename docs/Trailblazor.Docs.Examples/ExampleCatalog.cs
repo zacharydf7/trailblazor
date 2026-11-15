@@ -7471,7 +7471,9 @@ public static class ExampleCatalog
             TestingTip = "`await page.Tb().Popover(\"Filters\").OpenAsync()` opens it and returns the panel, a "
                 + "`dialog` named by its title or trigger; `CloseAsync()` closes it. Both wait for the popover to be "
                 + "ready. With `AttachOnFirstUse`, the trigger gets `data-ready` only when it's first focused, pointed "
-                + "at or clicked, so both focus it first.",
+                + "at or clicked, so both focus it first. In bUnit, `cut.Tb().Popover(\"Filters\").OpenAsync()` "
+                + "tells a bound `Open` that it opened and returns the panel, which bUnit's markup holds even while "
+                + "it's closed.",
         },
         new("popconfirm", "Popconfirm", ExampleCategory.Overlays,
             "A small question that opens beside the button that asked, such as \"Delete this trail?\", with Cancel and "

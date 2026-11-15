@@ -63,6 +63,13 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             ?? throw new InvalidOperationException("The splitter's script hasn't attached, as it does once the "
                 + "splitter renders interactively.");
 
+    // The events the popover script calls back for the panel with this id, which a popover has only when a bound Open
+    // or its telemetry has to hear it open and close.
+    public PopoverEvents? Popover(string panelId) => Js.Invocations["createPopover"]
+        .Select(call => call.Arguments.ElementAtOrDefault(4) as DotNetObjectReference<PopoverEvents>)
+        .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
+        .LastOrDefault(events => events.PanelId == panelId);
+
     // The file input with this id, which the browser hands the files a user picks or drops.
     public IRenderedComponent<InputFile> InputFile(string id) => inputFiles()
         .SingleOrDefault(input => input.Instance.AdditionalAttributes?.TryGetValue("id", out var given) == true
@@ -346,6 +353,8 @@ public sealed class TrailblazorMarkup
 
     /// <summary>The toasts from <c>IToastService</c>, which the rendered <c>TbRoot</c> shows.</summary>
     public TbToastsDriver Toasts => new(_findAll, _scripts);
+    /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
+    public TbPopoverDriver Popover(string trigger) => new(trigger, _findAll, _scripts);
 
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
     public TbMenuDriver Menu(string trigger) => new(trigger, _findAll, _scripts);
@@ -1133,6 +1142,71 @@ public sealed class TbToastsDriver
         string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 }
 
+/// <summary>A <c>TbPopover</c>, found by its trigger's name.</summary>
+public sealed class TbPopoverDriver
+{
+    private readonly string _trigger;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
+
+    internal TbPopoverDriver(string trigger, Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts) =>
+        (_trigger, _findAll, _scripts) = (trigger, findAll, scripts);
+
+    /// <summary>Opens the popover, as clicking its trigger does, and returns its panel. bUnit's markup holds the panel
+    /// whether it's open or not, so this tells a bound <c>Open</c> and the popover's telemetry that it opened. A
+    /// disabled trigger throws, since a user can't open it.</summary>
+    public async Task<IElement> OpenAsync()
+    {
+        await ToggleAsync(open: true);
+        return Panel();
+    }
+
+    /// <summary>Closes the popover, as Escape does, which tells a bound <c>Open</c> that it closed.</summary>
+    public Task CloseAsync() => ToggleAsync(open: false);
+
+    private async Task ToggleAsync(bool open)
+    {
+        var trigger = PopoverTriggers.Find(_findAll, _trigger, "popover", refuseDisabled: open);
+
+        // A popover that attaches on first use does so when its trigger is first focused.
+        if (trigger.HasAttribute("data-attach-on-use"))
+        {
+            await trigger.FocusAsync(new FocusEventArgs());
+        }
+
+        if (_scripts.Popover(trigger.GetAttribute("aria-controls")!) is { } events)
+        {
+            await _scripts.InvokeAsync(() => events.OnToggle(open));
+        }
+    }
+
+    private IElement Panel()
+    {
+        var trigger = PopoverTriggers.Find(_findAll, _trigger, "popover", refuseDisabled: false);
+        return _findAll($"[id='{trigger.GetAttribute("aria-controls")}']").Single();
+    }
+}
+
+internal static class PopoverTriggers
+{
+    // The trigger of the popover or popconfirm with this name, which a user can't open when it's disabled.
+    internal static IElement Find(Func<string, IReadOnlyList<IElement>> findAll, string name, string kind,
+        bool refuseDisabled)
+    {
+        var triggers = findAll("[data-part=trigger][aria-haspopup=dialog]")
+            .Where(trigger => Choices.NameOf(trigger) == name).ToList();
+        var trigger = triggers.Count == 1 ? triggers[0] : throw new InvalidOperationException(triggers.Count == 0
+            ? $"No {kind}'s trigger is named \"{name}\"."
+            : $"{triggers.Count} {kind}s' triggers are named \"{name}\".");
+        if (refuseDisabled && (trigger.HasAttribute("disabled") || trigger.GetAttribute("aria-disabled") == "true"))
+        {
+            throw new InvalidOperationException($"The {kind} \"{name}\" is disabled.");
+        }
+
+        return trigger;
+    }
+}
+
 /// <summary>A <c>TbPopconfirm</c>, found by its trigger's name.</summary>
 public sealed class TbPopconfirmDriver
 {
@@ -1151,16 +1225,7 @@ public sealed class TbPopconfirmDriver
 
     private Task PressAsync(string part)
     {
-        var triggers = _findAll("[data-part=trigger][aria-haspopup=dialog]")
-            .Where(trigger => Choices.NameOf(trigger) == _trigger).ToList();
-        var trigger = triggers.Count == 1 ? triggers[0] : throw new InvalidOperationException(triggers.Count == 0
-            ? $"No popconfirm's trigger is named \"{_trigger}\"."
-            : $"{triggers.Count} popconfirms' triggers are named \"{_trigger}\".");
-        if (trigger.HasAttribute("disabled") || trigger.GetAttribute("aria-disabled") == "true")
-        {
-            throw new InvalidOperationException($"The popconfirm \"{_trigger}\" is disabled.");
-        }
-
+        var trigger = PopoverTriggers.Find(_findAll, _trigger, "popconfirm", refuseDisabled: true);
         var button = _findAll($"[id='{trigger.GetAttribute("aria-controls")}'] [data-part={part}]").SingleOrDefault()
             ?? throw new InvalidOperationException($"The popover that \"{_trigger}\" opens isn't a popconfirm.");
         return button.ClickAsync(new MouseEventArgs { Detail = 1 });

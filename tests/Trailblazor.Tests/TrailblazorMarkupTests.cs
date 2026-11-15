@@ -1642,6 +1642,50 @@ public class TrailblazorMarkupTests : BunitContext
         await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().AccordionItem("Gear").ExpandAsync());
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Popover_ShouldOpenAndCloseABoundPopover_WhenTheHelperIsUsed(bool attachOnFirstUse)
+    {
+        var opens = new List<bool>();
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.AttachOnFirstUse, attachOnFirstUse)
+            .Add(popover => popover.OpenChanged, (bool open) => opens.Add(open))
+            .AddChildContent("Trail filters"));
+
+        var panel = await cut.Tb().Popover("Filters").OpenAsync();
+        await cut.Tb().Popover("Filters").CloseAsync();
+
+        Assert.Equal("Trail filters", panel.TextContent.Trim());
+        Assert.Equal([true, false], opens);
+    }
+
+    [Fact]
+    public async Task Popover_ShouldHandBackThePanel_WhenNothingIsBoundToOpen()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .AddChildContent("Trail filters"));
+
+        var panel = await cut.Tb().Popover("Filters").OpenAsync();
+        await cut.Tb().Popover("Filters").CloseAsync();
+
+        Assert.Equal("Trail filters", panel.TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task Popover_ShouldRefuseToOpen_WhenItIsDisabledOrNotThere()
+    {
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.Disabled, true));
+
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Popover("Filters").OpenAsync());
+        var missing = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Popover("Layers").OpenAsync());
+
+        Assert.Contains("disabled", disabled.Message);
+        Assert.Contains("No popover's trigger", missing.Message);
+    }
+
     [Fact]
     public async Task Toasts_ShouldReturnTheNewestToastWithTheText_WhenItShows()
     {
