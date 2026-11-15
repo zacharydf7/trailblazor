@@ -84,7 +84,7 @@ public class DriverParityTests
     {
         ["TrailblazorMarkup.Within"] = "Playwright scopes with new TrailblazorPage(locator)",
         ["TrailblazorPage.Interactive"] = "bUnit renders interactively from the start",
-        ["TrailblazorPage.Toasts"] = FollowUp, ["TrailblazorPage.Announcements"] = "bUnit tests read FakeAnnouncer",
+        ["TrailblazorPage.Announcements"] = "bUnit tests read FakeAnnouncer",
         ["TrailblazorPage.Popover"] = FollowUp,
         ["TbGridLocator.Copy"] = "pressing Ctrl+C needs the browser's copy event; bUnit reads the same text with "
             + "SelectedCells",

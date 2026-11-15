@@ -374,3 +374,6 @@ Trailblazor.Testing.TbSplitterDriver
 Trailblazor.Testing.TbSplitterDriver.ResizeAsync(int percent) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbSplitterDriver.Size.get -> int
 Trailblazor.Testing.TrailblazorMarkup.Splitter(string! separator) -> Trailblazor.Testing.TbSplitterDriver!
+Trailblazor.Testing.TbToastsDriver
+Trailblazor.Testing.TbToastsDriver.WaitForAsync(string! text) -> System.Threading.Tasks.Task<AngleSharp.Dom.IElement!>!
+Trailblazor.Testing.TrailblazorMarkup.Toasts.get -> Trailblazor.Testing.TbToastsDriver!

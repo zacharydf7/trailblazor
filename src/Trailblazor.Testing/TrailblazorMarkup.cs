@@ -344,6 +344,9 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbPopconfirm</c> whose trigger has this name.</summary>
     public TbPopconfirmDriver Popconfirm(string trigger) => new(trigger, _findAll);
 
+    /// <summary>The toasts from <c>IToastService</c>, which the rendered <c>TbRoot</c> shows.</summary>
+    public TbToastsDriver Toasts => new(_findAll, _scripts);
+
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
     public TbMenuDriver Menu(string trigger) => new(trigger, _findAll, _scripts);
 
@@ -1102,6 +1105,32 @@ public sealed class TbAccordionItemDriver
             ? throw new InvalidOperationException($"The accordion item \"{_header}\" is disabled.")
             : trigger.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
+}
+
+/// <summary>The toasts from <c>IToastService</c>, which the rendered <c>TbRoot</c> shows.</summary>
+public sealed class TbToastsDriver
+{
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
+
+    internal TbToastsDriver(Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts) =>
+        (_findAll, _scripts) = (findAll, scripts);
+
+    /// <summary>Waits for a toast whose text contains this and returns it, to read it or click its action. Like
+    /// Playwright's text match, it ignores case and runs of whitespace. When several match, as when the same action
+    /// ran twice, this returns the newest.</summary>
+    public async Task<IElement> WaitForAsync(string text)
+    {
+        var wanted = Collapsed(text);
+        // A toast that is leaving stays in the markup while it fades; newer toasts come later in it.
+        IElement? Newest() => _findAll("[data-part=toast]:not([data-leaving])")
+            .LastOrDefault(toast => Collapsed(toast.TextContent).Contains(wanted, StringComparison.OrdinalIgnoreCase));
+        await _scripts.WaitForAsync(() => Newest() is not null);
+        return Newest()!;
+    }
+
+    private static string Collapsed(string text) =>
+        string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 }
 
 /// <summary>A <c>TbPopconfirm</c>, found by its trigger's name.</summary>

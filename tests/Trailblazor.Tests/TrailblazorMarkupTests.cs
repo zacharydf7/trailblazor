@@ -1643,6 +1643,40 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Toasts_ShouldReturnTheNewestToastWithTheText_WhenItShows()
+    {
+        var cut = Render<TbRoot>();
+        var toasts = Services.GetRequiredService<IToastService>();
+
+        await cut.InvokeAsync(() => toasts.Show("Report archived", Tone.Success));
+        await cut.InvokeAsync(() => toasts.Show("Trail saved"));
+        await cut.InvokeAsync(() => toasts.Show("Report \n ARCHIVED again"));
+        // As in Playwright, case and runs of whitespace, in the toast or the text looked for, don't matter.
+        var toast = await cut.Tb().Toasts.WaitForAsync("report  archived");
+
+        Assert.Contains("ARCHIVED again", toast.TextContent);
+        await Assert.ThrowsAsync<Bunit.Extensions.WaitForHelpers.WaitForFailedException>(
+            () => cut.Tb().Toasts.WaitForAsync("Trail deleted"));
+    }
+
+    [Fact]
+    public async Task Toasts_ShouldPassOverAToastThatIsLeaving_WhenItShowsTheText()
+    {
+        // The app's clock stands still, so a closed toast stays in the markup, fading, until the test ends.
+        Services.AddSingleton<TimeProvider>(new Microsoft.Extensions.Time.Testing.FakeTimeProvider());
+        var cut = Render<TbRoot>();
+        var toasts = Services.GetRequiredService<IToastService>();
+
+        await cut.InvokeAsync(() => toasts.Show("Report archived"));
+        var newer = await cut.InvokeAsync(() => toasts.Show("Report archived again"));
+        await cut.InvokeAsync(newer.Dismiss);
+        var toast = await cut.Tb().Toasts.WaitForAsync("Report archived");
+
+        Assert.Single(cut.FindAll("[data-part=toast][data-leaving]"));
+        Assert.DoesNotContain("again", toast.TextContent);
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
     {
         var answers = new List<string>();

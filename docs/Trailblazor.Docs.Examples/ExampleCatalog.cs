@@ -9451,8 +9451,9 @@ public static class ExampleCatalog
             TestingTip = "Each toast is an item in the region named `Notifications`. A closed toast fades out with "
                 + "`data-leaving` for a moment, so wait for it to go, as with `ToHaveCountAsync(0)`. "
                 + "`await page.Tb().Toasts.WaitForAsync(\"Report archived\")` from `Trailblazor.Testing.Playwright` "
-                + "returns the toast that shows the text, to click its action. In bUnit, `await toast.Closed` says "
-                + "why it closed.",
+                + "returns the toast that shows the text, to click its action. `root.Tb().Toasts.WaitForAsync` does "
+                + "the same in bUnit, called on the markup of the `TbRoot` that shows the toasts. In bUnit, awaiting "
+                + "`Closed` on the `ToastReference` that `Show` returns says why the toast closed.",
             Telemetry =
             [
                 "With `ToastOptions.TelemetryName`, such as `\"trail-saved\"`, it counts `trailblazor.control.shown` "
