@@ -2013,9 +2013,9 @@ public static class ExampleCatalog
                     <TbSplitterPane Label="…">…</TbSplitterPane>
                 </TbSplitter>
                 """,
-            TestingTip = "Resize with the keys, as `var separator = page.GetByRole(AriaRole.Separator, new() { Name "
-                + "= \"Resize Trails\" }); await separator.FocusAsync(); await page.Keyboard.PressAsync(\"End\");`, "
-                + "then check `ToHaveAttributeAsync(\"aria-valuenow\", \"40\")`.",
+            TestingTip = "`page.Tb().Splitter(\"Resize Trails\").ResizeAsync(40)` in Playwright, or "
+                + "`cut.Tb().Splitter(\"Resize Trails\").ResizeAsync(40)` in bUnit, resizes the pane as the "
+                + "separator's keys do, and `SizeAsync()` or `Size` reads its percent.",
         },
         new("viewport", "Viewport", ExampleCategory.Layout,
             "A box that pans and zooms its content, such as a map, a diagram or a scanned page, and fits it to the "

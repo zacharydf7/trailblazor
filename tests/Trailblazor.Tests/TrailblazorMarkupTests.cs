@@ -69,6 +69,72 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Splitter_ShouldResizeThePaneAsItsKeysDo_WhenTheHelperIsUsed()
+    {
+        var sizes = new List<double?>();
+        var cut = Render<TbSplitter>(parameters => parameters.Add(splitter => splitter.ChildContent, Panes(
+            new("Trails", 25), new("Map", OnSize: sizes.Add), new("Details", 25))));
+
+        await cut.Tb().Splitter("Resize Trails").ResizeAsync(25);
+        var unchanged = sizes.Count;
+        await cut.Tb().Splitter("Resize Trails").ResizeAsync(40);
+
+        // The map, after the trails, gives up what the trails take, and the details keep their size.
+        Assert.Equal((40, 35), (cut.Tb().Splitter("Resize Trails").Size, cut.Tb().Splitter("Resize Map").Size));
+        // Resizing the trails to the size they have reports nothing, so the map, with no size of its own, gets none.
+        Assert.Equal(0, unchanged);
+        Assert.Equal([35d], sizes);
+    }
+
+    [Fact]
+    public async Task Splitter_ShouldRefuseASize_WhenALimitOrACollapsedPaneKeepsTheKeysFromIt()
+    {
+        var limited = Render<TbSplitter>(parameters => parameters.Add(splitter => splitter.ChildContent, Panes(
+            new("Trails", 25, MaxSize: 30), new("Map"), new("Details", 25, MinSize: 20))));
+        var collapsed = Render<TbSplitter>(parameters => parameters.Add(splitter => splitter.ChildContent, Panes(
+            new("Notes", 25), new("Photos"), new("Log", 25, Collapsed: true))));
+
+        var capped = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => limited.Tb().Splitter("Resize Trails").ResizeAsync(40));
+        // The details can't shrink below 20, so the map can grow only to 55.
+        var held = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => limited.Tb().Splitter("Resize Map").ResizeAsync(60));
+        await limited.Tb().Splitter("Resize Map").ResizeAsync(55);
+        var shut = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => collapsed.Tb().Splitter("Resize Photos").ResizeAsync(40));
+        Assert.Equal((25, 55), (limited.Tb().Splitter("Resize Trails").Size, limited.Tb().Splitter("Resize Map").Size));
+        Assert.Contains("nearest it reaches is 30%", capped.Message);
+        Assert.Contains("nearest it reaches is 55%", held.Message);
+        Assert.Contains("collapsed", shut.Message);
+    }
+
+    private static RenderFragment Panes(params SplitterPane[] panes) => builder =>
+    {
+        foreach (var pane in panes)
+        {
+            builder.OpenComponent<TbSplitterPane>(0);
+            builder.AddAttribute(1, nameof(TbSplitterPane.Label), pane.Label);
+            builder.AddAttribute(2, nameof(TbSplitterPane.Size), pane.Size);
+            builder.AddAttribute(3, nameof(TbSplitterPane.MinSize), pane.MinSize);
+            builder.AddAttribute(4, nameof(TbSplitterPane.MaxSize), pane.MaxSize);
+            builder.AddAttribute(5, nameof(TbSplitterPane.Collapsible), pane.Collapsed);
+            builder.AddAttribute(6, nameof(TbSplitterPane.Collapsed), pane.Collapsed);
+            builder.AddAttribute(7, nameof(TbSplitterPane.ChildContent),
+                (RenderFragment)(content => content.AddContent(0, pane.Label)));
+            if (pane.OnSize is { } onSize)
+            {
+                builder.AddAttribute(8, nameof(TbSplitterPane.SizeChanged),
+                    EventCallback.Factory.Create<double?>(new object(), onSize));
+            }
+
+            builder.CloseComponent();
+        }
+    };
+
+    private sealed record SplitterPane(string Label, double? Size = null, double MinSize = 0, double MaxSize = 100,
+        bool Collapsed = false, Action<double?>? OnSize = null);
+
+    [Fact]
     public async Task RangeSlider_ShouldRefuseToMoveIt_WhenItIsReadOnlyOrOnAStaticPage()
     {
         var locked = Render<TbRangeSlider<int>>(parameters => parameters.Add(field => field.Label, "Elevation")

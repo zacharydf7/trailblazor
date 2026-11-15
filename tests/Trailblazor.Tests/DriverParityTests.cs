@@ -31,7 +31,7 @@ public class DriverParityTests
         ["TbTreeSelect"] = "TreeSelect", ["TbMultiTreeSelect"] = "TreeSelect", ["TbViewport"] = "Viewport",
         ["TbAutocomplete"] = "Autocomplete", ["TbColorPicker"] = "ColorPicker", ["TbDialog"] = "Dialog",
         ["TbFileUpload"] = "FileUpload", ["TbSlider"] = "Slider", ["TbRangeSlider"] = "RangeSlider",
-        ["TbRating"] = "Rating",
+        ["TbRating"] = "Rating", ["TbSplitter"] = "Splitter",
     };
 
     // Why every other component has no helper of its own.
@@ -74,7 +74,7 @@ public class DriverParityTests
         ["TbCarousel"] = FollowUp, ["TbChip"] = FollowUp, ["TbChipGroup"] = FollowUp, ["TbCodeField"] = FollowUp,
         ["TbDrawer"] = FollowUp, ["TbForm"] = FollowUp, ["TbInsertDivider"] = FollowUp, ["TbNavMenu"] = FollowUp,
         ["TbPopover"] = FollowUp, ["TbSpeedDial"] = FollowUp,
-        ["TbSplitter"] = FollowUp, ["TbStepper"] = FollowUp, ["TbThemePicker"] = FollowUp,
+        ["TbStepper"] = FollowUp, ["TbThemePicker"] = FollowUp,
         ["TbTimePicker"] = FollowUp, ["TbToolbar"] = FollowUp, ["TbTooltip"] = FollowUp,
         ["TbVirtualList"] = FollowUp,
     };
@@ -85,7 +85,7 @@ public class DriverParityTests
         ["TrailblazorMarkup.Within"] = "Playwright scopes with new TrailblazorPage(locator)",
         ["TrailblazorPage.Interactive"] = "bUnit renders interactively from the start",
         ["TrailblazorPage.Toasts"] = FollowUp, ["TrailblazorPage.Announcements"] = "bUnit tests read FakeAnnouncer",
-        ["TrailblazorPage.Popover"] = FollowUp, ["TrailblazorPage.Splitter"] = FollowUp,
+        ["TrailblazorPage.Popover"] = FollowUp,
         ["TbGridLocator.Copy"] = "pressing Ctrl+C needs the browser's copy event; bUnit reads the same text with "
             + "SelectedCells",
         ["TbFileUploadLocator.Choose"] =

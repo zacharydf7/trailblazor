@@ -370,3 +370,7 @@ Trailblazor.Testing.TbRatingDriver.Max.get -> int
 Trailblazor.Testing.TbRatingDriver.RateAsync(int stars) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbRatingDriver.Value.get -> int
 Trailblazor.Testing.TrailblazorMarkup.Rating(string! label) -> Trailblazor.Testing.TbRatingDriver!
+Trailblazor.Testing.TbSplitterDriver
+Trailblazor.Testing.TbSplitterDriver.ResizeAsync(int percent) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSplitterDriver.Size.get -> int
+Trailblazor.Testing.TrailblazorMarkup.Splitter(string! separator) -> Trailblazor.Testing.TbSplitterDriver!

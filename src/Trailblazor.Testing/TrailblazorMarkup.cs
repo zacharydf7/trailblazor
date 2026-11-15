@@ -55,6 +55,14 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             ?? throw new InvalidOperationException("The menu's script hasn't attached, as it does once the menu "
                 + "renders interactively.");
 
+    // The reports the splitter script sends for the splitter that holds the pane with this id, as its panes resize.
+    public SplitterReport Splitter(string pane) => Js.Invocations["attachSplitter"]
+        .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<SplitterReport>)
+        .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
+        .LastOrDefault(report => report.Holds(pane))
+            ?? throw new InvalidOperationException("The splitter's script hasn't attached, as it does once the "
+                + "splitter renders interactively.");
+
     // The file input with this id, which the browser hands the files a user picks or drops.
     public IRenderedComponent<InputFile> InputFile(string id) => inputFiles()
         .SingleOrDefault(input => input.Instance.AdditionalAttributes?.TryGetValue("id", out var given) == true
@@ -251,6 +259,15 @@ public sealed class TrailblazorMarkup
 
     /// <summary>The <c>TbSlider</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbSliderDriver Slider(string label) => new(() => Field(label, "input[type=range][data-part=input]"));
+
+    /// <summary>The <c>TbSplitter</c> separator with this name, such as "Resize Trails".</summary>
+    public TbSplitterDriver Splitter(string separator) => new(() =>
+    {
+        var found = _findAll("[role=separator][data-part=separator]")
+            .Where(element => element.GetAttribute("aria-label") == separator).ToList();
+        return found.Count == 1 ? found[0] : throw new InvalidOperationException(found.Count == 0
+            ? $"No separator is named \"{separator}\"." : $"{found.Count} separators are named \"{separator}\".");
+    }, _scripts);
 
     /// <summary>The <c>TbRangeSlider</c> with this label.</summary>
     public TbRangeSliderDriver RangeSlider(string label) =>
@@ -1493,6 +1510,69 @@ public sealed class TbSliderDriver : TbFieldDriver
     /// step, and one past an end on that end, as in a browser. On a static page the slider is a native one that posts
     /// with its form, so this throws, as it does for a disabled or read-only slider.</summary>
     public Task SetAsync(decimal value) => SliderThumb.MoveAsync(_find, value);
+}
+
+/// <summary>The <c>TbSplitter</c> separator that resizes one pane, found by its name, such as "Resize Trails".
+/// </summary>
+public sealed class TbSplitterDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbSplitterDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>The pane's size in percent, as the separator shows it.</summary>
+    public int Size => int.Parse(_find().GetAttribute("aria-valuenow")!, CultureInfo.InvariantCulture);
+
+    /// <summary>Resizes the pane to this percent, as the separator's keys do: the pane after it gives or takes the
+    /// difference, within both panes' limits. A size the limits don't allow throws, and so does a collapsed pane on
+    /// either side, since the keys can't resize those.</summary>
+    public async Task ResizeAsync(int percent)
+    {
+        // The keys aren't pressed for a pane already at this size, so nothing is reported.
+        if (percent == Size)
+        {
+            return;
+        }
+
+        var separator = _find();
+        var bar = separator.ParentElement!;
+        var root = bar.ParentElement!;
+        var panes = root.Children.Where(child => child.GetAttribute("data-part") == "pane").ToList();
+        var before = panes.IndexOf(bar.PreviousElementSibling!);
+        var (first, second) = (panes[before], panes[before + 1]);
+        if (first.HasAttribute("data-collapsed") || second.HasAttribute("data-collapsed"))
+        {
+            throw new InvalidOperationException(
+                "The pane on one side of this separator is collapsed, and the keys can't resize it; restore it first.");
+        }
+
+        // As in the script: each pane's share follows its flex-grow, and the pair moves within both panes' limits.
+        var grows = panes.Select(Grow).ToList();
+        var total = grows.Sum();
+        var shares = grows.Select(grow => total > 0 ? grow / total * 100 : 0).ToArray();
+        var pair = shares[before] + shares[before + 1];
+        var moved = Math.Clamp(shares[before] + percent - Size, Limit(first, "data-min"), Limit(first, "data-max"));
+        moved = pair - Math.Clamp(pair - moved, Limit(second, "data-min"), Limit(second, "data-max"));
+        if (Math.Round(moved) != percent)
+        {
+            throw new InvalidOperationException(
+                $"The panes' limits keep this pane from {percent}%; the nearest it reaches is {Math.Round(moved)}%.");
+        }
+
+        shares[before] = Math.Max(moved, 0);
+        shares[before + 1] = pair - shares[before];
+        var report = _scripts.Splitter(first.Id!);
+        var number = int.Parse(root.GetAttribute("data-report") ?? "0", CultureInfo.InvariantCulture) + 1;
+        await _scripts.InvokeAsync(() => report.OnResize([.. panes.Select(pane => pane.Id!)],
+            [.. shares.Select(share => Math.Round(share, 2))], number));
+    }
+
+    private static double Grow(IElement pane) => double.Parse(
+        pane.GetAttribute("style")!.Split(';')[0].Split(':')[1], CultureInfo.InvariantCulture);
+
+    private static double Limit(IElement pane, string name) =>
+        double.Parse(pane.GetAttribute(name)!, CultureInfo.InvariantCulture);
 }
 
 /// <summary>A <c>TbRangeSlider</c>, found by its label.</summary>

@@ -67,7 +67,8 @@
             return;
         }
 
-        _report = DotNetObjectReference.Create(new SplitterReport(OnResizeAsync, OnToggleAsync, OnOrder));
+        _report = DotNetObjectReference.Create(new SplitterReport(OnResizeAsync, OnToggleAsync, OnOrder,
+            pane => _panes.Exists(each => each.Id == pane)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachSplitter", _root, _report, PersistenceKey);
         if (handle is null)
         {
