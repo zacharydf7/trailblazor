@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class ChipTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -21,6 +23,38 @@ public class ChipTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Backspace");
         await Expect(tags.GetByRole(AriaRole.Listitem)).ToHaveCountAsync(0);
         await Expect(tags).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helpers_ShouldToggleReadAndRemoveChips_WhenThePageIsInteractive(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chip");
+        var filters = page.Tb().ChipGroup("Filter by status");
+        var tags = page.Tb().ChipGroup("Selected tags");
+
+        await filters.Chip("Queued").ClickAsync();
+        await filters.Chip("Running").ClickAsync();
+        await tags.Chip("Archive").RemoveAsync();
+
+        Assert.True(await filters.Chip("Queued").SelectedAsync());
+        Assert.False(await page.Tb().Chip("Running").SelectedAsync());
+        await Expect(tags.Group.Locator(".tb-chip")).ToHaveCountAsync(2);
+        Assert.Equal(["Invoices", "2026"], await tags.ChipsAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => tags.Chip("Invoices").ClickAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRemoveTheChipOnceInteractive_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/examples/chip");
+        var tags = page.Tb().ChipGroup("Selected tags");
+
+        var removing = tags.Chip("Archive").RemoveAsync();
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await removing;
+
+        await Expect(tags.Group.Locator(".tb-chip")).ToHaveCountAsync(2);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

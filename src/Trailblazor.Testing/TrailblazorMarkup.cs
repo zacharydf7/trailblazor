@@ -70,6 +70,10 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
         .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
         .LastOrDefault(events => events.PanelId == panelId);
 
+    // A followed link takes the test's NavigationManager to its address, as the browser would.
+    public void NavigateTo(string href, bool forceLoad) =>
+        services.GetRequiredService<NavigationManager>().NavigateTo(href, forceLoad);
+
     // The file input with this id, which the browser hands the files a user picks or drops.
     public IRenderedComponent<InputFile> InputFile(string id) => inputFiles()
         .SingleOrDefault(input => input.Instance.AdditionalAttributes?.TryGetValue("id", out var given) == true
@@ -371,6 +375,17 @@ public sealed class TrailblazorMarkup
         return banners.Count == 1 ? banners[0] : throw new InvalidOperationException(banners.Count == 0
             ? $"No banner is named \"{name}\"." : $"{banners.Count} banners are named \"{name}\".");
     });
+
+    /// <summary>The <c>TbChip</c> whose text is this.</summary>
+    public TbChipDriver Chip(string text) => new(() => ChipParts.Find(_findAll(".tb-chip"), text), _scripts);
+
+    /// <summary>The <c>TbChipGroup</c> with this <c>AriaLabel</c>.</summary>
+    public TbChipGroupDriver ChipGroup(string name) => new(() =>
+    {
+        var groups = _findAll(".tb-chip-group").Where(group => group.GetAttribute("aria-label") == name).ToList();
+        return groups.Count == 1 ? groups[0] : throw new InvalidOperationException(groups.Count == 0
+            ? $"No chip group is named \"{name}\"." : $"{groups.Count} chip groups are named \"{name}\".");
+    }, _scripts);
 
     /// <summary>The <c>TbPopconfirm</c> whose trigger has this name.</summary>
     public TbPopconfirmDriver Popconfirm(string trigger) => new(trigger, _findAll);
@@ -1319,6 +1334,97 @@ internal static class Notices
 
     internal static string Collapsed(string text) =>
         string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+}
+
+/// <summary>A <c>TbChip</c>, found by its text.</summary>
+public sealed class TbChipDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbChipDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>Whether a chip that toggles is selected.</summary>
+    public bool Selected => _find().QuerySelector("[data-part=action]")!.GetAttribute("aria-pressed") == "true";
+
+    /// <summary>Clicks the chip, as a user does: a chip that toggles is selected or cleared, one with an
+    /// <c>OnClick</c> runs it, and one with an <c>Href</c> follows its link, taking the test's
+    /// <c>NavigationManager</c> to its address. It throws for a chip that does nothing when clicked, a disabled chip,
+    /// or one on a static page.</summary>
+    public async Task ClickAsync()
+    {
+        var action = ChipParts.Unlocked(_find()).QuerySelector("[data-part=action]")!;
+        if (action.LocalName is not ("button" or "a"))
+        {
+            throw new InvalidOperationException("This chip does nothing when clicked; give it an OnClick, an Href or a "
+                + "SelectedChanged.");
+        }
+
+        // A link chip with no OnClick renders no click handler, so following its link is all a click does.
+        if (action.HasAttribute("blazor:onclick"))
+        {
+            await action.ClickAsync(new MouseEventArgs { Detail = 1 });
+        }
+
+        if (action.LocalName == "a")
+        {
+            _scripts.NavigateTo(action.GetAttribute("href")!, forceLoad: false);
+        }
+    }
+
+    /// <summary>Presses the chip's remove button, which raises <c>OnRemove</c>. A chip with no <c>OnRemove</c> has no
+    /// remove button, so this throws, as it does for a disabled chip or one on a static page.</summary>
+    public async Task RemoveAsync()
+    {
+        var remove = ChipParts.Unlocked(_find()).QuerySelector("[data-part=remove]") ?? throw new
+            InvalidOperationException("This chip has no remove button; it shows only when OnRemove is set.");
+        await remove.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+}
+
+/// <summary>A <c>TbChipGroup</c>, found by its <c>AriaLabel</c>.</summary>
+public sealed class TbChipGroupDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbChipGroupDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>The chips' texts, in order.</summary>
+    public IReadOnlyList<string> Chips => [.. ChipParts.Only([.. _find().QuerySelectorAll(".tb-chip")])
+        .Select(ChipParts.TextOf)];
+
+    /// <summary>The chip in the group whose text is this.</summary>
+    public TbChipDriver Chip(string text) =>
+        new(() => ChipParts.Find([.. _find().QuerySelectorAll(".tb-chip")], text), _scripts);
+}
+
+internal static class ChipParts
+{
+    internal static string TextOf(IElement chip) =>
+        chip.QuerySelector("[data-part=label]")!.TextContent.Trim();
+
+    // A tag input's tags and a multi-select's chosen options share the chip's class, but not its parts.
+    internal static IEnumerable<IElement> Only(IEnumerable<IElement> chips) =>
+        chips.Where(chip => chip.QuerySelector(":scope > [data-part=action]") is not null);
+
+    internal static IElement Find(IReadOnlyList<IElement> chips, string text)
+    {
+        var found = Only(chips).Where(chip => TextOf(chip) == text).ToList();
+        return found.Count == 1 ? found[0] : throw new InvalidOperationException(found.Count == 0
+            ? $"No chip shows \"{text}\"." : $"{found.Count} chips show \"{text}\".");
+    }
+
+    internal static IElement Unlocked(IElement chip)
+    {
+        if (chip.ClassList.Contains("tb-chip--disabled"))
+        {
+            throw new InvalidOperationException("This chip is disabled, so a user can't click it.");
+        }
+
+        return chip.HasAttribute("data-static") ? throw new InvalidOperationException("On a static page a chip's "
+            + "buttons do nothing; render the page interactively to use them.") : chip;
+    }
 }
 
 /// <summary>A <c>TbPopconfirm</c>, found by its trigger's name.</summary>

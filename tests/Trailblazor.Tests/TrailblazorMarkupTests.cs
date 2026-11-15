@@ -1803,6 +1803,64 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Chip_ShouldToggleClickAndRemoveTheChip_WhenTheHelperIsUsed()
+    {
+        var (selected, clicks, removed) = (false, 0, 0);
+        var cut = Render<TbChipGroup>(parameters => parameters.Add(group => group.AriaLabel, "Filters")
+            .AddChildContent<TbChip>(chip => chip.Add(each => each.Text, "Running")
+                .Add(each => each.SelectedChanged, (bool on) => selected = on))
+            .AddChildContent<TbChip>(chip => chip.Add(each => each.Text, "Archive")
+                .Add(each => each.OnClick, () => clicks++).Add(each => each.OnRemove, () => removed++)));
+        var filters = cut.Tb().ChipGroup("Filters");
+
+        await filters.Chip("Running").ClickAsync();
+        await cut.Tb().Chip("Archive").ClickAsync();
+        await filters.Chip("Archive").RemoveAsync();
+
+        Assert.Equal((true, 1, 1), (selected, clicks, removed));
+        Assert.True(filters.Chip("Running").Selected);
+        Assert.Equal(["Running", "Archive"], filters.Chips);
+    }
+
+    [Fact]
+    public async Task Chip_ShouldFindTheChipAndFollowItsLink_WhenTagsShareTheChipsClass()
+    {
+        var cut = Render<TbStack>(parameters => parameters
+            .AddChildContent<TbTagInput>(tags => tags.Add(input => input.Label, "Labels")
+                .Add(input => input.Value, ["Pine Hollow"]))
+            .AddChildContent<TbChip>(chip => chip.Add(each => each.Text, "Projects")
+                .Add(each => each.Href, "projects")));
+
+        await cut.Tb().Chip("Projects").ClickAsync();
+
+        Assert.EndsWith("/projects", Services.GetRequiredService<NavigationManager>().Uri);
+    }
+
+    [Fact]
+    public async Task Chip_ShouldRefuseWhatAUserCantDo_WhenTheChipIsPlainDisabledOrStatic()
+    {
+        var plain = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Invoices"));
+        var off = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Invoices")
+            .Add(chip => chip.Disabled, true).Add(chip => chip.OnRemove, () => { }));
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var still = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Invoices")
+            .Add(chip => chip.OnClick, () => { }));
+
+        var nothing = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plain.Tb().Chip("Invoices").ClickAsync());
+        var noRemove = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plain.Tb().Chip("Invoices").RemoveAsync());
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => off.Tb().Chip("Invoices").RemoveAsync());
+        var stuck = await Assert.ThrowsAsync<InvalidOperationException>(() => still.Tb().Chip("Invoices").ClickAsync());
+
+        Assert.Contains("does nothing", nothing.Message);
+        Assert.Contains("OnRemove", noRemove.Message);
+        Assert.Contains("disabled", disabled.Message);
+        Assert.Contains("static page", stuck.Message);
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
     {
         var answers = new List<string>();

@@ -4,6 +4,8 @@
 @using System.Globalization
 
 <span @attributes="AdditionalAttributes" @ref="_chip" role="@(Group is null ? null : "listitem")" style="@Style"
+      data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+      data-ready="@(RendererInfo.IsInteractive ? "" : null)"
       class="@ClassNames.Join("tb-chip", ClassNames.Modifier("tb-chip", Variant), ClassNames.Modifier("tb-chip", Tone),
                  ClassNames.Modifier("tb-chip", Size), Toggles && Selected ? "tb-chip--selected" : null,
                  Disabled ? "tb-chip--disabled" : null, Class)">

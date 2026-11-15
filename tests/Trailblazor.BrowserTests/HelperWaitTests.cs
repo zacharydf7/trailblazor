@@ -26,6 +26,16 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Chip_ShouldReturnOnceTheAppHasTheToggle_WhenClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chip");
+
+        await page.Tb().ChipGroup("Filter by status").Chip("Queued").ClickAsync();
+
+        Assert.True(await page.Tb().ChipGroup("Filter by status").Chip("Queued").SelectedAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task NumberField_ShouldReturnOnceTheAppHasTheValue_WhenEntered(string browser)
     {
         var page = await OpenAsync(browser, "/examples/number-field");

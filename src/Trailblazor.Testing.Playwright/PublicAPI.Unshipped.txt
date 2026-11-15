@@ -374,3 +374,15 @@ Trailblazor.Testing.Playwright.TbBannerLocator.TbBannerLocator(Microsoft.Playwri
 Trailblazor.Testing.Playwright.TbBannerLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.Alert(string! text) -> Trailblazor.Testing.Playwright.TbAlertLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Banner(string! name) -> Trailblazor.Testing.Playwright.TbBannerLocator!
+Trailblazor.Testing.Playwright.TbChipGroupLocator
+Trailblazor.Testing.Playwright.TbChipGroupLocator.Chip(string! text) -> Trailblazor.Testing.Playwright.TbChipLocator!
+Trailblazor.Testing.Playwright.TbChipGroupLocator.ChipsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbChipGroupLocator.Group.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbChipGroupLocator.TbChipGroupLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void
+Trailblazor.Testing.Playwright.TbChipLocator
+Trailblazor.Testing.Playwright.TbChipLocator.Chip.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbChipLocator.ClickAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbChipLocator.RemoveAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbChipLocator.SelectedAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TrailblazorPage.Chip(string! text) -> Trailblazor.Testing.Playwright.TbChipLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.ChipGroup(string! name) -> Trailblazor.Testing.Playwright.TbChipGroupLocator!

@@ -393,3 +393,12 @@ Trailblazor.Testing.TbBannerDriver.CloseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbBannerDriver.Text.get -> string!
 Trailblazor.Testing.TrailblazorMarkup.Alert(string! text) -> Trailblazor.Testing.TbAlertDriver!
 Trailblazor.Testing.TrailblazorMarkup.Banner(string! name) -> Trailblazor.Testing.TbBannerDriver!
+Trailblazor.Testing.TbChipDriver
+Trailblazor.Testing.TbChipDriver.ClickAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbChipDriver.RemoveAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbChipDriver.Selected.get -> bool
+Trailblazor.Testing.TbChipGroupDriver
+Trailblazor.Testing.TbChipGroupDriver.Chip(string! text) -> Trailblazor.Testing.TbChipDriver!
+Trailblazor.Testing.TbChipGroupDriver.Chips.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TrailblazorMarkup.Chip(string! text) -> Trailblazor.Testing.TbChipDriver!
+Trailblazor.Testing.TrailblazorMarkup.ChipGroup(string! name) -> Trailblazor.Testing.TbChipGroupDriver!

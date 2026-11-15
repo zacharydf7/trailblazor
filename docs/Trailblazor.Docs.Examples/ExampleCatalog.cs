@@ -2539,8 +2539,10 @@ public static class ExampleCatalog
                     "The chip's body, around its icon and label: a button or link when it acts, otherwise text."),
                 new("remove", "The button that removes the chip."),
             ],
-            TestingTip = "Remove a chip with `GetByRole(AriaRole.Button, new() { Name = \"Remove Archive\" })`, and "
-                + "check a filter chip with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`.",
+            TestingTip = "`page.Tb().Chip(\"Archive\")` in Playwright, or `cut.Tb().Chip(\"Archive\")` in bUnit, "
+                + "finds a chip by its text: `ClickAsync()` toggles it or runs its `OnClick`, `RemoveAsync()` presses "
+                + "its remove button, and `SelectedAsync()` or `Selected` reads whether it's selected. "
+                + "`ChipGroup(name)` finds a group by its `AriaLabel`.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"filter-open\"`, it counts `trailblazor.control.shown` as it first "
