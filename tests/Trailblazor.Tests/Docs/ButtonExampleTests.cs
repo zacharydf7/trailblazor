@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Trailblazor.Docs.Examples;
 
 namespace Trailblazor.Tests.Docs;
@@ -73,10 +74,12 @@ public class ButtonExampleTests : DocsTest
     public void FocusExample_ShouldMoveFocusToRetry_WhenItsButtonIsPressed()
     {
         var cut = Render<ButtonFocusExample>();
+        // bUnit drops an element's reference mark once a click re-renders the buttons, so read it before the click.
+        var retry = Button(cut, "Retry").GetAttribute("blazor:elementReference");
 
         Button(cut, "Move focus to Retry").Click();
 
-        JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(Button(cut, "Retry"));
+        Assert.Equal(retry, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
     }
 
     [Fact]

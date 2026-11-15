@@ -7,6 +7,8 @@ namespace Trailblazor;
 public abstract partial class TbButtonBase : TbComponentBase
 {
     private ElementReference _element;
+    // How many clicks the button has finished handling; the Playwright driver waits for it to change.
+    private int _clicks;
     private ControlTelemetry? _telemetry;
     private bool _givenVariant;
     private bool _givenTone;
@@ -101,6 +103,10 @@ public abstract partial class TbButtonBase : TbComponentBase
     // Still focusable, but nothing happens when it is pressed.
     private bool Inert => Loading || (Off && FocusableWhenDisabled);
 
+    private int? Clicks => RendererInfo.IsInteractive ? _clicks : null;
+
+    private string? StaticMark => AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null;
+
     private string RootClass(string? extra) => ClassNames.Join("tb-button",
         ClassNames.Modifier("tb-button", ShownVariant), ClassNames.Modifier("tb-button", ShownTone),
         ClassNames.Modifier("tb-button", ShownSize), extra, Class);
@@ -134,6 +140,19 @@ public abstract partial class TbButtonBase : TbComponentBase
     protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
 
     private async Task OnClickAsync(MouseEventArgs args)
+    {
+        try
+        {
+            await HandleClickAsync(args);
+        }
+        finally
+        {
+            _clicks++;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleClickAsync(MouseEventArgs args)
     {
         if (Off || Loading)
         {

@@ -433,6 +433,15 @@ public sealed class TrailblazorMarkup
             ? $"No chip group is named \"{name}\"." : $"{groups.Count} chip groups are named \"{name}\".");
     }, _scripts);
 
+    /// <summary>The <c>TbButton</c> or <c>TbIconButton</c> with this accessible name, a button or a link.</summary>
+    public TbButtonDriver Button(string name) => new(() =>
+    {
+        var buttons = _findAll("button.tb-button, a.tb-button").Where(button => Choices.NameOf(button) == name)
+            .ToList();
+        return buttons.Count == 1 ? buttons[0] : throw new InvalidOperationException(buttons.Count == 0
+            ? $"No button is named \"{name}\"." : $"{buttons.Count} buttons are named \"{name}\".");
+    }, _scripts);
+
     /// <summary>The <c>TbNavMenu</c> in the navigation landmark with this name, or the only one in the markup when no
     /// name is given. While a <c>TbAppShell</c>'s drawer is open, the menu in the drawer is the one found.</summary>
     public TbNavMenuDriver NavMenu(string? name = null) => new(() =>
@@ -1666,6 +1675,47 @@ internal static class ChipParts
 
         return chip.HasAttribute("data-static") ? throw new InvalidOperationException("On a static page a chip's "
             + "buttons do nothing; render the page interactively to use them.") : chip;
+    }
+}
+
+/// <summary>A <c>TbButton</c> or <c>TbIconButton</c>, found by its accessible name.</summary>
+public sealed class TbButtonDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbButtonDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>Whether the button is busy, as <c>Loading</c> makes it; a busy button ignores clicks.</summary>
+    public bool Busy => _find().GetAttribute("aria-busy") == "true";
+
+    /// <summary>Clicks the button, as a user does, which raises its <c>OnClick</c>; a link button also takes the
+    /// test's <c>NavigationManager</c> to its address. Throws for a busy or disabled button, and on a static page for
+    /// any button but a link, since there it does nothing or the browser posts its form.</summary>
+    public async Task ClickAsync()
+    {
+        var button = _find();
+        if (button.GetAttribute("aria-busy") == "true")
+        {
+            throw new InvalidOperationException("The button is busy, so it ignores clicks until its Loading ends.");
+        }
+
+        if (Choices.IsDisabled(button))
+        {
+            throw new InvalidOperationException("The button is disabled, so a user can't click it.");
+        }
+
+        if (button.LocalName != "a" && button.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("On a static page the button does nothing, or the browser posts its "
+                + "form; render the page interactively to use it.");
+        }
+
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+        if (button.LocalName == "a")
+        {
+            _scripts.NavigateTo(button.GetAttribute("href")!);
+        }
     }
 }
 

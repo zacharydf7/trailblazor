@@ -5,6 +5,8 @@ namespace Trailblazor.Tests.Components;
 
 public class TbButtonTests : BunitContext
 {
+    public TbButtonTests() => this.AddTrailblazor();
+
     private static readonly Icon Plus = new("<path d=\"M12 5v14M5 12h14\" />");
     private static readonly Icon Chevron = new("<path d=\"M6 9l6 6 6-6\" />");
 

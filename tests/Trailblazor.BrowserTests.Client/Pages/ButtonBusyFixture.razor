@@ -1,0 +1,46 @@
+@page "/button-busy"
+
+@* A button that's busy while it saves, one renamed while it publishes, and one that starts busy and frees up a moment
+   after the page loads. *@
+<TbButton Loading="_saving" OnClick="SaveAsync">Save</TbButton>
+<TbButton Loading="_publishing" OnClick="PublishAsync">@(_publishing ? "Publishing" : "Publish")</TbButton>
+<TbButton Loading="_loading" OnClick="() => _refreshed++">Refresh</TbButton>
+<TbButton Disabled>Delete</TbButton>
+<output aria-label="Saved">@_saved</output>
+<output aria-label="Published">@_published</output>
+<output aria-label="Refreshed">@_refreshed</output>
+
+@code {
+    private bool _saving;
+    private bool _publishing;
+    private int _published;
+    private bool _loading = true;
+    private int _saved;
+    private int _refreshed;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && RendererInfo.IsInteractive)
+        {
+            await Task.Delay(500);
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task PublishAsync()
+    {
+        _publishing = true;
+        await Task.Delay(400);
+        _published++;
+        _publishing = false;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        await Task.Delay(400);
+        _saved++;
+        _saving = false;
+    }
+}

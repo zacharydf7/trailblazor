@@ -2311,6 +2311,61 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Button_ShouldClickAndReadWhetherItsBusy_WhenTheHelperIsUsed()
+    {
+        var saved = 0;
+        var cut = Render<TbStack>(parameters => parameters
+            .AddChildContent<TbButton>(button => button.Add(each => each.OnClick, () => saved++)
+                .AddChildContent("Save"))
+            .AddChildContent<TbButton>(button => button.Add(each => each.Loading, true).AddChildContent("Send"))
+            .AddChildContent<TbButton>(button => button.Add(each => each.Disabled, true).AddChildContent("Delete")));
+
+        await cut.Tb().Button("Save").ClickAsync();
+        var busy = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Button("Send").ClickAsync());
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Button("Delete").ClickAsync());
+
+        Assert.Equal(1, saved);
+        Assert.Equal((false, true), (cut.Tb().Button("Save").Busy, cut.Tb().Button("Send").Busy));
+        Assert.Contains("busy", busy.Message);
+        Assert.Contains("disabled", disabled.Message);
+    }
+
+    [Fact]
+    public async Task Button_ShouldClickAnIconButton_WhenFoundByItsName()
+    {
+        var added = 0;
+        var cut = Render<TbIconButton>(parameters => parameters.Add(button => button.AriaLabel, "Add")
+            .Add(button => button.Icon, BuiltInIcons.Plus).Add(button => button.OnClick, () => added++));
+
+        await cut.Tb().Button("Add").ClickAsync();
+
+        Assert.Equal(1, added);
+    }
+
+    [Fact]
+    public async Task Button_ShouldFollowItsLink_WhenItHasAnHref()
+    {
+        var cut = Render<TbButton>(parameters => parameters.Add(button => button.Href, "trails")
+            .AddChildContent("Trails"));
+
+        await cut.Tb().Button("Trails").ClickAsync();
+
+        Assert.EndsWith("/trails", Services.GetRequiredService<NavigationManager>().Uri);
+    }
+
+    [Fact]
+    public async Task Button_ShouldRefuseToClick_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbButton>(parameters => parameters.AddChildContent("Save"));
+
+        var still = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Button("Save").ClickAsync());
+
+        Assert.Contains("static page", still.Message);
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
     {
         var answers = new List<string>();

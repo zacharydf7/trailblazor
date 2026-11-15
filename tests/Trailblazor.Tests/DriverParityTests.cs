@@ -37,7 +37,8 @@ public class DriverParityTests
         ["TbTimePicker"] = "TimePicker", ["TbChip"] = "Chip", ["TbChipGroup"] = "ChipGroup",
         ["TbCarousel"] = "Carousel", ["TbForm"] = "Form", ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",
         ["TbSpeedDial"] = "Menu", ["TbToolbar"] = "Toolbar", ["TbInsertDivider"] = "InsertDivider",
-        ["TbNavMenu"] = "NavMenu", ["TbCodeField"] = "TextField",
+        ["TbNavMenu"] = "NavMenu", ["TbCodeField"] = "TextField", ["TbButton"] = "Button",
+        ["TbIconButton"] = "Button",
     };
 
     // Why every other component has no helper of its own.
@@ -68,7 +69,7 @@ public class DriverParityTests
         ["TbCard"] = NotInteractive, ["TbContainer"] = NotInteractive, ["TbDivider"] = NotInteractive,
         ["TbEmptyState"] = NotInteractive, ["TbFab"] = NotInteractive, ["TbFocusScope"] = NotInteractive,
         ["TbGrid"] = NotInteractive, ["TbHotkeysHelp"] = NotInteractive, ["TbIcon"] = NotInteractive,
-        ["TbIconButton"] = NotInteractive, ["TbImage"] = NotInteractive, ["TbKbd"] = NotInteractive,
+        ["TbImage"] = NotInteractive, ["TbKbd"] = NotInteractive,
         ["TbLabel"] = NotInteractive, ["TbLink"] = NotInteractive, ["TbOverlay"] = NotInteractive,
         ["TbProgress"] = NotInteractive, ["TbRoot"] = NotInteractive, ["TbSkeleton"] = NotInteractive,
         ["TbSpacer"] = NotInteractive, ["TbStack"] = NotInteractive, ["TbStyles"] = NotInteractive,
@@ -76,7 +77,6 @@ public class DriverParityTests
         ["TbTable"] = NotInteractive, ["TbTableOfContents"] = NotInteractive, ["TbText"] = NotInteractive,
         ["TbThemeHead"] = NotInteractive, ["TbTimeline"] = NotInteractive,
 
-        ["TbButton"] = FollowUp,
         ["TbVirtualList"] = FollowUp,
     };
 

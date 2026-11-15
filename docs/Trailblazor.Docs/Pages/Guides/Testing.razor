@@ -359,6 +359,14 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Button(name).ClickAsync()</code></th>
+                        <td>
+                            Clicks the button, which raises its <code>OnClick</code>; a link button also takes the
+                            test's <code>NavigationManager</code> to its address. Throws while it's busy or disabled,
+                            and <code>Busy</code> reads whether <code>Loading</code> has made it busy.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>NavMenu(name).FollowAsync(path)</code></th>
                         <td>
                             Opens each closed group named before the link, then clicks the link and takes the test's
@@ -1162,6 +1170,9 @@
         new("Dialog or drawer", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name, "
             + "and `CancelAsync()` dismisses it with Escape; both wait until it has left the page, or, on a static "
             + "page, until it closes."),
+        new("Button or icon button", "Its name", "`Button(name).ClickAsync()` clicks it once the page is "
+            + "interactive and it's no longer busy, then waits until the app has run its `OnClick`; `BusyAsync()` "
+            + "reads whether it's busy."),
         new("Nav menu", "Its navigation landmark's name, or none for the only one shown",
             "`NavMenu(name).FollowAsync(path)` opens the closed groups named before a link once the page is "
             + "interactive, then follows the link; `CurrentAsync()` reads the current page's link."),

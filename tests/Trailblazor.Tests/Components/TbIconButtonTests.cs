@@ -4,6 +4,8 @@ namespace Trailblazor.Tests.Components;
 
 public class TbIconButtonTests : BunitContext
 {
+    public TbIconButtonTests() => this.AddTrailblazor();
+
     private static readonly Icon Square = new("<path d=\"M4 4h16v16H4z\" />");
 
     [Fact]

@@ -15,6 +15,7 @@
                    data-kept-focusable="@(Off && FocusableWhenDisabled ? "" : null)"
                    aria-label="@(ariaLabel ?? Theirs("aria-label"))"
                    aria-disabled="@(Off || Loading ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
+                   data-clicks="@Clicks" data-static="@StaticMark"
                    class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"
                    @onclick:preventDefault="Loading">
                     @content
@@ -26,6 +27,7 @@
                         disabled="@(Off && !FocusableWhenDisabled)"
                         aria-label="@(ariaLabel ?? Theirs("aria-label"))"
                         aria-disabled="@(Inert ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
+                        data-clicks="@Clicks" data-static="@StaticMark"
                         aria-pressed="@(Toggles ? (Mixed ? "mixed" : Pressed ? "true" : "false")
                                           : Theirs("aria-pressed"))"
                         class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"

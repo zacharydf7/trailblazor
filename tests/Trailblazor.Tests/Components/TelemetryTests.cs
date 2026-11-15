@@ -167,6 +167,8 @@ public class TelemetryTests : BunitContext
     [Fact]
     public void TelemetryName_ShouldLeaveTheButtonWorking_WhenTrailblazorIsNotRegistered()
     {
+        // Every app's renderer reports whether it's interactive; only a bare bUnit context has to be told.
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         var clicks = 0;
         var cut = Render<TbButton>(parameters => parameters.Add(button => button.TelemetryName, "export-csv")
             .Add(button => button.OnClick, () => clicks++)

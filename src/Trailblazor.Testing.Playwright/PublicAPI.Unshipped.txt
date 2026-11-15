@@ -432,3 +432,9 @@ Trailblazor.Testing.Playwright.TbNavMenuLocator.FollowAsync(params string![]! pa
 Trailblazor.Testing.Playwright.TbNavMenuLocator.Menu.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbNavMenuLocator.TbNavMenuLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.NavMenu(string? name = null) -> Trailblazor.Testing.Playwright.TbNavMenuLocator!
+Trailblazor.Testing.Playwright.TbButtonLocator
+Trailblazor.Testing.Playwright.TbButtonLocator.BusyAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbButtonLocator.Button.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbButtonLocator.ClickAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbButtonLocator.TbButtonLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.Button(string! name) -> Trailblazor.Testing.Playwright.TbButtonLocator!

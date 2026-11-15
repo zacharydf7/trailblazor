@@ -1094,10 +1094,15 @@ public static class ExampleCatalog
                 new("spinner", "The spinner shown while the button is loading."),
                 new("end", "The end icon or content, after the label."),
             ],
-            TestingTip = "Check a toggle with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`, a `Loading` "
-                + "button with `ToHaveAttributeAsync(\"aria-busy\", \"true\")`, and a disabled button with "
-                + "`ToBeDisabledAsync()`, which also passes for `aria-disabled`. To move focus to a "
-                + "button from code, `@ref` it and call `FocusAsync()`.",
+            TestingTip = "`await page.Tb().Button(\"Save\").ClickAsync()` from `Trailblazor.Testing.Playwright` "
+                + "clicks a button once the page is interactive and it's no longer busy, and returns once the app has "
+                + "run its `OnClick`; `BusyAsync()` reads whether it's busy. In bUnit, "
+                + "`cut.Tb().Button(\"Save\").ClickAsync()` throws while the button is busy instead of waiting, and "
+                + "`Busy` reads whether it's busy. By hand, check a toggle with "
+                + "`ToHaveAttributeAsync(\"aria-pressed\", \"true\")`, a `Loading` button with "
+                + "`ToHaveAttributeAsync(\"aria-busy\", \"true\")`, and a disabled button with `ToBeDisabledAsync()`, "
+                + "which also passes for `aria-disabled`. To move focus to a button from code, `@ref` it and call "
+                + "`FocusAsync()`.",
             Telemetry = ButtonTelemetry("TbButton"),
         },
         new("icon-button", "Icon button", ExampleCategory.Actions,
@@ -1183,8 +1188,11 @@ public static class ExampleCatalog
                 new("icon", "The icon the button shows."),
                 new("spinner", "The spinner shown in place of the icon while loading."),
             ],
-            TestingTip = "Find it by its name: `GetByRole(AriaRole.Button, new() { Name = \"Delete\" })`. With "
-                + "`ShowTooltip`, focusing it shows a `tooltip` role with the same text.",
+            TestingTip = "`page.Tb().Button(\"Delete\")` from `Trailblazor.Testing.Playwright`, or "
+                + "`cut.Tb().Button(...)` in bUnit, finds it by its name and drives it just like a button. By hand, "
+                + "find it with "
+                + "`GetByRole(AriaRole.Button, new() { Name = \"Delete\" })`. With `ShowTooltip`, focusing it shows a "
+                + "`tooltip` role with the same text.",
             Telemetry = ButtonTelemetry("TbIconButton"),
         },
         new("button-group", "Button group", ExampleCategory.Actions,

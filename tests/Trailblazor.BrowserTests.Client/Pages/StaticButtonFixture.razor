@@ -1,0 +1,8 @@
+@page "/static-button"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR: a button with an OnClick that nothing can run, and a form's disabled submit button. *@
+<TbButton OnClick="() => { }">Save</TbButton>
+<form method="post">
+    <TbButton Type="ButtonType.Submit" Disabled>Send</TbButton>
+</form>

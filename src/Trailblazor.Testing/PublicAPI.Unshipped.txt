@@ -436,3 +436,7 @@ Trailblazor.Testing.TbNavMenuDriver
 Trailblazor.Testing.TbNavMenuDriver.Current.get -> string?
 Trailblazor.Testing.TbNavMenuDriver.FollowAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.NavMenu(string? name = null) -> Trailblazor.Testing.TbNavMenuDriver!
+Trailblazor.Testing.TbButtonDriver
+Trailblazor.Testing.TbButtonDriver.Busy.get -> bool
+Trailblazor.Testing.TbButtonDriver.ClickAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Button(string! name) -> Trailblazor.Testing.TbButtonDriver!

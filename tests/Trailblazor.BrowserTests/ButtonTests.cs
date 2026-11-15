@@ -1,9 +1,88 @@
 using System.Text.RegularExpressions;
+using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
 public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReturnOnceTheAppHasHandledTheClick_WhenItsOnClickTakesAWhile(string browser)
+    {
+        var page = await OpenAsync(browser, "/button-busy");
+
+        await page.Tb().Button("Save").ClickAsync();
+
+        Assert.Equal("1", await page.GetByLabel("Saved").TextContentAsync());
+        Assert.False(await page.Tb().Button("Save").BusyAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReturnOnceTheAppHasHandledTheClick_WhenTheButtonIsRenamedWhileItsBusy(string browser)
+    {
+        var page = await OpenAsync(browser, "/button-busy");
+
+        await page.Tb().Button("Publish").ClickAsync();
+
+        Assert.Equal("1", await page.GetByLabel("Published").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldSubmitTheForm_WhenTheButtonSubmitsAFormOnAStaticPage(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-attempted");
+
+        await page.Tb().Button("Send").ClickAsync();
+
+        await Expect(page.GetByTestId("posted")).ToHaveTextAsync("30");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldClickOnceTheButtonIsNoLongerBusy_WhenItIsBusy(string browser)
+    {
+        var page = await OpenAsync(browser, "/button-busy");
+
+        await page.Tb().Button("Refresh").ClickAsync();
+
+        Assert.Equal("1", await page.GetByLabel("Refreshed").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseADisabledButton_WhenAskedToClickIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/button-busy");
+
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Button("Delete").ClickAsync());
+
+        Assert.Contains("disabled", disabled.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldClickOnceInteractive_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/button-busy");
+
+        var clicking = page.Tb().Button("Save").ClickAsync();
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await clicking;
+
+        await Expect(page.GetByLabel("Saved")).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseToClick_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-button");
+
+        var still = await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Button("Save").ClickAsync());
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Button("Send").ClickAsync());
+
+        Assert.Contains("static page", still.Message);
+        Assert.Contains("disabled", disabled.Message);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Button_ShouldKeepItsTextClearOfItsBorders_WhenALongLabelWraps(string browser)
     {
