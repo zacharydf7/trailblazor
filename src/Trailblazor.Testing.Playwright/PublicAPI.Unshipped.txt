@@ -395,3 +395,10 @@ Trailblazor.Testing.Playwright.TbCarouselLocator.NextAsync() -> System.Threading
 Trailblazor.Testing.Playwright.TbCarouselLocator.PreviousAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbCarouselLocator.TbCarouselLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Carousel(string! name) -> Trailblazor.Testing.Playwright.TbCarouselLocator!
+Trailblazor.Testing.Playwright.TbBreadcrumbsLocator
+Trailblazor.Testing.Playwright.TbBreadcrumbsLocator.CurrentAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbBreadcrumbsLocator.FollowAsync(string! item) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbBreadcrumbsLocator.ItemsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbBreadcrumbsLocator.TbBreadcrumbsLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TbBreadcrumbsLocator.Trail.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Breadcrumbs(string? name = null) -> Trailblazor.Testing.Playwright.TbBreadcrumbsLocator!

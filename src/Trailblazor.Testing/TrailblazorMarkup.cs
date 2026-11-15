@@ -71,8 +71,7 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
         .LastOrDefault(events => events.PanelId == panelId);
 
     // A followed link takes the test's NavigationManager to its address, as the browser would.
-    public void NavigateTo(string href, bool forceLoad) =>
-        services.GetRequiredService<NavigationManager>().NavigateTo(href, forceLoad);
+    public void NavigateTo(string href) => services.GetRequiredService<NavigationManager>().NavigateTo(href);
 
     // The file input with this id, which the browser hands the files a user picks or drops.
     public IRenderedComponent<InputFile> InputFile(string id) => inputFiles()
@@ -351,6 +350,18 @@ public sealed class TrailblazorMarkup
                 ? $"Expected one pagination, found {navs.Count}; name the one to use."
                 : $"No pagination is named \"{name}\".");
     });
+
+    /// <summary>The <c>TbBreadcrumbs</c> with this accessible name, or the only one in the markup when no name is
+    /// given.</summary>
+    public TbBreadcrumbsDriver Breadcrumbs(string? name = null) => new(() =>
+    {
+        var trails = _findAll("nav.tb-breadcrumbs")
+            .Where(nav => name is null || nav.GetAttribute("aria-label") == name).ToList();
+        return trails.Count == 1 ? trails[0]
+            : throw new InvalidOperationException(name is null
+                ? $"Expected one breadcrumb trail, found {trails.Count}; name the one to use."
+                : $"No breadcrumb trail is named \"{name}\".");
+    }, _scripts);
 
     /// <summary>The <c>TbAccordionItem</c>, in an accordion or on its own, whose header reads this.</summary>
     public TbAccordionItemDriver AccordionItem(string header) => new(header, _findAll);
@@ -1094,6 +1105,42 @@ internal static class Typing
     }
 }
 
+/// <summary>A <c>TbBreadcrumbs</c> trail, found by its name.</summary>
+public sealed class TbBreadcrumbsDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbBreadcrumbsDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>The items' texts, from the top of the site down to the current page.</summary>
+    public IReadOnlyList<string> Items => [.. Labels().Select(label => label.TextContent.Trim())];
+
+    /// <summary>The text of the item marked as the current page, or null when none is.</summary>
+    public string? Current => Labels().FirstOrDefault(label => label.GetAttribute("aria-current") == "page")
+        ?.TextContent.Trim();
+
+    /// <summary>Follows the link of the item with this text, as clicking it does: its click handler runs, and the
+    /// test's <c>NavigationManager</c> goes to its address. It throws for an item without a link.</summary>
+    public async Task FollowAsync(string item)
+    {
+        var labels = Labels().Where(label => label.TextContent.Trim() == item).ToList();
+        var label = labels.Count == 1 ? labels[0] : throw new InvalidOperationException(labels.Count == 0
+            ? $"The breadcrumb trail has no item that reads \"{item}\"." : $"{labels.Count} items read \"{item}\".");
+        if (label.GetAttribute("data-part") != "link")
+        {
+            throw new InvalidOperationException($"\"{item}\" isn't a link; only an item with an Href is.");
+        }
+
+        await label.ClickAsync(new MouseEventArgs { Detail = 1 });
+        _scripts.NavigateTo(label.GetAttribute("href")!);
+    }
+
+    // Each item holds its separator, then its link or its text.
+    private IEnumerable<IElement> Labels() => _find().QuerySelectorAll(
+        "[data-part=breadcrumb] > [data-part=link], [data-part=breadcrumb] > [data-part=text]");
+}
+
 /// <summary>A <c>TbPagination</c>, found by its name.</summary>
 public sealed class TbPaginationDriver
 {
@@ -1433,7 +1480,7 @@ public sealed class TbChipDriver
 
         if (action.LocalName == "a")
         {
-            _scripts.NavigateTo(action.GetAttribute("href")!, forceLoad: false);
+            _scripts.NavigateTo(action.GetAttribute("href")!);
         }
     }
 

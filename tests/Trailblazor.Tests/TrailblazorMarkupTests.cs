@@ -1906,6 +1906,24 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Breadcrumbs_ShouldReadTheTrailAndFollowALink_WhenTheHelperIsUsed()
+    {
+        var cut = Render<TbBreadcrumbs>(parameters => parameters
+            .AddChildContent<TbBreadcrumb>(item => item.Add(crumb => crumb.Href, "projects")
+                .AddChildContent("Projects"))
+            .AddChildContent<TbBreadcrumb>(item => item.Add(crumb => crumb.Current, true).AddChildContent("Trails")));
+        var trail = cut.Tb().Breadcrumbs();
+
+        await trail.FollowAsync("Projects");
+
+        Assert.Equal(["Projects", "Trails"], trail.Items);
+        Assert.Equal("Trails", trail.Current);
+        Assert.EndsWith("/projects", Services.GetRequiredService<NavigationManager>().Uri);
+        var plain = await Assert.ThrowsAsync<InvalidOperationException>(() => trail.FollowAsync("Trails"));
+        Assert.Contains("isn't a link", plain.Message);
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
     {
         var answers = new List<string>();

@@ -82,8 +82,8 @@
             <code>cut.Tb()</code> finds fields by their labels and drives them the way a user does. A helper the
             <a href="guides/testing#playwright">Playwright helpers</a> also have goes by the same name there: a read
             such as <code>Text</code> here is <code>TextAsync()</code> there. A grid, tree, sortable list,
-            pagination, query builder, viewport, tabs, context menu or command palette that's the only one of its
-            kind can be found without its name, as in <code>Grid()</code>.
+            pagination, breadcrumb trail, query builder, viewport, tabs, context menu or command palette that's the
+            only one of its kind can be found without its name, as in <code>Grid()</code>.
         </TbText>
         <div class="docs-api" tabindex="0" role="region" aria-label="bUnit helpers">
             <table>
@@ -307,6 +307,14 @@
                     <tr>
                         <th scope="row"><code>AccordionItem(header).ExpandAsync()</code></th>
                         <td>Opens the item and hands back its panel; <code>CollapseAsync()</code> closes it.</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Breadcrumbs(name).FollowAsync(item)</code></th>
+                        <td>
+                            Clicks the item's link and takes the test's <code>NavigationManager</code> to its address.
+                            <code>Items</code> reads each item's text, and <code>Current</code> reads the item marked as
+                            the current page.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>Alert(text).CloseAsync()</code></th>
@@ -1058,6 +1066,9 @@
             + "the tooltip's text once it shows."),
         new("Splitter", "Its separator's name", "`Splitter(\"Resize Trails\").ResizeAsync(percent)` resizes the pane "
             + "with the separator's keys and waits until the app has the size, and `SizeAsync()` reads it."),
+        new("Breadcrumbs", "Its name, or none for the only one", "`Breadcrumbs(name).FollowAsync(item)` follows an "
+            + "item's link, `ItemsAsync()` reads each item's text, and `CurrentAsync()` reads the item marked as the "
+            + "current page."),
         new("Alert", "Its text", "`Alert(text).CloseAsync()` presses its close button once the page is interactive, "
             + "and `TextAsync()` reads its message."),
         new("Banner", "Its title", "`Banner(name).CloseAsync()` presses its close button once the page is "

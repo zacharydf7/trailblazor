@@ -409,3 +409,8 @@ Trailblazor.Testing.TbCarouselDriver.GoToAsync(int index) -> System.Threading.Ta
 Trailblazor.Testing.TbCarouselDriver.NextAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbCarouselDriver.PreviousAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.Carousel(string! name) -> Trailblazor.Testing.TbCarouselDriver!
+Trailblazor.Testing.TbBreadcrumbsDriver
+Trailblazor.Testing.TbBreadcrumbsDriver.Current.get -> string?
+Trailblazor.Testing.TbBreadcrumbsDriver.FollowAsync(string! item) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbBreadcrumbsDriver.Items.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TrailblazorMarkup.Breadcrumbs(string? name = null) -> Trailblazor.Testing.TbBreadcrumbsDriver!

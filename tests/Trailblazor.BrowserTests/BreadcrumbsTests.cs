@@ -1,8 +1,37 @@
+using System.Text.RegularExpressions;
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class BreadcrumbsTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     private static ILocator Trail(IPage page) => page.GetByRole(AriaRole.Navigation, new() { Name = "Breadcrumb" });
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReadTheTrailAndFollowALink_WhenTheTrailIsShown(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/breadcrumbs");
+        var trail = page.Tb().Breadcrumbs("Breadcrumb");
+
+        var items = await trail.ItemsAsync();
+        var current = await trail.CurrentAsync();
+        await trail.FollowAsync("Guides");
+
+        Assert.Equal(["Home", "Guides", "Right-to-left"], items);
+        Assert.Equal("Right-to-left", current);
+        await Expect(page).ToHaveURLAsync(new Regex("/guides/getting-started$"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldWaitForTheTrailAndTimeOut_WhenNoTrailHasTheName(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/breadcrumbs");
+        page.SetDefaultTimeout(1000);
+
+        await Assert.ThrowsAsync<TimeoutException>(() => page.Tb().Breadcrumbs("Missing").ItemsAsync());
+        await Assert.ThrowsAsync<TimeoutException>(() => page.Tb().Breadcrumbs("Missing").CurrentAsync());
+        await Assert.ThrowsAsync<TimeoutException>(() => page.Tb().Breadcrumbs("Missing").FollowAsync("Guides"));
+    }
 
     // Safari drops the list role from a list without bullets unless it is set again, and the separators must not be
     // read between the links.

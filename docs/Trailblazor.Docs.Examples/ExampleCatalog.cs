@@ -8924,9 +8924,10 @@ public static class ExampleCatalog
                 new("text", "An item without an address, shown as plain text."),
                 new("separator", "What goes before each item; the stylesheet hides the first item's."),
             ],
-            TestingTip = "Find the trail by its landmark, "
-                + "`GetByRole(AriaRole.Navigation, new() { Name = \"Breadcrumb\" })`, and the page it marks as current "
-                + "with `Locator(\"[aria-current=page]\")`.",
+            TestingTip = "`page.Tb().Breadcrumbs()` in Playwright, or `cut.Tb().Breadcrumbs()` in bUnit, finds the "
+                + "only trail, or the one you name: `FollowAsync(\"Guides\")` follows an item's link, "
+                + "`ItemsAsync()` or `Items` reads each item's text, and `CurrentAsync()` or `Current` reads the item "
+                + "marked as the current page.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"project-breadcrumbs\"`, it counts `trailblazor.control.shown` as "
