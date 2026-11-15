@@ -1,0 +1,38 @@
+@page "/nested-tree-content"
+
+@* A tree inside another tree's row, with a button written between the inner tree's rows. *@
+<TbTreeView TItem="string" TKey="string" AriaLabel="Guide">
+    <TbTreeItem Value="@("chapter")" Text="Chapter">
+        <TextContent>
+            Chapter
+            <TbTreeView TItem="string" TKey="string" AriaLabel="Parts" InitialExpandDepth="1">
+                <TbTreeItem Value="@("intro")" Text="Intro" />
+                <TbTreeItem Value="@("body")" Text="Body">
+                    <TbTreeItem Value="@("detail")" Text="Detail" />
+                    <button type="button" @onclick="() => _notes++">Notes</button>
+                </TbTreeItem>
+            </TbTreeView>
+        </TextContent>
+    </TbTreeItem>
+    <TbTreeItem Value="@("appendix")" Text="Appendix" />
+</TbTreeView>
+<output data-testid="notes">@_notes</output>
+@* An open row holding a tree whose rows can be dragged. *@
+<TbTreeView TItem="string" TKey="string" AriaLabel="Atlas" InitialExpandDepth="1">
+    <TbTreeItem Value="@("region")" Text="Region">
+        <TextContent>
+            Region
+            <TbTreeView TItem="string" TKey="string" AriaLabel="Maps" OnMove="(TreeMove<string> _) => { }">
+                <TbTreeItem Value="@("north")" Text="North" />
+                <TbTreeItem Value="@("south")" Text="South" />
+            </TbTreeView>
+        </TextContent>
+        <ChildContent>
+            <TbTreeItem Value="@("trail")" Text="Trail" />
+        </ChildContent>
+    </TbTreeItem>
+</TbTreeView>
+
+@code {
+    private int _notes;
+}

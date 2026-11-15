@@ -8121,8 +8121,9 @@ public static class ExampleCatalog
                     + "where it is written, followed by a `group` holding what is written inside it, so other content "
                     + "between rows shows in place and hides with its parent."),
                 new("A tree inside another tree's row is a tree of its own: its rows take their own keys, focus, clicks "
-                    + "and drags, the outer tree's arrows pass over them, and the outer row isn't selected by them. A "
-                    + "click on the inner tree outside its rows reaches the outer row."),
+                    + "and drags, the outer tree's arrows pass over them, and the outer row isn't selected by them, even "
+                    + "by a press that starts on one inner row and ends on another. A click on the inner tree outside "
+                    + "its rows reaches the outer row."),
                 new("A row's content keeps a minimum width of about six characters (`--tb-tree-text-min-width`), so "
                     + "a row deeper than the tree is wide overflows sideways into the scrolling box around the tree "
                     + "instead of shrinking to an ellipsis."),

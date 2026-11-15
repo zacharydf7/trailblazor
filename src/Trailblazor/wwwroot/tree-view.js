@@ -176,6 +176,32 @@ export function createTreeView(tree, events) {
             focusedRow = null;
         }
     });
+    // A press on one row released on another clicks the element holding both. In a tree inside another tree's row,
+    // that click would bubble up to that row and select it, and as a double-click's second click, open or close it.
+    let pressedRow = null;
+    let strayClick = false;
+    const onPointerDown = event => {
+        const row = event.target.closest('[role="treeitem"]');
+        pressedRow = row && owns(row) ? row : null;
+    };
+    // A key's click has a detail of 0, so a press that never reached a click in this tree can't make it stray.
+    const strays = event => {
+        const row = event.target.closest('[role="treeitem"]');
+        return Boolean(event.detail > 0 && pressedRow && !(row && owns(row)) && tree.parentElement?.closest('.tb-tree'));
+    };
+    const onClick = event => {
+        strayClick = strays(event);
+        pressedRow = null;
+        if (strayClick) {
+            event.stopPropagation();
+        }
+    };
+    // A drag stops its own click before onClick sees it, so the press is still set when the double-click arrives.
+    const onDoubleClick = event => {
+        if (strayClick || strays(event)) {
+            event.stopPropagation();
+        }
+    };
     const onKeyDown = event => {
         // Keys pressed in a row's own controls, such as a field in its end slot, are theirs.
         const current = event.target;
@@ -476,6 +502,9 @@ export function createTreeView(tree, events) {
 
     tree.addEventListener('focusin', onFocusIn);
     tree.addEventListener('focusout', onFocusOut);
+    tree.addEventListener('pointerdown', onPointerDown);
+    tree.addEventListener('click', onClick);
+    tree.addEventListener('dblclick', onDoubleClick);
     tree.addEventListener('keydown', onKeyDown);
     observer.observe(tree, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex'] });
     // A tree whose box grows, as in a pane being resized, shows more rows without anything scrolling.
@@ -499,6 +528,9 @@ export function createTreeView(tree, events) {
             clearTimeout(opening);
             tree.removeEventListener('focusin', onFocusIn);
             tree.removeEventListener('focusout', onFocusOut);
+            tree.removeEventListener('pointerdown', onPointerDown);
+            tree.removeEventListener('click', onClick);
+            tree.removeEventListener('dblclick', onDoubleClick);
             tree.removeEventListener('keydown', onKeyDown);
         },
     };
