@@ -123,7 +123,7 @@
                      aria-selected="@(chosen ? "true" : "false")" aria-disabled="@(option.Disabled ? "true" : null)"
                      data-index="@index" aria-posinset="@(index + 1)"
                      aria-setsize="@(index is null ? null : _shown?.Count)"
-                     data-part="option" class="tb-select__option" @onclick="args => ChooseItemAsync(option, args)">
+                     data-part="option" class="tb-select__option" @onclick="_chooseItem.For(option.Id)">
             @if (Multiple)
             {
                 <span aria-hidden="true" class="tb-select__box"></span>

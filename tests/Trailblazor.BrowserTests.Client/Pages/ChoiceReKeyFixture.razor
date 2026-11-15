@@ -1,0 +1,52 @@
+@page "/choice-rekey"
+
+@* Each choice field is keyed by what's chosen, as some apps do, so choosing replaces it; the image select and camp
+   list also rename the chosen option. *@
+<TbSelect @key="_trail" TValue="string" Label="Trail" Items="Trails" @bind-Value="_trail" />
+<output data-testid="trail">@_trail</output>
+<TbSelect @key="_image" TValue="string" Label="Image" @bind-Value="_image">
+    @foreach (var image in Images)
+    {
+        <TbOption Value="image">@(image == _image ? "Current image" : image)</TbOption>
+    }
+</TbSelect>
+<output data-testid="image">@_image</output>
+<TbMultiSelect @key="string.Join(',', _days)" TItem="string" Label="Days" Items="Days" @bind-Value="_days" />
+<output data-testid="days">@string.Join(", ", _days)</output>
+<TbAutocomplete @key="_trailhead" TValue="string" Label="Trailhead" Search="FindAsync" @bind-Value="_trailhead" />
+<output data-testid="trailhead">@_trailhead</output>
+<TbListBox @key="_camp" TValue="string" Label="Camp" @bind-Value="_camp">
+    @foreach (var camp in Camps)
+    {
+        <TbOption Value="camp">@(camp == _camp ? "Current camp" : camp)</TbOption>
+    }
+</TbListBox>
+<output data-testid="camp">@_camp</output>
+<TbTransferList @key="_crew.Count" TItem="string" Label="Crew" Items="Hikers" @bind-Value:get="_crew"
+                @bind-Value:set="SaveCrewAsync" />
+<output data-testid="crew">@string.Join(", ", _crew)</output>
+
+@code {
+    private static readonly string[] Trails = ["Cedar flats", "Lake shore", "Ridge loop"];
+    private static readonly string[] Images = ["Lake", "Ridge", "Summit"];
+    private static readonly string[] Days = ["Monday", "Tuesday", "Wednesday"];
+    private static readonly string[] Trailheads = ["North gate", "South gate"];
+    private static readonly string[] Camps = ["Birch camp", "Pine camp"];
+    private static readonly string[] Hikers = ["Ada", "Grace", "Linus"];
+    private string? _trail = "Cedar flats";
+    private string? _image = "Lake";
+    private IReadOnlyList<string> _days = [];
+    private string? _trailhead;
+    private string? _camp;
+    private IReadOnlyList<string> _crew = [];
+
+    // The app saves the crew before it takes it, so the list shows the move before the app has it.
+    private async Task SaveCrewAsync(IReadOnlyList<string> crew)
+    {
+        await Task.Delay(300);
+        _crew = crew;
+    }
+
+    private static Task<IEnumerable<string>> FindAsync(string text, CancellationToken cancellation) =>
+        Task.FromResult(Trailheads.Where(name => name.Contains(text, StringComparison.OrdinalIgnoreCase)));
+}

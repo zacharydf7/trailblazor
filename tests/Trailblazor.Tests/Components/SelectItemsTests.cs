@@ -26,6 +26,21 @@ public class SelectItemsTests : BunitContext
     }
 
     [Fact]
+    public async Task Click_ShouldChooseTheItem_WhenTheOptionWasFoundBeforeTheSelectRenderedAgain()
+    {
+        Trail? chosen = null;
+        var cut = Render<TbSelect<Trail>>(parameters => parameters.Add(select => select.Label, "Trail")
+            .Add(select => select.Items, Trails).Add(select => select.ItemText, trail => trail.Name)
+            .Add(select => select.ValueChanged, (Trail trail) => chosen = trail));
+        var option = cut.FindAll("[role=option]")[1];
+
+        cut.Render();
+        await option.ClickAsync(new());
+
+        Assert.Equal(Trails[1], chosen);
+    }
+
+    [Fact]
     public async Task Click_ShouldLeaveTheValue_WhenTheItemIsDisabled()
     {
         var chosen = 0;

@@ -160,6 +160,67 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldReturnOnceTheAppHasTheValue_WhenTheAppReKeysTheSelect(string browser)
+    {
+        var page = await OpenAsync(browser, "/choice-rekey");
+
+        await page.Tb().Select("Trail").ChooseAsync("Ridge loop");
+
+        Assert.Equal("Ridge loop", await page.GetByTestId("trail").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldReturnOnceTheAppHasTheValue_WhenTheAppReKeysTheSelectAndRenamesTheOption(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/choice-rekey");
+
+        await page.Tb().Select("Image").ChooseAsync("Summit");
+
+        Assert.Equal("Summit", await page.GetByTestId("image").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiSelect_ShouldReturnOnceTheAppHasEachValue_WhenTheAppReKeysTheSelect(string browser)
+    {
+        var page = await OpenAsync(browser, "/choice-rekey");
+
+        await page.Tb().Select("Days").ChooseAsync("Monday", "Wednesday");
+
+        Assert.Equal("Monday, Wednesday", await page.GetByTestId("days").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldReturnOnceTheAppHasTheValue_WhenTheAppReKeysTheField(string browser)
+    {
+        var page = await OpenAsync(browser, "/choice-rekey");
+
+        await page.Tb().Autocomplete("Trailhead").ChooseAsync("gate", "South gate");
+
+        Assert.Equal("South gate", await page.GetByTestId("trailhead").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ListBox_ShouldReturnOnceTheAppHasTheValue_WhenTheAppReKeysTheList(string browser)
+    {
+        var page = await OpenAsync(browser, "/choice-rekey");
+
+        await page.Tb().ListBox("Camp").ChooseAsync("Pine camp");
+
+        Assert.Equal("Pine camp", await page.GetByTestId("camp").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TransferList_ShouldReturnOnceTheAppHasTheItems_WhenTheAppReKeysTheList(string browser)
+    {
+        var page = await OpenAsync(browser, "/choice-rekey");
+
+        await page.Tb().TransferList("Crew").MoveAsync("Ada", "Linus");
+
+        Assert.Equal("Ada, Linus", await page.GetByTestId("crew").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldReturnOnceTheAppHasTheAnswer_WhenAButtonIsChosenOrTheDialogIsCanceled(string browser)
     {
         var page = await OpenAsync(browser, "/examples/dialog");

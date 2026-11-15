@@ -652,7 +652,9 @@
                 that captures a loop variable make a new delegate on every render: if background work renders the
                 component after a test finds an element but before the test raises its event, bUnit throws "There is
                 no event handler with ID". Pass a method, such as
-                <code>@@onchange="OnNameChanged"</code>, instead.
+                <code>@@onchange="OnNameChanged"</code>, instead. The check raises clicks, double clicks, changes,
+                input, key presses, focus and blur, focus entering and leaving a field, and the data grid's row and
+                edit events; it doesn't raise pointer or drag events.
             </li>
         </ul>
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Check your own components</TbText>
@@ -779,7 +781,9 @@
                             grid; it counts the changes the app has answered. An app that changes a component's
                             <code>@@key</code> replaces it, and the new component counts from 0 again, so the count can
                             look unchanged after the app has answered. End the wait when the old element leaves the
-                            page, too; the helpers stop on either.
+                            page, too; the helpers stop on either. The field helpers wait this way, the select,
+                            autocomplete, list box and transfer list ones included, so when a choice makes the app
+                            re-key the field, the helper still returns once the app has the value.
                         </td>
                     </tr>
                     <tr>

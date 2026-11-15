@@ -595,22 +595,26 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field) : TbFieldLoc
             throw new InvalidOperationException("A select that takes one option can't unchoose it; clear it instead.");
         }
 
-        await OpenAsync();
         var state = choose ? "true" : "false";
         foreach (var name in options)
         {
-            // A single select closes once chosen, so the option is found even while its list is hidden.
-            var option = listbox.GetByRole(AriaRole.Option, new() { Name = name, Exact = true, IncludeHidden = true });
+            // An app that re-keys the select as it takes a choice replaces the list with a closed one under a new
+            // id, so open and find the list again for each option.
+            await OpenAsync();
+            var option = (await ListboxAsync(control)).GetByRole(AriaRole.Option, new() { Name = name, Exact = true });
             if (await option.GetAttributeAsync("aria-selected") != state)
             {
-                await option.ClickAsync();
-                // The server applies the choice, so wait for it before reading the next option's state.
-                await Assertions.Expect(option).ToHaveAttributeAsync("aria-selected", state);
+                // The server applies the choice, so wait for its answer before reading the next option's state.
+                await Commit.WaitAsync(control, async () =>
+                {
+                    await option.ClickAsync();
+                    return true;
+                });
             }
         }
 
         // A multiple select stays open for more choices.
-        if (await listbox.IsVisibleAsync())
+        if (await (await ListboxAsync(control)).IsVisibleAsync())
         {
             await control.PressAsync("Escape");
         }
@@ -637,10 +641,13 @@ public sealed class TbAutocompleteLocator(ILocator scope, ILocator field) : TbFi
         await Assertions.Expect(input).ToHaveAttributeAsync("data-ready", "");
         await input.FillAsync(text);
         var listbox = Scope.Document(scope).Locator($"[id='{await input.GetAttributeAsync("aria-controls")}']");
-        await listbox.GetByRole(AriaRole.Option, new() { Name = option, Exact = true }).ClickAsync();
-        // The list closes as the option is clicked, and the server marks the choice a round trip later.
-        await Assertions.Expect(listbox.GetByRole(AriaRole.Option,
-            new() { Name = option, Exact = true, IncludeHidden = true })).ToHaveAttributeAsync("aria-selected", "true");
+        // The server takes the choice a round trip later. An app may re-key the field as it does, replacing the list
+        // and its id, so the wait is for the field's answer, not the option.
+        await Commit.WaitAsync(input, async () =>
+        {
+            await listbox.GetByRole(AriaRole.Option, new() { Name = option, Exact = true }).ClickAsync();
+            return true;
+        });
     }
 }
 
@@ -1316,9 +1323,12 @@ public sealed class TbListBoxLocator(ILocator scope, string label) : TbFieldLoca
             var option = field.GetByRole(AriaRole.Option, new() { Name = name, Exact = true });
             if (await option.GetAttributeAsync("aria-selected") != state)
             {
-                await option.ClickAsync();
-                // The server applies the choice, so wait for it before reading the next option's state.
-                await Assertions.Expect(option).ToHaveAttributeAsync("aria-selected", state);
+                // The server applies the choice, so wait for its answer before reading the next option's state.
+                await Commit.WaitAsync(field, async () =>
+                {
+                    await option.ClickAsync();
+                    return true;
+                });
             }
         }
     }
@@ -1337,14 +1347,14 @@ public sealed class TbTransferListLocator(ILocator scope, string label) : TbFiel
         Root.Locator("[data-part=chosen] [role=option]").AllInnerTextsAsync();
 
     /// <summary>Marks the available items with this text, moves them to the chosen list with its button, and waits
-    /// for them to arrive.</summary>
-    public Task MoveAsync(params string[] items) => MoveAsync("available", "chosen", "move-chosen", items);
+    /// until the app has them.</summary>
+    public Task MoveAsync(params string[] items) => MoveAsync("available", "move-chosen", items);
 
     /// <summary>Marks the chosen items with this text, moves them back to the available list with its button, and
-    /// waits for them to arrive.</summary>
-    public Task MoveBackAsync(params string[] items) => MoveAsync("chosen", "available", "move-available", items);
+    /// waits until the app has the items still chosen.</summary>
+    public Task MoveBackAsync(params string[] items) => MoveAsync("chosen", "move-available", items);
 
-    private async Task MoveAsync(string from, string to, string button, string[] items)
+    private async Task MoveAsync(string from, string button, string[] items)
     {
         ArgumentOutOfRangeException.ThrowIfZero(items.Length, nameof(items));
         var list = Root.Locator($"[data-part={from}] [role=listbox]");
@@ -1360,12 +1370,12 @@ public sealed class TbTransferListLocator(ILocator scope, string label) : TbFiel
             }
         }
 
-        await Root.Locator($"[data-part={button}]").ClickAsync();
-        foreach (var item in items)
+        // The app may still be handling the move after the list shows it, so wait for its answer.
+        await Commit.WaitAsync(Root, async () =>
         {
-            await Assertions.Expect(Root.Locator($"[data-part={to}]")
-                .GetByRole(AriaRole.Option, new() { Name = item, Exact = true })).ToHaveCountAsync(1);
-        }
+            await Root.Locator($"[data-part={button}]").ClickAsync();
+            return true;
+        });
     }
 }
 

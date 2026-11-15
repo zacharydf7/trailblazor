@@ -57,7 +57,8 @@ public class TbContractTests
             {
                 builder.OpenElement(0, "button");
                 builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, () => Value = choice));
-                builder.AddContent(2, choice);
+                builder.AddAttribute(2, "onblur", EventCallback.Factory.Create(this, () => Value = choice));
+                builder.AddContent(3, choice);
                 builder.CloseElement();
             }
         }
@@ -194,6 +195,7 @@ public class TbContractTests
         Assert.Contains(error.Failures, failure => failure.Contains("raised ValueChanged"));
         Assert.Contains(error.Failures, failure => failure.Contains("left a handler behind"));
         Assert.Contains(error.Failures, failure => failure.Contains("lost its onclick handler"));
+        Assert.Contains(error.Failures, failure => failure.Contains("lost its onblur handler"));
     }
 
     [Fact]

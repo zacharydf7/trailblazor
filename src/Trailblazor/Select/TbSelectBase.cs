@@ -13,6 +13,7 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     : TbBoxedFieldBase<TValue>, ISelect, IAsyncDisposable
 {
     private readonly List<ISelectOption> _options = [];
+
     // Past this many options from Items, only those in view are in the page.
     private const int VirtualizeAbove = 100;
 
@@ -23,6 +24,8 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     private const int OptionsBeyondView = 10;
 
     private IReadOnlyList<ItemOption> _itemOptions = [];
+    // One click handler per option id that looks the option up when it runs, since options are rebuilt on each render.
+    private readonly ItemHandlers<string, Func<MouseEventArgs, Task>> _chooseItem;
     private List<ShownOption>? _shown;
     private string _query = "";
     private ElementReference _combobox;
@@ -37,6 +40,8 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     // Whether the script was attached to a filtered select, whose list sits in another element.
     private bool _attachedFiltered;
     private bool _disposed;
+
+    protected TbSelectBase() => _chooseItem = new(id => args => ChooseItemAsync(id, args));
 
     /// <summary>The <see cref="TbOption{TValue}"/>s to choose from.</summary>
     [Parameter]
@@ -290,6 +295,7 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
                 itemTemplate?.Invoke(item) ?? (builder => builder.AddContent(0, text)),
                 itemTemplate is null ? null : text);
         }).ToList() ?? [];
+        _chooseItem.KeepOnly(_itemOptions.Select(option => option.Id));
         _options.AddRange(_itemOptions);
         Show();
     }
@@ -328,9 +334,9 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     private readonly record struct ShownOption(int Index, ItemOption Option);
 
     // A choice the script makes for a key, such as Enter, is a click with no count of presses.
-    private async Task ChooseItemAsync(ItemOption option, MouseEventArgs args)
+    private async Task ChooseItemAsync(string id, MouseEventArgs args)
     {
-        if (!option.Disabled)
+        if (_itemOptions.FirstOrDefault(option => option.Id == id) is { Disabled: false } option)
         {
             await ((ISelect)this).ChooseAsync(option.Value, args.Detail > 0 ? "pointer" : "keyboard");
         }

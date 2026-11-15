@@ -26,6 +26,10 @@ internal static class ContractRules
         ["oninput"] = part => part.InputAsync(new ChangeEventArgs { Value = part.GetAttribute("value") }),
         ["onkeydown"] = part => part.KeyDownAsync(new KeyboardEventArgs { Key = "Shift" }),
         ["onkeyup"] = part => part.KeyUpAsync(new KeyboardEventArgs { Key = "Shift" }),
+        ["onfocus"] = part => part.FocusAsync(new FocusEventArgs()),
+        ["onblur"] = part => part.BlurAsync(new FocusEventArgs()),
+        ["ontbfocusenter"] = part => part.TriggerEventAsync("ontbfocusenter", new FieldFocusEventArgs()),
+        ["ontbfocusleave"] = part => part.TriggerEventAsync("ontbfocusleave", new FieldFocusEventArgs()),
         ["ontbrowclick"] = part => part.TriggerEventAsync("ontbrowclick", new RowClickEventArgs()),
         ["ontbrowextend"] = part => part.TriggerEventAsync("ontbrowextend", new RowExtendEventArgs()),
         ["ontbeditstart"] = part => part.TriggerEventAsync("ontbeditstart", EventArgs.Empty),
@@ -139,7 +143,7 @@ internal static class ContractRules
     }
 
     // Each part keeps its event handlers from render to render, so a test can use a part, let the component render
-    // again and use the same found part again. Custom events not in Events, such as ontbfocusleave, aren't raised.
+    // again and use the same found part again. Events not in Events, such as pointer and drag events, aren't raised.
     public static async Task<List<string>> CheckHandlersAsync(IRenderedComponent<DynamicComponent> cut)
     {
         var failures = new List<string>();
