@@ -32,6 +32,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 - [x] The clear button shows only for text that can change. `TbTextFieldTests.Render_ShouldShowTheClearButtonOnlyForTextThatCanChange_WhenClearable`
 - [x] The show-password button shows and hides the password, leaving focus and the selection in the input. `TextFieldTests.TextField_ShouldKeepFocusAndTheSelection_WhenTheShowPasswordButtonIsPressed`
 - [x] A read-only or disabled field hides its password and disables the show-password button. `TbTextFieldTests.Render_ShouldHideThePasswordAndTurnTheButtonOff_WhenTheFieldCantChange`
+- [x] On a static page, the show-password button shows and hides the password and updates its pressed state and icon. `TextFieldTests.TextFieldLocator_ShouldShowAndHideThePassword_WhenThePageIsStatic`, `TbTextFieldTests.Render_ShouldAddAShowPasswordButton_WhenRevealableOnAStaticPage`
 - [x] A field shows Edge's own show-password button only when it has none of its own and nothing else in the `End` slot. `trailblazor.css`
 - [x] Pasted text fits the mask, and a short paste says so. `TextFieldTests.TextField_ShouldFitPastedTextAndFlagAShortOne_WhenItHasAMask`
 - [x] Text that doesn't parse stays in the input with its message, so it can be fixed. `TextFieldTests.TextField_ShouldKeepTheTextAndExplain_WhenTheTextDoesNotParse`

@@ -5,6 +5,7 @@ import './select-early-click.js';
 import './number-field.js';
 import { focusMarksOnPage } from './autofocus.js';
 import './force-load.js';
+import './password-reveal.js';
 import './form.js';
 import { focusMarkedForms } from './static-form.js';
 import './file-upload.js';
@@ -40,13 +41,14 @@ import './shortcuts.js';
 import './typeahead.js';
 import './unnamed-options.js';
 
-// Keys show Mod as ⌘ on Apple devices, which the styles read from this mark.
-const markPlatform = () => {
+// data-tb-script tells a test on a static page that its controls work; data-tb-apple makes the styles show Mod as ⌘.
+const markRoot = () => {
+    document.documentElement.dataset.tbScript = '';
     if (isApple()) {
         document.documentElement.dataset.tbApple = '';
     }
 };
-markPlatform();
+markRoot();
 
 // Blazor Web Apps call afterWebStarted; standalone WebAssembly and older hosts call afterStarted.
 export function afterWebStarted(blazor) {
@@ -59,7 +61,7 @@ export function afterWebStarted(blazor) {
 
         // The navigation removed the root's inline style and marks too, and the root may not have resized.
         measurePageScrollbar();
-        markPlatform();
+        markRoot();
         // AutoFocus first, so a failed post's first error takes focus last.
         focusMarksOnPage();
         focusMarkedForms();

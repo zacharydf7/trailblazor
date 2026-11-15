@@ -58,7 +58,7 @@
 
     /// <summary>Adds a button that shows and hides the password; the button is pressed while the password shows. It
     /// needs <see cref="Type"/> set to <see cref="TextFieldType.Password"/>. A read-only or disabled field keeps it
-    /// hidden, and a static page leaves the button out.</summary>
+    /// hidden. On a static page, Trailblazor's script shows and hides the password.</summary>
     [Parameter]
     public bool Revealable { get; set; }
 
@@ -176,8 +176,9 @@
             builder.AddAttribute(23, "ontbenter", OnEnter);
         }
 
-        // A shown password is still a password, so the browser mustn't check, correct or capitalize it.
-        if (_revealed)
+        // A shown password is still a password, so the browser mustn't check, correct or capitalize it. A static page's
+        // script shows it without a render, so there the attributes are set from the start.
+        if (_revealed || (Revealable && StaticPage))
         {
             builder.AddAttribute(24, "spellcheck", "false");
             builder.AddAttribute(25, "autocorrect", "off");
@@ -212,10 +213,7 @@
 
     private bool ShowsClear => Clearable && !Disabled && !ReadOnly && !string.IsNullOrEmpty(Text);
 
-    // A static page can't switch the type, so it keeps the browser's own show-password button, if any.
-    private bool ShowsReveal => Revealable && !StaticPage;
-
-    private RenderFragment? EndWithClear => !ShowsClear && !ShowsReveal ? End :
+    private RenderFragment? EndWithClear => !ShowsClear && !Revealable ? End :
         @<text>
             @if (ShowsClear)
             {
@@ -224,12 +222,13 @@
                               aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="ClearAsync"
                               data-part="clear" />
             }
-            @if (ShowsReveal)
+            @if (Revealable)
             {
                 <TbIconButton Icon="@(_revealed ? BuiltInIcons.EyeOff : BuiltInIcons.Eye)"
                               AriaLabel="@(Labels.ShowPassword ?? Localizer[TbStrings.TextFieldShowPassword])"
                               aria-describedby="@ClearDescribedBy" Size="Size.Small" Pressed="_revealed"
-                              PressedChanged="Reveal" Disabled="@(Disabled || ReadOnly)" data-part="reveal" />
+                              PressedChanged="Reveal" Disabled="@(Disabled || ReadOnly)" data-part="reveal"
+                              data-other-icon="@(StaticPage ? BuiltInIcons.EyeOff.Svg : null)" />
             }
             @End
         </text>;

@@ -185,6 +185,24 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextFieldLocator_ShouldShowAndHideThePassword_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-password");
+        var password = page.Tb().TextField("Password");
+        var button = page.Locator("[data-part=reveal]");
+        var hiddenIcon = await button.Locator("svg").InnerHTMLAsync();
+
+        await password.ShowPasswordAsync();
+        await Expect(page.GetByLabel("Password", new() { Exact = true })).ToHaveAttributeAsync("type", "text");
+        var shownIcon = await button.Locator("svg").InnerHTMLAsync();
+        await password.HidePasswordAsync();
+
+        await Expect(page.GetByLabel("Password", new() { Exact = true })).ToHaveAttributeAsync("type", "password");
+        Assert.NotEqual(hiddenIcon, shownIcon);
+        Assert.Equal(hiddenIcon, await button.Locator("svg").InnerHTMLAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldCountEachKeystrokeAndStopAtTheLimit_WhenItShowsACount(string browser)
     {
         var page = await OpenAsync(browser, "/text-count");

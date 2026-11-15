@@ -3319,9 +3319,8 @@ public static class ExampleCatalog
                     + "picks the one-form when the count is 1 and the other form otherwise, so an `ITbLocalizer` with "
                     + "more plural forms is only asked for those two."),
                 new("A shown password turns off spell checking, autocorrect and capitalization, so the browser doesn't "
-                    + "send it to a spelling service or change what was typed. A static page leaves the show-password "
-                    + "button out, since switching the type needs an interactive page; in Edge, the browser's own "
-                    + "button shows there instead."),
+                    + "send it to a spelling service or change what was typed. On a static page, such as a sign-in "
+                    + "page, Trailblazor's script runs the show-password button, so it works without a circuit."),
             ],
             Ready = new("[data-part=input]", "a masked field's input"),
             Target = new("textbox", "Name"),

@@ -318,6 +318,21 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldAddAShowPasswordButton_WhenRevealableOnAStaticPage()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderPassword();
+
+        var button = cut.Find("[data-part=reveal]");
+        var input = cut.Find("input");
+        Assert.Equal(("button", "false", BuiltInIcons.EyeOff.Svg),
+            (button.GetAttribute("type"), button.GetAttribute("aria-pressed"), button.GetAttribute("data-other-icon")));
+        Assert.Equal(("false", "off", "off"), (input.GetAttribute("spellcheck"), input.GetAttribute("autocorrect"),
+            input.GetAttribute("autocapitalize")));
+    }
+
+    [Fact]
     public async Task Reveal_ShouldShowThePasswordUntilPressedAgain_WhenPressed()
     {
         var cut = RenderPassword();
@@ -379,16 +394,6 @@ public class TbTextFieldTests : BunitContext
 
         var input = cut.Find("input");
         Assert.Equal(("password", null), (input.GetAttribute("type"), input.GetAttribute("spellcheck")));
-        Assert.Empty(cut.FindAll("[data-part=reveal]"));
-    }
-
-    [Fact]
-    public void Render_ShouldLeaveTheShowPasswordButtonOut_WhenThePageIsStatic()
-    {
-        SetRendererInfo(new RendererInfo("Static", false));
-
-        var cut = RenderPassword();
-
         Assert.Empty(cut.FindAll("[data-part=reveal]"));
     }
 

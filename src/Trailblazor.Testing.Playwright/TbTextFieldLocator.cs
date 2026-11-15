@@ -77,8 +77,10 @@ public sealed class TbTextFieldLocator(ILocator scope, ILocator field) : TbField
             return;
         }
 
-        // A prerendered field's button does nothing until the page is interactive.
-        await Assertions.Expect(Input).ToHaveAttributeAsync("data-ready", "");
+        // The button does nothing until a prerendered page is interactive or a static page's script has loaded.
+        await (await Input.GetAttributeAsync("data-static") is null
+            ? Assertions.Expect(Input).ToHaveAttributeAsync("data-ready", "")
+            : Assertions.Expect(Scope.Document(Input)).ToHaveAttributeAsync("data-tb-script", ""));
         await button.ClickAsync();
         await Assertions.Expect(button).ToHaveAttributeAsync("aria-pressed", shown ? "true" : "false");
     }
