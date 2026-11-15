@@ -100,6 +100,11 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbTooltip</c> around this trigger.</summary>
     public TbTooltipLocator Tooltip(ILocator trigger) => new(trigger);
 
+    /// <summary>The <c>TbTooltip</c> around the button or link with this accessible name.</summary>
+    public TbTooltipLocator Tooltip(string trigger) => new(scope.GetByRole(AriaRole.Button, new() { Name = trigger,
+        Exact = true }).Or(scope.GetByRole(AriaRole.Link, new() { Name = trigger, Exact = true }))
+        .And(scope.Locator(".tb-tooltip-anchor button, .tb-tooltip-anchor a[href]")));
+
     /// <summary>The <c>TbSplitter</c> separator with this name, such as "Resize Trails".</summary>
     public TbSplitterLocator Splitter(string separator) => new(scope, separator);
 

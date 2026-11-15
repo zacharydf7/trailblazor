@@ -415,3 +415,4 @@ Trailblazor.Testing.Playwright.TbFormLocator.Form.get -> Microsoft.Playwright.IL
 Trailblazor.Testing.Playwright.TbFormLocator.SubmitAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbFormLocator.TbFormLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Form(string? name = null) -> Trailblazor.Testing.Playwright.TbFormLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Tooltip(string! trigger) -> Trailblazor.Testing.Playwright.TbTooltipLocator!

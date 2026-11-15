@@ -5,12 +5,21 @@ namespace Trailblazor.BrowserTests;
 public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFindTheTooltipsTrigger_WhenAnotherControlHasTheSameName(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip-names");
+
+        Assert.Equal("Adds a trail", await page.Tb().Tooltip("Add").TextAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tooltip_ShouldShowAndDescribeItsTrigger_WhenThePageIsStatic(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-tooltip");
         var download = page.GetByRole(AriaRole.Button, new() { Name = "Download" });
 
         Assert.Equal("Saves a copy to your device", await page.Tb().Tooltip(download).TextAsync());
+        Assert.Equal("Saves a copy to your device", await page.Tb().Tooltip("Download").TextAsync());
         await Expect(download).ToHaveAccessibleDescriptionAsync("Saves a copy to your device");
     }
 

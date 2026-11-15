@@ -355,6 +355,13 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Tooltip(trigger).Text</code></th>
+                        <td>
+                            Reads the text of the tooltip around the button or link with this name. bUnit's markup
+                            holds that text from the start, so nothing has to show the tooltip first.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Toasts.WaitForAsync(text)</code></th>
                         <td>
                             Waits for a toast with this text and hands it back. Call it on the markup of the
@@ -1076,8 +1083,9 @@
             + "when the list has none."),
         new("Accordion", "An item's header", "`AccordionItem(header).ExpandAsync()` opens the item, waits until it "
             + "is open and hands back its panel; `CollapseAsync()` closes it."),
-        new("Tooltip", "Its trigger", "`Tooltip(trigger).TextAsync()` rests the pointer on the trigger and returns "
-            + "the tooltip's text once it shows."),
+        new("Tooltip", "Its trigger, or its trigger's name", "`Tooltip(trigger).TextAsync()` rests the pointer on "
+            + "the trigger and returns the tooltip's text once it shows; the trigger is a locator, or a button's or "
+            + "link's name."),
         new("Splitter", "Its separator's name", "`Splitter(\"Resize Trails\").ResizeAsync(percent)` resizes the pane "
             + "with the separator's keys and waits until the app has the size, and `SizeAsync()` reads it."),
         new("Stepper", "Its name, or none for the only one", "`Stepper(name).GoToAsync(title)` goes to a step and "

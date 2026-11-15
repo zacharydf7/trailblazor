@@ -1993,6 +1993,41 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public void Tooltip_ShouldReadItsOwnText_WhenFoundByItsTriggersNameInsideAnotherTooltip()
+    {
+        var cut = Render<TbTooltip>(parameters => parameters.Add(tooltip => tooltip.Text, "Map tools")
+            .AddChildContent<TbTooltip>(inner => inner.Add(tooltip => tooltip.Text, "Add an item")
+                .AddChildContent<TbIconButton>(button => button.Add(each => each.Icon, BuiltInIcons.Close)
+                    .Add(each => each.AriaLabel, "Add"))));
+
+        var missing = Assert.Throws<InvalidOperationException>(() => cut.Tb().Tooltip("Remove").Text);
+
+        Assert.Equal("Add an item", cut.Tb().Tooltip("Add").Text);
+        Assert.Contains("No tooltip's trigger", missing.Message);
+    }
+
+    [Fact]
+    public void Tooltip_ShouldReadALinksTooltipAndRefuseWhatItCantRead_WhenTriggersRepeatOrShowNothing()
+    {
+        var cut = Render<TbStack>(parameters => parameters
+            .AddChildContent<TbTooltip>(tooltip => tooltip.Add(each => each.TextContent, "Opens the\n    trail map")
+                .AddChildContent<TbLink>(link => link.Add(each => each.Href, "map").AddChildContent("Map")))
+            .AddChildContent<TbTooltip>(tooltip => tooltip.Add(each => each.Text, "Adds a trail")
+                .AddChildContent<TbButton>(button => button.AddChildContent("Add")))
+            .AddChildContent<TbTooltip>(tooltip => tooltip.Add(each => each.Text, "Adds a stop")
+                .AddChildContent<TbButton>(button => button.AddChildContent("Add")))
+            .AddChildContent<TbTooltip>(tooltip => tooltip.Add(each => each.Text, "Saves the trip")
+                .Add(each => each.Disabled, true).AddChildContent<TbButton>(button => button.AddChildContent("Save"))));
+
+        var repeated = Assert.Throws<InvalidOperationException>(() => cut.Tb().Tooltip("Add").Text);
+        var silent = Assert.Throws<InvalidOperationException>(() => cut.Tb().Tooltip("Save").Text);
+
+        Assert.Equal("Opens the trail map", cut.Tb().Tooltip("Map").Text);
+        Assert.Contains("2 tooltips' triggers", repeated.Message);
+        Assert.Contains("disabled or has no text", silent.Message);
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
     {
         var answers = new List<string>();

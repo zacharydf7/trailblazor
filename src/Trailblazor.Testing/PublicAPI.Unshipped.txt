@@ -423,3 +423,6 @@ Trailblazor.Testing.TbFormDriver
 Trailblazor.Testing.TbFormDriver.Errors.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbFormDriver.SubmitAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.Form(string? name = null) -> Trailblazor.Testing.TbFormDriver!
+Trailblazor.Testing.TbTooltipDriver
+Trailblazor.Testing.TbTooltipDriver.Text.get -> string!
+Trailblazor.Testing.TrailblazorMarkup.Tooltip(string! trigger) -> Trailblazor.Testing.TbTooltipDriver!

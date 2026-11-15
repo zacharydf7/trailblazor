@@ -6460,12 +6460,13 @@ public static class ExampleCatalog
                 new("tooltip", "The tooltip bubble."),
                 new("arrow", "The arrow that points at the trigger."),
             ],
-            TestingTip = "`await page.Tb().Tooltip(trigger).TextAsync()` from `Trailblazor.Testing.Playwright` rests "
-                + "the pointer on the trigger and returns the tooltip's text once it shows. By hand, tab to or hover "
-                + "the trigger, since `FocusAsync` after a click isn't keyboard focus, then find the tooltip with "
-                + "`GetByRole(AriaRole.Tooltip)`; "
-                + "`ToHaveAccessibleDescriptionAsync` on the trigger checks what screen readers hear. In bUnit the "
-                + "tooltip's text is in the markup from the start, with `role=\"tooltip\"`.",
+            TestingTip = "`await page.Tb().Tooltip(\"Add\").TextAsync()` from `Trailblazor.Testing.Playwright` rests "
+                + "the pointer on the button named \"Add\" and returns the tooltip's text once it shows; it also takes "
+                + "a locator for the trigger. By hand, tab to or hover the trigger, since `FocusAsync` after a click "
+                + "isn't keyboard focus, then find the tooltip with `GetByRole(AriaRole.Tooltip)`; "
+                + "`ToHaveAccessibleDescriptionAsync` on the trigger checks what screen readers hear. In bUnit, "
+                + "`cut.Tb().Tooltip(\"Add\").Text` reads the tooltip's text, which the markup holds from the start, "
+                + "with `role=\"tooltip\"`.",
         },
         new("menu", "Menu", ExampleCategory.Overlays,
             "A list of actions, options and links that opens from a button, with groups and submenus.")

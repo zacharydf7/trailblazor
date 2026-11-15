@@ -432,6 +432,16 @@ public sealed class TrailblazorMarkup
             ? $"No chip group is named \"{name}\"." : $"{groups.Count} chip groups are named \"{name}\".");
     }, _scripts);
 
+    /// <summary>The <c>TbTooltip</c> around the button or link with this accessible name.</summary>
+    public TbTooltipDriver Tooltip(string trigger) => new(() =>
+    {
+        var controls = _findAll(".tb-tooltip-anchor button, .tb-tooltip-anchor a[href]")
+            .Where(control => Choices.NameOf(control) == trigger).ToList();
+        return controls.Count == 1 ? controls[0].Closest(".tb-tooltip-anchor")! : throw new InvalidOperationException(
+            controls.Count == 0 ? $"No tooltip's trigger is named \"{trigger}\"."
+                : $"{controls.Count} tooltips' triggers are named \"{trigger}\".");
+    });
+
     /// <summary>The <c>TbPopconfirm</c> whose trigger has this name.</summary>
     public TbPopconfirmDriver Popconfirm(string trigger) => new(trigger, _findAll);
 
@@ -1621,6 +1631,19 @@ internal static class ChipParts
         return chip.HasAttribute("data-static") ? throw new InvalidOperationException("On a static page a chip's "
             + "buttons do nothing; render the page interactively to use them.") : chip;
     }
+}
+
+/// <summary>A <c>TbTooltip</c>, found by its trigger's name.</summary>
+public sealed class TbTooltipDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbTooltipDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The tooltip's text. bUnit's markup holds it from the start, so nothing has to show it first.</summary>
+    public string Text => _find().QuerySelector(":scope > [role=tooltip]") is { } bubble
+        ? Notices.Collapsed(bubble.TextContent)
+        : throw new InvalidOperationException("This tooltip shows nothing: it's disabled or has no text.");
 }
 
 /// <summary>A <c>TbPopconfirm</c>, found by its trigger's name.</summary>
