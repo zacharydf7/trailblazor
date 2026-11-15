@@ -438,3 +438,9 @@ Trailblazor.Testing.Playwright.TbButtonLocator.Button.get -> Microsoft.Playwrigh
 Trailblazor.Testing.Playwright.TbButtonLocator.ClickAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbButtonLocator.TbButtonLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Button(string! name) -> Trailblazor.Testing.Playwright.TbButtonLocator!
+Trailblazor.Testing.Playwright.TbVirtualListLocator
+Trailblazor.Testing.Playwright.TbVirtualListLocator.CountAsync() -> System.Threading.Tasks.Task<int>!
+Trailblazor.Testing.Playwright.TbVirtualListLocator.Feed.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbVirtualListLocator.ItemAsync(int index) -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
+Trailblazor.Testing.Playwright.TbVirtualListLocator.TbVirtualListLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.VirtualList(string? name = null) -> Trailblazor.Testing.Playwright.TbVirtualListLocator!

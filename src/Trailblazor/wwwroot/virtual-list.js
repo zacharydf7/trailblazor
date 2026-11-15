@@ -154,6 +154,10 @@ export function createVirtualList(feed) {
         }
     };
 
+    // Only .NET holds this script's handle, so the Playwright driver asks for an item with an event.
+    const onScrollTo = event => scrollToIndex(event.detail, false);
+
+    feed.addEventListener('tb-scroll-to', onScrollTo);
     feed.addEventListener('keydown', onKeyDown);
     feed.addEventListener('focusin', onFocusIn);
     feed.addEventListener('focusout', onFocusOut);
@@ -165,6 +169,7 @@ export function createVirtualList(feed) {
         scrollToIndex,
         dispose() {
             renders.disconnect();
+            feed.removeEventListener('tb-scroll-to', onScrollTo);
             feed.removeEventListener('keydown', onKeyDown);
             feed.removeEventListener('focusin', onFocusIn);
             feed.removeEventListener('focusout', onFocusOut);

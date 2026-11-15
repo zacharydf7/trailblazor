@@ -10,7 +10,6 @@ namespace Trailblazor.Tests;
 // bUnit read such as Text matches its Playwright twin TextAsync.
 public class DriverParityTests
 {
-    private const string FollowUp = "a driver in both packages follows in #516";
     private const string InMarkup = "bUnit's markup holds the list whether it's open or not";
     private const string NotInteractive = "not interactive, or a plain button or link found by its role";
 
@@ -34,6 +33,7 @@ public class DriverParityTests
         ["TbFileUpload"] = "FileUpload", ["TbSlider"] = "Slider", ["TbRangeSlider"] = "RangeSlider",
         ["TbRating"] = "Rating", ["TbSplitter"] = "Splitter", ["TbPopover"] = "Popover", ["TbAlert"] = "Alert",
         ["TbBanner"] = "Banner", ["TbBreadcrumbs"] = "Breadcrumbs", ["TbStepper"] = "Stepper",
+        ["TbVirtualList"] = "VirtualList",
         ["TbTimePicker"] = "TimePicker", ["TbChip"] = "Chip", ["TbChipGroup"] = "ChipGroup",
         ["TbCarousel"] = "Carousel", ["TbForm"] = "Form", ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",
         ["TbSpeedDial"] = "Menu", ["TbToolbar"] = "Toolbar", ["TbInsertDivider"] = "InsertDivider",
@@ -76,8 +76,6 @@ public class DriverParityTests
         ["TbSurface"] = NotInteractive,
         ["TbTable"] = NotInteractive, ["TbTableOfContents"] = NotInteractive, ["TbText"] = NotInteractive,
         ["TbThemeHead"] = NotInteractive, ["TbTimeline"] = NotInteractive,
-
-        ["TbVirtualList"] = FollowUp,
     };
 
     // Members only one package has, by type and member name, and why.

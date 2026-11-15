@@ -676,10 +676,14 @@ public static class ExampleCatalog
                 new("placeholder", "An item's place while it loads."),
                 new("empty", "The content shown when there are no items."),
             ],
-            TestingTip = "Find it as `GetByRole(AriaRole.Feed, new() { Name = \"Trail reports\" })` and an item as "
-                + "`GetByRole(AriaRole.Article, new() { Name = \"Report 12: Trail 13\" })`. Only items near the view "
-                + "are drawn, so scroll the feed or press Page Down until a far one shows. In bUnit, `Items` draws "
-                + "the first ones.",
+            TestingTip = "`await page.Tb().VirtualList(\"Trail reports\").ItemAsync(500)` from "
+                + "`Trailblazor.Testing.Playwright` scrolls the list to an item, as a user does, and returns it once "
+                + "drawn; `CountAsync()` reads how many items there are, once an `ItemsProvider` has answered. In bUnit, "
+                + "`cut.Tb().VirtualList(\"Trail reports\")` reads `Count`, and `Item(index)` returns a drawn item. "
+                + "bUnit runs no script, so only the first items are drawn and a far one throws; test it in "
+                + "Playwright. By hand, find the list as "
+                + "`GetByRole(AriaRole.Feed, new() { Name = \"Trail reports\" })` and an item as "
+                + "`GetByRole(AriaRole.Article, new() { Name = \"Report 12: Trail 13\" })`.",
         },
         new("image", "Image", ExampleCategory.Content,
             "An image that requires alternative text and can scale to fit its container.")

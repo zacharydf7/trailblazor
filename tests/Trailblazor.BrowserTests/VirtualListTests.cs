@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class VirtualListTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -106,6 +108,42 @@ public class VirtualListTests(BrowserFixture fixture) : BrowserTest(fixture)
         var likeStops = await posts.GetByRole(AriaRole.Group, new() { Name = "Reaction to Post 1", Exact = true })
             .Locator("[tabindex='0']").CountAsync();
         Assert.Equal(1, likeStops);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReadTheCountAndScrollToAFarItem_WhenAProviderGivesTheItems(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/virtual-list");
+        var sightings = page.Tb().VirtualList("Wildlife sightings");
+
+        var count = await sightings.CountAsync();
+        var far = await sightings.ItemAsync(1500);
+
+        Assert.Equal(2000, count);
+        await Expect(far).ToContainTextAsync("Sighting 1501:");
+        await Expect(far).ToBeInViewportAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldCountNoItems_WhenTheListIsEmpty(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/virtual-list");
+
+        Assert.Equal(0, await page.Tb().VirtualList("Saved hikes").CountAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReachEveryItemAndRefuseOnePastTheEnd_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-virtual-list");
+        var reports = page.Tb().VirtualList("Trail reports");
+
+        var count = await reports.CountAsync();
+        var last = await reports.ItemAsync(499);
+        var past = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => reports.ItemAsync(500));
+
+        Assert.Equal((500, "index"), (count, past.ParamName));
+        await Expect(last).ToHaveTextAsync("Report 500");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

@@ -422,6 +422,20 @@ public sealed class TrailblazorMarkup
             ? $"No carousel is named \"{name}\"." : $"{carousels.Count} carousels are named \"{name}\".");
     });
 
+    /// <summary>The <c>TbVirtualList</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
+    /// given.</summary>
+    public TbVirtualListDriver VirtualList(string? name = null) => new(() =>
+    {
+        var lists = _findAll(".tb-virtual-list[data-part=feed]")
+            .Where(list => name is null || list.GetAttribute("aria-label") == name).ToList();
+        return lists.Count == 1 ? lists[0]
+            : throw new InvalidOperationException(name is not null
+                ? lists.Count == 0 ? $"No virtual list is named \"{name}\"."
+                    : $"Expected one virtual list named \"{name}\", found {lists.Count}."
+                : lists.Count == 0 ? "No virtual list is in the markup."
+                : $"Expected one virtual list, found {lists.Count}; name the one to use.");
+    });
+
     /// <summary>The <c>TbChip</c> whose text is this.</summary>
     public TbChipDriver Chip(string text) => new(() => ChipParts.Find(_findAll(".tb-chip"), text), _scripts);
 
@@ -1529,6 +1543,30 @@ internal static class Notices
 
     internal static string Collapsed(string text) =>
         string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+}
+
+/// <summary>A <c>TbVirtualList</c>, found by its <c>AriaLabel</c>.</summary>
+public sealed class TbVirtualListDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbVirtualListDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>How many items the list has, drawn or not; 0 while its <c>ItemsProvider</c> first loads.</summary>
+    public int Count => int.Parse(_find().GetAttribute("data-count")!, CultureInfo.InvariantCulture);
+
+    /// <summary>The item at this index, from 0. bUnit runs no script, so the list draws only the items its first
+    /// view holds; an item it hasn't drawn throws; test that one with the Playwright driver, which scrolls to it.
+    /// </summary>
+    public IElement Item(int index)
+    {
+        var list = _find();
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Count);
+        return list.QuerySelector($":scope > [data-part=item][data-index='{index}']")
+            ?? throw new InvalidOperationException($"Item {index} isn't drawn. bUnit runs no script, so the list "
+                + "draws only the items its first view holds; test a far item with the Playwright driver.");
+    }
 }
 
 /// <summary>A <c>TbCarousel</c>, found by its <c>AriaLabel</c>.</summary>

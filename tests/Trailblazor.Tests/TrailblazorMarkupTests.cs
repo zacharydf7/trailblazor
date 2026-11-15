@@ -1841,6 +1841,38 @@ public class TrailblazorMarkupTests : BunitContext
         Assert.Equal((3, 2), (carousel.Count, carousel.ActiveIndex));
     }
 
+    private IRenderedComponent<TbVirtualList<string>> RenderReports() => Render<TbVirtualList<string>>(parameters =>
+        parameters.Add(list => list.AriaLabel, "Trail reports")
+            .Add(list => list.Items, Enumerable.Range(1, 1000).Select(number => $"Report {number}").ToArray())
+            .Add(list => list.ChildContent, report => builder => builder.AddContent(0, report)));
+
+    [Fact]
+    public void VirtualList_ShouldReadTheCountAndTheDrawnItems_WhenTheHelperIsUsed()
+    {
+        var cut = RenderReports();
+        var list = cut.Tb().VirtualList();
+
+        var count = list.Count;
+        var second = list.Item(1).TextContent;
+        var far = Assert.Throws<InvalidOperationException>(() => list.Item(999));
+        var past = Assert.Throws<ArgumentOutOfRangeException>(() => list.Item(1000));
+        var misnamed = Assert.Throws<InvalidOperationException>(() => cut.Tb().VirtualList("Trail notes").Count);
+
+        Assert.Equal((1000, "Report 2"), (count, second));
+        Assert.Contains("Playwright", far.Message);
+        Assert.Equal("index", past.ParamName);
+        Assert.Equal("No virtual list is named \"Trail notes\".", misnamed.Message);
+    }
+
+    [Fact]
+    public void VirtualList_ShouldReachEveryItem_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = RenderReports();
+
+        Assert.Equal("Report 1000", cut.Tb().VirtualList("Trail reports").Item(999).TextContent);
+    }
+
     [Fact]
     public async Task Carousel_ShouldRefuseAMove_WhenItDoesntLoopHasNoPickerOrIsStatic()
     {

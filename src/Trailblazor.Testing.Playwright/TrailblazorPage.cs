@@ -178,6 +178,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbCarousel</c> with this <c>AriaLabel</c>.</summary>
     public TbCarouselLocator Carousel(string name) => new(scope, name);
 
+    /// <summary>The <c>TbVirtualList</c> with this <c>AriaLabel</c>, or the only one in the scope when no name is
+    /// given.</summary>
+    public TbVirtualListLocator VirtualList(string? name = null) => new(scope, name);
+
     /// <summary>The <c>TbChip</c> whose text is this.</summary>
     public TbChipLocator Chip(string text) => new(scope.Locator(".tb-chip"), text);
 

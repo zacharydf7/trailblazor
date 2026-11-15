@@ -367,6 +367,14 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>VirtualList(name).Item(index)</code></th>
+                        <td>
+                            Returns the item at an index, from 0, and <code>Count</code> reads how many items the list
+                            has. bUnit runs no script, so the list draws only its first items, and a far one throws;
+                            test it with the Playwright driver, which scrolls to it.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>NavMenu(name).FollowAsync(path)</code></th>
                         <td>
                             Opens each closed group named before the link, then clicks the link and takes the test's
@@ -1173,6 +1181,9 @@
         new("Button or icon button", "Its name", "`Button(name).ClickAsync()` clicks it once the page is "
             + "interactive and it's no longer busy, then waits until the app has run its `OnClick`; `BusyAsync()` "
             + "reads whether it's busy."),
+        new("Virtual list", "Its name, or none for the only one", "`VirtualList(name).ItemAsync(index)` scrolls "
+            + "the list to the item at an index, as a user does, and returns it once drawn; `CountAsync()` reads how "
+            + "many items there are, once an `ItemsProvider` has answered."),
         new("Nav menu", "Its navigation landmark's name, or none for the only one shown",
             "`NavMenu(name).FollowAsync(path)` opens the closed groups named before a link once the page is "
             + "interactive, then follows the link; `CurrentAsync()` reads the current page's link."),
