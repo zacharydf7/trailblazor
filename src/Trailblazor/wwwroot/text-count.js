@@ -5,10 +5,13 @@
 // threshold.
 const lastCount = new WeakMap();
 const thresholds = [20, 0];
+// A rich text editor's editing area has no value, and its textContent leaves out paragraph and line breaks, as its count
+// in .NET does.
+const length = field => (field.value ?? field.textContent).length;
 
 document.addEventListener('focusin', event => {
     if (event.target.dataset?.count) {
-        lastCount.set(event.target, event.target.value.length);
+        lastCount.set(event.target, length(event.target));
     }
 }, true);
 
@@ -27,7 +30,7 @@ function update(field) {
         return;
     }
 
-    const count = field.value.length;
+    const count = length(field);
     const number = new Intl.NumberFormat(counter.dataset.culture || undefined);
     const limit = counter.dataset.limit === undefined ? null : Number(counter.dataset.limit);
     // Blazor keeps the text nodes it rendered and updates those, so they're changed in place rather than replaced.

@@ -1030,6 +1030,8 @@ class Editor {
     // The value goes to .NET as the field asks: when focus leaves, or on each change after its delay.
 
     changed(edited = true) {
+        // The field's count follows input events, but edits the engine makes itself, such as a paste or an undo, fire none.
+        this.root.dispatchEvent(new Event('input', { bubbles: true }));
         if (edited) this.closeStep();
         this.updateToolbar();
         clearTimeout(this.sendTimer);

@@ -3407,8 +3407,14 @@ public static class ExampleCatalog
                     + "field. The shortcuts and paste still apply the formats it allows.",
                     typeof(RichTextEditorToolbarExample)),
                 new("required-and-validation", "Required and validation", "`Required` counts paragraphs with no text "
-                    + "as empty. `Validation` gets the HTML; read its text with `RichTextDocument` to check a length.",
+                    + "as empty. `Validation` gets the HTML; for other checks on the text, read it with "
+                    + "`RichTextDocument`.",
                     typeof(RichTextEditorRequiredExample)),
+                new("character-count-and-limit", "Character count and limit", "`ShowCount` puts a count of the "
+                    + "text's characters under the editor and updates it as you type, and `MaxLength` sets a limit. "
+                    + "Paragraph and line breaks don't count. Typing past the limit isn't stopped, so nothing pasted "
+                    + "is cut off; a longer value shows an error, and a form won't submit it.",
+                    typeof(RichTextEditorCountExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the text focusable, "
                     + "selectable and copyable. `Disabled` takes it out of the tab order. Both disable the toolbar.",
                     typeof(RichTextEditorStatesExample)),
@@ -3478,6 +3484,8 @@ public static class ExampleCatalog
             [
                 "The editing area is a multi-line `textbox`, with `aria-required`, `aria-invalid`, `aria-readonly` "
                     + "and `aria-disabled` as they apply, and the placeholder as `aria-placeholder`.",
+                "With `ShowCount`, the count describes the editing area, and with a `MaxLength`, screen readers hear "
+                    + "the characters left as they reach 20 and 0.",
                 "The toolbar is a [toolbar](components/toolbar), following its WAI-ARIA pattern: one Tab stop, with "
                     + "the arrow keys moving between its buttons. Each format and block button uses `aria-pressed` to "
                     + "report whether it applies to all of the selection, part of it (mixed) or none, and names its "
@@ -3520,6 +3528,9 @@ public static class ExampleCatalog
                 new("editor", "The toolbar and editing area together."),
                 new("toolbar", "The formatting toolbar."),
                 new("input", "The editing area."),
+                new("count", "The counter under the editor, with `ShowCount`."),
+                new("count-shown", "The counter's text, such as 12 / 200, which screen readers skip."),
+                new("count-said", "The counter's words for screen readers, such as 12 of 200 characters."),
             ],
             TestingTips =
             [
@@ -3532,6 +3543,9 @@ public static class ExampleCatalog
                 "To add a link in Playwright, select the text and press `ControlOrMeta+k`, then fill the dialog's "
                     + "\"Link\" field and press Enter.",
                 "`TransformPaste` is a plain function, so test it on a `RichTextDocument` without the editor.",
+                "With `ShowCount`, read the count from the `count-shown` part, as `\"12 / 200\"` with a "
+                    + "`MaxLength`; a value past the limit shows its error once the value updates, when focus leaves the "
+                    + "editor, or when the form submits.",
             ],
         },
         new("number-field", "Number field", ExampleCategory.Inputs,

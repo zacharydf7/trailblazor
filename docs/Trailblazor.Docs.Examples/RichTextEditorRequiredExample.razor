@@ -1,6 +1,6 @@
 <TbForm @ref="_form" aria-label="Trail description" Style="max-inline-size: 32rem">
-    <TbRichTextEditor Label="Description" @bind-Value="_description" Required Validation="CheckLength"
-                      HelperText="Up to 200 characters." />
+    <TbRichTextEditor Label="Description" @bind-Value="_description" Required Validation="CheckCapitals"
+                      HelperText="Write it in sentence case." />
 </TbForm>
 
 @code {
@@ -16,12 +16,13 @@
         }
     }
 
-    // The length that counts is the text people read, not the HTML around it.
-    private static IEnumerable<string> CheckLength(string? html)
+    // The text that counts is what people read, not the HTML around it.
+    private static IEnumerable<string> CheckCapitals(string? html)
     {
-        if (RichTextDocument.Parse(html).ToPlainText().Length > 200)
+        var text = RichTextDocument.Parse(html).ToPlainText();
+        if (text.Any(char.IsLetter) && text == text.ToUpperInvariant())
         {
-            yield return "Keep the description to 200 characters.";
+            yield return "Write the description without all capitals.";
         }
     }
 }

@@ -5717,3 +5717,15 @@ Trailblazor.TbProgress.Buffer.get -> double?
 Trailblazor.TbProgress.Buffer.set -> void
 Trailblazor.TbProgress.Striped.get -> bool
 Trailblazor.TbProgress.Striped.set -> void
+Trailblazor.RichTextEditorLabels.CharactersLeft.get -> string?
+Trailblazor.RichTextEditorLabels.CharactersLeft.init -> void
+Trailblazor.RichTextEditorLabels.Count.get -> string?
+Trailblazor.RichTextEditorLabels.Count.init -> void
+Trailblazor.RichTextEditorLabels.CountOfLimit.get -> string?
+Trailblazor.RichTextEditorLabels.CountOfLimit.init -> void
+Trailblazor.RichTextEditorLabels.TooLong.get -> string?
+Trailblazor.RichTextEditorLabels.TooLong.init -> void
+Trailblazor.TbRichTextEditor.MaxLength.get -> int?
+Trailblazor.TbRichTextEditor.MaxLength.set -> void
+Trailblazor.TbRichTextEditor.ShowCount.get -> bool
+Trailblazor.TbRichTextEditor.ShowCount.set -> void

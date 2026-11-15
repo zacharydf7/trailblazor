@@ -1,6 +1,8 @@
+using System.Linq.Expressions;
 using System.Text.Json;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
@@ -645,5 +647,54 @@ public class TbRichTextEditorTests : BunitContext
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken,
             object?[]? args) => new(new TaskCompletionSource<TValue>().Task);
+    }
+
+    [Theory]
+    [InlineData(null, "4", "4 characters")]
+    [InlineData(10, "4 / 10", "4 of 10 characters")]
+    public void Render_ShouldCountTheTextWithoutItsBreaksAndDescribeTheEditorWithIt_WhenShowCount(int? maxLength,
+        string shown, string said)
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Trail report")
+            .Add(editor => editor.Value, "<p>ab</p><p>c<br>d</p>").Add(editor => editor.ShowCount, true)
+            .Add(editor => editor.MaxLength, maxLength));
+
+        var count = cut.Find("[data-part=count]");
+
+        Assert.Equal((shown, said), (count.QuerySelector("[data-part=count-shown]")!.TextContent,
+            count.QuerySelector("[data-part=count-said]")!.TextContent));
+        Assert.Contains(count.Id, cut.Find("[data-part=input]").GetAttribute("aria-describedby")!.Split(' '));
+        Assert.Equal(count.Id, cut.Find("[data-part=input]").GetAttribute("data-count"));
+    }
+
+    [Theory]
+    [InlineData("<p>Pine <b>Hollow</b></p>", false)]
+    [InlineData("<p>Pine</p><p>Hollow</p>", true)]
+    public void Submit_ShouldBlockTheFormOnlyForTextPastMaxLength_WhenItsBreaksArentCounted(string report, bool sent)
+    {
+        var trip = new Trip { Report = report };
+        var submitted = false;
+        var cut = Render<EditForm>(parameters => parameters.Add(form => form.Model, trip)
+            .Add(form => form.OnValidSubmit, () => submitted = true)
+            .Add(form => form.ChildContent, (EditContext _) => builder =>
+            {
+                builder.OpenComponent<TbRichTextEditor>(0);
+                builder.AddAttribute(1, "Value", trip.Report);
+                builder.AddAttribute(2, "ValueExpression", (Expression<Func<string>>)(() => trip.Report!));
+                builder.AddAttribute(3, "Label", "Trail report");
+                builder.AddAttribute(4, "MaxLength", 10);
+                builder.CloseComponent();
+            }));
+
+        cut.Find("form").Submit();
+
+        Assert.Equal(sent, submitted);
+        Assert.Equal(sent ? [] : ["Trail report can be at most 10 characters."],
+            cut.FindAll("[data-part=error]").Select(error => error.TextContent.Trim()));
+    }
+
+    private sealed class Trip
+    {
+        public string? Report { get; set; }
     }
 }

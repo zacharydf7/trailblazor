@@ -20,6 +20,9 @@ public partial class LabelsRuleTests
     private static readonly Dictionary<string, string> HandedIn = new()
     {
         ["SortableMoved"] = "ItemMover takes SortableLabels.Moved as moved",
+        ["TextFieldCount"] = "FieldCount takes each field's Labels.Count as countLabel",
+        ["TextFieldCountOfLimit"] = "FieldCount takes each field's Labels.CountOfLimit as countOfLimitLabel",
+        ["TextFieldCharactersLeft"] = "FieldCount takes each field's Labels.CharactersLeft as label",
     };
 
     // Strings every component words through the app's localizer alone, and why.
@@ -48,6 +51,7 @@ public partial class LabelsRuleTests
         ["CalendarDates"] = ["TbCalendar", "TbDatePicker", "TbDateRangePicker", "TbDateTimePicker"],
         ["RichTextLinkDialog"] = ["TbRichTextEditor"],
         ["Comparisons"] = ["TbDataGrid", "TbQueryBuilder"],
+        ["FieldCount"] = ["TbTextField", "TbRichTextEditor"],
     };
 
     // Services outside any component, and base classes whose strings every subclass shares.

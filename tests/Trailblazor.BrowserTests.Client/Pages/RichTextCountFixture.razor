@@ -1,0 +1,9 @@
+@page "/rich-text-count"
+
+@* An editor that counts its text against a limit, with its value shown below it. *@
+<TbRichTextEditor Label="Trail report" @bind-Value="_report" ShowCount MaxLength="25" />
+<output data-testid="report">@_report</output>
+
+@code {
+    private string? _report = "<p>Pine</p>";
+}

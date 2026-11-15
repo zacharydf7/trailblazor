@@ -32,11 +32,13 @@
              @ontbrichtextlink="OnLinkAsync" @ontbrichtextpaste="OnPasteAsync" data-part="input"
              id="@InputId" role="textbox"
              aria-multiline="true" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
-             aria-describedby="@InputDescribedBy" aria-required="@AriaRequired"
+             aria-describedby="@(ShowCount ? ClassNames.Join(InputDescribedBy, CountId) : InputDescribedBy)"
+             aria-required="@AriaRequired"
              aria-invalid="@(ShowsInvalid ? "true" : null)" aria-readonly="@(ReadOnly ? "true" : null)"
              aria-disabled="@(Disabled ? "true" : null)" aria-placeholder="@Placeholder" data-placeholder="@Placeholder"
              contenteditable="@(Disabled || _handle is null ? "false" : "true")" tabindex="@(Disabled ? "-1" : "0")"
-             data-ready="@(_handle is null ? null : "")"
+             data-ready="@(_handle is null ? null : "")" data-count="@(ShowCount ? CountId : null)"
+             @ontbcharactersleft="OnCharactersLeft"
              inputmode="@(ReadOnly ? "none" : null)" spellcheck="true"
              style="--tb-rich-text-editor-lines: @Lines; --tb-rich-text-editor-max-lines: @(MaxLines ?? 0)"
              class="@ClassNames.Join("tb-field__input", "tb-rich-text-editor__content",
@@ -111,6 +113,19 @@
     /// area grows with its text.</summary>
     [Parameter]
     public int? MaxLines { get; set; }
+
+    /// <summary>The most characters the text can have, counted as the browser counts them (UTF-16 code units) and
+    /// leaving out paragraph and line breaks. A longer value shows an error; typing past the limit isn't stopped, so
+    /// nothing a user pastes is cut off.</summary>
+    [Parameter]
+    public int? MaxLength { get; set; }
+
+    /// <summary>Shows a count of the text's characters under the editor, as "12 / 200" with a
+    /// <see cref="MaxLength"/> or "12" without one, counted as <see cref="MaxLength"/> counts them. It follows typing in
+    /// the browser, and screen readers hear it as the editor's description. With a limit, the editor announces the
+    /// characters left as they reach 20 and 0.</summary>
+    [Parameter]
+    public bool ShowCount { get; set; }
 
     /// <summary>Updates the value on every change instead of when focus leaves the editor.</summary>
     [Parameter]
@@ -217,6 +232,38 @@
 
     // The value as the editor holds it: parsed, so only the allowed formats and safe markup reach the page.
     private string Canonical => RichTextDocument.Parse(Value, Schema).ToHtml();
+
+    private string CountId => $"{FieldId}-count";
+
+    // The text's characters without its breaks, as text-count.js counts the editing area's text. Each render and each
+    // check of a form asks again, so the last answer is kept.
+    private (string? Value, RichTextSchema Schema, int Count)? _count;
+
+    private int CountOf(string? value)
+    {
+        var schema = Schema;
+        if (_count is not { } last || last.Value != value || last.Schema != schema)
+        {
+            _count = (value, schema, RichTextDocument.Parse(value, schema).Paragraphs
+                .Sum(paragraph => paragraph.Text.Count(c => c != '\n')));
+        }
+
+        return _count.Value.Count;
+    }
+
+    private protected override string? ValueError(string? value) =>
+        MaxLength is { } max && CountOf(value) > max
+            ? Labels.TooLong is { } template ? FormatMessage(template, max)
+                : CountedMessage(TbStrings.TextFieldTooLong, max)
+            : null;
+
+    private protected override RenderFragment? AfterMessages => ShowCount
+        ? FieldCount.Render(CountId, CountOf(Value), MaxLength, (Commits, Value),
+            count => FieldCount.Said(Localizer, MaxLength, count, Labels.Count, Labels.CountOfLimit))
+        : null;
+
+    private void OnCharactersLeft(CharactersLeftEventArgs args) =>
+        Announcer.Polite(FieldCount.CharactersLeft(Localizer, args.Left, Labels.CharactersLeft));
 
     // An anonymous object compares by value, so the script hears of options only when they change.
     private object Options => new

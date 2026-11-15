@@ -7,6 +7,58 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     public static TheoryData<string> Chromium => new(AllBrowsers.Names.Where(name => name == "chromium"));
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Count_ShouldFollowTypingAndAnnounceTheCharactersLeft_WhenTheEditorShowsACount(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-count");
+        var report = page.GetByRole(AriaRole.Textbox, new() { Name = "Trail report" });
+        await Expect(report).ToHaveAttributeAsync("data-ready", "");
+        var shown = page.Locator("[data-part=count-shown]");
+        await Expect(shown).ToHaveTextAsync("4 / 25");
+
+        await report.ClickAsync();
+        await page.Keyboard.PressAsync("Control+End");
+        await page.Keyboard.TypeAsync("s");
+        // Wait for this count: keys that land together cross the threshold in one update and would announce a later count.
+        await Expect(shown).ToHaveTextAsync("5 / 25");
+        // A new paragraph's break isn't counted, as it isn't in .NET.
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.TypeAsync("Ridge");
+
+        await Expect(shown).ToHaveTextAsync("10 / 25");
+        await Expect(page.Locator("[data-part=polite]").GetByText("20 characters left.", new() { Exact = true }))
+            .ToHaveCountAsync(1);
+        await Expect(page.GetByTestId("report")).ToHaveTextAsync("<p>Pine</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Count_ShouldFollowAPasteAndAnnounceTheCharactersLeft_WhenTheEditorShowsACount(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-count");
+        var report = page.GetByRole(AriaRole.Textbox, new() { Name = "Trail report" });
+        await Expect(report).ToHaveAttributeAsync("data-ready", "");
+        await report.ClickAsync();
+        await page.Keyboard.PressAsync("Control+End");
+
+        // The editor puts pasted text in itself, so the browser sends no input event for it.
+        await report.EvaluateAsync("""
+            area => {
+                const data = new DataTransfer();
+                data.setData('text/plain', ' Hollow loop');
+                const paste = new ClipboardEvent('paste', { bubbles: true, cancelable: true });
+                Object.defineProperty(paste, 'clipboardData', { value: data });
+                area.dispatchEvent(paste);
+            }
+            """);
+
+        await Expect(page.Locator("[data-part=count-shown]")).ToHaveTextAsync("16 / 25");
+        await Expect(page.Locator("[data-part=polite]").GetByText("9 characters left.", new() { Exact = true }))
+            .ToHaveCountAsync(1);
+        // Undo goes through the editor too.
+        await page.Keyboard.PressAsync("ControlOrMeta+z");
+        await Expect(page.Locator("[data-part=count-shown]")).ToHaveTextAsync("4 / 25");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Typing_ShouldLandAsShownAndTakeTheMarksBefore_WhenTypingInsideAndAfterAMarkedRun(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-editor");
