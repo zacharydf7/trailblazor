@@ -34,10 +34,11 @@ public class GuideTests : DocsTest
 
         var text = GuideText.Of(GuideCatalog.All.Single(guide => guide.Path == path));
 
-        // The palettes guide builds a section for each palette; search reads those from PaletteCatalog, not from the
-        // page's source.
-        var shown = cut.FindAll(".docs-article__body > .docs-section > h2")
-            .Where(heading => !heading.Id!.StartsWith("palette-", StringComparison.Ordinal));
+        // The palettes and upgrading guides build a section for each palette or date; search reads those from
+        // PaletteCatalog and UpgradeCatalog, not from the page's source.
+        var shown = cut.FindAll(".docs-article__body > .docs-section > h2").Where(heading =>
+            !heading.Id!.StartsWith("palette-", StringComparison.Ordinal)
+            && !heading.Id.StartsWith("changes-", StringComparison.Ordinal));
         Assert.Equal(shown.Select(heading => (heading.Id!, heading.TextContent.Trim())),
             text.Sections.Select(section => (section.Id, section.Title)));
         // Code the guide shows, such as <TbStack Gap="4"> or @bind-Value, is text; Razor it runs is not.
@@ -242,6 +243,26 @@ public class GuideTests : DocsTest
         Time.Advance(TimeSpan.FromSeconds(7));
 
         announcer.WaitForAssertion(() => Assert.Empty(Polite()));
+    }
+
+    [Fact]
+    public void UpgradingGuide_ShouldShowEachDateAndChangeTheChangelogLists_WhenOpened()
+    {
+        // The list runs from the first date to the next heading that isn't a date, as UpgradeCatalog reads it.
+        var changelog = File.ReadAllLines(Path.Combine(Repository.Root, "CHANGELOG.md"))
+            .SkipWhile(line => !line.StartsWith("#### ", StringComparison.Ordinal))
+            .TakeWhile(line => !line.StartsWith('#') || line.StartsWith("#### ", StringComparison.Ordinal))
+            .Where(line => line.StartsWith("#### ", StringComparison.Ordinal)
+                || line.StartsWith("- ", StringComparison.Ordinal))
+            .Select(line => line.Replace(@"\<", "<"));
+
+        var page = PageAt("guides/upgrading")
+            .FindAll(".docs-article__body > .docs-section > h2, .docs-article__body tbody tr")
+            .Where(part => part.TagName != "H2" || part.Id!.StartsWith("changes-", StringComparison.Ordinal))
+            .Select(part => part.TagName == "H2" ? $"#### {part.Id!["changes-".Length..]}"
+                : $"- {part.Children[0].TextContent.Trim()} → {part.Children[1].TextContent.Trim()}");
+
+        Assert.Equal(changelog, page);
     }
 
     [Fact]

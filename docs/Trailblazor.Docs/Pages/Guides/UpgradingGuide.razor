@@ -1,0 +1,61 @@
+@page "/guides/upgrading"
+@using Trailblazor.Docs.Examples
+
+<PageTitle>Upgrading · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        @foreach (var changes in UpgradeCatalog.All)
+        {
+            <TbTableOfContentsItem TargetId="@changes.Id" Text="@changes.Title" />
+        }
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Upgrading</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Every public name that was renamed or removed, newest first, with what to use in its place. Until the first
+            release they're listed by date; after it, by version.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsCallout Tone="Tone.Warning" Title="Search your markup for the old names">
+            A renamed parameter still set as an attribute isn't always a build error: most components pass an
+            attribute they don't know on to their element, where it does nothing. Code that calls a renamed member
+            does fail to build.
+        </DocsCallout>
+        @foreach (var changes in UpgradeCatalog.All)
+        {
+            <DocsHeading Id="@changes.Id" Text="@changes.Title" Class="docs-section" />
+            <div class="docs-api" tabindex="0" role="region" aria-label="@($"Changes on {changes.Title}")">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Before</th>
+                            <th scope="col">Now</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var change in changes.Changes)
+                        {
+                            <tr>
+                                <th scope="row">@change.Old</th>
+                                <td>@change.New</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li>
+                <a href="guides/analyzers">Analyzers</a>: TB005 warns about a type parameter given under the wrong name,
+                such as <code>TItem</code> on a <code>TbCheckboxItem</code>.
+            </li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+

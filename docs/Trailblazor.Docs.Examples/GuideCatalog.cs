@@ -55,6 +55,8 @@ public static class GuideCatalog
                 + "class selectors."),
         new("guides/wrapping", "Wrapping components",
             "Give a component your app's defaults in a wrapper of your own, and pass everything else through."),
+        new("guides/upgrading", "Upgrading",
+            "Every public name that was renamed or removed, and what to use in its place."),
         new("guides/analyzers", "Analyzers",
             "As your app builds, catch an unnamed control or field, an untitled dialog, or a value that snaps back "
                 + "after the user changes it."),

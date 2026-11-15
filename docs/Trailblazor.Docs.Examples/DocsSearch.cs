@@ -90,6 +90,17 @@ public static class DocsSearch
                 SearchMatch.Heading);
         }
 
+        // The upgrading guide builds a section for each date in a loop, so its headings aren't in the page's source.
+        if (guide.Path == "guides/upgrading")
+        {
+            foreach (var changes in UpgradeCatalog.All)
+            {
+                yield return page.Passage(changes.Title, $"{guide.Path}#{changes.Id}", changes.Title,
+                    string.Join(" ", changes.Changes.Select(change => $"{change.Old} {change.New}")),
+                    SearchMatch.Heading);
+            }
+        }
+
         // The palettes guide builds a section for each palette in a loop, so its headings aren't in the page's source.
         if (guide.Path == "guides/palettes")
         {

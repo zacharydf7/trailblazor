@@ -92,7 +92,7 @@ public class DocsSearchTests
     [InlineData("guides",
         new[] { "Getting started", "Forms and validation", "Accessibility", "Theming", "Palettes", "Spacing",
             "Browser", "Announcements", "Rich text", "Icons", "Localization", "Right-to-left and culture", "Testing",
-            "Migrating tests", "Wrapping components", "Analyzers",
+            "Migrating tests", "Wrapping components", "Upgrading", "Analyzers",
             "Telemetry" })]
     public void Find_ShouldRankEverythingInACategoryAsATitleMatch_WhenGivenItsName(string category, string[] titles)
     {
@@ -175,6 +175,15 @@ public class DocsSearchTests
 
         Assert.Contains(results, result => result is { Page: "Palettes", Section: "Graphite",
             Path: "guides/palettes#palette-graphite", Match: SearchMatch.Heading });
+    }
+
+    [Fact]
+    public void Find_ShouldLinkAnUpgradingSection_WhenAnOldNameIsSearched()
+    {
+        var results = DocsSearch.Find("ItemEnd");
+
+        Assert.Contains(results, result => result is { Page: "Upgrading", Section: "November 12, 2026",
+            Path: "guides/upgrading#changes-2026-11-12", Match: SearchMatch.Text });
     }
 
     [Theory]

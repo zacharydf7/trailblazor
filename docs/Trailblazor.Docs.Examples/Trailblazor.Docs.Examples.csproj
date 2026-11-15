@@ -21,6 +21,7 @@
     <EmbeddedResource Include="roadmap.json" LogicalName="Roadmap/roadmap.json" />
     <EmbeddedResource Include="..\Trailblazor.Docs\Pages\Guides\*.razor" LogicalName="Guides/%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\src\Trailblazor\wwwroot\trailblazor.css" LogicalName="Css/trailblazor.css" />
+    <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="Changelog/CHANGELOG.md" />
   </ItemGroup>
 
   <!-- The library's XML documentation comes with its reference, and the API tables read it at run time. -->
