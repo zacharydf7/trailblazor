@@ -377,10 +377,15 @@
     // .NET writes large doubles with exponents, such as 1E+29, which BindConverter can't read back.
     private static bool TryConvert(string? text, out TValue? value)
     {
-        if ((NumberType != typeof(double) && NumberType != typeof(float)) || string.IsNullOrEmpty(text))
+        if (string.IsNullOrEmpty(text))
         {
-            return BindConverter.TryConvertTo(text, CultureInfo.InvariantCulture, out value)
-                || TryConvertExponent(text, out value);
+            value = default;
+            return Nullable.GetUnderlyingType(typeof(TValue)) is not null;
+        }
+
+        if (NumberType != typeof(double) && NumberType != typeof(float))
+        {
+            return TryConvertExact(text, out value);
         }
 
         var parsed = double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number);
@@ -389,20 +394,28 @@
         return parsed && double.IsFinite(Convert.ToDouble(value, CultureInfo.InvariantCulture));
     }
 
-    // An integer or decimal written with an exponent, such as 1e3, if it comes to a value its type holds.
-    private static bool TryConvertExponent(string? text, out TValue? value)
+    // An integer or decimal, with or without an exponent such as 1e3, if it comes to a value its type holds.
+    // BindConverter throws on text it can't read for byte, sbyte and the unsigned types.
+    private static bool TryConvertExact(string text, out TValue? value)
     {
         value = default;
-        if (text?.Contains('e', StringComparison.OrdinalIgnoreCase) != true
-            || !decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number))
+        var exponent = text.IndexOf('e', StringComparison.OrdinalIgnoreCase);
+        // A decimal rounds off a fraction past 28 digits, so a whole type reads text without an exponent as an integer.
+        if (exponent < 0 && NumberTypes.IsWhole(NumberType))
+        {
+            return Int128.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var whole)
+                && whole >= long.MinValue && whole <= ulong.MaxValue && TryFitType((decimal)whole, out value);
+        }
+
+        if (!decimal.TryParse(text, NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture,
+                out var number))
         {
             return false;
         }
 
         // A fraction as small as 1e-30 reads as a decimal zero, so a whole type takes zero only from a zero mantissa.
-        var mantissa = text[..text.IndexOf('e', StringComparison.OrdinalIgnoreCase)];
         return (number != 0 || !NumberTypes.IsWhole(NumberType)
-                || (decimal.TryParse(mantissa, NumberStyles.Float, CultureInfo.InvariantCulture, out var start)
+                || (decimal.TryParse(text[..exponent], NumberStyles.Number, CultureInfo.InvariantCulture, out var start)
                     && start == 0))
             && TryFitType(number, out value);
     }

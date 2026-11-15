@@ -343,6 +343,42 @@ public class TbNumberFieldTests : BunitContext
     }
 
     [Fact]
+    public void Change_ShouldReadTheNumber_WhenTheFieldHoldsASmallWholeType()
+    {
+        Assert.Equal((byte)7, Committed<byte>("7"));
+        Assert.Equal((byte)0, Committed<byte>("0"));
+        Assert.Equal((sbyte)-7, Committed<sbyte>("-7"));
+        Assert.Equal((short)1000, Committed<short>("1e3"));
+        Assert.Equal((ushort)1000, Committed<ushort>("1,000"));
+        Assert.Equal(7u, Committed<uint>(" 7 "));
+        Assert.Equal(70ul, Committed<ulong>("7e1"));
+    }
+
+    [Fact]
+    public void Change_ShouldShowAnErrorInsteadOfThrowing_WhenASmallWholeTypeGetsTextItCantHold()
+    {
+        string[] errors =
+        [
+            ErrorAfter<byte>("abc"), ErrorAfter<byte>("1.5"), ErrorAfter<byte>("300"), ErrorAfter<byte>("1e3"),
+            ErrorAfter<byte>("-1"), ErrorAfter<sbyte>("abc"), ErrorAfter<sbyte>("1.5"), ErrorAfter<sbyte>("200"),
+            ErrorAfter<short>("abc"), ErrorAfter<short>("1.5"), ErrorAfter<short>("40000"), ErrorAfter<ushort>("abc"),
+            ErrorAfter<ushort>("1.5"), ErrorAfter<ushort>("70000"), ErrorAfter<uint>("abc"), ErrorAfter<uint>("1.5"),
+            ErrorAfter<uint>("5000000000"), ErrorAfter<ulong>("abc"), ErrorAfter<ulong>("1.5"), ErrorAfter<ulong>("-1"),
+            ErrorAfter<ulong>("100000000000000000000000000000"), ErrorAfter<long>("-100000000000000000000000000000"),
+        ];
+
+        Assert.All(errors, error => Assert.Equal("Copies must be a number.", error));
+    }
+
+    [Theory]
+    [InlineData("0.000000000000000000000000000001")]
+    [InlineData("0.99999999999999999999999999999")]
+    public void Change_ShouldShowAnError_WhenAWholeNumberFieldGetsAFractionTooLongForADecimal(string text)
+    {
+        Assert.Equal("Copies must be a number.", ErrorAfter<int>(text));
+    }
+
+    [Fact]
     public void Change_ShouldShowAnError_WhenAFloatIsTooLargeForItsType()
     {
         var cut = Render<TbNumberField<float>>(parameters => parameters.Add(field => field.Label, "Ratio"));
@@ -753,6 +789,23 @@ public class TbNumberFieldTests : BunitContext
                 }));
             builder.CloseComponent();
         }
+    }
+
+    private TValue Committed<TValue>(string text) where TValue : struct
+    {
+        var value = default(TValue);
+        var cut = Render<TbNumberField<TValue>>(parameters => parameters
+            .Add(field => field.ValueChanged, (TValue number) => value = number));
+        Commit(cut, text);
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+        return value;
+    }
+
+    private string ErrorAfter<TValue>(string text) where TValue : struct
+    {
+        var cut = Render<TbNumberField<TValue>>(parameters => parameters.Add(field => field.Label, "Copies"));
+        Commit(cut, text);
+        return cut.Find("[data-part=error]").TextContent.Trim();
     }
 
     private static void Commit<TValue>(IRenderedComponent<TbNumberField<TValue>> cut, string text) =>
