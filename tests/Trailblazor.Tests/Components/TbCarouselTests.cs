@@ -38,6 +38,14 @@ public class TbCarouselTests : BunitContext
 
     private List<int> Indexes { get; } = [];
 
+    // The tick fires on another thread, so while the renderer is busy its turn waits behind the work in hand.
+    private void TickFromAnotherThread()
+    {
+        var tick = new Thread(() => _time.Advance(FiveSeconds));
+        tick.Start();
+        tick.Join();
+    }
+
     private IRenderedComponent<TbCarousel> RenderCarousel(
         Action<ComponentParameterCollectionBuilder<TbCarousel>>? configure = null) => Render<TbCarousel>(parameters =>
     {
@@ -146,18 +154,47 @@ public class TbCarouselTests : BunitContext
     {
         var cut = RenderTurning();
 
-        // The tick fires on another thread while the renderer is busy, so its turn waits until the pause is handled.
+        // The tick's turn waits until the pause has been handled.
         await cut.InvokeAsync(() =>
         {
-            var tick = new Thread(() => _time.Advance(FiveSeconds));
-            tick.Start();
-            tick.Join();
+            TickFromAnotherThread();
             Events().Value.OnFocusEnter(fromKeyboard: false);
         });
         // Work queued on the renderer runs in order, so the tick's turn has run once this has.
         await cut.InvokeAsync(() => { });
 
         Assert.Equal("Pine", Shown(cut));
+    }
+
+    [Fact]
+    public async Task AutoPlayInterval_ShouldWaitTheNewInterval_WhenATickOfTheOldOneRunsAfterTheChange()
+    {
+        var cut = RenderTurning();
+
+        await cut.InvokeAsync(() =>
+        {
+            TickFromAnotherThread();
+            cut.Render(parameters => parameters.Add(carousel => carousel.AutoPlayInterval, FiveSeconds * 2));
+        });
+        await cut.InvokeAsync(() => { });
+
+        Assert.Equal("Pine", Shown(cut));
+    }
+
+    [Fact]
+    public async Task Carousel_ShouldNotTurn_WhenATickQueuedBeforeItIsDisposedRunsAfterIt()
+    {
+        var cut = RenderTurning();
+        _handle.SetupVoid("dispose").SetVoidResult();
+
+        await cut.InvokeAsync(async () =>
+        {
+            TickFromAnotherThread();
+            await cut.Instance.DisposeAsync();
+        });
+        await cut.InvokeAsync(() => { });
+
+        Assert.Empty(Indexes);
     }
 
     [Fact]

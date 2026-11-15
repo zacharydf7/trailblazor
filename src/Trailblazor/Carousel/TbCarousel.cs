@@ -238,15 +238,17 @@ public partial class TbCarousel
         if (Rotating && _timer is null)
         {
             _timerInterval = AutoPlayInterval!.Value;
-            _timer = Time.CreateTimer(_ => _ = InvokeAsync(TurnFromTimerAsync), null, _timerInterval, _timerInterval);
+            ITimer? timer = null;
+            timer = _timer = Time.CreateTimer(_ => _ = InvokeAsync(() => TurnFromTimerAsync(timer)), null,
+                _timerInterval, _timerInterval);
         }
     }
 
     // Runs outside any event handler, so it hands a failing ActiveIndexChanged to the renderer.
-    private async Task TurnFromTimerAsync()
+    private async Task TurnFromTimerAsync(ITimer? timer)
     {
-        // A tick that fired before a pause can run after it, until the render that follows stops the timer.
-        if (!Rotating)
+        // A tick that fired before a pause, a new interval or disposal can run after it, so it checks it still counts.
+        if (timer != _timer || _timerInterval != AutoPlayInterval || !Rotating)
         {
             return;
         }
@@ -266,6 +268,7 @@ public partial class TbCarousel
     {
         _disposed = true;
         _timer?.Dispose();
+        _timer = null;
         if (_handle is not null)
         {
             await _handle.DisposeHandleAsync();
