@@ -105,6 +105,100 @@ public class ScrollLockTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Fact]
+    public async Task Page_ShouldNotMarkALeftScrollbar_WhenARightToLeftPagesScrollbarIsOnTheRight()
+    {
+        var page = await OpenPageAsync();
+        await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
+        await GrowAsync(page);
+
+        Assert.False(await page.EvaluateAsync<bool>(
+            "() => document.documentElement.hasAttribute('data-tb-scrollbar-left')"));
+    }
+
+    [Fact]
+    public async Task Page_ShouldMeasureItsScrollbarAgain_WhenItsDirectionChanges()
+    {
+        var page = await GrowAsync(await OpenPageAsync());
+        await page.EvaluateAsync("() => document.documentElement.toggleAttribute('data-tb-scrollbar-left', true)");
+
+        await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
+
+        await page.WaitForFunctionAsync("() => !document.documentElement.hasAttribute('data-tb-scrollbar-left')");
+    }
+
+    [Fact]
+    public async Task Page_ShouldMeasureItsScrollbarAgain_WhenItsDirectionChangedWhileAModalWasOpen()
+    {
+        var page = await GrowAsync(await OpenPageAsync());
+        await OpenModalAsync(page);
+        await WaitForNoScrollbarAsync(page);
+        // A locked page has no scrollbar to measure, so the stale mark and the new direction wait for the lock to end.
+        await page.EvaluateAsync("""
+            () => {
+                document.documentElement.toggleAttribute('data-tb-scrollbar-left', true);
+                document.documentElement.dir = 'rtl';
+            }
+            """);
+
+        await page.Keyboard.PressAsync("Escape");
+        await WaitForScrollbarAsync(page, true);
+
+        await page.WaitForFunctionAsync("() => !document.documentElement.hasAttribute('data-tb-scrollbar-left')");
+    }
+
+    [Fact]
+    public async Task Modal_ShouldAddNoRoom_WhenThePageShrankWhileAModalWasOpen()
+    {
+        var page = await GrowAsync(await OpenPageAsync());
+        await OpenModalAsync(page);
+        await WaitForNoScrollbarAsync(page);
+        // The page behind the modal is inert, so the test can't click Shrink and sets the height itself.
+        await page.EvaluateAsync("() => document.querySelector('[style*=\"block-size\"]').style.blockSize = '1px'");
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(page.GetByRole(AriaRole.Dialog)).ToBeHiddenAsync();
+        await WaitForScrollbarAsync(page, false);
+        await OpenModalAsync(page);
+
+        Assert.Equal(0, await RootPaddingAsync(page));
+    }
+
+    // Only Firefox with classic scrollbars draws the scrollbar on the left, and these tests run in Chromium, so this one
+    // sets the page's left-scrollbar mark by hand.
+    [Theory]
+    [InlineData("bottomend")]
+    [InlineData("bottomcenter")]
+    public async Task Modal_ShouldPadTheLeftEdgeAndMoveToastersThere_WhenTheScrollbarWasOnTheLeft(string position)
+    {
+        var page = await GrowAsync(await OpenPageAsync());
+        var width = await page.EvaluateAsync<double>("() => innerWidth - document.documentElement.clientWidth");
+        await page.EvaluateAsync("""
+            position => {
+                document.documentElement.dir = 'rtl';
+                const toaster = document.body.appendChild(document.createElement('section'));
+                toaster.className = `tb-toaster tb-toaster--${position}`;
+                toaster.dataset.testid = 'stand-in';
+                toaster.textContent = 'Stand-in';
+            }
+            """, position);
+        // Set after the direction change, since the page measures its scrollbar again then and would clear the mark.
+        await page.EvaluateAsync("() => document.documentElement.toggleAttribute('data-tb-scrollbar-left', true)");
+
+        await OpenModalAsync(page);
+        await WaitForNoScrollbarAsync(page);
+
+        var padding = await page.EvaluateAsync<double[]>("""
+            () => {
+                const style = getComputedStyle(document.documentElement);
+                return [parseFloat(style.paddingLeft), parseFloat(style.paddingRight)];
+            }
+            """);
+        Assert.Equal([width, 0], padding);
+        Assert.Equal($"{width}px", await page.GetByTestId("stand-in").EvaluateAsync<string>(
+            "toaster => getComputedStyle(toaster).left"));
+    }
+
+    [Fact]
     public async Task Modal_ShouldHoldThePageStill_WhenThePageAlreadyKeepsAGutter()
     {
         var page = await OpenPageAsync();

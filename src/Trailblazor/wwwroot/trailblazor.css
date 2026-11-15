@@ -4334,6 +4334,15 @@
         scrollbar-gutter: auto !important;
     }
 
+    /* Firefox can draw the scrollbar on the left, on a right-to-left page or in a right-to-left Firefox, so the padding
+       goes there and the right edge, which doesn't move, needs no offset. */
+    :root[data-tb-scrollbar-left]:has(.tb-overlay--lock-scroll,
+        dialog.tb-dialog:is(:modal, [data-layer="page"][data-backdrop]:not([data-leaving]))) {
+        --tb-scroll-lock-offset: 0px;
+        --tb-scroll-lock-offset-left: var(--tb-page-scrollbar, 0px);
+        padding-left: var(--tb-scroll-lock-offset-left) !important;
+    }
+
     .tb-popover {
         display: inline-block;
     }
@@ -6957,6 +6966,17 @@
     .tb-toaster--topcenter,
     .tb-toaster--bottomcenter {
         right: var(--tb-scroll-lock-offset, 0px);
+    }
+
+    /* When Firefox drew the scrollbar on the left, the locked page pads its left edge instead, so these toasters keep
+       clear of it. */
+    .tb-toaster--topstart:dir(ltr),
+    .tb-toaster--bottomstart:dir(ltr),
+    .tb-toaster--topend:dir(rtl),
+    .tb-toaster--bottomend:dir(rtl),
+    .tb-toaster--topcenter,
+    .tb-toaster--bottomcenter {
+        left: var(--tb-scroll-lock-offset-left, 0px);
     }
 
     .tb-toaster__list {

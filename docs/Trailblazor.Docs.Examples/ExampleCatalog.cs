@@ -7139,7 +7139,9 @@ public static class ExampleCatalog
                 "A modal stops the page from scrolling behind it and makes up for the width of the scrollbar it takes "
                     + "away, so the page doesn't shift sideways. An element of your own with `position: fixed` against "
                     + "the window's right edge holds still too if it adds `var(--tb-scroll-lock-offset, 0px)` to its "
-                    + "`right`.",
+                    + "`right`. Firefox can draw the scrollbar on the left, on a right-to-left page or in a right-to-left "
+                    + "Firefox, so an element against the left edge holds still if it adds "
+                    + "`var(--tb-scroll-lock-offset-left, 0px)` to its `left`.",
                 "A click that starts and ends on the backdrop cancels a modal. `ConfirmAsync` and `AlertAsync` dialogs "
                     + "ignore it, so a stray click can't answer them, unless their options set `DismissOnBackdrop`.",
                 "A non-modal dialog comes to the front when it's pressed or takes focus, along with any dialog nested "
