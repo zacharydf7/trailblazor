@@ -413,21 +413,24 @@
             return false;
         }
 
-        return !LostAFraction(number, text) && TryFitType(number, out value);
+        return !LostAFraction(number, text, NumberFormatInfo.InvariantInfo) && TryFitType(number, out value);
     }
 
     // A fraction as small as 1e-30 reads as a decimal zero, so a whole type takes zero only from a zero mantissa.
-    private static bool LostAFraction(decimal number, string text)
+    private static bool LostAFraction(decimal number, string text, NumberFormatInfo format)
     {
         if (number != 0 || !NumberTypes.IsWhole(NumberType))
         {
             return false;
         }
 
+        string[] separators = [format.NumberDecimalSeparator, format.NumberGroupSeparator,
+            format.CurrencyDecimalSeparator, format.CurrencyGroupSeparator];
         for (var at = 1; at < text.Length; at++)
         {
-            // An exponent's e follows a digit, '.' or ','; a currency symbol's, as in Lekë or en-SZ's E, doesn't.
-            if (text[at] is 'e' or 'E' && (char.IsAsciiDigit(text[at - 1]) || text[at - 1] is '.' or ','))
+            // An exponent's e follows a digit or a separator; a currency symbol's, as in Lekë or en-SZ's E, doesn't.
+            if (text[at] is 'e' or 'E' && (char.IsAsciiDigit(text[at - 1])
+                    || separators.Any(separator => EndsWithSeparator(text.AsSpan(0, at), separator))))
             {
                 // Parsed text uses only ASCII digits, so any of 1-9 before the e means the mantissa isn't 0.
                 return text[..at].Any(digit => digit is >= '1' and <= '9');
@@ -436,6 +439,11 @@
 
         return false;
     }
+
+    // A plain space matches a no-break separator here, as it does for the parser.
+    private static bool EndsWithSeparator(ReadOnlySpan<char> before, string separator) => separator.Length > 0
+        && (before.EndsWith(separator, StringComparison.Ordinal)
+            || separator[^1] is '\u00A0' or '\u202F' && before[^1] == ' ');
 
     // The number as the value's type, unless it's past the type's limits or a fraction in a whole type.
     private static bool TryFitType(decimal number, out TValue? value)
@@ -462,7 +470,7 @@
 
         var digits = text.Replace(NumberCulture.NumberFormat.PercentSymbol, "", StringComparison.Ordinal);
         if (!decimal.TryParse(digits, NumberStyles.Currency | NumberStyles.AllowExponent, NumberCulture, out var number)
-            || LostAFraction(number, digits))
+            || LostAFraction(number, digits, NumberCulture.NumberFormat))
         {
             return false;
         }

@@ -493,11 +493,35 @@ public class TbNumberFieldTests : BunitContext
     [InlineData("C0", "en-SZ", "E1E-30")]
     [InlineData("N0", "en-US", "1.e-30")]
     [InlineData("N0", "de-DE", "1,e-30")]
+    [InlineData("N0", "sv-SE", "1 e-30")]
     public void Change_ShouldExplainAndKeepTheText_WhenAFormattedWholeNumberFieldGetsATinyExponent(string format,
         string culture, string text)
     {
         var value = 3;
         var cut = RenderFormatted<int>(format, culture, value, parameters => parameters
+            .Add(field => field.ValueChanged, (int number) => value = number));
+
+        cut.Find("input").Change(text);
+
+        Assert.Equal((3, text, "true"), (value, cut.Find("input").GetAttribute("value"),
+            cut.Find("input").GetAttribute("aria-invalid")));
+    }
+
+    [Theory]
+    [InlineData("/", ",", ".", ",", "1/e-30")]
+    [InlineData(".", "_", ".", ",", "1_e-30")]
+    [InlineData(".", ",", "/", ",", "1/e-30")]
+    [InlineData(".", ",", ".", "_", "1_e-30")]
+    public void Change_ShouldExplainAndKeepTheText_WhenATinyExponentFollowsTheCulturesOwnSeparator(string point,
+        string group, string currencyPoint, string currencyGroup, string text)
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        (culture.NumberFormat.NumberDecimalSeparator, culture.NumberFormat.NumberGroupSeparator) = (point, group);
+        (culture.NumberFormat.CurrencyDecimalSeparator, culture.NumberFormat.CurrencyGroupSeparator) =
+            (currencyPoint, currencyGroup);
+        var value = 3;
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Format, "N0")
+            .Add(field => field.Culture, culture).Add(field => field.Value, value)
             .Add(field => field.ValueChanged, (int number) => value = number));
 
         cut.Find("input").Change(text);
