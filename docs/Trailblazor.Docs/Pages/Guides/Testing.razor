@@ -356,6 +356,10 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>InsertDivider(label).InsertAsync()</code></th>
+                        <td>Presses the insert button with this label, which raises <code>OnInsert</code>.</td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Toolbar(name).ClickAsync(button)</code></th>
                         <td>
                             Clicks the toolbar's button with this name. bUnit lays nothing out, so no button moves into
@@ -1147,6 +1151,8 @@
         new("Dialog or drawer", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name, "
             + "and `CancelAsync()` dismisses it with Escape; both wait until it has left the page, or, on a static "
             + "page, until it closes."),
+        new("Insert divider", "Its Label", "`InsertDivider(label).InsertAsync()` presses its insert button once the "
+            + "page is interactive."),
         new("Toolbar", "Its AriaLabel", "`Toolbar(name).ClickAsync(button)` clicks a button by its name once the "
             + "toolbar has fitted its buttons, choosing it from the overflow menu when it has moved there."),
         new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows."),

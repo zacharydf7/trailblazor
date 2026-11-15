@@ -2,6 +2,8 @@
 @inherits TbComponentBase
 
 <div @attributes="AdditionalAttributes" style="@Style"
+     data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+     data-ready="@(RendererInfo.IsInteractive ? "" : null)"
      class="@ClassNames.Join("tb-insert-divider", AlwaysVisible ? "tb-insert-divider--visible" : null, Class)">
     <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@Label" Variant="Variant.Filled" Tone="Tone.Primary"
                   Size="Size.Small" Disabled="Disabled" OnClick="OnInsert" data-part="insert"

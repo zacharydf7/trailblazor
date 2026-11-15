@@ -2107,6 +2107,36 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task InsertDivider_ShouldRaiseOnInsertAndRefuseADisabledOne_WhenTheHelperIsUsed()
+    {
+        var inserted = 0;
+        var cut = Render<TbStack>(parameters => parameters
+            .AddChildContent<TbInsertDivider>(divider => divider.Add(each => each.Label, "Add a step at the start")
+                .Add(each => each.OnInsert, () => inserted++))
+            .AddChildContent<TbInsertDivider>(divider => divider.Add(each => each.Label, "Add a step at the end")
+                .Add(each => each.Disabled, true)));
+
+        await cut.Tb().InsertDivider("Add a step at the start").InsertAsync();
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().InsertDivider("Add a step at the end").InsertAsync());
+
+        Assert.Equal(1, inserted);
+        Assert.Contains("disabled", disabled.Message);
+    }
+
+    [Fact]
+    public async Task InsertDivider_ShouldRefuseToInsert_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbInsertDivider>(parameters => parameters.Add(divider => divider.Label, "Add a step"));
+
+        var still = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().InsertDivider("Add a step").InsertAsync());
+
+        Assert.Contains("static page", still.Message);
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
     {
         var answers = new List<string>();

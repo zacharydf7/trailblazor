@@ -1783,8 +1783,10 @@ public static class ExampleCatalog
             [
                 new("insert", "The button that inserts content at the divider."),
             ],
-            TestingTip = "Click the insert button by its name, as `GetByRole(AriaRole.Button, new() { Name = "
-                + "\"Add a step after Pack the tent\" })`; Playwright hovers it first, which shows it.",
+            TestingTip = "`page.Tb().InsertDivider(\"Add a step after Pack the tent\").InsertAsync()` in "
+                + "Playwright, or `cut.Tb().InsertDivider(...)` in bUnit, presses the insert button with that label "
+                + "once the page is interactive. By hand, click it by its name, as `GetByRole(AriaRole.Button, new() { "
+                + "Name = \"Add a step after Pack the tent\" })`; Playwright hovers it first, which shows it.",
         },
         new("stack", "Stack", ExampleCategory.Layout,
             "Lays its children out in a row or a column, evenly spaced.")

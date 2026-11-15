@@ -1,0 +1,5 @@
+@page "/static-insert-divider"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, where the insert button has nothing to run its OnInsert. *@
+<TbInsertDivider Label="Add a step" OnInsert="() => { }" AlwaysVisible />

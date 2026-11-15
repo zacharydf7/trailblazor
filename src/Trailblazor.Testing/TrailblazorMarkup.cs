@@ -432,6 +432,16 @@ public sealed class TrailblazorMarkup
             ? $"No chip group is named \"{name}\"." : $"{groups.Count} chip groups are named \"{name}\".");
     }, _scripts);
 
+    /// <summary>The <c>TbInsertDivider</c> whose insert button has this <c>Label</c>.</summary>
+    public TbInsertDividerDriver InsertDivider(string label) => new(() =>
+    {
+        var dividers = _findAll(".tb-insert-divider").Where(divider =>
+            divider.QuerySelector("[data-part=insert]")?.GetAttribute("aria-label") == label).ToList();
+        return dividers.Count == 1 ? dividers[0] : throw new InvalidOperationException(dividers.Count == 0
+            ? $"No insert divider is labeled \"{label}\"."
+            : $"{dividers.Count} insert dividers are labeled \"{label}\".");
+    });
+
     /// <summary>The <c>TbToolbar</c> with this <c>AriaLabel</c>.</summary>
     public TbToolbarDriver Toolbar(string name) => new(() =>
     {
@@ -1639,6 +1649,34 @@ internal static class ChipParts
 
         return chip.HasAttribute("data-static") ? throw new InvalidOperationException("On a static page a chip's "
             + "buttons do nothing; render the page interactively to use them.") : chip;
+    }
+}
+
+/// <summary>A <c>TbInsertDivider</c>, found by its <c>Label</c>.</summary>
+public sealed class TbInsertDividerDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbInsertDividerDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>Presses the insert button, which raises <c>OnInsert</c>. Throws for a disabled divider, or on a static
+    /// page, where the button does nothing.</summary>
+    public async Task InsertAsync()
+    {
+        var divider = _find();
+        if (divider.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("On a static page the insert button does nothing; render the page "
+                + "interactively to use it.");
+        }
+
+        var insert = divider.QuerySelector("[data-part=insert]")!;
+        if (Choices.IsDisabled(insert))
+        {
+            throw new InvalidOperationException("This insert divider is disabled.");
+        }
+
+        await insert.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 }
 

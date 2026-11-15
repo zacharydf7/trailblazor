@@ -429,3 +429,6 @@ Trailblazor.Testing.TrailblazorMarkup.Tooltip(string! trigger) -> Trailblazor.Te
 Trailblazor.Testing.TbToolbarDriver
 Trailblazor.Testing.TbToolbarDriver.ClickAsync(string! button) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.Toolbar(string! name) -> Trailblazor.Testing.TbToolbarDriver!
+Trailblazor.Testing.TbInsertDividerDriver
+Trailblazor.Testing.TbInsertDividerDriver.InsertAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.InsertDivider(string! label) -> Trailblazor.Testing.TbInsertDividerDriver!

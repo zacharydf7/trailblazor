@@ -36,7 +36,7 @@ public class DriverParityTests
         ["TbBanner"] = "Banner", ["TbBreadcrumbs"] = "Breadcrumbs", ["TbStepper"] = "Stepper",
         ["TbTimePicker"] = "TimePicker", ["TbChip"] = "Chip", ["TbChipGroup"] = "ChipGroup",
         ["TbCarousel"] = "Carousel", ["TbForm"] = "Form", ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",
-        ["TbSpeedDial"] = "Menu", ["TbToolbar"] = "Toolbar",
+        ["TbSpeedDial"] = "Menu", ["TbToolbar"] = "Toolbar", ["TbInsertDivider"] = "InsertDivider",
     };
 
     // Why every other component has no helper of its own.
@@ -77,7 +77,7 @@ public class DriverParityTests
 
         ["TbButton"] = FollowUp,
         ["TbCodeField"] = FollowUp,
-        ["TbInsertDivider"] = FollowUp, ["TbNavMenu"] = FollowUp,
+        ["TbNavMenu"] = FollowUp,
         ["TbVirtualList"] = FollowUp,
     };
 

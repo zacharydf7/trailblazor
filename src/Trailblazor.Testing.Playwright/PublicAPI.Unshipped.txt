@@ -421,3 +421,8 @@ Trailblazor.Testing.Playwright.TbToolbarLocator.ClickAsync(string! button) -> Sy
 Trailblazor.Testing.Playwright.TbToolbarLocator.TbToolbarLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void
 Trailblazor.Testing.Playwright.TbToolbarLocator.Toolbar.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Toolbar(string! name) -> Trailblazor.Testing.Playwright.TbToolbarLocator!
+Trailblazor.Testing.Playwright.TbInsertDividerLocator
+Trailblazor.Testing.Playwright.TbInsertDividerLocator.Divider.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbInsertDividerLocator.InsertAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbInsertDividerLocator.TbInsertDividerLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.InsertDivider(string! label) -> Trailblazor.Testing.Playwright.TbInsertDividerLocator!

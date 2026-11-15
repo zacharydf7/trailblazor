@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class InsertDividerTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -124,6 +126,54 @@ public class InsertDividerTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(steps).ToHaveTextAsync(
             ["New step 2", "Pack the tent", "New step 1", "Fill the water bottles", "Check the trail map"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldAddTheItemInItsPlace_WhenInserted(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/insert-divider");
+        var steps = page.GetByRole(AriaRole.List, new() { Name = "Trip checklist" }).GetByRole(AriaRole.Listitem);
+
+        await page.Tb().InsertDivider("Add a step after Pack the tent").InsertAsync();
+
+        await Expect(steps).ToHaveTextAsync(
+            ["Pack the tent", "New step 1", "Fill the water bottles", "Check the trail map"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseADisabledDivider_WhenAskedToInsert(string browser)
+    {
+        var page = await OpenAsync(browser, "/insert-dividers");
+
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().InsertDivider("Can't add here").InsertAsync());
+
+        Assert.Contains("disabled", disabled.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldInsertOnceInteractive_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/examples/insert-divider");
+
+        var inserting = page.Tb().InsertDivider("Add a step at the start").InsertAsync();
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await inserting;
+
+        await Expect(page.GetByRole(AriaRole.List, new() { Name = "Trip checklist" }).GetByRole(AriaRole.Listitem)
+            .First).ToHaveTextAsync("New step 1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseToInsert_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-insert-divider");
+
+        var still = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().InsertDivider("Add a step").InsertAsync());
+
+        Assert.Contains("static page", still.Message);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

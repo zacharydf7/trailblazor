@@ -202,6 +202,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// name is given. It opens on its whole area, or on an element in it picked with <c>On</c>.</summary>
     public TbContextMenuLocator ContextMenu(string? name = null) => TbContextMenuLocator.Named(scope, name);
 
+    /// <summary>The <c>TbInsertDivider</c> whose insert button has this <c>Label</c>.</summary>
+    public TbInsertDividerLocator InsertDivider(string label) => new(scope, label);
+
     /// <summary>The <c>TbToolbar</c> with this <c>AriaLabel</c>.</summary>
     public TbToolbarLocator Toolbar(string name) => new(scope, name);
 
