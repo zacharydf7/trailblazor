@@ -1,28 +1,31 @@
 @inject IDialogService Dialogs
 @inject IToastService Toasts
 
-<TbTable aria-label="Trails to edit" Size="Size.Small">
-    <thead>
-        <tr>
-            <th scope="col">Trail</th>
-            <th scope="col">Kilometers</th>
-            <th scope="col"><span class="tb-visually-hidden">Actions</span></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var trail in _trails)
-        {
-            <tr @key="trail.Id">
-                <th scope="row">@trail.Name</th>
-                <td>@trail.Kilometers</td>
-                <td>
-                    <TbButton Variant="Variant.Text" Size="Size.Small" aria-label="@($"Edit {trail.Name}")"
-                              OnClick="() => EditAsync(trail)">Edit</TbButton>
-                </td>
+@* On a narrow phone the table scrolls in an area of its own, which takes focus so keyboard users can scroll it too. *@
+<div role="region" aria-label="Trails" tabindex="0" style="overflow: auto">
+    <TbTable aria-label="Trails to edit" Size="Size.Small">
+        <thead>
+            <tr>
+                <th scope="col">Trail</th>
+                <th scope="col">Kilometers</th>
+                <th scope="col"><span class="tb-visually-hidden">Actions</span></th>
             </tr>
-        }
-    </tbody>
-</TbTable>
+        </thead>
+        <tbody>
+            @foreach (var trail in _trails)
+            {
+                <tr @key="trail.Id">
+                    <th scope="row">@trail.Name</th>
+                    <td>@trail.Kilometers</td>
+                    <td>
+                        <TbButton Variant="Variant.Text" Size="Size.Small" aria-label="@($"Edit {trail.Name}")"
+                                  OnClick="() => EditAsync(trail)">Edit</TbButton>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </TbTable>
+</div>
 
 @code {
     private readonly List<Trail> _trails = [new(1, "Pine Hollow loop", 6), new(2, "Cedar Flats", 4)];

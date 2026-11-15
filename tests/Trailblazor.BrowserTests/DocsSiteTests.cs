@@ -252,7 +252,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, MemberData(nameof(Guides))]
     public async Task Guide_ShouldFitThePageWidth_WhenTheScreenIsAPhone(string browser, string path)
     {
-        var page = await OpenDocsAsync(browser, path, new() { ViewportSize = new() { Width = 390, Height = 844 } });
+        // 320 pixels is the narrowest common phone, or a wider one with display zoom.
+        var page = await OpenDocsAsync(browser, path, new() { ViewportSize = new() { Width = 320, Height = 640 } });
         await Expect(page.Locator(".docs-article__body > .docs-section > h2").First).ToBeVisibleAsync();
         await page.EvaluateAsync("() => document.fonts.ready");
 
