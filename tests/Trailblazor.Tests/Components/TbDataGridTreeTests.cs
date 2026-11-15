@@ -101,6 +101,26 @@ public class TbDataGridTreeTests : BunitContext
     }
 
     [Fact]
+    public async Task Select_ShouldReportTheReloadedItems_WhenTheRowsLoadAgainUnderAClosedParent()
+    {
+        IReadOnlyCollection<Folder> selected = [];
+        var cut = RenderFolders(parameters => parameters.Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Folder> changed) => selected = changed));
+        var grid = cut.Tb().Grid("Folders");
+        await grid.ExpandAsync("Docs");
+        await grid.SelectAsync("Notes");
+        await grid.CollapseAsync("Docs");
+        Folder notes = new(2, "Notes (reloaded)", 3);
+        Folder[] reloaded = [Folders[0] with { Children = [notes, Folders[0].Children![1]] }, .. Folders[1..]];
+
+        cut.Render(parameters => parameters.Add(grid => grid.Items, reloaded));
+        await grid.SelectAsync("Music");
+
+        Assert.Equal([2, 7], Ids(selected));
+        Assert.Contains(selected, folder => ReferenceEquals(folder, notes));
+    }
+
+    [Fact]
     public async Task ExpandAsync_ShouldLeaveTheRowOpen_WhenItIsOpenAlready()
     {
         var cut = RenderFolders();

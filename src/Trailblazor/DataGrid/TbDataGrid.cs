@@ -43,6 +43,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private object? _closedWhileFilteredFor;
     // Each tree row's parent, by key, so a row can be shown by opening the rows it's nested under.
     private readonly Dictionary<object, TItem> _parentOf = [];
+    private readonly Dictionary<object, TItem> _treeItems = [];
     private int _treeVersion;
     // How many rows the filters leave; unlike _total, it doesn't count group headings.
     private int _matched;
@@ -150,7 +151,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Gives each item a key that stays the same across loads, such as its id, so selection follows the item.
+    /// <summary>Gives each item a key that stays the same across loads, such as its id, so the selection and a batch's
+    /// changes follow the item.
     /// Defaults to the item itself, which suits items compared by value, such as records; each row's key must differ.
     /// A row's <c>data-key</c> is the key's text when it is a string, number, date or other formattable value, and a
     /// made-up id such as <c>key-3</c> otherwise, or when that text is empty or another key already has it.</summary>
@@ -1187,7 +1189,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             }
             else
             {
-                _changes[key] = new(edit.Item, cell.Column.Key, value);
+                var item = _rows.FirstOrDefault(row => Equals(KeyOf(row), edit.Key)) ?? edit.Item;
+                _changes[key] = new(item, cell.Column.Key, value);
             }
         }
 
@@ -1251,6 +1254,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         if (batch.Error is { } error)
         {
+            // The refused changes stay, so swap in any items reloaded while the save handler had them.
+            TakeReloadedItems(_rows);
             _batchError = error;
             Announcer.Assertive(error);
             return;
@@ -2057,16 +2062,16 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private List<TreeNode> TreeOf(Func<TItem, bool> matches, List<TItem> matched)
     {
         _parentOf.Clear();
-        Dictionary<object, TItem> seen = [];
+        _treeItems.Clear();
         List<TreeNode> Level(IEnumerable<TItem> items, bool top, TItem parent)
         {
             List<TreeNode> nodes = [];
             foreach (var item in Sorted(items))
             {
                 var key = KeyOf(item);
-                if (!seen.TryAdd(key, item))
+                if (!_treeItems.TryAdd(key, item))
                 {
-                    throw SameKey(key, seen[key], item, $"If both are the same row, it's listed twice, under two "
+                    throw SameKey(key, _treeItems[key], item, $"If both are the same row, it's listed twice, under two "
                         + $"parents or under itself; check the items and what {nameof(ChildrenSelector)} returns. "
                         + $"Otherwise, give the grid a {nameof(KeySelector)} that gives each item a different key.");
                 }
@@ -2303,6 +2308,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         _rows = rows;
         _lines = lines;
+        TakeReloadedItems(rows);
         _rowClick.KeepOnly(shown.Contains);
         _rowExtend.KeepOnly(shown.Contains);
         _choose.KeepOnly(shown.Contains);
@@ -2725,6 +2731,43 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     }
 
     private object KeyOf(TItem item) => KeySelector?.Invoke(item) ?? item!;
+
+    // The selection and a batch's changes hold the item they were made on, so swap in the reloaded item with the same
+    // key. A change on its way to the save handler keeps its item: once the handler returns, the save matches it by
+    // reference.
+    private void TakeReloadedItems(List<TItem> rows)
+    {
+        // Without a data provider every item is known, including those on other pages, filtered out or under a closed
+        // parent. Outside a tree their keys haven't been checked for clashes.
+        var loaded = new Dictionary<object, TItem>();
+        foreach (var item in ChildrenSelector is not null ? _treeItems.Values : DataProvider is null ? Items ?? [] : [])
+        {
+            loaded.TryAdd(KeyOf(item), item);
+        }
+
+        foreach (var row in rows)
+        {
+            loaded[KeyOf(row)] = row;
+        }
+
+        _rangeBase = [.. _rangeBase.Select(item => loaded.GetValueOrDefault(KeyOf(item), item))];
+        foreach (var key in _selection.Keys.ToList())
+        {
+            if (loaded.TryGetValue(key, out var row))
+            {
+                _selection[key] = row;
+            }
+        }
+
+        foreach (var (key, change) in _changes.ToList())
+        {
+            if (loaded.TryGetValue(key.Key, out var row) && !ReferenceEquals(row, change.Item)
+                && !_sending.Contains(key))
+            {
+                _changes[key] = change with { Item = row };
+            }
+        }
+    }
 
     private string IdOf(TItem item) => _ids.IdOf(KeyOf(item));
 

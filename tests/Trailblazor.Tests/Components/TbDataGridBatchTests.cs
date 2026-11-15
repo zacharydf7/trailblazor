@@ -177,6 +177,92 @@ public class TbDataGridBatchTests : BunitContext
         Assert.Equal(14, _hikes[1].LengthKm);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SaveChangesAsync_ShouldSaveTheReloadedItem_WhenTheRowsLoadAgainAfterTheEdit(bool handler)
+    {
+        var cut = RenderHikes(handler: handler);
+        await EditAsync(cut, 1, "Name", "Pine loop");
+        List<Hike> reloaded = [new(1, "Pine Hollow", 6), new(2, "Eagle Ridge", 14)];
+
+        cut.Render(parameters => parameters.Add(grid => grid.Items, reloaded));
+        await cut.Tb().Grid("Hikes").SaveChangesAsync();
+
+        if (handler)
+        {
+            Assert.Same(reloaded[0], Saved.Single().Changes.Single().Item);
+        }
+        else
+        {
+            Assert.Equal(("Pine loop", "Pine Hollow"), (reloaded[0].Name, _hikes[0].Name));
+        }
+    }
+
+    [Fact]
+    public async Task SaveChangesAsync_ShouldClearTheSentChanges_WhenTheRowsLoadAgainWhileTheyAreSaved()
+    {
+        var cut = RenderHikes();
+        await EditAsync(cut, 1, "Name", "Pine loop");
+        _server = new TaskCompletionSource();
+
+        var save = cut.InvokeAsync(() => cut.Tb().Grid("Hikes").SaveChangesAsync());
+        cut.Render(parameters => parameters.Add(grid => grid.Items,
+            new List<Hike> { new(1, "Pine loop", 6), new(2, "Eagle Ridge", 14) }));
+        _server.SetResult();
+        await save;
+
+        Assert.Equal("Unsaved changes: 0", Count(cut));
+    }
+
+    [Fact]
+    public async Task SaveChangesAsync_ShouldSaveTheReloadedItem_WhenItsRowIsOnAnotherPageAsTheRowsLoadAgain()
+    {
+        var cut = RenderHikes();
+        cut.Render(parameters => parameters.Add(grid => grid.PageSize, 1));
+        await EditAsync(cut, 1, "Name", "Pine loop");
+        await cut.Tb().Grid("Hikes").GoToPageAsync(2);
+        List<Hike> reloaded = [new(1, "Pine Hollow", 6), new(2, "Eagle Ridge", 14)];
+
+        cut.Render(parameters => parameters.Add(grid => grid.Items, reloaded));
+        await cut.Tb().Grid("Hikes").SaveChangesAsync();
+
+        Assert.Same(reloaded[0], Saved.Single().Changes.Single().Item);
+    }
+
+    [Fact]
+    public async Task SaveChangesAsync_ShouldSaveTheReloadedItem_WhenAnEditStaysOpenAsTheRowsLoadAgain()
+    {
+        var cut = RenderHikes();
+        await Cell(cut, 1, "Name").DoubleClickAsync(new());
+        await Cell(cut, 1, "Name").QuerySelector("input")!.InputAsync(new ChangeEventArgs { Value = "Pine loop" });
+        List<Hike> reloaded = [new(1, "Pine Hollow", 6), new(2, "Eagle Ridge", 14)];
+
+        cut.Render(parameters => parameters.Add(grid => grid.Items, reloaded));
+        // The driver saves only counted changes; the grid's own save keeps the open edit first, as its bar's does.
+        await cut.InvokeAsync(cut.Instance.SaveChangesAsync);
+
+        Assert.Equal((reloaded[0], "Pine loop"),
+            (Saved.Single().Changes.Single().Item, Saved.Single().Changes.Single().Value));
+    }
+
+    [Fact]
+    public async Task SaveChangesAsync_ShouldSendTheReloadedItem_WhenATurnedDownSaveIsTriedAgain()
+    {
+        var cut = RenderHikes(batch => batch.Error = Saved.Count == 1 ? "The server is busy." : null);
+        await EditAsync(cut, 1, "Name", "Pine loop");
+        _server = new TaskCompletionSource();
+        List<Hike> reloaded = [new(1, "Pine Hollow", 6), new(2, "Eagle Ridge", 14)];
+
+        var save = cut.InvokeAsync(() => cut.Tb().Grid("Hikes").SaveChangesAsync());
+        cut.Render(parameters => parameters.Add(grid => grid.Items, reloaded));
+        _server.SetResult();
+        await save;
+        await cut.Tb().Grid("Hikes").SaveChangesAsync();
+
+        Assert.Same(reloaded[0], Saved[1].Changes.Single().Item);
+    }
+
     [Fact]
     public async Task SaveChangesAsync_ShouldRaiseTheChangesInTheOrderMade_WhenAChangeWasDroppedInBetween()
     {

@@ -1,7 +1,8 @@
 namespace Trailblazor;
 
 /// <summary>An edit the user saved in a <see cref="TbDataGrid{TItem}"/> cell, once its checks passed.</summary>
-/// <param name="Item">The row's item, as it was before the edit.</param>
+/// <param name="Item">The row's item, as it was before the edit. In a batch whose rows loaded again before the save,
+/// it's the reloaded item with the same key.</param>
 /// <param name="Column">The column's <see cref="TbColumn{TItem}.Id"/>.</param>
 /// <param name="Value">The new value, of the <see cref="TbColumn{TItem}.Field"/>'s type, or what the column's
 /// <see cref="TbColumn{TItem}.EditTemplate"/> gave.</param>

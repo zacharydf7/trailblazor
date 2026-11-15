@@ -1650,6 +1650,40 @@ public class TbDataGridTests : BunitContext
         Assert.EndsWith("/trails?size=5", Services.GetRequiredService<NavigationManager>().Uri);
     }
 
+    [Fact]
+    public void Select_ShouldReportTheReloadedItems_WhenTheRowsLoadAgainAfterARowWasSelected()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+        Row(cut, "1").QuerySelector("input")!.Change(true);
+        List<Trail> reloaded = [.. Trails.Select(trail => trail with { Name = $"{trail.Name} (reloaded)" })];
+
+        cut.Render(parameters => parameters.Add(grid => grid.Items, reloaded));
+        Row(cut, "2").QuerySelector("input")!.Change(true);
+
+        Assert.Equal([reloaded[0], reloaded[1]], selected);
+    }
+
+    [Fact]
+    public async Task ShiftClick_ShouldKeepTheReloadedItems_WhenTheRowsLoadAgainDuringARange()
+    {
+        IReadOnlyCollection<Trail> selected = [];
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple)
+            .Add(grid => grid.SelectedItemsChanged, (IReadOnlyCollection<Trail> changed) => selected = changed));
+        Row(cut, "3").QuerySelector("input")!.Change(true);
+        Row(cut, "1").QuerySelector("input")!.Change(true);
+        List<Trail> reloaded = [.. Trails.Select(trail => trail with { Name = $"{trail.Name} (reloaded)" })];
+
+        cut.Render(parameters => parameters.Add(grid => grid.Items, reloaded));
+        await Row(cut, "2").TriggerEventAsync("ontbrowclick", new RowClickEventArgs { ShiftKey = true });
+
+        Assert.All(selected, trail => Assert.EndsWith("(reloaded)", trail.Name));
+        Assert.Contains(selected, trail => trail.Id == 3);
+    }
+
     private IRenderedComponent<TbDataGrid<Trail>> RenderTrails(IReadOnlyList<Trail>? trails = null,
         Action<ComponentParameterCollectionBuilder<TbDataGrid<Trail>>>? configure = null,
         RenderFragment? columns = null) =>

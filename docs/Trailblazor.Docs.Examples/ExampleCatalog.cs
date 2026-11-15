@@ -8294,7 +8294,11 @@ public static class ExampleCatalog
                     + "them all to `OnBatchSave` at once, in the order they were made, and Discard changes drops them. "
                     + "A handler that sets the batch's `Error` keeps the changes and shows why. `SaveChangesAsync` "
                     + "and `DiscardChangesAsync` do the same from code, and `HasChanges` says whether any are "
-                    + "waiting, such as before the user leaves the page.", typeof(DataGridBatchExample)),
+                    + "waiting, such as before the user leaves the page. Like the selection, the changes follow each "
+                    + "row by its `KeySelector` key, so after `Items` changes or the rows load again they stay on "
+                    + "their rows and `OnBatchSave` gets the reloaded items. Without a `KeySelector`, unless the items "
+                    + "compare by value, the reloaded rows don't show changes made before the reload, though Save "
+                    + "changes still sends them.", typeof(DataGridBatchExample)),
                 new("cell-selection", "Select and copy cells", "With `CellSelection` on, drag across cells, or hold "
                     + "Shift and click a cell or press an arrow key, Home or End, to select a range. Ctrl+C (Cmd+C on "
                     + "a Mac) copies it as tab-separated text and as a table, so it pastes into a spreadsheet's "
