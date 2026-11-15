@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class FabTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -44,6 +46,16 @@ public class FabTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         // A scrollbar on the left in right-to-left text sits between the window's edge and the button.
         Assert.InRange((await GapsAsync(Compose(page)))[0], 16, 40);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldOpenTheSpeedDialAndChooseAnAction_WhenFoundByItsLabel(string browser)
+    {
+        var page = await OpenAsync(browser, "/fab");
+
+        await page.Tb().Menu("Add").ChooseAsync("Folder");
+
+        await Expect(page.GetByLabel("Last action")).ToHaveTextAsync("Added a folder.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
