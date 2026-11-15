@@ -375,6 +375,19 @@ public sealed class TrailblazorMarkup
                 : $"No stepper is named \"{name}\".");
     });
 
+    /// <summary>The <c>TbForm</c> with this accessible name, or the only one in the markup when no name is given.
+    /// </summary>
+    public TbFormDriver Form(string? name = null) => new(() =>
+    {
+        var forms = _findAll("form.tb-form").Where(form => name is null || name == (form.GetAttribute("aria-label")
+            ?? _findAll($"[id='{form.GetAttribute("aria-labelledby")}']").SingleOrDefault()?.TextContent.Trim()))
+            .ToList();
+        return forms.Count == 1 ? forms[0]
+            : throw new InvalidOperationException(name is null
+                ? $"Expected one form, found {forms.Count}; name the one to use."
+                : $"No form is named \"{name}\".");
+    });
+
     /// <summary>The <c>TbAccordionItem</c>, in an accordion or on its own, whose header reads this.</summary>
     public TbAccordionItemDriver AccordionItem(string header) => new(header, _findAll);
 
@@ -1183,6 +1196,33 @@ public sealed class TbStepperDriver
         child.GetAttribute("data-part") == "step");
 
     private static string TitleOf(IElement step) => step.QuerySelector("[data-part=title]")!.TextContent.Trim();
+}
+
+/// <summary>A <c>TbForm</c>, found by its name.</summary>
+public sealed class TbFormDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbFormDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The messages the form's fields show, in order.</summary>
+    public IReadOnlyList<string> Errors => [.. _find().QuerySelectorAll("[data-part=error] [data-part=message]")
+        .Select(message => message.TextContent.Trim())];
+
+    /// <summary>Submits the form as its submit button does: it raises <c>OnSubmit</c> when it has one, and otherwise
+    /// checks the fields and raises <c>OnValidSubmit</c> or <c>OnInvalidSubmit</c>. A disabled form ignores it. Throws
+    /// on a static page, where the form would post with the browser.</summary>
+    public async Task SubmitAsync()
+    {
+        var form = _find();
+        if (form.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("On a static page the form posts with the browser; render it on an "
+                + "interactive page to submit it.");
+        }
+
+        await form.SubmitAsync();
+    }
 }
 
 /// <summary>A <c>TbPagination</c>, found by its name.</summary>

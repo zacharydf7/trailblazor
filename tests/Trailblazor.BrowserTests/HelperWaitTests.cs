@@ -26,6 +26,16 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldReturnOnceTheFormHasHandledIt_WhenSubmitted(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/form");
+
+        await page.Tb().Form("Trip sign-up").SubmitAsync();
+
+        Assert.Equal(3, (await page.Tb().Form("Trip sign-up").ErrorsAsync()).Count);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Carousel_ShouldReturnOnceTheSlideShows_WhenMoved(string browser)
     {
         var page = await OpenAsync(browser, "/examples/carousel");

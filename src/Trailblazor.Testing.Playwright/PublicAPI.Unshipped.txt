@@ -409,3 +409,9 @@ Trailblazor.Testing.Playwright.TbStepperLocator.Stepper.get -> Microsoft.Playwri
 Trailblazor.Testing.Playwright.TbStepperLocator.StepsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbStepperLocator.TbStepperLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Stepper(string? name = null) -> Trailblazor.Testing.Playwright.TbStepperLocator!
+Trailblazor.Testing.Playwright.TbFormLocator
+Trailblazor.Testing.Playwright.TbFormLocator.ErrorsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbFormLocator.Form.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbFormLocator.SubmitAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbFormLocator.TbFormLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.Form(string? name = null) -> Trailblazor.Testing.Playwright.TbFormLocator!

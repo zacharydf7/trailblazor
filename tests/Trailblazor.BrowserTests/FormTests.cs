@@ -26,6 +26,50 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldSubmitAndReadTheFieldsMessages_WhenThePageIsInteractive(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/form");
+
+        await page.Tb().Form("Trip sign-up").SubmitAsync();
+
+        Assert.Equal(["Enter the leader's name.", "Enter how many are going.", "Read the safety notes first."],
+            await page.Tb().Form("Trip sign-up").ErrorsAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReturn_WhenAValidSubmitTakesTheFormOffThePage(string browser)
+    {
+        var page = await OpenAsync(browser, "/form-submits");
+
+        await page.Tb().Form("Feedback").SubmitAsync();
+
+        await Expect(page.GetByText("Thanks, we'll be in touch.")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReturn_WhenTheFormIsDisabled(string browser)
+    {
+        var page = await OpenAsync(browser, "/form-submits");
+
+        await page.Tb().Form("Archived").SubmitAsync();
+
+        await Expect(page.GetByText("Archived submits: 0")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldSubmitOnceInteractive_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/examples/form");
+
+        var submitting = page.Tb().Form("Trip sign-up").SubmitAsync();
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await submitting;
+
+        await Expect(page.GetByText("3 to fix.")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Form_ShouldFocusTheFirstErrorAfterThePageReloads_WhenAStaticPostFails(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-form-submit");

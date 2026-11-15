@@ -1947,6 +1947,52 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Form_ShouldSubmitAndReadTheFieldsMessages_WhenTheHelperIsUsed()
+    {
+        var (valid, invalid) = (0, 0);
+        var cut = Render<TbForm>(parameters => parameters.AddUnmatched("aria-label", "Trip sign-up")
+            .Add(form => form.OnValidSubmit, () => valid++).Add(form => form.OnInvalidSubmit, () => invalid++)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTextField<string>>(0);
+                builder.AddAttribute(1, nameof(TbTextField<string>.Label), "Leader's name");
+                builder.AddAttribute(2, nameof(TbTextField<string>.Required), true);
+                builder.AddAttribute(3, nameof(TbTextField<string>.RequiredMessage), "Enter the leader's name.");
+                builder.CloseComponent();
+            })));
+        var form = cut.Tb().Form("Trip sign-up");
+
+        await form.SubmitAsync();
+        var errors = form.Errors;
+        await cut.Tb().TextField("Leader's name").EnterAsync("Ada");
+        await form.SubmitAsync();
+
+        Assert.Equal(["Enter the leader's name."], errors);
+        Assert.Equal((1, 1), (invalid, valid));
+        Assert.Empty(form.Errors);
+    }
+
+    [Fact]
+    public void Form_ShouldFindTheForm_WhenAHeadingNamesIt()
+    {
+        var cut = Render<TbStack>(parameters => parameters.AddChildContent("<h2 id=\"trip\">Trip sign-up</h2>")
+            .AddChildContent<TbForm>(form => form.AddUnmatched("aria-labelledby", "trip")));
+
+        Assert.Empty(cut.Tb().Form("Trip sign-up").Errors);
+    }
+
+    [Fact]
+    public async Task Form_ShouldRefuseToSubmit_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.FormName, "sign-up"));
+
+        var still = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Form().SubmitAsync());
+
+        Assert.Contains("static page", still.Message);
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
     {
         var answers = new List<string>();

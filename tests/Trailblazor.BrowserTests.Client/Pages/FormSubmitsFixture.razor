@@ -1,0 +1,22 @@
+@page "/form-submits"
+
+@* A form that a valid submit swaps for a thank-you note, and a disabled form. *@
+@if (_sent)
+{
+    <p>Thanks, we'll be in touch.</p>
+}
+else
+{
+    <TbForm aria-label="Feedback" OnValidSubmit="() => _sent = true">
+        <TbButton Type="ButtonType.Submit">Send</TbButton>
+    </TbForm>
+}
+<TbForm aria-label="Archived" Disabled OnValidSubmit="() => _archived++">
+    <TbButton Type="ButtonType.Submit">Archive</TbButton>
+</TbForm>
+<p>Archived submits: @_archived</p>
+
+@code {
+    private bool _sent;
+    private int _archived;
+}

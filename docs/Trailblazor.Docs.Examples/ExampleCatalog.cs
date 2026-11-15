@@ -3118,10 +3118,13 @@ public static class ExampleCatalog
             ],
             Target = new("form", "Trip sign-up"),
             Blocks = ["tb-form"],
-            TestingTip = "Submit with the button, then find errors through the fields: "
-                + "`ToHaveAttributeAsync(\"aria-invalid\", \"true\")` on the input, and its message with "
-                + "`ToHaveAccessibleDescriptionAsync`. A `ValidationAsync` message shows only once its check answers, "
-                + "so wait for it: use `WaitForAssertion` in bUnit, or let Playwright's assertions retry.",
+            TestingTip = "`page.Tb().Form(\"Trip sign-up\")` in Playwright, or `cut.Tb().Form(...)` in bUnit, finds "
+                + "the form by its accessible name: `SubmitAsync()` submits it, and `ErrorsAsync()` or `Errors` reads "
+                + "the messages its fields show. To check one field, look at its input: "
+                + "`ToHaveAttributeAsync(\"aria-invalid\", \"true\")`, and its message with "
+                + "`ToHaveAccessibleDescriptionAsync`. A "
+                + "`ValidationAsync` message shows only once its check answers, so wait for it: use `WaitForAssertion` "
+                + "in bUnit, or let Playwright's assertions retry.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"new-trail\"`, it counts `trailblazor.control.shown` as it first "

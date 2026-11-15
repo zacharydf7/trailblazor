@@ -90,6 +90,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbDateRangePicker</c> with this label.</summary>
     public TbDateRangePickerLocator DateRangePicker(string label) => new(scope, label);
 
+    /// <summary>The <c>TbForm</c> with this accessible name, or the only one in the scope when no name is given.
+    /// </summary>
+    public TbFormLocator Form(string? name = null) => new(scope, name);
+
     /// <summary>The <c>TbAccordion</c> item with this header.</summary>
     public TbAccordionItemLocator AccordionItem(string header) => new(scope, header);
 

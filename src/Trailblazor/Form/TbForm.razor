@@ -38,6 +38,8 @@
     private bool _focusError;
     // Whether IsValid or Errors may have changed since the last report.
     private bool _stale = true;
+    // How many submits the form has finished handling; the Playwright driver waits for it to change.
+    private int _submits;
     // While a field's edit, a reset or a validation is under way, renders and the context's events hold their report
     // until it ends.
     private int _edits;
@@ -185,6 +187,15 @@
             var attributes = AdditionalAttributes?.ToDictionary() ?? [];
             attributes["onreset"] = EventCallback.Factory.Create(this, ResetAsync);
             attributes["__internal_preventDefault_onreset"] = true;
+            if (RendererInfo.IsInteractive)
+            {
+                attributes["data-submits"] = _submits;
+            }
+            else if (AssignedRenderMode is null)
+            {
+                attributes["data-static"] = "";
+            }
+
             // With no circuit, static-form.js marks the submit button busy and focuses the first error a post left.
             if (!RendererInfo.IsInteractive)
             {
@@ -397,6 +408,19 @@
     internal void Remove(IFormField field) => _fields.Remove(field);
 
     private async Task SubmitAsync(EditContext context)
+    {
+        try
+        {
+            await HandleSubmitAsync(context);
+        }
+        finally
+        {
+            _submits++;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleSubmitAsync(EditContext context)
     {
         // Enter in a field, or a submit button the form doesn't know of, can still post a disabled form.
         if (Disabled)

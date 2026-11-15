@@ -82,7 +82,7 @@
             <code>cut.Tb()</code> finds fields by their labels and drives them the way a user does. A helper the
             <a href="guides/testing#playwright">Playwright helpers</a> also have goes by the same name there: a read
             such as <code>Text</code> here is <code>TextAsync()</code> there. A grid, tree, sortable list,
-            pagination, breadcrumb trail, stepper, query builder, viewport, tabs, context menu or command palette
+            pagination, breadcrumb trail, stepper, form, query builder, viewport, tabs, context menu or command palette
             that's the only one of its kind can be found without its name, as in <code>Grid()</code>.
         </TbText>
         <div class="docs-api" tabindex="0" role="region" aria-label="bUnit helpers">
@@ -328,6 +328,13 @@
                         <td>
                             Presses the alert's close button, and <code>Text</code> reads its message.
                             <code>Banner(name)</code> does the same for a banner, found by its title.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Form(name).SubmitAsync()</code></th>
+                        <td>
+                            Submits the form as its submit button does, and <code>Errors</code> reads the messages its
+                            fields show.
                         </td>
                     </tr>
                     <tr>
@@ -1083,6 +1090,9 @@
             + "and `TextAsync()` reads its message."),
         new("Banner", "Its title", "`Banner(name).CloseAsync()` presses its close button once the page is "
             + "interactive, and `TextAsync()` reads its message."),
+        new("Form", "Its name, or none for the only one", "`Form(name).SubmitAsync()` submits it once the page is "
+            + "interactive and waits until the form has handled it, and `ErrorsAsync()` reads the messages its fields "
+            + "show."),
         new("Carousel", "Its AriaLabel", "`Carousel(name).NextAsync()` shows the next slide and waits for it to "
             + "appear, as `PreviousAsync()` and `GoToAsync(index)` do; `ActiveIndexAsync()` reads which slide shows, "
             + "and `CountAsync()` how many there are."),

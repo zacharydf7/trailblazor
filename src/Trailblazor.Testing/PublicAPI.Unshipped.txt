@@ -419,3 +419,7 @@ Trailblazor.Testing.TbStepperDriver.Current.get -> string?
 Trailblazor.Testing.TbStepperDriver.GoToAsync(string! title) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbStepperDriver.Steps.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TrailblazorMarkup.Stepper(string? name = null) -> Trailblazor.Testing.TbStepperDriver!
+Trailblazor.Testing.TbFormDriver
+Trailblazor.Testing.TbFormDriver.Errors.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbFormDriver.SubmitAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Form(string? name = null) -> Trailblazor.Testing.TbFormDriver!
