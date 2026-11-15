@@ -11,7 +11,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] Left and Right swap in a right-to-left grid. `DataGridTests.CellNavigation_ShouldMirrorLeftAndRight_WhenThePageIsRightToLeft`
 - [x] Home and End go to the row's ends, Ctrl+Home and Ctrl+End to the grid's first and last cells, and Page Up and Page Down move by a screenful, even to rows not drawn yet. `DataGridTests.CellNavigation_ShouldScrollToRowsNotYetDrawn_WhenControlEndAndHomeArePressed`, `data-grid.js`
 - [x] A cell chosen, such as by a click, while the row a key moved to is still being drawn keeps focus when that row arrives, as it does while an opened tree row's children arrive. `DataGridTests.CellNavigation_ShouldLeaveFocusOnTheCellChosen_WhenItTakesFocusBeforeTheRowIsDrawn`, `TreeGridTests.Keys_ShouldLeaveFocusOnTheCellChosen_WhenItTakesFocusBeforeTheOpenedRowsChildrenArrive`
-- [ ] The same for a column not drawn yet with `VirtualizeColumns`. #513
+- [x] With `VirtualizeColumns`, a cell chosen while a key's column is still being drawn ends up with focus, though the window that draws the column can drop it for a moment first. `GridColumnsTests.Focus_ShouldEndOnTheChosenCell_WhenACellIsChosenBeforeTheColumnIsDrawn`
 - [x] An up or down arrow keeps its column through a group's heading. `DataGridTests.CellNavigation_ShouldKeepItsColumnThroughAGroupsHeading_WhenMovingDown`
 - [x] Arrows pass over a cell with a menu without opening it, and over a row's handle without moving the row. `DataGridTests.CellNavigation_ShouldMoveOverAMenusCellWithoutOpeningIt_WhenArrowsArePressed`
 - [x] An arrow on a row's radio button moves on without choosing the row. `DataGridTests.CellNavigation_ShouldMoveFromARowsRadioWithoutChoosingIt_WhenAnArrowIsPressed`

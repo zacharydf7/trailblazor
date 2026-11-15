@@ -139,6 +139,27 @@ public class GridColumnsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Focus_ShouldEndOnTheChosenCell_WhenACellIsChosenBeforeTheColumnIsDrawn(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        var table = page.GetByRole(AriaRole.Grid, new() { Name = "Readings" });
+        await Expect(table).Not.ToHaveAttributeAsync("data-column-window", "0,9");
+        var drawn = await table.GetAttributeAsync("data-column-window");
+
+        await page.EvaluateAsync("""
+            () => {
+                const last = [...document.querySelectorAll("tr[data-key='1'] td[data-column^=s]")].at(-1);
+                last.focus();
+                last.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+                document.querySelector("tr[data-key='2'] td[data-column=s0]").focus();
+            }
+            """);
+
+        await Expect(table).Not.ToHaveAttributeAsync("data-column-window", drawn!);
+        await Expect(page.Locator("tr[data-key='2'] td[data-column=s0]")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Keys_ShouldKeepEveryColumnInViewDrawn_WhenTheyReachAColumnAlreadyInView(string browser)
     {
         var page = await OpenReadyAsync(browser);

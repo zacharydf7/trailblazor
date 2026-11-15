@@ -613,6 +613,11 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
     // While a column is scrolled into view, the cell that had focus can leave with the columns behind it; focus waits
     // for the column rather than falling back to the place it left.
     let revealing = false;
+    // The move whose column is on its way. Focus landing on a cell after it, from a click or a key, supersedes it; a key
+    // still waiting for its row doesn't.
+    let revealMove = 0;
+    let landedMove = 0;
+    const awaitingColumn = () => revealing && landedMove < revealMove;
 
     // A grid that selects cells keeps the cell its range started at; the server marks the cells from it to focus.
     const selectsCells = () => table.hasAttribute('data-cell-selection');
@@ -814,13 +819,13 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
             // Focus that fell to the page with its row goes to what takes the row's place. A virtualized grid also drops
             // rows as it scrolls, which leaves nothing in that place and mustn't pull focus back.
             if (document.activeElement === document.body) {
-                refocus = holdsFocus && !revealing && !columnScrolledAway
+                refocus = holdsFocus && !awaitingColumn() && !columnScrolledAway
                     && (!isVirtual() || !!rowAt(placeIndex(rows), rows));
                 // A window sent before focus moved can be drawn after it and drop the cell just focused; while that
                 // cell's column is still in view, it's drawn again and takes focus back.
                 const at = columnScrolledAway ? unpinnedKeys(table).indexOf(place.columnKey) : -1;
                 const [first, last] = at >= 0 ? columnsInView(table, scroll) : [0, -1];
-                if (holdsFocus && !revealing && row && at >= first && at <= last) {
+                if (holdsFocus && !awaitingColumn() && row && at >= first && at <= last) {
                     revealColumn(row, place.columnKey);
                 }
                 holdsFocus = refocus;
@@ -870,6 +875,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         }
 
         revealing = true;
+        revealMove = move;
         const target = drawn() ?? await new Promise(resolve => {
             const done = () => {
                 watch.disconnect();
@@ -881,8 +887,11 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
             watch.observe(row, { childList: true });
             watch.observe(table, { attributes: true, attributeFilter: ['data-column-window'] });
         });
-        revealing = false;
-        // A later key, or focus moving out of the grid, wins over a column that was slow to come.
+        if (revealMove === move) {
+            revealing = false;
+        }
+
+        // A later key or click, or focus moving out of the grid, wins over a column that was slow to come.
         const focused = document.activeElement;
         if (move === moves && (!focused || focused === document.body || table.contains(focused)) && target) {
             place.column = startOf(target);
@@ -1245,16 +1254,14 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         if (isGrid() && cell?.closest('table') === table && !event.target.closest('[popover]')) {
             holdsFocus = true;
             makeStop(stopOf(cell), cell);
-            // Focus the grid didn't move itself, such as a click, wins over a row still on its way. A column on its way
-            // is left to land, since the window that draws it can drop a cell chosen meanwhile (#513).
+            // Focus the grid didn't move itself, such as a click, wins over a row or column still on its way.
             if (!steering) {
-                if (!revealing) {
-                    ++moves;
-                }
-
+                ++moves;
                 place.column = startOf(cell);
                 place.columnKey = cell.dataset.column ?? null;
             }
+
+            landedMove = moves;
 
             if (extending && bodyCellOf(cell)) {
                 extending = false;
