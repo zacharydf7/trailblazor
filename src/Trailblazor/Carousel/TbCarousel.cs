@@ -245,6 +245,12 @@ public partial class TbCarousel
     // Runs outside any event handler, so it hands a failing ActiveIndexChanged to the renderer.
     private async Task TurnFromTimerAsync()
     {
+        // A tick that fired before a pause can run after it, until the render that follows stops the timer.
+        if (!Rotating)
+        {
+            return;
+        }
+
         try
         {
             await GoToAsync(Current + 1);

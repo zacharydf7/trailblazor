@@ -142,6 +142,25 @@ public class TbCarouselTests : BunitContext
     }
 
     [Fact]
+    public async Task AutoPlayInterval_ShouldStayOnTheSlide_WhenATickQueuedBeforeAPauseRunsAfterIt()
+    {
+        var cut = RenderTurning();
+
+        // The tick fires on another thread while the renderer is busy, so its turn waits until the pause is handled.
+        await cut.InvokeAsync(() =>
+        {
+            var tick = new Thread(() => _time.Advance(FiveSeconds));
+            tick.Start();
+            tick.Join();
+            Events().Value.OnFocusEnter(fromKeyboard: false);
+        });
+        // Work queued on the renderer runs in order, so the tick's turn has run once this has.
+        await cut.InvokeAsync(() => { });
+
+        Assert.Equal("Pine", Shown(cut));
+    }
+
+    [Fact]
     public async Task AutoPlayInterval_ShouldPauseAndGoOn_WhenThePointerOrAPointersFocusComesAndGoes()
     {
         var cut = RenderTurning();
