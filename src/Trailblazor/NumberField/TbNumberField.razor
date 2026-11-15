@@ -379,13 +379,46 @@
     {
         if ((NumberType != typeof(double) && NumberType != typeof(float)) || string.IsNullOrEmpty(text))
         {
-            return BindConverter.TryConvertTo(text, CultureInfo.InvariantCulture, out value);
+            return BindConverter.TryConvertTo(text, CultureInfo.InvariantCulture, out value)
+                || TryConvertExponent(text, out value);
         }
 
         var parsed = double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number);
         value = parsed ? (TValue)Convert.ChangeType(number, NumberType, CultureInfo.InvariantCulture) : default;
         // Too large for the type parses as infinity, which the input can't show.
         return parsed && double.IsFinite(Convert.ToDouble(value, CultureInfo.InvariantCulture));
+    }
+
+    // An integer or decimal written with an exponent, such as 1e3, if it comes to a value its type holds.
+    private static bool TryConvertExponent(string? text, out TValue? value)
+    {
+        value = default;
+        if (text?.Contains('e', StringComparison.OrdinalIgnoreCase) != true
+            || !decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number))
+        {
+            return false;
+        }
+
+        // A fraction as small as 1e-30 reads as a decimal zero, so a whole type takes zero only from a zero mantissa.
+        var mantissa = text[..text.IndexOf('e', StringComparison.OrdinalIgnoreCase)];
+        return (number != 0 || !NumberTypes.IsWhole(NumberType)
+                || (decimal.TryParse(mantissa, NumberStyles.Float, CultureInfo.InvariantCulture, out var start)
+                    && start == 0))
+            && TryFitType(number, out value);
+    }
+
+    // The number as the value's type, unless it's past the type's limits or a fraction in a whole type.
+    private static bool TryFitType(decimal number, out TValue? value)
+    {
+        value = default;
+        var (lower, upper) = NumberTypes.Limits(NumberType);
+        if (number < lower || number > upper || (NumberTypes.IsWhole(NumberType) && number != Math.Truncate(number)))
+        {
+            return false;
+        }
+
+        value = ToValue(number);
+        return true;
     }
 
     // Text in the field's culture, with its group separators and currency symbol; a percent is a hundredth.
@@ -403,15 +436,7 @@
             return false;
         }
 
-        number = Percent ? number / 100 : number;
-        var (lower, upper) = NumberTypes.Limits(NumberType);
-        if (number < lower || number > upper || (NumberTypes.IsWhole(NumberType) && number != Math.Truncate(number)))
-        {
-            return false;
-        }
-
-        value = ToValue(number);
-        return true;
+        return TryFitType(Percent ? number / 100 : number, out value);
     }
 
     // The field's own format says whether it holds a percent, so "15" in a percent field is 15%, as "15%" is.

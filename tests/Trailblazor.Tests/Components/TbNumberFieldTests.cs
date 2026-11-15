@@ -298,6 +298,50 @@ public class TbNumberFieldTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=error]"));
     }
 
+    [Theory]
+    [InlineData("1e3", 1000)]
+    [InlineData("-3E2", -300)]
+    [InlineData("1.5e1", 15)]
+    [InlineData("0e5", 0)]
+    public void Change_ShouldReadAnExponent_WhenAnIntegerFieldIsGivenOne(string text, int expected)
+    {
+        var value = 0;
+        var cut = Render<TbNumberField<int>>(parameters => parameters
+            .Add(field => field.ValueChanged, (int number) => value = number));
+
+        Commit(cut, text);
+
+        Assert.Equal(expected, value);
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+    }
+
+    [Fact]
+    public void Change_ShouldReadAnExponent_WhenADecimalFieldIsGivenOne()
+    {
+        var value = 0m;
+        var cut = Render<TbNumberField<decimal>>(parameters => parameters
+            .Add(field => field.ValueChanged, (decimal number) => value = number));
+
+        Commit(cut, "2.5e-2");
+
+        Assert.Equal(0.025m, value);
+    }
+
+    [Theory]
+    [InlineData("1.5e0")]
+    [InlineData("1e10")]
+    [InlineData("1e40")]
+    [InlineData("1e-30")]
+    [InlineData("-5e-400")]
+    public void Change_ShouldShowAnError_WhenAnExponentGivesAFractionOrANumberPastTheType(string text)
+    {
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Label, "Copies"));
+
+        Commit(cut, text);
+
+        Assert.Equal("Copies must be a number.", cut.Find("[data-part=error]").TextContent.Trim());
+    }
+
     [Fact]
     public void Change_ShouldShowAnError_WhenAFloatIsTooLargeForItsType()
     {

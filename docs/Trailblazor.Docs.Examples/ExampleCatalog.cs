@@ -3522,8 +3522,10 @@ public static class ExampleCatalog
             [
                 new("limits-and-steps", "Limits and steps", "`Min` and `Max` set the limits. A typed value outside them, or "
                     + "text that isn't a number, shows an error and stays in the field to be fixed, and the bound value "
-                    + "doesn't change. `Step` sets how far the arrow keys and buttons move the value, and `LargeStep` how far "
-                    + "Page Up and Page Down do. Holding a step button repeats it, faster the longer it's held, and "
+                    + "doesn't change. A number can be typed with an exponent, such as `1e3`, in a field of any number "
+                    + "type, as long as it comes to a value the type holds. `Step` sets how far the arrow keys and "
+                    + "buttons move the value, and `LargeStep` how far Page Up and Page Down do. Holding a step "
+                    + "button repeats it, faster the longer it's held, and "
                     + "the value changes once, when it's let go. `Labels` rewords the error messages, with `{0}` for "
                     + "the label and `{1}` for the limit, or `{1}` and `{2}` for both limits in `Labels.Range`.",
                     typeof(NumberFieldExample)),
