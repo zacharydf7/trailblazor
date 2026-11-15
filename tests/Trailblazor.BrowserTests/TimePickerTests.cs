@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class TimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -17,6 +19,25 @@ public class TimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await start.PressAsync("Tab");
 
         await Expect(page.GetByText($"Starting at {new TimeOnly(14, 45):t}.")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldChooseReadAndClearTheTime_WhenTheFieldIsInteractive(string browser)
+    {
+        Assert.SkipWhen(browser == "webkit", NoTimeBox);
+        var page = await OpenAsync(browser, "/examples/time-picker");
+        var start = page.Tb().TimePicker("Start time");
+
+        await start.ChooseAsync(new TimeOnly(14, 45));
+        await Expect(page.GetByText($"Starting at {new TimeOnly(14, 45):t}.")).ToBeVisibleAsync();
+        var chosen = await start.ValueAsync();
+        await start.ChooseAsync(null);
+
+        Assert.Equal(new TimeOnly(14, 45), chosen);
+        Assert.Null(await start.ValueAsync());
+        await Expect(page.GetByText("No time chosen yet.")).ToBeVisibleAsync();
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().TimePicker("Gates open").ChooseAsync(new TimeOnly(7, 0)));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -40,7 +61,8 @@ public class TimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenStaticAsync(browser, "/static-time-picker");
 
-        await page.GetByLabel("Start time").FillAsync("16:20");
+        await page.Tb().TimePicker("Start time").ChooseAsync(new TimeOnly(16, 20));
+        Assert.Equal(new TimeOnly(16, 20), await page.Tb().TimePicker("Start time").ValueAsync());
         await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync();
 
         await Expect(page.GetByTestId("posted")).ToHaveTextAsync("16:20");

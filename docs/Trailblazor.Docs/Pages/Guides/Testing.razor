@@ -287,6 +287,10 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>TimePicker(label).ChooseAsync(time)</code></th>
+                        <td>Sets the time as filling the browser's time box does, and <code>Value</code> reads it.</td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>DatePicker(label).ChooseAsync(date)</code></th>
                         <td>
                             Types the date in the field's own format, and <code>Value</code> reads it.
@@ -970,6 +974,8 @@
         new("Date picker", "Its label", "`DatePicker(label).ChooseAsync(date)` types the date in the field's format "
             + "and waits until the field has it, and `ValueAsync()` reads it. `EnterAsync(text)` types text as it is, "
             + "such as a date the field can't read, to test its error."),
+        new("Time picker", "Its label", "`TimePicker(label).ChooseAsync(time)` fills the time and waits until the app "
+            + "has it, and `ValueAsync()` reads it."),
         new("Date-time picker", "Its label", "`DateTimePicker(label).ChooseAsync(value)` types the date and fills the "
             + "time, and `ValueAsync()` reads them. `EnterAsync(text)` types text as it is in the date box."),
         new("Date range picker", "Its label", "`DateRangePicker(label).ChooseAsync(start, end)` picks the dates, and "

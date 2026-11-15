@@ -5491,8 +5491,9 @@ public static class ExampleCatalog
                 .. FieldParts,
                 new("input", "The time box."),
             ],
-            TestingTip = "In Playwright, `GetByLabel(\"Start time\").FillAsync(\"14:30\")` sets the time in 24-hour "
-                + "form, whatever the box shows. In bUnit, `Change(\"14:30\")` on the `input` does the same.",
+            TestingTip = "`page.Tb().TimePicker(\"Start time\")` in Playwright, or `cut.Tb().TimePicker(\"Start "
+                + "time\")` in bUnit, finds the time picker by its label: `ChooseAsync(new TimeOnly(14, 30))` sets the "
+                + "time however the box displays it, and `ValueAsync()` or `Value` reads it.",
         },
         new("date-time-picker", "Date-time picker", ExampleCategory.Inputs,
             "Chooses a date and a time of day: the date typed or picked in a calendar, the time in the browser's own "

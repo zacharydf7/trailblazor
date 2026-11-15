@@ -356,3 +356,9 @@ Trailblazor.Testing.Playwright.TbRatingLocator.RateAsync(int stars) -> System.Th
 Trailblazor.Testing.Playwright.TbRatingLocator.TbRatingLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbRatingLocator.ValueAsync() -> System.Threading.Tasks.Task<int>!
 Trailblazor.Testing.Playwright.TrailblazorPage.Rating(string! label) -> Trailblazor.Testing.Playwright.TbRatingLocator!
+Trailblazor.Testing.Playwright.TbTimePickerLocator
+Trailblazor.Testing.Playwright.TbTimePickerLocator.ChooseAsync(System.TimeOnly? time) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTimePickerLocator.Input.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbTimePickerLocator.TbTimePickerLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TbTimePickerLocator.ValueAsync() -> System.Threading.Tasks.Task<System.TimeOnly?>!
+Trailblazor.Testing.Playwright.TrailblazorPage.TimePicker(string! label) -> Trailblazor.Testing.Playwright.TbTimePickerLocator!

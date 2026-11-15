@@ -318,6 +318,9 @@ public sealed class TrailblazorMarkup
     public TbRichTextEditorDriver RichTextEditor(string label) =>
         new(() => Field(label, "[role=textbox][contenteditable]"));
 
+    /// <summary>The <c>TbTimePicker</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
+    public TbTimePickerDriver TimePicker(string label) => new(() => Field(label, "input[type=time][data-part=input]"));
+
     /// <summary>The <c>TbDatePicker</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbDatePickerDriver DatePicker(string label) =>
         new(() => Field(label, "input[data-format]", "input[type=date][data-static]:not(.tb-calendar__input)"));
@@ -883,6 +886,39 @@ public sealed class TbDatePickerDriver : TbFieldDriver
         var input = _find();
         Dates.ThrowIfStaticOrLocked(input);
         await input.ChangeAsync(new ChangeEventArgs { Value = text });
+    }
+}
+
+/// <summary>A <c>TbTimePicker</c>, found by its label.</summary>
+public sealed class TbTimePickerDriver : TbFieldDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbTimePickerDriver(Func<IElement> find) : base(find) => _find = find;
+
+    /// <summary>The time the field holds, or null when it has none.</summary>
+    public TimeOnly? Value => _find().GetAttribute("value") is { Length: > 0 } text
+        ? TimeOnly.ParseExact(text, ["HH:mm", "HH:mm:ss", "HH:mm:ss.FFF"], CultureInfo.InvariantCulture) : null;
+
+    /// <summary>Sets the time and commits it, as filling the browser's time box does; null clears it. A time the
+    /// field can't take shows its error, as in a browser. On a static page, or when the field is read-only or
+    /// disabled, this throws.</summary>
+    public async Task ChooseAsync(TimeOnly? time)
+    {
+        var input = _find();
+        Typing.ThrowIfLocked(input, "a time");
+        if (input.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("This field is the browser's own time box on a static page, which "
+                + "posts with its form; render it on an interactive page to choose a time.");
+        }
+
+        // The browser's time box holds the time in 24-hour form, with seconds only when it has them.
+        await input.ChangeAsync(new ChangeEventArgs
+        {
+            Value = time is { } chosen ? chosen.ToString(chosen.Second == 0 && chosen.Millisecond == 0 ? "HH:mm"
+                : "HH:mm:ss.FFF", CultureInfo.InvariantCulture) : "",
+        });
     }
 }
 

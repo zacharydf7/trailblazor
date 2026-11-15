@@ -32,6 +32,7 @@ public class DriverParityTests
         ["TbAutocomplete"] = "Autocomplete", ["TbColorPicker"] = "ColorPicker", ["TbDialog"] = "Dialog",
         ["TbFileUpload"] = "FileUpload", ["TbSlider"] = "Slider", ["TbRangeSlider"] = "RangeSlider",
         ["TbRating"] = "Rating", ["TbSplitter"] = "Splitter", ["TbPopover"] = "Popover",
+        ["TbTimePicker"] = "TimePicker",
     };
 
     // Why every other component has no helper of its own.
@@ -75,7 +76,7 @@ public class DriverParityTests
         ["TbDrawer"] = FollowUp, ["TbForm"] = FollowUp, ["TbInsertDivider"] = FollowUp, ["TbNavMenu"] = FollowUp,
         ["TbSpeedDial"] = FollowUp,
         ["TbStepper"] = FollowUp, ["TbThemePicker"] = FollowUp,
-        ["TbTimePicker"] = FollowUp, ["TbToolbar"] = FollowUp, ["TbTooltip"] = FollowUp,
+        ["TbToolbar"] = FollowUp, ["TbTooltip"] = FollowUp,
         ["TbVirtualList"] = FollowUp,
     };
 

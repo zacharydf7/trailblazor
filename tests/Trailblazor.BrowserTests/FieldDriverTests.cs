@@ -9,7 +9,7 @@ public class FieldDriverTests(BrowserFixture fixture) : BrowserTest(fixture)
     [
         "Select", "TreeSelect", "ListBox", "TransferList", "DatePicker", "DateTimePicker", "DateRangePicker",
         "TextField", "Checkbox", "Switch", "CheckboxGroup", "RadioGroup", "NumberField", "Slider", "RangeSlider",
-        "Autocomplete",
+        "Autocomplete", "TimePicker",
         "ColorPicker", "FileUpload", "TagInput", "SignaturePad", "Calendar", "RichTextEditor",
     ];
 

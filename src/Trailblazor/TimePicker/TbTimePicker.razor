@@ -5,6 +5,8 @@
 @* The browser's own time box shows the time in the user's language and handles the keys for each part. It works the
    same before the page is interactive, so a static form posts the time too. *@
 @Layout(Classes, @<input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId"
+                        data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+                        data-ready="@(RendererInfo.IsInteractive ? "" : null)"
                         name="@InputNameAttribute" type="time" value="@Text" min="@IsoOf(Min)" max="@IsoOf(Max)"
                         step="@StepSeconds" @onchange="args => SetTextAsync(args.Value as string)" disabled="@Disabled"
                         readonly="@ReadOnly" aria-required="@AriaRequired"

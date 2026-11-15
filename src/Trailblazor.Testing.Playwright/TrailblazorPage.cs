@@ -113,6 +113,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbRangeSlider</c> with this label.</summary>
     public TbRangeSliderLocator RangeSlider(string label) => new(scope, label);
 
+    /// <summary>The <c>TbTimePicker</c> with this label.</summary>
+    public TbTimePickerLocator TimePicker(string label) => new(scope, label);
+
     /// <summary>The <c>TbDatePicker</c> with this label.</summary>
     public TbDatePickerLocator DatePicker(string label) => new(scope, label);
 

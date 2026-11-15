@@ -1721,6 +1721,45 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task TimePicker_ShouldChooseReadAndClearTheTime_WhenTheHelperIsUsed()
+    {
+        TimeOnly? start = new(8, 30);
+        var cut = Render<TbTimePicker<TimeOnly>>(parameters => parameters.Add(field => field.Label, "Start time")
+            .Add(field => field.Value, start).Add(field => field.ValueChanged, (TimeOnly? time) => start = time)
+            .Add(field => field.Step, TimeSpan.FromSeconds(1)));
+        var picker = cut.Tb().TimePicker("Start time");
+
+        await picker.ChooseAsync(new TimeOnly(14, 45));
+        var chosen = (start, picker.Value);
+        await picker.ChooseAsync(new TimeOnly(14, 45, 30));
+        var withSeconds = (start, picker.Value);
+        await picker.ChooseAsync(null);
+
+        Assert.Equal((new TimeOnly(14, 45), new TimeOnly(14, 45)), chosen);
+        Assert.Equal((new TimeOnly(14, 45, 30), new TimeOnly(14, 45, 30)), withSeconds);
+        Assert.Equal((null, null), (start, picker.Value));
+    }
+
+    [Theory]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, true)]
+    public async Task TimePicker_ShouldRefuseATime_WhenItIsReadOnlyDisabledOrStatic(bool readOnly, bool disabled,
+        bool isStatic)
+    {
+        if (isStatic)
+        {
+            SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        }
+
+        var cut = Render<TbTimePicker<TimeOnly>>(parameters => parameters.Add(field => field.Label, "Gates open")
+            .Add(field => field.ReadOnly, readOnly).Add(field => field.Disabled, disabled));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().TimePicker("Gates open").ChooseAsync(new TimeOnly(6, 0)));
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
     {
         var answers = new List<string>();

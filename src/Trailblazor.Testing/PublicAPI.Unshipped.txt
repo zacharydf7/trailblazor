@@ -381,3 +381,7 @@ Trailblazor.Testing.TbPopoverDriver
 Trailblazor.Testing.TbPopoverDriver.CloseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbPopoverDriver.OpenAsync() -> System.Threading.Tasks.Task<AngleSharp.Dom.IElement!>!
 Trailblazor.Testing.TrailblazorMarkup.Popover(string! trigger) -> Trailblazor.Testing.TbPopoverDriver!
+Trailblazor.Testing.TbTimePickerDriver
+Trailblazor.Testing.TbTimePickerDriver.ChooseAsync(System.TimeOnly? time) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTimePickerDriver.Value.get -> System.TimeOnly?
+Trailblazor.Testing.TrailblazorMarkup.TimePicker(string! label) -> Trailblazor.Testing.TbTimePickerDriver!
