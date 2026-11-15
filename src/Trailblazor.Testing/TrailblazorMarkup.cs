@@ -206,9 +206,10 @@ public sealed class TrailblazorMarkup
                 : $"Expected one query builder labeled \"{label}\", found {builders.Count}.");
     }, _findAll, _scripts);
 
-    /// <summary>The <c>TbTextField</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
-    public TbTextFieldDriver TextField(string label) =>
-        new(() => Field(label, ".tb-text-field input[data-part=input]", ".tb-text-field textarea[data-part=input]"));
+    /// <summary>The <c>TbTextField</c> or <c>TbCodeField</c> with this label, or with this <c>AriaLabel</c> when it
+    /// has no label.</summary>
+    public TbTextFieldDriver TextField(string label) => new(() => Field(label, ".tb-text-field input[data-part=input]",
+        ".tb-text-field textarea[data-part=input]", "input.tb-code-field__input"));
 
     /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> with this label, or with this <c>AriaLabel</c> when it
     /// has no label.</summary>
@@ -1851,7 +1852,7 @@ public sealed class TbPopconfirmDriver
     }
 }
 
-/// <summary>A <c>TbTextField</c>, found by its label.</summary>
+/// <summary>A <c>TbTextField</c> or <c>TbCodeField</c>, found by its label.</summary>
 public sealed class TbTextFieldDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;

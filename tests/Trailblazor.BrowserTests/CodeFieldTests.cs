@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class CodeFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -7,6 +9,66 @@ public class CodeFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         var code = page.GetByLabel("Verification code");
         await Expect(code).ToHaveAttributeAsync("data-ready", "");
         return code;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldEnterTheCodeAndWaitUntilTheAppHasIt_WhenThePageIsInteractive(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/code-field");
+
+        await page.Tb().TextField("Verification code").EnterAsync("246810");
+
+        Assert.Equal("Code accepted.", await page.GetByLabel("Result").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldEnterOnlyWhatTheFieldTakes_WhenTheTextHasOtherCharacters(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/code-field");
+        var field = page.Tb().TextField("Verification code");
+
+        await field.EnterAsync("abc");
+        var ignored = await field.TextAsync();
+        await field.EnterAsync("24-6");
+
+        Assert.Equal("", ignored);
+        Assert.Equal("246", await field.TextAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Field_ShouldCommitTheTextItsScriptPutIn_WhenEnterCommittedEarlierInTheSameFocus(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/code-field");
+        var code = await OpenCodeAsync(page);
+        await code.FillAsync("12");
+        await code.PressAsync("Enter");
+
+        await page.Tb().TextField("Verification code").EnterAsync("9-8");
+
+        Assert.Equal("98", await page.Tb().TextField("Verification code").TextAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldEnterTheCodeOnceInteractive_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/examples/code-field");
+
+        var entering = page.Tb().TextField("Verification code").EnterAsync("246810");
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await entering;
+
+        await Expect(page.GetByLabel("Result")).ToHaveTextAsync("Code accepted.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFillTheField_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-code-field");
+
+        await page.Tb().TextField("Verification code").EnterAsync("246810");
+
+        await Expect(page.GetByLabel("Verification code")).ToHaveValueAsync("246810");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

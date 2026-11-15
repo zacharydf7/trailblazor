@@ -6106,12 +6106,15 @@ public static class ExampleCatalog
                 """,
             TestingTips =
             [
-                "In bUnit, raise one input event with the whole code, as the browser reports it: "
-                    + "`cut.Find(\"[data-part=input]\").Input(\"246810\")`.",
-                "In Playwright, wait for the input's `data-ready`, which comes once the page is interactive and "
-                    + "the field filters what's typed, then fill it by its label: `var code = "
+                "`await page.Tb().TextField(\"Verification code\").EnterAsync(\"246810\")` from "
+                    + "`Trailblazor.Testing.Playwright` enters a code the way it enters a text field's text: it waits "
+                    + "until the page is interactive and the field filters what's typed, then returns once the app has "
+                    + "the code. `await cut.Tb().TextField(\"Verification code\").EnterAsync(\"246810\")` does the "
+                    + "same in bUnit.",
+                "By hand in Playwright, wait for the input's `data-ready`, then fill it by its label: `var code = "
                     + "page.GetByLabel(\"Verification code\"); await Expect(code).ToHaveAttributeAsync(\"data-ready\", "
-                    + "\"\"); await code.FillAsync(\"246810\");`.",
+                    + "\"\"); await code.FillAsync(\"246810\");`. In bUnit, raise one input event with the whole "
+                    + "code, as the browser reports it: `cut.Find(\"[data-part=input]\").Input(\"246810\")`.",
             ],
         },
         new("property-grid", "Property grid", ExampleCategory.Inputs,

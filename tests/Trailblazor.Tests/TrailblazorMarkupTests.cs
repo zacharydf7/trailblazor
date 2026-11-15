@@ -2296,6 +2296,21 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task TextField_ShouldEnterOnlyWhatACodeFieldTakes_WhenTheFieldIsACodeField()
+    {
+        var (value, completed) = ((string?)null, new List<string>());
+        var cut = Render<TbCodeField>(parameters => parameters.Add(field => field.Label, "Verification code")
+            .Add(field => field.ValueChanged, (string now) => value = now)
+            .Add(field => field.OnComplete, (string code) => completed.Add(code)));
+
+        await cut.Tb().TextField("Verification code").EnterAsync("246-810");
+
+        Assert.Equal("246810", cut.Tb().TextField("Verification code").Text);
+        Assert.Equal("246810", value);
+        Assert.Equal(["246810"], completed);
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
     {
         var answers = new List<string>();

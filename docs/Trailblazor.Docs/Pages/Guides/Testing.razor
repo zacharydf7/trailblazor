@@ -124,7 +124,10 @@
                     </tr>
                     <tr>
                         <th scope="row"><code>TextField(label).EnterAsync(text)</code></th>
-                        <td>Types text and commits it, and <code>Text</code> reads what the field shows.</td>
+                        <td>
+                            Types text into a text field or code field and commits it, and <code>Text</code> reads what
+                            the field shows.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>Within(() =&gt; element)</code></th>
@@ -1021,8 +1024,8 @@
             + "`OptionAsync(name)` reads whether an option is disabled and chosen, and `DisabledAsync()` reads the "
             + "select. `OpenAsync()` and `CloseAsync()` open and close its list, and `IsOpenAsync()` reads whether "
             + "it's open."),
-        new("Text field", "Its label", "`TextField(label).EnterAsync(text)` types the text and waits until the app "
-            + "has it, and `TextAsync()` reads what the field shows."),
+        new("Text field or code field", "Its label", "`TextField(label).EnterAsync(text)` types the text and waits "
+            + "until the app has it, and `TextAsync()` reads what the field shows."),
         new("Checkbox and switch", "Its label", "`Checkbox(label).CheckAsync()` and `UncheckAsync()` wait until the "
             + "app has the value, and `CheckedAsync()` reads it. `Switch(label)` works the same way."),
         new("Checkbox group", "Its label", "`CheckboxGroup(label).CheckAsync(options)` and `UncheckAsync(options)` "

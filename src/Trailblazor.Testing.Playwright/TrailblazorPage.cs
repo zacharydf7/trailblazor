@@ -232,11 +232,12 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>What the page's components say to screen readers.</summary>
     public TbAnnouncementsLocator Announcements => new(Scope.Document(scope));
 
-    /// <summary>The <c>TbTextField</c> with this label.</summary>
+    /// <summary>The <c>TbTextField</c> or <c>TbCodeField</c> with this label.</summary>
     public TbTextFieldLocator TextField(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
 
-    /// <summary>The <c>TbTextField</c> this finds, inside the scope, such as one in a row of fields that share their
-    /// labels, as <c>row.GetByLabel("Name")</c>, or one with an id, as <c>page.Locator("#name")</c>.</summary>
+    /// <summary>The <c>TbTextField</c> or <c>TbCodeField</c> this finds, inside the scope, such as one in a row of
+    /// fields that share their labels, as <c>row.GetByLabel("Name")</c>, or one with an id, as
+    /// <c>page.Locator("#name")</c>.</summary>
     public TbTextFieldLocator TextField(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbCheckbox</c> with this label.</summary>

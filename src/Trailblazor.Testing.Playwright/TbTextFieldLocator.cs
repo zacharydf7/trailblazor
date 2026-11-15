@@ -2,13 +2,14 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbTextField</c>, found by its label or a locator.</summary>
+/// <summary>A <c>TbTextField</c> or <c>TbCodeField</c>, found by its label or a locator.</summary>
 public sealed class TbTextFieldLocator(ILocator scope, ILocator field) : TbFieldLocator
 {
     private protected override ILocator Control => Input;
 
     private ILocator Input =>
-        @field.And(scope.Locator(".tb-text-field input[data-part=input], .tb-text-field textarea[data-part=input]"));
+        @field.And(scope.Locator(".tb-text-field input[data-part=input], .tb-text-field textarea[data-part=input], "
+            + "input.tb-code-field__input"));
 
     private ILocator RevealButton =>
         Input.Locator("xpath=ancestor::*[@data-part='control'][1]").Locator("[data-part=reveal]");
@@ -36,8 +37,10 @@ public sealed class TbTextFieldLocator(ILocator scope, ILocator field) : TbField
         await Assertions.Expect(input).ToHaveAttributeAsync("data-ready", "");
         await Commit.WaitAsync(input, async () =>
         {
-            var changes = await input.InputValueAsync() != text;
+            // A mask or a code field can change what's typed, so wait only when the fill changed the value.
+            var before = await input.InputValueAsync();
             await input.FillAsync(text);
+            var changes = await input.InputValueAsync() != before;
             await input.BlurAsync();
             return changes;
         });

@@ -43,7 +43,9 @@
             InputDescribedBy is null ? LengthId : $"{InputDescribedBy} {LengthId}");
         builder.AddAttribute(21, "style", $"--tb-code-field-length: {Length}");
         builder.AddAttribute(22, "class", ClassNames.Join("tb-field__input", "tb-code-field__input", Classes?.Input));
-        builder.AddElementReferenceCapture(23, input => _input = input);
+        // Tests wait for the script's data-ready; a static page has no script, so tests fill the field without waiting.
+        builder.AddAttribute(23, "data-static", AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null);
+        builder.AddElementReferenceCapture(24, input => _input = input);
         builder.CloseElement();
     };
 

@@ -53,15 +53,32 @@ export function attachCodeField(input) {
         }
     };
 
+    // The browser raises change only for a user's edits, so the script raises it on blur for text it put in.
+    let committed = input.value;
+    const onCommit = () => {
+        committed = input.value;
+    };
+    const onBlur = () => {
+        if (input.value !== committed) {
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    };
+
     input.addEventListener('beforeinput', onBeforeInput);
     input.addEventListener('paste', onPaste);
     input.addEventListener('compositionend', onCompositionEnd);
+    input.addEventListener('focus', onCommit);
+    input.addEventListener('change', onCommit);
+    input.addEventListener('blur', onBlur);
     input.dataset.ready = '';
     return {
         dispose() {
             input.removeEventListener('beforeinput', onBeforeInput);
             input.removeEventListener('paste', onPaste);
             input.removeEventListener('compositionend', onCompositionEnd);
+            input.removeEventListener('focus', onCommit);
+            input.removeEventListener('change', onCommit);
+            input.removeEventListener('blur', onBlur);
         },
     };
 }
