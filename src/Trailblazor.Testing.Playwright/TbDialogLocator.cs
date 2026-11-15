@@ -2,8 +2,8 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A dialog, found by its title: a <c>TbDialog</c>, or one from <c>IDialogService</c> such as a confirm.
-/// </summary>
+/// <summary>A dialog, found by its title: a <c>TbDialog</c> or <c>TbDrawer</c>, or one from <c>IDialogService</c>
+/// such as a confirm.</summary>
 public sealed class TbDialogLocator(ILocator scope, string title)
 {
     // A confirm or alert is an alertdialog; a dialog that is closing stays on the page while it fades.

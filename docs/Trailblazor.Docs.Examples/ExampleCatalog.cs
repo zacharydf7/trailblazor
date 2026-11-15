@@ -7310,9 +7310,11 @@ public static class ExampleCatalog
             TestingTips =
             [
                 "In Playwright, `page.Tb().Dialog(\"Trail filters\")` from `Trailblazor.Testing.Playwright` finds a "
-                    + "drawer by its title, as it does a dialog: `WaitForAsync()` returns it once open, and "
-                    + "`CancelAsync()` closes it with Escape. It skips a drawer that is still sliding out.",
-                "In bUnit, `IDialogService.OpenDialogs` lists the open drawers along with the dialogs, and each one's "
+                    + "drawer by its title, as it does a dialog: `WaitForAsync()` returns it once open, "
+                    + "`ChooseAsync(\"Show trails\")` clicks one of its buttons, and `CancelAsync()` closes it with "
+                    + "Escape. It skips a drawer that is still sliding out.",
+                "In bUnit, `cut.Tb().Dialog(\"Trail filters\")` from `Trailblazor.Testing` does the same. "
+                    + "`IDialogService.OpenDialogs` lists the open drawers along with the dialogs, and each one's "
                     + "`Options.Position` is its side.",
                 "A drawer opens only once the page is interactive, so open it after the page is ready.",
             ],

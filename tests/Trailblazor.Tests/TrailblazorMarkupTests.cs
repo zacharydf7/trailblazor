@@ -257,6 +257,23 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Dialog_ShouldClickADrawersButtonAndCloseIt_WhenFoundByTheDrawersTitle()
+    {
+        Render<DialogHost>();
+        var (open, shown) = (true, 0);
+        var cut = Render<TbDrawer>(parameters => parameters.Add(drawer => drawer.Title, "Trail filters")
+            .Add(drawer => drawer.Open, true).Add(drawer => drawer.OpenChanged, (bool now) => open = now)
+            .AddChildContent<TbDialogActions>(actions => actions.AddChildContent<TbButton>(button => button
+                .Add(each => each.OnClick, () => shown++).AddChildContent("Show trails"))));
+
+        await cut.Tb().Dialog("Trail filters").ChooseAsync("Show trails");
+        await cut.Tb().Dialog("Trail filters").CancelAsync();
+
+        Assert.Equal(1, shown);
+        Assert.False(open);
+    }
+
+    [Fact]
     public async Task Dialog_ShouldFindAndCancelADialogByTheTitleItShows_WhenItsTitleIsRichContent()
     {
         Render<DialogHost>();

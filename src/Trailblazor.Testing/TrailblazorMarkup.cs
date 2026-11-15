@@ -298,9 +298,9 @@ public sealed class TrailblazorMarkup
     public TbFileUploadDriver FileUpload(string label) =>
         new(() => Field(label, "input[type=file][data-part=input]"), _scripts);
 
-    /// <summary>The open dialog with this title: a <c>TbDialog</c>, or one from <c>IDialogService</c> such as a
-    /// confirm. A dialog from the service renders in the <c>DialogHost</c> that <c>TbRoot</c> holds, so look for it in
-    /// the markup of the component that renders the host.</summary>
+    /// <summary>The open dialog with this title: a <c>TbDialog</c> or <c>TbDrawer</c>, or one from
+    /// <c>IDialogService</c> such as a confirm. A dialog from the service renders in the <c>DialogHost</c> that
+    /// <c>TbRoot</c> holds, so look for it in the markup of the component that renders the host.</summary>
     public TbDialogDriver Dialog(string title) => new(title, _findAll, _scripts);
 
     /// <summary>The <c>TbTagInput</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
@@ -2283,8 +2283,8 @@ public sealed class TbFileUploadDriver : TbFieldDriver
     }
 }
 
-/// <summary>An open dialog, found by its title: a <c>TbDialog</c>, or one from <c>IDialogService</c> such as a
-/// confirm.</summary>
+/// <summary>An open dialog, found by its title: a <c>TbDialog</c> or <c>TbDrawer</c>, or one from
+/// <c>IDialogService</c> such as a confirm.</summary>
 public sealed class TbDialogDriver
 {
     private readonly string _title;

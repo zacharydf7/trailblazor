@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class DrawerTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -15,6 +17,20 @@ public class DrawerTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var size = await page.EvaluateAsync<double[]>("() => [document.documentElement.clientWidth, innerHeight]");
         return (size[0], size[1]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldClickADrawersButtonOrCloseIt_WhenFoundByTheDrawersTitle(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/drawer");
+        var filters = page.GetByRole(AriaRole.Button, new() { Name = "Filters" });
+
+        await filters.ClickAsync();
+        await page.Tb().Dialog("Trail filters").ChooseAsync("Show trails");
+        await filters.ClickAsync();
+        await page.Tb().Dialog("Trail filters").CancelAsync();
+
+        await Expect(page.GetByRole(AriaRole.Dialog)).ToHaveCountAsync(0);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
