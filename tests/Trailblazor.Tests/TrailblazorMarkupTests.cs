@@ -1803,6 +1803,51 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Carousel_ShouldStepAndJumpBetweenSlides_WhenTheHelperIsUsed()
+    {
+        var shown = new List<int>();
+        var cut = Render<TbCarousel>(parameters => parameters.Add(carousel => carousel.AriaLabel, "Featured trails")
+            .Add(carousel => carousel.ActiveIndexChanged, (int index) => shown.Add(index))
+            .AddChildContent<TbCarouselSlide>(slide => slide.AddChildContent("Pine Hollow"))
+            .AddChildContent<TbCarouselSlide>(slide => slide.AddChildContent("Cedar Flats"))
+            .AddChildContent<TbCarouselSlide>(slide => slide.AddChildContent("Eagle Ridge")));
+        var carousel = cut.Tb().Carousel("Featured trails");
+
+        await carousel.NextAsync();
+        await carousel.GoToAsync(2);
+        await carousel.NextAsync();
+        await carousel.PreviousAsync();
+
+        // From the last slide, Next loops back to the first, and Previous goes back to the last.
+        Assert.Equal([1, 2, 0, 2], shown);
+        Assert.Equal((3, 2), (carousel.Count, carousel.ActiveIndex));
+    }
+
+    [Fact]
+    public async Task Carousel_ShouldRefuseAMove_WhenItDoesntLoopHasNoPickerOrIsStatic()
+    {
+        var cut = Render<TbCarousel>(parameters => parameters.Add(carousel => carousel.AriaLabel, "Trip steps")
+            .Add(carousel => carousel.Loop, false).Add(carousel => carousel.ShowPicker, false)
+            .AddChildContent<TbCarouselSlide>(slide => slide.AddChildContent("Park"))
+            .AddChildContent<TbCarouselSlide>(slide => slide.AddChildContent("Walk")));
+        var steps = cut.Tb().Carousel("Trip steps");
+
+        var first = await Assert.ThrowsAsync<InvalidOperationException>(() => steps.PreviousAsync());
+        var noPicker = await Assert.ThrowsAsync<InvalidOperationException>(() => steps.GoToAsync(1));
+
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var still = Render<TbCarousel>(parameters => parameters.Add(carousel => carousel.AriaLabel, "Featured trails")
+            .AddChildContent<TbCarouselSlide>(slide => slide.AddChildContent("Pine Hollow")));
+        var stuck = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => still.Tb().Carousel("Featured trails").NextAsync());
+
+        Assert.Contains("doesn't loop", first.Message);
+        Assert.Contains("no picker", noPicker.Message);
+        Assert.Contains("static page", stuck.Message);
+        Assert.Equal(0, steps.ActiveIndex);
+    }
+
+    [Fact]
     public async Task Chip_ShouldToggleClickAndRemoveTheChip_WhenTheHelperIsUsed()
     {
         var (selected, clicks, removed) = (false, 0, 0);

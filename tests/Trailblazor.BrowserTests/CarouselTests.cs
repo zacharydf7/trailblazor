@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class CarouselTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -18,6 +20,49 @@ public class CarouselTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Featured(page).GetByRole(AriaRole.Group, new() { Name = "1 of 3" })).ToBeHiddenAsync();
         await Expect(page.GetByText("Showing Cedar Flats.")).ToBeVisibleAsync();
         await Expect(next).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldStepAndJumpBetweenSlides_WhenThePageIsInteractive(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/carousel");
+        var trails = page.Tb().Carousel("Featured trails");
+
+        await trails.NextAsync();
+        await trails.GoToAsync(2);
+        await trails.NextAsync();
+
+        Assert.Equal((3, 0), (await trails.CountAsync(), await trails.ActiveIndexAsync()));
+        await Expect(page.GetByText("Showing Pine Hollow loop.")).ToBeVisibleAsync();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Carousel("Trip steps").PreviousAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldStepSlidesThatTurnByThemselves_WhenTheyAreTurning(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/carousel");
+        var photos = page.Tb().Carousel("Trail photos");
+
+        await photos.NextAsync();
+        var first = await photos.ActiveIndexAsync();
+        await photos.NextAsync();
+        await photos.PreviousAsync();
+
+        // The pointer rests on the slides, which pauses them, so the slide the helper moved to stays shown.
+        Assert.Equal(first, await photos.ActiveIndexAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldMoveTheCarouselOnceInteractive_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/examples/carousel");
+
+        var moving = page.Tb().Carousel("Featured trails").NextAsync();
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await moving;
+
+        await Expect(page.GetByText("Showing Cedar Flats.")).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

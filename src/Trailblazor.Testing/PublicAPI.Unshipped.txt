@@ -402,3 +402,10 @@ Trailblazor.Testing.TbChipGroupDriver.Chip(string! text) -> Trailblazor.Testing.
 Trailblazor.Testing.TbChipGroupDriver.Chips.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TrailblazorMarkup.Chip(string! text) -> Trailblazor.Testing.TbChipDriver!
 Trailblazor.Testing.TrailblazorMarkup.ChipGroup(string! name) -> Trailblazor.Testing.TbChipGroupDriver!
+Trailblazor.Testing.TbCarouselDriver
+Trailblazor.Testing.TbCarouselDriver.ActiveIndex.get -> int
+Trailblazor.Testing.TbCarouselDriver.Count.get -> int
+Trailblazor.Testing.TbCarouselDriver.GoToAsync(int index) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCarouselDriver.NextAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCarouselDriver.PreviousAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Carousel(string! name) -> Trailblazor.Testing.TbCarouselDriver!

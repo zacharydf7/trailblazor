@@ -316,6 +316,14 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Carousel(name).NextAsync()</code></th>
+                        <td>
+                            Shows the next slide, <code>PreviousAsync</code> the one before and <code>GoToAsync</code>
+                            the one at an index. <code>ActiveIndex</code> reads which slide shows, and
+                            <code>Count</code> how many there are.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Chip(text).ClickAsync()</code></th>
                         <td>
                             Clicks the chip, which toggles it, runs its <code>OnClick</code> or follows its link.
@@ -1054,6 +1062,9 @@
             + "and `TextAsync()` reads its message."),
         new("Banner", "Its title", "`Banner(name).CloseAsync()` presses its close button once the page is "
             + "interactive, and `TextAsync()` reads its message."),
+        new("Carousel", "Its AriaLabel", "`Carousel(name).NextAsync()` shows the next slide and waits for it to "
+            + "appear, as `PreviousAsync()` and `GoToAsync(index)` do; `ActiveIndexAsync()` reads which slide shows, "
+            + "and `CountAsync()` how many there are."),
         new("Chip", "Its text", "`Chip(text).ClickAsync()` clicks it once the page is interactive and, if it "
             + "toggles, waits until it has changed; `RemoveAsync()` presses its remove button, and `SelectedAsync()` "
             + "reads whether it's selected. `ChipGroup(name)` finds a group by its `AriaLabel`, and `ChipsAsync()` "

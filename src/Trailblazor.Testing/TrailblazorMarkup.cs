@@ -376,6 +376,15 @@ public sealed class TrailblazorMarkup
             ? $"No banner is named \"{name}\"." : $"{banners.Count} banners are named \"{name}\".");
     });
 
+    /// <summary>The <c>TbCarousel</c> with this <c>AriaLabel</c>.</summary>
+    public TbCarouselDriver Carousel(string name) => new(() =>
+    {
+        var carousels = _findAll("section.tb-carousel").Where(carousel => carousel.GetAttribute("aria-label") == name)
+            .ToList();
+        return carousels.Count == 1 ? carousels[0] : throw new InvalidOperationException(carousels.Count == 0
+            ? $"No carousel is named \"{name}\"." : $"{carousels.Count} carousels are named \"{name}\".");
+    });
+
     /// <summary>The <c>TbChip</c> whose text is this.</summary>
     public TbChipDriver Chip(string text) => new(() => ChipParts.Find(_findAll(".tb-chip"), text), _scripts);
 
@@ -1334,6 +1343,62 @@ internal static class Notices
 
     internal static string Collapsed(string text) =>
         string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+}
+
+/// <summary>A <c>TbCarousel</c>, found by its <c>AriaLabel</c>.</summary>
+public sealed class TbCarouselDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbCarouselDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>How many slides there are.</summary>
+    public int Count => Slides().Count;
+
+    /// <summary>The index of the slide shown, from 0.</summary>
+    public int ActiveIndex => Slides().FindIndex(slide => !slide.HasAttribute("hidden"));
+
+    /// <summary>Shows the next slide, as pressing Next does. On the last slide of a carousel that doesn't loop, Next
+    /// is disabled, so this throws, as it does on a static page.</summary>
+    public Task NextAsync() => PressAsync("next");
+
+    /// <summary>Shows the previous slide, as pressing Previous does. On the first slide of a carousel that doesn't
+    /// loop, Previous is disabled, so this throws, as it does on a static page.</summary>
+    public Task PreviousAsync() => PressAsync("previous");
+
+    /// <summary>Shows the slide at this index, from 0, as pressing its button in the picker does. A carousel without
+    /// a picker throws, and so does one on a static page.</summary>
+    public async Task GoToAsync(int index)
+    {
+        var picks = Unlocked().QuerySelectorAll(":scope > [data-part=picker] > [data-part=pick]");
+        if (picks.Length == 0)
+        {
+            throw new InvalidOperationException("This carousel has no picker; use NextAsync and PreviousAsync.");
+        }
+
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, picks.Length);
+        await picks[index].ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private async Task PressAsync(string part)
+    {
+        var button = Unlocked().QuerySelector($":scope > [data-part=controls] > [data-part={part}]")!;
+        if (button.GetAttribute("aria-disabled") == "true")
+        {
+            throw new InvalidOperationException($"There's no {part} slide; the carousel doesn't loop.");
+        }
+
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private IElement Unlocked() => _find() is var carousel && carousel.HasAttribute("data-static")
+        ? throw new InvalidOperationException("On a static page the carousel's buttons do nothing; render the page "
+            + "interactively to move it.")
+        : carousel;
+
+    private List<IElement> Slides() =>
+        [.. _find().QuerySelectorAll(":scope > [data-part=slides] > [data-part=slide]")];
 }
 
 /// <summary>A <c>TbChip</c>, found by its text.</summary>

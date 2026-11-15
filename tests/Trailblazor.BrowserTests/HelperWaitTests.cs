@@ -26,6 +26,16 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Carousel_ShouldReturnOnceTheSlideShows_WhenMoved(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/carousel");
+
+        await page.Tb().Carousel("Featured trails").NextAsync();
+
+        Assert.Equal(1, await page.Tb().Carousel("Featured trails").ActiveIndexAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Chip_ShouldReturnOnceTheAppHasTheToggle_WhenClicked(string browser)
     {
         var page = await OpenAsync(browser, "/examples/chip");

@@ -593,9 +593,10 @@ public static class ExampleCatalog
                 new("picker", "The buttons for each slide."),
                 new("pick", "The button that shows one slide."),
             ],
-            TestingTip = "Find it as `GetByRole(AriaRole.Region, new() { Name = \"Featured trails\" })`, move with "
-                + "`GetByRole(AriaRole.Button, new() { Name = \"Next slide\" })`, and find the shown slide as the "
-                + "visible `group` named, for example, \"2 of 3\". In bUnit, register a `FakeTimeProvider` as the "
+            TestingTip = "`page.Tb().Carousel(\"Featured trails\")` in Playwright, or `cut.Tb().Carousel(...)` in "
+                + "bUnit, finds the carousel by its `AriaLabel`: `NextAsync()`, `PreviousAsync()` and "
+                + "`GoToAsync(index)` move it, `ActiveIndexAsync()` or `ActiveIndex` reads which slide shows, and "
+                + "`CountAsync()` or `Count` reads how many there are. In bUnit, register a `FakeTimeProvider` as the "
                 + "`TimeProvider` and advance it past the `AutoPlayInterval` to turn the slides.",
         },
         new("virtual-list", "Virtual list", ExampleCategory.Content,
