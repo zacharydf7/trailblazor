@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 
 namespace Trailblazor;
 
@@ -51,9 +50,6 @@ public sealed partial class TbModelFields<
 
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
-
-    [CascadingParameter]
-    private EditContext? EditContext { get; set; }
 
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
@@ -135,9 +131,6 @@ public sealed partial class TbModelFields<
     private async Task ChangeAsync(PropertyInfo property, object? value)
     {
         property.SetValue(Model, value);
-        // A field that can't bind to its property, such as an enum's list, reports its own value as changed, so the
-        // property's messages are checked again here.
-        EditContext?.NotifyFieldChanged(new FieldIdentifier(Model!, property.Name));
         Telemetry.Used(TelemetryName, "change");
         await OnChange.InvokeAsync(property.Name);
     }

@@ -6183,9 +6183,8 @@ public static class ExampleCatalog
                     + "groups them, and its `Prompt` is a text field's placeholder. `[DataType]`, `[EmailAddress]`, "
                     + "`[Phone]` and `[Url]` pick a text field's kind, and `[Range]` limits a number. With the form's "
                     + "`DataAnnotations`, `[Required]` marks a field that can be left empty as required, and each "
-                    + "annotation's message shows under its field. An enum's list, and a date or time field that can't "
-                    + "be empty, show only the required message; their other messages appear only in the form's "
-                    + "`Errors`. `Columns` lays the fields out side by side; they stack when there's no room. "
+                    + "annotation's message shows under its field, including an enum's list and a date or time that "
+                    + "can't be empty. `Columns` lays the fields out side by side; they stack when there's no room. "
                     + "`OnChange` gets the name of each property the user changes, after its new value is set.",
                     typeof(ModelFieldsExample)),
                 new("overrides", "Change a field", "A `TbModelField` inside names a property and changes how it "

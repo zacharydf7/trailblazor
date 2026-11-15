@@ -199,6 +199,11 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     [CascadingParameter]
     private FormMappingContext? MappingContext { get; set; }
 
+    // The model property whose messages this field shows when its value can't bind to it, as with an enum's select in
+    // TbModelFields.
+    [CascadingParameter(Name = PropertyEditor.ReportsForCascade)]
+    private FieldIdentifier? ReportsFor { get; set; }
+
     [Inject]
     private protected IAnnouncer Announcer { get; set; } = default!;
 
@@ -446,10 +451,11 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
             ? _modelRequired.FormatErrorMessage(named.GetCustomAttribute<DisplayAttribute>()?.GetName() ?? named.Name)
             : null;
         // Only a form needs the identifier, and outside one an expression it can't parse must not throw. A field
-        // without a binding names itself, so the form still counts its messages.
+        // without a binding names the property it's given through ReportsFor, or else itself, so the form still counts
+        // its messages.
         FieldIdentifier? field = CascadedEditContext is null ? null
             : ValueExpression is not null ? FieldIdentifier.Create(ValueExpression)
-            : new FieldIdentifier(this, nameof(Value));
+            : ReportsFor ?? new FieldIdentifier(this, nameof(Value));
         if (!field.Equals(_field))
         {
             // A field rebound to another property, as in a list without @key, drops the old property's messages.

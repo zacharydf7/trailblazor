@@ -12,7 +12,7 @@ Familiar apps: an admin site's generated edit page, a scaffolded record form
 ## Pointer
 
 - [x] A change in any field sets the model's property. `TbModelFieldsTests.Fields_ShouldSetTheModel_WhenTheUserChangesAField`
-- [x] A failed submit shows each annotation's message under its field and focuses the first field with an error; an enum's list, and a date or time that can't be empty, show only the required message. `ModelFieldsTests.Submit_ShouldFocusTheFirstFieldWithAnError_WhenARequiredPropertyIsEmpty`, `TbModelFieldsTests.Fields_ShouldShowTheAnnotationsMessages_WhenTheFormIsSubmitted`
+- [x] A failed submit shows each annotation's message under its field, including an enum's list and a date or time that can't be empty, and focuses the first field with an error. `ModelFieldsTests.Submit_ShouldFocusTheFirstFieldWithAnError_WhenARequiredPropertyIsEmpty`, `TbModelFieldsTests.Fields_ShouldShowTheAnnotationsMessages_WhenTheFormIsSubmitted`, `TbModelFieldsTests.Fields_ShouldShowAndPointToAnAnnotationsMessage_WhenAFieldThatCantBindToItsPropertyFails`, `TbModelFieldsTests.Fields_ShouldClearAnAnnotationsMessage_WhenAnEnumFieldThatFailedIsFixed`
 
 ## Touch
 

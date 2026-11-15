@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Trailblazor;
@@ -13,9 +14,11 @@ internal sealed record PropertyEditor(Type Type, string Label, string? Descripti
 {
     private const DynamicallyAccessedMemberTypes Component = DynamicallyAccessedMemberTypes.All;
 
+    internal const string ReportsForCascade = "Trailblazor.PropertyEditor.ReportsFor";
+
     // The model and property the field's validation messages belong to. A field whose value isn't the property's own
-    // type, such as a date picker's nullable date for a DateOnly, can't bind its ValueExpression to the property, so it
-    // shows no messages of its own; Required still marks it and checks it's set.
+    // type, such as a date picker's nullable date for a DateOnly, can't bind its ValueExpression to the property, so
+    // it gets the property through ReportsForCascade instead; Required still marks it and checks it's set.
     public object? Model { get; init; }
 
     public PropertyInfo? Property { get; init; }
@@ -74,7 +77,28 @@ internal sealed record PropertyEditor(Type Type, string Label, string? Descripti
             ? Task.CompletedTask : Change(value);
 
     private void Add<TValue>(RenderTreeBuilder builder, object receiver,
-        [DynamicallyAccessedMembers(Component)] Type component, Action<RenderTreeBuilder>? extras = null)
+        [DynamicallyAccessedMembers(Component)] Type component, Action<RenderTreeBuilder>? extras = null) =>
+        ReportingFor(builder, field => AddField<TValue>(field, receiver, component, extras));
+
+    private void ReportingFor(RenderTreeBuilder builder, RenderFragment field)
+    {
+        if (Model is null || Property is null)
+        {
+            field(builder);
+            return;
+        }
+
+        builder.OpenComponent<CascadingValue<FieldIdentifier?>>(0);
+        builder.AddComponentParameter(1, nameof(CascadingValue<FieldIdentifier?>.Name), ReportsForCascade);
+        builder.AddComponentParameter(2, nameof(CascadingValue<FieldIdentifier?>.Value),
+            (FieldIdentifier?)new FieldIdentifier(Model, Property.Name));
+        builder.AddComponentParameter(3, nameof(CascadingValue<FieldIdentifier?>.IsFixed), true);
+        builder.AddComponentParameter(4, nameof(CascadingValue<FieldIdentifier?>.ChildContent), field);
+        builder.CloseComponent();
+    }
+
+    private void AddField<TValue>(RenderTreeBuilder builder, object receiver,
+        [DynamicallyAccessedMembers(Component)] Type component, Action<RenderTreeBuilder>? extras)
     {
         builder.OpenComponent(0, component);
         builder.AddComponentParameter(1, nameof(TbFieldBase<TValue>.Label), Label);
@@ -114,7 +138,10 @@ internal sealed record PropertyEditor(Type Type, string Label, string? Descripti
         });
 
     // An enum is a select of its values, each shown as its name split into words. A nullable enum can also be cleared.
-    private void AddEnum(RenderTreeBuilder builder, object receiver)
+    private void AddEnum(RenderTreeBuilder builder, object receiver) =>
+        ReportingFor(builder, field => AddEnumField(field, receiver));
+
+    private void AddEnumField(RenderTreeBuilder builder, object receiver)
     {
         var type = Nullable.GetUnderlyingType(Type) ?? Type;
         builder.OpenComponent<TbSelect<string>>(0);

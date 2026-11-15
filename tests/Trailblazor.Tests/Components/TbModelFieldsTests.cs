@@ -50,6 +50,26 @@ public class TbModelFieldsTests : BunitContext
         public Pace Mode { get; set; }
     }
 
+    public sealed class Outing
+    {
+        [AllowedValues(Pace.Brisk, ErrorMessage = "Only brisk outings")]
+        public Pace Mode { get; set; }
+
+        [Range(typeof(DateOnly), "2026-06-01", "2026-12-31", ErrorMessage = "Pick a summer date")]
+        public DateOnly Start { get; set; } = new(2026, 5, 1);
+    }
+
+    private readonly Outing _outing = new();
+
+    private IRenderedComponent<TbForm> RenderOuting() =>
+        Render<TbForm>(parameters => parameters.Add(form => form.Model, _outing).Add(form => form.DataAnnotations, true)
+            .Add(form => form.ChildContent, builder =>
+            {
+                builder.OpenComponent<TbModelFields<Outing>>(0);
+                builder.AddComponentParameter(1, nameof(TbModelFields<Outing>.Model), _outing);
+                builder.CloseComponent();
+            }));
+
     private readonly List<string> _changed = [];
     private IReadOnlyList<string> _errors = [];
 
@@ -133,6 +153,37 @@ public class TbModelFieldsTests : BunitContext
         Assert.Equal("true", cut.Find("[data-name=Start] input").GetAttribute("aria-required"));
         Assert.Empty(cut.FindAll("[data-name=Mode] [aria-required=true]"));
         Assert.Equal("true", cut.Find("[data-name=Name] input").GetAttribute("aria-required"));
+    }
+
+    [Theory]
+    [InlineData("Mode", "Only brisk outings")]
+    [InlineData("Start", "Pick a summer date")]
+    public async Task Fields_ShouldShowAndPointToAnAnnotationsMessage_WhenAFieldThatCantBindToItsPropertyFails(
+        string name, string message)
+    {
+        var cut = RenderOuting();
+
+        await cut.Find("form").SubmitAsync();
+
+        // A failed submit focuses the first field that is invalid and described by an error message.
+        var control = cut.Find($"[data-name={name}] [aria-invalid=true]");
+        var errors = control.GetAttribute("aria-describedby")!.Split(' ')
+            .SelectMany(id => cut.FindAll($"[id='{id}'][data-part=error]"));
+        Assert.Contains(errors, error => error.TextContent.Contains(message));
+    }
+
+    [Fact]
+    public async Task Fields_ShouldClearAnAnnotationsMessage_WhenAnEnumFieldThatFailedIsFixed()
+    {
+        var cut = RenderOuting();
+        await cut.Find("form").SubmitAsync();
+        Assert.Contains("Only brisk outings", cut.Find("[data-name=Mode]").TextContent);
+
+        await cut.Tb().Select("Mode").ChooseAsync("Brisk");
+
+        Assert.Equal(Pace.Brisk, _outing.Mode);
+        Assert.DoesNotContain("Only brisk outings", cut.Find("[data-name=Mode]").TextContent);
+        Assert.Empty(cut.FindAll("[data-name=Mode] [aria-invalid=true]"));
     }
 
     [Fact]
