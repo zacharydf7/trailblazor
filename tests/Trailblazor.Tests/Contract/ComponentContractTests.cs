@@ -11,15 +11,16 @@ namespace Trailblazor.Tests.Contract;
 public class ComponentContractTests : BunitContext
 {
     // TbRoot, TbDialogTitle, TbDialogHeader, TbDialogHeaderActions and TbModelField render no element of their own,
-    // TbStyles only a <link> and TbThemeHead only a <script>, which take no class or style; TbRadio, TbCheckboxItem,
-    // TbTab, TbOption, TbToggleItem, TbSplitterPane, TbTreeItem, TbMenuRadioItem, TbDialogDescription, TbColumn,
-    // TbColumnGroup, TbTableOfContentsItem, TbBreadcrumb, TbNavLink, TbNavGroup, TbStep and TbCarouselSlide only render
-    // inside their parent (see their parents' tests).
+    // TbStyles only a <link>, TbThemeHead only a <script> and TbInteractiveMark only a hidden mark, which take no class
+    // or style; TbRadio, TbCheckboxItem, TbTab, TbOption, TbToggleItem, TbSplitterPane, TbTreeItem, TbMenuRadioItem,
+    // TbDialogDescription, TbColumn, TbColumnGroup, TbTableOfContentsItem, TbBreadcrumb, TbNavLink, TbNavGroup, TbStep
+    // and TbCarouselSlide only render inside their parent (see their parents' tests).
     internal static readonly Type[] NotRenderedAlone =
     [
-        typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbRadio<>), typeof(TbCheckboxItem<>),
-        typeof(TbTab), typeof(TbOption<>), typeof(TbToggleItem<>), typeof(TbSplitterPane), typeof(TbTreeItem<>),
-        typeof(TbMenuRadioItem<>), typeof(TbDialogDescription), typeof(TbColumn<>), typeof(TbDialogTitle),
+        typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbInteractiveMark), typeof(TbRadio<>),
+        typeof(TbCheckboxItem<>), typeof(TbTab), typeof(TbOption<>), typeof(TbToggleItem<>), typeof(TbSplitterPane),
+        typeof(TbTreeItem<>), typeof(TbMenuRadioItem<>), typeof(TbDialogDescription), typeof(TbColumn<>),
+        typeof(TbDialogTitle),
         typeof(TbTableOfContentsItem), typeof(TbBreadcrumb), typeof(TbNavLink), typeof(TbNavGroup),
         typeof(TbStep), typeof(TbCarouselSlide), typeof(TbColumnGroup<>), typeof(TbModelField),
         typeof(TbDialogHeaderActions), typeof(TbDialogHeader),

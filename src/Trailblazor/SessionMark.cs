@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Trailblazor;
 
-// Marks the page once TbRoot's hosts run interactively, so a test can wait for that before using the page. It renders
-// in the hosts' own render mode, so it appears when the session that serves the interactive pages starts.
-internal sealed class InteractiveMark : ComponentBase
+// TbRoot's mark, set once its hosts run interactively; data-tb-session lets an enhanced navigation take it off.
+internal sealed class SessionMark : ComponentBase
 {
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -14,6 +13,7 @@ internal sealed class InteractiveMark : ComponentBase
             builder.OpenElement(0, "span");
             builder.AddAttribute(1, "hidden", true);
             builder.AddAttribute(2, "data-tb-interactive", "");
+            builder.AddAttribute(3, "data-tb-session", "");
             builder.CloseElement();
         }
     }

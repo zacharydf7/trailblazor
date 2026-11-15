@@ -69,7 +69,7 @@ public class DriverParityTests
         ["TbCard"] = NotInteractive, ["TbContainer"] = NotInteractive, ["TbDivider"] = NotInteractive,
         ["TbEmptyState"] = NotInteractive, ["TbFab"] = NotInteractive, ["TbFocusScope"] = NotInteractive,
         ["TbGrid"] = NotInteractive, ["TbHotkeysHelp"] = NotInteractive, ["TbIcon"] = NotInteractive,
-        ["TbImage"] = NotInteractive, ["TbKbd"] = NotInteractive,
+        ["TbImage"] = NotInteractive, ["TbInteractiveMark"] = NotInteractive, ["TbKbd"] = NotInteractive,
         ["TbLabel"] = NotInteractive, ["TbLink"] = NotInteractive, ["TbOverlay"] = NotInteractive,
         ["TbProgress"] = NotInteractive, ["TbRoot"] = NotInteractive, ["TbSkeleton"] = NotInteractive,
         ["TbSpacer"] = NotInteractive, ["TbStack"] = NotInteractive, ["TbStyles"] = NotInteractive,

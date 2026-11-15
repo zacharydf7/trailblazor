@@ -1,0 +1,6 @@
+@page "/per-page-trip"
+@attribute [ExcludeFromInteractiveRouting]
+@using Trailblazor.BrowserTests.Host.PerPage
+
+@* A second page that is interactive only in part, for moving between two such pages. *@
+<TripCounter @rendermode="InteractiveServer" />

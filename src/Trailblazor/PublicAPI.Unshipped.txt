@@ -5751,3 +5751,5 @@ static Trailblazor.RichTextImage.operator !=(Trailblazor.RichTextImage? left, Tr
 static Trailblazor.RichTextImage.operator ==(Trailblazor.RichTextImage? left, Trailblazor.RichTextImage? right) -> bool
 Trailblazor.RichTextSchema.ImageSchemes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.RichTextSchema.ImageSchemes.init -> void
+Trailblazor.TbInteractiveMark
+Trailblazor.TbInteractiveMark.TbInteractiveMark() -> void

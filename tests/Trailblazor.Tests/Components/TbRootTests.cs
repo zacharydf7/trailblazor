@@ -39,7 +39,7 @@ public class TbRootTests : BunitContext
 
         var cut = Render<TbRoot>();
 
-        Assert.Single(cut.FindAll("[data-tb-interactive]"));
+        Assert.Single(cut.FindAll("[data-tb-interactive][data-tb-session]"));
     }
 
     [Fact]
@@ -57,6 +57,6 @@ public class TbRootTests : BunitContext
         {
             cut.FindComponent<DialogHost>().Instance, cut.FindComponent<ToastHost>().Instance,
             cut.FindComponent<AnnouncerHost>().Instance, cut.FindComponent<StylesheetCheck>().Instance,
-            cut.FindComponent<InteractiveMark>().Instance,
+            cut.FindComponent<SessionMark>().Instance,
         }.Select(host => AssignedRenderMode.GetValue(host));
 }

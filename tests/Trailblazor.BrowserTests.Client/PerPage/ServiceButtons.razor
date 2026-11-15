@@ -3,6 +3,7 @@
 @inject IToastService Toasts
 @inject IAnnouncer Announcer
 
+<TbInteractiveMark />
 <TbStack Row Gap="2" data-interactive="@RendererInfo.IsInteractive">
     <TbButton OnClick='() => Dialogs.ShowAsync<ToastingDialog, bool>("Toasting")'>Dialog</TbButton>
     <TbButton OnClick='() => Toasts.Show("Saved")'>Toast</TbButton>

@@ -754,11 +754,15 @@
                             <code>page.Tb().InteractiveAsync()</code>, which waits for the
                             <code>[data-tb-interactive]</code> mark <code>TbRoot</code> renders once its dialogs,
                             toasts and announcements run interactively. When <code>Routes</code> is interactive, that's
-                            when the page is. When interactivity is set page by page, the mark appears with the first
-                            interactive session and stays through later navigation, so it can't tell you the next page
-                            is ready. Put a marker such as
-                            <code>data-interactive="@@RendererInfo.IsInteractive"</code> on each interactive page's
-                            root instead, and wait for it after each navigation.
+                            when the page is. When interactivity is set page by page, that mark covers the first page
+                            only: an enhanced navigation takes it off, since it can't tell whether the new page is
+                            interactive. Put a <code>&lt;TbInteractiveMark /&gt;</code> inside the part of each page
+                            that runs interactively (the page itself, or the component that has the render mode); it
+                            renders the same mark once that part runs interactively, and keeps it while Blazor keeps
+                            that part, as it does on a navigation to the same page. After navigating, wait for the new
+                            page to show before calling <code>InteractiveAsync()</code>, since the old page's mark
+                            stays until then. The helpers wait for their own components, so a test that only uses them
+                            needs neither the mark nor the wait.
                         </td>
                     </tr>
                     <tr>

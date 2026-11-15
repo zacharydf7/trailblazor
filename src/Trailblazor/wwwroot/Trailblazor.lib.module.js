@@ -65,6 +65,9 @@ export function afterWebStarted(blazor) {
         // AutoFocus first, so a failed post's first error takes focus last.
         focusMarksOnPage();
         focusMarkedForms();
+        // TbRoot's mark only says the session is interactive, not that the new page is, so it comes off.
+        document.querySelectorAll('[data-tb-interactive][data-tb-session]')
+            .forEach(mark => mark.removeAttribute('data-tb-interactive'));
     });
 }
 

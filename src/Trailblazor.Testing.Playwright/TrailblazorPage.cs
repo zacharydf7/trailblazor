@@ -223,10 +223,12 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The dialog or drawer with this title.</summary>
     public TbDialogLocator Dialog(string title) => new(Scope.Document(scope), title);
 
-    /// <summary>Waits until <c>TbRoot</c>'s dialogs, toasts and announcements run interactively, which they do once the
-    /// session that serves the page's interactive components starts. On a page with no interactive session, the wait
-    /// times out.</summary>
-    public Task InteractiveAsync() => Scope.Document(scope).Locator("[data-tb-interactive]")
+    /// <summary>Waits for a <c>data-tb-interactive</c> mark. <c>TbRoot</c> renders one once its dialogs, toasts and
+    /// announcements run interactively, which they do once the session that serves the page's interactive components
+    /// starts, and a <c>TbInteractiveMark</c> renders one once its part of the page runs interactively. An enhanced
+    /// navigation takes <c>TbRoot</c>'s mark off, so after one, wait for the new page to show, then call this to wait
+    /// for that page's <c>TbInteractiveMark</c>. With no mark on the page, the wait times out.</summary>
+    public Task InteractiveAsync() => Scope.Document(scope).Locator("[data-tb-interactive]").First
         .WaitForAsync(new() { State = WaitForSelectorState.Attached });
 
     /// <summary>The <c>TbTabs</c> with this accessible name, or the only one in the scope when no name is

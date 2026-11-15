@@ -286,6 +286,37 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Interactive_ShouldWaitForThePagesOwnMark_WhenEnhancedNavigationReachesAnInteractivePage(
+        string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-attempted-plain");
+        await page.Tb().InteractiveAsync();
+        var trip = page.GetByRole(AriaRole.Button, new() { Name = "Add trip" });
+
+        // A test waits for the page it navigated to, then for the page to turn interactive.
+        await page.EvaluateAsync("() => Blazor.navigateTo('/per-page-trip')");
+        await Expect(trip).ToBeVisibleAsync();
+        await page.Tb().InteractiveAsync();
+        var fresh = await trip.And(page.Locator("[data-clicks]")).CountAsync();
+        // The same page again keeps its interactive part, and with it the part's mark.
+        await page.EvaluateAsync("""
+            () => new Promise(loaded => {
+                Blazor.addEventListener('enhancedload', loaded, { once: true });
+                Blazor.navigateTo('/per-page-trip?day=2');
+            })
+            """);
+        await page.Tb().InteractiveAsync();
+        var kept = await trip.And(page.Locator("[data-clicks]")).CountAsync();
+        // Another page replaces the interactive part, and waits for the new part's own mark.
+        var dialog = page.GetByRole(AriaRole.Button, new() { Name = "Dialog" });
+        await page.EvaluateAsync("() => Blazor.navigateTo('/per-page')");
+        await Expect(dialog).ToBeVisibleAsync();
+        await page.Tb().InteractiveAsync();
+
+        Assert.Equal((1, 1, 1), (fresh, kept, await dialog.And(page.Locator("[data-clicks]")).CountAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldReturnOnceTheAppHasTheAnswer_WhenAButtonIsChosenOrTheDialogIsCanceled(string browser)
     {
         var page = await OpenAsync(browser, "/examples/dialog");
