@@ -432,6 +432,15 @@ public sealed class TrailblazorMarkup
             ? $"No chip group is named \"{name}\"." : $"{groups.Count} chip groups are named \"{name}\".");
     }, _scripts);
 
+    /// <summary>The <c>TbToolbar</c> with this <c>AriaLabel</c>.</summary>
+    public TbToolbarDriver Toolbar(string name) => new(() =>
+    {
+        var toolbars = _findAll(".tb-toolbar[role=toolbar]")
+            .Where(toolbar => toolbar.GetAttribute("aria-label") == name).ToList();
+        return toolbars.Count == 1 ? toolbars[0] : throw new InvalidOperationException(toolbars.Count == 0
+            ? $"No toolbar is named \"{name}\"." : $"{toolbars.Count} toolbars are named \"{name}\".");
+    });
+
     /// <summary>The <c>TbTooltip</c> around the button or link with this accessible name.</summary>
     public TbTooltipDriver Tooltip(string trigger) => new(() =>
     {
@@ -1630,6 +1639,41 @@ internal static class ChipParts
 
         return chip.HasAttribute("data-static") ? throw new InvalidOperationException("On a static page a chip's "
             + "buttons do nothing; render the page interactively to use them.") : chip;
+    }
+}
+
+/// <summary>A <c>TbToolbar</c>, found by its <c>AriaLabel</c>.</summary>
+public sealed class TbToolbarDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbToolbarDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>Clicks the toolbar's button with this name, as a user does. bUnit lays nothing out, so no button moves
+    /// into the overflow menu. Throws for a disabled button, or on a static page, where the buttons do nothing.
+    /// </summary>
+    public async Task ClickAsync(string button)
+    {
+        var toolbar = _find();
+        if (toolbar.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("On a static page the toolbar's buttons do nothing; render the page "
+                + "interactively to use them.");
+        }
+
+        // The overflow menu's button, hidden until a button moves into the menu, isn't one of the toolbar's own, and
+        // a menu's items are <button> elements with a menu item role.
+        var buttons = toolbar.QuerySelectorAll("button:not([role]), button[role=button]")
+            .Where(found => found.Closest("[data-part=overflow]") is null && Choices.NameOf(found) == button).ToList();
+        var only = buttons.Count == 1 ? buttons[0] : throw new InvalidOperationException(buttons.Count == 0
+            ? $"The toolbar has no button named \"{button}\"."
+            : $"The toolbar has {buttons.Count} buttons named \"{button}\".");
+        if (Choices.IsDisabled(only))
+        {
+            throw new InvalidOperationException($"The toolbar button \"{button}\" is disabled.");
+        }
+
+        await only.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 }
 

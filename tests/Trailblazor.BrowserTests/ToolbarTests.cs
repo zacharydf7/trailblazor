@@ -26,6 +26,70 @@ public class ToolbarTests(BrowserFixture fixture) : BrowserTest(fixture)
         Toolbar(page, "Trail notes").Locator("xpath=..").EvaluateAsync($"frame => frame.style.inlineSize = '{width}'");
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldClickAButton_WhenItIsShownOrHasMovedIntoTheOverflowMenu(string browser)
+    {
+        var page = await OpenToolbarAsync(browser);
+        var last = page.GetByText("Last action:");
+
+        await page.Tb().Toolbar("Trail notes").ClickAsync("Add a note");
+        await Expect(last).ToHaveTextAsync("Last action: Add a note");
+        await NarrowAsync(page, "12rem");
+        await Expect(Button(page, "Delete note")).ToBeHiddenAsync();
+        await page.Tb().Toolbar("Trail notes").ClickAsync("Delete note");
+
+        await Expect(last).ToHaveTextAsync("Last action: Delete note");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldClickItsOwnButton_WhenTheShownOverflowMenusButtonHasTheSameName(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-buttons");
+        await Expect(Toolbar(page, "Map tools").Locator("[data-part=overflow]")).ToBeVisibleAsync();
+
+        await page.Tb().Toolbar("Map tools").ClickAsync("More");
+
+        await Expect(page.GetByLabel("Last action")).ToHaveTextAsync("More");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseADisabledOrMissingButton_WhenAskedToClickIt(string browser)
+    {
+        var page = await OpenToolbarAsync(browser, "/toolbar-buttons");
+
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Toolbar("Print tools").ClickAsync("Print"));
+        var missing = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Toolbar("Print tools").ClickAsync("Scan"));
+
+        Assert.Contains("disabled", disabled.Message);
+        Assert.Contains("no button named", missing.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldClickOnceInteractive_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/examples/toolbar");
+
+        var clicking = page.Tb().Toolbar("Trail notes").ClickAsync("Add a note");
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await clicking;
+
+        await Expect(page.GetByText("Last action: Add a note")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseToClick_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-toolbar");
+
+        var still = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Toolbar("Map tools").ClickAsync("Pan"));
+
+        Assert.Contains("static page", still.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Toolbar_ShouldShowItsNamedMenu_WhenItsButtonsDontFit(string browser)
     {
         var page = await OpenToolbarAsync(browser);

@@ -1722,9 +1722,12 @@ public static class ExampleCatalog
                     <TbToolbarButton AriaLabel="…" Icon="…" OnClick="…" />
                 </TbToolbar>
                 """,
-            TestingTip = "Find a toolbar button by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Add a "
-                + "note\" })`. To test the overflow, set the page's viewport narrow, wait for the toolbar's "
-                + "`data-ready`, open the menu button named \"More\" and choose the `menuitem`.",
+            TestingTip = "`page.Tb().Toolbar(\"Trail notes\").ClickAsync(\"Add a note\")` in Playwright, or "
+                + "`cut.Tb().Toolbar(...)` in bUnit, clicks a toolbar button by its name once the toolbar is ready, "
+                + "and in Playwright chooses it from the More menu when it has moved there. By hand, find the button "
+                + "with `GetByRole(AriaRole.Button, new() { Name = \"Add a note\" })`; to test the overflow, set the "
+                + "page's viewport narrow, wait for the toolbar's `data-ready`, open the menu button named \"More\" "
+                + "and choose the `menuitem`.",
         },
         new("insert-divider", "Insert divider", ExampleCategory.Actions,
             "A line between two items that reveals an insert button on hover or keyboard focus, for adding an item "

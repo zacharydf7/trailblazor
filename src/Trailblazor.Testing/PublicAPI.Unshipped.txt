@@ -426,3 +426,6 @@ Trailblazor.Testing.TrailblazorMarkup.Form(string? name = null) -> Trailblazor.T
 Trailblazor.Testing.TbTooltipDriver
 Trailblazor.Testing.TbTooltipDriver.Text.get -> string!
 Trailblazor.Testing.TrailblazorMarkup.Tooltip(string! trigger) -> Trailblazor.Testing.TbTooltipDriver!
+Trailblazor.Testing.TbToolbarDriver
+Trailblazor.Testing.TbToolbarDriver.ClickAsync(string! button) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Toolbar(string! name) -> Trailblazor.Testing.TbToolbarDriver!

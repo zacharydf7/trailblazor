@@ -2045,6 +2045,68 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Toolbar_ShouldClickItsButtonsByNameAndRefuseADisabledOne_WhenTheHelperIsUsed()
+    {
+        var clicked = new List<string>();
+        var cut = Render<TbToolbar>(parameters => parameters.Add(toolbar => toolbar.AriaLabel, "Map tools")
+            .AddChildContent<TbToolbarButton>(button => button.Add(each => each.Label, "Pan")
+                .Add(each => each.OnClick, () => clicked.Add("Pan")))
+            .AddChildContent<TbToolbarButton>(button => button.Add(each => each.AriaLabel, "Zoom in")
+                .Add(each => each.Icon, BuiltInIcons.Close).Add(each => each.OnClick, () => clicked.Add("Zoom in")))
+            .AddChildContent<TbToolbarButton>(button => button.Add(each => each.Label, "Print")
+                .Add(each => each.Disabled, true)));
+
+        await cut.Tb().Toolbar("Map tools").ClickAsync("Pan");
+        await cut.Tb().Toolbar("Map tools").ClickAsync("Zoom in");
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Toolbar("Map tools").ClickAsync("Print"));
+
+        Assert.Equal(["Pan", "Zoom in"], clicked);
+        Assert.Contains("disabled", disabled.Message);
+    }
+
+    [Fact]
+    public async Task Toolbar_ShouldClickItsOwnButton_WhenTheOverflowMenusButtonHasTheSameName()
+    {
+        var clicked = 0;
+        var cut = Render<TbToolbar>(parameters => parameters.Add(toolbar => toolbar.AriaLabel, "Map tools")
+            .AddChildContent<TbToolbarButton>(button => button.Add(each => each.Label, "More")
+                .Add(each => each.OnClick, () => clicked++)));
+
+        await cut.Tb().Toolbar("Map tools").ClickAsync("More");
+
+        Assert.Equal(1, clicked);
+    }
+
+    [Fact]
+    public async Task Toolbar_ShouldClickItsOwnButton_WhenAMenuInTheToolbarHasAnItemWithTheSameName()
+    {
+        var clicked = 0;
+        var cut = Render<TbToolbar>(parameters => parameters.Add(toolbar => toolbar.AriaLabel, "Map tools")
+            .AddChildContent<TbMenu>(menu => menu.Add(each => each.Label, "Edit")
+                .AddChildContent<TbMenuItem>(item => item.AddChildContent("Copy")))
+            .AddChildContent<TbToolbarButton>(button => button.Add(each => each.Label, "Copy")
+                .Add(each => each.OnClick, () => clicked++)));
+
+        await cut.Tb().Toolbar("Map tools").ClickAsync("Copy");
+
+        Assert.Equal(1, clicked);
+    }
+
+    [Fact]
+    public async Task Toolbar_ShouldRefuseToClick_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbToolbar>(parameters => parameters.Add(toolbar => toolbar.AriaLabel, "Map tools")
+            .AddChildContent<TbToolbarButton>(button => button.Add(each => each.Label, "Pan")));
+
+        var still = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Toolbar("Map tools").ClickAsync("Pan"));
+
+        Assert.Contains("static page", still.Message);
+    }
+
+    [Fact]
     public async Task Popconfirm_ShouldRaiseConfirmOrCancel_WhenItsButtonsArePressed()
     {
         var answers = new List<string>();

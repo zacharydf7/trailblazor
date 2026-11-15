@@ -1,0 +1,18 @@
+@page "/toolbar-buttons"
+
+@* A narrow toolbar whose first button has the overflow menu's name, and a wide one with a disabled button. *@
+<div style="inline-size: 10rem">
+    <TbToolbar AriaLabel="Map tools">
+        <TbToolbarButton Label="More" OnClick="@(() => _last = "More")" />
+        <TbToolbarButton Label="Share the map" />
+        <TbToolbarButton Label="Delete the map" />
+    </TbToolbar>
+</div>
+<TbToolbar AriaLabel="Print tools">
+    <TbToolbarButton Label="Print" Disabled />
+</TbToolbar>
+<output aria-label="Last action">@_last</output>
+
+@code {
+    private string? _last;
+}

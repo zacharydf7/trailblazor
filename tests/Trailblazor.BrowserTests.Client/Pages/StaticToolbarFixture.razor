@@ -1,0 +1,7 @@
+@page "/static-toolbar"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, where a toolbar button has nothing to run its OnClick. *@
+<TbToolbar AriaLabel="Map tools">
+    <TbToolbarButton Label="Pan" OnClick="() => { }" />
+</TbToolbar>

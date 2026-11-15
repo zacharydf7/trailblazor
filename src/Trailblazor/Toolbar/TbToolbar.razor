@@ -8,6 +8,7 @@
 
 <div @attributes="AdditionalAttributes" @ref="_toolbar" role="toolbar" aria-label="@AriaLabel"
      aria-orientation="@(Vertical ? "vertical" : "horizontal")" style="@Style"
+     data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
      class="@ClassNames.Join("tb-toolbar", Vertical ? "tb-toolbar--vertical" : null, Class)">
     <CascadingValue Value="this">@ChildContent</CascadingValue>
     @if (!Vertical)
