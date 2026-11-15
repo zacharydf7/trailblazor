@@ -18,6 +18,8 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     private List<TValue> _results = [];
     private bool _searching;
     private bool _searched;
+    // The text the shown results answer, so a test or script can tell they're for what was typed.
+    private string? _resultsFor;
     private bool _failed;
     private CancellationTokenSource? _search;
     private CancellationTokenSource? _typing;
@@ -293,6 +295,7 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         _search?.Cancel();
         _searching = _failed = false;
+        _resultsFor = null;
     }
 
     // With a search, debounced-input.js holds keystrokes back in the browser until typing pauses for the delay, so the
@@ -311,6 +314,7 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
         {
             _results = [];
             _searched = _searching = false;
+            _resultsFor = _text;
             return;
         }
 
@@ -332,6 +336,7 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
             _choose.KeepOnly(_results);
             _searching = false;
             _searched = true;
+            _resultsFor = _text;
             // Only a new count is spoken, so typing doesn't bring an announcement with every key.
             if (_results.Count != _announcedCount)
             {
@@ -349,6 +354,7 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
             _results = [];
             _searching = _searched = false;
             _failed = true;
+            _resultsFor = _text;
             _announcedCount = null;
             Announcer.Polite(SearchFailedLabel);
             await OnSearchFailed.InvokeAsync(exception);
@@ -428,9 +434,11 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
         }
         else
         {
+            // Text that isn't a suggestion gives way to the value's own; setting the value again answers the commit.
             _text = Value is null ? "" : TextOf(Value);
             _results = [];
             _searched = false;
+            await SetValueAsync(Value);
         }
     }
 

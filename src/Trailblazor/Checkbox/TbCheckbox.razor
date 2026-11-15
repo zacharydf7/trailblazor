@@ -9,7 +9,7 @@
 
 <div @attributes="RootAttributes" style="@Style" data-commits="@Commits"
      data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
-     data-ready="@(RendererInfo.IsInteractive ? "" : null)"
+     data-ready="@(RendererInfo.IsInteractive ? "" : null)" data-indeterminate="@(Indeterminate ? "" : null)"
      class="@ClassNames.Join(Block, ClassNames.Modifier(Block, Tone), ClassNames.Modifier(Block, Size),
                 ShowsInvalid ? $"{Block}--invalid" : null,
                 Disabled ? $"{Block}--disabled" : null, Class)">

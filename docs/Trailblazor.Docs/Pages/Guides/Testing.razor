@@ -148,7 +148,8 @@
                     <tr>
                         <th scope="row"><code>Checkbox(label).CheckAsync()</code></th>
                         <td>
-                            Checks it, and <code>UncheckAsync</code> unchecks it; <code>Checked</code> reads it.
+                            Checks it, and <code>UncheckAsync</code> unchecks it; <code>Checked</code> reads it, and
+                            <code>Indeterminate</code> reads a <code>bool?</code> checkbox's mixed state.
                             <code>Switch(label)</code> works the same way. Both refuse a read-only or disabled box.
                         </td>
                     </tr>
@@ -364,6 +365,7 @@
                             Clicks the button, which raises its <code>OnClick</code>; a link button also takes the
                             test's <code>NavigationManager</code> to its address. Throws while it's busy or disabled,
                             and <code>Busy</code> reads whether <code>Loading</code> has made it busy.
+                            <code>Pressed</code> and <code>Mixed</code> read a toggle's state.
                         </td>
                     </tr>
                     <tr>
@@ -456,7 +458,12 @@
                     </tr>
                     <tr>
                         <th scope="row"><code>Autocomplete(label).ChooseAsync(text, option)</code></th>
-                        <td>Types the text and chooses a suggestion by its name.</td>
+                        <td>
+                            Types the text and chooses a suggestion by its name. <code>TypeAsync</code> types without
+                            choosing. <code>EnterAsync</code> types and leaves the field, which commits the text, and
+                            <code>ClearAsync</code> uses the clear button. <code>Text</code> reads the field's text and
+                            <code>Suggestions</code> the suggestions in its list.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>ColorPicker(label).ChooseAsync(color)</code></th>
@@ -1047,7 +1054,8 @@
         new("Text field or code field", "Its label", "`TextField(label).EnterAsync(text)` types the text and waits "
             + "until the app has it, and `TextAsync()` reads what the field shows."),
         new("Checkbox and switch", "Its label", "`Checkbox(label).CheckAsync()` and `UncheckAsync()` wait until the "
-            + "app has the value, and `CheckedAsync()` reads it. `Switch(label)` works the same way."),
+            + "app has the value, `CheckedAsync()` reads it, and `IndeterminateAsync()` reads a `bool?` checkbox's "
+            + "mixed state. `Switch(label)` works the same way."),
         new("Checkbox group", "Its label", "`CheckboxGroup(label).CheckAsync(options)` and `UncheckAsync(options)` "
             + "change options by name, and `CheckedAsync()` reads the checked ones."),
         new("Radio group", "Its label", "`RadioGroup(label).ChooseAsync(option)` chooses an option by name, and "
@@ -1060,8 +1068,10 @@
             + "`UnchooseAsync(items)` releases them, and `ChosenAsync()` reads the pressed ones."),
         new("List", "Its `aria-label`", "`List(name).ClickAsync(item)` clicks an item by its text, and "
             + "`ItemsAsync()` reads them."),
-        new("Autocomplete", "Its label",
-            "`Autocomplete(label).ChooseAsync(text, option)` types and picks an option."),
+        new("Autocomplete", "Its label", "`Autocomplete(label).ChooseAsync(text, option)` types and picks an option, "
+            + "and `TypeAsync(text)` types without choosing. `EnterAsync(text)` types and leaves the field, which "
+            + "commits the text, and `ClearAsync()` uses the clear button. `TextAsync()` reads the field's text and "
+            + "`SuggestionsAsync()` the suggestions in its list."),
         new("List box", "Its label", "`ListBox(label).ChooseAsync(options)` chooses by option names, "
             + "`ChosenAsync()` reads the chosen ones, and `OptionsAsync()` reads them all. In a multiple list box, "
             + "`UnchooseAsync(options)` unchooses some and `ClearAsync()` unchooses all. `OptionAsync(name)` and "
@@ -1184,7 +1194,7 @@
             + "page, until it closes."),
         new("Button or icon button", "Its name", "`Button(name).ClickAsync()` clicks it once the page is "
             + "interactive and it's no longer busy, then waits until the app has run its `OnClick`; `BusyAsync()` "
-            + "reads whether it's busy."),
+            + "reads whether it's busy, and `PressedAsync()` and `MixedAsync()` whether a toggle is pressed or mixed."),
         new("Virtual list", "Its name, or none for the only one", "`VirtualList(name).ItemAsync(index)` scrolls "
             + "the list to the item at an index, as a user does, and returns it once drawn; `CountAsync()` reads how "
             + "many items there are, once an `ItemsProvider` has answered."),

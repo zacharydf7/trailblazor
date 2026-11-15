@@ -444,3 +444,11 @@ Trailblazor.Testing.TbVirtualListDriver
 Trailblazor.Testing.TbVirtualListDriver.Count.get -> int
 Trailblazor.Testing.TbVirtualListDriver.Item(int index) -> AngleSharp.Dom.IElement!
 Trailblazor.Testing.TrailblazorMarkup.VirtualList(string? name = null) -> Trailblazor.Testing.TbVirtualListDriver!
+Trailblazor.Testing.TbAutocompleteDriver.ClearAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbAutocompleteDriver.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbAutocompleteDriver.Suggestions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbAutocompleteDriver.Text.get -> string?
+Trailblazor.Testing.TbAutocompleteDriver.TypeAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbButtonDriver.Mixed.get -> bool
+Trailblazor.Testing.TbButtonDriver.Pressed.get -> bool
+Trailblazor.Testing.TbCheckboxDriver.Indeterminate.get -> bool

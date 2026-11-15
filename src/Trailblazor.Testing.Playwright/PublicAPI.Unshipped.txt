@@ -444,3 +444,11 @@ Trailblazor.Testing.Playwright.TbVirtualListLocator.Feed.get -> Microsoft.Playwr
 Trailblazor.Testing.Playwright.TbVirtualListLocator.ItemAsync(int index) -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
 Trailblazor.Testing.Playwright.TbVirtualListLocator.TbVirtualListLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.VirtualList(string? name = null) -> Trailblazor.Testing.Playwright.TbVirtualListLocator!
+Trailblazor.Testing.Playwright.TbAutocompleteLocator.ClearAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAutocompleteLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAutocompleteLocator.SuggestionsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbAutocompleteLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbAutocompleteLocator.TypeAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbButtonLocator.MixedAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbButtonLocator.PressedAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbCheckboxLocator.IndeterminateAsync() -> System.Threading.Tasks.Task<bool>!

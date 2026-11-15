@@ -626,28 +626,106 @@ public sealed class TbAutocompleteLocator(ILocator scope, ILocator field) : TbFi
 {
     private protected override ILocator Control => @field.And(scope.Locator("input"));
 
+    /// <summary>The text the field shows.</summary>
+    public Task<string> TextAsync() => Control.InputValueAsync();
+
+    /// <summary>The names of the suggestions in the field's list, in order, from its last search; they stay after a
+    /// choice closes the list.</summary>
+    public async Task<IReadOnlyList<string>> SuggestionsAsync() =>
+        await (await ListboxAsync()).EvaluateAsync<string[]>(Choices.OptionNames);
+
+    /// <summary>Types the text and waits for the suggestions, without choosing one. A statically rendered field is a
+    /// plain input, which just gets the text.</summary>
+    public async Task TypeAsync(string text) => await TypeAndSearchAsync(text);
+
     /// <summary>Types the text, waits for the suggestions, and chooses the option with this name, waiting until the
     /// field has taken it. A statically rendered field is a plain input, which just gets the text.</summary>
     public async Task ChooseAsync(string text, string option)
+    {
+        if (!await TypeAndSearchAsync(text))
+        {
+            return;
+        }
+
+        var listbox = await ListboxAsync();
+        // The server takes the choice a round trip later. An app may re-key the field as it does, replacing the list
+        // and its id, so the wait is for the field's answer, not the option.
+        await Commit.WaitAsync(Control, async () =>
+        {
+            await listbox.GetByRole(AriaRole.Option, new() { Name = option, Exact = true }).ClickAsync();
+            return true;
+        });
+    }
+
+    /// <summary>Types the text, waits for the suggestions, and leaves the field without choosing one, which commits the
+    /// text: a suggestion it matches is taken; failing that, a <c>FreeText</c> field takes the text itself, and any
+    /// other field puts back its value's text. Then waits until the app has the value. A statically rendered field
+    /// just gets the text.</summary>
+    public async Task EnterAsync(string text)
+    {
+        if (await TypeAndSearchAsync(text))
+        {
+            // Leaving commits only when the text differs from what the field held as it took focus, which the browser
+            // tells with a change event during the blur.
+            await Commit.WaitAsync(Control, () => Control.EvaluateAsync<bool>("""
+                input => {
+                    let changed = false;
+                    const mark = () => changed = true;
+                    input.addEventListener('change', mark);
+                    input.blur();
+                    input.removeEventListener('change', mark);
+                    return changed;
+                }
+                """));
+        }
+    }
+
+    /// <summary>Clears the field with its clear button, as a user does, and waits until the app has it. A field that
+    /// isn't <c>Clearable</c>, shows no text, or is read-only or disabled has no clear button, so this throws.
+    /// </summary>
+    public async Task ClearAsync()
+    {
+        if (await Control.GetAttributeAsync("data-static") is not null)
+        {
+            throw new InvalidOperationException("An autocomplete on a static page is a plain input that posts with its "
+                + "form; render it on an interactive page to clear it.");
+        }
+
+        // A prerendered field is replaced once the page is interactive, and would lose the click.
+        await Assertions.Expect(Control).ToHaveAttributeAsync("data-ready", "");
+        var clear = Control.Locator("xpath=ancestor::*[@data-part='control'][1]").Locator("[data-part=clear]");
+        if (await clear.CountAsync() == 0)
+        {
+            throw new InvalidOperationException(
+                "The field has no clear button; make it Clearable, give it some text, and leave it editable.");
+        }
+
+        await Commit.WaitAsync(Control, async () =>
+        {
+            await clear.ClickAsync();
+            return true;
+        });
+    }
+
+    private async Task<ILocator> ListboxAsync() =>
+        Scope.Document(scope).Locator($"[id='{await Control.GetAttributeAsync("aria-controls")}']");
+
+    // Whether the field is interactive and searched; a static one just gets the text.
+    private async Task<bool> TypeAndSearchAsync(string text)
     {
         var input = Control;
         if (await input.GetAttributeAsync("data-static") is not null)
         {
             await input.FillAsync(text);
-            return;
+            return false;
         }
 
         // Typing opens the list once the field's script has attached.
         await Assertions.Expect(input).ToHaveAttributeAsync("data-ready", "");
         await input.FillAsync(text);
-        var listbox = Scope.Document(scope).Locator($"[id='{await input.GetAttributeAsync("aria-controls")}']");
-        // The server takes the choice a round trip later. An app may re-key the field as it does, replacing the list
-        // and its id, so the wait is for the field's answer, not the option.
-        await Commit.WaitAsync(input, async () =>
-        {
-            await listbox.GetByRole(AriaRole.Option, new() { Name = option, Exact = true }).ClickAsync();
-            return true;
-        });
+        // The browser holds keystrokes back for DebounceDelay, so wait for results that answer this text.
+        await Assertions.Expect(await ListboxAsync()).ToHaveAttributeAsync("data-results-for", text);
+        return true;
     }
 }
 

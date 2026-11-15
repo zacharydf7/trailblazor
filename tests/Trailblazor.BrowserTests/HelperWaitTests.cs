@@ -201,6 +201,71 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldReturnOnceTheSuggestionsAnswerTheText_WhenTypedWithoutChoosing(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/autocomplete");
+        var lake = page.Tb().Autocomplete("Lake");
+
+        await lake.TypeAsync("a");
+
+        Assert.Equal(["Crater", "Sapphire"], await lake.SuggestionsAsync());
+        Assert.Equal("a", await lake.TextAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldReturnOnceTheAppHasTheValue_WhenTextIsEnteredOrTheFieldCleared(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/autocomplete");
+
+        await page.Tb().Autocomplete("Pack weight (kg)").EnterAsync("8");
+        await page.Tb().Autocomplete("Lake").ClearAsync();
+
+        Assert.Equal(1, await page.GetByText("Packing: 8 kg", new() { Exact = true }).CountAsync());
+        Assert.Equal(1, await page.GetByText("Lake value: null", new() { Exact = true }).CountAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldReturn_WhenTheEnteredTextIsTheFieldsOwnOrIsRefused(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/autocomplete");
+        var lake = page.Tb().Autocomplete("Lake");
+
+        await lake.EnterAsync("Mirror");
+        await lake.EnterAsync("Nowhere");
+
+        Assert.Equal("Mirror", await lake.TextAsync());
+        Assert.Equal(1, await page.GetByText("Lake value: Mirror", new() { Exact = true }).CountAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldReturnOnceTheAppHasTheValue_WhenTextIsEnteredAfterTyping(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/autocomplete");
+        var lake = page.Tb().Autocomplete("Lake");
+
+        // The field still holds focus from the typing, so leaving it compares with the text it had then.
+        await lake.TypeAsync("Nowhere");
+        await lake.EnterAsync("Mirror");
+        await lake.TypeAsync("Crater");
+        await lake.EnterAsync("Crater");
+
+        Assert.Equal(1, await page.GetByText("Lake value: Crater", new() { Exact = true }).CountAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldWaitForNewSuggestions_WhenTheSameTextIsTypedAfterAClear(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/autocomplete");
+        var lake = page.Tb().Autocomplete("Lake");
+
+        await lake.TypeAsync("a");
+        await lake.ClearAsync();
+        await lake.TypeAsync("a");
+
+        Assert.Equal(["Crater", "Sapphire"], await lake.SuggestionsAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ListBox_ShouldReturnOnceTheAppHasTheValue_WhenTheAppReKeysTheList(string browser)
     {
         var page = await OpenAsync(browser, "/choice-rekey");

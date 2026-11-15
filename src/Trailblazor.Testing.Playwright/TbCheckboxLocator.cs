@@ -16,6 +16,11 @@ public sealed class TbCheckboxLocator : TbFieldLocator
     /// <summary>Whether it's checked, or on for a switch.</summary>
     public Task<bool> CheckedAsync() => _box.IsCheckedAsync();
 
+    /// <summary>Whether a <c>bool?</c> checkbox is mixed, for a null value; on a static page the box itself doesn't
+    /// show it.</summary>
+    public async Task<bool> IndeterminateAsync() =>
+        await _box.Locator("xpath=ancestor::*[@data-commits][1]").GetAttributeAsync("data-indeterminate") is not null;
+
     /// <summary>Checks it, as clicking it does, unless it's checked already, and waits until the app has it. A
     /// statically rendered one is checked the native way. A read-only or disabled one throws.</summary>
     public Task CheckAsync() => SetAsync(true);

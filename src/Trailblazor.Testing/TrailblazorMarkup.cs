@@ -1727,6 +1727,12 @@ public sealed class TbButtonDriver
     /// <summary>Whether the button is busy, as <c>Loading</c> makes it; a busy button ignores clicks.</summary>
     public bool Busy => _find().GetAttribute("aria-busy") == "true";
 
+    /// <summary>Whether a toggle button is pressed.</summary>
+    public bool Pressed => _find().GetAttribute("aria-pressed") == "true";
+
+    /// <summary>Whether a toggle button shows its mixed state, on for only part of what it acts on.</summary>
+    public bool Mixed => _find().GetAttribute("aria-pressed") == "mixed";
+
     /// <summary>Clicks the button, as a user does, which raises its <c>OnClick</c>; a link button also takes the
     /// test's <c>NavigationManager</c> to its address. Throws for a busy or disabled button, and on a static page for
     /// any button but a link, since there it does nothing or the browser posts its form.</summary>
@@ -2007,6 +2013,10 @@ public sealed class TbCheckboxDriver : TbFieldDriver
 
     /// <summary>Whether it's checked, or on for a switch.</summary>
     public bool Checked => _find().HasAttribute("checked");
+
+    /// <summary>Whether a <c>bool?</c> checkbox is mixed, for a null value; on a static page the box itself doesn't
+    /// show it.</summary>
+    public bool Indeterminate => _find().Closest("[data-commits]")?.HasAttribute("data-indeterminate") == true;
 
     /// <summary>Checks it, as clicking it does, unless it's checked already. A read-only or disabled one throws, and so
     /// does one on a static page, which posts with its form.</summary>
@@ -2448,26 +2458,72 @@ public sealed class TbAutocompleteDriver : TbFieldDriver
     internal TbAutocompleteDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll,
         ScriptCalls scripts) : base(find) => (_find, _findAll, _scripts) = (find, findAll, scripts);
 
+    /// <summary>The text the field shows.</summary>
+    public string? Text => _find().GetAttribute("value");
+
+    /// <summary>The names of the suggestions in the field's list, in order, from its last search; they stay after a
+    /// choice closes the list.</summary>
+    public IReadOnlyList<string> Suggestions => [.. Options().Select(Choices.NameOf)];
+
+    /// <summary>Types the text, as a user does, and waits for the suggestions, without choosing one. It doesn't wait
+    /// for <c>OnTextChanged</c>, which may wait on the app's clock. It throws as <see cref="ChooseAsync"/> does.
+    /// </summary>
+    public async Task TypeAsync(string text) => await TypeAndSearchAsync(text);
+
     /// <summary>Types the text, as a user does, waits for the suggestions, and chooses the option with this name. On a
     /// static page the field is a plain input that posts with its form, so this throws, as it does for a disabled or
     /// read-only field.</summary>
     public async Task ChooseAsync(string text, string option)
+    {
+        var typing = await TypeAndSearchAsync(text);
+        // Click even when the field already holds this option, since the click puts its text back over what was typed.
+        await Choices.Named(Options().ToList(), option).ClickAsync(new MouseEventArgs { Detail = 1 });
+        await typing;
+    }
+
+    /// <summary>Types the text, as a user does, waits for the suggestions, and leaves the field without choosing one,
+    /// which commits the text: a suggestion it matches is taken; failing that, a <c>FreeText</c> field takes the text
+    /// itself, and any other field puts back its value's text. It throws as <see cref="ChooseAsync"/> does.</summary>
+    public async Task EnterAsync(string text)
+    {
+        var typing = await TypeAndSearchAsync(text);
+        // OnTextChanged may still wait on the app's clock; committing ends that wait, so await the typing after it.
+        await _find().ChangeAsync(new ChangeEventArgs { Value = text });
+        await LeaveAsync();
+        await typing;
+    }
+
+    /// <summary>Clears the field with its clear button, as a user does. A field that isn't <c>Clearable</c>, shows no
+    /// text, or is read-only or disabled has no clear button, so this throws, as it does on a static page.</summary>
+    public async Task ClearAsync()
+    {
+        if (_find().HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("An autocomplete on a static page is a plain input that posts with its "
+                + "form; render it on an interactive page to clear it.");
+        }
+
+        var clear = _find().Closest(".tb-field")?.QuerySelector("[data-part=clear]") ?? throw new
+            InvalidOperationException("The field has no clear button; make it Clearable, give it some text, and leave "
+                + "it editable.");
+        await clear.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    // Returns the typing, which may finish only after the search, since OnTextChanged may wait on the app's clock.
+    private async Task<Task> TypeAndSearchAsync(string text)
     {
         var input = _find();
         Typing.ThrowIfLocked(input, "a search");
         if (input.HasAttribute("data-static"))
         {
             throw new InvalidOperationException("An autocomplete on a static page is a plain input that posts with its "
-                + "form; render it on an interactive page to choose a suggestion.");
+                + "form; render it on an interactive page to type into it.");
         }
 
-        // OnTextChanged may wait on the app's clock, so wait for the search to finish, not for the typing.
         var typing = input.InputAsync(new ChangeEventArgs { Value = text });
         await _scripts.WaitForAsync(() => typing.IsCompleted || (_find().GetAttribute("value") == text
             && _findAll($"[id='{_find().GetAttribute("aria-controls")}'][aria-busy]").Count == 0));
-        // Click even when the field already holds this option, since the click puts its text back over what was typed.
-        await Choices.Named(Options().ToList(), option).ClickAsync(new MouseEventArgs { Detail = 1 });
-        await typing;
+        return typing;
     }
 
     private IEnumerable<IElement> Options() =>

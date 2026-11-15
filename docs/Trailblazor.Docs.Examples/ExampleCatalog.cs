@@ -1100,9 +1100,10 @@ public static class ExampleCatalog
             ],
             TestingTip = "`await page.Tb().Button(\"Save\").ClickAsync()` from `Trailblazor.Testing.Playwright` "
                 + "clicks a button once the page is interactive and it's no longer busy, and returns once the app has "
-                + "run its `OnClick`; `BusyAsync()` reads whether it's busy. In bUnit, "
-                + "`cut.Tb().Button(\"Save\").ClickAsync()` throws while the button is busy instead of waiting, and "
-                + "`Busy` reads whether it's busy. By hand, check a toggle with "
+                + "run its `OnClick`; `BusyAsync()` reads whether it's busy, and `PressedAsync()` and `MixedAsync()` "
+                + "whether a toggle is pressed or mixed. In bUnit, `cut.Tb().Button(\"Save\").ClickAsync()` throws "
+                + "while the button is busy instead of waiting, and `Busy`, `Pressed` and `Mixed` read the same "
+                + "states. By hand, check a toggle with "
                 + "`ToHaveAttributeAsync(\"aria-pressed\", \"true\")`, a `Loading` button with "
                 + "`ToHaveAttributeAsync(\"aria-busy\", \"true\")`, and a disabled button with `ToBeDisabledAsync()`, "
                 + "which also passes for `aria-disabled`. To move focus to a button from code, `@ref` it and call "
@@ -3774,7 +3775,8 @@ public static class ExampleCatalog
                 + "still changes the value. Test read-only behavior in Playwright. In bUnit and Playwright, "
                 + "`Tb().Checkbox(\"Email me updates\").CheckAsync()` and `UncheckAsync()` refuse a read-only or "
                 + "disabled box and, in Playwright, wait until the app has the value; `Checked` (`CheckedAsync()` in "
-                + "Playwright) reads it.",
+                + "Playwright) reads it, and `Indeterminate` (`IndeterminateAsync()`) reads the mixed state. The "
+                + "checkbox's root carries `data-indeterminate` while it's mixed, so bUnit can see it too.",
             Telemetry = CheckboxTelemetry,
         },
         new("checkbox-group", "Checkbox group", ExampleCategory.Inputs,
@@ -4916,7 +4918,12 @@ public static class ExampleCatalog
             ],
             TestingTip = "To choose a suggestion, `await page.Tb().Autocomplete(\"Trailhead\").ChooseAsync(\"pine\", "
                 + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "
-                + "search, and clicks the option by its name. In bUnit, `cut.Tb().Autocomplete(...)` does the same. "
+                + "search, and clicks the option by its name. `TypeAsync(text)` types and waits for the suggestions "
+                + "without choosing one. `EnterAsync(text)` types and leaves the field, which commits the text, and "
+                + "`ClearAsync()` uses the clear button. `TextAsync()` reads the field's text and `SuggestionsAsync()` "
+                + "the suggestions in its list, which stay after a choice closes it. The helpers that type wait until "
+                + "the list's `data-results-for` holds the typed text, which shows the results are for it. In bUnit, "
+                + "`cut.Tb().Autocomplete(...)` does the same, with `Suggestions` and `Text` as reads. "
                 + "With a `Search`, the browser waits out `DebounceDelay`, "
                 + "so in bUnit, which has no browser, `Search` runs and `OnTextChanged` fires on each input. Without a "
                 + "`Search`, `OnTextChanged` fires once `DebounceDelay` has passed on the app's `TimeProvider`, so advance a "

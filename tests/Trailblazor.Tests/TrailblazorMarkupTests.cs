@@ -181,6 +181,37 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Autocomplete_ShouldReadTheTextAndSuggestions_WhenTypedWithoutChoosing()
+    {
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Items, ["Pine Hollow", "Eagle Ridge", "Pine Bluff"]));
+        var trail = cut.Tb().Autocomplete("Trail");
+
+        await trail.TypeAsync("pine");
+
+        Assert.Equal("pine", trail.Text);
+        Assert.Equal(["Pine Hollow", "Pine Bluff"], trail.Suggestions);
+    }
+
+    [Fact]
+    public async Task Autocomplete_ShouldCommitTheTextAndClearIt_WhenEnteredAndCleared()
+    {
+        string? trail = null;
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Items, ["Pine Hollow"]).Add(field => field.FreeText, true)
+            .Add(field => field.Clearable, true).Add(field => field.ValueChanged, (string? chosen) => trail = chosen));
+        var field = cut.Tb().Autocomplete("Trail");
+
+        await field.EnterAsync("Cedar Flats");
+        var entered = trail;
+        await field.ClearAsync();
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(field.ClearAsync);
+
+        Assert.Equal(("Cedar Flats", null, ""), (entered, trail, field.Text));
+        Assert.Contains("make it Clearable", refused.Message);
+    }
+
+    [Fact]
     public async Task Autocomplete_ShouldChooseWithoutWaitingForTheTextReport_WhenTheAppsClockIsFake()
     {
         Services.AddSingleton<TimeProvider>(new Microsoft.Extensions.Time.Testing.FakeTimeProvider());
@@ -198,6 +229,40 @@ public class TrailblazorMarkupTests : BunitContext
 
         Assert.Equal("Pine Bluff", cut.Find("input").GetAttribute("value"));
         Assert.Equal(["Pine Bluff"], reported);
+    }
+
+    [Fact]
+    public async Task Autocomplete_ShouldRefuseToClear_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Items, ["Pine Hollow"]).Add(field => field.Clearable, true)
+            .Add(field => field.Value, "Pine Hollow"));
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(cut.Tb().Autocomplete("Trail").ClearAsync);
+
+        Assert.Contains("static page", refused.Message);
+    }
+
+    [Fact]
+    public async Task Autocomplete_ShouldTypeAndEnterWithoutWaitingForTheTextReport_WhenTheAppsClockIsFake()
+    {
+        Services.AddSingleton<TimeProvider>(new Microsoft.Extensions.Time.Testing.FakeTimeProvider());
+        string? trail = null;
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Items, ["Pine Hollow", "Pine Bluff"]).Add(field => field.FreeText, true)
+            .Add(field => field.ValueChanged, (string? chosen) => trail = chosen)
+            .Add(field => field.OnTextChanged, (string _) => { }));
+        var field = cut.Tb().Autocomplete("Trail");
+
+        // The report of the typed text waits out DebounceDelay on a clock that never moves.
+        await field.TypeAsync("pine").WaitAsync(TimeSpan.FromSeconds(10), Xunit.TestContext.Current.CancellationToken);
+        var suggested = field.Suggestions;
+        await field.EnterAsync("Cedar Flats")
+            .WaitAsync(TimeSpan.FromSeconds(10), Xunit.TestContext.Current.CancellationToken);
+
+        Assert.Equal(["Pine Hollow", "Pine Bluff"], suggested);
+        Assert.Equal("Cedar Flats", trail);
     }
 
     [Fact]
@@ -2340,6 +2405,38 @@ public class TrailblazorMarkupTests : BunitContext
         Assert.Equal("246810", cut.Tb().TextField("Verification code").Text);
         Assert.Equal("246810", value);
         Assert.Equal(["246810"], completed);
+    }
+
+    [Fact]
+    public void Button_ShouldReadWhetherAToggleIsPressedOrMixed_WhenTheHelperIsUsed()
+    {
+        var cut = Render<TbStack>(parameters => parameters
+            .AddChildContent<TbButton>(button => button.Add(each => each.Pressed, true)
+                .Add(each => each.PressedChanged, (bool _) => { }).AddChildContent("Bold"))
+            .AddChildContent<TbButton>(button => button.Add(each => each.Mixed, true)
+                .Add(each => each.PressedChanged, (bool _) => { }).AddChildContent("Italic"))
+            .AddChildContent<TbButton>(button => button.AddChildContent("Save")));
+        var (bold, italic, save) = (cut.Tb().Button("Bold"), cut.Tb().Button("Italic"), cut.Tb().Button("Save"));
+
+        Assert.Equal((true, false, false, true, false, false),
+            (bold.Pressed, bold.Mixed, italic.Pressed, italic.Mixed, save.Pressed, save.Mixed));
+    }
+
+    [Fact]
+    public void Checkbox_ShouldReadTheMixedState_WhenABoolCheckboxIsNull()
+    {
+        var cut = Render<TbStack>(parameters => parameters
+            .AddChildContent<TbCheckbox<bool?>>(box => box.Add(each => each.Label, "Every day"))
+            .AddChildContent<TbCheckbox<bool?>>(box => box.Add(each => each.Label, "Weekends")
+                .Add(each => each.Value, true))
+            .AddChildContent<TbCheckbox<bool?>>(box => box.Add(each => each.Label, "Holidays")
+                .Add(each => each.Value, false)));
+
+        Assert.Equal((true, false, false, true), (cut.Tb().Checkbox("Every day").Indeterminate,
+            cut.Tb().Checkbox("Every day").Checked, cut.Tb().Checkbox("Weekends").Indeterminate,
+            cut.Tb().Checkbox("Weekends").Checked));
+        Assert.Equal((false, false), (cut.Tb().Checkbox("Holidays").Indeterminate,
+            cut.Tb().Checkbox("Holidays").Checked));
     }
 
     [Fact]

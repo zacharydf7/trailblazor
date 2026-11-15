@@ -13,6 +13,12 @@ public sealed class TbButtonLocator(ILocator scope, string name)
     /// <summary>Whether the button is busy, as <c>Loading</c> makes it; a busy button ignores clicks.</summary>
     public async Task<bool> BusyAsync() => await Button.GetAttributeAsync("aria-busy") == "true";
 
+    /// <summary>Whether a toggle button is pressed.</summary>
+    public async Task<bool> PressedAsync() => await Button.GetAttributeAsync("aria-pressed") == "true";
+
+    /// <summary>Whether a toggle button shows its mixed state, on for only part of what it acts on.</summary>
+    public async Task<bool> MixedAsync() => await Button.GetAttributeAsync("aria-pressed") == "mixed";
+
     /// <summary>Clicks the button, as a user does, once the page is interactive and the button is no longer busy, and
     /// waits until the app has run its <c>OnClick</c>. On a static page, a link button is followed and a form's submit
     /// or reset button is clicked, without the wait. Throws for a disabled button, or for any other button on a static

@@ -6,6 +6,33 @@ namespace Trailblazor.BrowserTests;
 public class DriverReadsTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Pressed_ShouldReadAToggleButton_WhenItsPressedOrNot(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/button");
+        var pin = page.Tb().Button("Pin to top");
+        var before = await pin.PressedAsync();
+
+        await pin.ClickAsync();
+
+        Assert.Equal((false, true, false), (before, await pin.PressedAsync(), await pin.MixedAsync()));
+        var icons = await OpenAsync(browser, "/examples/icon-button");
+        var bold = icons.Tb().Button("Bold");
+        Assert.Equal((false, true), (await bold.PressedAsync(), await bold.MixedAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Indeterminate_ShouldReadTheMixedState_WhenABoolCheckboxIsNullAndThenChecked(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/checkbox");
+        var formats = page.Tb().Checkbox("All formats");
+        var mixed = await formats.IndeterminateAsync();
+
+        await formats.CheckAsync();
+
+        Assert.Equal((true, false), (mixed, await formats.IndeterminateAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Options_ShouldListTheOptionsInOrder_WhenReadFromASelectOrAListBox(string browser)
     {
         var page = await OpenAsync(browser, "/examples/select");
