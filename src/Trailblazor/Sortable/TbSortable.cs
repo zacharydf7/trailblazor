@@ -228,7 +228,8 @@ public sealed partial class TbSortable<TItem> : TbComponentBase, ISortableGroupM
         args => UserTransferAsync(IndexOf(IdOf(item)), peer, peer.Items.Count,
             args.Detail > 0 ? "pointer" : "keyboard")))];
 
-    private string? GroupHint => Group is null ? null : Localizer[TbStrings.SortableGroupHint];
+    private string? GroupHint =>
+        Group is null ? null : Labels.GroupHint ?? Labels.Hint ?? Localizer[TbStrings.SortableGroupHint];
 
     private string HandleLabel(TItem item) =>
         string.Format(CultureInfo.CurrentCulture, Labels.Handle ?? Localizer[TbStrings.SortableHandle], TextOf(item));

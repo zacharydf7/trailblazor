@@ -1285,7 +1285,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         // Beside or inside one of its own descendants, an item would move into itself.
         if (sources.Any(source => source == target || target.Ancestors().Contains(source)))
         {
-            return MoveCheck.Refuse(Localizer[TbStrings.TreeViewCantMoveIntoItself]);
+            return MoveCheck.Refuse(Labels.CantMoveIntoItself ?? Localizer[TbStrings.TreeViewCantMoveIntoItself]);
         }
 
         return CanMove is null ? MoveCheck.Allow
@@ -1377,8 +1377,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
 
         var moved = sources.Count == 1 ? TextOf(sources[0])
-            : string.Format(CultureInfo.CurrentCulture, Localizer.Plural(TbStrings.TreeViewItemCount, sources.Count),
-                sources.Count);
+            : string.Format(CultureInfo.CurrentCulture,
+                Labels.ItemCount ?? Localizer.Plural(TbStrings.TreeViewItemCount, sources.Count), sources.Count);
         var said = position switch
         {
             TreeMovePosition.Before => Labels.MovedBefore ?? Localizer[TbStrings.TreeViewMovedBefore],

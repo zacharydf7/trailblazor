@@ -115,4 +115,8 @@ public sealed record RichTextEditorLabels
     /// <summary>The link dialog's link to the URL. Leave it null for the app's text for <see
     /// cref="TbStrings.RichTextEditorOpenLink"/>.</summary>
     public string? OpenLink { get; init; }
+
+    /// <summary>Names the link dialog's cancel button. Leave it null for the app's text for
+    /// <see cref="TbStrings.DialogCancel"/>.</summary>
+    public string? CancelLink { get; init; }
 }

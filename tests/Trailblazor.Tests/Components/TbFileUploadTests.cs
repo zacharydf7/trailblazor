@@ -41,6 +41,17 @@ public class TbFileUploadTests : BunitContext
     }
 
     [Fact]
+    public void Labels_ShouldWordTheSizes_WhenGiven()
+    {
+        var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true)
+            .Add(upload => upload.Labels, new FileUploadLabels { Bytes = "{0} o", Kilobytes = "{0} ko" }));
+
+        cut.FindComponent<InputFile>().UploadFiles(Pdf("trail.pdf", 1_500), Pdf("map.pdf"));
+
+        Assert.Equal(["1.5 ko", "10 o"], cut.FindAll(".tb-file-upload__size").Select(size => size.TextContent));
+    }
+
+    [Fact]
     public void Choose_ShouldListTheFilesWithTheirSizes_WhenTheyAreTaken()
     {
         var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true));

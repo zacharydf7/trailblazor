@@ -21,7 +21,7 @@ internal static class MoveHandle
         builder.AddComponentParameter(sequence + 1, nameof(TbMenu.AriaLabel), label);
         builder.AddComponentParameter(sequence + 2, nameof(TbMenu.Icon), BuiltInIcons.DragHandle);
         builder.AddComponentParameter(sequence + 3, nameof(TbMenu.Description),
-            labels.Hint ?? hint ?? localizer[TbStrings.SortableHint]);
+            hint ?? labels.Hint ?? localizer[TbStrings.SortableHint]);
         builder.AddComponentParameter(sequence + 4, nameof(TbMenu.Size), Size.Small);
         builder.AddComponentParameter(sequence + 5, nameof(TbMenu.Disabled), disabled);
         builder.AddComponentParameter(sequence + 6, nameof(TbMenu.Class), "tb-sortable__handle");

@@ -285,6 +285,26 @@ public class TreeReorderTests : BunitContext
     }
 
     [Fact]
+    public async Task Labels_ShouldWordTheMoveHintTheRefusalAndTheCount_WhenGiven()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.Labels, new TreeViewLabels
+        {
+            MoveHint = "Alt+Shift moves it.", CantMoveIntoItself = "It can't go inside itself.",
+            ItemCount = "{0} places", MovedAfter = "{0} went after {1}.",
+        }));
+
+        var check = await cut.InvokeAsync(() => Events().OnDragOver(["1"], "2", TreeMovePosition.Inside));
+        await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
+            new TreeDropEventArgs { Rows = ["2", "4"], Target = "6", Position = TreeMovePosition.After });
+
+        Assert.Equal("Alt+Shift moves it.", cut.Find($"#{Row(cut, "1").GetAttribute("aria-describedby")}").TextContent);
+        Assert.Equal(MoveCheck.Refuse("It can't go inside itself."), check);
+        announcer.WaitForAssertion(() => Assert.Equal("2 places went after Pass.",
+            announcer.Find("[role=status] p").TextContent));
+    }
+
+    [Fact]
     public async Task Drop_ShouldMoveOnlyTheOutermostRows_WhenARowAndOneInsideItAreBothDragged()
     {
         var cut = RenderPlaces();

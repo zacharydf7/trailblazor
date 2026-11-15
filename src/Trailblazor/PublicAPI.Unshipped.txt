@@ -5522,3 +5522,21 @@ override Trailblazor.DialogLabels.GetHashCode() -> int
 override Trailblazor.DialogLabels.ToString() -> string!
 static Trailblazor.DialogLabels.operator !=(Trailblazor.DialogLabels? left, Trailblazor.DialogLabels? right) -> bool
 static Trailblazor.DialogLabels.operator ==(Trailblazor.DialogLabels? left, Trailblazor.DialogLabels? right) -> bool
+Trailblazor.FileUploadLabels.Bytes.get -> string?
+Trailblazor.FileUploadLabels.Bytes.init -> void
+Trailblazor.FileUploadLabels.Gigabytes.get -> string?
+Trailblazor.FileUploadLabels.Gigabytes.init -> void
+Trailblazor.FileUploadLabels.Kilobytes.get -> string?
+Trailblazor.FileUploadLabels.Kilobytes.init -> void
+Trailblazor.FileUploadLabels.Megabytes.get -> string?
+Trailblazor.FileUploadLabels.Megabytes.init -> void
+Trailblazor.RichTextEditorLabels.CancelLink.get -> string?
+Trailblazor.RichTextEditorLabels.CancelLink.init -> void
+Trailblazor.SortableLabels.GroupHint.get -> string?
+Trailblazor.SortableLabels.GroupHint.init -> void
+Trailblazor.TreeViewLabels.CantMoveIntoItself.get -> string?
+Trailblazor.TreeViewLabels.CantMoveIntoItself.init -> void
+Trailblazor.TreeViewLabels.ItemCount.get -> string?
+Trailblazor.TreeViewLabels.ItemCount.init -> void
+Trailblazor.TreeViewLabels.MoveHint.get -> string?
+Trailblazor.TreeViewLabels.MoveHint.init -> void

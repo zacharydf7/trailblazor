@@ -145,7 +145,8 @@ The same idea gets the same name on every component.
   members are null by default. The accessible name of its landmark or group is still set by `AriaLabel`, not by
   `Labels`. `LabelsRuleTests` reads the files of each component, its base classes and the internal parts it renders,
   and fails for a component that reads two or more built-in strings and has no `Labels` parameter, apart from the
-  exceptions it lists with their reasons.
+  exceptions it lists with their reasons. It also fails for a component with a `Labels` record that reads a string
+  the record doesn't word, apart from the app-wide strings and the components it lists with their reasons.
 
 ## Upcoming components
 

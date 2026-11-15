@@ -204,6 +204,20 @@ public class TbSortableGroupTests : BunitContext
         Assert.False(cut.FindAll(".tb-sortable")[1].QuerySelector("ul")!.HasAttribute("data-group"));
     }
 
+    [Fact]
+    public void Labels_ShouldWordTheHandlesHint_WhenTheListIsInAGroup()
+    {
+        _labels = new SortableLabels
+        {
+            Hint = "Arrows move it.", GroupHint = "Arrows move it here, and the menu moves it to the other list.",
+        };
+
+        var cut = RenderBoard();
+
+        Assert.Contains("Arrows move it here, and the menu moves it to the other list.", cut.Markup);
+        Assert.DoesNotContain("Arrows move it.", cut.Markup);
+    }
+
     private IRenderedComponent<IComponent> RenderBoard() => Render(builder =>
     {
         Column(builder, 0, "todo", "To do", _todo, _canMoveInTodo, false);

@@ -38,7 +38,7 @@
     }
     @if (OnMove.HasDelegate)
     {
-        <span id="@MoveHintId" hidden>@Localizer[TbStrings.TreeViewMoveHint]</span>
+        <span id="@MoveHintId" hidden>@(Labels.MoveHint ?? Localizer[TbStrings.TreeViewMoveHint])</span>
         @* Shown by tree-view.js beside a place a drag can't drop, with the reason. *@
         <div data-part="drop-reason" class="tb-tree__drop-reason" aria-hidden="true" hidden></div>
     }

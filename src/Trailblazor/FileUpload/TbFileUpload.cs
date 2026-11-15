@@ -247,14 +247,14 @@ public partial class TbFileUpload
 
     private string FormatSize(long bytes) => bytes switch
     {
-        < 1_000 => SizeText(TbStrings.FileUploadBytes, bytes),
-        < 1_000_000 => SizeText(TbStrings.FileUploadKilobytes, bytes / 1_000d),
-        < 1_000_000_000 => SizeText(TbStrings.FileUploadMegabytes, bytes / 1_000_000d),
-        _ => SizeText(TbStrings.FileUploadGigabytes, bytes / 1_000_000_000d),
+        < 1_000 => SizeText(Labels.Bytes ?? Localizer[TbStrings.FileUploadBytes], bytes),
+        < 1_000_000 => SizeText(Labels.Kilobytes ?? Localizer[TbStrings.FileUploadKilobytes], bytes / 1_000d),
+        < 1_000_000_000 => SizeText(Labels.Megabytes ?? Localizer[TbStrings.FileUploadMegabytes], bytes / 1_000_000d),
+        _ => SizeText(Labels.Gigabytes ?? Localizer[TbStrings.FileUploadGigabytes], bytes / 1_000_000_000d),
     };
 
-    private string SizeText(string key, double amount) => string.Format(CultureInfo.CurrentCulture, Localizer[key],
-        amount.ToString("0.#", CultureInfo.CurrentCulture));
+    private static string SizeText(string template, double amount) => string.Format(CultureInfo.CurrentCulture,
+        template, amount.ToString("0.#", CultureInfo.CurrentCulture));
 
     private string ZoneLabel => Labels.Zone ?? Localizer[TbStrings.FileUploadZone];
     private string ChooseLabel => Labels.Choose ?? Localizer[TbStrings.FileUploadChoose];

@@ -30,4 +30,16 @@ public sealed record TreeViewLabels
     /// <summary>Read out after a move into a row, with {0} what moved and {1} the row, as in "{0} moved into {1}."
     /// Leave it null for the app's text for <see cref="TbStrings.TreeViewMovedInside"/>.</summary>
     public string? MovedInside { get; init; }
+
+    /// <summary>Describes a movable row with the keys that move it. Leave it null for the app's text for
+    /// <see cref="TbStrings.TreeViewMoveHint"/>.</summary>
+    public string? MoveHint { get; init; }
+
+    /// <summary>Shown beside the drop place and read out when a row would move into itself or a row under it. Leave
+    /// it null for the app's text for <see cref="TbStrings.TreeViewCantMoveIntoItself"/>.</summary>
+    public string? CantMoveIntoItself { get; init; }
+
+    /// <summary>Names several rows moved together, with <c>{0}</c> for how many, as in "3 items". Leave it null for the
+    /// app's text for <see cref="TbStrings.TreeViewItemCount"/>.</summary>
+    public string? ItemCount { get; init; }
 }

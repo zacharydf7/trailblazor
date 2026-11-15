@@ -83,8 +83,8 @@ internal sealed partial class RichTextLinkDialog : TbDialogContent<RichTextLinkE
                     Variant.Outlined, Tone.Neutral, () => Dialog.CloseAsync(new(null, null)));
             }
 
-            DialogButtons.Add(actions, 10, this, Localizer[TbStrings.DialogCancel], Variant.Outlined, Tone.Neutral,
-                Dialog.CancelAsync);
+            DialogButtons.Add(actions, 10, this, Labels.CancelLink ?? Localizer[TbStrings.DialogCancel],
+                Variant.Outlined, Tone.Neutral, Dialog.CancelAsync);
             actions.OpenComponent<TbButton>(20);
             actions.AddComponentParameter(21, nameof(TbButton.Type), ButtonType.Submit);
             actions.AddComponentParameter(22, nameof(TbButton.ChildContent),

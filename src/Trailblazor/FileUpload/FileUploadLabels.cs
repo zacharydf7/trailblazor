@@ -43,4 +43,20 @@ public sealed record FileUploadLabels
     /// <summary>The message when more than one file is chosen where one is allowed, with <c>{0}</c>, if used, for the
     /// limit. Leave it null for the app's text for <see cref="TbStrings.FileUploadTooManyOne"/>.</summary>
     public string? TooManyOne { get; init; }
+
+    /// <summary>A file's size under a kilobyte, with <c>{0}</c> for the number. Leave it null for the app's text for
+    /// <see cref="TbStrings.FileUploadBytes"/>.</summary>
+    public string? Bytes { get; init; }
+
+    /// <summary>A file's size in kilobytes, with <c>{0}</c> for the number. Leave it null for the app's text for
+    /// <see cref="TbStrings.FileUploadKilobytes"/>.</summary>
+    public string? Kilobytes { get; init; }
+
+    /// <summary>A file's size in megabytes, with <c>{0}</c> for the number. Leave it null for the app's text for
+    /// <see cref="TbStrings.FileUploadMegabytes"/>.</summary>
+    public string? Megabytes { get; init; }
+
+    /// <summary>A file's size in gigabytes, with <c>{0}</c> for the number. Leave it null for the app's text for
+    /// <see cref="TbStrings.FileUploadGigabytes"/>.</summary>
+    public string? Gigabytes { get; init; }
 }

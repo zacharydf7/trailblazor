@@ -229,6 +229,22 @@ public class TbRichTextEditorTests : BunitContext
     }
 
     [Fact]
+    public async Task RequestLink_ShouldNameTheDialogsCancelButtonFromTheLabels_WhenGiven()
+    {
+        var host = Render<DialogHost>();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Labels, new RichTextEditorLabels { CancelLink = "Keep the text" }));
+
+        var request = cut.Find("[data-part=input]").TriggerEventAsync("ontbrichtextlink", new RichTextLinkEventArgs());
+        host.WaitForElement("dialog");
+        var cancel = host.FindAll("button").Single(button => button.TextContent.Trim() == "Keep the text");
+        await cancel.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs { Detail = 1 });
+        await request;
+
+        Assert.Empty(host.FindAll("dialog"));
+    }
+
+    [Fact]
     public async Task RequestLink_ShouldAskForTheTextToo_WhenNothingIsSelected()
     {
         _handle.SetupVoid("setLink", _ => true).SetVoidResult();
