@@ -28,6 +28,18 @@ public class TbThemePickerTests : BunitContext
     }
 
     [Fact]
+    public async Task ToggleGroupHelper_ShouldChooseAndReadTheMode_WhenThePickerIsInteractive()
+    {
+        var cut = Render<TbThemePicker>();
+        cut.WaitForAssertion(() => Assert.Equal("true", Item(cut, "Light").GetAttribute("aria-pressed")));
+
+        await cut.Tb().ToggleGroup("Theme").ChooseAsync("Dark");
+
+        Assert.Equal(["Dark"], cut.Tb().ToggleGroup("Theme").Chosen);
+        Assert.Equal(["tbTheme", "dark", true], _module.VerifyInvoke("apply").Arguments);
+    }
+
+    [Fact]
     public void Click_ShouldPressTheLoadedModeThenSetTheOnePressed_WhenInteractive()
     {
         var cut = Render<TbThemePicker>();

@@ -22,7 +22,8 @@ public class DriverParityTests
         ["TbDateRangePicker"] = "DateRangePicker", ["TbDateTimePicker"] = "DateTimePicker", ["TbHotkey"] = "Hotkey",
         ["TbListBox"] = "ListBox", ["TbMultiListBox"] = "ListBox", ["TbMenu"] = "Menu", ["TbCheckbox"] = "Checkbox",
         ["TbSwitch"] = "Switch", ["TbCheckboxGroup"] = "CheckboxGroup", ["TbRadioGroup"] = "RadioGroup",
-        ["TbToggleGroup"] = "ToggleGroup", ["TbMultiToggleGroup"] = "ToggleGroup", ["TbList"] = "List",
+        ["TbToggleGroup"] = "ToggleGroup", ["TbMultiToggleGroup"] = "ToggleGroup",
+        ["TbThemePicker"] = "ToggleGroup", ["TbList"] = "List",
         ["TbTextField"] = "TextField", ["TbNumberField"] = "NumberField", ["TbPagination"] = "Pagination",
         ["TbPopconfirm"] = "Popconfirm", ["TbPropertyGrid"] = "PropertyGrid", ["TbQueryBuilder"] = "QueryBuilder",
         ["TbRichTextEditor"] = "RichTextEditor", ["TbSelect"] = "Select", ["TbMultiSelect"] = "Select",
@@ -76,7 +77,7 @@ public class DriverParityTests
         ["TbCodeField"] = FollowUp,
         ["TbDrawer"] = FollowUp, ["TbForm"] = FollowUp, ["TbInsertDivider"] = FollowUp, ["TbNavMenu"] = FollowUp,
         ["TbSpeedDial"] = FollowUp,
-        ["TbStepper"] = FollowUp, ["TbThemePicker"] = FollowUp,
+        ["TbStepper"] = FollowUp,
         ["TbToolbar"] = FollowUp, ["TbTooltip"] = FollowUp,
         ["TbVirtualList"] = FollowUp,
     };

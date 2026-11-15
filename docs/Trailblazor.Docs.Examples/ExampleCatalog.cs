@@ -1628,10 +1628,11 @@ public static class ExampleCatalog
             Ready = new(".tb-toggle-group", "the group"),
             Target = new("group", "Theme"),
             Blocks = ["tb-toggle-group", "tb-button"],
-            TestingTip = "Pick a mode with `GetByRole(AriaRole.Button, new() { Name = \"Dark\" })`, and check the "
-                + "page with `ToHaveAttributeAsync(\"data-tb-theme\", \"dark\")` on `html`. A test that needs one "
-                + "theme can set `data-tb-theme` on `html` itself. Focusing a choice shows a `tooltip` role with its "
-                + "name.",
+            TestingTip = "The picker is a toggle group, so `page.Tb().ToggleGroup(\"Theme\")` in Playwright, or "
+                + "`cut.Tb().ToggleGroup(\"Theme\")` in bUnit, finds it: `ChooseAsync(\"Dark\")` picks a mode, and "
+                + "`ChosenAsync()` or `Chosen` reads it. Check the page with "
+                + "`ToHaveAttributeAsync(\"data-tb-theme\", \"dark\")` on `html`. A test that needs one theme can set "
+                + "`data-tb-theme` on `html` itself. Focusing a choice shows a `tooltip` role with its name.",
         },
         new("toolbar", "Toolbar", ExampleCategory.Actions,
             "A row of controls that is one tab stop. When it is too narrow, its toolbar buttons move into a menu at "
