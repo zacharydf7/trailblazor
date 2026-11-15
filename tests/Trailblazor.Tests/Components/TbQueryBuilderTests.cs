@@ -254,6 +254,38 @@ public class TbQueryBuilderTests : BunitContext
         Assert.Contains("New set", cut.Find("[data-part=add-group]").TextContent);
     }
 
+    [Fact]
+    public void Labels_ShouldReplaceTheComparisonsAndChoicesWords_WhenGiven()
+    {
+        var cut = RenderSearch(parameters => parameters.Add(builder => builder.Labels, new QueryBuilderLabels
+        {
+            Comparisons = new()
+            {
+                EqualTo = "=", NotEqualTo = "!=", Contains = "has", DoesNotContain = "lacks", StartsWith = "begins",
+                EndsWith = "finishes", LessThan = "<", LessThanOrEqualTo = "<=", GreaterThan = ">",
+                GreaterThanOrEqualTo = ">=", IsEmpty = "blank", IsNotEmpty = "filled", IsAnyOf = "one of",
+            },
+            Before = "earlier", OnOrBefore = "by", After = "later", OnOrAfter = "from", Yes = "si", No = "nope",
+        }).Add(builder => builder.Value, new QueryGroup
+        {
+            Conditions =
+            [
+                new("Name", FilterOperator.Contains), new("LengthKm", FilterOperator.EqualTo, 8m),
+                new("Opened", FilterOperator.EqualTo, new DateOnly(2026, 6, 1)),
+                new("Loop", FilterOperator.EqualTo, true), new("Difficulty", FilterOperator.EqualTo, Difficulty.Easy),
+            ],
+        }));
+
+        Assert.Equal(["has", "lacks", "begins", "finishes", "=", "!=", "blank", "filled"],
+            Search(cut).Condition(1).Select("Comparison").Options);
+        Assert.Equal(["=", "!=", "<", "<=", ">", ">=", "blank", "filled"],
+            Search(cut).Condition(2).Select("Comparison").Options);
+        Assert.Equal(["=", "!=", "earlier", "by", "later", "from", "blank", "filled"],
+            Search(cut).Condition(3).Select("Comparison").Options);
+        Assert.Equal(["si", "nope"], Search(cut).Condition(4).Select("Value").Options);
+        Assert.Equal(["=", "!=", "one of"], Search(cut).Condition(5).Select("Comparison").Options);
+    }
+
     [Theory]
     [InlineData("", 1, 3)]
     [InlineData("Trail search", 0, 3)]

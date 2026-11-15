@@ -110,8 +110,8 @@
                        Value="@(condition.Value is bool yes ? yes ? "yes" : "no" : null)"
                        ValueChanged="@(text => ValueAsync(condition, text is null ? null : text == "yes"))"
                        data-part="condition-value">
-                <TbOption Value="@("yes")">@Localizer[TbStrings.DataGridFilterYes]</TbOption>
-                <TbOption Value="@("no")">@Localizer[TbStrings.DataGridFilterNo]</TbOption>
+                <TbOption Value="@("yes")">@Text(Labels.Yes, TbStrings.DataGridFilterYes)</TbOption>
+                <TbOption Value="@("no")">@Text(Labels.No, TbStrings.DataGridFilterNo)</TbOption>
             </TbSelect>,
         QueryFieldKind.Choice when condition.Operator == FilterOperator.IsAnyOf =>
             @<TbMultiSelect TItem="string" AriaLabel="@Text(Labels.Value, TbStrings.DataGridFilterValue)" Size="Size.Small"

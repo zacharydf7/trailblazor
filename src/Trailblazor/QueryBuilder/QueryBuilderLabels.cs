@@ -1,8 +1,7 @@
 namespace Trailblazor;
 
-/// <summary>The words a <see cref="TbQueryBuilder"/>'s lists and buttons show and say to screen readers. The comparisons'
-/// names and the Yes and No choices aren't among them: they come from the app's text, worded as in a data grid's
-/// filters.</summary>
+/// <summary>The words a <see cref="TbQueryBuilder"/>'s lists, choices and buttons show and say to screen
+/// readers.</summary>
 public sealed record QueryBuilderLabels
 {
     /// <summary>Names each group's list that picks whether an item must meet all of its conditions or any of them. Leave it null for the app's text for <see cref="TbStrings.QueryBuilderMatch"/>.</summary>
@@ -40,4 +39,32 @@ public sealed record QueryBuilderLabels
 
     /// <summary>Names an inner group's remove button, with <c>{0}</c> for its number. Leave it null for the app's text for <see cref="TbStrings.QueryBuilderRemoveGroup"/>.</summary>
     public string? RemoveGroup { get; init; }
+
+    /// <summary>The comparisons' names. For a date, <see cref="Before"/>, <see cref="OnOrBefore"/>,
+    /// <see cref="After"/> and <see cref="OnOrAfter"/> name the before and after comparisons instead.</summary>
+    public ComparisonLabels Comparisons { get; init; } = new();
+
+    /// <summary>Names a date's <see cref="FilterOperator.LessThan"/>. Leave it null for the app's text for
+    /// <see cref="TbStrings.QueryBuilderBefore"/>.</summary>
+    public string? Before { get; init; }
+
+    /// <summary>Names a date's <see cref="FilterOperator.LessThanOrEqualTo"/>. Leave it null for the app's text for
+    /// <see cref="TbStrings.QueryBuilderOnOrBefore"/>.</summary>
+    public string? OnOrBefore { get; init; }
+
+    /// <summary>Names a date's <see cref="FilterOperator.GreaterThan"/>. Leave it null for the app's text for
+    /// <see cref="TbStrings.QueryBuilderAfter"/>.</summary>
+    public string? After { get; init; }
+
+    /// <summary>Names a date's <see cref="FilterOperator.GreaterThanOrEqualTo"/>. Leave it null for the app's text
+    /// for <see cref="TbStrings.QueryBuilderOnOrAfter"/>.</summary>
+    public string? OnOrAfter { get; init; }
+
+    /// <summary>A yes/no field's choice for yes. Leave it null for the app's text for
+    /// <see cref="TbStrings.DataGridFilterYes"/>.</summary>
+    public string? Yes { get; init; }
+
+    /// <summary>A yes/no field's choice for no. Leave it null for the app's text for
+    /// <see cref="TbStrings.DataGridFilterNo"/>.</summary>
+    public string? No { get; init; }
 }

@@ -6275,7 +6275,8 @@ public static class ExampleCatalog
             ],
             Api =
             [
-                typeof(TbQueryBuilder), typeof(QueryBuilderLabels), typeof(QueryGroup), typeof(QueryJoin), typeof(QueryField), typeof(QueryFieldKind),
+                typeof(TbQueryBuilder), typeof(QueryBuilderLabels), typeof(ComparisonLabels), typeof(QueryGroup),
+                typeof(QueryJoin), typeof(QueryField), typeof(QueryFieldKind),
                 typeof(QueryChoice), typeof(GridFilter), typeof(FilterOperator),
             ],
             Keyboard =
@@ -6291,7 +6292,9 @@ public static class ExampleCatalog
                 "A condition's fields are named Field, Comparison and Value, and its remove button \"Remove condition\" "
                     + "and its number, so a screen reader hears which condition it's in as it moves.",
                 "`Labels` replaces all of these words, the Match list and its choices, and the Add buttons' text, "
-                    + "with `{0}` for a number.",
+                    + "with `{0}` for a number. Its `Comparisons` names the comparisons, `Before`, `OnOrBefore`, "
+                    + "`After` and `OnOrAfter` name a date's before and after comparisons, and `Yes` and `No` name a "
+                    + "yes/no field's choices.",
             ],
             Announcements =
             [

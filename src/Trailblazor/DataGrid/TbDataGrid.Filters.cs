@@ -166,7 +166,10 @@ public partial class TbDataGrid<TItem>
     private static IReadOnlyList<FilterOperator> FilterOperators(TbColumn<TItem> column) =>
         column.FilterKind == ColumnFilterKind.Number ? Comparisons.ForNumbers : Comparisons.ForText;
 
-    private string OperatorLabel(FilterOperator op) => Localizer[Comparisons.TextKeyOf(op)];
+    private string OperatorLabel(FilterOperator op) => Comparisons.NameOf(op, FilterComparisonLabels, Localizer);
+
+    // The filter menus use the app's text, since DataGridLabels doesn't word them.
+    private static readonly ComparisonLabels FilterComparisonLabels = new();
 
 
     // Enter in the value applies the menu, as Apply does, unless it confirms an IME composition. The value field

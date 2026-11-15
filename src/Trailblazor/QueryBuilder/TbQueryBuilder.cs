@@ -227,14 +227,16 @@ public sealed partial class TbQueryBuilder : TbComponentBase
     };
 
     // A date's comparisons read as before and after.
-    private string OperatorLabel(QueryField field, FilterOperator op) => Localizer[(field.Kind, op) switch
+    private string OperatorLabel(QueryField field, FilterOperator op) => (field.Kind, op) switch
     {
-        (QueryFieldKind.Date, FilterOperator.LessThan) => TbStrings.QueryBuilderBefore,
-        (QueryFieldKind.Date, FilterOperator.LessThanOrEqualTo) => TbStrings.QueryBuilderOnOrBefore,
-        (QueryFieldKind.Date, FilterOperator.GreaterThan) => TbStrings.QueryBuilderAfter,
-        (QueryFieldKind.Date, FilterOperator.GreaterThanOrEqualTo) => TbStrings.QueryBuilderOnOrAfter,
-        _ => Comparisons.TextKeyOf(op),
-    }];
+        (QueryFieldKind.Date, FilterOperator.LessThan) => Text(Labels.Before, TbStrings.QueryBuilderBefore),
+        (QueryFieldKind.Date, FilterOperator.LessThanOrEqualTo) =>
+            Text(Labels.OnOrBefore, TbStrings.QueryBuilderOnOrBefore),
+        (QueryFieldKind.Date, FilterOperator.GreaterThan) => Text(Labels.After, TbStrings.QueryBuilderAfter),
+        (QueryFieldKind.Date, FilterOperator.GreaterThanOrEqualTo) =>
+            Text(Labels.OnOrAfter, TbStrings.QueryBuilderOnOrAfter),
+        _ => Comparisons.NameOf(op, Labels.Comparisons, Localizer),
+    };
 
     // A choice's option is its place in the field's list, since its value can be any type.
     private static string? ChoiceKeyOf(QueryField field, object? value) =>

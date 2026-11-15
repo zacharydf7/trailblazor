@@ -5542,3 +5542,52 @@ Trailblazor.TreeViewLabels.MoveHint.init -> void
 Trailblazor.CommandPaletteLabels.Shortcut.get -> string?
 Trailblazor.CommandPaletteLabels.Shortcut.init -> void
 const Trailblazor.TbStrings.CommandPaletteShortcut = "CommandPalette.Shortcut" -> string!
+Trailblazor.ComparisonLabels
+Trailblazor.ComparisonLabels.<Clone>$() -> Trailblazor.ComparisonLabels!
+Trailblazor.ComparisonLabels.ComparisonLabels() -> void
+Trailblazor.ComparisonLabels.Contains.get -> string?
+Trailblazor.ComparisonLabels.Contains.init -> void
+Trailblazor.ComparisonLabels.DoesNotContain.get -> string?
+Trailblazor.ComparisonLabels.DoesNotContain.init -> void
+Trailblazor.ComparisonLabels.EndsWith.get -> string?
+Trailblazor.ComparisonLabels.EndsWith.init -> void
+Trailblazor.ComparisonLabels.EqualTo.get -> string?
+Trailblazor.ComparisonLabels.EqualTo.init -> void
+Trailblazor.ComparisonLabels.Equals(Trailblazor.ComparisonLabels? other) -> bool
+Trailblazor.ComparisonLabels.GreaterThan.get -> string?
+Trailblazor.ComparisonLabels.GreaterThan.init -> void
+Trailblazor.ComparisonLabels.GreaterThanOrEqualTo.get -> string?
+Trailblazor.ComparisonLabels.GreaterThanOrEqualTo.init -> void
+Trailblazor.ComparisonLabels.IsAnyOf.get -> string?
+Trailblazor.ComparisonLabels.IsAnyOf.init -> void
+Trailblazor.ComparisonLabels.IsEmpty.get -> string?
+Trailblazor.ComparisonLabels.IsEmpty.init -> void
+Trailblazor.ComparisonLabels.IsNotEmpty.get -> string?
+Trailblazor.ComparisonLabels.IsNotEmpty.init -> void
+Trailblazor.ComparisonLabels.LessThan.get -> string?
+Trailblazor.ComparisonLabels.LessThan.init -> void
+Trailblazor.ComparisonLabels.LessThanOrEqualTo.get -> string?
+Trailblazor.ComparisonLabels.LessThanOrEqualTo.init -> void
+Trailblazor.ComparisonLabels.NotEqualTo.get -> string?
+Trailblazor.ComparisonLabels.NotEqualTo.init -> void
+Trailblazor.ComparisonLabels.StartsWith.get -> string?
+Trailblazor.ComparisonLabels.StartsWith.init -> void
+Trailblazor.QueryBuilderLabels.After.get -> string?
+Trailblazor.QueryBuilderLabels.After.init -> void
+Trailblazor.QueryBuilderLabels.Before.get -> string?
+Trailblazor.QueryBuilderLabels.Before.init -> void
+Trailblazor.QueryBuilderLabels.Comparisons.get -> Trailblazor.ComparisonLabels!
+Trailblazor.QueryBuilderLabels.Comparisons.init -> void
+Trailblazor.QueryBuilderLabels.No.get -> string?
+Trailblazor.QueryBuilderLabels.No.init -> void
+Trailblazor.QueryBuilderLabels.OnOrAfter.get -> string?
+Trailblazor.QueryBuilderLabels.OnOrAfter.init -> void
+Trailblazor.QueryBuilderLabels.OnOrBefore.get -> string?
+Trailblazor.QueryBuilderLabels.OnOrBefore.init -> void
+Trailblazor.QueryBuilderLabels.Yes.get -> string?
+Trailblazor.QueryBuilderLabels.Yes.init -> void
+override Trailblazor.ComparisonLabels.Equals(object? obj) -> bool
+override Trailblazor.ComparisonLabels.GetHashCode() -> int
+override Trailblazor.ComparisonLabels.ToString() -> string!
+static Trailblazor.ComparisonLabels.operator !=(Trailblazor.ComparisonLabels? left, Trailblazor.ComparisonLabels? right) -> bool
+static Trailblazor.ComparisonLabels.operator ==(Trailblazor.ComparisonLabels? left, Trailblazor.ComparisonLabels? right) -> bool

@@ -35,7 +35,6 @@ public partial class LabelsRuleTests
     private static readonly Dictionary<string, string> Unworded = new()
     {
         ["TbDataGrid"] = "its record words a few strings; #451 gives it the rest",
-        ["TbQueryBuilder"] = "its comparisons, date words and yes/no choices get members in #518",
     };
 
     // Internal parts that read strings for the components that render them.

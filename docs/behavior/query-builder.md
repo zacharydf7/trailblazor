@@ -19,6 +19,7 @@ Familiar apps: Jira's advanced search builder, Notion's and Airtable's filter gr
 - [x] A condition drops its value when its field changes or its comparison takes none. `TbQueryBuilderTests.Condition_ShouldDropItsValue_WhenItsFieldChangesOrItsComparisonTakesNone`
 - [x] Groups nest no deeper than `MaxDepth`. `TbQueryBuilderTests.AddGroupAsync_ShouldThrow_WhenTheGroupIsAtTheDeepestLevel`
 - [x] A query read back from JSON shows as it was saved. `TbQueryBuilderTests.Value_ShouldShowAQueryReadBackFromJson_WhenTheParentSetsIt`
+- [x] `Labels` words the lists, buttons, comparisons (with a date's before and after) and a yes/no field's choices. `TbQueryBuilderTests.Labels_ShouldReplaceTheListsAndButtonsWords_WhenGiven`, `TbQueryBuilderTests.Labels_ShouldReplaceTheComparisonsAndChoicesWords_WhenGiven`
 
 ## Touch
 
