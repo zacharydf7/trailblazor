@@ -1,6 +1,6 @@
-@* The count follows typing; a report longer than the limit shows its error once focus leaves the editor. *@
-<TbRichTextEditor Label="Trail report" @bind-Value="_report" ShowCount MaxLength="120" />
+@* The count follows typing; a summary longer than the limit shows its error once focus leaves the editor. *@
+<TbRichTextEditor Label="Hike summary" @bind-Value="_summary" ShowCount MaxLength="120" />
 
 @code {
-    private string? _report = "<p>The <strong>Pine Hollow</strong> loop is clear to the second bridge.</p>";
+    private string? _summary = "<p>The <strong>Pine Hollow</strong> loop is clear to the second bridge.</p>";
 }
