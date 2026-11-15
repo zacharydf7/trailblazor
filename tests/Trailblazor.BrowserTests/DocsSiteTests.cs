@@ -254,6 +254,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenDocsAsync(browser, path, new() { ViewportSize = new() { Width = 390, Height = 844 } });
         await Expect(page.Locator(".docs-article__body > .docs-section > h2").First).ToBeVisibleAsync();
+        await page.EvaluateAsync("() => document.fonts.ready");
 
         Assert.True(await page.Locator("html").EvaluateAsync<bool>("html => html.scrollWidth <= html.clientWidth"),
             "Wide code and tables should scroll inside their own box, not the page.");

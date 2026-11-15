@@ -826,6 +826,7 @@ code {
 :is(.docs-main, .docs-article__body) > :is(p, ul, ol) {
     box-sizing: border-box;
     max-width: 52rem;
+    overflow-wrap: break-word;
 }
 
 :is(.docs-main, .docs-article__body) > p + p {
