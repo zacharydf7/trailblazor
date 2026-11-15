@@ -7026,7 +7026,8 @@ public static class ExampleCatalog
                     + "dialog can be `Draggable` by its header and `Resizable` by its bottom-end grip. Neither needs "
                     + "dragging: the header gains a Move button whose menu picks a place, and the grip is a Resize "
                     + "button whose menu picks a size. `Minimizable` and `Maximizable` add header buttons, and "
-                    + "`WindowState` opens the dialog minimized or maximized.",
+                    + "`WindowState` opens the dialog minimized or maximized. `Labels` rewords the header's buttons and "
+                    + "the Move and Resize menus, with their places and sizes, for this dialog alone.",
                     typeof(DialogWindowExample), typeof(RenameDialog)),
                 new("changing", "Changing an open dialog's window", "An open dialog can change. Set `Modal`, `Size`, "
                     + "`Width`, `Position`, `WindowState`, `ShowHeader`, `CloseButton`, `Minimizable`, "
@@ -7049,7 +7050,7 @@ public static class ExampleCatalog
                 typeof(IDialogService), typeof(DialogReference<>), typeof(DialogOptions), typeof(DialogSettings),
                 typeof(TbDialog), typeof(TbDialogActions), typeof(TbDialogTitle), typeof(TbDialogHeaderActions),
                 typeof(TbDialogHeader),
-                typeof(TbDialogDescription), typeof(DialogClasses), typeof(DialogAttributes),
+                typeof(TbDialogDescription), typeof(DialogClasses), typeof(DialogAttributes), typeof(DialogLabels),
             ],
             Keyboard =
             [
@@ -7229,7 +7230,10 @@ public static class ExampleCatalog
                     + "open, with no backdrop, so people can pick another item and see it in the same drawer.",
                     typeof(DrawerNonModalExample)),
             ],
-            Api = [typeof(TbDrawer), typeof(DrawerSide), typeof(DialogOptions), typeof(DialogClasses)],
+            Api =
+            [
+                typeof(TbDrawer), typeof(DrawerSide), typeof(DialogOptions), typeof(DialogClasses), typeof(DialogLabels),
+            ],
             Anatomy = """
                 <TbDrawer Title="…" Side="…" @bind-Open="_open">
                     …
@@ -7244,7 +7248,8 @@ public static class ExampleCatalog
             ],
             Labeling =
             [
-                "A native `<dialog>` named by its title, with a close button named \"Close\".",
+                "A native `<dialog>` named by its title, with a close button named \"Close\" "
+                    + "unless `Labels.Close` names it.",
             ],
             Accessibility =
             [

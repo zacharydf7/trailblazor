@@ -20,6 +20,8 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
     [Inject]
     private ITbLocalizer Localizer { get; set; } = default!;
 
+    private DialogLabels Labels => Dialog.Options.Labels ?? new();
+
     [Inject]
     private Telemetry Telemetry { get; set; } = default!;
 
@@ -91,7 +93,8 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         {
             var minimized = state == DialogWindowState.Minimized;
             AddWindowButton(builder, 31, "minimize", Dialog.Options.Attributes?.Minimize,
-                Localizer[minimized ? TbStrings.DialogRestore : TbStrings.DialogMinimize],
+                minimized ? Labels.Restore ?? Localizer[TbStrings.DialogRestore]
+                    : Labels.Minimize ?? Localizer[TbStrings.DialogMinimize],
                 minimized ? BuiltInIcons.Restore : BuiltInIcons.Minus,
                 minimized ? DialogWindowState.Normal : DialogWindowState.Minimized);
         }
@@ -100,7 +103,8 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         {
             var maximized = state == DialogWindowState.Maximized;
             AddWindowButton(builder, 39, "maximize", Dialog.Options.Attributes?.Maximize,
-                Localizer[maximized ? TbStrings.DialogRestore : TbStrings.DialogMaximize],
+                maximized ? Labels.Restore ?? Localizer[TbStrings.DialogRestore]
+                    : Labels.Maximize ?? Localizer[TbStrings.DialogMaximize],
                 maximized ? BuiltInIcons.Restore : BuiltInIcons.Maximize,
                 maximized ? DialogWindowState.Normal : DialogWindowState.Maximized);
         }
@@ -110,7 +114,8 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
             builder.OpenComponent<TbIconButton>(47);
             builder.AddMultipleAttributes(48, Dialog.Options.Attributes?.Close);
             builder.AddComponentParameter(49, nameof(TbIconButton.Icon), BuiltInIcons.Close);
-            builder.AddComponentParameter(50, nameof(TbIconButton.AriaLabel), Localizer[TbStrings.DialogClose]);
+            builder.AddComponentParameter(50, nameof(TbIconButton.AriaLabel),
+                Labels.Close ?? Localizer[TbStrings.DialogClose]);
             builder.AddComponentParameter(51, nameof(TbIconButton.Size), Size.Small);
             builder.AddComponentParameter(52, nameof(TbIconButton.OnClick),
                 EventCallback.Factory.Create<MouseEventArgs>(this, CloseAsync));

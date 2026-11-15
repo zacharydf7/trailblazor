@@ -383,6 +383,55 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public void ShowAsync_ShouldWordTheHeaderAndMenusFromTheLabels_WhenTheOptionsGiveThem()
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new()
+        {
+            Modal = false, Draggable = true, Resizable = true, Minimizable = true, Maximizable = true,
+            Labels = new()
+            {
+                Close = "Shut", Minimize = "Tuck", Maximize = "Grow", Move = "Shift", MoveHint = "Arrows shift it.",
+                Resize = "Sizes", ResizeHint = "Arrows size it.", PositionCenter = "Middle", PositionTop = "Up",
+                PositionBottom = "Down", PositionStart = "Lead", PositionEnd = "Trail", PositionTopStart = "Up lead",
+                PositionTopEnd = "Up trail", PositionBottomStart = "Down lead", PositionBottomEnd = "Down trail",
+                SizeSmall = "Narrow", SizeMedium = "Usual", SizeLarge = "Wide", SizeExtraLarge = "Widest",
+            },
+        });
+
+        var move = host.WaitForElement("[data-part=move] [data-part=trigger]");
+        var grip = host.Find("[data-part=resize] [data-part=trigger]");
+        Assert.Equal(("Shut", "Tuck", "Grow"), (host.Find("[data-part=close]").GetAttribute("aria-label"),
+            host.Find("[data-part=minimize]").GetAttribute("aria-label"),
+            host.Find("[data-part=maximize]").GetAttribute("aria-label")));
+        Assert.Equal(("Shift", "Arrows shift it.", "Sizes", "Arrows size it."), (move.GetAttribute("aria-label"),
+            host.Find($"#{move.GetAttribute("aria-describedby")}").TextContent, grip.GetAttribute("aria-label"),
+            host.Find($"#{grip.GetAttribute("aria-describedby")}").TextContent));
+        Assert.Equal(["Middle", "Up", "Down", "Lead", "Trail", "Up lead", "Up trail", "Down lead", "Down trail"],
+            host.FindAll("[data-part=move] [role=menuitem]").Select(item => item.TextContent.Trim()));
+        Assert.Equal(["Narrow", "Usual", "Wide", "Widest"],
+            host.FindAll("[data-part=resize] [role=menuitem]").Select(item => item.TextContent.Trim()));
+    }
+
+    [Theory]
+    [InlineData(DialogWindowState.Minimized, "minimize")]
+    [InlineData(DialogWindowState.Maximized, "maximize")]
+    public void ShowAsync_ShouldNameTheRestoreButtonFromTheLabels_WhenTheDialogOpensMinimizedOrMaximized(
+        DialogWindowState state, string part)
+    {
+        var host = Render<DialogHost>();
+
+        _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new()
+        {
+            Modal = false, Minimizable = true, Maximizable = true, WindowState = state,
+            Labels = new() { Restore = "Bring back" },
+        });
+
+        Assert.Equal("Bring back", host.WaitForElement($"[data-part={part}]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
     public void ShowAsync_ShouldOfferAMoveButtonAndAResizeGripWithHints_WhenANonModalDialogIsDraggableAndResizable()
     {
         var host = Render<DialogHost>();

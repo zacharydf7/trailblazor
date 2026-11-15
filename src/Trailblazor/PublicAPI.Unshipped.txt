@@ -5465,3 +5465,60 @@ const Trailblazor.TbStrings.TextFieldCountOfLimitOne = "TextField.CountOfLimitOn
 const Trailblazor.TbStrings.TextFieldCountOne = "TextField.CountOne" -> string!
 const Trailblazor.TbStrings.TextFieldTooLong = "TextField.TooLong" -> string!
 const Trailblazor.TbStrings.TextFieldTooLongOne = "TextField.TooLongOne" -> string!
+Trailblazor.DialogLabels
+Trailblazor.DialogLabels.<Clone>$() -> Trailblazor.DialogLabels!
+Trailblazor.DialogLabels.Close.get -> string?
+Trailblazor.DialogLabels.Close.init -> void
+Trailblazor.DialogLabels.DialogLabels() -> void
+Trailblazor.DialogLabels.Equals(Trailblazor.DialogLabels? other) -> bool
+Trailblazor.DialogLabels.Maximize.get -> string?
+Trailblazor.DialogLabels.Maximize.init -> void
+Trailblazor.DialogLabels.Minimize.get -> string?
+Trailblazor.DialogLabels.Minimize.init -> void
+Trailblazor.DialogLabels.Move.get -> string?
+Trailblazor.DialogLabels.Move.init -> void
+Trailblazor.DialogLabels.MoveHint.get -> string?
+Trailblazor.DialogLabels.MoveHint.init -> void
+Trailblazor.DialogLabels.PositionBottom.get -> string?
+Trailblazor.DialogLabels.PositionBottom.init -> void
+Trailblazor.DialogLabels.PositionBottomEnd.get -> string?
+Trailblazor.DialogLabels.PositionBottomEnd.init -> void
+Trailblazor.DialogLabels.PositionBottomStart.get -> string?
+Trailblazor.DialogLabels.PositionBottomStart.init -> void
+Trailblazor.DialogLabels.PositionCenter.get -> string?
+Trailblazor.DialogLabels.PositionCenter.init -> void
+Trailblazor.DialogLabels.PositionEnd.get -> string?
+Trailblazor.DialogLabels.PositionEnd.init -> void
+Trailblazor.DialogLabels.PositionStart.get -> string?
+Trailblazor.DialogLabels.PositionStart.init -> void
+Trailblazor.DialogLabels.PositionTop.get -> string?
+Trailblazor.DialogLabels.PositionTop.init -> void
+Trailblazor.DialogLabels.PositionTopEnd.get -> string?
+Trailblazor.DialogLabels.PositionTopEnd.init -> void
+Trailblazor.DialogLabels.PositionTopStart.get -> string?
+Trailblazor.DialogLabels.PositionTopStart.init -> void
+Trailblazor.DialogLabels.Resize.get -> string?
+Trailblazor.DialogLabels.Resize.init -> void
+Trailblazor.DialogLabels.ResizeHint.get -> string?
+Trailblazor.DialogLabels.ResizeHint.init -> void
+Trailblazor.DialogLabels.Restore.get -> string?
+Trailblazor.DialogLabels.Restore.init -> void
+Trailblazor.DialogLabels.SizeExtraLarge.get -> string?
+Trailblazor.DialogLabels.SizeExtraLarge.init -> void
+Trailblazor.DialogLabels.SizeLarge.get -> string?
+Trailblazor.DialogLabels.SizeLarge.init -> void
+Trailblazor.DialogLabels.SizeMedium.get -> string?
+Trailblazor.DialogLabels.SizeMedium.init -> void
+Trailblazor.DialogLabels.SizeSmall.get -> string?
+Trailblazor.DialogLabels.SizeSmall.init -> void
+Trailblazor.DialogOptions.Labels.get -> Trailblazor.DialogLabels?
+Trailblazor.DialogOptions.Labels.init -> void
+Trailblazor.TbDialog.Labels.get -> Trailblazor.DialogLabels?
+Trailblazor.TbDialog.Labels.set -> void
+Trailblazor.TbDrawer.Labels.get -> Trailblazor.DialogLabels?
+Trailblazor.TbDrawer.Labels.set -> void
+override Trailblazor.DialogLabels.Equals(object? obj) -> bool
+override Trailblazor.DialogLabels.GetHashCode() -> int
+override Trailblazor.DialogLabels.ToString() -> string!
+static Trailblazor.DialogLabels.operator !=(Trailblazor.DialogLabels? left, Trailblazor.DialogLabels? right) -> bool
+static Trailblazor.DialogLabels.operator ==(Trailblazor.DialogLabels? left, Trailblazor.DialogLabels? right) -> bool

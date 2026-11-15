@@ -14,7 +14,6 @@ public partial class LabelsRuleTests
         ["TbPopconfirm"] = "ConfirmText and CancelText are usually set per use, such as \"Delete\", so they stay flat "
             + "parameters",
         ["TbRoot"] = "it holds the app's one toast region, so the app's localizer words it",
-        ["TbDialog"] = "its header and menus get a Labels record in #452",
     };
 
     // Internal parts that read strings for the components that render them.

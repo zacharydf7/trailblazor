@@ -35,6 +35,12 @@ public sealed class TbDialog : TbComponentBase, IAsyncDisposable
     [Parameter]
     public DialogOptions? Options { get; set; }
 
+    /// <summary>The words the header's buttons and the Move and Resize menus show and say to screen readers, in place
+    /// of <see cref="DialogOptions.Labels"/>. Each one left null uses the app's text. It's read each time the dialog
+    /// opens.</summary>
+    [Parameter]
+    public DialogLabels? Labels { get; set; }
+
     /// <summary>Asked when the user presses Escape, clicks the backdrop or presses the close button. Return false to
     /// keep the dialog open, for example to ask about unsaved changes first. Setting <see cref="Open"/> to false
     /// doesn't ask.</summary>
@@ -68,11 +74,14 @@ public sealed class TbDialog : TbComponentBase, IAsyncDisposable
         }
     }
 
+    private DialogOptions OpenedOptions =>
+        Labels is null ? Options ?? new() : (Options ?? new()) with { Labels = Labels };
+
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         var dialog = _dialog ?? (RendererInfo.IsInteractive || AdditionalAttributes?.ContainsKey("id") != true ? null
-            : _closed ??= Dialogs.Closed(Title, Options ?? new()));
+            : _closed ??= Dialogs.Closed(Title, OpenedOptions));
         if (dialog is null)
         {
             return;
@@ -90,7 +99,7 @@ public sealed class TbDialog : TbComponentBase, IAsyncDisposable
 
     private void OpenDialog()
     {
-        var dialog = Dialogs.OpenInPlace(Title, Options ?? new());
+        var dialog = Dialogs.OpenInPlace(Title, OpenedOptions);
         dialog.Dismiss = async reason =>
         {
             if (CanDismiss is null || await CanDismiss(reason))

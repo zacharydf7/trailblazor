@@ -71,6 +71,10 @@ public sealed record DialogOptions
     /// </summary>
     public DialogAttributes? Attributes { get; init; }
 
+    /// <summary>The words the header's buttons and the Move and Resize menus show and say to screen readers. Each one
+    /// left null uses the app's text.</summary>
+    public DialogLabels? Labels { get; init; }
+
     /// <summary>A label the dialog's use is counted under, such as <c>"delete-trail"</c>, through the
     /// <c>Trailblazor</c> meter: shown each time it opens, and counted in <c>trailblazor.dialog.closed</c> and
     /// <c>trailblazor.dialog.duration</c> with how it closed: <c>confirmed</c>, <c>cancelled</c>, <c>escape</c>,

@@ -13,16 +13,22 @@ internal static class DialogMenus
         [DialogSize.Small, DialogSize.Medium, DialogSize.Large, DialogSize.ExtraLarge];
 
     public static void AddMove(RenderTreeBuilder builder, int sequence, DialogReference dialog,
-        ITbLocalizer localizer) =>
-        AddMenu(builder, sequence, dialog, localizer[TbStrings.DialogMove], BuiltInIcons.Move,
-            localizer[TbStrings.DialogMoveHint], "move", null, Enum.GetValues<DialogPosition>(),
-            position => localizer[PositionKey(position)], position => dialog.Position = position);
+        ITbLocalizer localizer)
+    {
+        var labels = dialog.Options.Labels ?? new();
+        AddMenu(builder, sequence, dialog, labels.Move ?? localizer[TbStrings.DialogMove], BuiltInIcons.Move,
+            labels.MoveHint ?? localizer[TbStrings.DialogMoveHint], "move", null, Enum.GetValues<DialogPosition>(),
+            position => PositionName(position, labels, localizer), position => dialog.Position = position);
+    }
 
     public static void AddResize(RenderTreeBuilder builder, int sequence, DialogReference dialog,
-        ITbLocalizer localizer) =>
-        AddMenu(builder, sequence, dialog, localizer[TbStrings.DialogResize], BuiltInIcons.ResizeGrip,
-            localizer[TbStrings.DialogResizeHint], "resize", "tb-dialog__resize", Sizes,
-            size => localizer[SizeKey(size)], size => dialog.Size = size);
+        ITbLocalizer localizer)
+    {
+        var labels = dialog.Options.Labels ?? new();
+        AddMenu(builder, sequence, dialog, labels.Resize ?? localizer[TbStrings.DialogResize], BuiltInIcons.ResizeGrip,
+            labels.ResizeHint ?? localizer[TbStrings.DialogResizeHint], "resize", "tb-dialog__resize", Sizes,
+            size => SizeName(size, labels, localizer), size => dialog.Size = size);
+    }
 
     private static void AddMenu<T>(RenderTreeBuilder builder, int sequence, DialogReference dialog, string label,
         Icon icon, string description, string part, string? cssClass, IEnumerable<T> choices, Func<T, string> name,
@@ -52,26 +58,27 @@ internal static class DialogMenus
         builder.CloseComponent();
     }
 
-    private static string PositionKey(DialogPosition position) => position switch
-    {
-        DialogPosition.Center => TbStrings.DialogPositionCenter,
-        DialogPosition.Top => TbStrings.DialogPositionTop,
-        DialogPosition.Bottom => TbStrings.DialogPositionBottom,
-        DialogPosition.Start => TbStrings.DialogPositionStart,
-        DialogPosition.End => TbStrings.DialogPositionEnd,
-        DialogPosition.TopStart => TbStrings.DialogPositionTopStart,
-        DialogPosition.TopEnd => TbStrings.DialogPositionTopEnd,
-        DialogPosition.BottomStart => TbStrings.DialogPositionBottomStart,
-        DialogPosition.BottomEnd => TbStrings.DialogPositionBottomEnd,
-        _ => throw new ArgumentOutOfRangeException(nameof(position), position, null),
-    };
+    private static string PositionName(DialogPosition position, DialogLabels labels, ITbLocalizer localizer) =>
+        position switch
+        {
+            DialogPosition.Center => labels.PositionCenter ?? localizer[TbStrings.DialogPositionCenter],
+            DialogPosition.Top => labels.PositionTop ?? localizer[TbStrings.DialogPositionTop],
+            DialogPosition.Bottom => labels.PositionBottom ?? localizer[TbStrings.DialogPositionBottom],
+            DialogPosition.Start => labels.PositionStart ?? localizer[TbStrings.DialogPositionStart],
+            DialogPosition.End => labels.PositionEnd ?? localizer[TbStrings.DialogPositionEnd],
+            DialogPosition.TopStart => labels.PositionTopStart ?? localizer[TbStrings.DialogPositionTopStart],
+            DialogPosition.TopEnd => labels.PositionTopEnd ?? localizer[TbStrings.DialogPositionTopEnd],
+            DialogPosition.BottomStart => labels.PositionBottomStart ?? localizer[TbStrings.DialogPositionBottomStart],
+            DialogPosition.BottomEnd => labels.PositionBottomEnd ?? localizer[TbStrings.DialogPositionBottomEnd],
+            _ => throw new ArgumentOutOfRangeException(nameof(position), position, null),
+        };
 
-    private static string SizeKey(DialogSize size) => size switch
+    private static string SizeName(DialogSize size, DialogLabels labels, ITbLocalizer localizer) => size switch
     {
-        DialogSize.Small => TbStrings.DialogSizeSmall,
-        DialogSize.Medium => TbStrings.DialogSizeMedium,
-        DialogSize.Large => TbStrings.DialogSizeLarge,
-        DialogSize.ExtraLarge => TbStrings.DialogSizeExtraLarge,
+        DialogSize.Small => labels.SizeSmall ?? localizer[TbStrings.DialogSizeSmall],
+        DialogSize.Medium => labels.SizeMedium ?? localizer[TbStrings.DialogSizeMedium],
+        DialogSize.Large => labels.SizeLarge ?? localizer[TbStrings.DialogSizeLarge],
+        DialogSize.ExtraLarge => labels.SizeExtraLarge ?? localizer[TbStrings.DialogSizeExtraLarge],
         _ => throw new ArgumentOutOfRangeException(nameof(size), size, null),
     };
 }

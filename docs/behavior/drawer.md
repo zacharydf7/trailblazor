@@ -13,6 +13,7 @@ Familiar apps: the filter panel on a shop's search results, and the share sheet 
 ## Pointer
 
 - [x] The close button closes the drawer and turns `Open` false. `TbDrawerTests.CloseButton_ShouldCloseTheDrawerAndRaiseOpenChanged_WhenPressed`
+- [x] `Labels` names the header's buttons. `TbDrawerTests.Labels_ShouldWordTheHeadersButtons_WhenGiven`
 - [x] `CanDismiss` can keep the drawer open. `TbDrawerTests.CloseButton_ShouldKeepTheDrawerOpen_WhenCanDismissRefuses`
 - [x] A drawer at the start or end fills the window's height against its edge. `DrawerTests.Drawer_ShouldFillTheWindowsHeightAtItsEnd_WhenOpened`
 - [x] A drawer at the start opens on the right in right-to-left text. `DrawerTests.Drawer_ShouldOpenOnTheRight_WhenItsAtTheStartOfRightToLeftText`

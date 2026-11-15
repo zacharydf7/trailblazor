@@ -28,6 +28,15 @@ public class TbDrawerTests : BunitContext
     }
 
     [Fact]
+    public void Labels_ShouldWordTheHeadersButtons_WhenGiven()
+    {
+        var cut = Render<TbDrawer>(parameters => parameters.Add(drawer => drawer.Open, true)
+            .Add(drawer => drawer.Title, "Filters").Add(drawer => drawer.Labels, new DialogLabels { Close = "Shut" }));
+
+        Assert.Equal("Shut", cut.Find("[data-part=close]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
     public void Open_ShouldOpenAModalDialogAtTheEnd_WhenTrue()
     {
         var cut = Render<TbDrawer>(parameters => parameters.Add(drawer => drawer.Open, true)

@@ -94,6 +94,16 @@ public class TbDialogTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldTakeItsOwnLabelsOverTheOptions_WhenBothGiveThem()
+    {
+        var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Rename")
+            .Add(d => d.Options, new DialogOptions { Labels = new() { Close = "Dismiss" } })
+            .Add(d => d.Labels, new DialogLabels { Close = "Shut" }));
+
+        Assert.Equal("Shut", cut.Find("[data-part=close]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
     public void Render_ShouldAddPartClasses_WhenTheOptionsHaveClasses()
     {
         var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Rename")
