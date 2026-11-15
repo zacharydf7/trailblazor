@@ -86,6 +86,13 @@ public class DriverTaskTests : BunitContext
                 yield return found;
             }
         }
+
+        // Drivers can also come from a property, such as TrailblazorMarkup.Toasts.
+        foreach (var property in driver.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(property => IsDriver(property.PropertyType)))
+        {
+            yield return property.GetValue(driver)!;
+        }
     }
 
     private static IEnumerable<MethodInfo> Members(Type type) => type
