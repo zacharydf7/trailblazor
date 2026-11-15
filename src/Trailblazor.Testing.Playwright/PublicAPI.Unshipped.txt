@@ -426,3 +426,9 @@ Trailblazor.Testing.Playwright.TbInsertDividerLocator.Divider.get -> Microsoft.P
 Trailblazor.Testing.Playwright.TbInsertDividerLocator.InsertAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbInsertDividerLocator.TbInsertDividerLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.InsertDivider(string! label) -> Trailblazor.Testing.Playwright.TbInsertDividerLocator!
+Trailblazor.Testing.Playwright.TbNavMenuLocator
+Trailblazor.Testing.Playwright.TbNavMenuLocator.CurrentAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbNavMenuLocator.FollowAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbNavMenuLocator.Menu.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbNavMenuLocator.TbNavMenuLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.NavMenu(string? name = null) -> Trailblazor.Testing.Playwright.TbNavMenuLocator!

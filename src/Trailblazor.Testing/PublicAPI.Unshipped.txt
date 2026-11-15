@@ -432,3 +432,7 @@ Trailblazor.Testing.TrailblazorMarkup.Toolbar(string! name) -> Trailblazor.Testi
 Trailblazor.Testing.TbInsertDividerDriver
 Trailblazor.Testing.TbInsertDividerDriver.InsertAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.InsertDivider(string! label) -> Trailblazor.Testing.TbInsertDividerDriver!
+Trailblazor.Testing.TbNavMenuDriver
+Trailblazor.Testing.TbNavMenuDriver.Current.get -> string?
+Trailblazor.Testing.TbNavMenuDriver.FollowAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.NavMenu(string? name = null) -> Trailblazor.Testing.TbNavMenuDriver!

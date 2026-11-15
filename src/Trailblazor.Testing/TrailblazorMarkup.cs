@@ -432,6 +432,22 @@ public sealed class TrailblazorMarkup
             ? $"No chip group is named \"{name}\"." : $"{groups.Count} chip groups are named \"{name}\".");
     }, _scripts);
 
+    /// <summary>The <c>TbNavMenu</c> in the navigation landmark with this name, or the only one in the markup when no
+    /// name is given. While a <c>TbAppShell</c>'s drawer is open, the menu in the drawer is the one found.</summary>
+    public TbNavMenuDriver NavMenu(string? name = null) => new(() =>
+    {
+        var menus = _findAll("ul.tb-nav-menu").Where(menu => name is null
+            || menu.Closest("nav, [role=navigation]") is { } landmark && name == (landmark.GetAttribute("aria-label")
+                ?? _findAll($"[id='{landmark.GetAttribute("aria-labelledby")}']").SingleOrDefault()?.TextContent
+                    .Trim())).ToList();
+        // An app shell's open drawer holds a second copy of its menu, the one a user sees on a narrow window.
+        var drawn = menus.Where(menu => menu.Closest("dialog[data-part=dialog]") is not null).ToList();
+        menus = drawn.Count == 1 ? drawn : menus;
+        return menus.Count == 1 ? menus[0] : throw new InvalidOperationException(name is null
+            ? $"Expected one nav menu, found {menus.Count}; name the one to use by its navigation landmark."
+            : $"Expected one nav menu in a navigation landmark named \"{name}\", found {menus.Count}.");
+    }, _scripts);
+
     /// <summary>The <c>TbInsertDivider</c> whose insert button has this <c>Label</c>.</summary>
     public TbInsertDividerDriver InsertDivider(string label) => new(() =>
     {
@@ -1649,6 +1665,88 @@ internal static class ChipParts
 
         return chip.HasAttribute("data-static") ? throw new InvalidOperationException("On a static page a chip's "
             + "buttons do nothing; render the page interactively to use them.") : chip;
+    }
+}
+
+/// <summary>A <c>TbNavMenu</c>, found by its navigation landmark's name.</summary>
+public sealed class TbNavMenuDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbNavMenuDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>The text of the link marked as the current page, or null when none is. A link stays current on the
+    /// pages under its address, so when several are current, it's the one with the longest address.</summary>
+    public string? Current => _find().QuerySelectorAll("[data-part=link][aria-current=page]")
+        .MaxBy(link => link.GetAttribute("href")!.Length)?.QuerySelector(":scope > [data-part=label]")!.TextContent
+        .Trim();
+
+    /// <summary>Follows the link with this text, through the groups named before it, as in
+    /// <c>FollowAsync("Settings", "Profile")</c>. Each closed group opens as clicking it does, then the link's click
+    /// runs and the test's <c>NavigationManager</c> goes to its address. Throws for a link in a closed group the path
+    /// doesn't name, or for a closed group on a static page, which can't open.</summary>
+    public async Task FollowAsync(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        for (var depth = 0; depth < path.Length - 1; depth++)
+        {
+            var toggle = Only(Within(path[..depth]), "[data-part=group-toggle]", path[depth], "groups");
+            if (toggle.Closest("[data-part=group-items][hidden]") is not null)
+            {
+                throw InClosedGroup(path[depth]);
+            }
+
+            if (toggle.GetAttribute("aria-expanded") == "true")
+            {
+                continue;
+            }
+
+            if (_find().HasAttribute("data-static"))
+            {
+                throw new InvalidOperationException($"On a static page the group \"{path[depth]}\" doesn't open; "
+                    + "render the page interactively to use it.");
+            }
+
+            await toggle.ClickAsync(new MouseEventArgs { Detail = 1 });
+        }
+
+        var link = Only(Within(path[..^1]), "[data-part=link]", path[^1], "links");
+        if (link.Closest("[data-part=group-items][hidden]") is not null)
+        {
+            throw InClosedGroup(path[^1]);
+        }
+
+        await link.ClickAsync(new MouseEventArgs { Detail = 1 });
+        _scripts.NavigateTo(link.GetAttribute("href")!);
+    }
+
+    private static InvalidOperationException InClosedGroup(string item) => new($"\"{item}\" is in a closed group; "
+        + "name the groups it's in before it, as in FollowAsync(\"Settings\", \"Profile\").");
+
+    // The menu, or the links of the group the path ends at. Found again for each step, since opening a group renders
+    // new markup.
+    private IElement Within(string[] groups)
+    {
+        var within = _find();
+        foreach (var group in groups)
+        {
+            within = Only(within, "[data-part=group-toggle]", group, "groups").ParentElement!
+                .QuerySelector(":scope > [data-part=group-items]")!;
+        }
+
+        return within;
+    }
+
+    // A match at this level wins over same-labeled ones in nested groups, so a label repeated deeper doesn't hide it.
+    private static IElement Only(IElement within, string selector, string text, string kind)
+    {
+        var found = within.QuerySelectorAll(selector)
+            .Where(part => part.QuerySelector("[data-part=label]")!.TextContent.Trim() == text).ToList();
+        var own = found.Where(part => part.Closest("ul") == within).ToList();
+        found = own.Count > 0 ? own : found;
+        return found.Count == 1 ? found[0] : throw new InvalidOperationException(found.Count == 0
+            ? $"The nav menu has no {kind[..^1]} that reads \"{text}\"." : $"{found.Count} {kind} read \"{text}\".");
     }
 }
 

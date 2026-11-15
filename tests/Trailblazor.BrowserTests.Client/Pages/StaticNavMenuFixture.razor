@@ -1,0 +1,11 @@
+@page "/static-nav-menu"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, where a nav group's button has nothing to open it. *@
+<nav aria-label="Account">
+    <TbNavMenu>
+        <TbNavGroup Text="Settings">
+            <TbNavLink Href="static-nav-menu/profile">Profile</TbNavLink>
+        </TbNavGroup>
+    </TbNavMenu>
+</nav>

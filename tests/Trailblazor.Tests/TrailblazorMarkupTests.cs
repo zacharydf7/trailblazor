@@ -4,6 +4,7 @@ using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -2134,6 +2135,164 @@ public class TrailblazorMarkupTests : BunitContext
             () => cut.Tb().InsertDivider("Add a step").InsertAsync());
 
         Assert.Contains("static page", still.Message);
+    }
+
+    private static readonly RenderFragment AccountMenu = builder =>
+    {
+        builder.OpenElement(0, "nav");
+        builder.AddAttribute(1, "aria-label", "Account");
+        builder.OpenComponent<TbNavMenu>(2);
+        builder.AddComponentParameter(3, nameof(TbNavMenu.ChildContent), (RenderFragment)(links =>
+        {
+            links.OpenComponent<TbNavLink>(0);
+            links.AddComponentParameter(1, nameof(TbNavLink.Href), "");
+            links.AddComponentParameter(2, nameof(TbNavLink.Match), NavLinkMatch.All);
+            links.AddComponentParameter(3, nameof(TbNavLink.ChildContent), (RenderFragment)(text => text.AddContent(0,
+                "Home")));
+            links.CloseComponent();
+            links.OpenComponent<TbNavLink>(4);
+            links.AddComponentParameter(5, nameof(TbNavLink.Href), "settings");
+            links.AddComponentParameter(6, nameof(TbNavLink.ChildContent), (RenderFragment)(text => text.AddContent(0,
+                "All settings")));
+            links.CloseComponent();
+            links.OpenComponent<TbNavGroup>(7);
+            links.AddComponentParameter(8, nameof(TbNavGroup.Text), "Settings");
+            links.AddComponentParameter(9, nameof(TbNavGroup.ChildContent), (RenderFragment)(group =>
+            {
+                group.OpenComponent<TbNavLink>(0);
+                group.AddComponentParameter(1, nameof(TbNavLink.Href), "settings/profile");
+                group.AddComponentParameter(2, nameof(TbNavLink.ChildContent), (RenderFragment)(text =>
+                    text.AddContent(0, "Profile")));
+                group.CloseComponent();
+                group.OpenComponent<TbNavGroup>(3);
+                group.AddComponentParameter(4, nameof(TbNavGroup.Text), "Advanced");
+                group.AddComponentParameter(5, nameof(TbNavGroup.ChildContent), (RenderFragment)(inner =>
+                {
+                    inner.OpenComponent<TbNavLink>(0);
+                    inner.AddComponentParameter(1, nameof(TbNavLink.Href), "settings/advanced/backups");
+                    inner.AddComponentParameter(2, nameof(TbNavLink.ChildContent), (RenderFragment)(text =>
+                        text.AddContent(0, "Backups")));
+                    inner.CloseComponent();
+                }));
+                group.CloseComponent();
+                group.OpenComponent<TbNavLink>(6);
+                group.AddComponentParameter(7, nameof(TbNavLink.Href), "settings/overview");
+                group.AddComponentParameter(8, nameof(TbNavLink.ChildContent), (RenderFragment)(text =>
+                    text.AddContent(0, "Overview")));
+                group.CloseComponent();
+            }));
+            links.CloseComponent();
+            links.OpenComponent<TbNavLink>(10);
+            links.AddComponentParameter(11, nameof(TbNavLink.Href), "overview");
+            links.AddComponentParameter(12, nameof(TbNavLink.ChildContent), (RenderFragment)(text => text.AddContent(0,
+                "Overview")));
+            links.CloseComponent();
+        }));
+        builder.CloseComponent();
+        builder.CloseElement();
+    };
+
+    [Fact]
+    public async Task NavMenu_ShouldFollowALinkThroughItsGroupAndReadTheCurrentPage_WhenTheHelperIsUsed()
+    {
+        var cut = Render(AccountMenu);
+        var before = cut.Tb().NavMenu("Account").Current;
+
+        await cut.Tb().NavMenu("Account").FollowAsync("Settings", "Profile");
+
+        Assert.Equal("Home", before);
+        Assert.EndsWith("/settings/profile", Services.GetRequiredService<NavigationManager>().Uri);
+        Assert.Equal("Profile", cut.Tb().NavMenu("Account").Current);
+    }
+
+    [Fact]
+    public async Task NavMenu_ShouldFollowTheLinkAtEachLevel_WhenALabelRepeatsInAGroup()
+    {
+        var cut = Render(AccountMenu);
+        var navigation = Services.GetRequiredService<NavigationManager>();
+
+        await cut.Tb().NavMenu("Account").FollowAsync("Settings", "Overview");
+        var inGroup = navigation.Uri;
+        await cut.Tb().NavMenu("Account").FollowAsync("Overview");
+
+        Assert.EndsWith("/settings/overview", inGroup);
+        Assert.EndsWith("/overview", navigation.Uri);
+        Assert.DoesNotContain("settings", navigation.Uri);
+    }
+
+    [Fact]
+    public async Task NavMenu_ShouldRefuseALinkInAClosedGroup_WhenThePathDoesntNameTheGroup()
+    {
+        var cut = Render(AccountMenu);
+
+        var closed = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().NavMenu("Account").FollowAsync("Profile"));
+
+        Assert.Contains("closed group", closed.Message);
+    }
+
+    [Fact]
+    public async Task NavMenu_ShouldRefuseAGroupInAClosedGroup_WhenThePathDoesntNameTheOuterGroup()
+    {
+        var cut = Render(AccountMenu);
+
+        var closed = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().NavMenu("Account").FollowAsync("Advanced", "Backups"));
+
+        Assert.Contains("closed group", closed.Message);
+        Assert.All(cut.FindAll("[data-part=group-toggle]"), toggle => Assert.Equal("false",
+            toggle.GetAttribute("aria-expanded")));
+    }
+
+    [Fact]
+    public void NavMenu_ShouldFindTheMenu_WhenAHeadingNamesItsLandmark()
+    {
+        var cut = Render(builder =>
+        {
+            builder.AddMarkupContent(0, "<h2 id=\"trail-menu\">Trail menu</h2>");
+            builder.OpenElement(1, "nav");
+            builder.AddAttribute(2, "aria-labelledby", "trail-menu");
+            builder.OpenComponent<TbNavMenu>(3);
+            builder.CloseComponent();
+            builder.CloseElement();
+        });
+
+        Assert.Null(cut.Tb().NavMenu("Trail menu").Current);
+    }
+
+    [Fact]
+    public async Task NavMenu_ShouldRefuseToOpenAGroup_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render(AccountMenu);
+
+        var still = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().NavMenu("Account").FollowAsync("Settings", "Profile"));
+
+        Assert.Contains("static page", still.Message);
+    }
+
+    [Fact]
+    public async Task NavMenu_ShouldFollowTheDrawersLink_WhenTheAppShellsDrawerIsOpen()
+    {
+        var cut = Render<TbAppShell>(parameters => parameters.Add(shell => shell.NavigationOpen, true)
+            .Add(shell => shell.Navigation, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbNavMenu>(0);
+                builder.AddComponentParameter(1, nameof(TbNavMenu.ChildContent), (RenderFragment)(links =>
+                {
+                    links.OpenComponent<TbNavLink>(0);
+                    links.AddComponentParameter(1, nameof(TbNavLink.Href), "trails");
+                    links.AddComponentParameter(2, nameof(TbNavLink.ChildContent), (RenderFragment)(text =>
+                        text.AddContent(0, "Trails")));
+                    links.CloseComponent();
+                }));
+                builder.CloseComponent();
+            })));
+
+        await cut.Tb().NavMenu("Main").FollowAsync("Trails");
+
+        Assert.EndsWith("/trails", Services.GetRequiredService<NavigationManager>().Uri);
     }
 
     [Fact]

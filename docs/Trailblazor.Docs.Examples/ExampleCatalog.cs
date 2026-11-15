@@ -2298,9 +2298,12 @@ public static class ExampleCatalog
             ],
             TestingTips =
             [
-                "Find the navigation by its landmark, with "
-                    + "`GetByRole(AriaRole.Navigation, new() { Name = \"Main\" })`, and the current page's link with "
-                    + "`Locator(\"[aria-current=page]\")`.",
+                "`page.Tb().NavMenu(\"Main\")` from `Trailblazor.Testing.Playwright`, or `cut.Tb().NavMenu(...)` "
+                    + "in bUnit, finds a nav menu by its navigation landmark's name. `FollowAsync(\"Settings\", "
+                    + "\"Profile\")` opens each closed group named before the link and follows it, and "
+                    + "`CurrentAsync()` (`Current` in bUnit) reads the current page's link. By hand, find the "
+                    + "navigation with `GetByRole(AriaRole.Navigation, new() { Name = \"Main\" })`, and the current "
+                    + "page's link with `Locator(\"[aria-current=page]\")`.",
                 "Playwright's window is wide unless you set `ViewportSize`; set it narrower than 768px to test the "
                     + "drawer. On a narrow window, open it with "
                     + "`GetByRole(AriaRole.Button, new() { Name = \"Navigation\" })`.",

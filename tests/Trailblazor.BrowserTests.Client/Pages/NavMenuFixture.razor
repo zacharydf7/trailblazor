@@ -1,0 +1,24 @@
+@page "/nav-menu"
+@page "/nav-menu/{*Rest}"
+
+@* New trip's address is under Trips', so both are current on its page; Settings holds a group of its own, and
+   Overview is both a top-level link and one of Settings'. *@
+<nav aria-label="Account">
+    <TbNavMenu>
+        <TbNavLink Href="nav-menu/trips">Trips</TbNavLink>
+        <TbNavLink Href="nav-menu/trips/new">New trip</TbNavLink>
+        <TbNavLink Href="nav-menu/overview">Overview</TbNavLink>
+        <TbNavGroup Text="Settings">
+            <TbNavLink Href="nav-menu/settings/overview">Overview</TbNavLink>
+            <TbNavGroup Text="Advanced">
+                <TbNavLink Href="nav-menu/settings/advanced/backups">Backups</TbNavLink>
+            </TbNavGroup>
+        </TbNavGroup>
+    </TbNavMenu>
+</nav>
+<h1>@(Rest ?? "home")</h1>
+
+@code {
+    [Parameter]
+    public string? Rest { get; set; }
+}

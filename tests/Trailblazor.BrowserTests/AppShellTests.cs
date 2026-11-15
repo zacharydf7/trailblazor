@@ -1,3 +1,4 @@
+using Trailblazor.Testing.Playwright;
 using System.Text.RegularExpressions;
 
 namespace Trailblazor.BrowserTests;
@@ -36,6 +37,96 @@ public class AppShellTests(BrowserFixture fixture) : BrowserTest(fixture)
             .ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(Beside(page).GetByRole(AriaRole.Link, new() { Name = "Profile" }))
             .ToHaveAttributeAsync("aria-current", "page");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFollowALinkThroughItsGroupAndReadTheCurrentPage_WhenTheMenuIsBesideThePage(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/app-shell");
+
+        await page.Tb().NavMenu("Main").FollowAsync("Settings", "Profile");
+
+        await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 })).ToHaveTextAsync("settings/profile");
+        Assert.Equal("Profile", await page.Tb().NavMenu("Main").CurrentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseALinkInAClosedGroup_WhenThePathDoesntNameTheGroup(string browser)
+    {
+        var page = await OpenAsync(browser, "/app-shell");
+
+        var closed = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().NavMenu("Main").FollowAsync("Profile"));
+
+        Assert.Contains("closed group", closed.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReadTheLinkWithTheLongestAddress_WhenALinkUnderAnotherIsCurrent(string browser)
+    {
+        var page = await OpenAsync(browser, "/nav-menu/trips/new");
+
+        Assert.Equal("New trip", await page.Tb().NavMenu("Account").CurrentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFollowTheLinkAtEachLevel_WhenALabelRepeatsInAGroup(string browser)
+    {
+        var page = await OpenAsync(browser, "/nav-menu");
+        var heading = page.GetByRole(AriaRole.Heading, new() { Level = 1 });
+
+        await page.Tb().NavMenu("Account").FollowAsync("Settings", "Overview");
+        await Expect(heading).ToHaveTextAsync("settings/overview");
+        await page.Tb().NavMenu("Account").FollowAsync("Overview");
+
+        await Expect(heading).ToHaveTextAsync("overview");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseAGroupInAClosedGroup_WhenThePathDoesntNameTheOuterGroup(string browser)
+    {
+        var page = await OpenAsync(browser, "/nav-menu");
+
+        var closed = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().NavMenu("Account").FollowAsync("Advanced", "Backups"));
+
+        Assert.Contains("closed group", closed.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFollowTheDrawersLink_WhenTheDrawerIsOpenOnANarrowWindow(string browser)
+    {
+        var page = await OpenAsync(browser, "/app-shell", new() { ViewportSize = new() { Width = 600, Height = 800 } });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Navigation" }).ClickAsync();
+
+        await page.Tb().NavMenu().FollowAsync("Trips");
+
+        await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 })).ToHaveTextAsync("trips");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldOpenTheGroupOnceInteractive_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/app-shell");
+
+        var following = page.Tb().NavMenu("Main").FollowAsync("Settings", "Profile");
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await following;
+
+        await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 })).ToHaveTextAsync("settings/profile");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseToOpenAGroup_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-nav-menu");
+
+        var still = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().NavMenu("Account").FollowAsync("Settings", "Profile"));
+
+        Assert.Contains("static page", still.Message);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

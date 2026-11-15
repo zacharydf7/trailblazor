@@ -3,6 +3,8 @@
 
 @* Safari drops the list role from a list without bullets, so it is set again. *@
 <ul @attributes="AdditionalAttributes" role="list" data-part="nav-menu" style="@Style"
+    data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+    data-ready="@(RendererInfo.IsInteractive ? "" : null)"
     class="@ClassNames.Join("tb-nav-menu", Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
 </ul>

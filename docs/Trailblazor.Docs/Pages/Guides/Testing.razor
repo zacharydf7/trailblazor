@@ -356,6 +356,14 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>NavMenu(name).FollowAsync(path)</code></th>
+                        <td>
+                            Opens each closed group named before the link, then clicks the link and takes the test's
+                            <code>NavigationManager</code> to its address. <code>Current</code> reads the current
+                            page's link.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>InsertDivider(label).InsertAsync()</code></th>
                         <td>Presses the insert button with this label, which raises <code>OnInsert</code>.</td>
                     </tr>
@@ -1151,6 +1159,9 @@
         new("Dialog or drawer", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name, "
             + "and `CancelAsync()` dismisses it with Escape; both wait until it has left the page, or, on a static "
             + "page, until it closes."),
+        new("Nav menu", "Its navigation landmark's name, or none for the only one shown",
+            "`NavMenu(name).FollowAsync(path)` opens the closed groups named before a link once the page is "
+            + "interactive, then follows the link; `CurrentAsync()` reads the current page's link."),
         new("Insert divider", "Its Label", "`InsertDivider(label).InsertAsync()` presses its insert button once the "
             + "page is interactive."),
         new("Toolbar", "Its AriaLabel", "`Toolbar(name).ClickAsync(button)` clicks a button by its name once the "
