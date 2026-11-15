@@ -8,8 +8,9 @@
      @attributes="AdditionalAttributes"
      class="@ClassNames.Join("tb-progress", Circular ? "tb-progress--circular" : "tb-progress--linear",
                 ClassNames.Modifier("tb-progress", Tone), ClassNames.Modifier("tb-progress", Size),
-                Value is null ? "tb-progress--indeterminate" : null, Class)"
-     style="@Styles.Join(PercentStyle, Style)">
+                Value is null ? "tb-progress--indeterminate" : null,
+                Striped && Value is not null ? "tb-progress--striped" : null, Class)"
+     style="@Styles.Join(PercentStyle, BufferStyle, Style)">
     @if (Circular)
     {
         <span data-part="ring" class="tb-progress__ring">
@@ -43,6 +44,10 @@
             </div>
         }
         <div data-part="bar" class="tb-progress__bar">
+            @if (BufferStyle is not null)
+            {
+                <div data-part="buffer" class="tb-progress__buffer"></div>
+            }
             <div data-part="indicator" class="tb-progress__indicator"></div>
         </div>
     }
@@ -69,6 +74,17 @@
     /// <summary>Draws a ring instead of a bar.</summary>
     [Parameter]
     public bool Circular { get; set; }
+
+    /// <summary>Draws diagonal stripes on a bar's filled part while it has a <see cref="Value"/>. The stripes move
+    /// unless the user asks for reduced motion. A ring can't be striped.</summary>
+    [Parameter]
+    public bool Striped { get; set; }
+
+    /// <summary>How much of the work is ready ahead of <see cref="Value"/>, from <see cref="Min"/> to
+    /// <see cref="Max"/>, such as the part of a video that has loaded while it plays. A bar draws it as a lighter fill
+    /// behind its filled part, and only while it has a <see cref="Value"/>. A ring can't show it.</summary>
+    [Parameter]
+    public double? Buffer { get; set; }
 
     /// <summary>The indicator's color. Defaults to <see cref="Trailblazor.Tone.Primary"/>.</summary>
     [Parameter]
@@ -108,6 +124,12 @@
                 $"{nameof(TbProgress)} needs a {nameof(Label)} or an {nameof(AriaLabel)} to name it.");
         }
 
+        if (Circular && (Striped || Buffer is not null))
+        {
+            throw new InvalidOperationException(
+                $"A {nameof(Circular)} {nameof(TbProgress)} can't be {nameof(Striped)} or show a {nameof(Buffer)}.");
+        }
+
         if (Max < Min)
         {
             throw new ArgumentOutOfRangeException(nameof(Max), Max, $"{nameof(Max)} can't be less than {nameof(Min)}.");
@@ -122,11 +144,15 @@
 
     private string? ValueNow => Value is { } value ? Format(Math.Clamp(value, Min, Max)) : null;
 
-    private double? Fraction => Value is not { } value ? null
-        : Max == Min ? 1 : Math.Clamp((value - Min) / (Max - Min), 0, 1);
+    private double? Fraction => Value is { } value ? FractionOf(value) : null;
+
+    private double FractionOf(double value) => Max == Min ? 1 : Math.Clamp((value - Min) / (Max - Min), 0, 1);
 
     private string? PercentStyle =>
         Fraction is { } fraction ? $"--tb-progress-percent: {Format(fraction * 100)}" : null;
+
+    private string? BufferStyle => Value is null || Buffer is not { } buffer ? null
+        : $"--tb-progress-buffer: {Format(FractionOf(buffer) * 100)}";
 
     private string? ShownValue => ShowValue ? _valueText : null;
 

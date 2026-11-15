@@ -2999,7 +2999,18 @@
         height: 0.5rem;
     }
 
+    .tb-progress__buffer {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 0;
+        width: calc(var(--tb-progress-buffer) * 1%);
+        border-radius: inherit;
+        background: color-mix(in srgb, var(--tb-progress-fill) 30%, transparent);
+        transition: width var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
+    }
+
     .tb-progress--linear .tb-progress__indicator {
+        position: relative;
         width: calc(var(--tb-progress-percent) * 1%);
         height: 100%;
         border-radius: inherit;
@@ -3014,6 +3025,19 @@
 
     .tb-progress--linear.tb-progress--indeterminate:dir(rtl) .tb-progress__indicator {
         animation-name: tb-progress-slide-rtl;
+    }
+
+    /* The stripes take the surface's color, so they show against the fill in light and dark themes alike. */
+    .tb-progress--striped .tb-progress__indicator {
+        background-image: linear-gradient(45deg, var(--tb-progress-stripe) 25%, transparent 25%, transparent 50%,
+            var(--tb-progress-stripe) 50%, var(--tb-progress-stripe) 75%, transparent 75%, transparent);
+        background-size: 1rem 1rem;
+        animation: tb-progress-stripes 1s linear infinite;
+        --tb-progress-stripe: color-mix(in srgb, var(--tb-color-surface) 35%, transparent);
+    }
+
+    .tb-progress--striped:dir(rtl) .tb-progress__indicator {
+        animation-direction: reverse;
     }
 
     .tb-progress--circular {
@@ -3116,6 +3140,11 @@
             background: Highlight;
         }
 
+        .tb-progress__buffer {
+            forced-color-adjust: none;
+            background: GrayText;
+        }
+
         .tb-progress--circular .tb-progress__indicator {
             stroke: Highlight;
         }
@@ -3152,6 +3181,10 @@
         .tb-progress--circular.tb-progress--indeterminate svg {
             animation: none;
         }
+
+        .tb-progress--striped .tb-progress__indicator {
+            animation: none;
+        }
     }
 
     @keyframes tb-progress-slide {
@@ -3171,6 +3204,16 @@
 
         to {
             transform: translateX(-250%);
+        }
+    }
+
+    @keyframes tb-progress-stripes {
+        from {
+            background-position: 0 0;
+        }
+
+        to {
+            background-position: 1rem 0;
         }
     }
 

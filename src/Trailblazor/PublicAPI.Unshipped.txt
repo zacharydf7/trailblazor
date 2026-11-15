@@ -5713,3 +5713,7 @@ Trailblazor.DataGridLabels.Unsorted.get -> string?
 Trailblazor.DataGridLabels.Unsorted.init -> void
 Trailblazor.DataGridLabels.Wider.get -> string?
 Trailblazor.DataGridLabels.Wider.init -> void
+Trailblazor.TbProgress.Buffer.get -> double?
+Trailblazor.TbProgress.Buffer.set -> void
+Trailblazor.TbProgress.Striped.get -> bool
+Trailblazor.TbProgress.Striped.set -> void

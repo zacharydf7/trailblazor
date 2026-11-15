@@ -123,6 +123,57 @@ public class TbProgressTests : BunitContext
         Assert.Equal("Exporting", cut.Find("[data-part=label]").TextContent);
     }
 
+    [Theory]
+    [InlineData(45d, true)]
+    [InlineData(null, false)]
+    public void Render_ShouldStripeTheBarOnlyWithAValue_WhenStriped(double? value, bool striped)
+    {
+        var cut = Render<TbProgress>(parameters => parameters.Add(progress => progress.AriaLabel, "Copying")
+            .Add(progress => progress.Value, value).Add(progress => progress.Striped, true));
+
+        Assert.Equal(striped, cut.Find("[role=progressbar]").ClassList.Contains("tb-progress--striped"));
+    }
+
+    [Fact]
+    public void Render_ShouldDrawTheBufferBehindTheIndicatorButNotAnnounceIt_WhenGivenABuffer()
+    {
+        var cut = Render<TbProgress>(parameters => parameters.Add(progress => progress.AriaLabel, "Video")
+            .Add(progress => progress.Value, 15).Add(progress => progress.Buffer, 25).Add(progress => progress.Min, 10)
+            .Add(progress => progress.Max, 30));
+
+        var progress = cut.Find("[role=progressbar]");
+        Assert.Contains("--tb-progress-buffer: 75", progress.GetAttribute("style"));
+        Assert.Equal("15", progress.GetAttribute("aria-valuenow"));
+        Assert.Equal(["buffer", "indicator"],
+            cut.Find("[data-part=bar]").Children.Select(part => part.GetAttribute("data-part")));
+    }
+
+    [Theory]
+    [InlineData(null, 60)]
+    [InlineData(40d, 120)]
+    public void Render_ShouldLeaveOutOrClampTheBuffer_WhenIndeterminateOrPastMax(double? value, double buffer)
+    {
+        var cut = Render<TbProgress>(parameters => parameters.Add(progress => progress.AriaLabel, "Video")
+            .Add(progress => progress.Value, value).Add(progress => progress.Buffer, buffer));
+
+        var style = cut.Find("[role=progressbar]").GetAttribute("style");
+        Assert.Equal(value is null ? null : "--tb-progress-percent: 40; --tb-progress-buffer: 100", style);
+        Assert.Equal(value is null ? 0 : 1, cut.FindAll("[data-part=buffer]").Count);
+    }
+
+    [Theory]
+    [InlineData(true, null)]
+    [InlineData(false, 50d)]
+    public void Render_ShouldThrow_WhenARingIsStripedOrGivenABuffer(bool striped, double? buffer)
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<TbProgress>(parameters => parameters
+            .Add(progress => progress.AriaLabel, "Export").Add(progress => progress.Value, 20)
+            .Add(progress => progress.Circular, true).Add(progress => progress.Striped, striped)
+            .Add(progress => progress.Buffer, buffer)));
+
+        Assert.Contains("Circular", error.Message);
+    }
+
     [Fact]
     public void Render_ShouldDrawARing_WhenCircular()
     {

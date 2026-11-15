@@ -23,6 +23,8 @@ Nothing of its own, for the same reason.
 - [x] They read its value, or the formatted text in its place. `TbProgressTests.Render_ShouldShowAndAnnounceTheFormattedValue_WhenGivenAValueFormatter`
 - [x] Work with no known end has no value to read. `TbProgressTests.Render_ShouldBeAnIndeterminateLinearBar_WhenNoValueIsSet`
 - [x] Zero total work, with `Min` equal to `Max`, shows and reads as finished. `TbProgressTests.Render_ShouldShowTheWorkAsFinished_WhenMinEqualsMax`
+- [x] A `Buffer` is drawn behind the filled part but not read out; screen readers hear only `Value`. `TbProgressTests.Render_ShouldDrawTheBufferBehindTheIndicatorButNotAnnounceIt_WhenGivenABuffer`
+- [x] A striped bar's stripes move in the reading direction, and hold still with reduced motion. `FeedbackTests.Progress_ShouldMoveItsStripesInTheReadingDirection_WhenStriped`, `FeedbackTests.Progress_ShouldMoveItsStripesOnlyWithoutReducedMotion_WhenStriped`
 
 ## Not applicable
 

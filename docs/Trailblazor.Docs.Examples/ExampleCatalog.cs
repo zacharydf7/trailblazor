@@ -2846,6 +2846,11 @@ public static class ExampleCatalog
                     + "`Large`.", typeof(ProgressSizeExample)),
                 new("tone", "Tone", "`Tone` colors the filled part of a progress bar or ring by "
                     + "meaning.", typeof(ProgressToneExample)),
+                new("striped", "Striped", "`Striped` draws moving stripes on a bar's filled part while it has a "
+                    + "`Value`. A ring can't be striped and throws if asked.", typeof(ProgressStripedExample)),
+                new("buffer", "Buffer", "`Buffer` draws a lighter fill behind the filled part to show how much is "
+                    + "ready ahead of `Value`, such as the part of a video that has loaded. A ring can't show one and "
+                    + "throws if given one.", typeof(ProgressBufferExample)),
                 new("failed", "A failed state", "Progress has no failed state of its own. Set a `Danger` `Tone` and "
                     + "say what went wrong beside it, as an alert does here.", typeof(ProgressFailedExample)),
             ],
@@ -2861,11 +2866,13 @@ public static class ExampleCatalog
                 "A `progressbar` with its range and current value, and no current value when indeterminate.",
                 "With `ValueFormatter`, screen readers announce that text, such as \"3 of 10 files\", in place of the "
                     + "number.",
+                "Screen readers hear only `Value`; a `Buffer` is drawn but not announced.",
             ],
             Accessibility =
             [
-                "With reduced motion, the moving bar and the spinning ring pulse instead.",
-                "In forced-colors mode, such as Windows high contrast, the fill takes the system's highlight color.",
+                "With reduced motion, the moving bar and the spinning ring pulse instead, and stripes hold still.",
+                "In forced-colors mode, such as Windows high contrast, the fill takes the system's highlight color and "
+                    + "a buffer the system's gray.",
             ],
             Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
@@ -2879,6 +2886,7 @@ public static class ExampleCatalog
                 new("bar", "A linear progress bar's track."),
                 new("ring", "A circular progress's ring."),
                 new("indicator", "The filled part that shows how far along it is."),
+                new("buffer", "A bar's lighter fill behind the indicator, showing its `Buffer`."),
                 new("value", "The value shown as text, such as \"40%\"."),
                 new("label", "The progress's visible label."),
             ],

@@ -175,6 +175,45 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(Math.Min(gap, 360 - gap) < 1, $"The cycle ends at {end} degrees but starts at {start}.");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Progress_ShouldMoveItsStripesOnlyWithoutReducedMotion_WhenStriped(string browser)
+    {
+        var moving = await OpenAsync(browser, "/examples/progress");
+        var still = await OpenAsync(browser, "/examples/progress", new() { ReducedMotion = ReducedMotion.Reduce });
+
+        Assert.Equal(["tb-progress-stripes"],
+            await AnimationNamesAsync(Progress(moving, "Copying photos").Locator("[data-part=indicator]")));
+        Assert.Empty(await AnimationNamesAsync(Progress(still, "Copying photos").Locator("[data-part=indicator]")));
+    }
+
+    [Theory]
+    [MemberData(nameof(BrowsersAndDirections))]
+    public async Task Progress_ShouldMoveItsStripesInTheReadingDirection_WhenStriped(string browser, string direction)
+    {
+        var page = await OpenAsync(browser, "/examples/progress");
+        await page.EvaluateAsync("direction => document.documentElement.dir = direction", direction);
+        var indicator = Progress(page, "Copying photos").Locator("[data-part=indicator]");
+
+        var early = await StripesAtAsync(indicator, 0.2);
+        var late = await StripesAtAsync(indicator, 0.6);
+
+        Assert.True(direction == "rtl" ? late < early : late > early, $"Moved from {early} to {late} in {direction}.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Progress_ShouldFillItsBufferBehindTheIndicator_WhenGivenABuffer(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/progress");
+        var track = Progress(page, "Trail video");
+
+        var trackBox = await track.Locator("[data-part=bar]").BoundingBoxAsync();
+        var bufferBox = await track.Locator("[data-part=buffer]").BoundingBoxAsync();
+        var indicatorBox = await track.Locator("[data-part=indicator]").BoundingBoxAsync();
+
+        Assert.Equal(trackBox!.Width * 0.7, bufferBox!.Width, tolerance: 1);
+        Assert.Equal(trackBox.Width * 0.3, indicatorBox!.Width, tolerance: 1);
+    }
+
     public static TheoryData<string, string> BrowsersAndDirections()
     {
         var data = new TheoryData<string, string>();
@@ -202,6 +241,17 @@ public class FeedbackTests(BrowserFixture fixture) : BrowserTest(fixture)
                 spin.currentTime = fraction * spin.effect.getComputedTiming().duration;
                 const matrix = new DOMMatrix(getComputedStyle(ring).transform);
                 return (Math.atan2(matrix.b, matrix.a) * 180 / Math.PI + 360) % 360;
+            }
+            """, fraction);
+
+    // Pauses the stripes at a fraction of their cycle and reads how far across they've moved.
+    private static Task<double> StripesAtAsync(ILocator indicator, double fraction) =>
+        indicator.EvaluateAsync<double>("""
+            (indicator, fraction) => {
+                const stripes = indicator.getAnimations()[0];
+                stripes.pause();
+                stripes.currentTime = fraction * stripes.effect.getComputedTiming().duration;
+                return parseFloat(getComputedStyle(indicator).backgroundPositionX);
             }
             """, fraction);
 
