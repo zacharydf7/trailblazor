@@ -579,6 +579,7 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             () => tb.AccordionItem("Slow route").ExpandAsync(),
             () => tb.Stepper("Slow booking").GoToAsync("Gear"),
             () => tb.Carousel("Slow slides").GoToAsync(0),
+            () => tb.Calendar("Slow hike").ChooseAsync(new DateOnly(2026, 5, 2)),
         })
         {
             await act();
@@ -588,7 +589,7 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(["alert closed", "inserted", "removed", "kept", "zoom 1.25", "pinned", "view Terrain", "slide 1",
             "region ", "color #aa0000", "day 2026-05-02 #1", "trip 2026-05-02/2026-05-04", "clicked notes", "open True",
             "shaded", "muddy removed", "camp Lakeside", "route True",
-            "step gear", "slide 0"], seen);
+            "step gear", "slide 0", "hike 2026-05-02"], seen);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

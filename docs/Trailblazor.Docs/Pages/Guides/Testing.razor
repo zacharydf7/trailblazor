@@ -1167,7 +1167,7 @@
         new("Transfer list", "Its label", "`TransferList(label).MoveAsync(items)` moves items to the chosen list, "
             + "`MoveBackAsync(items)` moves them back, and `ChosenAsync()` reads the chosen ones."),
         new("Calendar", "Its label", "`Calendar(label).ChooseAsync(date)` picks a date as a user would, through the "
-            + "calendar's years, months and days."),
+            + "calendar's years, months and days, and waits until the app's `ValueChanged` has run."),
         new("Signature pad", "Its label", "`SignaturePad(label).DrawAsync(points)` drags the mouse through points in "
             + "the signature's 600 by 200 space and waits until the pad has the stroke; `UndoAsync()`, `ClearAsync()` "
             + "and `TypeNameAsync(name)` use its buttons and name field, and `IsSignedAsync()` says whether anything "

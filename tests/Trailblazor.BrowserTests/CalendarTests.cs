@@ -203,6 +203,27 @@ public class CalendarTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ChooseAsync_ShouldRefuse_WhenTheCalendarIsReadOnlyOrTheDayCantBeChosen(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/calendar");
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var saturday = today.AddDays(((int)DayOfWeek.Saturday - (int)today.DayOfWeek + 7) % 7);
+
+        var readOnly = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Calendar("Season opens").ChooseAsync(new DateOnly(2026, 5, 1)));
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Calendar("Last season opened").ChooseAsync(new DateOnly(2025, 5, 1)));
+        // The guided walks run on weekdays in the next two months.
+        var weekend = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Calendar("Guided walk").ChooseAsync(saturday));
+        var later = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Calendar("Guided walk").ChooseAsync(today.AddMonths(4)));
+
+        Assert.All([readOnly, disabled], refused => Assert.Contains("read-only or disabled", refused.Message));
+        Assert.All([weekend, later], refused => Assert.Contains("doesn't let", refused.Message));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ChooseAsync_ShouldPostTheDate_WhenTheCalendarIsStatic(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-calendar");

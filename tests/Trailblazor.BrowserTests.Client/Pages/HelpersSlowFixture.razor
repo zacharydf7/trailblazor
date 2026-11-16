@@ -29,6 +29,7 @@
     </TbSelect>
     <TbColorPicker Label="Slow marker" Value="@_color" ValueChanged="ColorAsync" />
     <TbDatePicker TDate="DateOnly" Label="Slow day" Value="_day" ValueChanged="DayAsync" />
+    <TbCalendar TDate="DateOnly" Label="Slow hike" Value="_hike" ValueChanged="HikeAsync" />
     <TbDateTimePicker TDateTime="DateTime" Label="Slow start" Value="_start" ValueChanged="StartAsync" />
     <TbDateTimePicker TDateTime="DateTime" Label="Slow finish" Value="_finish" ValueChanged="FinishAsync" />
     <TbDateRangePicker TDate="DateOnly" Label="Slow trip" Value="_trip" ValueChanged="TripAsync" />
@@ -79,6 +80,7 @@
     private string? _region = "North";
     private string? _color = "#336699";
     private DateOnly? _day;
+    private DateOnly? _hike;
     private DateTime? _start;
     private DateTime? _finish = new DateTime(2026, 5, 2, 9, 30, 15);
     private DateRange<DateOnly> _trip;
@@ -101,6 +103,8 @@
     private Task RegionAsync(string? region) => SlowlyAsync($"region {region}", () => _region = region);
 
     private Task ColorAsync(string? color) => SlowlyAsync($"color {color}", () => _color = color);
+
+    private Task HikeAsync(DateOnly? hike) => SlowlyAsync($"hike {hike:yyyy-MM-dd}", () => _hike = hike);
 
     private Task DayAsync(DateOnly? day) => SlowlyAsync($"day {day:yyyy-MM-dd} #{++_days}", () => _day = day);
 

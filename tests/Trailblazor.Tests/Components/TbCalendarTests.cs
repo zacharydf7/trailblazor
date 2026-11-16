@@ -103,6 +103,25 @@ public class TbCalendarTests : BunitContext
     }
 
     [Fact]
+    public async Task Click_ShouldCountTheDayOnceValueChangedHasFinished_WhenTheHandlerIsSlow()
+    {
+        var changed = new TaskCompletionSource();
+        var cut = Render<TbCalendar<DateOnly>>(parameters => parameters.Add(calendar => calendar.Value, June3)
+            .Add(calendar => calendar.Label, "Hike date").Add(calendar => calendar.Culture, English)
+            .Add(calendar => calendar.ValueChanged, (DateOnly? _) => changed.Task));
+        string? Commits() => cut.Find(".tb-calendar").GetAttribute("data-commits");
+
+        var picking = Cell(cut, "2026-06-09").ClickAsync(new MouseEventArgs());
+        // The app can render the calendar while its handler runs, which mustn't show the day counted yet.
+        cut.Render();
+        var pending = Commits();
+        await cut.InvokeAsync(changed.SetResult);
+        await picking;
+
+        Assert.Equal(("0", "1"), (pending, Commits()));
+    }
+
+    [Fact]
     public async Task OnDayPicked_ShouldBeRaised_WhenTheChosenDayIsPickedAgain()
     {
         var picked = new List<DateOnly>();

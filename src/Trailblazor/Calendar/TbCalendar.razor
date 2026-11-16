@@ -4,6 +4,7 @@
 @using static Trailblazor.CalendarDates
 
 <div @attributes="RootAttributes" role="group" aria-labelledby="@(ShownLabel is null ? null : LabelId)" style="@Style"
+     data-commits="@Commits"
      class="@ClassNames.Join("tb-calendar", ShowsInvalid ? "tb-calendar--invalid" : null,
                 Disabled ? "tb-calendar--disabled" : null, ReadOnly ? "tb-calendar--readonly" : null, Class)">
     @if (ShownLabel is not null)

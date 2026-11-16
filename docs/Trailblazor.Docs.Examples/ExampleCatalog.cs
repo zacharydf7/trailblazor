@@ -5456,7 +5456,8 @@ public static class ExampleCatalog
             ],
             TestingTip = "`await page.Tb().Calendar(\"Hike date\").ChooseAsync(date)` from "
                 + "`Trailblazor.Testing.Playwright` picks a date through the years and months views, as a user would, "
-                + "and waits until the calendar has taken it. In bUnit, `cut.Tb().Calendar(\"Hike date\")"
+                + "and waits until the calendar has taken it and the app's `ValueChanged` has run, which the "
+                + "calendar counts in `data-commits` on its root. In bUnit, `cut.Tb().Calendar(\"Hike date\")"
                 + ".ChooseAsync(date)` from `Trailblazor.Testing` does the same.",
         },
         new("date-picker", "Date picker", ExampleCategory.Inputs,
