@@ -35,7 +35,8 @@ public sealed class TbCarouselLocator(ILocator scope, string? name)
     public Task PreviousAsync() => PressAsync("previous", -1);
 
     /// <summary>Shows the slide at this index, from 0, as pressing its button in the picker does, and waits for it
-    /// to appear. A carousel without a picker throws, and so does one on a static page.</summary>
+    /// to appear and for the app's <c>ActiveIndexChanged</c> to run; the slide that already shows is left as it is.
+    /// A carousel without a picker throws, and so does one on a static page.</summary>
     public async Task GoToAsync(int index)
     {
         await ReadyAsync();
@@ -48,21 +49,24 @@ public sealed class TbCarouselLocator(ILocator scope, string? name)
 
         ArgumentOutOfRangeException.ThrowIfNegative(index);
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, count);
-        await picks.Nth(index).ClickAsync();
+        var picker = Carousel.Locator(":scope > [data-part=picker]");
+        // Picking the slide that shows changes nothing, so the app has nothing to answer.
+        await Commit.CountedAsync(picker, "data-commits", async () =>
+        {
+            if (await picks.Nth(index).GetAttributeAsync("aria-current") == "true")
+            {
+                return false;
+            }
+
+            await picks.Nth(index).ClickAsync();
+            return true;
+        });
         await Assertions.Expect(Slides.Nth(index)).ToBeVisibleAsync();
     }
 
     private async Task PressAsync(string part, int step)
     {
         await ReadyAsync();
-        // Slides that turn by themselves could turn before the click lands, so the pointer pauses them first.
-        if (await Carousel.Locator(":scope > [data-part=controls] > [data-part=rotation]").CountAsync() > 0)
-        {
-            await Carousel.HoverAsync();
-            await Assertions.Expect(Carousel.Locator(":scope > [data-part=slides]"))
-                .ToHaveAttributeAsync("aria-live", "polite");
-        }
-
         var button = Carousel.Locator($":scope > [data-part=controls] > [data-part={part}]");
         if (await button.GetAttributeAsync("aria-disabled") == "true")
         {
@@ -85,5 +89,13 @@ public sealed class TbCarouselLocator(ILocator scope, string? name)
 
         // A prerendered carousel is replaced once the page is interactive, and its buttons would lose the click.
         await Assertions.Expect(Carousel).ToHaveAttributeAsync("data-ready", "");
+
+        // Slides that turn by themselves could turn before the click lands, so the pointer pauses them first.
+        if (await Carousel.Locator(":scope > [data-part=controls] > [data-part=rotation]").CountAsync() > 0)
+        {
+            await Carousel.HoverAsync();
+            await Assertions.Expect(Carousel.Locator(":scope > [data-part=slides]"))
+                .ToHaveAttributeAsync("aria-live", "polite");
+        }
     }
 }

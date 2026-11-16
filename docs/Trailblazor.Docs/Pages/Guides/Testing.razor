@@ -831,7 +831,7 @@
                         <td>
                             <code>data-commits</code> to change on the field's root, tab list, sortable list, data grid,
                             pagination, menu, tree, toaster, chip, list item, accordion item's header, nav group's
-                            button or stepper; it counts the changes the app has
+                            button, stepper or carousel's picker; it counts the changes the app has
                             answered. An app that changes a component's <code>@@key</code> replaces it, and the new
                             component counts from 0 again, so the count can look unchanged after the app has answered.
                             Also end the wait when the old element leaves the page or a dialog opens; the helpers stop
@@ -843,7 +843,8 @@
                             clicks, once the app's handlers have finished; a chip or item that only links somewhere has
                             no count. An accordion item's header and a nav group's button count their toggles once
                             <code>ExpandedChanged</code> has run, and a stepper counts the step clicks that move it once
-                            <code>ActiveKeyChanged</code> has run.
+                            <code>ActiveKeyChanged</code> has run. A carousel's picker counts the picks that move the
+                            slides once <code>ActiveIndexChanged</code> has run.
                         </td>
                     </tr>
                     <tr>
@@ -1217,7 +1218,8 @@
             + "interactive and waits until the form has handled it, or until a dialog opens, in case the handler "
             + "awaits the dialog's answer; `ErrorsAsync()` reads the messages its fields show."),
         new("Carousel", "Its AriaLabel, or none for the only one", "`Carousel(name).NextAsync()` shows the next "
-            + "slide and waits for it to appear, as `PreviousAsync()` and `GoToAsync(index)` do; "
+            + "slide and waits until it appears and the app's `ActiveIndexChanged` has run, as `PreviousAsync()` "
+            + "and `GoToAsync(index)` do; "
             + "`ActiveIndexAsync()` reads which slide shows, and `CountAsync()` how many there are."),
         new("Chip", "Its text", "`Chip(text).ClickAsync()` clicks it once the page is interactive and waits until "
             + "the app's handlers have run; `RemoveAsync()` presses its remove button and waits for `OnRemove`, and "

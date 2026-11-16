@@ -30,7 +30,8 @@
     </div>
     @if (ShowPicker && _slides.Count > 1)
     {
-        <div data-part="picker" class="tb-carousel__picker">
+        <div data-part="picker" class="tb-carousel__picker"
+             data-commits="@(RendererInfo.IsInteractive ? _commits : null)">
             @for (var index = 0; index < _slides.Count; index++)
             {
                 var at = index;

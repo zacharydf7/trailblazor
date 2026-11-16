@@ -14,6 +14,7 @@ public partial class TbCarousel
     private ElementReference _section;
     private int _current;
     private int _lastIndex;
+    private int _commits;
     // Set when a removed slide moved the shown one, which is reported once the render is done.
     private bool _indexMoved;
     private bool _stopped;
@@ -29,7 +30,7 @@ public partial class TbCarousel
     private readonly ItemHandlers<int, Func<Task>> _goTo;
 
     /// <summary>Creates the carousel.</summary>
-    public TbCarousel() => _goTo = new(index => () => GoToAsync(index));
+    public TbCarousel() => _goTo = new(index => () => PickAsync(index));
 
     /// <summary>Names the carousel for screen readers, such as "Trail photos". Required.</summary>
     [Parameter, EditorRequired]
@@ -202,6 +203,24 @@ public partial class TbCarousel
         _current = next;
         await ActiveIndexChanged.InvokeAsync(next);
         StateHasChanged();
+    }
+
+    // Counts a pick that moves the slides once ActiveIndexChanged has run, so a test can wait for the app's answer.
+    private async Task PickAsync(int index)
+    {
+        if (index == Current)
+        {
+            return;
+        }
+
+        try
+        {
+            await GoToAsync(index);
+        }
+        finally
+        {
+            _commits++;
+        }
     }
 
     // Starting the slides again also lifts the pause for focus already in the carousel, since the user asked for them.

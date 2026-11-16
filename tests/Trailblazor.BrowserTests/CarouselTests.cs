@@ -47,9 +47,11 @@ public class CarouselTests(BrowserFixture fixture) : BrowserTest(fixture)
         var first = await photos.ActiveIndexAsync();
         await photos.NextAsync();
         await photos.PreviousAsync();
+        var back = await photos.ActiveIndexAsync();
+        await photos.GoToAsync(2);
 
         // The pointer rests on the slides, which pauses them, so the slide the helper moved to stays shown.
-        Assert.Equal(first, await photos.ActiveIndexAsync());
+        Assert.Equal((first, 2), (back, await photos.ActiveIndexAsync()));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

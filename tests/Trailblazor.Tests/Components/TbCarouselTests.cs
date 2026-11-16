@@ -111,6 +111,25 @@ public class TbCarouselTests : BunitContext
     }
 
     [Fact]
+    public async Task Picker_ShouldCountThePickOnceActiveIndexChangedHasFinished_WhenTheHandlerIsSlow()
+    {
+        var changed = new TaskCompletionSource();
+        var cut = Render<TbCarousel>(parameters => parameters.Add(carousel => carousel.AriaLabel, "Featured trails")
+            .Add(carousel => carousel.ActiveIndexChanged, (int _) => changed.Task)
+            .AddChildContent<TbCarouselSlide>().AddChildContent<TbCarouselSlide>().AddChildContent<TbCarouselSlide>());
+        string? Commits() => cut.Find("[data-part=picker]").GetAttribute("data-commits");
+
+        await cut.FindAll("[data-part=pick]")[0].ClickAsync(new());
+        var unmoved = Commits();
+        var picked = cut.FindAll("[data-part=pick]")[2].ClickAsync(new());
+        var pending = Commits();
+        await cut.InvokeAsync(changed.SetResult);
+        await picked;
+
+        Assert.Equal(("0", "0", "1"), (unmoved, pending, Commits()));
+    }
+
+    [Fact]
     public void Render_ShouldTurnOffTheButtonsAtTheEnds_WhenItDoesntLoop()
     {
         var cut = RenderCarousel(parameters => parameters.Add(carousel => carousel.Loop, false)

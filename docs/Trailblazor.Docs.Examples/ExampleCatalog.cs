@@ -595,7 +595,9 @@ public static class ExampleCatalog
             ],
             TestingTip = "`page.Tb().Carousel(\"Featured trails\")` in Playwright, or `cut.Tb().Carousel(...)` in "
                 + "bUnit, finds the carousel by its `AriaLabel`: `NextAsync()`, `PreviousAsync()` and "
-                + "`GoToAsync(index)` move it, `ActiveIndexAsync()` or `ActiveIndex` reads which slide shows, and "
+                + "`GoToAsync(index)` move it and, in Playwright, wait until the app's `ActiveIndexChanged` has run, "
+                + "which the picker counts in `data-commits` for `GoToAsync`; `ActiveIndexAsync()` or `ActiveIndex` "
+                + "reads which slide shows, and "
                 + "`CountAsync()` or `Count` reads how many there are. In bUnit, register a `FakeTimeProvider` as the "
                 + "`TimeProvider` and advance it past the `AutoPlayInterval` to turn the slides.",
         },
