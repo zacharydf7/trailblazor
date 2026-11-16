@@ -33,6 +33,21 @@
     <TbFileUpload Label="Slow map" Value="_map" ValueChanged="MapAsync" />
     <TbAutocomplete TValue="string" Label="Slow town" Items="Towns" OnTextChanged="TownAsync" Clearable />
     <TbLink OnClick="@(() => SlowlyAsync("guide copied"))">Copy guide</TbLink>
+    <TbHotkey Keys="Alt+K" OnPress="@(() => SlowlyAsync("hotkey pressed"))" />
+    @* The page's hotkey comes first, but the section's wins while focus is in the section. *@
+    <TbHotkey Keys="Alt+J" OnPress="@(() => SlowlyAsync("page jump"))" />
+    <section>
+        <input aria-label="Jump field" />
+        <TbHotkey Keys="Alt+J" Scope="HotkeyScope.Parent" OnPress="@(() => SlowlyAsync("section jump"))" />
+    </section>
+    <section>
+        <input aria-label="Note field" />
+        <TbHotkey Keys="Alt+N" Scope="HotkeyScope.Parent" OnPress="@(() => SlowlyAsync("note"))" />
+    </section>
+    @if (_closable)
+    {
+        <TbHotkey Keys="Alt+M" OnPress="@(() => _closable = false)" />
+    }
     <TbSlider TValue="int" Label="Slow pace" Value="_pace" ValueChanged="PaceAsync" OnValueCommitted="PacedAsync" />
     <TbRangeSlider TValue="int" Label="Slow climb" Value="_climb" ValueChanged="ClimbAsync" />
     <TbDateTimePicker TDateTime="DateTime" Label="Slow start" Value="_start" ValueChanged="StartAsync" />
@@ -99,6 +114,7 @@
     private bool _open;
     private string? _step = "dates";
     private string _slow = "";
+    private bool _closable = true;
     private string _settings = "";
 
     private Task CloseAlertAsync() => SlowlyAsync("alert closed", () => _alert = false);

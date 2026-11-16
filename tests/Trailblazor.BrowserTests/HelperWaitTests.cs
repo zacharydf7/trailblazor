@@ -549,6 +549,19 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Hotkey_ShouldReturn_WhenNoHotkeyFiresOrTheOneThatFiresGoesAway(string browser)
+    {
+        var page = await OpenAsync(browser, "/helpers-slow");
+        var tb = page.Tb();
+
+        // Focus is outside the Note field's section, so its hotkey doesn't fire.
+        await tb.Hotkey("Alt+N").PressAsync();
+        await tb.Hotkey("Alt+M").PressAsync();
+
+        await Expect(page.Locator("[data-part=hotkey][data-keys='Alt+M']")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helpers_ShouldReturnOnceTheAppHasRunItsCallback_WhenTheirButtonOrFieldIsSlow(string browser)
     {
         var page = await OpenAsync(browser, "/helpers-slow");
@@ -594,6 +607,12 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             () => tb.Autocomplete("Slow town").TypeAsync("Ashland"),
             () => tb.Autocomplete("Slow town").ClearAsync(),
             () => tb.Link("Copy guide").ClickAsync(),
+            () => tb.Hotkey("Alt+K").PressAsync(),
+            async () =>
+            {
+                await page.GetByLabel("Jump field").FocusAsync();
+                await tb.Hotkey("Alt+J").PressAsync();
+            },
         })
         {
             await act();
@@ -606,7 +625,7 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             "step gear", "slide 0", "hike 2026-05-02", "map ridge.gpx",
             "paced 40", "town Be", "town Ashland", "climb 20-60",
             "town Ashland", "town Bend", "town ", "town Ashland", "town ",
-            "guide copied"], seen);
+            "guide copied", "hotkey pressed", "section jump"], seen);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

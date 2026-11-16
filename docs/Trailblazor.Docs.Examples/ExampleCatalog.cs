@@ -7080,8 +7080,10 @@ public static class ExampleCatalog
             ],
             TestingTip = "`await page.Tb().Hotkey(\"Alt+Shift+S\").PressAsync()` from `Trailblazor.Testing.Playwright` "
                 + "waits until the hotkey's marker has `data-ready` set to its keys, then presses them, with Mod as "
-                + "`ControlOrMeta`. Focus what the hotkey needs first, such as a field inside a `Parent` hotkey's "
-                + "element. In bUnit, `await cut.Tb().Hotkey(\"Alt+Shift+S\").PressAsync()` runs it as a press would. "
+                + "`ControlOrMeta`. It then waits until the `OnPress` of the hotkey that fired has run, which its "
+                + "marker counts in `data-commits`. Focus what the hotkey needs first, such as a field inside a "
+                + "`Parent` hotkey's element. In bUnit, `await cut.Tb().Hotkey(\"Alt+Shift+S\").PressAsync()` runs "
+                + "it as a press would. "
                 + "Find the help by role: `GetByRole(AriaRole.Dialog, new() { Name = \"Keyboard shortcuts\" })`. A "
                 + "Mod key shows as both `.tb-kbd__mod-other` (Ctrl) and `.tb-kbd__mod-apple` (⌘), and the page "
                 + "styles hide the one that doesn't fit the device.",

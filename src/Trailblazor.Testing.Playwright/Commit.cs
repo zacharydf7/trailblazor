@@ -21,8 +21,7 @@ internal static class Commit
     // does once the app's handlers have finished; a double-click raises three, its two clicks and the double-click. The
     // wait also ends when the counter leaves the page, as when the app re-keys a control or a reload replaces the page,
     // and when a dialog opens, since a handler that awaits the dialog's answer finishes only after the test answers
-    // the dialog. The wait looks through the counter's frame rather than the counter itself, so it can still see the
-    // counter leave.
+    // the dialog.
     public static async Task CountedAsync(ILocator counter, string count, Func<Task<bool>> act, int handlers = 1)
     {
         var mark = Guid.NewGuid().ToString("N");
@@ -36,18 +35,51 @@ internal static class Commit
                 return counter.getAttribute(count);
             }
             """, new[] { mark, count });
-        IFrame frame;
-        await using (var handle = await counter.ElementHandleAsync())
-        {
-            frame = (await handle.OwnerFrameAsync())!;
-        }
-
+        var frame = await FrameAsync(counter);
         // A counter with no count yet, as on a static page, has no handlers to wait for.
         if (await act() && int.TryParse(before, out var start))
         {
-            await Assertions.Expect(frame.Locator($"xpath=/html[not(.//*[@data-tb-awaited='{mark}'])]"
-                + $" | //*[@data-tb-awaited='{mark}'][number(@{count}) >= {start + handlers}]"
-                + $" | //dialog[@open][not(@data-tb-open-before='{mark}')]").First).ToBeAttachedAsync();
+            await EndAsync(frame, mark, $"number(@{count}) >= {start + handlers}");
         }
     }
+
+    // Waits as CountedAsync does, but on whichever counter the action's event reaches rather than one known
+    // beforehand, since several hotkeys can share keys and only one fires. If the event reaches no counter, the wait
+    // returns at once.
+    public static async Task FiredAsync(ILocator anchor, string eventName, string count, Func<Task> act)
+    {
+        var mark = Guid.NewGuid().ToString("N");
+        await anchor.EvaluateAsync("""
+            (anchor, [mark, eventName, count]) => {
+                const page = anchor.ownerDocument;
+                for (const dialog of page.querySelectorAll('dialog[open]')) {
+                    dialog.dataset.tbOpenBefore = mark;
+                }
+
+                // An earlier action whose event reached no counter left its listener behind.
+                page.removeEventListener(eventName, page.tbFiredWatch, { capture: true });
+                page.tbFiredWatch = event => {
+                    event.target.dataset.tbAwaited = mark;
+                    event.target.dataset.tbStart = event.target.getAttribute(count);
+                };
+                page.addEventListener(eventName, page.tbFiredWatch, { capture: true, once: true });
+            }
+            """, new[] { mark, eventName, count });
+        var frame = await FrameAsync(anchor);
+        await act();
+        await EndAsync(frame, mark, $"number(@{count}) > number(@data-tb-start)");
+    }
+
+    private static async Task<IFrame> FrameAsync(ILocator element)
+    {
+        await using var handle = await element.ElementHandleAsync();
+        return (await handle.OwnerFrameAsync())!;
+    }
+
+    // Ends when the awaited element meets the landed condition or leaves the page, or when a dialog opens. The wait
+    // looks through the frame rather than the element, so it can still see the element leave.
+    private static Task EndAsync(IFrame frame, string mark, string landed) =>
+        Assertions.Expect(frame.Locator($"xpath=/html[not(.//*[@data-tb-awaited='{mark}'])]"
+            + $" | //*[@data-tb-awaited='{mark}'][{landed}]"
+            + $" | //dialog[@open][not(@data-tb-open-before='{mark}')]").First).ToBeAttachedAsync();
 }

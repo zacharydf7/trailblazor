@@ -8,8 +8,8 @@
 
 @* The marker shows nothing. It stands where the hotkey is, which sets its scope, and its script tells it of presses. *@
 <span @ref="_marker" @attributes="AdditionalAttributes" hidden data-part="hotkey" data-keys="@Keys"
-      data-disabled="@(Disabled ? "" : null)" class="@ClassNames.Join("tb-hotkey", Class)" style="@Style"
-      @ontbhotkey="PressAsync"></span>
+      data-disabled="@(Disabled ? "" : null)" data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
+      class="@ClassNames.Join("tb-hotkey", Class)" style="@Style" @ontbhotkey="PressAsync"></span>
 
 @code {
     private ElementReference _marker;
@@ -19,6 +19,8 @@
     private int _attaches;
     private bool _disposed;
     private ControlTelemetry? _telemetry;
+    // Counts the presses whose OnPress has finished, so a test can wait for the app's answer.
+    private int _commits;
 
     /// <summary>The keys, such as <c>"Mod+S"</c> or <c>"Alt+Shift+N"</c>: any of Mod, Ctrl, Alt, Shift and Meta, then
     /// one key, joined by plus signs. Mod is ⌘ on Apple devices and Ctrl elsewhere. Name Space and the plus key as
@@ -131,15 +133,22 @@
         }
     }
 
-    private Task PressAsync()
+    private async Task PressAsync()
     {
         if (Disabled)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        Telemetry.Used(TelemetryName);
-        return OnPress.InvokeAsync();
+        try
+        {
+            Telemetry.Used(TelemetryName);
+            await OnPress.InvokeAsync();
+        }
+        finally
+        {
+            _commits++;
+        }
     }
 
     /// <inheritdoc />

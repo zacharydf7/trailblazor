@@ -856,7 +856,7 @@
                         <td>
                             <code>data-commits</code> to change on the field's root, tab list, sortable list, data grid,
                             pagination, menu, tree, toaster, chip, list item, accordion item's header, nav group's
-                            button, stepper or carousel's picker; it counts the changes the app has
+                            button, stepper, carousel's picker or hotkey's marker; it counts the changes the app has
                             answered. An app that changes a component's <code>@@key</code> replaces it, and the new
                             component counts from 0 again, so the count can look unchanged after the app has answered.
                             Also end the wait when the old element leaves the page or a dialog opens; the helpers stop
@@ -869,7 +869,8 @@
                             no count. An accordion item's header and a nav group's button count their toggles once
                             <code>ExpandedChanged</code> has run, and a stepper counts the step clicks that move it once
                             <code>ActiveKeyChanged</code> has run. A carousel's picker counts the picks that move the
-                            slides once <code>ActiveIndexChanged</code> has run.
+                            slides once <code>ActiveIndexChanged</code> has run, and a hotkey's marker counts its
+                            presses once <code>OnPress</code> has run.
                         </td>
                     </tr>
                     <tr>
@@ -1288,8 +1289,9 @@
             + "submenus and waits until the app has run the item's handler. `OpenAsync()` and `CloseAsync()` open and "
             + "close the menu, `IsOpenAsync()` reads whether it's open, and `CheckedAsync(path)` reads whether a "
             + "checkbox or radio item is checked, without opening the menu."),
-        new("Hotkey", "Its keys", "`Hotkey(keys).PressAsync()` waits until the hotkey listens, then presses its "
-            + "keys, with Mod as `ControlOrMeta`."),
+        new("Hotkey", "Its keys", "`Hotkey(keys).PressAsync()` presses its keys once the hotkey listens, with Mod as "
+            + "`ControlOrMeta`, then waits until the app has run the `OnPress` of the hotkey that fired, or a dialog "
+            + "opens. A press where no hotkey fires returns at once."),
         new("Viewport", "Its label", "`Viewport(label).ZoomInAsync()`, `FitAsync(ViewportFit.Page)` and the other "
             + "helpers zoom with its controls and wait until the app has the zoom. `ZoomAsync()` reads the zoom, and "
             + "`CurrentFitAsync()` the fit."),

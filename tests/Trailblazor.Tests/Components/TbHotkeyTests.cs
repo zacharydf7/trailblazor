@@ -12,6 +12,21 @@ public class TbHotkeyTests : BunitContext
     public TbHotkeyTests() => this.AddTrailblazor();
 
     [Fact]
+    public async Task Press_ShouldCountThePressOnceOnPressHasFinished_WhenTheHandlerIsSlow()
+    {
+        var pressed = new TaskCompletionSource();
+        var cut = Render<TbHotkey>(parameters => parameters.Add(hotkey => hotkey.Keys, "Mod+S")
+            .Add(hotkey => hotkey.OnPress, () => pressed.Task));
+
+        var pressing = cut.Find("[data-part=hotkey]").TriggerEventAsync("ontbhotkey", EventArgs.Empty);
+        var pending = cut.Find("[data-part=hotkey]").GetAttribute("data-commits");
+        await cut.InvokeAsync(pressed.SetResult);
+        await pressing;
+
+        Assert.Equal(("0", "1"), (pending, cut.Find("[data-part=hotkey]").GetAttribute("data-commits")));
+    }
+
+    [Fact]
     public void Render_ShouldDrawAHiddenMarkerAndStartTheScriptWithItsKeysAndScope_WhenGivenKeys()
     {
         Render<TbHotkey>(parameters => parameters.Add(hotkey => hotkey.Keys, "Mod+S")
