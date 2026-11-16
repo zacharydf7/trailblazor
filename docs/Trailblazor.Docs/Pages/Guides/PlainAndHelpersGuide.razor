@@ -1,0 +1,76 @@
+@page "/guides/plain-and-helpers"
+@using Trailblazor.Docs.Examples
+
+<PageTitle>Plain bUnit and Playwright, and the helpers · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="overview" Text="Each task three ways" />
+        @foreach (var task in PlainAndHelpersCatalog.All)
+        {
+            <TbTableOfContentsItem TargetId="@task.Id" Text="@task.Title" />
+        }
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Plain bUnit and Playwright, and the helpers</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Trailblazor's components work with plain bUnit and Playwright. Each task below is shown both ways, then
+            with the helpers from <code>Trailblazor.Testing</code> and <code>Trailblazor.Testing.Playwright</code>,
+            which go by the same names in both packages (a bUnit read such as <code>Error</code> is
+            <code>ErrorAsync()</code> in Playwright). Each task also says what the helpers add beyond shorter code.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="overview" Text="Each task three ways" Class="docs-section" />
+        <TbText>
+            Every snippet runs as a test against the same trip planner page, in bUnit and in Chromium, Firefox and
+            WebKit, so the code here is the code that passed. The plain versions do what a careful test needs: a
+            browser test waits until the page is interactive, using a mark the page renders itself, and waits for
+            whatever the app's handler changes, since a click returns before the app has answered.
+        </TbText>
+        <div class="docs-api" tabindex="0" role="region" aria-label="What the helpers add">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Task</th>
+                        <th scope="col">What the helper adds</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var task in PlainAndHelpersCatalog.All)
+                    {
+                        <tr>
+                            <th scope="row"><a href="@($"guides/plain-and-helpers#{task.Id}")">@task.Title</a></th>
+                            <td>@task.Short</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @foreach (var task in PlainAndHelpersCatalog.All)
+        {
+            <DocsHeading Id="@task.Id" Text="@task.Title" Class="docs-section" />
+            <TbText>@DocsText.Render(task.Adds)</TbText>
+            @if (task.PlainBunit is { } bunit)
+            {
+                <CodeBlock Label="@($"{task.Title} in plain bUnit")" Code="@bunit" />
+            }
+
+            <CodeBlock Label="@($"{task.Title} in plain Playwright")" Code="@task.PlainPlaywright" />
+            @if (task.WithHelpers is { } helpers)
+            {
+                <CodeBlock Label="@($"{task.Title} with the helpers")" Code="@helpers" />
+            }
+        }
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li><a href="guides/testing">Testing</a>: every helper, fake and wait.</li>
+            <li><a href="guides/migrating-tests">Migrating tests</a>: what replaces another library's test setup.</li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
+

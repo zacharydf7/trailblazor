@@ -92,8 +92,8 @@ public class DocsSearchTests
     [InlineData("guides",
         new[] { "Getting started", "Forms and validation", "Accessibility", "Theming", "Palettes", "Spacing",
             "Browser", "Announcements", "Rich text", "Icons", "Localization", "Right-to-left and culture", "Testing",
-            "Migrating tests", "Wrapping components", "Upgrading", "Analyzers",
-            "Telemetry" })]
+            "Migrating tests", "Plain bUnit and Playwright, and the helpers", "Wrapping components", "Upgrading",
+            "Analyzers", "Telemetry" })]
     public void Find_ShouldRankEverythingInACategoryAsATitleMatch_WhenGivenItsName(string category, string[] titles)
     {
         var results = DocsSearch.Find(category);
@@ -184,6 +184,15 @@ public class DocsSearchTests
 
         Assert.Contains(results, result => result is { Page: "Upgrading", Section: "November 12, 2026",
             Path: "guides/upgrading#changes-2026-11-12", Match: SearchMatch.Text });
+    }
+
+    [Fact]
+    public void Find_ShouldLinkAPlainAndHelpersSection_WhenATaskIsSearched()
+    {
+        var results = DocsSearch.Find("Upload a file");
+
+        Assert.Contains(results, result => result is { Page: "Plain bUnit and Playwright, and the helpers",
+            Section: "Upload a file", Path: "guides/plain-and-helpers#upload-a-file", Match: SearchMatch.Heading });
     }
 
     [Fact]

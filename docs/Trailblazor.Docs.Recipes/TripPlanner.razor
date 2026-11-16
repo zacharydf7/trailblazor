@@ -1,0 +1,91 @@
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@inject IDialogService Dialogs
+
+@* The page the testing comparison's snippets drive, in bUnit and in a browser. data-trip-ready is the page's own mark
+   that it has turned interactive, which plain Playwright tests need and the helpers don't. *@
+<TbStack Gap="4" data-trip-ready="@(_ready ? "" : null)">
+    <TbStack Row Gap="2" Align="Align.Center">
+        <TbButton OnClick="() => _stops++">Add a stop</TbButton>
+        <output aria-label="Stops">@_stops</output>
+    </TbStack>
+
+    <EditForm Model="_trip" FormName="trip-planner">
+        <DataAnnotationsValidator />
+        <TbStack Gap="3">
+            <TbTextField Label="Trip name" @bind-Value="_trip.Name" />
+            <TbSelect Label="Season" @bind-Value="_trip.Season" Placeholder="Choose a season">
+                <TbOption Value="@("Spring")">Spring</TbOption>
+                <TbOption Value="@("Summer")">Summer</TbOption>
+                <TbOption Value="@("Fall")">Fall</TbOption>
+            </TbSelect>
+            <TbFileUpload Label="Route map" @bind-Value="_map" />
+        </TbStack>
+    </EditForm>
+    <output aria-label="Trip">@_trip.Name, @(_trip.Season ?? "no season"), @(_map?[0].Name ?? "no map")</output>
+
+    <TbStack Row Gap="2" Align="Align.Center">
+        <TbButton OnClick="DeleteAsync">Delete trip</TbButton>
+        <output aria-label="Deleted">@_deleted</output>
+    </TbStack>
+
+    <TbTabs AriaLabel="Trip details">
+        <TbTab Text="Gear">Boots, water and a paper map.</TbTab>
+        <TbTab Text="Route">North along the ridge, back by the lake.</TbTab>
+    </TbTabs>
+
+    <TbTreeView TItem="string" TKey="string" AriaLabel="Stops by region" @bind-SelectedKeys="_stop">
+        <TbTreeItem Value="@("north")" Text="North">
+            <TbTreeItem Value="@("ridge")" Text="Ridge loop" />
+            <TbTreeItem Value="@("lake")" Text="Lake path" />
+        </TbTreeItem>
+    </TbTreeView>
+
+    <TbDataGrid TItem="Hike" Items="Hikes" AriaLabel="Hikes" KeySelector="hike => hike.Name"
+                SelectionMode="SelectionMode.Single" @bind-SelectedItem="_hike">
+        <TbColumn Field="hike => hike.Name" Title="Trail" />
+        <TbColumn Field="hike => hike.Km" Title="Length (km)" />
+    </TbDataGrid>
+    <output aria-label="Hike">@(_hike?.Name ?? "no hike")</output>
+
+    <TbProgress Label="Packed" Value="40" />
+</TbStack>
+
+@code {
+    private static readonly Hike[] Hikes = [new("Ridge loop", 12), new("Lake path", 5), new("Fern gully", 8)];
+
+    private readonly Trip _trip = new();
+    private IReadOnlyList<IBrowserFile>? _map;
+    private IReadOnlyCollection<string> _stop = [];
+    private Hike? _hike;
+    private int _stops;
+    private string _deleted = "no";
+    private bool _ready;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && RendererInfo.IsInteractive)
+        {
+            _ready = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (await Dialogs.ConfirmAsync("Delete trip?", "The trip and its stops go away.", "Delete"))
+        {
+            _deleted = "yes";
+        }
+    }
+
+    public sealed record Hike(string Name, int Km);
+
+    private sealed class Trip
+    {
+        [Required]
+        public string? Name { get; set; } = "Ridge weekend";
+
+        public string? Season { get; set; }
+    }
+}

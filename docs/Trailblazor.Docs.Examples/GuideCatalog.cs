@@ -57,10 +57,13 @@ public static class GuideCatalog
         new("guides/migrating-tests", "Migrating tests",
             "Move tests over from another component library: what replaces its providers, mocks, state reads and "
                 + "class selectors."),
+        new("guides/plain-and-helpers", "Plain bUnit and Playwright, and the helpers",
+            "Common testing tasks in plain bUnit and Playwright beside the helpers, and what the helpers add."),
         new("guides/wrapping", "Wrapping components",
             "Give a component your app's defaults in a wrapper of your own, and pass everything else through."),
         new("guides/upgrading", "Upgrading",
-            "Every public name that was renamed or removed, and what to use in its place."),
+            "Every public name that was renamed or removed and what to use in its place, plus every change to markup or "
+                + "behavior that tests, styles or scripts can depend on."),
         new("guides/analyzers", "Analyzers",
             "As your app builds, catch an unnamed control or field, an untitled dialog, or a value that snaps back "
                 + "after the user changes it."),

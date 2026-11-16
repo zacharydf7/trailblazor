@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trailblazor\Trailblazor.csproj" />
     <ProjectReference Include="..\..\docs\Trailblazor.Docs.Examples\Trailblazor.Docs.Examples.csproj" />
+    <ProjectReference Include="..\..\docs\Trailblazor.Docs.Recipes\Trailblazor.Docs.Recipes.csproj" />
     <ProjectReference Include="..\Trailblazor.BrowserTests.Client\Trailblazor.BrowserTests.Client.csproj" />
   </ItemGroup>
 

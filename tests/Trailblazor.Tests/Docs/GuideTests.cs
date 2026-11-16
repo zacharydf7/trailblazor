@@ -34,11 +34,12 @@ public class GuideTests : DocsTest
 
         var text = GuideText.Of(GuideCatalog.All.Single(guide => guide.Path == path));
 
-        // The palettes and upgrading guides build a section for each palette or date; search reads those from
-        // PaletteCatalog and UpgradeCatalog, not from the page's source.
+        // The palettes, upgrading and comparison guides build a section for each palette, date or task; search reads
+        // those from PaletteCatalog, UpgradeCatalog and PlainAndHelpersCatalog, not from the page's source.
         var shown = cut.FindAll(".docs-article__body > .docs-section > h2").Where(heading =>
             !heading.Id!.StartsWith("palette-", StringComparison.Ordinal)
-            && !heading.Id.StartsWith("changes-", StringComparison.Ordinal));
+            && !heading.Id.StartsWith("changes-", StringComparison.Ordinal)
+            && PlainAndHelpersCatalog.All.All(task => task.Id != heading.Id));
         Assert.Equal(shown.Select(heading => (heading.Id!, heading.TextContent.Trim())),
             text.Sections.Select(section => (section.Id, section.Title)));
         // Code the guide shows, such as <TbStack Gap="4"> or @bind-Value, is text; Razor it runs is not.
@@ -256,6 +257,23 @@ public class GuideTests : DocsTest
                 : $"- {part.Children[0].TextContent.Trim()} → {part.Children[1].TextContent.Trim()}");
 
         Assert.Equal(ChangelogSection("Renamed and removed"), page);
+    }
+
+    [Fact]
+    public void PlainAndHelpersGuide_ShouldShowEachTasksCodeFromTheRecipe_WhenOpened()
+    {
+        var code = PageAt("guides/plain-and-helpers").FindAll("pre").Select(block => block.TextContent.Trim()).ToList();
+
+        // Each task shows its plain bUnit code when bUnit has one, its plain Playwright code, and the helpers' code
+        // when they have one, in that order, all read from TestingComparison.cs.
+        var expected = PlainAndHelpersCatalog.All.SelectMany(task => new[]
+            { task.PlainBunit, task.PlainPlaywright, task.WithHelpers }).OfType<string>().Select(text => text.Trim());
+        Assert.Equal(expected, code);
+        Assert.Contains("// bUnit\nawait cut.Tb().Button(\"Add a stop\").ClickAsync();", string.Join("\n", code));
+        Assert.Contains("// Playwright\nawait page.Tb().InteractiveAsync();", code);
+        Assert.StartsWith("var button = cut.FindAll(\"button\").Single(", code[0]);
+        Assert.Contains("await page.Tb().FileUpload(\"Route map\").ChooseAsync(\n    new FilePayload { Name = \"route.gpx\"",
+            string.Join("\n", code));
     }
 
     [Fact]

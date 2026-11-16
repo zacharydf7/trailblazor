@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Trailblazor.BrowserTests.Host\Trailblazor.BrowserTests.Host.csproj" />
     <ProjectReference Include="..\..\docs\Trailblazor.Docs.Examples\Trailblazor.Docs.Examples.csproj" />
+    <ProjectReference Include="..\..\docs\Trailblazor.Docs.Recipes\Trailblazor.Docs.Recipes.csproj" />
     <ProjectReference Include="..\..\src\Trailblazor.Testing.Playwright\Trailblazor.Testing.Playwright.csproj" />
     <!-- Built first, so its publish below finds it up to date. -->
     <ProjectReference Include="..\..\docs\Trailblazor.Docs\Trailblazor.Docs.csproj" ReferenceOutputAssembly="false"

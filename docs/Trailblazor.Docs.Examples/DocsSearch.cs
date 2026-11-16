@@ -107,6 +107,16 @@ public static class DocsSearch
             }
         }
 
+        // The comparison guide builds a section for each task in a loop, so its headings aren't in the page's source.
+        if (guide.Path == "guides/plain-and-helpers")
+        {
+            foreach (var task in PlainAndHelpersCatalog.All)
+            {
+                yield return page.Passage(task.Title, $"{guide.Path}#{task.Id}", task.Title, Plain(task.Adds),
+                    SearchMatch.Heading);
+            }
+        }
+
         // The palettes guide builds a section for each palette in a loop, so its headings aren't in the page's source.
         if (guide.Path == "guides/palettes")
         {
