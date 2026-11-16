@@ -60,7 +60,10 @@
     [Parameter]
     public decimal? Max { get; set; }
 
-    /// <summary>How much the step buttons and arrow keys change the value. Defaults to 1.</summary>
+    /// <summary>How much the step buttons and arrow keys change the value; must be greater than 0. Defaults to 1.
+    /// From a value off the step, they land on a whole number of steps from <see cref="Min"/>, or from zero without
+    /// one, as a number box's own arrows do: 1.5 with a step of 1 goes up to 2 or down to 1. They still stop at a
+    /// <see cref="Max"/> that is off the step, where a number box stops at the last step below it.</summary>
     [Parameter]
     public decimal Step { get; set; } = 1;
 
@@ -202,6 +205,11 @@
                 $"{nameof(TbNumberField<TValue>)} needs a number type, not {NumberType.Name}.");
         }
 
+        if (Step <= 0)
+        {
+            throw new InvalidOperationException($"{nameof(Step)} must be greater than 0, not {Step}.");
+        }
+
         if (Decimals is < 0 or > 28)
         {
             throw new InvalidOperationException(
@@ -251,7 +259,11 @@
             return Task.CompletedTask;
         }
 
-        var stepped = Math.Clamp((_held ?? number ?? Min ?? 0) + direction * size, Lower, Upper);
+        // Letting go of a held button (a direction of 0) commits what the field showed.
+        var from = _held ?? number ?? Min ?? 0;
+        // A large step smaller than Step moves by its own size: landing on the step first would move the value back.
+        var stepped = Math.Clamp(direction == 0 ? from : size < Step ? from + direction * size
+            : NextStep(from, direction) + direction * (size - Step), Lower, Upper);
         if (held)
         {
             _held = stepped;
@@ -260,6 +272,20 @@
 
         _held = null;
         return SetValueAsync(ToValue(stepped));
+    }
+
+    // Remainders and only the first step, since a step count, a later step or the distance from Min can overflow.
+    private decimal NextStep(decimal value, int direction)
+    {
+        var off = (value % Step - (Min ?? 0) % Step) % Step;
+        if (off == 0)
+        {
+            return value + direction * Step;
+        }
+
+        var next = direction > 0 ? value - off + (off > 0 ? Step : 0) : value - off - (off < 0 ? Step : 0);
+        // A step needs no more places than Step and Min have, so 1.5 goes to 2, not to 2.0.
+        return decimal.Round(next, Math.Max(Step.Scale, (Min ?? 0).Scale));
     }
 
     // number-field.js asks for these steps; letting go of a held button sends a direction of 0.

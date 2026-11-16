@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-16
 
+- From a value off the step, a number field's step buttons, and a formatted field's arrow keys, now land on a whole number of steps from `Min`, or from zero without one, as a number box's own arrows do: 1.5 with a step of 1 goes to 2 or 1, where the buttons used to give 2.5 or 0.5. A `Step` of 0 or less now throws an `InvalidOperationException`
 - A field in a `TbFieldRow` shrinks to its column, where its box used to stay as wide as its input's `size` and spill into the next column
 - A masked text field no longer commits on the Enter that ends an input method's composition, matching the code field
 - The bUnit typing drivers (text, number, date, time, color and autocomplete) and the tag input's `AddAsync` refuse a field inside a disabled `fieldset` or marked `aria-readonly="true"`, as the choice drivers already did, and the choice drivers now also refuse one with `readonly`

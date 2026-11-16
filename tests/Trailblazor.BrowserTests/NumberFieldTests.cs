@@ -176,9 +176,10 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await budget.PressAsync("ArrowUp");
         Assert.True(await page.EvaluateAsync<bool>("() => window.held"));
 
-        await Expect(budget).ToHaveValueAsync("$2,450.50");
-        await Expect(page.GetByText("Budget value: 2450.5", new() { Exact = true })).ToBeVisibleAsync();
-        await Expect(budget).ToHaveAttributeAsync("aria-valuetext", "$2,450.50");
+        // 2400.5 is off the step of 50, so the arrow goes to the next step up.
+        await Expect(budget).ToHaveValueAsync("$2,450.00");
+        await Expect(page.GetByText("Budget value: 2450", new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(budget).ToHaveAttributeAsync("aria-valuetext", "$2,450.00");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -314,6 +315,37 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static ILocator Chosen(IPage page) =>
         page.GetByRole(AriaRole.Status, new() { Name = "Copies chosen", Exact = true });
+
+    // Tip holds 1.5 with steps from zero, and Fee holds 2 with steps from its Min of 0.5.
+    public static TheoryData<string, string, string, string, string> OffStepMoves() => new(
+        from browser in AllBrowsers.Names
+        from move in new[]
+        {
+            (Field: "Tip", Key: "ArrowUp", Button: "increment", Landed: "2"),
+            (Field: "Tip", Key: "ArrowDown", Button: "decrement", Landed: "1"),
+            (Field: "Fee", Key: "ArrowUp", Button: "increment", Landed: "2.5"),
+            (Field: "Fee", Key: "ArrowDown", Button: "decrement", Landed: "1.5"),
+        }
+        select (browser, move.Field, move.Key, move.Button, move.Landed));
+
+    [Theory, MemberData(nameof(OffStepMoves))]
+    public async Task StepButton_ShouldLandWhereTheArrowLands_WhenTheValueIsOffTheStep(string browser, string field,
+        string key, string button, string landed)
+    {
+        var arrows = await OpenAsync(browser, "/number-step");
+        var buttons = await OpenAsync(browser, "/number-step");
+        var arrowed = arrows.GetByRole(AriaRole.Spinbutton, new() { Name = field });
+        var clicked = buttons.GetByRole(AriaRole.Spinbutton, new() { Name = field });
+        await Expect(arrowed).ToHaveAttributeAsync("data-ready", "");
+        await Expect(clicked).ToHaveAttributeAsync("data-ready", "");
+
+        await arrowed.PressAsync(key);
+        await arrowed.BlurAsync();
+        await clicked.Locator("xpath=..").Locator($"[data-part={button}]").ClickAsync();
+
+        await Expect(arrows.GetByLabel($"{field} chosen")).ToHaveTextAsync(landed);
+        await Expect(buttons.GetByLabel($"{field} chosen")).ToHaveTextAsync(landed);
+    }
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task StepButton_ShouldMoveFocusToTheInput_WhenClicked(string browser)

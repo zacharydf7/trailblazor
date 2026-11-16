@@ -65,11 +65,11 @@ public class TbNumberFieldTests : BunitContext
     }
 
     [Theory]
-    [InlineData("increment", 6)]
-    [InlineData("decrement", -4)]
+    [InlineData("increment", 5)]
+    [InlineData("decrement", -5)]
     public void Click_ShouldStepTheValue_WhenAStepButtonIsClicked(string button, int expected)
     {
-        var value = 1;
+        var value = 0;
         var cut = Render<TbNumberField<int>>(parameters => parameters
             .Add(field => field.Value, value)
             .Add(field => field.ValueChanged, (int number) => value = number)
@@ -78,6 +78,95 @@ public class TbNumberFieldTests : BunitContext
         cut.Find($"[data-part={button}]").Click();
 
         Assert.Equal(expected, value);
+    }
+
+    [Theory]
+    [InlineData(1.5, null, "increment", 2)]
+    [InlineData(1.5, null, "decrement", 1)]
+    [InlineData(-1.5, null, "increment", -1)]
+    [InlineData(-1.5, null, "decrement", -2)]
+    [InlineData(2, 0.5, "increment", 2.5)]
+    [InlineData(2, 0.5, "decrement", 1.5)]
+    public void Click_ShouldLandOnTheStepCountedFromMin_WhenTheValueIsOffTheStep(double start, double? min,
+        string button, double expected)
+    {
+        var value = (decimal)start;
+        var cut = Render<TbNumberField<decimal>>(parameters => parameters.Add(field => field.Value, value)
+            .Add(field => field.ValueChanged, (decimal number) => value = number)
+            .Add(field => field.Min, (decimal?)min));
+
+        cut.Find($"[data-part={button}]").Click();
+
+        Assert.Equal((decimal)expected, value);
+    }
+
+    [Fact]
+    public void Click_ShouldNotThrow_WhenTheValueIsNearTheLimitOfADecimal()
+    {
+        var value = 1e27m;
+        var cut = Render<TbNumberField<decimal>>(parameters => parameters.Add(field => field.Value, value)
+            .Add(field => field.ValueChanged, (decimal number) => value = number).Add(field => field.Step, 0.01m));
+
+        cut.Find("[data-part=increment]").Click();
+
+        // A decimal can't hold 1e27 plus 0.01, so the step leaves the value as it was.
+        Assert.Equal(1e27m, value);
+    }
+
+    [Fact]
+    public void Click_ShouldLandOnTheStepBelow_WhenTheStepAboveIsPastTheLargestDecimal()
+    {
+        // The step above this value is past decimal.MaxValue, so finding the step below mustn't work it out first.
+        var value = decimal.MaxValue - 1e19m;
+        var cut = Render<TbNumberField<decimal>>(parameters => parameters.Add(field => field.Value, value)
+            .Add(field => field.ValueChanged, (decimal number) => value = number).Add(field => field.Step, 1e20m));
+
+        cut.Find("[data-part=decrement]").Click();
+
+        Assert.Equal(79228162500000000000000000000m, value);
+    }
+
+    [Theory]
+    [InlineData("increment", 2)]
+    [InlineData("decrement", 1)]
+    public void Click_ShouldLandOnTheStep_WhenMinIsTheSmallestDecimal(string button, int expected)
+    {
+        // The distance from this Min to 1.5 is more than a decimal can hold.
+        var value = 1.5m;
+        var cut = Render<TbNumberField<decimal>>(parameters => parameters.Add(field => field.Value, value)
+            .Add(field => field.ValueChanged, (decimal number) => value = number)
+            .Add(field => field.Min, decimal.MinValue));
+
+        cut.Find($"[data-part={button}]").Click();
+
+        Assert.Equal(expected, value);
+    }
+
+    [Theory]
+    [InlineData(1, 6)]
+    [InlineData(-1, 4)]
+    public async Task Step_ShouldMoveByTheLargeStep_WhenItIsSmallerThanTheStep(int direction, int expected)
+    {
+        var value = 5;
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Value, value)
+            .Add(field => field.ValueChanged, (int number) => value = number).Add(field => field.Step, 10m)
+            .Add(field => field.LargeStep, 1m));
+
+        await cut.Find("[data-part=input]").TriggerEventAsync("ontbnumberstep",
+            new NumberStepEventArgs { Direction = direction, Large = true });
+
+        Assert.Equal(expected, value);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Render_ShouldThrow_WhenTheStepIsntPositive(int step)
+    {
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Step, (decimal)step)));
+
+        Assert.Equal($"Step must be greater than 0, not {step}.", error.Message);
     }
 
     [Fact]
@@ -892,6 +981,28 @@ public class TbNumberFieldTests : BunitContext
         Assert.Empty(changes);
         await cut.Find("[data-part=input]").TriggerEventAsync("ontbnumberstep", new NumberStepEventArgs());
         Assert.Equal([7], changes);
+    }
+
+    [Fact]
+    public async Task Step_ShouldCommitWhatItShowed_WhenAHeldStepStopsAtALimitOffTheStep()
+    {
+        // An sbyte stops at -128, which isn't a whole number of steps of 3 from zero.
+        var changes = new List<sbyte>();
+        var cut = Render<TbNumberField<sbyte>>(parameters => parameters.Add(field => field.Label, "Offset")
+            .Add(field => field.Value, (sbyte)0).Add(field => field.Step, 3m)
+            .Add(field => field.ValueChanged, (sbyte value) => changes.Add(value)));
+
+        for (var held = 0; held < 50; held++)
+        {
+            await cut.Find("[data-part=input]").TriggerEventAsync("ontbnumberstep",
+                new NumberStepEventArgs { Direction = -1, Held = true });
+        }
+
+        var shown = cut.Find("[data-part=input]").GetAttribute("value");
+        await cut.Find("[data-part=input]").TriggerEventAsync("ontbnumberstep", new NumberStepEventArgs());
+
+        Assert.Equal("-128", shown);
+        Assert.Equal([(sbyte)-128], changes);
     }
 
     [Theory]

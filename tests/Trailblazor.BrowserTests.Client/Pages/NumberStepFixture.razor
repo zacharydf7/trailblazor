@@ -3,8 +3,13 @@
 
 <TbNumberField TValue="int" Label="Copies" @bind-Value="_copies" Min="0" Max="10" />
 <output aria-label="Copies chosen">@_copies</output>
-<TbNumberField TValue="decimal" Label="Rate" @bind-Value="_rate" Decimals="2" Step="1" />
+@* Min makes 0.125 a step, so stepping up gives 1.125, more decimals than the field's two shows. *@
+<TbNumberField TValue="decimal" Label="Rate" @bind-Value="_rate" Decimals="2" Step="1" Min="0.125m" />
 <output aria-label="Rate chosen">@_rate</output>
+<TbNumberField TValue="decimal" Label="Tip" @bind-Value="_tip" />
+<output aria-label="Tip chosen">@_tip</output>
+<TbNumberField TValue="decimal" Label="Fee" @bind-Value="_fee" Min="0.5m" />
+<output aria-label="Fee chosen">@_fee</output>
 @* Events reach the server in order, so once the count shows, every earlier event has been handled. *@
 <button type="button" @onclick="() => _elsewhere++">Elsewhere</button>
 <output aria-label="Elsewhere clicks">@_elsewhere</output>
@@ -26,5 +31,7 @@
 
     private int _copies = 5;
     private decimal _rate = 0.125m;
+    private decimal _tip = 1.5m;
+    private decimal _fee = 2m;
     private int _elsewhere;
 }
