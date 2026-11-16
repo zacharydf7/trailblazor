@@ -2408,7 +2408,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         return GoToPageAsync(page);
     });
 
-    private async Task ChangePageSizeAsync(int size)
+    private Task ChangePageSizeAsync(int size) => AnsweredAsync(() => SetPageSizeAsync(size));
+
+    private async Task SetPageSizeAsync(int size)
     {
         Telemetry.Used(TelemetryName, "page_size");
         _pageSize = size;
@@ -2647,12 +2649,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             : [.. _selection.Values, item]);
 
     // The header box selects every row on the page, or unselects them when all already are.
-    private Task ToggleAllAsync()
+    private Task ToggleAllAsync() => AnsweredAsync(() =>
     {
         _rangeAnchor = null;
-        return AllSelected ? SetSelectionAsync(_selection.Values.Where(item => !_rows.Any(row => Equals(KeyOf(row), KeyOf(item)))))
+        return AllSelected
+            ? SetSelectionAsync(_selection.Values.Where(item => !_rows.Any(row => Equals(KeyOf(row), KeyOf(item)))))
             : SelectAllAsync();
-    }
+    });
 
     private Task SelectAllAsync()
     {

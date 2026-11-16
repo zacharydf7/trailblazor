@@ -178,7 +178,7 @@
                             <input type="checkbox" data-part="select-all" class="tb-checkbox__input tb-data-grid__check"
                                    aria-label="@(Labels.SelectAll ?? Localizer[TbStrings.DataGridSelectAll])"
                                    checked="@AllSelected" data-mixed="@(SomeSelected ? "" : null)"
-                                   disabled="@(_rows.Count == 0)" @onchange="() => AnsweredAsync(ToggleAllAsync)" />
+                                   disabled="@(_rows.Count == 0)" @onchange="ToggleAllAsync" />
                         </th>
                     }
                     else if (SelectionMode != SelectionMode.None)
@@ -349,7 +349,7 @@
                     <CascadingValue TValue="TbForm" Value="null">
                         <TbSelect TValue="int" Label="@(Labels.PageSize ?? Localizer[TbStrings.DataGridPageSize])"
                                   Size="Size.Small" Value="size" class="tb-data-grid__page-size"
-                                  ValueChanged="(int size) => AnsweredAsync(() => ChangePageSizeAsync(size))">
+                                  ValueChanged="ChangePageSizeAsync">
                             @foreach (var option in sizes)
                             {
                                 <TbOption Value="option">@option</TbOption>

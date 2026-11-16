@@ -71,6 +71,20 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public async Task Grid_ShouldCountTheUsersChanges_WhenAllAreSelectedOrThePageSizeChanges()
+    {
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple).Add(grid => grid.PageSize, 2)
+            .Add(grid => grid.PageSizes, [2, 3]));
+
+        await cut.Find("[data-part=select-all]").ChangeAsync(new ChangeEventArgs { Value = true });
+        var selected = cut.Find("[data-part=grid]").GetAttribute("data-commits");
+        await cut.Tb().Select("Rows per page").ChooseAsync("3");
+
+        Assert.Equal(("1", "2"), (selected, cut.Find("[data-part=grid]").GetAttribute("data-commits")));
+    }
+
+    [Fact]
     public void Render_ShouldWarnOnce_WhenTheSameItemsCollectionComesBackWithAnotherCount()
     {
         var logs = new FakeLogCollector();
