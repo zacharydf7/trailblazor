@@ -8843,8 +8843,9 @@ public static class ExampleCatalog
                     + "order; in Playwright, use `await GroupTotalsAsync(\"Length (km)\")`. Both leave out the row's "
                     + "hidden name.",
                 "`ResizeColumnAsync(\"Region\", 200)` resizes the Region column to 200 pixels: in Playwright by "
-                    + "dragging its edge, waiting for the grid to keep the width, and in bUnit as the grid's script "
-                    + "reports it. A column's header carries the width the grid keeps in `data-width`.",
+                    + "dragging its edge and waiting until the grid keeps the width and `StateChanged` has run; in "
+                    + "bUnit as the grid's script reports it. A column's header carries the width the grid keeps in "
+                    + "`data-width`.",
                 "A column moves from its menu: `page.Tb().Menu(\"Options for Region\").ChooseAsync(\"Move Region "
                     + "later\")`, and the same in bUnit with `cut.Tb()`. In bUnit, `Columns` reads the column titles "
                     + "in the order they show; in Playwright, use `await ColumnsAsync()`.",

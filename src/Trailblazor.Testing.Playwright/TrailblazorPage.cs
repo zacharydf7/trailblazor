@@ -2181,8 +2181,9 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         return words.Length == 0 ? null : string.Join(' ', words);
     }
 
-    /// <summary>Resizes the column with this title to this many pixels by dragging its header's edge, and waits for
-    /// the grid to keep the width. The column stops at its <c>MinWidth</c>.</summary>
+    /// <summary>Resizes the column with this title to this many pixels by dragging its header's edge, and waits until
+    /// the grid keeps the width and the app's <c>StateChanged</c> has run. The column stops at its <c>MinWidth</c>.
+    /// </summary>
     public async Task ResizeColumnAsync(string column, double width)
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
@@ -2199,14 +2200,14 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         var by = width - (await header.BoundingBoxAsync())!.Width;
         var rtl = await header.EvaluateAsync<bool>("header => getComputedStyle(header).direction === 'rtl'");
         var (x, y) = (box.X + box.Width / 2, box.Y + box.Height / 2);
-        await scope.Page.Mouse.MoveAsync(x, y);
-        await scope.Page.Mouse.DownAsync();
-        await scope.Page.Mouse.MoveAsync(x + (float)(rtl ? -by : by), y, new() { Steps = 5 });
-        await scope.Page.Mouse.UpAsync();
-        // The grid renders the width it keeps, which matches the header once the server has it.
-        await scope.Page.WaitForFunctionAsync("header => header.dataset.width"
-            + " && Math.abs(header.getBoundingClientRect().width - Number(header.dataset.width)) < 1",
-            await header.ElementHandleAsync());
+        // The render that counts the change also carries the width the grid keeps.
+        await AnsweredAsync(async () =>
+        {
+            await scope.Page.Mouse.MoveAsync(x, y);
+            await scope.Page.Mouse.DownAsync();
+            await scope.Page.Mouse.MoveAsync(x + (float)(rtl ? -by : by), y, new() { Steps = 5 });
+            await scope.Page.Mouse.UpAsync();
+        });
     }
 
     private ILocator Header(string column) => Table.Locator($"thead th[data-title=\"{column}\"]");

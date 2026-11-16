@@ -11,6 +11,10 @@
             ChildrenSelector="folder => folder.Children" ExpandedParentsChanged="ExpandAsync">
     <TbColumn Field="folder => folder.Name" Title="Folder" />
 </TbDataGrid>
+<TbDataGrid TItem="string" Items="Trails" AriaLabel="Slow widths" KeySelector="trail => trail" ResizableColumns
+            StateChanged="WidthsAsync">
+    <TbColumn Field="trail => trail" Title="Name" Id="name" />
+</TbDataGrid>
 <TbPagination Page="_page" PageChanged="TurnAsync" PageCount="5" AriaLabel="Slow pages" />
 <output data-testid="slow">@_slow</output>
 
@@ -38,6 +42,8 @@
         SlowlyAsync($"expanded {string.Join(", ", folders.Select(folder => folder.Name))}");
 
     private Task TurnAsync(int page) => SlowlyAsync($"page {page}", () => _page = page);
+
+    private Task WidthsAsync(GridState state) => SlowlyAsync($"width {state.ColumnWidths["name"]}");
 
     private async Task SlowlyAsync(string what, Action? apply = null)
     {

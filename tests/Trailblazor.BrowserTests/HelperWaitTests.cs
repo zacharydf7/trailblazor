@@ -542,9 +542,11 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Tb().Grid("Slow folders").ExpandAsync("Maps");
         var expanded = await slow.TextContentAsync();
         await page.Tb().Pagination("Slow pages").GoToPageAsync(3);
+        var turned = await slow.TextContentAsync();
+        await page.Tb().Grid("Slow widths").ResizeColumnAsync("Name", 200);
 
         Assert.Equal(("selected Ash", "selected Ash, Birch", "sorted name Descending", "grid page 2", "grid page 1",
-            "expanded Maps", "page 3"), (selected, clicked, sorted, paged, filtered, expanded,
+            "expanded Maps", "page 3", "width 200"), (selected, clicked, sorted, paged, filtered, expanded, turned,
             await slow.TextContentAsync()));
     }
 

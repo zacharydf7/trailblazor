@@ -73,6 +73,22 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public async Task Grid_ShouldCountAResizeOnceStateChangedHasRun_WhenTheUserSetsAWidth()
+    {
+        var changed = new TaskCompletionSource();
+        var cut = RenderTrails(configure: parameters => parameters.Add(grid => grid.ResizableColumns, true)
+            .Add(grid => grid.StateChanged, (GridState _) => changed.Task));
+
+        var resizing = cut.Find("table").TriggerEventAsync("ontbcolumnwidths",
+            new ColumnWidthsEventArgs { Widths = new() { ["Name"] = 200 } });
+        var pending = cut.Find("[data-part=grid]").GetAttribute("data-commits");
+        await cut.InvokeAsync(changed.SetResult);
+        await resizing;
+
+        Assert.Equal(("0", "1"), (pending, cut.Find("[data-part=grid]").GetAttribute("data-commits")));
+    }
+
+    [Fact]
     public async Task Grid_ShouldCountTheUsersChanges_WhenAllAreSelectedOrThePageSizeChanges()
     {
         var cut = RenderTrails(configure: parameters => parameters

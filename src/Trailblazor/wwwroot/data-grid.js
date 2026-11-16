@@ -543,11 +543,14 @@ export function createDataGrid(table, waitForReorder) {
         focusColumnChooser() {
             table.closest('[data-part=grid]')?.querySelector('[data-part=column-chooser] [data-part=trigger]')?.focus();
         },
+        // Says whether the column is drawn, since only a drawn one reports its width.
         resizeColumn(key, delta) {
             const cell = columnHeaders().find(other => other.dataset.column === key);
             if (cell) {
                 reportWidths(cell, cell.getBoundingClientRect().width + delta);
             }
+
+            return cell !== undefined;
         },
         dispose() {
             scrolls++;

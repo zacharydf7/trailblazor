@@ -768,7 +768,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             {
                 _measureColumn = null;
                 _measuring = true;
-                await _handle.InvokeVoidAsync("resizeColumn", shown, 0);
+                // A column outside the drawn window reports no width, so the next width reported is the user's.
+                if (!await _handle.InvokeAsync<bool>("resizeColumn", shown, 0))
+                {
+                    _measuring = false;
+                }
             }
         }
         catch (JSDisconnectedException)
@@ -1541,14 +1545,21 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private bool HasFixedWidths => ResizableColumns && _shownColumns.Count > 0
         && _shownColumns.All(column => _widths.ContainsKey(column.Key));
 
-    private async Task OnColumnWidthsAsync(ColumnWidthsEventArgs e)
+    // A width the user set counts once the app's StateChanged has run; one the grid measured for itself doesn't.
+    private Task OnColumnWidthsAsync(ColumnWidthsEventArgs e)
     {
-        if (!_measuring)
+        if (_measuring)
         {
-            Telemetry.Used(TelemetryName, "resize");
+            _measuring = false;
+            return TakeWidthsAsync(e);
         }
 
-        _measuring = false;
+        Telemetry.Used(TelemetryName, "resize");
+        return AnsweredAsync(() => TakeWidthsAsync(e));
+    }
+
+    private async Task TakeWidthsAsync(ColumnWidthsEventArgs e)
+    {
         // The script measures only the columns it draws, so a column it doesn't report, hidden or out of view, keeps
         // the width it had.
         var widths = _widths.Where(width => !e.Widths.ContainsKey(width.Key)

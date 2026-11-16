@@ -165,6 +165,7 @@ public class TbDataGridHideTests : BunitContext
         var script = JSInterop.SetupModule("./_content/Trailblazor/data-grid.js")
             .SetupModule("createDataGrid", _ => true);
         script.Mode = JSRuntimeMode.Loose;
+        script.Setup<bool>("resizeColumn", _ => true).SetResult(true);
         var widths = new Dictionary<string, double> { ["Name"] = 160, ["LengthKm"] = 100, ["Notes"] = 120 };
         // A key from an older saved state that no column has any more can't be measured.
         var cut = RenderHikes(new GridState { HiddenColumns = ["Gone", "Region"], ColumnWidths = widths },
@@ -175,6 +176,42 @@ public class TbDataGridHideTests : BunitContext
 
         cut.WaitForAssertion(() => Assert.Equal(["Region", 0],
             script.Invocations["resizeColumn"].Single().Arguments));
+    }
+
+    [Fact]
+    public async Task ColumnWidthsEvent_ShouldNotCountTheWidthsTheGridMeasured_WhenItShowsAColumnThatHasNoWidth()
+    {
+        var script = JSInterop.SetupModule("./_content/Trailblazor/data-grid.js")
+            .SetupModule("createDataGrid", _ => true);
+        script.Mode = JSRuntimeMode.Loose;
+        script.Setup<bool>("resizeColumn", _ => true).SetResult(true);
+        var widths = new Dictionary<string, double> { ["Name"] = 160, ["LengthKm"] = 100, ["Notes"] = 120 };
+        var cut = RenderHikes(new GridState { HiddenColumns = ["Region"], ColumnWidths = widths }, resizable: true);
+        cut.Render(parameters => parameters.Add(grid => grid.State, new GridState { ColumnWidths = widths }));
+        cut.WaitForAssertion(() => Assert.Single(script.Invocations["resizeColumn"]));
+
+        await cut.Find("table").TriggerEventAsync("ontbcolumnwidths",
+            new ColumnWidthsEventArgs { Widths = new() { ["Region"] = 140 } });
+
+        Assert.Equal("0", cut.Find("[data-part=grid]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
+    public async Task ColumnWidthsEvent_ShouldCountTheUsersResize_WhenTheColumnShownAgainWasntDrawnToMeasure()
+    {
+        var script = JSInterop.SetupModule("./_content/Trailblazor/data-grid.js")
+            .SetupModule("createDataGrid", _ => true);
+        script.Mode = JSRuntimeMode.Loose;
+        script.Setup<bool>("resizeColumn", _ => true).SetResult(false);
+        var widths = new Dictionary<string, double> { ["Name"] = 160, ["LengthKm"] = 100, ["Notes"] = 120 };
+        var cut = RenderHikes(new GridState { HiddenColumns = ["Region"], ColumnWidths = widths }, resizable: true);
+        cut.Render(parameters => parameters.Add(grid => grid.State, new GridState { ColumnWidths = widths }));
+        cut.WaitForAssertion(() => Assert.Single(script.Invocations["resizeColumn"]));
+
+        await cut.Find("table").TriggerEventAsync("ontbcolumnwidths",
+            new ColumnWidthsEventArgs { Widths = new() { ["Name"] = 200 } });
+
+        Assert.Equal("1", cut.Find("[data-part=grid]").GetAttribute("data-commits"));
     }
 
     [Fact]
