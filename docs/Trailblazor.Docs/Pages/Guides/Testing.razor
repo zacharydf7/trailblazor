@@ -388,7 +388,9 @@
                         <td>
                             Opens each closed group named before the link, then clicks the link and takes the test's
                             <code>NavigationManager</code> to its address. <code>Current</code> reads the current
-                            page's link.
+                            page's link. <code>ExpandAsync(path)</code> opens the groups on a path,
+                            <code>CollapseAsync(path)</code> closes the last one, and <code>Expanded(path)</code> reads
+                            whether the last one is open.
                         </td>
                     </tr>
                     <tr>
@@ -1275,7 +1277,9 @@
         new("Nav menu", "Its navigation landmark's name, or none for the only one shown",
             "`NavMenu(name).FollowAsync(path)` opens the closed groups named before a link once the page is "
             + "interactive, waiting for each group's `ExpandedChanged`, then follows the link; `CurrentAsync()` reads "
-            + "the current page's link."),
+            + "the current page's link. `ExpandAsync(path)` opens the groups on a path and `CollapseAsync(path)` "
+            + "closes the last one, each waiting for `ExpandedChanged`; `ExpandedAsync(path)` reads whether the last "
+            + "one is open."),
         new("Insert divider", "Its Label", "`InsertDivider(label).InsertAsync()` presses its insert button once the "
             + "page is interactive."),
         new("Toolbar", "Its AriaLabel, or none for the only one", "`Toolbar(name).ClickAsync(button)` clicks a "

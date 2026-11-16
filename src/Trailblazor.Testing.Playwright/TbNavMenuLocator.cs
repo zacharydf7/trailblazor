@@ -28,36 +28,7 @@ public sealed class TbNavMenuLocator(ILocator scope, string? name)
     public async Task FollowAsync(params string[] path)
     {
         ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
-        await Menu.WaitForAsync();
-        var within = Menu;
-        foreach (var group in path[..^1])
-        {
-            var toggle = await OnlyAsync(within, "group-toggle", group, "groups");
-            if (!await toggle.IsVisibleAsync())
-            {
-                throw InClosedGroup(group);
-            }
-
-            if (await toggle.GetAttributeAsync("aria-expanded") != "true")
-            {
-                if (await Menu.GetAttributeAsync("data-static") is not null)
-                {
-                    throw new InvalidOperationException($"On a static page the group \"{group}\" doesn't open; "
-                        + "render the page interactively to use it.");
-                }
-
-                await Assertions.Expect(Menu).ToHaveAttributeAsync("data-ready", "");
-                await Commit.CountedAsync(toggle, "data-commits", async () =>
-                {
-                    await toggle.ClickAsync();
-                    return true;
-                });
-                await Assertions.Expect(toggle).ToHaveAttributeAsync("aria-expanded", "true");
-            }
-
-            within = toggle.Locator("xpath=../*[@data-part='group-items']");
-        }
-
+        var within = await OpenAsync(path[..^1]);
         var link = await OnlyAsync(within, "link", path[^1], "links");
         if (!await link.IsVisibleAsync())
         {
@@ -67,8 +38,91 @@ public sealed class TbNavMenuLocator(ILocator scope, string? name)
         await link.ClickAsync();
     }
 
+    /// <summary>Whether the group at the end of this path is open, as in <c>ExpandedAsync("Settings", "Advanced")
+    /// </c>. The groups before it are left as they are.</summary>
+    public async Task<bool> ExpandedAsync(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        await Menu.WaitForAsync();
+        var within = Menu;
+        foreach (var group in path[..^1])
+        {
+            within = Items(await OnlyAsync(within, "group-toggle", group, "groups"));
+        }
+
+        var toggle = await OnlyAsync(within, "group-toggle", path[^1], "groups");
+        return await toggle.GetAttributeAsync("aria-expanded") == "true";
+    }
+
+    /// <summary>Opens each closed group on this path, as in <c>ExpandAsync("Settings", "Advanced")</c>. Each opens as
+    /// clicking it does, once the page is interactive, and waits for the app's <c>ExpandedChanged</c>. Throws for a
+    /// group in a closed group the path doesn't name, or for a closed group on a static page.</summary>
+    public async Task ExpandAsync(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        await OpenAsync(path);
+    }
+
+    /// <summary>Closes the group at the end of this path, if it's open, as clicking it does once the page is
+    /// interactive, and waits for the app's <c>ExpandedChanged</c>. The groups before it open first, as
+    /// <c>ExpandAsync</c> opens them. Throws for a group in a closed group the path doesn't name, or on a static page
+    /// for a group it would have to open or close.</summary>
+    public async Task CollapseAsync(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        var toggle = await VisibleToggleAsync(await OpenAsync(path[..^1]), path[^1]);
+        if (await toggle.GetAttributeAsync("aria-expanded") == "true")
+        {
+            await ToggleAsync(toggle, path[^1], false);
+        }
+    }
+
+    // Opens the groups in order and returns the list of the last one's items, or the menu when given no groups.
+    private async Task<ILocator> OpenAsync(string[] groups)
+    {
+        await Menu.WaitForAsync();
+        var within = Menu;
+        foreach (var group in groups)
+        {
+            var toggle = await VisibleToggleAsync(within, group);
+            if (await toggle.GetAttributeAsync("aria-expanded") != "true")
+            {
+                await ToggleAsync(toggle, group, true);
+            }
+
+            within = Items(toggle);
+        }
+
+        return within;
+    }
+
+    private async Task<ILocator> VisibleToggleAsync(ILocator within, string group)
+    {
+        var toggle = await OnlyAsync(within, "group-toggle", group, "groups");
+        return await toggle.IsVisibleAsync() ? toggle : throw InClosedGroup(group);
+    }
+
+    private async Task ToggleAsync(ILocator toggle, string group, bool expanded)
+    {
+        if (await Menu.GetAttributeAsync("data-static") is not null)
+        {
+            throw new InvalidOperationException($"On a static page the group \"{group}\" doesn't "
+                + $"{(expanded ? "open" : "close")}; render the page interactively to use it.");
+        }
+
+        await Assertions.Expect(Menu).ToHaveAttributeAsync("data-ready", "");
+        await Commit.CountedAsync(toggle, "data-commits", async () =>
+        {
+            await toggle.ClickAsync();
+            return true;
+        });
+        await Assertions.Expect(toggle).ToHaveAttributeAsync("aria-expanded", expanded ? "true" : "false");
+    }
+
+    private static ILocator Items(ILocator toggle) => toggle.Locator("xpath=../*[@data-part='group-items']");
+
     private static InvalidOperationException InClosedGroup(string item) => new($"\"{item}\" is in a closed group; "
-        + "name the groups it's in before it, as in FollowAsync(\"Settings\", \"Profile\").");
+        + "name the groups that contain it earlier in the path.");
 
     // A match at this level wins over same-labeled ones in nested groups, so a label repeated deeper doesn't hide it.
     private async Task<ILocator> OnlyAsync(ILocator within, string part, string text, string kind)

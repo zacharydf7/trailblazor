@@ -635,6 +635,25 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NavMenu_ShouldReturnOnceTheGroupsExpandedChangedHasRun_WhenItCollapsesOrExpandsAGroup(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/helpers-slow");
+        var menu = page.Tb().NavMenu("Slow navigation");
+        var settings = page.GetByTestId("settings");
+        // The link is to this page, so the group opens as the page loads.
+        await Expect(settings).ToHaveTextAsync("settings True");
+
+        await menu.CollapseAsync("Slow settings");
+        var collapsed = (await settings.TextContentAsync(), await menu.ExpandedAsync("Slow settings"));
+        await menu.ExpandAsync("Slow settings");
+
+        Assert.Equal(("settings False", false), collapsed);
+        Assert.Equal(("settings True", true), (await settings.TextContentAsync(),
+            await menu.ExpandedAsync("Slow settings")));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task SignaturePad_ShouldReturnOnceTheAppHasRunItsCallback_WhenUndoOrClearIsSlow(string browser)
     {
         var page = await OpenAsync(browser, "/helpers-slow");

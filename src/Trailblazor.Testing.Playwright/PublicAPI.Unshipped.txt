@@ -475,3 +475,6 @@ Trailblazor.Testing.Playwright.TrailblazorPage.Carousel(string? name = null) -> 
 Trailblazor.Testing.Playwright.TrailblazorPage.ChipGroup(string? name = null) -> Trailblazor.Testing.Playwright.TbChipGroupLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Toolbar(string? name = null) -> Trailblazor.Testing.Playwright.TbToolbarLocator!
 Trailblazor.Testing.Playwright.TbViewportLocator.CurrentFitAsync() -> System.Threading.Tasks.Task<Trailblazor.ViewportFit>!
+Trailblazor.Testing.Playwright.TbNavMenuLocator.ExpandedAsync(params string![]! path) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbNavMenuLocator.ExpandAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbNavMenuLocator.CollapseAsync(params string![]! path) -> System.Threading.Tasks.Task!

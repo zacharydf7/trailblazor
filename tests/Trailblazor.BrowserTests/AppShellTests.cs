@@ -95,6 +95,26 @@ public class AppShellTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldOpenCloseAndReadAGroup_WhenGivenItsPath(string browser)
+    {
+        var page = await OpenAsync(browser, "/nav-menu");
+        var menu = page.Tb().NavMenu("Account");
+
+        await menu.ExpandAsync("Settings", "Advanced");
+        var opened = (await menu.ExpandedAsync("Settings"), await menu.ExpandedAsync("Settings", "Advanced"));
+        await menu.CollapseAsync("Settings");
+        var closed = (await menu.ExpandedAsync("Settings"), await menu.ExpandedAsync("Settings", "Advanced"));
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => menu.CollapseAsync("Advanced"));
+        await menu.CollapseAsync("Settings", "Advanced");
+
+        Assert.Equal((true, true), opened);
+        Assert.Equal((false, true), closed);
+        Assert.Contains("closed group", refused.Message);
+        Assert.Equal((true, false), (await menu.ExpandedAsync("Settings"),
+            await menu.ExpandedAsync("Settings", "Advanced")));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldFollowTheDrawersLink_WhenTheDrawerIsOpenOnANarrowWindow(string browser)
     {
         var page = await OpenAsync(browser, "/app-shell", new() { ViewportSize = new() { Width = 600, Height = 800 } });

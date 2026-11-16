@@ -2374,7 +2374,9 @@ public static class ExampleCatalog
                     + "in bUnit, finds a nav menu by its navigation landmark's name. `FollowAsync(\"Settings\", "
                     + "\"Profile\")` opens each closed group named before the link and follows it; opening a group "
                     + "waits until the app's `ExpandedChanged` has run, which the group's button counts in "
-                    + "`data-commits`. `CurrentAsync()` (`Current` in bUnit) reads the current page's link. By hand, "
+                    + "`data-commits`. `ExpandAsync(\"Settings\")` and `CollapseAsync(\"Settings\")` open and close a "
+                    + "group the same way, and `ExpandedAsync(\"Settings\")` (`Expanded` in bUnit) reads whether it's "
+                    + "open. `CurrentAsync()` (`Current` in bUnit) reads the current page's link. By hand, "
                     + "find the navigation with `GetByRole(AriaRole.Navigation, new() { Name = \"Main\" })`, and the "
                     + "current page's link with `Locator(\"[aria-current=page]\")`.",
                 "Playwright's window is wide unless you set `ViewportSize`; set it narrower than 768px to test the "

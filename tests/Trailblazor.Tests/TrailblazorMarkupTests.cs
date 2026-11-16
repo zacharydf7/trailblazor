@@ -2634,6 +2634,49 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task NavMenu_ShouldOpenCloseAndReadAGroup_WhenTheHelperIsUsed()
+    {
+        var cut = Render(AccountMenu);
+        var menu = cut.Tb().NavMenu("Account");
+
+        await menu.ExpandAsync("Settings", "Advanced");
+        var opened = (menu.Expanded("Settings"), menu.Expanded("Settings", "Advanced"));
+        await menu.CollapseAsync("Settings");
+        var closed = (menu.Expanded("Settings"), menu.Expanded("Settings", "Advanced"));
+        await menu.CollapseAsync("Settings", "Advanced");
+
+        Assert.Equal((true, true), opened);
+        Assert.Equal((false, true), closed);
+        Assert.Equal((true, false), (menu.Expanded("Settings"), menu.Expanded("Settings", "Advanced")));
+    }
+
+    [Fact]
+    public async Task NavMenu_ShouldRefuseToExpandAGroupInAClosedGroup_WhenThePathDoesntNameTheOuterGroup()
+    {
+        var cut = Render(AccountMenu);
+
+        var closed = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().NavMenu("Account").ExpandAsync("Advanced"));
+
+        Assert.Contains("closed group", closed.Message);
+        Assert.False(cut.Tb().NavMenu("Account").Expanded("Settings", "Advanced"));
+    }
+
+    [Fact]
+    public async Task NavMenu_ShouldRefuseToCloseAGroup_WhenThePageIsStatic()
+    {
+        Services.GetRequiredService<NavigationManager>().NavigateTo("settings/profile");
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render(AccountMenu);
+
+        var still = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().NavMenu("Account").CollapseAsync("Settings"));
+
+        Assert.Contains("doesn't close", still.Message);
+        Assert.True(cut.Tb().NavMenu("Account").Expanded("Settings"));
+    }
+
+    [Fact]
     public async Task NavMenu_ShouldFollowTheDrawersLink_WhenTheAppShellsDrawerIsOpen()
     {
         var cut = Render<TbAppShell>(parameters => parameters.Add(shell => shell.NavigationOpen, true)

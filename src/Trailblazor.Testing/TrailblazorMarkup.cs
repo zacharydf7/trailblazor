@@ -1826,28 +1826,7 @@ public sealed class TbNavMenuDriver
     public async Task FollowAsync(params string[] path)
     {
         ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
-        for (var depth = 0; depth < path.Length - 1; depth++)
-        {
-            var toggle = Only(Within(path[..depth]), "[data-part=group-toggle]", path[depth], "groups");
-            if (toggle.Closest("[data-part=group-items][hidden]") is not null)
-            {
-                throw InClosedGroup(path[depth]);
-            }
-
-            if (toggle.GetAttribute("aria-expanded") == "true")
-            {
-                continue;
-            }
-
-            if (_find().HasAttribute("data-static"))
-            {
-                throw new InvalidOperationException($"On a static page the group \"{path[depth]}\" doesn't open; "
-                    + "render the page interactively to use it.");
-            }
-
-            await toggle.ClickAsync(new MouseEventArgs { Detail = 1 });
-        }
-
+        await OpenAsync(path[..^1]);
         var link = Only(Within(path[..^1]), "[data-part=link]", path[^1], "links");
         if (link.Closest("[data-part=group-items][hidden]") is not null)
         {
@@ -1858,8 +1837,71 @@ public sealed class TbNavMenuDriver
         _scripts.NavigateTo(link.GetAttribute("href")!);
     }
 
+    /// <summary>Whether the group at the end of this path is open, as in <c>Expanded("Settings", "Advanced")</c>.
+    /// The groups before it are left as they are.</summary>
+    public bool Expanded(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        return Only(Within(path[..^1]), "[data-part=group-toggle]", path[^1], "groups")
+            .GetAttribute("aria-expanded") == "true";
+    }
+
+    /// <summary>Opens each closed group on this path, as in <c>ExpandAsync("Settings", "Advanced")</c>. Each opens as
+    /// clicking it does, and the app's <c>ExpandedChanged</c> runs. Throws for a group in a closed group the path
+    /// doesn't name, or for a closed group on a static page.</summary>
+    public async Task ExpandAsync(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        await OpenAsync(path);
+    }
+
+    /// <summary>Closes the group at the end of this path, if it's open, as clicking it does, and the app's
+    /// <c>ExpandedChanged</c> runs. The groups before it open first, as <c>ExpandAsync</c> opens them. Throws for a
+    /// group in a closed group the path doesn't name, or on a static page for a group it would have to open or close.
+    /// </summary>
+    public async Task CollapseAsync(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        await OpenAsync(path[..^1]);
+        var toggle = VisibleToggle(path);
+        if (toggle.GetAttribute("aria-expanded") == "true")
+        {
+            await ToggleAsync(toggle, path[^1], false);
+        }
+    }
+
     private static InvalidOperationException InClosedGroup(string item) => new($"\"{item}\" is in a closed group; "
-        + "name the groups it's in before it, as in FollowAsync(\"Settings\", \"Profile\").");
+        + "name the groups that contain it earlier in the path.");
+
+    private async Task OpenAsync(string[] groups)
+    {
+        for (var depth = 1; depth <= groups.Length; depth++)
+        {
+            var toggle = VisibleToggle(groups[..depth]);
+            if (toggle.GetAttribute("aria-expanded") != "true")
+            {
+                await ToggleAsync(toggle, groups[depth - 1], true);
+            }
+        }
+    }
+
+    // The button of the group at the end of the path, which mustn't be in a closed group the path doesn't name.
+    private IElement VisibleToggle(string[] path)
+    {
+        var toggle = Only(Within(path[..^1]), "[data-part=group-toggle]", path[^1], "groups");
+        return toggle.Closest("[data-part=group-items][hidden]") is null ? toggle : throw InClosedGroup(path[^1]);
+    }
+
+    private async Task ToggleAsync(IElement toggle, string group, bool expanded)
+    {
+        if (_find().HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException($"On a static page the group \"{group}\" doesn't "
+                + $"{(expanded ? "open" : "close")}; render the page interactively to use it.");
+        }
+
+        await toggle.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
 
     // The menu, or the links of the group the path ends at. Found again for each step, since opening a group renders
     // new markup.

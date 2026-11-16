@@ -475,3 +475,6 @@ Trailblazor.Testing.TrailblazorMarkup.Carousel(string? name = null) -> Trailblaz
 Trailblazor.Testing.TrailblazorMarkup.ChipGroup(string? name = null) -> Trailblazor.Testing.TbChipGroupDriver!
 Trailblazor.Testing.TrailblazorMarkup.Toolbar(string? name = null) -> Trailblazor.Testing.TbToolbarDriver!
 Trailblazor.Testing.TbViewportDriver.CurrentFit.get -> Trailblazor.ViewportFit
+Trailblazor.Testing.TbNavMenuDriver.Expanded(params string![]! path) -> bool
+Trailblazor.Testing.TbNavMenuDriver.ExpandAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbNavMenuDriver.CollapseAsync(params string![]! path) -> System.Threading.Tasks.Task!
