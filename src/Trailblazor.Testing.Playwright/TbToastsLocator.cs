@@ -25,8 +25,9 @@ public sealed class TbToastsLocator(ILocator scope)
     }
 
     /// <summary>Waits for a toast whose text contains this, as <see cref="WaitForAsync"/> does, clicks its action
-    /// button, such as <c>Undo</c>, and waits until the app has run the action. Throws when the toast's action has
-    /// another name, or it has none.</summary>
+    /// button, such as <c>Undo</c>, and waits until the app has run the action, or until a dialog opens, since an
+    /// action that awaits the dialog's answer finishes only once the test answers it. Throws when the toast's action
+    /// has another name, or it has none.</summary>
     public async Task ChooseAsync(string text, string action)
     {
         var toast = await MarkAsync(await WaitForAsync(text));
@@ -39,10 +40,8 @@ public sealed class TbToastsLocator(ILocator scope)
         }
 
         // The action runs after its toast has started to fade, and can outlast it, so the wait follows the toaster's
-        // count of finished actions, from a mark on the toaster that stays when the toast leaves.
-        var mark = Guid.NewGuid().ToString("N");
-        await toast.EvaluateAsync("(toast, mark) => toast.closest('[data-part=toaster]').dataset.tbToaster = mark", mark);
-        await Commit.WaitAsync(scope.Locator($"[data-tb-toaster='{mark}']"), async () =>
+        // count of finished actions.
+        await Commit.WaitAsync(button, async () =>
         {
             await button.ClickAsync();
             return true;
@@ -61,8 +60,10 @@ public sealed class TbToastsLocator(ILocator scope)
     private static async Task ClickAsync(ILocator button)
     {
         await Assertions.Expect(button).ToHaveAttributeAsync("data-clicks", new Regex(@"^\d+$"));
-        var before = await button.GetAttributeAsync("data-clicks");
-        await button.ClickAsync();
-        await Assertions.Expect(button.And(button.Page.Locator($"[data-clicks='{before}']"))).ToHaveCountAsync(0);
+        await Commit.CountedAsync(button, "data-clicks", async () =>
+        {
+            await button.ClickAsync();
+            return true;
+        });
     }
 }

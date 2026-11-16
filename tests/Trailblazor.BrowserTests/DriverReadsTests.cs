@@ -362,8 +362,7 @@ public class DriverReadsTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/examples/dialog");
         var closed = await page.Tb().Dialog().IsOpenAsync();
-        // A plain click, since the button's handler awaits the dialog's answer, and the button helper would wait for it.
-        await page.GetByRole(AriaRole.Button, new() { Name = "Edit beside the page", Exact = true }).ClickAsync();
+        await page.Tb().Button("Edit beside the page").ClickAsync();
         var dialog = page.Tb().Dialog();
         var states = new List<DialogWindowState> { await dialog.WindowStateAsync() };
 

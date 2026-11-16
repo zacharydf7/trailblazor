@@ -436,4 +436,42 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Equal("undone slowly", await page.GetByTestId("result").TextContentAsync());
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldReturnOnceTheDialogOpens_WhenItsHandlerAwaitsTheDialogsAnswer(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+
+        // The handler awaits the answer, so it finishes only after the test gives one.
+        await page.Tb().Button("Edit beside the page").ClickAsync();
+        await page.Tb().Dialog("Edit name").CancelAsync();
+
+        Assert.False(await page.Tb().Dialog("Edit name").IsOpenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldWaitForItsHandler_WhenADialogWasOpenBeforeTheClick(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialog-windows");
+        await page.Tb().Button("Open front").ClickAsync();
+        await page.Tb().Dialog("Front").WaitForAsync();
+
+        // Only a dialog that opens after the click ends the wait early; this handler closes the open one.
+        await page.Tb().Button("Close front later").ClickAsync();
+
+        Assert.False(await page.Tb().Dialog("Front").IsOpenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldReturn_WhenItsHandlerReloadsThePage(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialog-reload");
+        await page.Tb().Button("Open sign out").ClickAsync();
+
+        // The reload replaces the page while the helper waits, which ends the wait.
+        await page.Tb().Button("Sign out").ClickAsync();
+
+        // The handler never closes the dialog, so only the reload takes it away.
+        await Expect(page.GetByRole(AriaRole.Dialog)).ToBeHiddenAsync();
+    }
 }

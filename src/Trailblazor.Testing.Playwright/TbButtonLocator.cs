@@ -20,9 +20,10 @@ public sealed class TbButtonLocator(ILocator scope, string name)
     public async Task<bool> MixedAsync() => await Button.GetAttributeAsync("aria-pressed") == "mixed";
 
     /// <summary>Clicks the button, as a user does, once the page is interactive and the button is no longer busy, and
-    /// waits until the app has run its <c>OnClick</c>. On a static page, a link button is followed and a form's submit
-    /// or reset button is clicked, without the wait. Throws for a disabled button, or for any other button on a static
-    /// page, where it does nothing.</summary>
+    /// waits until the app has run its <c>OnClick</c>, or until a dialog opens, since a handler that awaits the
+    /// dialog's answer finishes only once the test answers it. On a static page, a link button is followed and a
+    /// form's submit or reset button is clicked, without the wait. Throws for a disabled button, or for any other
+    /// button on a static page, where it does nothing.</summary>
     public async Task ClickAsync()
     {
         await Button.WaitForAsync();
@@ -53,12 +54,11 @@ public sealed class TbButtonLocator(ILocator scope, string name)
             throw new InvalidOperationException("The button is disabled, so a user can't click it.");
         }
 
-        // The button is marked, so the wait follows it when the click renames it, and ends if it leaves the page.
-        var mark = Guid.NewGuid().ToString("N");
-        var before = await Button.EvaluateAsync<string>(
-            "(button, mark) => { button.dataset.tbAwaited = mark; return button.dataset.clicks; }", mark);
-        await Button.ClickAsync();
-        var waiting = Scope.Document(scope).Locator($"[data-tb-awaited='{mark}'][data-clicks='{before}']");
-        await Assertions.Expect(waiting).ToHaveCountAsync(0);
+        // The wait follows the button it marks, so it holds when the click renames the button.
+        await Commit.CountedAsync(Button, "data-clicks", async () =>
+        {
+            await Button.ClickAsync();
+            return true;
+        });
     }
 }
