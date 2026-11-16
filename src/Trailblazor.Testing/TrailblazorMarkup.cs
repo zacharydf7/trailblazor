@@ -195,7 +195,8 @@ public abstract class TbFieldDriver
     public bool Invalid => _control() is var control
         && (control.GetAttribute("aria-invalid") == "true" || control.QuerySelector("[aria-invalid=true]") is not null);
 
-    /// <summary>Moves focus out of the field, as tabbing away does, which raises its <c>OnBlur</c>.</summary>
+    /// <summary>Moves focus out of the field, as tabbing away does, which raises its <c>OnBlur</c>. Does nothing when
+    /// the field has no <c>OnBlur</c>, since that's all leaving it raises.</summary>
     public async Task LeaveAsync()
     {
         // Only the field's own root raises OnBlur, and only when the app set one; the nearest root may instead be a
@@ -459,7 +460,9 @@ public sealed class TrailblazorMarkup
                 : $"No form is named \"{name}\".");
     });
 
-    /// <summary>The <c>TbAccordionItem</c>, in an accordion or on its own, whose header reads this.</summary>
+    /// <summary>The <c>TbAccordionItem</c>, in an accordion or on its own, whose header reads this: its full name, or,
+    /// when the header shows a badge, any run of text in its title outside the badge, such as the title beside a
+    /// count.</summary>
     public TbAccordionItemDriver AccordionItem(string header) => new(header, _findAll);
 
     /// <summary>The <c>TbAlert</c> whose text contains this, ignoring case and treating any run of whitespace as one
@@ -1123,8 +1126,7 @@ internal static class Choices
     // An input a user can't change, or one on a static page, which posts with its form.
     internal static void ThrowIfLocked(IElement input)
     {
-        if (input.HasAttribute("disabled") || input.Closest("fieldset[disabled]") is not null
-            || input.GetAttribute("aria-readonly") == "true")
+        if (Locks.IsLocked(input))
         {
             throw new InvalidOperationException("This input is read-only or disabled, so a user can't change it.");
         }
@@ -1333,14 +1335,20 @@ internal static class Dates
     }
 }
 
+// A control a user can't change: disabled, inside a disabled fieldset, or read-only by attribute or by ARIA.
+internal static class Locks
+{
+    internal static bool IsLocked(IElement control) => control.HasAttribute("disabled")
+        || control.HasAttribute("readonly") || control.Closest("fieldset[disabled]") is not null
+        || control.GetAttribute("aria-readonly") == "true";
+}
+
 // A user can't type into a read-only or disabled field, so the drivers that type refuse it too.
 internal static class Typing
 {
-    internal static bool IsLocked(IElement input) => input.HasAttribute("readonly") || input.HasAttribute("disabled");
-
     internal static void ThrowIfLocked(IElement input, string what)
     {
-        if (IsLocked(input))
+        if (Locks.IsLocked(input))
         {
             throw new InvalidOperationException(
                 $"This field is read-only or disabled, so {what} can't be typed into it.");
@@ -1514,12 +1522,21 @@ public sealed class TbAccordionItemDriver
         get
         {
             var triggers = _findAll("button.tb-accordion__trigger")
-                .Where(trigger => Choices.NameOf(trigger) == _header).ToList();
+                .Where(trigger => Choices.NameOf(trigger) == _header || TitleTexts(trigger).Contains(_header))
+                .ToList();
             return triggers.Count == 1 ? triggers[0] : throw new InvalidOperationException(triggers.Count == 0
                 ? $"No accordion item's header reads \"{_header}\"."
                 : $"{triggers.Count} accordion items' headers read \"{_header}\".");
         }
     }
+
+    // In a header that shows a badge, any run of title text outside the badge also names the item, so a header with a
+    // count is found by its title alone.
+    private static IEnumerable<string> TitleTexts(IElement trigger) =>
+        trigger.QuerySelector("[data-part=badge]") is null ? [] : trigger.QuerySelectorAll(".tb-accordion__title")
+            .SelectMany(title => title.Descendants<IText>())
+            .Where(text => text.ParentElement?.Closest("[data-part=badge]") is null)
+            .Select(text => Notices.Collapsed(text.Data));
 
     /// <summary>Opens the item, if it's closed, and returns its panel. Throws for a disabled item that is closed.
     /// </summary>
@@ -1557,7 +1574,8 @@ public sealed class TbToastsDriver
 
     /// <summary>Waits for a toast whose text contains this and returns it, to read it or click its action. Like
     /// Playwright's text match, it ignores case and runs of whitespace. When several match, as when the same action
-    /// ran twice, this returns the newest.</summary>
+    /// ran twice, this returns the newest. When none shows within bUnit's wait timeout, this throws bUnit's
+    /// <c>WaitForFailedException</c>.</summary>
     public async Task<IElement> WaitForAsync(string text)
     {
         var wanted = Collapsed(text);
@@ -2539,7 +2557,7 @@ public sealed class TbNumberFieldDriver : TbFieldDriver
     {
         ArgumentOutOfRangeException.ThrowIfZero(count);
         var part = count < 0 ? "decrement" : "increment";
-        if (Typing.IsLocked(_find()))
+        if (Locks.IsLocked(_find()))
         {
             throw new InvalidOperationException("This field is read-only or disabled, so it can't be stepped.");
         }
@@ -3066,7 +3084,7 @@ public sealed class TbTagInputDriver : TbFieldDriver
     public async Task AddAsync(string text)
     {
         var input = _find();
-        if (input.HasAttribute("disabled") || input.HasAttribute("readonly"))
+        if (Locks.IsLocked(input))
         {
             throw new InvalidOperationException("This tag input is disabled or read-only, so tags can't be added.");
         }
@@ -3311,7 +3329,8 @@ public sealed class TbTreeDriver
     }
 
     /// <summary>Opens every row, and the rows that appear inside them as they open. In a branch, it opens the branch's
-    /// row and the rows inside it.</summary>
+    /// row and the rows inside it. A tree inside a row is a tree of its own, which this leaves closed; open it with its
+    /// own helper.</summary>
     public async Task ExpandAllAsync()
     {
         await ExpandAsync();
@@ -3491,7 +3510,14 @@ public sealed class TbGridDriver
 
     /// <summary>Waits until the grid has loaded its rows, such as from a <c>DataProvider</c> that answers later.
     /// </summary>
-    public async Task WaitForRowsAsync() => await _scripts.WaitForAsync(() => !IsBusy);
+    public async Task WaitForRowsAsync()
+    {
+        // Read once first, so a grid that isn't there fails with its own message rather than inside bUnit's wait.
+        if (IsBusy)
+        {
+            await _scripts.WaitForAsync(() => !IsBusy);
+        }
+    }
 
     // A grid nested in a detail row has rows of its own, which aren't this grid's.
     private const string OwnRows = ":scope > tbody > tr[data-part=row]";

@@ -22,13 +22,27 @@ public class AccordionTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task AccordionItem_ShouldMoveFocusToItsHeader_WhenCodeClosesAnItemOnItsOwn(string browser)
     {
         var page = await OpenAsync(browser, "/accordion-item");
-        var header = page.GetByRole(AriaRole.Button, new() { Name = "On its own" });
+        var header = page.GetByRole(AriaRole.Button, new() { Name = "On its own", Exact = true });
         await page.GetByRole(AriaRole.Button, new() { Name = "Done" }).FocusAsync();
 
         await page.Keyboard.PressAsync("Enter");
 
         await Expect(header).ToHaveAttributeAsync("aria-expanded", "false");
         await Expect(header).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFindAnItemByItsTitleOrFullName_WhenItsHeaderShowsABadge(string browser)
+    {
+        var page = await OpenAsync(browser, "/accordion-item");
+
+        await page.Tb().AccordionItem("On its own").CollapseAsync();
+        var panel = await page.Tb().AccordionItem("Reviews").ExpandAsync();
+        var shown = await panel.TextContentAsync();
+        await page.Tb().AccordionItem("Reviews 3").CollapseAsync();
+
+        Assert.Equal("Reviews content", shown?.Trim());
+        await Expect(page.Tb().AccordionItem("Reviews").Trigger).ToHaveAttributeAsync("aria-expanded", "false");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

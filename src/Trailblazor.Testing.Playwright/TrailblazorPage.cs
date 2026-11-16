@@ -116,9 +116,15 @@ public sealed class TrailblazorPage(ILocator scope)
     /// </summary>
     public TbFormLocator Form(string? name = null) => new(scope, name);
 
-    /// <summary>The <c>TbAccordion</c> item with this header.</summary>
+    /// <summary>The <c>TbAccordion</c> item with this header: its full name, or, when the header shows a badge, any run
+    /// of text in its title outside the badge, such as the title beside a count.</summary>
     public TbAccordionItemLocator AccordionItem(string header) =>
-        new(scope, scope.GetByRole(AriaRole.Button, new() { Name = header, Exact = true }));
+        new(scope, scope.GetByRole(AriaRole.Button, new() { Name = header, Exact = true }).Or(scope.Locator(
+            "xpath=.//button[contains(concat(' ', normalize-space(@class), ' '), ' tb-accordion__trigger ')]"
+            + "[.//*[@data-part='badge']][.//*[contains(concat(' ', normalize-space(@class), ' '), "
+            + "' tb-accordion__title ')]//text()"
+            + $"[normalize-space()={TbTreeLocator.XPathText(header)}][not(ancestor::*[@data-part='badge'])]]")));
+
 
     /// <summary>The <c>TbAccordionItem</c> this finds, by the item or its header's button, inside the scope, such as
     /// one with custom <c>TitleContent</c>, as <c>page.Locator("#gear")</c>.</summary>
@@ -584,7 +590,8 @@ public abstract class TbFieldLocator
     public Task<bool> InvalidAsync() => Control.EvaluateAsync<bool>(Marked);
 
     /// <summary>Moves focus out of the field, as tabbing away does, which raises its <c>OnBlur</c>. Does nothing when
-    /// focus isn't in the field. Wait for what the app does next with <c>Expect</c>.</summary>
+    /// focus isn't in the field, since a user who isn't in a field can't leave it. Wait for what the app does next with
+    /// <c>Expect</c>.</summary>
     public Task LeaveAsync() => Control.EvaluateAsync(Leave);
 }
 
@@ -1298,7 +1305,7 @@ public sealed class TbTreeLocator(ILocator scope, ILocator tree)
 
     /// <summary>Opens every row, and the rows that appear inside them as they open, waiting for children that load. A
     /// virtualized tree opens the rows it has rendered. In a branch, it opens the branch's row and the rows inside it.
-    /// </summary>
+    /// A tree inside a row is a tree of its own, which this leaves closed; open it with its own helper.</summary>
     public async Task ExpandAllAsync()
     {
         await ExpandAsync();
@@ -1481,8 +1488,8 @@ public sealed class TbTreeLocator(ILocator scope, ILocator tree)
             $"xpath=.//*[@role='treeitem'][@data-key={XPathText(key)}][count(ancestor::*[@role='tree'])={_depth}]");
     }
 
-    // An XPath string literal, which has no escapes, so a key holding both quotes is joined from pieces.
-    private static string XPathText(string text) => !text.Contains('\'') ? $"'{text}'"
+    // An XPath string literal, which has no escapes, so text holding both quotes is joined from pieces.
+    internal static string XPathText(string text) => !text.Contains('\'') ? $"'{text}'"
         : !text.Contains('"') ? $"\"{text}\""
         : $"concat('{text.Replace("'", "',\"'\",'", StringComparison.Ordinal)}')";
 

@@ -4,6 +4,16 @@
 <TbAccordionItem Title="On its own" @bind-Expanded="_open">
     <TbButton OnClick="() => _open = false">Done</TbButton>
 </TbAccordionItem>
+@* A title that begins with another item's but shows no badge, so only its full name finds it. *@
+<TbAccordionItem>
+    <TitleContent>On its own <em>again</em></TitleContent>
+    <ChildContent>Again content</ChildContent>
+</TbAccordionItem>
+@* A header that shows a count beside its title. *@
+<TbAccordionItem>
+    <TitleContent>Reviews <TbBadge Count="3" /></TitleContent>
+    <ChildContent>Reviews content</ChildContent>
+</TbAccordionItem>
 
 @code {
     private bool _open = true;

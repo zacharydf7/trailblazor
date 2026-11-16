@@ -1,5 +1,6 @@
 using System.Reflection;
 using Bunit;
+using Bunit.Extensions.WaitForHelpers;
 using Trailblazor.Testing;
 
 namespace Trailblazor.Tests;
@@ -10,6 +11,10 @@ public class DriverTaskTests : BunitContext
 {
     // Drivers that wait for their component to go finish at once when it isn't there.
     private static readonly HashSet<string> DoneWhenGone = ["TbDialogDriver.WaitForClosedAsync"];
+
+    // These drivers wait for something to show, so they time out as bUnit's own waits do.
+    private static readonly HashSet<string> TimeOutWhenGone =
+        ["TbToastsDriver.WaitForAsync", "TbToastsDriver.DismissAsync", "TbToastsDriver.ChooseAsync"];
 
     public DriverTaskTests() => this.AddTrailblazor();
 
@@ -55,9 +60,20 @@ public class DriverTaskTests : BunitContext
                 {
                     failures.Add($"{name} didn't finish without its component.");
                 }
-                catch (Exception)
+                catch (InvalidOperationException)
                 {
-                    // Faulted, as it should.
+                    // Faulted with the drivers' refusal, as it should.
+                }
+                catch (ArgumentException error) when (method.GetParameters().Any(each => each.Name == error.ParamName))
+                {
+                    // A stand-in argument the driver checks first, such as an empty list of files.
+                }
+                catch (WaitForFailedException) when (TimeOutWhenGone.Contains(name))
+                {
+                }
+                catch (Exception error)
+                {
+                    failures.Add($"{name} faulted with {error.GetType().Name}: {error.Message}");
                 }
             }
 
@@ -70,6 +86,33 @@ public class DriverTaskTests : BunitContext
         Assert.Empty(typeof(TrailblazorMarkup).Assembly.GetExportedTypes()
             .Where(type => IsDriver(type) && !type.IsAbstract && !seen.Contains(type)).Select(type => type.Name));
         Assert.Empty(failures);
+    }
+
+    [Fact]
+    public async Task Drivers_ShouldFaultWithTheirRefusal_WhenTheComponentRefusesTheAction()
+    {
+        var tags = Render<TbTagInput>(parameters => parameters.Add(field => field.Label, "Features")
+            .Add(field => field.Disabled, true));
+        var accordion = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Gear")
+            .Add(item => item.Disabled, true));
+        var palette = Render<TbCommandPalette<string>>(parameters => parameters.Add(each => each.Items, ["New tab"])
+            .Add(each => each.Open, true));
+        var menu = Render<TbMenu>(parameters => parameters.Add(each => each.Label, "Actions")
+            .AddChildContent<TbMenuItem>(item => item.Add(each => each.Disabled, true).AddChildContent("Rename")));
+
+        (Task Task, string Says)[] refusals =
+        [
+            (tags.Tb().TagInput("Features").AddAsync("Wi-Fi"), "disabled or read-only"),
+            (accordion.Tb().AccordionItem("Gear").ExpandAsync(), "is disabled"),
+            (palette.Tb().CommandPalette().ChooseAsync("Missing"), "no command named"),
+            (menu.Tb().Menu("Actions").ChooseAsync("Rename"), "is disabled"),
+        ];
+
+        foreach (var (task, says) in refusals)
+        {
+            var refusal = Assert.IsType<InvalidOperationException>(await Record.ExceptionAsync(() => task));
+            Assert.Contains(says, refusal.Message);
+        }
     }
 
     // Drivers a driver's lookups return, such as a tree's branch or a context menu on a key, from stand-in arguments.

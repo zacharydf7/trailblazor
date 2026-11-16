@@ -87,6 +87,9 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-16
 
+- The bUnit typing drivers (text, number, date, time, color and autocomplete) and the tag input's `AddAsync` refuse a field inside a disabled `fieldset` or marked `aria-readonly="true"`, as the choice drivers already did, and the choice drivers now also refuse one with `readonly`
+- `AccordionItem(header)` in both testing packages also finds an item whose header shows a badge by any run of text in its title outside the badge, so a header that shows a count is found by its title alone
+- The bUnit `Grid(name).WaitForRowsAsync()` fails with the grid lookup's own message when no grid has the name, rather than inside bUnit's wait
 - A required field leaves its required message out of the `EditContext` when a validator already reports the model's `[Required]` for it, so `GetValidationMessages()` and a `ValidationSummary` hold the message once; the form's `Errors` and the field still show the field's wording, now also for a `[Required]` that sets its own message
 - The Playwright tree select's `OpenAsync`, and the helpers that open its tree, wait until its trigger carries `aria-expanded="true"`, so `IsOpenAsync()` returns true straight after
 - An interactive dialog counts its window state changes in `data-window-commits` once `TbDialogHeader.WindowStateChanged` has run, and the dialog's `MinimizeAsync`, `MaximizeAsync` and `RestoreAsync` wait for it in both testing packages

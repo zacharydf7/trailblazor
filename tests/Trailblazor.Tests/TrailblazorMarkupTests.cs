@@ -174,6 +174,82 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task AccordionItem_ShouldFindTheItemByItsTitleOrFullName_WhenItsHeaderShowsABadge()
+    {
+        var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.TitleContent, builder =>
+        {
+            builder.AddContent(0, "Reviews ");
+            builder.OpenComponent<TbBadge>(1);
+            builder.AddComponentParameter(2, nameof(TbBadge.Count), 3);
+            builder.CloseComponent();
+        }).AddChildContent("Reviews content"));
+
+        await cut.Tb().AccordionItem("Reviews").ExpandAsync();
+        var opened = cut.Find("button").GetAttribute("aria-expanded");
+        await cut.Tb().AccordionItem("Reviews 3").CollapseAsync();
+
+        Assert.Equal(("true", "false"), (opened, cut.Find("button").GetAttribute("aria-expanded")));
+        Assert.Throws<InvalidOperationException>(() => cut.Tb().AccordionItem("3").Trigger);
+    }
+
+    [Fact]
+    public async Task TextField_ShouldRefuseToType_WhenItsFieldsetIsDisabledOrItIsReadOnlyByAria()
+    {
+        var fieldset = Render(builder =>
+        {
+            builder.OpenElement(0, "fieldset");
+            builder.AddAttribute(1, "disabled", true);
+            builder.OpenComponent<TbTextField<string>>(2);
+            builder.AddComponentParameter(3, nameof(TbTextField<string>.Label), "Trail");
+            builder.CloseComponent();
+            builder.CloseElement();
+        });
+        var aria = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.InputAttributes, new Dictionary<string, object> { ["aria-readonly"] = "true" }));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fieldset.Tb().TextField("Trail").EnterAsync("Ash"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => aria.Tb().TextField("Trail").EnterAsync("Ash"));
+    }
+
+    [Fact]
+    public async Task TagInput_ShouldRefuseToAddATag_WhenItsFieldsetIsDisabled()
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenElement(0, "fieldset");
+            builder.AddAttribute(1, "disabled", true);
+            builder.OpenComponent<TbTagInput>(2);
+            builder.AddComponentParameter(3, nameof(TbTagInput.Label), "Features");
+            builder.CloseComponent();
+            builder.CloseElement();
+        });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().TagInput("Features").AddAsync("Wi-Fi"));
+    }
+
+    [Fact]
+    public async Task AccordionItem_ShouldFindTheItemByItsFullName_WhenAnotherItemsTitleHasTheSameTextWithoutABadge()
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbAccordionItem>(0);
+            builder.AddComponentParameter(1, nameof(TbAccordionItem.Title), "Shipping");
+            builder.CloseComponent();
+            builder.OpenComponent<TbAccordionItem>(2);
+            builder.AddComponentParameter(3, nameof(TbAccordionItem.TitleContent), (RenderFragment)(title =>
+            {
+                title.AddContent(0, "Shipping ");
+                title.AddMarkupContent(1, "<em>(optional)</em>");
+            }));
+            builder.CloseComponent();
+        });
+
+        await cut.Tb().AccordionItem("Shipping").ExpandAsync();
+
+        Assert.Equal(["true", "false"], cut.FindAll("button").Select(button => button.GetAttribute("aria-expanded")));
+    }
+
+    [Fact]
     public async Task RangeSlider_ShouldRefuseToMoveIt_WhenItIsReadOnlyOrOnAStaticPage()
     {
         var locked = Render<TbRangeSlider<int>>(parameters => parameters.Add(field => field.Label, "Elevation")

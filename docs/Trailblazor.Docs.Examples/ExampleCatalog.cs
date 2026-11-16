@@ -8068,7 +8068,8 @@ public static class ExampleCatalog
                 + "moves, then `open` or `closed`. On a static page, click the item's header instead. In "
                 + "bUnit, `cut.Tb().AccordionItem(\"Sizing\")` from `Trailblazor.Testing` has the same `ExpandAsync` "
                 + "and `CollapseAsync`; bUnit runs no script, so an item it opens or closes stays `opening` or "
-                + "`closing`.",
+                + "`closing`. Both find an item by its header's full name, or by its title alone when the header "
+                + "also shows a badge, such as \"Reviews\" beside a count.",
         },
         new("tree-view", "Tree view", ExampleCategory.Navigation,
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
