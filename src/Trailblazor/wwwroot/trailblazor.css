@@ -8016,7 +8016,7 @@
         color: var(--tb-color-text-disabled);
     }
 
-    .tb-tree__item--match > .tb-tree__content > .tb-tree__text {
+    .tb-tree__item--match > .tb-tree__content > :is(.tb-tree__text, [data-part="text"]) {
         font-weight: var(--tb-font-weight-medium);
     }
 
@@ -8057,7 +8057,9 @@
         min-width: var(--tb-tree-text-min-width, 6ch);
     }
 
-    .tb-tree__text {
+    /* A template marks its text with the stable data-part, so it needn't rely on the styling class. */
+    .tb-tree__text,
+    .tb-tree__content > [data-part="text"] {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;

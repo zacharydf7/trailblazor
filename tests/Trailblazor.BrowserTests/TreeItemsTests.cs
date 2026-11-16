@@ -90,7 +90,7 @@ public class TreeItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Text_ShouldKeepItsEllipsis_WhenARowsContentUsesTheTextPart(string browser)
     {
         var page = await OpenItemsAsync(browser);
-        var text = page.GetByRole(AriaRole.Tree, new() { Name = "Long names" }).Locator(".tb-tree__text");
+        var text = page.GetByRole(AriaRole.Tree, new() { Name = "Long names" }).Locator("[data-part=text]");
 
         var shown = await text.EvaluateAsync<string>(
             "text => `${text.scrollWidth > text.clientWidth} ${getComputedStyle(text).textOverflow}`");

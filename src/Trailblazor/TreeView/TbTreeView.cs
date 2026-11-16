@@ -169,7 +169,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public TreeViewClasses? Classes { get; set; }
 
-    /// <summary>Draws a row's content instead of its icon and text.</summary>
+    /// <summary>Draws a row's content instead of its icon and text. Put the text in an element with
+    /// <c>data-part="text"</c>, directly in the template, to keep the row's ellipsis.</summary>
     [Parameter]
     public RenderFragment<TreeItemContext<TItem, TKey>>? ItemTemplate { get; set; }
 

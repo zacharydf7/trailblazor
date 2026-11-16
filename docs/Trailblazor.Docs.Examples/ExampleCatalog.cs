@@ -8038,8 +8038,8 @@ public static class ExampleCatalog
                 new("disabled", "Disabled rows", "`ItemDisabled` turns off single rows, and `Disabled` turns off the "
                     + "whole tree.", typeof(TreeViewDisabledExample)),
                 new("item-template", "Item template", "`ItemTemplate` draws a row's content. Keep `ItemText` so typing "
-                    + "still finds the row, and put the text in an element with the `tb-tree__text` class, directly in "
-                    + "the template, to keep the row's ellipsis. To draw a row's text and its controls from one "
+                    + "still finds the row, and put the text in an element with `data-part=\"text\"`, directly in the "
+                    + "template, to keep the row's ellipsis. To draw a row's text and its controls from one "
                     + "component of your own, render it in both `ItemTemplate` and `ItemEndTemplate` with a parameter "
                     + "saying which part to draw; each slot gets its own instance, so keep any state they share on the "
                     + "item rather than in the component.",
@@ -8223,8 +8223,8 @@ public static class ExampleCatalog
                 new("toggle", "The arrow that opens and closes a row."),
                 new("check", "A checkable tree's checkbox."),
                 new("content", "The row's text or template."),
-                new("text", "The row's text, inside its content. A template keeps the ellipsis by giving its text "
-                    + "the `tb-tree__text` class."),
+                new("text", "The row's text, inside its content. A template keeps the ellipsis by marking its text "
+                    + "with this part too."),
                 new("end", "Content at the end of the row, such as a count or a menu."),
                 new("insert", "The slot between rows that holds InsertTemplate content, such as an add button."),
                 new("loading", "The message shown while rows load."),

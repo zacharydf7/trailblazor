@@ -64,7 +64,8 @@ else
     [Parameter]
     public bool Disabled { get; set; }
 
-    /// <summary>The row's content in place of its <see cref="Icon"/> and <see cref="Text"/>.</summary>
+    /// <summary>The row's content in place of its <see cref="Icon"/> and <see cref="Text"/>. Put the text in an
+    /// element with <c>data-part="text"</c>, directly in this content, to keep the row's ellipsis.</summary>
     [Parameter]
     public RenderFragment? TextContent { get; set; }
 
