@@ -64,7 +64,7 @@ public abstract class ToggleGroupKeysTests(BrowserFixture fixture) : BrowserTest
         await page.Keyboard.PressAsync("Home");
         await page.Keyboard.PressAsync("Space");
 
-        await Expect(page.GetByText("Showing: ")).ToHaveTextAsync("Showing: Water, Alerts, Campsites");
+        await Expect(page.GetByText("Showing: ")).ToHaveTextAsync("Showing: Water, Alerts, Camps");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

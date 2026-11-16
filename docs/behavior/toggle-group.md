@@ -47,5 +47,6 @@ Familiar apps: Word's text alignment and its bold, italic and underline buttons
 
 ## Not applicable
 
+- Wrapping on a narrow screen: wrapped items would lose their joined look, so a horizontal group stays on one line. The page says to keep labels short or use `Vertical`.
 - Arrows that press as they move: a [radio group](radio-group.md) does that, and an item here may start something costly such as a map reload.
 - Typing a letter to jump to an item: a group has a handful of items and no familiar app does it.

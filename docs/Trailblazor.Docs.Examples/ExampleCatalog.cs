@@ -1479,6 +1479,8 @@ public static class ExampleCatalog
             [
                 new("`Comparer` decides whether two values are the same, such as entities matched by id, so a value "
                     + "loaded again still presses its item."),
+                new("A horizontal group keeps its items joined on one line and never wraps, so labels too long to "
+                    + "share a line on a phone make it wider than the screen. Shorten them, or use `Vertical`."),
                 new("For a choice with three answers, such as Any, Yes and No, give each item its own value, such as "
                     + "an enum member. Don't use `null` for one of them: `null` is also the group's value before "
                     + "anything is chosen and after a `Clearable` group is cleared, so that item would look chosen "

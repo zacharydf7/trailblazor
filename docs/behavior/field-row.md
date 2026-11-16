@@ -27,6 +27,7 @@ Nothing of its own.
 - [x] A taller box, such as a field with several lines, keeps the other boxes at their own height. `LayoutTests.FieldRow_ShouldKeepEachBoxItsOwnHeightAndPutABoxlessFieldOnTheirLine_WhenOneBoxIsTaller`
 - [x] A field with no box, such as a file upload, sits on the boxes' line like a button. `LayoutTests.FieldRow_ShouldKeepEachBoxItsOwnHeightAndPutABoxlessFieldOnTheirLine_WhenOneBoxIsTaller`
 - [x] Labels share the line above the boxes, so a field with no visible label or a label on two lines still lines up with the others. `LayoutTests.FieldRow_ShouldPutEveryBoxOnOneLineAndCenterTheButtons_WhenFieldsShowDifferentMessages`
+- [x] A field's box shrinks to its column, even one narrower than the input's natural width, rather than spilling into the next column. `LayoutTests.FieldRow_ShouldKeepEachBoxInsideItsColumn_WhenTheColumnIsNarrowerThanTheInput`
 
 ## Not applicable
 

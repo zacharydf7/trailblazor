@@ -369,6 +369,14 @@ a:focus-visible {
     }
 }
 
+/* At 320 pixels, the width WCAG's reflow criterion uses, the full padding leaves too little room for a demo such as
+   a six-slot code field. */
+@media (max-width: 24rem) {
+    .docs-example__stage {
+        padding-inline: var(--tb-space-3);
+    }
+}
+
 .docs-example__demo {
     max-width: 100%;
 }

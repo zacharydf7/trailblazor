@@ -2663,8 +2663,11 @@
         grid-row: 1;
     }
 
+    /* A grid item won't shrink below its content, and an input's width follows its size attribute, so the box
+       would push past its column. */
     .tb-field-row > .tb-field:has(> [data-part="control"]) > [data-part="control"] {
         grid-row: 2;
+        min-inline-size: 0;
     }
 
     .tb-field-row > .tb-field:has(> [data-part="control"]) > [data-part="helper"] {

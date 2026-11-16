@@ -262,12 +262,13 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     public static TheoryData<string> ComponentPages => new(ExampleCatalog.All.Select(example => example.Name));
 
-    // Layout doesn't differ enough between engines to run every page in each.
+    // Layout doesn't differ enough between engines to run every page in each. 320 pixels, as in the guides test
+    // above, is the width WCAG's reflow criterion uses.
     [Theory, MemberData(nameof(ComponentPages))]
     public async Task ComponentPage_ShouldFitThePageWidth_WhenTheScreenIsAPhone(string example)
     {
         var page = await OpenDocsAsync("chromium", $"components/{example}",
-            new() { ViewportSize = new() { Width = 390, Height = 844 } });
+            new() { ViewportSize = new() { Width = 320, Height = 640 } });
         await Expect(page.Locator(".docs-example__stage").First).ToBeVisibleAsync();
 
         await Expect(page.Locator(".tb-data-grid--loading")).ToHaveCountAsync(0);

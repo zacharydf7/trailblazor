@@ -180,6 +180,20 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(lines.Height > single.Height * 2, "The four-line box should be taller than the one-line box.");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FieldRow_ShouldKeepEachBoxInsideItsColumn_WhenTheColumnIsNarrowerThanTheInput(string browser)
+    {
+        var page = await OpenAtWidthAsync(browser, "/layout-field-row", width: 1200);
+        // The climb's column is 6rem, narrower than a text box's natural width.
+        var field = page.Locator(".tb-field-row .tb-field")
+            .Filter(new() { Has = page.GetByLabel("Longest day's climb in meters") });
+
+        var column = (await field.BoundingBoxAsync())!;
+        var box = (await field.Locator("[data-part=control]").BoundingBoxAsync())!;
+
+        Assert.Equal(column.Width, box.Width, tolerance: 1);
+    }
+
     private Task<IPage> OpenAtWidthAsync(string browser, string path, int width) =>
         OpenAsync(browser, path, new() { ViewportSize = new() { Width = width, Height = 900 } });
 

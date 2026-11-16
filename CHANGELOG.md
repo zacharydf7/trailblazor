@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-16
 
+- A field in a `TbFieldRow` shrinks to its column, where its box used to stay as wide as its input's `size` and spill into the next column
 - A masked text field no longer commits on the Enter that ends an input method's composition, matching the code field
 - The bUnit typing drivers (text, number, date, time, color and autocomplete) and the tag input's `AddAsync` refuse a field inside a disabled `fieldset` or marked `aria-readonly="true"`, as the choice drivers already did, and the choice drivers now also refuse one with `readonly`
 - `AccordionItem(header)` in both testing packages also finds an item whose header shows a badge by any run of text in its title outside the badge, so a header that shows a count is found by its title alone
