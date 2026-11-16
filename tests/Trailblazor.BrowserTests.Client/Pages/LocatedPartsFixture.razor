@@ -1,0 +1,53 @@
+@page "/located-parts"
+
+@* Components the tests find by a locator rather than by a name, each with an output that shows what the helper did.
+   A second tree, tabs and grid make a helper that ignores its locator find two. *@
+<TbDateTimePicker TDateTime="DateTime" AriaLabel="Starts at" id="starts" @bind-Value="_starts" />
+<output data-testid="starts">@_starts?.ToString("yyyy-MM-ddTHH:mm")</output>
+<TbTreeSelect TItem="Place" TKey="string" AriaLabel="Region" id="region" Items="Places" KeySelector="place => place.Id"
+              ItemText="place => place.Name" ChildrenSelector="place => place.Children" @bind-Value="_region" />
+<output data-testid="region">@_region</output>
+<TbAccordionItem Title="Gear list" id="gear">Pack light.</TbAccordionItem>
+<TbMenu Label="Trip actions" id="actions">
+    <TbMenuItem OnClick="@(() => _action = "Rename")">Rename</TbMenuItem>
+</TbMenu>
+<output data-testid="action">@_action</output>
+<TbTreeView TItem="Place" TKey="string" AriaLabel="Map places" id="places" Items="Places"
+            KeySelector="place => place.Id" ItemText="place => place.Name" ChildrenSelector="place => place.Children"
+            @bind-SelectedKeys="_places" />
+<output data-testid="places">@string.Join(", ", _places ?? [])</output>
+<TbTreeView TItem="Place" TKey="string" AriaLabel="Other places" Items="Places" KeySelector="place => place.Id"
+            ItemText="place => place.Name" ChildrenSelector="place => place.Children" />
+<TbTabs AriaLabel="Trip views" id="views" @bind-ActiveKey="_view">
+    <TbTab Key="map" Text="Map">The map.</TbTab>
+    <TbTab Key="notes" Text="Notes">The notes.</TbTab>
+</TbTabs>
+<output data-testid="view">@_view</output>
+<TbTabs AriaLabel="Other views">
+    <TbTab Key="map" Text="Map">The other map.</TbTab>
+</TbTabs>
+<TbDataGrid TItem="Place" AriaLabel="Place list" id="place-grid" Items="Places" KeySelector="place => place.Id"
+            SelectionMode="SelectionMode.Single" @bind-SelectedItems="_chosen">
+    <TbColumn Field="place => place.Name" />
+</TbDataGrid>
+<output data-testid="chosen">@string.Join(", ", (_chosen ?? []).Select(place => place.Name))</output>
+<TbDataGrid TItem="Place" AriaLabel="Other list" Items="Places" KeySelector="place => place.Id">
+    <TbColumn Field="place => place.Name" />
+</TbDataGrid>
+
+@code {
+    private static readonly Place[] Places =
+    [
+        new("north", "North", [new("ridge", "Ridge", null)]),
+        new("south", "South", null),
+    ];
+
+    private DateTime? _starts;
+    private string? _region;
+    private string? _action;
+    private IReadOnlyCollection<string>? _places = [];
+    private string? _view = "map";
+    private IReadOnlyCollection<Place>? _chosen = [];
+
+    private sealed record Place(string Id, string Name, Place[]? Children);
+}

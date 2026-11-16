@@ -61,7 +61,7 @@ public sealed class TbViewportLocator(ILocator scope, string? label)
         var trigger = Root.Locator("[data-part=zoom-menu] [aria-haspopup=menu]");
         var menu = Scope.Document(scope).Locator($"[id='{await trigger.GetAttributeAsync("aria-controls")}']");
         var name = (await menu.Locator(item).TextContentAsync())!.Trim();
-        await new TbMenuLocator(Root, (await trigger.GetAttributeAsync("aria-label"))!).ChooseAsync(name);
+        await new TbMenuLocator(Root, trigger).ChooseAsync(name);
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-fit", fit);
     }
 }

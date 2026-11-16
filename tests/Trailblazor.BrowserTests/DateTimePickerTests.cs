@@ -98,4 +98,15 @@ public class DateTimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByTestId("posted")).ToHaveTextAsync("2026-09-14 16:45");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ChooseAsync_ShouldFillTheInput_WhenAStaticPickerIsFoundByALocator(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-date-time-picker");
+        var starts = page.Tb().DateTimePicker(page.Locator("#starts"));
+
+        await starts.ChooseAsync(new DateTime(2026, 9, 14, 16, 45, 0));
+
+        Assert.Equal(new DateTime(2026, 9, 14, 16, 45, 0), await starts.ValueAsync());
+    }
 }

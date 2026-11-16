@@ -63,6 +63,40 @@ public class LocatedFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helpers_ShouldWorkThePartsTheyAreGiven_WhenFoundByALocator(string browser)
+    {
+        var page = await OpenAsync(browser, "/located-parts");
+        var tb = page.Tb();
+
+        await tb.TreeSelect(page.Locator("#region")).ChooseAsync("North", "Ridge");
+        var expanded = await tb.AccordionItem(page.Locator("#gear")).ExpandAsync();
+        await tb.Menu(page.Locator("#actions")).ChooseAsync("Rename");
+        await tb.Tree(page.Locator("#places")).Branch("North").SelectAsync("Ridge");
+        await tb.Tabs(page.Locator("#views")).SelectAsync("Notes");
+        await tb.Grid(page.Locator("#place-grid")).SelectAsync("South");
+
+        Assert.Equal("ridge", await page.GetByTestId("region").TextContentAsync());
+        await Expect(expanded).ToHaveTextAsync("Pack light.");
+        Assert.Equal("Rename", await page.GetByTestId("action").TextContentAsync());
+        Assert.Equal("ridge", await page.GetByTestId("places").TextContentAsync());
+        Assert.Equal("notes", await page.GetByTestId("view").TextContentAsync());
+        Assert.Equal("South", await page.GetByTestId("chosen").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task DateTimePicker_ShouldWorkThePickerItIsGiven_WhenFoundByALocator(string browser)
+    {
+        Assert.SkipWhen(browser == "webkit", NoTimeBox);
+        var page = await OpenAsync(browser, "/located-parts");
+        var starts = page.Tb().DateTimePicker(page.Locator("#starts"));
+
+        await starts.ChooseAsync(new DateTime(2026, 5, 2, 9, 30, 0));
+
+        Assert.Equal(new DateTime(2026, 5, 2, 9, 30, 0), await starts.ValueAsync());
+        Assert.Equal("2026-05-02T09:30", await page.GetByTestId("starts").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldLookOnlyInsideTheScope_WhenGivenALocatorThatMatchesMore(string browser)
     {
         var page = await OpenAsync(browser, "/drawn-labels");

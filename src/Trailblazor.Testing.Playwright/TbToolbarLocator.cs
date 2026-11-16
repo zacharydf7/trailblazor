@@ -42,7 +42,6 @@ public sealed class TbToolbarLocator(ILocator scope, string? name)
             throw new InvalidOperationException($"The toolbar has no button named \"{button}\".");
         }
 
-        var more = await overflow.Locator("[data-part=trigger]").GetAttributeAsync("aria-label");
-        await new TbMenuLocator(overflow, more!).ChooseAsync(button);
+        await new TbMenuLocator(overflow, overflow.Locator("[data-part=trigger]")).ChooseAsync(button);
     }
 }

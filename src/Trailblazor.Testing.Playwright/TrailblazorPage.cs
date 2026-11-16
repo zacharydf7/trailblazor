@@ -117,7 +117,12 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbFormLocator Form(string? name = null) => new(scope, name);
 
     /// <summary>The <c>TbAccordion</c> item with this header.</summary>
-    public TbAccordionItemLocator AccordionItem(string header) => new(scope, header);
+    public TbAccordionItemLocator AccordionItem(string header) =>
+        new(scope, scope.GetByRole(AriaRole.Button, new() { Name = header, Exact = true }));
+
+    /// <summary>The <c>TbAccordionItem</c> this finds, by the item or its header's button, inside the scope, such as
+    /// one with custom <c>TitleContent</c>, as <c>page.Locator("#gear")</c>.</summary>
+    public TbAccordionItemLocator AccordionItem(ILocator item) => new(scope, item);
 
     /// <summary>The <c>TbTooltip</c> around this trigger.</summary>
     public TbTooltipLocator Tooltip(ILocator trigger) => new(trigger);
@@ -168,7 +173,13 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbDatePickerLocator DatePicker(ILocator input) => new(scope, input);
 
     /// <summary>The <c>TbDateTimePicker</c> with this label.</summary>
-    public TbDateTimePickerLocator DateTimePicker(string label) => new(scope, label);
+    public TbDateTimePickerLocator DateTimePicker(string label) =>
+        new(scope, scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) })
+            .Or(scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[data-static]"))));
+
+    /// <summary>The <c>TbDateTimePicker</c> this finds, by its group of boxes or the field around it, inside the
+    /// scope, such as one whose label the app draws itself, as <c>page.Locator("#start")</c>.</summary>
+    public TbDateTimePickerLocator DateTimePicker(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbCalendar</c> with this label.</summary>
     public TbCalendarLocator Calendar(string label) =>
@@ -179,11 +190,24 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbCalendarLocator Calendar(ILocator calendar) => new(scope, calendar);
 
     /// <summary>The <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c> with this label.</summary>
-    public TbTreeSelectLocator TreeSelect(string label) => new(scope, label);
+    public TbTreeSelectLocator TreeSelect(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c> whose button this finds, inside the scope, such as
+    /// one whose label the app draws itself, as <c>page.Locator("#region")</c>.</summary>
+    public TbTreeSelectLocator TreeSelect(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbTreeView</c> with this accessible name, or the only one in the scope when no name is
     /// given.</summary>
-    public TbTreeLocator Tree(string? name = null) => new(scope, name);
+    // A name and a locator are never confused, and the name stays optional as on the other helpers.
+#pragma warning disable RS0027
+    // A tree with no rows is a group, so that it can hold its message.
+    public TbTreeLocator Tree(string? name = null) =>
+        new(scope, Scope.ByRole(scope, AriaRole.Tree, name).Or(Scope.ByRole(scope, AriaRole.Group, name)));
+#pragma warning restore RS0027
+
+    /// <summary>The <c>TbTreeView</c> this finds, inside the scope, such as one of several that have no accessible
+    /// name or share one, as <c>page.Locator("#places")</c>.</summary>
+    public TbTreeLocator Tree(ILocator tree) => new(scope, tree);
 
     /// <summary>The <c>TbStepper</c> with this accessible name, or the only one in the scope when no name is
     /// given.</summary>
@@ -199,7 +223,16 @@ public sealed class TrailblazorPage(ILocator scope)
 
     /// <summary>The <c>TbDataGrid</c> whose table has this accessible name, or the only one in the scope when no name
     /// is given.</summary>
-    public TbGridLocator Grid(string? name = null) => new(scope, name);
+    // A name and a locator are never confused, and the name stays optional as on the other helpers.
+#pragma warning disable RS0027
+    // With cell navigation the table is a grid to assistive technology, and with child rows a tree grid.
+    public TbGridLocator Grid(string? name = null) => new(scope, Scope.ByRole(scope, AriaRole.Table, name)
+        .Or(Scope.ByRole(scope, AriaRole.Grid, name)).Or(Scope.ByRole(scope, AriaRole.Treegrid, name)));
+#pragma warning restore RS0027
+
+    /// <summary>The <c>TbDataGrid</c> this finds, by its table or the grid around it, inside the scope, such as one of
+    /// several that have no accessible name or share one, as <c>page.Locator("#trails")</c>.</summary>
+    public TbGridLocator Grid(ILocator grid) => new(scope, grid);
 
     /// <summary>The <c>TbCommandPalette</c> with this label, or the only one in the scope.</summary>
     public TbCommandPaletteLocator CommandPalette(string? name = null) => new(scope, name);
@@ -258,7 +291,12 @@ public sealed class TrailblazorPage(ILocator scope)
         new(scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true }).And(scope.Locator(".tb-property-grid")));
 
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
-    public TbMenuLocator Menu(string trigger) => new(scope, trigger);
+    public TbMenuLocator Menu(string trigger) =>
+        new(scope, scope.GetByRole(AriaRole.Button, new() { Name = trigger, Exact = true }));
+
+    /// <summary>The <c>TbMenu</c> whose trigger this finds, inside the scope, such as one of several whose triggers
+    /// share a name, as <c>page.Locator("#actions")</c>.</summary>
+    public TbMenuLocator Menu(ILocator trigger) => new(scope, trigger);
 
     /// <summary>The <c>TbContextMenu</c> whose menu has this <c>AriaLabel</c>, or the only one in the scope when no
     /// name is given. It opens on its whole area, or on an element in it picked with <c>On</c>.</summary>
@@ -295,7 +333,15 @@ public sealed class TrailblazorPage(ILocator scope)
 
     /// <summary>The <c>TbTabs</c> with this accessible name, or the only one in the scope when no name is
     /// given.</summary>
-    public TbTabsLocator Tabs(string? name = null) => new(scope, name);
+    // A name and a locator are never confused, and the name stays optional as on the other helpers.
+#pragma warning disable RS0027
+    // With no name, only visible tab lists count, so tabs nested in a hidden panel don't make the lookup ambiguous.
+    public TbTabsLocator Tabs(string? name = null) => new(scope, Scope.ByRole(scope, AriaRole.Tablist, name));
+#pragma warning restore RS0027
+
+    /// <summary>The <c>TbTabs</c> this finds, by its tab list or the tabs around it, inside the scope, such as one of
+    /// several that have no accessible name or share one, as <c>page.Locator("#views")</c>.</summary>
+    public TbTabsLocator Tabs(ILocator tabs) => new(scope, tabs);
 
     /// <summary>The toasts on the page.</summary>
     public TbToastsLocator Toasts => new(Scope.Document(scope));
@@ -1139,16 +1185,14 @@ public sealed class TbDateRangePickerLocator(ILocator scope, ILocator field) : T
     private static string Iso(DateOnly? date) => date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "";
 }
 
-/// <summary>A <c>TbTreeView</c>, found by its accessible name. Rows are named by their path of texts from a root,
-/// such as <c>("North", "Ridge")</c>, or from a branch's row.</summary>
-public sealed class TbTreeLocator(ILocator scope, string? name)
+/// <summary>A <c>TbTreeView</c>, found by its accessible name or a locator. Rows are named by their path of texts
+/// from a root, such as <c>("North", "Ridge")</c>, or from a branch's row.</summary>
+public sealed class TbTreeLocator(ILocator scope, ILocator tree)
 {
     private int? _depth;
     private string[] _branch = [];
 
-    // A tree with no rows is a group, so that it can hold its message.
-    private ILocator Tree => Scope.ByRole(scope, AriaRole.Tree, name).Or(Scope.ByRole(scope, AriaRole.Group, name))
-        .And(scope.Locator(".tb-tree"));
+    private ILocator Tree => tree.And(scope.Locator(".tb-tree"));
 
     /// <summary>The texts of the rows that show, in order. In a branch, only the rows inside it count.</summary>
     public async Task<IReadOnlyList<string>> TextsAsync()
@@ -1163,7 +1207,8 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
     /// <summary>The rows inside the row at this path, as a locator whose paths start there, such as
     /// <c>Branch("North").SelectAsync("Ridge")</c>. Its steps open the branch's row as they open the rows above.
     /// </summary>
-    public TbTreeLocator Branch(params string[] path) => new(scope, name) { _branch = [.. _branch, .. path] };
+    public TbTreeLocator Branch(params string[] path) =>
+        new(scope, tree) { _branch = [.. _branch, .. path] };
 
     /// <summary>The row with this text at any depth, which must be showing. It throws when no row or several rows show
     /// the text; <see cref="ItemAsync"/> tells them apart by their path. A virtualized tree doesn't render every row,
@@ -1196,7 +1241,7 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
         await RowsBuiltAsync();
         if (await Tree.GetAttributeAsync("data-virtual") is not null)
         {
-            throw new InvalidOperationException($"The tree{Scope.Called(name)} is virtualized, so it can't {task}.");
+            throw new InvalidOperationException($"This tree is virtualized, so it can't {task}.");
         }
     }
 
@@ -1345,7 +1390,7 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
         if (!await ShowsAsync(sourceKey))
         {
             throw new InvalidOperationException(
-                $"The tree{Scope.Called(name)} can't show {string.Join(" > ", row)} and "
+                $"This tree can't show {string.Join(" > ", row)} and "
                 + $"{string.Join(" > ", target)} together, so one can't be dragged onto the other.");
         }
 
@@ -1514,7 +1559,7 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
     }
 
     private InvalidOperationException NoRow(string[] path) =>
-        new($"The tree{Scope.Called(name)} shows no row at {string.Join(" > ", path)}; open the rows above it first.");
+        new($"This tree shows no row at {string.Join(" > ", path)}; open the rows above it first.");
 
     // Where a walk through a virtualized tree has reached; Found is the row's key, or empty when there's no such row.
     // Playwright fills in a result's properties, so they are settable.
@@ -1681,13 +1726,13 @@ public sealed class TbTransferListLocator(ILocator scope, ILocator root) : TbFie
     }
 }
 
-/// <summary>A <c>TbDataGrid</c>, found by its table's accessible name. Rows are found by the exact text of one of
-/// their cells, and columns by their header's title.</summary>
-public sealed class TbGridLocator(ILocator scope, string? name)
+/// <summary>A <c>TbDataGrid</c>, found by its table's accessible name or a locator. Rows are found by the exact text
+/// of one of their cells, and columns by their header's title.</summary>
+public sealed class TbGridLocator(ILocator scope, ILocator grid)
 {
-    // With cell navigation the table is a grid to assistive technology, and with child rows a tree grid.
-    private ILocator Table => Scope.ByRole(scope, AriaRole.Table, name).Or(Scope.ByRole(scope, AriaRole.Grid, name))
-        .Or(Scope.ByRole(scope, AriaRole.Treegrid, name)).And(scope.Locator(".tb-data-grid__table"));
+    // An id goes on the grid around the table, so the table is also looked for inside the match.
+    private ILocator Table => grid.Locator("xpath=descendant-or-self::*[contains(concat(' ', normalize-space(@class), "
+        + "' '), ' tb-data-grid__table ')][1]").And(scope.Locator(".tb-data-grid__table"));
 
     private ILocator Root => Table.Locator("xpath=ancestor::*[@data-part='grid'][1]");
 

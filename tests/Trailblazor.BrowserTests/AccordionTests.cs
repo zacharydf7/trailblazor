@@ -284,7 +284,7 @@ public class AccordionTests(BrowserFixture fixture) : BrowserTest(fixture)
         var failure = await Assert.ThrowsAsync<InvalidOperationException>(
             () => page.Tb().AccordionItem("Warranty").ExpandAsync());
 
-        Assert.Contains("Warranty", failure.Message);
+        Assert.Contains("disabled", failure.Message);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

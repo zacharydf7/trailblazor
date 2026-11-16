@@ -2,15 +2,14 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c>, found by its label. Items are named by their path of
-/// texts from a root, such as <c>("North ridge", "Pine Hollow")</c>.</summary>
-public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c>, found by its label or a locator. Items are named by
+/// their path of texts from a root, such as <c>("North ridge", "Pine Hollow")</c>.</summary>
+public sealed class TbTreeSelectLocator(ILocator scope, ILocator field) : TbFieldLocator
 {
     private protected override ILocator Control => Trigger;
 
-    // The field's label names its button, which also carries the chosen text.
-    private ILocator Trigger =>
-        scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator(".tb-tree-select__trigger"));
+    // The field's locator finds its button, which also carries the chosen text.
+    private ILocator Trigger => @field.And(scope.Locator(".tb-tree-select__trigger"));
 
     /// <summary>Opens the tree, opens the rows above the item at this path, and chooses it, waiting until the app has
     /// the value and the field has closed.</summary>
@@ -134,7 +133,7 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
         await CloseAsync();
     }
 
-    // The tree is named by the field's label, and its keys and clicks work once the field's script has attached. A
+    // The field's panel holds only its tree, whose keys and clicks work once the field's script has attached. A
     // read-only field's button opens nothing. A button can also be disabled only because the page isn't interactive
     // yet, so the disabled check waits for the script.
     private async Task<TbTreeLocator> OpenTreeAsync()
@@ -157,7 +156,7 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
 
         var panel = await PanelAsync();
         await Assertions.Expect(panel).ToBeVisibleAsync();
-        return new TbTreeLocator(panel, label);
+        return new TbTreeLocator(panel, panel.Locator(".tb-tree"));
     }
 
     private static InvalidOperationException Closed() =>

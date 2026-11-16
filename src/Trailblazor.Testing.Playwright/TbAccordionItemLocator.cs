@@ -2,11 +2,14 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbAccordionItem</c>, in an accordion or on its own, found by its header's text.</summary>
-public sealed class TbAccordionItemLocator(ILocator scope, string header)
+/// <summary>A <c>TbAccordionItem</c>, in an accordion or on its own, found by its header's text or a locator.
+/// </summary>
+public sealed class TbAccordionItemLocator(ILocator scope, ILocator item)
 {
     /// <summary>The header's button, whose <c>aria-expanded</c> says whether the item is open.</summary>
-    public ILocator Trigger => scope.GetByRole(AriaRole.Button, new() { Name = header, Exact = true })
+    // An id goes on the item around the button, so the first button inside the match counts; the item's own comes
+    // before any nested item's.
+    public ILocator Trigger => item.Locator("xpath=descendant-or-self::*[@data-part='trigger'][1]")
         .And(scope.Locator("[data-part=trigger]"));
 
     /// <summary>Opens the item, if it's closed, and waits until the app's <c>ExpandedChanged</c> has run and its panel
@@ -30,7 +33,7 @@ public sealed class TbAccordionItemLocator(ILocator scope, string header)
         {
             if (await Trigger.IsDisabledAsync())
             {
-                throw new InvalidOperationException($"The accordion item \"{header}\" is disabled.");
+                throw new InvalidOperationException("This accordion item is disabled.");
             }
 
             await Commit.CountedAsync(Trigger, "data-commits", async () =>

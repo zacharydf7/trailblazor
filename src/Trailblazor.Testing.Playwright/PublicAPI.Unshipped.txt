@@ -6,7 +6,6 @@ static Trailblazor.Testing.Playwright.TrailblazorPageExtensions.Tb(this Microsof
 Trailblazor.Testing.Playwright.TbAccordionItemLocator
 Trailblazor.Testing.Playwright.TbAccordionItemLocator.CollapseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbAccordionItemLocator.ExpandAsync() -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
-Trailblazor.Testing.Playwright.TbAccordionItemLocator.TbAccordionItemLocator(Microsoft.Playwright.ILocator! scope, string! header) -> void
 Trailblazor.Testing.Playwright.TbAccordionItemLocator.Trigger.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.SlowLink
 Trailblazor.Testing.Playwright.TbAnnouncementsLocator
@@ -34,7 +33,6 @@ Trailblazor.Testing.Playwright.TbDateTimePickerLocator
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.ChooseAsync(System.DateTime? value) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.DateInput.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.Group.get -> Microsoft.Playwright.ILocator!
-Trailblazor.Testing.Playwright.TbDateTimePickerLocator.TbDateTimePickerLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.TimeInput.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.ValueAsync() -> System.Threading.Tasks.Task<System.DateTime?>!
 Trailblazor.Testing.Playwright.TbDialogLocator
@@ -54,14 +52,12 @@ Trailblazor.Testing.Playwright.TbGridLocator.CollapseAsync(string! row) -> Syste
 Trailblazor.Testing.Playwright.TbGridLocator.ExpandAsync(string! row) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.SelectAsync(string! row) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbGridLocator.SortAsync(string! column, bool descending = false) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbGridLocator.TbGridLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TbGridLocator.TotalAsync(string! column) -> System.Threading.Tasks.Task<string?>!
 Trailblazor.Testing.Playwright.TbGridLocator.GroupTotalsAsync(string! column) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string?>!>!
 Trailblazor.Testing.Playwright.TbListBoxLocator
 Trailblazor.Testing.Playwright.TbListBoxLocator.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbMenuLocator
 Trailblazor.Testing.Playwright.TbMenuLocator.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbMenuLocator.TbMenuLocator(Microsoft.Playwright.ILocator! scope, string! trigger) -> void
 Trailblazor.Testing.Playwright.TbNumberFieldLocator
 Trailblazor.Testing.Playwright.TbNumberFieldLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbNumberFieldLocator.TbNumberFieldLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
@@ -94,7 +90,6 @@ Trailblazor.Testing.Playwright.TbSplitterLocator.SizeAsync() -> System.Threading
 Trailblazor.Testing.Playwright.TbSplitterLocator.TbSplitterLocator(Microsoft.Playwright.ILocator! scope, string! separator) -> void
 Trailblazor.Testing.Playwright.TbTabsLocator
 Trailblazor.Testing.Playwright.TbTabsLocator.SelectAsync(string! tab) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbTabsLocator.TbTabsLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TbTagInputLocator
 Trailblazor.Testing.Playwright.TbTagInputLocator.AddAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTagInputLocator.Input.get -> Microsoft.Playwright.ILocator!
@@ -119,7 +114,6 @@ Trailblazor.Testing.Playwright.TbTreeLocator.DragIntoAsync(string![]! row, strin
 Trailblazor.Testing.Playwright.TbTreeLocator.ExpandAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeLocator.ItemAsync(params string![]! path) -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
 Trailblazor.Testing.Playwright.TbTreeLocator.SelectAsync(params string![]! path) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbTreeLocator.TbTreeLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage
 Trailblazor.Testing.Playwright.TrailblazorPage.AccordionItem(string! header) -> Trailblazor.Testing.Playwright.TbAccordionItemLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Announcements.get -> Trailblazor.Testing.Playwright.TbAnnouncementsLocator!
@@ -131,7 +125,6 @@ Trailblazor.Testing.Playwright.TrailblazorPage.DatePicker(string! label) -> Trai
 Trailblazor.Testing.Playwright.TrailblazorPage.DateRangePicker(string! label) -> Trailblazor.Testing.Playwright.TbDateRangePickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.DateTimePicker(string! label) -> Trailblazor.Testing.Playwright.TbDateTimePickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.FileUpload(string! label) -> Trailblazor.Testing.Playwright.TbFileUploadLocator!
-Trailblazor.Testing.Playwright.TrailblazorPage.Grid(string? name = null) -> Trailblazor.Testing.Playwright.TbGridLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.ListBox(string! label) -> Trailblazor.Testing.Playwright.TbListBoxLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Menu(string! trigger) -> Trailblazor.Testing.Playwright.TbMenuLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.NumberField(string! label) -> Trailblazor.Testing.Playwright.TbNumberFieldLocator!
@@ -143,13 +136,11 @@ Trailblazor.Testing.Playwright.TrailblazorPage.Select(Microsoft.Playwright.ILoca
 Trailblazor.Testing.Playwright.TrailblazorPage.Select(string! label) -> Trailblazor.Testing.Playwright.TbSelectLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Slider(string! label) -> Trailblazor.Testing.Playwright.TbSliderLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Splitter(string! separator) -> Trailblazor.Testing.Playwright.TbSplitterLocator!
-Trailblazor.Testing.Playwright.TrailblazorPage.Tabs(string? name = null) -> Trailblazor.Testing.Playwright.TbTabsLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.TagInput(string! label) -> Trailblazor.Testing.Playwright.TbTagInputLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Toasts.get -> Trailblazor.Testing.Playwright.TbToastsLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Tooltip(Microsoft.Playwright.ILocator! trigger) -> Trailblazor.Testing.Playwright.TbTooltipLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.TrailblazorPage(Microsoft.Playwright.ILocator! scope) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.TransferList(string! label) -> Trailblazor.Testing.Playwright.TbTransferListLocator!
-Trailblazor.Testing.Playwright.TrailblazorPage.Tree(string? name = null) -> Trailblazor.Testing.Playwright.TbTreeLocator!
 Trailblazor.Testing.Playwright.TbTreeLocator.ExpandAllAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeLocator.ItemsAsync(params string![]! path) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Playwright.ILocator!>!>!
 Trailblazor.Testing.Playwright.TrailblazorPageExtensions
@@ -163,7 +154,6 @@ Trailblazor.Testing.Playwright.TrailblazorPage.RichTextEditor(string! label) -> 
 Trailblazor.Testing.Playwright.TbTabsLocator.CloseAsync(string! tab) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTabsLocator.AddAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeSelectLocator
-Trailblazor.Testing.Playwright.TbTreeSelectLocator.TbTreeSelectLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbTreeSelectLocator.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeSelectLocator.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeSelectLocator.UncheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
@@ -499,3 +489,20 @@ Trailblazor.Testing.Playwright.TrailblazorPage.FileUpload(Microsoft.Playwright.I
 Trailblazor.Testing.Playwright.TrailblazorPage.ListBox(Microsoft.Playwright.ILocator! list) -> Trailblazor.Testing.Playwright.TbListBoxLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.SignaturePad(Microsoft.Playwright.ILocator! root) -> Trailblazor.Testing.Playwright.TbSignaturePadLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.TransferList(Microsoft.Playwright.ILocator! root) -> Trailblazor.Testing.Playwright.TbTransferListLocator!
+Trailblazor.Testing.Playwright.TbDateTimePickerLocator.TbDateTimePickerLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.DateTimePicker(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbDateTimePickerLocator!
+Trailblazor.Testing.Playwright.TbTreeSelectLocator.TbTreeSelectLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.TreeSelect(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbTreeSelectLocator!
+Trailblazor.Testing.Playwright.TbMenuLocator.TbMenuLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! trigger) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.Menu(Microsoft.Playwright.ILocator! trigger) -> Trailblazor.Testing.Playwright.TbMenuLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Grid(Microsoft.Playwright.ILocator! grid) -> Trailblazor.Testing.Playwright.TbGridLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Tabs(Microsoft.Playwright.ILocator! tabs) -> Trailblazor.Testing.Playwright.TbTabsLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Tree(Microsoft.Playwright.ILocator! tree) -> Trailblazor.Testing.Playwright.TbTreeLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Grid(string? name = null) -> Trailblazor.Testing.Playwright.TbGridLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Tabs(string? name = null) -> Trailblazor.Testing.Playwright.TbTabsLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Tree(string? name = null) -> Trailblazor.Testing.Playwright.TbTreeLocator!
+Trailblazor.Testing.Playwright.TbAccordionItemLocator.TbAccordionItemLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! item) -> void
+Trailblazor.Testing.Playwright.TbGridLocator.TbGridLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! grid) -> void
+Trailblazor.Testing.Playwright.TbTabsLocator.TbTabsLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! tabs) -> void
+Trailblazor.Testing.Playwright.TbTreeLocator.TbTreeLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! tree) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.AccordionItem(Microsoft.Playwright.ILocator! item) -> Trailblazor.Testing.Playwright.TbAccordionItemLocator!

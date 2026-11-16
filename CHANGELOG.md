@@ -10,7 +10,9 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-16
 
-- new TbSliderLocator, TbRangeSliderLocator, TbTimePickerLocator, TbDatePickerLocator, TbCheckboxGroupLocator, TbRadioGroupLocator, TbRatingLocator, TbToggleGroupLocator, TbTagInputLocator, TbRichTextEditorLocator, TbListBoxLocator, TbTransferListLocator, TbFileUploadLocator, TbDateRangePickerLocator or TbCalendarLocator with a label → page.Tb().Slider(label) and the like, or new TbSliderLocator(scope, locator) and the like, given the element the field's id goes on
+- new TbSliderLocator, TbRangeSliderLocator, TbTimePickerLocator, TbDatePickerLocator, TbCheckboxGroupLocator, TbRadioGroupLocator, TbRatingLocator, TbToggleGroupLocator, TbTagInputLocator, TbRichTextEditorLocator, TbListBoxLocator, TbTransferListLocator, TbFileUploadLocator, TbDateRangePickerLocator, TbCalendarLocator, TbDateTimePickerLocator or TbTreeSelectLocator with a label → page.Tb().Slider(label) and the like, or new TbSliderLocator(scope, locator) and the like, given the element the field's id goes on
+- new TbMenuLocator(scope, trigger name) or TbAccordionItemLocator(scope, header text) → page.Tb().Menu(name) and AccordionItem(text), or new TbMenuLocator(scope, locator) with the trigger and TbAccordionItemLocator(scope, locator) with the item or its header's button
+- new TbTreeLocator, TbTabsLocator or TbGridLocator with a name → page.Tb().Tree(name) and the like, or new TbTreeLocator(scope, locator) and the like, given the tree, the tabs or the grid
 - TbViewportLocator.FitAsync() and TbViewportDriver.Fit, which read the fit → CurrentFitAsync() and CurrentFit; FitAsync(ViewportFit) still sets the fit
 - DialogOptions.Attributes and DialogAttributes → DialogOptions.WindowButtonAttributes and DialogWindowButtonAttributes
 

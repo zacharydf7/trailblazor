@@ -2,11 +2,12 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbTabs</c>, found by its accessible name, or the only one in the scope.</summary>
-public sealed class TbTabsLocator(ILocator scope, string? name)
+/// <summary>A <c>TbTabs</c>, found by its accessible name or a locator, or the only one in the scope.</summary>
+public sealed class TbTabsLocator(ILocator scope, ILocator tabs)
 {
-    // With no name, only visible tab lists count, so tabs nested in a hidden panel don't make the lookup ambiguous.
-    private ILocator List => Scope.ByRole(scope, AriaRole.Tablist, name);
+    // An id goes on the tabs around the list, so the list is also looked for inside the match.
+    private ILocator List => tabs.Locator("xpath=descendant-or-self::*[@role='tablist'][1]")
+        .And(scope.Locator("[role=tablist]"));
 
     /// <summary>The helpers inside the panel of the tab with this name, such as
     /// <c>page.Tb().Tabs().Panel("Route").TextField("Start")</c>, so a field that every panel has can be told apart.

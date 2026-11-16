@@ -2,11 +2,10 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbMenu</c>, found by its trigger's name.</summary>
-public sealed class TbMenuLocator(ILocator scope, string trigger)
+/// <summary>A <c>TbMenu</c>, found by its trigger's name or a locator.</summary>
+public sealed class TbMenuLocator(ILocator scope, ILocator trigger)
 {
-    private ILocator Trigger => scope.GetByRole(AriaRole.Button, new() { Name = trigger, Exact = true })
-        .And(scope.Locator("[aria-haspopup=menu]"));
+    private ILocator Trigger => trigger.And(scope.Locator("[aria-haspopup=menu]"));
 
     /// <summary>Opens the menu and clicks the item with this name, through the submenus named before it, as in
     /// <c>ChooseAsync("Export", "PDF")</c>. Waits until the app has run the item's handler, or until a dialog opens,

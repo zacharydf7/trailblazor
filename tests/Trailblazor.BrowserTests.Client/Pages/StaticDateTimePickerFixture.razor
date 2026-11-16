@@ -2,7 +2,7 @@
 @attribute [ExcludeFromInteractiveRouting]
 
 <EditForm Model="Model" FormName="static-date-time-picker" OnValidSubmit="Post">
-    <TbDateTimePicker TDateTime="DateTime" Label="Starts" @bind-Value="Model!.Start" />
+    <TbDateTimePicker TDateTime="DateTime" Label="Starts" id="starts" @bind-Value="Model!.Start" />
     <TbButton Type="ButtonType.Submit">Send</TbButton>
 </EditForm>
 <output data-testid="posted">@_posted</output>

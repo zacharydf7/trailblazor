@@ -4,13 +4,21 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbDateTimePicker</c>, found by its label.</summary>
-public sealed class TbDateTimePickerLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbDateTimePicker</c>, found by its label or a locator.</summary>
+public sealed class TbDateTimePickerLocator(ILocator scope, ILocator field) : TbFieldLocator
 {
     private protected override ILocator Control => Group;
 
     /// <summary>The group that holds the date box, the calendar button and the time box.</summary>
-    public ILocator Group => scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) });
+    // An id goes on the field around the group, so the group is also looked for inside the match.
+    public ILocator Group => @field
+        .Locator("xpath=descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), "
+            + "' tb-date-time__boxes ')][1]")
+        .And(scope.Locator(".tb-date-time__boxes"));
+
+    // A statically rendered field is the browser's own date and time box, found the same way.
+    private ILocator StaticBox => @field.Locator("xpath=descendant-or-self::input[@data-static][1]")
+        .And(scope.Locator("input[data-static]"));
 
     /// <summary>The box the date is typed in.</summary>
     public ILocator DateInput => Group.Locator("[data-part=date-input]");
@@ -22,7 +30,7 @@ public sealed class TbDateTimePickerLocator(ILocator scope, string label) : TbFi
     /// clears the date. A statically rendered field gets the value in the browser's own date and time box.</summary>
     public async Task ChooseAsync(DateTime? value)
     {
-        var staticBox = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[data-static]"));
+        var staticBox = StaticBox;
         if (await staticBox.CountAsync() > 0)
         {
             await staticBox.FillAsync(
@@ -66,7 +74,7 @@ public sealed class TbDateTimePickerLocator(ILocator scope, string label) : TbFi
     /// field throws, and so does a read-only or disabled one.</summary>
     public async Task EnterAsync(string text)
     {
-        var staticBox = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[data-static]"));
+        var staticBox = StaticBox;
         await Dates.EnterAsync(await staticBox.CountAsync() > 0 ? staticBox : DateInput, text,
             () => Assertions.Expect(Group).ToHaveAttributeAsync("data-format", new Regex(".+")));
     }
@@ -75,14 +83,14 @@ public sealed class TbDateTimePickerLocator(ILocator scope, string label) : TbFi
     /// reads the browser's own date and time box.</summary>
     public async Task<DateTime?> ValueAsync()
     {
-        var staticBox = scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[data-static]"));
+        var staticBox = StaticBox;
         var text = await staticBox.CountAsync() > 0 ? await staticBox.InputValueAsync() : null;
         if (text is null)
         {
             // A prerendered field has no value of its own to report until the page is interactive.
             await Assertions.Expect(Group).ToHaveAttributeAsync("data-format", new Regex(".+"));
             text = await Group.GetAttributeAsync("data-value")
-                ?? throw new InvalidOperationException($"The date-time picker \"{label}\" doesn't report its value.");
+                ?? throw new InvalidOperationException("This date-time picker doesn't report its value.");
         }
 
         return string.IsNullOrEmpty(text) ? null

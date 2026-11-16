@@ -140,10 +140,9 @@ internal static class HandleMoves
         await Scope.ReadyAsync(trigger.Locator("xpath=.."), trigger);
         var menu = Scope.Document(answers).Locator($"[id='{await trigger.GetAttributeAsync("aria-controls")}']");
         var step = (await (await pick(menu)).TextContentAsync())!.Trim();
-        var handle = await trigger.GetAttributeAsync("aria-label");
         await Commit.WaitAsync(answers, async () =>
         {
-            await new TbMenuLocator(trigger.Locator("xpath=.."), handle!).ChooseAsync(step);
+            await new TbMenuLocator(trigger.Locator("xpath=.."), trigger).ChooseAsync(step);
             return true;
         });
     }
