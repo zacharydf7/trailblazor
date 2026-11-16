@@ -576,6 +576,7 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             () => tb.Chip("Shaded").ClickAsync(),
             () => tb.Chip("Muddy").RemoveAsync(),
             () => tb.List("Slow campsites").ClickAsync("Lakeside"),
+            () => tb.AccordionItem("Slow route").ExpandAsync(),
         })
         {
             await act();
@@ -584,7 +585,7 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Equal(["alert closed", "inserted", "removed", "kept", "zoom 1.25", "pinned", "view Terrain", "slide 1",
             "region ", "color #aa0000", "day 2026-05-02 #1", "trip 2026-05-02/2026-05-04", "clicked notes", "open True",
-            "shaded", "muddy removed", "camp Lakeside"], seen);
+            "shaded", "muddy removed", "camp Lakeside", "route True"], seen);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -613,6 +614,21 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
         await clicking;
 
         Assert.Equal("camp Lakeside", await page.GetByTestId("slow").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NavMenu_ShouldReturnOnceTheGroupsExpandedChangedHasRun_WhenItOpensAGroup(string browser)
+    {
+        var page = await OpenAsync(browser, "/helpers-slow");
+        var settings = page.GetByTestId("settings");
+        // The link is to this page, so the group opens as the page loads; it's closed here for the helper to open.
+        await Expect(settings).ToHaveTextAsync("settings True");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Slow settings" }).ClickAsync();
+        await Expect(settings).ToHaveTextAsync("settings False");
+
+        await page.Tb().NavMenu("Slow navigation").FollowAsync("Slow settings", "Profile");
+
+        Assert.Equal("settings True", await settings.TextContentAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

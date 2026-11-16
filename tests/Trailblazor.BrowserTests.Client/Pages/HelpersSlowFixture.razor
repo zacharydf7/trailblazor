@@ -44,8 +44,17 @@
     <TbList aria-label="Slow campsites">
         <TbListItem OnClick="@(() => SlowlyAsync("camp Lakeside"))">Lakeside</TbListItem>
     </TbList>
+    <nav aria-label="Slow navigation">
+        <TbNavMenu>
+            <TbNavGroup Text="Slow settings" ExpandedChanged="SettingsAsync">
+                <TbNavLink Href="helpers-slow#profile">Profile</TbNavLink>
+            </TbNavGroup>
+        </TbNavMenu>
+    </nav>
+    <TbAccordionItem Title="Slow route" ExpandedChanged="RouteAsync">Ridge, then lake</TbAccordionItem>
     <TbSignaturePad Label="Slow signature" Value="_signature" ValueChanged="SignAsync" Style="width: 300px" />
     <output data-testid="slow">@_slow</output>
+    <output data-testid="settings">@_settings</output>
 </TbStack>
 
 @code {
@@ -66,6 +75,7 @@
     private int _days;
     private bool _open;
     private string _slow = "";
+    private string _settings = "";
 
     private Task CloseAlertAsync() => SlowlyAsync("alert closed", () => _alert = false);
 
@@ -92,6 +102,15 @@
     private Task TabAsync(string? tab) => SlowlyAsync($"tab {tab}", () => _tab = tab);
 
     private Task OpenAsync(bool open) => SlowlyAsync($"open {open}", () => _open = open);
+
+    // Its own output, since the group already opens on page load: its link points to this page.
+    private async Task SettingsAsync(bool expanded)
+    {
+        await Task.Delay(1500);
+        _settings = $"settings {expanded}";
+    }
+
+    private Task RouteAsync(bool expanded) => SlowlyAsync($"route {expanded}");
 
     private Task SignAsync(Signature? signature) =>
         SlowlyAsync($"strokes {signature?.Strokes.Count ?? 0}", () => _signature = signature);

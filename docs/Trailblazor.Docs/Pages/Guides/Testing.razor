@@ -829,7 +829,8 @@
                         <th scope="row">A change the app answers</th>
                         <td>
                             <code>data-commits</code> to change on the field's root, tab list, sortable list, data grid,
-                            pagination, menu, tree, toaster, chip or list item; it counts the changes the app has
+                            pagination, menu, tree, toaster, chip, list item, accordion item's header or nav group's
+                            button; it counts the changes the app has
                             answered. An app that changes a component's <code>@@key</code> replaces it, and the new
                             component counts from 0 again, so the count can look unchanged after the app has answered.
                             Also end the wait when the old element leaves the page or a dialog opens; the helpers stop
@@ -839,7 +840,8 @@
                             drops it has handled rather than changes: a double-click adds three, and keys aren't counted.
                             A chip counts its clicks and removals, and a list item with an <code>OnClick</code> its
                             clicks, once the app's handlers have finished; a chip or item that only links somewhere has
-                            no count.
+                            no count. An accordion item's header and a nav group's button count their toggles once
+                            <code>ExpandedChanged</code> has run.
                         </td>
                     </tr>
                     <tr>
@@ -1192,8 +1194,8 @@
             + "and `DragToListAsync(item, list)` move it to another list of its group, and each waits for the app's "
             + "answer; `ItemsAsync()` reads the order. An item is named by the list's `ItemLabel`, or by its text "
             + "when the list has none."),
-        new("Accordion", "An item's header", "`AccordionItem(header).ExpandAsync()` opens the item, waits until it "
-            + "is open and hands back its panel; `CollapseAsync()` closes it."),
+        new("Accordion", "An item's header", "`AccordionItem(header).ExpandAsync()` opens the item, waits until the "
+            + "app's `ExpandedChanged` has run and it is open, and hands back its panel; `CollapseAsync()` closes it."),
         new("Tooltip", "Its trigger, or its trigger's name", "`Tooltip(trigger).TextAsync()` rests the pointer on "
             + "the trigger and returns the tooltip's text once it shows; the trigger is a locator, or a button's or "
             + "link's name."),
@@ -1268,7 +1270,8 @@
             + "many items there are, once an `ItemsProvider` has answered."),
         new("Nav menu", "Its navigation landmark's name, or none for the only one shown",
             "`NavMenu(name).FollowAsync(path)` opens the closed groups named before a link once the page is "
-            + "interactive, then follows the link; `CurrentAsync()` reads the current page's link."),
+            + "interactive, waiting for each group's `ExpandedChanged`, then follows the link; `CurrentAsync()` reads "
+            + "the current page's link."),
         new("Insert divider", "Its Label", "`InsertDivider(label).InsertAsync()` presses its insert button once the "
             + "page is interactive."),
         new("Toolbar", "Its AriaLabel, or none for the only one", "`Toolbar(name).ClickAsync(button)` clicks a "

@@ -2369,10 +2369,11 @@ public static class ExampleCatalog
             [
                 "`page.Tb().NavMenu(\"Main\")` from `Trailblazor.Testing.Playwright`, or `cut.Tb().NavMenu(...)` "
                     + "in bUnit, finds a nav menu by its navigation landmark's name. `FollowAsync(\"Settings\", "
-                    + "\"Profile\")` opens each closed group named before the link and follows it, and "
-                    + "`CurrentAsync()` (`Current` in bUnit) reads the current page's link. By hand, find the "
-                    + "navigation with `GetByRole(AriaRole.Navigation, new() { Name = \"Main\" })`, and the current "
-                    + "page's link with `Locator(\"[aria-current=page]\")`.",
+                    + "\"Profile\")` opens each closed group named before the link and follows it; opening a group "
+                    + "waits until the app's `ExpandedChanged` has run, which the group's button counts in "
+                    + "`data-commits`. `CurrentAsync()` (`Current` in bUnit) reads the current page's link. By hand, "
+                    + "find the navigation with `GetByRole(AriaRole.Navigation, new() { Name = \"Main\" })`, and the "
+                    + "current page's link with `Locator(\"[aria-current=page]\")`.",
                 "Playwright's window is wide unless you set `ViewportSize`; set it narrower than 768px to test the "
                     + "drawer. On a narrow window, open it with "
                     + "`GetByRole(AriaRole.Button, new() { Name = \"Navigation\" })`.",
@@ -8039,8 +8040,9 @@ public static class ExampleCatalog
                 """,
             TestingTip = "`await page.Tb().AccordionItem(\"Sizing\").ExpandAsync()` from "
                 + "`Trailblazor.Testing.Playwright` opens an item, in an accordion or on its own, once the page is "
-                + "interactive, and hands back its panel once it has finished opening; `CollapseAsync` waits until "
-                + "it has finished closing. An item's `data-state` reads `opening` or `closing` while its panel "
+                + "interactive, and hands back its panel once the app's `ExpandedChanged` has run (the header "
+                + "counts these runs in `data-commits`) and the panel has finished opening; `CollapseAsync` waits the "
+                + "same way until it has finished closing. An item's `data-state` reads `opening` or `closing` while its panel "
                 + "moves, then `open` or `closed`. On a static page, click the item's header instead. In "
                 + "bUnit, `cut.Tb().AccordionItem(\"Sizing\")` from `Trailblazor.Testing` has the same `ExpandAsync` "
                 + "and `CollapseAsync`; bUnit runs no script, so an item it opens or closes stays `opening` or "

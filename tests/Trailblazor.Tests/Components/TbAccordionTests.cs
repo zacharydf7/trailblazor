@@ -76,6 +76,37 @@ public class TbAccordionTests : BunitContext
     }
 
     [Fact]
+    public async Task Click_ShouldCountTheOpeningOnceTheOtherItemHasClosed_WhenItsHandlerIsSlow()
+    {
+        var closed = new TaskCompletionSource();
+        var cut = Render<TbAccordion>(parameters => parameters
+            .AddChildContent<TbAccordionItem>(item => item.Add(i => i.Title, "Warranty").Add(i => i.Expanded, true)
+                .Add(i => i.ExpandedChanged, (bool _) => closed.Task))
+            .AddChildContent<TbAccordionItem>(item => item.Add(i => i.Title, "Returns")));
+        string? Commits() => cut.FindAll("[data-part=trigger]")[1].GetAttribute("data-commits");
+
+        cut.FindAll("[data-part=trigger]")[1].Click();
+        var pending = Commits();
+        await cut.InvokeAsync(closed.SetResult);
+
+        Assert.Equal(("0", "1"), (pending, Commits()));
+    }
+
+    [Fact]
+    public async Task Click_ShouldCountTheToggleOnceExpandedChangedHasFinished_WhenTheHandlerIsSlow()
+    {
+        var changed = new TaskCompletionSource();
+        var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Warranty")
+            .Add(item => item.ExpandedChanged, (bool _) => changed.Task));
+
+        cut.Find("[data-part=trigger]").Click();
+        var pending = cut.Find("[data-part=trigger]").GetAttribute("data-commits");
+        await cut.InvokeAsync(changed.SetResult);
+
+        Assert.Equal(("0", "1"), (pending, cut.Find("[data-part=trigger]").GetAttribute("data-commits")));
+    }
+
+    [Fact]
     public void Render_ShouldMarkTheItemOpeningOrClosing_WhenItsHeaderOrItsParentMovesIt()
     {
         var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Warranty")

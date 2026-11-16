@@ -83,6 +83,22 @@ public class TbNavMenuTests : BunitContext
     }
 
     [Fact]
+    public async Task Group_ShouldCountTheToggleOnceExpandedChangedHasFinished_WhenTheHandlerIsSlow()
+    {
+        var changed = new TaskCompletionSource();
+        var cut = Render<TbNavMenu>(parameters => parameters.AddChildContent<TbNavGroup>(group => group
+            .Add(g => g.Text, "Settings").Add(g => g.ExpandedChanged, (bool _) => changed.Task)
+            .AddChildContent<TbNavLink>(link => link.Add(l => l.Href, "settings/profile").AddChildContent("Profile"))));
+        string? Commits() => cut.Find("[data-part=group-toggle]").GetAttribute("data-commits");
+
+        cut.Find("[data-part=group-toggle]").Click();
+        var pending = Commits();
+        await cut.InvokeAsync(changed.SetResult);
+
+        Assert.Equal(("0", "1"), (pending, Commits()));
+    }
+
+    [Fact]
     public void Group_ShouldOpenByItself_WhenItHoldsTheCurrentPage()
     {
         Navigation.NavigateTo("settings/profile");

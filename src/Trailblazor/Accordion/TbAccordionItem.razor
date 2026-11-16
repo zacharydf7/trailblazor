@@ -34,6 +34,7 @@
 </div>
 
 @code {
+    private int _commits;
     private readonly string _id = $"tb-accordion-item-{Guid.NewGuid():N}";
     private bool _expanded;
     private string _state = "closed";
@@ -100,7 +101,7 @@
         @<button type="button" id="@TriggerId" aria-expanded="@(_expanded ? "true" : "false")"
                  aria-controls="@PanelId" disabled="@Disabled" data-part="trigger" class="tb-accordion__trigger"
                  data-ready="@(RendererInfo.IsInteractive ? "" : null)"
-                 @onclick="ToggleAsync">
+                 data-commits="@(RendererInfo.IsInteractive ? _commits : null)" @onclick="ToggleAsync">
             <span class="tb-accordion__title">
                 @if (TitleContent is not null)
                 {
@@ -157,13 +158,21 @@
         await ExpandedChanged.InvokeAsync(false);
     }
 
+    // The click counts once the app's ExpandedChanged, and any closing of the other items, has run.
     private async Task ToggleAsync()
     {
-        SetExpanded(!_expanded);
-        await ExpandedChanged.InvokeAsync(_expanded);
-        if (_expanded && Accordion is not null)
+        try
         {
-            await Accordion.ExpandedAsync(this);
+            SetExpanded(!_expanded);
+            await ExpandedChanged.InvokeAsync(_expanded);
+            if (_expanded && Accordion is not null)
+            {
+                await Accordion.ExpandedAsync(this);
+            }
+        }
+        finally
+        {
+            _commits++;
         }
     }
 

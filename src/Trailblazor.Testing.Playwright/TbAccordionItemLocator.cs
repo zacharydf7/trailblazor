@@ -9,16 +9,16 @@ public sealed class TbAccordionItemLocator(ILocator scope, string header)
     public ILocator Trigger => scope.GetByRole(AriaRole.Button, new() { Name = header, Exact = true })
         .And(scope.Locator("[data-part=trigger]"));
 
-    /// <summary>Opens the item, if it's closed, and waits until its panel has finished opening. Returns its panel.
-    /// Throws for a disabled item that is closed.</summary>
+    /// <summary>Opens the item, if it's closed, and waits until the app's <c>ExpandedChanged</c> has run and its panel
+    /// has finished opening. Returns its panel. Throws for a disabled item that is closed.</summary>
     public async Task<ILocator> ExpandAsync()
     {
         await SetAsync(true);
         return Scope.Document(scope).Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");
     }
 
-    /// <summary>Closes the item, if it's open, and waits until its panel has finished closing. Throws for a disabled
-    /// item that is open.</summary>
+    /// <summary>Closes the item, if it's open, and waits until the app's <c>ExpandedChanged</c> has run and its panel
+    /// has finished closing. Throws for a disabled item that is open.</summary>
     public Task CollapseAsync() => SetAsync(false);
 
     private async Task SetAsync(bool expanded)
@@ -33,7 +33,11 @@ public sealed class TbAccordionItemLocator(ILocator scope, string header)
                 throw new InvalidOperationException($"The accordion item \"{header}\" is disabled.");
             }
 
-            await Trigger.ClickAsync();
+            await Commit.CountedAsync(Trigger, "data-commits", async () =>
+            {
+                await Trigger.ClickAsync();
+                return true;
+            });
             await Assertions.Expect(Trigger).ToHaveAttributeAsync("aria-expanded", state);
         }
 

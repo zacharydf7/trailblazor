@@ -23,8 +23,8 @@ public sealed class TbNavMenuLocator(ILocator scope, string? name)
 
     /// <summary>Follows the link with this text, through the groups named before it, as in
     /// <c>FollowAsync("Settings", "Profile")</c>. Each closed group opens as clicking it does, once the page is
-    /// interactive, then the link is clicked. Throws for a link in a closed group the path doesn't name, or for a
-    /// closed group on a static page, which can't open.</summary>
+    /// interactive, and the app's <c>ExpandedChanged</c> runs before the link is clicked. Throws for a link in a
+    /// closed group the path doesn't name, or for a closed group on a static page, which can't open.</summary>
     public async Task FollowAsync(params string[] path)
     {
         ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
@@ -47,7 +47,11 @@ public sealed class TbNavMenuLocator(ILocator scope, string? name)
                 }
 
                 await Assertions.Expect(Menu).ToHaveAttributeAsync("data-ready", "");
-                await toggle.ClickAsync();
+                await Commit.CountedAsync(toggle, "data-commits", async () =>
+                {
+                    await toggle.ClickAsync();
+                    return true;
+                });
                 await Assertions.Expect(toggle).ToHaveAttributeAsync("aria-expanded", "true");
             }
 

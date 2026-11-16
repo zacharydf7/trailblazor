@@ -4,7 +4,8 @@
 <li @attributes="AdditionalAttributes" data-part="nav-group" style="@Style"
     class="@ClassNames.Join("tb-nav-menu__item", Class)">
     <button type="button" aria-expanded="@(_expanded ? "true" : "false")" aria-controls="@ItemsId"
-            data-part="group-toggle" class="tb-nav-menu__link tb-nav-menu__toggle" @onclick="ToggleAsync">
+            data-part="group-toggle" class="tb-nav-menu__link tb-nav-menu__toggle" @onclick="ToggleAsync"
+            data-commits="@(RendererInfo.IsInteractive ? _commits : null)">
         @if (Icon is { } icon)
         {
             <TbIcon Icon="icon" data-part="icon" class="tb-nav-menu__icon" />
@@ -21,6 +22,8 @@
 @code {
     private readonly string _id = $"tb-nav-group-{Guid.NewGuid():N}";
     private bool _expanded;
+    // Counts the toggles whose ExpandedChanged has finished, so a test can wait for the app's answer.
+    private int _commits;
     private bool _lastExpanded;
 
     /// <summary>The group's name, on the button that opens and closes it.</summary>
@@ -95,9 +98,16 @@
         }
     }
 
-    private Task ToggleAsync()
+    private async Task ToggleAsync()
     {
-        _expanded = !_expanded;
-        return ExpandedChanged.InvokeAsync(_expanded);
+        try
+        {
+            _expanded = !_expanded;
+            await ExpandedChanged.InvokeAsync(_expanded);
+        }
+        finally
+        {
+            _commits++;
+        }
     }
 }
