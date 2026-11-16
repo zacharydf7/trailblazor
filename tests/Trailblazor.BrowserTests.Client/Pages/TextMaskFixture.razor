@@ -1,11 +1,22 @@
 @page "/text-mask"
 
-@* Masks whose literals a typed character can match, or that end in one. *@
+@* Masks whose literals a typed character can match, or that end in one, and masks the page takes away. *@
 <TbTextField Label="UK phone" @bind-Value="_phone" Mask="+44 0000 000000" />
 <TbTextField Label="Area" @bind-Value="_area" Mask="(000)" IncludeMaskLiterals />
 <output data-testid="area">@_area</output>
+<TbTextField Label="Code" @bind-Value="_code" Mask="@(_masked ? "000" : null)" />
+<button type="button" @onclick="() => _masked = false">Drop the mask</button>
+<button type="button" @onclick="() => _pings++">Ping</button>
+<output data-testid="pings">@_pings</output>
+<TbTextField Label="Late" @bind-Value="_late" Mask="@_lateMask" />
+<button type="button" @onclick="() => _lateMask = null">Drop the late mask</button>
 
 @code {
     private string? _phone;
     private string? _area;
+    private string? _code;
+    private bool _masked = true;
+    private int _pings;
+    private string? _late;
+    private string? _lateMask = "000";
 }

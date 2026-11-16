@@ -116,10 +116,12 @@ export function createMask(input, pattern) {
     input.addEventListener('keydown', onKeyDown);
     input.dataset.ready = '';
     const mask = {
-        dispose() {
+        dispose(unmasked = false) {
             if (current.get(input) === mask) {
                 current.delete(input);
-                delete input.dataset.ready;
+                if (!unmasked) {
+                    delete input.dataset.ready;
+                }
             }
 
             input.removeEventListener('beforeinput', onBeforeInput);

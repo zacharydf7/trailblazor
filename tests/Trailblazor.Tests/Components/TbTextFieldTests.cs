@@ -43,6 +43,17 @@ public class TbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldLeaveDataReadyToTheMaskScript_WhenTheFieldHasAMask()
+    {
+        var masked = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Code")
+            .Add(field => field.Mask, "000"));
+        var plain = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Name"));
+
+        Assert.Equal([false, true],
+            [masked.Find("input").HasAttribute("data-ready"), plain.Find("input").HasAttribute("data-ready")]);
+    }
+
+    [Fact]
     public void Render_ShouldKeepTheInputsOwnAttributesOffTheRoot_WhenTheFieldHasAnId()
     {
         var cut = Render<TbTextField<string>>(parameters => parameters.Add(field => field.Label, "Email")

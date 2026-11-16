@@ -86,6 +86,7 @@ they run by version. The docs site's Upgrading page is built from both.
 - TbRoot's dialog host renders a hidden element with `data-tb-open-dialogs`, the number of open dialogs that aren't closing
 - A static form marks its submit button busy during an enhanced post too, and drops a second submit until the answer updates the page
 - A number field too narrow for its step buttons hides them on static and prerendered pages too
+- A masked text field's input gets `data-ready` once its mask has attached, not as soon as the field is interactive, and keeps it when the mask is taken away
 
 #### 2026-11-15
 

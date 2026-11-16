@@ -531,6 +531,44 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldStayReadyAndTakeAnyText_WhenItsMaskIsTakenAway(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-mask");
+        var code = page.GetByLabel("Code");
+        await Expect(code).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Drop the mask" }).ClickAsync();
+        // The old mask is disposed once the browser has shown the render, so a second round trip waits until it's gone.
+        await Expect(code).Not.ToHaveAttributeAsync("placeholder", "___");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Ping" }).ClickAsync();
+        await Expect(page.GetByTestId("pings")).ToHaveTextAsync("1");
+        await code.FillAsync("abc");
+
+        await Expect(code).ToHaveValueAsync("abc");
+        await Expect(code).ToHaveAttributeAsync("data-ready", "");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TextField_ShouldStayReady_WhenItsMaskIsTakenAwayWhileItAttaches(string browser)
+    {
+        var (page, script) = await OpenWithAScriptHeldAsync(browser, "/text-mask", "**/text-mask.*js");
+        var late = page.GetByLabel("Late");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Drop the late mask" }).ClickAsync();
+        await Expect(late).ToHaveAttributeAsync("data-ready", "");
+
+        script.SetResult();
+        await Expect(page.GetByLabel("Code")).ToHaveAttributeAsync("data-ready", "");
+        // Once the script loads, the late field's mask attaches along with the others and is then disposed; two round
+        // trips wait for that.
+        var ping = page.GetByRole(AriaRole.Button, new() { Name = "Ping" });
+        await ping.ClickAsync();
+        await ping.ClickAsync();
+        await Expect(page.GetByTestId("pings")).ToHaveTextAsync("2");
+
+        await Expect(late).ToHaveAttributeAsync("data-ready", "");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldFillSlotsWithCharactersLikeTheLiterals_WhenTheMaskHasDigitsOrEndsInOne(
         string browser)
     {

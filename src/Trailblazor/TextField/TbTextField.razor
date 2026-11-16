@@ -168,9 +168,10 @@
         builder.AddAttribute(19, "aria-describedby",
             ShowCount ? ClassNames.Join(InputDescribedBy, CountId) : InputDescribedBy);
         builder.AddAttribute(20, "class", ClassNames.Join("tb-field__input", Classes?.Input));
-        // Tests wait for data-ready before typing, since a prerendered field is replaced and loses the text.
+        // Tests wait for data-ready before typing, since a prerendered field is replaced and loses the text. With a mask,
+        // the mask's script sets it once it has attached.
         builder.AddAttribute(21, "data-static", StaticPage ? "" : null);
-        builder.AddAttribute(22, "data-ready", RendererInfo.IsInteractive ? "" : null);
+        builder.AddAttribute(22, "data-ready", RendererInfo.IsInteractive && Mask is null ? "" : null);
         if (!area && OnEnter.HasDelegate)
         {
             builder.AddAttribute(23, "ontbenter", OnEnter);
@@ -283,7 +284,8 @@
             if (_maskHandle is { } old)
             {
                 _maskHandle = null;
-                await old.DisposeHandleAsync();
+                // Without a mask the render marks the field ready, so the old mask mustn't remove data-ready.
+                await old.DisposeHandleAsync(mask is null);
             }
 
             if (mask is null)
@@ -296,7 +298,7 @@
             // The field went, or its mask changed, while this one was being attached.
             if (_disposed || mask != _maskAttached)
             {
-                await handle.DisposeHandleAsync();
+                await handle.DisposeHandleAsync(_maskAttached is null);
                 return;
             }
 
