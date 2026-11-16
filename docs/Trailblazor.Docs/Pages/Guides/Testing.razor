@@ -465,7 +465,9 @@
                         <th scope="row"><code>Splitter(separator).ResizeAsync(percent)</code></th>
                         <td>
                             Resizes the pane as the separator's keys do, within both panes' limits, and
-                            <code>Size</code> reads it.
+                            <code>Size</code> reads it. <code>CollapseAsync()</code> and <code>RestoreAsync()</code>
+                            collapse and restore the pane that Enter on the separator toggles, and
+                            <code>Collapsed</code> reads whether it's collapsed.
                         </td>
                     </tr>
                     <tr>
@@ -1205,7 +1207,10 @@
             + "the trigger and returns the tooltip's text once it shows; the trigger is a locator, or a button's or "
             + "link's name."),
         new("Splitter", "Its separator's name", "`Splitter(\"Resize Trails\").ResizeAsync(percent)` resizes the pane "
-            + "with the separator's keys and waits until the app has the size, and `SizeAsync()` reads it."),
+            + "with the separator's keys and waits until the app has the size, and `SizeAsync()` reads it. "
+            + "`CollapseAsync()` and `RestoreAsync()` press Enter on the separator, unless the pane it toggles is "
+            + "already collapsed or open as asked, and wait until the app's `CollapsedChanged` has run; "
+            + "`CollapsedAsync()` reads whether that pane is collapsed."),
         new("Stepper", "Its name, or none for the only one", "`Stepper(name).GoToAsync(title)` goes to a step and "
             + "waits until it's current and the app's `ActiveKeyChanged` has run, `StepsAsync()` reads the steps' "
             + "titles, and `CurrentAsync()` reads the current step's."),

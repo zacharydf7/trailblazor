@@ -118,7 +118,7 @@ public class TrailblazorMarkupTests : BunitContext
             builder.AddAttribute(2, nameof(TbSplitterPane.Size), pane.Size);
             builder.AddAttribute(3, nameof(TbSplitterPane.MinSize), pane.MinSize);
             builder.AddAttribute(4, nameof(TbSplitterPane.MaxSize), pane.MaxSize);
-            builder.AddAttribute(5, nameof(TbSplitterPane.Collapsible), pane.Collapsed);
+            builder.AddAttribute(5, nameof(TbSplitterPane.Collapsible), pane.Collapsible || pane.Collapsed);
             builder.AddAttribute(6, nameof(TbSplitterPane.Collapsed), pane.Collapsed);
             builder.AddAttribute(7, nameof(TbSplitterPane.ChildContent),
                 (RenderFragment)(content => content.AddContent(0, pane.Label)));
@@ -128,12 +128,50 @@ public class TrailblazorMarkupTests : BunitContext
                     EventCallback.Factory.Create<double?>(new object(), onSize));
             }
 
+            if (pane.OnCollapsed is { } onCollapsed)
+            {
+                builder.AddAttribute(9, nameof(TbSplitterPane.CollapsedChanged),
+                    EventCallback.Factory.Create<bool>(new object(), onCollapsed));
+            }
+
             builder.CloseComponent();
         }
     };
 
     private sealed record SplitterPane(string Label, double? Size = null, double MinSize = 0, double MaxSize = 100,
-        bool Collapsed = false, Action<double?>? OnSize = null);
+        bool Collapsed = false, Action<double?>? OnSize = null, bool Collapsible = false,
+        Action<bool>? OnCollapsed = null);
+
+    [Fact]
+    public async Task Splitter_ShouldCollapseAndRestoreThePaneEnterToggles_WhenTheHelperIsUsed()
+    {
+        var changes = new List<bool>();
+        var cut = Render<TbSplitter>(parameters => parameters.Add(splitter => splitter.ChildContent, Panes(
+            new("Trails", 25), new("Map", Collapsible: true, OnCollapsed: changes.Add))));
+        var separator = cut.Tb().Splitter("Resize Trails");
+
+        var before = separator.Collapsed;
+        await separator.CollapseAsync();
+        var collapsed = separator.Collapsed;
+        await separator.CollapseAsync();
+        await separator.RestoreAsync();
+
+        // The trails can't collapse, so Enter on their separator collapses the map, the last pane, after it.
+        Assert.Equal((false, true, false), (before, collapsed, separator.Collapsed));
+        Assert.Equal([true, false], changes);
+    }
+
+    [Fact]
+    public async Task Splitter_ShouldRefuseToCollapse_WhenNeitherPaneBesideTheSeparatorCan()
+    {
+        var cut = Render<TbSplitter>(parameters => parameters.Add(splitter => splitter.ChildContent, Panes(
+            new("Trails", 25), new("Map"))));
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Splitter("Resize Trails").CollapseAsync());
+
+        Assert.Contains("Neither pane beside \"Resize Trails\" can collapse", refused.Message);
+    }
 
     [Fact]
     public async Task RangeSlider_ShouldRefuseToMoveIt_WhenItIsReadOnlyOrOnAStaticPage()

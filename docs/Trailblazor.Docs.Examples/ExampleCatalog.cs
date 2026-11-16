@@ -2093,7 +2093,11 @@ public static class ExampleCatalog
                 """,
             TestingTip = "`page.Tb().Splitter(\"Resize Trails\").ResizeAsync(40)` in Playwright, or "
                 + "`cut.Tb().Splitter(\"Resize Trails\").ResizeAsync(40)` in bUnit, resizes the pane as the "
-                + "separator's keys do, and `SizeAsync()` or `Size` reads its percent.",
+                + "separator's keys do, and `SizeAsync()` or `Size` reads its percent. `CollapseAsync()` and "
+                + "`RestoreAsync()` collapse and restore the pane that Enter on the separator toggles, and "
+                + "`CollapsedAsync()` or `Collapsed` reads whether it's collapsed. In "
+                + "Playwright they wait until the app's `CollapsedChanged` has run, which the splitter counts in "
+                + "`data-commits`.",
         },
         new("viewport", "Viewport", ExampleCategory.Layout,
             "A box that pans and zooms its content, such as a map, a diagram or a scanned page, and fits it to the "

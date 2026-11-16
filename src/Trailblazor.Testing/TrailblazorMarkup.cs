@@ -2464,6 +2464,41 @@ public sealed class TbSplitterDriver
             [.. shares.Select(share => Math.Round(share, 2))], number));
     }
 
+    /// <summary>Whether the pane that Enter on the separator collapses and restores is collapsed. That's the pane
+    /// before the separator, or the one after it when the one before can't collapse; but while the pane before is
+    /// open, a collapsed last pane after it comes first, so the pane can change after a toggle. Throws when neither
+    /// pane can collapse.</summary>
+    public bool Collapsed => ToggledPane().HasAttribute("data-collapsed");
+
+    /// <summary>Collapses the pane that Enter on the separator collapses, if it's open, as pressing Enter does, which
+    /// runs the app's <c>CollapsedChanged</c>. Throws when neither pane beside the separator can collapse.</summary>
+    public Task CollapseAsync() => SetCollapsedAsync(true);
+
+    /// <summary>Restores the pane that Enter on the separator restores, if it's collapsed, as
+    /// <see cref="CollapseAsync"/> collapses it.</summary>
+    public Task RestoreAsync() => SetCollapsedAsync(false);
+
+    private IElement ToggledPane()
+    {
+        var separator = _find();
+        var id = separator.GetAttribute("data-toggles") ?? throw new InvalidOperationException(
+            $"Neither pane beside \"{separator.GetAttribute("aria-label")}\" can collapse.");
+        return separator.ParentElement!.ParentElement!.Children.Single(child => child.Id == id);
+    }
+
+    // On Enter the script reports the pane before the separator, and the splitter picks which pane to toggle.
+    private async Task SetCollapsedAsync(bool collapsed)
+    {
+        if (Collapsed == collapsed)
+        {
+            return;
+        }
+
+        var before = _find().ParentElement!.PreviousElementSibling!.Id!;
+        var report = _scripts.Splitter(before);
+        await _scripts.InvokeAsync(() => report.OnToggle(before));
+    }
+
     private static double Grow(IElement pane) => double.Parse(
         pane.GetAttribute("style")!.Split(';')[0].Split(':')[1], CultureInfo.InvariantCulture);
 

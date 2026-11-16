@@ -654,6 +654,25 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldReturnOnceThePanesCollapsedChangedHasRun_WhenItCollapsesOrRestoresAPane(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/helpers-slow");
+        var outline = page.Tb().Splitter("Resize Slow outline");
+        var slow = page.GetByTestId("slow");
+
+        await outline.CollapseAsync();
+        var collapsed = (await slow.TextContentAsync(), await outline.CollapsedAsync());
+        // Collapsing it again changes nothing, so the app has nothing to answer.
+        await outline.CollapseAsync();
+        var again = await outline.CollapsedAsync();
+        await outline.RestoreAsync();
+
+        Assert.Equal(("outline True", true, true), (collapsed.Item1, collapsed.Item2, again));
+        Assert.Equal(("outline False", false), (await slow.TextContentAsync(), await outline.CollapsedAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task SignaturePad_ShouldReturnOnceTheAppHasRunItsCallback_WhenUndoOrClearIsSlow(string browser)
     {
         var page = await OpenAsync(browser, "/helpers-slow");

@@ -478,3 +478,6 @@ Trailblazor.Testing.TbViewportDriver.CurrentFit.get -> Trailblazor.ViewportFit
 Trailblazor.Testing.TbNavMenuDriver.Expanded(params string![]! path) -> bool
 Trailblazor.Testing.TbNavMenuDriver.ExpandAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbNavMenuDriver.CollapseAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSplitterDriver.Collapsed.get -> bool
+Trailblazor.Testing.TbSplitterDriver.CollapseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSplitterDriver.RestoreAsync() -> System.Threading.Tasks.Task!

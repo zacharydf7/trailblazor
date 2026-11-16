@@ -478,3 +478,6 @@ Trailblazor.Testing.Playwright.TbViewportLocator.CurrentFitAsync() -> System.Thr
 Trailblazor.Testing.Playwright.TbNavMenuLocator.ExpandedAsync(params string![]! path) -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbNavMenuLocator.ExpandAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbNavMenuLocator.CollapseAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSplitterLocator.CollapsedAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbSplitterLocator.CollapseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSplitterLocator.RestoreAsync() -> System.Threading.Tasks.Task!

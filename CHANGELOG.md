@@ -88,6 +88,7 @@ they run by version. The docs site's Upgrading page is built from both.
 - Every component takes the font of the text around it, as fields and tabs already did, rather than `--tb-font-family`; headings keep `--tb-font-family-heading`, and code and keys keep `--tb-font-family-mono`. A `--tb-font-family` that a stylesheet rule sets on a region no longer reaches its components; set `font-family` there, or the token in its `style` attribute
 - An interactive chip that isn't only a link counts its finished clicks, toggles and removals in `data-commits` on its root, and a list item with an `OnClick` counts its finished clicks on its `li`
 - A list item's `li` gets `data-static` on a static page and `data-ready` once it's interactive
+- An interactive splitter counts the collapses and restores it has made in `data-commits` on its root, once `CollapsedChanged` has run, and each separator names the pane that Enter on it collapses and restores in `data-toggles`
 - An interactive accordion item's header and nav group's button count their toggles in `data-commits` once `ExpandedChanged` has run
 - An interactive stepper's list counts the step clicks that move it, in `data-commits`, once `ActiveKeyChanged` has run
 - An interactive carousel's picker counts the picks that move the slides, in `data-commits`, once `ActiveIndexChanged` has run

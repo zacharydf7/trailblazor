@@ -6,6 +6,7 @@
 @inject JsModuleLoader Modules
 
 <div @attributes="AdditionalAttributes" @ref="_root" data-part="splitter" data-report="@_reported" style="@Style"
+     data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
      class="@ClassNames.Join("tb-splitter", Vertical ? "tb-splitter--vertical" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
 </div>
@@ -18,6 +19,7 @@
     private bool _saveAfterRender;
     // The number of the browser's last resize report this render shows.
     private int _reported;
+    private int _commits;
     private bool _disposed;
 
     /// <summary>The <see cref="TbSplitterPane"/>s, two or more, with a separator between each pair.</summary>
@@ -205,12 +207,21 @@
         return before.Collapsible ? before : after is { Collapsible: true } ? after : null;
     }
 
+    // A toggle counts once the app's CollapsedChanged has run, so a test can wait for the app's answer.
     internal async Task ToggleAsync(TbSplitterPane before)
     {
         if (ToggleTarget(before) is { } pane)
         {
-            await pane.SetCollapsedAsync(!pane.IsCollapsed);
-            await SaveAsync();
+            try
+            {
+                await pane.SetCollapsedAsync(!pane.IsCollapsed);
+                await SaveAsync();
+            }
+            finally
+            {
+                _commits++;
+                StateHasChanged();
+            }
         }
     }
 

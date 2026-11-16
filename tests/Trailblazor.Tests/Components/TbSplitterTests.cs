@@ -114,10 +114,34 @@ public class TbSplitterTests : BunitContext
         var module = SetUpScript();
         var cut = RenderSplitter(new Pane("Left", 30, Collapsible: first), new Pane("Right", Collapsible: second));
         var report = (DotNetObjectReference<SplitterReport>)module.Invocations["attachSplitter"].Single().Arguments[1]!;
+        var toggles = cut.Find("[role=separator]").GetAttribute("data-toggles");
 
         await cut.InvokeAsync(() => report.Value.OnToggle(PaneIds(cut)[0]));
 
+        Assert.Equal(PaneIds(cut)[collapsed], toggles);
         Assert.True(cut.FindAll("[data-part=pane]")[collapsed].HasAttribute("data-collapsed"));
+    }
+
+    [Fact]
+    public async Task Toggle_ShouldCountTheToggleOnceCollapsedChangedHasFinished_WhenTheHandlerIsSlow()
+    {
+        var module = SetUpScript();
+        var changed = new TaskCompletionSource();
+        var cut = Render<TbSplitter>(parameters => parameters
+            .AddChildContent<TbSplitterPane>(pane => pane.Add(p => p.Label, "Left").Add(p => p.Collapsible, true)
+                .Add(p => p.CollapsedChanged, (bool _) => changed.Task))
+            .AddChildContent<TbSplitterPane>(pane => pane.Add(p => p.Label, "Right")));
+        var report = (DotNetObjectReference<SplitterReport>)module.Invocations["attachSplitter"].Single().Arguments[1]!;
+        string? Commits() => cut.Find("[data-part=splitter]").GetAttribute("data-commits");
+
+        var toggling = cut.InvokeAsync(() => report.Value.OnToggle(PaneIds(cut)[0]));
+        // The app can render the splitter while its handler runs, which mustn't show the toggle counted yet.
+        cut.Render();
+        var pending = Commits();
+        await cut.InvokeAsync(changed.SetResult);
+        await toggling;
+
+        Assert.Equal(("0", "1"), (pending, Commits()));
     }
 
     [Fact]
@@ -127,10 +151,13 @@ public class TbSplitterTests : BunitContext
         var cut = RenderSplitter(new Pane("Left", 30, Collapsible: true, Collapsed: true),
             new Pane("Right", Collapsible: true, Collapsed: true));
         var report = (DotNetObjectReference<SplitterReport>)module.Invocations["attachSplitter"].Single().Arguments[1]!;
+        string? Toggles() => cut.Find("[role=separator]").GetAttribute("data-toggles");
+        Assert.Equal(PaneIds(cut)[0], Toggles());
 
         await cut.InvokeAsync(() => report.Value.OnToggle(PaneIds(cut)[0]));
         Assert.False(cut.FindAll("[data-part=pane]")[0].HasAttribute("data-collapsed"));
         Assert.True(cut.FindAll("[data-part=pane]")[1].HasAttribute("data-collapsed"));
+        Assert.Equal(PaneIds(cut)[1], Toggles());
 
         await cut.InvokeAsync(() => report.Value.OnToggle(PaneIds(cut)[0]));
         Assert.False(cut.FindAll("[data-part=pane]")[1].HasAttribute("data-collapsed"));

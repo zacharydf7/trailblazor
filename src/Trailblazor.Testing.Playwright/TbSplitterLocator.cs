@@ -44,4 +44,48 @@ public sealed class TbSplitterLocator(ILocator scope, string separator)
     /// same size.</summary>
     public async Task<int> SizeAsync() =>
         int.Parse(await Separator.GetAttributeAsync("aria-valuenow") ?? "", CultureInfo.InvariantCulture);
+
+    /// <summary>Whether the pane that Enter on the separator collapses and restores is collapsed. That's the pane
+    /// before the separator, or the one after it when the one before can't collapse; but while the pane before is
+    /// open, a collapsed last pane after it comes first, so the pane can change after a toggle. Throws when neither
+    /// pane can collapse.</summary>
+    public async Task<bool> CollapsedAsync() => await (await ToggledPaneAsync()).GetAttributeAsync("data-collapsed")
+        is not null;
+
+    /// <summary>Collapses the pane that Enter on the separator collapses, if it's open, by pressing Enter as a keyboard
+    /// user would, and waits until the app's <c>CollapsedChanged</c> has run. Throws when neither pane beside the
+    /// separator can collapse.</summary>
+    public Task CollapseAsync() => SetCollapsedAsync(true);
+
+    /// <summary>Restores the pane that Enter on the separator restores, if it's collapsed, as
+    /// <see cref="CollapseAsync"/> collapses it.</summary>
+    public Task RestoreAsync() => SetCollapsedAsync(false);
+
+    private async Task<ILocator> ToggledPaneAsync()
+    {
+        var id = await Separator.GetAttributeAsync("data-toggles")
+            ?? throw new InvalidOperationException($"Neither pane beside \"{separator}\" can collapse.");
+        return Splitter.Locator($"[id='{id}']");
+    }
+
+    private async Task SetCollapsedAsync(bool collapsed)
+    {
+        // Enter works once the splitter's script has attached.
+        await Assertions.Expect(Splitter).ToHaveAttributeAsync("data-ready", "");
+        var pane = await ToggledPaneAsync();
+        // A pane already as asked is left alone, so the app has nothing to answer.
+        await Commit.CountedAsync(Splitter, "data-commits", async () =>
+        {
+            if (await pane.GetAttributeAsync("data-collapsed") is not null == collapsed)
+            {
+                return false;
+            }
+
+            await Separator.PressAsync("Enter");
+            return true;
+        });
+        var marked = Assertions.Expect(pane);
+        await (collapsed ? marked.ToHaveAttributeAsync("data-collapsed", "")
+            : marked.Not.ToHaveAttributeAsync("data-collapsed", ""));
+    }
 }

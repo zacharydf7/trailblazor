@@ -51,6 +51,14 @@
             </TbNavGroup>
         </TbNavMenu>
     </nav>
+    <div style="block-size: 6rem">
+        <TbSplitter>
+            <TbSplitterPane Label="Slow outline" Size="30" Collapsible CollapsedChanged="OutlineAsync">
+                Outline
+            </TbSplitterPane>
+            <TbSplitterPane Label="Slow page">Page</TbSplitterPane>
+        </TbSplitter>
+    </div>
     <TbStepper AriaLabel="Slow booking" Linear="false" ActiveKey="@_step" ActiveKeyChanged="StepAsync">
         <TbStep Key="dates" Title="Dates" />
         <TbStep Key="gear" Title="Gear" />
@@ -116,6 +124,8 @@
     }
 
     private Task StepAsync(string? step) => SlowlyAsync($"step {step}", () => _step = step);
+
+    private Task OutlineAsync(bool collapsed) => SlowlyAsync($"outline {collapsed}");
 
     private Task RouteAsync(bool expanded) => SlowlyAsync($"route {expanded}");
 

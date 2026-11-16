@@ -12,6 +12,7 @@
     <div data-part="bar" class="tb-splitter__bar">
         <div @ref="_separator" role="separator" tabindex="0" data-part="separator" class="tb-splitter__separator"
              aria-orientation="@(Splitter.Vertical ? "horizontal" : "vertical")" aria-controls="@before.Id"
+             data-toggles="@Splitter.ToggleTarget(before)?.Id"
              aria-label="@Format(Splitter.Labels.Resize, TbStrings.SplitterResize, before)"
              aria-valuenow="@Whole(Splitter.Percent(before))"
              aria-valuemin="@(before.Collapsible ? "0" : Whole(Splitter.InOpenSpace(before.MinSize)))"
