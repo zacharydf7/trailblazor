@@ -157,7 +157,10 @@ The same idea gets the same name on every component.
 
 The docs site's navigation lists each component still to come under its category. `UpcomingCatalog.All` names each one
 with its category and the issue that tracks it, and the issue sets its badge: "Coming soon" when the issue is in
-progress or in the current or next phase milestone, "Planned" otherwise. Add the `in progress` label to an issue when
-work on it starts and close it when the component ships; remove the component's entry from `All` in the change that adds
-its page. The Docs workflow fetches the issues again on every publish; `docs/update-roadmap.sh` refreshes the committed
-copy, `docs/Trailblazor.Docs.Examples/roadmap.json`.
+progress or its milestone is the current phase, and "Planned" otherwise. `UpcomingCatalog.CurrentPhase` names the
+current phase's milestone; change it when the next phase starts. Bugs, review findings and polish to shipped components
+go in the Maintenance milestone, which isn't a phase; a phase's milestone holds only the work the roadmap plans for it,
+and closes when that work is done. Add the `in progress` label to an issue when work on it starts and close it when the
+component ships; remove the component's entry from `All` in the change that adds its page. The Docs workflow fetches the
+issues again on every publish; `docs/update-roadmap.sh` refreshes the committed copy,
+`docs/Trailblazor.Docs.Examples/roadmap.json`.

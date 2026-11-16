@@ -23,6 +23,10 @@ public sealed record UpcomingEntry(UpcomingComponent Component, UpcomingStage St
 
 public static class UpcomingCatalog
 {
+    // The milestone title of the phase under way, whose components show as coming soon; update it when the next
+    // phase starts.
+    public const string CurrentPhase = "Phase 4 · Advanced tier";
+
     public static IReadOnlyList<UpcomingComponent> All { get; } =
     [
         new("Dashboard tile layout", ExampleCategory.Layout, 204),
@@ -55,37 +59,33 @@ public static class UpcomingCatalog
         new("Multi-column combobox", ExampleCategory.Inputs, 185),
         new("Image preview", ExampleCategory.Overlays, 188),
         new("Product tour", ExampleCategory.Overlays, 191),
-        new("Sheet", ExampleCategory.Overlays, 59),
         new("File manager", ExampleCategory.Navigation, 209),
         new("Menubar", ExampleCategory.Navigation, 187),
     ];
 
     public static IReadOnlyList<RoadmapIssue> Issues { get; } = Load();
 
-    public static IReadOnlyList<UpcomingEntry> Current { get; } = Arrange(All, Issues);
+    public static IReadOnlyList<UpcomingEntry> Current { get; } = Arrange(All, Issues, CurrentPhase);
 
     public static IEnumerable<UpcomingEntry> In(ExampleCategory category) =>
         Current.Where(entry => entry.Component.Category == category);
 
     // A closed (shipped or dropped) or missing issue skips its component instead of throwing; a test catches typos.
-    // Coming soon means in progress or in the current or next phase; phases sort by title while numbered below 10.
+    // Coming soon means in progress or in the current phase.
     public static IReadOnlyList<UpcomingEntry> Arrange(IReadOnlyList<UpcomingComponent> components,
-        IReadOnlyList<RoadmapIssue> issues)
+        IReadOnlyList<RoadmapIssue> issues, string currentPhase)
     {
-        var phases = issues.Where(issue => issue.Phase is not null && !issue.Dropped).Select(issue => issue.Phase!)
-            .Distinct().Order(StringComparer.Ordinal).ToList();
-        var current = phases.FindIndex(phase => issues.Any(issue => issue.Phase == phase && issue.Open));
         var byNumber = issues.ToDictionary(issue => issue.Number);
         return [.. components
             .Where(component => byNumber.ContainsKey(component.Issue))
             .Select(component => (Component: component, Issue: byNumber[component.Issue]))
             .Where(pair => pair.Issue.Open)
-            .Select(pair => new UpcomingEntry(pair.Component, StageOf(pair.Issue, phases, current)))
+            .Select(pair => new UpcomingEntry(pair.Component, StageOf(pair.Issue, currentPhase)))
             .OrderBy(entry => entry.Stage).ThenBy(entry => entry.Component.Title, StringComparer.CurrentCulture)];
     }
 
-    private static UpcomingStage StageOf(RoadmapIssue issue, List<string> phases, int current) =>
-        issue.Labels.Contains("in progress") || (issue.Phase is not null && phases.IndexOf(issue.Phase) <= current + 1)
+    private static UpcomingStage StageOf(RoadmapIssue issue, string currentPhase) =>
+        issue.Labels.Contains("in progress") || issue.Phase == currentPhase
             ? UpcomingStage.ComingSoon : UpcomingStage.Planned;
 
     private static IReadOnlyList<RoadmapIssue> Load()
