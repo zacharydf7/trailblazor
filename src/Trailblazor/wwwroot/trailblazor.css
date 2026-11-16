@@ -4384,7 +4384,7 @@
 
     .tb-popover__panel {
         box-sizing: border-box;
-        max-inline-size: min(24rem, calc(100vw - 2 * var(--tb-space-4)));
+        max-inline-size: min(var(--tb-popover-max-width, 24rem), calc(100vw - 2 * var(--tb-space-4)));
         max-block-size: var(--tb-available-block-size, none);
         overflow-y: auto;
         margin: 0;
@@ -4415,9 +4415,10 @@
         line-height: var(--tb-line-height-tight);
     }
 
-    /* A confirmation stays narrow, so its question and buttons read as one short line or two. */
-    .tb-popconfirm .tb-popover__panel {
-        max-inline-size: min(22rem, calc(100vw - 2 * var(--tb-space-4)));
+    /* A confirmation stays narrow, so its question and buttons read as one short line or two, whatever width the app
+       gives popovers. */
+    .tb-popconfirm {
+        --tb-popover-max-width: 22rem;
     }
 
     .tb-popconfirm__description {

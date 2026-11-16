@@ -61,6 +61,8 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] Minimize collapses it to its header in the corner. `DialogTests.Dialog_ShouldCollapseToItsHeaderInTheCornerAndKeepFocus_WhenMinimized`
 - [x] A dialog opened minimized starts in the corner with focus on Restore and leaves the page usable, even when it's modal. `DialogTests.Dialog_ShouldOpenInTheCornerAndLeaveThePageUsable_WhenItStartsMinimized`
 - [x] The reference reports each new window state, from the header's buttons or from code. `DialogServiceTests.WindowStateChanged_ShouldReportEachNewState_WhenTheHeaderOrCodeChangesIt`, `DialogServiceTests.WindowStateChanged_ShouldReportTheRestore_WhenHidingTheHeaderRestoresAMinimizedDialog`
+- [x] A `TbDialogHeader` reports each new window state through its `WindowStateChanged` callback, which renders the component that passed the callback again, and stops once the header leaves. `DialogServiceTests.CustomHeader_ShouldRaiseWindowStateChangedUntilItLeaves_WhenTheStateChangesFromCode`
+- [x] `HasOpenDialogs` and the page's `data-tb-open-dialogs` count the open dialogs, leaving out one that is closing. `DialogServiceTests.HasOpenDialogs_ShouldLeaveOutAClosingDialogAndShowTheCountOnThePage_WhenOneOpensAndCloses`
 - [x] Maximize fills the window, and Restore brings it back. `DialogTests.Dialog_ShouldFillTheWindowAndComeBack_WhenMaximizedAndRestored`
 - [x] A long dialog keeps its header in view and scrolls its body. `DialogExtrasTests.Dialog_ShouldScrollItsBodyAndKeepItsHeaderInView_WhenItsContentIsLong`
 - [x] A full or maximized dialog, or a drawer, keeps its actions at the bottom of the window, even when a form holds them. `DialogTests.Dialog_ShouldPinItsActionsToTheBottomOfTheWindow_WhenFullOrMaximized`

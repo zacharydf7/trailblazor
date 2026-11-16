@@ -8,6 +8,10 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Renamed and removed
 
+#### 2026-11-16
+
+- DialogOptions.Attributes and DialogAttributes → DialogOptions.WindowButtonAttributes and DialogWindowButtonAttributes
+
 #### 2026-11-14
 
 - TbViewportLocator.FitPageAsync() and FitWidthAsync() → TbViewportLocator.FitAsync(ViewportFit)
@@ -76,6 +80,10 @@ they run by version. The docs site's Upgrading page is built from both.
 - new TbSelectLocator or TbColorPickerLocator with a label → page.Tb().Select(label) or ColorPicker(label)
 
 ### Markup and behavior
+
+#### 2026-11-16
+
+- TbRoot's dialog host renders a hidden element with `data-tb-open-dialogs`, the number of open dialogs that aren't closing
 
 #### 2026-11-15
 

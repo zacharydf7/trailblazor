@@ -592,7 +592,7 @@ public class DialogServiceTests : BunitContext
         _ = Dialogs.ShowAsync<GreetingDialog, string>("Notes", options: new()
         {
             Modal = false, Minimizable = true, Maximizable = true,
-            Attributes = new()
+            WindowButtonAttributes = new()
             {
                 Minimize = new Dictionary<string, object> { ["id"] = "notes-minimize" },
                 Maximize = new Dictionary<string, object> { ["id"] = "notes-maximize" },
@@ -635,6 +635,46 @@ public class DialogServiceTests : BunitContext
 
         Assert.Equal(DialogWindowState.Normal, dialog.WindowState);
         host.WaitForAssertion(() => Assert.Equal("Notes", host.Find("[data-part=title]").TextContent));
+    }
+
+    [Fact]
+    public async Task CustomHeader_ShouldRaiseWindowStateChangedUntilItLeaves_WhenTheStateChangesFromCode()
+    {
+        var host = Render<DialogHost>();
+        _ = Dialogs.ShowAsync<BarDialog, string>("Notes", options: new() { Modal = false, Maximizable = true });
+        var dialog = Dialogs.OpenDialogs.Single();
+        host.WaitForElement("[data-testid=states]");
+
+        // Set from code, so only the callback renders the content again.
+        await host.InvokeAsync(() => dialog.WindowState = DialogWindowState.Minimized);
+        host.WaitForAssertion(() => Assert.Equal("Minimized", host.Find("[data-testid=states]").TextContent));
+        await host.Find("[data-testid=drop-header]").ClickAsync(new());
+        await host.InvokeAsync(() => dialog.WindowState = DialogWindowState.Maximized);
+
+        Assert.Equal(DialogWindowState.Maximized, dialog.WindowState);
+        Assert.Equal("Minimized", host.Find("[data-testid=states]").TextContent);
+    }
+
+    [Fact]
+    public async Task HasOpenDialogs_ShouldLeaveOutAClosingDialogAndShowTheCountOnThePage_WhenOneOpensAndCloses()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame").SetVoidResult();
+        var fade = module.SetupModule("openDialog", _ => true).SetupVoid("close");
+        var host = Render<DialogHost>();
+        string? Count() => host.Find("[data-tb-open-dialogs]").GetAttribute("data-tb-open-dialogs");
+        var before = (Dialogs.HasOpenDialogs, Count());
+        _ = Dialogs.ShowAsync<BarDialog, string>("Notes", options: new() { Modal = false });
+        var close = host.WaitForElement("[data-testid=close]");
+        var open = (Dialogs.HasOpenDialogs, Count());
+
+        // The fade-out is held, so the dialog is still in OpenDialogs while it closes.
+        var closing = close.ClickAsync(new());
+        var fading = (Dialogs.OpenDialogs.Count, Dialogs.HasOpenDialogs, Count());
+        fade.SetVoidResult();
+        await closing;
+
+        Assert.Equal(((false, "0"), (true, "1"), (1, false, "0")), (before, open, fading));
     }
 
     [Fact]
@@ -1433,6 +1473,7 @@ public class DialogServiceTests : BunitContext
 
     private sealed class BarDialog : TbDialogContent<string>
     {
+        private readonly List<DialogWindowState> _states = [];
         private bool _bar = true;
         private bool _empty;
 
@@ -1448,11 +1489,17 @@ public class DialogServiceTests : BunitContext
                         AddButton(bar, 10, "unfold", "Unfold", () => Dialog.WindowState = DialogWindowState.Normal);
                         AddButton(bar, 20, "close", "Close", () => Dialog.CancelAsync());
                     }));
+                builder.AddComponentParameter(2, nameof(TbDialogHeader.WindowStateChanged),
+                    EventCallback.Factory.Create<DialogWindowState>(this, _states.Add));
                 builder.CloseComponent();
             }
 
             AddButton(builder, 30, "drop-header", "Drop the header", () => _bar = false);
             AddButton(builder, 40, "empty-header", "Empty the header", () => _empty = true);
+            builder.OpenElement(50, "output");
+            builder.AddAttribute(51, "data-testid", "states");
+            builder.AddContent(52, string.Join(", ", _states));
+            builder.CloseElement();
         }
 
         private void AddButton(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int sequence,

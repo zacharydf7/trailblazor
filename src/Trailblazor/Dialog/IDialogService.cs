@@ -10,6 +10,11 @@ public interface IDialogService
     /// <see cref="DialogReference.IsClosing"/> set, until it has faded out.</summary>
     IReadOnlyList<DialogReference> OpenDialogs { get; }
 
+    /// <summary>Whether a dialog is open, not counting one that is closing. For a script that checks without knowing
+    /// the dialogs' markup, <see cref="TbRoot"/> renders the number of those dialogs, closing ones left out, as
+    /// <c>data-tb-open-dialogs</c> on a hidden element on the page.</summary>
+    bool HasOpenDialogs { get; }
+
     // The overloads differ in their type parameter count, so no call is ambiguous.
 #pragma warning disable RS0026
     /// <summary>Opens <typeparamref name="TDialog"/> and returns at once, with a reference that closes, renames or

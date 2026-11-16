@@ -17,12 +17,39 @@ public sealed class TbDialogHeader : ComponentBase, IDisposable
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>Raised with the dialog's new <see cref="DialogReference.WindowState"/> each time it changes, so the
+    /// header can show the controls for it, such as a Restore button while the dialog is minimized. The component
+    /// that sets it renders again afterward, as with any <see cref="EventCallback"/>.</summary>
+    [Parameter]
+    public EventCallback<DialogWindowState> WindowStateChanged { get; set; }
+
     private DialogReference Reference => Dialog
         ?? throw new InvalidOperationException($"Put {nameof(TbDialogHeader)} inside a dialog.");
 
     /// <inheritdoc />
-    protected override void OnParametersSet() => Reference.Fill(Reference.CustomHeader, this, ChildContent);
+    protected override void OnInitialized() => Reference.WindowStateChanged += OnWindowStateChanged;
 
     /// <inheritdoc />
-    public void Dispose() => Dialog?.Empty(Dialog.CustomHeader, this);
+    protected override void OnParametersSet() => Reference.Fill(Reference.CustomHeader, this, ChildContent);
+
+    // The dialog's event can fire off Blazor's dispatcher, so the callback goes through InvokeAsync.
+    private async void OnWindowStateChanged(DialogWindowState state)
+    {
+        try
+        {
+            await InvokeAsync(() => WindowStateChanged.InvokeAsync(state));
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        // Unsubscribe first: emptying the header restores a minimized dialog, and that restore shouldn't be reported.
+        Dialog?.WindowStateChanged -= OnWindowStateChanged;
+        Dialog?.Empty(Dialog.CustomHeader, this);
+    }
 }

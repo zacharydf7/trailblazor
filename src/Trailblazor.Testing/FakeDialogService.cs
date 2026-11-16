@@ -29,6 +29,9 @@ public sealed class FakeDialogService : IDialogService
     /// <inheritdoc />
     public IReadOnlyList<DialogReference> OpenDialogs => _dialogs.OpenDialogs;
 
+    /// <inheritdoc />
+    public bool HasOpenDialogs => _dialogs.HasOpenDialogs;
+
     /// <summary>Closes each <typeparamref name="TDialog"/> with <paramref name="result"/> as it opens, so a click that
     /// awaits one finishes, as <see cref="Answer"/> does for confirms and alerts. A dialog with no result is a
     /// <c>TbDialogContent&lt;bool&gt;</c>, so <c>AnswerWith&lt;TDialog, bool&gt;(true)</c> confirms it. A later answer

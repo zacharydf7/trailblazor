@@ -92,7 +92,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         if (Dialog.Minimizable)
         {
             var minimized = state == DialogWindowState.Minimized;
-            AddWindowButton(builder, 31, "minimize", Dialog.Options.Attributes?.Minimize,
+            AddWindowButton(builder, 31, "minimize", Dialog.Options.WindowButtonAttributes?.Minimize,
                 minimized ? Labels.Restore ?? Localizer[TbStrings.DialogRestore]
                     : Labels.Minimize ?? Localizer[TbStrings.DialogMinimize],
                 minimized ? BuiltInIcons.Restore : BuiltInIcons.Minus,
@@ -102,7 +102,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         if (Dialog.Maximizable)
         {
             var maximized = state == DialogWindowState.Maximized;
-            AddWindowButton(builder, 39, "maximize", Dialog.Options.Attributes?.Maximize,
+            AddWindowButton(builder, 39, "maximize", Dialog.Options.WindowButtonAttributes?.Maximize,
                 maximized ? Labels.Restore ?? Localizer[TbStrings.DialogRestore]
                     : Labels.Maximize ?? Localizer[TbStrings.DialogMaximize],
                 maximized ? BuiltInIcons.Restore : BuiltInIcons.Maximize,
@@ -112,7 +112,7 @@ internal sealed class DialogHeader : ComponentBase, IDisposable
         if (Dialog.CloseButton)
         {
             builder.OpenComponent<TbIconButton>(47);
-            builder.AddMultipleAttributes(48, Dialog.Options.Attributes?.Close);
+            builder.AddMultipleAttributes(48, Dialog.Options.WindowButtonAttributes?.Close);
             builder.AddComponentParameter(49, nameof(TbIconButton.Icon), BuiltInIcons.Close);
             builder.AddComponentParameter(50, nameof(TbIconButton.AriaLabel),
                 Labels.Close ?? Localizer[TbStrings.DialogClose]);

@@ -7144,7 +7144,9 @@ public static class ExampleCatalog
                     + "`Maximizable`, `Draggable` or `Resizable` on its reference, or on `Dialog` from inside a "
                     + "`TbDialogContent<TResult>`, as this notes dialog does. Turning `Minimizable` off restores a "
                     + "minimized dialog. The reference's `WindowStateChanged` event reports each new window state, "
-                    + "whether the user pressed a header button or code set it.",
+                    + "whether the user pressed a header button or code set it. In the dialog's own header, "
+                    + "`TbDialogHeader`'s `WindowStateChanged` callback reports it too and, unlike the event, renders "
+                    + "the component that sets it again.",
                     typeof(DialogChangingExample), typeof(NotesDialog)),
                 new("top-layer", "On the page instead of the top layer", "A dialog opens in the browser's top layer, "
                     + "above everything on the page. A popup another library adds to the page's body then opens "
@@ -7159,8 +7161,8 @@ public static class ExampleCatalog
             [
                 typeof(IDialogService), typeof(DialogReference<>), typeof(DialogOptions), typeof(DialogSettings),
                 typeof(TbDialog), typeof(TbDialogActions), typeof(TbDialogTitle), typeof(TbDialogHeaderActions),
-                typeof(TbDialogHeader),
-                typeof(TbDialogDescription), typeof(DialogClasses), typeof(DialogAttributes), typeof(DialogLabels),
+                typeof(TbDialogHeader), typeof(TbDialogDescription), typeof(DialogClasses),
+                typeof(DialogWindowButtonAttributes), typeof(DialogLabels),
             ],
             Keyboard =
             [
@@ -7277,7 +7279,9 @@ public static class ExampleCatalog
                 + "and opens a dialog in one call, or `this.ShowDialogAsync<TDialog>(title)` for a dialog with no "
                 + "result. "
                 + "`IDialogService.OpenDialogs` lists the open dialogs, newest last, including any still fading out, "
-                + "which have `IsClosing` set. `CloseAllAsync()` "
+                + "which have `IsClosing` set, and `HasOpenDialogs` says whether any is open and not closing. On the "
+                + "page, `TbRoot` renders the number of those as `data-tb-open-dialogs` on a hidden element, for a script "
+                + "that checks without knowing the dialogs' markup. `CloseAllAsync()` "
                 + "cancels them all, which resets a page between tests. `Show` returns a reference whose `Result` "
                 + "finishes when the dialog closes, and whose `ContentType` and `Parameters` say what it shows. In "
                 + "bUnit, `FakeDialogService` records the dialogs opened through it, finds one with `Last<TDialog, "
@@ -7298,7 +7302,7 @@ public static class ExampleCatalog
                 + "`IsOpen` and `WindowState` (`TitleAsync()` and so on in Playwright) read it; `MinimizeAsync()`, "
                 + "`MaximizeAsync()` and `RestoreAsync()` use its window buttons; and `WaitForClosedAsync()` waits "
                 + "until the app closes it. To give the header's minimize, maximize and close buttons an `id` or "
-                + "other attributes a test can find them by, set `DialogOptions.Attributes`.",
+                + "other attributes a test can find them by, set `DialogOptions.WindowButtonAttributes`.",
             Telemetry =
             [
                 "With `DialogOptions.TelemetryName`, such as `\"delete-trail\"`, or the `telemetryName` of "
@@ -7554,9 +7558,8 @@ public static class ExampleCatalog
             ],
             Notes =
             [
-                new("The panel is at most 24rem wide. To change that, give the popover a `Class`, such as `wide-help`, "
-                    + "and set `max-inline-size` on `.wide-help [data-part=\"panel\"]` in your stylesheet, as the "
-                    + "[Theming guide](guides/theming#restyle) describes for popups."),
+                new("The panel is at most 24rem wide. Set `--tb-popover-max-width` to change that, in your stylesheet "
+                    + "for every popover or through `Style` for one."),
             ],
             Ready = new("[data-part=trigger]", "the trigger"),
             Target = new("dialog", "Filter the report") { OpenedBy = new("button", "Filters") },

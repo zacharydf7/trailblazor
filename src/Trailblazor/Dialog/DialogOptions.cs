@@ -69,7 +69,7 @@ public sealed record DialogOptions
 
     /// <summary>Extra attributes, such as an <c>id</c>, for the header's minimize, maximize and close buttons.
     /// </summary>
-    public DialogAttributes? Attributes { get; init; }
+    public DialogWindowButtonAttributes? WindowButtonAttributes { get; init; }
 
     /// <summary>The words the header's buttons and the Move and Resize menus show and say to screen readers. Each one
     /// left null uses the app's text.</summary>

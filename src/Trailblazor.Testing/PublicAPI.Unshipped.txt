@@ -468,3 +468,4 @@ Trailblazor.Testing.TrailblazorMarkup.Alerts.get -> System.Collections.Generic.I
 Trailblazor.Testing.TbPopoverDriver.Panel.get -> AngleSharp.Dom.IElement!
 Trailblazor.Testing.TbToastsDriver.DismissAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbToastsDriver.ChooseAsync(string! text, string! action) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.FakeDialogService.HasOpenDialogs.get -> bool

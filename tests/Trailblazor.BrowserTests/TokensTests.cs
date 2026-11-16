@@ -233,6 +233,11 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         ("menu item height", "--tb-menu-item-height", "<div class='tb-menu__item'></div>", "min-height", "37px"),
         ("popover radius", "--tb-popover-radius", "<div class='tb-popover__panel'></div>", "border-top-left-radius",
             "37px"),
+        ("popover width", "--tb-popover-max-width", "<div class='tb-popover__panel'></div>", "max-inline-size",
+            "37px"),
+        // A confirmation keeps its own narrow width whatever the app sets around it.
+        ("popconfirm width", "--tb-popover-max-width",
+            "<div class='tb-popconfirm'><div class='tb-popover__panel'></div></div>", "max-inline-size", "352px"),
         ("dialog radius", "--tb-dialog-radius", "<dialog class='tb-dialog'></dialog>", "border-top-left-radius",
             "37px"),
         ("end drawer radius", "--tb-dialog-radius", "<dialog class='tb-dialog tb-drawer tb-drawer--end'></dialog>",

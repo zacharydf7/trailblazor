@@ -19,6 +19,8 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
 
     public IReadOnlyList<DialogReference> OpenDialogs => _open;
 
+    public bool HasOpenDialogs => _open.Any(dialog => !dialog.IsClosing);
+
     internal HostCheck Hosts { get; } = new("A dialog", time, logger, js, navigation);
 
     // A modal makes the rest of the page inert, so toasts and announcements go inside the topmost one.

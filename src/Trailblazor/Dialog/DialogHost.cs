@@ -17,11 +17,15 @@ internal sealed class DialogHost : ComponentBase, IDisposable
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
+        builder.OpenElement(0, "span");
+        builder.AddAttribute(1, "hidden");
+        builder.AddAttribute(2, "data-tb-open-dialogs", Dialogs.OpenDialogs.Count(dialog => !dialog.IsClosing));
+        builder.CloseElement();
         foreach (var dialog in Dialogs.OpenDialogs.Where(dialog => dialog.ContentType is not null))
         {
-            builder.OpenComponent<DialogFrame>(0);
+            builder.OpenComponent<DialogFrame>(3);
             builder.SetKey(dialog);
-            builder.AddComponentParameter(1, nameof(DialogFrame.Dialog), dialog);
+            builder.AddComponentParameter(4, nameof(DialogFrame.Dialog), dialog);
             builder.CloseComponent();
         }
     }
