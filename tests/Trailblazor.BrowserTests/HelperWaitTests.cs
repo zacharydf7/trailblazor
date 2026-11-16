@@ -572,6 +572,10 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             () => tb.DatePicker("Slow day").ChooseAsync(new DateOnly(2026, 5, 2)),
             () => tb.DateRangePicker("Slow trip").ChooseAsync(new DateOnly(2026, 5, 2), new DateOnly(2026, 5, 4)),
             () => tb.Tabs("Slow tabs").SelectAsync("Notes"),
+            () => tb.Chip("Open").ClickAsync(),
+            () => tb.Chip("Shaded").ClickAsync(),
+            () => tb.Chip("Muddy").RemoveAsync(),
+            () => tb.List("Slow campsites").ClickAsync("Lakeside"),
         })
         {
             await act();
@@ -579,8 +583,8 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
         }
 
         Assert.Equal(["alert closed", "inserted", "removed", "kept", "zoom 1.25", "pinned", "view Terrain", "slide 1",
-            "region ", "color #aa0000", "day 2026-05-02 #1",
-            "trip 2026-05-02/2026-05-04", "clicked notes"], seen);
+            "region ", "color #aa0000", "day 2026-05-02 #1", "trip 2026-05-02/2026-05-04", "clicked notes", "open True",
+            "shaded", "muddy removed", "camp Lakeside"], seen);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -596,6 +600,19 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
         await day.ChooseAsync(new DateOnly(2026, 5, 2));
 
         Assert.Equal("day 2026-05-02 #2", await page.GetByTestId("slow").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task List_ShouldClickOnceInteractiveAndWaitForTheApp_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/helpers-slow");
+
+        var clicking = page.Tb().List("Slow campsites").ClickAsync("Lakeside");
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await clicking;
+
+        Assert.Equal("camp Lakeside", await page.GetByTestId("slow").TextContentAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

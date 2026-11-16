@@ -15,10 +15,13 @@ public sealed class TbListLocator(ILocator scope, string? name)
     public async Task<IReadOnlyList<string>> ItemsAsync() =>
         [.. (await Items.Locator("[data-part=text]").AllTextContentsAsync()).Select(text => text.Trim())];
 
-    /// <summary>Clicks the item with this text. The item must be a button or a link, which it is when it has an
-    /// <c>OnClick</c> or an <c>Href</c>. A disabled item throws.</summary>
+    /// <summary>Clicks the item with this text once the page is interactive and, if the item has an <c>OnClick</c>,
+    /// waits until it has run. The item must be a button or a link, which it is when it has an <c>OnClick</c> or an
+    /// <c>Href</c>. A disabled item throws, and so does a button on a static page, where it does nothing.</summary>
     public async Task ClickAsync(string item)
     {
+        // The list renders with its items, so once it's attached, an item that isn't there won't appear later.
+        await Assertions.Expect(List).ToBeAttachedAsync();
         var named = scope.Page.Locator("[data-part=text]")
             .Filter(new() { HasTextRegex = new Regex($@"^\s*{Regex.Escape(item)}\s*$") });
         var row = Items.Filter(new() { Has = named });
@@ -34,6 +37,25 @@ public sealed class TbListLocator(ILocator scope, string? name)
             throw new InvalidOperationException($"\"{item}\" is disabled.");
         }
 
-        await action.ClickAsync();
+        if (await row.GetAttributeAsync("data-static") is not null)
+        {
+            if (await action.EvaluateAsync<string>("action => action.localName") == "button")
+            {
+                throw new InvalidOperationException($"On a static page \"{item}\" does nothing; render the page "
+                    + "interactively to use it.");
+            }
+
+            await action.ClickAsync();
+            return;
+        }
+
+        // A prerendered item is replaced once the page is interactive, and its button would lose the click. An item
+        // with no OnClick has no count, so following its link doesn't wait.
+        await Assertions.Expect(row).ToHaveAttributeAsync("data-ready", "");
+        await Commit.CountedAsync(row, "data-commits", async () =>
+        {
+            await action.ClickAsync();
+            return true;
+        });
     }
 }

@@ -136,6 +136,55 @@ public class TbChipTests : BunitContext
     }
 
     [Fact]
+    public async Task Click_ShouldCountEachClickAndRemovalOnceItsHandlerHasFinished_WhenTheHandlersAreSlow()
+    {
+        var clicked = new TaskCompletionSource();
+        var removed = new TaskCompletionSource();
+        var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Archive")
+            .Add(chip => chip.OnClick, () => clicked.Task).Add(chip => chip.OnRemove, () => removed.Task));
+        string? Commits() => cut.Find(".tb-chip").GetAttribute("data-commits");
+
+        cut.Find("[data-part=action]").Click();
+        var clicking = Commits();
+        await cut.InvokeAsync(clicked.SetResult);
+        var afterClick = Commits();
+        cut.Find("[data-part=remove]").Click();
+        var removing = Commits();
+        await cut.InvokeAsync(removed.SetResult);
+
+        Assert.Equal(("0", "1", "1", "2"), (clicking, afterClick, removing, Commits()));
+    }
+
+    [Fact]
+    public async Task Click_ShouldCountALinkChipsClick_WhenItHasAnOnClick()
+    {
+        var clicked = new TaskCompletionSource();
+        var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Guides")
+            .Add(chip => chip.Href, "guides").Add(chip => chip.OnClick, () => clicked.Task));
+        var plain = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Maps")
+            .Add(chip => chip.Href, "maps"));
+
+        cut.Find("a").Click();
+        var pending = cut.Find(".tb-chip").GetAttribute("data-commits");
+        await cut.InvokeAsync(clicked.SetResult);
+
+        Assert.Equal(("0", "1", false), (pending, cut.Find(".tb-chip").GetAttribute("data-commits"),
+            plain.Find(".tb-chip").HasAttribute("data-commits")));
+    }
+
+    [Fact]
+    public void Click_ShouldCountALinkChipsClickAndRemoval_WhenItHasAnOnRemove()
+    {
+        var cut = Render<TbChip>(parameters => parameters.Add(chip => chip.Text, "Trails")
+            .Add(chip => chip.Href, "trails").Add(chip => chip.OnRemove, () => { }));
+
+        cut.Find("a").Click();
+        cut.Find("[data-part=remove]").Click();
+
+        Assert.Equal("2", cut.Find(".tb-chip").GetAttribute("data-commits"));
+    }
+
+    [Fact]
     public void Click_ShouldAskToBeRemovedWithANamedButton_WhenOnRemoveIsSet()
     {
         var removals = 0;

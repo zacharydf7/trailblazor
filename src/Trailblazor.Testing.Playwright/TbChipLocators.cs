@@ -24,30 +24,37 @@ public sealed class TbChipLocator
     public async Task<bool> SelectedAsync() =>
         await Chip.Locator("[data-part=action]").GetAttributeAsync("aria-pressed") == "true";
 
-    /// <summary>Clicks the chip, as a user does, once the page is interactive: a chip that toggles is selected or
-    /// cleared, and the call waits until it has changed; one with an <c>OnClick</c> runs it, and one with an
-    /// <c>Href</c> follows its link. It throws for a chip that does nothing when clicked, a disabled chip, or one on a
-    /// static page.</summary>
+    /// <summary>Clicks the chip, as a user does, once the page is interactive. A chip that toggles is selected or
+    /// cleared and one with an <c>OnClick</c> runs it; either way the call waits until the app's handlers have run. One
+    /// with only an <c>Href</c> follows its link. It throws for a chip that does nothing when clicked, a disabled chip,
+    /// or one on a static page.</summary>
     public async Task ClickAsync()
     {
-        var action = (await UnlockedAsync()).Locator("[data-part=action]");
-        if (await action.EvaluateAsync<string>("action => action.localName") is not ("button" or "a"))
+        var chip = await UnlockedAsync();
+        var action = chip.Locator("[data-part=action]");
+        var kind = await action.EvaluateAsync<string>("action => action.localName");
+        if (kind is not ("button" or "a"))
         {
             throw new InvalidOperationException("This chip does nothing when clicked; give it an OnClick, an Href or a "
                 + "SelectedChanged.");
         }
 
         var pressed = await action.GetAttributeAsync("aria-pressed");
-        await action.ClickAsync();
+        // A chip that only links has no count, so following its link doesn't wait.
+        await Commit.CountedAsync(chip, "data-commits", async () =>
+        {
+            await action.ClickAsync();
+            return true;
+        });
         if (pressed is not null)
         {
             await Assertions.Expect(action).ToHaveAttributeAsync("aria-pressed", pressed == "true" ? "false" : "true");
         }
     }
 
-    /// <summary>Presses the chip's remove button, which raises <c>OnRemove</c>, once the page is interactive. A chip
-    /// with no <c>OnRemove</c> has no remove button, so this throws, as it does for a disabled chip or one on a static
-    /// page.</summary>
+    /// <summary>Presses the chip's remove button once the page is interactive, and waits until the app's
+    /// <c>OnRemove</c> has run. A chip with no <c>OnRemove</c> has no remove button, so this throws, as it does for a
+    /// disabled chip or one on a static page.</summary>
     public async Task RemoveAsync()
     {
         var remove = (await UnlockedAsync()).Locator("[data-part=remove]");
@@ -56,7 +63,11 @@ public sealed class TbChipLocator
             throw new InvalidOperationException("This chip has no remove button; it shows only when OnRemove is set.");
         }
 
-        await remove.ClickAsync();
+        await Commit.CountedAsync(Chip, "data-commits", async () =>
+        {
+            await remove.ClickAsync();
+            return true;
+        });
     }
 
     private async Task<ILocator> UnlockedAsync()

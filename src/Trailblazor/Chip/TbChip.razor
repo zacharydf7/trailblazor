@@ -6,6 +6,7 @@
 <span @attributes="AdditionalAttributes" @ref="_chip" role="@(Group is null ? null : "listitem")" style="@Style"
       data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
       data-ready="@(RendererInfo.IsInteractive ? "" : null)"
+      data-commits="@(RendererInfo.IsInteractive && !OnlyLinks ? _commits : null)"
       class="@ClassNames.Join("tb-chip", ClassNames.Modifier("tb-chip", Variant), ClassNames.Modifier("tb-chip", Tone),
                  ClassNames.Modifier("tb-chip", Size), Toggles && Selected ? "tb-chip--selected" : null,
                  Disabled ? "tb-chip--disabled" : null, Class)">
@@ -41,6 +42,8 @@
     private ElementReference _chip;
     private ControlTelemetry? _telemetry;
     private bool _removing;
+    // Counts the clicks, toggles and removals whose handlers have finished, so a test can wait for the app's answer.
+    private int _commits;
 
     /// <summary>The chip's text, which also names its remove button. Use <see cref="ChildContent"/> for richer
     /// content.</summary>
@@ -152,26 +155,44 @@
     /// <inheritdoc />
     protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
 
-    // An empty callback leaves the link without a handler, so a plain link chip's clicks stay in the browser.
-    private EventCallback<MouseEventArgs> LinkClick => TelemetryName is null ? OnClick
+    // A chip that only links has no handlers for a test to wait for, so it has no count.
+    private bool OnlyLinks => Href is not null && !OnClick.HasDelegate && !OnRemove.HasDelegate;
+
+    // An empty callback leaves the link without a handler, so a plain link chip's clicks stay in the browser. A link
+    // chip with an OnClick or OnRemove has a count, so its link clicks go through the handler to be counted.
+    private EventCallback<MouseEventArgs> LinkClick => TelemetryName is null && OnlyLinks ? OnClick
         : EventCallback.Factory.Create<MouseEventArgs>(this, OnLinkClickAsync);
 
-    private Task OnLinkClickAsync(MouseEventArgs e)
+    private async Task OnLinkClickAsync(MouseEventArgs e)
     {
         Telemetry.Used(TelemetryName);
-        return OnClick.InvokeAsync(e);
+        try
+        {
+            await OnClick.InvokeAsync(e);
+        }
+        finally
+        {
+            _commits++;
+        }
     }
 
     private async Task OnActionClickAsync(MouseEventArgs e)
     {
         Telemetry.Used(TelemetryName);
-        if (Toggles)
+        try
         {
-            Selected = !Selected;
-            await SelectedChanged.InvokeAsync(Selected);
-        }
+            if (Toggles)
+            {
+                Selected = !Selected;
+                await SelectedChanged.InvokeAsync(Selected);
+            }
 
-        await OnClick.InvokeAsync(e);
+            await OnClick.InvokeAsync(e);
+        }
+        finally
+        {
+            _commits++;
+        }
     }
 
     private async Task OnKeyDownAsync(KeyboardEventArgs e)
@@ -206,6 +227,7 @@
         finally
         {
             _removing = false;
+            _commits++;
         }
 
         Group?.RestoreFocusAfterRender();

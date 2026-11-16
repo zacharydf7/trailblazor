@@ -5,6 +5,11 @@ namespace Trailblazor.Tests.Components;
 
 public class TbListTests : BunitContext
 {
+    public TbListTests()
+    {
+        this.AddTrailblazor();
+    }
+
     [Fact]
     public void Render_ShouldRenderAnOrderedList_WhenOrdered()
     {
@@ -21,6 +26,34 @@ public class TbListTests : BunitContext
 
         Assert.Equal("Pine Hollow", cut.Find("button > * > [data-part=text]").TextContent);
         Assert.Equal("4 sites", cut.Find("button > * > [data-part=description]").TextContent);
+    }
+
+    [Fact]
+    public async Task Click_ShouldCountTheClickOnceOnClickHasFinished_WhenTheHandlerIsSlow()
+    {
+        var clicked = new TaskCompletionSource();
+        var cut = Render<TbListItem>(parameters => parameters.Add(item => item.ChildContent, "Pine Hollow")
+            .Add(item => item.OnClick, () => clicked.Task));
+        var plain = Render<TbListItem>(parameters => parameters.Add(item => item.ChildContent, "Elm Flat"));
+
+        cut.Find("button").Click();
+        var pending = cut.Find("li").GetAttribute("data-commits");
+        await cut.InvokeAsync(clicked.SetResult);
+
+        Assert.Equal(("0", "1", false),
+            (pending, cut.Find("li").GetAttribute("data-commits"), plain.Find("li").HasAttribute("data-commits")));
+    }
+
+    [Fact]
+    public void Render_ShouldMarkTheItemStaticWithNoCount_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var item = Render<TbListItem>(parameters => parameters.Add(entry => entry.ChildContent, "Pine Hollow")
+            .Add(entry => entry.OnClick, () => { })).Find("li");
+
+        Assert.Equal((true, false, false),
+            (item.HasAttribute("data-static"), item.HasAttribute("data-ready"), item.HasAttribute("data-commits")));
     }
 
     [Fact]

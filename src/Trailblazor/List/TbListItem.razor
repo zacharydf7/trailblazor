@@ -4,6 +4,9 @@
 @* An item that acts puts its id on its link or button, the part users act on. *@
 <li @attributes="IsAction ? AttributesWithoutId : AdditionalAttributes"
     aria-current="@(Selected && !IsAction ? "true" : null)" style="@Style"
+    data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+    data-ready="@(RendererInfo.IsInteractive ? "" : null)"
+    data-commits="@(RendererInfo.IsInteractive && OnClick.HasDelegate ? _commits : null)"
     class="@ClassNames.Join("tb-list__item", Selected ? "tb-list__item--selected" : null,
                Disabled ? "tb-list__item--disabled" : null, Class)">
     @if (Href is not null && !Disabled)
@@ -29,6 +32,8 @@
 
 @code {
     private ControlTelemetry? _telemetry;
+    // Counts the clicks whose OnClick has finished, so a test can wait for the app's answer.
+    private int _commits;
 
     /// <summary>The item's main text.</summary>
     [Parameter]
@@ -81,10 +86,17 @@
     /// <inheritdoc />
     protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
 
-    private Task OnClickAsync(MouseEventArgs args)
+    private async Task OnClickAsync(MouseEventArgs args)
     {
         Telemetry.Used(TelemetryName);
-        return OnClick.InvokeAsync(args);
+        try
+        {
+            await OnClick.InvokeAsync(args);
+        }
+        finally
+        {
+            _commits++;
+        }
     }
 
     private RenderFragment Body =>

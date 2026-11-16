@@ -36,6 +36,14 @@
         <TbTab Key="maps" Text="Maps">Maps</TbTab>
         <TbTab Key="notes" Text="Notes" OnClick="@(() => SlowlyAsync($"clicked {_tab}"))">Notes</TbTab>
     </TbTabs>
+    <TbChipGroup AriaLabel="Slow filters">
+        <TbChip Text="Open" Selected="_open" SelectedChanged="OpenAsync" />
+        <TbChip Text="Shaded" OnClick="@(() => SlowlyAsync("shaded"))" />
+        <TbChip Text="Muddy" OnRemove="@(() => SlowlyAsync("muddy removed"))" />
+    </TbChipGroup>
+    <TbList aria-label="Slow campsites">
+        <TbListItem OnClick="@(() => SlowlyAsync("camp Lakeside"))">Lakeside</TbListItem>
+    </TbList>
     <TbSignaturePad Label="Slow signature" Value="_signature" ValueChanged="SignAsync" Style="width: 300px" />
     <output data-testid="slow">@_slow</output>
 </TbStack>
@@ -56,6 +64,7 @@
     private string? _tab = "maps";
     private Signature? _signature;
     private int _days;
+    private bool _open;
     private string _slow = "";
 
     private Task CloseAlertAsync() => SlowlyAsync("alert closed", () => _alert = false);
@@ -81,6 +90,8 @@
         SlowlyAsync($"trip {trip.Start:yyyy-MM-dd}/{trip.End:yyyy-MM-dd}", () => _trip = trip);
 
     private Task TabAsync(string? tab) => SlowlyAsync($"tab {tab}", () => _tab = tab);
+
+    private Task OpenAsync(bool open) => SlowlyAsync($"open {open}", () => _open = open);
 
     private Task SignAsync(Signature? signature) =>
         SlowlyAsync($"strokes {signature?.Strokes.Count ?? 0}", () => _signature = signature);
