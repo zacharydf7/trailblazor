@@ -98,9 +98,8 @@ public class DriverParityTests
             + "SelectedCells",
         ["TbFileUploadLocator.Choose(FilePayload[])"] = InTestFile,
         ["TbFileUploadDriver.Choose(InputFileContent[])"] = InTestFile,
-        ["TbSelectLocator.Open()"] = InMarkup, ["TbSelectLocator.Close()"] = InMarkup,
-        ["TbSelectLocator.IsOpen()"] = InMarkup, ["TbTreeSelectLocator.Open()"] = InMarkup,
-        ["TbTreeSelectLocator.Close()"] = InMarkup, ["TbTreeSelectLocator.IsOpen()"] = InMarkup,
+        ["TbTreeSelectLocator.Open()"] = InMarkup, ["TbTreeSelectLocator.Close()"] = InMarkup,
+        ["TbTreeSelectLocator.IsOpen()"] = InMarkup,
     };
 
     [Fact]

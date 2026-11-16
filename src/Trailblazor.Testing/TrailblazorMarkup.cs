@@ -70,6 +70,14 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
         .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
         .LastOrDefault(events => events.PanelId == panelId);
 
+    // The toggle the select script calls back for the select whose combobox has this id, as its list opens and closes.
+    public SelectToggle Select(string? comboboxId) => Js.Invocations["createSelect"]
+        .Select(call => call.Arguments.ElementAtOrDefault(2) as DotNetObjectReference<SelectToggle>)
+        .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
+        .LastOrDefault(toggle => toggle.ComboboxId == comboboxId)
+            ?? throw new InvalidOperationException("The select's script hasn't attached, as it does once the select "
+                + "renders interactively.");
+
     // The dismissable layer made for this element, which the layer script calls back when Escape is pressed, or null
     // when the component made none.
     public Trailblazor.Primitives.DismissableLayer? Layer(IElement element) => Js.Invocations["createDismissableLayer"]
@@ -222,7 +230,8 @@ public sealed class TrailblazorMarkup
 
     /// <summary>The <c>TbSelect</c> or <c>TbMultiSelect</c> with this label, or with this <c>AriaLabel</c> when it
     /// has no label.</summary>
-    public TbSelectDriver Select(string label) => new(() => Field(label, "[role=combobox]", "select"), _findAll);
+    public TbSelectDriver Select(string label) =>
+        new(() => Field(label, "[role=combobox]", "select"), _findAll, _scripts);
 
     /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label, or with this <c>AriaLabel</c> when it
     /// has no label.</summary>
@@ -669,9 +678,10 @@ public sealed class TbSelectDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
     private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
 
-    internal TbSelectDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) : base(find) =>
-        (_find, _findAll) = (find, findAll);
+    internal TbSelectDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts)
+        : base(find) => (_find, _findAll, _scripts) = (find, findAll, scripts);
 
     /// <summary>The options' names, in order, leaving out a static select's placeholder, the extra option it adds to
     /// keep a value that matches no option, and the message an empty list shows. An option with content of its own is
@@ -732,6 +742,19 @@ public sealed class TbSelectDriver : TbFieldDriver
     public async Task UnchooseAsync(params string[] options) =>
         await Choices.SetChosenAsync(Choosable, options, choose: false);
 
+    /// <summary>Whether the select's list is open. Unlike in a browser, choosing an option in a single select here
+    /// doesn't close it.</summary>
+    public bool IsOpen => _find().HasAttribute("data-open");
+
+    /// <summary>Opens the select's list, as pressing Down on it does, and the app's <c>OpenChanged</c> runs. An open
+    /// list is left as it is. A statically rendered, disabled or read-only select throws, since its list can't open.
+    /// </summary>
+    public async Task OpenAsync() => await SetOpenAsync(true);
+
+    /// <summary>Closes the select's list, as pressing Escape does, and the app's <c>OpenChanged</c> runs. A closed list
+    /// is left as it is.</summary>
+    public async Task CloseAsync() => await SetOpenAsync(false);
+
     /// <summary>Clears the select with its clear button, as a user does. A select that isn't <c>Clearable</c>, or has
     /// nothing chosen, shows no clear button, so this throws, as it does on a static page or for a disabled select.
     /// </summary>
@@ -743,6 +766,35 @@ public sealed class TbSelectDriver : TbFieldDriver
             ?? throw new InvalidOperationException(
                 "The select shows no clear button; make it Clearable, and choose an option first.");
         await clear.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        var control = _find();
+        if (open && control.TagName == "SELECT")
+        {
+            throw new InvalidOperationException("On a static page this field renders as a native select, which posts "
+                + "with its form; render it on an interactive page to open its list.");
+        }
+
+        if (open && (Choices.IsDisabled(control) || control.GetAttribute("aria-readonly") == "true"))
+        {
+            throw new InvalidOperationException("This select is disabled or read-only, so its list can't open.");
+        }
+
+        if (control.HasAttribute("data-open") == open)
+        {
+            return;
+        }
+
+        // A select that attaches on first use does so when it gets focus.
+        if (control.HasAttribute("data-attach-on-use"))
+        {
+            await control.FocusAsync(new FocusEventArgs());
+        }
+
+        var toggle = _scripts.Select(_find().Id);
+        await _scripts.InvokeAsync(() => toggle.OnToggle(open));
     }
 
     private (IEnumerable<IElement> Options, bool Multiple) Choosable()
@@ -3532,7 +3584,7 @@ public sealed class TbGridDriver
             $"The \"{column}\" column has no filter menu; set the grid's FilterMode to Menu.");
         var conditions = menu.QuerySelector("[role=combobox]") ?? throw new InvalidOperationException(
             $"The \"{column}\" column's filter has no conditions; use FilterAsync(column, text) or FilterChoicesAsync.");
-        await new TbSelectDriver(() => conditions, _findAll).ChooseAsync(condition);
+        await new TbSelectDriver(() => conditions, _findAll, _scripts).ChooseAsync(condition);
         // Choosing renders the menu again, without a value field for a condition that takes none.
         if (ValueInput(column) is { } input)
         {
@@ -3562,7 +3614,7 @@ public sealed class TbGridDriver
 
             if (choices.Length > 0)
             {
-                await new TbSelectDriver(() => FilterCell(column).QuerySelector("[role=combobox]")!, _findAll)
+                await new TbSelectDriver(() => FilterCell(column).QuerySelector("[role=combobox]")!, _findAll, _scripts)
                     .ChooseAsync(choices);
             }
 
@@ -4151,7 +4203,7 @@ public sealed class TbQueryBuilderDriver
     public async Task JoinAsync(QueryJoin join, params int[] group)
     {
         var select = new TbSelectDriver(() => GroupOf(group).QuerySelector(":scope > [data-part=group-header] "
-            + "[role=combobox]")!, _findAll);
+            + "[role=combobox]")!, _findAll, _scripts);
         await select.ChooseAsync(select.Options[join == QueryJoin.And ? 0 : 1]);
     }
 

@@ -212,6 +212,7 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
                 {
                     _open = opened;
                     await OpenChanged.InvokeAsync(opened);
+                    StateHasChanged();
                 }
             }
         }
@@ -254,7 +255,7 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
         }
 
         _toggle = DotNetObjectReference.Create(new SelectToggle(OnToggleAsync, OnRemoveChipAsync, OnFilterAsync,
-            OnFindAsync));
+            OnFindAsync, InputId));
         _attachedFiltered = Filterable;
         var handle = await module.InvokeAsync<IJSObjectReference?>("createSelect", _combobox, _listbox, _toggle);
         if (handle is null)
@@ -390,6 +391,8 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
 
         _open = open;
         await OpenChanged.InvokeAsync(open);
+        // The script shows the list; the render marks the combobox data-open for tests that have no script.
+        StateHasChanged();
     }
 
     // The script reports a chip removed by its button or by Backspace, with the text the chip shows, which is said

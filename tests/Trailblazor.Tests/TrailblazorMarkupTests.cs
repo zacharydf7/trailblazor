@@ -543,6 +543,79 @@ public class TrailblazorMarkupTests : BunitContext
         Assert.Equal(["Small", "Medium", "Large"], cut.Tb().Select("Size").Options);
     }
 
+    private IRenderedComponent<TbSelect<string>> RenderSizes(List<bool> opens,
+        Action<ComponentParameterCollectionBuilder<TbSelect<string>>>? configure = null) =>
+        Render<TbSelect<string>>(parameters =>
+        {
+            parameters.Add(select => select.Label, "Size")
+                .Add(select => select.OpenChanged, (bool open) => opens.Add(open))
+                .AddChildContent<TbOption<string>>(option => option.Add(o => o.Value, "s").Add(o => o.Text, "Small"));
+            configure?.Invoke(parameters);
+        });
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Select_ShouldOpenAndCloseTheListAndRaiseOpenChanged_WhenTheHelperIsUsed(bool attachOnFirstUse)
+    {
+        var opens = new List<bool>();
+        var size = RenderSizes(opens, parameters => parameters.Add(select => select.AttachOnFirstUse, attachOnFirstUse))
+            .Tb().Select("Size");
+
+        var before = size.IsOpen;
+        await size.OpenAsync();
+        var opened = size.IsOpen;
+        await size.OpenAsync();
+        await size.CloseAsync();
+        await size.CloseAsync();
+
+        Assert.Equal((false, true, false), (before, opened, size.IsOpen));
+        Assert.Equal([true, false], opens);
+    }
+
+    [Fact]
+    public async Task Select_ShouldRefuseToOpenTheList_WhenReadOnlyDisabledOrStatic()
+    {
+        var opens = new List<bool>();
+        var readOnly = RenderSizes(opens, parameters => parameters.Add(select => select.ReadOnly, true));
+        var disabled = RenderSizes(opens, parameters => parameters.Add(select => select.Disabled, true));
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var still = RenderSizes(opens);
+
+        var refused = await Task.WhenAll(new[] { readOnly, disabled, still }.Select(cut =>
+            Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Select("Size").OpenAsync())));
+
+        Assert.Contains("read-only", refused[0].Message);
+        Assert.Contains("disabled", refused[1].Message);
+        Assert.Contains("static", refused[2].Message);
+        Assert.Null(await Record.ExceptionAsync(() => still.Tb().Select("Size").CloseAsync()));
+        Assert.Empty(opens);
+    }
+
+    [Fact]
+    public async Task Select_ShouldOpenOnlyTheSelectItNames_WhenThePageHasTwo()
+    {
+        var sizes = new List<bool>();
+        var colors = new List<bool>();
+        var cut = Render(builder =>
+        {
+            foreach (var (label, opens) in new[] { ("Size", sizes), ("Color", colors) })
+            {
+                builder.OpenComponent<TbSelect<string>>(0);
+                builder.AddAttribute(1, nameof(TbSelect<string>.Label), label);
+                builder.AddAttribute(2, nameof(TbSelect<string>.OpenChanged),
+                    EventCallback.Factory.Create<bool>(this, opens.Add));
+                builder.CloseComponent();
+            }
+        });
+
+        await cut.Tb().Select("Size").OpenAsync();
+
+        Assert.Equal((true, false), (cut.Tb().Select("Size").IsOpen, cut.Tb().Select("Color").IsOpen));
+        Assert.Equal([true], sizes);
+        Assert.Empty(colors);
+    }
+
     [Fact]
     public async Task Select_ShouldReadUnchooseAndClearTheChosenOptions_WhenAsked()
     {

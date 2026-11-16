@@ -110,7 +110,9 @@
                         <th scope="row"><code>Select(label).UnchooseAsync(options)</code></th>
                         <td>
                             Unchooses options in a multiple select, and <code>ClearAsync()</code> clears a
-                            <code>Clearable</code> select with its clear button.
+                            <code>Clearable</code> select with its clear button. <code>OpenAsync()</code> and
+                            <code>CloseAsync()</code> open and close its list, running the app's
+                            <code>OpenChanged</code>, and <code>IsOpen</code> reads whether it's open.
                         </td>
                     </tr>
                     <tr>

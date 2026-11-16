@@ -5,8 +5,11 @@ namespace Trailblazor;
 // Hears the browser open and close a select's list and remove a chip, so the public select needn't expose
 // [JSInvokable] methods.
 internal sealed class SelectToggle(Func<bool, Task> onToggle, Func<string, string, Task> onRemoveChip,
-    Func<string, Task> onFilter, Func<int, string, Task<int>> onFind)
+    Func<string, Task> onFilter, Func<int, string, Task<int>> onFind, string comboboxId)
 {
+    // The test helpers find a select's toggle by the id of its combobox.
+    internal string ComboboxId => comboboxId;
+
     [JSInvokable]
     public Task OnToggle(bool open) => onToggle(open);
 

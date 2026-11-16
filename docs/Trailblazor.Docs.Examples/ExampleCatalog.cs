@@ -4704,8 +4704,9 @@ public static class ExampleCatalog
                 + "`AttachOnFirstUse`, the combobox gets `data-ready` only when it's first focused or pointed at, so "
                 + "`ChooseAsync` focuses it first. `Option(\"Overnight\")` reads whether an option is `Disabled` and "
                 + "`Chosen`, and `Disabled` reads the select; in Playwright they're `OptionAsync` and `DisabledAsync()`. "
-                + "Playwright also has `OpenAsync()`, `CloseAsync()` and `IsOpenAsync()`, so a test can open the list "
-                + "once and look at several options; bUnit's markup has the list whether it's open or not.",
+                + "`OpenAsync()` and `CloseAsync()` open and close the list, so a Playwright test can open it once and "
+                + "look at several options, and a bUnit test can run the app's `OpenChanged`; `IsOpenAsync()` "
+                + "(`IsOpen` in bUnit) reads whether it's open.",
             Telemetry =
             [
                 "The select also counts `trailblazor.control.used` for each choice, with `trailblazor.input` `pointer` "

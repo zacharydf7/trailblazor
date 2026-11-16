@@ -481,3 +481,6 @@ Trailblazor.Testing.TbNavMenuDriver.CollapseAsync(params string![]! path) -> Sys
 Trailblazor.Testing.TbSplitterDriver.Collapsed.get -> bool
 Trailblazor.Testing.TbSplitterDriver.CollapseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbSplitterDriver.RestoreAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSelectDriver.IsOpen.get -> bool
+Trailblazor.Testing.TbSelectDriver.OpenAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSelectDriver.CloseAsync() -> System.Threading.Tasks.Task!
