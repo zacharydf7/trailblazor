@@ -474,3 +474,4 @@ Trailblazor.Testing.Playwright.TbOverlayLocator.PressEscapeAsync() -> System.Thr
 Trailblazor.Testing.Playwright.TbOverlayLocator.TbOverlayLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TbTagInputLocator.TagsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.Overlay(string? name = null) -> Trailblazor.Testing.Playwright.TbOverlayLocator!
+Trailblazor.Testing.Playwright.TbMenuLocator.CheckedAsync(params string![]! path) -> System.Threading.Tasks.Task<bool>!

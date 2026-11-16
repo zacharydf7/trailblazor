@@ -44,6 +44,49 @@ public sealed class TbMenuLocator(ILocator scope, string trigger)
         await Assertions.Expect(menu).ToBeHiddenAsync();
     }
 
+    /// <summary>Whether the checkbox or radio item with this name, through the submenus named before it, is checked.
+    /// The items are on the page whether the menu is open or not, so this reads it without opening the menu.</summary>
+    public async Task<bool> CheckedAsync(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        var list = await MenuAsync();
+        foreach (var name in path[..^1])
+        {
+            var opener = await OwnAsync(list, Hidden(list, AriaRole.Menuitem, name)
+                .And(list.Locator("[aria-haspopup=menu]")), name, "submenu");
+            list = Scope.Document(scope).Locator($"[id='{await opener.GetAttributeAsync("aria-controls")}']");
+        }
+
+        var item = await OwnAsync(list, Hidden(list, AriaRole.Menuitemcheckbox, path[^1])
+            .Or(Hidden(list, AriaRole.Menuitemradio, path[^1])), path[^1], "checkbox or radio item");
+        return await item.GetAttributeAsync("aria-checked") == "true";
+    }
+
+    // An item in a closed list, which is hidden until the list opens.
+    private static ILocator Hidden(ILocator list, AriaRole role, string name) =>
+        list.GetByRole(role, new() { Name = name, Exact = true, IncludeHidden = true });
+
+    // The one candidate whose nearest menu is this list, since a submenu's items sit inside the list that holds it.
+    private static async Task<ILocator> OwnAsync(ILocator list, ILocator candidates, string name, string kind)
+    {
+        var id = await list.GetAttributeAsync("id");
+        var own = new List<ILocator>();
+        foreach (var candidate in await candidates.AllAsync())
+        {
+            if (await candidate.EvaluateAsync<string?>("item => item.parentElement.closest('[role=menu]')?.id") == id)
+            {
+                own.Add(candidate);
+            }
+        }
+
+        return own.Count switch
+        {
+            1 => own[0],
+            0 => throw new InvalidOperationException($"The menu has no {kind} named \"{name}\"."),
+            _ => throw new InvalidOperationException($"The menu has {own.Count} {kind}s named \"{name}\"."),
+        };
+    }
+
     /// <summary>Whether the menu is showing.</summary>
     public async Task<bool> IsOpenAsync() => await (await MenuAsync()).IsVisibleAsync();
 

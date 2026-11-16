@@ -222,8 +222,9 @@
                         <td>
                             Clicks a menu or speed dial item by its name, through the submenus named before it,
                             and throws for a disabled menu or item. <code>OpenAsync()</code> and
-                            <code>CloseAsync()</code> open and close the menu, and <code>IsOpen</code> reads whether
-                            it's open.
+                            <code>CloseAsync()</code> open and close the menu, <code>IsOpen</code> reads whether
+                            it's open, and <code>Checked(path)</code> reads whether a checkbox or radio item is
+                            checked.
                         </td>
                     </tr>
                     <tr>
@@ -1226,7 +1227,8 @@
             + "dialog, would keep the helper waiting, so click the confirm button instead."),
         new("Menu or speed dial", "Its trigger", "`Menu(trigger).ChooseAsync(path)` chooses an item through its "
             + "submenus and waits until the app has run the item's handler. `OpenAsync()` and `CloseAsync()` open and "
-            + "close the menu, and `IsOpenAsync()` reads whether it's open."),
+            + "close the menu, `IsOpenAsync()` reads whether it's open, and `CheckedAsync(path)` reads whether a "
+            + "checkbox or radio item is checked, without opening the menu."),
         new("Hotkey", "Its keys", "`Hotkey(keys).PressAsync()` waits until the hotkey listens, then presses its "
             + "keys, with Mod as `ControlOrMeta`."),
         new("Viewport", "Its label", "`Viewport(label).ZoomInAsync()`, `FitAsync(ViewportFit.Page)` and the other "

@@ -6748,8 +6748,11 @@ public static class ExampleCatalog
                 + "handler runs, so the wait follows the menu's count of finished handlers in `data-commits`. With "
                 + "`AttachOnFirstUse`, the trigger gets `data-ready` only once it's first focused, pointed at or "
                 + "clicked, so `ChooseAsync` focuses it first. In both packages, "
-                + "`OpenAsync()` and `CloseAsync()` open and close the menu, and `IsOpen` (`IsOpenAsync()` in "
-                + "Playwright) reads whether it's open. In bUnit, check `IsOpen` rather than the items, which are in "
+                + "`OpenAsync()` and `CloseAsync()` open and close the menu, `IsOpen` (`IsOpenAsync()` in "
+                + "Playwright) reads whether it's open, and `Checked(path)` (`CheckedAsync(path)`) reads whether a "
+                + "checkbox or radio item is checked, through the submenus named before it, without opening the "
+                + "menu. In bUnit, "
+                + "check `IsOpen` rather than the items, which are in "
                 + "the markup whether the menu is open or not.",
             Telemetry =
             [

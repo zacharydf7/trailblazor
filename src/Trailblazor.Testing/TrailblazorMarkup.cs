@@ -4136,13 +4136,29 @@ public sealed class TbMenuDriver
     {
         ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
         var trigger = EnabledTrigger();
+        await ClickAsync(trigger, Find(ListAt(trigger, path[..^1]), path[^1], Items, "item"));
+    }
+
+    /// <summary>Whether the checkbox or radio item with this name, through the submenus named before it, is checked.
+    /// The items are in the markup whether the menu is open or not, so this reads it either way. Throws for a name the
+    /// menu doesn't have as a checkbox or radio item.</summary>
+    public bool Checked(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        return Find(ListAt(Trigger(), path[..^1]), path[^1], "[role=menuitemcheckbox], [role=menuitemradio]",
+            "checkbox or radio item").GetAttribute("aria-checked") == "true";
+    }
+
+    // The list the trigger opens, or the one reached through these submenus.
+    private IElement ListAt(IElement trigger, string[] submenus)
+    {
         var list = ListOf(trigger);
-        foreach (var name in path[..^1])
+        foreach (var name in submenus)
         {
             list = ListOf(Find(list, name, "[data-part=submenu-trigger]", "submenu"));
         }
 
-        await ClickAsync(trigger, Find(list, path[^1], Items, "item"));
+        return list;
     }
 
     internal static Task ClickAsync(IElement trigger, IElement item)

@@ -69,6 +69,22 @@ public class TbMenuTests : BunitContext
         Assert.Equal(1, saves);
     }
 
+    [Fact]
+    public void Driver_ShouldReadWhetherAnItemIsChecked_WhenItIsInASubmenuOfAClosedMenu()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "View")
+            .AddChildContent<TbMenuCheckboxItem>(item => item.Add(i => i.Checked, true).AddChildContent("Map"))
+            .AddChildContent<TbMenuCheckboxItem>(item => item.Add(i => i.Checked, true).AddChildContent("Huts"))
+            .AddChildContent<TbSubMenu>(submenu => submenu.Add(s => s.Label, "Layers")
+                .AddChildContent<TbMenuCheckboxItem>(item => item.Add(i => i.Checked, true).AddChildContent("Trails"))
+                .AddChildContent<TbMenuCheckboxItem>(item => item.AddChildContent("Huts"))));
+        var view = cut.Tb().Menu("View");
+
+        Assert.Equal((false, true, true, false, true), (view.IsOpen, view.Checked("Map"),
+            view.Checked("Layers", "Trails"), view.Checked("Layers", "Huts"), view.Checked("Huts")));
+        Assert.Throws<InvalidOperationException>(() => view.Checked("Trails"));
+    }
+
     [Theory]
     [InlineData("ctrl+shift+K", "Control+Shift+K")]
     [InlineData("alt+META+Delete", "Alt+Meta+Delete")]

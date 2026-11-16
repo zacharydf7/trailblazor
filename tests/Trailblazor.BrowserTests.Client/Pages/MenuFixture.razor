@@ -35,6 +35,15 @@
     </TbMenu>
 </div>
 
+@* Checkbox items at two levels, one name repeated in the submenu. *@
+<TbMenu Label="Layers">
+    <TbMenuCheckboxItem @bind-Checked="_grid">Grid</TbMenuCheckboxItem>
+    <TbSubMenu Label="Overlays">
+        <TbMenuCheckboxItem @bind-Checked="_trails">Trails</TbMenuCheckboxItem>
+        <TbMenuCheckboxItem @bind-Checked="_overlayGrid">Grid</TbMenuCheckboxItem>
+    </TbSubMenu>
+</TbMenu>
+
 @* Items whose handlers outlast the menu, which closes in the browser as an item is clicked. *@
 <TbMenu Label="Trip">
     <TbMenuItem OnClick="ArchiveAsync">Archive slowly</TbMenuItem>
@@ -43,6 +52,9 @@
 <output data-testid="trip">@_trip</output>
 
 @code {
+    private bool _grid = true;
+    private bool _trails = true;
+    private bool _overlayGrid;
     private bool _notify;
     private string _trip = "";
 

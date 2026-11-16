@@ -508,6 +508,34 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReadWhetherAnItemIsChecked_WhenTheMenuIsClosed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        var view = page.Tb().Menu("View");
+
+        var before = (await view.CheckedAsync("Map"), await view.CheckedAsync("Elevation"),
+            await view.CheckedAsync("Miles"));
+        await view.ChooseAsync("Elevation");
+
+        Assert.Equal((true, false, true), before);
+        Assert.Equal((false, true), (await view.IsOpenAsync(), await view.CheckedAsync("Elevation")));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldReadOnlyTheItemOnItsPath_WhenASubmenuRepeatsAName(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        var layers = page.Tb().Menu("Layers");
+
+        var read = (await layers.CheckedAsync("Grid"), await layers.CheckedAsync("Overlays", "Trails"),
+            await layers.CheckedAsync("Overlays", "Grid"));
+        var offPath = await Assert.ThrowsAsync<InvalidOperationException>(() => layers.CheckedAsync("Trails"));
+
+        Assert.Equal((true, true, false), read);
+        Assert.Equal("The menu has no checkbox or radio item named \"Trails\".", offPath.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task CheckboxItem_ShouldToggleAndCloseTheMenu_WhenChosen(string browser)
     {
         var page = await OpenAsync(browser, "/examples/menu");
