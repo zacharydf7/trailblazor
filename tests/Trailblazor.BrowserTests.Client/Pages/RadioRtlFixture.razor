@@ -1,0 +1,14 @@
+@page "/radio-rtl"
+
+<div dir="rtl">
+    <TbRadioGroup TValue="string" Label="Trail size" @bind-Value="_size">
+        <TbRadio Value="@("Short")">Short</TbRadio>
+        <TbRadio Value="@("Medium")">Medium</TbRadio>
+        <TbRadio Value="@("Long")">Long</TbRadio>
+    </TbRadioGroup>
+</div>
+<output data-testid="size">@_size</output>
+
+@code {
+    private string? _size = "Short";
+}

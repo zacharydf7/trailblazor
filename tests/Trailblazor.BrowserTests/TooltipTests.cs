@@ -606,4 +606,17 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(tooltip).ToBeVisibleAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldShow_WhenItsDisabledTriggerIsHovered(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip-disabled");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Save copy" });
+        await Expect(trigger).ToBeDisabledAsync();
+
+        // A disabled button fails Playwright's hover checks, though a mouse still passes over it.
+        await trigger.HoverAsync(new() { Force = true });
+
+        await Expect(page.GetByText("Already saved")).ToBeVisibleAsync();
+    }
 }

@@ -83,6 +83,25 @@ public class PaginationTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PageBox_ShouldShowTheCurrentPageAgain_WhenClearedOrTypedPastTheEndWhileThere(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/pagination");
+        var box = Navigation(page, "Photos").GetByRole(AriaRole.Spinbutton, new() { Name = "Page" });
+        await Expect(Navigation(page, "Photos")).ToContainTextAsync("of 140");
+        await box.FillAsync("140");
+        await box.PressAsync("Enter");
+        await Expect(page.GetByText("Showing photo")).ToHaveTextAsync("Showing photo 140 of 140");
+
+        await box.FillAsync("999");
+        await box.PressAsync("Enter");
+        await Expect(box).ToHaveValueAsync("140");
+        await box.FillAsync("");
+        await box.PressAsync("Tab");
+
+        await Expect(box).ToHaveValueAsync("140");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Pagination_ShouldGoToTheNextPage_WhenUpIsPressedInCompactMode(string browser)
     {
         var page = await OpenAsync(browser, "/examples/pagination");

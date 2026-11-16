@@ -10,7 +10,7 @@ Familiar apps: search results, GitHub's lists, the pager under a data table
 - [x] Without `PageHref`, Space goes to the page as Enter does, since each control is a real button. `TbButtonBase.razor`
 - [x] In compact mode, Enter or leaving the box goes to the typed page, and a page past either end goes to that end. `PaginationTests.Pagination_ShouldGoToTheTypedPage_WhenAPageIsTypedInCompactMode`
 - [x] In compact mode, Up goes to the next page and Down to the previous. `PaginationTests.Pagination_ShouldGoToTheNextPage_WhenUpIsPressedInCompactMode`
-- [ ] Clearing the box, or typing past the end while already there, puts the current page back in the box. UNCONFIRMED
+- [x] Clearing the box, or typing past the end while already there, puts the current page back in the box. `PaginationTests.PageBox_ShouldShowTheCurrentPageAgain_WhenClearedOrTypedPastTheEndWhileThere`
 - [x] Enter in the box goes to the page without submitting a form around the pagination. `PaginationTests.PageBox_ShouldGoToTheTypedPageWithoutSubmittingTheForm_WhenEnterIsPressed`
 
 ## Pointer

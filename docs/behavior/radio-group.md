@@ -15,7 +15,7 @@ Familiar apps: the browser's own radio buttons, the shipping choice at a checkou
 - [x] Fast presses leave the group showing the value the server holds. `CheckboxTests.Controls_ShouldShowTheStateTheServerHolds_WhenEachUpdateIsSlowToComeBack`
 - [x] Arrows in a read-only group change nothing. `ReadOnlyTests.ReadOnlyRadioGroup_ShouldKeepItsChoice_WhenTheUserTriesAnother`
 - [ ] In Safari, arrows wrap at the ends of the group too. UNCONFIRMED
-- [ ] In right-to-left text, Left moves to the next option and Right to the previous one. UNCONFIRMED
+- [x] In right-to-left text, Left moves to the next option and Right to the previous one in Chromium and Firefox. The arrows are the browser's own, so WebKit's radios still keep Left as the previous option. `RadioGroupTests.RadioGroup_ShouldMoveWithLeftToTheNextOption_WhenTheTextIsRightToLeft`
 
 ## Pointer
 

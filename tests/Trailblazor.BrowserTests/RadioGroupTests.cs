@@ -65,4 +65,18 @@ public class RadioGroupTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("posted")).ToHaveTextAsync("Ada, False, Pro");
         await Expect(page.GetByRole(AriaRole.Radio, new() { Name = "Pro" })).ToBeCheckedAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RadioGroup_ShouldMoveWithLeftToTheNextOption_WhenTheTextIsRightToLeft(string browser)
+    {
+        Assert.SkipWhen(browser == "webkit", "WebKit's radios keep Left as the previous option in right-to-left text.");
+        var page = await OpenAsync(browser, "/radio-rtl");
+        await page.GetByRole(AriaRole.Radio, new() { Name = "Short" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(page.GetByTestId("size")).ToHaveTextAsync("Medium");
+        await page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(page.GetByTestId("size")).ToHaveTextAsync("Short");
+    }
 }
