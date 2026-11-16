@@ -474,6 +474,14 @@ public sealed class TrailblazorMarkup
             ? $"No button is named \"{name}\"." : $"{buttons.Count} buttons are named \"{name}\".");
     }, _scripts);
 
+    /// <summary>The <c>TbLink</c> with this accessible name, a link or, without an address, a button.</summary>
+    public TbLinkDriver Link(string name) => new(() =>
+    {
+        var links = _findAll("a.tb-link, button.tb-link").Where(link => Choices.NameOf(link) == name).ToList();
+        return links.Count == 1 ? links[0] : throw new InvalidOperationException(links.Count == 0
+            ? $"No link is named \"{name}\"." : $"{links.Count} links are named \"{name}\".");
+    }, _scripts);
+
     /// <summary>The <c>TbNavMenu</c> in the navigation landmark with this name, or the only one in the markup when no
     /// name is given. While a <c>TbAppShell</c>'s drawer is open, the menu in the drawer is the one found.</summary>
     public TbNavMenuDriver NavMenu(string? name = null) => new(() =>
@@ -1882,6 +1890,39 @@ public sealed class TbButtonDriver
         if (button.LocalName == "a")
         {
             _scripts.NavigateTo(button.GetAttribute("href")!);
+        }
+    }
+}
+
+/// <summary>A <c>TbLink</c>, found by its accessible name.</summary>
+public sealed class TbLinkDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbLinkDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>Clicks the link, as a user does, which raises its <c>OnClick</c> and waits until it has run; a link
+    /// with an address that opens in the same tab also takes the test's <c>NavigationManager</c> there. Throws for a
+    /// disabled link, and on a static page for a link without an address, since there it does nothing.</summary>
+    public async Task ClickAsync()
+    {
+        var link = _find();
+        if (Choices.IsDisabled(link))
+        {
+            throw new InvalidOperationException("The link is disabled, so a user can't click it.");
+        }
+
+        if (link.LocalName != "a" && link.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("On a static page a link without an address does nothing; render the "
+                + "page interactively to use it.");
+        }
+
+        await link.ClickAsync(new MouseEventArgs { Detail = 1 });
+        if (link.LocalName == "a" && link.GetAttribute("target") != "_blank")
+        {
+            _scripts.NavigateTo(link.GetAttribute("href")!);
         }
     }
 }

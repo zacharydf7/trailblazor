@@ -99,6 +99,7 @@ they run by version. The docs site's Upgrading page is built from both.
 - An interactive carousel's picker counts the picks that move the slides, in `data-commits`, once `ActiveIndexChanged` has run
 - A calendar's root counts the days picked in `data-commits`, once `ValueChanged` has run, as other fields' roots count their changes
 - A file upload's input no longer carries `data-choices`; its field's root counts each choice in `data-commits` once `ValueChanged` has run
+- An interactive link counts its clicks in `data-clicks` once `OnClick` has run, as a button does, and a link on a static page carries `data-static`
 - An interactive autocomplete's list counts in `data-handled` each time someone types, chooses, leaves or clears the field, once the handlers, `OnTextChanged` included, have run
 - A signature pad's root counts each stroke, undo, clear, typed name and switch between drawing and typing in `data-commits` once `ValueChanged` has run
 - A slider's and range slider's root counts each move in `data-commits` once `ValueChanged` has run, as other fields' roots do, and each release of a thumb once `OnValueCommitted` has run

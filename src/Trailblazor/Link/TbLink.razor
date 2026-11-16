@@ -6,7 +6,8 @@
 @if (Href is null)
 {
     <button @ref="_element" type="button" @attributes="AdditionalAttributes" disabled="@Disabled"
-            class="@ClassNames.Join("tb-link", "tb-link--button", Class)" style="@Style" @onclick="OnClickAsync">
+            class="@ClassNames.Join("tb-link", "tb-link--button", Class)" style="@Style" data-clicks="@Clicks"
+            data-static="@StaticMark" @onclick="OnClickAsync">
         @ChildContent
     </button>
 }
@@ -17,7 +18,7 @@ else
        rel="@RelAttribute" role="@(Disabled ? "link" : AdditionalAttributes?.GetValueOrDefault("role"))"
        tabindex="@(Disabled ? null : AdditionalAttributes?.GetValueOrDefault("tabindex"))"
        aria-disabled="@(Disabled ? "true" : null)" data-tb-force-load="@(ForceLoad ? "" : null)"
-       class="@ClassNames.Join("tb-link", Class)" style="@Style"
+       class="@ClassNames.Join("tb-link", Class)" style="@Style" data-clicks="@Clicks" data-static="@StaticMark"
        @onclick="OnClickAsync">
         @ChildContent
         @if (NewTab)
@@ -30,6 +31,7 @@ else
 @code {
     private ElementReference _element;
     private ControlTelemetry? _telemetry;
+    private int _clicks;
 
     /// <summary>The address the link goes to. Without one, the link is a button that runs <see cref="OnClick"/>.
     /// </summary>
@@ -84,15 +86,27 @@ else
     /// <param name="preventScroll">Whether to keep the page from scrolling the link into view.</param>
     public ValueTask FocusAsync(bool preventScroll = false) => _element.FocusAsync(preventScroll);
 
-    private Task OnClickAsync(MouseEventArgs args)
+    // Counts the clicks whose OnClick has finished, so a test can wait for the app's answer.
+    private int? Clicks => RendererInfo.IsInteractive ? _clicks : null;
+
+    private string? StaticMark => AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null;
+
+    private async Task OnClickAsync(MouseEventArgs args)
     {
         if (Disabled)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        Telemetry.Used(TelemetryName);
-        return OnClick.InvokeAsync(args);
+        try
+        {
+            Telemetry.Used(TelemetryName);
+            await OnClick.InvokeAsync(args);
+        }
+        finally
+        {
+            _clicks++;
+        }
     }
 
     // These come after the consumer's attributes, so they carry the consumer's own target and rel along.

@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
@@ -33,10 +34,48 @@ public class LinkTests(BrowserFixture fixture) : BrowserTest(fixture)
             _ => "Reload into read-only fields",
         };
 
-        await page.GetByRole(AriaRole.Link, new() { Name = name, Exact = true }).ClickAsync();
+        await page.Tb().Link(name).ClickAsync();
 
         await Expect(page).ToHaveURLAsync(new Regex(path == "/link" ? "/dialogs$" : "/static-read-only$"));
         Assert.Equal(!forceLoad, await page.EvaluateAsync<bool>("() => window.tbMark === true"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseADisabledLink_WhenAskedToClickIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/link");
+
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Link("Run the report").ClickAsync());
+
+        Assert.Contains("disabled", disabled.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldClickOnceInteractive_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/link");
+
+        var clicking = page.Tb().Link("Copy the report").ClickAsync();
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await clicking;
+
+        await Expect(page.GetByTestId("ran")).ToHaveTextAsync("copied ");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseToClick_WhenThePageIsStaticAndTheLinkDoesNothing(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-link");
+
+        var still = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Link("Copy the address").ClickAsync());
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Link("Closed fields").ClickAsync());
+
+        Assert.Contains("static page", still.Message);
+        Assert.Contains("disabled", disabled.Message);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

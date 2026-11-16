@@ -593,6 +593,7 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             () => tb.Autocomplete("Slow town").ClearAsync(),
             () => tb.Autocomplete("Slow town").TypeAsync("Ashland"),
             () => tb.Autocomplete("Slow town").ClearAsync(),
+            () => tb.Link("Copy guide").ClickAsync(),
         })
         {
             await act();
@@ -604,7 +605,8 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             "shaded", "muddy removed", "camp Lakeside", "route True",
             "step gear", "slide 0", "hike 2026-05-02", "map ridge.gpx",
             "paced 40", "town Be", "town Ashland", "climb 20-60",
-            "town Ashland", "town Bend", "town ", "town Ashland", "town "], seen);
+            "town Ashland", "town Bend", "town ", "town Ashland", "town ",
+            "guide copied"], seen);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

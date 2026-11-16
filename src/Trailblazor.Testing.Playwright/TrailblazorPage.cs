@@ -290,6 +290,11 @@ public sealed class TrailblazorPage(ILocator scope)
     public TrailblazorPage PropertyGrid(string label) =>
         new(scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true }).And(scope.Locator(".tb-property-grid")));
 
+    /// <summary>The <c>TbLink</c> with this name, a link or, without an address, a button.</summary>
+    public TbLinkLocator Link(string name) =>
+        new(scope, scope.GetByRole(AriaRole.Link, new() { Name = name, Exact = true })
+            .Or(scope.GetByRole(AriaRole.Button, new() { Name = name, Exact = true })));
+
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
     public TbMenuLocator Menu(string trigger) =>
         new(scope, scope.GetByRole(AriaRole.Button, new() { Name = trigger, Exact = true }));

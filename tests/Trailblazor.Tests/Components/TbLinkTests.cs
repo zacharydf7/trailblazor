@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.AspNetCore.Components;
 
 namespace Trailblazor.Tests.Components;
 
@@ -44,6 +45,31 @@ public class TbLinkTests : BunitContext
         Assert.Contains("tb-link--button", cut.Find("button").ClassList);
         Assert.Empty(cut.FindAll("a"));
         Assert.Equal(1, clicks);
+    }
+
+    [Fact]
+    public async Task Click_ShouldCountTheClickOnceOnClickHasFinished_WhenTheHandlerIsSlow()
+    {
+        var clicked = new TaskCompletionSource();
+        var cut = Render<TbLink>(parameters => parameters.Add(link => link.Href, "guides/theming")
+            .Add(link => link.OnClick, () => clicked.Task).AddChildContent("Theming"));
+
+        cut.Find("a").Click();
+        var pending = cut.Find("a").GetAttribute("data-clicks");
+        await cut.InvokeAsync(clicked.SetResult);
+
+        Assert.Equal(("0", "1"), (pending, cut.Find("a").GetAttribute("data-clicks")));
+    }
+
+    [Fact]
+    public void Render_ShouldMarkTheLinkStaticWithNoCount_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var link = Render<TbLink>(parameters => parameters.Add(link => link.OnClick, () => { })
+            .AddChildContent("Copy the ID")).Find("button");
+
+        Assert.Equal((true, false), (link.HasAttribute("data-static"), link.HasAttribute("data-clicks")));
     }
 
     [Fact]

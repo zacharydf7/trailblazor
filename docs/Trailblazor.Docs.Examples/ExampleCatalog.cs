@@ -9448,8 +9448,10 @@ public static class ExampleCatalog
             ],
             Target = new("link", "theming guide"),
             Blocks = ["tb-link"],
-            TestingTip = "A link with an `Href` has the `link` role and one without has the `button` role, so find it "
-                + "with the role that matches. `ToBeDisabledAsync` checks either kind is disabled.",
+            TestingTip = "A link with an `Href` has the `link` role and one without has the `button` role. "
+                + "`Tb().Link(name).ClickAsync()` clicks either kind and waits until its `OnClick` has run, which the "
+                + "link counts in `data-clicks`; to find it yourself, use the role that matches. `ToBeDisabledAsync` "
+                + "checks either kind is disabled.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"trail-guide\"`, it counts `trailblazor.control.shown` as it first "

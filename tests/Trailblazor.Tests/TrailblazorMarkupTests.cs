@@ -2931,6 +2931,50 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Link_ShouldRunOnClickAndFollowTheAddress_WhenClicked()
+    {
+        var (copied, followed) = (0, 0);
+        var cut = Render<TbStack>(parameters => parameters
+            .AddChildContent<TbLink>(link => link.Add(each => each.OnClick, () => copied++).AddChildContent("Copy"))
+            .AddChildContent<TbLink>(link => link.Add(each => each.Href, "guides/theming")
+                .Add(each => each.OnClick, () => followed++).AddChildContent("Theming"))
+            .AddChildContent<TbLink>(link => link.Add(each => each.Href, "guides/testing")
+                .Add(each => each.Disabled, true).AddChildContent("Testing")));
+
+        await cut.Tb().Link("Copy").ClickAsync();
+        await cut.Tb().Link("Theming").ClickAsync();
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Link("Testing").ClickAsync());
+
+        Assert.Equal((1, 1), (copied, followed));
+        Assert.EndsWith("/guides/theming", Services.GetRequiredService<NavigationManager>().Uri);
+        Assert.Contains("disabled", disabled.Message);
+    }
+
+    [Fact]
+    public async Task Link_ShouldLeaveTheAddressAlone_WhenTheLinkOpensANewTab()
+    {
+        var uri = Services.GetRequiredService<NavigationManager>().Uri;
+        var cut = Render<TbLink>(parameters => parameters.Add(link => link.Href, "guides/theming")
+            .Add(link => link.NewTab, true).AddChildContent("Theming"));
+
+        await cut.Tb().Link("Theming (opens in a new tab)").ClickAsync();
+
+        Assert.Equal(uri, Services.GetRequiredService<NavigationManager>().Uri);
+    }
+
+    [Fact]
+    public async Task Link_ShouldThrow_WhenItHasNoAddressOnAStaticPage()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbLink>(parameters => parameters.Add(link => link.OnClick, () => { })
+            .AddChildContent("Copy"));
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Link("Copy").ClickAsync());
+
+        Assert.Contains("static page", failure.Message);
+    }
+
+    [Fact]
     public async Task Button_ShouldClickAnIconButton_WhenFoundByItsName()
     {
         var added = 0;

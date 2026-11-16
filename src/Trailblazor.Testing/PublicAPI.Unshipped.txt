@@ -484,3 +484,6 @@ Trailblazor.Testing.TbSplitterDriver.RestoreAsync() -> System.Threading.Tasks.Ta
 Trailblazor.Testing.TbSelectDriver.IsOpen.get -> bool
 Trailblazor.Testing.TbSelectDriver.OpenAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbSelectDriver.CloseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbLinkDriver
+Trailblazor.Testing.TbLinkDriver.ClickAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Link(string! name) -> Trailblazor.Testing.TbLinkDriver!

@@ -506,3 +506,8 @@ Trailblazor.Testing.Playwright.TbGridLocator.TbGridLocator(Microsoft.Playwright.
 Trailblazor.Testing.Playwright.TbTabsLocator.TbTabsLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! tabs) -> void
 Trailblazor.Testing.Playwright.TbTreeLocator.TbTreeLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! tree) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.AccordionItem(Microsoft.Playwright.ILocator! item) -> Trailblazor.Testing.Playwright.TbAccordionItemLocator!
+Trailblazor.Testing.Playwright.TbLinkLocator
+Trailblazor.Testing.Playwright.TbLinkLocator.ClickAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbLinkLocator.Link.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbLinkLocator.TbLinkLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! link) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.Link(string! name) -> Trailblazor.Testing.Playwright.TbLinkLocator!

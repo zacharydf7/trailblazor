@@ -32,6 +32,7 @@
     <TbCalendar TDate="DateOnly" Label="Slow hike" Value="_hike" ValueChanged="HikeAsync" />
     <TbFileUpload Label="Slow map" Value="_map" ValueChanged="MapAsync" />
     <TbAutocomplete TValue="string" Label="Slow town" Items="Towns" OnTextChanged="TownAsync" Clearable />
+    <TbLink OnClick="@(() => SlowlyAsync("guide copied"))">Copy guide</TbLink>
     <TbSlider TValue="int" Label="Slow pace" Value="_pace" ValueChanged="PaceAsync" OnValueCommitted="PacedAsync" />
     <TbRangeSlider TValue="int" Label="Slow climb" Value="_climb" ValueChanged="ClimbAsync" />
     <TbDateTimePicker TDateTime="DateTime" Label="Slow start" Value="_start" ValueChanged="StartAsync" />

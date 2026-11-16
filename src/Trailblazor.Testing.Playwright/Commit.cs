@@ -10,7 +10,7 @@ internal static class Commit
     public static Task WaitAsync(ILocator control, Func<Task<bool>> act, int handlers = 1) =>
         CountedAsync(control.Locator("xpath=ancestor-or-self::*[@data-commits][1]"), "data-commits", act, handlers);
 
-    // A TbButton or TbIconButton counts its finished OnClick, and a toggle's PressedChanged, in data-clicks.
+    // A TbButton, TbIconButton or TbLink counts its finished OnClick, and a toggle's PressedChanged, in data-clicks.
     public static Task ClickedAsync(ILocator button) => CountedAsync(button, "data-clicks", async () =>
     {
         await button.ClickAsync();

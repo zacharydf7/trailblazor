@@ -382,6 +382,14 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Link(name).ClickAsync()</code></th>
+                        <td>
+                            Clicks the link, which raises its <code>OnClick</code>; a link with an address that opens in
+                            the same tab also takes the test's <code>NavigationManager</code> there. Throws for a
+                            disabled link, and on a static page for a link without an address.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>VirtualList(name).Item(index)</code></th>
                         <td>
                             Returns the item at an index, from 0, and <code>Count</code> reads how many items the list
@@ -827,8 +835,8 @@
                     <tr>
                         <th scope="row">A button's handler</th>
                         <td>
-                            <code>data-clicks</code> to change on the <code>TbButton</code> or
-                            <code>TbIconButton</code>; it counts the clicks whose <code>OnClick</code> has finished. A
+                            <code>data-clicks</code> to change on the <code>TbButton</code>, <code>TbIconButton</code>
+                            or <code>TbLink</code>; it counts the clicks whose <code>OnClick</code> has finished. A
                             handler that awaits a dialog's answer finishes only once the dialog is answered, so also end
                             the wait when a dialog opens, as the helpers do. The helpers that press a component's own
                             button wait this way too: an alert's or banner's close, an insert divider, a popconfirm's
@@ -1303,6 +1311,9 @@
             + "until the app has run its `OnClick`, or until a dialog opens, in case the handler awaits the dialog's "
             + "answer; `BusyAsync()` reads whether it's busy, and `PressedAsync()` and `MixedAsync()` whether a toggle "
             + "is pressed or mixed."),
+        new("Link", "Its name", "`Link(name).ClickAsync()` clicks it once the page is interactive, then waits until "
+            + "the app has run its `OnClick`, the page it goes to has replaced this one, or a dialog opens. On a static "
+            + "page it follows a link with an address and throws for one without."),
         new("Virtual list", "Its name, or none for the only one", "`VirtualList(name).ItemAsync(index)` scrolls "
             + "the list to the item at an index, as a user does, and returns it once drawn; `CountAsync()` reads how "
             + "many items there are, once an `ItemsProvider` has answered."),
