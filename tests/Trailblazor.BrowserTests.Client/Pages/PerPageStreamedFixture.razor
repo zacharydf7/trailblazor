@@ -1,0 +1,16 @@
+@page "/per-page-streamed"
+@attribute [ExcludeFromInteractiveRouting]
+@attribute [StreamRendering]
+
+@* A static page that streams its content in late; Blazor starts the session only after the stream ends. *@
+<p>@(_trails ?? "Loading trails")</p>
+
+@code {
+    private string? _trails;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(300);
+        _trails = "Streamed trails";
+    }
+}

@@ -23,16 +23,28 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
     protected async Task<(IPage Page, TaskCompletionSource Script)> OpenWithAScriptHeldAsync(string browser,
         string path, string script)
     {
+        var (page, held) = await OpenWithRequestsHeldAsync(browser, path, script);
+        // A click before this is lost anyway, when the interactive render replaces the prerendered page.
+        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        return (page, held);
+    }
+
+    // Opens a page with its interactive session held back until the returned source is set, so a test can act before
+    // the session's components first render.
+    protected Task<(IPage Page, TaskCompletionSource Session)> OpenWithTheSessionHeldAsync(string browser,
+        string path) => OpenWithRequestsHeldAsync(browser, path, "**/_blazor/negotiate**");
+
+    private async Task<(IPage Page, TaskCompletionSource Held)> OpenWithRequestsHeldAsync(string browser, string path,
+        string requests)
+    {
         var held = new TaskCompletionSource();
         var page = await OpenStaticAsync(browser, "about:blank");
-        await page.RouteAsync(script, async route =>
+        await page.RouteAsync(requests, async route =>
         {
             await held.Task;
             await route.ContinueAsync();
         });
         await page.GotoAsync(HostAddress(path).ToString());
-        // A click before this is lost anyway, when the interactive render replaces the prerendered page.
-        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
         return (page, held);
     }
 

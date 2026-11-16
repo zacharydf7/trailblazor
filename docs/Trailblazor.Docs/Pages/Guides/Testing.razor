@@ -770,8 +770,10 @@
                             toasts and announcements run interactively. When <code>Routes</code> is interactive, that's
                             when the page is. When interactivity is set page by page, that mark covers the first page
                             only: an enhanced navigation takes it off, since it can't tell whether the new page is
-                            interactive. Put a <code>&lt;TbInteractiveMark /&gt;</code> inside the part of each page
-                            that runs interactively (the page itself, or the component that has the render mode); it
+                            interactive. From then on <code>InteractiveAsync()</code> passes over it, even when the
+                            session starts late and the mark first renders after the navigation. Put a
+                            <code>&lt;TbInteractiveMark /&gt;</code> inside the part of each page that runs
+                            interactively (the page itself, or the component that has the render mode); it
                             renders the same mark once that part runs interactively, and keeps it while Blazor keeps
                             that part, as it does on a navigation to the same page. After navigating, wait for the new
                             page to show before calling <code>InteractiveAsync()</code>, since the old page's mark

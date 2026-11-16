@@ -29,6 +29,7 @@
         builder.AddComponentRenderMode(mode);
         builder.CloseComponent();
         builder.OpenComponent<SessionMark>(4);
+        builder.AddComponentParameter(5, nameof(SessionMark.PerPage), mode is not null);
         builder.AddComponentRenderMode(mode);
         builder.CloseComponent();
     }

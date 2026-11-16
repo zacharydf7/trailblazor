@@ -42,8 +42,23 @@ import './typeahead.js';
 import './unnamed-options.js';
 
 // data-tb-script tells a test on a static page that its controls work; data-tb-apple makes the styles show Mod as ⌘.
+// data-tb-navigated says an enhanced navigation has left the first page. TbRoot's mark speaks only for that page when
+// interactivity is set page by page, so the mark comes off, and a test passes over it once this is set, even when the
+// mark first renders afterward. Blazor also raises enhancedload on the first page, as its streamed content lands, so
+// only a new address counts. This module can load after a navigation, while the session starts, so the first page is
+// the one the browser loaded the document for.
+const address = url => url.pathname + url.search;
+const firstPage = address(new URL(performance.getEntriesByType('navigation')[0]?.name ?? location.href));
+let navigated = false;
 const markRoot = () => {
     document.documentElement.dataset.tbScript = '';
+    navigated ||= address(location) !== firstPage;
+    if (navigated) {
+        document.documentElement.dataset.tbNavigated = '';
+        document.querySelectorAll('[data-tb-interactive][data-tb-session]')
+            .forEach(mark => mark.removeAttribute('data-tb-interactive'));
+    }
+
     if (isApple()) {
         document.documentElement.dataset.tbApple = '';
     }
@@ -65,9 +80,6 @@ export function afterWebStarted(blazor) {
         // AutoFocus first, so a failed post's first error takes focus last.
         focusMarksOnPage();
         focusMarkedForms();
-        // TbRoot's mark only says the session is interactive, not that the new page is, so it comes off.
-        document.querySelectorAll('[data-tb-interactive][data-tb-session]')
-            .forEach(mark => mark.removeAttribute('data-tb-interactive'));
     });
 }
 
@@ -105,7 +117,8 @@ function registerEvents(blazor) {
             crossesEdit: crosses(event.target.closest?.('[data-tb-focus-root="edit"]')),
         };
     };
-    blazor.registerCustomEventType('tbfocusenter', { browserEventName: 'focusin', createEventArgs: fieldFocusEventArgs });
+    blazor.registerCustomEventType('tbfocusenter',
+        { browserEventName: 'focusin', createEventArgs: fieldFocusEventArgs });
     // A text field's OnEnter hears an Enter pressed and released in the same field, after the change it commits; the
     // server hears no other key. An Enter that ends an input method composition doesn't count, and Safari marks it only
     // with keyCode 229.
@@ -120,7 +133,8 @@ function registerEvents(blazor) {
         }
     }, true);
     blazor.registerCustomEventType('tbenter', { browserEventName: 'tb-enter' });
-    blazor.registerCustomEventType('tbfocusleave', { browserEventName: 'focusout', createEventArgs: fieldFocusEventArgs });
+    blazor.registerCustomEventType('tbfocusleave',
+        { browserEventName: 'focusout', createEventArgs: fieldFocusEventArgs });
     // A label can't take focus, so pressing one sends focus to the page, then back when its click focuses the box.
     // In a field that already holds focus, the press leaves focus where it is, so moving between options isn't leaving.
     // A link or other control inside a label still takes focus when pressed.
@@ -142,11 +156,11 @@ function registerEvents(blazor) {
         }
     }, true);
 
-    // A click on a data grid row says whether the row should ignore it, as when it landed on a control in the row, whose
-    // click is the control's own.
+    // A click on a data grid row says whether the row should ignore it, as when it landed on a control in the row,
+    // whose click is the control's own.
     const rowControls = 'a[href], button, input, select, textarea, label, summary, [contenteditable], '
         + '[role="button"], [role="checkbox"], [role="combobox"], [role="switch"], [role="link"]';
-    // A drag ends in a click where it was released. Enter clicks a row with a detail of 0, so it never counts as a drag.
+    // A drag ends in a click where it was released. Enter clicks a row with detail 0, so it never counts as a drag.
     const dragThreshold = 4;
     let pressedAt = null;
     document.addEventListener('pointerdown', event => pressedAt = { x: event.clientX, y: event.clientY }, true);
@@ -165,7 +179,7 @@ function registerEvents(blazor) {
             shiftKey: event.shiftKey,
         }),
     });
-    // The grid's script raises these only for the keys and clicks they're for, so other keys cost no trip to the server.
+    // The grid's script raises these only for their keys and clicks, so other keys cost no trip to the server.
     // Each browser event's name differs from the registered one, since Blazor would otherwise handle it twice.
     blazor.registerCustomEventType('tbrowextend', {
         browserEventName: 'tb-row-extend',

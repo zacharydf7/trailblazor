@@ -17,7 +17,8 @@ public class TbRootTests : BunitContext
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
 
-        var cut = Render<TbRoot>(parameters => parameters.Add(root => root.HostRenderMode, RenderMode.InteractiveServer));
+        var cut = Render<TbRoot>(parameters =>
+            parameters.Add(root => root.HostRenderMode, RenderMode.InteractiveServer));
 
         Assert.All(ModesOfTheHosts(cut), mode => Assert.IsType<InteractiveServerRenderMode>(mode));
     }
@@ -27,19 +28,36 @@ public class TbRootTests : BunitContext
     {
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
 
-        var cut = Render<TbRoot>(parameters => parameters.Add(root => root.HostRenderMode, RenderMode.InteractiveServer));
+        var cut = Render<TbRoot>(parameters =>
+            parameters.Add(root => root.HostRenderMode, RenderMode.InteractiveServer));
 
         Assert.All(ModesOfTheHosts(cut), Assert.Null);
     }
 
     [Fact]
-    public void Render_ShouldMarkThePageInteractive_WhenTheHostsRunInteractively()
+    public void Render_ShouldMarkThePageInteractive_WhenTheRootRendersInteractively()
     {
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
 
-        var cut = Render<TbRoot>();
+        var cut = Render<TbRoot>(parameters =>
+            parameters.Add(root => root.HostRenderMode, RenderMode.InteractiveServer));
 
-        Assert.Single(cut.FindAll("[data-tb-interactive][data-tb-session]"));
+        // The whole page runs interactively, so the mark speaks for each page, not just the session.
+        Assert.Single(cut.FindAll("[data-tb-interactive]:not([data-tb-session])"));
+    }
+
+    [Fact]
+    public void Render_ShouldMarkOnlyTheSession_WhenTheHostsAloneGetTheHostRenderMode()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render<TbRoot>(parameters =>
+            parameters.Add(root => root.HostRenderMode, RenderMode.InteractiveServer));
+        var perPage = cut.FindComponent<SessionMark>().Instance.PerPage;
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+
+        var mark = Render<SessionMark>(parameters => parameters.Add(component => component.PerPage, perPage));
+
+        Assert.Single(mark.FindAll("[data-tb-interactive][data-tb-session]"));
     }
 
     [Fact]
