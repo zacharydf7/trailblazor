@@ -1897,6 +1897,51 @@ public static class ExampleCatalog
             Target = null,
             Blocks = ["tb-spacer"],
         },
+        new("field-row", "Field row", ExampleCategory.Layout,
+            "Lays out fields and buttons in a row with every field's box on one line, whatever the fields show above "
+                + "and below their boxes.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a field with a button beside it, such as a code and a Look up button, or for short fields "
+                    + "that share a line, such as a city, a state and a ZIP code.",
+            ],
+            WhenNotToUse =
+            [
+                "A [stack](components/stack) row with `Align.End` lines up the bottoms of the items, so a field's helper "
+                    + "text or error pushes its box up out of line. Use a field row instead.",
+                "It lines up the fields with a box, such as text, number, select and date fields, when they're its "
+                    + "own children. A field wrapped in another element, or one with no box, such as a file upload, "
+                    + "sits beside the boxes like a button.",
+                "For a row that must wrap onto more lines on a narrow screen, use a [grid](components/grid) or a stack "
+                    + "with `RowFrom`; a field row keeps its items on one line.",
+            ],
+            Related = ["form", "stack", "text-field"],
+            Sections =
+            [
+                new("field-and-button", "A field and a button", "The button sits beside the field's box, not beside its "
+                    + "label or helper text. `Columns` sets each item's width, here up to 20rem for the field and its "
+                    + "own width for the button.", typeof(FieldRowExample)),
+                new("errors", "Helper text and errors", "Labels share the line above the boxes, and helper text and "
+                    + "errors take the lines below, so a message under one field moves none of the boxes. Type fewer "
+                    + "than five characters in ZIP code, then leave the field to see the error.",
+                    typeof(FieldRowErrorsExample)),
+            ],
+            Api = [typeof(TbFieldRow)],
+            Accessibility =
+            [
+                "A plain `div`; it only lays out what it holds, and screen readers and the keyboard follow the order "
+                    + "in the markup.",
+            ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
+            BeforeInteractive =
+            [
+                PlainHtml,
+            ],
+            Target = null,
+            Blocks = ["tb-field-row"],
+        },
         new("grid", "Grid", ExampleCategory.Layout,
             "A responsive 12-column grid for page layouts.")
         {
@@ -3037,7 +3082,7 @@ public static class ExampleCatalog
                 "Skip it for a control that acts as soon as it changes, such as a search box or a [switch]"
                     + "(components/switch) that applies a setting.",
             ],
-            Related = ["text-field", "number-field", "select", "checkbox", "alert"],
+            Related = ["text-field", "number-field", "select", "checkbox", "alert", "field-row"],
             Pattern = new("Form landmark", "https://www.w3.org/WAI/ARIA/apg/patterns/landmarks/examples/form.html"),
             Sections =
             [

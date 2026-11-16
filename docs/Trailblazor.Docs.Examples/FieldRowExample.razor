@@ -1,0 +1,12 @@
+<TbFieldRow Columns="minmax(0, 20rem) auto">
+    <TbTextField Label="Trail code" @bind-Value="_code" HelperText="Printed on the trailhead sign" />
+    <TbButton OnClick="LookUp">Look up</TbButton>
+</TbFieldRow>
+<p>@_found</p>
+
+@code {
+    private string? _code;
+    private string _found = "";
+
+    private void LookUp() => _found = string.IsNullOrWhiteSpace(_code) ? "Enter a code first." : $"Looked up {_code}.";
+}

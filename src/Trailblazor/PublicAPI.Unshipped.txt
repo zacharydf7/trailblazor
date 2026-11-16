@@ -5768,3 +5768,11 @@ Trailblazor.TbDialogHeader.WindowStateChanged.get -> Microsoft.AspNetCore.Compon
 Trailblazor.IDialogService.HasOpenDialogs.get -> bool
 Trailblazor.TbDataGrid<TItem>.RowVersion.get -> System.Func<TItem, object?>?
 Trailblazor.TbDataGrid<TItem>.RowVersion.set -> void
+Trailblazor.TbFieldRow
+Trailblazor.TbFieldRow.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbFieldRow.ChildContent.set -> void
+Trailblazor.TbFieldRow.Columns.get -> string?
+Trailblazor.TbFieldRow.Columns.set -> void
+Trailblazor.TbFieldRow.Gap.get -> int
+Trailblazor.TbFieldRow.Gap.set -> void
+Trailblazor.TbFieldRow.TbFieldRow() -> void

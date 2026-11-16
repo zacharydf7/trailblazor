@@ -1,0 +1,29 @@
+@page "/layout-field-row"
+
+@* Fields that show different things above and below their boxes, beside a button and an icon button. *@
+<TbFieldRow Columns="8rem 10rem 8rem 6rem 9rem auto auto">
+    <TbTextField Label="Trail" @bind-Value="_trail" HelperText="As on the trailhead sign" />
+    <TbTextField Label="Code" @bind-Value="_code" Error="A code has five characters." />
+    <TbTextField AriaLabel="Notes" @bind-Value="_notes" />
+    <TbTextField Label="Longest day's climb in meters" @bind-Value="_climb" />
+    <TbSelect TValue="string" Label="Season" @bind-Value="_season">
+        <TbOption Value="@("Summer")">Summer</TbOption>
+    </TbSelect>
+    <TbButton>Look up</TbButton>
+    <TbIconButton AriaLabel="Clear" Icon="BuiltInIcons.Close" />
+</TbFieldRow>
+<TbFieldRow data-testid="mixed">
+    <TbTextField Label="Name" @bind-Value="_name" />
+    <TbTextField Label="Directions" @bind-Value="_directions" Lines="4" />
+    <TbFileUpload Label="Map" />
+</TbFieldRow>
+
+@code {
+    private string? _trail;
+    private string? _code = "AB";
+    private string? _notes;
+    private string? _climb;
+    private string? _season;
+    private string? _name;
+    private string? _directions;
+}

@@ -47,6 +47,7 @@ public static class AccessibilityStatusCatalog
         new("insert-divider", Tested, NotYet, NotYet),
         new("stack", None, None, None),
         new("spacer", None, None, None),
+        new("field-row", None, None, None),
         new("grid", None, None, None),
         new("splitter", Tested, Tested, NotYet),
         new("viewport", Tested, NotYet, None),

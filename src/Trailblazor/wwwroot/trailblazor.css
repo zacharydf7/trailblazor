@@ -2637,6 +2637,59 @@
         flex: 1 1 auto;
     }
 
+    /* Each field with a box spans the row's five lines (label, box, helper, error, count) through a subgrid, so the
+       boxes share a line and other items sit on it. The spacing moves from gaps to margins, so a line a field leaves
+       empty takes no space. */
+    .tb-field-row {
+        display: grid;
+        grid-template-rows: repeat(5, auto);
+        grid-template-columns: var(--tb-field-row-columns, none);
+        grid-auto-flow: column;
+        justify-content: start;
+        align-items: start;
+        column-gap: var(--tb-field-row-gap);
+    }
+
+    .tb-field-row > .tb-field:has(> [data-part="control"]) {
+        display: grid;
+        grid-row: span 5;
+        grid-template-rows: subgrid;
+        row-gap: 0;
+        align-items: start;
+        min-inline-size: 0;
+    }
+
+    .tb-field-row > .tb-field:has(> [data-part="control"]) > :is([data-part="label"], .tb-field__label-row) {
+        grid-row: 1;
+    }
+
+    .tb-field-row > .tb-field:has(> [data-part="control"]) > [data-part="control"] {
+        grid-row: 2;
+    }
+
+    .tb-field-row > .tb-field:has(> [data-part="control"]) > [data-part="helper"] {
+        grid-row: 3;
+    }
+
+    .tb-field-row > .tb-field:has(> [data-part="control"]) > [data-part="error"] {
+        grid-row: 4;
+    }
+
+    .tb-field-row > .tb-field:has(> [data-part="control"]) > [data-part="count"] {
+        grid-row: 5;
+        justify-self: end;
+    }
+
+    .tb-field-row > .tb-field:has(> [data-part="control"]) > :not([data-part="label"], .tb-field__label-row),
+    .tb-field-row > :not(.tb-field:has(> [data-part="control"])) {
+        margin-block-start: var(--tb-space-1);
+    }
+
+    .tb-field-row > :not(.tb-field:has(> [data-part="control"])) {
+        grid-row: 2;
+        align-self: center;
+    }
+
     .tb-container {
         box-sizing: border-box;
         width: 100%;

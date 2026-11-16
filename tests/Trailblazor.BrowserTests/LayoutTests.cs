@@ -138,6 +138,48 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(toolbar.X + toolbar.Width, end.X + end.Width, tolerance: 1);
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FieldRow_ShouldPutEveryBoxOnOneLineAndCenterTheButtons_WhenFieldsShowDifferentMessages(
+        string browser)
+    {
+        var page = await OpenAtWidthAsync(browser, "/layout-field-row", width: 1200);
+        var controls = page.Locator(".tb-field-row").First.Locator("[data-part=control]");
+
+        var boxes = new List<LocatorBoundingBoxResult>();
+        for (var index = 0; index < await controls.CountAsync(); index++)
+        {
+            boxes.Add((await controls.Nth(index).BoundingBoxAsync())!);
+        }
+
+        var button = (await page.GetByRole(AriaRole.Button, new() { Name = "Look up" }).BoundingBoxAsync())!;
+        var icon = (await page.GetByRole(AriaRole.Button, new() { Name = "Clear" }).BoundingBoxAsync())!;
+        var middle = boxes[0].Y + boxes[0].Height / 2;
+        Assert.Equal(5, boxes.Count);
+        Assert.All(boxes, box => Assert.Equal(boxes[0].Y, box.Y, tolerance: 1));
+        Assert.Equal(middle, button.Y + button.Height / 2, tolerance: 1);
+        Assert.Equal(middle, icon.Y + icon.Height / 2, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FieldRow_ShouldKeepEachBoxItsOwnHeightAndPutABoxlessFieldOnTheirLine_WhenOneBoxIsTaller(
+        string browser)
+    {
+        var page = await OpenAtWidthAsync(browser, "/layout-field-row", width: 1200);
+        var mixed = page.GetByTestId("mixed");
+        var controls = mixed.Locator("[data-part=control]");
+
+        var single = (await controls.Nth(0).BoundingBoxAsync())!;
+        var lines = (await controls.Nth(1).BoundingBoxAsync())!;
+        var plain = (await page.Locator(".tb-field-row [data-part=control]").First.BoundingBoxAsync())!;
+        var upload = (await mixed.Locator(".tb-field:not(:has(> [data-part=control]))").BoundingBoxAsync())!;
+
+        Assert.Equal(single.Y, lines.Y, tolerance: 1);
+        // A file upload has no box, so it sits on the boxes' line, label and all, rather than putting its label above.
+        Assert.True(upload.Y >= single.Y - 1, "The file upload should start on the boxes' line.");
+        Assert.Equal(plain.Height, single.Height, tolerance: 1);
+        Assert.True(lines.Height > single.Height * 2, "The four-line box should be taller than the one-line box.");
+    }
+
     private Task<IPage> OpenAtWidthAsync(string browser, string path, int width) =>
         OpenAsync(browser, path, new() { ViewportSize = new() { Width = width, Height = 900 } });
 

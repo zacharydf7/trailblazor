@@ -1,0 +1,15 @@
+<TbFieldRow Columns="minmax(0, 1fr) minmax(0, 6rem) minmax(0, 8rem) auto">
+    <TbTextField Label="City" @bind-Value="_city" />
+    <TbTextField Label="State" @bind-Value="_state" HelperText="Two letters" />
+    <TbTextField Label="ZIP code" @bind-Value="_zipCode" Validation="CheckZipCode" />
+    <TbButton Variant="Variant.Outlined">Find on map</TbButton>
+</TbFieldRow>
+
+@code {
+    private string? _city = "Pine Ridge";
+    private string? _state;
+    private string? _zipCode;
+
+    private static IEnumerable<string> CheckZipCode(string? zipCode) =>
+        zipCode is { Length: > 0 and < 5 } ? ["A ZIP code has at least 5 characters."] : [];
+}
