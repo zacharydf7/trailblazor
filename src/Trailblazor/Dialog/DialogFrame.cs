@@ -75,11 +75,13 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
             options.Classes?.Dialog, Class));
         builder.AddAttribute(8, "role", Dialog.IsAlert ? "alertdialog" : null);
         builder.AddAttribute(9, "aria-describedby", Dialog.IsAlert || Dialog.Described ? Dialog.DescriptionId : null);
-        builder.AddElementReferenceCapture(10, element => _element = element);
-        builder.OpenComponent<DialogHeader>(11);
-        builder.AddComponentParameter(12, nameof(DialogHeader.Dialog), Dialog);
-        builder.AddComponentParameter(13, nameof(DialogHeader.TitleId), TitleId);
-        builder.AddComponentParameter(14, nameof(DialogHeader.DialogId), AdditionalAttributes?.GetValueOrDefault("id"));
+        // Not data-commits, which a control inside the dialog would find as its own count.
+        builder.AddAttribute(10, "data-window-commits", RendererInfo.IsInteractive ? Dialog.WindowStateCommits : null);
+        builder.AddElementReferenceCapture(11, element => _element = element);
+        builder.OpenComponent<DialogHeader>(12);
+        builder.AddComponentParameter(13, nameof(DialogHeader.Dialog), Dialog);
+        builder.AddComponentParameter(14, nameof(DialogHeader.TitleId), TitleId);
+        builder.AddComponentParameter(15, nameof(DialogHeader.DialogId), AdditionalAttributes?.GetValueOrDefault("id"));
         builder.CloseComponent();
 
         builder.OpenElement(30, "div");

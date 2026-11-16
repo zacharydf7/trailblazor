@@ -16,6 +16,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     // is replaced rather than changed.
     private readonly Lock _lock = new();
     private ImmutableList<DialogReference> _open = [];
+    private int _answered;
 
     public IReadOnlyList<DialogReference> OpenDialogs => _open;
 
@@ -28,6 +29,16 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
 
     // Raised when a dialog opens, closes, or starts or stops blocking the page, so the hosts re-render.
     public event Action? Changed;
+
+    // The closed dialogs the app has answered, which the host renders for the testing helpers: one from the service
+    // once its result is set, since its caller can't be watched, and a TbDialog once its OpenChanged has finished.
+    internal int Answered => _answered;
+
+    internal void CountAnswer()
+    {
+        Interlocked.Increment(ref _answered);
+        Changed?.Invoke();
+    }
 
     public DialogReference<TResult> Show<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog, TResult>(
@@ -268,6 +279,10 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             Changed?.Invoke();
             CountClose(dialog, confirmed);
             dialog.Complete(confirmed, value);
+            if (dialog.ContentType is not null)
+            {
+                CountAnswer();
+            }
         }
     }
 }

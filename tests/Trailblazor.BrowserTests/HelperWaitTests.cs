@@ -332,6 +332,29 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldReturnOnceTheAppHasRunItsCallback_WhenEachHelperActs(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialog-slow");
+        var dialog = page.Tb().Dialog("Slow notes");
+        var slow = page.GetByTestId("slow");
+
+        await page.Tb().Button("Open notes").ClickAsync();
+        await dialog.MinimizeAsync();
+        var minimized = await slow.TextContentAsync();
+        await dialog.MaximizeAsync();
+        var maximized = await slow.TextContentAsync();
+        await dialog.RestoreAsync();
+        var restored = await slow.TextContentAsync();
+        await dialog.CancelAsync();
+        var canceled = await slow.TextContentAsync();
+        await page.Tb().Button("Open notes").ClickAsync();
+        await dialog.ChooseAsync("Close");
+
+        Assert.Equal(("Minimized", "Maximized", "Normal", "closed 1", "closed 2"),
+            (minimized, maximized, restored, canceled, await slow.TextContentAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task RichTextEditor_ShouldReturnOnceTheAppHasTheValue_WhenEntered(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-editor");

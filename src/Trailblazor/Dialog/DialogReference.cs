@@ -21,6 +21,7 @@ public abstract class DialogReference
     private bool _maximizable;
     private bool _draggable;
     private bool _resizable;
+    private int _windowStateCommits;
 
     private protected DialogReference(string? title, DialogOptions options,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type? component,
@@ -221,6 +222,12 @@ public abstract class DialogReference
     /// <summary>Raised with the new state each time <see cref="WindowState"/> changes.</summary>
     public event Action<DialogWindowState>? WindowStateChanged;
 
+    // The TbDialogHeader callbacks a window state change waits for before it's counted.
+    internal event Func<DialogWindowState, Task>? WindowStateAnswered;
+
+    // The window state changes whose callbacks have finished, which the frame renders for the testing helpers.
+    internal int WindowStateCommits => _windowStateCommits;
+
     internal event Action? Changed;
 
     // Only the header listens, since a frame-wide change would draw a markup dialog's TbDialogTitle again, endlessly.
@@ -278,7 +285,21 @@ public abstract class DialogReference
         if (_windowState != windowState)
         {
             WindowStateChanged?.Invoke(_windowState);
+            _ = CountWindowStateAsync(_windowState);
         }
+    }
+
+    // Each callback reports its own failure to the renderer, so none of them throws here.
+    private async Task CountWindowStateAsync(DialogWindowState state)
+    {
+        if (WindowStateAnswered is { } answered)
+        {
+            await Task.WhenAll(answered.GetInvocationList().Cast<Func<DialogWindowState, Task>>()
+                .Select(callback => callback(state)));
+        }
+
+        Interlocked.Increment(ref _windowStateCommits);
+        Changed?.Invoke();
     }
 
     // False until the content has rendered, since DefaultTitle may still fill in a blank title.

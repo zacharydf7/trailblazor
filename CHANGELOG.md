@@ -87,6 +87,8 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-16
 
+- An interactive dialog counts its window state changes in `data-window-commits` once `TbDialogHeader.WindowStateChanged` has run, and the dialog's `MinimizeAsync`, `MaximizeAsync` and `RestoreAsync` wait for it in both testing packages
+- `TbRoot`'s hidden dialog element counts answered dialogs in `data-tb-answered-dialogs` on an interactive page: a `TbDialog` or `TbDrawer` once its `OpenChanged` has run, and a dialog from `IDialogService` once its result is set. The dialog's `ChooseAsync` and `CancelAsync` wait for it in both testing packages
 - The data grid's `data-commits` also counts a column the user resizes, once `StateChanged` has run; a width the grid measures for itself isn't counted
 - An interactive toolbar carries `data-fitting` while a fit is still to come, such as after a resize
 - A theme picker on an interactive or prerendered page carries `aria-busy="true"` on its group until it has read the theme the page shows

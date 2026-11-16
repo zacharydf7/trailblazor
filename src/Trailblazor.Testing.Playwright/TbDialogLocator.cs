@@ -61,23 +61,26 @@ public sealed class TbDialogLocator(ILocator scope, string? title)
         await WindowStateAsync() == DialogWindowState.Minimized ? "minimize" : "maximize");
 
     /// <summary>Clicks the dialog's button with this name, such as a confirm's <c>Delete</c> or a form's <c>Save</c>,
-    /// and waits for the dialog to fade out and leave the page, which is when the app gets the answer. On a static page,
+    /// and waits for the dialog to fade out and leave the page, which is when the app gets the answer. For a
+    /// <c>TbDialog</c> or <c>TbDrawer</c>, it also waits for the app's <c>OpenChanged</c> to finish. On a static page,
     /// it waits for the dialog to close instead.</summary>
     public async Task ChooseAsync(string button)
     {
         var dialog = await WaitForAsync();
         var open = await MarkAsync(dialog);
-        await dialog.GetByRole(AriaRole.Button, new() { Name = button, Exact = true }).ClickAsync();
+        var choice = dialog.GetByRole(AriaRole.Button, new() { Name = button, Exact = true });
+        await AnsweredAsync(dialog, () => choice.ClickAsync());
         await Assertions.Expect(open).ToHaveCountAsync(0);
     }
 
     /// <summary>Dismisses the dialog with Escape, as a keyboard user would, and waits for it to fade out and leave the
-    /// page, which is when the app gets the answer. On a static page, it waits for the dialog to close instead.
-    /// </summary>
+    /// page, which is when the app gets the answer. For a <c>TbDialog</c> or <c>TbDrawer</c>, it also waits for the
+    /// app's <c>OpenChanged</c> to finish. On a static page, it waits for the dialog to close instead.</summary>
     public async Task CancelAsync()
     {
-        var open = await MarkAsync(await WaitForAsync());
-        await scope.Page.Keyboard.PressAsync("Escape");
+        var dialog = await WaitForAsync();
+        var open = await MarkAsync(dialog);
+        await AnsweredAsync(dialog, () => scope.Page.Keyboard.PressAsync("Escape"));
         await Assertions.Expect(open).ToHaveCountAsync(0);
     }
 
@@ -115,9 +118,31 @@ public sealed class TbDialogLocator(ILocator scope, string? title)
 
         // A prerendered button is replaced once the page is interactive, and would lose the click.
         await Assertions.Expect(button).ToHaveAttributeAsync("data-clicks", new Regex(@"^\d+$"));
-        await button.ClickAsync();
+        await Commit.CountedAsync(dialog, "data-window-commits", async () =>
+        {
+            await button.ClickAsync();
+            return true;
+        });
         await Assertions.Expect(dialog).ToHaveAttributeAsync("data-window-state",
             state.ToString().ToLowerInvariant());
+    }
+
+    // TbRoot's dialog host counts the dialogs the app has answered. A page without one has no count, and a static
+    // dialog, which the browser opens and closes, is never counted, even when an interactive TbRoot holds the host.
+    private async Task AnsweredAsync(ILocator dialog, Func<Task> act)
+    {
+        var host = scope.Page.Locator("[data-tb-answered-dialogs]");
+        if (await host.CountAsync() == 0 || await dialog.GetAttributeAsync("closedby") is not null)
+        {
+            await act();
+            return;
+        }
+
+        await Commit.CountedAsync(host.First, "data-tb-answered-dialogs", async () =>
+        {
+            await act();
+            return true;
+        });
     }
 
     // The app hears the answer once the dialog has faded and left the page. The mark tracks this dialog only, and the

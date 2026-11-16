@@ -1,0 +1,30 @@
+@page "/dialog-slow"
+
+@* A dialog with slow callbacks, so it changes size or closes well before the app's handler has finished. *@
+<TbButton OnClick="() => _open = true">Open notes</TbButton>
+<TbDialog Open="_open" OpenChanged="CloseAsync" Title="Slow notes"
+          Options="new DialogOptions { Minimizable = true, Maximizable = true }">
+    <TbDialogHeader WindowStateChanged="ResizeAsync" />
+    Notes
+</TbDialog>
+<output data-testid="slow">@_slow</output>
+
+@code {
+    private bool _open;
+    private int _closes;
+    private string _slow = "";
+
+    // The dialog is closed at once, so the render that follows doesn't open it again.
+    private async Task CloseAsync(bool open)
+    {
+        _open = open;
+        await Task.Delay(1500);
+        _slow = $"closed {++_closes}";
+    }
+
+    private async Task ResizeAsync(DialogWindowState state)
+    {
+        await Task.Delay(1500);
+        _slow = state.ToString();
+    }
+}

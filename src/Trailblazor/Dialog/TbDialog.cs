@@ -140,6 +140,10 @@ public sealed class TbDialog : TbComponentBase, IAsyncDisposable
         {
             await DispatchExceptionAsync(exception);
         }
+        finally
+        {
+            Dialogs.CountAnswer();
+        }
     }
 
     /// <inheritdoc />

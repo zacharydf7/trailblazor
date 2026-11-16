@@ -529,9 +529,11 @@
                         <th scope="row"><code>Dialog(title).ChooseAsync(button)</code></th>
                         <td>
                             Clicks a button by its name in an open dialog, drawer or hotkeys help, and
-                            <code>CancelAsync()</code> dismisses it as Escape does. <code>Title</code>,
+                            <code>CancelAsync()</code> dismisses it as Escape does; when the dialog closes, both wait
+                            for a dialog's or drawer's <code>OpenChanged</code>. <code>Title</code>,
                             <code>IsOpen</code> and <code>WindowState</code> read it; <code>MinimizeAsync()</code>,
-                            <code>MaximizeAsync()</code> and <code>RestoreAsync()</code> use its window buttons; and
+                            <code>MaximizeAsync()</code> and <code>RestoreAsync()</code> use its window buttons and wait
+                            for <code>TbDialogHeader.WindowStateChanged</code>; and
                             <code>WaitForClosedAsync()</code> waits until the app closes it. With no title,
                             <code>Dialog()</code> finds the only open dialog. Call it on the markup of the
                             <code>TbRoot</code> that shows the dialog; see
@@ -879,7 +881,21 @@
                             The dialog to leave the page. While it fades out it stays there with
                             <code>data-leaving</code>, and the app gets the answer only once it has gone, so waiting
                             for it to be hidden ends too soon. A dialog on a static page never fades or leaves, so wait for
-                            it to close instead.
+                            it to close instead. Then wait for <code>data-tb-answered-dialogs</code> to change on the
+                            hidden element <code>TbRoot</code> renders: it counts a <code>TbDialog</code> or
+                            <code>TbDrawer</code> once its <code>OpenChanged</code> has finished, and a dialog from
+                            <code>IDialogService</code> once its result is set. <code>ChooseAsync</code> and
+                            <code>CancelAsync</code> wait for both. Nothing on the page marks when a service dialog's
+                            caller has finished with the result, so check what it does with <code>Expect</code>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A dialog's window state</th>
+                        <td>
+                            <code>data-window-commits</code> to change on the dialog; it counts the window state changes
+                            whose <code>TbDialogHeader.WindowStateChanged</code> has finished.
+                            <code>MinimizeAsync</code>, <code>MaximizeAsync</code> and <code>RestoreAsync</code> wait
+                            for it.
                         </td>
                     </tr>
                     <tr>
@@ -1313,9 +1329,11 @@
             + "the visible tab list, so name the outer list when a shown panel holds another."),
         new("Dialog, drawer or hotkeys help", "Its title, or none for the only open one",
             "`Dialog(title).ChooseAsync(button)` answers it with a button's name, and `CancelAsync()` dismisses it "
-            + "with Escape; both wait until it has left the page, or, on a static page, until it closes. "
-            + "`TitleAsync()`, `IsOpenAsync()` and `WindowStateAsync()` read it; `MinimizeAsync()`, `MaximizeAsync()` "
-            + "and `RestoreAsync()` use its window buttons; and `WaitForClosedAsync()` waits until the app closes it."),
+            + "with Escape; both wait until it has left the page, or, on a static page, until it closes. For a "
+            + "dialog or drawer in markup, they also wait until its `OpenChanged` has run. `TitleAsync()`, "
+            + "`IsOpenAsync()` and `WindowStateAsync()` read it; `MinimizeAsync()`, `MaximizeAsync()` and "
+            + "`RestoreAsync()` use its window buttons and wait until `TbDialogHeader.WindowStateChanged` has run; "
+            + "and `WaitForClosedAsync()` waits until the app closes it."),
         new("Overlay", "Its `aria-label`, or none for the only open one", "`Overlay(name).ClickAsync()` clicks "
             + "it outside its content once the page is interactive, and waits until the app has run its `OnClick` "
             + "and, with `CloseOnClick`, it has closed; `PressEscapeAsync()` closes one with `CloseOnClick`. "

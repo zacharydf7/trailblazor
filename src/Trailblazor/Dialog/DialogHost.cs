@@ -20,12 +20,13 @@ internal sealed class DialogHost : ComponentBase, IDisposable
         builder.OpenElement(0, "span");
         builder.AddAttribute(1, "hidden");
         builder.AddAttribute(2, "data-tb-open-dialogs", Dialogs.OpenDialogs.Count(dialog => !dialog.IsClosing));
+        builder.AddAttribute(3, "data-tb-answered-dialogs", RendererInfo.IsInteractive ? Dialogs.Answered : null);
         builder.CloseElement();
         foreach (var dialog in Dialogs.OpenDialogs.Where(dialog => dialog.ContentType is not null))
         {
-            builder.OpenComponent<DialogFrame>(3);
+            builder.OpenComponent<DialogFrame>(4);
             builder.SetKey(dialog);
-            builder.AddComponentParameter(4, nameof(DialogFrame.Dialog), dialog);
+            builder.AddComponentParameter(5, nameof(DialogFrame.Dialog), dialog);
             builder.CloseComponent();
         }
     }

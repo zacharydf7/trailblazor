@@ -491,6 +491,45 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Dialog_ShouldWaitForTheHeadersCallback_WhenItsWindowStateChanges()
+    {
+        Render<DialogHost>();
+        var states = new List<DialogWindowState>();
+        var cut = Render<TbDialog>(parameters => parameters.Add(dialog => dialog.Title, "Trail notes")
+            .Add(dialog => dialog.Open, true).Add(dialog => dialog.Options, new DialogOptions { Minimizable = true })
+            .AddChildContent<TbDialogHeader>(header => header.Add(each => each.WindowStateChanged,
+                async (DialogWindowState state) =>
+                {
+                    await Task.Delay(100);
+                    states.Add(state);
+                })));
+
+        await cut.Tb().Dialog("Trail notes").MinimizeAsync();
+
+        Assert.Equal([DialogWindowState.Minimized], states);
+    }
+
+    [Fact]
+    public async Task Dialog_ShouldWaitForOpenChanged_WhenCanceledOrClosedByItsCloseButton()
+    {
+        Render<DialogHost>();
+        var answers = new List<bool>();
+        var cut = Render<TbDialog>(parameters => parameters.Add(dialog => dialog.Title, "Trail notes")
+            .Add(dialog => dialog.Open, true).Add(dialog => dialog.OpenChanged, async (bool open) =>
+            {
+                await Task.Delay(100);
+                answers.Add(open);
+            }));
+
+        await cut.Tb().Dialog("Trail notes").CancelAsync();
+        var canceled = answers.Count;
+        cut.Render(parameters => parameters.Add(dialog => dialog.Open, true));
+        await cut.Tb().Dialog("Trail notes").ChooseAsync("Close");
+
+        Assert.Equal((1, 2), (canceled, answers.Count));
+    }
+
+    [Fact]
     public async Task Dialog_ShouldThrow_WhenMaximizingADialogWithoutTheButton()
     {
         Render<DialogHost>();

@@ -107,6 +107,40 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
 
     public Task WaitForAsync(Func<bool> done) => waitFor(done);
 
+    // The closed dialogs the app has answered, as TbRoot's dialog host counts them for the Playwright helpers.
+    public int AnsweredDialogs => Dialogs.Answered;
+
+    // A TbDialog's answer is counted after its OpenChanged, which may render nothing, so this listens to the service
+    // rather than waiting for a render.
+    public async Task WaitForAnswerAsync(int answered)
+    {
+        var counted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnChanged()
+        {
+            if (Dialogs.Answered > answered)
+            {
+                counted.TrySetResult();
+            }
+        }
+
+        Dialogs.Changed += OnChanged;
+        try
+        {
+            OnChanged();
+            await counted.Task.WaitAsync(BunitContext.DefaultWaitTimeout);
+        }
+        catch (TimeoutException)
+        {
+            throw new TimeoutException("The app didn't finish answering the dialog before the wait timed out.");
+        }
+        finally
+        {
+            Dialogs.Changed -= OnChanged;
+        }
+    }
+
+    private DialogService Dialogs => services.GetRequiredService<DialogService>();
+
     private BunitJSInterop Js => services.GetService<BunitJSInterop>() ?? throw new InvalidOperationException(
         "Call AddTrailblazor on the test's BunitContext before rendering.");
 
@@ -2935,9 +2969,11 @@ public sealed class TbDialogDriver
         WindowState == DialogWindowState.Minimized ? "minimize" : "maximize");
 
     /// <summary>Clicks the dialog's button with this name, such as a confirm's <c>Delete</c> or a form's <c>Save</c>.
-    /// </summary>
+    /// When the click closes the dialog, this waits for a <c>TbDialog</c>'s or <c>TbDrawer</c>'s <c>OpenChanged</c> to
+    /// finish.</summary>
     public async Task ChooseAsync(string button)
     {
+        var dialog = _scripts.Dialog(Find()).Dialog;
         var buttons = Find().QuerySelectorAll("button").Where(found => Choices.NameOf(found) == button).ToList();
         if (buttons is not [var only])
         {
@@ -2945,11 +2981,14 @@ public sealed class TbDialogDriver
                 + $"{buttons.Count}.");
         }
 
+        var answered = _scripts.AnsweredDialogs;
         await only.ClickAsync(new MouseEventArgs { Detail = 1 });
+        await AnsweredAsync(dialog, answered);
     }
 
-    /// <summary>Dismisses the dialog with Escape, as a keyboard user does. This throws for a dialog whose options
-    /// don't let Escape dismiss it.</summary>
+    /// <summary>Dismisses the dialog with Escape, as a keyboard user does, and waits for a <c>TbDialog</c>'s or
+    /// <c>TbDrawer</c>'s <c>OpenChanged</c> to finish. This throws for a dialog whose options don't let Escape dismiss
+    /// it.</summary>
     public async Task CancelAsync()
     {
         var frame = _scripts.Dialog(Find());
@@ -2958,7 +2997,9 @@ public sealed class TbDialogDriver
             throw new InvalidOperationException("This dialog's options don't let Escape dismiss it.");
         }
 
+        var answered = _scripts.AnsweredDialogs;
         await _scripts.InvokeAsync(() => frame.Dismiss(DialogDismissReason.Escape));
+        await AnsweredAsync(frame.Dialog, answered);
     }
 
     // The header's Minimize and Maximize buttons each toggle between their state and the dialog's own size.
@@ -2972,8 +3013,15 @@ public sealed class TbDialogDriver
         var button = Find().QuerySelector($"[data-part=header] [data-part={part}]")
             ?? throw new InvalidOperationException($"This dialog has no {char.ToUpperInvariant(part[0])}{part[1..]} "
                 + "button.");
+        var dialog = _scripts.Dialog(Find()).Dialog;
+        var counted = dialog.WindowStateCommits;
         await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+        await _scripts.WaitForAsync(() => dialog.WindowStateCommits > counted);
     }
+
+    // A dialog that stays open, or that its content kept open, has no answer to wait for.
+    private Task AnsweredAsync(DialogReference dialog, int answered) =>
+        dialog.IsClosing ? _scripts.WaitForAnswerAsync(answered) : Task.CompletedTask;
 
     private IElement Find()
     {

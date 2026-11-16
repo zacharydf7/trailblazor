@@ -27,13 +27,13 @@ public sealed class TbDialogHeader : ComponentBase, IDisposable
         ?? throw new InvalidOperationException($"Put {nameof(TbDialogHeader)} inside a dialog.");
 
     /// <inheritdoc />
-    protected override void OnInitialized() => Reference.WindowStateChanged += OnWindowStateChanged;
+    protected override void OnInitialized() => Reference.WindowStateAnswered += OnWindowStateChanged;
 
     /// <inheritdoc />
     protected override void OnParametersSet() => Reference.Fill(Reference.CustomHeader, this, ChildContent);
 
     // The dialog's event can fire off Blazor's dispatcher, so the callback goes through InvokeAsync.
-    private async void OnWindowStateChanged(DialogWindowState state)
+    private async Task OnWindowStateChanged(DialogWindowState state)
     {
         try
         {
@@ -49,7 +49,7 @@ public sealed class TbDialogHeader : ComponentBase, IDisposable
     public void Dispose()
     {
         // Unsubscribe first: emptying the header restores a minimized dialog, and that restore shouldn't be reported.
-        Dialog?.WindowStateChanged -= OnWindowStateChanged;
+        Dialog?.WindowStateAnswered -= OnWindowStateChanged;
         Dialog?.Empty(Dialog.CustomHeader, this);
     }
 }
