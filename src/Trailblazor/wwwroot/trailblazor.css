@@ -755,7 +755,7 @@
 
     .tb-text {
         margin: 0;
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         line-height: var(--tb-line-height-normal);
     }
 
@@ -1059,7 +1059,7 @@
         border-radius: var(--tb-radius-full);
         background: var(--tb-badge-fill);
         color: var(--tb-badge-on-fill);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         font-size: var(--tb-font-size-xs);
         font-weight: var(--tb-font-weight-semibold);
         font-variant-numeric: tabular-nums;
@@ -1352,7 +1352,7 @@
         block-size: var(--tb-chip-height);
         border: 1px solid transparent;
         border-radius: var(--tb-radius-full);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         font-size: var(--tb-font-size-sm);
         line-height: 1;
         vertical-align: middle;
@@ -1514,7 +1514,7 @@
         display: flex;
         align-items: center;
         gap: var(--tb-space-1);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         font-size: var(--tb-font-size-sm);
         color: var(--tb-color-text);
     }
@@ -1551,7 +1551,7 @@
         padding: 0;
         list-style: none;
         color: var(--tb-color-text);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
     }
 
     .tb-list--dividers {
@@ -2102,7 +2102,7 @@
         padding: calc(var(--tb-space-1) / 2) var(--tb-control-padding-inline);
         border: 1px solid transparent;
         border-radius: var(--tb-button-radius, var(--tb-radius-md));
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         font-size: var(--tb-font-size-sm);
         font-weight: var(--tb-font-weight-medium);
         line-height: 1.25;
@@ -4142,7 +4142,7 @@
         border-radius: var(--tb-radius-sm);
         background: var(--tb-color-text);
         color: var(--tb-color-surface);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         font-size: var(--tb-font-size-xs);
         line-height: var(--tb-line-height-normal);
         /* A popover clips by default, which would hide the bridge below. */
@@ -4447,7 +4447,7 @@
         background: var(--tb-color-surface-raised);
         color: var(--tb-color-text);
         box-shadow: var(--tb-shadow-md);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
     }
 
     /* A focus scope with no controls takes focus itself, so it shows where focus went. */
@@ -4495,7 +4495,7 @@
         border-radius: var(--tb-dialog-radius, var(--tb-radius-lg));
         background: var(--tb-color-surface-raised);
         color: var(--tb-color-text);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         box-shadow: var(--tb-shadow-lg);
     }
 
@@ -5543,7 +5543,7 @@
         flex-direction: column;
         gap: var(--tb-space-2);
         color: var(--tb-color-text);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
     }
 
     .tb-signature-pad__label,
@@ -5868,7 +5868,7 @@
         border-radius: var(--tb-popover-radius, var(--tb-radius-md));
         background: var(--tb-color-surface-raised);
         color: var(--tb-color-text);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         box-shadow: var(--tb-shadow-md);
     }
 
@@ -6183,7 +6183,7 @@
     }
 
     .tb-table-of-contents {
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         font-size: var(--tb-font-size-sm);
     }
 
@@ -6232,7 +6232,7 @@
         flex-direction: column;
         gap: var(--tb-space-1);
         color: var(--tb-color-text);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
     }
 
     .tb-slider__label {
@@ -7013,7 +7013,7 @@
         border: 0;
         background: transparent;
         color: var(--tb-color-text);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         /* Only the toasts take clicks; the gaps between them don't cover the page. */
         pointer-events: none;
     }
@@ -7284,7 +7284,7 @@
         border-collapse: separate;
         border-spacing: 0;
         color: var(--tb-color-text);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         font-size: var(--tb-font-size-sm);
         font-variant-numeric: tabular-nums;
     }
@@ -7992,7 +7992,7 @@
         display: flex;
         flex-direction: column;
         color: var(--tb-color-text);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         font-size: var(--tb-font-size-sm);
     }
 
@@ -8309,7 +8309,7 @@
         border-radius: var(--tb-popover-radius, var(--tb-radius-md));
         background: var(--tb-color-surface-raised);
         color: var(--tb-color-text);
-        font-family: var(--tb-font-family);
+        font-family: inherit;
         font-size: var(--tb-font-size-sm);
         box-shadow: var(--tb-shadow-md);
     }
@@ -9110,6 +9110,13 @@
 }
 
 @layer tb.utilities {
+    /* Components inherit their font, so an element that sets --tb-font-family in its style attribute applies it here.
+       This layer comes after the components one, so it wins on a component's own root too, except where a heading or
+       a key keeps its own token. */
+    :where([style*="--tb-font-family:"]:not(.tb-text--display, .tb-text--headline, .tb-text--title, .tb-kbd)) {
+        font-family: var(--tb-font-family);
+    }
+
     /* Hidden from sight but still read by screen readers. */
     .tb-visually-hidden {
         position: absolute;

@@ -1,7 +1,7 @@
 @page "/heading-font"
 
-@* Every part that takes the heading font, beside body text that keeps the main one, and a heading in a region that
-   sets its own main font. *@
+@* Every part that takes the heading font, beside body text that keeps the main one; a heading and a button in a
+   region that sets its own main font; a button and a title that set it on themselves; and a key that keeps mono. *@
 <TbText TextStyle="TextStyle.Display">Display</TbText>
 <TbText TextStyle="TextStyle.Headline">Headline</TbText>
 <TbText TextStyle="TextStyle.Title">Title</TbText>
@@ -12,4 +12,9 @@
 <TbDialog Open Title="Dialog" Options="new() { Modal = false }" />
 <section style="--tb-font-family: Courier, monospace">
     <TbText TextStyle="TextStyle.Title" data-testid="region">In a region</TbText>
+    <TbButton data-testid="region-button">Print</TbButton>
 </section>
+<TbButton data-testid="own-font" Style="--tb-font-family: Courier, monospace">Share</TbButton>
+<TbText TextStyle="TextStyle.Title" data-testid="own-title"
+        Style="--tb-font-family: Courier, monospace; --tb-font-family-heading: Verdana, sans-serif">Own title</TbText>
+<TbKbd data-testid="own-key" Style="--tb-font-family: Courier, monospace">Ctrl</TbKbd>

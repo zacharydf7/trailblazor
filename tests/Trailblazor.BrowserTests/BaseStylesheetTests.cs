@@ -10,11 +10,11 @@ public class BaseStylesheetTests(BrowserFixture fixture) : BrowserTest(fixture)
         // The test host's own stylesheet sets the body's font outside a layer, which would hide the base one's.
         await page.Locator("link[href*='host']").EvaluateAsync("link => link.disabled = true");
 
-        // A button sets the theme font itself. Keycaps take the monospace one, and checkbox, radio and range inputs
-        // show no text.
+        // The base stylesheet's body font loses to the themed page's, so every part takes the page's font. Keycaps take
+        // the monospace one, and checkbox, radio and range inputs show no text.
         var others = await page.Locator("#parts").EvaluateAsync<string[]>("""
             parts => {
-                const theme = getComputedStyle(parts.querySelector('.tb-button')).fontFamily;
+                const theme = getComputedStyle(document.documentElement).fontFamily;
                 const skipped = '.tb-kbd, svg, input:is([type=checkbox], [type=radio], [type=range])';
                 return [...parts.querySelectorAll('*')]
                     .filter(element => !element.closest(skipped))

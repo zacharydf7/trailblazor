@@ -1,0 +1,30 @@
+@page "/font-inherit"
+
+@* Components inside a region with its own font, which their text should take. *@
+<div data-testid="region" style="font-family: Georgia, serif">
+    <TbButton>Save trail</TbButton>
+    <TbChipGroup AriaLabel="Tags">
+        <TbChip Text="Ridge" />
+    </TbChipGroup>
+    <TbBadge Count="3"><span>Inbox</span></TbBadge>
+    <TbLabel For="code" Text="Trail code" />
+    <TbTextField id="code" @bind-Value="_code" />
+    <TbSlider @bind-Value="_level" Label="Difficulty" ShowValue />
+    <TbList aria-label="Campsites">
+        <TbListItem>Lakeside</TbListItem>
+    </TbList>
+    <TbTreeView TItem="string" TKey="string" AriaLabel="Regions" Items="Regions" KeySelector="name => name"
+                ItemText="name => name" ChildrenSelector="name => null" />
+    <TbTable aria-label="Hours">
+        <tbody><tr><td>Weekdays</td></tr></tbody>
+    </TbTable>
+    <TbText>Plain text</TbText>
+    <TbText TextStyle="TextStyle.Title">A title</TbText>
+    <TbKbd>Ctrl</TbKbd>
+</div>
+
+@code {
+    private static readonly string[] Regions = ["North"];
+    private string? _code;
+    private int _level = 2;
+}

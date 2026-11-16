@@ -154,12 +154,20 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task HeadingFont_ShouldFollowTheMainFont_WhenOnlyTheMainFontIsSet(string browser)
     {
         var page = await OpenAsync(browser, "/heading-font");
-        const string Fonts = "() => [document.querySelector('.tb-card__title'), "
-            + "document.querySelector('[data-testid=region]')].map(part => getComputedStyle(part).fontFamily)";
+        const string Fonts = "() => ['.tb-card__title', '[data-testid=region]', '[data-testid=region-button]', "
+            + "'[data-testid=own-font]'].map(part => getComputedStyle(document.querySelector(part)).fontFamily)";
 
         await page.AddStyleTagAsync(new() { Content = ":root { --tb-font-family: Georgia, serif; }" });
 
-        Assert.Equal(["Georgia, serif", "Courier, monospace"], await page.EvaluateAsync<string[]>(Fonts));
+        var own = await page.EvaluateAsync<string[]>("() => ['[data-testid=own-title]', '[data-testid=own-key]']"
+            + ".map(part => getComputedStyle(document.querySelector(part)).fontFamily)");
+
+        // A region's button, and a button that sets the font on itself, take that font too, while a title and a key
+        // that set it on themselves keep their own tokens.
+        Assert.Equal(["Georgia, serif", "Courier, monospace", "Courier, monospace", "Courier, monospace"],
+            await page.EvaluateAsync<string[]>(Fonts));
+        Assert.Equal("Verdana, sans-serif", own[0]);
+        Assert.DoesNotContain("Courier", own[1]);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -185,5 +193,21 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
             """);
 
         Assert.Equal(colors[1], colors[0]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Components_ShouldTakeTheFontAroundThem_WhenARegionSetsItsOwn(string browser)
+    {
+        var page = await OpenAsync(browser, "/font-inherit");
+
+        var fonts = await page.GetByTestId("region").EvaluateAsync<string[]>("""
+            region => ['.tb-button', '.tb-chip__label', '.tb-badge', '.tb-label__text', '.tb-field__input',
+                '.tb-slider__label', '.tb-list', '.tb-tree__text', '.tb-table', '.tb-text:not(.tb-text--title)',
+                '.tb-text--title', '.tb-kbd'].map(part => `${part} ${getComputedStyle(region.querySelector(part)).fontFamily}`)
+            """);
+
+        // Every part but the title and the key takes the region's font; those keep the heading and mono tokens.
+        Assert.All(fonts[..^2], font => Assert.Contains("Georgia", font));
+        Assert.All(fonts[^2..], font => Assert.DoesNotContain("Georgia", font));
     }
 }

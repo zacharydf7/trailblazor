@@ -87,18 +87,22 @@
 
         <DocsHeading Id="typography" Text="Typography" Class="docs-section" />
         <TbText>
-            Components set their text in <code>--tb-font-family</code>, the system's interface font unless you change
-            it, and controls such as text fields, tabs and links take the font of the text around them. The page that
-            <code>TbThemeHead</code> marks takes <code>--tb-font-family</code> on both <code>html</code> and
-            <code>body</code>, with <code>--tb-line-height-normal</code>, and its <code>body</code> takes
-            <code>--tb-font-size-md</code>, so text outside the components matches them without CSS of your own.
+            Components take the font of the text around them, except headings, which take
+            <code>--tb-font-family-heading</code>, and code and keys, which take <code>--tb-font-family-mono</code>.
+            <code>--tb-font-family</code> is the system's interface font unless you change it. The page that
+            <code>TbThemeHead</code> marks takes it on both <code>html</code> and <code>body</code>, with
+            <code>--tb-line-height-normal</code>, and its <code>body</code> takes <code>--tb-font-size-md</code>, so
+            your text and the components match without any CSS of your own. On a page it doesn't mark, the components
+            take your page's font.
         </TbText>
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Your own font, everywhere</TbText>
         <TbText>
-            Set <code>--tb-font-family</code> rather than a font on <code>body</code>. The token changes the page and
-            every component at once, while a font on <code>body</code> alone changes your own text and the controls
-            that take its font, and leaves the rest in the system font.
+            Set <code>--tb-font-family</code> to change the page's font, components and headings included. A font you
+            set on <code>body</code> or on one region, such as <code>font-family</code> on a sidebar, reaches the
+            components inside it too, but headings, code and keys keep their own tokens. To set
+            <code>--tb-font-family</code> on a region rather than on <code>:root</code>, put it in the region's
+            <code>style</code> attribute; set by a rule in your stylesheet, it doesn't reach the components.
         </TbText>
         <CodeBlock Label="Your own font, everywhere" Code="@Font" Language="CodeLanguage.Css" />
 
@@ -107,11 +111,10 @@
             The display, headline and title text styles, along with the titles of cards, dialogs, empty states and
             accordion items, take <code>--tb-font-family-heading</code>, which is <code>--tb-font-family</code>
             unless you set it. Set it to give those headings a display font while body text, subtitles and controls
-            keep the main font. Heading weights still come from <code>--tb-font-weight-*</code>. Wherever you set
-            <code>--tb-font-family</code> on an element other than <code>:root</code>, set
-            <code>--tb-font-family-heading</code> on it too. Otherwise, inside an element whose <code>style</code>
-            attribute sets the main font, headings take that main font, and inside one where a rule in your own
-            stylesheet sets it, headings keep the page's heading font.
+            keep the main font. Heading weights still come from <code>--tb-font-weight-*</code>. A region that
+            sets <code>--tb-font-family</code> in its <code>style</code> attribute changes its headings too; to change
+            them along with a <code>font-family</code> of its own, set <code>--tb-font-family-heading</code> on the
+            region as well.
         </TbText>
         <CodeBlock Label="A font for headings" Code="@HeadingFont" Language="CodeLanguage.Css" />
 
@@ -122,8 +125,8 @@
             of yours outside a cascade layer wins.
         </TbText>
         <TbText>
-            Text fields, tabs, menu items and the other controls that take the text's font set their own line height,
-            so a line height of yours doesn't change how tall they are.
+            Text fields, tabs, menu items and the other controls set their own line height, so a line height of yours
+            doesn't change how tall they are.
         </TbText>
 
         <DocsHeading Id="density" Text="Density" Class="docs-section" />
