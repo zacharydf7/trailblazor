@@ -23,7 +23,8 @@ public sealed class TbViewportLocator(ILocator scope, string? label)
     public Task ZoomOutAsync() => ClickAsync("zoom-out");
 
     /// <summary>The fit the zoom follows, or <see cref="ViewportFit.None"/>.</summary>
-    public async Task<ViewportFit> FitAsync() => Enum.Parse<ViewportFit>((await Root.GetAttributeAsync("data-fit"))!);
+    public async Task<ViewportFit> CurrentFitAsync() =>
+        Enum.Parse<ViewportFit>((await Root.GetAttributeAsync("data-fit"))!);
 
     /// <summary>Picks <see cref="ViewportFit.Width"/> or <see cref="ViewportFit.Page"/> from the zoom menu.</summary>
     public Task FitAsync(ViewportFit fit)

@@ -235,7 +235,8 @@
                         <th scope="row"><code>Viewport(label)</code></th>
                         <td>
                             Zooms with the viewport's buttons, and fits it with <code>FitAsync(ViewportFit.Page)</code>
-                            or <code>ViewportFit.Width</code> from its menu; <code>Zoom</code> reads the zoom.
+                            or <code>ViewportFit.Width</code> from its menu; <code>Zoom</code> reads the zoom, and
+                            <code>CurrentFit</code> the fit.
                         </td>
                     </tr>
                     <tr>
@@ -1236,7 +1237,7 @@
             + "keys, with Mod as `ControlOrMeta`."),
         new("Viewport", "Its label", "`Viewport(label).ZoomInAsync()`, `FitAsync(ViewportFit.Page)` and the other "
             + "helpers zoom with its controls and wait until the app has the zoom. `ZoomAsync()` reads the zoom, and "
-            + "`FitAsync()` the fit."),
+            + "`CurrentFitAsync()` the fit."),
         new("Query builder", "Its label", "`QueryBuilder(label)` adds conditions and groups, sets a group's join with "
             + "`JoinAsync(QueryJoin.Or, group)`, and `Condition(number, group)` finds a condition's Field, Comparison "
             + "and Value by their labels."),

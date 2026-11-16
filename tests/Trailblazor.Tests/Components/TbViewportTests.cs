@@ -150,7 +150,8 @@ public class TbViewportTests : BunitContext
         fit.SetResult(1.5);
         await picked;
 
-        Assert.Equal((1.25, ViewportFit.None), (cut.Tb().Viewport("Trail map").Zoom, cut.Tb().Viewport("Trail map").Fit));
+        Assert.Equal((1.25, ViewportFit.None), (
+            cut.Tb().Viewport("Trail map").Zoom, cut.Tb().Viewport("Trail map").CurrentFit));
         Assert.Equal([1.25], Zooms);
     }
 
@@ -164,7 +165,8 @@ public class TbViewportTests : BunitContext
         await cut.Tb().Viewport("Trail map").ZoomInAsync();
         await cut.InvokeAsync(() => fit.SetResult(1.5));
 
-        Assert.Equal((1.25, ViewportFit.None), (cut.Tb().Viewport("Trail map").Zoom, cut.Tb().Viewport("Trail map").Fit));
+        Assert.Equal((1.25, ViewportFit.None), (
+            cut.Tb().Viewport("Trail map").Zoom, cut.Tb().Viewport("Trail map").CurrentFit));
         Assert.Equal([1.25], Zooms);
     }
 
@@ -195,7 +197,8 @@ public class TbViewportTests : BunitContext
 
         await cut.Tb().Viewport("Trail map").FitAsync(ViewportFit.Width);
 
-        Assert.Equal((1.5, ViewportFit.Width), (cut.Tb().Viewport("Trail map").Zoom, cut.Tb().Viewport("Trail map").Fit));
+        Assert.Equal((1.5, ViewportFit.Width), (
+            cut.Tb().Viewport("Trail map").Zoom, cut.Tb().Viewport("Trail map").CurrentFit));
         Assert.Equal([1.5], Zooms);
         Assert.Equal([ViewportFit.Width], Fits);
         Assert.Equal([1d, "Width", 0.1, 8d, 1.25, true], _handle.Invocations["update"].Last().Arguments);
@@ -257,7 +260,8 @@ public class TbViewportTests : BunitContext
 
         await cut.InvokeAsync(() => ReportOf(JSInterop).OnZoom(2, "None", "keyboard"));
 
-        Assert.Equal((2, ViewportFit.None), (cut.Tb().Viewport("Trail map").Zoom, cut.Tb().Viewport("Trail map").Fit));
+        Assert.Equal((2, ViewportFit.None), (
+            cut.Tb().Viewport("Trail map").Zoom, cut.Tb().Viewport("Trail map").CurrentFit));
         Assert.Equal([2d], Zooms);
         Assert.Equal([ViewportFit.None], Fits);
         announcer.WaitForAssertion(() => Assert.Equal($"Zoom {Percent(2)}",
@@ -271,7 +275,7 @@ public class TbViewportTests : BunitContext
         var cut = RenderMap(parameters => parameters.Add(viewport => viewport.Fit, ViewportFit.Page));
 
         await cut.InvokeAsync(() => ReportOf(JSInterop).OnZoom(0.5, "Page", "resize"));
-        Assert.Equal(ViewportFit.Page, cut.Tb().Viewport("Trail map").Fit);
+        Assert.Equal(ViewportFit.Page, cut.Tb().Viewport("Trail map").CurrentFit);
         await cut.InvokeAsync(() => ReportOf(JSInterop).OnZoom(2, "None", "pointer"));
 
         Assert.Equal([1.5, 0.5, 2], Zooms);

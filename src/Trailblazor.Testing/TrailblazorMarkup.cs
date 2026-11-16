@@ -3989,7 +3989,7 @@ public sealed class TbViewportDriver
     public double Zoom => double.Parse(_find().GetAttribute("data-zoom")!, CultureInfo.InvariantCulture);
 
     /// <summary>The fit the zoom follows, or <see cref="ViewportFit.None"/>.</summary>
-    public ViewportFit Fit => Enum.Parse<ViewportFit>(_find().GetAttribute("data-fit")!);
+    public ViewportFit CurrentFit => Enum.Parse<ViewportFit>(_find().GetAttribute("data-fit")!);
 
     /// <summary>Clicks the zoom in button. Throws when the zoom is at its largest or the viewport shows no controls.
     /// </summary>

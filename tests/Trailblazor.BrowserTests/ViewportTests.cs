@@ -143,7 +143,7 @@ public class ViewportTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(await FitAsync(map.Surface, "Page"), await map.ZoomAsync(), tolerance: 0.001);
         await map.FitAsync(ViewportFit.Width);
         Assert.Equal(await FitAsync(map.Surface, "Width"), await map.ZoomAsync(), tolerance: 0.001);
-        Assert.Equal(ViewportFit.Width, await map.FitAsync());
+        Assert.Equal(ViewportFit.Width, await map.CurrentFitAsync());
         var fitted = await Readout(page, "Zoom").TextContentAsync();
         await page.Locator("#frame").EvaluateAsync("frame => frame.style.inlineSize = '600px'");
 

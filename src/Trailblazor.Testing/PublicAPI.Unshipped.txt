@@ -233,7 +233,6 @@ Trailblazor.Testing.TrailblazorMarkup.Hotkey(string! keys) -> Trailblazor.Testin
 Trailblazor.Testing.TrailblazorMarkup.PropertyGrid(string! label) -> Trailblazor.Testing.TrailblazorMarkup!
 Trailblazor.Testing.TbViewportDriver
 Trailblazor.Testing.TbViewportDriver.ActualSizeAsync() -> System.Threading.Tasks.Task!
-Trailblazor.Testing.TbViewportDriver.Fit.get -> Trailblazor.ViewportFit
 Trailblazor.Testing.TbViewportDriver.FitAsync(Trailblazor.ViewportFit fit) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbViewportDriver.Zoom.get -> double
 Trailblazor.Testing.TbViewportDriver.ZoomInAsync() -> System.Threading.Tasks.Task!
@@ -475,3 +474,4 @@ Trailblazor.Testing.TrailblazorMarkup.Banner(string? name = null) -> Trailblazor
 Trailblazor.Testing.TrailblazorMarkup.Carousel(string? name = null) -> Trailblazor.Testing.TbCarouselDriver!
 Trailblazor.Testing.TrailblazorMarkup.ChipGroup(string? name = null) -> Trailblazor.Testing.TbChipGroupDriver!
 Trailblazor.Testing.TrailblazorMarkup.Toolbar(string? name = null) -> Trailblazor.Testing.TbToolbarDriver!
+Trailblazor.Testing.TbViewportDriver.CurrentFit.get -> Trailblazor.ViewportFit

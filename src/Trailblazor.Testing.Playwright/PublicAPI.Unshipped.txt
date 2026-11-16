@@ -257,7 +257,6 @@ Trailblazor.Testing.Playwright.TbTabsLocator.SelectedAsync() -> System.Threading
 Trailblazor.Testing.Playwright.TbTabsLocator.TabsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbTreeLocator.TextsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbGridLocator.ClickRowAsync(string! cell) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbViewportLocator.FitAsync() -> System.Threading.Tasks.Task<Trailblazor.ViewportFit>!
 Trailblazor.Testing.Playwright.TbCheckboxGroupLocator
 Trailblazor.Testing.Playwright.TbCheckboxGroupLocator.CheckAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbCheckboxGroupLocator.CheckedAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
@@ -475,3 +474,4 @@ Trailblazor.Testing.Playwright.TrailblazorPage.Banner(string? name = null) -> Tr
 Trailblazor.Testing.Playwright.TrailblazorPage.Carousel(string? name = null) -> Trailblazor.Testing.Playwright.TbCarouselLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.ChipGroup(string? name = null) -> Trailblazor.Testing.Playwright.TbChipGroupLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Toolbar(string? name = null) -> Trailblazor.Testing.Playwright.TbToolbarLocator!
+Trailblazor.Testing.Playwright.TbViewportLocator.CurrentFitAsync() -> System.Threading.Tasks.Task<Trailblazor.ViewportFit>!

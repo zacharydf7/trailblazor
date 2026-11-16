@@ -2189,11 +2189,12 @@ public static class ExampleCatalog
             [
                 "In Playwright, `page.Tb().Viewport(\"Ridge trail map\")` from `Trailblazor.Testing.Playwright` has "
                     + "`ZoomInAsync`, `ZoomOutAsync`, `FitAsync(ViewportFit.Page)` and `ActualSizeAsync`, each "
-                    + "waiting until the app has the new zoom, which `ZoomAsync()` reads. Its `Surface` is the box to "
-                    + "focus for the keys.",
+                    + "waiting until the app has the new zoom, which `ZoomAsync()` reads, and `CurrentFitAsync()` reads "
+                    + "the fit. Its `Surface` is the box to focus for the keys.",
                 "In bUnit, `cut.Tb().Viewport(\"Ridge trail map\")` from `Trailblazor.Testing` clicks the same "
-                    + "controls, with `FitAsync(ViewportFit.Width)` for a fit, and reads `Zoom` and `Fit`. The keys, "
-                    + "the wheel and a drag need a browser, and so does a fit's zoom, which the browser works out.",
+                    + "controls, with `FitAsync(ViewportFit.Width)` for a fit, and reads `Zoom` and `CurrentFit`. "
+                    + "The keys, the wheel and a drag need a browser, and so does a fit's zoom, which the browser works "
+                    + "out.",
                 "Without the helpers, wait for the viewport's `data-ready` before pressing keys on the box, and read "
                     + "the zoom from its `data-zoom`.",
             ],
