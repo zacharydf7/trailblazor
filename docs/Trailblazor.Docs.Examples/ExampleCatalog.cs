@@ -4163,8 +4163,9 @@ public static class ExampleCatalog
                 new("end-thumb", "A range slider's input for its high end."),
             ],
             TestingTip = "`await page.Tb().Slider(\"Map brightness\").SetAsync(80)` from "
-                + "`Trailblazor.Testing.Playwright` moves the slider and waits until the app has the value, and "
-                + "`ValueAsync()` reads it back. "
+                + "`Trailblazor.Testing.Playwright` moves the slider and waits until the app's `ValueChanged` and "
+                + "`OnValueCommitted` have run, which the slider counts in `data-commits` on its root. `ValueAsync()` "
+                + "reads the value back. "
                 + "`RangeSlider(\"Elevation\").SetAsync(1000, 3000)` does the same for both thumbs. With "
                 + "`GetByRole(AriaRole.Slider).FillAsync(\"80\")` alone, `ToHaveValueAsync(\"80\")` passes before the "
                 + "app hears of the change. A range slider's thumbs are named \"Elevation Minimum\" and \"Elevation "

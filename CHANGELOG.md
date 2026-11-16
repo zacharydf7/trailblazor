@@ -96,6 +96,7 @@ they run by version. The docs site's Upgrading page is built from both.
 - An interactive carousel's picker counts the picks that move the slides, in `data-commits`, once `ActiveIndexChanged` has run
 - A calendar's root counts the days picked in `data-commits`, once `ValueChanged` has run, as other fields' roots count their changes
 - A file upload's input no longer carries `data-choices`; its field's root counts each choice in `data-commits` once `ValueChanged` has run
+- A slider's and range slider's root counts each move in `data-commits` once `ValueChanged` has run, as other fields' roots do, and each release of a thumb once `OnValueCommitted` has run
 - TbRoot's dialog host renders a hidden element with `data-tb-open-dialogs`, the number of open dialogs that aren't closing
 - A static form marks its submit button busy during an enhanced post too, and drops a second submit until the answer updates the page
 - A number field too narrow for its step buttons hides them on static and prerendered pages too

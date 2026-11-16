@@ -17,6 +17,41 @@ public class TbSliderTests : BunitContext
     }
 
     [Fact]
+    public async Task Slide_ShouldCountTheMoveOnceValueChangedHasFinished_WhenTheHandlerIsSlow()
+    {
+        var changed = new TaskCompletionSource();
+        var cut = Render<TbSlider<int>>(parameters => parameters.Add(field => field.Label, "Brightness")
+            .Add(field => field.ValueChanged, (int _) => changed.Task));
+        string? Commits() => cut.Find(".tb-slider").GetAttribute("data-commits");
+
+        var sliding = cut.Find("input[type=range]").InputAsync(new ChangeEventArgs { Value = "40" });
+        // The app can render the field while its handler runs, which mustn't show the move counted yet.
+        cut.Render();
+        var pending = Commits();
+        await cut.InvokeAsync(changed.SetResult);
+        await sliding;
+
+        Assert.Equal(("0", "1"), (pending, Commits()));
+    }
+
+    [Fact]
+    public async Task Commit_ShouldCountTheLetGoOnceOnValueCommittedHasFinished_WhenTheHandlerIsSlow()
+    {
+        var committed = new TaskCompletionSource();
+        var cut = Render<TbSlider<int>>(parameters => parameters.Add(field => field.Label, "Brightness")
+            .Add(field => field.OnValueCommitted, (int _) => committed.Task));
+        string? Commits() => cut.Find(".tb-slider").GetAttribute("data-commits");
+
+        var letting = cut.Find("input[type=range]").ChangeAsync(new ChangeEventArgs { Value = "40" });
+        cut.Render();
+        var pending = Commits();
+        await cut.InvokeAsync(committed.SetResult);
+        await letting;
+
+        Assert.Equal(("0", "1"), (pending, Commits()));
+    }
+
+    [Fact]
     public void Render_ShouldMarkEveryThumbReadOnlyButNotDisabled_WhenReadOnly()
     {
         var slider = Render<TbSlider<int>>(parameters => parameters.Add(field => field.ReadOnly, true));

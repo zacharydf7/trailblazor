@@ -7,8 +7,8 @@ internal static class Commit
     // A field's root, a tab list, a sortable list, a grid or a toaster counts the commits the app has answered, so a
     // helper waits until the one its action raised lands. The action says whether it raised one: text the field already
     // holds raises no change.
-    public static Task WaitAsync(ILocator control, Func<Task<bool>> act) =>
-        CountedAsync(control.Locator("xpath=ancestor-or-self::*[@data-commits][1]"), "data-commits", act);
+    public static Task WaitAsync(ILocator control, Func<Task<bool>> act, int handlers = 1) =>
+        CountedAsync(control.Locator("xpath=ancestor-or-self::*[@data-commits][1]"), "data-commits", act, handlers);
 
     // A TbButton or TbIconButton counts its finished OnClick, and a toggle's PressedChanged, in data-clicks.
     public static Task ClickedAsync(ILocator button) => CountedAsync(button, "data-clicks", async () =>

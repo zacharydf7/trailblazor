@@ -31,6 +31,8 @@
     <TbDatePicker TDate="DateOnly" Label="Slow day" Value="_day" ValueChanged="DayAsync" />
     <TbCalendar TDate="DateOnly" Label="Slow hike" Value="_hike" ValueChanged="HikeAsync" />
     <TbFileUpload Label="Slow map" Value="_map" ValueChanged="MapAsync" />
+    <TbSlider TValue="int" Label="Slow pace" Value="_pace" ValueChanged="PaceAsync" OnValueCommitted="PacedAsync" />
+    <TbRangeSlider TValue="int" Label="Slow climb" Value="_climb" ValueChanged="ClimbAsync" />
     <TbDateTimePicker TDateTime="DateTime" Label="Slow start" Value="_start" ValueChanged="StartAsync" />
     <TbDateTimePicker TDateTime="DateTime" Label="Slow finish" Value="_finish" ValueChanged="FinishAsync" />
     <TbDateRangePicker TDate="DateOnly" Label="Slow trip" Value="_trip" ValueChanged="TripAsync" />
@@ -83,6 +85,8 @@
     private DateOnly? _day;
     private DateOnly? _hike;
     private IReadOnlyList<IBrowserFile>? _map;
+    private int _pace;
+    private SliderRange<int> _climb = new(0, 100);
     private DateTime? _start;
     private DateTime? _finish = new DateTime(2026, 5, 2, 9, 30, 15);
     private DateRange<DateOnly> _trip;
@@ -105,6 +109,18 @@
     private Task RegionAsync(string? region) => SlowlyAsync($"region {region}", () => _region = region);
 
     private Task ColorAsync(string? color) => SlowlyAsync($"color {color}", () => _color = color);
+
+    private Task PaceAsync(int pace) => SlowlyAsync($"pace {pace}", () => _pace = pace);
+
+    // Ends after PaceAsync whichever event the browser sends first, so the text shows the helper waited for both.
+    private async Task PacedAsync(int pace)
+    {
+        await Task.Delay(1000);
+        await SlowlyAsync($"paced {pace}");
+    }
+
+    private Task ClimbAsync(SliderRange<int> climb) =>
+        SlowlyAsync($"climb {climb.Start}-{climb.End}", () => _climb = climb);
 
     private Task MapAsync(IReadOnlyList<IBrowserFile>? map) =>
         SlowlyAsync($"map {string.Join(", ", map?.Select(file => file.Name) ?? [])}", () => _map = map);

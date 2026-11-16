@@ -584,6 +584,8 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             {
                 Name = "ridge.gpx", MimeType = "application/gpx+xml", Buffer = [1],
             }),
+            () => tb.Slider("Slow pace").SetAsync(40),
+            () => tb.RangeSlider("Slow climb").SetAsync(20, 60),
         })
         {
             await act();
@@ -593,7 +595,8 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(["alert closed", "inserted", "removed", "kept", "zoom 1.25", "pinned", "view Terrain", "slide 1",
             "region ", "color #aa0000", "day 2026-05-02 #1", "trip 2026-05-02/2026-05-04", "clicked notes", "open True",
             "shaded", "muddy removed", "camp Lakeside", "route True",
-            "step gear", "slide 0", "hike 2026-05-02", "map ridge.gpx"], seen);
+            "step gear", "slide 0", "hike 2026-05-02", "map ridge.gpx",
+            "paced 40", "climb 20-60"], seen);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

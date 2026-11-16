@@ -1161,10 +1161,11 @@
             + "box unchanged."),
         new("Number field", "Its label", "`NumberField(label).EnterAsync(text)` types a number and waits until the "
             + "app has it, and `TextAsync()` reads what the field shows."),
-        new("Slider", "Its label", "`Slider(label).SetAsync(value)` moves it and waits until the field has the value, "
-            + "and `ValueAsync()` reads it."),
+        new("Slider", "Its label", "`Slider(label).SetAsync(value)` moves it and waits until the field has the value "
+            + "and the app's `ValueChanged` and `OnValueCommitted` have run; `ValueAsync()` reads it."),
         new("Range slider", "Its label", "`RangeSlider(label).SetAsync(start, end)` moves both thumbs and waits until "
-            + "the field has the range, and `RangeAsync()` reads it."),
+            + "the field has the range and the app's `ValueChanged` and `OnValueCommitted` have run; `RangeAsync()` "
+            + "reads it."),
         new("Tag input", "Its label", "`TagInput(label).AddAsync(text)` types a tag and presses Enter, "
             + "`RemoveAsync(tag)` clicks its remove button, and both wait for the app's answer; `TagsAsync()` reads "
             + "the tags' text, and `Tags` is the tag elements, for assertions."),

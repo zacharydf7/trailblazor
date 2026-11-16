@@ -33,6 +33,9 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     private int _commits;
 
     private protected int Commits => _commits;
+
+    // A field with a commit event of its own, as a slider's thumb has when let go, counts that one too.
+    private protected void CountCommit() => _commits++;
     // The change a typed update is still delivering, which the commit on leaving the field waits for before it counts.
     private Task _typedChange = Task.CompletedTask;
     private string? _unparsedText;

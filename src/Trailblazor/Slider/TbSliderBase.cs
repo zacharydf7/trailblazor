@@ -97,6 +97,22 @@ public abstract partial class TbSliderBase<[DynamicallyAccessedMembers(Dynamical
     private protected static decimal? Parse(string? text) =>
         decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var number) ? number : null;
 
-    // Bound to each thumb's change event, which the browser fires once the user lets go.
-    private protected Task CommitAsync() => ReadOnly ? Task.CompletedTask : OnValueCommitted.InvokeAsync(Value!);
+    // Bound to each thumb's change event, which the browser fires once the user lets go; it counts once
+    // OnValueCommitted has run.
+    private protected async Task CommitAsync()
+    {
+        if (ReadOnly)
+        {
+            return;
+        }
+
+        try
+        {
+            await OnValueCommitted.InvokeAsync(Value!);
+        }
+        finally
+        {
+            CountCommit();
+        }
+    }
 }

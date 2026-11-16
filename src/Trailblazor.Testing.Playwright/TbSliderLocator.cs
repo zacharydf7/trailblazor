@@ -11,8 +11,9 @@ public sealed class TbSliderLocator(ILocator scope, string label) : TbFieldLocat
     /// <summary>The slider's range input.</summary>
     public ILocator Input => scope.GetByRole(AriaRole.Slider, new() { NameRegex = FieldLabel.Matching(label) });
 
-    /// <summary>Moves the slider to this value and waits until the field has taken it. A value between steps lands on
-    /// the nearest step, as it would for the user. A statically rendered slider just moves.</summary>
+    /// <summary>Moves the slider to this value and waits until the field has taken it and the app's
+    /// <c>ValueChanged</c> and <c>OnValueCommitted</c> have run. A value between steps lands on the nearest step, as it
+    /// would for the user. A statically rendered slider just moves.</summary>
     public Task SetAsync(decimal value) => SliderThumb.MoveAsync(Input, value);
 
     /// <summary>The value the field holds.</summary>
@@ -35,8 +36,9 @@ public sealed class TbRangeSliderLocator(ILocator scope, string label) : TbField
     /// <summary>The thumb for the end of the range.</summary>
     public ILocator End => Field.Locator("[data-part=end-thumb]");
 
-    /// <summary>Moves both thumbs and waits until the field has taken the range. The thumbs can't pass each other, so
-    /// the end moves first when the new start lands past the old end.</summary>
+    /// <summary>Moves both thumbs and waits until the field has taken the range and the app's <c>ValueChanged</c> and
+    /// <c>OnValueCommitted</c> have run for each. The thumbs can't pass each other, so the end moves first when the new
+    /// start lands past the old end.</summary>
     public async Task SetAsync(decimal start, decimal end)
     {
         if (start > end)
@@ -83,7 +85,12 @@ internal static class SliderThumb
 
         // A prerendered slider is replaced once the page is interactive, and would lose the move.
         await Assertions.Expect(thumb).ToHaveAttributeAsync("data-ready", "");
-        await thumb.EvaluateAsync(Move, text);
+        // The move's input and change events each count once the app's handler for it has run.
+        await Commit.WaitAsync(thumb, async () =>
+        {
+            await thumb.EvaluateAsync(Move, text);
+            return true;
+        }, handlers: 2);
         // The browser snaps the value to a step, and the field writes back what it took.
         await Assertions.Expect(thumb).ToHaveAttributeAsync("data-value", await thumb.InputValueAsync());
     }
