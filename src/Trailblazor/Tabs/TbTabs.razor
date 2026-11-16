@@ -67,7 +67,7 @@
 @code {
     private readonly string _closeHintId = $"tb-tabs-{Guid.NewGuid():N}-close-hint";
     private readonly List<TbTab> _tabs = [];
-    // Counts the adds and closes the app has answered, so a test can wait until its own has run.
+    // Counts the tab clicks, adds and closes the app has answered, so a test can wait until its own has run.
     private int _answered;
     private ElementReference _list;
     private IJSObjectReference? _handle;
@@ -476,11 +476,18 @@
         _answered++;
     }
 
-    // The tab is selected first, so its OnClick sees the new selection.
+    // The tab is selected first, so its OnClick sees the new selection. The click counts once both have run.
     private async Task ClickAsync(TbTab tab, MouseEventArgs args)
     {
-        await ActivateAsync(tab);
-        await tab.OnClick.InvokeAsync(args);
+        try
+        {
+            await ActivateAsync(tab);
+            await tab.OnClick.InvokeAsync(args);
+        }
+        finally
+        {
+            _answered++;
+        }
     }
 
     private async Task ActivateAsync(TbTab tab)

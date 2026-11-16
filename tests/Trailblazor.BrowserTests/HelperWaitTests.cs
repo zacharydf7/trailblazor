@@ -549,6 +549,88 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helpers_ShouldReturnOnceTheAppHasRunItsCallback_WhenTheirButtonOrFieldIsSlow(string browser)
+    {
+        var page = await OpenAsync(browser, "/helpers-slow");
+        var tb = page.Tb();
+        var slow = page.GetByTestId("slow");
+        var seen = new List<string?>();
+
+        // Each read follows its helper at once, with no wait of the test's own.
+        foreach (var act in new Func<Task>[]
+        {
+            () => tb.Alert("Trail closed for repairs.").CloseAsync(),
+            () => tb.InsertDivider("Add a stop").InsertAsync(),
+            () => tb.Popconfirm("Remove trail").ConfirmAsync(),
+            () => tb.Popconfirm("Remove trail").CancelAsync(),
+            () => tb.Viewport("Slow map").ZoomInAsync(),
+            () => tb.Toolbar("Slow tools").ClickAsync("Pin"),
+            () => tb.ToggleGroup("Slow view").ChooseAsync("Terrain"),
+            () => tb.Carousel("Slow slides").NextAsync(),
+            () => tb.Select("Slow region").ClearAsync(),
+            () => tb.ColorPicker("Slow marker").ChooseAsync("#aa0000"),
+            () => tb.DatePicker("Slow day").ChooseAsync(new DateOnly(2026, 5, 2)),
+            () => tb.DateRangePicker("Slow trip").ChooseAsync(new DateOnly(2026, 5, 2), new DateOnly(2026, 5, 4)),
+            () => tb.Tabs("Slow tabs").SelectAsync("Notes"),
+        })
+        {
+            await act();
+            seen.Add(await slow.TextContentAsync());
+        }
+
+        Assert.Equal(["alert closed", "inserted", "removed", "kept", "zoom 1.25", "pinned", "view Terrain", "slide 1",
+            "region ", "color #aa0000", "day 2026-05-02 #1",
+            "trip 2026-05-02/2026-05-04", "clicked notes"], seen);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task DatePicker_ShouldReturnOnceTheAppHasRunItsCallback_WhenTheSameDateReplacesTextItCouldNotRead(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/helpers-slow");
+        var day = page.Tb().DatePicker("Slow day");
+        await day.ChooseAsync(new DateOnly(2026, 5, 2));
+        await day.EnterAsync("not a day");
+
+        // The field still has the date, but the box's new text raises a change the app answers.
+        await day.ChooseAsync(new DateOnly(2026, 5, 2));
+
+        Assert.Equal("day 2026-05-02 #2", await page.GetByTestId("slow").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SignaturePad_ShouldReturnOnceTheAppHasRunItsCallback_WhenUndoOrClearIsSlow(string browser)
+    {
+        var page = await OpenAsync(browser, "/helpers-slow");
+        var pad = page.Tb().SignaturePad("Slow signature");
+        var slow = page.GetByTestId("slow");
+        await pad.DrawAsync((50, 50), (300, 150));
+        await pad.DrawAsync((50, 150), (300, 50));
+        await Expect(slow).ToHaveTextAsync("strokes 2");
+
+        await pad.UndoAsync();
+        var undone = await slow.TextContentAsync();
+        await pad.ClearAsync();
+
+        Assert.Equal(("strokes 1", "strokes 0"), (undone, await slow.TextContentAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task DateTimePicker_ShouldReturnOnceTheAppHasRunItsCallback_WhenItsHandlerIsSlow(string browser)
+    {
+        Assert.SkipWhen(browser == "webkit", "WebKit on Windows has no time box.");
+        var page = await OpenAsync(browser, "/helpers-slow");
+
+        await page.Tb().DateTimePicker("Slow start").ChooseAsync(new DateTime(2026, 5, 2, 9, 30, 0));
+        var started = await page.GetByTestId("slow").TextContentAsync();
+        // The box shows 09:30 for 09:30:15, so the same text still changes the time.
+        await page.Tb().DateTimePicker("Slow finish").ChooseAsync(new DateTime(2026, 5, 2, 9, 30, 0));
+
+        Assert.Equal(("start 2026-05-02T09:30", "finish 2026-05-02T09:30:00"),
+            (started, await page.GetByTestId("slow").TextContentAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task GridAndPagination_ShouldReturnAtOnce_WhenTheRowOrPageIsAlreadyAsAsked(string browser)
     {
         var page = await OpenAsync(browser, "/grid-slow");

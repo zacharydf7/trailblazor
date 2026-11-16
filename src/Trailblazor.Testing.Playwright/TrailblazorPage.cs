@@ -382,13 +382,15 @@ public sealed class TbPopconfirmLocator
     /// the app's <c>OnConfirm</c> has run.</summary>
     public Task ConfirmAsync() => PressAsync("confirm");
 
-    /// <summary>Opens the confirmation, presses its cancel button and waits until it has closed.</summary>
+    /// <summary>Opens the confirmation, presses its cancel button and waits until it has closed and the app's
+    /// <c>OnCancel</c> has run.</summary>
     public Task CancelAsync() => PressAsync("cancel");
 
     private async Task PressAsync(string part)
     {
         var panel = await _popover.OpenAsync();
-        await panel.Locator($"[data-part={part}]").ClickAsync();
+        // The panel closes before the app's OnCancel runs, so the wait follows the button's count instead.
+        await Commit.ClickedAsync(panel.Locator($"[data-part={part}]"));
         await _popover.ClosedAsync(panel);
     }
 }
@@ -488,7 +490,11 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field) : TbFieldLoc
                 "The select shows no clear button; make it Clearable, and choose an option first.");
         }
 
-        await clear.ClickAsync();
+        await Commit.WaitAsync(control, async () =>
+        {
+            await clear.ClickAsync();
+            return true;
+        });
         await Assertions.Expect(control.Locator("[data-part=value], [data-part=chip]")).ToHaveCountAsync(0);
     }
 
@@ -793,10 +799,16 @@ public sealed partial class TbColorPickerLocator(ILocator scope, ILocator field)
 
         // A prerendered field is replaced once the page is interactive, so the interactive one is waited for.
         await Assertions.Expect(input).Not.ToHaveAttributeAsync("data-prerender", "");
-        await input.FillAsync(color);
-        await input.PressAsync("Enter");
         // The field writes an opaque color without its alpha.
         var expected = color.ToLowerInvariant();
+        // Text the box already holds raises no change for the app to answer.
+        await Commit.WaitAsync(input, async () =>
+        {
+            var changes = await input.InputValueAsync() != color;
+            await input.FillAsync(color);
+            await input.PressAsync("Enter");
+            return changes;
+        });
         await Assertions.Expect(input).ToHaveAttributeAsync("data-value",
             expected.Length == 9 && expected.EndsWith("ff", StringComparison.Ordinal) ? expected[..7] : expected);
     }
@@ -832,6 +844,8 @@ public sealed class TbSignaturePadLocator(ILocator root) : TbFieldLocator
 
         // A press before the pad's script is ready would draw nothing.
         await Assertions.Expect(surface).ToHaveAttributeAsync("data-ready", "");
+        // The mouse only reaches what's in view.
+        await surface.ScrollIntoViewIfNeededAsync();
         var box = (await surface.BoundingBoxAsync())!;
         var before = await Strokes.CountAsync();
         var mouse = root.Page.Mouse;
@@ -848,18 +862,18 @@ public sealed class TbSignaturePadLocator(ILocator root) : TbFieldLocator
         await Assertions.Expect(Strokes).ToHaveCountAsync(before + 1);
     }
 
-    /// <summary>Clicks Undo, and waits until the last stroke is gone.</summary>
+    /// <summary>Clicks Undo, and waits until the last stroke is gone and the app has the change.</summary>
     public async Task UndoAsync()
     {
         var before = await Strokes.CountAsync();
-        await root.Locator("[data-part=undo]").ClickAsync();
+        await Commit.ClickedAsync(root.Locator("[data-part=undo]"));
         await Assertions.Expect(Strokes).ToHaveCountAsync(Math.Max(before - 1, 0));
     }
 
-    /// <summary>Clicks Clear, and waits until the pad is empty.</summary>
+    /// <summary>Clicks Clear, and waits until the pad is empty and the app has the change.</summary>
     public async Task ClearAsync()
     {
-        await root.Locator("[data-part=clear]").ClickAsync();
+        await Commit.ClickedAsync(root.Locator("[data-part=clear]"));
         await Assertions.Expect(root.Locator("[data-part=clear]")).ToBeDisabledAsync();
     }
 
@@ -940,9 +954,21 @@ public sealed class TbDateRangePickerLocator(ILocator scope, string label) : TbF
         await Assertions.Expect(group.Locator("[data-part=trigger]")).ToHaveAttributeAsync("data-ready", "");
         var format = await group.GetAttributeAsync("data-format");
         var culture = GregorianCulture.Named(await group.GetAttributeAsync("data-culture"));
-        await boxes.Nth(0).FillAsync(start?.ToString(format, culture) ?? "");
-        await boxes.Nth(1).FillAsync(end?.ToString(format, culture) ?? "");
-        await boxes.Nth(1).PressAsync("Enter");
+        // Each box commits on its own, and text a box already holds raises no change for the app to answer.
+        foreach (var (box, text, key) in new[]
+        {
+            (boxes.Nth(0), start?.ToString(format, culture) ?? "", "Tab"),
+            (boxes.Nth(1), end?.ToString(format, culture) ?? "", "Enter"),
+        })
+        {
+            await Commit.WaitAsync(box, async () =>
+            {
+                var changes = await box.InputValueAsync() != text;
+                await box.FillAsync(text);
+                await box.PressAsync(key);
+                return changes;
+            });
+        }
         await Assertions.Expect(group).ToHaveAttributeAsync("data-value", $"{Iso(start)}/{Iso(end)}");
     }
 

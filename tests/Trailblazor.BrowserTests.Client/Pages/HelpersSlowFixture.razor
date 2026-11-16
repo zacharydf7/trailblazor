@@ -1,0 +1,94 @@
+@page "/helpers-slow"
+
+@* Components whose callbacks are slow, so each shows the user's change well before the app's handler has finished. *@
+<TbStack Gap="3" Style="max-inline-size: 40rem">
+    @if (_alert)
+    {
+        <TbAlert OnClose="CloseAlertAsync">Trail closed for repairs.</TbAlert>
+    }
+    <TbInsertDivider Label="Add a stop" OnInsert="@(() => SlowlyAsync("inserted"))" AlwaysVisible />
+    <TbPopconfirm Label="Remove trail" Title="Remove the trail?" OnConfirm="@(() => SlowlyAsync("removed"))"
+                  OnCancel="@(() => SlowlyAsync("kept"))" />
+    <TbViewport Label="Slow map" Zoom="_zoom" ZoomChanged="ZoomAsync" Style="block-size: 10rem">
+        <div style="inline-size: 20rem; block-size: 10rem">Map</div>
+    </TbViewport>
+    <TbToolbar AriaLabel="Slow tools">
+        <TbToolbarButton AriaLabel="Pin" Icon="Square" OnClick="@(() => SlowlyAsync("pinned"))" />
+    </TbToolbar>
+    <TbToggleGroup TValue="string" AriaLabel="Slow view" Value="@_view" ValueChanged="ViewAsync">
+        <TbToggleItem Value="@("Trails")" Text="Trails" />
+        <TbToggleItem Value="@("Terrain")" Text="Terrain" />
+    </TbToggleGroup>
+    <TbCarousel AriaLabel="Slow slides" ActiveIndex="_slide" ActiveIndexChanged="SlideAsync">
+        <TbCarouselSlide>Ridge</TbCarouselSlide>
+        <TbCarouselSlide>Lake</TbCarouselSlide>
+    </TbCarousel>
+    <TbSelect TValue="string" Label="Slow region" Clearable Value="@_region" ValueChanged="RegionAsync">
+        <TbOption Value="@("North")">North</TbOption>
+        <TbOption Value="@("South")">South</TbOption>
+    </TbSelect>
+    <TbColorPicker Label="Slow marker" Value="@_color" ValueChanged="ColorAsync" />
+    <TbDatePicker TDate="DateOnly" Label="Slow day" Value="_day" ValueChanged="DayAsync" />
+    <TbDateTimePicker TDateTime="DateTime" Label="Slow start" Value="_start" ValueChanged="StartAsync" />
+    <TbDateTimePicker TDateTime="DateTime" Label="Slow finish" Value="_finish" ValueChanged="FinishAsync" />
+    <TbDateRangePicker TDate="DateOnly" Label="Slow trip" Value="_trip" ValueChanged="TripAsync" />
+    <TbTabs AriaLabel="Slow tabs" ActiveKey="@_tab" ActiveKeyChanged="TabAsync">
+        <TbTab Key="maps" Text="Maps">Maps</TbTab>
+        <TbTab Key="notes" Text="Notes" OnClick="@(() => SlowlyAsync($"clicked {_tab}"))">Notes</TbTab>
+    </TbTabs>
+    <TbSignaturePad Label="Slow signature" Value="_signature" ValueChanged="SignAsync" Style="width: 300px" />
+    <output data-testid="slow">@_slow</output>
+</TbStack>
+
+@code {
+    private static readonly Icon Square = new("<path d=\"M5 5h14v14H5z\" />");
+
+    private bool _alert = true;
+    private double _zoom = 1;
+    private string? _view = "Trails";
+    private int _slide;
+    private string? _region = "North";
+    private string? _color = "#336699";
+    private DateOnly? _day;
+    private DateTime? _start;
+    private DateTime? _finish = new DateTime(2026, 5, 2, 9, 30, 15);
+    private DateRange<DateOnly> _trip;
+    private string? _tab = "maps";
+    private Signature? _signature;
+    private int _days;
+    private string _slow = "";
+
+    private Task CloseAlertAsync() => SlowlyAsync("alert closed", () => _alert = false);
+
+    private Task ZoomAsync(double zoom) => SlowlyAsync($"zoom {zoom}", () => _zoom = zoom);
+
+    private Task ViewAsync(string? view) => SlowlyAsync($"view {view}", () => _view = view);
+
+    private Task SlideAsync(int slide) => SlowlyAsync($"slide {slide}", () => _slide = slide);
+
+    private Task RegionAsync(string? region) => SlowlyAsync($"region {region}", () => _region = region);
+
+    private Task ColorAsync(string? color) => SlowlyAsync($"color {color}", () => _color = color);
+
+    private Task DayAsync(DateOnly? day) => SlowlyAsync($"day {day:yyyy-MM-dd} #{++_days}", () => _day = day);
+
+    private Task StartAsync(DateTime? start) => SlowlyAsync($"start {start:yyyy-MM-ddTHH:mm}", () => _start = start);
+
+    private Task FinishAsync(DateTime? finish) =>
+        SlowlyAsync($"finish {finish:yyyy-MM-ddTHH:mm:ss}", () => _finish = finish);
+
+    private Task TripAsync(DateRange<DateOnly> trip) =>
+        SlowlyAsync($"trip {trip.Start:yyyy-MM-dd}/{trip.End:yyyy-MM-dd}", () => _trip = trip);
+
+    private Task TabAsync(string? tab) => SlowlyAsync($"tab {tab}", () => _tab = tab);
+
+    private Task SignAsync(Signature? signature) =>
+        SlowlyAsync($"strokes {signature?.Strokes.Count ?? 0}", () => _signature = signature);
+
+    private async Task SlowlyAsync(string what, Action? apply = null)
+    {
+        await Task.Delay(1500);
+        _slow = what;
+        apply?.Invoke();
+    }
+}

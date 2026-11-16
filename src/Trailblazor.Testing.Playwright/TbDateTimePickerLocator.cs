@@ -34,16 +34,29 @@ public sealed class TbDateTimePickerLocator(ILocator scope, string label) : TbFi
         await Assertions.Expect(Group).ToHaveAttributeAsync("data-format", new Regex(".+"));
         var format = await Group.GetAttributeAsync("data-format");
         var culture = GregorianCulture.Named(await Group.GetAttributeAsync("data-culture"));
-        await DateInput.FillAsync(value?.ToString(format, culture) ?? "");
-        await DateInput.PressAsync("Tab");
+        // Each box commits on its own, and text a box already holds raises no change for the app to answer.
+        var date = value?.ToString(format, culture) ?? "";
+        await Commit.WaitAsync(DateInput, async () =>
+        {
+            var changes = await DateInput.InputValueAsync() != date;
+            await DateInput.FillAsync(date);
+            await DateInput.PressAsync("Tab");
+            return changes;
+        });
         if (value is not { } chosen)
         {
             await Assertions.Expect(Group).ToHaveAttributeAsync("data-value", "");
             return;
         }
 
-        await TimeInput.FillAsync(chosen.ToString(TimeFormat(chosen), CultureInfo.InvariantCulture));
-        await TimeInput.PressAsync("Tab");
+        await Commit.WaitAsync(TimeInput, async () =>
+        {
+            // Filling a time box always raises a change, even with the time it already shows, since that text may hide the
+            // value's seconds.
+            await TimeInput.FillAsync(chosen.ToString(TimeFormat(chosen), CultureInfo.InvariantCulture));
+            await TimeInput.PressAsync("Tab");
+            return true;
+        });
         await Assertions.Expect(Group).ToHaveAttributeAsync("data-value",
             new Regex($"^{chosen.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture)}"));
     }

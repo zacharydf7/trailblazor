@@ -807,21 +807,24 @@
                             <code>data-clicks</code> to change on the <code>TbButton</code> or
                             <code>TbIconButton</code>; it counts the clicks whose <code>OnClick</code> has finished. A
                             handler that awaits a dialog's answer finishes only once the dialog is answered, so also end
-                            the wait when a dialog opens, as the helpers do.
+                            the wait when a dialog opens, as the helpers do. The helpers that press a component's own
+                            button wait this way too: an alert's or banner's close, an insert divider, a popconfirm's
+                            buttons, a viewport's zoom buttons, a toolbar button, a toggle item, a carousel's Next and
+                            Previous, and a signature pad's Undo and Clear.
                         </td>
                     </tr>
                     <tr>
                         <th scope="row">A change the app answers</th>
                         <td>
                             <code>data-commits</code> to change on the field's root, tab list, sortable list, data grid,
-                            menu, tree or toaster; it counts the changes the app has answered. An app that changes a
-                            component's <code>@@key</code> replaces it, and the new component counts from 0 again, so
-                            the count can look unchanged after the app has answered. Also end the wait when the old
-                            element leaves the page or a dialog opens; the helpers stop on whichever comes first. The
-                            field helpers wait this way, the select, autocomplete, list box and transfer list ones
-                            included, so when a choice makes the app re-key the field, the helper still returns once the
-                            app has the value. The tree counts the clicks, toggles, checks and drops it has handled
-                            rather than changes: a double-click adds three, and keys aren't counted.
+                            pagination, menu, tree or toaster; it counts the changes the app has answered. An app that
+                            changes a component's <code>@@key</code> replaces it, and the new component counts from 0
+                            again, so the count can look unchanged after the app has answered. Also end the wait when
+                            the old element leaves the page or a dialog opens; the helpers stop on whichever comes
+                            first. The field helpers wait this way, the select, autocomplete, list box and transfer list
+                            ones included, so when a choice makes the app re-key the field, the helper still returns
+                            once the app has the value. The tree counts the clicks, toggles, checks and drops it has
+                            handled rather than changes: a double-click adds three, and keys aren't counted.
                         </td>
                     </tr>
                     <tr>

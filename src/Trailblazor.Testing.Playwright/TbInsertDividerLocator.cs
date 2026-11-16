@@ -11,8 +11,8 @@ public sealed class TbInsertDividerLocator(ILocator scope, string label)
         Has = scope.Page.GetByRole(AriaRole.Button, new() { Name = label, Exact = true }),
     });
 
-    /// <summary>Presses the insert button, which raises <c>OnInsert</c>, once the page is interactive. Throws for a
-    /// disabled divider, or on a static page, where the button does nothing.</summary>
+    /// <summary>Presses the insert button once the page is interactive, and waits until the app's <c>OnInsert</c>
+    /// has run. Throws for a disabled divider, or on a static page, where the button does nothing.</summary>
     public async Task InsertAsync()
     {
         await Divider.WaitForAsync(new() { State = WaitForSelectorState.Attached });
@@ -29,6 +29,6 @@ public sealed class TbInsertDividerLocator(ILocator scope, string label)
             throw new InvalidOperationException("This insert divider is disabled.");
         }
 
-        await insert.ClickAsync();
+        await Commit.ClickedAsync(insert);
     }
 }

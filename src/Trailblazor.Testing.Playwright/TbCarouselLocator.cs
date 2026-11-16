@@ -71,7 +71,7 @@ public sealed class TbCarouselLocator(ILocator scope, string name)
 
         var count = await Slides.CountAsync();
         var target = ((await ActiveIndexAsync() + step) % count + count) % count;
-        await button.ClickAsync();
+        await Commit.ClickedAsync(button);
         await Assertions.Expect(Slides.Nth(target)).ToBeVisibleAsync();
     }
 

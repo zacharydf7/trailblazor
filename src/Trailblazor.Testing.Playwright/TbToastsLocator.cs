@@ -60,10 +60,6 @@ public sealed class TbToastsLocator(ILocator scope)
     private static async Task ClickAsync(ILocator button)
     {
         await Assertions.Expect(button).ToHaveAttributeAsync("data-clicks", new Regex(@"^\d+$"));
-        await Commit.CountedAsync(button, "data-clicks", async () =>
-        {
-            await button.ClickAsync();
-            return true;
-        });
+        await Commit.ClickedAsync(button);
     }
 }

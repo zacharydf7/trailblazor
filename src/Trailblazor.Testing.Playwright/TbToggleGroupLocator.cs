@@ -56,7 +56,7 @@ public sealed class TbToggleGroupLocator(ILocator scope, string label)
 
             if (await item.GetAttributeAsync("aria-pressed") != state)
             {
-                await item.ClickAsync();
+                await Commit.ClickedAsync(item);
                 // The pressed state arrives with the next render, so wait for it before reading the next item.
                 await Assertions.Expect(item).ToHaveAttributeAsync("aria-pressed", state);
             }

@@ -8,8 +8,9 @@ public sealed class TbToolbarLocator(ILocator scope, string name)
     /// <summary>The toolbar.</summary>
     public ILocator Toolbar => scope.GetByRole(AriaRole.Toolbar, new() { Name = name, Exact = true });
 
-    /// <summary>Clicks the toolbar's button with this name, as a user does, once the toolbar has fitted its buttons. A
-    /// button that moved into the overflow menu is chosen from that menu instead. Throws for a disabled button, a name
+    /// <summary>Clicks the toolbar's button with this name, as a user does, once the toolbar has fitted its buttons,
+    /// and waits until the app's handler has run. A button that moved into the overflow menu is chosen from that menu
+    /// instead. Throws for a disabled button, a name
     /// the toolbar doesn't have, or a static page, where the buttons do nothing.</summary>
     public async Task ClickAsync(string button)
     {
@@ -31,7 +32,7 @@ public sealed class TbToolbarLocator(ILocator scope, string name)
                 throw new InvalidOperationException($"The toolbar button \"{button}\" is disabled.");
             }
 
-            await shown.ClickAsync();
+            await Commit.ClickedAsync(shown);
             return;
         }
 

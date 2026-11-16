@@ -157,6 +157,29 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void Click_ShouldCountTheClickOnceTheTabsOnClickHasFinished_WhenItsHandlerIsSlow()
+    {
+        var clicked = new TaskCompletionSource();
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+        {
+            AddTab(builder, 0, "Overview", "Overview panel");
+            builder.OpenComponent<TbTab>(10);
+            builder.AddAttribute(11, nameof(TbTab.Text), "Map");
+            builder.AddAttribute(12, nameof(TbTab.OnClick),
+                EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this,
+                    () => clicked.Task));
+            builder.CloseComponent();
+        })));
+
+        cut.FindAll("[role=tab]")[1].Click();
+        var pending = cut.Find("[role=tablist]").GetAttribute("data-commits");
+        clicked.SetResult();
+
+        cut.WaitForAssertion(() =>
+            Assert.Equal(("0", "1"), (pending, cut.Find("[role=tablist]").GetAttribute("data-commits"))));
+    }
+
+    [Fact]
     public async Task Select_ShouldSelectTheTabWithoutRaisingItsOnClick_WhenTheArrowKeysReachIt()
     {
         var order = SetUpOrder();

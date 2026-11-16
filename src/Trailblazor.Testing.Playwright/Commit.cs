@@ -10,6 +10,13 @@ internal static class Commit
     public static Task WaitAsync(ILocator control, Func<Task<bool>> act) =>
         CountedAsync(control.Locator("xpath=ancestor-or-self::*[@data-commits][1]"), "data-commits", act);
 
+    // A TbButton or TbIconButton counts its finished OnClick, and a toggle's PressedChanged, in data-clicks.
+    public static Task ClickedAsync(ILocator button) => CountedAsync(button, "data-clicks", async () =>
+    {
+        await button.ClickAsync();
+        return true;
+    });
+
     // Waits until the count in the counter's attribute has moved by the number of handlers the action raises, which it
     // does once the app's handlers have finished; a double-click raises three, its two clicks and the double-click. The
     // wait also ends when the counter leaves the page, as when the app re-keys a control or a reload replaces the page,

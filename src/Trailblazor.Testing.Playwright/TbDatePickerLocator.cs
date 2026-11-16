@@ -27,8 +27,14 @@ public sealed class TbDatePickerLocator(ILocator scope, string label) : TbFieldL
         var format = await Input.GetAttributeAsync("data-format");
         var culture = GregorianCulture.Named(await Input.GetAttributeAsync("data-culture"));
         var text = date?.ToString(format, culture) ?? "";
-        await Input.FillAsync(text);
-        await Input.PressAsync("Tab");
+        // Text the box already holds raises no change for the app to answer.
+        await Commit.WaitAsync(Input, async () =>
+        {
+            var changes = await Input.InputValueAsync() != text;
+            await Input.FillAsync(text);
+            await Input.PressAsync("Tab");
+            return changes;
+        });
         await Assertions.Expect(Input).ToHaveAttributeAsync("data-value",
             date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "");
     }

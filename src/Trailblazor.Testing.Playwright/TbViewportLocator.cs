@@ -49,7 +49,7 @@ public sealed class TbViewportLocator(ILocator scope, string? label)
         }
 
         var before = await Root.GetAttributeAsync("data-zoom");
-        await button.ClickAsync();
+        await Commit.ClickedAsync(button);
         await Assertions.Expect(Root).Not.ToHaveAttributeAsync("data-zoom", before!);
     }
 

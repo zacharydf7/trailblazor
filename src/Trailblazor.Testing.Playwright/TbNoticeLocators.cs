@@ -59,6 +59,6 @@ internal static class Notices
 
         // A prerendered notice is replaced once the page is interactive, and its button would lose the click.
         await Assertions.Expect(notice).ToHaveAttributeAsync("data-ready", "");
-        await close.ClickAsync();
+        await Commit.ClickedAsync(close);
     }
 }
