@@ -711,9 +711,10 @@ public sealed class TbSelectDriver : TbFieldDriver
 
     /// <summary>Chooses the options with these names, as clicking them does: the one option of a select, or each one
     /// not yet chosen in a multiple select, keeping what is already chosen. On a static page the select is a native
-    /// one that posts with its form, so this throws, as it does for a disabled select.</summary>
-    public async Task ChooseAsync(params string[] options) =>
-        await Choices.SetChosenAsync(Choosable, options, choose: true);
+    /// one that posts with its form, so this throws, as it does for a disabled or read-only select. As in a browser,
+    /// the list is opened before each option if it's closed, and closed once they're chosen, so the app's
+    /// <c>OpenChanged</c> runs.</summary>
+    public async Task ChooseAsync(params string[] options) => await SetChosenAsync(options, choose: true);
 
     /// <summary>The names of the chosen options, in order. A list of more than 100 options shows only those in view,
     /// so for one that long this throws; read <see cref="Text"/> instead.</summary>
@@ -738,12 +739,11 @@ public sealed class TbSelectDriver : TbFieldDriver
 
     /// <summary>Unchooses the options with these names in a multiple select, as clicking them again does, leaving the
     /// others chosen. A select that takes one option throws; clear it with <see cref="ClearAsync"/>. On a static page,
-    /// or when the select is disabled, this throws too, as <see cref="ChooseAsync"/> does.</summary>
-    public async Task UnchooseAsync(params string[] options) =>
-        await Choices.SetChosenAsync(Choosable, options, choose: false);
+    /// or when the select is disabled or read-only, this throws too, as <see cref="ChooseAsync"/> does. Otherwise it
+    /// opens and closes the list around the options the same way.</summary>
+    public async Task UnchooseAsync(params string[] options) => await SetChosenAsync(options, choose: false);
 
-    /// <summary>Whether the select's list is open. Unlike in a browser, choosing an option in a single select here
-    /// doesn't close it.</summary>
+    /// <summary>Whether the select's list is open.</summary>
     public bool IsOpen => _find().HasAttribute("data-open");
 
     /// <summary>Opens the select's list, as pressing Down on it does, and the app's <c>OpenChanged</c> runs. An open
@@ -766,6 +766,29 @@ public sealed class TbSelectDriver : TbFieldDriver
             ?? throw new InvalidOperationException(
                 "The select shows no clear button; make it Clearable, and choose an option first.");
         await clear.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private async Task SetChosenAsync(string[] options, bool choose)
+    {
+        Choices.ThrowIfStaticOrDisabled(_find());
+        await Choices.SetChosenAsync(Choosable, options, choose, OpenAsync);
+        if (StillOpen())
+        {
+            await CloseAsync();
+        }
+    }
+
+    private bool StillOpen()
+    {
+        try
+        {
+            return IsOpen;
+        }
+        catch (InvalidOperationException)
+        {
+            // The app can take the select away once it has the choice, as a grid's cell editor does.
+            return false;
+        }
     }
 
     private async Task SetOpenAsync(bool open)
@@ -979,8 +1002,9 @@ public sealed class TbTransferListDriver : TbFieldDriver
 internal static class Choices
 {
     // Clicks each named option whose state differs: one not yet chosen to choose it, or a chosen one to unchoose it.
+    // A field whose list opens first, as a select's does, is opened before each option, so the app hears it open.
     internal static async Task SetChosenAsync(Func<(IEnumerable<IElement> Options, bool Multiple)> find,
-        string[] texts, bool choose)
+        string[] texts, bool choose, Func<Task>? open = null)
     {
         ArgumentOutOfRangeException.ThrowIfZero(texts.Length, nameof(texts));
         if (choose && texts.Length > 1 && !find().Multiple)
@@ -995,6 +1019,11 @@ internal static class Choices
 
         foreach (var text in texts)
         {
+            if (open is not null)
+            {
+                await open();
+            }
+
             var option = Named(find().Options.ToList(), text);
             if (option.GetAttribute("aria-selected") == "true" != choose)
             {
@@ -3582,9 +3611,15 @@ public sealed class TbGridDriver
     {
         var menu = Menu(column) ?? throw new InvalidOperationException(
             $"The \"{column}\" column has no filter menu; set the grid's FilterMode to Menu.");
-        var conditions = menu.QuerySelector("[role=combobox]") ?? throw new InvalidOperationException(
-            $"The \"{column}\" column's filter has no conditions; use FilterAsync(column, text) or FilterChoicesAsync.");
-        await new TbSelectDriver(() => conditions, _findAll, _scripts).ChooseAsync(condition);
+        if (menu.QuerySelector("[role=combobox]") is null)
+        {
+            throw new InvalidOperationException($"The \"{column}\" column's filter has no conditions; use "
+                + "FilterAsync(column, text) or FilterChoicesAsync.");
+        }
+
+        // Found again on each use, since opening the list renders new markup.
+        await new TbSelectDriver(() => Menu(column)!.QuerySelector("[role=combobox]")!, _findAll, _scripts)
+            .ChooseAsync(condition);
         // Choosing renders the menu again, without a value field for a condition that takes none.
         if (ValueInput(column) is { } input)
         {

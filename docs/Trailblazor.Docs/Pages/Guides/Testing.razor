@@ -96,7 +96,11 @@
                 <tbody>
                     <tr>
                         <th scope="row"><code>Select(label).ChooseAsync(options)</code></th>
-                        <td>Chooses options by their text, keeping those already chosen.</td>
+                        <td>
+                            Chooses options by their text, keeping those already chosen. As in a browser, a select's
+                            list opens first and closes after, so an app that loads its options in
+                            <code>OpenChanged</code> has them to choose from.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>Select(label).Text</code></th>

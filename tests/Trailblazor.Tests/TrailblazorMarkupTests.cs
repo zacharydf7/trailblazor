@@ -593,6 +593,58 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Select_ShouldOpenTheListBeforeChoosingAndCloseItAfter_WhenTheHelperChooses()
+    {
+        var opens = new List<bool>();
+        var size = RenderSizes(opens).Tb().Select("Size");
+
+        await size.ChooseAsync("Small");
+
+        Assert.Equal([true, false], opens);
+        Assert.Equal(("Small", false), (size.Text, size.IsOpen));
+    }
+
+    [Fact]
+    public async Task Select_ShouldOpenTheListOnceForSeveralOptions_WhenAMultipleSelectChoosesAndUnchooses()
+    {
+        var opens = new List<bool>();
+        var cut = Render<TbMultiSelect<string>>(parameters => parameters.Add(select => select.Label, "Toppings")
+            .Add(select => select.OpenChanged, (bool open) => opens.Add(open))
+            .Add(select => select.ChildContent, Options("Olives", "Basil", "Garlic")));
+        var toppings = cut.Tb().Select("Toppings");
+
+        await toppings.ChooseAsync("Olives", "Basil");
+        await toppings.UnchooseAsync("Olives");
+
+        Assert.Equal([true, false, true, false], opens);
+        Assert.Equal(["Basil"], toppings.Chosen);
+    }
+
+    [Fact]
+    public async Task Select_ShouldRefuseToChoose_WhenTheSelectIsReadOnly()
+    {
+        var opens = new List<bool>();
+        var size = RenderSizes(opens, parameters => parameters.Add(select => select.ReadOnly, true))
+            .Tb().Select("Size");
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => size.ChooseAsync("Small"));
+
+        Assert.Contains("read-only", refused.Message);
+        Assert.Equal((null, false), (size.Text, size.IsOpen));
+        Assert.Empty(opens);
+    }
+
+    [Fact]
+    public async Task Select_ShouldLetTheAppLoadItsOptions_WhenTheyArriveAsTheListOpens()
+    {
+        var cut = Render<LazySizes>();
+
+        await cut.Tb().Select("Size").ChooseAsync("Large");
+
+        Assert.Equal("Large", cut.Tb().Select("Size").Text);
+    }
+
+    [Fact]
     public async Task Select_ShouldOpenOnlyTheSelectItNames_WhenThePageHasTwo()
     {
         var sizes = new List<bool>();
@@ -3711,4 +3763,33 @@ public class TrailblazorMarkupTests : BunitContext
     };
 
     private sealed record Trail(string Name, string Region = "");
+
+    // A select whose options load as its list first opens, as an app might fetch them only when needed.
+    private sealed class LazySizes : ComponentBase
+    {
+        private string? _size;
+        private bool _loaded;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbSelect<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbSelect<string>.Label), "Size");
+            builder.AddComponentParameter(2, nameof(TbSelect<string>.Value), _size);
+            builder.AddComponentParameter(3, nameof(TbSelect<string>.ValueChanged),
+                EventCallback.Factory.Create<string?>(this, size => _size = size));
+            builder.AddComponentParameter(4, nameof(TbSelect<string>.OpenChanged),
+                EventCallback.Factory.Create<bool>(this, open => _loaded |= open));
+            builder.AddComponentParameter(5, nameof(TbSelect<string>.ChildContent), (RenderFragment)(options =>
+            {
+                if (_loaded)
+                {
+                    options.OpenComponent<TbOption<string>>(0);
+                    options.AddComponentParameter(1, nameof(TbOption<string>.Value), "l");
+                    options.AddComponentParameter(2, nameof(TbOption<string>.Text), "Large");
+                    options.CloseComponent();
+                }
+            }));
+            builder.CloseComponent();
+        }
+    }
 }
