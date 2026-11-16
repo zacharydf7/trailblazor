@@ -161,7 +161,14 @@ internal sealed class ToastFrame : ComponentBase, IDisposable
     private async Task RunAsync(ToastAction action)
     {
         Toasts.Close(Toast, ToastCloseReason.Action);
-        await action.OnClick.InvokeAsync();
+        try
+        {
+            await action.OnClick.InvokeAsync();
+        }
+        finally
+        {
+            Toasts.ActionRan();
+        }
     }
 
     public void Dispose() => _timer?.Dispose();

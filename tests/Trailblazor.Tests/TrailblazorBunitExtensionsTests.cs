@@ -142,6 +142,33 @@ public class TrailblazorBunitExtensionsTests : BunitContext
     }
 
     [Fact]
+    public async Task RenderTreeItem_ShouldRenderTheItemInARealTreeWithTheTreesParameters_WhenGivenItsMarkup()
+    {
+        this.AddTrailblazor();
+        var expanded = new List<bool>();
+        var cut = this.RenderTreeItem<string, string>(builder =>
+        {
+            builder.OpenComponent<TbTreeItem<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbTreeItem<string>.Text), "Packing list");
+            builder.AddComponentParameter(2, nameof(TbTreeItem<string>.ExpandedChanged),
+                EventCallback.Factory.Create<bool>(this, expanded.Add));
+            builder.AddComponentParameter(3, nameof(TbTreeItem<string>.ChildContent), (RenderFragment)(child =>
+            {
+                child.OpenComponent<TbTreeItem<string>>(0);
+                child.AddComponentParameter(1, nameof(TbTreeItem<string>.Text), "Boots");
+                child.AddComponentParameter(2, nameof(TbTreeItem<string>.Value), "boots");
+                child.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }, tree => tree.Add(view => view.Checkable, true));
+
+        await cut.Tb().Tree().ExpandAsync("Packing list");
+
+        Assert.Equal([true], expanded);
+        Assert.Equal("false", cut.Tb().Tree().Item("Packing list", "Boots").GetAttribute("aria-checked"));
+    }
+
+    [Fact]
     public async Task ShowDialogAsync_ShouldOpenADialogWithABooleanResult_WhenItIsATbDialogContentOfBool()
     {
         this.AddTrailblazor();

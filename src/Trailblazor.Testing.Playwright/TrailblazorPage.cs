@@ -171,6 +171,18 @@ public sealed class TrailblazorPage(ILocator scope)
     /// space.</summary>
     public TbAlertLocator Alert(string text) => new(scope, text);
 
+    /// <summary>Every <c>TbAlert</c>'s message, in page order, as <c>Alert(text).TextAsync()</c> reads each.</summary>
+    public async Task<IReadOnlyList<string>> AlertsAsync()
+    {
+        var alerts = new List<string>();
+        foreach (var alert in await scope.Locator(".tb-alert").AllAsync())
+        {
+            alerts.Add(await Notices.MessageAsync(alert));
+        }
+
+        return alerts;
+    }
+
     /// <summary>The <c>TbBanner</c> with this accessible name: its <c>Title</c>, or its <c>AriaLabel</c> when it has
     /// no title.</summary>
     public TbBannerLocator Banner(string name) => new(scope, name);
@@ -220,8 +232,8 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbToolbar</c> with this <c>AriaLabel</c>.</summary>
     public TbToolbarLocator Toolbar(string name) => new(scope, name);
 
-    /// <summary>The dialog or drawer with this title.</summary>
-    public TbDialogLocator Dialog(string title) => new(Scope.Document(scope), title);
+    /// <summary>The dialog or drawer with this title, or the only open one when no title is given.</summary>
+    public TbDialogLocator Dialog(string? title = null) => new(Scope.Document(scope), title);
 
     /// <summary>Waits for a <c>data-tb-interactive</c> mark. <c>TbRoot</c> renders one once its dialogs, toasts and
     /// announcements run interactively, which they do once the session that serves the page's interactive components
@@ -295,7 +307,7 @@ public sealed class TbPopoverLocator(ILocator scope, string trigger)
     /// natively, without the script.</summary>
     public async Task<ILocator> OpenAsync()
     {
-        var panel = await PanelAsync();
+        var panel = await ReadyPanelAsync();
         if (!await panel.IsVisibleAsync())
         {
             await Trigger.ClickAsync();
@@ -309,7 +321,7 @@ public sealed class TbPopoverLocator(ILocator scope, string trigger)
     /// <summary>Closes the popover with Escape, as a keyboard user would, if it is open.</summary>
     public async Task CloseAsync()
     {
-        var panel = await PanelAsync();
+        var panel = await ReadyPanelAsync();
         if (await panel.IsVisibleAsync())
         {
             await scope.Page.Keyboard.PressAsync("Escape");
@@ -336,15 +348,23 @@ public sealed class TbPopoverLocator(ILocator scope, string trigger)
         }
     }
 
+    // Found from the trigger each time, since a prerendered popover's panel is replaced, with a new id, once the page is
+    // interactive.
+    /// <summary>The popover's panel, open or not, to read what it holds without opening it, as with
+    /// <c>Expect(Panel).ToContainTextAsync(...)</c>. The panel is on the page while closed, so text assertions see it;
+    /// visibility assertions see what a user does.</summary>
+    public ILocator Panel => Trigger.Locator(
+        "xpath=ancestor::*[contains(concat(' ', @class, ' '), ' tb-popover ')][1]/*[@data-part='panel']");
+
     // Focus and hover work once the popover's script has attached, and a static page has no script to wait for.
-    private async Task<ILocator> PanelAsync()
+    private async Task<ILocator> ReadyPanelAsync()
     {
         if (await Trigger.GetAttributeAsync("data-static") is null)
         {
             await Scope.ReadyAsync(scope, Trigger);
         }
 
-        return Scope.Document(scope).Locator($"[id='{await Trigger.GetAttributeAsync("aria-controls")}']");
+        return Panel;
     }
 }
 
@@ -736,6 +756,22 @@ public sealed partial class TbColorPickerLocator(ILocator scope, ILocator field)
 {
     private protected override ILocator Control => @field.And(scope.Locator("input"));
 
+    /// <summary>The color the field holds, as it was given or last committed, such as <c>#rrggbb</c>, or <c>null</c>
+    /// when it holds none. Text typed but not yet committed doesn't count, except on a static page, where the field is
+    /// a plain input whose text posts with its form.</summary>
+    public async Task<string?> ValueAsync()
+    {
+        var input = Control;
+        if (await input.GetAttributeAsync("data-static") is not null)
+        {
+            return await input.InputValueAsync() is { Length: > 0 } text ? text : null;
+        }
+
+        // A prerendered field is replaced once the page is interactive, and only the interactive one has data-value.
+        await Assertions.Expect(input).Not.ToHaveAttributeAsync("data-prerender", "");
+        return await input.GetAttributeAsync("data-value");
+    }
+
     /// <summary>Types the color, as <c>#rrggbb</c>, or <c>#rrggbbaa</c> for a field with <c>Alpha</c>, and waits until
     /// the field has taken it. A statically rendered field just gets the text.</summary>
     public async Task ChooseAsync(string color)
@@ -854,6 +890,12 @@ public sealed class TbFileUploadLocator(ILocator scope, string label) : TbFieldL
     /// <summary>Chooses files made in the test, each with a <c>Name</c>, <c>MimeType</c> and <c>Buffer</c>, and waits
     /// until the field has taken the choice.</summary>
     public Task ChooseAsync(params FilePayload[] files) => ChooseAsync(input => input.SetInputFilesAsync(files));
+
+    /// <summary>The names of the files the field lists as chosen, in order. A field with <c>Hidden</c> set lists none,
+    /// and neither does one on a static page, whose files post with the form.</summary>
+    public async Task<IReadOnlyList<string>> FilesAsync() => await Control
+        .Locator("xpath=ancestor::*[contains(concat(' ', @class, ' '), ' tb-file-upload ')][1]")
+        .Locator("[data-part=file] .tb-file-upload__name").AllTextContentsAsync();
 
     private async Task ChooseAsync(Func<ILocator, Task> choose)
     {

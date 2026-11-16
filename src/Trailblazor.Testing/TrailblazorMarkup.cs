@@ -299,10 +299,11 @@ public sealed class TrailblazorMarkup
     public TbFileUploadDriver FileUpload(string label) =>
         new(() => Field(label, "input[type=file][data-part=input]"), _scripts);
 
-    /// <summary>The open dialog with this title: a <c>TbDialog</c> or <c>TbDrawer</c>, or one from
-    /// <c>IDialogService</c> such as a confirm. A dialog from the service renders in the <c>DialogHost</c> that
-    /// <c>TbRoot</c> holds, so look for it in the markup of the component that renders the host.</summary>
-    public TbDialogDriver Dialog(string title) => new(title, _findAll, _scripts);
+    /// <summary>The open dialog with this title, or the only open dialog when no title is given: a <c>TbDialog</c> or
+    /// <c>TbDrawer</c>, or one from <c>IDialogService</c> such as a confirm. A dialog from the service renders in the
+    /// <c>DialogHost</c> that <c>TbRoot</c> holds, so look for it in the markup of the component that renders the
+    /// host.</summary>
+    public TbDialogDriver Dialog(string? title = null) => new(title, _findAll, _scripts);
 
     /// <summary>The <c>TbTagInput</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbTagInputDriver TagInput(string label) =>
@@ -401,6 +402,9 @@ public sealed class TrailblazorMarkup
         return alerts.Count == 1 ? alerts[0] : throw new InvalidOperationException(alerts.Count == 0
             ? $"No alert shows \"{text}\"." : $"{alerts.Count} alerts show \"{text}\".");
     });
+
+    /// <summary>Every <c>TbAlert</c>'s message, in page order, as <c>Alert(text).Text</c> reads each.</summary>
+    public IReadOnlyList<string> Alerts => [.. _findAll(".tb-alert").Select(Notices.Message)];
 
     /// <summary>The <c>TbBanner</c> with this accessible name: its <c>Title</c>, or its <c>AriaLabel</c> when it has
     /// no title.</summary>
@@ -1419,6 +1423,28 @@ public sealed class TbToastsDriver
         return Newest()!;
     }
 
+    /// <summary>Waits for a toast whose text contains this, as <see cref="WaitForAsync"/> does, and closes it with its
+    /// dismiss button.</summary>
+    public async Task DismissAsync(string text)
+    {
+        var toast = await WaitForAsync(text);
+        await toast.QuerySelector("[data-part=close]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    /// <summary>Waits for a toast whose text contains this, as <see cref="WaitForAsync"/> does, and clicks its action
+    /// button, such as <c>Undo</c>, which closes the toast and runs the action. Throws when the toast's action has
+    /// another name, or it has none.</summary>
+    public async Task ChooseAsync(string text, string action)
+    {
+        var button = (await WaitForAsync(text)).QuerySelector("[data-part=action]");
+        if (button is null || Choices.NameOf(button) != action)
+        {
+            throw new InvalidOperationException($"The toast showing \"{text}\" has no action named \"{action}\".");
+        }
+
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
     private static string Collapsed(string text) =>
         string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 }
@@ -1439,7 +1465,18 @@ public sealed class TbPopoverDriver
     public async Task<IElement> OpenAsync()
     {
         await ToggleAsync(open: true);
-        return Panel();
+        return Panel;
+    }
+
+    /// <summary>The popover's panel, open or not, to read what it holds without opening it. The panel renders while
+    /// closed, so this reads what the markup holds, not what a user sees.</summary>
+    public IElement Panel
+    {
+        get
+        {
+            var trigger = PopoverTriggers.Find(_findAll, _trigger, "popover", refuseDisabled: false);
+            return _findAll($"[id='{trigger.GetAttribute("aria-controls")}']").Single();
+        }
     }
 
     /// <summary>Closes the popover, as Escape does, which tells a bound <c>Open</c> that it closed.</summary>
@@ -1459,12 +1496,6 @@ public sealed class TbPopoverDriver
         {
             await _scripts.InvokeAsync(() => events.OnToggle(open));
         }
-    }
-
-    private IElement Panel()
-    {
-        var trigger = PopoverTriggers.Find(_findAll, _trigger, "popover", refuseDisabled: false);
-        return _findAll($"[id='{trigger.GetAttribute("aria-controls")}']").Single();
     }
 }
 
@@ -2537,6 +2568,23 @@ public sealed partial class TbColorPickerDriver : TbFieldDriver
 
     internal TbColorPickerDriver(Func<IElement> find) : base(find) => _find = find;
 
+    /// <summary>The color the field holds, as it was given or last committed, such as <c>#rrggbb</c>, or <c>null</c>
+    /// when it holds none. Text typed but not yet committed doesn't count. On a static page, the field is a plain input,
+    /// so this reads the color it was rendered with.</summary>
+    public string? Value
+    {
+        get
+        {
+            var input = _find();
+            if (input.HasAttribute("data-static") || input.HasAttribute("data-prerender"))
+            {
+                return input.GetAttribute("value") is { Length: > 0 } text ? text : null;
+            }
+
+            return input.GetAttribute("data-value");
+        }
+    }
+
     /// <summary>Types the color, as <c>#rrggbb</c>, or <c>#rrggbbaa</c> for a field with <c>Alpha</c>, and commits it,
     /// as typing it and pressing Enter does. On a static page the field is a plain input that posts with its form, so
     /// this throws, as it does for a disabled or read-only field.</summary>
@@ -2588,12 +2636,34 @@ public sealed class TbFileUploadDriver : TbFieldDriver
 
     /// <summary>Chooses the files at these paths, as dropping them or picking them in the file dialog does. A file
     /// with a common extension takes the type a browser gives it, such as <c>image/png</c> for a <c>.png</c>, and any
-    /// other an empty type; to set the type yourself, pass an <c>InputFileContent</c> to bUnit's <c>UploadFiles</c>.
+    /// other an empty type; to set the type yourself, pass <c>InputFileContent</c>s instead.
     /// On a static page the field is a native one that posts with its form, so this throws, as it does for a disabled
     /// or read-only field.</summary>
     public async Task ChooseAsync(params string[] paths)
     {
         ArgumentOutOfRangeException.ThrowIfZero(paths.Length, nameof(paths));
+        Upload().UploadFiles([.. paths.Select(path => InputFileContent.CreateFromBinary(
+            File.ReadAllBytes(path), Path.GetFileName(path), File.GetLastWriteTimeUtc(path),
+            Types.GetValueOrDefault(Path.GetExtension(path), "")))]);
+    }
+
+    /// <summary>Chooses files made in the test, such as <c>InputFileContent.CreateFromText("Day one", "notes.txt")</c>,
+    /// as dropping them or picking them in the file dialog does. Throws as the paths overload does.</summary>
+    public async Task ChooseAsync(params InputFileContent[] files)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(files.Length, nameof(files));
+        Upload().UploadFiles(files);
+    }
+
+    /// <summary>The names of the files the field lists as chosen, in order. A field with <c>Hidden</c> set lists none.
+    /// </summary>
+    public IReadOnlyList<string> Files =>
+        [.. FieldRoot().QuerySelectorAll("[data-part=file] .tb-file-upload__name").Select(name => name.TextContent)];
+
+    private IElement FieldRoot() => _find().Closest(".tb-file-upload")!;
+
+    private IRenderedComponent<InputFile> Upload()
+    {
         var input = _find();
         Choices.ThrowIfLocked(input);
         if (input.HasAttribute("data-prerender"))
@@ -2602,9 +2672,7 @@ public sealed class TbFileUploadDriver : TbFieldDriver
                 + "choose files.");
         }
 
-        _scripts.InputFile(input.Id!).UploadFiles([.. paths.Select(path => InputFileContent.CreateFromBinary(
-            File.ReadAllBytes(path), Path.GetFileName(path), File.GetLastWriteTimeUtc(path),
-            Types.GetValueOrDefault(Path.GetExtension(path), "")))]);
+        return _scripts.InputFile(input.Id!);
     }
 }
 
@@ -2612,16 +2680,44 @@ public sealed class TbFileUploadDriver : TbFieldDriver
 /// <c>IDialogService</c> such as a confirm.</summary>
 public sealed class TbDialogDriver
 {
-    private readonly string _title;
+    private readonly string? _title;
     private readonly Func<string, IReadOnlyList<IElement>> _findAll;
     private readonly ScriptCalls _scripts;
 
-    internal TbDialogDriver(string title, Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts) =>
+    internal TbDialogDriver(string? title, Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts) =>
         (_title, _findAll, _scripts) = (title, findAll, scripts);
 
     /// <summary>Returns the open dialog, without waiting, to find what it shows. A dialog on a static page opens and
     /// closes in the browser, so this throws for one, as it does when no dialog with the title is open.</summary>
     public async Task<IElement> WaitForAsync() => Find();
+
+    /// <summary>Waits until the app has closed the dialog, as it does once a save it started has finished. Returns at
+    /// once when the dialog isn't open.</summary>
+    public async Task WaitForClosedAsync() => await _scripts.WaitForAsync(() => !IsOpen);
+
+    /// <summary>The dialog's title, which names it, read from the open dialog.</summary>
+    public string Title => TitleOf(Find())!;
+
+    /// <summary>Whether the dialog is open. A dialog on a static page opens and closes in the browser, so this throws
+    /// for one.</summary>
+    public bool IsOpen => Matching().Count > 0;
+
+    /// <summary>Whether the dialog shows at its own size, minimized to its header or maximized to fill the window.
+    /// </summary>
+    public DialogWindowState WindowState => _scripts.Dialog(Find()).Dialog.WindowState;
+
+    /// <summary>Minimizes the dialog with its Minimize button, unless it's minimized already. Throws for a dialog
+    /// without the button, which shows only when the dialog is <c>Minimizable</c>.</summary>
+    public Task MinimizeAsync() => SetWindowStateAsync(DialogWindowState.Minimized, "minimize");
+
+    /// <summary>Maximizes the dialog with its Maximize button, unless it's maximized already. Throws for a dialog
+    /// without the button, which shows only when the dialog is <c>Maximizable</c>.</summary>
+    public Task MaximizeAsync() => SetWindowStateAsync(DialogWindowState.Maximized, "maximize");
+
+    /// <summary>Brings a minimized or maximized dialog back to its own size with its Restore button. Does nothing for
+    /// a dialog at its own size.</summary>
+    public async Task RestoreAsync() => await SetWindowStateAsync(DialogWindowState.Normal,
+        WindowState == DialogWindowState.Minimized ? "minimize" : "maximize");
 
     /// <summary>Clicks the dialog's button with this name, such as a confirm's <c>Delete</c> or a form's <c>Save</c>.
     /// </summary>
@@ -2650,22 +2746,45 @@ public sealed class TbDialogDriver
         await _scripts.InvokeAsync(() => frame.Dismiss(DialogDismissReason.Escape));
     }
 
-    // A static page's dialog has the browser close it.
+    // The header's Minimize and Maximize buttons each toggle between their state and the dialog's own size.
+    private async Task SetWindowStateAsync(DialogWindowState state, string part)
+    {
+        if (WindowState == state)
+        {
+            return;
+        }
+
+        var button = Find().QuerySelector($"[data-part=header] [data-part={part}]")
+            ?? throw new InvalidOperationException($"This dialog has no {char.ToUpperInvariant(part[0])}{part[1..]} "
+                + "button.");
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
     private IElement Find()
     {
-        var dialogs = _findAll("dialog[data-part=dialog]").Where(dialog => _findAll(
-                $"[id='{dialog.GetAttribute("aria-labelledby")}']").SingleOrDefault()?.TextContent.Trim() == _title)
-            .ToList();
+        var dialogs = Matching();
+        return dialogs.Count == 1 ? dialogs[0] : throw new InvalidOperationException(dialogs.Count == 0
+            ? _title is null ? "No dialog is in the markup." : $"No dialog titled \"{_title}\" is in the markup."
+            : _title is null ? $"{dialogs.Count} dialogs are open; give the title of the one to use."
+            : $"{dialogs.Count} dialogs are titled \"{_title}\"; give each its own title.");
+    }
+
+    // A static page's dialog has the browser open and close it.
+    private List<IElement> Matching()
+    {
+        var dialogs = _findAll("dialog[data-part=dialog]")
+            .Where(dialog => _title is null || TitleOf(dialog) == _title).ToList();
         if (dialogs.Any(dialog => dialog.HasAttribute("closedby")))
         {
             throw new InvalidOperationException("A dialog on a static page opens and closes in the browser; test it in "
                 + "Playwright.");
         }
 
-        return dialogs.Count == 1 ? dialogs[0] : throw new InvalidOperationException(dialogs.Count == 0
-            ? $"No dialog titled \"{_title}\" is in the markup."
-            : $"{dialogs.Count} dialogs are titled \"{_title}\"; give each its own title.");
+        return dialogs;
     }
+
+    private string? TitleOf(IElement dialog) =>
+        _findAll($"[id='{dialog.GetAttribute("aria-labelledby")}']").SingleOrDefault()?.TextContent.Trim();
 }
 
 /// <summary>A <c>TbTagInput</c>, found by its label.</summary>
@@ -3726,10 +3845,15 @@ public sealed class TbTabsDriver
     /// <c>cut.Tb().Tabs().Panel("Route").TextField("Start")</c>, so a field that every panel has can be told apart.
     /// Throws when the tab's panel isn't in the markup, as happens for a panel not yet shown unless
     /// <c>RenderAllPanels</c> is set.</summary>
-    public TrailblazorMarkup Panel(string tab) => new TrailblazorMarkup(_findAll, _scripts).Within(() =>
+    public TrailblazorMarkup Panel(string tab) =>
+        new TrailblazorMarkup(_findAll, _scripts).Within(() => PanelElement(tab));
+
+    /// <summary>The panel of the tab with this text, to assert on what it shows. Throws when the panel isn't in the
+    /// markup, as <see cref="Panel"/> does.</summary>
+    public IElement PanelElement(string tab) =>
         Find(tab).GetAttribute("aria-controls") is { } panel ? _findAll($"[id='{panel}']").Single()
             : throw new InvalidOperationException($"The panel of the tab \"{tab}\" isn't in the markup; select the "
-                + "tab first, or set RenderAllPanels."));
+                + "tab first, or set RenderAllPanels.");
 
     /// <summary>The tabs' texts, in order.</summary>
     public IReadOnlyList<string> Tabs =>

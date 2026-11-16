@@ -22,8 +22,18 @@ internal sealed class ToastService(IOptions<TrailblazorOptions> trailblazorOptio
 
     public ToastSettings Settings => trailblazorOptions.Value.Toasts;
 
-    // Raised when a toast opens, changes or closes, so the hosts re-render.
+    // Raised when a toast opens, changes or closes, or an action finishes, so the hosts re-render.
     public event Action? Changed;
+
+    // The toast actions that have finished running, which the hosts show as data-commits for tests to wait on. An
+    // action runs after its toast has closed, and can outlast the toast's fade.
+    internal int ActionsRun { get; private set; }
+
+    internal void ActionRan()
+    {
+        ActionsRun++;
+        Changed?.Invoke();
+    }
 
     public ToastReference Show(string message, Tone tone = Tone.Neutral, ToastOptions? options = null)
     {

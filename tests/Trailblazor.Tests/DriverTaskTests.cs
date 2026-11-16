@@ -8,6 +8,9 @@ namespace Trailblazor.Tests;
 // Task.WhenAll, sees the failure where it awaits.
 public class DriverTaskTests : BunitContext
 {
+    // Drivers that wait for their component to go finish at once when it isn't there.
+    private static readonly HashSet<string> DoneWhenGone = ["TbDialogDriver.WaitForClosedAsync"];
+
     public DriverTaskTests() => this.AddTrailblazor();
 
     [Fact]
@@ -43,7 +46,10 @@ public class DriverTaskTests : BunitContext
                 try
                 {
                     await task.WaitAsync(TimeSpan.FromSeconds(10), Xunit.TestContext.Current.CancellationToken);
-                    failures.Add($"{name} finished without its component.");
+                    if (!DoneWhenGone.Contains(name))
+                    {
+                        failures.Add($"{name} finished without its component.");
+                    }
                 }
                 catch (TimeoutException)
                 {

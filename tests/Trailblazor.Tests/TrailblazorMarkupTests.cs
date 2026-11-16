@@ -279,6 +279,54 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task ColorPicker_ShouldReadTheColorItHolds_WhenOneIsChosen()
+    {
+        string? color = null;
+        var cut = Render<TbColorPicker>(parameters => parameters.Add(field => field.Label, "Trail color")
+            .Bind(field => field.Value, color, chosen => color = chosen));
+        var before = cut.Tb().ColorPicker("Trail color").Value;
+
+        await cut.Tb().ColorPicker("Trail color").ChooseAsync("#336699");
+
+        Assert.Equal((null, "#336699"), (before, cut.Tb().ColorPicker("Trail color").Value));
+    }
+
+    [Fact]
+    public void ColorPicker_ShouldReadTheColorThePlainInputShows_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbColorPicker>(0);
+            builder.AddComponentParameter(1, nameof(TbColorPicker.Label), "Accent");
+            builder.AddComponentParameter(2, nameof(TbColorPicker.Value), "#336699");
+            builder.CloseComponent();
+            builder.OpenComponent<TbColorPicker>(3);
+            builder.AddComponentParameter(4, nameof(TbColorPicker.Label), "Marker");
+            builder.CloseComponent();
+        });
+
+        Assert.Equal(("#336699", null), (cut.Tb().ColorPicker("Accent").Value, cut.Tb().ColorPicker("Marker").Value));
+    }
+
+    [Fact]
+    public async Task FileUpload_ShouldTakeFilesMadeInTheTestAndListTheirNames_WhenChosenInMemory()
+    {
+        IReadOnlyList<IBrowserFile>? files = null;
+        var cut = Render<TbFileUpload>(parameters => parameters.Add(upload => upload.Label, "Trip files")
+            .Add(upload => upload.Multiple, true)
+            .Bind(upload => upload.Value, null, chosen => files = chosen));
+        var before = cut.Tb().FileUpload("Trip files").Files;
+
+        await cut.Tb().FileUpload("Trip files").ChooseAsync(InputFileContent.CreateFromText("Day one", "notes.txt"),
+            InputFileContent.CreateFromBinary(new byte[5], "summit.png", contentType: "image/png"));
+
+        Assert.Empty(before);
+        Assert.Equal(["notes.txt", "summit.png"], cut.Tb().FileUpload("Trip files").Files);
+        Assert.Equal([("notes.txt", 7L), ("summit.png", 5L)], files!.Select(file => (file.Name, file.Size)));
+    }
+
+    [Fact]
     public async Task FileUpload_ShouldHandTheFieldTheFilesWithTheTypeTheirExtensionGives_WhenChosenByPath()
     {
         var folder = Directory.CreateTempSubdirectory();
@@ -351,6 +399,86 @@ public class TrailblazorMarkupTests : BunitContext
         await cut.Tb().Dialog("Edit North ridge").CancelAsync();
 
         Assert.False(open);
+    }
+
+    [Fact]
+    public async Task Dialog_ShouldReadTheOnlyOpenDialog_WhenNoTitleIsGiven()
+    {
+        var host = Render<DialogHost>();
+        var dialogs = Services.GetRequiredService<IDialogService>();
+        var closed = host.Tb().Dialog().IsOpen;
+        var deleting = host.InvokeAsync(() => dialogs.ConfirmAsync("Delete trail", "Delete it?", "Delete"));
+
+        var (title, open) = (host.Tb().Dialog().Title, host.Tb().Dialog("Delete trail").IsOpen);
+        await host.Tb().Dialog().ChooseAsync("Delete");
+
+        Assert.Equal((false, "Delete trail", true), (closed, title, open));
+        Assert.True(await deleting);
+        Assert.False(host.Tb().Dialog("Delete trail").IsOpen);
+    }
+
+    [Fact]
+    public async Task Dialog_ShouldRefuseToGuess_WhenNoTitleIsGivenAndTwoDialogsAreOpen()
+    {
+        var host = Render<DialogHost>();
+        var dialogs = Services.GetRequiredService<IDialogService>();
+        _ = host.InvokeAsync(() => dialogs.ConfirmAsync("Delete trail", "Delete it?"));
+        _ = host.InvokeAsync(() => dialogs.ConfirmAsync("Leave trip", "Leave it?"));
+
+        var error = Assert.Throws<InvalidOperationException>(() => host.Tb().Dialog().Title);
+
+        Assert.Equal("2 dialogs are open; give the title of the one to use.", error.Message);
+    }
+
+    [Fact]
+    public async Task Dialog_ShouldMinimizeMaximizeAndRestore_WhenItHasTheWindowButtons()
+    {
+        Render<DialogHost>();
+        var cut = Render<TbDialog>(parameters => parameters.Add(dialog => dialog.Title, "Trail notes")
+            .Add(dialog => dialog.Open, true)
+            .Add(dialog => dialog.Options, new DialogOptions { Minimizable = true, Maximizable = true }));
+        var dialog = cut.Tb().Dialog("Trail notes");
+        var states = new List<DialogWindowState> { dialog.WindowState };
+
+        foreach (var step in new Func<Task>[]
+            { dialog.MinimizeAsync, dialog.MinimizeAsync, dialog.RestoreAsync, dialog.MaximizeAsync, dialog.RestoreAsync })
+        {
+            await step();
+            states.Add(dialog.WindowState);
+        }
+
+        // Minimizing a minimized dialog leaves it so, where its button alone would restore it.
+        Assert.Equal([DialogWindowState.Normal, DialogWindowState.Minimized, DialogWindowState.Minimized,
+            DialogWindowState.Normal, DialogWindowState.Maximized, DialogWindowState.Normal], states);
+    }
+
+    [Fact]
+    public async Task Dialog_ShouldThrow_WhenMaximizingADialogWithoutTheButton()
+    {
+        Render<DialogHost>();
+        var cut = Render<TbDialog>(parameters => parameters.Add(dialog => dialog.Title, "Trail notes")
+            .Add(dialog => dialog.Open, true));
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Dialog("Trail notes").MaximizeAsync());
+
+        Assert.Equal("This dialog has no Maximize button.", error.Message);
+    }
+
+    [Fact]
+    public async Task Dialog_ShouldWaitUntilTheAppClosesIt_WhenTheAppClosesItLater()
+    {
+        var host = Render<DialogHost>();
+        var dialogs = Services.GetRequiredService<IDialogService>();
+        _ = host.InvokeAsync(() => dialogs.ConfirmAsync("Saving trail", "Saving..."));
+
+        var waiting = host.Tb().Dialog("Saving trail").WaitForClosedAsync();
+        var early = waiting.IsCompleted;
+        await host.InvokeAsync(() => dialogs.OpenDialogs.Single().CancelAsync());
+        await waiting;
+
+        Assert.False(early);
+        Assert.False(host.Tb().Dialog("Saving trail").IsOpen);
     }
 
     [Fact]
@@ -958,6 +1086,29 @@ public class TrailblazorMarkupTests : BunitContext
         await cut.Tb().Tabs().Panel("Route").TextField("Notes").EnterAsync("Steep");
 
         Assert.Equal(["Route Steep"], notes);
+    }
+
+    [Fact]
+    public async Task Tabs_ShouldHandBackATabsPanel_WhenAskedForItsElement()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+        {
+            foreach (var (sequence, tab) in new[] { (0, "Gear"), (10, "Route") })
+            {
+                builder.OpenComponent<TbTab>(sequence);
+                builder.AddAttribute(sequence + 1, nameof(TbTab.Text), tab);
+                builder.AddAttribute(sequence + 2, nameof(TbTab.ChildContent),
+                    (RenderFragment)(panel => panel.AddContent(0, $"{tab} details")));
+                builder.CloseComponent();
+            }
+        })));
+
+        var gear = cut.Tb().Tabs().PanelElement("Gear").TextContent.Trim();
+        var unshown = Assert.Throws<InvalidOperationException>(() => cut.Tb().Tabs().PanelElement("Route"));
+        await cut.Tb().Tabs().SelectAsync("Route");
+
+        Assert.Equal(("Gear details", "Route details"), (gear, cut.Tb().Tabs().PanelElement("Route").TextContent.Trim()));
+        Assert.Contains("isn't in the markup", unshown.Message);
     }
 
     [Fact]
@@ -1756,6 +1907,19 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public void Popover_ShouldReadThePanelWithoutOpeningIt_WhenItIsClosed()
+    {
+        var opens = new List<bool>();
+        var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
+            .Add(popover => popover.OpenChanged, (bool open) => opens.Add(open)).AddChildContent("Trail filters"));
+
+        var panel = cut.Tb().Popover("Filters").Panel;
+
+        Assert.Equal("Trail filters", panel.TextContent.Trim());
+        Assert.Empty(opens);
+    }
+
+    [Fact]
     public async Task Popover_ShouldRefuseToOpen_WhenItIsDisabledOrNotThere()
     {
         var cut = Render<TbPopover>(parameters => parameters.Add(popover => popover.Label, "Filters")
@@ -1784,6 +1948,27 @@ public class TrailblazorMarkupTests : BunitContext
         Assert.Contains("ARCHIVED again", toast.TextContent);
         await Assert.ThrowsAsync<Bunit.Extensions.WaitForHelpers.WaitForFailedException>(
             () => cut.Tb().Toasts.WaitForAsync("Trail deleted"));
+    }
+
+    [Fact]
+    public async Task Toasts_ShouldDismissOneToastAndTakeAnothersAction_WhenTheHelperIsUsed()
+    {
+        var cut = Render<TbRoot>();
+        var toasts = Services.GetRequiredService<IToastService>();
+        var undone = 0;
+        var saved = await cut.InvokeAsync(() => toasts.Show("Trail saved", options: new()
+            { Action = new("Share", EventCallback.Factory.Create(this, () => undone += 10)) }));
+        var deleted = await cut.InvokeAsync(() => toasts.Show("Trail deleted", options: new()
+            { Action = new("Undo", EventCallback.Factory.Create(this, () => undone++)) }));
+
+        await cut.Tb().Toasts.DismissAsync("Trail saved");
+        var wrong = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Toasts.ChooseAsync("Trail deleted", "Restore"));
+        await cut.Tb().Toasts.ChooseAsync("Trail deleted", "Undo");
+
+        Assert.Equal((ToastCloseReason.CloseButton, ToastCloseReason.Action, 1),
+            (await saved.Closed, await deleted.Closed, undone));
+        Assert.Equal("The toast showing \"Trail deleted\" has no action named \"Restore\".", wrong.Message);
     }
 
     [Fact]
@@ -1854,6 +2039,25 @@ public class TrailblazorMarkupTests : BunitContext
         await alert.CloseAsync();
 
         Assert.Equal(("Pine Hollow is closed for repairs.", 1), (text, closes));
+    }
+
+    [Fact]
+    public void Alerts_ShouldReadEveryAlertsMessageInOrder_WhenThePageShowsSeveral()
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbAlert>(0);
+            builder.AddComponentParameter(1, nameof(TbAlert.Title), "Trail closed");
+            builder.AddComponentParameter(2, nameof(TbAlert.ChildContent), (RenderFragment)(text =>
+                text.AddContent(0, "Pine  Hollow is closed.")));
+            builder.CloseComponent();
+            builder.OpenComponent<TbAlert>(3);
+            builder.AddComponentParameter(4, nameof(TbAlert.ChildContent), (RenderFragment)(text =>
+                text.AddContent(0, "Bring water.")));
+            builder.CloseComponent();
+        });
+
+        Assert.Equal(["Pine Hollow is closed.", "Bring water."], cut.Tb().Alerts);
     }
 
     [Fact]

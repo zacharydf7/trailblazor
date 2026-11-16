@@ -114,6 +114,18 @@ public static class TrailblazorBunitExtensions
         where TDialog : TbDialogContent<bool> => context.ShowDialogAsync<TDialog, bool>(title, parameters, options);
 #pragma warning restore RS0026
 
+    /// <summary>Renders a <see cref="TbTreeItem{TItem}"/>, or a component of the app's that renders one, inside a
+    /// real <see cref="TbTreeView{TItem, TKey}"/>, since an item works only inside a tree. Find its row with
+    /// <c>Tb().Tree().Item(text)</c> on what this returns, and set the tree's own parameters, such as
+    /// <c>Checkable</c>, with <paramref name="tree"/>.</summary>
+    public static IRenderedComponent<TbTreeView<TItem, TKey>> RenderTreeItem<TItem, TKey>(this BunitContext context,
+        RenderFragment item, Action<ComponentParameterCollectionBuilder<TbTreeView<TItem, TKey>>>? tree = null)
+        where TKey : notnull => context.Render<TbTreeView<TItem, TKey>>(parameters =>
+        {
+            tree?.Invoke(parameters);
+            parameters.AddChildContent(item);
+        });
+
     // bUnit consults its factories as it creates each component, after the services are fixed; this one creates none.
     private sealed class InteractiveByDefault(BunitContext context) : IComponentFactory
     {

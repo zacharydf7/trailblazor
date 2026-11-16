@@ -43,7 +43,6 @@ Trailblazor.Testing.Playwright.TbDateTimePickerLocator.ValueAsync() -> System.Th
 Trailblazor.Testing.Playwright.TbDialogLocator
 Trailblazor.Testing.Playwright.TbDialogLocator.CancelAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDialogLocator.ChooseAsync(string! button) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbDialogLocator.TbDialogLocator(Microsoft.Playwright.ILocator! scope, string! title) -> void
 Trailblazor.Testing.Playwright.TbDialogLocator.WaitForAsync() -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
 Trailblazor.Testing.Playwright.TbFileUploadLocator
 Trailblazor.Testing.Playwright.TbFileUploadLocator.ChooseAsync(params Microsoft.Playwright.FilePayload![]! files) -> System.Threading.Tasks.Task!
@@ -141,7 +140,6 @@ Trailblazor.Testing.Playwright.TrailblazorPage.ColorPicker(string! label) -> Tra
 Trailblazor.Testing.Playwright.TrailblazorPage.DatePicker(string! label) -> Trailblazor.Testing.Playwright.TbDatePickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.DateRangePicker(string! label) -> Trailblazor.Testing.Playwright.TbDateRangePickerLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.DateTimePicker(string! label) -> Trailblazor.Testing.Playwright.TbDateTimePickerLocator!
-Trailblazor.Testing.Playwright.TrailblazorPage.Dialog(string! title) -> Trailblazor.Testing.Playwright.TbDialogLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.FileUpload(string! label) -> Trailblazor.Testing.Playwright.TbFileUploadLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Grid(string? name = null) -> Trailblazor.Testing.Playwright.TbGridLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.ListBox(string! label) -> Trailblazor.Testing.Playwright.TbListBoxLocator!
@@ -452,3 +450,19 @@ Trailblazor.Testing.Playwright.TbAutocompleteLocator.TypeAsync(string! text) -> 
 Trailblazor.Testing.Playwright.TbButtonLocator.MixedAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbButtonLocator.PressedAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbCheckboxLocator.IndeterminateAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbDialogLocator.TbDialogLocator(Microsoft.Playwright.ILocator! scope, string? title) -> void
+Trailblazor.Testing.Playwright.TbDialogLocator.WaitForClosedAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDialogLocator.TitleAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbDialogLocator.IsOpenAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbDialogLocator.WindowStateAsync() -> System.Threading.Tasks.Task<Trailblazor.DialogWindowState>!
+Trailblazor.Testing.Playwright.TbDialogLocator.MinimizeAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDialogLocator.MaximizeAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDialogLocator.RestoreAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTabsLocator.PanelElement(string! tab) -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbToastsLocator.DismissAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbToastsLocator.ChooseAsync(string! text, string! action) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbColorPickerLocator.ValueAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TrailblazorPage.AlertsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbFileUploadLocator.FilesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TrailblazorPage.Dialog(string? title = null) -> Trailblazor.Testing.Playwright.TbDialogLocator!
+Trailblazor.Testing.Playwright.TbPopoverLocator.Panel.get -> Microsoft.Playwright.ILocator!

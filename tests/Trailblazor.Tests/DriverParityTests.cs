@@ -12,6 +12,8 @@ public class DriverParityTests
 {
     private const string InMarkup = "bUnit's markup holds the list whether it's open or not";
     private const string NotInteractive = "not interactive, or a plain button or link found by its role";
+    private const string InTestFile = "each package takes its own file made in the test: Playwright's FilePayload and "
+        + "bUnit's InputFileContent";
 
     // The helper in both packages that finds each component.
     internal static readonly Dictionary<string, string> Helpers = new()
@@ -86,8 +88,7 @@ public class DriverParityTests
         ["TrailblazorPage.Announcements"] = "bUnit tests read FakeAnnouncer",
         ["TbGridLocator.Copy"] = "pressing Ctrl+C needs the browser's copy event; bUnit reads the same text with "
             + "SelectedCells",
-        ["TbFileUploadLocator.Choose"] =
-            "a FilePayload is Playwright's file made in the test; bUnit picks files by path",
+        ["TbFileUploadLocator.Choose"] = InTestFile, ["TbFileUploadDriver.Choose"] = InTestFile,
         ["TbSelectLocator.Open"] = InMarkup, ["TbSelectLocator.Close"] = InMarkup,
         ["TbSelectLocator.IsOpen"] = InMarkup, ["TbTreeSelectLocator.Open"] = InMarkup,
         ["TbTreeSelectLocator.Close"] = InMarkup, ["TbTreeSelectLocator.IsOpen"] = InMarkup,

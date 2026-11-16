@@ -2408,8 +2408,8 @@ public static class ExampleCatalog
             ],
             TestingTip = "`page.Tb().Alert(\"Close this alert\")` in Playwright, or `cut.Tb().Alert(...)` in bUnit, "
                 + "finds an alert by its text: `CloseAsync()` presses its close button, and `TextAsync()` or `Text` "
-                + "reads its message. A danger or warning alert has the `alert` role, and the other tones have "
-                + "`status`.",
+                + "reads its message. `AlertsAsync()`, or `Alerts` in bUnit, reads every alert's message, in order. "
+                + "A danger or warning alert has the `alert` role, and the other tones have `status`.",
         },
         new("banner", "Banner", ExampleCategory.Feedback,
             "A strip across the top of the page or app with a notice for everyone using it, such as planned "
@@ -5160,9 +5160,10 @@ public static class ExampleCatalog
             TestingTip = "`await page.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` from "
                 + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it; for "
                 + "pickers that share a label, pass a locator, as `ColorPicker(row.GetByLabel(\"Color\"))`. In bUnit, "
-                + "`cut.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` types and commits the color, and "
-                + "setting `FakeBrowserService.PickedColor` tests the eyedropper. `@bind-Open` opens the color panel "
-                + "from code.",
+                + "`cut.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` types and commits the color. "
+                + "`ValueAsync()`, or `Value` in bUnit, reads the color the field holds. In bUnit, setting "
+                + "`FakeBrowserService.PickedColor` tests the eyedropper. `@bind-Open` opens the color panel from "
+                + "code.",
         },
         new("file-upload", "File upload", ExampleCategory.Inputs,
             "Chooses files by clicking or dropping them on a drop zone, and lists them with a way to remove each.")
@@ -5273,9 +5274,10 @@ public static class ExampleCatalog
             TestingTip = "`await page.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` from "
                 + "`Trailblazor.Testing.Playwright` takes file paths or `FilePayload`s and waits until the field has "
                 + "taken them. In bUnit, `cut.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` chooses files "
-                + "from disk, giving each the type a browser would for its extension, and "
-                + "`FindComponent<InputFile>().UploadFiles(...)` chooses files made in the test. The field is "
-                + "ready as soon as `Render` returns, with nothing left to run, so a test can raise events at once.",
+                + "from disk, giving each the type a browser would for its extension, or takes `InputFileContent`s "
+                + "made in the test. `FilesAsync()`, or `Files` in bUnit, reads the names of the files the field "
+                + "lists. The field is ready as soon as `Render` returns, with nothing left to run, so a test can "
+                + "raise events at once.",
         },
         new("calendar", "Calendar", ExampleCategory.Inputs,
             "Shows a month in place for choosing one date, with views of the year's months and the decade's years.")
@@ -7266,8 +7268,11 @@ public static class ExampleCatalog
                 + "open, `ChooseAsync(\"Delete\")` clicks a button, and `CancelAsync()` presses Escape. Those two "
                 + "wait until the dialog has faded out and left the page, which is when the app gets the answer. A "
                 + "dialog that's fading carries `data-leaving`, so if you write your own wait, wait for the dialog to "
-                + "be gone, not hidden. To give the header's minimize, maximize and close buttons an `id` or other "
-                + "attributes a test can find them by, set `DialogOptions.Attributes`.",
+                + "be gone, not hidden. In both, `Dialog()` with no title finds the only open dialog; `Title`, "
+                + "`IsOpen` and `WindowState` (`TitleAsync()` and so on in Playwright) read it; `MinimizeAsync()`, "
+                + "`MaximizeAsync()` and `RestoreAsync()` use its window buttons; and `WaitForClosedAsync()` waits "
+                + "until the app closes it. To give the header's minimize, maximize and close buttons an `id` or "
+                + "other attributes a test can find them by, set `DialogOptions.Attributes`.",
             Telemetry =
             [
                 "With `DialogOptions.TelemetryName`, such as `\"delete-trail\"`, or the `telemetryName` of "
@@ -7540,8 +7545,8 @@ public static class ExampleCatalog
                 + "`dialog` named by its title or trigger; `CloseAsync()` closes it. Both wait for the popover to be "
                 + "ready. With `AttachOnFirstUse`, the trigger gets `data-ready` only when it's first focused, pointed "
                 + "at or clicked, so both focus it first. In bUnit, `cut.Tb().Popover(\"Filters\").OpenAsync()` "
-                + "tells a bound `Open` that it opened and returns the panel, which bUnit's markup holds even while "
-                + "it's closed.",
+                + "tells a bound `Open` that it opened and returns the panel. In both packages, `Panel` reads the "
+                + "panel without opening the popover, since the panel renders while closed.",
         },
         new("popconfirm", "Popconfirm", ExampleCategory.Overlays,
             "A small question that opens beside the button that asked, such as \"Delete this trail?\", with Cancel and "
@@ -7851,7 +7856,8 @@ public static class ExampleCatalog
                 + "in a browser, each waits until the app's handler has run. A handler that waits for the user, such "
                 + "as one that opens a dialog, would keep the helper waiting, so click `[data-part=add]` or "
                 + "`[data-part=close]` instead and answer the dialog. When every panel has a field with the same "
-                + "label, `Tabs().Panel(\"Summary\").TextField(\"Notes\")` finds the one in that tab's panel. Select "
+                + "label, `Tabs().Panel(\"Summary\").TextField(\"Notes\")` finds the one in that tab's panel, and "
+                + "`PanelElement(\"Summary\")` hands back the panel itself, to check what it shows. Select "
                 + "the tab first: a browser can't use a hidden panel's fields, and in bUnit a panel not yet shown "
                 + "isn't in the markup unless `RenderAllPanels` is set. With no name, `Tabs()` ignores nested tab "
                 + "lists: in bUnit, any inside a panel; in Playwright, only those inside a hidden panel. So in a "
@@ -8231,7 +8237,9 @@ public static class ExampleCatalog
                     + "`DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync`, with `Texts` for the rows that show "
                     + "and `Row`, `Item` and `Items` to find rows. A drag step moves what a drag in the browser would, "
                     + "selected rows included, and goes through `CanMove` and `OnMove`.",
-                "A `TbTreeItem` works only inside a `TbTreeView`, so a test has to render the view around it.",
+                "A `TbTreeItem` works only inside a `TbTreeView`. In bUnit, `this.RenderTreeItem<TItem, TKey>(item)` "
+                    + "renders an item, or a component of the app's that renders one, inside a real tree, and takes "
+                    + "the tree's own parameters, such as `Checkable`, as a second argument.",
             ],
             Telemetry =
             [
@@ -9525,8 +9533,11 @@ public static class ExampleCatalog
                 + "`data-leaving` for a moment, so wait for it to go, as with `ToHaveCountAsync(0)`. "
                 + "`await page.Tb().Toasts.WaitForAsync(\"Report archived\")` from `Trailblazor.Testing.Playwright` "
                 + "returns the toast that shows the text, to click its action. `root.Tb().Toasts.WaitForAsync` does "
-                + "the same in bUnit, called on the markup of the `TbRoot` that shows the toasts. In bUnit, awaiting "
-                + "`Closed` on the `ToastReference` that `Show` returns says why the toast closed.",
+                + "the same in bUnit, called on the markup of the `TbRoot` that shows the toasts. In both, "
+                + "`DismissAsync(\"Report archived\")` closes the newest toast with the text, and "
+                + "`ChooseAsync(\"Report archived\", \"Undo\")` clicks its action; in Playwright, it waits until "
+                + "the app has run the action. In bUnit, awaiting `Closed` on the `ToastReference` that `Show` "
+                + "returns says why the toast closed.",
             Telemetry =
             [
                 "With `ToastOptions.TelemetryName`, such as `\"trail-saved\"`, it counts `trailblazor.control.shown` "

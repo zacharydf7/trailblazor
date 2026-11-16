@@ -425,4 +425,15 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Equal(1, await page.Locator("li").CountAsync());
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toasts_ShouldReturnOnceTheActionHasRun_WhenTheActionOutlastsTheToast(string browser)
+    {
+        var page = await OpenAsync(browser, "/toasts");
+        await page.Tb().Button("Remove slowly").ClickAsync();
+
+        await page.Tb().Toasts.ChooseAsync("Removed slowly", "Undo");
+
+        Assert.Equal("undone slowly", await page.GetByTestId("result").TextContentAsync());
+    }
 }

@@ -66,16 +66,17 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
         builder.AddAttribute(4, "data-part", "toaster");
         builder.AddAttribute(5, "class",
             ClassNames.Join("tb-toaster", ClassNames.Modifier("tb-toaster", Toasts.Settings.Position)));
-        builder.AddElementReferenceCapture(6, element => _element = element);
-        builder.OpenElement(7, "ol");
-        builder.AddAttribute(8, "class", "tb-toaster__list");
+        builder.AddAttribute(6, "data-commits", RendererInfo.IsInteractive ? Toasts.ActionsRun : null);
+        builder.AddElementReferenceCapture(7, element => _element = element);
+        builder.OpenElement(8, "ol");
+        builder.AddAttribute(9, "class", "tb-toaster__list");
         foreach (var toast in _shown)
         {
-            builder.OpenComponent<ToastFrame>(9);
+            builder.OpenComponent<ToastFrame>(10);
             builder.SetKey(toast);
-            builder.AddComponentParameter(10, nameof(ToastFrame.Toast), toast);
-            builder.AddComponentParameter(11, nameof(ToastFrame.Leaving), _leaving.ContainsKey(toast));
-            builder.AddComponentParameter(12, nameof(ToastFrame.Paused), _paused);
+            builder.AddComponentParameter(11, nameof(ToastFrame.Toast), toast);
+            builder.AddComponentParameter(12, nameof(ToastFrame.Leaving), _leaving.ContainsKey(toast));
+            builder.AddComponentParameter(13, nameof(ToastFrame.Paused), _paused);
             builder.CloseComponent();
         }
 

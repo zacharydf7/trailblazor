@@ -263,6 +263,7 @@
                         <td>
                             Selects a tab by its name; <code>Tabs</code> reads the tabs and <code>Selected</code> the
                             selected one. <code>Panel(tab)</code> scopes the helpers to that tab's panel, and
+                            <code>PanelElement(tab)</code> hands back the panel itself, to check what it shows.
                             <code>Tabs()</code> with no name ignores tab lists nested in a panel.
                         </td>
                     </tr>
@@ -276,8 +277,9 @@
                             <code>Texts</code> reads the rows that show, <code>Row(text)</code> finds the one row that
                             shows a text at any depth, and <code>Branch(path)</code> scopes the helpers to a row's
                             branch, with paths that start inside it. A
-                            <code>TbTreeItem</code> works only inside a <code>TbTreeView</code>, so render the view
-                            around it.
+                            <code>TbTreeItem</code> works only inside a <code>TbTreeView</code>, so
+                            <code>this.RenderTreeItem&lt;TItem, TKey&gt;(item)</code> renders it, or a component of the
+                            app's that renders one, inside a real tree.
                         </td>
                     </tr>
                     <tr>
@@ -333,6 +335,7 @@
                         <td>
                             Presses the alert's close button, and <code>Text</code> reads its message.
                             <code>Banner(name)</code> does the same for a banner, found by its title.
+                            <code>Alerts</code> reads every alert's message, in order.
                         </td>
                     </tr>
                     <tr>
@@ -405,15 +408,18 @@
                     <tr>
                         <th scope="row"><code>Toasts.WaitForAsync(text)</code></th>
                         <td>
-                            Waits for a toast with this text and hands it back. Call it on the markup of the
-                            <code>TbRoot</code> that shows the toasts.
+                            Waits for a toast with this text and hands it back. <code>DismissAsync(text)</code> closes
+                            it with its dismiss button, and <code>ChooseAsync(text, action)</code> clicks its action,
+                            such as <code>Undo</code>. Call them on the markup of the <code>TbRoot</code> that shows
+                            the toasts.
                         </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>Popover(trigger).OpenAsync()</code></th>
                         <td>
                             Opens the popover, telling a bound <code>Open</code> that it opened, and hands back its
-                            panel; <code>CloseAsync()</code> closes it.
+                            panel; <code>CloseAsync()</code> closes it. <code>Panel</code> reads the panel without
+                            opening the popover, since the panel renders while closed.
                         </td>
                     </tr>
                     <tr>
@@ -467,21 +473,29 @@
                     </tr>
                     <tr>
                         <th scope="row"><code>ColorPicker(label).ChooseAsync(color)</code></th>
-                        <td>Types a color, as <code>#rrggbb</code> or <code>#rrggbbaa</code>, and commits it.</td>
+                        <td>
+                            Types a color, as <code>#rrggbb</code> or <code>#rrggbbaa</code>, and commits it;
+                            <code>Value</code> reads the color the field holds.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>FileUpload(label).ChooseAsync(paths)</code></th>
                         <td>
                             Chooses the files at these paths. A file with a common extension gets the type a browser
                             gives it, such as <code>image/png</code> for a <code>.png</code>, and any other file an
-                            empty type.
+                            empty type. <code>ChooseAsync(files)</code> takes bUnit's <code>InputFileContent</code>s,
+                            made in the test, and <code>Files</code> reads the names of the files the field lists.
                         </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>Dialog(title).ChooseAsync(button)</code></th>
                         <td>
                             Clicks an open dialog's or drawer's button by its name, and <code>CancelAsync()</code>
-                            dismisses the dialog or drawer as Escape does. Call it on the markup of the
+                            dismisses the dialog or drawer as Escape does. <code>Title</code>, <code>IsOpen</code> and
+                            <code>WindowState</code> read it; <code>MinimizeAsync()</code>,
+                            <code>MaximizeAsync()</code> and <code>RestoreAsync()</code> use its window buttons; and
+                            <code>WaitForClosedAsync()</code> waits until the app closes it. With no title,
+                            <code>Dialog()</code> finds the only open dialog. Call it on the markup of the
                             <code>TbRoot</code> that shows the dialog; see
                             <a href="guides/testing#bunit-dialogs">Test dialogs in bUnit</a>.
                         </td>
@@ -1080,8 +1094,10 @@
             + "`ChosenAsync()` reads the chosen ones, and `OptionsAsync()` reads them all. In a multiple list box, "
             + "`UnchooseAsync(options)` unchooses some and `ClearAsync()` unchooses all. `OptionAsync(name)` and "
             + "`DisabledAsync()` read an option and the list box."),
-        new("Color picker", "Its label", "`ColorPicker(label).ChooseAsync(color)` picks a color."),
-        new("File upload", "Its label", "`FileUpload(label).ChooseAsync(paths)` chooses files."),
+        new("Color picker", "Its label", "`ColorPicker(label).ChooseAsync(color)` picks a color, and `ValueAsync()` "
+            + "reads the color the field holds."),
+        new("File upload", "Its label", "`FileUpload(label).ChooseAsync(paths)` chooses files by path, or "
+            + "`FilePayload`s made in the test, and `FilesAsync()` reads the names of the files the field lists."),
         new("Date picker", "Its label", "`DatePicker(label).ChooseAsync(date)` types the date in the field's format "
             + "and waits until the field has it, and `ValueAsync()` reads it. `EnterAsync(text)` types text as it is, "
             + "such as a date the field can't read, to test its error."),
@@ -1153,7 +1169,7 @@
             + "item's link, `ItemsAsync()` reads each item's text, and `CurrentAsync()` reads the item marked as the "
             + "current page."),
         new("Alert", "Its text", "`Alert(text).CloseAsync()` presses its close button once the page is interactive, "
-            + "and `TextAsync()` reads its message."),
+            + "and `TextAsync()` reads its message. `AlertsAsync()` reads every alert's message, in order."),
         new("Banner", "Its title", "`Banner(name).CloseAsync()` presses its close button once the page is "
             + "interactive, and `TextAsync()` reads its message."),
         new("Form", "Its name, or none for the only one", "`Form(name).SubmitAsync()` submits it once the page is "
@@ -1166,7 +1182,8 @@
             + "toggles, waits until it has changed; `RemoveAsync()` presses its remove button, and `SelectedAsync()` "
             + "reads whether it's selected. `ChipGroup(name)` finds a group by its `AriaLabel`, and `ChipsAsync()` "
             + "reads its chips' texts."),
-        new("Popover", "Its trigger", "`Popover(trigger).OpenAsync()` opens it and hands back its panel."),
+        new("Popover", "Its trigger", "`Popover(trigger).OpenAsync()` opens it and hands back its panel, and "
+            + "`Panel` reads the panel without opening the popover."),
         new("Popconfirm", "Its trigger",
             "`Popconfirm(trigger).ConfirmAsync()` opens it, confirms and waits until it closes, which it does once "
             + "the app's `OnConfirm` has run; `CancelAsync()` cancels and waits until it closes, though an async "
@@ -1191,11 +1208,14 @@
             + "whole area."),
         new("Tabs", "Their list's name", "`Tabs(name).SelectAsync(tab)` selects a tab by its name, `TabsAsync()` "
             + "reads the tabs and `SelectedAsync()` the selected one. `Panel(tab)` scopes the helpers to that tab's "
-            + "panel; select the tab first, since a hidden panel's fields can't be used. With no name, `Tabs()` finds "
+            + "panel, and `PanelElement(tab)` hands back the panel itself; select the tab first, since a hidden "
+            + "panel's fields can't be used. With no name, `Tabs()` finds "
             + "the visible tab list, so name the outer list when a shown panel holds another."),
-        new("Dialog or drawer", "Its title", "`Dialog(title).ChooseAsync(button)` answers it with a button's name, "
-            + "and `CancelAsync()` dismisses it with Escape; both wait until it has left the page, or, on a static "
-            + "page, until it closes."),
+        new("Dialog or drawer", "Its title, or none for the only open one", "`Dialog(title).ChooseAsync(button)` "
+            + "answers it with a button's name, and `CancelAsync()` dismisses it with Escape; both wait until it has "
+            + "left the page, or, on a static page, until it closes. `TitleAsync()`, `IsOpenAsync()` and "
+            + "`WindowStateAsync()` read it; `MinimizeAsync()`, `MaximizeAsync()` and `RestoreAsync()` use its window "
+            + "buttons; and `WaitForClosedAsync()` waits until the app closes it."),
         new("Button or icon button", "Its name", "`Button(name).ClickAsync()` clicks it once the page is "
             + "interactive and it's no longer busy, then waits until the app has run its `OnClick`; `BusyAsync()` "
             + "reads whether it's busy, and `PressedAsync()` and `MixedAsync()` whether a toggle is pressed or mixed."),
@@ -1209,7 +1229,8 @@
             + "page is interactive."),
         new("Toolbar", "Its AriaLabel", "`Toolbar(name).ClickAsync(button)` clicks a button by its name once the "
             + "toolbar has fitted its buttons, choosing it from the overflow menu when it has moved there."),
-        new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows."),
+        new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows, `DismissAsync(text)` closes "
+            + "it, and `ChooseAsync(text, action)` clicks its action and waits until the app has run it."),
     ];
 
     private const string Scoped = """

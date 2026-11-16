@@ -303,7 +303,6 @@ Trailblazor.Testing.TbSliderDriver.SetAsync(decimal value) -> System.Threading.T
 Trailblazor.Testing.TbSliderDriver.Value.get -> decimal
 Trailblazor.Testing.TrailblazorMarkup.Autocomplete(string! label) -> Trailblazor.Testing.TbAutocompleteDriver!
 Trailblazor.Testing.TrailblazorMarkup.ColorPicker(string! label) -> Trailblazor.Testing.TbColorPickerDriver!
-Trailblazor.Testing.TrailblazorMarkup.Dialog(string! title) -> Trailblazor.Testing.TbDialogDriver!
 Trailblazor.Testing.TrailblazorMarkup.FileUpload(string! label) -> Trailblazor.Testing.TbFileUploadDriver!
 Trailblazor.Testing.TrailblazorMarkup.Slider(string! label) -> Trailblazor.Testing.TbSliderDriver!
 Trailblazor.Testing.TbFieldDriver
@@ -452,3 +451,20 @@ Trailblazor.Testing.TbAutocompleteDriver.TypeAsync(string! text) -> System.Threa
 Trailblazor.Testing.TbButtonDriver.Mixed.get -> bool
 Trailblazor.Testing.TbButtonDriver.Pressed.get -> bool
 Trailblazor.Testing.TbCheckboxDriver.Indeterminate.get -> bool
+static Trailblazor.Testing.TrailblazorBunitExtensions.RenderTreeItem<TItem, TKey>(this Bunit.BunitContext! context, Microsoft.AspNetCore.Components.RenderFragment! item, System.Action<Bunit.ComponentParameterCollectionBuilder<Trailblazor.TbTreeView<TItem, TKey>!>!>? tree = null) -> Bunit.IRenderedComponent<Trailblazor.TbTreeView<TItem, TKey>!>!
+Trailblazor.Testing.TbTabsDriver.PanelElement(string! tab) -> AngleSharp.Dom.IElement!
+Trailblazor.Testing.TbColorPickerDriver.Value.get -> string?
+Trailblazor.Testing.TbDialogDriver.WaitForClosedAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDialogDriver.Title.get -> string!
+Trailblazor.Testing.TbDialogDriver.IsOpen.get -> bool
+Trailblazor.Testing.TbDialogDriver.WindowState.get -> Trailblazor.DialogWindowState
+Trailblazor.Testing.TbDialogDriver.MaximizeAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDialogDriver.MinimizeAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDialogDriver.RestoreAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Dialog(string? title = null) -> Trailblazor.Testing.TbDialogDriver!
+Trailblazor.Testing.TbFileUploadDriver.ChooseAsync(params Bunit.InputFileContent![]! files) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbFileUploadDriver.Files.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TrailblazorMarkup.Alerts.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbPopoverDriver.Panel.get -> AngleSharp.Dom.IElement!
+Trailblazor.Testing.TbToastsDriver.DismissAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbToastsDriver.ChooseAsync(string! text, string! action) -> System.Threading.Tasks.Task!

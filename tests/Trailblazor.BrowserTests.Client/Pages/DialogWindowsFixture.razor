@@ -13,6 +13,7 @@
 <TbButton OnClick="() => _share = true">Open share</TbButton>
 <TbButton OnClick="() => _held = true">Open held</TbButton>
 <TbButton OnClick="() => Dialogs.OpenDialogs[0].WindowState = DialogWindowState.Normal">Restore oldest</TbButton>
+<TbButton OnClick="CloseFrontLaterAsync">Close front later</TbButton>
 <TbDialog @bind-Open="_back" Title="Back" Options="Large">
     <TbPopover Label="Share" @bind-Open="_share">Share words</TbPopover>
     <TbButton OnClick="() => _inner = true">Open inner</TbButton>
@@ -42,6 +43,13 @@
 
     [SupplyParameterFromQuery]
     public bool OnPage { get; set; }
+
+    // The app closes the window itself, a moment after the click, as when a save it started finishes.
+    private async Task CloseFrontLaterAsync()
+    {
+        await Task.Delay(300);
+        _front = false;
+    }
 
     private DialogOptions Large => new()
     {

@@ -282,4 +282,157 @@ public class DriverReadsTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(1.0, await viewport.Tb().Viewport().ZoomAsync());
         Assert.Equal(2, await single.Tb().Pagination().PageAsync());
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PanelElement_ShouldHandBackATabsPanel_WhenFoundByItsTab(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+
+        await Expect(page.Tb().Tabs("Report sections").PanelElement("Summary")).ToContainTextAsync("Revenue grew");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldReadAPopoversPanel_WhenItIsClosed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/popover");
+
+        var panel = page.Tb().Popover("Trip details").Panel;
+
+        await Expect(panel).ToBeHiddenAsync();
+        await Expect(panel).ToContainTextAsync("Three nights on the ridge");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task AlertsAsync_ShouldReadEveryAlertsMessageInOrder_WhenThePageShowsSeveral(string browser)
+    {
+        // The page shows every alert example, the tones first.
+        var page = await OpenAsync(browser, "/examples/alert");
+        var tones = Enum.GetValues<Tone>().Select(tone => $"{tone} alert.").ToList();
+
+        var alerts = await page.Tb().AlertsAsync();
+
+        Assert.Equal(tones, alerts.Take(tones.Count));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ValueAsync_ShouldReadTheColorAColorPickerHolds_WhenOneIsChosen(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/color-picker");
+        var marker = page.Tb().ColorPicker("Trail marker");
+        var before = await marker.ValueAsync();
+
+        await marker.ChooseAsync("#336699");
+
+        Assert.Equal(("#1f6feb", "#336699"), (before, await marker.ValueAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FilesAsync_ShouldListTheChosenFilesNames_WhenFilesAreChosen(string browser)
+    {
+        var page = await OpenAsync(browser, "/file-upload");
+        var documents = page.Tb().FileUpload("Documents");
+        var before = await documents.FilesAsync();
+
+        await documents.ChooseAsync(new FilePayload { Name = "route.pdf", MimeType = "application/pdf", Buffer = [1] },
+            new FilePayload { Name = "permit.pdf", MimeType = "application/pdf", Buffer = [2] });
+
+        Assert.Empty(before);
+        Assert.Equal(["route.pdf", "permit.pdf"], await documents.FilesAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toasts_ShouldTakeAToastsActionAndDismissAnother_WhenTheHelperIsUsed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/toast");
+        await page.Tb().Button("Archive report").ClickAsync();
+        await page.Tb().Button("Save report").ClickAsync();
+
+        var wrong = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Toasts.ChooseAsync("Report archived", "Restore"));
+        await page.Tb().Toasts.ChooseAsync("Report archived", "Undo");
+        await page.Tb().Toasts.DismissAsync("Report saved");
+
+        Assert.Equal("The toast showing \"Report archived\" has no action named \"Restore\".", wrong.Message);
+        await Expect(page.GetByText("Restored")).ToBeVisibleAsync();
+        await Expect(page.Locator("[data-part=toast]:not([data-leaving])")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldReadAndChangeTheOnlyDialogsWindowState_WhenNoTitleIsGiven(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+        var closed = await page.Tb().Dialog().IsOpenAsync();
+        // A plain click, since the button's handler awaits the dialog's answer, and the button helper would wait for it.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Edit beside the page", Exact = true }).ClickAsync();
+        var dialog = page.Tb().Dialog();
+        var states = new List<DialogWindowState> { await dialog.WindowStateAsync() };
+
+        foreach (var step in new Func<Task>[]
+            { dialog.MinimizeAsync, dialog.MinimizeAsync, dialog.RestoreAsync, dialog.MaximizeAsync, dialog.RestoreAsync })
+        {
+            await step();
+            states.Add(await dialog.WindowStateAsync());
+        }
+
+        Assert.Equal((false, true, "Edit name"), (closed, await dialog.IsOpenAsync(), await dialog.TitleAsync()));
+        Assert.Equal([DialogWindowState.Normal, DialogWindowState.Minimized, DialogWindowState.Minimized,
+            DialogWindowState.Normal, DialogWindowState.Maximized, DialogWindowState.Normal], states);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task WaitForClosedAsync_ShouldWaitUntilTheAppClosesTheDialog_WhenItClosesItLater(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialog-windows");
+        await page.Tb().Button("Open front").ClickAsync();
+        await page.Tb().Dialog("Front").WaitForAsync();
+
+        // A plain click, since the button helper would wait out the app's handler itself.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Close front later", Exact = true }).ClickAsync();
+        await page.Tb().Dialog("Front").WaitForClosedAsync();
+
+        await Expect(page.Locator("dialog[open], dialog[data-leaving]")).ToHaveCountAsync(0, new() { Timeout = 1 });
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldFollowAPrerenderedPopoversPanel_WhenThePageTurnsInteractive(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/examples/popover");
+        var panel = page.Tb().Popover("Trip details").Panel;
+        await Expect(panel).ToContainTextAsync("Three nights on the ridge");
+
+        // The interactive render replaces the panel, with a new id.
+        held.SetResult();
+        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
+
+        await Expect(panel).ToContainTextAsync("Three nights on the ridge");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldPassOverAPopoverAndRefuseToGuess_WhenNoTitleIsGiven(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialog-windows");
+        await page.Tb().Button("Open back").ClickAsync();
+        await page.Tb().Popover("Share").OpenAsync();
+
+        var title = await page.Tb().Dialog().TitleAsync();
+        // The back window covers the page's buttons, so the click goes to the button itself.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open front" }).EvaluateAsync("button => button.click()");
+        await page.Tb().Dialog("Front").WaitForAsync();
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Dialog().TitleAsync());
+
+        Assert.Equal(("Back", "2 dialogs are open; give the title of the one to use."), (title, error.Message));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ValueAsync_ShouldReadTheColorAStaticColorPickerShows_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-color-picker");
+        var marker = page.Tb().ColorPicker("Marker");
+        var empty = await marker.ValueAsync();
+
+        await marker.ChooseAsync("#d1242f");
+
+        Assert.Equal(("#336699", null, "#d1242f"),
+            (await page.Tb().ColorPicker("Accent").ValueAsync(), empty, await marker.ValueAsync()));
+    }
 }

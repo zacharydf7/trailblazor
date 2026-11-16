@@ -11,8 +11,11 @@ public sealed class TbTabsLocator(ILocator scope, string? name)
     /// <summary>The helpers inside the panel of the tab with this name, such as
     /// <c>page.Tb().Tabs().Panel("Route").TextField("Start")</c>, so a field that every panel has can be told apart.
     /// Only the selected tab's panel is visible, so select the tab before using its fields.</summary>
-    public TrailblazorPage Panel(string tab) => new(List.Locator("xpath=../*[@role='tabpanel']")
-        .And(scope.GetByRole(AriaRole.Tabpanel, new() { Name = tab, Exact = true, IncludeHidden = true })));
+    public TrailblazorPage Panel(string tab) => new(PanelElement(tab));
+
+    /// <summary>The panel of the tab with this name, to assert on what it shows.</summary>
+    public ILocator PanelElement(string tab) => List.Locator("xpath=../*[@role='tabpanel']")
+        .And(scope.GetByRole(AriaRole.Tabpanel, new() { Name = tab, Exact = true, IncludeHidden = true }));
 
     /// <summary>The tabs' texts, in order.</summary>
     public async Task<IReadOnlyList<string>> TabsAsync() =>
