@@ -41,6 +41,18 @@ public class ToolbarTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldChooseFromTheOverflowMenu_WhenTheToolbarWasJustNarrowed(string browser)
+    {
+        var page = await OpenToolbarAsync(browser);
+
+        // No wait for the toolbar to fit: the helper waits for that itself.
+        await NarrowAsync(page, "12rem");
+        await page.Tb().Toolbar("Trail notes").ClickAsync("Delete note");
+
+        await Expect(page.GetByText("Last action:")).ToHaveTextAsync("Last action: Delete note");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldClickItsOwnButton_WhenTheShownOverflowMenusButtonHasTheSameName(string browser)
     {
         var page = await OpenToolbarAsync(browser, "/toolbar-buttons");

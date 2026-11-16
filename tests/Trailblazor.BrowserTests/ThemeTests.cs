@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -8,6 +10,18 @@ public class ThemeTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenStaticAsync(browser, "/theme");
 
         Assert.Equal(["system", "graphite", "comfortable"], await ThemeAsync(page));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ToggleGroupHelper_ShouldReadTheShownMode_WhenThePageIsStillPrerendered(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/theme");
+
+        var reading = page.Tb().ToggleGroup("Theme").ChosenAsync();
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+
+        Assert.Equal(["Match the device"], await reading);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

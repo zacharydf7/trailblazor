@@ -88,6 +88,8 @@ they run by version. The docs site's Upgrading page is built from both.
 #### 2026-11-16
 
 - The data grid's `data-commits` also counts a column the user resizes, once `StateChanged` has run; a width the grid measures for itself isn't counted
+- An interactive toolbar carries `data-fitting` while a fit is still to come, such as after a resize
+- A theme picker on an interactive or prerendered page carries `aria-busy="true"` on its group until it has read the theme the page shows
 - The bUnit `Button(name).ClickAsync()` leaves the test's `NavigationManager` alone for a link button with `target="_blank"`, as the list and menu drivers do for a link that opens in a new tab
 - The bUnit `List(name).ClickAsync(item)`, `Menu(trigger).ChooseAsync(path)` and `ContextMenu(name).ChooseAsync(path)` take the test's `NavigationManager` to a link item's address, as a browser follows it, unless the link opens in a new tab
 - The Playwright select's `ChooseAsync` and `OptionAsync`, and a static list box's `ChooseAsync`, throw for a name the field doesn't have, listing the options it does have, as the bUnit driver does; `ChooseAsync` no longer times out on the click, except in a long list that shows only the options in view

@@ -22,6 +22,10 @@ public sealed class TbToolbarLocator(ILocator scope, string? name)
         }
 
         await Assertions.Expect(Toolbar).ToHaveAttributeAsync("data-ready", "");
+        // A resize refits the toolbar a frame later and can move a button into the overflow menu, so this waits a frame
+        // for the toolbar's resize observer to mark the fit, then for that fit to finish.
+        await Toolbar.EvaluateAsync("toolbar => new Promise(done => requestAnimationFrame(() => setTimeout(done)))");
+        await Assertions.Expect(Toolbar).Not.ToHaveAttributeAsync("data-fitting", "");
         // The overflow menu's button, shown once a button moves into the menu, isn't one of the toolbar's own.
         var shown = Toolbar.GetByRole(AriaRole.Button, new() { Name = button, Exact = true })
             .And(Toolbar.Locator(":not([data-part=overflow] *)"));

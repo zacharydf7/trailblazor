@@ -12,8 +12,12 @@ public sealed class TbToggleGroupLocator(ILocator scope, ILocator group)
     private ILocator Group => @group.Locator("xpath=descendant-or-self::*[@role='group'][1]")
         .And(scope.Locator(".tb-toggle-group"));
 
-    /// <summary>The pressed items' names, in order.</summary>
-    public async Task<IReadOnlyList<string>> ChosenAsync() => await Group.EvaluateAsync<string[]>(Choices.PressedNames);
+    /// <summary>The pressed items' names, in order, once a theme picker has read the page's theme.</summary>
+    public async Task<IReadOnlyList<string>> ChosenAsync()
+    {
+        await Assertions.Expect(Group).Not.ToHaveAttributeAsync("aria-busy", "true");
+        return await Group.EvaluateAsync<string[]>(Choices.PressedNames);
+    }
 
     /// <summary>Presses the items with these names that aren't pressed yet, and waits until the app has each. Give a
     /// <c>TbToggleGroup</c> just one, since it keeps one item pressed. A disabled item throws, and so does a statically
@@ -47,6 +51,8 @@ public sealed class TbToggleGroupLocator(ILocator scope, ILocator group)
         }
 
         await Assertions.Expect(Group).ToHaveAttributeAsync("data-ready", "");
+        // A theme picker is busy until it has read the page's theme and pressed the matching item.
+        await Assertions.Expect(Group).Not.ToHaveAttributeAsync("aria-busy", "true");
         var state = pressed ? "true" : "false";
         foreach (var name in items)
         {

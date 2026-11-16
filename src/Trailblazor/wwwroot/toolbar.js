@@ -28,6 +28,7 @@ export function attachToolbar(toolbar, more, overflow) {
     let reported = '';
     const overflows = () => toolbar.scrollWidth > toolbar.clientWidth;
     const fit = () => {
+        delete toolbar.dataset.fitting;
         if (!more) {
             focus.sync();
             return;
@@ -64,7 +65,9 @@ export function attachToolbar(toolbar, more, overflow) {
     };
 
     let frame = 0;
+    // Marks a fit that is still to come, which a test waits out before choosing a button that may move.
     const fitSoon = () => {
+        toolbar.dataset.fitting = '';
         cancelAnimationFrame(frame);
         frame = requestAnimationFrame(fit);
     };
@@ -97,6 +100,7 @@ export function attachToolbar(toolbar, more, overflow) {
             toolbar.querySelectorAll('[data-overflowed]').forEach(item => item.removeAttribute('data-overflowed'));
             more?.removeAttribute('data-shown');
             delete toolbar.dataset.ready;
+            delete toolbar.dataset.fitting;
         },
     };
 }

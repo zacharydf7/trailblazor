@@ -6,6 +6,7 @@
 
 @* Nothing is pressed until the picker has read the page, which the head script may have put in a remembered mode. *@
 <TbToggleGroup TValue="ThemeMode?" @attributes="AdditionalAttributes"
+               aria-busy="@(!_loaded && (RendererInfo.IsInteractive || AssignedRenderMode is not null) ? "true" : null)"
                AriaLabel="@(AriaLabel ?? Localizer[TbStrings.ThemePicker])" Value="@(_loaded ? Theme.Mode : null)"
                ValueChanged="(ThemeMode? mode) => mode is { } chosen ? Theme.SetModeAsync(chosen) : Task.CompletedTask"
                Size="Size" Class="@Class" Style="@Style">

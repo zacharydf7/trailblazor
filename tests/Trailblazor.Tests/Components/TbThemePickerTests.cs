@@ -25,6 +25,20 @@ public class TbThemePickerTests : BunitContext
         var cut = Render<TbThemePicker>();
 
         Assert.All(cut.FindAll("button"), item => Assert.Equal("false", item.GetAttribute("aria-pressed")));
+        Assert.False(cut.Find("[role=group]").HasAttribute("aria-busy"));
+    }
+
+    [Fact]
+    public void Render_ShouldBeBusy_WhenItIsStillReadingThePage()
+    {
+        var read = _module.Setup<string?[]?>("read");
+        var cut = Render<TbThemePicker>();
+
+        var busy = cut.Find("[role=group]").GetAttribute("aria-busy");
+        read.SetResult(["dark", "graphite", "comfortable"]);
+
+        cut.WaitForAssertion(() => Assert.False(cut.Find("[role=group]").HasAttribute("aria-busy")));
+        Assert.Equal("true", busy);
     }
 
     [Fact]
