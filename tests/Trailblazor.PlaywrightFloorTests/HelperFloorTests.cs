@@ -1,0 +1,42 @@
+using Trailblazor.Testing.Playwright;
+
+namespace Trailblazor.PlaywrightFloorTests;
+
+// Smoke-tests a few helpers of each kind, calling only the helpers and Playwright APIs the package's minimum already
+// had. Each check reads the page once, without retrying, so a helper that returns before the app has answered fails.
+public class HelperFloorTests(FloorFixture fixture)
+{
+    [Fact]
+    public async Task Choices_ShouldReachTheApp_WhenCheckedOrChosen()
+    {
+        var boxes = await fixture.OpenAsync("/examples/checkbox");
+        var radios = await fixture.OpenAsync("/examples/radio-group");
+
+        await boxes.Tb().Checkbox("Email me updates").CheckAsync();
+        await radios.Tb().RadioGroup("Paper size").ChooseAsync("A4");
+
+        Assert.Equal(1, await boxes.GetByText("Updates value: True", new() { Exact = true }).CountAsync());
+        Assert.Equal(1, await radios.GetByText("Paper size value: A4", new() { Exact = true }).CountAsync());
+    }
+
+    [Fact]
+    public async Task Form_ShouldListItsErrors_WhenSubmittedEmpty()
+    {
+        var page = await fixture.OpenAsync("/examples/form");
+
+        await page.Tb().Form("Trip sign-up").SubmitAsync();
+
+        Assert.Equal(3, (await page.Tb().Form("Trip sign-up").ErrorsAsync()).Count);
+    }
+
+    [Fact]
+    public async Task Dialog_ShouldAnswerTheApp_WhenAButtonIsChosen()
+    {
+        var page = await fixture.OpenAsync("/examples/dialog");
+
+        await page.Tb().Button("Delete report").ClickAsync();
+        await page.Tb().Dialog("Delete report?").ChooseAsync("Delete");
+
+        Assert.Equal(1, await page.GetByText("Deleted", new() { Exact = true }).CountAsync());
+    }
+}

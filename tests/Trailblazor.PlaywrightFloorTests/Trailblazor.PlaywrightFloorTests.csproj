@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Runs the Playwright helpers against the lowest Microsoft.Playwright the package supports. CI's minimums job
+       builds it with -p:TestingMinimums=true. Other builds use the latest, to match the browsers the main job
+       installs. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.Playwright" Condition="'$(TestingMinimums)' != 'true'" />
+    <PackageReference Include="Microsoft.Playwright" VersionOverride="$(PlaywrightMinimum)"
+                      Condition="'$(TestingMinimums)' == 'true'" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Trailblazor.BrowserTests.Host\Trailblazor.BrowserTests.Host.csproj" />
+    <ProjectReference Include="..\..\src\Trailblazor.Testing.Playwright\Trailblazor.Testing.Playwright.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Microsoft.Playwright" />
+  </ItemGroup>
+
+</Project>

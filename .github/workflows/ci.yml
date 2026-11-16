@@ -44,7 +44,8 @@ jobs:
 
   # The testing packages promise the lowest versions in Directory.Packages.props, so the bUnit tests run against them.
   minimums:
-    runs-on: ubuntu-latest
+    # Pinned, since the minimum Playwright installs its browsers' dependencies only on the Ubuntu releases it knew.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -57,3 +58,6 @@ jobs:
       - run: dotnet restore -p:TestingMinimums=true
       - run: dotnet build --configuration Release --no-restore -p:TestingMinimums=true
       - run: dotnet test --configuration Release --no-build --project tests/Trailblazor.Tests
+      # The browser tests need newer Playwright APIs, so a smoke project runs the helpers on the minimum version.
+      - run: pwsh tests/Trailblazor.PlaywrightFloorTests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      - run: dotnet test --configuration Release --no-build --project tests/Trailblazor.PlaywrightFloorTests
