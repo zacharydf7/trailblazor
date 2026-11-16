@@ -391,7 +391,6 @@ Trailblazor.Testing.TbBannerDriver
 Trailblazor.Testing.TbBannerDriver.CloseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbBannerDriver.Text.get -> string!
 Trailblazor.Testing.TrailblazorMarkup.Alert(string! text) -> Trailblazor.Testing.TbAlertDriver!
-Trailblazor.Testing.TrailblazorMarkup.Banner(string! name) -> Trailblazor.Testing.TbBannerDriver!
 Trailblazor.Testing.TbChipDriver
 Trailblazor.Testing.TbChipDriver.ClickAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbChipDriver.RemoveAsync() -> System.Threading.Tasks.Task!
@@ -400,14 +399,12 @@ Trailblazor.Testing.TbChipGroupDriver
 Trailblazor.Testing.TbChipGroupDriver.Chip(string! text) -> Trailblazor.Testing.TbChipDriver!
 Trailblazor.Testing.TbChipGroupDriver.Chips.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TrailblazorMarkup.Chip(string! text) -> Trailblazor.Testing.TbChipDriver!
-Trailblazor.Testing.TrailblazorMarkup.ChipGroup(string! name) -> Trailblazor.Testing.TbChipGroupDriver!
 Trailblazor.Testing.TbCarouselDriver
 Trailblazor.Testing.TbCarouselDriver.ActiveIndex.get -> int
 Trailblazor.Testing.TbCarouselDriver.Count.get -> int
 Trailblazor.Testing.TbCarouselDriver.GoToAsync(int index) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbCarouselDriver.NextAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbCarouselDriver.PreviousAsync() -> System.Threading.Tasks.Task!
-Trailblazor.Testing.TrailblazorMarkup.Carousel(string! name) -> Trailblazor.Testing.TbCarouselDriver!
 Trailblazor.Testing.TbBreadcrumbsDriver
 Trailblazor.Testing.TbBreadcrumbsDriver.Current.get -> string?
 Trailblazor.Testing.TbBreadcrumbsDriver.FollowAsync(string! item) -> System.Threading.Tasks.Task!
@@ -427,7 +424,6 @@ Trailblazor.Testing.TbTooltipDriver.Text.get -> string!
 Trailblazor.Testing.TrailblazorMarkup.Tooltip(string! trigger) -> Trailblazor.Testing.TbTooltipDriver!
 Trailblazor.Testing.TbToolbarDriver
 Trailblazor.Testing.TbToolbarDriver.ClickAsync(string! button) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.TrailblazorMarkup.Toolbar(string! name) -> Trailblazor.Testing.TbToolbarDriver!
 Trailblazor.Testing.TbInsertDividerDriver
 Trailblazor.Testing.TbInsertDividerDriver.InsertAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.InsertDivider(string! label) -> Trailblazor.Testing.TbInsertDividerDriver!
@@ -475,3 +471,7 @@ Trailblazor.Testing.TbOverlayDriver.IsOpen.get -> bool
 Trailblazor.Testing.TbOverlayDriver.PressEscapeAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.Overlay(string? name = null) -> Trailblazor.Testing.TbOverlayDriver!
 Trailblazor.Testing.TbMenuDriver.Checked(params string![]! path) -> bool
+Trailblazor.Testing.TrailblazorMarkup.Banner(string? name = null) -> Trailblazor.Testing.TbBannerDriver!
+Trailblazor.Testing.TrailblazorMarkup.Carousel(string? name = null) -> Trailblazor.Testing.TbCarouselDriver!
+Trailblazor.Testing.TrailblazorMarkup.ChipGroup(string? name = null) -> Trailblazor.Testing.TbChipGroupDriver!
+Trailblazor.Testing.TrailblazorMarkup.Toolbar(string? name = null) -> Trailblazor.Testing.TbToolbarDriver!

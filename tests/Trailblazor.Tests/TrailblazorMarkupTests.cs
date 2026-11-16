@@ -2187,6 +2187,66 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Helpers_ShouldFindTheOnlyBannerCarouselAndToolbar_WhenNoNameIsGiven()
+    {
+        var pins = 0;
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbBanner>(0);
+            builder.AddComponentParameter(1, nameof(TbBanner.Title), "Trail closed");
+            builder.AddComponentParameter(2, nameof(TbBanner.ChildContent),
+                (RenderFragment)(text => text.AddContent(0, "The ridge trail is closed today.")));
+            builder.CloseComponent();
+            builder.OpenComponent<TbCarousel>(3);
+            builder.AddComponentParameter(4, nameof(TbCarousel.AriaLabel), "Views");
+            builder.AddComponentParameter(5, nameof(TbCarousel.ChildContent), (RenderFragment)(slides =>
+            {
+                slides.OpenComponent<TbCarouselSlide>(0);
+                slides.CloseComponent();
+            }));
+            builder.CloseComponent();
+            builder.OpenComponent<TbToolbar>(6);
+            builder.AddComponentParameter(7, nameof(TbToolbar.AriaLabel), "Map tools");
+            builder.AddComponentParameter(8, nameof(TbToolbar.ChildContent), (RenderFragment)(tools =>
+            {
+                tools.OpenComponent<TbToolbarButton>(0);
+                tools.AddComponentParameter(1, nameof(TbToolbarButton.AriaLabel), "Pin");
+                tools.AddComponentParameter(2, nameof(TbToolbarButton.Icon), BuiltInIcons.Close);
+                tools.AddComponentParameter(3, nameof(TbToolbarButton.OnClick),
+                    EventCallback.Factory.Create<MouseEventArgs>(this, () => pins++));
+                tools.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        await cut.Tb().Toolbar().ClickAsync("Pin");
+
+        Assert.Equal(("The ridge trail is closed today.", 0, 1),
+            (cut.Tb().Banner().Text, cut.Tb().Carousel().ActiveIndex, pins));
+    }
+
+    [Fact]
+    public void ChipGroup_ShouldFindTheOnlyGroupOrAskForAName_WhenNoNameIsGiven()
+    {
+        var one = Render<TbChipGroup>(parameters => parameters.Add(group => group.AriaLabel, "Filters")
+            .AddChildContent<TbChip>(chip => chip.Add(each => each.Text, "Running")));
+        var two = Render(builder =>
+        {
+            foreach (var name in new[] { "Filters", "Tags" })
+            {
+                builder.OpenComponent<TbChipGroup>(0);
+                builder.AddComponentParameter(1, nameof(TbChipGroup.AriaLabel), name);
+                builder.CloseComponent();
+            }
+        });
+
+        var unnamed = Assert.Throws<InvalidOperationException>(() => two.Tb().ChipGroup().Chips);
+
+        Assert.Equal(["Running"], one.Tb().ChipGroup().Chips);
+        Assert.Equal("Expected one chip group, found 2; name the one to use.", unnamed.Message);
+    }
+
+    [Fact]
     public async Task Chip_ShouldFindTheChipAndFollowItsLink_WhenTagsShareTheChipsClass()
     {
         var cut = Render<TbStack>(parameters => parameters

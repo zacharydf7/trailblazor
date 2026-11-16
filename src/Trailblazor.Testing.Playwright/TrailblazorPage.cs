@@ -183,12 +183,13 @@ public sealed class TrailblazorPage(ILocator scope)
         return alerts;
     }
 
-    /// <summary>The <c>TbBanner</c> with this accessible name: its <c>Title</c>, or its <c>AriaLabel</c> when it has
-    /// no title.</summary>
-    public TbBannerLocator Banner(string name) => new(scope, name);
+    /// <summary>The <c>TbBanner</c> with this accessible name (its <c>Title</c>, or its <c>AriaLabel</c> when it has
+    /// no title), or the only one in the scope when no name is given.</summary>
+    public TbBannerLocator Banner(string? name = null) => new(scope, name);
 
-    /// <summary>The <c>TbCarousel</c> with this <c>AriaLabel</c>.</summary>
-    public TbCarouselLocator Carousel(string name) => new(scope, name);
+    /// <summary>The <c>TbCarousel</c> with this <c>AriaLabel</c>, or the only one in the scope when no name is
+    /// given.</summary>
+    public TbCarouselLocator Carousel(string? name = null) => new(scope, name);
 
     /// <summary>The <c>TbVirtualList</c> with this <c>AriaLabel</c>, or the only one in the scope when no name is
     /// given.</summary>
@@ -197,8 +198,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbChip</c> whose text is this.</summary>
     public TbChipLocator Chip(string text) => new(scope.Locator(".tb-chip"), text);
 
-    /// <summary>The <c>TbChipGroup</c> with this <c>AriaLabel</c>.</summary>
-    public TbChipGroupLocator ChipGroup(string name) => new(scope, name);
+    /// <summary>The <c>TbChipGroup</c> with this <c>AriaLabel</c>, or the only one in the scope when no name is
+    /// given.</summary>
+    public TbChipGroupLocator ChipGroup(string? name = null) => new(scope, name);
 
     /// <summary>The <c>TbPopover</c> whose trigger has this name.</summary>
     public TbPopoverLocator Popover(string trigger) => new(scope, trigger);
@@ -229,8 +231,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbInsertDivider</c> whose insert button has this <c>Label</c>.</summary>
     public TbInsertDividerLocator InsertDivider(string label) => new(scope, label);
 
-    /// <summary>The <c>TbToolbar</c> with this <c>AriaLabel</c>.</summary>
-    public TbToolbarLocator Toolbar(string name) => new(scope, name);
+    /// <summary>The <c>TbToolbar</c> with this <c>AriaLabel</c>, or the only one in the scope when no name is
+    /// given.</summary>
+    public TbToolbarLocator Toolbar(string? name = null) => new(scope, name);
 
     /// <summary>The dialog or drawer with this title, or the only open one when no title is given.</summary>
     public TbDialogLocator Dialog(string? title = null) => new(Scope.Document(scope), title);

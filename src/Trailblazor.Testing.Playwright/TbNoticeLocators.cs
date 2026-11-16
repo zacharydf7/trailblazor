@@ -18,11 +18,11 @@ public sealed class TbAlertLocator(ILocator scope, string text)
     public Task CloseAsync() => Notices.CloseAsync(Alert);
 }
 
-/// <summary>A <c>TbBanner</c>, found by its name.</summary>
-public sealed class TbBannerLocator(ILocator scope, string name)
+/// <summary>A <c>TbBanner</c>, found by its name, or the only one in the scope.</summary>
+public sealed class TbBannerLocator(ILocator scope, string? name)
 {
     /// <summary>The banner's region.</summary>
-    public ILocator Banner => scope.GetByRole(AriaRole.Region, new() { Name = name, Exact = true })
+    public ILocator Banner => Scope.ByRole(scope, AriaRole.Region, name)
         .And(scope.Locator("section.tb-banner"));
 
     /// <summary>The banner's message, without its title, with runs of whitespace collapsed.</summary>

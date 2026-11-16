@@ -335,7 +335,8 @@
                         <th scope="row"><code>Alert(text).CloseAsync()</code></th>
                         <td>
                             Presses the alert's close button, and <code>Text</code> reads its message.
-                            <code>Banner(name)</code> does the same for a banner, found by its title.
+                            <code>Banner(name)</code> does the same for a banner, found by its title, or the only one
+                            when no name is given.
                             <code>Alerts</code> reads every alert's message, in order.
                         </td>
                     </tr>
@@ -360,7 +361,7 @@
                             Clicks the chip, which toggles it, runs its <code>OnClick</code> or follows its link.
                             <code>RemoveAsync</code> presses its remove button, and <code>Selected</code> reads whether
                             it's selected. <code>ChipGroup(name)</code> finds a group by its <code>AriaLabel</code>,
-                            and its <code>Chips</code> reads the chips' texts.
+                            or the only one when no name is given, and its <code>Chips</code> reads the chips' texts.
                         </td>
                     </tr>
                     <tr>
@@ -1206,18 +1207,18 @@
             + "current page."),
         new("Alert", "Its text", "`Alert(text).CloseAsync()` presses its close button once the page is interactive, "
             + "and `TextAsync()` reads its message. `AlertsAsync()` reads every alert's message, in order."),
-        new("Banner", "Its title", "`Banner(name).CloseAsync()` presses its close button once the page is "
-            + "interactive, and `TextAsync()` reads its message."),
+        new("Banner", "Its title, or none for the only one", "`Banner(name).CloseAsync()` presses its close "
+            + "button once the page is interactive, and `TextAsync()` reads its message."),
         new("Form", "Its name, or none for the only one", "`Form(name).SubmitAsync()` submits it once the page is "
             + "interactive and waits until the form has handled it, or until a dialog opens, in case the handler "
             + "awaits the dialog's answer; `ErrorsAsync()` reads the messages its fields show."),
-        new("Carousel", "Its AriaLabel", "`Carousel(name).NextAsync()` shows the next slide and waits for it to "
-            + "appear, as `PreviousAsync()` and `GoToAsync(index)` do; `ActiveIndexAsync()` reads which slide shows, "
-            + "and `CountAsync()` how many there are."),
+        new("Carousel", "Its AriaLabel, or none for the only one", "`Carousel(name).NextAsync()` shows the next "
+            + "slide and waits for it to appear, as `PreviousAsync()` and `GoToAsync(index)` do; "
+            + "`ActiveIndexAsync()` reads which slide shows, and `CountAsync()` how many there are."),
         new("Chip", "Its text", "`Chip(text).ClickAsync()` clicks it once the page is interactive and waits until "
             + "the app's handlers have run; `RemoveAsync()` presses its remove button and waits for `OnRemove`, and "
             + "`SelectedAsync()` reads whether it's selected. `ChipGroup(name)` finds a group by its `AriaLabel`, "
-            + "and `ChipsAsync()` reads its chips' texts."),
+            + "or the only one when no name is given, and `ChipsAsync()` reads its chips' texts."),
         new("Popover", "Its trigger", "`Popover(trigger).OpenAsync()` opens it and hands back its panel, and "
             + "`Panel` reads the panel without opening the popover."),
         new("Popconfirm", "Its trigger",
@@ -1270,8 +1271,9 @@
             + "interactive, then follows the link; `CurrentAsync()` reads the current page's link."),
         new("Insert divider", "Its Label", "`InsertDivider(label).InsertAsync()` presses its insert button once the "
             + "page is interactive."),
-        new("Toolbar", "Its AriaLabel", "`Toolbar(name).ClickAsync(button)` clicks a button by its name once the "
-            + "toolbar has fitted its buttons, choosing it from the overflow menu when it has moved there."),
+        new("Toolbar", "Its AriaLabel, or none for the only one", "`Toolbar(name).ClickAsync(button)` clicks a "
+            + "button by its name once the toolbar has fitted its buttons, choosing it from the overflow menu when it "
+            + "has moved there."),
         new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows, `DismissAsync(text)` closes "
             + "it, and `ChooseAsync(text, action)` clicks its action and waits until the app has run it."),
     ];

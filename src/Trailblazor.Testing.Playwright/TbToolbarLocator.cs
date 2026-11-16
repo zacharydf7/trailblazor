@@ -2,11 +2,11 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbToolbar</c>, found by its <c>AriaLabel</c>.</summary>
-public sealed class TbToolbarLocator(ILocator scope, string name)
+/// <summary>A <c>TbToolbar</c>, found by its <c>AriaLabel</c>, or the only one in the scope.</summary>
+public sealed class TbToolbarLocator(ILocator scope, string? name)
 {
     /// <summary>The toolbar.</summary>
-    public ILocator Toolbar => scope.GetByRole(AriaRole.Toolbar, new() { Name = name, Exact = true });
+    public ILocator Toolbar => Scope.ByRole(scope, AriaRole.Toolbar, name).And(scope.Locator(".tb-toolbar"));
 
     /// <summary>Clicks the toolbar's button with this name, as a user does, once the toolbar has fitted its buttons,
     /// and waits until the app's handler has run. A button that moved into the overflow menu is chosen from that menu

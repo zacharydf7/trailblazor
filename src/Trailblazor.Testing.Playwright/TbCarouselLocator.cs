@@ -2,11 +2,11 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbCarousel</c>, found by its <c>AriaLabel</c>.</summary>
-public sealed class TbCarouselLocator(ILocator scope, string name)
+/// <summary>A <c>TbCarousel</c>, found by its <c>AriaLabel</c>, or the only one in the scope.</summary>
+public sealed class TbCarouselLocator(ILocator scope, string? name)
 {
     /// <summary>The carousel's region.</summary>
-    public ILocator Carousel => scope.GetByRole(AriaRole.Region, new() { Name = name, Exact = true })
+    public ILocator Carousel => Scope.ByRole(scope, AriaRole.Region, name)
         .And(scope.Locator("section.tb-carousel"));
 
     private ILocator Slides => Carousel.Locator(":scope > [data-part=slides] > [data-part=slide]");

@@ -281,6 +281,10 @@ public class DriverReadsTests(BrowserFixture fixture) : BrowserTest(fixture)
         await builder.Tb().QueryBuilder().AddConditionAsync();
         Assert.Equal(1.0, await viewport.Tb().Viewport().ZoomAsync());
         Assert.Equal(2, await single.Tb().Pagination().PageAsync());
+        await single.Tb().Toolbar().ClickAsync("Pin");
+        Assert.Equal(("The ridge trail is closed today.", 0, "True"), (await single.Tb().Banner().TextAsync(),
+            await single.Tb().Carousel().ActiveIndexAsync(), await single.GetByTestId("pinned").TextContentAsync()));
+        Assert.Equal(["Shaded"], await single.Tb().ChipGroup().ChipsAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

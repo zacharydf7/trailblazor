@@ -421,25 +421,17 @@ public sealed class TrailblazorMarkup
     /// <summary>Every <c>TbAlert</c>'s message, in page order, as <c>Alert(text).Text</c> reads each.</summary>
     public IReadOnlyList<string> Alerts => [.. _findAll(".tb-alert").Select(Notices.Message)];
 
-    /// <summary>The <c>TbBanner</c> with this accessible name: its <c>Title</c>, or its <c>AriaLabel</c> when it has
-    /// no title.</summary>
-    public TbBannerDriver Banner(string name) => new(() =>
-    {
-        var banners = _findAll("section.tb-banner").Where(banner => (banner.GetAttribute("aria-labelledby") is { } id
+    /// <summary>The <c>TbBanner</c> with this accessible name (its <c>Title</c>, or its <c>AriaLabel</c> when it has
+    /// no title), or the only one in the markup when no name is given.</summary>
+    public TbBannerDriver Banner(string? name = null) => new(() => Only(_findAll("section.tb-banner")
+        .Where(banner => name is null || (banner.GetAttribute("aria-labelledby") is { } id
             ? banner.QuerySelector($"[id='{id}']")?.TextContent.Trim() : banner.GetAttribute("aria-label")) == name)
-            .ToList();
-        return banners.Count == 1 ? banners[0] : throw new InvalidOperationException(banners.Count == 0
-            ? $"No banner is named \"{name}\"." : $"{banners.Count} banners are named \"{name}\".");
-    });
+        .ToList(), "banner", name));
 
-    /// <summary>The <c>TbCarousel</c> with this <c>AriaLabel</c>.</summary>
-    public TbCarouselDriver Carousel(string name) => new(() =>
-    {
-        var carousels = _findAll("section.tb-carousel").Where(carousel => carousel.GetAttribute("aria-label") == name)
-            .ToList();
-        return carousels.Count == 1 ? carousels[0] : throw new InvalidOperationException(carousels.Count == 0
-            ? $"No carousel is named \"{name}\"." : $"{carousels.Count} carousels are named \"{name}\".");
-    });
+    /// <summary>The <c>TbCarousel</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
+    /// given.</summary>
+    public TbCarouselDriver Carousel(string? name = null) => new(() => Only(_findAll("section.tb-carousel")
+        .Where(carousel => name is null || carousel.GetAttribute("aria-label") == name).ToList(), "carousel", name));
 
     /// <summary>The <c>TbVirtualList</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
     /// given.</summary>
@@ -458,13 +450,11 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbChip</c> whose text is this.</summary>
     public TbChipDriver Chip(string text) => new(() => ChipParts.Find(_findAll(".tb-chip"), text), _scripts);
 
-    /// <summary>The <c>TbChipGroup</c> with this <c>AriaLabel</c>.</summary>
-    public TbChipGroupDriver ChipGroup(string name) => new(() =>
-    {
-        var groups = _findAll(".tb-chip-group").Where(group => group.GetAttribute("aria-label") == name).ToList();
-        return groups.Count == 1 ? groups[0] : throw new InvalidOperationException(groups.Count == 0
-            ? $"No chip group is named \"{name}\"." : $"{groups.Count} chip groups are named \"{name}\".");
-    }, _scripts);
+    /// <summary>The <c>TbChipGroup</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
+    /// given.</summary>
+    public TbChipGroupDriver ChipGroup(string? name = null) => new(() => Only(_findAll(".tb-chip-group")
+        .Where(group => name is null || group.GetAttribute("aria-label") == name).ToList(), "chip group", name),
+        _scripts);
 
     /// <summary>The <c>TbButton</c> or <c>TbIconButton</c> with this accessible name, a button or a link.</summary>
     public TbButtonDriver Button(string name) => new(() =>
@@ -501,14 +491,20 @@ public sealed class TrailblazorMarkup
             : $"{dividers.Count} insert dividers are labeled \"{label}\".");
     });
 
-    /// <summary>The <c>TbToolbar</c> with this <c>AriaLabel</c>.</summary>
-    public TbToolbarDriver Toolbar(string name) => new(() =>
+    /// <summary>The <c>TbToolbar</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
+    /// given.</summary>
+    public TbToolbarDriver Toolbar(string? name = null) => new(() => Only(_findAll(".tb-toolbar[role=toolbar]")
+        .Where(toolbar => name is null || toolbar.GetAttribute("aria-label") == name).ToList(), "toolbar", name));
+
+    private static IElement Only(List<IElement> found, string kind, string? name) => found.Count switch
     {
-        var toolbars = _findAll(".tb-toolbar[role=toolbar]")
-            .Where(toolbar => toolbar.GetAttribute("aria-label") == name).ToList();
-        return toolbars.Count == 1 ? toolbars[0] : throw new InvalidOperationException(toolbars.Count == 0
-            ? $"No toolbar is named \"{name}\"." : $"{toolbars.Count} toolbars are named \"{name}\".");
-    });
+        1 => found[0],
+        0 => throw new InvalidOperationException(name is null ? $"No {kind} is in the markup."
+            : $"No {kind} is named \"{name}\"."),
+        _ => throw new InvalidOperationException(name is null
+            ? $"Expected one {kind}, found {found.Count}; name the one to use."
+            : $"{found.Count} {kind}s are named \"{name}\"."),
+    };
 
     /// <summary>The <c>TbTooltip</c> around the button or link with this accessible name.</summary>
     public TbTooltipDriver Tooltip(string trigger) => new(() =>

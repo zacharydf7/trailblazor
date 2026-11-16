@@ -368,22 +368,18 @@ Trailblazor.Testing.Playwright.TbAlertLocator.TextAsync() -> System.Threading.Ta
 Trailblazor.Testing.Playwright.TbBannerLocator
 Trailblazor.Testing.Playwright.TbBannerLocator.Banner.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbBannerLocator.CloseAsync() -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbBannerLocator.TbBannerLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void
 Trailblazor.Testing.Playwright.TbBannerLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.Alert(string! text) -> Trailblazor.Testing.Playwright.TbAlertLocator!
-Trailblazor.Testing.Playwright.TrailblazorPage.Banner(string! name) -> Trailblazor.Testing.Playwright.TbBannerLocator!
 Trailblazor.Testing.Playwright.TbChipGroupLocator
 Trailblazor.Testing.Playwright.TbChipGroupLocator.Chip(string! text) -> Trailblazor.Testing.Playwright.TbChipLocator!
 Trailblazor.Testing.Playwright.TbChipGroupLocator.ChipsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbChipGroupLocator.Group.get -> Microsoft.Playwright.ILocator!
-Trailblazor.Testing.Playwright.TbChipGroupLocator.TbChipGroupLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void
 Trailblazor.Testing.Playwright.TbChipLocator
 Trailblazor.Testing.Playwright.TbChipLocator.Chip.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbChipLocator.ClickAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbChipLocator.RemoveAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbChipLocator.SelectedAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TrailblazorPage.Chip(string! text) -> Trailblazor.Testing.Playwright.TbChipLocator!
-Trailblazor.Testing.Playwright.TrailblazorPage.ChipGroup(string! name) -> Trailblazor.Testing.Playwright.TbChipGroupLocator!
 Trailblazor.Testing.Playwright.TbCarouselLocator
 Trailblazor.Testing.Playwright.TbCarouselLocator.ActiveIndexAsync() -> System.Threading.Tasks.Task<int>!
 Trailblazor.Testing.Playwright.TbCarouselLocator.Carousel.get -> Microsoft.Playwright.ILocator!
@@ -391,8 +387,6 @@ Trailblazor.Testing.Playwright.TbCarouselLocator.CountAsync() -> System.Threadin
 Trailblazor.Testing.Playwright.TbCarouselLocator.GoToAsync(int index) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbCarouselLocator.NextAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbCarouselLocator.PreviousAsync() -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbCarouselLocator.TbCarouselLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void
-Trailblazor.Testing.Playwright.TrailblazorPage.Carousel(string! name) -> Trailblazor.Testing.Playwright.TbCarouselLocator!
 Trailblazor.Testing.Playwright.TbBreadcrumbsLocator
 Trailblazor.Testing.Playwright.TbBreadcrumbsLocator.CurrentAsync() -> System.Threading.Tasks.Task<string?>!
 Trailblazor.Testing.Playwright.TbBreadcrumbsLocator.FollowAsync(string! item) -> System.Threading.Tasks.Task!
@@ -416,9 +410,7 @@ Trailblazor.Testing.Playwright.TrailblazorPage.Form(string? name = null) -> Trai
 Trailblazor.Testing.Playwright.TrailblazorPage.Tooltip(string! trigger) -> Trailblazor.Testing.Playwright.TbTooltipLocator!
 Trailblazor.Testing.Playwright.TbToolbarLocator
 Trailblazor.Testing.Playwright.TbToolbarLocator.ClickAsync(string! button) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbToolbarLocator.TbToolbarLocator(Microsoft.Playwright.ILocator! scope, string! name) -> void
 Trailblazor.Testing.Playwright.TbToolbarLocator.Toolbar.get -> Microsoft.Playwright.ILocator!
-Trailblazor.Testing.Playwright.TrailblazorPage.Toolbar(string! name) -> Trailblazor.Testing.Playwright.TbToolbarLocator!
 Trailblazor.Testing.Playwright.TbInsertDividerLocator
 Trailblazor.Testing.Playwright.TbInsertDividerLocator.Divider.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbInsertDividerLocator.InsertAsync() -> System.Threading.Tasks.Task!
@@ -475,3 +467,11 @@ Trailblazor.Testing.Playwright.TbOverlayLocator.TbOverlayLocator(Microsoft.Playw
 Trailblazor.Testing.Playwright.TbTagInputLocator.TagsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.Overlay(string? name = null) -> Trailblazor.Testing.Playwright.TbOverlayLocator!
 Trailblazor.Testing.Playwright.TbMenuLocator.CheckedAsync(params string![]! path) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbBannerLocator.TbBannerLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TbCarouselLocator.TbCarouselLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TbChipGroupLocator.TbChipGroupLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TbToolbarLocator.TbToolbarLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.Banner(string? name = null) -> Trailblazor.Testing.Playwright.TbBannerLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Carousel(string? name = null) -> Trailblazor.Testing.Playwright.TbCarouselLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.ChipGroup(string? name = null) -> Trailblazor.Testing.Playwright.TbChipGroupLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Toolbar(string? name = null) -> Trailblazor.Testing.Playwright.TbToolbarLocator!

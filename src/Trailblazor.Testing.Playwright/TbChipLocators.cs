@@ -90,11 +90,11 @@ public sealed class TbChipLocator
     }
 }
 
-/// <summary>A <c>TbChipGroup</c>, found by its <c>AriaLabel</c>.</summary>
-public sealed class TbChipGroupLocator(ILocator scope, string name)
+/// <summary>A <c>TbChipGroup</c>, found by its <c>AriaLabel</c>, or the only one in the scope.</summary>
+public sealed class TbChipGroupLocator(ILocator scope, string? name)
 {
     /// <summary>The group's list.</summary>
-    public ILocator Group => scope.GetByRole(AriaRole.List, new() { Name = name, Exact = true })
+    public ILocator Group => Scope.ByRole(scope, AriaRole.List, name)
         .And(scope.Locator(".tb-chip-group"));
 
     /// <summary>The chips' texts, in order.</summary>
