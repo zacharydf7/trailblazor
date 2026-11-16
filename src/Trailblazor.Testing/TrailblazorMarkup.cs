@@ -4330,8 +4330,8 @@ public sealed class TbOverlayDriver
     /// <summary>Clicks the overlay outside its content, as a user does, which raises its <c>OnClick</c> and closes an
     /// overlay with <c>CloseOnClick</c>, and waits until the <c>OnClick</c>, and any close, have run. It throws for a
     /// closed overlay.</summary>
-    public Task ClickAsync() =>
-        Find().QuerySelector("[data-part=scrim]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
+    public async Task ClickAsync() =>
+        await Find().QuerySelector("[data-part=scrim]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
 
     /// <summary>Presses Escape, which closes an overlay with <c>CloseOnClick</c>, and waits until it has closed. It
     /// throws for a closed overlay, or one that Escape doesn't close.</summary>
