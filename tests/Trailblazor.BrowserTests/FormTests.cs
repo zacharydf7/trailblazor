@@ -135,6 +135,44 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldMarkItsSubmitButtonBusyUntilTheAnswerAndSendOnce_WhenAnEnhancedPostIsUnderWay(
+        string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-form-enhanced");
+        var posts = 0;
+        await page.RouteAsync("**/static-form-enhanced", async route =>
+        {
+            // The first post is held long enough for a second press to land while it is on its way.
+            if (route.Request.Method == "POST" && ++posts == 1)
+            {
+                await Task.Delay(1500, TestContext.Current.CancellationToken);
+            }
+
+            await route.ContinueAsync();
+        });
+        var save = page.GetByRole(AriaRole.Button, new() { Name = "Save" });
+
+        // The page records the button's aria-busy at the second submit, while the first post is on its way.
+        await page.EvaluateAsync("""
+            async () => {
+                await import(new URL('_content/Trailblazor/static-form.js', document.baseURI));
+                window.addEventListener('submit', event => sessionStorage.setItem('busy',
+                    event.submitter.getAttribute('aria-busy')));
+                const form = document.querySelector('form');
+                const button = form.querySelector('button[type=submit]');
+                form.requestSubmit(button);
+                setTimeout(() => form.requestSubmit(button), 500);
+            }
+            """);
+
+        // The answer lands in place, with no page load to take the mark away.
+        await Expect(page.GetByLabel("Ranger")).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(save).Not.ToHaveAttributeAsync("aria-busy", "true");
+        Assert.Equal("true", await page.EvaluateAsync<string>("() => sessionStorage.getItem('busy')"));
+        Assert.Equal(1, posts);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Form_ShouldLetItsSubmitButtonGoAfterTenSeconds_WhenAStaticPostLeavesThePageInPlace(
         string browser)
     {
@@ -158,6 +196,58 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve, 10500))");
 
         Assert.Equal(" false", await page.EvaluateAsync<string>(Busy));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldKeepTheBusyStateTheAnswerRendered_WhenTenSecondsPassAfterAnEnhancedPost(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-form-enhanced");
+        var save = page.GetByRole(AriaRole.Button, new() { Name = "Save" });
+        await save.ClickAsync();
+        await Expect(page.GetByLabel("Ranger")).ToHaveAttributeAsync("aria-invalid", "true");
+
+        // Stands in for an answer that renders the button busy, as a Loading one does; the post's own timer, had it
+        // been left to run, would take it off.
+        await save.EvaluateAsync("save => save.setAttribute('aria-busy', 'true')");
+        await page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve, 10500))");
+
+        Assert.Equal("true", await save.GetAttributeAsync("aria-busy"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldLeaveItsSubmitButtonAlone_WhenAListenerOnTheFormCancelsAnEnhancedPost(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-form-enhanced");
+        var save = page.GetByRole(AriaRole.Button, new() { Name = "Save" });
+
+        // A listener on the form cancels the submit once, so Blazor sends nothing.
+        await page.EvaluateAsync("""
+            async () => {
+                await import(new URL('_content/Trailblazor/static-form.js', document.baseURI));
+                const form = document.querySelector('form');
+                form.addEventListener('submit', event => event.preventDefault(), { once: true });
+                form.requestSubmit(form.querySelector('button[type=submit]'));
+            }
+            """);
+        await page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve, 50))");
+        Assert.Null(await save.GetAttributeAsync("aria-busy"));
+        await save.ClickAsync();
+
+        await Expect(page.GetByLabel("Ranger")).ToHaveAttributeAsync("aria-invalid", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldKeepItsStepButtonsHidden_WhenAnEnhancedPostUpdatesItsNarrowPage(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-form-enhanced");
+        var input = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Tents" });
+        var increase = input.Locator("xpath=ancestor::*[@data-part='control'][1]/*[@data-part='increment']");
+        await Expect(increase).ToBeHiddenAsync();
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Save" }).ClickAsync();
+
+        await Expect(page.GetByLabel("Ranger")).ToHaveAttributeAsync("aria-invalid", "true");
+        await Expect(increase).ToBeHiddenAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

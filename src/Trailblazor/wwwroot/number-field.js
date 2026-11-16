@@ -176,3 +176,14 @@ export function watchWidth(input) {
     fits.observe(control);
     return { dispose: () => fits.unobserve(control) };
 }
+
+// A static or prerendered box has no session to call watchWidth, so the page watches each one it shows, on load and
+// after each enhanced update. An update takes data-narrow off with the server's markup, so each box is fitted again.
+export function watchPageWidths() {
+    document.querySelectorAll('[data-part="control"]:has(> [data-part="increment"])').forEach(control => {
+        fits.observe(control);
+        fitStepButtons(control);
+    });
+}
+
+watchPageWidths();

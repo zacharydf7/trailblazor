@@ -255,6 +255,19 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(increase).ToBeVisibleAsync();
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldHideItsStepButtonsUntilThereIsRoom_WhenTheNarrowPageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-number-narrow");
+        var input = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Tents" });
+        var increase = input.Locator("xpath=ancestor::*[@data-part='control'][1]/*[@data-part='increment']");
+
+        await Expect(increase).ToBeHiddenAsync();
+        await page.GetByTestId("column").EvaluateAsync("column => column.style.width = '320px'");
+
+        await Expect(increase).ToBeVisibleAsync();
+    }
+
     [Theory, MemberData(nameof(NarrowFields))]
     public async Task NumberField_ShouldHideItsStepButtons_WhenItsColumnNarrowedWhileItWasHidden(string browser,
         string label)

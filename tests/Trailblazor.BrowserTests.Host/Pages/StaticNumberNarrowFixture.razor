@@ -1,0 +1,11 @@
+@page "/static-number-narrow"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, in a column too narrow for the field's step buttons and its value. *@
+<div data-testid="column" style="width: 80px; --tb-field-height: 64px">
+    <TbNumberField TValue="int" Label="Tents" @bind-Value="_count" />
+</div>
+
+@code {
+    private int _count = 120;
+}

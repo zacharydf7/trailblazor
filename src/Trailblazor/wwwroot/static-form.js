@@ -1,7 +1,8 @@
 import { focusFirstError } from './form.js';
 
-// On a static page there's no circuit to set the submit button's Loading, so a native post marks it busy here, and a
-// second submit is dropped while the first is on its way. Blazor handles the posts it enhances.
+// On a static page there's no circuit to set the submit button's Loading, so a post marks it busy here, and a second
+// submit is dropped while the first is on its way. An enhanced post's answer updates the page in place to what the
+// server rendered, which takes the marks off.
 const marked = new Set();
 let clearing = null;
 
@@ -41,6 +42,8 @@ function mark(form, button) {
     clearing = setTimeout(clearMarks, 10000);
 }
 
+// Listening in the capture phase, ahead of Blazor, lets a second submit be dropped before Blazor sends an enhanced
+// one; Blazor ignores a submit that's already canceled.
 document.addEventListener('submit', event => {
     const form = event.target;
     if (event.defaultPrevented || !form.matches?.('form.tb-form[data-tb-static]')) {
@@ -59,13 +62,26 @@ document.addEventListener('submit', event => {
         return;
     }
 
-    // Marked once the event is over, so a listener after this one can still cancel the post.
+    // Marked once the event is over, so a listener after this one can still cancel a native post. Blazor cancels the
+    // native post of a form it enhances and sends the form itself, so that post is marked too, but only when the submit
+    // got past the form's own listeners uncanceled; otherwise Blazor sends nothing. A cancel from an ancestor's listener
+    // comes after that check, so its post is marked until the 10-second clear.
+    const enhanced = ['', 'true'].includes(form.getAttribute('data-enhance')?.toLowerCase());
+    let blazorSends = false;
+    form.addEventListener('submit', reached => { blazorSends = !reached.defaultPrevented; }, { once: true });
     setTimeout(() => {
-        if (!event.defaultPrevented) {
+        if (!event.defaultPrevented || enhanced && blazorSends) {
             mark(form, event.submitter);
         }
     });
-});
+}, { capture: true });
+
+// An enhanced post's answer takes the marks off as it updates the page, so they're only forgotten here; clearing them
+// would strip a busy or disabled state the answer rendered.
+export function forgetMarks() {
+    clearTimeout(clearing);
+    marked.clear();
+}
 
 // A page the browser brings back from its cache keeps the marks of the post that left it.
 window.addEventListener('pageshow', event => {

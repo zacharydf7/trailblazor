@@ -33,6 +33,7 @@ Familiar apps: the browser's number box, the Windows number up-down control, the
 - [x] Holding a step button keeps stepping, faster the longer it's held, as the browser's own spinner does. The field shows each step, the value changes once when the button is let go, and the click that ends the hold adds no step. `NumberFieldTests.StepButton_ShouldKeepSteppingAndChangeTheValueOnce_WhenHeldAndLetGo`, `TbNumberFieldTests.Step_ShouldShowEachHeldStepAndChangeTheValueOnce_WhenAStepButtonIsHeldAndLetGo`
 - [x] Clicking anywhere in the box outside its controls, such as its padding, focuses the input. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`
 - [ ] Scrolling the wheel over a focused field leaves its value alone. UNCONFIRMED
+- [x] A field too narrow for its step buttons and about four digits hides them until it has room, on interactive, static and prerendered pages. `NumberFieldTests.NumberField_ShouldHideItsStepButtonsUntilThereIsRoom_WhenItsColumnIsTooNarrowForThem`, `NumberFieldTests.NumberField_ShouldHideItsStepButtons_WhenItsColumnNarrowedWhileItWasHidden`, `NumberFieldTests.NumberField_ShouldHideItsStepButtonsUntilThereIsRoom_WhenTheNarrowPageIsStatic`, `FormTests.NumberField_ShouldKeepItsStepButtonsHidden_WhenAnEnhancedPostUpdatesItsNarrowPage`
 
 ## Touch
 

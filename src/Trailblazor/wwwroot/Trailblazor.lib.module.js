@@ -2,12 +2,12 @@
 import '../Trailblazor.Primitives/pointer-origin.js';
 import './read-only.js';
 import './select-early-click.js';
-import './number-field.js';
+import { watchPageWidths } from './number-field.js';
 import { focusMarksOnPage } from './autofocus.js';
 import './force-load.js';
 import './password-reveal.js';
 import './form.js';
-import { focusMarkedForms } from './static-form.js';
+import { focusMarkedForms, forgetMarks } from './static-form.js';
 import './file-upload.js';
 import './accordion.js';
 import './pagination.js';
@@ -77,6 +77,8 @@ export function afterWebStarted(blazor) {
         // The navigation removed the root's inline style and marks too, and the root may not have resized.
         measurePageScrollbar();
         markRoot();
+        watchPageWidths();
+        forgetMarks();
         // AutoFocus first, so a failed post's first error takes focus last.
         focusMarksOnPage();
         focusMarkedForms();

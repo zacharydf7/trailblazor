@@ -3124,6 +3124,9 @@ public static class ExampleCatalog
                     + "page comes back with their messages. With no script running, focus doesn't move and nothing "
                     + "is read out. A reset button is left to the browser, which puts the inputs back to what the page "
                     + "came with, and `OnReset` doesn't run.",
+                "While a static post is on its way, the submit button shows as busy and a second submit is dropped. "
+                    + "The same goes for an enhanced post, from a form with `data-enhance`, until its answer updates "
+                    + "the page.",
             ],
             Notes =
             [
@@ -3665,7 +3668,6 @@ public static class ExampleCatalog
                     + "posts numbers in the invariant culture.",
                 "A static form's post is checked against `Min` and `Max` on the server, as a typed value is, unless "
                     + "the field is read-only; use `Validation` to check a read-only value.",
-                "A field too narrow for its step buttons shows them until the page is interactive.",
             ],
             Notes =
             [
@@ -3675,7 +3677,8 @@ public static class ExampleCatalog
                     + "click a step button that's off at a limit, and an error waits until then too."),
                 new("`ClampToRange` also moves a number too large or small for the value's type to the nearer limit."),
                 new("A field too narrow for its step buttons and about four digits, such as one in an 80-pixel "
-                    + "column, hides the buttons, as `HideStepButtons` does, and shows them again once it has room."),
+                    + "column, hides the buttons, as `HideStepButtons` does, and shows them again once it has room. "
+                    + "It does on a static or prerendered page too."),
             ],
             Ready = new("[data-part=input]", "the input"),
             Target = new("spinbutton", "Quantity"),
