@@ -25,6 +25,7 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     private CancellationTokenSource? _typing;
     private bool _typedSinceReport;
     private int _reports;
+    private int _handled;
     private int? _announcedCount;
     private IJSObjectReference? _handle;
     private DotNetObjectReference<AutocompleteEvents>? _events;
@@ -35,7 +36,7 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     private readonly ItemHandlers<TValue, Func<Task>> _choose;
 
     /// <summary>Creates the autocomplete.</summary>
-    public TbAutocomplete() => _choose = new(item => () => ChooseAsync(item));
+    public TbAutocomplete() => _choose = new(item => () => HandledAsync(() => ChooseAsync(item)));
 
     /// <summary>Finds the suggestions for what the user typed. It runs once the user stops typing for
     /// <see cref="DebounceDelay"/>, and the token is canceled when the user types again.</summary>
@@ -288,6 +289,19 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
         _typedSinceReport = false;
         _reports++;
         await OnTextChanged.InvokeAsync(_text);
+    }
+
+    // Each user action counts once its handlers, OnTextChanged included, have finished, so a test can wait for them.
+    private async Task HandledAsync(Func<Task> handle)
+    {
+        try
+        {
+            await handle();
+        }
+        finally
+        {
+            _handled++;
+        }
     }
 
     // A search the user has moved on from, by choosing, leaving or clearing, is dropped with its results.

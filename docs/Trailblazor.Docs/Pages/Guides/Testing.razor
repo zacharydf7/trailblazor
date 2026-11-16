@@ -1153,8 +1153,9 @@
             + "`OnClick`, and `ItemsAsync()` reads them."),
         new("Autocomplete", "Its label", "`Autocomplete(label).ChooseAsync(text, option)` types and picks an option, "
             + "and `TypeAsync(text)` types without choosing. `EnterAsync(text)` types and leaves the field, which "
-            + "commits the text, and `ClearAsync()` uses the clear button. `TextAsync()` reads the field's text and "
-            + "`SuggestionsAsync()` the suggestions in its list."),
+            + "commits the text, and `ClearAsync()` uses the clear button. Each waits until the app's handlers, "
+            + "`OnTextChanged` included, have run. `TextAsync()` reads the field's text and `SuggestionsAsync()` the "
+            + "suggestions in its list."),
         new("List box", "Its label", "`ListBox(label).ChooseAsync(options)` chooses by option names, "
             + "`ChosenAsync()` reads the chosen ones, and `OptionsAsync()` reads them all. In a multiple list box, "
             + "`UnchooseAsync(options)` unchooses some and `ClearAsync()` unchooses all. `OptionAsync(name)` and "

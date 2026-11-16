@@ -8,7 +8,7 @@
     {
         <div @ref="_listbox" id="@ListboxId" popover="manual" role="listbox" data-part="listbox"
              aria-labelledby="@(ShownLabel is null ? null : LabelId)" aria-busy="@(_searching ? "true" : null)"
-             data-results-for="@_resultsFor"
+             data-results-for="@_resultsFor" data-handled="@_handled"
              class="tb-select__listbox tb-autocomplete__listbox">
             @* A listbox must hold options, so a message that stands in for them is one that can't be chosen. *@
             @if (_results.Count == 0)
@@ -55,7 +55,7 @@
         builder.AddAttribute(7, "value", _text);
         builder.AddAttribute(8, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, OnTypedInputAsync));
         builder.SetUpdatesAttributeName("value");
-        builder.AddAttribute(9, "onchange", EventCallback.Factory.Create(this, CommitAsync));
+        builder.AddAttribute(9, "onchange", EventCallback.Factory.Create(this, OnChangedAsync));
         builder.AddAttribute(10, "data-input-delay", InputDelay);
         builder.AddAttribute(11, "data-open-on-focus", OpenOnFocus ? "" : null);
         builder.AddAttribute(12, "placeholder", Placeholder);
@@ -74,10 +74,14 @@
         builder.CloseElement();
     };
 
-    private Task OnTypedInputAsync(ChangeEventArgs args) => OnTypedAsync(args.Value as string);
+    private Task OnTypedInputAsync(ChangeEventArgs args) => HandledAsync(() => OnTypedAsync(args.Value as string));
+
+    private Task OnChangedAsync() => HandledAsync(CommitAsync);
+
+    private Task OnClearedAsync() => HandledAsync(ClearAsync);
 
     private RenderFragment? End => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(_text) ? null :
         @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.AutocompleteClear])"
-                       aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="ClearAsync"
+                       aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="OnClearedAsync"
                        data-part="clear" />;
 }

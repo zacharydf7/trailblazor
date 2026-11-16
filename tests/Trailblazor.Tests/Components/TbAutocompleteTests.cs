@@ -518,6 +518,31 @@ public class TbAutocompleteTests : BunitContext
     }
 
     [Fact]
+    public async Task Choose_ShouldCountTheChoiceOnceOnTextChangedHasFinished_WhenTheListenerIsSlow()
+    {
+        var reported = new TaskCompletionSource();
+        var reports = 0;
+        // The typed text's report finishes at once; the choice's waits for the test.
+        var cut = Render<TbAutocomplete<string?>>(parameters => parameters.Add(field => field.Label, "Trail")
+            .Add(field => field.Items, Trails)
+            .Add(field => field.OnTextChanged, (string _) => ++reports == 1 ? Task.CompletedTask : reported.Task));
+        string? Handled() => cut.Find("[role=listbox]").GetAttribute("data-handled");
+        var typing = cut.Find("input").InputAsync(new ChangeEventArgs { Value = "ridge" });
+        _time.Advance(TimeSpan.FromMilliseconds(200));
+        await typing;
+        var typed = Handled();
+
+        var choosing = cut.Find("[role=option]").ClickAsync(new());
+        // The app can render the field while its listener runs, which mustn't show the choice counted yet.
+        cut.Render();
+        var pending = Handled();
+        await cut.InvokeAsync(reported.SetResult);
+        await choosing;
+
+        Assert.Equal(("1", "1", "2"), (typed, pending, Handled()));
+    }
+
+    [Fact]
     public void OnTextChanged_ShouldStayQuiet_WhenTheParentSetsTheValue()
     {
         var reported = new List<string>();

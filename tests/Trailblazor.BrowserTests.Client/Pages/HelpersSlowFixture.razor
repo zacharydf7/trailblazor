@@ -31,6 +31,7 @@
     <TbDatePicker TDate="DateOnly" Label="Slow day" Value="_day" ValueChanged="DayAsync" />
     <TbCalendar TDate="DateOnly" Label="Slow hike" Value="_hike" ValueChanged="HikeAsync" />
     <TbFileUpload Label="Slow map" Value="_map" ValueChanged="MapAsync" />
+    <TbAutocomplete TValue="string" Label="Slow town" Items="Towns" OnTextChanged="TownAsync" Clearable />
     <TbSlider TValue="int" Label="Slow pace" Value="_pace" ValueChanged="PaceAsync" OnValueCommitted="PacedAsync" />
     <TbRangeSlider TValue="int" Label="Slow climb" Value="_climb" ValueChanged="ClimbAsync" />
     <TbDateTimePicker TDateTime="DateTime" Label="Slow start" Value="_start" ValueChanged="StartAsync" />
@@ -85,6 +86,7 @@
     private DateOnly? _day;
     private DateOnly? _hike;
     private IReadOnlyList<IBrowserFile>? _map;
+    private static readonly string[] Towns = ["Ashland", "Bend"];
     private int _pace;
     private SliderRange<int> _climb = new(0, 100);
     private DateTime? _start;
@@ -121,6 +123,8 @@
 
     private Task ClimbAsync(SliderRange<int> climb) =>
         SlowlyAsync($"climb {climb.Start}-{climb.End}", () => _climb = climb);
+
+    private Task TownAsync(string text) => SlowlyAsync($"town {text}");
 
     private Task MapAsync(IReadOnlyList<IBrowserFile>? map) =>
         SlowlyAsync($"map {string.Join(", ", map?.Select(file => file.Name) ?? [])}", () => _map = map);

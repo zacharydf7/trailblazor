@@ -755,12 +755,13 @@ public sealed class TbAutocompleteLocator(ILocator scope, ILocator field) : TbFi
     public async Task<IReadOnlyList<string>> SuggestionsAsync() =>
         await (await ListboxAsync()).EvaluateAsync<string[]>(Choices.OptionNames);
 
-    /// <summary>Types the text and waits for the suggestions, without choosing one. A statically rendered field is a
-    /// plain input, which just gets the text.</summary>
+    /// <summary>Types the text and waits for the suggestions and the app's <c>OnTextChanged</c>, without choosing one.
+    /// A statically rendered field is a plain input, which just gets the text.</summary>
     public async Task TypeAsync(string text) => await TypeAndSearchAsync(text);
 
     /// <summary>Types the text, waits for the suggestions, and chooses the option with this name, waiting until the
-    /// field has taken it. A statically rendered field is a plain input, which just gets the text.</summary>
+    /// field has taken it and the app's <c>ValueChanged</c> and <c>OnTextChanged</c> have run. A statically rendered
+    /// field is a plain input, which just gets the text.</summary>
     public async Task ChooseAsync(string text, string option)
     {
         if (!await TypeAndSearchAsync(text))
@@ -770,8 +771,8 @@ public sealed class TbAutocompleteLocator(ILocator scope, ILocator field) : TbFi
 
         var listbox = await ListboxAsync();
         // The server takes the choice a round trip later. An app may re-key the field as it does, replacing the list
-        // and its id, so the wait is for the field's answer, not the option.
-        await Commit.WaitAsync(Control, async () =>
+        // and its id, which ends the wait too.
+        await Commit.CountedAsync(listbox, "data-handled", async () =>
         {
             await listbox.GetByRole(AriaRole.Option, new() { Name = option, Exact = true }).ClickAsync();
             return true;
@@ -780,30 +781,19 @@ public sealed class TbAutocompleteLocator(ILocator scope, ILocator field) : TbFi
 
     /// <summary>Types the text, waits for the suggestions, and leaves the field without choosing one, which commits the
     /// text: a suggestion it matches is taken; failing that, a <c>FreeText</c> field takes the text itself, and any
-    /// other field puts back its value's text. Then waits until the app has the value. A statically rendered field
-    /// just gets the text.</summary>
+    /// other field puts back its value's text. Then waits until the app's <c>ValueChanged</c> and
+    /// <c>OnTextChanged</c> have run. A statically rendered field just gets the text.</summary>
     public async Task EnterAsync(string text)
     {
         if (await TypeAndSearchAsync(text))
         {
-            // Leaving commits only when the text differs from what the field held as it took focus, which the browser
-            // tells with a change event during the blur.
-            await Commit.WaitAsync(Control, () => Control.EvaluateAsync<bool>("""
-                input => {
-                    let changed = false;
-                    const mark = () => changed = true;
-                    input.addEventListener('change', mark);
-                    input.blur();
-                    input.removeEventListener('change', mark);
-                    return changed;
-                }
-                """));
+            await CommitTypedAsync();
         }
     }
 
-    /// <summary>Clears the field with its clear button, as a user does, and waits until the app has it. A field that
-    /// isn't <c>Clearable</c>, shows no text, or is read-only or disabled has no clear button, so this throws.
-    /// </summary>
+    /// <summary>Clears the field with its clear button, as a user does, and waits until the app's <c>ValueChanged</c>
+    /// and <c>OnTextChanged</c> have run. A field that isn't <c>Clearable</c>, shows no text, or is read-only or
+    /// disabled has no clear button, so this throws.</summary>
     public async Task ClearAsync()
     {
         if (await Control.GetAttributeAsync("data-static") is not null)
@@ -821,12 +811,35 @@ public sealed class TbAutocompleteLocator(ILocator scope, ILocator field) : TbFi
                 "The field has no clear button; make it Clearable, give it some text, and leave it editable.");
         }
 
-        await Commit.WaitAsync(Control, async () =>
+        // The click takes focus from the field first, which commits typed text as leaving it does. Text that matches
+        // nothing is replaced by the value's text, and when that's empty the button goes away and the field is already
+        // clear.
+        await CommitTypedAsync();
+        if (await clear.CountAsync() == 0)
+        {
+            return;
+        }
+
+        await Commit.CountedAsync(await ListboxAsync(), "data-handled", async () =>
         {
             await clear.ClickAsync();
             return true;
         });
     }
+
+    // Leaving commits only when the text differs from what the field held as it took focus, which the browser tells
+    // with a change event during the blur.
+    private async Task CommitTypedAsync() =>
+        await Commit.CountedAsync(await ListboxAsync(), "data-handled", () => Control.EvaluateAsync<bool>("""
+            input => {
+                let changed = false;
+                const mark = () => changed = true;
+                input.addEventListener('change', mark);
+                input.blur();
+                input.removeEventListener('change', mark);
+                return changed;
+            }
+            """));
 
     private async Task<ILocator> ListboxAsync() =>
         Scope.Document(scope).Locator($"[id='{await Control.GetAttributeAsync("aria-controls")}']");
@@ -843,8 +856,17 @@ public sealed class TbAutocompleteLocator(ILocator scope, ILocator field) : TbFi
 
         // Typing opens the list once the field's script has attached.
         await Assertions.Expect(input).ToHaveAttributeAsync("data-ready", "");
-        await input.FillAsync(text);
-        // The browser holds keystrokes back for DebounceDelay, so wait for results that answer this text.
+        // A user types only into a field in view, and the list opens beside it. WebKit's fill doesn't scroll the field
+        // into view, and a list in the top layer can't be scrolled to, so its options would be out of reach.
+        await input.ScrollIntoViewIfNeededAsync();
+        await Commit.CountedAsync(await ListboxAsync(), "data-handled", async () =>
+        {
+            // Filling raises an input even with the text the field holds, unless both are empty.
+            var changes = text.Length > 0 || await input.InputValueAsync() != "";
+            await input.FillAsync(text);
+            return changes;
+        });
+        // A fill that raised no input skipped the wait above, so wait here for results that answer this text.
         await Assertions.Expect(await ListboxAsync()).ToHaveAttributeAsync("data-results-for", text);
         return true;
     }
