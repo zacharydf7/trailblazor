@@ -131,4 +131,54 @@ public class TbOverlayTests : BunitContext
         Assert.Equal((null, 1), (visible, clicks));
         Assert.Single(cut.FindAll("[data-part=overlay]"));
     }
+
+    [Fact]
+    public async Task Driver_ShouldCloseWithEscapeOrAClickAndWaitForOnClick_WhenTheOverlayClosesOnClick()
+    {
+        var events = new List<string>();
+        var clicked = new TaskCompletionSource();
+        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true)
+            .Add(overlay => overlay.CloseOnClick, true).AddUnmatched("aria-label", "Cover")
+            .Add(overlay => overlay.OpenChanged, (bool open) => events.Add($"open {open}"))
+            .Add(overlay => overlay.OnClick, async () =>
+            {
+                await clicked.Task;
+                events.Add("clicked");
+            }));
+        var overlay = cut.Tb().Overlay("Cover");
+
+        await overlay.PressEscapeAsync();
+        cut.Render(parameters => parameters.Add(overlay => overlay.Open, true));
+        var clicking = overlay.ClickAsync();
+        var waited = !clicking.IsCompleted;
+        clicked.SetResult();
+        await clicking;
+
+        Assert.True(waited);
+        Assert.Equal(["open False", "clicked", "open False"], events);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldRefuseEscapeAndFindNoClosedOverlay_WhenEscapeDoesntCloseIt()
+    {
+        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true));
+        var overlay = cut.Tb().Overlay();
+
+        var escape = await Assert.ThrowsAsync<InvalidOperationException>(overlay.PressEscapeAsync);
+        cut.Render(parameters => parameters.Add(overlay => overlay.Open, false));
+
+        Assert.Equal(("Escape doesn't close this overlay; it closes one with CloseOnClick.", false),
+            (escape.Message, overlay.IsOpen));
+    }
+
+    [Fact]
+    public void Render_ShouldMarkTheOverlayStaticWithNoCount_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var overlay = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true))
+            .Find("[data-part=overlay]");
+
+        Assert.Equal((true, false), (overlay.HasAttribute("data-static"), overlay.HasAttribute("data-clicks")));
+    }
 }

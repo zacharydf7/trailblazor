@@ -1,0 +1,9 @@
+@page "/overlay-open"
+
+@* An overlay open from the start, so it is prerendered before the page is interactive. *@
+<TbOverlay Open aria-label="Loading cover" OnClick="() => _clicks++" />
+<output data-testid="clicks">@_clicks</output>
+
+@code {
+    private int _clicks;
+}

@@ -15,6 +15,10 @@ public sealed class TbTagInputLocator(ILocator scope, string label) : TbFieldLoc
     /// <c>Expect(tags.Tags).ToHaveTextAsync(["Shade", "Water"])</c>.</summary>
     public ILocator Tags => Field.Locator("[data-part=tag]");
 
+    /// <summary>The tags the field shows, in order.</summary>
+    public async Task<IReadOnlyList<string>> TagsAsync() =>
+        [.. (await Tags.Locator(".tb-chip__label").AllTextContentsAsync()).Select(text => text.Trim())];
+
     private ILocator Field => Input.Locator("xpath=ancestor::*[@data-part='control'][1]");
 
     /// <summary>Once the field's keys work, types this text and presses Enter, which adds it as a tag, then waits until

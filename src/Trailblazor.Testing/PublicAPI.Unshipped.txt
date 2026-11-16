@@ -469,3 +469,8 @@ Trailblazor.Testing.TbPopoverDriver.Panel.get -> AngleSharp.Dom.IElement!
 Trailblazor.Testing.TbToastsDriver.DismissAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbToastsDriver.ChooseAsync(string! text, string! action) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.FakeDialogService.HasOpenDialogs.get -> bool
+Trailblazor.Testing.TbOverlayDriver
+Trailblazor.Testing.TbOverlayDriver.ClickAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbOverlayDriver.IsOpen.get -> bool
+Trailblazor.Testing.TbOverlayDriver.PressEscapeAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Overlay(string? name = null) -> Trailblazor.Testing.TbOverlayDriver!

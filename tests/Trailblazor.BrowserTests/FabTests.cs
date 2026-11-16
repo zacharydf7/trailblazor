@@ -109,4 +109,14 @@ public class FabTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(dial).ToBeFocusedAsync();
         await Expect(dial).ToHaveAttributeAsync("aria-expanded", "false");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ButtonHelper_ShouldFindTheFabAndRunItsAction_WhenClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/fab");
+
+        await page.Tb().Button("Compose").ClickAsync();
+
+        Assert.Equal("Composing.", await page.GetByLabel("Last action").TextContentAsync());
+    }
 }

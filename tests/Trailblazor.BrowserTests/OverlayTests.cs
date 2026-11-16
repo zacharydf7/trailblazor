@@ -1,3 +1,5 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class OverlayTests(BrowserFixture fixture) : BrowserTest(fixture)
@@ -315,5 +317,58 @@ public class OverlayTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByRole(AriaRole.Button, new() { Name = "Show page overlay" }).ClickAsync();
 
         await Expect(Overlay(page)).ToHaveCSSAsync("animation-duration", "0s");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldCloseTheOverlayWithEscapeOrAClick_WhenItClosesOnClick(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+        var overlay = page.Tb().Overlay();
+        var closable = page.GetByRole(AriaRole.Button, new() { Name = "Closable" });
+
+        await closable.ClickAsync();
+        await Expect(overlay.Overlay).ToBeVisibleAsync();
+        var opened = await overlay.IsOpenAsync();
+        await overlay.PressEscapeAsync();
+        var afterEscape = await overlay.IsOpenAsync();
+        await closable.ClickAsync();
+        await overlay.ClickAsync();
+
+        Assert.Equal((true, false, false), (opened, afterEscape, await overlay.IsOpenAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldWaitForTheAppsOnClick_WhenTheOverlayDoesntCloseOnClick(string browser)
+    {
+        var page = await OpenAsync(browser, "/overlays");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Slow" }).ClickAsync();
+
+        await page.Tb().Overlay("Slow cover").ClickAsync();
+
+        Assert.Equal("1", await page.GetByTestId("slow").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldClickOnceInteractive_WhenTheOverlayIsOpenOnAPrerenderedPage(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/overlay-open");
+
+        var clicking = page.Tb().Overlay("Loading cover").ClickAsync();
+        await page.WaitForTimeoutAsync(300);
+        held.SetResult();
+        await clicking;
+
+        Assert.Equal("1", await page.GetByTestId("clicks").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRefuseToClick_WhenThePageIsStatic(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-overlay");
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(page.Tb().Overlay("Static cover").ClickAsync);
+
+        Assert.Equal("On a static page the overlay does nothing; render the page interactively to use it.",
+            refused.Message);
     }
 }

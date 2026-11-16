@@ -287,6 +287,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// </summary>
     public TbListLocator List(string? name = null) => new(scope, name);
 
+    /// <summary>The <c>TbOverlay</c> with this <c>aria-label</c>, or the only one open when no name is given. A closed
+    /// overlay renders nothing, so it is found only while open.</summary>
+    public TbOverlayLocator Overlay(string? name = null) => new(scope, name);
+
     /// <summary>The <c>TbNumberField</c> with this label.</summary>
     public TbNumberFieldLocator NumberField(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
 

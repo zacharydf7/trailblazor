@@ -59,7 +59,14 @@
     <TbOverlay @bind-Open="_rightCover" CloseOnClick>Right cover</TbOverlay>
 </TbDialog>
 
+@* An overlay whose OnClick is slow, which the test helpers wait for. *@
+<TbButton OnClick="() => _slow = true">Slow</TbButton>
+<TbOverlay Open="_slow" aria-label="Slow cover" OnClick="SlowClickAsync" />
+<output data-testid="slow">@_slowClicks</output>
+
 @code {
+    private bool _slow;
+    private int _slowClicks;
     private bool _holder;
     private bool _inner;
     private static readonly DialogOptions PageLayer = new() { TopLayer = false };
@@ -77,4 +84,10 @@
     private bool _second;
     private bool _page;
     private bool _card;
+
+    private async Task SlowClickAsync()
+    {
+        await Task.Delay(1500);
+        _slowClicks++;
+    }
 }

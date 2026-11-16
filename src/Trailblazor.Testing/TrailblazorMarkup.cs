@@ -70,6 +70,15 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
         .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
         .LastOrDefault(events => events.PanelId == panelId);
 
+    // The dismissable layer made for this element, which the layer script calls back when Escape is pressed, or null
+    // when the component made none.
+    public Trailblazor.Primitives.DismissableLayer? Layer(IElement element) => Js.Invocations["createDismissableLayer"]
+        .Where(call => call.Arguments.ElementAtOrDefault(0) is ElementReference reference
+            && reference.Id == element.GetAttribute("blazor:elementReference"))
+        .Select(call =>
+            call.Arguments.ElementAtOrDefault(2) as DotNetObjectReference<Trailblazor.Primitives.DismissableLayer>)
+        .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value).LastOrDefault();
+
     // A followed link takes the test's NavigationManager to its address, as the browser would.
     public void NavigateTo(string href) => services.GetRequiredService<NavigationManager>().NavigateTo(href);
 
@@ -251,6 +260,12 @@ public sealed class TrailblazorMarkup
                 ?? _findAll($"[id='{group.GetAttribute("aria-labelledby")}']").SingleOrDefault()?.TextContent.Trim())
             == label).ToList() is [var group] ? group
             : throw new InvalidOperationException($"Expected one toggle group named \"{label}\"."));
+
+    /// <summary>The <c>TbOverlay</c> with this <c>aria-label</c>, or the only one in the markup when no name is
+    /// given. A closed overlay renders nothing, so it is found only while open.</summary>
+    public TbOverlayDriver Overlay(string? name = null) => new(() =>
+        _findAll(".tb-overlay").Where(overlay => name is null || overlay.GetAttribute("aria-label") == name).ToList(),
+        name, _scripts);
 
     /// <summary>The <c>TbList</c> with this <c>aria-label</c>, or the only one in the markup when no name is given.
     /// </summary>
@@ -4207,5 +4222,43 @@ public sealed class TbMenuDriver
             0 => throw new InvalidOperationException($"The menu has no {kind} named \"{name}\"."),
             _ => throw new InvalidOperationException($"The menu has {found.Count} {kind}s named \"{name}\"."),
         };
+    }
+}
+
+/// <summary>Drives a <c>TbOverlay</c>, found by its <c>aria-label</c> or as the only one.</summary>
+public sealed class TbOverlayDriver
+{
+    private readonly Func<IReadOnlyList<IElement>> _find;
+    private readonly string? _name;
+    private readonly ScriptCalls _scripts;
+
+    internal TbOverlayDriver(Func<IReadOnlyList<IElement>> find, string? name, ScriptCalls scripts) =>
+        (_find, _name, _scripts) = (find, name, scripts);
+
+    /// <summary>Whether the overlay is open, which is when it renders.</summary>
+    public bool IsOpen => _find().Count > 0;
+
+    /// <summary>Clicks the overlay outside its content, as a user does, which raises its <c>OnClick</c> and closes an
+    /// overlay with <c>CloseOnClick</c>, and waits until the <c>OnClick</c>, and any close, have run. It throws for a
+    /// closed overlay.</summary>
+    public Task ClickAsync() =>
+        Find().QuerySelector("[data-part=scrim]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    /// <summary>Presses Escape, which closes an overlay with <c>CloseOnClick</c>, and waits until it has closed. It
+    /// throws for a closed overlay, or one that Escape doesn't close.</summary>
+    public async Task PressEscapeAsync()
+    {
+        var layer = _scripts.Layer(Find())
+            ?? throw new InvalidOperationException(
+                "Escape doesn't close this overlay; it closes one with CloseOnClick.");
+        await _scripts.InvokeAsync(() => layer.OnDismissRequested(Trailblazor.Primitives.DismissReason.EscapeKey));
+    }
+
+    private IElement Find()
+    {
+        var overlays = _find();
+        return overlays.Count == 1 ? overlays[0] : throw new InvalidOperationException(overlays.Count == 0
+            ? _name is null ? "No overlay is open." : $"No overlay named \"{_name}\" is open."
+            : $"{overlays.Count} overlays are open; name the one to use with its aria-label.");
     }
 }

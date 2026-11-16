@@ -365,7 +365,8 @@
                     <tr>
                         <th scope="row"><code>Button(name).ClickAsync()</code></th>
                         <td>
-                            Clicks the button, which raises its <code>OnClick</code>; a link button also takes the
+                            Clicks the button, icon button or floating action button, which raises its
+                            <code>OnClick</code>; a link button also takes the
                             test's <code>NavigationManager</code> to its address. Throws while it's busy or disabled,
                             and <code>Busy</code> reads whether <code>Loading</code> has made it busy.
                             <code>Pressed</code> and <code>Mixed</code> read a toggle's state.
@@ -488,11 +489,20 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Overlay(name).ClickAsync()</code></th>
+                        <td>
+                            Clicks the open overlay outside its content, which raises its <code>OnClick</code> and
+                            closes one with <code>CloseOnClick</code>, and <code>PressEscapeAsync()</code> closes one
+                            with <code>CloseOnClick</code> as Escape does. <code>IsOpen</code> reads whether it's open.
+                            With no name, <code>Overlay()</code> finds the only open overlay.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Dialog(title).ChooseAsync(button)</code></th>
                         <td>
-                            Clicks an open dialog's or drawer's button by its name, and <code>CancelAsync()</code>
-                            dismisses the dialog or drawer as Escape does. <code>Title</code>, <code>IsOpen</code> and
-                            <code>WindowState</code> read it; <code>MinimizeAsync()</code>,
+                            Clicks a button by its name in an open dialog, drawer or hotkeys help, and
+                            <code>CancelAsync()</code> dismisses it as Escape does. <code>Title</code>,
+                            <code>IsOpen</code> and <code>WindowState</code> read it; <code>MinimizeAsync()</code>,
                             <code>MaximizeAsync()</code> and <code>RestoreAsync()</code> use its window buttons; and
                             <code>WaitForClosedAsync()</code> waits until the app closes it. With no title,
                             <code>Dialog()</code> finds the only open dialog. Call it on the markup of the
@@ -1135,8 +1145,8 @@
         new("Range slider", "Its label", "`RangeSlider(label).SetAsync(start, end)` moves both thumbs and waits until "
             + "the field has the range, and `RangeAsync()` reads it."),
         new("Tag input", "Its label", "`TagInput(label).AddAsync(text)` types a tag and presses Enter, "
-            + "`RemoveAsync(tag)` clicks its remove button, and both wait for the app's answer; `Tags` is the tags, "
-            + "for assertions."),
+            + "`RemoveAsync(tag)` clicks its remove button, and both wait for the app's answer; `TagsAsync()` reads "
+            + "the tags' text, and `Tags` is the tag elements, for assertions."),
         new("Rich text editor", "Its label", "`RichTextEditor(label).EnterAsync(html)` pastes the HTML over the text, "
             + "leaves the editor and waits until the app has it; `Input` is the editing area, for typing and reading "
             + "its text."),
@@ -1233,15 +1243,20 @@
             + "panel, and `PanelElement(tab)` hands back the panel itself; select the tab first, since a hidden "
             + "panel's fields can't be used. With no name, `Tabs()` finds "
             + "the visible tab list, so name the outer list when a shown panel holds another."),
-        new("Dialog or drawer", "Its title, or none for the only open one", "`Dialog(title).ChooseAsync(button)` "
-            + "answers it with a button's name, and `CancelAsync()` dismisses it with Escape; both wait until it has "
-            + "left the page, or, on a static page, until it closes. `TitleAsync()`, `IsOpenAsync()` and "
-            + "`WindowStateAsync()` read it; `MinimizeAsync()`, `MaximizeAsync()` and `RestoreAsync()` use its window "
-            + "buttons; and `WaitForClosedAsync()` waits until the app closes it."),
-        new("Button or icon button", "Its name", "`Button(name).ClickAsync()` clicks it once the page is "
-            + "interactive and it's no longer busy, then waits until the app has run its `OnClick`, or until a dialog "
-            + "opens, in case the handler awaits the dialog's answer; `BusyAsync()` "
-            + "reads whether it's busy, and `PressedAsync()` and `MixedAsync()` whether a toggle is pressed or mixed."),
+        new("Dialog, drawer or hotkeys help", "Its title, or none for the only open one",
+            "`Dialog(title).ChooseAsync(button)` answers it with a button's name, and `CancelAsync()` dismisses it "
+            + "with Escape; both wait until it has left the page, or, on a static page, until it closes. "
+            + "`TitleAsync()`, `IsOpenAsync()` and `WindowStateAsync()` read it; `MinimizeAsync()`, `MaximizeAsync()` "
+            + "and `RestoreAsync()` use its window buttons; and `WaitForClosedAsync()` waits until the app closes it."),
+        new("Overlay", "Its `aria-label`, or none for the only open one", "`Overlay(name).ClickAsync()` clicks "
+            + "it outside its content once the page is interactive, and waits until the app has run its `OnClick` "
+            + "and, with `CloseOnClick`, it has closed; `PressEscapeAsync()` closes one with `CloseOnClick`. "
+            + "`IsOpenAsync()` reads whether it's open, which is when it's on the page."),
+        new("Button, icon button or floating action button", "Its name",
+            "`Button(name).ClickAsync()` clicks it once the page is interactive and it's no longer busy, then waits "
+            + "until the app has run its `OnClick`, or until a dialog opens, in case the handler awaits the dialog's "
+            + "answer; `BusyAsync()` reads whether it's busy, and `PressedAsync()` and `MixedAsync()` whether a toggle "
+            + "is pressed or mixed."),
         new("Virtual list", "Its name, or none for the only one", "`VirtualList(name).ItemAsync(index)` scrolls "
             + "the list to the item at an index, as a user does, and returns it once drawn; `CountAsync()` reads how "
             + "many items there are, once an `ItemsProvider` has answered."),

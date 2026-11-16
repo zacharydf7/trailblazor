@@ -3,7 +3,7 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbButton</c> or <c>TbIconButton</c>, found by its accessible name.</summary>
+/// <summary>A <c>TbButton</c>, <c>TbIconButton</c> or <c>TbFab</c>, found by its accessible name.</summary>
 public sealed class TbButtonLocator(ILocator scope, string name)
 {
     /// <summary>The button or link.</summary>

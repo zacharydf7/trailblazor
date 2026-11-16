@@ -466,3 +466,11 @@ Trailblazor.Testing.Playwright.TrailblazorPage.AlertsAsync() -> System.Threading
 Trailblazor.Testing.Playwright.TbFileUploadLocator.FilesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.Dialog(string? title = null) -> Trailblazor.Testing.Playwright.TbDialogLocator!
 Trailblazor.Testing.Playwright.TbPopoverLocator.Panel.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbOverlayLocator
+Trailblazor.Testing.Playwright.TbOverlayLocator.ClickAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbOverlayLocator.IsOpenAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbOverlayLocator.Overlay.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbOverlayLocator.PressEscapeAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbOverlayLocator.TbOverlayLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TbTagInputLocator.TagsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TrailblazorPage.Overlay(string? name = null) -> Trailblazor.Testing.Playwright.TbOverlayLocator!

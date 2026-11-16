@@ -35,8 +35,11 @@ public class TagInputTests(BrowserFixture fixture) : BrowserTest(fixture)
         var features = page.Tb().TagInput(Features);
 
         await features.AddAsync("Views");
+        // AddAsync waits for the app, so the tags can be read at once.
+        var added = await features.TagsAsync();
         await features.Input.PressSequentiallyAsync("Bench,");
 
+        Assert.Equal(["Shade", "Water", "Views"], added);
         await Expect(features.Tags).ToHaveTextAsync(["Shade", "Water", "Views", "Bench"]);
         await Expect(features.Input).ToHaveValueAsync("");
         await Expect(page.GetByText("Features: Shade, Water, Views, Bench")).ToBeVisibleAsync();

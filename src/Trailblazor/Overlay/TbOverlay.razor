@@ -11,7 +11,8 @@
 {
     @* The layer's script sets data-ready here once Escape is wired, just after the overlay appears. *@
     <div @attributes="AdditionalAttributes" @ref="_overlay" data-part="overlay" style="@Style"
-         data-open-order="@_openOrder"
+         data-open-order="@_openOrder" data-clicks="@(RendererInfo.IsInteractive ? _clicks : null)"
+         data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
          class="@ClassNames.Join("tb-overlay", Contained ? "tb-overlay--contained" : "tb-overlay--fixed",
                     Blur ? "tb-overlay--blur" : null, Transparent ? "tb-overlay--transparent" : null,
                     LockScroll && !Contained ? "tb-overlay--lock-scroll" : null, Class)">
@@ -31,6 +32,8 @@
     private bool _disposed;
     private static long _lastOpenOrder;
     private long _openOrder;
+    // Counts the clicks whose OnClick, and any close it brings, have run, so a test can wait for the app.
+    private int _clicks;
 
     /// <summary>Shows the overlay. Bind it with <c>@bind-Open</c> when clicks or Escape can close it.</summary>
     [Parameter]
@@ -173,10 +176,17 @@
 
     private async Task OnScrimClickAsync(MouseEventArgs e)
     {
-        await OnClick.InvokeAsync(e);
-        if (CloseOnClick)
+        try
         {
-            await CloseAsync();
+            await OnClick.InvokeAsync(e);
+            if (CloseOnClick)
+            {
+                await CloseAsync();
+            }
+        }
+        finally
+        {
+            _clicks++;
         }
     }
 

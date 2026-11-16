@@ -7768,8 +7768,10 @@ public static class ExampleCatalog
                 new("scrim", "The shade over the page behind the content."),
                 new("content", "The overlay's content."),
             ],
-            TestingTip = "The overlay's element has `data-part=\"overlay\"`; click its `data-part=\"scrim\"` to "
-                + "close one with `CloseOnClick`; the value bound with `@bind-Open` turns false.",
+            TestingTip = "`page.Tb().Overlay(name)` in Playwright, or `cut.Tb().Overlay(...)` in bUnit, finds the open "
+                + "overlay by its `aria-label`, or the only one. `ClickAsync()` clicks it outside its content and "
+                + "waits for its `OnClick`; with `CloseOnClick`, both `ClickAsync()` and `PressEscapeAsync()` close "
+                + "the overlay, and the value bound with `@bind-Open` turns false.",
         },
         new("tabs", "Tabs", ExampleCategory.Navigation,
             "Switches between panels of related content, one at a time.")

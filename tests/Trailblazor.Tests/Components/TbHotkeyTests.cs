@@ -130,6 +130,18 @@ public class TbHotkeyTests : BunitContext
         Assert.Equal([true, false], changes);
     }
 
+    [Fact]
+    public async Task DialogDriver_ShouldCloseTheHotkeysHelp_WhenCanceled()
+    {
+        var changes = new List<bool>();
+        var cut = Render<TbHotkeysHelp>(parameters => parameters.Add(help => help.Open, true)
+            .Add(help => help.OpenChanged, open => changes.Add(open)));
+
+        await cut.Tb().Dialog("Keyboard shortcuts").CancelAsync();
+
+        Assert.Equal([false], changes);
+    }
+
     private IRenderedComponent<TbHotkey> RenderHotkey(bool disabled) => Render<TbHotkey>(parameters => parameters
         .Add(hotkey => hotkey.Keys, "Mod+S").Add(hotkey => hotkey.Disabled, disabled)
         .Add(hotkey => hotkey.OnPress, () => _presses++));

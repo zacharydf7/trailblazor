@@ -11,7 +11,7 @@ namespace Trailblazor.Tests;
 public class DriverParityTests
 {
     private const string InMarkup = "bUnit's markup holds the list whether it's open or not";
-    private const string NotInteractive = "not interactive, or a plain button or link found by its role";
+    private const string NotInteractive = "not interactive";
     private const string InTestFile = "each package takes its own file made in the test: Playwright's FilePayload and "
         + "bUnit's InputFileContent";
 
@@ -35,7 +35,8 @@ public class DriverParityTests
         ["TbFileUpload"] = "FileUpload", ["TbSlider"] = "Slider", ["TbRangeSlider"] = "RangeSlider",
         ["TbRating"] = "Rating", ["TbSplitter"] = "Splitter", ["TbPopover"] = "Popover", ["TbAlert"] = "Alert",
         ["TbBanner"] = "Banner", ["TbBreadcrumbs"] = "Breadcrumbs", ["TbStepper"] = "Stepper",
-        ["TbVirtualList"] = "VirtualList",
+        ["TbVirtualList"] = "VirtualList", ["TbOverlay"] = "Overlay", ["TbHotkeysHelp"] = "Dialog",
+        ["TbFab"] = "Button",
         ["TbTimePicker"] = "TimePicker", ["TbChip"] = "Chip", ["TbChipGroup"] = "ChipGroup",
         ["TbCarousel"] = "Carousel", ["TbForm"] = "Form", ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",
         ["TbSpeedDial"] = "Menu", ["TbToolbar"] = "Toolbar", ["TbInsertDivider"] = "InsertDivider",
@@ -66,33 +67,40 @@ public class DriverParityTests
         ["TbToolbarSeparator"] = "part of TbToolbar",
         ["TbTreeItem"] = "part of TbTreeView",
 
-        ["TbAppBar"] = NotInteractive, ["TbAppShell"] = NotInteractive, ["TbAvatar"] = NotInteractive,
+        ["TbAppShell"] = "its menu button is a plain button found by its role, and whether the navigation is open "
+            + "or collapsed shows on the page",
+        ["TbImage"] = "its OnLoad and OnError report the image loading or failing, not anything a user does",
+        ["TbTableOfContents"] = "its entries are plain links found by their role, and ActiveChanged follows scrolling",
+
+        ["TbAppBar"] = NotInteractive, ["TbAvatar"] = NotInteractive,
         ["TbAvatarGroup"] = NotInteractive, ["TbBadge"] = NotInteractive, ["TbButtonGroup"] = NotInteractive,
         ["TbCard"] = NotInteractive, ["TbContainer"] = NotInteractive, ["TbDivider"] = NotInteractive,
-        ["TbEmptyState"] = NotInteractive, ["TbFab"] = NotInteractive, ["TbFieldRow"] = NotInteractive,
+        ["TbEmptyState"] = NotInteractive, ["TbFieldRow"] = NotInteractive,
         ["TbFocusScope"] = NotInteractive,
-        ["TbGrid"] = NotInteractive, ["TbHotkeysHelp"] = NotInteractive, ["TbIcon"] = NotInteractive,
-        ["TbImage"] = NotInteractive, ["TbInteractiveMark"] = NotInteractive, ["TbKbd"] = NotInteractive,
-        ["TbLabel"] = NotInteractive, ["TbLink"] = NotInteractive, ["TbOverlay"] = NotInteractive,
+        ["TbGrid"] = NotInteractive, ["TbIcon"] = NotInteractive,
+        ["TbInteractiveMark"] = NotInteractive, ["TbKbd"] = NotInteractive,
+        ["TbLabel"] = NotInteractive,
+        ["TbLink"] = "found by its role; a count to wait for its OnClick comes with the other counts in #546",
         ["TbProgress"] = NotInteractive, ["TbRoot"] = NotInteractive, ["TbSkeleton"] = NotInteractive,
         ["TbSpacer"] = NotInteractive, ["TbStack"] = NotInteractive, ["TbStyles"] = NotInteractive,
         ["TbSurface"] = NotInteractive,
-        ["TbTable"] = NotInteractive, ["TbTableOfContents"] = NotInteractive, ["TbText"] = NotInteractive,
+        ["TbTable"] = NotInteractive, ["TbText"] = NotInteractive,
         ["TbThemeHead"] = NotInteractive, ["TbTimeline"] = NotInteractive,
     };
 
-    // Members only one package has, by type and member name, and why.
+    // Members only one package has, by type and member signature, and why.
     private static readonly Dictionary<string, string> OneSided = new()
     {
-        ["TrailblazorMarkup.Within"] = "Playwright scopes with new TrailblazorPage(locator)",
-        ["TrailblazorPage.Interactive"] = "bUnit renders interactively from the start",
-        ["TrailblazorPage.Announcements"] = "bUnit tests read FakeAnnouncer",
-        ["TbGridLocator.Copy"] = "pressing Ctrl+C needs the browser's copy event; bUnit reads the same text with "
+        ["TrailblazorMarkup.Within(Func`1)"] = "Playwright scopes with new TrailblazorPage(locator)",
+        ["TrailblazorPage.Interactive()"] = "bUnit renders interactively from the start",
+        ["TrailblazorPage.Announcements()"] = "bUnit tests read FakeAnnouncer",
+        ["TbGridLocator.Copy()"] = "pressing Ctrl+C needs the browser's copy event; bUnit reads the same text with "
             + "SelectedCells",
-        ["TbFileUploadLocator.Choose"] = InTestFile, ["TbFileUploadDriver.Choose"] = InTestFile,
-        ["TbSelectLocator.Open"] = InMarkup, ["TbSelectLocator.Close"] = InMarkup,
-        ["TbSelectLocator.IsOpen"] = InMarkup, ["TbTreeSelectLocator.Open"] = InMarkup,
-        ["TbTreeSelectLocator.Close"] = InMarkup, ["TbTreeSelectLocator.IsOpen"] = InMarkup,
+        ["TbFileUploadLocator.Choose(FilePayload[])"] = InTestFile,
+        ["TbFileUploadDriver.Choose(InputFileContent[])"] = InTestFile,
+        ["TbSelectLocator.Open()"] = InMarkup, ["TbSelectLocator.Close()"] = InMarkup,
+        ["TbSelectLocator.IsOpen()"] = InMarkup, ["TbTreeSelectLocator.Open()"] = InMarkup,
+        ["TbTreeSelectLocator.Close()"] = InMarkup, ["TbTreeSelectLocator.IsOpen()"] = InMarkup,
     };
 
     [Fact]
@@ -112,6 +120,19 @@ public class DriverParityTests
             && HasHelper(typeof(TrailblazorPage), component[2..]));
 
         Assert.Equal(([], [], []), (unsorted.Order().ToArray(), unknown.Order().ToArray(), helped.Order().ToArray()));
+    }
+
+    [Fact]
+    public void Exemptions_ShouldNotCallAComponentWithCallbacksNotInteractive_WhenTheLibraryIsScanned()
+    {
+        var interactive = typeof(TbButton).Assembly.GetExportedTypes()
+            .Where(type => Exempt.GetValueOrDefault(Name(type)) == NotInteractive)
+            .Where(type => type.GetProperties().Any(property =>
+                property.GetCustomAttribute<ParameterAttribute>() is not null
+                && property.PropertyType.Name.StartsWith("EventCallback")))
+            .Select(Name);
+
+        Assert.Empty(interactive);
     }
 
     [Fact]
@@ -157,12 +178,24 @@ public class DriverParityTests
         var playwright = Members(page);
         foreach (var member in bunit.Keys.Union(playwright.Keys).Order())
         {
-            var excuse = $"{(bunit.ContainsKey(member) ? markup : page).Name}.{member.Split('(')[0]}";
+            var excuse = $"{(bunit.ContainsKey(member) ? markup : page).Name}.{member}";
             if (bunit.TryGetValue(member, out var markupType) && playwright.TryGetValue(member, out var pageType))
             {
+                (markupType, pageType) = (Unwrapped(markupType), Unwrapped(pageType));
                 if (IsDriver(markupType) && IsDriver(pageType))
                 {
+                    if (DriverName(markupType) != DriverName(pageType))
+                    {
+                        differences.Add($"{markup.Name} / {page.Name}: {member} returns {Name(markupType)} in "
+                            + $"bUnit and {Name(pageType)} in Playwright");
+                    }
+
                     Compare(markupType, pageType, compared, differences, excused);
+                }
+                else if (Element(markupType) != Element(pageType))
+                {
+                    differences.Add($"{markup.Name} / {page.Name}: {member} returns {TypeName(markupType)} in bUnit "
+                        + $"and {TypeName(pageType)} in Playwright");
                 }
             }
             // A Playwright part such as an input, handed out to assert on with Expect, needs no bUnit twin.
@@ -187,9 +220,32 @@ public class DriverParityTests
         .Select(member => member is PropertyInfo property ? (Key: $"{property.Name}()", Type: property.PropertyType)
             : (Key: $"{Stripped(member.Name)}({string.Join(", ", ((MethodInfo)member).GetParameters()
                 .Select(parameter => parameter.ParameterType.Name))})", Type: ((MethodInfo)member).ReturnType))
-        .DistinctBy(member => member.Key).ToDictionary(member => member.Key, member => member.Type);
+        // A Playwright read such as TagsAsync() pairs with its bUnit twin ahead of a locator of the same name.
+        .OrderBy(member => member.Type == typeof(ILocator)).DistinctBy(member => member.Key)
+        .ToDictionary(member => member.Key, member => member.Type);
 
     private static string Stripped(string name) => name.EndsWith("Async") ? name[..^5] : name;
+
+    // An element bUnit hands out is a locator in Playwright, alone or in a list.
+    private static Type Element(Type type) => type == typeof(AngleSharp.Dom.IElement) ? typeof(ILocator)
+        : type == typeof(IReadOnlyList<AngleSharp.Dom.IElement>) ? typeof(IReadOnlyList<ILocator>) : type;
+
+    // A Playwright member returns a task where its bUnit twin may not.
+    private static Type Unwrapped(Type type) =>
+        type == typeof(Task) ? typeof(void) : type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>)
+            ? type.GetGenericArguments()[0] : type;
+
+    // TbXDriver pairs with TbXLocator, and the markup with the page.
+    private static string DriverName(Type type) => Name(type) switch
+    {
+        "TrailblazorMarkup" or "TrailblazorPage" => "Trailblazor",
+        var name when name.EndsWith("Driver") => name[..^6],
+        var name when name.EndsWith("Locator") => name[..^7],
+        var name => name,
+    };
+
+    private static string TypeName(Type type) => type.IsGenericType
+        ? $"{Name(type)}<{string.Join(", ", type.GetGenericArguments().Select(TypeName))}>" : type.Name;
 
     private static bool HasHelper(Type type, string name) =>
         type.GetMember(name, BindingFlags.Public | BindingFlags.Instance).Length > 0;

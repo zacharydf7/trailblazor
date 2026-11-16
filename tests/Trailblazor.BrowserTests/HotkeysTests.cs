@@ -178,6 +178,19 @@ public class HotkeysTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task DialogHelper_ShouldFindAndCloseTheHotkeysHelp_WhenCanceled(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await page.Locator("body").ClickAsync(new() { Position = new() { X = 1, Y = 1 } });
+        await page.Tb().Hotkey("?").PressAsync();
+        var help = page.Tb().Dialog("Keyboard shortcuts");
+
+        await help.CancelAsync();
+
+        Assert.False(await help.IsOpenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Help_ShouldListTheHotkeysByGroupAndClose_WhenItsKeyIsPressedTwice(string browser)
     {
         var page = await OpenReadyAsync(browser);

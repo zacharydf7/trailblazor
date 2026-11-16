@@ -83,6 +83,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-16
 
+- An interactive overlay counts finished clicks in `data-clicks` on its root; a click counts once its `OnClick`, and any close it brings, have run
 - Every component takes the font of the text around it, as fields and tabs already did, rather than `--tb-font-family`; headings keep `--tb-font-family-heading`, and code and keys keep `--tb-font-family-mono`. A `--tb-font-family` that a stylesheet rule sets on a region no longer reaches its components; set `font-family` there, or the token in its `style` attribute
 - TbRoot's dialog host renders a hidden element with `data-tb-open-dialogs`, the number of open dialogs that aren't closing
 - A static form marks its submit button busy during an enhanced post too, and drops a second submit until the answer updates the page

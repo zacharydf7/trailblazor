@@ -67,4 +67,16 @@ public class TbFabTests : BunitContext
         Assert.Throws<InvalidOperationException>(() => Render<TbFab>(parameters =>
             parameters.Add(fab => fab.Icon, Pencil).Add(fab => fab.Label, " ")));
     }
+
+    [Fact]
+    public async Task ButtonDriver_ShouldFindTheFabAndRunItsAction_WhenClicked()
+    {
+        var clicks = 0;
+        var cut = Render<TbFab>(parameters => parameters.Add(fab => fab.Icon, Pencil)
+            .Add(fab => fab.Label, "New message").Add(fab => fab.OnClick, () => clicks++));
+
+        await cut.Tb().Button("New message").ClickAsync();
+
+        Assert.Equal(1, clicks);
+    }
 }
