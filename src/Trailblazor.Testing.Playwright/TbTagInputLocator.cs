@@ -3,13 +3,13 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbTagInput</c>, found by its label.</summary>
-public sealed class TbTagInputLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbTagInput</c>, found by its label or a locator.</summary>
+public sealed class TbTagInputLocator(ILocator scope, ILocator input) : TbFieldLocator
 {
     private protected override ILocator Control => Input;
 
     /// <summary>The input that tags are typed into.</summary>
-    public ILocator Input => scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
+    public ILocator Input => input.And(scope.Locator("input"));
 
     /// <summary>The tags, in order, for assertions such as
     /// <c>Expect(tags.Tags).ToHaveTextAsync(["Shade", "Water"])</c>.</summary>

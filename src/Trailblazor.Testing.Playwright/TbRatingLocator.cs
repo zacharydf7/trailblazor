@@ -2,13 +2,12 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbRating</c>, found by its label.</summary>
-public sealed class TbRatingLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbRating</c>, found by its label or a locator.</summary>
+public sealed class TbRatingLocator(ILocator scope, ILocator rating) : TbFieldLocator
 {
     private protected override ILocator Control => Rating;
 
-    private ILocator Rating => scope.GetByRole(AriaRole.Radiogroup, new() { NameRegex = FieldLabel.Matching(label) })
-        .And(scope.Locator("fieldset.tb-rating"));
+    private ILocator Rating => rating.And(scope.Locator("fieldset.tb-rating"));
 
     private ILocator Stars => Rating.Locator("[data-part=stars] input[type=radio]");
 

@@ -3,13 +3,13 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbSlider</c>, found by its label.</summary>
-public sealed class TbSliderLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbSlider</c>, found by its label or a locator.</summary>
+public sealed class TbSliderLocator(ILocator scope, ILocator input) : TbFieldLocator
 {
     private protected override ILocator Control => Input;
 
     /// <summary>The slider's range input.</summary>
-    public ILocator Input => scope.GetByRole(AriaRole.Slider, new() { NameRegex = FieldLabel.Matching(label) });
+    public ILocator Input => input.And(scope.Locator(".tb-slider input[type=range][data-part=input]"));
 
     /// <summary>Moves the slider to this value and waits until the field has taken it and the app's
     /// <c>ValueChanged</c> and <c>OnValueCommitted</c> have run. A value between steps lands on the nearest step, as it
@@ -20,13 +20,15 @@ public sealed class TbSliderLocator(ILocator scope, string label) : TbFieldLocat
     public Task<decimal> ValueAsync() => SliderThumb.ValueAsync(Input);
 }
 
-/// <summary>A <c>TbRangeSlider</c>, found by its label.</summary>
-public sealed class TbRangeSliderLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbRangeSlider</c>, found by its label or a locator.</summary>
+public sealed class TbRangeSliderLocator(ILocator scope, ILocator root) : TbFieldLocator
 {
     private protected override ILocator Control => Field;
 
+    private ILocator Field => root.And(scope.Locator(".tb-slider--range"));
+
     // Found from its label upward, since a Has filter on the scope would look for the scope inside each match.
-    private ILocator Field => scope.Locator(".tb-slider--range label")
+    internal static ILocator Named(ILocator scope, string label) => scope.Locator(".tb-slider--range label")
         .Filter(new() { HasTextRegex = FieldLabel.Matching(label) })
         .Locator("xpath=ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' tb-slider--range ')][1]");
 

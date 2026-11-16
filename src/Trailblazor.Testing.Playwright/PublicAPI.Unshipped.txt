@@ -27,7 +27,6 @@ Trailblazor.Testing.Playwright.TbColorPickerLocator.TbColorPickerLocator(Microso
 Trailblazor.Testing.Playwright.TbDatePickerLocator
 Trailblazor.Testing.Playwright.TbDatePickerLocator.ChooseAsync(System.DateOnly? date) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDatePickerLocator.Input.get -> Microsoft.Playwright.ILocator!
-Trailblazor.Testing.Playwright.TbDatePickerLocator.TbDatePickerLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbDatePickerLocator.ValueAsync() -> System.Threading.Tasks.Task<System.DateOnly?>!
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.ChooseAsync(System.DateOnly? start, System.DateOnly? end) -> System.Threading.Tasks.Task!
@@ -85,15 +84,12 @@ Trailblazor.Testing.Playwright.TbRangeSliderLocator.End.get -> Microsoft.Playwri
 Trailblazor.Testing.Playwright.TbRangeSliderLocator.RangeAsync() -> System.Threading.Tasks.Task<(decimal Start, decimal End)>!
 Trailblazor.Testing.Playwright.TbRangeSliderLocator.SetAsync(decimal start, decimal end) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbRangeSliderLocator.Start.get -> Microsoft.Playwright.ILocator!
-Trailblazor.Testing.Playwright.TbRangeSliderLocator.TbRangeSliderLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
-Trailblazor.Testing.Playwright.TbRichTextEditorLocator.TbRichTextEditorLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbSelectLocator
 Trailblazor.Testing.Playwright.TbSelectLocator.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbSelectLocator.TbSelectLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
 Trailblazor.Testing.Playwright.TbSliderLocator
 Trailblazor.Testing.Playwright.TbSliderLocator.Input.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbSliderLocator.SetAsync(decimal value) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbSliderLocator.TbSliderLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbSliderLocator.ValueAsync() -> System.Threading.Tasks.Task<decimal>!
 Trailblazor.Testing.Playwright.TbSplitterLocator
 Trailblazor.Testing.Playwright.TbSplitterLocator.ResizeAsync(int percent) -> System.Threading.Tasks.Task!
@@ -108,7 +104,6 @@ Trailblazor.Testing.Playwright.TbTagInputLocator.AddAsync(string! text) -> Syste
 Trailblazor.Testing.Playwright.TbTagInputLocator.Input.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbTagInputLocator.RemoveAsync(string! tag) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTagInputLocator.Tags.get -> Microsoft.Playwright.ILocator!
-Trailblazor.Testing.Playwright.TbTagInputLocator.TbTagInputLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbToastsLocator
 Trailblazor.Testing.Playwright.TbToastsLocator.TbToastsLocator(Microsoft.Playwright.ILocator! scope) -> void
 Trailblazor.Testing.Playwright.TbToastsLocator.WaitForAsync(string! text) -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
@@ -260,7 +255,6 @@ Trailblazor.Testing.Playwright.TbGridLocator.ClickRowAsync(string! cell) -> Syst
 Trailblazor.Testing.Playwright.TbCheckboxGroupLocator
 Trailblazor.Testing.Playwright.TbCheckboxGroupLocator.CheckAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbCheckboxGroupLocator.CheckedAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
-Trailblazor.Testing.Playwright.TbCheckboxGroupLocator.TbCheckboxGroupLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbCheckboxGroupLocator.UncheckAsync(params string![]! options) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbCheckboxLocator
 Trailblazor.Testing.Playwright.TbCheckboxLocator.CheckAsync() -> System.Threading.Tasks.Task!
@@ -273,7 +267,6 @@ Trailblazor.Testing.Playwright.TbListLocator.TbListLocator(Microsoft.Playwright.
 Trailblazor.Testing.Playwright.TbRadioGroupLocator
 Trailblazor.Testing.Playwright.TbRadioGroupLocator.ChooseAsync(string! option) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbRadioGroupLocator.ChosenAsync() -> System.Threading.Tasks.Task<string?>!
-Trailblazor.Testing.Playwright.TbRadioGroupLocator.TbRadioGroupLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbTextFieldLocator
 Trailblazor.Testing.Playwright.TbTextFieldLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTextFieldLocator.TbTextFieldLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
@@ -281,7 +274,6 @@ Trailblazor.Testing.Playwright.TbTextFieldLocator.TextAsync() -> System.Threadin
 Trailblazor.Testing.Playwright.TbToggleGroupLocator
 Trailblazor.Testing.Playwright.TbToggleGroupLocator.ChooseAsync(params string![]! items) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbToggleGroupLocator.ChosenAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
-Trailblazor.Testing.Playwright.TbToggleGroupLocator.TbToggleGroupLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbToggleGroupLocator.UnchooseAsync(params string![]! items) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TrailblazorPage.Checkbox(string! label) -> Trailblazor.Testing.Playwright.TbCheckboxLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.CheckboxGroup(string! label) -> Trailblazor.Testing.Playwright.TbCheckboxGroupLocator!
@@ -350,13 +342,11 @@ Trailblazor.Testing.Playwright.TbRatingLocator
 Trailblazor.Testing.Playwright.TbRatingLocator.ClearAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbRatingLocator.MaxAsync() -> System.Threading.Tasks.Task<int>!
 Trailblazor.Testing.Playwright.TbRatingLocator.RateAsync(int stars) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbRatingLocator.TbRatingLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbRatingLocator.ValueAsync() -> System.Threading.Tasks.Task<int>!
 Trailblazor.Testing.Playwright.TrailblazorPage.Rating(string! label) -> Trailblazor.Testing.Playwright.TbRatingLocator!
 Trailblazor.Testing.Playwright.TbTimePickerLocator
 Trailblazor.Testing.Playwright.TbTimePickerLocator.ChooseAsync(System.TimeOnly? time) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTimePickerLocator.Input.get -> Microsoft.Playwright.ILocator!
-Trailblazor.Testing.Playwright.TbTimePickerLocator.TbTimePickerLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbTimePickerLocator.ValueAsync() -> System.Threading.Tasks.Task<System.TimeOnly?>!
 Trailblazor.Testing.Playwright.TrailblazorPage.TimePicker(string! label) -> Trailblazor.Testing.Playwright.TbTimePickerLocator!
 Trailblazor.Testing.Playwright.TbAlertLocator
@@ -481,3 +471,25 @@ Trailblazor.Testing.Playwright.TbNavMenuLocator.CollapseAsync(params string![]! 
 Trailblazor.Testing.Playwright.TbSplitterLocator.CollapsedAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbSplitterLocator.CollapseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbSplitterLocator.RestoreAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TrailblazorPage.Checkbox(Microsoft.Playwright.ILocator! box) -> Trailblazor.Testing.Playwright.TbCheckboxLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.CheckboxGroup(Microsoft.Playwright.ILocator! group) -> Trailblazor.Testing.Playwright.TbCheckboxGroupLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.DatePicker(Microsoft.Playwright.ILocator! input) -> Trailblazor.Testing.Playwright.TbDatePickerLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.RadioGroup(Microsoft.Playwright.ILocator! group) -> Trailblazor.Testing.Playwright.TbRadioGroupLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.RangeSlider(Microsoft.Playwright.ILocator! slider) -> Trailblazor.Testing.Playwright.TbRangeSliderLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Rating(Microsoft.Playwright.ILocator! rating) -> Trailblazor.Testing.Playwright.TbRatingLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.RichTextEditor(Microsoft.Playwright.ILocator! input) -> Trailblazor.Testing.Playwright.TbRichTextEditorLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Slider(Microsoft.Playwright.ILocator! slider) -> Trailblazor.Testing.Playwright.TbSliderLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Switch(Microsoft.Playwright.ILocator! box) -> Trailblazor.Testing.Playwright.TbCheckboxLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.TagInput(Microsoft.Playwright.ILocator! input) -> Trailblazor.Testing.Playwright.TbTagInputLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.TimePicker(Microsoft.Playwright.ILocator! input) -> Trailblazor.Testing.Playwright.TbTimePickerLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.ToggleGroup(Microsoft.Playwright.ILocator! group) -> Trailblazor.Testing.Playwright.TbToggleGroupLocator!
+Trailblazor.Testing.Playwright.TbCheckboxGroupLocator.TbCheckboxGroupLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! group) -> void
+Trailblazor.Testing.Playwright.TbDatePickerLocator.TbDatePickerLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! input) -> void
+Trailblazor.Testing.Playwright.TbRadioGroupLocator.TbRadioGroupLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! group) -> void
+Trailblazor.Testing.Playwright.TbRangeSliderLocator.TbRangeSliderLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! root) -> void
+Trailblazor.Testing.Playwright.TbRatingLocator.TbRatingLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! rating) -> void
+Trailblazor.Testing.Playwright.TbRichTextEditorLocator.TbRichTextEditorLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! input) -> void
+Trailblazor.Testing.Playwright.TbSliderLocator.TbSliderLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! input) -> void
+Trailblazor.Testing.Playwright.TbTagInputLocator.TbTagInputLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! input) -> void
+Trailblazor.Testing.Playwright.TbTimePickerLocator.TbTimePickerLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! input) -> void
+Trailblazor.Testing.Playwright.TbToggleGroupLocator.TbToggleGroupLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! group) -> void

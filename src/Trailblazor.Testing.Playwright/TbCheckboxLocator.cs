@@ -2,16 +2,15 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbCheckbox</c> or <c>TbSwitch</c>, found by its label.</summary>
+/// <summary>A <c>TbCheckbox</c> or <c>TbSwitch</c>, found by its label or a locator.</summary>
 public sealed class TbCheckboxLocator : TbFieldLocator
 {
     private protected override ILocator Control => _box;
 
     private readonly ILocator _box;
 
-    internal TbCheckboxLocator(ILocator scope, string label, bool isSwitch) =>
-        _box = scope.GetByLabel(FieldLabel.Matching(label))
-            .And(scope.Locator(isSwitch ? ".tb-switch input[role=switch]" : ".tb-checkbox input[type=checkbox]"));
+    internal TbCheckboxLocator(ILocator scope, ILocator box, bool isSwitch) =>
+        _box = box.And(scope.Locator(isSwitch ? ".tb-switch input[role=switch]" : ".tb-checkbox input[type=checkbox]"));
 
     /// <summary>Whether it's checked, or on for a switch.</summary>
     public Task<bool> CheckedAsync() => _box.IsCheckedAsync();

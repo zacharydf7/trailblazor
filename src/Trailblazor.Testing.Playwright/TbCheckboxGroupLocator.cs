@@ -2,13 +2,12 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbCheckboxGroup</c>, found by its label. Its options are named by their text.</summary>
-public sealed class TbCheckboxGroupLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbCheckboxGroup</c>, found by its label or a locator. Its options are named by their text.</summary>
+public sealed class TbCheckboxGroupLocator(ILocator scope, ILocator group) : TbFieldLocator
 {
     private protected override ILocator Control => Group;
 
-    private ILocator Group => scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) })
-        .And(scope.Locator("fieldset.tb-checkbox-group"));
+    private ILocator Group => @group.And(scope.Locator("fieldset.tb-checkbox-group"));
 
     /// <summary>The checked options' names, in order.</summary>
     public async Task<IReadOnlyList<string>> CheckedAsync() =>

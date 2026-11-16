@@ -1058,6 +1058,21 @@
             A custom trigger gets its id from <code>context.Attributes</code>, so put the id on the
             <code>TbMenu</code> or <code>TbPopover</code>, not on your button.
         </DocsCallout>
+
+        <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">With the helpers</TbText>
+        <TbText>
+            <code>page.Tb()</code> searches the whole page. Call <code>Tb()</code> on a locator to search only inside
+            it, as <code>page.GetByRole(AriaRole.Dialog, new() { Name = "Edit trail" }).Tb().Select("Size")</code>
+            does when a second dialog has a field with the same label.
+        </TbText>
+        <TbText>
+            When the app draws a field's label itself, the text on screen isn't the field's accessible name, so the
+            label can't find it. Give the helper a locator for the field instead, as
+            <code>page.Tb().Slider(page.Locator("#pace"))</code>. Many of the helpers that take a label also take a
+            locator, and look for its match inside the scope as they do for a label. Point it at the element the
+            field's id goes on: a single field's control, or the root of a range slider,
+            checkbox group, radio group, rating or toggle group.
+        </TbText>
         <CodeBlock Label="Finding components" Code="@Locators" />
 
         <DocsHeading Id="recipes" Text="Recipes" Class="docs-section" />

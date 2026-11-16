@@ -117,16 +117,33 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbViewportLocator Viewport(string? label = null) => new(scope, label);
 
     /// <summary>The <c>TbSlider</c> with this label.</summary>
-    public TbSliderLocator Slider(string label) => new(scope, label);
+    public TbSliderLocator Slider(string label) =>
+        new(scope, scope.GetByRole(AriaRole.Slider, new() { NameRegex = FieldLabel.Matching(label) }));
+
+    /// <summary>The <c>TbSlider</c> whose range input this finds, inside the scope, such as one whose label the app
+    /// draws itself, as <c>page.Locator("#pace")</c>.</summary>
+    public TbSliderLocator Slider(ILocator slider) => new(scope, slider);
 
     /// <summary>The <c>TbRangeSlider</c> with this label.</summary>
-    public TbRangeSliderLocator RangeSlider(string label) => new(scope, label);
+    public TbRangeSliderLocator RangeSlider(string label) => new(scope, TbRangeSliderLocator.Named(scope, label));
+
+    /// <summary>The <c>TbRangeSlider</c> whose root this finds, inside the scope, such as one whose label the app draws
+    /// itself, as <c>page.Locator("#elevation")</c>.</summary>
+    public TbRangeSliderLocator RangeSlider(ILocator slider) => new(scope, slider);
 
     /// <summary>The <c>TbTimePicker</c> with this label.</summary>
-    public TbTimePickerLocator TimePicker(string label) => new(scope, label);
+    public TbTimePickerLocator TimePicker(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbTimePicker</c> whose time box this finds, inside the scope, such as one whose label the app
+    /// draws itself, as <c>page.Locator("#start")</c>.</summary>
+    public TbTimePickerLocator TimePicker(ILocator input) => new(scope, input);
 
     /// <summary>The <c>TbDatePicker</c> with this label.</summary>
-    public TbDatePickerLocator DatePicker(string label) => new(scope, label);
+    public TbDatePickerLocator DatePicker(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbDatePicker</c> whose date box this finds, inside the scope, such as one whose label the app
+    /// draws itself, as <c>page.Locator("#departure")</c>.</summary>
+    public TbDatePickerLocator DatePicker(ILocator input) => new(scope, input);
 
     /// <summary>The <c>TbDateTimePicker</c> with this label.</summary>
     public TbDateTimePickerLocator DateTimePicker(string label) => new(scope, label);
@@ -268,23 +285,53 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbTextFieldLocator TextField(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbCheckbox</c> with this label.</summary>
-    public TbCheckboxLocator Checkbox(string label) => new(scope, label, isSwitch: false);
+    public TbCheckboxLocator Checkbox(string label) =>
+        new(scope, scope.GetByLabel(FieldLabel.Matching(label)), isSwitch: false);
+
+    /// <summary>The <c>TbCheckbox</c> whose box this finds, inside the scope, such as one whose label the app
+    /// draws itself, as <c>page.Locator("#terms")</c>.</summary>
+    public TbCheckboxLocator Checkbox(ILocator box) => new(scope, box, isSwitch: false);
 
     /// <summary>The <c>TbSwitch</c> with this label.</summary>
-    public TbCheckboxLocator Switch(string label) => new(scope, label, isSwitch: true);
+    public TbCheckboxLocator Switch(string label) =>
+        new(scope, scope.GetByLabel(FieldLabel.Matching(label)), isSwitch: true);
+
+    /// <summary>The <c>TbSwitch</c> whose switch this finds, inside the scope, such as one whose label the app
+    /// draws itself, as <c>page.Locator("#alerts")</c>.</summary>
+    public TbCheckboxLocator Switch(ILocator box) => new(scope, box, isSwitch: true);
 
     /// <summary>The <c>TbCheckboxGroup</c> with this label.</summary>
-    public TbCheckboxGroupLocator CheckboxGroup(string label) => new(scope, label);
+    public TbCheckboxGroupLocator CheckboxGroup(string label) =>
+        new(scope, scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) }));
+
+    /// <summary>The <c>TbCheckboxGroup</c> whose group this finds, inside the scope, such as one whose label the app
+    /// draws itself, as <c>page.Locator("#gear")</c>.</summary>
+    public TbCheckboxGroupLocator CheckboxGroup(ILocator group) => new(scope, group);
 
     /// <summary>The <c>TbRadioGroup</c> with this label.</summary>
-    public TbRadioGroupLocator RadioGroup(string label) => new(scope, label);
+    public TbRadioGroupLocator RadioGroup(string label) =>
+        new(scope, scope.GetByRole(AriaRole.Radiogroup, new() { NameRegex = FieldLabel.Matching(label) }));
+
+    /// <summary>The <c>TbRadioGroup</c> whose group this finds, inside the scope, such as one whose label the app draws
+    /// itself, as <c>page.Locator("#route")</c>.</summary>
+    public TbRadioGroupLocator RadioGroup(ILocator group) => new(scope, group);
 
     /// <summary>The <c>TbRating</c> with this label.</summary>
-    public TbRatingLocator Rating(string label) => new(scope, label);
+    public TbRatingLocator Rating(string label) =>
+        new(scope, scope.GetByRole(AriaRole.Radiogroup, new() { NameRegex = FieldLabel.Matching(label) }));
+
+    /// <summary>The <c>TbRating</c> whose group this finds, inside the scope, such as one whose label the app draws
+    /// itself, as <c>page.Locator("#effort")</c>.</summary>
+    public TbRatingLocator Rating(ILocator rating) => new(scope, rating);
 
     /// <summary>The <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c> with this label, or with this
     /// <c>AriaLabel</c> when it has no label.</summary>
-    public TbToggleGroupLocator ToggleGroup(string label) => new(scope, label);
+    public TbToggleGroupLocator ToggleGroup(string label) =>
+        new(scope, scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true }));
+
+    /// <summary>The <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c> this finds, by its group or the field around it,
+    /// inside the scope, such as one whose label the app draws itself, as <c>page.Locator("#view")</c>.</summary>
+    public TbToggleGroupLocator ToggleGroup(ILocator group) => new(scope, group);
 
     /// <summary>The <c>TbList</c> with this <c>aria-label</c>, or the only one in the scope when no name is given.
     /// </summary>
@@ -302,10 +349,19 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbNumberFieldLocator NumberField(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbTagInput</c> with this label.</summary>
-    public TbTagInputLocator TagInput(string label) => new(scope, label);
+    public TbTagInputLocator TagInput(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbTagInput</c> whose input this finds, inside the scope, such as one whose label the app draws
+    /// itself, as <c>page.Locator("#tags")</c>.</summary>
+    public TbTagInputLocator TagInput(ILocator input) => new(scope, input);
 
     /// <summary>The <c>TbRichTextEditor</c> with this label.</summary>
-    public TbRichTextEditorLocator RichTextEditor(string label) => new(scope, label);
+    public TbRichTextEditorLocator RichTextEditor(string label) =>
+        new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbRichTextEditor</c> whose editing area this finds, inside the scope, such as one whose label
+    /// the app draws itself, as <c>page.Locator("#notes")</c>.</summary>
+    public TbRichTextEditorLocator RichTextEditor(ILocator input) => new(scope, input);
 }
 
 /// <summary>A <c>TbPopover</c>, found by its trigger's name.</summary>

@@ -10,6 +10,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-16
 
+- new TbSliderLocator, TbRangeSliderLocator, TbTimePickerLocator, TbDatePickerLocator, TbCheckboxGroupLocator, TbRadioGroupLocator, TbRatingLocator, TbToggleGroupLocator, TbTagInputLocator or TbRichTextEditorLocator with a label → page.Tb().Slider(label) and the like, or new TbSliderLocator(scope, locator) and the like, given the element the field's id goes on
 - TbViewportLocator.FitAsync() and TbViewportDriver.Fit, which read the fit → CurrentFitAsync() and CurrentFit; FitAsync(ViewportFit) still sets the fit
 - DialogOptions.Attributes and DialogAttributes → DialogOptions.WindowButtonAttributes and DialogWindowButtonAttributes
 

@@ -4,13 +4,13 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbDatePicker</c>, found by its label.</summary>
-public sealed class TbDatePickerLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbDatePicker</c>, found by its label or a locator.</summary>
+public sealed class TbDatePickerLocator(ILocator scope, ILocator input) : TbFieldLocator
 {
     private protected override ILocator Control => Input;
 
     /// <summary>The box the date is typed in.</summary>
-    public ILocator Input => scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input"));
+    public ILocator Input => input.And(scope.Locator("input"));
 
     /// <summary>Types the date in the field's own format and waits until the field has taken it; null clears it. A
     /// statically rendered field gets it in the browser's own date box.</summary>
@@ -57,7 +57,7 @@ public sealed class TbDatePickerLocator(ILocator scope, string label) : TbFieldL
         // A prerendered field has no value of its own to report until the page is interactive.
         await Assertions.Expect(Input).ToHaveAttributeAsync("data-format", new Regex(".+"));
         return ReadIso(await Input.GetAttributeAsync("data-value")
-            ?? throw new InvalidOperationException($"The date picker \"{label}\" doesn't report its date."));
+            ?? throw new InvalidOperationException("This date picker doesn't report its date."));
     }
 
     internal static DateOnly? ReadIso(string? text) => string.IsNullOrEmpty(text) ? null

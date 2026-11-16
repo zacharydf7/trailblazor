@@ -2,12 +2,14 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c>, found by its label, or by its <c>AriaLabel</c>
-/// when it has no label. Its items are named by their text, or by their <c>AriaLabel</c> when they show only an icon.
-/// </summary>
-public sealed class TbToggleGroupLocator(ILocator scope, string label)
+/// <summary>A <c>TbToggleGroup</c> or <c>TbMultiToggleGroup</c>, found by its label, by its <c>AriaLabel</c> when it
+/// has no label, or by a locator. Its items are named by their text, or by their <c>AriaLabel</c> when they show
+/// only an icon.</summary>
+public sealed class TbToggleGroupLocator(ILocator scope, ILocator group)
 {
-    private ILocator Group => scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true })
+    // A group with a label or helper text sits in a field that takes its id, so the group is also looked for inside
+    // the match.
+    private ILocator Group => @group.Locator("xpath=descendant-or-self::*[@role='group'][1]")
         .And(scope.Locator(".tb-toggle-group"));
 
     /// <summary>The pressed items' names, in order.</summary>

@@ -1,0 +1,56 @@
+@page "/drawn-labels"
+
+@* Each field's label is drawn by the page, and its accessible name differs from it, so tests find each field by its
+   id. *@
+<p>Pace</p>
+<TbSlider TValue="int" AriaLabel="Walking pace" id="pace" @bind-Value="_pace" />
+<p>Elevation</p>
+<TbRangeSlider TValue="int" AriaLabel="Height band" id="elevation" @bind-Value="_elevation" />
+<p>Start</p>
+<TbTimePicker TTime="TimeOnly" AriaLabel="Start time" id="start" @bind-Value="_start" />
+<p>Departure</p>
+<TbDatePicker TDate="DateOnly" AriaLabel="Leaving on" id="departure" @bind-Value="_departure" />
+<p>Terms</p>
+<TbCheckbox AriaLabel="Agree to terms" id="terms" @bind-Value="_terms" />
+<p>Alerts</p>
+<TbSwitch AriaLabel="Trail alerts" id="alerts" @bind-Value="_alerts" />
+<p>Gear</p>
+<TbCheckboxGroup TItem="string" AriaLabel="Packed gear" id="gear" @bind-Value="_gear">
+    <TbCheckboxItem Value="@("Rope")">Rope</TbCheckboxItem>
+    <TbCheckboxItem Value="@("Stove")">Stove</TbCheckboxItem>
+</TbCheckboxGroup>
+<p>Route</p>
+<TbRadioGroup TValue="string" AriaLabel="Route taken" id="route" @bind-Value="_route">
+    <TbRadio Value="@("Ridge")">Ridge</TbRadio>
+    <TbRadio Value="@("Valley")">Valley</TbRadio>
+</TbRadioGroup>
+<p>Effort</p>
+<TbRating AriaLabel="How hard" id="effort" @bind-Value="_effort" />
+<p>View</p>
+<TbToggleGroup TValue="string" AriaLabel="Shown as" HelperText="Map or list" id="view" @bind-Value="_view">
+    <TbToggleItem Value="@("Map")" Text="Map" />
+    <TbToggleItem Value="@("List")" Text="List" />
+</TbToggleGroup>
+<p>Tags</p>
+<TbTagInput AriaLabel="Trail tags" id="tags" @bind-Value="_tags" />
+<p>Notes</p>
+<TbRichTextEditor AriaLabel="Trip notes" id="notes" @bind-Value="_notes" />
+<section data-testid="later">
+    <TbCheckbox AriaLabel="Remember me" id="remember" @bind-Value="_remember" />
+</section>
+
+@code {
+    private int _pace;
+    private SliderRange<int> _elevation = new(0, 100);
+    private TimeOnly? _start;
+    private DateOnly? _departure;
+    private bool _terms;
+    private bool _alerts;
+    private bool _remember;
+    private IReadOnlyList<string> _gear = [];
+    private string? _route;
+    private int _effort;
+    private string? _view;
+    private IReadOnlyList<string> _tags = [];
+    private string? _notes;
+}

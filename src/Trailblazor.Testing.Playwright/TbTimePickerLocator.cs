@@ -3,14 +3,13 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbTimePicker</c>, found by its label.</summary>
-public sealed class TbTimePickerLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbTimePicker</c>, found by its label or a locator.</summary>
+public sealed class TbTimePickerLocator(ILocator scope, ILocator input) : TbFieldLocator
 {
     private protected override ILocator Control => Input;
 
     /// <summary>The browser's own time box.</summary>
-    public ILocator Input => scope.GetByLabel(FieldLabel.Matching(label))
-        .And(scope.Locator("input[type=time][data-part=input]"));
+    public ILocator Input => input.And(scope.Locator("input[type=time][data-part=input]"));
 
     /// <summary>Fills the time and leaves the box, which commits it, and waits until the app has it; null clears it. A
     /// statically rendered field gets the time without waiting for the app. A read-only or disabled field throws.

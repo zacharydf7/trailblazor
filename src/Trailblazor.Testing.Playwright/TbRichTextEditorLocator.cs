@@ -2,13 +2,13 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbRichTextEditor</c>, found by its label.</summary>
-public sealed class TbRichTextEditorLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbRichTextEditor</c>, found by its label or a locator.</summary>
+public sealed class TbRichTextEditorLocator(ILocator scope, ILocator input) : TbFieldLocator
 {
     private protected override ILocator Control => Input;
 
     /// <summary>The editing area, for typing into and reading its text.</summary>
-    public ILocator Input => scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("[contenteditable]"));
+    public ILocator Input => input.And(scope.Locator("[contenteditable]"));
 
     /// <summary>Replaces the editor's text with this HTML, as pasting it over everything does, and leaves the editor,
     /// which commits it, then waits until the app has it. The editor keeps only the formats it allows, as with any
