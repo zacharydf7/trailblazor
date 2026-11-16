@@ -47,6 +47,33 @@ public class TbTreeViewTests : BunitContext
     ];
 
     [Fact]
+    public async Task Rows_ShouldCountTheUsersFinishedHandlers_WhenClickedToggledOrChecked()
+    {
+        var cut = RenderPlaces([new(1, "North", Children: [new(2, "Ridge")])],
+            parameters => parameters.Add(tree => tree.Checkable, true));
+        var before = cut.Find("[role=tree]").GetAttribute("data-commits");
+
+        await cut.Find("[role=treeitem] [data-part=toggle]").ClickAsync(new());
+        await cut.Find("[role=treeitem]").ClickAsync(new() { Detail = 1 });
+        await cut.Find("[role=treeitem] [data-part=check]").ClickAsync(new());
+        await cut.Find("[role=treeitem]").DoubleClickAsync(new());
+
+        Assert.Equal(("0", "4"), (before, cut.Find("[role=tree]").GetAttribute("data-commits")));
+    }
+
+    [Fact]
+    public async Task Rows_ShouldCountAFinishedDrop_WhenARowIsDroppedOntoAnother()
+    {
+        var moves = 0;
+        var cut = RenderPlaces([new(1, "North"), new(2, "South")],
+            parameters => parameters.Add(tree => tree.OnMove, (TreeMove<Place> _) => moves++));
+
+        await cut.Tb().Tree("Places").DragBeforeAsync(["South"], ["North"]);
+
+        Assert.Equal((1, "1"), (moves, cut.Find("[role=tree]").GetAttribute("data-commits")));
+    }
+
+    [Fact]
     public void Render_ShouldShowTheRootsClosedWithTheirTreePlaces_WhenGivenNestedItems()
     {
         var cut = RenderPlaces(Nested);

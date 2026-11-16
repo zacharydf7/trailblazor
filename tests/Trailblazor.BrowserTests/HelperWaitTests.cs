@@ -496,4 +496,60 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Equal("Slow Lake path", await page.GetByTestId("chosen").TextContentAsync());
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldReturnOnceTheAppHasRunItsCallback_WhenEachHelperActs(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-view");
+        var tree = page.Tb().Tree("Slow");
+        var slow = page.GetByTestId("slow");
+
+        // Each read follows its helper at once, with no wait of the test's own.
+        await tree.ExpandAsync("North");
+        var expanded = await slow.TextContentAsync();
+        await tree.SelectAsync("North", "Pass");
+        var selected = await slow.TextContentAsync();
+        await tree.CheckAsync("South");
+        var checks = await slow.TextContentAsync();
+        await tree.ActivateAsync("North", "Pass");
+        var activated = await slow.TextContentAsync();
+        await tree.DragBeforeAsync(["South"], ["North"]);
+
+        Assert.Equal(("expanded 1", "selected 6", "checked 4, 5", "activated Pass", "moved South"),
+            (expanded, selected, checks, activated, await slow.TextContentAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeDrag_ShouldReturnAtOnce_WhenTheDropLandsNowhere(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-view");
+
+        // Without a drop to wait for, the helper's wait would time out and throw.
+        await page.Tb().Tree("Slow").DragIntoAsync(["South"], ["South"]);
+
+        Assert.Equal("", await page.GetByTestId("slow").TextContentAsync());
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Tree("Places").DragBeforeAsync(["South"], ["North"]));
+        Assert.Contains("can't be dragged", refused.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeSelect_ShouldReturnOnceTheAppHasTheChoice_WhenItsHandlerOutlastsTheClose(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-select-states");
+
+        await page.Tb().TreeSelect("Slow trail").ChooseAsync("North ridge", "Pine Hollow");
+
+        Assert.Equal("pine", await page.GetByLabel("Slow", new() { Exact = true }).TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MultiTreeSelect_ShouldReturnOnceTheAppHasTheChecks_WhenItsHandlerOutlastsTheCheck(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-select-states");
+
+        await page.Tb().TreeSelect("Slow visits").CheckAsync("North ridge", "Eagle Ridge");
+
+        Assert.Equal("eagle", await page.GetByLabel("Slow checks", new() { Exact = true }).TextContentAsync());
+    }
 }

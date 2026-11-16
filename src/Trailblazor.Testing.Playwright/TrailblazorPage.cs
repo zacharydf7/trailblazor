@@ -1082,7 +1082,7 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
                    await BranchKeyAsync()) is { } key)
         {
             var row = await RowByKeyAsync(key);
-            await row.Locator("[data-part=toggle]").ClickAsync();
+            await HandledAsync(() => row.Locator("[data-part=toggle]").ClickAsync());
             await Assertions.Expect(row).ToHaveAttributeAsync("aria-expanded", "true");
             await Assertions.Expect(Tree.Locator("[data-part=loading]")).ToHaveCountAsync(0);
             await RowsBuiltAsync();
@@ -1107,7 +1107,7 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
             var row = await RowByKeyAsync(await Key(full[..depth]));
             if (await row.GetAttributeAsync("aria-expanded") == "false")
             {
-                await row.Locator("[data-part=toggle]").ClickAsync();
+                await HandledAsync(() => row.Locator("[data-part=toggle]").ClickAsync());
             }
 
             await Assertions.Expect(row).ToHaveAttributeAsync("aria-expanded", "true");
@@ -1122,35 +1122,39 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
         var row = await RowAsync(path);
         if (await row.GetAttributeAsync("aria-expanded") == "true")
         {
-            await row.Locator("[data-part=toggle]").ClickAsync();
+            await HandledAsync(() => row.Locator("[data-part=toggle]").ClickAsync());
         }
 
         await Assertions.Expect(row).Not.ToHaveAttributeAsync("aria-expanded", "true");
     }
 
-    /// <summary>Opens the rows above the one at this path and activates it, as double-clicking it does. That raises
-    /// the tree's <c>OnActivate</c>, and opens or closes a row with children.</summary>
+    /// <summary>Opens the rows above the one at this path and activates it, as double-clicking it does, and waits
+    /// until the app has run the tree's <c>OnActivate</c>. That also opens or closes a row with children.</summary>
     public async Task ActivateAsync(params string[] path)
     {
         await ExpandAsync(path[..^1]);
-        await (await RowAsync(path)).DblClickAsync();
+        var row = await RowAsync(path);
+        // A double-click is two clicks and then the double-click, each handled in turn.
+        await HandledAsync(() => row.DblClickAsync(), handlers: 3);
     }
 
-    /// <summary>Opens the rows above the one at this path, clicks it, and waits until it is selected.</summary>
+    /// <summary>Opens the rows above the one at this path, clicks it, and waits until it is selected and the app has
+    /// run its callbacks.</summary>
     public async Task SelectAsync(params string[] path)
     {
         await ExpandAsync(path[..^1]);
         var row = await RowAsync(path);
-        await row.ClickAsync();
+        await HandledAsync(() => row.ClickAsync());
         await Assertions.Expect(row).ToHaveAttributeAsync("aria-selected", "true");
     }
 
-    /// <summary>Opens the rows above the one at this path, and checks it.</summary>
+    /// <summary>Opens the rows above the one at this path, checks it, and waits until the app has run its callbacks.
+    /// </summary>
     public async Task CheckAsync(params string[] path)
     {
         await ExpandAsync(path[..^1]);
         var row = await RowAsync(path);
-        await row.Locator("[data-part=check]").ClickAsync();
+        await HandledAsync(() => row.Locator("[data-part=check]").ClickAsync());
         await Assertions.Expect(row).ToHaveAttributeAsync("aria-checked", "true");
     }
 
@@ -1175,6 +1179,13 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
         await Assertions.Expect(Tree).ToHaveAttributeAsync("data-ready", "");
         var sourceKey = await Key(Full(row));
         var source = await RowByKeyAsync(sourceKey);
+        if (await source.GetAttributeAsync("data-draggable") is null)
+        {
+            throw new InvalidOperationException($"The row at {string.Join(" > ", row)} can't be dragged: the tree "
+                + "needs an OnMove and mustn't be disabled, and the row must be enabled, have a value and be allowed "
+                + "by CanMoveItem.");
+        }
+
         var destination = await RowAsync(target);
         await destination.EvaluateAsync("row => row.scrollIntoView({ block: 'center' })");
         if (!await ShowsAsync(sourceKey))
@@ -1185,8 +1196,21 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
         }
 
         await source.ScrollIntoViewIfNeededAsync();
-        await PointerDrag.DragAsync(scope.Page, await BoxAsync(source, row), () => BoxAsync(destination, target), at);
+        var box = await BoxAsync(source, row);
+        // A drop onto a moving row, or where the tree allows no place, marks no row and isn't sent to the app.
+        await Commit.CountedAsync(Tree, "data-commits", () => PointerDrag.DragAsync(scope.Page, box,
+            () => BoxAsync(destination, target), at,
+            landing: async () => await Tree.Locator("[data-drop]").CountAsync() > 0));
     }
+
+    // A row shows the change before the app's callback runs, so the helpers wait for the tree's count of finished
+    // clicks, toggles and drops, the app's callbacks included.
+    private Task HandledAsync(Func<Task> act, int handlers = 1) =>
+        Commit.CountedAsync(Tree, "data-commits", async () =>
+        {
+            await act();
+            return true;
+        }, handlers);
 
     // A virtualized tree renders only the rows in view, so a row it still has must show, clipped by the tree and the
     // page as the browser measures it, to stay rendered through the drag. It checks once and never waits.

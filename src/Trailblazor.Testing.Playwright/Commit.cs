@@ -10,12 +10,13 @@ internal static class Commit
     public static Task WaitAsync(ILocator control, Func<Task<bool>> act) =>
         CountedAsync(control.Locator("xpath=ancestor-or-self::*[@data-commits][1]"), "data-commits", act);
 
-    // Waits until the count in the counter's attribute moves, which it does once the app's handler has finished. The
+    // Waits until the count in the counter's attribute has moved by the number of handlers the action raises, which it
+    // does once the app's handlers have finished; a double-click raises three, its two clicks and the double-click. The
     // wait also ends when the counter leaves the page, as when the app re-keys a control or a reload replaces the page,
     // and when a dialog opens, since a handler that awaits the dialog's answer finishes only after the test answers
     // the dialog. The wait looks through the counter's frame rather than the counter itself, so it can still see the
     // counter leave.
-    public static async Task CountedAsync(ILocator counter, string count, Func<Task<bool>> act)
+    public static async Task CountedAsync(ILocator counter, string count, Func<Task<bool>> act, int handlers = 1)
     {
         var mark = Guid.NewGuid().ToString("N");
         var before = await counter.EvaluateAsync<string?>("""
@@ -34,10 +35,11 @@ internal static class Commit
             frame = (await handle.OwnerFrameAsync())!;
         }
 
-        if (await act())
+        // A counter with no count yet, as on a static page, has no handlers to wait for.
+        if (await act() && int.TryParse(before, out var start))
         {
             await Assertions.Expect(frame.Locator($"xpath=/html[not(.//*[@data-tb-awaited='{mark}'])]"
-                + $" | //*[@data-tb-awaited='{mark}'][not(@{count}='{before}')]"
+                + $" | //*[@data-tb-awaited='{mark}'][number(@{count}) >= {start + handlers}]"
                 + $" | //dialog[@open][not(@data-tb-open-before='{mark}')]").First).ToBeAttachedAsync();
         }
     }

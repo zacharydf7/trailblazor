@@ -17,6 +17,15 @@
                        KeySelector="place => place.Id" ItemText="place => place.Name"
                        ChildrenSelector="place => place.Children" @bind-Value="_visited" />
     <output aria-label="Visited">@string.Join(", ", _visited)</output>
+    @* The app takes a moment with each choice, after the field has closed or checked the row. *@
+    <TbTreeSelect TItem="Place" TKey="string" Label="Slow trail" Items="Places" KeySelector="place => place.Id"
+                  ItemText="place => place.Name" ChildrenSelector="place => place.Children" Value="_slow"
+                  ValueChanged="@((string? id) => ChooseSlowlyAsync(id))" />
+    <output aria-label="Slow">@_slow</output>
+    <TbMultiTreeSelect TItem="Place" TKey="string" Label="Slow visits" Items="Places" KeySelector="place => place.Id"
+                       ItemText="place => place.Name" ChildrenSelector="place => place.Children" Value="_slowVisits"
+                       ValueChanged="@((IReadOnlyList<string> ids) => CheckSlowlyAsync(ids))" />
+    <output aria-label="Slow checks">@string.Join(", ", _slowVisits)</output>
 </TbStack>
 
 @code {
@@ -27,6 +36,20 @@
 
     private string? _picked = "pine";
     private IReadOnlyList<string> _visited = ["pine"];
+    private string? _slow;
+    private IReadOnlyList<string> _slowVisits = [];
+
+    private async Task ChooseSlowlyAsync(string? id)
+    {
+        await Task.Delay(1500);
+        _slow = id;
+    }
+
+    private async Task CheckSlowlyAsync(IReadOnlyList<string> ids)
+    {
+        await Task.Delay(1500);
+        _slowVisits = ids;
+    }
 
     private sealed record Place(string Id, string Name, IReadOnlyList<Place>? Children = null);
 }

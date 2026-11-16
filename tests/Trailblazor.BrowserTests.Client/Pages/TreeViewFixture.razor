@@ -24,6 +24,12 @@
                 ChildrenSelector="place => place.Children" SelectionFollowsFocus TypeAhead="false"
                 @bind-SelectedKeys="_outline" />
     <output data-testid="outline">@string.Join(", ", _outline)</output>
+    @* Callbacks that outlast the change the row shows, which the tree renders before it calls them. *@
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Slow" Items="Places" KeySelector="place => place.Id"
+                ChildrenSelector="place => place.Children" Checkable SelectedKeys="_slowSelected"
+                SelectedKeysChanged="SlowSelectAsync" CheckedKeys="_slowChecked" CheckedKeysChanged="SlowCheckAsync"
+                ExpandedKeysChanged="SlowExpandAsync" OnActivate="SlowActivateAsync" OnMove="SlowMoveAsync" />
+    <output data-testid="slow">@_slow</output>
 </TbStack>
 
 @code {
@@ -44,6 +50,9 @@
     private string? _activated;
     private string? _info;
     private int _flakyLoads;
+    private IReadOnlyCollection<int> _slowSelected = [];
+    private IReadOnlyCollection<int> _slowChecked = [];
+    private string? _slow;
 
     private void Activate(Place place) => _activated = place.Name;
 
@@ -69,5 +78,35 @@
     private sealed record Place(int Id, string Name, Place[]? Children)
     {
         public override string ToString() => Name;
+    }
+
+    private async Task SlowSelectAsync(IReadOnlyCollection<int> keys)
+    {
+        await Task.Delay(600);
+        (_slowSelected, _slow) = (keys, $"selected {string.Join(", ", keys)}");
+    }
+
+    private async Task SlowCheckAsync(IReadOnlyCollection<int> keys)
+    {
+        await Task.Delay(600);
+        (_slowChecked, _slow) = (keys, $"checked {string.Join(", ", keys.Order())}");
+    }
+
+    private async Task SlowExpandAsync(IReadOnlyCollection<int> keys)
+    {
+        await Task.Delay(600);
+        _slow = $"expanded {string.Join(", ", keys.Order())}";
+    }
+
+    private async Task SlowActivateAsync(Place place)
+    {
+        await Task.Delay(600);
+        _slow = $"activated {place.Name}";
+    }
+
+    private async Task SlowMoveAsync(TreeMove<Place> move)
+    {
+        await Task.Delay(600);
+        _slow = $"moved {move.Items[0].Name}";
     }
 }

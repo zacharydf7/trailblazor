@@ -4767,7 +4767,8 @@ public static class ExampleCatalog
             [
                 "In Playwright, `await page.Tb().TreeSelect(\"Trail\").ChooseAsync(\"River valley\", \"Cedar "
                     + "Flats\")` from `Trailblazor.Testing.Playwright` waits for the field's script, opens the tree "
-                    + "and the rows along the path, and chooses the item. `CheckAsync`, `UncheckAsync` and "
+                    + "and the rows along the path, chooses the item, and waits until the app has the value. "
+                    + "`CheckAsync`, `UncheckAsync` and "
                     + "`FilterAsync` work the same way, and `TextAsync()` reads what the field shows.",
                 "In bUnit, `await cut.Tb().TreeSelect(\"Trail\").ChooseAsync(\"River valley\", \"Cedar Flats\")` "
                     + "from `Trailblazor.Testing` does the same, and `Text` reads the field.",
@@ -8230,7 +8231,10 @@ public static class ExampleCatalog
             [
                 "In Playwright, `page.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing.Playwright` follows "
                     + "rows by their path of texts: `ExpandAsync(\"River valley\", \"Fern Gully\")`, "
-                    + "`SelectAsync(...)`, `CheckAsync(...)` and `ItemAsync(...)`.",
+                    + "`SelectAsync(...)`, `CheckAsync(...)` and `ItemAsync(...)`. The helpers that act on a row wait "
+                    + "until the app has run its callback, such as `SelectedKeysChanged` or `OnActivate`; a row shows "
+                    + "the change before the callback runs, so the wait follows the tree's count of finished handlers "
+                    + "in `data-commits`.",
                 "`ItemsAsync(...)` returns every row at a path, for rows that share their text. `ExpandAllAsync()` "
                     + "opens every row, waiting for rows that load or that a `TbTreeItem` renders once open.",
                 "`CollapseAsync(...)` closes a row, and `ActivateAsync(...)` double-clicks one, which raises "

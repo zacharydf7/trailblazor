@@ -15,6 +15,7 @@
      aria-multiselectable="@(!IsEmpty && SelectionMode == SelectionMode.Multiple ? "true" : null)"
      aria-disabled="@(Disabled ? "true" : null)" aria-busy="@(Building ? "true" : null)"
      @ontbtreedrop="OnDropAsync" @ontbtreedrop:stopPropagation
+     data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
      data-virtual="@(Virtualize ? "" : null)" data-rows="@(Virtualize ? _rows.Count : null)"
      data-move-positions="@(OnMove.HasDelegate ? MovePositionsAttribute : null)"
      data-follows-focus="@(FollowsFocus ? "" : null)" data-no-typeahead="@(TypeAhead ? null : "")"

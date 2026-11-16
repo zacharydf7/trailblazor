@@ -79,6 +79,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-15
 
+- A tree view counts the user's finished clicks, toggles, checks and drops in `data-commits` on the tree, so a test can wait for a callback that runs after the row shows the change
 - Menus and context menus count finished item handlers in `data-commits` on their list, so a test can wait for a handler that runs after the menu closes
 - The toaster counts finished toast actions in `data-commits`, so a test can wait for an action that runs after its toast starts to fade
 - A canceled dialog's `trailblazor.outcome` is `canceled`, not `cancelled`; update dashboards and alerts that filter on the old value

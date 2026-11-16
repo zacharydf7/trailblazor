@@ -88,13 +88,17 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     // ExpandedChanged.
     private HashSet<object>? _expandedByParent;
 
+    // The user's clicks, toggles and drops whose handlers have finished, shown as data-commits.
+    private int _commits;
+
     /// <summary>Creates the tree view.</summary>
     public TbTreeView()
     {
-        _rowClick = new(key => args => OnNodeAsync(key, node => OnRowClickAsync(node, args)), byValue: true);
-        _rowDoubleClick = new(key => () => OnNodeAsync(key, OnRowDoubleClickAsync), byValue: true);
-        _toggle = new(key => () => OnNodeAsync(key, ToggleAsync), byValue: true);
-        _toggleCheck = new(key => () => OnNodeAsync(key, ToggleCheckAsync), byValue: true);
+        _rowClick = new(key => args => CountedAsync(() => OnNodeAsync(key, node => OnRowClickAsync(node, args))),
+            byValue: true);
+        _rowDoubleClick = new(key => () => CountedAsync(() => OnNodeAsync(key, OnRowDoubleClickAsync)), byValue: true);
+        _toggle = new(key => () => CountedAsync(() => OnNodeAsync(key, ToggleAsync)), byValue: true);
+        _toggleCheck = new(key => () => CountedAsync(() => OnNodeAsync(key, ToggleCheckAsync)), byValue: true);
     }
 
     /// <summary>The roots, or with a <see cref="ParentKeySelector"/>, every item. The rows are built again when this
@@ -1297,13 +1301,13 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             : Task.FromResult(new MoveCheck(false));
 
     // A drop arrives as an event on the tree rather than a script call, so a bUnit test can raise it too.
-    private async Task OnDropAsync(TreeDropEventArgs args)
+    private Task OnDropAsync(TreeDropEventArgs args) => CountedAsync(async () =>
     {
         if (_byId.TryGetValue(args.Target, out var target))
         {
             await DropAsync(NodesOf(args.Rows), target, args.Position, keepFocus: false);
         }
-    }
+    });
 
     // A keyboard move goes before or after the row's neighbor, into the row above as its last child, or after its
     // parent.
@@ -1407,6 +1411,19 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     // A parent row that can't be selected opens or closes on a click, as a sidebar's heading does. A double-click's
     // second click and its dblclick leave it alone, so the row toggles once.
     private bool TogglesOnClick(TreeNode<TItem> node) => node.HasChildren && !CanSelect(node) && !IsItemDisabled(node);
+
+    // Counts in finally, after the app's callbacks in the handler, since the row shows the change before they run.
+    private async Task CountedAsync(Func<Task> handler)
+    {
+        try
+        {
+            await handler();
+        }
+        finally
+        {
+            _commits++;
+        }
+    }
 
     // A row's handlers find its node as they run, since a rebuild, such as after a lazy load, makes new nodes.
     private Task OnNodeAsync(object key, Func<TreeNode<TItem>, Task> handle) =>

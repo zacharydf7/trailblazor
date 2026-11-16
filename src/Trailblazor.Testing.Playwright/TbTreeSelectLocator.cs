@@ -12,13 +12,19 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
     private ILocator Trigger =>
         scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator(".tb-tree-select__trigger"));
 
-    /// <summary>Opens the tree, opens the rows above the item at this path, and chooses it, waiting until the field
-    /// has taken it and closed.</summary>
+    /// <summary>Opens the tree, opens the rows above the item at this path, and chooses it, waiting until the app has
+    /// the value and the field has closed.</summary>
     public async Task ChooseAsync(params string[] path)
     {
         var tree = await OpenTreeAsync();
         await tree.ExpandAsync(path[..^1]);
-        await (await tree.ItemAsync(path)).ClickAsync();
+        var item = await tree.ItemAsync(path);
+        // The field closes before the app has the value, so the wait follows the field's count of commits.
+        await Commit.WaitAsync(Trigger, async () =>
+        {
+            await item.ClickAsync();
+            return true;
+        });
         // The field closes in the same render that takes the choice.
         await Assertions.Expect(Trigger).ToHaveAttributeAsync("aria-expanded", "false");
     }
@@ -40,12 +46,12 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
         return new(path[^1], state[0], state[1]);
     }
 
-    /// <summary>Opens the tree, checks the item at this path in a multi tree select unless it is checked already, and
-    /// closes the tree again.</summary>
+    /// <summary>Opens the tree, checks the item at this path in a multi tree select unless it is checked already,
+    /// waits until the app has the value, and closes the tree again.</summary>
     public Task CheckAsync(params string[] path) => SetCheckedAsync(path, "true");
 
     /// <summary>Opens the tree, unchecks the item at this path in a multi tree select unless it is unchecked already,
-    /// and closes the tree again.</summary>
+    /// waits until the app has the value, and closes the tree again.</summary>
     public Task UncheckAsync(params string[] path) => SetCheckedAsync(path, "false");
 
     /// <summary>Opens the tree and types this text in its filter box, waiting until the tree shows what matches. The
@@ -117,7 +123,11 @@ public sealed class TbTreeSelectLocator(ILocator scope, string label) : TbFieldL
                     + "unchecked.");
             }
 
-            await row.Locator("[data-part=check]").ClickAsync();
+            await Commit.WaitAsync(Trigger, async () =>
+            {
+                await row.Locator("[data-part=check]").ClickAsync();
+                return true;
+            });
             await Assertions.Expect(row).Not.ToHaveAttributeAsync("aria-checked", state ?? "");
         }
 
