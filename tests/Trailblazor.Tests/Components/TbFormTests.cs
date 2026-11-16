@@ -749,7 +749,8 @@ public class TbFormTests : BunitContext
     [Fact]
     public async Task Field_ShouldShowOneRequiredMessage_WhenItBecomesDisabledAfterItCheckedItself()
     {
-        var cut = RenderLeaderForm(new EditContext(new Trip()));
+        var context = new EditContext(new Trip());
+        var cut = RenderLeaderForm(context);
         await cut.InvokeAsync(() => cut.Instance.ValidateAsync());
 
         _leaderDisabled = true;
@@ -757,6 +758,7 @@ public class TbFormTests : BunitContext
 
         Assert.Equal(["Leader is required."], cut.FindAll("[data-part=error]").Select(error => error.TextContent));
         Assert.Equal(["Leader is required."], _errors);
+        Assert.Single(context.GetValidationMessages());
     }
 
     [Fact]

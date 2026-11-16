@@ -247,6 +247,74 @@ public class FieldRequiredTests : BunitContext
         Assert.Equal(["Email is required.", "Pick a trail."], errors);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EditContext_ShouldHoldOneRequiredMessagePerField_WhenAFieldIsEmptied(bool submitted)
+    {
+        var booking = new Booking { Email = "ash@example.com", Trail = "North", Camp = "Lake", Phone = "555" };
+        var context = new EditContext(booking);
+        var fields = new (string Label, Expression<Func<string?>> Bound, Action<string?> Set, string? Message)[]
+        {
+            ("Email", () => booking.Email, text => booking.Email = text, null),
+            ("Trail", () => booking.Trail, text => booking.Trail = text, null),
+            ("Camp", () => booking.Camp, text => booking.Camp = text, "Choose a camp."),
+            ("Phone number", () => booking.Phone, text => booking.Phone = text, null),
+        };
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.EditContext, context)
+            .Add(form => form.DataAnnotations, true)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                foreach (var (label, bound, set, message) in fields)
+                {
+                    builder.OpenComponent<TbTextField<string?>>(0);
+                    builder.AddAttribute(1, nameof(TbTextField<string?>.Label), label);
+                    builder.AddAttribute(2, nameof(TbTextField<string?>.Value), bound.Compile()());
+                    builder.AddAttribute(3, nameof(TbTextField<string?>.ValueChanged),
+                        EventCallback.Factory.Create(this, set));
+                    builder.AddAttribute(4, nameof(TbTextField<string?>.ValueExpression), bound);
+                    builder.AddAttribute(5, nameof(TbTextField<string?>.Required), true);
+                    builder.AddAttribute(6, nameof(TbTextField<string?>.RequiredMessage), message);
+                    builder.CloseComponent();
+                }
+            })));
+
+        for (var index = 0; index < fields.Length; index++)
+        {
+            cut.FindAll("input")[index].Change("");
+        }
+
+        if (submitted)
+        {
+            cut.Find("form").Submit();
+        }
+
+        Assert.Equal([1, 1, 1, 1],
+            fields.Select(field => context.GetValidationMessages(FieldIdentifier.Create(field.Bound)).Count()));
+    }
+
+    [Fact]
+    public async Task Field_ShouldShowItsOwnWording_WhenTheModelsRequiredSetsAMessageAndTheUserCantChangeIt()
+    {
+        var booking = new Booking();
+        var cut = Render<TbForm>(parameters => parameters.Add(form => form.Model, booking)
+            .Add(form => form.DataAnnotations, true)
+            .Add(form => form.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbTextField<string?>>(0);
+                builder.AddAttribute(1, nameof(TbTextField<string?>.Label), "Phone number");
+                builder.AddAttribute(2, nameof(TbTextField<string?>.ValueExpression),
+                    (Expression<Func<string?>>)(() => booking.Phone));
+                builder.AddAttribute(3, nameof(TbTextField<string?>.Disabled), true);
+                builder.CloseComponent();
+            })));
+
+        await cut.InvokeAsync(() => cut.Instance.ValidateAsync());
+
+        Assert.Equal(["Phone number is required."],
+            cut.FindAll("[data-part=error]").Select(error => error.TextContent));
+    }
+
     private IRenderedComponent<TbForm> RenderTbForm(object model, Action submitted, RenderFragment fields) =>
         Render<TbForm>(parameters => parameters.Add(form => form.Model, model).Add(form => form.DataAnnotations, true)
             .Add(form => form.OnValidSubmit, (EditContext _) => submitted())
@@ -272,6 +340,23 @@ public class FieldRequiredTests : BunitContext
 
         [Required]
         public IReadOnlyList<string> Tags { get; set; } = [];
+    }
+
+    // Each field's [Required] words its message another way: the default, the field's own text, a message the field
+    // replaces, and a {0} that names the member rather than the field's label.
+    private sealed class Booking
+    {
+        [Required]
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "Trail is required.")]
+        public string? Trail { get; set; }
+
+        [Required(ErrorMessage = "Pick a camp.")]
+        public string? Camp { get; set; }
+
+        [Required(ErrorMessage = "{0} is required.")]
+        public string? Phone { get; set; }
     }
 
     private sealed class Signup

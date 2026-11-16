@@ -21,8 +21,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 {
     private readonly List<string> _messages = [];
     private RequiredAttribute? _modelRequired;
-    // The validator's message for a model [Required] that sets none; the field shows RequiredText in its place.
-    private string? _modelRequiredDefault;
+    // The validator's message for the model's [Required], in its own words; the field shows RequiredText in its place.
+    private string? _modelRequiredCopy;
     private EditContext? _editContext;
     private ValidationMessageStore? _messageStore;
     private FieldIdentifier? _field;
@@ -342,8 +342,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         _messageStore is null || ShowsRequiredMessage ? OwnMessages
             : [.. _editContext!.GetValidationMessages(_field!.Value).Select(ShownAs).Distinct()];
 
-    // A validator's default [Required] message shows as the field's own, even when the field skipped its own check.
-    private string ShownAs(string message) => message == _modelRequiredDefault ? RequiredText : message;
+    // A validator's [Required] message shows as the field's own, even when the field skipped its own check.
+    private string ShownAs(string message) => message == _modelRequiredCopy ? RequiredText : message;
 
     // Once the field has checked itself while empty and required, its messages hold the required one.
     private bool ShowsRequiredMessage => MissesRequired && _messages.Count > 0;
@@ -449,7 +449,7 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
             && member.GetCustomAttribute<RequiredAttribute>() is { AllowEmptyStrings: false } required
             ? required : null;
         // A validator names the member by its [Display] name, or else by the member's own name.
-        _modelRequiredDefault = _modelRequired is { ErrorMessage: null, ErrorMessageResourceType: null }
+        _modelRequiredCopy = _modelRequired is not null
             && ValueExpression?.Body is MemberExpression { Member: var named }
             ? _modelRequired.FormatErrorMessage(named.GetCustomAttribute<DisplayAttribute>()?.GetName() ?? named.Name)
             : null;
@@ -719,7 +719,16 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         _validationRequested = false;
     }
 
-    private void OnValidationStateChanged(object? sender, ValidationStateChangedEventArgs e) => StateHasChanged();
+    // A validator may have added or dropped its [Required] message, which decides whether the field stores its own.
+    private void OnValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        if (_messages.Contains(RequiredText))
+        {
+            Store();
+        }
+
+        StateHasChanged();
+    }
 
     private void Validate()
     {
@@ -823,7 +832,20 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     private void Store()
     {
         _messageStore?.Clear();
-        _messageStore?.Add(_field!.Value, OwnMessages);
+        _messageStore?.Add(_field!.Value, StoredMessages());
+    }
+
+    // A validator reporting the model's [Required] already holds the required message, so don't store a second copy.
+    private List<string> StoredMessages()
+    {
+        var held = HeldMessages();
+        var stored = OwnMessages.ToList();
+        if (held.Contains(RequiredText) || ValidatorRequiredCopy() is not null)
+        {
+            stored.Remove(RequiredText);
+        }
+
+        return stored;
     }
 
     private void DetachEditContext()
@@ -841,27 +863,32 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     {
         if (!ShowsRequiredMessage)
         {
-            // The field's own required message is still listed, so drop the validator's default copy, not reword it.
-            return DefaultRequiredCopy() is { } copy && HeldMessages().Contains(RequiredText) ? [copy] : [];
+            // The field's own required message is still listed, so drop the validator's copy, not reword it.
+            return ValidatorRequiredCopy() is { } copy && HeldMessages().Contains(RequiredText) ? [copy] : [];
         }
 
         // Remove one copy of each message the field shows, so a validator's duplicate of the same text stays hidden.
-        var hidden = _editContext!.GetValidationMessages(_field!.Value).ToList();
+        var hidden = HeldMessages();
         foreach (var shown in OwnMessages)
         {
             hidden.Remove(shown);
+        }
+
+        // The validator's copy that stands for the field's required message is reworded, not hidden.
+        if (ValidatorRequiredCopy() is { } standsFor && !HeldMessages().Contains(RequiredText))
+        {
+            hidden.Remove(standsFor);
         }
 
         return hidden;
     }
 
     IEnumerable<(string From, string To)> IFormField.RenamedMessages() =>
-        !ShowsRequiredMessage && DefaultRequiredCopy() is { } copy && !HeldMessages().Contains(RequiredText)
-            ? [(copy, RequiredText)] : [];
+        ValidatorRequiredCopy() is { } copy && !HeldMessages().Contains(RequiredText) ? [(copy, RequiredText)] : [];
 
-    // The validator's default [Required] message, if this field's edit-context messages hold it.
-    private string? DefaultRequiredCopy() =>
-        _modelRequiredDefault is { } copy && copy != RequiredText && HeldMessages().Contains(copy) ? copy : null;
+    // The validator's [Required] message in its own words, if this field's edit-context messages hold it.
+    private string? ValidatorRequiredCopy() =>
+        _modelRequiredCopy is { } copy && copy != RequiredText && HeldMessages().Contains(copy) ? copy : null;
 
     private List<string> HeldMessages() => [.. _editContext!.GetValidationMessages(_field!.Value)];
 
