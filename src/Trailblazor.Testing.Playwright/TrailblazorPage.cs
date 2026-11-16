@@ -1673,7 +1673,7 @@ public sealed class TbGridLocator(ILocator scope, string? name)
         var wanted = expanded ? "true" : "false";
         if (await found.GetAttributeAsync("aria-expanded") != wanted)
         {
-            await found.Locator("[data-part=tree-toggle]").ClickAsync();
+            await AnsweredAsync(() => found.Locator("[data-part=tree-toggle]").ClickAsync());
         }
 
         await Assertions.Expect(found).ToHaveAttributeAsync("aria-expanded", wanted);
@@ -1695,8 +1695,17 @@ public sealed class TbGridLocator(ILocator scope, string? name)
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
         var exactly = new Regex($"^\\s*{Regex.Escape(cell)}\\s*$");
-        await Row(cell).Locator(":scope > td").Filter(new() { HasTextRegex = exactly }).First.ClickAsync();
+        await AnsweredAsync(() => Row(cell).Locator(":scope > td").Filter(new() { HasTextRegex = exactly }).First
+            .ClickAsync());
     }
+
+    // A row, header or filter shows the user's change before the app's callbacks run, so the helpers wait for the
+    // grid's count of the changes the app has answered.
+    private Task AnsweredAsync(Func<Task> act) => Commit.CountedAsync(Root, "data-commits", async () =>
+    {
+        await act();
+        return true;
+    });
 
     /// <summary>Drags the row with a cell whose text is exactly <paramref name="row"/> by its handle onto the top half
     /// of the row with a cell whose text is exactly <paramref name="target"/>, to move it just before that row, and
@@ -1736,9 +1745,7 @@ public sealed class TbGridLocator(ILocator scope, string? name)
                 break;
             }
 
-            await header.Locator("[data-part=sort]").ClickAsync();
-            await scope.Page.WaitForFunctionAsync($"([header, before]) => ({state})(header) !== before",
-                new object[] { await header.ElementHandleAsync(), before });
+            await AnsweredAsync(() => header.Locator("[data-part=sort]").ClickAsync());
         }
 
         await Assertions.Expect(header).ToHaveAttributeAsync("aria-sort", wanted);
@@ -1749,7 +1756,14 @@ public sealed class TbGridLocator(ILocator scope, string? name)
     public async Task SelectAsync(string row)
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
-        await Row(row).Locator("[data-part=select] input").CheckAsync();
+        var box = Row(row).Locator("[data-part=select] input");
+        // A row already selected raises no change for the app to answer.
+        var changes = !await box.IsCheckedAsync();
+        await Commit.CountedAsync(Root, "data-commits", async () =>
+        {
+            await box.CheckAsync();
+            return changes;
+        });
         await Assertions.Expect(Row(row)).ToHaveAttributeAsync("data-selected", "");
     }
 
@@ -1773,19 +1787,25 @@ public sealed class TbGridLocator(ILocator scope, string? name)
         var id = await Header(column).GetAttributeAsync("data-column");
         var cell = Table.Locator($"[data-part=filter][data-column=\"{id}\"]");
         var input = cell.Locator("input");
-        await input.FillAsync(text);
-        await input.PressAsync("Enter");
         // The cell shows the filter the grid applied, as invariant text, in the render that starts loading its rows. A
         // number box holds invariant text too, but rewrites what was typed, such as .5 as 0.5.
-        if (text.Length == 0)
+        var applied = text.Length == 0 ? null : await input.GetAttributeAsync("type") == "number"
+            && decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
+            ? number.ToString(CultureInfo.InvariantCulture) : text;
+        // The filter the grid already has raises no change for the app to answer.
+        var changes = await cell.GetAttributeAsync("data-value") != applied;
+        await Commit.CountedAsync(Root, "data-commits", async () =>
+        {
+            await input.FillAsync(text);
+            await input.PressAsync("Enter");
+            return changes;
+        });
+        if (applied is null)
         {
             await Assertions.Expect(cell).Not.ToHaveAttributeAsync("data-value", new Regex(""));
         }
         else
         {
-            var applied = await input.GetAttributeAsync("type") == "number"
-                && decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
-                ? number.ToString(CultureInfo.InvariantCulture) : text;
             await Assertions.Expect(cell).ToHaveAttributeAsync("data-value", applied);
         }
 
@@ -1822,7 +1842,7 @@ public sealed class TbGridLocator(ILocator scope, string? name)
             // Clearing first leaves only the choices asked for; the filter's value goes in the same render.
             if (await cell.GetAttributeAsync("data-value") is not null)
             {
-                await cell.Locator("[data-part=clear]").ClickAsync();
+                await AnsweredAsync(() => cell.Locator("[data-part=clear]").ClickAsync());
                 await Assertions.Expect(cell).Not.ToHaveAttributeAsync("data-value", new Regex(""));
             }
 
@@ -1884,7 +1904,7 @@ public sealed class TbGridLocator(ILocator scope, string? name)
             throw new InvalidOperationException("The column's filter is a template; use the controls it draws.");
         }
 
-        await panel.Locator("[data-part=filter-apply]").ClickAsync();
+        await AnsweredAsync(() => panel.Locator("[data-part=filter-apply]").ClickAsync());
         await Assertions.Expect(panel).ToBeHiddenAsync();
         await WaitForRowsAsync();
     }
@@ -1995,6 +2015,12 @@ public sealed class TbPaginationLocator(ILocator scope, string? name)
         var box = Navigation.Locator("[data-part=page-box] input");
         if (await box.CountAsync() > 0)
         {
+            // The current page typed again raises no change for the app to answer.
+            if (await CurrentAsync() == number)
+            {
+                return;
+            }
+
             await GoAsync(number, async () =>
             {
                 await box.FillAsync(number.ToString(CultureInfo.InvariantCulture));
@@ -2038,7 +2064,12 @@ public sealed class TbPaginationLocator(ILocator scope, string? name)
             await Assertions.Expect(Navigation).ToHaveAttributeAsync("data-ready", "");
         }
 
-        await act();
+        // The page shown changes before the app's PageChanged runs, so the wait follows the count of finished changes.
+        await Commit.CountedAsync(Navigation, "data-commits", async () =>
+        {
+            await act();
+            return true;
+        });
         await Assertions.Expect(Navigation)
             .ToHaveAttributeAsync("data-page", number.ToString(CultureInfo.InvariantCulture));
     }

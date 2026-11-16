@@ -113,8 +113,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private ControlTelemetry? _telemetry;
     private int _columnVersion;
     private int _rowVersion;
-    // Counts the row moves and batch saves the user asked for that the app has answered, done or refused, so a test can
-    // wait for its own.
+    // Counts the changes the user made, such as a sort, filter, page, selection, row click, row move or batch save,
+    // that the app has answered, done or refused, so a test can wait for its own.
     private int _answered;
     private object? _arrangedFor;
     private object? _rowOptions;
@@ -125,12 +125,15 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <summary>Creates the data grid.</summary>
     public TbDataGrid()
     {
-        _sort = new(column => args => SortAsync(column, args));
-        _rowClick = new(key => args => OnRowAsync(key, item => OnRowClickedAsync(item, args)), byValue: true);
-        _rowExtend = new(key => args => OnRowAsync(key, item => OnRowExtendedAsync(item, args)), byValue: true);
-        _choose = new(key => () => OnRowAsync(key, ChooseAsync), byValue: true);
-        _toggleDetail = new(key => () => OnRowAsync(key, ToggleDetailAsync), byValue: true);
-        _toggleChildren = new(key => () => OnRowAsync(key, ToggleChildrenAsync), byValue: true);
+        _sort = new(column => args => AnsweredAsync(() => SortAsync(column, args)));
+        // A click the row ignores, such as one on its checkbox that its own handler counts, isn't counted again.
+        _rowClick = new(key => args => args.Ignored ? Task.CompletedTask
+            : AnsweredAsync(() => OnRowAsync(key, item => OnRowClickedAsync(item, args))), byValue: true);
+        _rowExtend = new(key => args => AnsweredAsync(() => OnRowAsync(key, item => OnRowExtendedAsync(item, args))),
+            byValue: true);
+        _choose = new(key => () => AnsweredAsync(() => OnRowAsync(key, ChooseAsync)), byValue: true);
+        _toggleDetail = new(key => () => AnsweredAsync(() => OnRowAsync(key, ToggleDetailAsync)), byValue: true);
+        _toggleChildren = new(key => () => AnsweredAsync(() => OnRowAsync(key, ToggleChildrenAsync)), byValue: true);
         _startEdit = new(cell => () => OnRowAsync(cell.Item1, item => StartEditAsync(item, cell.Item2)));
         _toggleGroup = new(key => () => ToggleGroup(key), byValue: true);
         _applyOnEnter = new(column => args => ApplyOnEnterAsync(column, args));
@@ -1209,11 +1212,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// shows why. A save already on its way is waited for rather than started again.</summary>
     public Task SaveChangesAsync() => _batchSave is { IsCompleted: false } saving ? saving : _batchSave = SaveBatchAsync();
 
-    private async Task SaveBatchAsync()
+    private Task SaveBatchAsync() => AnsweredAsync(SaveBatchCoreAsync);
+
+    // Runs a change the user made and counts it once it has finished, the app's callbacks included.
+    private async Task AnsweredAsync(Func<Task> change)
     {
         try
         {
-            await SaveBatchCoreAsync();
+            await change();
         }
         finally
         {
@@ -1794,18 +1800,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     // The app moves the item in its own list, often in place, so the rows are arranged again, on the page the row
     // went to. A key press keeps focus on the moved row's handle.
-    private async Task MoveRowAsync(int from, int to, string input)
-    {
-        try
-        {
-            await MoveRowCoreAsync(from, to, input);
-        }
-        finally
-        {
-            _answered++;
-            StateHasChanged();
-        }
-    }
+    private Task MoveRowAsync(int from, int to, string input) => AnsweredAsync(() => MoveRowCoreAsync(from, to, input));
 
     private async Task MoveRowCoreAsync(int from, int to, string input)
     {
@@ -2407,11 +2402,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     }
 
     // Code moves the page too, as ScrollToAsync does, so only the pager's moves count as the user's.
-    private Task PageFromPagerAsync(int page)
+    private Task PageFromPagerAsync(int page) => AnsweredAsync(() =>
     {
         Telemetry.Used(TelemetryName, "page");
         return GoToPageAsync(page);
-    }
+    });
 
     private async Task ChangePageSizeAsync(int size)
     {
@@ -2720,11 +2715,6 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private async Task OnRowClickedAsync(TItem item, RowClickEventArgs args)
     {
-        if (args.Ignored)
-        {
-            return;
-        }
-
         await OnRowClick.InvokeAsync(item);
         if (RowClickSelects && SelectionMode != SelectionMode.None)
         {

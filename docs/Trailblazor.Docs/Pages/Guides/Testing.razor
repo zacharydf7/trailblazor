@@ -1145,8 +1145,8 @@
             + "the signature's 600 by 200 space and waits until the pad has the stroke; `UndoAsync()`, `ClearAsync()` "
             + "and `TypeNameAsync(name)` use its buttons and name field, and `IsSignedAsync()` says whether anything "
             + "is drawn or typed."),
-        new("Pagination", "Its name", "`Pagination(name).GoToPageAsync(number)` goes to a page, and `PageAsync()` "
-            + "reads the current one."),
+        new("Pagination", "Its name", "`Pagination(name).GoToPageAsync(number)` goes to a page and waits until the "
+            + "app has run its `PageChanged`, and `PageAsync()` reads the current one."),
         new("Tree", "Its name", "`Tree(name)` expands, collapses, selects, checks, activates and drags rows by the "
             + "texts along their path, waiting each time until the app has run its callback; a drag that lands "
             + "nowhere, such as onto one of the moving rows, returns at once. `TextsAsync()` reads the rows that show, "
@@ -1159,11 +1159,12 @@
             + "`OptionAsync(path)` reads an item's text, and whether it's disabled and chosen."),
         new("Data grid", "Its name", "`Grid(name)` finds rows and cells by their text, and sorts, filters, selects "
             + "and pages, and `ClickRowAsync(cell)` clicks a row. `MoveRowAsync(row, index)` moves a row through its "
-            + "handle's menu, and `DragRowBeforeAsync` "
-            + "and `DragRowAfterAsync` drag it onto another row; each waits for the app's answer. `ExpandAsync(row)` "
-            + "and `CollapseAsync(row)` open and close a tree grid's row. `RowsAsync()` and `SelectedAsync()` read the "
-            + "rows shown and the selected ones as their data cells' texts, `RowCountAsync()` counts the rows shown, "
-            + "`IsBusyAsync()` reads whether rows are loading, and `WaitForRowsAsync()` waits until they've loaded."),
+            + "handle's menu, and `DragRowBeforeAsync` and `DragRowAfterAsync` drag it onto another row. "
+            + "`ExpandAsync(row)` and `CollapseAsync(row)` open and close a tree grid's row. All of these wait until "
+            + "the app has run its callbacks, such as `SortsChanged` or `OnRowClick`. `RowsAsync()` and "
+            + "`SelectedAsync()` read the rows shown and the selected ones as their data cells' texts, "
+            + "`RowCountAsync()` counts the rows shown, `IsBusyAsync()` reads whether rows are loading, and "
+            + "`WaitForRowsAsync()` waits until they've loaded."),
         new("Command palette", "Its label", "`CommandPalette(name).OpenAsync()` presses its shortcut, "
             + "`SearchAsync(text)` types and waits for the results, `ResultsAsync()` reads them, "
             + "`ChooseAsync(command)` runs one and waits until the app's `OnChoose` has run, and `IsOpenAsync()` says "

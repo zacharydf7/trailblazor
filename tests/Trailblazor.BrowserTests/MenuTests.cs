@@ -208,8 +208,9 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await page.Keyboard.PressAsync("Tab");
 
+        // The next example's menu trigger is the next stop.
         await Expect(page.GetByRole(AriaRole.Menu)).ToBeHiddenAsync();
-        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "More options" })).ToBeFocusedAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Route" })).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

@@ -1,0 +1,50 @@
+@page "/grid-slow"
+
+@* A grid, a tree grid and a pagination with slow callbacks, so each shows the user's change well before the app's
+   handler has finished. *@
+<TbDataGrid TItem="string" Items="Trails" AriaLabel="Slow trails" KeySelector="trail => trail" PageSize="2"
+            SelectionMode="SelectionMode.Multiple" SelectedItems="_selected" SelectedItemsChanged="SelectAsync"
+            OnRowClick="ClickAsync" SortsChanged="SortAsync" FiltersChanged="FilterAsync" PageChanged="PageAsync">
+    <TbColumn Field="trail => trail" Title="Name" Id="name" Sortable Filterable />
+</TbDataGrid>
+<TbDataGrid TItem="Folder" Items="Folders" AriaLabel="Slow folders" KeySelector="folder => folder.Name"
+            ChildrenSelector="folder => folder.Children" ExpandedParentsChanged="ExpandAsync">
+    <TbColumn Field="folder => folder.Name" Title="Folder" />
+</TbDataGrid>
+<TbPagination Page="_page" PageChanged="TurnAsync" PageCount="5" AriaLabel="Slow pages" />
+<output data-testid="slow">@_slow</output>
+
+@code {
+    private static readonly string[] Trails = ["Ash", "Birch", "Cedar", "Dogwood", "Elm"];
+    private static readonly Folder[] Folders = [new("Maps", [new("North", null)])];
+    private IReadOnlyCollection<string> _selected = [];
+    private int _page = 1;
+    private string _slow = "";
+
+    private Task SelectAsync(IReadOnlyCollection<string> trails) =>
+        SlowlyAsync($"selected {string.Join(", ", trails.Order())}", () => _selected = trails);
+
+    private Task ClickAsync(string trail) => SlowlyAsync($"clicked {trail}");
+
+    private Task SortAsync(IReadOnlyList<GridSort> sorts) =>
+        SlowlyAsync($"sorted {string.Join(", ", sorts.Select(sort => $"{sort.Column} {sort.Direction}"))}");
+
+    private Task FilterAsync(IReadOnlyList<GridFilter> filters) =>
+        SlowlyAsync($"filtered {string.Join(", ", filters.Select(filter => filter.Value))}");
+
+    private Task PageAsync(int page) => SlowlyAsync($"grid page {page}");
+
+    private Task ExpandAsync(IReadOnlyCollection<Folder> folders) =>
+        SlowlyAsync($"expanded {string.Join(", ", folders.Select(folder => folder.Name))}");
+
+    private Task TurnAsync(int page) => SlowlyAsync($"page {page}", () => _page = page);
+
+    private async Task SlowlyAsync(string what, Action? apply = null)
+    {
+        await Task.Delay(1500);
+        apply?.Invoke();
+        _slow = what;
+    }
+
+    private sealed record Folder(string Name, Folder[]? Children);
+}

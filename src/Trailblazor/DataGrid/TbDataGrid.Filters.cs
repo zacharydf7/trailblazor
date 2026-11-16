@@ -195,9 +195,12 @@ public partial class TbDataGrid<TItem>
         return SetFiltersAsync(column, []);
     }
 
+    private Task SetFiltersAsync(TbColumn<TItem> column, List<GridFilter> filters) =>
+        AnsweredAsync(() => ReplaceFiltersAsync(column, filters));
+
     // A column's filters are replaced together, so a range's two ends change as one. The page goes back to the first,
     // and the rows now shown are counted aloud once they have loaded, unless newer filters replaced these.
-    private async Task SetFiltersAsync(TbColumn<TItem> column, List<GridFilter> filters)
+    private async Task ReplaceFiltersAsync(TbColumn<TItem> column, List<GridFilter> filters)
     {
         List<GridFilter> next = [.. _filters.Where(filter => filter.Column != column.Key), .. filters];
         if (next.SequenceEqual(_filters))

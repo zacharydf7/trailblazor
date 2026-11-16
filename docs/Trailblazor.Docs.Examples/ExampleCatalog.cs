@@ -8717,8 +8717,11 @@ public static class ExampleCatalog
             [
                 "In Playwright, `page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row with "
                     + "`Row(\"Cedar Flats\")` and a cell with `await CellAsync(\"Cedar Flats\", \"Region\")`.",
-                "`SortAsync(\"Name\", descending: true)`, `FilterAsync(\"Name\", \"ridge\")`, `SelectAsync(...)` and "
-                    + "`GoToPageAsync(2)` drive it, and sorting, filtering and paging wait for a `DataProvider`'s rows.",
+                "`SortAsync(\"Name\", descending: true)`, `FilterAsync(\"Name\", \"ridge\")`, `SelectAsync(...)`, "
+                    + "`ClickRowAsync(...)` and `GoToPageAsync(2)` drive it. Each waits until the app has run its "
+                    + "callbacks, such as `SortsChanged` or `SelectedItemsChanged`; the grid shows a change before "
+                    + "they run, so the wait follows its count of answered changes in `data-commits`. Sorting, "
+                    + "filtering and paging also wait for a `DataProvider`'s rows.",
                 "With a `StateHref`, the sort headers and the pager are links. In an interactive grid, `SortAsync` and "
                     + "`GoToPageAsync` still work; on a static page, click the header's link, and `GoToPageAsync` "
                     + "follows the pager's. To start a test at a view, open the page at an address with "
@@ -8874,9 +8877,10 @@ public static class ExampleCatalog
             ],
             TestingTips =
             [
-                "In Playwright, `page.Tb().Grid(\"Trails by region\")` from `Trailblazor.Testing.Playwright` opens a row "
-                    + "with `ExpandAsync(\"North ridge\")` and closes it with `CollapseAsync`, each waiting for the row's "
-                    + "`aria-expanded`. In bUnit, `cut.Tb().Grid(\"Trails by region\")` has the same two.",
+                "In Playwright, `page.Tb().Grid(\"Trails by region\")` from `Trailblazor.Testing.Playwright` opens a "
+                    + "row with `ExpandAsync(\"North ridge\")` and closes it with `CollapseAsync`, each waiting until "
+                    + "the app has run its `ExpandedParentsChanged`. In bUnit, `cut.Tb().Grid(\"Trails by region\")` "
+                    + "has the same two.",
                 "Rows carry `aria-level`, from 1 for a top row, so a test can read a row's depth, and the rest of the "
                     + "[data grid's](components/data-grid#testing) helpers work as they do there.",
             ],
@@ -9224,7 +9228,8 @@ public static class ExampleCatalog
             ],
             TestingTip = "To go to a page, `await page.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from "
                 + "`Trailblazor.Testing.Playwright` clicks it, types it into a compact pagination's box, or steps "
-                + "with Next and Previous, then waits for it to be current. In bUnit, "
+                + "with Next and Previous, then waits until the app has run its `PageChanged`, which the pagination "
+                + "counts in `data-commits` since it shows the new page first. In bUnit, "
                 + "`cut.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from `Trailblazor.Testing` does the same, and "
                 + "`Page` reads the current page.",
         },

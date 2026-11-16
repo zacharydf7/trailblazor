@@ -5,9 +5,10 @@
 @inject NavigationManager Navigation
 @inject ITbLocalizer Localizer
 
-@* The testing helper reads data-page and data-page-count, and waits for data-ready before a click that needs the
-   page to be interactive. *@
+@* The testing helper reads data-page and data-page-count, waits for data-ready before a click that needs the page to
+   be interactive, and after the click for data-commits, which counts the user's page changes the app has handled. *@
 <nav @attributes="AdditionalAttributes" data-page="@CurrentPage"
+     data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
      aria-label="@(AriaLabel ?? Localizer[TbStrings.PaginationNavigation])"
      data-page-count="@Count" data-ready="@(RendererInfo.IsInteractive ? "" : null)" style="@Style"
      class="@ClassNames.Join("tb-pagination", ClassNames.Modifier("tb-pagination", Size),
@@ -28,7 +29,8 @@
                 @* The page box is the pager's own, so a form around it neither counts it nor turns it off. *@
                 <CascadingValue TValue="EditContext" Value="null">
                     <CascadingValue TValue="TbForm" Value="null">
-                        <TbNumberField TValue="int?" Value="CurrentPage" ValueChanged="GoToTypedPageAsync"
+                        <TbNumberField TValue="int?" Value="CurrentPage"
+                                       ValueChanged="(int? page) => CountedAsync(() => GoToTypedPageAsync(page))"
                                        HideStepButtons Disabled="Disabled" InputAttributes="PageBoxAttributes"
                                        data-part="page-box" Class="tb-pagination__box" />
                     </CascadingValue>
@@ -52,7 +54,8 @@
                                   Tone="@(number == CurrentPage ? Tone.Primary : Tone.Neutral)"
                                   Disabled="Disabled" aria-current="@(number == CurrentPage ? "page" : null)"
                                   aria-label="@string.Format(CultureInfo.CurrentCulture, PageLabel, number)"
-                                  OnClick="args => OnClickedAsync(args, number)" data-part="page" Class="tb-pagination__page">
+                                  OnClick="args => CountedAsync(() => OnClickedAsync(args, number))" data-part="page"
+                                  Class="tb-pagination__page">
                             @number
                         </TbButton>
                     </li>
@@ -76,6 +79,8 @@
 </nav>
 
 @code {
+    private int _commits;
+
     /// <summary>The current page, from 1. Bind it with <c>@bind-Page</c>.</summary>
     [Parameter]
     public int Page { get; set; } = 1;
@@ -148,7 +153,7 @@
         @<TbIconButton Icon="icon" AriaLabel="@label" Href="@PageHref?.Invoke(Math.Clamp(page, 1, Count))" Size="Size"
                        Disabled="@(Disabled || page < 1 || page > Count || page == Page)"
                        FocusableWhenDisabled="!Disabled"
-                       OnClick="args => OnClickedAsync(args, page)"
+                       OnClick="args => CountedAsync(() => OnClickedAsync(args, page))"
                        data-part="@part" Class="tb-pagination__step" />;
 
     /// <inheritdoc />
@@ -158,6 +163,20 @@
         {
             throw new InvalidOperationException(
                 "A pagination needs a PageCount and SiblingCount of 0 or more, and a BoundaryCount of 1 or more.");
+        }
+    }
+
+    // Counts a page change the user made once it has finished, the app's PageChanged included, since the page shown
+    // changes before the app's handler runs.
+    private async Task CountedAsync(Func<Task> change)
+    {
+        try
+        {
+            await change();
+        }
+        finally
+        {
+            _commits++;
         }
     }
 

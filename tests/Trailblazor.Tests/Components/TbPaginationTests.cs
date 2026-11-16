@@ -41,6 +41,19 @@ public class TbPaginationTests : BunitContext
     }
 
     [Fact]
+    public void Click_ShouldCountTheFinishedPageChanges_WhenPagesAreClickedOrTyped()
+    {
+        var cut = RenderPagination(page: 5, count: 10, compact: true);
+        var before = cut.Find("nav").GetAttribute("data-commits");
+
+        cut.Find("[data-part=next]").Click();
+        cut.Find("[data-part=page-box] input").TriggerEvent("ontbnumberchange",
+            new NumberChangeEventArgs { Value = "9" });
+
+        Assert.Equal(("0", "2"), (before, cut.Find("nav").GetAttribute("data-commits")));
+    }
+
+    [Fact]
     public void Render_ShouldTurnOffTheStepsAtEachEndButKeepThemFocusable_WhenOnTheFirstOrLastPage()
     {
         var cut = RenderPagination(page: 1, count: 3, showFirstLast: true);

@@ -520,6 +520,50 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldReturnOnceTheAppHasRunItsCallback_WhenEachHelperActs(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-slow");
+        var grid = page.Tb().Grid("Slow trails");
+        var slow = page.GetByTestId("slow");
+
+        // Each read follows its helper at once, with no wait of the test's own.
+        await grid.SelectAsync("Ash");
+        var selected = await slow.TextContentAsync();
+        // A row click raises OnRowClick, then selects the row.
+        await grid.ClickRowAsync("Birch");
+        var clicked = await slow.TextContentAsync();
+        await grid.SortAsync("Name", descending: true);
+        var sorted = await slow.TextContentAsync();
+        await grid.GoToPageAsync(2);
+        var paged = await slow.TextContentAsync();
+        // Filtering goes back to the first page, which the app hears of last.
+        await grid.FilterAsync("Name", "a");
+        var filtered = await slow.TextContentAsync();
+        await page.Tb().Grid("Slow folders").ExpandAsync("Maps");
+        var expanded = await slow.TextContentAsync();
+        await page.Tb().Pagination("Slow pages").GoToPageAsync(3);
+
+        Assert.Equal(("selected Ash", "selected Ash, Birch", "sorted name Descending", "grid page 2", "grid page 1",
+            "expanded Maps", "page 3"), (selected, clicked, sorted, paged, filtered, expanded,
+            await slow.TextContentAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task GridAndPagination_ShouldReturnAtOnce_WhenTheRowOrPageIsAlreadyAsAsked(string browser)
+    {
+        var page = await OpenAsync(browser, "/grid-slow");
+        var grid = page.Tb().Grid("Slow trails");
+        await grid.SelectAsync("Ash");
+        var pages = await OpenAsync(browser, "/pagination");
+
+        // Neither changes anything, so the app has nothing to answer, and a wait for it would time out and throw.
+        await grid.SelectAsync("Ash");
+        await pages.Tb().Pagination("In a form").GoToPageAsync(1);
+
+        Assert.Equal("1", await pages.GetByTestId("box-page").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TreeDrag_ShouldReturnAtOnce_WhenTheDropLandsNowhere(string browser)
     {
         var page = await OpenAsync(browser, "/tree-view");

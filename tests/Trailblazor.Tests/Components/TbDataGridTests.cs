@@ -56,6 +56,21 @@ public class TbDataGridTests : BunitContext
     ];
 
     [Fact]
+    public async Task Grid_ShouldCountTheUsersChanges_WhenSelectedClickedSortedOrPaged()
+    {
+        var cut = RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.SelectionMode, SelectionMode.Multiple).Add(grid => grid.PageSize, 2));
+        var grid = cut.Tb().Grid("Trails");
+
+        await grid.SelectAsync("Pine Hollow");
+        await grid.ClickRowAsync("Eagle Ridge");
+        await grid.SortAsync("Name");
+        await grid.GoToPageAsync(2);
+
+        Assert.Equal("4", cut.Find("[data-part=grid]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
     public void Render_ShouldWarnOnce_WhenTheSameItemsCollectionComesBackWithAnotherCount()
     {
         var logs = new FakeLogCollector();
