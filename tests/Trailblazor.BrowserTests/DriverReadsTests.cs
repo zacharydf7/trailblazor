@@ -127,6 +127,27 @@ public class DriverReadsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TreeSelect_ShouldReadAsOpen_WhenItsToggleEventComesLate(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-select-states");
+        // The browser fires toggle a task after the panel shows; holding the listeners back widens that gap.
+        await page.AddInitScriptAsync("""
+            const add = EventTarget.prototype.addEventListener;
+            EventTarget.prototype.addEventListener = function (type, listener, options) {
+                const late = event => setTimeout(() => listener.call(this, event), 300);
+                return add.call(this, type, type === 'toggle' ? late : listener, options);
+            };
+            """);
+        await page.ReloadAsync();
+        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        var tree = page.Tb().TreeSelect("Plain trail");
+
+        await tree.OpenAsync();
+
+        Assert.True(await tree.IsOpenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldFindAFieldAndTheTabsInOneListsPanel_WhenPanelsShareLabelsAndNestTabs(string browser)
     {
         var page = await OpenAsync(browser, "/tabs-panels");

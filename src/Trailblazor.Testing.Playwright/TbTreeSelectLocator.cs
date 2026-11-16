@@ -156,6 +156,8 @@ public sealed class TbTreeSelectLocator(ILocator scope, ILocator field) : TbFiel
 
         var panel = await PanelAsync();
         await Assertions.Expect(panel).ToBeVisibleAsync();
+        // The script sets aria-expanded on toggle, which fires a task after the panel shows, and IsOpenAsync reads it.
+        await Assertions.Expect(Trigger).ToHaveAttributeAsync("aria-expanded", "true");
         return new TbTreeLocator(panel, panel.Locator(".tb-tree"));
     }
 

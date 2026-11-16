@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-16
 
+- The Playwright tree select's `OpenAsync`, and the helpers that open its tree, wait until its trigger carries `aria-expanded="true"`, so `IsOpenAsync()` returns true straight after
 - An interactive dialog counts its window state changes in `data-window-commits` once `TbDialogHeader.WindowStateChanged` has run, and the dialog's `MinimizeAsync`, `MaximizeAsync` and `RestoreAsync` wait for it in both testing packages
 - `TbRoot`'s hidden dialog element counts answered dialogs in `data-tb-answered-dialogs` on an interactive page: a `TbDialog` or `TbDrawer` once its `OpenChanged` has run, and a dialog from `IDialogService` once its result is set. The dialog's `ChooseAsync` and `CancelAsync` wait for it in both testing packages
 - The data grid's `data-commits` also counts a column the user resizes, once `StateChanged` has run; a width the grid measures for itself isn't counted
