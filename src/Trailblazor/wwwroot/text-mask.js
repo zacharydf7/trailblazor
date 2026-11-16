@@ -1,3 +1,5 @@
+import { isComposing } from '../Trailblazor.Primitives/composing.js';
+
 // Fits a field's text to its mask as it is typed, the way TextMask.cs fits it on the server: 0 takes a digit, a a
 // letter and * either, \ makes the next character literal, and every other character is shown as it is.
 const tokens = { '0': /^[0-9]$/, 'a': /^\p{L}$/u, '*': /^[\p{L}\p{Nd}]$/u };
@@ -101,9 +103,10 @@ export function createMask(input, pattern) {
             input.dispatchEvent(new Event('change', { bubbles: true }));
         }
     };
-    // Enter commits the text too, so OnEnter and the form's submit, which come after it, see the fitted text.
+    // Enter commits the text too, so OnEnter and the form's submit, which come after it, see the fitted text. An Enter
+    // that ends an input method's composition belongs to the input method, so it commits nothing.
     const onKeyDown = event => {
-        if (event.key === 'Enter') {
+        if (event.key === 'Enter' && !isComposing(event)) {
             commit();
         }
     };

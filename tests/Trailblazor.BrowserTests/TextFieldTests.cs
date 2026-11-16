@@ -448,6 +448,29 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByText("Digits: 5551234567")).ToBeVisibleAsync();
     }
 
+    [Theory, MemberData(nameof(CodeFieldTests.ComposingEnters), MemberType = typeof(CodeFieldTests))]
+    public async Task TextField_ShouldCommitOnlyAfterTheComposition_WhenEnterEndsOneInAMaskedField(string browser,
+        string composing)
+    {
+        var page = await OpenAsync(browser, "/examples/text-field");
+        var phone = page.GetByLabel("Phone");
+        await Expect(phone).ToHaveAttributeAsync("data-ready", "");
+        await phone.PressSequentiallyAsync("555");
+
+        var changes = await phone.EvaluateAsync<int[]>($$"""
+            input => {
+                let changes = 0;
+                input.addEventListener('change', () => changes++);
+                input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, {{composing}} }));
+                const composed = changes;
+                input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+                return [composed, changes];
+            }
+            """);
+
+        Assert.Equal([0, 1], changes);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldCommitTheTextTheMaskRewrote_WhenEnterCommittedEarlierInTheSameFocus(string browser)
     {

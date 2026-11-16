@@ -16,6 +16,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 - [x] Tab reaches the show-password button, and Enter or Space shows or hides the password. `TbTextField.razor`
 - [x] In a mask, typing or deleting mid-text keeps the caret in place. `TextFieldTests.TextField_ShouldKeepTheCaretInPlace_WhenADigitIsTypedOrDeletedMidMask`
 - [x] In a mask, Backspace just after a literal removes the character before it. `text-mask.js`
+- [x] In a mask, Enter that ends an input method's composition commits nothing; the next Enter commits. `TextFieldTests.TextField_ShouldCommitOnlyAfterTheComposition_WhenEnterEndsOneInAMaskedField`
 - [x] In a mask, leaving the field commits the text the mask rewrote, even after Enter committed earlier in the same focus, so a short number pasted after Enter still says it's short. If the field already had focus when the mask attached, leaving it unchanged commits nothing. `TextFieldTests.TextField_ShouldCommitTheTextTheMaskRewrote_WhenEnterCommittedEarlierInTheSameFocus`, `TextFieldTests.Mask_ShouldCommitNothing_WhenItAttachesToAFocusedFieldThatIsLeftUnchanged`
 - [x] In a read-only field, the keys move the caret but change nothing. `ReadOnlyTests.ReadOnlyField_ShouldKeepItsValueButTakeFocus_WhenTheUserTriesToEditIt`
 - [ ] In Safari, Enter in a masked field commits the fitted text before `OnEnter` runs or the form submits; `TextFieldTests.OnEnter_ShouldSeeTheFittedText_WhenEnterIsPressedInAMaskedField` checks it once WebKit runs it. UNCONFIRMED
