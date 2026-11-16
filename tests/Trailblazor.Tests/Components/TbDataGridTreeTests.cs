@@ -50,6 +50,21 @@ public class TbDataGridTreeTests : BunitContext
         [.. folders.Select(folder => folder.Id).Order()];
 
     [Fact]
+    public void RowVersion_ShouldSortAChildChangedInPlace_WhenTheParentRendersAgain()
+    {
+        List<Folder> notes = [new(2, "Notes", 3), new(3, "Plans", 9)];
+        Folder[] items = [new(1, "Docs", 5, notes)];
+        var cut = RenderFolders(parameters => parameters.Add(grid => grid.RowVersion, folder => folder.Name)
+            .Add(grid => grid.Sorts, [new GridSort("Name", SortDirection.Ascending)])
+            .Add(grid => grid.ExpandedParents, [items[0]]), items);
+
+        notes[0] = notes[0] with { Name = "Zest" };
+        cut.Render(parameters => parameters.Add(grid => grid.Striped, true));
+
+        Assert.Equal(["1 Docs", "2 Plans", "2 Zest"], Lines(cut));
+    }
+
+    [Fact]
     public void Render_ShouldShowTheTopRowsOfATreeGrid_WhenGivenAChildrenSelector()
     {
         var cut = RenderFolders();
@@ -287,6 +302,17 @@ public class TbDataGridTreeTests : BunitContext
             .Add(folder => folder.RowLabel, folder => folder.Name), items));
 
         Assert.Contains("the same key (2): \"Notes\" and \"Plans\"", error.Message);
+    }
+
+    [Fact]
+    public void Render_ShouldNameTheIndexesInItems_WhenTwoTopRowsShareAKey()
+    {
+        Folder[] items = [new(7, "Music", 4), new(1, "Docs", 5), new(1, "Drafts", 2)];
+
+        var error = Assert.Throws<InvalidOperationException>(() => RenderFolders(grid => grid
+            .Add(folder => folder.RowLabel, folder => folder.Name), items));
+
+        Assert.Contains("\"Docs\" and \"Drafts\", at indexes 1 and 2 in Items.", error.Message);
     }
 
     [Fact]

@@ -8644,7 +8644,11 @@ public static class ExampleCatalog
                     + "columns change. When a `CellTemplate` shows something else, call `RenderRows` after it "
                     + "changes. After changing `Items` in place, or after the page changes a filter of its own, call "
                     + "`RefreshAsync`. When the same collection comes back with a different count and no "
-                    + "`RefreshAsync`, the grid logs a warning once.") { Pitfall = true },
+                    + "`RefreshAsync`, the grid logs a warning once. For items changed in place, such as tracked "
+                    + "database entities, set a `RowVersion`, for example `item => item.UpdatedAt`, instead of "
+                    + "calling `RefreshAsync`: when the parent renders again, a row whose version changed draws "
+                    + "again, and the rows sort, filter and page again.")
+                    { Pitfall = true },
                 new("Each move handle is a menu with a script of its own, so set a `PageSize` on a grid with many rows "
                     + "that can move."),
                 new("A row's `data-key` is its key's text for a string, number or date key, and a made-up id such as "

@@ -5766,3 +5766,5 @@ Trailblazor.TbButtonBase.PressedLook.set -> void
 Trailblazor.TbDialogHeader.WindowStateChanged.set -> void
 Trailblazor.TbDialogHeader.WindowStateChanged.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.DialogWindowState>
 Trailblazor.IDialogService.HasOpenDialogs.get -> bool
+Trailblazor.TbDataGrid<TItem>.RowVersion.get -> System.Func<TItem, object?>?
+Trailblazor.TbDataGrid<TItem>.RowVersion.set -> void

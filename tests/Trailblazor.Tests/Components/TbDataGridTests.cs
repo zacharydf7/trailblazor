@@ -32,12 +32,14 @@ public class TbDataGridTests : BunitContext
         public string Name { get; } = name;
     }
 
-    // A class whose name can change in place, as an entity's can.
+    // A class whose name can change in place, as an entity's can, with a version that says so.
     private sealed class Shelter(int id, string name)
     {
         public int Id { get; } = id;
 
         public string Name { get; set; } = name;
+
+        public int Version { get; set; }
     }
 
     // A plain class, whose text is its type's name, so two of them can't tell rows apart without a key.
@@ -152,12 +154,40 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public async Task Render_ShouldNameEachRowBesideItsIndexInItems_WhenSortedRowsShareAKey()
+    {
+        var cut = RenderTrails(configure: grid => grid.Add(trail => trail.RowLabel, trail => trail.Name));
+        await cut.Tb().Grid("Trails").SortAsync("Name");
+
+        // Sorted by name, the clashing rows show in the other order, and further apart, than in Items.
+        var error = Assert.Throws<InvalidOperationException>(() => cut.Render(parameters => parameters
+            .Add(grid => grid.Items, [Trails[4], Trails[0], Trails[1] with { Id = Trails[0].Id }, Trails[2]])));
+
+        Assert.Contains($"\"{Trails[0].Name}\" and \"{Trails[1].Name}\", at indexes 1 and 2 in Items.", error.Message);
+    }
+
+    [Fact]
+    public void Render_ShouldNotWarn_WhenTheGridHasARowVersion()
+    {
+        var logs = new FakeLogCollector();
+        Services.AddSingleton<ILogger<TbDataGrid<Trail>>>(new FakeLogger<TbDataGrid<Trail>>(logs));
+        List<Trail> trails = [.. Trails];
+        var cut = RenderTrails(trails, grid => grid.Add(trail => trail.RowVersion, trail => trail.Id));
+
+        trails.Add(trails[0] with { Id = 99 });
+        cut.Render(parameters => parameters.Add(grid => grid.Items, trails));
+
+        Assert.DoesNotContain(logs.GetSnapshot(), log => log.Level == LogLevel.Warning);
+        Assert.Equal(Trails.Count + 1, cut.FindAll("tbody tr[data-part=row]").Count);
+    }
+
+    [Fact]
     public void Render_ShouldLeaveTheRowsDataOutOfTheError_WhenTwoRowsAreEqualItemsWithNoKeySelector()
     {
         var error = Assert.Throws<InvalidOperationException>(() => Render<TbDataGrid<Trail>>(parameters => parameters
             .Add(grid => grid.Items, [Trails[0], Trails[0] with { }]).Add(grid => grid.AriaLabel, "Trails")));
 
-        Assert.Contains("the same key.", error.Message);
+        Assert.Contains("the same key, at indexes 0 and 1 in Items.", error.Message);
         Assert.DoesNotContain(Trails[0].Name, error.Message);
     }
 
@@ -269,9 +299,10 @@ public class TbDataGridTests : BunitContext
     public void DataProvider_ShouldThrowNotOfferToTryAgain_WhenTwoRowsHaveTheSameKey()
     {
         var error = Assert.Throws<InvalidOperationException>(() => RenderProvided(_ =>
-            Task.FromResult(new GridResult<Trail>([Trails[0], Trails[0] with { }], 2))));
+            Task.FromResult(new GridResult<Trail>([Trails[1], Trails[0], Trails[0] with { }], 3))));
 
         Assert.Contains("KeySelector", error.Message);
+        Assert.Contains("at indexes 1 and 2 in the rows the provider returned.", error.Message);
     }
 
     [Fact]
@@ -1172,6 +1203,30 @@ public class TbDataGridTests : BunitContext
 
         Assert.Equal(["Pine Lodge", "Ridge Hut", "Lake Hut"],
             cut.FindAll("tr[data-part=row] td").Select(cell => cell.TextContent));
+    }
+
+    [Fact]
+    public async Task RowVersion_ShouldDrawAndSortChangesMadeInPlace_WhenTheParentRendersAgain()
+    {
+        List<Shelter> huts = [new(1, "Pine Hut"), new(2, "Ridge Hut")];
+        var cut = Render<TbDataGrid<Shelter>>(parameters => parameters.Add(grid => grid.Items, huts)
+            .Add(grid => grid.AriaLabel, "Huts").Add(grid => grid.KeySelector, hut => hut.Id)
+            .Add(grid => grid.RowVersion, hut => hut.Version)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Shelter>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Shelter>.Field),
+                    (Expression<Func<Shelter, object?>>)(hut => hut.Name));
+                builder.AddAttribute(2, nameof(TbColumn<Shelter>.Sortable), true);
+                builder.CloseComponent();
+            })));
+        await cut.Tb().Grid("Huts").SortAsync("Name");
+        huts[0].Name = "Zion Hut";
+        huts[0].Version++;
+
+        cut.Render(parameters => parameters.Add(grid => grid.Striped, true));
+
+        Assert.Equal(["Ridge Hut", "Zion Hut"], cut.FindAll("tr[data-part=row] td").Select(cell => cell.TextContent));
     }
 
     [Fact]

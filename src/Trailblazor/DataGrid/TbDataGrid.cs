@@ -204,6 +204,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public Func<TItem, string>? RowLabel { get; set; }
 
+    /// <summary>A value that changes whenever an item changes in place, such as <c>item => item.UpdatedAt</c> for a
+    /// tracked database entity. When the parent renders again, a row whose version changed draws again, and if any
+    /// version changed, in-memory rows (a tree grid's children too) sort, filter and page again, with no
+    /// <see cref="RefreshAsync"/>. The grid reads every item's version on each render.</summary>
+    [Parameter]
+    public Func<TItem, object?>? RowVersion { get; set; }
+
     /// <summary>Extra CSS classes for a row. A row whose classes change draws again, even when they come from outside
     /// the item, such as which row is current. A class that shades the row should also set
     /// <c>--tb-data-grid-row-shade</c> to that color, so the row's pinned cells, which paint a background of their own,
@@ -904,7 +911,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         builder.AddComponentParameter(2, nameof(GridRow<TItem>.Selected), selected);
         builder.AddComponentParameter(3, nameof(GridRow<TItem>.Class), rowClass);
         builder.AddComponentParameter(4, nameof(GridRow<TItem>.Label), label);
-        builder.AddComponentParameter(5, nameof(GridRow<TItem>.Version), _rowVersion);
+        builder.AddComponentParameter(5, nameof(GridRow<TItem>.Version), (_rowVersion, RowVersion?.Invoke(item)));
         builder.AddComponentParameter(6, nameof(GridRow<TItem>.Editing),
             _edit is { } edit && Equals(edit.Key, key) ? (edit, _editVersion) : null);
         var expanded = HasDetails && IsExpanded(item);
@@ -1956,7 +1963,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // In-memory rows sort and page again only when something that orders them changed, not on every parent render.
     private void Arrange(bool force)
     {
-        if (!force && ArrangedFor.Equals(_arrangedFor))
+        var versions = ItemsVersion;
+        if (!force && ArrangedFor(versions).Equals(_arrangedFor))
         {
             return;
         }
@@ -1984,22 +1992,24 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         _page = Math.Min(_page, PageCount);
         ShowLines(_pageSize is { } size ? [.. lines.Skip((_page - 1) * size).Take(size)] : lines);
-        _arrangedFor = ArrangedFor;
+        _arrangedFor = ArrangedFor(versions);
     }
 
     private int? ItemsCount => Items?.TryGetNonEnumeratedCount(out var count) == true ? count : null;
 
     // RefreshAsync records the count, so the same collection with another count was changed in place without it, and
-    // the rows are stale. It warns once, not on every render after.
+    // the rows are stale. It warns once, not on every render after. A RowVersion follows such changes by itself.
     private void WarnIfChangedInPlace()
     {
         var count = ItemsCount;
-        if (!_warnedInPlace && Items is not null && ReferenceEquals(Items, _itemsSeen) && count != _itemsCountSeen)
+        if (!_warnedInPlace && RowVersion is null && Items is not null && ReferenceEquals(Items, _itemsSeen)
+            && count != _itemsCountSeen)
         {
             _warnedInPlace = true;
             Services.GetService<ILogger<TbDataGrid<TItem>>>()?.LogWarning("The grid {Grid} got the same Items "
                 + "collection back with {Count} items instead of {Before}, so it was changed in place, and the grid "
-                + "still shows the rows it had. Pass a new collection, or call RefreshAsync after each change.",
+                + "still shows the rows it had. Pass a new collection, call RefreshAsync after each change, or give "
+                + "the grid a RowVersion.",
                 AriaLabel ?? nameof(TbDataGrid<TItem>), count, _itemsCountSeen);
         }
 
@@ -2007,14 +2017,59 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     }
 
     // A row's own data can be private, so only its RowLabel names it, and a key only when it's text or a value, as
-    // its data-key already shows; by default the key is the item itself.
-    private InvalidOperationException SameKey(object key, TItem first, TItem second, string fix) =>
-        new($"{nameof(TbDataGrid<TItem>)} has two rows with the same key"
-            + (key is string or IFormattable ? $" ({Convert.ToString(key, CultureInfo.InvariantCulture)})" : "")
-            + (RowLabel is null ? "" : $": \"{RowLabel(first)}\" and \"{RowLabel(second)}\"") + $". {fix}");
+    // its data-key already shows; by default the key is the item itself. Where the two sit in a list says nothing
+    // private, so a large grid's rows can be found whatever the key.
+    private InvalidOperationException SameKey(object key, TItem first, TItem second, string fix,
+        (IEnumerable<TItem> Items, string Name)? among = null)
+    {
+        var places = among is { } list
+            ? list.Items.Select((item, at) => (item, at)).Where(pair => Equals(KeyOf(pair.item), key)).Take(2).ToList()
+            : [];
+        // When both rows are found in the list, the labels follow its order, so each name sits beside its own index.
+        if (places.Count == 2)
+        {
+            (first, second) = (places[0].item, places[1].item);
+        }
 
-    private object ArrangedFor =>
-        (Items, _sorts, _filters, _groups, _page, _pageSize, _columnVersion, GroupTotals && HasTotals, _treeVersion);
+        return new($"{nameof(TbDataGrid<TItem>)} has two rows with the same key"
+            + (key is string or IFormattable ? $" ({Convert.ToString(key, CultureInfo.InvariantCulture)})" : "")
+            + (RowLabel is null ? "" : $": \"{RowLabel(first)}\" and \"{RowLabel(second)}\"")
+            + (places.Count == 2 ? $", at indexes {places[0].at} and {places[1].at} in {among!.Value.Name}" : "")
+            + $". {fix}");
+    }
+
+    private object ArrangedFor(int versions) => (Items, _sorts, _filters, _groups, _page, _pageSize, _columnVersion,
+        GroupTotals && HasTotals, _treeVersion, versions);
+
+    // One value that changes when any item's RowVersion does, a tree's children included, read only when the grid has
+    // one. An item met twice, as under two parents, is read once, so a tree that holds itself can't loop.
+    private int ItemsVersion
+    {
+        get
+        {
+            if (RowVersion is null || Items is null)
+            {
+                return 0;
+            }
+
+            var versions = new HashCode();
+            HashSet<object> read = [];
+            void Add(IEnumerable<TItem> items)
+            {
+                foreach (var item in items.Where(item => read.Add(KeyOf(item))))
+                {
+                    versions.Add(RowVersion(item));
+                    if (ChildrenSelector?.Invoke(item) is { } children)
+                    {
+                        Add(children);
+                    }
+                }
+            }
+
+            Add(Items);
+            return versions.ToHashCode();
+        }
+    }
 
     // A tree grid's lines, where each open row's children follow it. The rows that match the filters are counted and
     // totaled at every level.
@@ -2069,7 +2124,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 {
                     throw SameKey(key, _treeItems[key], item, $"If both are the same row, it's listed twice, under two "
                         + $"parents or under itself; check the items and what {nameof(ChildrenSelector)} returns. "
-                        + $"Otherwise, give the grid a {nameof(KeySelector)} that gives each item a different key.");
+                        + $"Otherwise, give the grid a {nameof(KeySelector)} that gives each item a different key.",
+                        (Items ?? [], nameof(Items)));
                 }
 
                 if (!top)
@@ -2299,7 +2355,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         {
             var clash = rows.GroupBy(KeyOf).First(group => group.Count() > 1);
             throw SameKey(clash.Key, clash.First(), clash.ElementAt(1), $"Give the grid a {nameof(KeySelector)} that "
-                + "gives each item a different key, such as its id.");
+                + "gives each item a different key, such as its id.",
+                Items is null ? (rows, "the rows the provider returned") : (Items, nameof(Items)));
         }
 
         _rows = rows;
