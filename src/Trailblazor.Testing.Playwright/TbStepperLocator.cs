@@ -30,7 +30,8 @@ public sealed class TbStepperLocator(ILocator scope, string? name)
     }
 
     /// <summary>Waits until the page is interactive, goes to the step with this title as clicking its header does,
-    /// and waits until it's current. A step a user can't go to throws: one that's disabled, or, in a <c>Linear</c>
+    /// and waits until it's current and the app's <c>ActiveKeyChanged</c> has run. Going to the step that's already
+    /// current does nothing. A step a user can't go to throws: one that's disabled, or, in a <c>Linear</c>
     /// stepper, one ahead that isn't finished.</summary>
     public async Task GoToAsync(string title)
     {
@@ -50,7 +51,17 @@ public sealed class TbStepperLocator(ILocator scope, string? name)
         }
 
         await Assertions.Expect(Stepper).ToHaveAttributeAsync("data-ready", "");
-        await button.ClickAsync();
+        // Clicking the current step changes nothing, so the app has nothing to answer.
+        await Commit.CountedAsync(Stepper, "data-commits", async () =>
+        {
+            if (await button.GetAttributeAsync("aria-current") == "step")
+            {
+                return false;
+            }
+
+            await button.ClickAsync();
+            return true;
+        });
         await Assertions.Expect(button).ToHaveAttributeAsync("aria-current", "step");
     }
 }

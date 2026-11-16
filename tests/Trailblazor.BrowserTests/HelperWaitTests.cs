@@ -577,6 +577,7 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
             () => tb.Chip("Muddy").RemoveAsync(),
             () => tb.List("Slow campsites").ClickAsync("Lakeside"),
             () => tb.AccordionItem("Slow route").ExpandAsync(),
+            () => tb.Stepper("Slow booking").GoToAsync("Gear"),
         })
         {
             await act();
@@ -585,7 +586,8 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Equal(["alert closed", "inserted", "removed", "kept", "zoom 1.25", "pinned", "view Terrain", "slide 1",
             "region ", "color #aa0000", "day 2026-05-02 #1", "trip 2026-05-02/2026-05-04", "clicked notes", "open True",
-            "shaded", "muddy removed", "camp Lakeside", "route True"], seen);
+            "shaded", "muddy removed", "camp Lakeside", "route True",
+            "step gear"], seen);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -664,18 +666,21 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task GridAndPagination_ShouldReturnAtOnce_WhenTheRowOrPageIsAlreadyAsAsked(string browser)
+    public async Task Helpers_ShouldReturnAtOnce_WhenTheRowPageOrStepIsAlreadyAsAsked(string browser)
     {
         var page = await OpenAsync(browser, "/grid-slow");
         var grid = page.Tb().Grid("Slow trails");
         await grid.SelectAsync("Ash");
         var pages = await OpenAsync(browser, "/pagination");
+        var steps = await OpenAsync(browser, "/helpers-slow");
 
-        // Neither changes anything, so the app has nothing to answer, and a wait for it would time out and throw.
+        // None changes anything, so the app has nothing to answer, and a wait for it would time out and throw.
         await grid.SelectAsync("Ash");
         await pages.Tb().Pagination("In a form").GoToPageAsync(1);
+        await steps.Tb().Stepper("Slow booking").GoToAsync("Dates");
 
-        Assert.Equal("1", await pages.GetByTestId("box-page").TextContentAsync());
+        Assert.Equal(("1", "Dates", ""), (await pages.GetByTestId("box-page").TextContentAsync(),
+            await steps.Tb().Stepper("Slow booking").CurrentAsync(), await steps.GetByTestId("slow").TextContentAsync()));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

@@ -9195,7 +9195,9 @@ public static class ExampleCatalog
             TestingTips =
             [
                 "`page.Tb().Stepper(\"Trip booking\")` in Playwright, or `cut.Tb().Stepper(...)` in bUnit, finds "
-                    + "the stepper: `GoToAsync(\"Gear\")` goes to a step by its title, `StepsAsync()` or `Steps` "
+                    + "the stepper: `GoToAsync(\"Gear\")` goes to a step by its title and, in Playwright, waits "
+                    + "until the app's `ActiveKeyChanged` has run, which the stepper counts in `data-commits`; "
+                    + "`StepsAsync()` or `Steps` "
                     + "reads the steps' titles, and `CurrentAsync()` or `Current` reads the current step's.",
                 "To find a finished step by role yourself, match its accessible name, which ends in \"Completed\", or "
                     + "`Labels.Completed`, as in \"Trip Completed\".",

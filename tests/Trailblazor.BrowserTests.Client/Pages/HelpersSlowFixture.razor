@@ -51,6 +51,10 @@
             </TbNavGroup>
         </TbNavMenu>
     </nav>
+    <TbStepper AriaLabel="Slow booking" Linear="false" ActiveKey="@_step" ActiveKeyChanged="StepAsync">
+        <TbStep Key="dates" Title="Dates" />
+        <TbStep Key="gear" Title="Gear" />
+    </TbStepper>
     <TbAccordionItem Title="Slow route" ExpandedChanged="RouteAsync">Ridge, then lake</TbAccordionItem>
     <TbSignaturePad Label="Slow signature" Value="_signature" ValueChanged="SignAsync" Style="width: 300px" />
     <output data-testid="slow">@_slow</output>
@@ -74,6 +78,7 @@
     private Signature? _signature;
     private int _days;
     private bool _open;
+    private string? _step = "dates";
     private string _slow = "";
     private string _settings = "";
 
@@ -109,6 +114,8 @@
         await Task.Delay(1500);
         _settings = $"settings {expanded}";
     }
+
+    private Task StepAsync(string? step) => SlowlyAsync($"step {step}", () => _step = step);
 
     private Task RouteAsync(bool expanded) => SlowlyAsync($"route {expanded}");
 

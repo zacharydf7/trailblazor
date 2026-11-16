@@ -58,6 +58,20 @@ public class TbStepperTests : BunitContext
     }
 
     [Fact]
+    public async Task StepButton_ShouldCountTheMoveOnceActiveKeyChangedHasFinished_WhenTheHandlerIsSlow()
+    {
+        var changed = new TaskCompletionSource();
+        var cut = RenderStepper("Gear", parameters => parameters.Add(stepper => stepper.ActiveKeyChanged,
+            (string? _) => changed.Task));
+
+        cut.FindAll("[data-part=step-button]")[0].Click();
+        var pending = cut.Find("[data-part=stepper]").GetAttribute("data-commits");
+        await cut.InvokeAsync(changed.SetResult);
+
+        Assert.Equal(("0", "1"), (pending, cut.Find("[data-part=stepper]").GetAttribute("data-commits")));
+    }
+
+    [Fact]
     public void StepButton_ShouldDoNothing_WhenItIsTheCurrentStep()
     {
         var changes = new List<string?>();

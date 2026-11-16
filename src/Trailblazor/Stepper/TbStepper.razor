@@ -6,11 +6,13 @@
    in the list, as in "2 of 4", and the stylesheet numbers them in the same order. *@
 <ol @attributes="AdditionalAttributes" role="list" aria-label="@(AriaLabel ?? Localizer[TbStrings.StepperLabel])"
     data-part="stepper" data-ready="@(RendererInfo.IsInteractive ? "" : null)" style="@Style"
+    data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
     class="@ClassNames.Join("tb-stepper", Vertical ? "tb-stepper--vertical" : null, Class)">
     <CascadingValue Value="this">@ChildContent</CascadingValue>
 </ol>
 
 @code {
+    private int _commits;
     private string? _lastActive;
 
     /// <summary>The <see cref="TbStep"/> items, in order.</summary>
@@ -59,10 +61,19 @@
         }
     }
 
-    internal Task GoToAsync(string key)
+    // A step's click counts once the app's ActiveKeyChanged has run, so a test can wait for the app's answer.
+    internal async Task GoToAsync(string key)
     {
-        Current = key;
-        StateHasChanged();
-        return ActiveKeyChanged.InvokeAsync(key);
+        try
+        {
+            Current = key;
+            StateHasChanged();
+            await ActiveKeyChanged.InvokeAsync(key);
+        }
+        finally
+        {
+            _commits++;
+            StateHasChanged();
+        }
     }
 }

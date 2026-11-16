@@ -89,6 +89,7 @@ they run by version. The docs site's Upgrading page is built from both.
 - An interactive chip that isn't only a link counts its finished clicks, toggles and removals in `data-commits` on its root, and a list item with an `OnClick` counts its finished clicks on its `li`
 - A list item's `li` gets `data-static` on a static page and `data-ready` once it's interactive
 - An interactive accordion item's header and nav group's button count their toggles in `data-commits` once `ExpandedChanged` has run
+- An interactive stepper's list counts the step clicks that move it, in `data-commits`, once `ActiveKeyChanged` has run
 - TbRoot's dialog host renders a hidden element with `data-tb-open-dialogs`, the number of open dialogs that aren't closing
 - A static form marks its submit button busy during an enhanced post too, and drops a second submit until the answer updates the page
 - A number field too narrow for its step buttons hides them on static and prerendered pages too
