@@ -5,20 +5,20 @@
 
 <DocsArticle Class="docs-article--guide">
     <Contents>
-        @foreach (var changes in UpgradeCatalog.All)
-        {
-            <TbTableOfContentsItem TargetId="@changes.Id" Text="@changes.Title" />
-        }
+        <TbTableOfContentsItem TargetId="renamed" Text="Renamed and removed" />
+        <TbTableOfContentsItem TargetId="behavior" Text="Markup and behavior" />
         <TbTableOfContentsItem TargetId="related" Text="Related" />
     </Contents>
     <Header>
         <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Upgrading</TbText>
         <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
-            Every public name that was renamed or removed, newest first, with what to use in its place. Until the first
-            release they're listed by date; after it, by version.
+            Every public name that was renamed or removed, with what to use in its place, and every change to markup or
+            behavior that tests, styles or scripts can depend on. Both lists run newest first: by date until the first
+            release, then by version.
         </TbText>
     </Header>
     <ChildContent>
+        <DocsHeading Id="renamed" Text="Renamed and removed" Class="docs-section" />
         <DocsCallout Tone="Tone.Warning" Title="Search your markup for the old names">
             A renamed parameter still set as an attribute isn't always a build error: most components pass an
             attribute they don't know on to their element, where it does nothing. Code that calls a renamed member
@@ -26,7 +26,8 @@
         </DocsCallout>
         @foreach (var changes in UpgradeCatalog.All)
         {
-            <DocsHeading Id="@changes.Id" Text="@changes.Title" Class="docs-section" />
+            <DocsHeading Id="@changes.Id" Text="@changes.Title" Level="TextElement.H3" TextStyle="TextStyle.Subtitle"
+                         Class="docs-section" />
             <div class="docs-api" tabindex="0" role="region" aria-label="@($"Changes on {changes.Title}")">
                 <table>
                     <thead>
@@ -48,6 +49,24 @@
             </div>
         }
 
+        <DocsHeading Id="behavior" Text="Markup and behavior" Class="docs-section" />
+        <TbText>
+            Changes to parts, ids, attributes, default looks, telemetry values, interface members and other behavior an app
+            can see. Tests and styles that find an element by a part or attribute, dashboards that read telemetry,
+            and code that mocks or implements an interface depend on these as much as on API names.
+        </TbText>
+        @foreach (var changes in UpgradeCatalog.Behavior)
+        {
+            <DocsHeading Id="@changes.Id" Text="@changes.Section" Level="TextElement.H3" TextStyle="TextStyle.Subtitle"
+                         Class="docs-section">@changes.Title</DocsHeading>
+            <ul>
+                @foreach (var change in changes.Changes)
+                {
+                    <li>@DocsText.Render(change)</li>
+                }
+            </ul>
+        }
+
         <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li>
@@ -58,4 +77,3 @@
         <GuideFooter Page="GetType()" />
     </ChildContent>
 </DocsArticle>
-

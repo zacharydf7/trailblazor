@@ -441,7 +441,7 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await page.Keyboard.PressAsync("Escape");
 
-        await Expect(page.GetByTestId("result")).ToHaveTextAsync("cancelled");
+        await Expect(page.GetByTestId("result")).ToHaveTextAsync("canceled");
         await Expect(rename).ToBeFocusedAsync();
     }
 
@@ -454,7 +454,7 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await page.Mouse.ClickAsync(5, 5);
 
-        await Expect(page.GetByTestId("result")).ToHaveTextAsync("cancelled");
+        await Expect(page.GetByTestId("result")).ToHaveTextAsync("canceled");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -488,7 +488,7 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByRole(AriaRole.Dialog, new() { Name = "Hinted" })).ToBeVisibleAsync();
         await page.Keyboard.PressAsync("Escape");
 
-        await Expect(page.GetByTestId("result")).ToHaveTextAsync("hinted cancelled");
+        await Expect(page.GetByTestId("result")).ToHaveTextAsync("hinted canceled");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -508,7 +508,7 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(trail).ToHaveValueAsync("Ri");
         await page.Keyboard.PressAsync("Escape");
 
-        await Expect(page.GetByTestId("result")).ToHaveTextAsync("suggest cancelled");
+        await Expect(page.GetByTestId("result")).ToHaveTextAsync("suggest canceled");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

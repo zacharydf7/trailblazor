@@ -91,7 +91,8 @@ public class GuideTests : DocsTest
         Assert.Contains("<ImportMap />", app);
         Assert.Contains("<Routes @rendermode=", app);
         var next = cut.Find("#next-steps").ParentElement!.ParentElement!.QuerySelectorAll("a");
-        Assert.Superset(new HashSet<string?> { "guides/theming", "guides/forms", "guides/testing", "guides/accessibility" },
+        Assert.Superset(
+            new HashSet<string?> { "guides/theming", "guides/forms", "guides/testing", "guides/accessibility" },
             next.Select(link => link.GetAttribute("href")).ToHashSet());
     }
 
@@ -248,22 +249,38 @@ public class GuideTests : DocsTest
     [Fact]
     public void UpgradingGuide_ShouldShowEachDateAndChangeTheChangelogLists_WhenOpened()
     {
-        // The list runs from the first date to the next heading that isn't a date, as UpgradeCatalog reads it.
-        var changelog = File.ReadAllLines(Path.Combine(Repository.Root, "CHANGELOG.md"))
-            .SkipWhile(line => !line.StartsWith("#### ", StringComparison.Ordinal))
+        var page = PageAt("guides/upgrading")
+            .FindAll(".docs-article__body > .docs-section > h3, .docs-article__body tbody tr")
+            .Where(part => part.TagName != "H3" || part.Id!.StartsWith("changes-", StringComparison.Ordinal))
+            .Select(part => part.TagName == "H3" ? $"#### {part.Id!["changes-".Length..]}"
+                : $"- {part.Children[0].TextContent.Trim()} → {part.Children[1].TextContent.Trim()}");
+
+        Assert.Equal(ChangelogSection("Renamed and removed"), page);
+    }
+
+    [Fact]
+    public void UpgradingGuide_ShouldShowEachMarkupAndBehaviorChange_WhenOpened()
+    {
+        // The section runs from its own heading to the next h2, Related; code shows a name the changelog backticks.
+        var page = PageAt("guides/upgrading")
+            .FindAll(".docs-article__body > .docs-section > :is(h2, h3), .docs-article__body > ul > li")
+            .SkipWhile(part => part.Id != "behavior").Skip(1).TakeWhile(part => part.TagName != "H2")
+            .Select(part => part.TagName == "H3" ? $"#### {part.Id!["behavior-".Length..]}"
+                : $"- {string.Concat(part.ChildNodes.Select(node => node is AngleSharp.Dom.IElement { TagName: "CODE" }
+                    ? $"`{node.TextContent}`" : node.TextContent))}");
+
+        Assert.Equal(ChangelogSection("Markup and behavior"), page);
+    }
+
+    // A section's date headings and changes, from its "###" heading to the next "##" or "###", as UpgradeCatalog reads
+    // them.
+    private static IEnumerable<string> ChangelogSection(string name) =>
+        File.ReadAllLines(Path.Combine(Repository.Root, "CHANGELOG.md"))
+            .SkipWhile(line => line != $"### {name}").Skip(1)
             .TakeWhile(line => !line.StartsWith('#') || line.StartsWith("#### ", StringComparison.Ordinal))
             .Where(line => line.StartsWith("#### ", StringComparison.Ordinal)
                 || line.StartsWith("- ", StringComparison.Ordinal))
             .Select(line => line.Replace(@"\<", "<"));
-
-        var page = PageAt("guides/upgrading")
-            .FindAll(".docs-article__body > .docs-section > h2, .docs-article__body tbody tr")
-            .Where(part => part.TagName != "H2" || part.Id!.StartsWith("changes-", StringComparison.Ordinal))
-            .Select(part => part.TagName == "H2" ? $"#### {part.Id!["changes-".Length..]}"
-                : $"- {part.Children[0].TextContent.Trim()} → {part.Children[1].TextContent.Trim()}");
-
-        Assert.Equal(changelog, page);
-    }
 
     [Fact]
     public void TestingGuide_ShouldNameEachTestingPackagesLowestVersion_WhenOpened()

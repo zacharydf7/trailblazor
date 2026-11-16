@@ -1,7 +1,8 @@
 # Changelog
 
-Trailblazor hasn't had a release yet. Until it does, renamed and removed public API is listed by date, newest
-first; after that, by version. The docs site's Upgrading page is built from this list.
+Trailblazor hasn't had a release yet. Until it does, two lists below run by date, newest first: renamed and removed
+public API, and changes to markup and behavior that tests, styles or scripts can depend on. After the first release
+they run by version. The docs site's Upgrading page is built from both.
 
 ## Unreleased
 
@@ -73,3 +74,31 @@ first; after that, by version. The docs site's Upgrading page is built from this
 - TbDialogContent\<TResult>.CloseAsync(value) and CancelAsync() → Dialog.CloseAsync(value) and Dialog.CancelAsync()
 - TbDialogContent\<TResult>.CanDismissAsync(reason) → OnDismissAsync(reason); the dialog stays open unless the override closes it
 - new TbSelectLocator or TbColorPickerLocator with a label → page.Tb().Select(label) or ColorPicker(label)
+
+### Markup and behavior
+
+#### 2026-11-15
+
+- The toaster counts finished toast actions in `data-commits`, so a test can wait for an action that runs after its toast starts to fade
+- A canceled dialog's `trailblazor.outcome` is `canceled`, not `cancelled`; update dashboards and alerts that filter on the old value
+- When interactivity is set page by page, TbRoot's `data-tb-interactive` mark carries `data-tb-session`, and the page's root gets `data-tb-navigated` once an enhanced navigation leaves the first page. From then on `page.Tb().InteractiveAsync()` passes over TbRoot's mark, even one that first renders after the navigation
+- A text field's show-password button works on static pages too, through the page's script
+- The page's root carries `data-tb-script` once Trailblazor's script has loaded, on static pages too
+- A transfer list's root counts the commits the app has answered in `data-commits`
+- An autocomplete's list carries `data-results-for`, the text its suggestions answer
+- Leaving an autocomplete whose typed text isn't a suggestion restores the value's text, and that now counts as a commit in `data-commits`
+- A checkbox's root carries `data-indeterminate` while it shows its mixed state
+- TbRoot's `data-tb-interactive` mark comes off on an enhanced navigation when interactivity is set page by page; put a `TbInteractiveMark` in each page's interactive part to mark the page
+- `page.Tb().InteractiveAsync()` waits for the first `data-tb-interactive` mark, so a page with several marks no longer fails Playwright's strict mode
+
+#### 2026-11-14
+
+- A clickable TbListItem's `id` is on its action, the button or link, not on the item
+- Every pressed outlined or soft TbButton takes the solid fill, not only a toggle in a group
+- IDialogService.ConfirmAsync and AlertAsync take a `DialogOptions`, which breaks mock setups of the old signatures and custom IDialogService implementations
+
+#### 2026-11-13
+
+- A loading TbButton no longer has the `tb-button--loading` class; style and test `aria-busy="true"` instead
+- A tooltip's requested side is in `data-placement`; `data-side` holds the side the script placed it on
+- Setting DialogReference.Size clears a Width set earlier

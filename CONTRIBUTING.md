@@ -32,6 +32,9 @@ An issue is done when all of these hold:
   that isn't listed (RS0016), and the IDE's code fix adds it; a release moves the lines to `PublicAPI.Shipped.txt`.
 - A renamed or removed public name is listed under "Renamed and removed" in `CHANGELOG.md`, which the docs site's
   Upgrading page is built from.
+- A change to a documented part, id or attribute, a default look, a telemetry value, an interface member or other
+  behavior an app can see gets a line under "Markup and behavior" in `CHANGELOG.md`, since tests, styles, dashboards
+  and scripts depend on those as much as on API names.
 
 ## Component pages
 

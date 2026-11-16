@@ -7278,7 +7278,7 @@ public static class ExampleCatalog
                 "With `DialogOptions.TelemetryName`, such as `\"delete-trail\"`, or the `telemetryName` of "
                     + "`ConfirmAsync` and `AlertAsync`, it counts `trailblazor.control.shown` each time it opens, and "
                     + "`trailblazor.dialog.closed` and `trailblazor.dialog.duration` with `trailblazor.outcome`: "
-                    + "`confirmed`, `cancelled`, `escape`, `backdrop` or `close_button`.",
+                    + "`confirmed`, `canceled`, `escape`, `backdrop` or `close_button`.",
                 "Its `trailblazor.component` is the content's type, such as `EditTrailDialog`, `ConfirmDialog` for "
                     + "`ConfirmAsync` and `AlertAsync`, or `TbDialog` for one in markup. Its title and result are "
                     + "never recorded.",

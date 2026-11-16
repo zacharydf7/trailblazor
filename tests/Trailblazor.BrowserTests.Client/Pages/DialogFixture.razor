@@ -124,7 +124,7 @@
     private async Task RenameAsync()
     {
         var result = await Dialogs.ShowAsync<NameDialog, string>("Rename", p => p.Set(d => d.Name, "Ada"));
-        _result = result.Confirmed ? $"saved {result.Value}" : "cancelled";
+        _result = result.Confirmed ? $"saved {result.Value}" : "canceled";
     }
 
     private async Task ConfirmAsync() =>
@@ -134,26 +134,26 @@
     {
         var options = new DialogOptions { DismissOnEscape = false, DismissOnBackdrop = false };
         var result = await Dialogs.ShowAsync<NameDialog, string>("Locked", options: options);
-        _result = result.Confirmed ? "saved" : "cancelled";
+        _result = result.Confirmed ? "saved" : "canceled";
     }
 
     private async Task NestedAsync()
     {
         var result = await Dialogs.ShowAsync<OuterDialog, bool>("Outer");
-        _result = result.Confirmed ? "outer saved" : "outer cancelled";
+        _result = result.Confirmed ? "outer saved" : "outer canceled";
     }
 
     private async Task HintedAsync(bool locked)
     {
         var options = new DialogOptions { DismissOnEscape = !locked };
         var result = await Dialogs.ShowAsync<HintedDialog, string>("Hinted", options: options);
-        _result = result.Confirmed ? "hinted saved" : "hinted cancelled";
+        _result = result.Confirmed ? "hinted saved" : "hinted canceled";
     }
 
     private async Task SuggestAsync()
     {
         var result = await Dialogs.ShowAsync<SuggestDialog, string>("Suggest");
-        _result = result.Confirmed ? "suggest saved" : "suggest cancelled";
+        _result = result.Confirmed ? "suggest saved" : "suggest canceled";
     }
 
     private async Task PlacedAsync(DialogPosition position, bool modal = true) =>
@@ -194,7 +194,7 @@
     {
         var result = await Dialogs.ShowAsync<EditorDialog, string>("Editor",
             options: new() { Minimizable = true, Maximizable = true, DismissOnEscape = !locked });
-        _result = result.Confirmed ? "editor saved" : "editor cancelled";
+        _result = result.Confirmed ? "editor saved" : "editor canceled";
     }
 
     private async Task AboutAsync() =>
@@ -203,6 +203,6 @@
     private async Task PanelAsync()
     {
         var result = await Dialogs.ShowAsync<NameDialog, string>("Panel", options: new() { Modal = false });
-        _result = result.Confirmed ? "panel saved" : "panel cancelled";
+        _result = result.Confirmed ? "panel saved" : "panel canceled";
     }
 }

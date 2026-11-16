@@ -186,6 +186,15 @@ public class DocsSearchTests
             Path: "guides/upgrading#changes-2026-11-12", Match: SearchMatch.Text });
     }
 
+    [Fact]
+    public void Find_ShouldLinkAMarkupChange_WhenAnAttributeItNamesIsSearched()
+    {
+        var results = DocsSearch.Find("data-placement");
+
+        Assert.Contains(results, result => result is { Page: "Upgrading", Section: "Markup and behavior, November 13, 2026",
+            Path: "guides/upgrading#behavior-2026-11-13", Match: SearchMatch.Text });
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("   ")]

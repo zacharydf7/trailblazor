@@ -119,7 +119,7 @@ export function createPointerDrag(container,
             onDrop();
         } else {
             end();
-            // The release after a drag Escape cancelled sends its click now.
+            // The release after a drag Escape canceled sends its click now.
             if (justDragged) {
                 settle();
             }

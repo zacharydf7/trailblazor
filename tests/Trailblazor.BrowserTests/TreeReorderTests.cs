@@ -245,7 +245,7 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Escape");
         await page.Mouse.UpAsync();
         await Expect(page.Locator("[data-drop], [data-dragging]")).ToHaveCountAsync(0);
-        // A later move the server applies after it shows the cancelled drag never dropped.
+        // A later move the server applies after it shows the canceled drag never dropped.
         await page.Tb().Tree(Plan).DragIntoAsync(["Day 1", "Trailhead"], ["Day 2"]);
 
         await Expect(Rows(page)).ToHaveTextAsync(["Day 1", "Pine Hollow", "Lake camp", "Day 2", "Eagle Ridge",

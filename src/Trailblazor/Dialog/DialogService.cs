@@ -228,7 +228,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
             DialogDismissReason.Escape => "escape",
             DialogDismissReason.Backdrop => "backdrop",
             DialogDismissReason.CloseButton => "close_button",
-            _ => "cancelled",
+            _ => "canceled",
         };
         telemetry.DialogClosed(name, ComponentOf(dialog), outcome, time.GetElapsedTime(dialog.OpenedAt));
     }

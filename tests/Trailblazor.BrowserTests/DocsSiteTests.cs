@@ -97,9 +97,8 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
             "components/data-grid/api", "preview/tree-view/many-rows", "guides/getting-started", "guides/forms",
             "guides/accessibility", "guides/wrapping", "guides/theming", "guides/palettes",
             "guides/spacing", "guides/browser", "guides/testing", "guides/migrating-tests",
-            "guides/announcements", "guides/rich-text", "guides/icons", "guides/localization", "guides/right-to-left", "guides/telemetry",
-            "guides/analyzers",
-            "search?q=dialog",
+            "guides/announcements", "guides/rich-text", "guides/icons", "guides/localization", "guides/right-to-left",
+            "guides/telemetry", "guides/analyzers", "guides/upgrading", "search?q=dialog",
         })
         from theme in new[] { "light", "dark" }
         select (browser, path, theme));

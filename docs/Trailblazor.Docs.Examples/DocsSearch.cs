@@ -82,8 +82,8 @@ public static class DocsSearch
     {
         var text = GuideText.Of(guide);
         var page = new Page(guide.Title, guide.Path);
-        yield return page.Passage(null, guide.Path, $"{guide.Title} {(guide.IsRecipe ? "Recipes" : "Guides")}", $"{guide.Summary} {text.Intro}",
-            SearchMatch.Title);
+        yield return page.Passage(null, guide.Path, $"{guide.Title} {(guide.IsRecipe ? "Recipes" : "Guides")}",
+            $"{guide.Summary} {text.Intro}", SearchMatch.Title);
         foreach (var section in text.Sections)
         {
             yield return page.Passage(section.Title, $"{guide.Path}#{section.Id}", section.Title, section.Text,
@@ -98,6 +98,12 @@ public static class DocsSearch
                 yield return page.Passage(changes.Title, $"{guide.Path}#{changes.Id}", changes.Title,
                     string.Join(" ", changes.Changes.Select(change => $"{change.Old} {change.New}")),
                     SearchMatch.Heading);
+            }
+
+            foreach (var changes in UpgradeCatalog.Behavior)
+            {
+                yield return page.Passage(changes.Section, $"{guide.Path}#{changes.Id}", changes.Section,
+                    Plain(changes.Changes), SearchMatch.Heading);
             }
         }
 

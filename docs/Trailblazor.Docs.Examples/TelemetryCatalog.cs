@@ -35,7 +35,7 @@ public static class TelemetryCatalog
             + "or list box, or of an option, whether a pointer or the keyboard made it, as trailblazor.input."),
         new("trailblazor.dialog.closed", "Counter", "{dialog}",
             "Dialogs with a TelemetryName that closed, by how they closed.", [.. CommonTags, OutcomeTag],
-            "A dialog with a TelemetryName closes: confirmed, cancelled, or dismissed by escape, backdrop or "
+            "A dialog with a TelemetryName closes: confirmed, canceled, or dismissed by escape, backdrop or "
             + "close_button."),
         new("trailblazor.dialog.duration", "Histogram", "s",
             "How long dialogs with a TelemetryName stayed open, by how they closed.", [.. CommonTags, OutcomeTag],

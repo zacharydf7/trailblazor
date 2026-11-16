@@ -50,14 +50,14 @@ public class TelemetryOutcomeTests : BunitContext
         dialogs.Show<EditTrail, bool>("Unlabeled");
 
         Assert.Equal(3, shown.GetMeasurementSnapshot().Count);
-        Assert.Equal(["confirmed", "escape", "cancelled"], Outcomes(closed));
+        Assert.Equal(["confirmed", "escape", "canceled"], Outcomes(closed));
         Assert.All(closed.GetMeasurementSnapshot(), measurement =>
             Assert.Equal(nameof(EditTrail), measurement.Tags["trailblazor.component"]));
         Assert.Equal(3, duration.GetMeasurementSnapshot()[0].Value);
     }
 
     [Fact]
-    public async Task Dialog_ShouldCountItAsCancelled_WhenItsContentKeptItOpenOnEscapeAndCodeCancelsItLater()
+    public async Task Dialog_ShouldCountItAsCanceled_WhenItsContentKeptItOpenOnEscapeAndCodeCancelsItLater()
     {
         using var closed = Collect("trailblazor.dialog.closed");
         var host = Render<DialogHost>();
@@ -68,7 +68,7 @@ public class TelemetryOutcomeTests : BunitContext
         await host.InvokeAsync(() => dialog.DismissAsync(DialogDismissReason.Escape));
         await host.InvokeAsync(dialog.CancelAsync);
 
-        Assert.Equal(["cancelled"], Outcomes(closed));
+        Assert.Equal(["canceled"], Outcomes(closed));
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public class TelemetryOutcomeTests : BunitContext
         var measurement = Assert.Single(closed.GetMeasurementSnapshot());
         Assert.Equal("delete-trail", measurement.Tags["trailblazor.telemetry_name"]);
         Assert.Equal("ConfirmDialog", measurement.Tags["trailblazor.component"]);
-        Assert.Equal("cancelled", measurement.Tags["trailblazor.outcome"]);
+        Assert.Equal("canceled", measurement.Tags["trailblazor.outcome"]);
     }
 
     [Fact]

@@ -49,7 +49,7 @@ public class DialogStateTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(await IsModalAsync(dialog));
         Assert.NotEqual(Transparent, await BackdropColorAsync(dialog));
         await page.Keyboard.PressAsync("Escape");
-        await Expect(page.GetByTestId("result")).ToHaveTextAsync("editor cancelled");
+        await Expect(page.GetByTestId("result")).ToHaveTextAsync("editor canceled");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -77,7 +77,7 @@ public class DialogStateTests(BrowserFixture fixture) : BrowserTest(fixture)
         await panel.GetByLabel("Name").FocusAsync();
         await page.Keyboard.PressAsync("Escape");
 
-        await Expect(page.GetByTestId("result")).ToHaveTextAsync("panel cancelled");
+        await Expect(page.GetByTestId("result")).ToHaveTextAsync("panel canceled");
         await Expect(docked).ToBeVisibleAsync();
     }
 
