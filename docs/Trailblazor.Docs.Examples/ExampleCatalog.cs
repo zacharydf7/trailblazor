@@ -5343,7 +5343,8 @@ public static class ExampleCatalog
             ],
             TestingTip = "`await page.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` from "
                 + "`Trailblazor.Testing.Playwright` takes file paths or `FilePayload`s and waits until the field has "
-                + "taken them. In bUnit, `cut.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` chooses files "
+                + "taken them and the app's `ValueChanged` has run, which the field counts in `data-commits` on its "
+                + "root. In bUnit, `cut.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` chooses files "
                 + "from disk, giving each the type a browser would for its extension, or takes `InputFileContent`s "
                 + "made in the test. `FilesAsync()`, or `Files` in bUnit, reads the names of the files the field "
                 + "lists. The field is ready as soon as `Render` returns, with nothing left to run, so a test can "

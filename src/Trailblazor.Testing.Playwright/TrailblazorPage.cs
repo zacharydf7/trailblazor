@@ -908,11 +908,12 @@ public sealed class TbFileUploadLocator(ILocator scope, string label) : TbFieldL
         scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[type=file]"));
 
     /// <summary>Chooses the files at these paths, as dropping them or picking them in the file dialog would, and waits
-    /// until the field has taken the choice. A statically rendered field just gets the files.</summary>
+    /// until the field has taken the choice and the app's <c>ValueChanged</c> has run. A statically rendered field
+    /// just gets the files.</summary>
     public Task ChooseAsync(params string[] paths) => ChooseAsync(input => input.SetInputFilesAsync(paths));
 
     /// <summary>Chooses files made in the test, each with a <c>Name</c>, <c>MimeType</c> and <c>Buffer</c>, and waits
-    /// until the field has taken the choice.</summary>
+    /// until the field has taken the choice and the app's <c>ValueChanged</c> has run.</summary>
     public Task ChooseAsync(params FilePayload[] files) => ChooseAsync(input => input.SetInputFilesAsync(files));
 
     /// <summary>The names of the files the field lists as chosen, in order. A field with <c>Hidden</c> set lists none,
@@ -931,11 +932,13 @@ public sealed class TbFileUploadLocator(ILocator scope, string label) : TbFieldL
         }
 
         // A prerendered field is replaced once the page is interactive, and its script listens only once
-        // data-ready is set; the field counts the choices it has taken, so a new count means it has this one.
+        // data-ready is set.
         await Assertions.Expect(input).ToHaveAttributeAsync("data-ready", "");
-        var choices = await input.GetAttributeAsync("data-choices");
-        await choose(input);
-        await Assertions.Expect(input).Not.ToHaveAttributeAsync("data-choices", choices ?? "");
+        await Commit.WaitAsync(input, async () =>
+        {
+            await choose(input);
+            return true;
+        });
     }
 }
 

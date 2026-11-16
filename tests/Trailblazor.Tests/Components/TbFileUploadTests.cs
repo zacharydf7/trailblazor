@@ -29,6 +29,32 @@ public class TbFileUploadTests : BunitContext
     }
 
     [Fact]
+    public async Task Choose_ShouldCountTheChoiceOnceValueChangedHasFinished_WhenTheHandlerIsSlow()
+    {
+        var started = new TaskCompletionSource();
+        var changed = new TaskCompletionSource();
+        var cut = Render<TbFileUpload>(parameters => parameters.Add(upload => upload.Label, "Documents")
+            .Add(upload => upload.ValueChanged, (IReadOnlyList<IBrowserFile>? _) =>
+            {
+                started.TrySetResult();
+                return changed.Task;
+            }));
+        string? Commits() => cut.Find(".tb-file-upload").GetAttribute("data-commits");
+
+        // UploadFiles blocks until the field's handler finishes, so it runs aside while the handler waits.
+        var choosing = Task.Run(() => cut.FindComponent<InputFile>().UploadFiles(Pdf("trail.pdf")),
+            Xunit.TestContext.Current.CancellationToken);
+        await started.Task;
+        // The app can render the field while its handler runs, which mustn't show the choice counted yet.
+        cut.Render();
+        var pending = Commits();
+        await cut.InvokeAsync(changed.SetResult);
+        await choosing;
+
+        Assert.Equal(("0", "1"), (pending, Commits()));
+    }
+
+    [Fact]
     public void Render_ShouldTurnOffThePickerAndEveryButton_WhenReadOnly()
     {
         var cut = RenderUpload(parameters => parameters.Add(upload => upload.Multiple, true));

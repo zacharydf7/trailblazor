@@ -1141,7 +1141,8 @@
         new("Color picker", "Its label", "`ColorPicker(label).ChooseAsync(color)` picks a color, and `ValueAsync()` "
             + "reads the color the field holds."),
         new("File upload", "Its label", "`FileUpload(label).ChooseAsync(paths)` chooses files by path, or "
-            + "`FilePayload`s made in the test, and `FilesAsync()` reads the names of the files the field lists."),
+            + "`FilePayload`s made in the test, and waits until the app's `ValueChanged` has run; `FilesAsync()` reads "
+            + "the names of the files the field lists."),
         new("Date picker", "Its label", "`DatePicker(label).ChooseAsync(date)` types the date in the field's format "
             + "and waits until the field has it, and `ValueAsync()` reads it. `EnterAsync(text)` types text as it is, "
             + "such as a date the field can't read, to test its error."),

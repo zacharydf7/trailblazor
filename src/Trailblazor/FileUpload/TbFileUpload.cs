@@ -13,8 +13,6 @@ public partial class TbFileUpload
 {
     private readonly List<string> _rejected = [];
     private ListeningInputFile? _input;
-    // Counts the choices taken, which tests wait on.
-    private int _choices;
     // InputFile hears the browser only after its first interactive render, so tests wait for this before choosing.
     private bool _ready;
     private bool _dragging;
@@ -146,7 +144,6 @@ public partial class TbFileUpload
         builder.AddAttribute(13, "data-static", AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null);
         builder.AddAttribute(14, "data-prerender",
             AssignedRenderMode is not null && !RendererInfo.IsInteractive ? "" : null);
-        builder.AddAttribute(15, "data-choices", _choices);
         builder.AddAttribute(16, "data-ready", _ready ? "" : null);
         builder.AddAttribute(17, "tabindex", Hidden ? "-1" : null);
         builder.AddComponentParameter(18, nameof(ListeningInputFile.OnListening),
@@ -177,7 +174,6 @@ public partial class TbFileUpload
     private async Task OnChangeAsync(InputFileChangeEventArgs args)
     {
         _dragging = false;
-        _choices++;
         _rejected.Clear();
         var chosen = new List<IBrowserFile>();
         var tooMany = false;
