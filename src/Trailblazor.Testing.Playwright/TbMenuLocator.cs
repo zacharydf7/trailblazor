@@ -9,9 +9,9 @@ public sealed class TbMenuLocator(ILocator scope, string trigger)
         .And(scope.Locator("[aria-haspopup=menu]"));
 
     /// <summary>Opens the menu and clicks the item with this name, through the submenus named before it, as in
-    /// <c>ChooseAsync("Export", "PDF")</c>. Waits until the menu has closed or, for a <c>KeepOpen</c> item, until it
-    /// is checked or unchecked. Throws for a disabled item. On a statically rendered page the menu opens natively, and
-    /// only its links work.</summary>
+    /// <c>ChooseAsync("Export", "PDF")</c>. Waits until the app has run the item's handler, or until a dialog opens,
+    /// in case the handler awaits the dialog's answer. Throws for a disabled item. On a statically rendered page the
+    /// menu opens natively, and only its links work.</summary>
     public async Task ChooseAsync(params string[] path)
     {
         ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
@@ -100,18 +100,13 @@ public sealed class TbMenuLocator(ILocator scope, string trigger)
 
         var item = Item(list, path[^1]);
         await ThrowIfDisabledAsync(item, path[^1]);
-        if (await item.GetAttributeAsync("data-keep-open") is null)
+        // The menu closes in the browser as the item is clicked, before the app's handler has run, so the wait follows
+        // the menu's count of finished handlers.
+        await Commit.CountedAsync(menu, "data-commits", async () =>
         {
             await item.ClickAsync();
-            await Assertions.Expect(menu).ToBeHiddenAsync();
-            return;
-        }
-
-        // A radio item is checked once chosen, and a checkbox item toggles.
-        var radio = await item.GetAttributeAsync("role") == "menuitemradio";
-        var checkedAfter = radio || await item.GetAttributeAsync("aria-checked") != "true" ? "true" : "false";
-        await item.ClickAsync();
-        await Assertions.Expect(item).ToHaveAttributeAsync("aria-checked", checkedAfter);
+            return true;
+        });
     }
 
     // A checkbox or radio item is chosen the same way as a plain one.

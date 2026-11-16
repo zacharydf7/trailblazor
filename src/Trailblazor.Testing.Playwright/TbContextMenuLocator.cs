@@ -33,9 +33,9 @@ public sealed class TbContextMenuLocator
             + "' tb-context-menu ')][1]"), element, _named);
 
     /// <summary>Right-clicks the element and clicks the menu item with this name, through the submenus named before
-    /// it, as in <c>ChooseAsync("Move to", "Archive")</c>. Waits until the menu has closed or, for a <c>KeepOpen</c>
-    /// item, until it is checked or unchecked. Throws for a disabled context menu or item, and on a statically rendered
-    /// page, where the browser's own menu opens instead.</summary>
+    /// it, as in <c>ChooseAsync("Move to", "Archive")</c>. Waits until the app has run the item's handler, or until a
+    /// dialog opens, in case the handler awaits the dialog's answer. Throws for a disabled context menu or item, and on
+    /// a statically rendered page, where the browser's own menu opens instead.</summary>
     public async Task ChooseAsync(params string[] path)
     {
         ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));

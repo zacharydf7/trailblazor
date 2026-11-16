@@ -17,6 +17,8 @@
                 <TbMenuItem OnClick="@(() => _chosen = $"Archive {context.Key ?? "all"}")">Archive</TbMenuItem>
             </TbSubMenu>
             <TbMenuItem Disabled>Locked</TbMenuItem>
+            @* Its handler outlasts the menu, which closes in the browser as the item is clicked. *@
+            <TbMenuItem OnClick="@(() => SlowlyAsync($"Slow {context.Key ?? "all"}"))">Slow</TbMenuItem>
         </Items>
     </TbContextMenu>
     <TbContextMenu AriaLabel="Off" Disabled>
@@ -48,4 +50,10 @@
 @code {
     private static readonly string[] Trails = ["Ridge loop", "Lake path"];
     private string _chosen = "";
+
+    private async Task SlowlyAsync(string chosen)
+    {
+        await Task.Delay(600);
+        _chosen = chosen;
+    }
 }

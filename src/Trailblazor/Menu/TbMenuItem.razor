@@ -29,6 +29,9 @@ else
 @code {
     [CascadingParameter]
     private MenuClasses? Classes { get; set; }
+
+    [CascadingParameter]
+    private MenuCommits? Commits { get; set; }
     private ControlTelemetry? _telemetry;
 
     /// <summary>The item's text.</summary>
@@ -105,6 +108,6 @@ else
         }
 
         Telemetry.Used(TelemetryName);
-        return OnClick.InvokeAsync(args);
+        return Commits is null ? OnClick.InvokeAsync(args) : Commits.RunAsync(() => OnClick.InvokeAsync(args));
     }
 }

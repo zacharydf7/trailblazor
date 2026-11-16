@@ -474,4 +474,26 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
         // The handler never closes the dialog, so only the reload takes it away.
         await Expect(page.GetByRole(AriaRole.Dialog)).ToBeHiddenAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldReturnOnceTheItemsHandlerHasRun_WhenItOutlastsTheMenu(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+
+        await page.Tb().Menu("Trip").ChooseAsync("Archive slowly");
+        var archived = await page.GetByTestId("trip").TextContentAsync();
+        await page.Tb().Menu("Trip").ChooseAsync("Notify slowly");
+
+        Assert.Equal(("archived", "notifying"), (archived, await page.GetByTestId("trip").TextContentAsync()));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ContextMenu_ShouldReturnOnceTheItemsHandlerHasRun_WhenItOutlastsTheMenu(string browser)
+    {
+        var page = await OpenAsync(browser, "/context-menu");
+
+        await page.Tb().ContextMenu("Trail actions").On("Lake path").ChooseAsync("Slow");
+
+        Assert.Equal("Slow Lake path", await page.GetByTestId("chosen").TextContentAsync());
+    }
 }

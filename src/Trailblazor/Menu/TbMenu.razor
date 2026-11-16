@@ -31,13 +31,17 @@
     }
     @* data-open comes with the items drawn as the menu opened, which tests wait for. *@
     <div @ref="_menu" id="@MenuId" popover="auto" role="menu" aria-labelledby="@TriggerId" data-part="menu"
-         data-open="@(_open ? "" : null)" class="@ClassNames.Join("tb-menu__list", Classes?.Menu)">
-        <CascadingValue Value="Classes">@ChildContent</CascadingValue>
+         data-open="@(_open ? "" : null)" data-commits="@(RendererInfo.IsInteractive ? Commits.Count : null)"
+         class="@ClassNames.Join("tb-menu__list", Classes?.Menu)">
+        <CascadingValue Value="Commits" IsFixed>
+            <CascadingValue Value="Classes">@ChildContent</CascadingValue>
+        </CascadingValue>
     </div>
 </div>
 
 @code {
     private readonly string _id = $"tb-menu-{Guid.NewGuid():N}";
+    private MenuCommits? _commits;
     private ElementReference _root;
     private ElementReference _menu;
     private IJSObjectReference? _handle;
@@ -221,6 +225,8 @@
             return attributes;
         }
     }
+
+    private MenuCommits Commits => _commits ??= new(() => _ = InvokeAsync(StateHasChanged));
 
     /// <inheritdoc />
     protected override void OnParametersSet()

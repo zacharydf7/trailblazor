@@ -28,6 +28,25 @@ public class TbMenuTests : BunitContext
     }
 
     [Fact]
+    public async Task Items_ShouldCountTheirFinishedHandlersOnTheMenu_WhenChosen()
+    {
+        var checks = new List<bool>();
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .AddChildContent<TbMenuItem>(item => item.Add(i => i.OnClick, () => { }).AddChildContent("Rename"))
+            .AddChildContent<TbMenuCheckboxItem>(item => item.Add(i => i.CheckedChanged, (bool on) => checks.Add(on))
+                .AddChildContent("Wrap lines"))
+            .AddChildContent<TbMenuRadioGroup<string>>(group => group.AddChildContent<TbMenuRadioItem<string>>(item =>
+                item.Add(i => i.Value, "name").AddChildContent("Name"))));
+        var before = cut.Find("[data-part=menu]").GetAttribute("data-commits");
+
+        await cut.Find("[role=menuitem]").ClickAsync(new());
+        await cut.Find("[role=menuitemcheckbox]").ClickAsync(new());
+        await cut.Find("[role=menuitemradio]").ClickAsync(new());
+
+        Assert.Equal(("0", "3"), (before, cut.Find("[data-part=menu]").GetAttribute("data-commits")));
+    }
+
+    [Fact]
     public void Render_ShouldAddPartClasses_WhenClassesAreSet()
     {
         var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")

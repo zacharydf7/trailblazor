@@ -79,6 +79,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-15
 
+- Menus and context menus count finished item handlers in `data-commits` on their list, so a test can wait for a handler that runs after the menu closes
 - The toaster counts finished toast actions in `data-commits`, so a test can wait for an action that runs after its toast starts to fade
 - A canceled dialog's `trailblazor.outcome` is `canceled`, not `cancelled`; update dashboards and alerts that filter on the old value
 - When interactivity is set page by page, TbRoot's `data-tb-interactive` mark carries `data-tb-session`, and the page's root gets `data-tb-navigated` once an enhanced navigation leaves the first page. From then on `page.Tb().InteractiveAsync()` passes over TbRoot's mark, even one that first renders after the navigation

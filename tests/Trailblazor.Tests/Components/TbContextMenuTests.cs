@@ -73,6 +73,16 @@ public class TbContextMenuTests : BunitContext
     }
 
     [Fact]
+    public async Task Items_ShouldCountTheirFinishedHandlersOnTheMenu_WhenChosen()
+    {
+        var cut = RenderMenu();
+
+        await cut.Find("[role=menuitem]").ClickAsync(new());
+
+        Assert.Equal("1", cut.Find("[role=menu]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
     public async Task Opening_ShouldLeaveAnOuterMenusItemsAlone_WhenAnInnerMenuAsksForAKey()
     {
         var cut = Render<TbContextMenu>(parameters => parameters.Add(menu => menu.Items, DeleteItem)

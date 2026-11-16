@@ -6674,8 +6674,10 @@ public static class ExampleCatalog
                 + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`. The trigger gets `data-ready` once a "
                 + "click on an item reaches the server; `await page.Tb().Menu(\"More options\").ChooseAsync(\"Share\", "
                 + "\"Email\")` from `Trailblazor.Testing.Playwright` waits for it, opens the menu and its submenus, "
-                + "and clicks the item. With `AttachOnFirstUse`, the trigger gets `data-ready` only once it's "
-                + "first focused, pointed at or clicked, so `ChooseAsync` focuses it first. In both packages, "
+                + "clicks the item, and waits until the app has run the item's handler; the menu closes before the "
+                + "handler runs, so the wait follows the menu's count of finished handlers in `data-commits`. With "
+                + "`AttachOnFirstUse`, the trigger gets `data-ready` only once it's first focused, pointed at or "
+                + "clicked, so `ChooseAsync` focuses it first. In both packages, "
                 + "`OpenAsync()` and `CloseAsync()` open and close the menu, and `IsOpen` (`IsOpenAsync()` in "
                 + "Playwright) reads whether it's open. In bUnit, check `IsOpen` rather than the items, which are in "
                 + "the markup whether the menu is open or not.",
@@ -6798,7 +6800,8 @@ public static class ExampleCatalog
                 + "will open the menu. The menu gets `data-open` in the render that draws its items as it opens, and "
                 + "`data-key` with the key those items were drawn for. "
                 + "`await page.Tb().ContextMenu().On(page.GetByText(\"Ridge loop\")).ChooseAsync(\"Remove\")` from "
-                + "`Trailblazor.Testing.Playwright` waits for it, right-clicks the element and clicks the item. In "
+                + "`Trailblazor.Testing.Playwright` waits for it, right-clicks the element, clicks the item and waits "
+                + "until the app has run the item's handler, which the menu counts in `data-commits`. In "
                 + "bUnit, `await cut.Tb().ContextMenu().On(\"Ridge loop\").ChooseAsync(\"Remove\")` draws the items for "
                 + "that key and clicks one.",
             Telemetry =

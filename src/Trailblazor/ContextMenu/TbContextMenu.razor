@@ -17,14 +17,18 @@
        and request those items were drawn for. *@
     <div @ref="_menu" popover="manual" role="menu" aria-label="@AriaLabel" data-part="menu"
          data-key="@(_context.Key ?? "")" data-request="@_request" data-open="@(_open ? "" : null)"
+         data-commits="@(RendererInfo.IsInteractive ? Commits.Count : null)"
          class="@ClassNames.Join("tb-menu__list", Classes?.Menu)">
-        <CascadingValue Value="Classes">@Items?.Invoke(_context)</CascadingValue>
+        <CascadingValue Value="Commits" IsFixed>
+            <CascadingValue Value="Classes">@Items?.Invoke(_context)</CascadingValue>
+        </CascadingValue>
     </div>
 </div>
 
 @code {
     private ElementReference _target;
     private ElementReference _menu;
+    private MenuCommits? _commits;
     private IJSObjectReference? _handle;
     private DotNetObjectReference<MenuEvents>? _events;
     private ControlTelemetry? _telemetry;
@@ -74,6 +78,8 @@
     private IServiceProvider Services { get; set; } = default!;
 
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
+
+    private MenuCommits Commits => _commits ??= new(() => _ = InvokeAsync(StateHasChanged));
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

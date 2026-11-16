@@ -34,3 +34,28 @@
         </TbSubMenu>
     </TbMenu>
 </div>
+
+@* Items whose handlers outlast the menu, which closes in the browser as an item is clicked. *@
+<TbMenu Label="Trip">
+    <TbMenuItem OnClick="ArchiveAsync">Archive slowly</TbMenuItem>
+    <TbMenuCheckboxItem KeepOpen Checked="_notify" CheckedChanged="NotifyAsync">Notify slowly</TbMenuCheckboxItem>
+</TbMenu>
+<output data-testid="trip">@_trip</output>
+
+@code {
+    private bool _notify;
+    private string _trip = "";
+
+    private async Task ArchiveAsync()
+    {
+        await Task.Delay(600);
+        _trip = "archived";
+    }
+
+    private async Task NotifyAsync(bool notify)
+    {
+        await Task.Delay(600);
+        _notify = notify;
+        _trip = notify ? "notifying" : "quiet";
+    }
+}

@@ -23,6 +23,9 @@
 
     [CascadingParameter]
     private MenuClasses? Classes { get; set; }
+
+    [CascadingParameter]
+    private MenuCommits? Commits { get; set; }
     /// <summary>The item's text.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -69,6 +72,7 @@
 
         Telemetry.Used(TelemetryName);
         Checked = !Checked;
-        await CheckedChanged.InvokeAsync(Checked);
+        await (Commits is null ? CheckedChanged.InvokeAsync(Checked)
+            : Commits.RunAsync(() => CheckedChanged.InvokeAsync(Checked)));
     }
 }

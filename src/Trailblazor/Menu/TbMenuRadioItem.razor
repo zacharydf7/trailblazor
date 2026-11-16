@@ -15,6 +15,9 @@
 
     [CascadingParameter]
     private MenuClasses? Classes { get; set; }
+
+    [CascadingParameter]
+    private MenuCommits? Commits { get; set; }
     /// <summary>The value the group takes when this item is chosen. A plain value fits a group of its nullable type,
     /// such as <c>Value="2"</c> in a group bound to an <c>int?</c>.</summary>
     [Parameter, EditorRequired]
@@ -67,6 +70,6 @@
         }
 
         Telemetry.Used(TelemetryName);
-        return Group!.ChooseAsync(Value);
+        return Commits is null ? Group!.ChooseAsync(Value) : Commits.RunAsync(() => Group!.ChooseAsync(Value));
     }
 }
