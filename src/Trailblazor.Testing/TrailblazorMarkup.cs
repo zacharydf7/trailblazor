@@ -87,16 +87,13 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             call.Arguments.ElementAtOrDefault(2) as DotNetObjectReference<Trailblazor.Primitives.DismissableLayer>)
         .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value).LastOrDefault();
 
-    // A followed link takes the test's NavigationManager to its address, as the browser would.
-    public void NavigateTo(string href) => services.GetRequiredService<NavigationManager>().NavigateTo(href);
-
     // A link goes to its address, as in a browser, unless it opens in a new tab and leaves this page where it is.
     public void Follow(IElement action)
     {
         if (action.LocalName == "a" && action.GetAttribute("href") is { } href
             && action.GetAttribute("target") != "_blank")
         {
-            NavigateTo(href);
+            services.GetRequiredService<NavigationManager>().NavigateTo(href);
         }
     }
 
@@ -1345,7 +1342,7 @@ public sealed class TbBreadcrumbsDriver
         }
 
         await label.ClickAsync(new MouseEventArgs { Detail = 1 });
-        _scripts.NavigateTo(label.GetAttribute("href")!);
+        _scripts.Follow(label);
     }
 
     // Each item holds its separator, then its link or its text.
@@ -1800,10 +1797,7 @@ public sealed class TbChipDriver
             await action.ClickAsync(new MouseEventArgs { Detail = 1 });
         }
 
-        if (action.LocalName == "a")
-        {
-            _scripts.NavigateTo(action.GetAttribute("href")!);
-        }
+        _scripts.Follow(action);
     }
 
     /// <summary>Presses the chip's remove button, which raises <c>OnRemove</c>. A chip with no <c>OnRemove</c> has no
@@ -1878,9 +1872,9 @@ public sealed class TbButtonDriver
     /// <summary>Whether a toggle button shows its mixed state, on for only part of what it acts on.</summary>
     public bool Mixed => _find().GetAttribute("aria-pressed") == "mixed";
 
-    /// <summary>Clicks the button, as a user does, which raises its <c>OnClick</c>; a link button also takes the
-    /// test's <c>NavigationManager</c> to its address. Throws for a busy or disabled button, and on a static page for
-    /// any button but a link, since there it does nothing or the browser posts its form.</summary>
+    /// <summary>Clicks the button, as a user does, which raises its <c>OnClick</c>; a link button that opens in the
+    /// same tab also takes the test's <c>NavigationManager</c> to its address. Throws for a busy or disabled button, and
+    /// on a static page for any button but a link, since there it does nothing or the browser posts its form.</summary>
     public async Task ClickAsync()
     {
         var button = _find();
@@ -1901,10 +1895,7 @@ public sealed class TbButtonDriver
         }
 
         await button.ClickAsync(new MouseEventArgs { Detail = 1 });
-        if (button.LocalName == "a")
-        {
-            _scripts.NavigateTo(button.GetAttribute("href")!);
-        }
+        _scripts.Follow(button);
     }
 }
 
@@ -1967,7 +1958,7 @@ public sealed class TbNavMenuDriver
         }
 
         await link.ClickAsync(new MouseEventArgs { Detail = 1 });
-        _scripts.NavigateTo(link.GetAttribute("href")!);
+        _scripts.Follow(link);
     }
 
     /// <summary>Whether the group at the end of this path is open, as in <c>Expanded("Settings", "Advanced")</c>.

@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-16
 
+- The bUnit `Button(name).ClickAsync()` leaves the test's `NavigationManager` alone for a link button with `target="_blank"`, as the list and menu drivers do for a link that opens in a new tab
 - The bUnit `List(name).ClickAsync(item)`, `Menu(trigger).ChooseAsync(path)` and `ContextMenu(name).ChooseAsync(path)` take the test's `NavigationManager` to a link item's address, as a browser follows it, unless the link opens in a new tab
 - The Playwright select's `ChooseAsync` and `OptionAsync`, and a static list box's `ChooseAsync`, throw for a name the field doesn't have, listing the options it does have, as the bUnit driver does; `ChooseAsync` no longer times out on the click, except in a long list that shows only the options in view
 - The bUnit `List(name)` throws for a name no list has, listing the names the lists do have, rather than saying no list is in the markup

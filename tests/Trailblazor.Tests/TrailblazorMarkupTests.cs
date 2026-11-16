@@ -3030,6 +3030,18 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Button_ShouldLeaveTheAddressAlone_WhenItsLinkOpensANewTab()
+    {
+        var uri = Services.GetRequiredService<NavigationManager>().Uri;
+        var cut = Render<TbButton>(parameters => parameters.Add(button => button.Href, "trails")
+            .AddUnmatched("target", "_blank").AddChildContent("Trails"));
+
+        await cut.Tb().Button("Trails").ClickAsync();
+
+        Assert.Equal(uri, Services.GetRequiredService<NavigationManager>().Uri);
+    }
+
+    [Fact]
     public async Task Button_ShouldRefuseToClick_WhenThePageIsStatic()
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
