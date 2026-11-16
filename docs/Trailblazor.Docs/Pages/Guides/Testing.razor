@@ -99,7 +99,8 @@
                         <td>
                             Chooses options by their text, keeping those already chosen. As in a browser, a select's
                             list opens first and closes after, so an app that loads its options in
-                            <code>OpenChanged</code> has them to choose from.
+                            <code>OpenChanged</code> has them to choose from. A name the select doesn't have throws,
+                            listing the options it does have.
                         </td>
                     </tr>
                     <tr>
@@ -186,7 +187,10 @@
                     </tr>
                     <tr>
                         <th scope="row"><code>List(name).ClickAsync(item)</code></th>
-                        <td>Clicks an item by its text, and <code>Items</code> reads them.</td>
+                        <td>
+                            Clicks an item by its text, and <code>Items</code> reads them. A link item also takes the
+                            test's <code>NavigationManager</code> to its address.
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row"><code>TagInput(label).AddAsync(text)</code></th>
@@ -227,7 +231,9 @@
                         <th scope="row"><code>Menu(trigger).ChooseAsync(path)</code></th>
                         <td>
                             Clicks a menu or speed dial item by its name, through the submenus named before it,
-                            and throws for a disabled menu or item. <code>OpenAsync()</code> and
+                            and throws for a disabled menu or item. A link item also takes the test's
+                            <code>NavigationManager</code> to its address, unless it opens in a new tab.
+                            <code>OpenAsync()</code> and
                             <code>CloseAsync()</code> open and close the menu, <code>IsOpen</code> reads whether
                             it's open, and <code>Checked(path)</code> reads whether a checkbox or radio item is
                             checked.
@@ -1144,7 +1150,10 @@
             + "what it shows, `ChosenAsync()` reads the chosen options, and `OptionsAsync()` reads them all. "
             + "`OptionAsync(name)` reads whether an option is disabled and chosen, and `DisabledAsync()` reads the "
             + "select. `OpenAsync()` and `CloseAsync()` open and close its list, and `IsOpenAsync()` reads whether "
-            + "it's open."),
+            + "it's open. `ChooseAsync` and `OptionAsync` throw for a name the select doesn't have, listing the "
+            + "options it does have. `ChooseAsync` first waits as long as a click would, so an app that loads its "
+            + "options as the list opens has time to show them; in a long list that shows only the options in view, it "
+            + "times out on a missing name instead."),
         new("Text field or code field", "Its label", "`TextField(label).EnterAsync(text)` types the text and waits "
             + "until the app has it, and `TextAsync()` reads what the field shows."),
         new("Checkbox and switch", "Its label", "`Checkbox(label).CheckAsync()` and `UncheckAsync()` wait until the "

@@ -90,6 +90,16 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
     // A followed link takes the test's NavigationManager to its address, as the browser would.
     public void NavigateTo(string href) => services.GetRequiredService<NavigationManager>().NavigateTo(href);
 
+    // A link goes to its address, as in a browser, unless it opens in a new tab and leaves this page where it is.
+    public void Follow(IElement action)
+    {
+        if (action.LocalName == "a" && action.GetAttribute("href") is { } href
+            && action.GetAttribute("target") != "_blank")
+        {
+            NavigateTo(href);
+        }
+    }
+
     // The file input with this id, which the browser hands the files a user picks or drops.
     public IRenderedComponent<InputFile> InputFile(string id) => inputFiles()
         .SingleOrDefault(input => input.Instance.AdditionalAttributes?.TryGetValue("id", out var given) == true
@@ -280,13 +290,17 @@ public sealed class TrailblazorMarkup
     /// </summary>
     public TbListDriver List(string? name = null) => new(() =>
     {
-        var lists = _findAll(".tb-list[role=list]")
-            .Where(list => name is null || list.GetAttribute("aria-label") == name).ToList();
-        return lists.Count == 1 ? lists[0]
-            : throw new InvalidOperationException(lists.Count == 0 ? "No list is in the markup."
-                : name is null ? $"Expected one list, found {lists.Count}; name the one to use."
-                : $"Expected one list named \"{name}\", found {lists.Count}.");
-    });
+        var all = _findAll(".tb-list[role=list]");
+        var lists = all.Where(list => name is null || list.GetAttribute("aria-label") == name).ToList();
+        if (lists.Count == 0 && all.Count > 0)
+        {
+            throw new InvalidOperationException($"No list is named \"{name}\". The lists are named: "
+                + string.Join(", ", all.Select(list => list.GetAttribute("aria-label") is { } label ? $"\"{label}\""
+                    : "one without a name")) + ".");
+        }
+
+        return Only(lists, "list", name);
+    }, _scripts);
 
     /// <summary>The <c>TbNumberField</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbNumberFieldDriver NumberField(string label) =>
@@ -564,7 +578,7 @@ public sealed class TrailblazorMarkup
             : throw new InvalidOperationException(name is null
                 ? $"Expected one context menu, found {targets.Count}; name the one to use."
                 : $"Expected one context menu named \"{name}\", found {targets.Count}.");
-    });
+    }, _scripts);
 
     /// <summary>The <c>TbTabs</c> with this accessible name, or the only tabs in the markup when no name is given.
     /// </summary>
@@ -1920,10 +1934,7 @@ public sealed class TbLinkDriver
         }
 
         await link.ClickAsync(new MouseEventArgs { Detail = 1 });
-        if (link.LocalName == "a" && link.GetAttribute("target") != "_blank")
-        {
-            _scripts.NavigateTo(link.GetAttribute("href")!);
-        }
+        _scripts.Follow(link);
     }
 }
 
@@ -2441,14 +2452,16 @@ public sealed class TbToggleGroupDriver
 public sealed class TbListDriver
 {
     private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
 
-    internal TbListDriver(Func<IElement> find) => _find = find;
+    internal TbListDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
 
     /// <summary>The items' names, in order.</summary>
     public IReadOnlyList<string> Items => [.. ItemElements().Select(NameOf)];
 
     /// <summary>Clicks the item with this text. The item must be a button or a link, which it is when it has an
-    /// <c>OnClick</c> or an <c>Href</c>. A disabled item throws.</summary>
+    /// <c>OnClick</c> or an <c>Href</c>; a link also takes the test's <c>NavigationManager</c> to its address. A
+    /// disabled item throws.</summary>
     public async Task ClickAsync(string item)
     {
         var found = ItemElements().Where(each => NameOf(each) == item).ToList() is [var one] ? one
@@ -2462,6 +2475,7 @@ public sealed class TbListDriver
         }
 
         await action.ClickAsync(new MouseEventArgs { Detail = 1 });
+        _scripts.Follow(action);
     }
 
     private IEnumerable<IElement> ItemElements() => _find().Children.Where(child => child.LocalName == "li");
@@ -4127,17 +4141,20 @@ public sealed class TbHotkeyDriver
 public sealed class TbContextMenuDriver
 {
     private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
     private readonly string _key;
 
-    internal TbContextMenuDriver(Func<IElement> find, string key = "") => (_find, _key) = (find, key);
+    internal TbContextMenuDriver(Func<IElement> find, ScriptCalls scripts, string key = "") =>
+        (_find, _scripts, _key) = (find, scripts, key);
 
     /// <summary>The same context menu, opened on the element inside it with this <c>data-context-key</c>, such as a
     /// row's id: <c>cut.Tb().ContextMenu().On("ridge-loop").ChooseAsync("Delete")</c>.</summary>
-    public TbContextMenuDriver On(string key) => new(_find, key);
+    public TbContextMenuDriver On(string key) => new(_find, _scripts, key);
 
     /// <summary>Opens the menu as a right-click would and clicks the item with this name, through the submenus named
-    /// before it, as in <c>ChooseAsync("Move to", "Archive")</c>. Throws for a disabled context menu or item, a key or
-    /// name it doesn't have, or a static page, where the browser's own menu opens instead.</summary>
+    /// before it, as in <c>ChooseAsync("Move to", "Archive")</c>. A link item also takes the test's
+    /// <c>NavigationManager</c> to its address, unless it opens in a new tab. Throws for a disabled context menu or
+    /// item, a key or name it doesn't have, or a static page, where the browser's own menu opens instead.</summary>
     public async Task ChooseAsync(params string[] path)
     {
         ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
@@ -4173,7 +4190,9 @@ public sealed class TbContextMenuDriver
             list = target.QuerySelector($"[id='{opener.GetAttribute("aria-controls")}']")!;
         }
 
-        await TbMenuDriver.ClickAsync(target, TbMenuDriver.Find(list, path[^1], TbMenuDriver.Items, "item"));
+        var item = TbMenuDriver.Find(list, path[^1], TbMenuDriver.Items, "item");
+        await TbMenuDriver.ClickAsync(target, item);
+        _scripts.Follow(item);
     }
 
     internal static IElement Menu(IElement target) =>
@@ -4331,13 +4350,16 @@ public sealed class TbMenuDriver
     public async Task CloseAsync() => await SetOpenAsync(false);
 
     /// <summary>Clicks the item with this name, through the submenus named before it, as in
-    /// <c>ChooseAsync("Export", "PDF")</c>. A checkbox or radio item is clicked the same way. Throws for a disabled
+    /// <c>ChooseAsync("Export", "PDF")</c>. A checkbox or radio item is clicked the same way, and a link item also
+    /// takes the test's <c>NavigationManager</c> to its address, unless it opens in a new tab. Throws for a disabled
     /// menu or item, a name the menu doesn't have, or a button item on a static page, where only links work.</summary>
     public async Task ChooseAsync(params string[] path)
     {
         ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
         var trigger = EnabledTrigger();
-        await ClickAsync(trigger, Find(ListAt(trigger, path[..^1]), path[^1], Items, "item"));
+        var item = Find(ListAt(trigger, path[..^1]), path[^1], Items, "item");
+        await ClickAsync(trigger, item);
+        _scripts.Follow(item);
     }
 
     /// <summary>Whether the checkbox or radio item with this name, through the submenus named before it, is checked.

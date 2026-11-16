@@ -93,6 +93,20 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public async Task Breadcrumbs_ShouldCountTheLinkFollowed_WhenItsDriverFollowsIt()
+    {
+        var cut = Render<TbBreadcrumbs>(parameters => parameters
+            .Add(trail => trail.TelemetryName, "project-breadcrumbs")
+            .AddChildContent<TbBreadcrumb>(item => item.Add(crumb => crumb.Href, "/").AddChildContent("Home"))
+            .AddChildContent<TbBreadcrumb>(item => item.Add(crumb => crumb.Current, true)
+                .AddChildContent("Ridge loop")));
+
+        await cut.Tb().Breadcrumbs().FollowAsync("Home");
+
+        Assert.Equal([("project-breadcrumbs", "TbBreadcrumbs", null)], Uses());
+    }
+
+    [Fact]
     public async Task Menu_ShouldCountItsOpensAndItsItemsChosen_WhenTheyHaveTelemetryNames()
     {
         var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")

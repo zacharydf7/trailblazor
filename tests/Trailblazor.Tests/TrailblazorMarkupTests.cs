@@ -976,6 +976,20 @@ public class TrailblazorMarkupTests : BunitContext
         Assert.Equal(["Rename", "PDF", "Show hidden", "Docs"], clicked);
     }
 
+    [Fact]
+    public async Task Menu_ShouldFollowALinkItemButStayForANewTab_WhenChosen()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Go to")
+            .AddChildContent<TbMenuItem>(item => item.Add(each => each.Href, "help").AddChildContent("Help"))
+            .AddChildContent<TbMenuItem>(item => item.Add(each => each.Href, "guide").Add(each => each.NewTab, true)
+                .AddChildContent("Guide")));
+
+        await cut.Tb().Menu("Go to").ChooseAsync("Help");
+        await cut.Tb().Menu("Go to").ChooseAsync("Guide (opens in a new tab)");
+
+        Assert.EndsWith("/help", Services.GetRequiredService<NavigationManager>().Uri);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -1094,6 +1108,24 @@ public class TrailblazorMarkupTests : BunitContext
         await cut.Tb().ContextMenu().ChooseAsync("Rename");
 
         Assert.Equal(["Rename all", "Archive ridge", "Rename ridge", "Rename all"], clicked);
+    }
+
+    [Fact]
+    public async Task ContextMenu_ShouldFollowALinkItem_WhenChosen()
+    {
+        var cut = Render<TbContextMenu>(parameters => parameters.Add(menu => menu.AriaLabel, "Trail actions")
+            .AddChildContent("<p>Ridge loop</p>").Add(menu => menu.Items, _ => builder =>
+            {
+                builder.OpenComponent<TbMenuItem>(0);
+                builder.AddAttribute(1, nameof(TbMenuItem.Href), "trails/ridge");
+                builder.AddAttribute(2, nameof(TbMenuItem.ChildContent),
+                    (RenderFragment)(text => text.AddContent(0, "Open")));
+                builder.CloseComponent();
+            }));
+
+        await cut.Tb().ContextMenu().ChooseAsync("Open");
+
+        Assert.EndsWith("/trails/ridge", Services.GetRequiredService<NavigationManager>().Uri);
     }
 
     [Theory]
@@ -3508,6 +3540,30 @@ public class TrailblazorMarkupTests : BunitContext
         await cut.Tb().ToggleGroup("Layers").UnchooseAsync("Trails");
 
         Assert.Equal(["Huts"], layers);
+    }
+
+    [Fact]
+    public async Task List_ShouldFollowTheLink_WhenTheItemIsALink()
+    {
+        var cut = Render<TbList>(parameters => parameters.AddUnmatched("aria-label", "Camps")
+            .AddChildContent<TbListItem>(item => item.Add(each => each.Href, "camps/lake")
+                .AddChildContent("Lake camp")));
+
+        await cut.Tb().List("Camps").ClickAsync("Lake camp");
+
+        Assert.EndsWith("/camps/lake", Services.GetRequiredService<NavigationManager>().Uri);
+    }
+
+    [Fact]
+    public void List_ShouldNameTheListsThereAre_WhenNoneHasTheName()
+    {
+        var cut = Render<TbStack>(parameters => parameters
+            .AddChildContent<TbList>(list => list.AddUnmatched("aria-label", "Camps"))
+            .AddChildContent<TbList>(list => list.AddUnmatched("aria-label", "Trails")));
+
+        var failure = Assert.Throws<InvalidOperationException>(() => cut.Tb().List("Huts").Items);
+
+        Assert.Equal("No list is named \"Huts\". The lists are named: \"Camps\", \"Trails\".", failure.Message);
     }
 
     [Fact]

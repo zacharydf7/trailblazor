@@ -1291,4 +1291,14 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     public static TheoryData<string, bool> ChosenBy => new(
         from browser in AllBrowsers.Names from keyboard in new[] { true, false } select (browser, keyboard));
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFollowALink_WhenTheMenuIsInteractive(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+
+        await page.Tb().Menu("Go").ChooseAsync("Follow");
+
+        await Expect(page).ToHaveURLAsync(new Regex("/menu#followed$"));
+    }
 }

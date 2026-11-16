@@ -481,4 +481,25 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
         await Expect(option).ToHaveCountAsync(1);
         await Expect(combobox).ToHaveAttributeAsync("aria-activedescendant", (await option.GetAttributeAsync("id"))!);
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldListTheOptions_WhenAskedForOneTheSelectDoesntHave(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/select");
+        var statics = await OpenStaticAsync(browser, "/static-select");
+        var shipping = page.Tb().Select("Shipping");
+        // The guides load as the list opens, so choosing one checks that options still on their way aren't missing.
+        await page.Tb().Select("Guide").ChooseAsync("Ada");
+        page.SetDefaultTimeout(2000);
+
+        var choose = await Assert.ThrowsAsync<InvalidOperationException>(() => shipping.ChooseAsync("Teleport"));
+        var read = await Assert.ThrowsAsync<InvalidOperationException>(() => shipping.OptionAsync("Teleport"));
+        var native = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => statics.Tb().Select("Size").ChooseAsync("Huge"));
+
+        Assert.Equal("No option reads \"Teleport\". The options read: \"Standard (3-5 days)\", \"Express (1 day)\", "
+            + "\"Overnight\".", choose.Message);
+        Assert.Equal(choose.Message, read.Message);
+        Assert.Equal("No option reads \"Huge\". The options read: \"Small\", \"Medium\".", native.Message);
+    }
 }

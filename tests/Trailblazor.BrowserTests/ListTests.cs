@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
@@ -75,5 +76,15 @@ public class ListTests(BrowserFixture fixture) : BrowserTest(fixture)
             """);
 
         Assert.Equal([colors[0], colors[0]], colors[1..]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldFollowALink_WhenTheItemIsALink(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/list");
+
+        await page.Tb().List("Component pages").ClickAsync("Table");
+
+        await Expect(page).ToHaveURLAsync(new Regex("/components/table$"));
     }
 }

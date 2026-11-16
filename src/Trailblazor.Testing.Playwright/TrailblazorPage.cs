@@ -593,7 +593,9 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field) : TbFieldLoc
 {
     /// <summary>Chooses the options with these names: the one option of a select, or each one not yet chosen in a
     /// multiple select, keeping what is already chosen. A statically rendered select is a native one, and is chosen
-    /// the native way; one still prerendering is waited for. A disabled or read-only select throws.</summary>
+    /// the native way; one still prerendering is waited for. A disabled or read-only select throws, and so does a name
+    /// it doesn't have, listing the options it does have; in a list long enough to show only those in view, a missing
+    /// name times out instead.</summary>
     public async Task ChooseAsync(params string[] options)
     {
         ArgumentOutOfRangeException.ThrowIfZero(options.Length, nameof(options));
@@ -773,7 +775,27 @@ public sealed class TbSelectLocator(ILocator scope, ILocator field) : TbFieldLoc
             // An app that re-keys the select as it takes a choice replaces the list with a closed one under a new
             // id, so open and find the list again for each option.
             await OpenAsync();
-            var option = (await ListboxAsync(control)).GetByRole(AriaRole.Option, new() { Name = name, Exact = true });
+            var list = await ListboxAsync(control);
+            var option = list.GetByRole(AriaRole.Option, new() { Name = name, Exact = true });
+            // An app may load the options as the list opens, so wait for the option before calling it missing. A long
+            // list shows only the options in view, so only a short one is checked, even if it grew long meanwhile.
+            if (await list.GetAttributeAsync("data-count") is null)
+            {
+                try
+                {
+                    await option.WaitForAsync(new() { State = WaitForSelectorState.Attached });
+                }
+                catch (TimeoutException)
+                {
+                    if (await list.GetAttributeAsync("data-count") is not null)
+                    {
+                        throw;
+                    }
+
+                    throw Choices.NoOption(name, await list.EvaluateAsync<string[]>(Choices.OptionNames));
+                }
+            }
+
             if (await option.GetAttributeAsync("aria-selected") != state)
             {
                 // The server applies the choice, so wait for its answer before reading the next option's state.
@@ -2320,6 +2342,12 @@ internal static class Choices
         + "option.getAttribute('aria-selected') === 'true' || option.selected === true "
         + "|| option.getAttribute('aria-checked') === 'true']";
 
+    // The bUnit drivers' message: the name asked for and the names there are.
+    public static InvalidOperationException NoOption(string name, IReadOnlyCollection<string> names) =>
+        new(names.Count == 0 ? $"No option reads \"{name}\": there are none."
+            : $"No option reads \"{name}\". The options read: "
+                + string.Join(", ", names.Select(each => $"\"{each}\"")) + ".");
+
     public static async Task<OptionInfo> DescribeAsync(ILocator list, string name)
     {
         // A select's list is hidden while closed, so hidden options are read too. It skips the same options
@@ -2327,10 +2355,15 @@ internal static class Choices
         var option = list.GetByRole(AriaRole.Option, new() { Name = name, Exact = true, IncludeHidden = true })
             .And(list.Locator(":not([data-part=status]):not([value='']):not([data-unmatched])"));
         var count = await option.CountAsync();
-        if (count != 1)
+        if (count == 0)
         {
-            throw new InvalidOperationException(count == 0 ? $"No option reads \"{name}\"."
-                : $"{count} options read \"{name}\"; give each option a name of its own.");
+            throw NoOption(name, await list.EvaluateAsync<string[]>(OptionNames));
+        }
+
+        if (count > 1)
+        {
+            throw new InvalidOperationException(
+                $"{count} options read \"{name}\"; give each option a name of its own.");
         }
 
         var state = await option.EvaluateAsync<bool[]>(State);
@@ -2366,6 +2399,12 @@ internal static class NativeSelect
         }
 
         ThrowIfSeveral(options, native == "multiple", kind);
+        var names = await field.EvaluateAsync<string[]>(Choices.OptionNames);
+        if (options.FirstOrDefault(option => !names.Contains(option)) is { } missing)
+        {
+            throw Choices.NoOption(missing, names);
+        }
+
         // Choosing in a native multiple select replaces the selection, so the options already chosen are kept.
         var chosen = await field.EvaluateAsync<string[]>(
             "select => select.multiple ? [...select.selectedOptions].map(option => option.label) : []");
