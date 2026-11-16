@@ -150,6 +150,27 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task IconButton_ShouldDrawTheQuietBar_WhenPressedOnASelectedTreeRow(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/icon-button", new() { ReducedMotion = ReducedMotion.Reduce });
+        var row = page.GetByRole(AriaRole.Treeitem, new() { Name = "Eagle Ridge" });
+        var watch = row.GetByRole(AriaRole.Button, new() { Name = "Watch Eagle Ridge" });
+        await Expect(row).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(watch).ToHaveAttributeAsync("aria-pressed", "true");
+        await page.Mouse.MoveAsync(0, 0);
+        var pressed = await row.ScreenshotAsync();
+        var bar = await watch.EvaluateAsync<string>("button => getComputedStyle(button).boxShadow");
+
+        await watch.ClickAsync();
+        await Expect(watch).ToHaveAttributeAsync("aria-pressed", "false");
+        await page.Mouse.MoveAsync(0, 0);
+
+        Assert.Matches(@"inset|0px -2px", bar);
+        Assert.Equal("none", await watch.EvaluateAsync<string>("button => getComputedStyle(button).boxShadow"));
+        Assert.NotEqual(pressed, await row.ScreenshotAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task IconButton_ShouldDrawAMixedToggleApartFromOnAndOff_WhenMixed(string browser)
     {
         var page = await OpenAsync(browser, "/examples/icon-button");

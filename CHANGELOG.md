@@ -85,6 +85,8 @@ they run by version. The docs site's Upgrading page is built from both.
 - A canceled dialog's `trailblazor.outcome` is `canceled`, not `cancelled`; update dashboards and alerts that filter on the old value
 - When interactivity is set page by page, TbRoot's `data-tb-interactive` mark carries `data-tb-session`, and the page's root gets `data-tb-navigated` once an enhanced navigation leaves the first page. From then on `page.Tb().InteractiveAsync()` passes over TbRoot's mark, even one that first renders after the navigation
 - A text field's show-password button works on static pages too, through the page's script
+- Items in a `Variant.Text` toggle group carry `tb-button--quiet`. A pressed one takes the tone's light fill and text color, with a bar in that color along its bottom, in place of the deeper tint and body text it took before
+- In forced-colors mode, a pressed toggle keeps the system highlight while hovered or pressed down, in every variant
 - The page's root carries `data-tb-script` once Trailblazor's script has loaded, on static pages too
 - A transfer list's root counts the commits the app has answered in `data-commits`
 - An autocomplete's list carries `data-results-for`, the text its suggestions answer

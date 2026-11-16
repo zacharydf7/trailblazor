@@ -1,0 +1,9 @@
+<TbStack Row Gap="2" Align="Align.Center">
+    <TbButton @bind-Pressed="_wrap" Variant="Variant.Text" PressedLook="PressedLook.Quiet">Wrap lines</TbButton>
+    <TbButton @bind-Pressed="_numbers" Variant="Variant.Text" PressedLook="PressedLook.Quiet">Line numbers</TbButton>
+</TbStack>
+
+@code {
+    private bool _wrap = true;
+    private bool _numbers;
+}

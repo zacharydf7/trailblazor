@@ -2181,7 +2181,7 @@
         color: var(--tb-button-on-fill);
     }
 
-    .tb-button[aria-pressed="true"]:hover:not(:disabled, [aria-disabled="true"], .tb-button--text) {
+    .tb-button[aria-pressed="true"]:hover:not(:disabled, [aria-disabled="true"], .tb-button--text, .tb-button--quiet) {
         background: var(--tb-button-fill-hover);
     }
 
@@ -2197,11 +2197,14 @@
         color: var(--tb-button-text);
     }
 
-    /* The quiet look: no edge, a tint deeper than hover, and body text, as neutral text falls under 4.5:1 on it. */
-    .tb-toggle-group .tb-button--text[aria-pressed="true"] {
+    /* The quiet look's bar meets 3:1 against its light fill and the page, which the fill alone can't. It holds through
+       hover and press, over a filled button's own hover and pressed fills. */
+    .tb-button--quiet[aria-pressed="true"],
+    .tb-button--quiet[aria-pressed="true"]:is(:hover, :active):not(:disabled, [aria-disabled="true"]) {
         border-color: transparent;
-        background: color-mix(in oklch, var(--tb-button-subtle), var(--tb-button-text) 18%);
-        color: var(--tb-color-text);
+        background: var(--tb-button-subtle);
+        color: var(--tb-button-text);
+        box-shadow: inset 0 -2px 0 var(--tb-button-text);
     }
 
     /* A mixed toggle, on for only part of what it acts on, takes the light fill and a dashed edge in every variant. */
@@ -2213,7 +2216,10 @@
     }
 
     @media (forced-colors: active) {
-        .tb-button[aria-pressed="true"] {
+        /* A pressed toggle keeps the highlight while hovered or pressed down, over each variant's own hover and
+           pressed fills. */
+        .tb-button[aria-pressed="true"],
+        .tb-button[aria-pressed="true"]:is(:hover, :active):not(:disabled) {
             forced-color-adjust: none;
             border-color: Highlight;
             background: Highlight;

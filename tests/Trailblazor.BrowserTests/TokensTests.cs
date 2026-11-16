@@ -419,23 +419,36 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/tokens", new() { ReducedMotion = ReducedMotion.Reduce });
         await page.EvaluateAsync("palette => document.documentElement.dataset.tbPalette = palette", palette);
         await SetThemeAsync(page, theme);
-        // The default outlined neutral group and the quiet text one, each with a pressed item and one to hover, and a
-        // pressed text toggle on its own.
+        // The default outlined neutral group with a pressed item and one to hover, a quiet text group's item to hover,
+        // a quiet pressed toggle in each tone and on a filled and a soft button, and a pressed text toggle on its own.
         await page.EvaluateAsync("""
             () => {
+                const main = document.querySelector('main');
                 ['outlined', 'text'].forEach(variant => {
-                    const group = document.createElement('div');
+                    const group = main.appendChild(document.createElement('div'));
                     group.className = 'tb-toggle-group';
-                    for (const on of [true, false]) {
+                    for (const on of variant === 'outlined' ? [true, false] : [false]) {
                         const item = group.appendChild(document.createElement('button'));
-                        item.className = `tb-button tb-button--${variant} tb-button--neutral`;
+                        item.className = `tb-button tb-button--${variant} tb-button--neutral`
+                            + (variant === 'text' ? ' tb-button--quiet' : '');
                         item.setAttribute('aria-pressed', String(on));
                         item.dataset.testid = `${variant}-${on ? 'on' : 'off'}`;
                         item.textContent = 'Trails';
                     }
-                    document.querySelector('main').append(group);
                 });
-                const alone = document.querySelector('main').appendChild(document.createElement('button'));
+                const quiet = (variant, tone, testId) => {
+                    const button = main.appendChild(document.createElement('button'));
+                    button.className = `tb-button tb-button--${variant} tb-button--${tone} tb-button--quiet`;
+                    button.setAttribute('aria-pressed', 'true');
+                    button.dataset.testid = testId;
+                    button.textContent = 'Wrap';
+                };
+                for (const tone of ['primary', 'secondary', 'neutral', 'success', 'warning', 'danger', 'info']) {
+                    quiet('text', tone, `quiet-${tone}`);
+                }
+                quiet('filled', 'primary', 'quiet-filled');
+                quiet('soft', 'primary', 'quiet-soft');
+                const alone = main.appendChild(document.createElement('button'));
                 alone.className = 'tb-button tb-button--text tb-button--neutral';
                 alone.setAttribute('aria-pressed', 'true');
                 alone.dataset.testid = 'alone';
@@ -445,22 +458,49 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
         var background = await GetLuminanceAsync(page, "--tb-color-background");
         var failures = new List<string>();
 
-        // The default look meets the 3:1 a control's state needs; the quiet look is a tint, below that by design.
-        foreach (var (variant, minimum) in new[] { ("outlined", 3.0), ("text", 1.25) })
+        // The default look's fill stands out by the 3:1 a control's state needs.
+        var pressed = await FillLuminanceAsync(page, "outlined-on");
+        var text = ContrastRatio(await FillLuminanceAsync(page, "outlined-on", "color"), pressed);
+        await page.GetByTestId("outlined-off").HoverAsync();
+        var (onPage, onHover) = (ContrastRatio(pressed, background),
+            ContrastRatio(pressed, await FillLuminanceAsync(page, "outlined-off")));
+        if (text < 4.5 || onPage < 3 || onHover < 3)
         {
-            var pressed = await FillLuminanceAsync(page, $"{variant}-on");
-            var text = ContrastRatio(await FillLuminanceAsync(page, $"{variant}-on", "color"), pressed);
-            if (text < 4.5)
+            failures.Add($"outlined: text {text:F2}, {onPage:F2} on the page, {onHover:F2} beside a hovered item");
+        }
+
+        // In the quiet look, the bar meets 3:1 in each tone against its own fill and against what a toggle can sit on:
+        // the page, a hovered item, and a hovered or selected tree row. Its text stays readable on the fill.
+        await page.GetByTestId("text-off").HoverAsync();
+        var around = new[]
+        {
+            ("the page", background), ("a hovered item", await FillLuminanceAsync(page, "text-off")),
+            ("a hovered row", await GetLuminanceAsync(page, "--tb-color-hover", under: "--tb-color-background")),
+            ("a selected row", await GetLuminanceAsync(page, "--tb-color-primary-subtle")),
+        };
+        string[] quiet = ["primary", "secondary", "neutral", "success", "warning", "danger", "info", "filled", "soft"];
+        foreach (var tone in quiet)
+        {
+            // A filled or soft button's own hover fill mustn't win over the quiet look's.
+            if (tone is "filled" or "soft")
             {
-                failures.Add($"{variant}: its text is {text:F2} on the pressed fill");
+                await page.GetByTestId($"quiet-{tone}").HoverAsync();
             }
 
-            await page.GetByTestId($"{variant}-off").HoverAsync();
-            var hovered = await FillLuminanceAsync(page, $"{variant}-off");
-            var (onPage, onHover) = (ContrastRatio(pressed, background), ContrastRatio(pressed, hovered));
-            if (onPage < minimum || onHover < minimum)
+            var fill = await FillLuminanceAsync(page, $"quiet-{tone}");
+            var words = ContrastRatio(await FillLuminanceAsync(page, $"quiet-{tone}", "color"), fill);
+            if (words < 4.5)
             {
-                failures.Add($"{variant}: {onPage:F2} on the page, {onHover:F2} beside a hovered item");
+                failures.Add($"quiet {tone}: its text is {words:F2} on its fill");
+            }
+
+            var bar = await FillLuminanceAsync(page, $"quiet-{tone}", "boxShadow");
+            foreach (var (beside, luminance) in around.Prepend(("its fill", fill)))
+            {
+                if (ContrastRatio(bar, luminance) < 3)
+                {
+                    failures.Add($"quiet {tone}: its bar is {ContrastRatio(bar, luminance):F2} on {beside}");
+                }
             }
         }
 
@@ -485,7 +525,9 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
                 context.fillStyle = getComputedStyle(probe).color;
                 probe.remove();
                 context.fillRect(0, 0, 1, 1);
-                context.fillStyle = getComputedStyle(document.querySelector(`[data-testid=${testId}]`))[property];
+                const value = getComputedStyle(document.querySelector(`[data-testid=${testId}]`))[property];
+                // A box shadow's color comes first, before its offsets.
+                context.fillStyle = property === 'boxShadow' ? value.match(/^(\w+\([^)]*\)|#\w+|\w+)/)[0] : value;
                 context.fillRect(0, 0, 1, 1);
                 return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3);
             }

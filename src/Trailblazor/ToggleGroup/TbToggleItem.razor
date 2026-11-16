@@ -6,14 +6,14 @@
 {
     <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@(AriaLabel ?? "")" Variant="Group!.Variant"
                   Tone="Group.Tone" Size="Group.Size" Disabled="@(Disabled || Group.Disabled)"
-                  Pressed="Group.IsPressed(Value)" PressedChanged="OnPressedChanged" data-part="item" Class="@Class"
-                  Style="@Style" ShowTooltip />
+                  Pressed="Group.IsPressed(Value)" PressedChanged="OnPressedChanged" PressedLook="Look" data-part="item"
+                  Class="@Class" Style="@Style" ShowTooltip />
 }
 else
 {
     <TbButton @attributes="AdditionalAttributes" Variant="Group!.Variant" Tone="Group.Tone" Size="Group.Size"
               Disabled="@(Disabled || Group.Disabled)" Pressed="Group.IsPressed(Value)" PressedChanged="OnPressedChanged"
-              Start="StartIcon" data-part="item" Class="@Class" Style="@Style">
+              PressedLook="Look" Start="StartIcon" data-part="item" Class="@Class" Style="@Style">
         @if (ChildContent is null)
         {
             @Text
@@ -79,6 +79,9 @@ else
 
         Group.Accept(Value);
     }
+
+    // A text group draws its pressed items quietly, as a toolbar of formatting toggles wants.
+    private PressedLook Look => Group!.Variant == Variant.Text ? PressedLook.Quiet : PressedLook.Default;
 
     private RenderFragment? StartIcon => Icon is Icon icon ? @<TbIcon Icon="icon" Size="Group!.Size" /> : null;
 

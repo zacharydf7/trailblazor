@@ -1,0 +1,30 @@
+@* Watch toggles on tree rows, where a selected row's tint sits behind the pressed look. *@
+<TbTreeView TItem="Place" TKey="int" AriaLabel="Watched trails" Items="Trails" KeySelector="trail => trail.Id"
+            ItemText="trail => trail.Name" @bind-SelectedKeys="_selected" Style="max-inline-size: 22rem">
+    <ItemEndTemplate>
+        <TbIconButton Icon="ExampleIcons.Bell" AriaLabel="@($"Watch {context.Item.Name}")" Size="Size.Small"
+                      Variant="Variant.Text" Pressed="_watched.Contains(context.Item.Id)"
+                      PressedLook="PressedLook.Quiet" PressedChanged="(bool on) => Watch(context.Item.Id, on)" />
+    </ItemEndTemplate>
+</TbTreeView>
+
+@code {
+    private static readonly Place[] Trails = [new(1, "Pine Hollow loop"), new(2, "Eagle Ridge"), new(3, "Cedar Flats")];
+
+    private readonly HashSet<int> _watched = [1, 2];
+    private IReadOnlyCollection<int> _selected = [2];
+
+    private void Watch(int id, bool on)
+    {
+        if (on)
+        {
+            _watched.Add(id);
+        }
+        else
+        {
+            _watched.Remove(id);
+        }
+    }
+
+    private sealed record Place(int Id, string Name);
+}

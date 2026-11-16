@@ -27,6 +27,7 @@ Familiar apps: the buttons in any native dialog, Gmail's and GitHub's action but
 - [x] A disabled link has no address to follow. `TbButtonTests.Render_ShouldDropTheAddressButKeepTheLinkRole_WhenALinkIsDisabled`
 - [x] A loading link ignores clicks. `TbButtonTests.Click_ShouldIgnoreTheClick_WhenALinkIsLoading`
 - [x] Turning an outlined toggle off shows at once, while the pointer is still on it. `ToggleItemsTests.Item_ShouldShowItTurnedOff_WhenClickedWithThePointerStillOnIt`
+- [x] With `PressedLook.Quiet`, a pressed toggle shows a tint and a bar in its text color, and the bar stands out by at least 3:1 from the tint, the page and a hovered or selected tree row. `TokensTests.PressedToggle_ShouldStandOutAndKeepItsTextReadable_WhenAPaletteAndThemeAreApplied`, `TbButtonTests.Render_ShouldMarkTheQuietLook_WhenGivenAPressedLook`
 
 ## Touch
 

@@ -5758,3 +5758,8 @@ Trailblazor.TbMenuItem.Description.set -> void
 Trailblazor.TbMenuItem.Shortcut.get -> string?
 Trailblazor.TbMenuItem.Shortcut.set -> void
 override Trailblazor.TbMenuItem.OnParametersSet() -> void
+Trailblazor.PressedLook.Quiet = 1 -> Trailblazor.PressedLook
+Trailblazor.PressedLook.Default = 0 -> Trailblazor.PressedLook
+Trailblazor.PressedLook
+Trailblazor.TbButtonBase.PressedLook.get -> Trailblazor.PressedLook
+Trailblazor.TbButtonBase.PressedLook.set -> void

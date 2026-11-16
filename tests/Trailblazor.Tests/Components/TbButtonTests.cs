@@ -221,6 +221,20 @@ public class TbButtonTests : BunitContext
         Assert.Equal("true", button.GetAttribute("aria-disabled"));
     }
 
+    [Theory]
+    [InlineData(PressedLook.Default, false)]
+    [InlineData(PressedLook.Quiet, true)]
+    public void Render_ShouldMarkTheQuietLook_WhenGivenAPressedLook(PressedLook look, bool quiet)
+    {
+        var button = Render<TbButton>(parameters => parameters.Add(b => b.PressedLook, look).Add(b => b.Pressed, true)
+            .Add(b => b.PressedChanged, (bool _) => { })).Find("button");
+        var icon = Render<TbIconButton>(parameters => parameters.Add(b => b.Icon, BuiltInIcons.Close)
+            .Add(b => b.AriaLabel, "Pin").Add(b => b.PressedLook, look)).Find("button");
+
+        Assert.Equal((quiet, quiet), (button.ClassList.Contains("tb-button--quiet"),
+            icon.ClassList.Contains("tb-button--quiet")));
+    }
+
     [Fact]
     public void Click_ShouldTogglePressed_WhenBoundToPressed()
     {

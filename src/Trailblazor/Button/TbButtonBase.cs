@@ -60,6 +60,11 @@ public abstract partial class TbButtonBase : TbComponentBase
     [Parameter]
     public bool Mixed { get; set; }
 
+    /// <summary>How a toggle button shows that it's pressed. <see cref="Trailblazor.PressedLook.Quiet"/> suits a
+    /// <see cref="Trailblazor.Variant.Text"/> toggle among other content, such as on a tree row.</summary>
+    [Parameter]
+    public PressedLook PressedLook { get; set; }
+
     /// <summary>What the button does inside a form. Defaults to <see cref="ButtonType.Button"/>.</summary>
     [Parameter]
     public ButtonType Type { get; set; } = ButtonType.Button;
@@ -109,7 +114,8 @@ public abstract partial class TbButtonBase : TbComponentBase
 
     private string RootClass(string? extra) => ClassNames.Join("tb-button",
         ClassNames.Modifier("tb-button", ShownVariant), ClassNames.Modifier("tb-button", ShownTone),
-        ClassNames.Modifier("tb-button", ShownSize), extra, Class);
+        ClassNames.Modifier("tb-button", ShownSize), PressedLook == PressedLook.Quiet ? "tb-button--quiet" : null,
+        extra, Class);
 
     private object? Theirs(string attribute) => AdditionalAttributes?.GetValueOrDefault(attribute);
 

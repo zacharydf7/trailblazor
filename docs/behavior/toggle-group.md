@@ -28,6 +28,8 @@ Familiar apps: Word's text alignment and its bold, italic and underline buttons
 - [x] A hovered item that isn't pressed looks different from a pressed one, so turning an item off shows at once under the pointer. `ToggleItemsTests.Item_ShouldLookDifferentFromAPressedOne_WhenItIsHovered`, `ToggleItemsTests.Item_ShouldShowItTurnedOff_WhenClickedWithThePointerStillOnIt`
 - [x] Hover shows the name of an item that has only an icon. `ToggleItemsTests.Item_ShouldShowItsName_WhenAnIconOnlyItemIsHovered`
 - [x] Icon-only items stay joined, and a pressed one stays lifted, even though each is wrapped in a tooltip. `ToggleItemsTests.Item_ShouldStayJoinedToItsNeighbors_WhenInARow`, `ToggleItemsTests.Item_ShouldStayJoinedToItsNeighbors_WhenInAColumn`, `ToggleItemsTests.Item_ShouldLiftAPressedOneOverItsNeighbors_WhenJoined`
+- [x] In a text group, a pressed item takes the quiet look, whose bar stands out by at least 3:1 from its tint, the page, a hovered item and a hovered or selected tree row. `TokensTests.PressedToggle_ShouldStandOutAndKeepItsTextReadable_WhenAPaletteAndThemeAreApplied`, `TbToggleGroupTests.Items_ShouldTakeTheQuietPressedLook_WhenTheGroupIsText`
+- [x] In forced-colors mode, a pressed item keeps the system highlight, at rest and while hovered. `ToggleGroupTests.ToggleGroup_ShouldFillThePressedItemWithTheHighlight_WhenColorsAreForced`, `ToggleGroupTests.ToggleGroup_ShouldKeepThePressedItemsHighlight_WhenHoveredWithColorsForced`
 
 ## Touch
 

@@ -29,6 +29,21 @@ public class TbToggleGroupTests : BunitContext
         Assert.True(items[2].HasAttribute("disabled"));
     }
 
+    [Theory]
+    [InlineData(Variant.Text, true)]
+    [InlineData(Variant.Outlined, false)]
+    public void Items_ShouldTakeTheQuietPressedLook_WhenTheGroupIsText(Variant variant, bool quiet)
+    {
+        var cut = Render<TbToggleGroup<string>>(parameters => parameters.Add(group => group.AriaLabel, "Style")
+            .Add(group => group.Variant, variant)
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(i => i.Value, "Bold").Add(i => i.Text, "Bold"))
+            .AddChildContent<TbToggleItem<string>>(item => item.Add(i => i.Value, "Pin").Add(i => i.Icon, Square)
+                .Add(i => i.AriaLabel, "Pin")));
+
+        Assert.All(cut.FindAll("[data-part=item]"), item => Assert.Equal(quiet,
+            item.ClassList.Contains("tb-button--quiet")));
+    }
+
     [Fact]
     public async Task Render_ShouldNameTheGroupByItsLabelAndDescribeItByItsHelperText_WhenGivenBoth()
     {

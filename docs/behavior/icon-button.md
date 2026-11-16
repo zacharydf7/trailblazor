@@ -19,6 +19,7 @@ Familiar apps: the icon bars in Gmail and Google Docs, GitHub's issue actions
 - [x] Without `ShowTooltip`, no tooltip shows. `TbIconButtonTests.Render_ShouldShowNoTooltip_WhenShowTooltipIsNotSet`
 - [x] A click doesn't leave the tooltip open. `TooltipTests.Tooltip_ShouldStayClosed_WhenTheTriggerIsClicked`
 - [x] The tooltip closes when the pointer leaves. `TooltipTests.Tooltip_ShouldClose_WhenThePointerLeaves`
+- [x] With `PressedLook.Quiet`, a pressed toggle shows a tint and a bar in its text color, and the bar stands out by at least 3:1 from the tint, the page and a hovered or selected tree row. `TokensTests.PressedToggle_ShouldStandOutAndKeepItsTextReadable_WhenAPaletteAndThemeAreApplied`, `TbButtonTests.Render_ShouldMarkTheQuietLook_WhenGivenAPressedLook`, `ButtonTests.IconButton_ShouldDrawTheQuietBar_WhenPressedOnASelectedTreeRow`
 
 ## Touch
 

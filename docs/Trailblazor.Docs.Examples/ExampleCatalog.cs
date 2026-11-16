@@ -1038,6 +1038,9 @@ public static class ExampleCatalog
                 new("toggle", "Toggle", "`@bind-Pressed` makes the button a toggle that stays pressed. Keep its text "
                     + "the same when it is pressed, so the state isn't announced twice. If the text has to change, use "
                     + "a plain button instead of a toggle.", typeof(ButtonToggleExample)),
+                new("quiet", "Quiet pressed look", "`PressedLook.Quiet` marks a pressed toggle with a tint and a bar "
+                    + "in its text color along the bottom, in place of the variant's fill or edge. It suits text "
+                    + "toggles among other content, such as a toolbar's view options.", typeof(ButtonQuietExample)),
                 new("submit", "Submit", "A button defaults to `type=\"button\"`, so it never submits a form by "
                     + "accident. `Type=\"ButtonType.Submit\"` makes it submit its form.", typeof(ButtonSubmitExample)),
                 new("focus", "Moving focus", "Take a `@ref` to the button and call `FocusAsync()`, for example to "
@@ -1067,6 +1070,8 @@ public static class ExampleCatalog
             [
                 "A `Loading` button, or a `Disabled` one with `FocusableWhenDisabled`, is marked `aria-disabled` and "
                     + "stays a tab stop.",
+                "With `PressedLook.Quiet`, the bar under a pressed toggle stands out by at least 3:1 from its tint, "
+                    + "the page, and a hovered or selected row, in every palette, light and dark.",
                 "With reduced motion, the busy spinner stops turning. In forced-colors mode a pressed button takes "
                     + "the system highlight.",
             ],
@@ -1137,6 +1142,9 @@ public static class ExampleCatalog
                     + "sighted people can read it too.", typeof(IconButtonTooltipExample)),
                 new("toggle", "Toggle", "`@bind-Pressed` makes the button a toggle. Keep the same `AriaLabel` whether "
                     + "it's on or off, since `aria-pressed` tells which.", typeof(IconButtonToggleExample)),
+                new("quiet", "Quiet pressed look", "`PressedLook.Quiet` marks a pressed toggle with a tint and a bar "
+                    + "in its text color along the bottom. The bar still shows on a hovered or selected row. Here "
+                    + "each row of a tree has a watch toggle.", typeof(IconButtonQuietExample)),
                 new("mixed", "Mixed", "`Mixed` marks a toggle that is on for only part of what it acts on, such as Bold "
                     + "over text that is partly bold. It gets a light fill and a dashed edge, and screen readers "
                     + "announce it as mixed. A press turns it on, and the app then works out `Pressed` and `Mixed` "
@@ -1172,6 +1180,8 @@ public static class ExampleCatalog
             [
                 "A `Loading` icon button, or a `Disabled` one with `FocusableWhenDisabled`, is marked `aria-disabled` "
                     + "and stays a tab stop, as a button does.",
+                "With `PressedLook.Quiet`, the bar under a pressed toggle stands out by at least 3:1 from its tint, "
+                    + "the page, and a hovered or selected row, in every palette, light and dark.",
                 "With reduced motion, the busy spinner stops turning. In forced-colors mode a pressed button takes "
                     + "the system highlight.",
             ],
@@ -1409,9 +1419,8 @@ public static class ExampleCatalog
                 new("style", "Variant, tone and size", "`Variant`, `Tone` and `Size` apply to every item.",
                     typeof(ToggleGroupStyleExample)),
                 new("quiet", "Quiet look", "`Variant.Text` suits a toolbar of formatting toggles: the items draw no "
-                    + "edge, and a pressed one takes a tint. The tint falls short of the 3:1 contrast the default look "
-                    + "gives a pressed item, so keep the quiet look for toggles whose effect shows on the page.",
-                    typeof(ToggleGroupQuietExample)),
+                    + "edge, and a pressed one takes the quiet pressed look, a tint with a bar in its text color along "
+                    + "the bottom.", typeof(ToggleGroupQuietExample)),
                 new("disabled", "Disabled", "`Disabled` turns the whole group off.", typeof(ToggleGroupDisabledExample)),
             ],
             Api = [typeof(TbToggleGroup<>), typeof(TbMultiToggleGroup<>), typeof(TbToggleItem<>)],
@@ -1448,8 +1457,9 @@ public static class ExampleCatalog
             Accessibility =
             [
                 "In the default outlined neutral look, a pressed item takes the solid neutral fill, which stands out "
-                    + "from the page and from a hovered item by at least 3:1 in every palette, light and dark. The "
-                    + "quiet look's tint falls below that.",
+                    + "from the page and from a hovered item by at least 3:1 in every palette, light and dark. In the "
+                    + "quiet look, the bar under a pressed item meets 3:1 against its tint, the page and a hovered "
+                    + "item.",
                 "In forced-colors mode a pressed item takes the system highlight.",
             ],
             AppDuties =
