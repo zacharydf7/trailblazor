@@ -8,6 +8,7 @@
 
 @* ARIA gives a group no required state, so a description says "required" to screen readers instead. *@
 <div @attributes="GroupRootAttributes" role="group" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
+     data-commits="@Commits"
      aria-describedby="@DescribedWithRequired(DescribedBy)" aria-invalid="@(ShowsInvalid ? "true" : null)" style="@Style"
      class="@ClassNames.Join("tb-signature-pad", ShowsInvalid ? "tb-signature-pad--invalid" : null,
                 Disabled ? "tb-signature-pad--disabled" : null, Class)">

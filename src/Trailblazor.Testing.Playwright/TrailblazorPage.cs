@@ -922,8 +922,8 @@ public sealed class TbSignaturePadLocator(ILocator root) : TbFieldLocator
             || (await typed.CountAsync() > 0 && !string.IsNullOrWhiteSpace(await typed.InputValueAsync()));
     }
 
-    /// <summary>Draws a stroke through these points, in the signature's space of 600 by 200, with the mouse, and waits
-    /// until the pad has taken it.</summary>
+    /// <summary>Draws a stroke with the mouse through these points in the signature's 600 by 200 space, and waits until
+    /// the pad has taken it and the app's <c>ValueChanged</c> has run.</summary>
     public async Task DrawAsync(params (double X, double Y)[] points)
     {
         var surface = root.Locator("[data-part=surface]");
@@ -941,14 +941,18 @@ public sealed class TbSignaturePadLocator(ILocator root) : TbFieldLocator
         var mouse = root.Page.Mouse;
         (float X, float Y) At((double X, double Y) point) =>
             ((float)(box.X + point.X / 600 * box.Width), (float)(box.Y + point.Y / 200 * box.Height));
-        await mouse.MoveAsync(At(points[0]).X, At(points[0]).Y);
-        await mouse.DownAsync();
-        foreach (var point in points.Skip(1))
+        await Commit.WaitAsync(root, async () =>
         {
-            await mouse.MoveAsync(At(point).X, At(point).Y, new() { Steps = 2 });
-        }
+            await mouse.MoveAsync(At(points[0]).X, At(points[0]).Y);
+            await mouse.DownAsync();
+            foreach (var point in points.Skip(1))
+            {
+                await mouse.MoveAsync(At(point).X, At(point).Y, new() { Steps = 2 });
+            }
 
-        await mouse.UpAsync();
+            await mouse.UpAsync();
+            return true;
+        });
         await Assertions.Expect(Strokes).ToHaveCountAsync(before + 1);
     }
 
@@ -968,18 +972,24 @@ public sealed class TbSignaturePadLocator(ILocator root) : TbFieldLocator
     }
 
     /// <summary>Switches to typing a name if the pad isn't already, and types this one, which the pad takes as focus
-    /// leaves the field.</summary>
+    /// leaves the field. Waits until the app's <c>ValueChanged</c> has run for the switch and for the name.</summary>
     public async Task TypeNameAsync(string name)
     {
         var toggle = root.Locator("[data-part=type-name]");
         if (await toggle.GetAttributeAsync("aria-pressed") != "true")
         {
-            await toggle.ClickAsync();
+            await Commit.ClickedAsync(toggle);
         }
 
         var field = root.Locator("[data-part=typed-name] input");
-        await field.FillAsync(name);
-        await field.BlurAsync();
+        // A name the field already holds raises no change for the app to answer.
+        await Commit.WaitAsync(root, async () =>
+        {
+            var changes = await field.InputValueAsync() != name;
+            await field.FillAsync(name);
+            await field.BlurAsync();
+            return changes;
+        });
         await Assertions.Expect(root.Locator("[data-part=clear]")).ToBeEnabledAsync();
     }
 }

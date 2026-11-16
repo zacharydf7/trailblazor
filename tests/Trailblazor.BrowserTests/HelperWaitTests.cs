@@ -681,20 +681,29 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task SignaturePad_ShouldReturnOnceTheAppHasRunItsCallback_WhenUndoOrClearIsSlow(string browser)
+    public async Task SignaturePad_ShouldReturnOnceTheAppHasRunItsCallback_WhenItsHandlerIsSlow(string browser)
     {
         var page = await OpenAsync(browser, "/helpers-slow");
         var pad = page.Tb().SignaturePad("Slow signature");
         var slow = page.GetByTestId("slow");
-        await pad.DrawAsync((50, 50), (300, 150));
-        await pad.DrawAsync((50, 150), (300, 50));
-        await Expect(slow).ToHaveTextAsync("strokes 2");
+        var seen = new List<string?>();
 
-        await pad.UndoAsync();
-        var undone = await slow.TextContentAsync();
-        await pad.ClearAsync();
+        // Each read follows its helper at once, with no wait of the test's own.
+        foreach (var act in new Func<Task>[]
+        {
+            () => pad.DrawAsync((50, 50), (300, 150)),
+            () => pad.DrawAsync((50, 150), (300, 50)),
+            () => pad.UndoAsync(),
+            // Switching to typing while a stroke is drawn starts the signature over, which the app hears too.
+            () => pad.TypeNameAsync("Ana Lee"),
+            () => pad.ClearAsync(),
+        })
+        {
+            await act();
+            seen.Add(await slow.TextContentAsync());
+        }
 
-        Assert.Equal(("strokes 1", "strokes 0"), (undone, await slow.TextContentAsync()));
+        Assert.Equal(["strokes 1", "strokes 2", "strokes 1", "signed Ana Lee", "strokes 0"], seen);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

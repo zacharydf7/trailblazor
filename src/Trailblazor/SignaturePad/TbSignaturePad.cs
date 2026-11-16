@@ -16,6 +16,7 @@ public partial class TbSignaturePad
     private TbButton? _modeButton;
     private IJSObjectReference? _handle;
     private bool _typing;
+    private bool _switching;
     private bool _attaching;
     private bool _disposed;
 
@@ -63,9 +64,10 @@ public partial class TbSignaturePad
     {
         base.OnParametersSet();
         // A signature the app gives the pad shows as it was made: a typed name in the name field, strokes on the pad.
-        if (Value is { IsEmpty: false } signature)
+        // While the toggle's ValueChanged runs, the app may render the old signature, which mustn't undo the switch.
+        if (!_switching && Value is { IsEmpty: false } signature)
         {
-            _typing = signature.Strokes.Count == 0 && !string.IsNullOrWhiteSpace(signature.TypedName);
+            _typing = IsTyped(signature);
         }
     }
 
@@ -149,8 +151,25 @@ public partial class TbSignaturePad
     {
         _typing = !_typing;
         Telemetry.Used(TelemetryName, _typing ? "type" : "draw_instead");
-        await SetValueAsync(null);
+        _switching = true;
+        try
+        {
+            await SetValueAsync(null);
+        }
+        finally
+        {
+            _switching = false;
+        }
+
+        // An app that kept its signature keeps the mode it was made in.
+        if (Value is { IsEmpty: false } kept)
+        {
+            _typing = IsTyped(kept);
+        }
     }
+
+    private static bool IsTyped(Signature signature) =>
+        signature.Strokes.Count == 0 && !string.IsNullOrWhiteSpace(signature.TypedName);
 
     private Task TypeAsync(ChangeEventArgs args) =>
         SetValueAsync(args.Value is string { Length: > 0 } name && !string.IsNullOrWhiteSpace(name)

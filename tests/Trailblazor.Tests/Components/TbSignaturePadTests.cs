@@ -35,6 +35,46 @@ public class TbSignaturePadTests : BunitContext
         Assert.False(cut.Tb().SignaturePad("Signature").IsSigned);
     }
 
+    [Theory]
+    [InlineData(true, "true")]
+    [InlineData(false, "false")]
+    public async Task Toggle_ShouldFollowTheSignatureTheAppEndsWith_WhenItRendersTheOldOneWhileItsHandlerRuns(
+        bool stored, string typing)
+    {
+        var drawn = new Signature([new SignatureStroke([new(10, 20), new(30, 40)])]);
+        var changed = new TaskCompletionSource();
+        var cut = Render<TbSignaturePad>(parameters => parameters.Add(pad => pad.Label, "Signature")
+            .Add(pad => pad.Value, drawn).Add(pad => pad.ValueChanged, (Signature _) => changed.Task));
+
+        var switching = cut.Find("[data-part=type-name]").ClickAsync(new());
+        // The app's own component renders as soon as its handler starts, with the signature it still holds, and
+        // again as the handler ends, with the cleared signature or the one it kept.
+        cut.Render(parameters => parameters.Add(pad => pad.Value, drawn));
+        cut.Render(parameters => parameters.Add(pad => pad.Value, stored ? null : drawn));
+        await cut.InvokeAsync(changed.SetResult);
+        await switching;
+
+        Assert.Equal(typing, cut.Find("[data-part=type-name]").GetAttribute("aria-pressed"));
+    }
+
+    [Fact]
+    public async Task Draw_ShouldCountTheStrokeOnceValueChangedHasFinished_WhenTheHandlerIsSlow()
+    {
+        var changed = new TaskCompletionSource();
+        var cut = Render<TbSignaturePad>(parameters => parameters.Add(pad => pad.Label, "Signature")
+            .Add(pad => pad.ValueChanged, (Signature _) => changed.Task));
+        string? Commits() => cut.Find(".tb-signature-pad").GetAttribute("data-commits");
+
+        var drawing = cut.Tb().SignaturePad("Signature").DrawAsync((10, 20), (30, 40));
+        // The app can render the pad while its handler runs, which mustn't show the stroke counted yet.
+        cut.Render();
+        var pending = Commits();
+        await cut.InvokeAsync(changed.SetResult);
+        await drawing;
+
+        Assert.Equal(("0", "1"), (pending, Commits()));
+    }
+
     [Fact]
     public async Task DrawAsync_ShouldAddTheStrokeToTheValue_WhenAStrokeIsDrawn()
     {

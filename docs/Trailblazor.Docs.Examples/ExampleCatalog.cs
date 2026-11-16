@@ -4446,7 +4446,8 @@ public static class ExampleCatalog
             TestingTip = "In bUnit, `cut.Tb().SignaturePad(\"Signature\").DrawAsync((10, 20), (60, 40))` draws a "
                 + "stroke through points in the signature's space, and `UndoAsync`, `ClearAsync` and "
                 + "`TypeNameAsync(\"Ada Lovelace\")` do the rest. In Playwright, `page.Tb().SignaturePad(...)` "
-                + "draws with the mouse and waits until the pad has taken the stroke.",
+                + "draws with the mouse and waits until the pad has taken the stroke and the app's `ValueChanged` has "
+                + "run, which the pad counts in `data-commits` on its root.",
         },
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.")

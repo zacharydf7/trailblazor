@@ -154,8 +154,8 @@
 
     private Task RouteAsync(bool expanded) => SlowlyAsync($"route {expanded}");
 
-    private Task SignAsync(Signature? signature) =>
-        SlowlyAsync($"strokes {signature?.Strokes.Count ?? 0}", () => _signature = signature);
+    private Task SignAsync(Signature? signature) => SlowlyAsync(signature?.TypedName is { } name ? $"signed {name}"
+        : $"strokes {signature?.Strokes.Count ?? 0}", () => _signature = signature);
 
     private async Task SlowlyAsync(string what, Action? apply = null)
     {

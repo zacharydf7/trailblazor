@@ -1192,9 +1192,9 @@
         new("Calendar", "Its label", "`Calendar(label).ChooseAsync(date)` picks a date as a user would, through the "
             + "calendar's years, months and days, and waits until the app's `ValueChanged` has run."),
         new("Signature pad", "Its label", "`SignaturePad(label).DrawAsync(points)` drags the mouse through points in "
-            + "the signature's 600 by 200 space and waits until the pad has the stroke; `UndoAsync()`, `ClearAsync()` "
-            + "and `TypeNameAsync(name)` use its buttons and name field, and `IsSignedAsync()` says whether anything "
-            + "is drawn or typed."),
+            + "the signature's 600 by 200 space and waits until the pad has the stroke and the app's `ValueChanged` "
+            + "has run; `UndoAsync()`, `ClearAsync()` and `TypeNameAsync(name)` use its buttons and name field and "
+            + "wait the same way, and `IsSignedAsync()` says whether anything is drawn or typed."),
         new("Pagination", "Its name", "`Pagination(name).GoToPageAsync(number)` goes to a page and waits until the "
             + "app has run its `PageChanged`, and `PageAsync()` reads the current one."),
         new("Tree", "Its name", "`Tree(name)` expands, collapses, selects, checks, activates and drags rows by the "
