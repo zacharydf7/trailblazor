@@ -38,6 +38,31 @@ public class LocatedFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helpers_ShouldWorkTheListsPadsAndDatesTheyAreGiven_WhenTheAppDrawsTheLabelItself(string browser)
+    {
+        var page = await OpenAsync(browser, "/drawn-labels");
+        var tb = page.Tb();
+
+        await tb.ListBox(page.Locator("#stops")).ChooseAsync("Lake");
+        await tb.TransferList(page.Locator("#crew")).MoveAsync("Ben");
+        await tb.FileUpload(page.Locator("#maps")).ChooseAsync(new FilePayload
+        {
+            Name = "ridge.gpx", MimeType = "application/gpx+xml", Buffer = [1],
+        });
+        await tb.SignaturePad(page.Locator("#signed")).TypeNameAsync("Ana Lee");
+        await tb.DateRangePicker(page.Locator("#trip")).ChooseAsync(new DateOnly(2026, 5, 2), new DateOnly(2026, 5, 4));
+        await tb.Calendar(page.Locator("#hike")).ChooseAsync(new DateOnly(2026, 6, 9));
+
+        Assert.Equal(["Lake"], await tb.ListBox(page.Locator("#stops")).ChosenAsync());
+        Assert.Equal(["Ben"], await tb.TransferList(page.Locator("#crew")).ChosenAsync());
+        Assert.Equal(["ridge.gpx"], await tb.FileUpload(page.Locator("#maps")).FilesAsync());
+        Assert.True(await tb.SignaturePad(page.Locator("#signed")).IsSignedAsync());
+        Assert.Equal((new DateOnly(2026, 5, 2), new DateOnly(2026, 5, 4)),
+            await tb.DateRangePicker(page.Locator("#trip")).RangeAsync());
+        await Expect(page.Locator("#hike td[aria-selected=true] [data-date='2026-06-09']")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldLookOnlyInsideTheScope_WhenGivenALocatorThatMatchesMore(string browser)
     {
         var page = await OpenAsync(browser, "/drawn-labels");

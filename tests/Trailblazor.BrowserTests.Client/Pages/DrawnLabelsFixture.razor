@@ -35,6 +35,22 @@
 <TbTagInput AriaLabel="Trail tags" id="tags" @bind-Value="_tags" />
 <p>Notes</p>
 <TbRichTextEditor AriaLabel="Trip notes" id="notes" @bind-Value="_notes" />
+<p>Stops</p>
+<TbListBox TValue="string" AriaLabel="Stop list" id="stops" @bind-Value="_stop">
+    <TbOption Value="@("Ridge")" />
+    <TbOption Value="@("Lake")" />
+</TbListBox>
+<p>Crew</p>
+<TbTransferList TItem="string" AriaLabel="Trip crew" id="crew" Items="Hikers" ItemText="hiker => hiker"
+                @bind-Value="_crew" />
+<p>Maps</p>
+<TbFileUpload AriaLabel="Trail maps" id="maps" @bind-Value="_maps" />
+<p>Signed</p>
+<TbSignaturePad AriaLabel="Waiver signature" id="signed" @bind-Value="_signature" />
+<p>Trip</p>
+<TbDateRangePicker TDate="DateOnly" AriaLabel="Trip dates" id="trip" @bind-Value="_trip" />
+<p>Hike</p>
+<TbCalendar TDate="DateOnly" AriaLabel="Hike day" id="hike" @bind-Value="_hike" />
 <section data-testid="later">
     <TbCheckbox AriaLabel="Remember me" id="remember" @bind-Value="_remember" />
 </section>
@@ -47,6 +63,13 @@
     private bool _terms;
     private bool _alerts;
     private bool _remember;
+    private static readonly string[] Hikers = ["Ana", "Ben"];
+    private string? _stop;
+    private IReadOnlyList<string> _crew = [];
+    private IReadOnlyList<IBrowserFile>? _maps;
+    private Signature? _signature;
+    private DateRange<DateOnly> _trip;
+    private DateOnly? _hike;
     private IReadOnlyList<string> _gear = [];
     private string? _route;
     private int _effort;

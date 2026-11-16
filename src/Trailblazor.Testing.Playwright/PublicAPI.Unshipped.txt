@@ -20,7 +20,6 @@ Trailblazor.Testing.Playwright.TbAutocompleteLocator.ChooseAsync(string! text, s
 Trailblazor.Testing.Playwright.TbAutocompleteLocator.TbAutocompleteLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
 Trailblazor.Testing.Playwright.TbCalendarLocator
 Trailblazor.Testing.Playwright.TbCalendarLocator.ChooseAsync(System.DateOnly date) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbCalendarLocator.TbCalendarLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbColorPickerLocator
 Trailblazor.Testing.Playwright.TbColorPickerLocator.ChooseAsync(string! color) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbColorPickerLocator.TbColorPickerLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
@@ -31,7 +30,6 @@ Trailblazor.Testing.Playwright.TbDatePickerLocator.ValueAsync() -> System.Thread
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.ChooseAsync(System.DateOnly? start, System.DateOnly? end) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDateRangePickerLocator.RangeAsync() -> System.Threading.Tasks.Task<(System.DateOnly? Start, System.DateOnly? End)>!
-Trailblazor.Testing.Playwright.TbDateRangePickerLocator.TbDateRangePickerLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.ChooseAsync(System.DateTime? value) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDateTimePickerLocator.DateInput.get -> Microsoft.Playwright.ILocator!
@@ -46,7 +44,6 @@ Trailblazor.Testing.Playwright.TbDialogLocator.WaitForAsync() -> System.Threadin
 Trailblazor.Testing.Playwright.TbFileUploadLocator
 Trailblazor.Testing.Playwright.TbFileUploadLocator.ChooseAsync(params Microsoft.Playwright.FilePayload![]! files) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbFileUploadLocator.ChooseAsync(params string![]! paths) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbFileUploadLocator.TbFileUploadLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbGridLocator
 Trailblazor.Testing.Playwright.TbGridLocator.CellAsync(string! row, string! column) -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
 Trailblazor.Testing.Playwright.TbGridLocator.ColumnsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
@@ -62,7 +59,6 @@ Trailblazor.Testing.Playwright.TbGridLocator.TotalAsync(string! column) -> Syste
 Trailblazor.Testing.Playwright.TbGridLocator.GroupTotalsAsync(string! column) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string?>!>!
 Trailblazor.Testing.Playwright.TbListBoxLocator
 Trailblazor.Testing.Playwright.TbListBoxLocator.ChooseAsync(params string![]! options) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbListBoxLocator.TbListBoxLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbMenuLocator
 Trailblazor.Testing.Playwright.TbMenuLocator.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbMenuLocator.TbMenuLocator(Microsoft.Playwright.ILocator! scope, string! trigger) -> void
@@ -115,7 +111,6 @@ Trailblazor.Testing.Playwright.TbTransferListLocator
 Trailblazor.Testing.Playwright.TbTransferListLocator.ChosenAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbTransferListLocator.MoveAsync(params string![]! items) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTransferListLocator.MoveBackAsync(params string![]! items) -> System.Threading.Tasks.Task!
-Trailblazor.Testing.Playwright.TbTransferListLocator.TbTransferListLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbTreeLocator
 Trailblazor.Testing.Playwright.TbTreeLocator.CheckAsync(params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbTreeLocator.DragAfterAsync(string![]! row, string![]! target) -> System.Threading.Tasks.Task!
@@ -493,3 +488,14 @@ Trailblazor.Testing.Playwright.TbSliderLocator.TbSliderLocator(Microsoft.Playwri
 Trailblazor.Testing.Playwright.TbTagInputLocator.TbTagInputLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! input) -> void
 Trailblazor.Testing.Playwright.TbTimePickerLocator.TbTimePickerLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! input) -> void
 Trailblazor.Testing.Playwright.TbToggleGroupLocator.TbToggleGroupLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! group) -> void
+Trailblazor.Testing.Playwright.TbCalendarLocator.TbCalendarLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! calendar) -> void
+Trailblazor.Testing.Playwright.TbDateRangePickerLocator.TbDateRangePickerLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
+Trailblazor.Testing.Playwright.TbFileUploadLocator.TbFileUploadLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
+Trailblazor.Testing.Playwright.TbListBoxLocator.TbListBoxLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! list) -> void
+Trailblazor.Testing.Playwright.TbTransferListLocator.TbTransferListLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! root) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.Calendar(Microsoft.Playwright.ILocator! calendar) -> Trailblazor.Testing.Playwright.TbCalendarLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.DateRangePicker(Microsoft.Playwright.ILocator! group) -> Trailblazor.Testing.Playwright.TbDateRangePickerLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.FileUpload(Microsoft.Playwright.ILocator! input) -> Trailblazor.Testing.Playwright.TbFileUploadLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.ListBox(Microsoft.Playwright.ILocator! list) -> Trailblazor.Testing.Playwright.TbListBoxLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.SignaturePad(Microsoft.Playwright.ILocator! root) -> Trailblazor.Testing.Playwright.TbSignaturePadLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.TransferList(Microsoft.Playwright.ILocator! root) -> Trailblazor.Testing.Playwright.TbTransferListLocator!

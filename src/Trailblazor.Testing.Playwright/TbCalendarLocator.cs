@@ -3,12 +3,14 @@ using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
 
-/// <summary>A <c>TbCalendar</c>, found by its label.</summary>
-public sealed class TbCalendarLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbCalendar</c>, found by its label or a locator.</summary>
+public sealed class TbCalendarLocator(ILocator scope, ILocator calendar) : TbFieldLocator
 {
     private protected override ILocator Control => Root;
 
-    private ILocator Root => scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) })
+    // An id goes on the calendar's grid, or on its date box on a static page, so the calendar is the nearest one up.
+    private ILocator Root => calendar
+        .Locator("xpath=ancestor-or-self::*[contains(concat(' ', normalize-space(@class), ' '), ' tb-calendar ')][1]")
         .And(scope.Locator(".tb-calendar"));
 
     private ILocator Grid => Root.Locator("[role=grid]");
@@ -31,8 +33,7 @@ public sealed class TbCalendarLocator(ILocator scope, string label) : TbFieldLoc
         if (await Grid.GetAttributeAsync("aria-readonly") == "true"
             || await Grid.GetAttributeAsync("aria-disabled") == "true")
         {
-            throw new InvalidOperationException($"The calendar \"{label}\" is read-only or disabled, so it can't take "
-                + "a date.");
+            throw new InvalidOperationException("This calendar is read-only or disabled, so it can't take a date.");
         }
 
         foreach (var (from, to) in new[] { ("days", "months"), ("months", "years") })
@@ -72,7 +73,7 @@ public sealed class TbCalendarLocator(ILocator scope, string label) : TbFieldLoc
     // The calendar ignores a click on a year, month or day it doesn't offer, so the app would have nothing to answer.
     private async Task<ILocator> OfferedAsync(ILocator cell, DateOnly date) =>
         await cell.GetAttributeAsync("aria-disabled") == "true"
-            ? throw new InvalidOperationException($"The calendar \"{label}\" doesn't let {Iso(date)} be chosen.")
+            ? throw new InvalidOperationException($"This calendar doesn't let {Iso(date)} be chosen.")
             : cell;
 
     private static string Iso(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);

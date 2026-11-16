@@ -68,10 +68,19 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbAutocompleteLocator Autocomplete(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> with this label.</summary>
-    public TbListBoxLocator ListBox(string label) => new(scope, label);
+    public TbListBoxLocator ListBox(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbListBox</c> or <c>TbMultiListBox</c> whose list this finds, inside the scope, such as one
+    /// whose label the app draws itself, as <c>page.Locator("#stops")</c>.</summary>
+    public TbListBoxLocator ListBox(ILocator list) => new(scope, list);
 
     /// <summary>The <c>TbTransferList</c> with this label.</summary>
-    public TbTransferListLocator TransferList(string label) => new(scope, label);
+    public TbTransferListLocator TransferList(string label) =>
+        new(scope, scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) }));
+
+    /// <summary>The <c>TbTransferList</c> whose root this finds, inside the scope, such as one whose label the app
+    /// draws itself, as <c>page.Locator("#crew")</c>.</summary>
+    public TbTransferListLocator TransferList(ILocator root) => new(scope, root);
 
     /// <summary>The <c>TbColorPicker</c> with this label.</summary>
     public TbColorPickerLocator ColorPicker(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
@@ -81,14 +90,27 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbColorPickerLocator ColorPicker(ILocator field) => new(scope, field);
 
     /// <summary>The <c>TbFileUpload</c> with this label.</summary>
-    public TbFileUploadLocator FileUpload(string label) => new(scope, label);
+    public TbFileUploadLocator FileUpload(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbFileUpload</c> whose file input this finds, inside the scope, such as one whose label the app
+    /// draws itself, as <c>page.Locator("#maps")</c>.</summary>
+    public TbFileUploadLocator FileUpload(ILocator input) => new(scope, input);
 
     /// <summary>The <c>TbSignaturePad</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbSignaturePadLocator SignaturePad(string label) =>
         new(scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) }));
 
+    /// <summary>The <c>TbSignaturePad</c> whose root this finds, inside the scope, such as one whose label the app
+    /// draws itself, as <c>page.Locator("#signed")</c>.</summary>
+    public TbSignaturePadLocator SignaturePad(ILocator root) => new(root.And(scope.Locator(".tb-signature-pad")));
+
     /// <summary>The <c>TbDateRangePicker</c> with this label.</summary>
-    public TbDateRangePickerLocator DateRangePicker(string label) => new(scope, label);
+    public TbDateRangePickerLocator DateRangePicker(string label) =>
+        new(scope, scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true }));
+
+    /// <summary>The <c>TbDateRangePicker</c> this finds, by its group of boxes or the field around it, inside the
+    /// scope, such as one whose label the app draws itself, as <c>page.Locator("#trip")</c>.</summary>
+    public TbDateRangePickerLocator DateRangePicker(ILocator group) => new(scope, group);
 
     /// <summary>The <c>TbForm</c> with this accessible name, or the only one in the scope when no name is given.
     /// </summary>
@@ -149,7 +171,12 @@ public sealed class TrailblazorPage(ILocator scope)
     public TbDateTimePickerLocator DateTimePicker(string label) => new(scope, label);
 
     /// <summary>The <c>TbCalendar</c> with this label.</summary>
-    public TbCalendarLocator Calendar(string label) => new(scope, label);
+    public TbCalendarLocator Calendar(string label) =>
+        new(scope, scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) }));
+
+    /// <summary>The <c>TbCalendar</c> this finds, by its grid or any other element in it, inside the scope, such as one
+    /// whose label the app draws itself, as <c>page.Locator("#hike")</c>.</summary>
+    public TbCalendarLocator Calendar(ILocator calendar) => new(scope, calendar);
 
     /// <summary>The <c>TbTreeSelect</c> or <c>TbMultiTreeSelect</c> with this label.</summary>
     public TbTreeSelectLocator TreeSelect(string label) => new(scope, label);
@@ -880,7 +907,7 @@ public sealed partial class TbColorPickerLocator(ILocator scope, ILocator field)
     private static partial Regex HexColor();
 }
 
-/// <summary>A <c>TbSignaturePad</c>, found by its label.</summary>
+/// <summary>A <c>TbSignaturePad</c>, found by its label or a locator.</summary>
 public sealed class TbSignaturePadLocator(ILocator root) : TbFieldLocator
 {
     private protected override ILocator Control => root;
@@ -957,11 +984,10 @@ public sealed class TbSignaturePadLocator(ILocator root) : TbFieldLocator
     }
 }
 
-/// <summary>A <c>TbFileUpload</c>, found by its label.</summary>
-public sealed class TbFileUploadLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbFileUpload</c>, found by its label or a locator.</summary>
+public sealed class TbFileUploadLocator(ILocator scope, ILocator field) : TbFieldLocator
 {
-    private protected override ILocator Control =>
-        scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("input[type=file]"));
+    private protected override ILocator Control => @field.And(scope.Locator("input[type=file]"));
 
     /// <summary>Chooses the files at these paths, as dropping them or picking them in the file dialog would, and waits
     /// until the field has taken the choice and the app's <c>ValueChanged</c> has run. A statically rendered field
@@ -998,10 +1024,14 @@ public sealed class TbFileUploadLocator(ILocator scope, string label) : TbFieldL
     }
 }
 
-/// <summary>A <c>TbDateRangePicker</c>, found by its label.</summary>
-public sealed class TbDateRangePickerLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbDateRangePicker</c>, found by its label or a locator.</summary>
+public sealed class TbDateRangePickerLocator(ILocator scope, ILocator field) : TbFieldLocator
 {
-    private protected override ILocator Control => scope.GetByRole(AriaRole.Group, new() { Name = label, Exact = true });
+    // An id goes on the field around the group of boxes, so the group is also looked for inside the match.
+    private protected override ILocator Control => @field
+        .Locator("xpath=descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), "
+            + "' tb-date-range__boxes ')][1]")
+        .And(scope.Locator(".tb-date-range__boxes"));
 
     /// <summary>Types both dates in the field's own format and waits until the field has taken them; null leaves a
     /// box empty. A statically rendered field gets them in the browser's own date boxes.</summary>
@@ -1069,7 +1099,7 @@ public sealed class TbDateRangePickerLocator(ILocator scope, string label) : TbF
         }
 
         var value = await group.GetAttributeAsync("data-value")
-            ?? throw new InvalidOperationException($"The date range picker \"{label}\" doesn't report its range.");
+            ?? throw new InvalidOperationException("This date range picker doesn't report its range.");
         var dates = value.Split('/');
         return (TbDatePickerLocator.ReadIso(dates[0]), TbDatePickerLocator.ReadIso(dates[1]));
     }
@@ -1466,8 +1496,8 @@ public sealed class TbTreeLocator(ILocator scope, string? name)
     }
 }
 
-/// <summary>A <c>TbListBox</c> or <c>TbMultiListBox</c>, found by its label.</summary>
-public sealed class TbListBoxLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbListBox</c> or <c>TbMultiListBox</c>, found by its label or a locator.</summary>
+public sealed class TbListBoxLocator(ILocator scope, ILocator list) : TbFieldLocator
 {
     private protected override ILocator Control => Field;
 
@@ -1541,7 +1571,7 @@ public sealed class TbListBoxLocator(ILocator scope, string label) : TbFieldLoca
             : await Field.EvaluateAsync<string[]>(Choices.ChosenNames);
     }
 
-    private ILocator Field => scope.GetByLabel(FieldLabel.Matching(label)).And(scope.Locator("[role=listbox], select"));
+    private ILocator Field => list.And(scope.Locator("[role=listbox], select"));
 
     private async Task SetChosenAsync(string[] options, bool choose)
     {
@@ -1575,13 +1605,12 @@ public sealed class TbListBoxLocator(ILocator scope, string label) : TbFieldLoca
     }
 }
 
-/// <summary>A <c>TbTransferList</c>, found by its label.</summary>
-public sealed class TbTransferListLocator(ILocator scope, string label) : TbFieldLocator
+/// <summary>A <c>TbTransferList</c>, found by its label or a locator.</summary>
+public sealed class TbTransferListLocator(ILocator scope, ILocator root) : TbFieldLocator
 {
     private protected override ILocator Control => Root;
 
-    private ILocator Root => scope.GetByRole(AriaRole.Group, new() { NameRegex = FieldLabel.Matching(label) })
-        .And(scope.Locator("fieldset.tb-transfer-list"));
+    private ILocator Root => root.And(scope.Locator("fieldset.tb-transfer-list"));
 
     /// <summary>The chosen items' text, in order.</summary>
     public Task<IReadOnlyList<string>> ChosenAsync() =>
