@@ -1,0 +1,18 @@
+<TbStack Row Gap="4" Align="Align.Center">
+    <TbHotkey Keys="Alt+Shift+R" Description="Reverse the route" OnPress="Reverse" />
+    <TbMenu Label="Route">
+        <TbMenuItem Description="Starts from the other end" Shortcut="Alt+Shift+R" OnClick="Reverse">
+            Reverse
+        </TbMenuItem>
+        <TbMenuItem Description="Fits the route on one page" OnClick="@(() => _last = "Printed")">
+            Print a map
+        </TbMenuItem>
+    </TbMenu>
+    <output aria-label="Last route action">@_last</output>
+</TbStack>
+
+@code {
+    private string _last = "";
+
+    private void Reverse() => _last = _last == "Reversed" ? "Reversed back" : "Reversed";
+}

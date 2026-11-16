@@ -117,6 +117,26 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Item_ShouldKeepItsNameAndDescribeItsHintAndShortcut_WhenGivenADescriptionAndAShortcut(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        var route = page.Tb().Menu("Route");
+        await route.OpenAsync();
+
+        var reverse = Item(page, "Reverse");
+        await Expect(reverse).ToHaveAccessibleNameAsync("Reverse");
+        await Expect(reverse).ToHaveAccessibleDescriptionAsync("Starts from the other end");
+        await Expect(reverse).ToHaveAttributeAsync("aria-keyshortcuts", "Alt+Shift+R");
+        await Expect(reverse.Locator("[data-part=shortcut] kbd").First).ToBeVisibleAsync();
+        await route.CloseAsync();
+        await route.ChooseAsync("Print a map");
+        await Expect(Output(page, "Last route action")).ToHaveTextAsync("Printed");
+        await page.Keyboard.PressAsync("Alt+Shift+R");
+        await Expect(Output(page, "Last route action")).ToHaveTextAsync("Reversed");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Menu_ShouldStayOpenAndDoNothing_WhenADisabledItemIsChosen(string browser)
     {
         var page = await OpenAsync(browser, "/examples/menu");

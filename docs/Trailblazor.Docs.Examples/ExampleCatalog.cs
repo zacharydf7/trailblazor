@@ -6544,9 +6544,14 @@ public static class ExampleCatalog
             Sections =
             [
                 new("items", "Items", "A menu's items run `OnClick` when chosen, which closes the menu. `Icon` adds an "
-                    + "icon, and `End` puts a count or hint at the item's end, which screen readers read as part of "
+                    + "icon, and `End` puts a count at the item's end, which screen readers read as part of "
                     + "the item's name. `Disabled` turns an item off but keeps it focusable, marked `aria-disabled`, "
                     + "so people can still find it.", typeof(MenuExample)),
+                new("descriptions-and-shortcuts", "Descriptions and shortcuts", "`Description` adds a line of muted "
+                    + "text under an item's text, and `Shortcut` shows the keys that do the same thing, such as "
+                    + "`\"Alt+Shift+R\"`. Neither becomes part of the item's name; screen readers hear both after "
+                    + "it. The item only shows its shortcut; a `TbHotkey` listens for the keys.",
+                    typeof(MenuShortcutExample)),
                 new("submenus", "Submenus", "`TbSubMenu` opens a second list beside an item. Resting the pointer on "
                     + "the item opens the list without moving focus into it, and on the way there the pointer can "
                     + "cross other items without the submenu closing. This menu also sets `Icon`, which makes its "
@@ -6567,10 +6572,10 @@ public static class ExampleCatalog
                     + "Without `context.Attributes`, the menu can't find its trigger, and once its script attaches it "
                     + "throws an error that says so.",
                     typeof(MenuTriggerExample)),
-                new("trigger-style", "The trigger's look", "`Variant` sets how a menu's text trigger looks, and `Tone` and "
-                    + "`Size` set the color and size of its built-in trigger. With a `Label`, an `Icon` shows before "
-                    + "the text. In a button group, the trigger takes the group's `Variant`, `Tone` and `Size` unless "
-                    + "the menu sets its own.", typeof(MenuStyleExample)),
+                new("trigger-style", "The trigger's look", "`Variant` sets how a menu's text trigger looks, and "
+                    + "`Tone` and `Size` set the color and size of its built-in trigger. With a `Label`, an `Icon` "
+                    + "shows before the text. In a button group, the trigger takes the group's `Variant`, `Tone` and "
+                    + "`Size` unless the menu sets its own.", typeof(MenuStyleExample)),
                 new("placement", "Placement and width", "`Placement` picks the side a menu opens on, and `Align` lines "
                     + "it up with the trigger. Placed to the side in a narrow window, a menu or submenu wraps to fit, "
                     + "or overlaps what opened it if its items can't wrap that far. `FullWidth` stretches the trigger, "
@@ -6624,6 +6629,8 @@ public static class ExampleCatalog
                 "Checkbox items are `menuitemcheckbox`es and radio items `menuitemradio`s, with `aria-checked`. A "
                     + "`TbMenuGroup` or radio group is a `group` named by its `Label`, and `TbMenuSeparator` is a "
                     + "`separator`.",
+                "An item's `End` is part of its name. Its `Description` is its `aria-describedby`, and its "
+                    + "`Shortcut` its `aria-keyshortcuts`, so screen readers hear both after the name.",
             ],
             Accessibility =
             [
@@ -6648,6 +6655,8 @@ public static class ExampleCatalog
                 new("icon", "An item's icon."),
                 new("label", "An item's text."),
                 new("end", "An item's `End` content, such as a count."),
+                new("description", "An item's `Description`."),
+                new("shortcut", "An item's `Shortcut` keys."),
                 new("indicator", "The check or dot a checkbox or radio item shows."),
                 new("chevron", "The arrow that shows an item opens a submenu."),
                 new("submenu-trigger", "The item that opens a submenu."),
@@ -6670,7 +6679,9 @@ public static class ExampleCatalog
                 """,
             TestingTip = "Open the menu with its trigger, then find items by role: `GetByRole(AriaRole.Menuitem)`, "
                 + "`Menuitemcheckbox` or `Menuitemradio`, with `ToBeCheckedAsync` for the last two. An item's `End` "
-                + "text is part of its name, so name an item with its count, such as \"Delete 3\". A group is "
+                + "text is part of its name, so name an item with its count, such as \"Delete 3\". Its `Description` "
+                + "and `Shortcut` aren't, so check them with `ToHaveAccessibleDescriptionAsync` and the "
+                + "`aria-keyshortcuts` attribute. A group is "
                 + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`. The trigger gets `data-ready` once a "
                 + "click on an item reaches the server; `await page.Tb().Menu(\"More options\").ChooseAsync(\"Share\", "
                 + "\"Email\")` from `Trailblazor.Testing.Playwright` waits for it, opens the menu and its submenus, "

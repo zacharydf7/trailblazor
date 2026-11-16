@@ -47,6 +47,65 @@ public class TbMenuTests : BunitContext
     }
 
     [Fact]
+    public async Task Item_ShouldDescribeItselfAndShowItsShortcut_WhenGivenADescriptionAndAShortcut()
+    {
+        var saves = 0;
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "File")
+            .AddChildContent<TbMenuItem>(item => item.Add(i => i.Description, "Keeps a copy on this device")
+                .Add(i => i.Shortcut, "Mod+S").Add(i => i.OnClick, () => saves++)
+                .AddUnmatched("aria-describedby", "trip-hint").AddChildContent("Save")));
+        var item = cut.Find("[role=menuitem]");
+        var description = cut.Find("[data-part=description]");
+
+        await cut.Tb().Menu("File").ChooseAsync("Save");
+
+        // The description and keycaps are hidden from the item's name, which stays "Save".
+        Assert.Equal($"trip-hint {description.Id}", item.GetAttribute("aria-describedby"));
+        Assert.Equal(("true", "Keeps a copy on this device"), (description.GetAttribute("aria-hidden"),
+            description.TextContent));
+        Assert.Equal("Control+S Meta+S", item.GetAttribute("aria-keyshortcuts"));
+        Assert.Equal("true", cut.Find("[data-part=shortcut]").GetAttribute("aria-hidden"));
+        Assert.Single(cut.FindAll("[data-part=shortcut] kbd.tb-kbd"));
+        Assert.Equal(1, saves);
+    }
+
+    [Theory]
+    [InlineData("ctrl+shift+K", "Control+Shift+K")]
+    [InlineData("alt+META+Delete", "Alt+Meta+Delete")]
+    [InlineData("mod+alt+S", "Control+Alt+S Meta+Alt+S")]
+    public void Item_ShouldNameTheModifiersAsAriaDoes_WhenGivenAShortcutInAnyCase(string shortcut, string expected)
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "File")
+            .AddChildContent<TbMenuItem>(item => item.Add(i => i.Shortcut, shortcut).AddChildContent("Save")));
+
+        Assert.Equal(expected, cut.Find("[role=menuitem]").GetAttribute("aria-keyshortcuts"));
+    }
+
+    [Fact]
+    public void Item_ShouldThrow_WhenGivenAShortcutItCantRead()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => Render<TbMenu>(parameters => parameters
+            .Add(menu => menu.Label, "File")
+            .AddChildContent<TbMenuItem>(item => item.Add(i => i.Shortcut, "S+Mod").AddChildContent("Save"))));
+
+        Assert.Contains("can't read the shortcut \"S+Mod\"", error.Message);
+    }
+
+    [Fact]
+    public void Item_ShouldLeaveTheConsumersDescriptionAlone_WhenItHasNoDescriptionOfItsOwn()
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "File")
+            .AddChildContent<TbMenuItem>(item => item.AddUnmatched("aria-describedby", "trip-hint")
+                .AddUnmatched("aria-keyshortcuts", "F2").AddChildContent("Rename")));
+
+        var item = cut.Find("[role=menuitem]");
+
+        Assert.Equal(("trip-hint", "F2"),
+            (item.GetAttribute("aria-describedby"), item.GetAttribute("aria-keyshortcuts")));
+        Assert.Empty(cut.FindAll("[data-part=description], [data-part=shortcut]"));
+    }
+
+    [Fact]
     public void Render_ShouldAddPartClasses_WhenClassesAreSet()
     {
         var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")

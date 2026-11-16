@@ -5753,3 +5753,8 @@ Trailblazor.RichTextSchema.ImageSchemes.get -> System.Collections.Generic.IReadO
 Trailblazor.RichTextSchema.ImageSchemes.init -> void
 Trailblazor.TbInteractiveMark
 Trailblazor.TbInteractiveMark.TbInteractiveMark() -> void
+Trailblazor.TbMenuItem.Description.get -> string?
+Trailblazor.TbMenuItem.Description.set -> void
+Trailblazor.TbMenuItem.Shortcut.get -> string?
+Trailblazor.TbMenuItem.Shortcut.set -> void
+override Trailblazor.TbMenuItem.OnParametersSet() -> void

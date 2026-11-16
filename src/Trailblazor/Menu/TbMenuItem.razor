@@ -8,8 +8,8 @@
     @* A disabled link loses its address, so it can't be followed. *@
     <a @attributes="AdditionalAttributes" href="@(Disabled ? null : Href)" target="@TargetAttribute"
        rel="@RelAttribute" role="menuitem" tabindex="-1" style="@Style"
-       aria-disabled="@(Disabled ? "true" : null)" class="@ClassNames.Join("tb-menu__item", Classes?.Item, Class)"
-       @onclick="OnClickAsync">
+       aria-disabled="@(Disabled ? "true" : null)" aria-describedby="@DescribedBy" aria-keyshortcuts="@KeyShortcuts"
+       class="@ClassNames.Join("tb-menu__item", Classes?.Item, Class)" @onclick="OnClickAsync">
         @Content
         @if (NewTab)
         {
@@ -20,7 +20,8 @@
 else
 {
     <button @attributes="AdditionalAttributes" type="button" role="menuitem" tabindex="-1" style="@Style"
-            aria-disabled="@(Disabled ? "true" : null)" class="@ClassNames.Join("tb-menu__item", Classes?.Item, Class)"
+            aria-disabled="@(Disabled ? "true" : null)" aria-describedby="@DescribedBy"
+            aria-keyshortcuts="@KeyShortcuts" class="@ClassNames.Join("tb-menu__item", Classes?.Item, Class)"
             @onclick="OnClickAsync">
         @Content
     </button>
@@ -42,10 +43,22 @@ else
     [Parameter]
     public Icon? Icon { get; set; }
 
-    /// <summary>Content at the item's end, such as a badge, a count or a hint. It's part of the item's name, so keep
-    /// it short.</summary>
+    /// <summary>Content at the item's end, such as a badge or a count. It's part of the item's name, so keep it
+    /// short; put a hint in <see cref="Description"/> and a key combination in <see cref="Shortcut"/>, which describe
+    /// the item without naming it.</summary>
     [Parameter]
     public RenderFragment? End { get; set; }
+
+    /// <summary>A line of muted text under the item's text, such as what it does. Screen readers hear it as the
+    /// item's description, after its name, so the item is still found by its text alone.</summary>
+    [Parameter]
+    public string? Description { get; set; }
+
+    /// <summary>The keys that do what the item does, written as <see cref="TbKbd.Keys"/> are, such as
+    /// <c>"Mod+S"</c>. The item shows them at its end and tells screen readers through <c>aria-keyshortcuts</c>; it
+    /// doesn't listen for them, so pair it with a <see cref="TbHotkey"/> that does.</summary>
+    [Parameter]
+    public string? Shortcut { get; set; }
 
     /// <summary>Keeps the item in the menu but stops it from being chosen.</summary>
     [Parameter]
@@ -80,16 +93,52 @@ else
 
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
+    private readonly string _descriptionId = $"tb-menu-item-{Guid.NewGuid():N}-description";
+
+    // Each keeps what the consumer set and adds the item's own.
+    private object? DescribedBy => Description is null ? AdditionalAttributes?.GetValueOrDefault("aria-describedby")
+        : $"{AdditionalAttributes?.GetValueOrDefault("aria-describedby")} {_descriptionId}".TrimStart();
+
+    private object? KeyShortcuts => Shortcut is null ? AdditionalAttributes?.GetValueOrDefault("aria-keyshortcuts")
+        : $"{AdditionalAttributes?.GetValueOrDefault("aria-keyshortcuts")} {KeyShortcut.Aria(Shortcut)}".TrimStart();
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Shortcut is not null && !KeyShortcut.IsValid(Shortcut))
+        {
+            throw new InvalidOperationException($"{nameof(TbMenuItem)} can't read the shortcut \"{Shortcut}\": end "
+                + "it with one key, after any of Mod, Ctrl, Alt, Shift and Meta, as in \"Mod+S\".");
+        }
+    }
+
     private RenderFragment Content => @<text>
         @if (Icon is { } icon)
         {
             <TbIcon Icon="icon" Size="Size.Small" Class="@Classes?.Icon" data-part="icon" />
         }
-        <span data-part="label" class="@Classes?.Label">@ChildContent</span>
+        @if (Description is null)
+        {
+            <span data-part="label" class="@Classes?.Label">@ChildContent</span>
+        }
+        else
+        {
+            @* aria-hidden keeps the description out of the item's name; aria-describedby still reads it. *@
+            <span class="tb-menu__text">
+                <span data-part="label" class="@Classes?.Label">@ChildContent</span>
+                <span id="@_descriptionId" data-part="description" class="tb-menu__description"
+                      aria-hidden="true">@Description</span>
+            </span>
+        }
         @if (End is not null)
         {
             @* Razor drops the whitespace here, so this space keeps the label and end apart in the item's name. *@
             @(" ")<span data-part="end" class="tb-menu__end">@End</span>
+        }
+        @if (Shortcut is not null)
+        {
+            @* aria-keyshortcuts tells screen readers the keys, so the keycaps stay out of the item's name. *@
+            <span data-part="shortcut" class="tb-menu__shortcut" aria-hidden="true"><TbKbd Keys="@Shortcut" /></span>
         }
     </text>;
 

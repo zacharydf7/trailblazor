@@ -372,6 +372,7 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
         ("menu", "Opens above", "menu", "Opens above"),
         ("menu", "Full width", "menu", "Full width"),
         ("menu", "Saved searches", "menu", "Saved searches"),
+        ("menu", "Route", "menu", "Route"),
         ("dialog", "Delete report", "alertdialog", "Delete report?"),
         ("dialog", "Check the backup", "alertdialog", "Backup finished"),
         ("dialog", "Share", "dialog", "Share report"),
