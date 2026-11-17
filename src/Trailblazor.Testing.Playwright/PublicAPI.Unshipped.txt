@@ -520,3 +520,15 @@ Trailblazor.Testing.Playwright.TbChatLocator.SendAsync(string! text) -> System.T
 Trailblazor.Testing.Playwright.TbChatLocator.TbChatLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TbChatLocator.TypingAsync() -> System.Threading.Tasks.Task<string?>!
 Trailblazor.Testing.Playwright.TrailblazorPage.Chat(string? name = null) -> Trailblazor.Testing.Playwright.TbChatLocator!
+Trailblazor.Testing.Playwright.TbAiPromptLocator
+Trailblazor.Testing.Playwright.TbAiPromptLocator.AiPrompt.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbAiPromptLocator.ChooseSuggestionAsync(string! suggestion) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAiPromptLocator.CopyAsync(int index = 0) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAiPromptLocator.InsertAsync(int index = 0) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAiPromptLocator.PromptAsync(string! prompt) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAiPromptLocator.ResponsesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbAiPromptLocator.RetryAsync(int index = 0) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAiPromptLocator.StatusesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Trailblazor.AiPromptStatus>!>!
+Trailblazor.Testing.Playwright.TbAiPromptLocator.StopAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAiPromptLocator.TbAiPromptLocator(Microsoft.Playwright.ILocator! scope, string? label) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.AiPrompt(string? label = null) -> Trailblazor.Testing.Playwright.TbAiPromptLocator!

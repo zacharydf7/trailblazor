@@ -1,0 +1,23 @@
+@page "/ai-prompt"
+@using System.Runtime.CompilerServices
+
+<TbAiPrompt Label="Ask about the ridge trail" Generate="Answer" Suggestions="Suggestions" OnInsert="Insert" />
+<output data-testid="inserted">@_inserted</output>
+
+@code {
+    private static readonly string[] Suggestions = ["How long is the loop?"];
+    private string _inserted = "";
+
+    // Says the prompt back a word every 150 ms, so a test can act while the response streams.
+    private static async IAsyncEnumerable<string> Answer(string prompt, [EnumeratorCancellation] CancellationToken token)
+    {
+        var words = $"You asked: {prompt}".Split(' ');
+        for (var at = 0; at < words.Length; at++)
+        {
+            await Task.Delay(150, token);
+            yield return at == 0 ? words[at] : $" {words[at]}";
+        }
+    }
+
+    private void Insert(AiPromptOutput output) => _inserted = output.Text;
+}

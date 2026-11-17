@@ -33,6 +33,7 @@ public static class AccessibilityStatusCatalog
         new("carousel", Tested, Tested, Tested),
         new("virtual-list", Tested, None, None),
         new("chat", Tested, NotYet, None),
+        new("ai-prompt", Tested, NotYet, None),
         new("image", None, NotYet, None),
         new("divider", None, NotYet, None),
         new("surface", None, NotYet, None),

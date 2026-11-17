@@ -494,3 +494,13 @@ Trailblazor.Testing.TbChatDriver.Messages.get -> System.Collections.Generic.IRea
 Trailblazor.Testing.TbChatDriver.SendAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbChatDriver.Typing.get -> string?
 Trailblazor.Testing.TrailblazorMarkup.Chat(string? name = null) -> Trailblazor.Testing.TbChatDriver!
+Trailblazor.Testing.TbAiPromptDriver
+Trailblazor.Testing.TbAiPromptDriver.ChooseSuggestionAsync(string! suggestion) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbAiPromptDriver.CopyAsync(int index = 0) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbAiPromptDriver.InsertAsync(int index = 0) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbAiPromptDriver.PromptAsync(string! prompt) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbAiPromptDriver.Responses.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbAiPromptDriver.RetryAsync(int index = 0) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbAiPromptDriver.Statuses.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.AiPromptStatus>!
+Trailblazor.Testing.TbAiPromptDriver.StopAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.AiPrompt(string? label = null) -> Trailblazor.Testing.TbAiPromptDriver!

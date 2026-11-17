@@ -5995,3 +5995,95 @@ override Trailblazor.TbQrCode.OnParametersSet() -> void
 ~override Trailblazor.TbQrCode.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 static Trailblazor.TbBarcode.CanEncode(string! value, Trailblazor.BarcodeFormat format = Trailblazor.BarcodeFormat.Code128) -> bool
 static Trailblazor.TbQrCode.CanEncode(string! value, Trailblazor.QrErrorCorrection errorCorrection = Trailblazor.QrErrorCorrection.Medium) -> bool
+Trailblazor.AiPromptLabels
+Trailblazor.AiPromptLabels.<Clone>$() -> Trailblazor.AiPromptLabels!
+Trailblazor.AiPromptLabels.AiPromptLabels() -> void
+Trailblazor.AiPromptLabels.Copied.get -> string?
+Trailblazor.AiPromptLabels.Copied.init -> void
+Trailblazor.AiPromptLabels.Copy.get -> string?
+Trailblazor.AiPromptLabels.Copy.init -> void
+Trailblazor.AiPromptLabels.Done.get -> string?
+Trailblazor.AiPromptLabels.Done.init -> void
+Trailblazor.AiPromptLabels.Equals(Trailblazor.AiPromptLabels? other) -> bool
+Trailblazor.AiPromptLabels.Failed.get -> string?
+Trailblazor.AiPromptLabels.Failed.init -> void
+Trailblazor.AiPromptLabels.Generate.get -> string?
+Trailblazor.AiPromptLabels.Generate.init -> void
+Trailblazor.AiPromptLabels.Generating.get -> string?
+Trailblazor.AiPromptLabels.Generating.init -> void
+Trailblazor.AiPromptLabels.Insert.get -> string?
+Trailblazor.AiPromptLabels.Insert.init -> void
+Trailblazor.AiPromptLabels.Responses.get -> string?
+Trailblazor.AiPromptLabels.Responses.init -> void
+Trailblazor.AiPromptLabels.Retry.get -> string?
+Trailblazor.AiPromptLabels.Retry.init -> void
+Trailblazor.AiPromptLabels.Stop.get -> string?
+Trailblazor.AiPromptLabels.Stop.init -> void
+Trailblazor.AiPromptLabels.Stopped.get -> string?
+Trailblazor.AiPromptLabels.Stopped.init -> void
+Trailblazor.AiPromptLabels.Suggestions.get -> string?
+Trailblazor.AiPromptLabels.Suggestions.init -> void
+Trailblazor.AiPromptOutput
+Trailblazor.AiPromptOutput.<Clone>$() -> Trailblazor.AiPromptOutput!
+Trailblazor.AiPromptOutput.AiPromptOutput(string! Prompt, string! Text, Trailblazor.AiPromptStatus Status) -> void
+Trailblazor.AiPromptOutput.Deconstruct(out string! Prompt, out string! Text, out Trailblazor.AiPromptStatus Status) -> void
+Trailblazor.AiPromptOutput.Equals(Trailblazor.AiPromptOutput? other) -> bool
+Trailblazor.AiPromptOutput.Error.get -> System.Exception?
+Trailblazor.AiPromptOutput.Error.init -> void
+Trailblazor.AiPromptOutput.Prompt.get -> string!
+Trailblazor.AiPromptOutput.Prompt.init -> void
+Trailblazor.AiPromptOutput.Status.get -> Trailblazor.AiPromptStatus
+Trailblazor.AiPromptOutput.Status.init -> void
+Trailblazor.AiPromptOutput.Text.get -> string!
+Trailblazor.AiPromptOutput.Text.init -> void
+Trailblazor.AiPromptStatus
+Trailblazor.AiPromptStatus.Done = 1 -> Trailblazor.AiPromptStatus
+Trailblazor.AiPromptStatus.Failed = 3 -> Trailblazor.AiPromptStatus
+Trailblazor.AiPromptStatus.Generating = 0 -> Trailblazor.AiPromptStatus
+Trailblazor.AiPromptStatus.Stopped = 2 -> Trailblazor.AiPromptStatus
+Trailblazor.TbAiPrompt
+Trailblazor.TbAiPrompt.Disabled.get -> bool
+Trailblazor.TbAiPrompt.Disabled.set -> void
+Trailblazor.TbAiPrompt.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbAiPrompt.Generate.get -> System.Func<string!, System.Threading.CancellationToken, System.Collections.Generic.IAsyncEnumerable<string!>!>?
+Trailblazor.TbAiPrompt.Generate.set -> void
+Trailblazor.TbAiPrompt.Label.get -> string!
+Trailblazor.TbAiPrompt.Label.set -> void
+Trailblazor.TbAiPrompt.Labels.get -> Trailblazor.AiPromptLabels!
+Trailblazor.TbAiPrompt.Labels.set -> void
+Trailblazor.TbAiPrompt.OnInsert.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.AiPromptOutput!>
+Trailblazor.TbAiPrompt.OnInsert.set -> void
+Trailblazor.TbAiPrompt.OutputTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.AiPromptOutput!>?
+Trailblazor.TbAiPrompt.OutputTemplate.set -> void
+Trailblazor.TbAiPrompt.Placeholder.get -> string?
+Trailblazor.TbAiPrompt.Placeholder.set -> void
+Trailblazor.TbAiPrompt.Suggestions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.TbAiPrompt.Suggestions.set -> void
+Trailblazor.TbAiPrompt.TbAiPrompt() -> void
+Trailblazor.TbAiPrompt.TelemetryName.get -> string?
+Trailblazor.TbAiPrompt.TelemetryName.set -> void
+const Trailblazor.TbStrings.AiPromptCopied = "AiPrompt.Copied" -> string!
+const Trailblazor.TbStrings.AiPromptCopy = "AiPrompt.Copy" -> string!
+const Trailblazor.TbStrings.AiPromptDone = "AiPrompt.Done" -> string!
+const Trailblazor.TbStrings.AiPromptFailed = "AiPrompt.Failed" -> string!
+const Trailblazor.TbStrings.AiPromptGenerate = "AiPrompt.Generate" -> string!
+const Trailblazor.TbStrings.AiPromptGenerating = "AiPrompt.Generating" -> string!
+const Trailblazor.TbStrings.AiPromptInsert = "AiPrompt.Insert" -> string!
+const Trailblazor.TbStrings.AiPromptResponses = "AiPrompt.Responses" -> string!
+const Trailblazor.TbStrings.AiPromptRetry = "AiPrompt.Retry" -> string!
+const Trailblazor.TbStrings.AiPromptStop = "AiPrompt.Stop" -> string!
+const Trailblazor.TbStrings.AiPromptStopped = "AiPrompt.Stopped" -> string!
+const Trailblazor.TbStrings.AiPromptSuggestions = "AiPrompt.Suggestions" -> string!
+override Trailblazor.AiPromptLabels.Equals(object? obj) -> bool
+override Trailblazor.AiPromptLabels.GetHashCode() -> int
+override Trailblazor.AiPromptLabels.ToString() -> string!
+override Trailblazor.AiPromptOutput.Equals(object? obj) -> bool
+override Trailblazor.AiPromptOutput.GetHashCode() -> int
+override Trailblazor.AiPromptOutput.ToString() -> string!
+override Trailblazor.TbAiPrompt.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbAiPrompt.OnParametersSet() -> void
+static Trailblazor.AiPromptLabels.operator !=(Trailblazor.AiPromptLabels? left, Trailblazor.AiPromptLabels? right) -> bool
+static Trailblazor.AiPromptLabels.operator ==(Trailblazor.AiPromptLabels? left, Trailblazor.AiPromptLabels? right) -> bool
+static Trailblazor.AiPromptOutput.operator !=(Trailblazor.AiPromptOutput? left, Trailblazor.AiPromptOutput? right) -> bool
+static Trailblazor.AiPromptOutput.operator ==(Trailblazor.AiPromptOutput? left, Trailblazor.AiPromptOutput? right) -> bool
+~override Trailblazor.TbAiPrompt.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

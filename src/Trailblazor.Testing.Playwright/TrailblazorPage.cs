@@ -278,6 +278,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// </summary>
     public TbChatLocator Chat(string? name = null) => new(scope, name);
 
+    /// <summary>The <c>TbAiPrompt</c> with this <c>Label</c>, or the only one in the scope when no label is given.
+    /// </summary>
+    public TbAiPromptLocator AiPrompt(string? label = null) => new(scope, label);
+
     /// <summary>The <c>TbVirtualList</c> with this <c>AriaLabel</c>, or the only one in the scope when no name is
     /// given.</summary>
     public TbVirtualListLocator VirtualList(string? name = null) => new(scope, name);

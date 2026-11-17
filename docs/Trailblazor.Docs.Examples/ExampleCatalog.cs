@@ -849,6 +849,94 @@ public static class ExampleCatalog
                 + "for the next message; `MessagesAsync()` or `Messages` reads each message as \"Author: text\", and "
                 + "`TypingAsync()` or `Typing` reads who is typing.",
         },
+        new("ai-prompt", "AI prompt", ExampleCategory.Inputs,
+            "A box to write a prompt for a model, with suggestions, and the responses it streams back, each with "
+                + "Copy, Retry and Insert.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it where people ask a model for something they'll use, such as a summary, a draft or an answer "
+                    + "they insert into their work.",
+            ],
+            WhenNotToUse =
+            [
+                "For a back-and-forth conversation, use a [chat](components/chat).",
+                "For search over the app's own content, use a [command palette](components/command-palette) or an "
+                    + "[autocomplete](components/autocomplete).",
+            ],
+            Related = ["chat", "text-field", "command-palette"],
+            Sections =
+            [
+                new("basic", "AI prompt", "`Generate` connects any model: it takes the prompt and a "
+                    + "`CancellationToken` and returns the text as an `IAsyncEnumerable<string>`, a chunk at a time, "
+                    + "which the response shows as it arrives. Enter generates, Shift+Enter starts a new line, and "
+                    + "Stop or Escape cancels the token. `Suggestions` fill the box, ready to change. Responses list "
+                    + "newest first, each with Copy and Retry, and Insert when `OnInsert` is set, as the trip notes "
+                    + "here show. `OutputTemplate` draws a response, such as Markdown rendered to HTML.",
+                    typeof(AiPromptExample)),
+            ],
+            Api = [typeof(TbAiPrompt), typeof(AiPromptOutput), typeof(AiPromptStatus), typeof(AiPromptLabels)],
+            Keyboard =
+            [
+                new(["Tab"], "Moves through the box, the generate button, the suggestions, then each response's "
+                    + "buttons."),
+                new(["Enter"], "Generates a response to the prompt.") { When = "In the box" },
+                new(["Shift+Enter"], "Starts a new line.") { When = "In the box" },
+                new(["Escape"], "Stops the response that's generating.") { When = "While a response generates" },
+            ],
+            Labeling =
+            [
+                "The prompt is a region named by its visible `Label`, which also labels the box.",
+                "The suggestions are a group named \"Suggestions\", and the responses a list named \"Responses\"; "
+                    + "`Labels` can rename both.",
+            ],
+            Announcements =
+            [
+                "When a response starts, is ready, stops or fails, the announcer says so: \"Generating a response\", "
+                    + "\"Response ready\", \"Response stopped\" or \"Couldn't generate a response. Try again.\" The "
+                    + "streaming text itself isn't read out chunk by chunk; the response is `aria-busy` meanwhile.",
+                "Copy says \"Copied\" once the text is on the clipboard.",
+            ],
+            Accessibility =
+            [
+                "The generate button turns into Stop while a response generates, so focus on it stays put.",
+                "The Enter that ends an input method's composition doesn't generate.",
+            ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
+            BeforeInteractive =
+            [
+                "The box and the suggestions show, and generating works once the page is interactive.",
+            ],
+            Ready = new(".tb-ai-prompt", "the prompt"),
+            Target = new("region", "Ask about the ridge trail"),
+            Blocks = ["tb-ai-prompt"],
+            DataParts =
+            [
+                new("composer", "The label, the box, the generate button and the suggestions."),
+                new("label", "The prompt's visible label."),
+                new("input", "The box the user writes the prompt in."),
+                new("suggestions", "The group of suggested prompts."),
+                new("suggestion", "One suggestion."),
+                new("generate", "The button that generates, which reads Stop and stops the response while one "
+                    + "generates; the prompt has `data-generating` meanwhile."),
+                new("outputs", "The list of responses, newest first."),
+                new("output", "One response, with `data-status` of generating, done, stopped or failed."),
+                new("prompt", "The prompt a response answers."),
+                new("text", "The response's text, or what `OutputTemplate` draws."),
+                new("error", "The message on a failed response."),
+                new("actions", "A response's buttons."),
+                new("copy", "Copies the response's text."),
+                new("retry", "Generates the response again."),
+                new("insert", "Hands the response to `OnInsert`."),
+            ],
+            TestingTip = "`page.Tb().AiPrompt(\"Ask about the ridge trail\")` in Playwright, or "
+                + "`cut.Tb().AiPrompt(...)` in bUnit, finds the prompt by its `Label`: `PromptAsync(text)` writes a "
+                + "prompt and generates, and in Playwright waits until the response is done, stopped or failed; `ResponsesAsync()` or `Responses` "
+                + "reads each response's text, newest first, and `StatusesAsync()` or `Statuses` their statuses; "
+                + "`StopAsync()`, `CopyAsync()`, `RetryAsync()` and `InsertAsync()` act on a response, the newest by "
+                + "default. In bUnit, pass `Generate` a stub that yields fixed chunks.",
+        },
         new("image", "Image", ExampleCategory.Content,
             "An image that requires alternative text and can scale to fit its container.")
         {

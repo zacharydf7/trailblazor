@@ -53,6 +53,42 @@ public static class TbStrings
     /// <summary>"Newest messages": the button that goes back to the newest message after scrolling up.</summary>
     public const string ChatNewest = "Chat.Newest";
 
+    /// <summary>"Generate": an AI prompt's button that sends the prompt.</summary>
+    public const string AiPromptGenerate = "AiPrompt.Generate";
+
+    /// <summary>"Stop": an AI prompt's button that stops a response while it generates.</summary>
+    public const string AiPromptStop = "AiPrompt.Stop";
+
+    /// <summary>"Suggestions": names an AI prompt's group of suggested prompts.</summary>
+    public const string AiPromptSuggestions = "AiPrompt.Suggestions";
+
+    /// <summary>"Responses": names an AI prompt's list of responses.</summary>
+    public const string AiPromptResponses = "AiPrompt.Responses";
+
+    /// <summary>"Copy": copies a response's text.</summary>
+    public const string AiPromptCopy = "AiPrompt.Copy";
+
+    /// <summary>"Retry": generates a response again for the same prompt.</summary>
+    public const string AiPromptRetry = "AiPrompt.Retry";
+
+    /// <summary>"Insert": hands a response's text to the app, such as into the document being written.</summary>
+    public const string AiPromptInsert = "AiPrompt.Insert";
+
+    /// <summary>"Generating a response": read out when a response starts.</summary>
+    public const string AiPromptGenerating = "AiPrompt.Generating";
+
+    /// <summary>"Response ready": read out when a response is done.</summary>
+    public const string AiPromptDone = "AiPrompt.Done";
+
+    /// <summary>"Response stopped": read out when the user stops a response.</summary>
+    public const string AiPromptStopped = "AiPrompt.Stopped";
+
+    /// <summary>"Couldn't generate a response. Try again.": shown on a failed response and read out.</summary>
+    public const string AiPromptFailed = "AiPrompt.Failed";
+
+    /// <summary>"Copied": read out once a response is copied.</summary>
+    public const string AiPromptCopied = "AiPrompt.Copied";
+
     /// <summary>"Navigation": names an app shell's menu button and titles its navigation drawer.</summary>
     public const string AppShellMenu = "AppShell.Menu";
 
@@ -1228,6 +1264,18 @@ public static class TbStrings
         [ChatTyping] = "{0} is typing…",
         [ChatTypingMany] = "{0} and {1} are typing…",
         [ChatNewest] = "Newest messages",
+        [AiPromptGenerate] = "Generate",
+        [AiPromptStop] = "Stop",
+        [AiPromptSuggestions] = "Suggestions",
+        [AiPromptResponses] = "Responses",
+        [AiPromptCopy] = "Copy",
+        [AiPromptRetry] = "Retry",
+        [AiPromptInsert] = "Insert",
+        [AiPromptGenerating] = "Generating a response",
+        [AiPromptDone] = "Response ready",
+        [AiPromptStopped] = "Response stopped",
+        [AiPromptFailed] = "Couldn't generate a response. Try again.",
+        [AiPromptCopied] = "Copied",
         [AppShellMenu] = "Navigation",
         [AppShellNavigation] = "Main",
         [AppShellSkipToContent] = "Skip to content",

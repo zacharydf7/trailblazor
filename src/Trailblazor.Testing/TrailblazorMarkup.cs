@@ -490,6 +490,13 @@ public sealed class TrailblazorMarkup
     public TbChatDriver Chat(string? name = null) => new(() => Only(_findAll("section.tb-chat")
         .Where(chat => name is null || chat.GetAttribute("aria-label") == name).ToList(), "chat", name), _scripts);
 
+    /// <summary>The <c>TbAiPrompt</c> with this <c>Label</c>, or the only one in the markup when no label is given.
+    /// </summary>
+    public TbAiPromptDriver AiPrompt(string? label = null) => new(() => Only(_findAll("section.tb-ai-prompt")
+        .Where(prompt => label is null
+            || prompt.QuerySelector(":scope > [data-part=composer] > [data-part=label]")!.TextContent.Trim() == label)
+        .ToList(), "AI prompt", label));
+
     /// <summary>The <c>TbCarousel</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
     /// given.</summary>
     public TbCarouselDriver Carousel(string? name = null) => new(() => Only(_findAll("section.tb-carousel")
@@ -1828,6 +1835,104 @@ public sealed class TbChatDriver
         return input.HasAttribute("disabled")
             ? throw new InvalidOperationException("This chat is still sending; attach once OnSend has run.")
             : _scripts.InputFile(input.Id!);
+    }
+}
+
+/// <summary>A <c>TbAiPrompt</c>, found by its <c>Label</c>. Responses are newest first, so index 0 is the latest.
+/// </summary>
+public sealed class TbAiPromptDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbAiPromptDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>Each response's text, newest first.</summary>
+    public IReadOnlyList<string> Responses => [.. Outputs().Select(output =>
+        output.QuerySelector("[data-part=text]")!.TextContent.Trim())];
+
+    /// <summary>Each response's status, newest first.</summary>
+    public IReadOnlyList<AiPromptStatus> Statuses => [.. Outputs().Select(output =>
+        Enum.Parse<AiPromptStatus>(output.GetAttribute("data-status")!, ignoreCase: true))];
+
+    /// <summary>Types the prompt in the box and generates, as pressing Enter does. A disabled prompt, or one still
+    /// generating, throws.</summary>
+    public async Task PromptAsync(string prompt)
+    {
+        var composer = Composer();
+        await composer.QuerySelector("[data-part=input]")!.InputAsync(new ChangeEventArgs { Value = prompt });
+        await composer.SubmitAsync();
+    }
+
+    /// <summary>Clicks the suggestion with this text, which puts it in the box. A prompt without it throws.</summary>
+    public async Task ChooseSuggestionAsync(string suggestion)
+    {
+        var button = Composer().QuerySelectorAll("[data-part=suggestion]")
+            .FirstOrDefault(button => button.TextContent.Trim() == suggestion)
+            ?? throw new InvalidOperationException($"This AI prompt has no suggestion \"{suggestion}\".");
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    /// <summary>Stops the response that's generating, as Escape does. A prompt with nothing generating throws.
+    /// </summary>
+    public async Task StopAsync()
+    {
+        var prompt = _find();
+        if (!prompt.HasAttribute("data-generating"))
+        {
+            throw new InvalidOperationException("Nothing is generating in this AI prompt.");
+        }
+
+        await prompt.QuerySelector(":scope > [data-part=composer] [data-part=generate]")!
+            .ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    /// <summary>Copies a response's text; the app's <c>FakeBrowserService</c> records it. A response with no text
+    /// yet throws.</summary>
+    public Task CopyAsync(int index = 0) => PressAsync(index, "copy", "Copy");
+
+    /// <summary>Generates a response again for its prompt. A prompt that's disabled or still generating throws.
+    /// </summary>
+    public Task RetryAsync(int index = 0) => PressAsync(index, "retry", "Retry");
+
+    /// <summary>Inserts a response, which raises <c>OnInsert</c>. A prompt without <c>OnInsert</c> or that's disabled,
+    /// or a response with no text yet, throws.</summary>
+    public Task InsertAsync(int index = 0) => PressAsync(index, "insert", "Insert");
+
+    private List<IElement> Outputs() =>
+        [.. _find().QuerySelectorAll(":scope > [data-part=outputs] > [data-part=output]")];
+
+    private IElement Composer()
+    {
+        var prompt = _find();
+        var composer = prompt.QuerySelector(":scope > [data-part=composer]")!;
+        if (composer.QuerySelector("[data-part=input]")!.HasAttribute("disabled"))
+        {
+            throw new InvalidOperationException("This AI prompt is disabled.");
+        }
+
+        return prompt.HasAttribute("data-generating")
+            ? throw new InvalidOperationException("This AI prompt is still generating; stop it or let it finish.")
+            : composer;
+    }
+
+    private async Task PressAsync(int index, string part, string name)
+    {
+        var outputs = Outputs();
+        if (index < 0 || index >= outputs.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index), index,
+                $"There's no response at index {index}; this AI prompt has {outputs.Count}.");
+        }
+
+        var button = outputs[index].QuerySelector($"[data-part={part}]")
+            ?? throw new InvalidOperationException("This AI prompt has no Insert; set OnInsert.");
+        if (button.HasAttribute("disabled"))
+        {
+            throw new InvalidOperationException(
+                $"{name} is off for this response: it has no text yet, or the prompt is disabled or generating.");
+        }
+
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 }
 

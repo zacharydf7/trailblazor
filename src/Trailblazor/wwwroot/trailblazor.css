@@ -2991,6 +2991,92 @@
         outline-offset: var(--tb-focus-ring-offset);
     }
 
+    .tb-ai-prompt {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-3);
+    }
+
+    .tb-ai-prompt__composer {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-ai-prompt__label,
+    .tb-ai-prompt__suggestions {
+        grid-column: 1 / -1;
+    }
+
+    .tb-ai-prompt__label {
+        font-weight: 600;
+    }
+
+    .tb-ai-prompt__input {
+        min-block-size: calc(var(--tb-control-height) * 1.5);
+        max-block-size: 12rem;
+        padding: var(--tb-space-2);
+        border: var(--tb-field-border-width, 1px) solid var(--tb-field-border-color, var(--tb-border-strong));
+        border-radius: var(--tb-field-radius, var(--tb-radius-md));
+        background: var(--tb-field-background, var(--tb-color-surface));
+        color: inherit;
+        font: inherit;
+        field-sizing: content;
+        resize: none;
+    }
+
+    .tb-ai-prompt__input:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-ai-prompt__suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-ai-prompt__outputs {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-3);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .tb-ai-prompt__output {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-2);
+        padding: var(--tb-space-3);
+        border: 1px solid var(--tb-border-subtle);
+        border-radius: var(--tb-radius-lg);
+        background: var(--tb-color-surface-raised);
+        overflow-wrap: anywhere;
+    }
+
+    .tb-ai-prompt__prompt {
+        margin: 0;
+        font-size: var(--tb-font-size-sm);
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-ai-prompt__text {
+        white-space: pre-wrap;
+    }
+
+    .tb-ai-prompt__error {
+        margin: 0;
+        color: var(--tb-color-danger-text);
+    }
+
+    .tb-ai-prompt__actions {
+        display: flex;
+        gap: var(--tb-space-1);
+    }
+
     /* The controls sit above the slides, and the slide buttons below them, as small dots. */
     .tb-carousel {
         display: grid;

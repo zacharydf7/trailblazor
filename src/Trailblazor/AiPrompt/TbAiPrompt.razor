@@ -1,0 +1,85 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IAsyncDisposable
+
+@* data-ready marks that the script handles Enter and Escape; data-generating, that a response is streaming. *@
+<section @ref="_root" @attributes="AdditionalAttributes" aria-labelledby="@($"{_id}-label")" style="@Style"
+         data-ready="@(_handle is not null ? "" : null)" data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
+         data-generating="@(Generating ? "" : null)"
+         class="@ClassNames.Join("tb-ai-prompt", Class)">
+    <form data-part="composer" class="tb-ai-prompt__composer" @onsubmit="SubmitAsync" @onsubmit:preventDefault>
+        <label id="@($"{_id}-label")" for="@($"{_id}-input")" data-part="label" class="tb-ai-prompt__label">
+            @Label
+        </label>
+        @Box
+        @* One button that turns into Stop while a response generates, and is never turned off by an empty box or
+           while it can stop a response, so focus on it stays put. *@
+        <TbButton Type="@(Generating ? ButtonType.Button : ButtonType.Submit)" Variant="Variant.Filled"
+                  Size="Size.Small" data-part="generate" OnClick="StopIfGenerating"
+                  Disabled="@(Disabled && !Generating)" class="tb-ai-prompt__generate">
+            @(Generating ? Text(Labels.Stop, TbStrings.AiPromptStop)
+                : Text(Labels.Generate, TbStrings.AiPromptGenerate))
+        </TbButton>
+        @if (Suggestions.Count > 0)
+        {
+            <div role="group" aria-label="@Text(Labels.Suggestions, TbStrings.AiPromptSuggestions)"
+                 data-part="suggestions" class="tb-ai-prompt__suggestions">
+                @foreach (var suggestion in Suggestions)
+                {
+                    <TbButton Variant="Variant.Outlined" Size="Size.Small" Disabled="Disabled" data-part="suggestion"
+                              OnClick="() => Suggest(suggestion)">@suggestion</TbButton>
+                }
+            </div>
+        }
+    </form>
+    @if (_outputs.Count > 0)
+    {
+        <ol aria-label="@Text(Labels.Responses, TbStrings.AiPromptResponses)" data-part="outputs"
+            class="tb-ai-prompt__outputs">
+            @for (var index = 0; index < _outputs.Count; index++)
+            {
+                var at = index;
+                var (key, output) = _outputs[index];
+                var busy = output.Status == AiPromptStatus.Generating;
+                <li @key="key" data-part="output" data-status="@output.Status.ToString().ToLowerInvariant()"
+                    aria-busy="@(busy ? "true" : null)" class="tb-ai-prompt__output">
+                    <p data-part="prompt" class="tb-ai-prompt__prompt">@output.Prompt</p>
+                    <div data-part="text" class="tb-ai-prompt__text">
+                        @if (OutputTemplate is not null)
+                        {
+                            @OutputTemplate(output)
+                        }
+                        else
+                        {
+                            @output.Text
+                        }
+                    </div>
+                    @if (output.Status == AiPromptStatus.Failed)
+                    {
+                        <p data-part="error" class="tb-ai-prompt__error">
+                            @Text(Labels.Failed, TbStrings.AiPromptFailed)
+                        </p>
+                    }
+                    <div data-part="actions" class="tb-ai-prompt__actions">
+                        <TbButton Variant="Variant.Text" Size="Size.Small" data-part="copy"
+                                  Disabled="@(busy || output.Text.Length == 0)" OnClick="() => CopyAsync(output)">
+                            @Text(Labels.Copy, TbStrings.AiPromptCopy)
+                        </TbButton>
+                        <TbButton Variant="Variant.Text" Size="Size.Small" data-part="retry"
+                                  Disabled="@(Disabled || Generating)" OnClick="() => RetryAsync(at)">
+                            @Text(Labels.Retry, TbStrings.AiPromptRetry)
+                        </TbButton>
+                        @if (OnInsert.HasDelegate)
+                        {
+                            <TbButton Variant="Variant.Text" Size="Size.Small" data-part="insert"
+                                      Disabled="@(Disabled || busy || output.Text.Length == 0)"
+                                      OnClick="() => InsertAsync(output)">
+                                @Text(Labels.Insert, TbStrings.AiPromptInsert)
+                            </TbButton>
+                        }
+                    </div>
+                </li>
+            }
+        </ol>
+    }
+</section>

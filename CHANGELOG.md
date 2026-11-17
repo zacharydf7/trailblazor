@@ -88,6 +88,7 @@ they run by version. The docs site's Upgrading page is built from both.
 #### 2026-11-17
 
 - New `TbQrCode` and `TbBarcode` (Code 128 and EAN-13): SVG images (`role="img"`) named by their value, which `data-value` holds; a QR code's modules are `data-part="modules"`, and a barcode's image is `data-part="bars"` with its printed value in `data-part="text"`
+- New `TbAiPrompt`: a region named by its visible label, with a prompt box, suggestions (`data-part="suggestion"`), a generate button that turns into Stop, and responses newest first (`data-part="output"`, `data-status` of generating, done, stopped or failed); a response's start, end, stop or failure is read out through the announcer
 
 #### 2026-11-16
 

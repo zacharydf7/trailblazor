@@ -1,0 +1,39 @@
+@using System.Runtime.CompilerServices
+
+<TbStack Gap="4">
+    <TbAiPrompt Label="Ask about the ridge trail" Generate="Answer" Suggestions="Suggestions"
+                Placeholder="How long is it, is it shaded, what to pack…" OnInsert="Insert" />
+    @if (_notes.Count > 0)
+    {
+        <TbCard>
+            <TbText As="TextElement.H3" TextStyle="TextStyle.Title">Trip notes</TbText>
+            @foreach (var note in _notes)
+            {
+                <TbText>@note</TbText>
+            }
+        </TbCard>
+    }
+</TbStack>
+
+@code {
+    private static readonly string[] Suggestions = ["How long is the loop?", "Is it shaded?", "What should I pack?"];
+    private readonly List<string> _notes = [];
+
+    // Stands in for a model, streaming a word at a time. An app calls its model's client here and passes the token on.
+    private static async IAsyncEnumerable<string> Answer(string prompt, [EnumeratorCancellation] CancellationToken token)
+    {
+        var answer = prompt.Contains("pack", StringComparison.OrdinalIgnoreCase)
+            ? "Two liters of water, a rain shell and the map. The ridge has no shade after noon, so add a hat."
+            : prompt.Contains("shade", StringComparison.OrdinalIgnoreCase)
+                ? "The first two miles run through pines. The ridge itself is open, so start before nine."
+                : "The ridge loop is seven miles, with 1,400 feet of climbing. Most hikers take four hours.";
+        var words = answer.Split(' ');
+        for (var at = 0; at < words.Length; at++)
+        {
+            await Task.Delay(60, token);
+            yield return at == 0 ? words[at] : $" {words[at]}";
+        }
+    }
+
+    private void Insert(AiPromptOutput output) => _notes.Add(output.Text);
+}

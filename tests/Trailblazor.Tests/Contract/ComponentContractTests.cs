@@ -291,6 +291,9 @@ public class ComponentContractTests : BunitContext
                     (RenderFragment<string>)(text => item => item.AddContent(0, text)),
                 var type when type == typeof(Func<string, object>) => (Func<string, object>)(text => text),
                 var type when type == typeof(Func<string, string>) => (Func<string, string>)(text => text),
+                var type when type == typeof(Func<string, CancellationToken, IAsyncEnumerable<string>>) =>
+                    (Func<string, CancellationToken, IAsyncEnumerable<string>>)((_, _) =>
+                        AsyncEnumerable.Empty<string>()),
                 _ => throw new NotSupportedException($"Add a sample {property.PropertyType.Name} to the contract " +
                     $"kit for {component.Name}.{property.Name}."),
             };
