@@ -43,7 +43,6 @@ public static class UpcomingCatalog
         new("Spreadsheet", ExampleCategory.Content, 206),
         new("Ribbon", ExampleCategory.Actions, 83),
         new("Smart paste", ExampleCategory.Actions, 198),
-        new("Speech-to-text button", ExampleCategory.Actions, 197),
         new("In-place editor", ExampleCategory.Inputs, 196),
         new("File manager", ExampleCategory.Navigation, 209),
     ];

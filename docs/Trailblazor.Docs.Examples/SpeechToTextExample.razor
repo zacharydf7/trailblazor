@@ -1,0 +1,16 @@
+<TbStack Gap="3" Style="max-inline-size: 28rem">
+    <TbTextField TValue="string" Label="Trail notes" @bind-Value="_notes">
+        <End><TbSpeechToText Label="Dictate notes" OnText="Append" OnError="Failed" /></End>
+    </TbTextField>
+    <output>@_status</output>
+</TbStack>
+
+@code {
+    private string? _notes;
+    private string _status = "The microphone button shows only where your browser recognizes speech.";
+
+    private void Append(string text) => _notes = string.IsNullOrEmpty(_notes) ? text : $"{_notes} {text}";
+
+    private void Failed(SpeechToTextError error) => _status = error == SpeechToTextError.NotAllowed
+        ? "Allow the microphone to dictate." : "Dictation didn't catch that; try again.";
+}

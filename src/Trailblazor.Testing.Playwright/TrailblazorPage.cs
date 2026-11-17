@@ -348,6 +348,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// shown.</summary>
     public TbNavMenuLocator NavMenu(string? name = null) => new(scope, name);
 
+    /// <summary>The <c>TbSpeechToText</c> whose button has this <c>Label</c>, such as "Dictate".</summary>
+    public TbSpeechToTextLocator SpeechToText(string label) => new(scope, label);
+
     /// <summary>The page's <c>TbBackToTop</c>.</summary>
     public TbBackToTopLocator BackToTop() => new(scope);
 

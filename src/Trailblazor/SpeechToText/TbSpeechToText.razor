@@ -1,0 +1,185 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+@inject ITbLocalizer Localizer
+@inject IAnnouncer Announcer
+@inject IServiceProvider Services
+
+@* The button shows only where the browser recognizes speech, which only its script can tell. *@
+<span @ref="_root" @attributes="AdditionalAttributes" style="@Style" hidden="@(!_available)"
+      class="@ClassNames.Join("tb-speech-to-text", Class)">
+    <TbIconButton id="@_buttonId" Icon="BuiltInIcons.Microphone"
+                  AriaLabel="@(Label ?? Localizer[TbStrings.SpeechToTextLabel])" Pressed="_listening"
+                  PressedChanged="SetListeningAsync" Disabled="Disabled" data-part="button" />
+</span>
+
+@code {
+    private readonly string _buttonId = $"tb-speech-to-text-{Guid.NewGuid():N}";
+    private ElementReference _root;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<SpeechToTextEvents>? _events;
+    private bool _available;
+    private bool _listening;
+    private int _session;
+    private bool _disposed;
+
+    /// <summary>Raised with each phrase the browser recognizes, such as to add it to a field.</summary>
+    [Parameter]
+    public EventCallback<string> OnText { get; set; }
+
+    /// <summary>Raised when recognition fails, such as when the microphone isn't allowed.</summary>
+    [Parameter]
+    public EventCallback<SpeechToTextError> OnError { get; set; }
+
+    /// <summary>The language spoken, such as <c>"en-US"</c>. Defaults to the page's language.</summary>
+    [Parameter]
+    public string? Language { get; set; }
+
+    /// <summary>Keeps listening across pauses until the button is pressed again. Defaults to false, which stops after
+    /// the first phrase.</summary>
+    [Parameter]
+    public bool Continuous { get; set; }
+
+    /// <summary>The button's accessible name. Defaults to "Dictate".</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>Shows the button without letting it listen. Disabling it while it listens stops listening.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>The words it says to screen readers as it starts and stops listening.</summary>
+    [Parameter]
+    public SpeechToTextLabels Labels { get; set; } = new();
+
+    /// <summary>A label this button's use is counted under, such as <c>"notes-dictation"</c>, so the app can count how
+    /// often people see it and start or stop listening through the <c>Trailblazor</c> meter. It counts as seen once
+    /// it shows, where the browser recognizes speech. Controls that share a label count together; a control without
+    /// one isn't counted. It names what the control does, never the user, and what is said is never recorded.
+    /// </summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        // A disabled button can't be pressed to stop, so the microphone mustn't stay on behind it.
+        if (Disabled && _listening && _handle is not null)
+        {
+            Stopped();
+            await _handle.InvokeVoidAsync("stop");
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_available)
+        {
+            Telemetry.Rendered(TelemetryName);
+        }
+
+        if (!firstRender || !RendererInfo.IsInteractive)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/speech-to-text.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            _events = DotNetObjectReference.Create(new SpeechToTextEvents(_buttonId, TextAsync, ErrorAsync, StoppedBy));
+            var handle = await module.InvokeAsync<IJSObjectReference?>("attachSpeechToText", _root, _events);
+            if (_disposed && handle is not null)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+            _available = handle is not null;
+            if (_available)
+            {
+                StateHasChanged();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the button went with it.
+        }
+    }
+
+    private async Task SetListeningAsync(bool listen)
+    {
+        if (_handle is null || listen == _listening)
+        {
+            return;
+        }
+
+        if (listen)
+        {
+            _listening = true;
+            Telemetry.Used(TelemetryName, "start");
+            Announcer.Polite(Labels.Listening ?? Localizer[TbStrings.SpeechToTextListening]);
+            await _handle.InvokeVoidAsync("start", Language, Continuous, ++_session);
+        }
+        else
+        {
+            Telemetry.Used(TelemetryName, "stop");
+            Stopped();
+            await _handle.InvokeVoidAsync("stop");
+        }
+    }
+
+    private Task TextAsync(string text) => OnText.InvokeAsync(text);
+
+    private Task ErrorAsync(string error) => OnError.InvokeAsync(error switch
+    {
+        "not-allowed" or "service-not-allowed" => SpeechToTextError.NotAllowed,
+        "no-speech" => SpeechToTextError.NoSpeech,
+        "audio-capture" => SpeechToTextError.NoMicrophone,
+        "network" => SpeechToTextError.Network,
+        _ => SpeechToTextError.Other,
+    });
+
+    // An earlier recognition can end after the next start was sent, and mustn't unpress the button for the new one.
+    private void StoppedBy(int session)
+    {
+        if (session == _session)
+        {
+            Stopped();
+        }
+    }
+
+    // Recognition ends when the button is pressed again, after a phrase unless Continuous, or on an error.
+    private void Stopped()
+    {
+        if (_listening)
+        {
+            _listening = false;
+            Announcer.Polite(Labels.Stopped ?? Localizer[TbStrings.SpeechToTextStopped]);
+            StateHasChanged();
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _events?.Dispose();
+    }
+}

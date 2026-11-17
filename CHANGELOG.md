@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-17
 
+- New `TbSpeechToText`: a toggle button (`tb-speech-to-text`, `data-part="button"`, `aria-pressed` while listening) that shows only where the browser recognizes speech and hands each phrase it hears to the app
 - New `TbBackToTop`: a floating button (`tb-back-to-top`, with `data-shown` while it shows, and `data-part="button"`) that appears once the page has scrolled down and takes it back to the top, moving focus there
 - New `TbHighlight`: text (`tb-highlight`) with each match of a search in a `mark` (`data-part="match"`)
 - `TbAccordionItem`, `TbAlert`, `TbBanner`, `TbAppShell`, `TbCarousel`, `TbOverlay`, `TbPagination`, `TbSplitter`, `TbStepper`, `TbThemePicker` and `TbInsertDivider` take a `TelemetryName` and, when given one, count `trailblazor.control.shown` and each use as `trailblazor.control.used`, with what was done as `trailblazor.action`; `TbHotkeysHelp` takes one too and counts as a dialog does

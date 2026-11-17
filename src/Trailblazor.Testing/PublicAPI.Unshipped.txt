@@ -560,3 +560,10 @@ Trailblazor.Testing.TrailblazorMarkup.Tour() -> Trailblazor.Testing.TbTourDriver
 Trailblazor.Testing.TbBackToTopDriver
 Trailblazor.Testing.TbBackToTopDriver.ClickAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.BackToTop() -> Trailblazor.Testing.TbBackToTopDriver!
+Trailblazor.Testing.TbSpeechToTextDriver
+Trailblazor.Testing.TbSpeechToTextDriver.IsAvailable.get -> bool
+Trailblazor.Testing.TbSpeechToTextDriver.IsListening.get -> bool
+Trailblazor.Testing.TbSpeechToTextDriver.SayAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSpeechToTextDriver.StartAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSpeechToTextDriver.StopAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.SpeechToText(string! label) -> Trailblazor.Testing.TbSpeechToTextDriver!

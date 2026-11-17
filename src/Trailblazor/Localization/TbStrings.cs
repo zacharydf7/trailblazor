@@ -934,6 +934,15 @@ public static class TbStrings
     /// <summary>"{0} of {1}": shows which tour step shows; {0} is its number and {1} the number of steps.</summary>
     public const string TourPosition = "Tour.Position";
 
+    /// <summary>"Dictate": the name of the button that fills a field from speech.</summary>
+    public const string SpeechToTextLabel = "SpeechToText.Label";
+
+    /// <summary>"Listening": said when the dictation button starts listening.</summary>
+    public const string SpeechToTextListening = "SpeechToText.Listening";
+
+    /// <summary>"Stopped listening": said when the dictation button stops listening.</summary>
+    public const string SpeechToTextStopped = "SpeechToText.Stopped";
+
     /// <summary>"Back to top": the name of the button that takes a scrolled page back to its top.</summary>
     public const string BackToTopLabel = "BackToTop.Label";
 
@@ -1602,6 +1611,9 @@ public static class TbStrings
         [TourDone] = "Done",
         [TourSkip] = "Skip tour",
         [TourPosition] = "{0} of {1}",
+        [SpeechToTextLabel] = "Dictate",
+        [SpeechToTextListening] = "Listening",
+        [SpeechToTextStopped] = "Stopped listening",
         [BackToTopLabel] = "Back to top",
         [ThemePicker] = "Theme",
         [ThemeLight] = "Light",

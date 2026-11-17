@@ -1853,6 +1853,79 @@ public static class ExampleCatalog
                     + "pressed.",
             ],
         },
+        new("speech-to-text", "Speech to text", ExampleCategory.Actions,
+            "A button that listens through the browser's speech recognition and hands what it hears to the app.")
+        {
+            WhenToUse =
+            [
+                "Use it beside a field people would rather speak into, such as notes or a search, where the browser "
+                    + "recognizes speech.",
+            ],
+            WhenNotToUse =
+            [
+                "As the only way to fill a field: it shows only in browsers that recognize speech, so the field must "
+                    + "work by typing too.",
+            ],
+            Related = ["text-field", "ai-prompt", "chat"],
+            Pattern = new("button", "https://www.w3.org/WAI/ARIA/apg/patterns/button/"),
+            Sections =
+            [
+                new("basic", "Speech to text", "Pressing the button starts listening, and `OnText` is raised with "
+                    + "each phrase heard, which the app adds to its field. It stops after one phrase or, with "
+                    + "`Continuous`, when pressed again. `OnError` says why it stopped without hearing anything, such "
+                    + "as a microphone that isn't allowed. `Language` sets the language spoken.",
+                    typeof(SpeechToTextExample)),
+            ],
+            Api = [typeof(TbSpeechToText), typeof(SpeechToTextError), typeof(SpeechToTextLabels)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Starts listening, or stops it."),
+            ],
+            Labeling =
+            [
+                "The button is named \"Dictate\", unless `Label` names it, and is pressed while it listens.",
+            ],
+            Announcements =
+            [
+                "\"Listening\" when it starts, and \"Stopped listening\" when it stops, unless `Labels` words them.",
+            ],
+            Accessibility =
+            [
+                "The button shows only where the browser recognizes speech, so no one meets a button that can't work.",
+            ],
+            AppDuties =
+            [
+                "Keep the field usable by typing, since many browsers have no speech recognition.",
+                "Say what went wrong from `OnError`, such as asking to allow the microphone.",
+            ],
+            Modes = new(ModeSupport.None, ModeSupport.None),
+            BeforeInteractive =
+            [
+                "The button shows only once the page is interactive, because finding the browser's speech "
+                    + "recognition takes a script.",
+            ],
+            Ready = new(".tb-speech-to-text", "the button's root, once its script has looked for the browser's speech "
+                + "recognition, whether or not it found it"),
+            Target = null,
+            Blocks = ["tb-speech-to-text"],
+            DataParts =
+            [
+                new("button", "The toggle button, pressed while it listens."),
+            ],
+            TestingTips =
+            [
+                "In bUnit, `cut.Tb().SpeechToText(\"Dictate notes\")` finds it: `StartAsync()` and `StopAsync()` press "
+                    + "it, and `SayAsync(\"...\")` hands the app a phrase as the browser would on hearing it.",
+                "In Playwright, a test browser has no microphone, so replace `window.SpeechRecognition` with a fake "
+                    + "in an init script; `page.Tb().SpeechToText(\"Dictate notes\")` presses it and reads its state.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"notes-dictation\"`, it counts `trailblazor.control.shown` once it "
+                    + "shows, where the browser recognizes speech, and `trailblazor.control.used` with the action "
+                    + "`start` or `stop`. What is said is never recorded.",
+            ],
+        },
         new("toggle-group", "Toggle group", ExampleCategory.Actions,
             "A row of toggle buttons where one, or any number, can be pressed.")
         {

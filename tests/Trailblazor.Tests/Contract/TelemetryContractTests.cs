@@ -53,6 +53,8 @@ public class TelemetryContractTests : BunitContext
     // Components rendered alone that take a TelemetryName but don't count shown as they render, with the reason.
     private static readonly Dictionary<Type, string> NotShownAsRendered = new()
     {
+        [typeof(TbSpeechToText)] = "it counts shown once its script finds the browser's speech recognition and it "
+            + "shows; TbSpeechToTextTests checks it",
         [typeof(TbBackToTop)] = "it counts shown once the page scrolls far enough to show it, which its script "
             + "reports; TbBackToTopTests checks it",
         [typeof(TbMenuItem)] = "it renders hidden until its menu opens, which the menu counts",

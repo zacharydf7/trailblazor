@@ -95,6 +95,14 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             ?? throw new InvalidOperationException("The mention input's script hasn't attached, as it does once the "
                 + "field renders interactively.");
 
+    // The events the speech recognition script calls back for this dictation button, matched by its id.
+    public SpeechToTextEvents SpeechToText(IElement button) => Js.Invocations["attachSpeechToText"]
+        .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<SpeechToTextEvents>)
+        .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
+        .LastOrDefault(events => events.ButtonId == button.Id)
+            ?? throw new InvalidOperationException("The dictation button's script hasn't attached, as it does once "
+                + "the button renders interactively.");
+
     // A link goes to its address, as in a browser, unless it opens in a new tab and leaves this page where it is.
     public void Follow(IElement action)
     {
@@ -584,6 +592,16 @@ public sealed class TrailblazorMarkup
         return menus.Count == 1 ? menus[0] : throw new InvalidOperationException(name is null
             ? $"Expected one nav menu, found {menus.Count}; name the one to use by its navigation landmark."
             : $"Expected one nav menu in a navigation landmark named \"{name}\", found {menus.Count}.");
+    }, _scripts);
+
+    /// <summary>The <c>TbSpeechToText</c> whose button has this <c>Label</c>, such as "Dictate".</summary>
+    public TbSpeechToTextDriver SpeechToText(string label) => new(() =>
+    {
+        var buttons = _findAll(".tb-speech-to-text [data-part=button]")
+            .Where(button => button.GetAttribute("aria-label") == label).ToList();
+        return buttons.Count == 1 ? buttons[0] : throw new InvalidOperationException(buttons.Count == 0
+            ? $"No dictation button is labeled \"{label}\"."
+            : $"{buttons.Count} dictation buttons are labeled \"{label}\".");
     }, _scripts);
 
     /// <summary>The page's <c>TbBackToTop</c>.</summary>
@@ -2352,6 +2370,57 @@ public sealed class TbInsertDividerDriver
         }
 
         await insert.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+}
+
+/// <summary>A <c>TbSpeechToText</c>, found by its button's <c>Label</c>.</summary>
+public sealed class TbSpeechToTextDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbSpeechToTextDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>Whether the button shows, which it does where the browser recognizes speech.</summary>
+    public bool IsAvailable => _find().Closest(".tb-speech-to-text")?.HasAttribute("hidden") == false;
+
+    /// <summary>Whether it is listening.</summary>
+    public bool IsListening => _find().GetAttribute("aria-pressed") == "true";
+
+    /// <summary>Presses the button to start listening. Throws while it's listening already, or hidden.</summary>
+    public Task StartAsync() => PressAsync(listening: false);
+
+    /// <summary>Presses the button to stop listening. Throws while it isn't listening.</summary>
+    public Task StopAsync() => PressAsync(listening: true);
+
+    /// <summary>Hands this phrase to the app as the browser would on hearing it, which raises <c>OnText</c>.
+    /// Throws while it isn't listening; start it with <see cref="StartAsync"/> first.</summary>
+    public async Task SayAsync(string text)
+    {
+        if (!IsListening)
+        {
+            throw new InvalidOperationException("The dictation button isn't listening; call StartAsync first.");
+        }
+
+        var events = _scripts.SpeechToText(_find());
+        await _scripts.InvokeAsync(() => events.OnText(text));
+    }
+
+    private async Task PressAsync(bool listening)
+    {
+        if (!IsAvailable)
+        {
+            throw new InvalidOperationException("The dictation button is hidden; it stays hidden until its script "
+                + "finds the browser's speech recognition.");
+        }
+
+        if (IsListening != listening)
+        {
+            throw new InvalidOperationException(listening ? "The dictation button isn't listening."
+                : "The dictation button is listening already.");
+        }
+
+        await _find().ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 }
 

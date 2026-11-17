@@ -37,6 +37,9 @@ internal static class BuiltInIcons
 
     public static Icon ArrowUp { get; } = new("<path d=\"M11 20V7.8l-5.6 5.6L4 12l8-8 8 8-1.4 1.4L13 7.8V20z\" />");
 
+    public static Icon Microphone { get; } = new("<path d=\"M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 "
+        + "5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11z\" />");
+
     public static Icon Filter { get; } = new("<path d=\"M3 4h18v2l-7 7v7l-4-2v-5L3 6z\" />");
 
     public static Icon ArrowDown { get; } = new("<path d=\"M13 4v12.2l5.6-5.6L20 12l-8 8-8-8 1.4-1.4 5.6 5.6V4z\" />");

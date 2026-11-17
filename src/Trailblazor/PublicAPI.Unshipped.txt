@@ -6666,3 +6666,47 @@ Trailblazor.TbHighlight.Search.set -> void
 Trailblazor.TbHighlight.TbHighlight() -> void
 Trailblazor.TbHighlight.Text.get -> string!
 Trailblazor.TbHighlight.Text.set -> void
+Trailblazor.SpeechToTextError
+Trailblazor.SpeechToTextError.Network = 3 -> Trailblazor.SpeechToTextError
+Trailblazor.SpeechToTextError.NoMicrophone = 2 -> Trailblazor.SpeechToTextError
+Trailblazor.SpeechToTextError.NoSpeech = 1 -> Trailblazor.SpeechToTextError
+Trailblazor.SpeechToTextError.NotAllowed = 0 -> Trailblazor.SpeechToTextError
+Trailblazor.SpeechToTextError.Other = 4 -> Trailblazor.SpeechToTextError
+Trailblazor.TbSpeechToText
+Trailblazor.TbSpeechToText.Continuous.get -> bool
+Trailblazor.TbSpeechToText.Continuous.set -> void
+Trailblazor.TbSpeechToText.Disabled.get -> bool
+Trailblazor.TbSpeechToText.Disabled.set -> void
+Trailblazor.TbSpeechToText.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbSpeechToText.Label.get -> string?
+Trailblazor.TbSpeechToText.Label.set -> void
+Trailblazor.TbSpeechToText.Language.get -> string?
+Trailblazor.TbSpeechToText.Language.set -> void
+Trailblazor.TbSpeechToText.OnError.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.SpeechToTextError>
+Trailblazor.TbSpeechToText.OnError.set -> void
+Trailblazor.TbSpeechToText.OnText.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
+Trailblazor.TbSpeechToText.OnText.set -> void
+Trailblazor.TbSpeechToText.TbSpeechToText() -> void
+Trailblazor.TbSpeechToText.TelemetryName.get -> string?
+Trailblazor.TbSpeechToText.TelemetryName.set -> void
+const Trailblazor.TbStrings.SpeechToTextLabel = "SpeechToText.Label" -> string!
+const Trailblazor.TbStrings.SpeechToTextListening = "SpeechToText.Listening" -> string!
+const Trailblazor.TbStrings.SpeechToTextStopped = "SpeechToText.Stopped" -> string!
+override Trailblazor.TbSpeechToText.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbSpeechToText.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.SpeechToTextLabels
+Trailblazor.SpeechToTextLabels.<Clone>$() -> Trailblazor.SpeechToTextLabels!
+Trailblazor.SpeechToTextLabels.Equals(Trailblazor.SpeechToTextLabels? other) -> bool
+Trailblazor.SpeechToTextLabels.Listening.get -> string?
+Trailblazor.SpeechToTextLabels.Listening.init -> void
+Trailblazor.SpeechToTextLabels.SpeechToTextLabels() -> void
+Trailblazor.SpeechToTextLabels.Stopped.get -> string?
+Trailblazor.SpeechToTextLabels.Stopped.init -> void
+Trailblazor.TbSpeechToText.Labels.get -> Trailblazor.SpeechToTextLabels!
+Trailblazor.TbSpeechToText.Labels.set -> void
+override Trailblazor.SpeechToTextLabels.Equals(object? obj) -> bool
+override Trailblazor.SpeechToTextLabels.GetHashCode() -> int
+override Trailblazor.SpeechToTextLabels.ToString() -> string!
+override Trailblazor.TbSpeechToText.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+static Trailblazor.SpeechToTextLabels.operator !=(Trailblazor.SpeechToTextLabels? left, Trailblazor.SpeechToTextLabels? right) -> bool
+static Trailblazor.SpeechToTextLabels.operator ==(Trailblazor.SpeechToTextLabels? left, Trailblazor.SpeechToTextLabels? right) -> bool

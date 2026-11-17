@@ -2349,6 +2349,15 @@
         box-shadow: var(--tb-shadow-lg);
     }
 
+    /* Inline, as at a field's end; without the [hidden] rule, display: inline-flex would override the hidden attribute. */
+    .tb-speech-to-text {
+        display: inline-flex;
+    }
+
+    .tb-speech-to-text[hidden] {
+        display: none;
+    }
+
     .tb-back-to-top > .tb-fab {
         transition: background-color var(--tb-motion-duration-fast) var(--tb-motion-easing-standard),
             box-shadow var(--tb-motion-duration-fast) var(--tb-motion-easing-standard),

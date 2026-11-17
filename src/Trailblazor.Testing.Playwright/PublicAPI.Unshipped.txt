@@ -610,3 +610,11 @@ Trailblazor.Testing.Playwright.TbBackToTopLocator.ClickAsync() -> System.Threadi
 Trailblazor.Testing.Playwright.TbBackToTopLocator.IsShownAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbBackToTopLocator.TbBackToTopLocator(Microsoft.Playwright.ILocator! scope) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.BackToTop() -> Trailblazor.Testing.Playwright.TbBackToTopLocator!
+Trailblazor.Testing.Playwright.TbSpeechToTextLocator
+Trailblazor.Testing.Playwright.TbSpeechToTextLocator.Button.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbSpeechToTextLocator.IsAvailableAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbSpeechToTextLocator.IsListeningAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbSpeechToTextLocator.StartAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSpeechToTextLocator.StopAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSpeechToTextLocator.TbSpeechToTextLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.SpeechToText(string! label) -> Trailblazor.Testing.Playwright.TbSpeechToTextLocator!
