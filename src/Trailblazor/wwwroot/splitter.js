@@ -85,6 +85,8 @@ export function attachSplitter(root, reporter, key) {
         const pressed = separator === event.target ? separator : event.target.closest('[data-part="trigger"]');
         if (pressed === separator) {
             event.preventDefault();
+            // Focus from script counts as keyboard focus, so the mark keeps a press from showing the focus highlight.
+            separator.dataset.pointerFocus = '';
             separator.focus();
         }
 
@@ -125,6 +127,7 @@ export function attachSplitter(root, reporter, key) {
         draggedGrip = null;
     };
     const onKeyDown = event => {
+        delete separatorFor(event.target)?.dataset.pointerFocus;
         if (separatorFor(event.target) !== event.target || event.altKey || event.ctrlKey || event.metaKey) {
             return;
         }
@@ -162,11 +165,14 @@ export function attachSplitter(root, reporter, key) {
         report(sizes);
     };
 
+    const onFocusOut = event => delete separatorFor(event.target)?.dataset.pointerFocus;
+
     root.addEventListener('pointerdown', onPointerDown);
     root.addEventListener('pointermove', onPointerMove);
     root.addEventListener('pointerup', onPointerUp);
     root.addEventListener('pointercancel', onPointerUp);
     root.addEventListener('keydown', onKeyDown);
+    root.addEventListener('focusout', onFocusOut);
     root.addEventListener('click', onClick, { capture: true });
 
     // Panes register on the server as they first render, so one added later in the middle needs its place reported.
@@ -237,6 +243,7 @@ export function attachSplitter(root, reporter, key) {
             root.removeEventListener('pointerup', onPointerUp);
             root.removeEventListener('pointercancel', onPointerUp);
             root.removeEventListener('keydown', onKeyDown);
+            root.removeEventListener('focusout', onFocusOut);
             root.removeEventListener('click', onClick, { capture: true });
         },
     };

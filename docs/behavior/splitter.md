@@ -30,7 +30,7 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] The menu's steps turn off at a limit or while a neighbor is collapsed. `TbSplitterTests.Render_ShouldDisableTheGripsSteps_WhenAPaneIsAtItsLimitOrCollapsed`
 - [x] Hover highlights the line and shows a resize cursor. `trailblazor.css`
 - [x] With a `PersistenceKey`, the layout comes back after a reload. `SplitterTests.Splitter_ShouldKeepTheLayout_WhenThePageIsReloadedWithAPersistenceKey`
-- [ ] A drag doesn't select the text in the panes. UNCONFIRMED
+- [x] A drag doesn't select the text in the panes. `SplitterDragTests.Splitter_ShouldSelectNoText_WhenTheSeparatorIsDraggedOverThePanes`
 
 ## Touch
 
@@ -43,7 +43,7 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] Each separator is one tab stop. `TbSplitterPane.razor`
 - [x] The grip stays out of the tab order, since the separator's keys do the same. `TbSplitterTests.Render_ShouldGiveEachSeparatorAGripMenuOutOfTheTabOrder_WhenGivenPanes`
 - [x] `Labels` replaces the separator's and grip's names, the grip menu's items and the name of a pane with no `Label`. `TbSplitterTests.Labels_ShouldWordTheSeparatorsAndTheirMenus_WhenGiven`
-- [ ] Pressing a separator focuses it, and only keyboard focus highlights it. UNCONFIRMED
+- [x] Pressing a separator focuses it, and only keyboard focus highlights it. `SplitterDragTests.Separator_ShouldShowAHighlightOnlyForKeyboardFocus_WhenPressedThenGivenAKeyOrTabbedBackTo`
 - [x] Focus stays on the separator through a collapse and a restore. `SplitterTests.Splitter_ShouldCollapseAndRestoreThePane_WhenEnterIsPressed`
 - [x] A collapsed pane's content is out of the tab order. `SplitterTests.Splitter_ShouldHideACollapsedPanesContentFromTheTabOrder_WhenCollapsedFromAButton`
 - [x] A collapsed pane's content stays out of reach and hidden, even in an open accordion inside it. `HiddenContentTests.HiddenContent_ShouldBeSkippedByTab_WhenLoadingOrInACollapsedPane`, `HiddenContentTests.HiddenContent_ShouldHideAnOpenAccordionsPanel_WhenLoadingOrInACollapsedPane`, `TbSplitterTests.Render_ShouldGiveACollapsedPanesShareToTheOthers_WhenOneIsCollapsed`

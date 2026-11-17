@@ -1,0 +1,10 @@
+@page "/popover-last"
+
+@* A field that keeps Tab, as an editor indenting a list does. *@
+<TbPopover Label="Indent notes">
+    <input aria-label="Indented" @onkeydown:preventDefault />
+</TbPopover>
+@* Nothing follows this popover, so Tab past its last control leaves the page. *@
+<TbPopover Label="Trail notes">
+    <TbButton>Clear notes</TbButton>
+</TbPopover>

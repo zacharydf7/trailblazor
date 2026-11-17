@@ -678,4 +678,24 @@ public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByLabel("Price chosen")).ToHaveTextAsync("30");
         await Expect(price).ToHaveValueAsync("30.00");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NumberField_ShouldKeepItsValue_WhenTheWheelTurnsOverItWhileFocused(string browser)
+    {
+        var page = await OpenAsync(browser, "/number-step");
+        var copies = page.GetByRole(AriaRole.Spinbutton, new() { Name = "Copies" });
+        await Expect(copies).ToHaveAttributeAsync("data-ready", "");
+        await copies.FocusAsync();
+        var box = (await copies.BoundingBoxAsync())!;
+
+        await page.Mouse.MoveAsync(box.X + box.Width / 4, box.Y + box.Height / 2);
+        await page.Mouse.WheelAsync(0, -100);
+        var shown = await copies.InputValueAsync();
+        // Events reach the server in order, so once this click counts, any change from the wheel has too.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Elsewhere" }).ClickAsync();
+        await Expect(page.GetByLabel("Elsewhere clicks")).ToHaveTextAsync("1");
+
+        Assert.Equal(("5", "5"), (shown, await page.GetByLabel("Copies chosen").TextContentAsync()));
+        await Expect(copies).ToBeEditableAsync();
+    }
 }

@@ -6565,7 +6565,7 @@
     }
 
     .tb-splitter__separator:hover::before,
-    .tb-splitter__separator:focus-visible::before {
+    .tb-splitter__separator:focus-visible:not([data-pointer-focus])::before {
         background: var(--tb-color-primary);
         box-shadow: 0 0 0 1px var(--tb-color-primary);
     }
@@ -6580,7 +6580,7 @@
         }
 
         .tb-splitter__separator:hover::before,
-        .tb-splitter__separator:focus-visible::before {
+        .tb-splitter__separator:focus-visible:not([data-pointer-focus])::before {
             background: Highlight;
             box-shadow: 0 0 0 1px Highlight;
         }

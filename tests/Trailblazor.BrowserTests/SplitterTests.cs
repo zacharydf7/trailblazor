@@ -131,4 +131,57 @@ public class SplitterDragTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.Locator("[data-part=pane]").First)
             .ToHaveAttributeAsync("style", new System.Text.RegularExpressions.Regex("flex-grow: 25;"));
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldSelectNoText_WhenTheSeparatorIsDraggedOverThePanes(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/splitter");
+        await Expect(page.Locator(".tb-splitter").First).ToHaveAttributeAsync("data-ready", "");
+        var trails = page.GetByRole(AriaRole.Separator, new() { Name = "Resize Trails", Exact = true });
+        var root = (await page.Locator(".tb-splitter").First.BoundingBoxAsync())!;
+        var box = (await trails.BoundingBoxAsync())!;
+        var y = box.Y + box.Height / 4;
+
+        await page.Mouse.MoveAsync(box.X + box.Width / 2, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(root.X, y, new() { Steps = 5 });
+        await page.Mouse.UpAsync();
+
+        Assert.Equal("", await page.EvaluateAsync<string>("() => getSelection().toString()"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Separator_ShouldShowAHighlightOnlyForKeyboardFocus_WhenPressedThenGivenAKeyOrTabbedBackTo(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/splitter");
+        await Expect(page.Locator(".tb-splitter").First).ToHaveAttributeAsync("data-ready", "");
+        var trails = page.GetByRole(AriaRole.Separator, new() { Name = "Resize Trails", Exact = true });
+        var box = (await trails.BoundingBoxAsync())!;
+        // The line's color eases in and out, so it's read once its transitions have finished.
+        const string line = """
+            async separator => {
+                await Promise.all(separator.getAnimations({ subtree: true }).map(animation => animation.finished));
+                return getComputedStyle(separator, '::before').backgroundColor;
+            }
+            """;
+        var resting = await trails.EvaluateAsync<string>(line);
+
+        // Away from the grip, whose press opens its menu, then off the line, so hover doesn't highlight it.
+        await page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 4);
+        await page.Mouse.MoveAsync(0, 0);
+        await Expect(trails).ToBeFocusedAsync();
+        var pressed = await trails.EvaluateAsync<string>(line);
+        await page.Keyboard.PressAsync("Shift");
+        var keyed = await trails.EvaluateAsync<string>(line);
+        await page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 4);
+        await page.Mouse.MoveAsync(0, 0);
+        await page.Keyboard.PressAsync("Tab");
+        await page.Keyboard.PressAsync("Shift+Tab");
+        await Expect(trails).ToBeFocusedAsync();
+
+        Assert.Equal(resting, pressed);
+        Assert.NotEqual(resting, keyed);
+        Assert.NotEqual(resting, await trails.EvaluateAsync<string>(line));
+    }
 }

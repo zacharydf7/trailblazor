@@ -308,4 +308,35 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(page.GetByTestId("notes-open")).ToHaveTextAsync("closed");
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldClose_WhenTabLeavesItsLastControlAndNothingFollowsOnThePage(string browser)
+    {
+        Assert.SkipWhen(browser == "firefox", "Headless Firefox keeps focus on the last control when Tab has nowhere "
+            + "to go, where a browser with a toolbar moves it to the toolbar.");
+        var page = await OpenAsync(browser, "/popover-last");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Trail notes" });
+        await trigger.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Clear notes" })).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldStayOpen_WhenFocusLeavesThePageAfterATabAControlKept(string browser)
+    {
+        var page = await OpenAsync(browser, "/popover-last");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Indent notes" });
+        await trigger.ClickAsync();
+        var field = page.GetByLabel("Indented");
+        await Expect(field).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Tab");
+        // Focus leaves with no related target, as when the window loses focus.
+        await field.EvaluateAsync("field => field.blur()");
+
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+    }
 }

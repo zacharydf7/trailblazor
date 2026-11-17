@@ -13,7 +13,7 @@ Familiar apps: filter panels in Google Sheets and GitHub, Slack's profile cards
 - [x] Tab past the last control closes the panel. `PopoverTests.Popover_ShouldClose_WhenTabMovesFocusOutOfThePanel`
 - [x] Shift+Tab from the first control goes to the trigger and leaves the panel open. `popover.js`
 - [x] A natively disabled trigger opens nothing. `PopoverTests.Popover_ShouldOpenNeitherOnAClickNorOnHover_WhenDisabled`
-- [ ] Tab past the last control closes the panel when nothing on the page follows it. UNCONFIRMED
+- [x] Tab past the last control closes the panel when nothing on the page follows it. `PopoverTests.Popover_ShouldClose_WhenTabLeavesItsLastControlAndNothingFollowsOnThePage`
 
 ## Pointer
 

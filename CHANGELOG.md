@@ -87,6 +87,9 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-16
 
+- A popover closes when Tab moves focus past its last control and out of the page, as it already did when Tab moved focus to another control
+- Pressing a splitter's separator focuses it without the focus highlight, which now shows only for the keyboard; the separator carries `data-pointer-focus` from the press until a key is pressed or focus leaves it, as a range slider's thumbs do
+- In Chromium, turning the mouse wheel over a focused number field no longer steps its value; the page scrolls as it does over any other field
 - From a value off the step, a number field's step buttons, and a formatted field's arrow keys, now land on a whole number of steps from `Min`, or from zero without one, as a number box's own arrows do: 1.5 with a step of 1 goes to 2 or 1, where the buttons used to give 2.5 or 0.5. A `Step` of 0 or less now throws an `InvalidOperationException`
 - A field in a `TbFieldRow` shrinks to its column, where its box used to stay as wide as its input's `size` and spill into the next column
 - A masked text field no longer commits on the Enter that ends an input method's composition, matching the code field

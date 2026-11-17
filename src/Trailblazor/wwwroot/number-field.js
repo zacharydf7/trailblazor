@@ -14,6 +14,16 @@ document.addEventListener('keydown', event => {
     }
 }, { capture: true });
 
+// Chromium steps a focused number box when the wheel turns over it, which changes a value the user only scrolled
+// past. It leaves a read-only box alone and still scrolls the page, so the box is read-only for that one event.
+document.addEventListener('wheel', event => {
+    const input = event.target;
+    if (input === document.activeElement && input.matches?.('input[type=number][data-part=input]') && !input.readOnly) {
+        input.readOnly = true;
+        setTimeout(() => input.readOnly = false);
+    }
+}, { capture: true, passive: true });
+
 let lastPointer = 'mouse';
 document.addEventListener('pointerdown', event => lastPointer = event.pointerType, { capture: true });
 const typed = new WeakSet();

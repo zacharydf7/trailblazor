@@ -89,9 +89,17 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     const onPanelFocusIn = () => {
         openedByHover = false;
     };
-    // Tabbing out of the panel closes it, so it doesn't cover what focus moves to (WCAG 2.4.11).
+    // Tabbing out of the panel closes it, so it doesn't cover what focus moves to (WCAG 2.4.11). Tab past the page's
+    // last control sends focus to the browser with no related target, as leaving the window does, so a missing target
+    // counts only in the Tab's own task, where focus moves: a control can keep the Tab for itself and lose focus later.
+    let tabbing = false;
+    const onKeyDown = event => {
+        tabbing = event.key === 'Tab';
+        setTimeout(() => tabbing = false);
+    };
     const onFocusOut = event => {
-        if (event.relatedTarget && !root.contains(event.relatedTarget) && panel.matches(':popover-open')) {
+        const left = event.relatedTarget ? !root.contains(event.relatedTarget) : tabbing;
+        if (left && panel.matches(':popover-open')) {
             panel.hidePopover();
         }
     };
@@ -128,6 +136,7 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     panel.addEventListener('beforetoggle', onBeforeToggle);
     panel.addEventListener('toggle', onToggle);
     panel.addEventListener('focusin', onPanelFocusIn);
+    root.addEventListener('keydown', onKeyDown);
     root.addEventListener('focusout', onFocusOut);
     // The panel sits inside the root, so moving the pointer onto it keeps the popover open.
     if (hover) {
@@ -169,6 +178,7 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
             panel.removeEventListener('beforetoggle', onBeforeToggle);
             panel.removeEventListener('toggle', onToggle);
             panel.removeEventListener('focusin', onPanelFocusIn);
+            root.removeEventListener('keydown', onKeyDown);
             root.removeEventListener('focusout', onFocusOut);
             trigger.removeEventListener('click', onTriggerClick);
             trigger.removeEventListener('pointerenter', showSoon);
