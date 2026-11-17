@@ -11,6 +11,8 @@ public class TbCarouselTests : BunitContext
     private readonly FakeTimeProvider _time = new();
     private readonly BunitJSModuleInterop _module;
     private readonly BunitJSModuleInterop _handle;
+    // Unanswered until a test says whether motion is reduced, so until then the slides neither turn nor move.
+    private readonly JSRuntimeInvocationHandler<bool> _reducedMotion;
 
     public TbCarouselTests()
     {
@@ -19,6 +21,7 @@ public class TbCarouselTests : BunitContext
         _module = JSInterop.SetupModule("./_content/Trailblazor/carousel.js");
         _handle = _module.SetupModule("createCarousel", _ => true);
         _handle.SetupVoid("dispose");
+        _reducedMotion = _handle.Setup<bool>("prefersReducedMotion");
     }
 
     private static TimeSpan FiveSeconds => TimeSpan.FromSeconds(5);
@@ -29,8 +32,10 @@ public class TbCarouselTests : BunitContext
     // Renders a carousel whose slides turn every five seconds, once its script says whether motion is reduced.
     private IRenderedComponent<TbCarousel> RenderTurning(bool reducedMotion = false)
     {
-        _handle.Setup<bool>("prefersReducedMotion").SetResult(reducedMotion);
-        var cut = RenderCarousel(parameters => parameters.Add(carousel => carousel.AutoPlayInterval, FiveSeconds));
+        _reducedMotion.SetResult(reducedMotion);
+        // Moves wait for the script to end them, so these slides turn without moving.
+        var cut = RenderCarousel(parameters => parameters.Add(carousel => carousel.AutoPlayInterval, FiveSeconds)
+            .Add(carousel => carousel.Transition, CarouselTransition.None));
         cut.WaitForAssertion(() => Assert.Equal(reducedMotion ? "polite" : "off",
             cut.Find("[data-part=slides]").GetAttribute("aria-live")));
         return cut;
@@ -256,8 +261,9 @@ public class TbCarouselTests : BunitContext
     [Fact]
     public void AutoPlayInterval_ShouldStartTurning_WhenItIsSetAfterTheFirstRender()
     {
-        _handle.Setup<bool>("prefersReducedMotion").SetResult(false);
-        var cut = RenderCarousel();
+        _reducedMotion.SetResult(false);
+        // Without a transition, nothing else needs the script before AutoPlayInterval does.
+        var cut = RenderCarousel(parameters => parameters.Add(carousel => carousel.Transition, CarouselTransition.None));
 
         cut.Render(parameters => parameters.Add(carousel => carousel.AutoPlayInterval, FiveSeconds));
         cut.WaitForAssertion(() => Assert.Equal("off", cut.Find("[data-part=slides]").GetAttribute("aria-live")));
@@ -282,10 +288,11 @@ public class TbCarouselTests : BunitContext
     [Fact]
     public async Task AutoPlayInterval_ShouldHandTheErrorToTheRenderer_WhenActiveIndexChangedThrowsOnATurn()
     {
-        _handle.Setup<bool>("prefersReducedMotion").SetResult(false);
+        _reducedMotion.SetResult(false);
         var cut = Render<TbCarousel>(parameters => parameters.Add(carousel => carousel.AriaLabel, "Featured trails")
             .Add(carousel => carousel.AutoPlayInterval, FiveSeconds)
             .Add(carousel => carousel.ActiveIndexChanged, (int _) => throw new InvalidOperationException("Turned"))
+            .Add(carousel => carousel.Transition, CarouselTransition.None)
             .AddChildContent<TbCarouselSlide>().AddChildContent<TbCarouselSlide>());
         cut.WaitForAssertion(() => Assert.Equal("off", cut.Find("[data-part=slides]").GetAttribute("aria-live")));
 
@@ -343,5 +350,158 @@ public class TbCarouselTests : BunitContext
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbCarousel>(parameters => parameters
             .Add(carousel => carousel.AriaLabel, " ")));
+    }
+
+    // Renders a carousel whose script allows motion, once the script has said so.
+    private IRenderedComponent<TbCarousel> RenderMoving(CarouselTransition transition = CarouselTransition.Slide,
+        Action<ComponentParameterCollectionBuilder<TbCarousel>>? configure = null)
+    {
+        _reducedMotion.SetResult(false);
+        var cut = RenderCarousel(parameters =>
+        {
+            parameters.Add(carousel => carousel.Transition, transition);
+            configure?.Invoke(parameters);
+        });
+        cut.WaitForAssertion(() => Assert.Single(_handle.Invocations["prefersReducedMotion"]));
+        return cut;
+    }
+
+    private static (string? Move, string? Direction, string? Transition) Move(IRenderedComponent<TbCarousel> cut)
+    {
+        var slides = cut.Find("[data-part=slides]");
+        return (slides.GetAttribute("data-move"), slides.GetAttribute("data-direction"),
+            slides.GetAttribute("data-transition"));
+    }
+
+    private static string Drawn(IRenderedComponent<TbCarousel> cut) => string.Join(", ",
+        cut.FindAll("[data-part=slide]").Select(slide => slide.HasAttribute("hidden") ? "hidden" : "drawn"));
+
+    private Task EndMoveAsync(IRenderedComponent<TbCarousel> cut, int move) =>
+        cut.InvokeAsync(() => Events().Value.OnMoveEnd(move));
+
+    [Fact]
+    public async Task Transition_ShouldKeepTheLeavingSlideDrawnButOutOfReach_WhenTheSlidesTurnUntilTheMoveEnds()
+    {
+        var cut = RenderMoving();
+
+        await cut.Find("[data-part=next]").ClickAsync(new());
+        var pine = cut.FindAll("[data-part=slide]")[0];
+        var during = (Move(cut), Drawn(cut), pine.GetAttribute("aria-hidden"), pine.HasAttribute("inert"),
+            pine.HasAttribute("data-leaving"));
+        await EndMoveAsync(cut, 1);
+
+        Assert.Equal((("1", "forward", "slide"), "drawn, drawn, hidden", "true", true, true), during);
+        Assert.Equal(((string?)null, (string?)null, (string?)null), Move(cut));
+        Assert.Equal("Cedar", Shown(cut));
+    }
+
+    [Theory]
+    [InlineData(0, "previous", "back")]
+    [InlineData(2, "next", "forward")]
+    public async Task Transition_ShouldMoveInTheButtonsDirection_WhenItWrapsAround(int start, string button,
+        string direction)
+    {
+        var cut = RenderMoving(configure: parameters => parameters.Add(carousel => carousel.ActiveIndex, start));
+
+        await cut.Find($"[data-part={button}]").ClickAsync(new());
+
+        Assert.Equal(direction, Move(cut).Direction);
+    }
+
+    [Fact]
+    public async Task Transition_ShouldMoveTowardThePickedSlide_WhenAPickIsPressed()
+    {
+        var cut = RenderMoving(CarouselTransition.Fade);
+
+        await cut.FindAll("[data-part=pick]")[2].ClickAsync(new());
+        var forward = Move(cut);
+        await cut.FindAll("[data-part=pick]")[0].ClickAsync(new());
+
+        Assert.Equal((("1", "forward", "fade"), ("2", "back", "fade")), (forward, Move(cut)));
+    }
+
+    [Fact]
+    public async Task Transition_ShouldReplaceTheMoveAndIgnoreItsEnd_WhenTheSlidesTurnAgainDuringIt()
+    {
+        var cut = RenderMoving();
+
+        await cut.Find("[data-part=next]").ClickAsync(new());
+        await cut.Find("[data-part=next]").ClickAsync(new());
+        await EndMoveAsync(cut, 1);
+
+        Assert.Equal(("2", "hidden, drawn, drawn"), (Move(cut).Move, Drawn(cut)));
+        Assert.True(cut.FindAll("[data-part=slide]")[1].HasAttribute("data-leaving"));
+    }
+
+    [Theory]
+    [InlineData(CarouselTransition.None, false)]
+    [InlineData(CarouselTransition.Slide, true)]
+    public async Task Transition_ShouldTurnAtOnce_WhenItIsNoneOrMotionIsReduced(CarouselTransition transition,
+        bool reducedMotion)
+    {
+        _reducedMotion.SetResult(reducedMotion);
+        var cut = RenderCarousel(parameters => parameters.Add(carousel => carousel.Transition, transition));
+        if (reducedMotion)
+        {
+            cut.WaitForAssertion(() => Assert.Single(_handle.Invocations["prefersReducedMotion"]));
+        }
+
+        await cut.Find("[data-part=next]").ClickAsync(new());
+
+        Assert.Equal(((string?)null, "Cedar"), (Move(cut).Move, Shown(cut)));
+    }
+
+    [Fact]
+    public async Task AutoPlayInterval_ShouldCountItsIntervalFromTheMovesEnd_WhenATurnMovesTheSlides()
+    {
+        var cut = RenderMoving(configure: parameters => parameters.Add(carousel => carousel.AutoPlayInterval,
+            FiveSeconds));
+        cut.WaitForAssertion(() => Assert.Equal("off", cut.Find("[data-part=slides]").GetAttribute("aria-live")));
+
+        _time.Advance(FiveSeconds);
+        cut.WaitForAssertion(() => Assert.Equal("1", Move(cut).Move));
+        _time.Advance(FiveSeconds);
+        await EndMoveAsync(cut, 1);
+        _time.Advance(FiveSeconds - TimeSpan.FromSeconds(1));
+        var beforeTheInterval = (Move(cut).Move, Shown(cut));
+        _time.Advance(TimeSpan.FromSeconds(1));
+
+        Assert.Equal(((string?)null, "Cedar"), beforeTheInterval);
+        cut.WaitForAssertion(() => Assert.Equal("2", Move(cut).Move));
+    }
+
+    [Fact]
+    public void AutoPlayInterval_ShouldKeepTheLiveRegionOff_WhenATurnByItselfMovesTheSlides()
+    {
+        var cut = RenderMoving(configure: parameters => parameters.Add(carousel => carousel.AutoPlayInterval,
+            FiveSeconds));
+        cut.WaitForAssertion(() => Assert.Equal("off", cut.Find("[data-part=slides]").GetAttribute("aria-live")));
+
+        _time.Advance(FiveSeconds);
+        cut.WaitForAssertion(() => Assert.Equal("1", Move(cut).Move));
+
+        Assert.Equal("off", cut.Find("[data-part=slides]").GetAttribute("aria-live"));
+    }
+
+    [Fact]
+    public async Task ActiveIndex_ShouldKeepTheMoveGoing_WhenABoundParentPassesTheTurnBack()
+    {
+        var cut = RenderMoving();
+        await cut.Find("[data-part=next]").ClickAsync(new());
+
+        cut.Render(parameters => parameters.Add(carousel => carousel.ActiveIndex, 1));
+
+        Assert.Equal(("1", "drawn, drawn, hidden"), (Move(cut).Move, Drawn(cut)));
+    }
+
+    [Fact]
+    public async Task ActiveIndex_ShouldShowTheParentsSlideAtOnce_WhenItChangesDuringAMove()
+    {
+        var cut = RenderMoving();
+        await cut.Find("[data-part=next]").ClickAsync(new());
+
+        cut.Render(parameters => parameters.Add(carousel => carousel.ActiveIndex, 2));
+
+        Assert.Equal(((string?)null, "hidden, hidden, drawn"), (Move(cut).Move, Drawn(cut)));
     }
 }

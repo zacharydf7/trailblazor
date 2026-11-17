@@ -3,10 +3,11 @@
 @implements IAsyncDisposable
 
 @* The controls come first, so a keyboard user reaches the button that stops the slides before the slides. *@
-@* data-ready marks that the buttons work and, for slides that turn by themselves, that focus pauses them. *@
+@* data-ready marks that the buttons work, that a turn moves the slides and, for slides that turn by themselves, that
+   focus pauses them. *@
 <section @ref="_section" @attributes="AdditionalAttributes" aria-roledescription="carousel" aria-label="@AriaLabel"
          data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
-         data-ready="@(RendererInfo.IsInteractive && (AutoPlayInterval is null || _handle is not null) ? "" : null)"
+         data-ready="@(RendererInfo.IsInteractive && (!NeedsScript || _handle is not null) ? "" : null)"
          style="@Style" class="@ClassNames.Join("tb-carousel", Class)"
          @onmouseenter="() => _hovered = true" @onmouseleave="() => _hovered = false">
     <div data-part="controls" class="tb-carousel__controls">
@@ -25,7 +26,11 @@
                       OnClick="() => GoToAsync(Current + 1)" aria-controls="@_slidesId" data-part="next" />
     </div>
     @* Screen readers hear a slide the user brought in, but not each one that turns by itself. *@
-    <div id="@_slidesId" data-part="slides" class="tb-carousel__slides" aria-live="@(Rotating ? "off" : "polite")">
+    @* While a move runs, data-move numbers it and the script reports its end, when the leaving slide is hidden. *@
+    <div id="@_slidesId" data-part="slides" class="tb-carousel__slides" aria-live="@(AutoPlaying ? "off" : "polite")"
+         data-move="@(_leaving is null ? null : _move)"
+         data-direction="@(_leaving is null ? null : _back ? "back" : "forward")"
+         data-transition="@(_leaving is null ? null : Transition == CarouselTransition.Fade ? "fade" : "slide")">
         <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
     </div>
     @if (ShowPicker && _slides.Count > 1)

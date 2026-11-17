@@ -2,8 +2,11 @@
 @inherits TbComponentBase
 @implements IDisposable
 
-<div @attributes="AdditionalAttributes" role="group" aria-roledescription="slide" aria-label="@Name" hidden="@(!Shown)"
-     data-part="slide" class="@ClassNames.Join("tb-carousel__slide", Class)" style="@Style">
+@* A slide moving out stays drawn until the move ends, but only the arriving one is there for assistive technology. *@
+<div @attributes="AdditionalAttributes" role="group" aria-roledescription="slide" aria-label="@Name"
+     hidden="@(!Shown && !Leaving)" aria-hidden="@(Leaving ? "true" : null)" inert="@Leaving"
+     data-leaving="@(Leaving ? "" : null)" data-part="slide" class="@ClassNames.Join("tb-carousel__slide", Class)"
+     style="@Style">
     @ChildContent
 </div>
 
@@ -23,6 +26,8 @@
         ?? throw new InvalidOperationException($"{nameof(TbCarouselSlide)} must be inside a {nameof(TbCarousel)}.");
 
     private bool Shown => Owner.IsShown(this);
+
+    private bool Leaving => !Shown && Owner.IsLeaving(this);
 
     private string Name => AriaLabel ?? Owner.SlideName(this);
 

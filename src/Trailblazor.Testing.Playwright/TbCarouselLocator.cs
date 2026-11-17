@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
@@ -18,12 +19,12 @@ public sealed class TbCarouselLocator(ILocator scope, string? name)
         return await Slides.CountAsync();
     }
 
-    /// <summary>The index of the slide shown, from 0.</summary>
+    /// <summary>The index of the slide shown, from 0. During a move between slides, it's the slide arriving.</summary>
     public async Task<int> ActiveIndexAsync()
     {
         await Carousel.WaitForAsync();
         return await Carousel.EvaluateAsync<int>("carousel => [...carousel.querySelectorAll("
-            + "':scope > [data-part=slides] > [data-part=slide]')].findIndex(slide => !slide.hidden)");
+            + "':scope > [data-part=slides] > [data-part=slide]')].findIndex(slide => !slide.hidden && !slide.inert)");
     }
 
     /// <summary>Shows the next slide, as pressing Next does, and waits for it to appear. On the last slide of a
@@ -61,7 +62,7 @@ public sealed class TbCarouselLocator(ILocator scope, string? name)
             await picks.Nth(index).ClickAsync();
             return true;
         });
-        await Assertions.Expect(Slides.Nth(index)).ToBeVisibleAsync();
+        await SettledAsync(index);
     }
 
     private async Task PressAsync(string part, int step)
@@ -76,7 +77,15 @@ public sealed class TbCarouselLocator(ILocator scope, string? name)
         var count = await Slides.CountAsync();
         var target = ((await ActiveIndexAsync() + step) % count + count) % count;
         await Commit.ClickedAsync(button);
-        await Assertions.Expect(Slides.Nth(target)).ToBeVisibleAsync();
+        await SettledAsync(target);
+    }
+
+    // A turn can move the slides, and the leaving one stays drawn until the move ends.
+    private async Task SettledAsync(int index)
+    {
+        await Assertions.Expect(Slides.Nth(index)).ToBeVisibleAsync();
+        await Assertions.Expect(Carousel.Locator(":scope > [data-part=slides]"))
+            .Not.ToHaveAttributeAsync("data-move", new Regex("."));
     }
 
     private async Task ReadyAsync()

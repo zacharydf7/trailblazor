@@ -1773,8 +1773,9 @@ public sealed class TbCarouselDriver
     /// <summary>How many slides there are.</summary>
     public int Count => Slides().Count;
 
-    /// <summary>The index of the slide shown, from 0.</summary>
-    public int ActiveIndex => Slides().FindIndex(slide => !slide.HasAttribute("hidden"));
+    /// <summary>The index of the slide shown, from 0. During a move between slides, it's the slide arriving.
+    /// </summary>
+    public int ActiveIndex => Slides().FindIndex(slide => !slide.HasAttribute("hidden") && !slide.HasAttribute("inert"));
 
     /// <summary>Shows the next slide, as pressing Next does. On the last slide of a carousel that doesn't loop, Next
     /// is disabled, so this throws, as it does on a static page.</summary>

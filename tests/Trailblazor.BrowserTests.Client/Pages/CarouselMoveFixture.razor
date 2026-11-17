@@ -1,0 +1,28 @@
+@page "/carousel-move"
+
+@* Slides that take two seconds to move, so a test can look at a move while it runs; ?rtl=true lays them out right to
+   left, and the button switches them to a fade. The second carousel turns by itself, with short moves. *@
+<div dir="@(Rtl ? "rtl" : "ltr")">
+    <TbCarousel AriaLabel="Trail photos" Style="--tb-carousel-duration: 2s" Transition="_transition">
+        @foreach (var trail in Trails)
+        {
+            <TbCarouselSlide><p style="block-size: 4rem">@trail</p></TbCarouselSlide>
+        }
+    </TbCarousel>
+</div>
+<TbButton OnClick="() => _transition = CarouselTransition.Fade">Fade the trails</TbButton>
+<TbCarousel AriaLabel="Camp photos" AutoPlayInterval="TimeSpan.FromMilliseconds(400)"
+            Style="--tb-carousel-duration: 150ms">
+    @foreach (var trail in Trails)
+    {
+        <TbCarouselSlide><p>@trail camp</p></TbCarouselSlide>
+    }
+</TbCarousel>
+
+@code {
+    private static readonly string[] Trails = ["Pine", "Cedar", "Eagle"];
+    private CarouselTransition _transition;
+
+    [SupplyParameterFromQuery]
+    public bool Rtl { get; set; }
+}

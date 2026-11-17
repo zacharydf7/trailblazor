@@ -88,6 +88,8 @@ they run by version. The docs site's Upgrading page is built from both.
 #### 2026-11-16
 
 - A `TbTreeItemEnd` in a tree's `ItemTemplate` or a `TbTreeItem`'s `TextContent` fills that row's end slot (`data-part="end"`), after its `ItemEndTemplate` or `End`, so one component can draw a row's text and its end controls
+- A carousel's turn moves the slides by default (`Transition`): during a move its slides carry `data-move`, `data-direction` and `data-transition`, and the slide moving out stays drawn with `data-leaving`, `aria-hidden="true"` and `inert` until the move ends; `CarouselTransition.None` keeps the instant turn, and someone who asks for reduced motion always gets it
+- An interactive carousel with a transition, not only one whose slides turn by themselves, now waits for its script to load before it carries `data-ready`, and the Playwright carousel helpers wait until a move has ended
 - A popover closes when Tab moves focus past its last control and out of the page, as it already did when Tab moved focus to another control
 - Pressing a splitter's separator focuses it without the focus highlight, which now shows only for the keyboard; the separator carries `data-pointer-focus` from the press until a key is pressed or focus leaves it, as a range slider's thumbs do
 - In Chromium, turning the mouse wheel over a focused number field no longer steps its value; the page scrolls as it does over any other field

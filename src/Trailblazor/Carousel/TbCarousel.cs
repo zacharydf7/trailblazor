@@ -21,6 +21,13 @@ public partial class TbCarousel
     private bool _hovered;
     private bool _focused;
     private bool _attaching;
+    // Set when the script reports that motion isn't reduced; from then on, a turn moves the slides rather than
+    // swapping them.
+    private bool _moves;
+    // While a move runs, the slide it moves out of view, which stays drawn until the script says the move has ended.
+    private int? _leaving;
+    private bool _back;
+    private int _move;
     // Set once the script has checked for reduced motion; the slides turn only after that.
     private IJSObjectReference? _handle;
     private DotNetObjectReference<CarouselEvents>? _events;
@@ -63,6 +70,12 @@ public partial class TbCarousel
     [Parameter]
     public bool ShowPicker { get; set; } = true;
 
+    /// <summary>How the slides move when the carousel turns. <see cref="CarouselTransition.Slide"/> by default; set
+    /// <see cref="CarouselTransition.None"/> for an instant turn. The <c>--tb-carousel-duration</c> token sets how long
+    /// a move takes.</summary>
+    [Parameter]
+    public CarouselTransition Transition { get; set; }
+
     /// <summary>Replaces the words the carousel says to screen readers.</summary>
     [Parameter]
     public CarouselLabels Labels { get; set; } = new();
@@ -78,8 +91,14 @@ public partial class TbCarousel
 
     private int Current => _slides.Count == 0 ? 0 : Math.Clamp(_current, 0, _slides.Count - 1);
 
-    private bool Rotating => AutoPlayInterval is not null && _handle is not null && !_stopped && !_hovered && !_focused
-        && _slides.Count > 1;
+    private bool AutoPlaying => AutoPlayInterval is not null && _handle is not null && !_stopped && !_hovered
+        && !_focused && _slides.Count > 1;
+
+    // Auto-play waits out a move, so each interval starts once the slide has arrived.
+    private bool Rotating => AutoPlaying && _leaving is null;
+
+    // The script pauses slides that turn by themselves and ends each move between slides.
+    private bool NeedsScript => AutoPlayInterval is not null || Transition != CarouselTransition.None;
 
     private string Text(string? given, string key) => given ?? Localizer[key];
 
@@ -106,12 +125,15 @@ public partial class TbCarousel
 
         var shown = Current;
         _slides.RemoveAt(at);
+        _leaving = null;
         _current = at < shown ? shown - 1 : Current;
         _indexMoved = _current != shown;
         StateHasChanged();
     }
 
     internal bool IsShown(TbCarouselSlide slide) => _slides.IndexOf(slide) == Current;
+
+    internal bool IsLeaving(TbCarouselSlide slide) => _leaving is { } leaving && _slides.IndexOf(slide) == leaving;
 
     internal string SlideName(TbCarouselSlide slide) => Format(Text(Labels.SlideOf, TbStrings.CarouselSlideOf),
         _slides.IndexOf(slide) + 1, _slides.Count);
@@ -124,9 +146,15 @@ public partial class TbCarousel
             throw new InvalidOperationException($"{nameof(TbCarousel)} needs an {nameof(AriaLabel)}.");
         }
 
-        // A new ActiveIndex from the parent shows that slide; one the carousel reported itself changes nothing.
+        // A new ActiveIndex from the parent shows that slide at once and ends any move. An index the carousel
+        // reported itself, which a bound parent passes back, changes nothing.
         if (ActiveIndex != _lastIndex)
         {
+            if (ActiveIndex != Current)
+            {
+                _leaving = null;
+            }
+
             _current = _lastIndex = ActiveIndex;
         }
     }
@@ -141,7 +169,7 @@ public partial class TbCarousel
             await ActiveIndexChanged.InvokeAsync(_current);
         }
 
-        if (AutoPlayInterval is not null && !_attaching && RendererInfo.IsInteractive)
+        if (NeedsScript && !_attaching && RendererInfo.IsInteractive)
         {
             await AttachAsync();
         }
@@ -149,7 +177,8 @@ public partial class TbCarousel
         UpdateTimer();
     }
 
-    // Runs once AutoPlayInterval is first set, which needn't be on the first render.
+    // Runs the first time the carousel needs its script, for AutoPlayInterval or a transition, which needn't be on
+    // the first render.
     private async Task AttachAsync()
     {
         _attaching = true;
@@ -161,7 +190,7 @@ public partial class TbCarousel
                 return;
             }
 
-            _events = DotNetObjectReference.Create(new CarouselEvents(OnFocusEnter, OnFocusLeave));
+            _events = DotNetObjectReference.Create(new CarouselEvents(OnFocusEnter, OnFocusLeave, OnMoveEnd));
             var handle = await module.InvokeAsync<IJSObjectReference?>("createCarousel", _section, _events);
             if (handle is null)
             {
@@ -169,7 +198,9 @@ public partial class TbCarousel
             }
 
             // Focus or the stop button may have stopped the slides while this was awaited.
-            _stopped |= await handle.InvokeAsync<bool>("prefersReducedMotion");
+            var reduced = await handle.InvokeAsync<bool>("prefersReducedMotion");
+            _stopped |= reduced;
+            _moves = !reduced;
             if (_disposed)
             {
                 await handle.DisposeHandleAsync();
@@ -198,6 +229,15 @@ public partial class TbCarousel
         if (next == Current)
         {
             return;
+        }
+
+        // A turn during a move replaces it: the slide that was arriving moves out, and the one leaving goes at once.
+        // Wrapping keeps the direction of the button pressed, so Next from the last slide moves forward.
+        if (_moves && Transition != CarouselTransition.None)
+        {
+            _leaving = Current;
+            _back = index < Current;
+            _move++;
         }
 
         _current = next;
@@ -243,6 +283,16 @@ public partial class TbCarousel
     {
         _focused = false;
         StateHasChanged();
+    }
+
+    // Only the latest move's end hides the slide it moved out; a move a later turn replaced has nothing to finish.
+    private void OnMoveEnd(int move)
+    {
+        if (move == _move && _leaving is not null)
+        {
+            _leaving = null;
+            StateHasChanged();
+        }
     }
 
     // The timer runs only while the slides should turn, and starts over after each pause or a new interval.

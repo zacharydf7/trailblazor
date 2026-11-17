@@ -5781,3 +5781,9 @@ Trailblazor.TbTreeItemEnd.ChildContent.get -> Microsoft.AspNetCore.Components.Re
 Trailblazor.TbTreeItemEnd.ChildContent.set -> void
 Trailblazor.TbTreeItemEnd.Dispose() -> void
 Trailblazor.TbTreeItemEnd.TbTreeItemEnd() -> void
+Trailblazor.CarouselTransition
+Trailblazor.CarouselTransition.Fade = 1 -> Trailblazor.CarouselTransition
+Trailblazor.CarouselTransition.None = 2 -> Trailblazor.CarouselTransition
+Trailblazor.CarouselTransition.Slide = 0 -> Trailblazor.CarouselTransition
+Trailblazor.TbCarousel.Transition.get -> Trailblazor.CarouselTransition
+Trailblazor.TbCarousel.Transition.set -> void

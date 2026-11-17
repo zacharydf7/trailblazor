@@ -538,8 +538,14 @@ public static class ExampleCatalog
                 new("ends", "Ends and buttons", "`Loop=\"false\"` stops at the first and last slides and turns off "
                     + "the button that would pass them. `ShowPicker=\"false\"` leaves out the button for each slide.",
                     typeof(CarouselEndsExample)),
+                new("transition", "Moving between slides", "By default, the shown slide moves out as the next moves "
+                    + "in, in the direction of travel: next comes in from the end of the line and previous from the "
+                    + "start, mirrored in right-to-left text. `Transition=\"CarouselTransition.Fade\"` fades one into "
+                    + "the other, and `CarouselTransition.None` turns at once. `--tb-carousel-duration` sets how long a "
+                    + "move takes. A turn during a move replaces it, and slides that turn by themselves wait for a "
+                    + "move to end before counting their interval.", typeof(CarouselTransitionExample)),
             ],
-            Api = [typeof(TbCarousel), typeof(TbCarouselSlide), typeof(CarouselLabels)],
+            Api = [typeof(TbCarousel), typeof(TbCarouselSlide), typeof(CarouselLabels), typeof(CarouselTransition)],
             Keyboard =
             [
                 new(["Tab"], "Moves to the stop button, when `AutoPlayInterval` is set, then previous and next, into "
@@ -566,6 +572,9 @@ public static class ExampleCatalog
                     + "in the carousel does the same.",
                 "At the ends of a carousel that doesn't loop, previous or next turns off but keeps focus.",
                 "Each slide button's box is 24 pixels across, with a smaller dot drawn inside it.",
+                "During a move, the slide moving out is hidden from assistive technology and can't take focus, so "
+                    + "only the arriving slide is there to read. For someone who asks for reduced motion, every turn "
+                    + "is instant.",
             ],
             Notes =
             [
@@ -598,8 +607,10 @@ public static class ExampleCatalog
                 + "`GoToAsync(index)` move it and, in Playwright, wait until the app's `ActiveIndexChanged` has run, "
                 + "which the picker counts in `data-commits` for `GoToAsync`; `ActiveIndexAsync()` or `ActiveIndex` "
                 + "reads which slide shows, and "
-                + "`CountAsync()` or `Count` reads how many there are. In bUnit, register a `FakeTimeProvider` as the "
-                + "`TimeProvider` and advance it past the `AutoPlayInterval` to turn the slides.",
+                + "`CountAsync()` or `Count` reads how many there are. In Playwright, `NextAsync()`, `PreviousAsync()` "
+                + "and `GoToAsync(index)` also wait until the slides have stopped moving. In bUnit, slides turn "
+                + "without moving; register a `FakeTimeProvider` as the `TimeProvider` and advance it past the "
+                + "`AutoPlayInterval` to turn the slides.",
         },
         new("virtual-list", "Virtual list", ExampleCategory.Content,
             "A long list of items of any height, such as thousands of trail reports, that draws only those near the "

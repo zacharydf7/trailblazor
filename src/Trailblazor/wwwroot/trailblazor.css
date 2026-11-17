@@ -2851,6 +2851,89 @@
         display: none;
     }
 
+    /* The slides share one cell, so during a move the arriving slide and the leaving one overlap within its bounds. */
+    .tb-carousel__slides {
+        display: grid;
+    }
+
+    .tb-carousel__slide {
+        grid-area: 1 / 1;
+        min-width: 0;
+    }
+
+    .tb-carousel__slides[data-move] {
+        overflow: clip;
+    }
+
+    .tb-carousel__slides[data-move] > .tb-carousel__slide {
+        animation-duration: var(--tb-carousel-duration, var(--tb-motion-duration-slow));
+        animation-timing-function: var(--tb-motion-easing-standard);
+        animation-fill-mode: both;
+    }
+
+    /* Forward moves toward the start of the line, which is left in left-to-right text and right in right-to-left. */
+    .tb-carousel__slides[data-direction="forward"] {
+        --tb-carousel-shift: 100%;
+    }
+
+    .tb-carousel__slides[data-direction="back"] {
+        --tb-carousel-shift: -100%;
+    }
+
+    .tb-carousel__slides[data-direction="forward"]:dir(rtl) {
+        --tb-carousel-shift: -100%;
+    }
+
+    .tb-carousel__slides[data-direction="back"]:dir(rtl) {
+        --tb-carousel-shift: 100%;
+    }
+
+    .tb-carousel__slides[data-transition="slide"] > .tb-carousel__slide:not([data-leaving]) {
+        animation-name: tb-carousel-slide-in;
+    }
+
+    .tb-carousel__slides[data-transition="slide"] > [data-leaving] {
+        animation-name: tb-carousel-slide-out;
+    }
+
+    .tb-carousel__slides[data-transition="fade"] > .tb-carousel__slide:not([data-leaving]) {
+        animation-name: tb-carousel-fade-in;
+    }
+
+    .tb-carousel__slides[data-transition="fade"] > [data-leaving] {
+        animation-name: tb-carousel-fade-out;
+    }
+
+    @keyframes tb-carousel-slide-in {
+        from {
+            translate: var(--tb-carousel-shift) 0;
+        }
+    }
+
+    @keyframes tb-carousel-slide-out {
+        to {
+            translate: calc(-1 * var(--tb-carousel-shift)) 0;
+        }
+    }
+
+    @keyframes tb-carousel-fade-in {
+        from {
+            opacity: 0;
+        }
+    }
+
+    @keyframes tb-carousel-fade-out {
+        to {
+            opacity: 0;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .tb-carousel__slides[data-move] > .tb-carousel__slide {
+            animation: none;
+        }
+    }
+
     .tb-carousel__picker {
         display: flex;
         flex-wrap: wrap;
