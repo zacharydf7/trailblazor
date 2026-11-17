@@ -1,0 +1,106 @@
+@namespace Trailblazor
+@typeparam TValue
+@inherits TbBoxedFieldBase<TValue>
+
+@Layout(Classes, @<text>
+    @Input
+    @if (RendererInfo.IsInteractive)
+    {
+        @* One list for each level, side by side, or one list of matching paths while the user searches. *@
+        <div @ref="_popup" id="@PopupId" popover="manual" data-part="popup" data-handled="@_handled"
+             data-searching="@(Searching ? "" : null)" class="tb-select__popup tb-cascader__popup">
+            @if (Searching)
+            {
+                <div role="listbox" aria-labelledby="@(ShownLabel is null ? null : LabelId)" data-part="results"
+                     class="tb-cascader__list">
+                    @if (_results.Count == 0)
+                    {
+                        @* A listbox must hold options, so the message is one that can't be chosen. *@
+                        <div role="option" aria-disabled="true" aria-selected="false" data-part="status"
+                             class="tb-cascader__status">
+                            @(Labels.NoResults ?? Localizer[TbStrings.CascaderNoResults])
+                        </div>
+                    }
+                    @for (var index = 0; index < _results.Count; index++)
+                    {
+                        var path = _results[index];
+                        <div id="@($"{PopupId}-result-{index}")" role="option" data-part="option"
+                             aria-selected="@(IsChosen(path[^1]) ? "true" : "false")" class="tb-select__option"
+                             @onclick="_pickPath.For(path)">
+                            @PathText(path)
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                var level = 0;
+                @foreach (var column in Columns)
+                {
+                    var at = level++;
+                    var opener = at == 0 ? null : _trail[at - 1];
+                    <div @key="@((object?)opener ?? Items)" role="listbox" data-part="column" data-level="@at"
+                         aria-labelledby="@(at == 0 && ShownLabel is not null ? LabelId : null)"
+                         aria-label="@opener?.Text" class="tb-cascader__list">
+                        @for (var index = 0; index < column.Count; index++)
+                        {
+                            var item = column[index];
+                            var open = _trail.Contains(item);
+                            <div id="@($"{PopupId}-{at}-{index}")" role="option" data-part="option" data-index="@index"
+                                 aria-label="@ItemLabel(item)" aria-selected="@(IsChosen(item) ? "true" : "false")"
+                                 aria-disabled="@(item.Disabled ? "true" : null)"
+                                 data-more="@(Ends(item) ? null : "")" data-open="@(open ? "" : null)"
+                                 data-choosable="@(Choosable(item) ? "" : null)" class="tb-select__option"
+                                 @onclick="_pick.For(item)">
+                                <span class="tb-cascader__text">@item.Text</span>
+                                @if (!Ends(item))
+                                {
+                                    <TbIcon Icon="BuiltInIcons.ChevronEnd" class="tb-cascader__more" />
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    }
+</text>, Start, End)
+
+@code {
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment Input => builder =>
+    {
+        var interactive = RendererInfo.IsInteractive;
+        builder.OpenElement(0, "input");
+        builder.AddMultipleAttributes(1, ControlAttributes);
+        builder.AddAttribute(2, "data-part", "input");
+        builder.AddAttribute(3, "id", InputId);
+        builder.AddAttribute(4, "name", InputNameAttribute);
+        builder.AddAttribute(5, "type", "text");
+        builder.AddAttribute(6, "autocomplete", "off");
+        builder.AddAttribute(7, "value", _text);
+        builder.AddAttribute(8, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, OnTypedInputAsync));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(9, "onchange", EventCallback.Factory.Create(this, OnChangedAsync));
+        builder.AddAttribute(10, "placeholder", Placeholder);
+        builder.AddAttribute(11, "disabled", Disabled);
+        builder.AddAttribute(12, "readonly", ReadOnly);
+        builder.AddAttribute(13, "data-static", AssignedRenderMode is null && !interactive ? "" : null);
+        builder.AddAttribute(14, "role", interactive ? "combobox" : null);
+        builder.AddAttribute(15, "aria-autocomplete", interactive ? "list" : null);
+        builder.AddAttribute(16, "aria-haspopup", interactive ? "listbox" : null);
+        builder.AddAttribute(17, "aria-expanded", interactive ? "false" : null);
+        builder.AddAttribute(18, "aria-controls", interactive ? PopupId : null);
+        builder.AddAttribute(19, "aria-required", AriaRequired);
+        builder.AddAttribute(20, "aria-invalid", ShowsInvalid ? "true" : null);
+        builder.AddAttribute(21, "aria-describedby", InputDescribedBy);
+        builder.AddAttribute(22, "class", ClassNames.Join("tb-field__input", Classes?.Input));
+        builder.AddElementReferenceCapture(23, input => _input = input);
+        builder.CloseElement();
+    };
+
+    private RenderFragment? End => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(_text) ? null :
+        @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.CascaderClear])"
+                       aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="OnClearedAsync"
+                       data-part="clear" />;
+}

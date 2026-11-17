@@ -285,6 +285,8 @@ public class ComponentContractTests : BunitContext
                 var type when type == typeof(Icon) => new Icon("<path d=\"M4 4h16v16H4z\" />"),
                 var type when type == typeof(IEnumerable<string>) => Array.Empty<string>(),
                 var type when type == typeof(IReadOnlyList<string>) => Array.Empty<string>(),
+                var type when type == typeof(IReadOnlyList<CascaderItem<string>>) =>
+                    new[] { new CascaderItem<string>("Canada", "ca") { Children = [new("Ontario", "on")] } },
                 var type when type == typeof(IReadOnlyList<KanbanColumn<string>>) =>
                     new[] { new KanbanColumn<string>("todo", "To do", []) },
                 var type when type == typeof(IReadOnlyList<QueryField>) => new[] { new QueryField("Name", "Name",

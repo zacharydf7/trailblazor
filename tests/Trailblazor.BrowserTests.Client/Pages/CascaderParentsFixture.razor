@@ -1,0 +1,17 @@
+@page "/cascader-parents"
+
+@* Any choice can be the value here, so the keys must browse without choosing. *@
+<TbCascader TValue="string" @bind-Value="_value" Label="Trailhead" Items="Regions" AllowParents />
+<output data-testid="value">@(_value ?? "none")</output>
+
+@code {
+    private static readonly CascaderItem<string>[] Regions =
+    [
+        new("North ridge", "north")
+        {
+            Children = [new("Pine Hollow", "pine") { Children = [new("Lower lot", "pine-lower")] }],
+        },
+    ];
+
+    private string? _value;
+}

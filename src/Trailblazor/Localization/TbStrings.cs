@@ -97,6 +97,18 @@ public static class TbStrings
     /// column's title and {1} its limit.</summary>
     public const string KanbanFull = "Kanban.Full";
 
+    /// <summary>"{0}, more choices": names a cascader's choice that opens more choices; {0} is its text.</summary>
+    public const string CascaderMore = "Cascader.More";
+
+    /// <summary>"Results: {0}": read out with the number of paths that match what was typed in a cascader.</summary>
+    public const string CascaderResults = "Cascader.Results";
+
+    /// <summary>"No matches": shown when no path matches what was typed in a cascader.</summary>
+    public const string CascaderNoResults = "Cascader.NoResults";
+
+    /// <summary>"Clear": names a cascader's clear button.</summary>
+    public const string CascaderClear = "Cascader.Clear";
+
     /// <summary>"Navigation": names an app shell's menu button and titles its navigation drawer.</summary>
     public const string AppShellMenu = "AppShell.Menu";
 
@@ -1286,6 +1298,10 @@ public static class TbStrings
         [AiPromptCopied] = "Copied",
         [KanbanCount] = "{0} of {1}",
         [KanbanFull] = "{0} is full: its limit is {1}.",
+        [CascaderMore] = "{0}, more choices",
+        [CascaderResults] = "Results: {0}",
+        [CascaderNoResults] = "No matches",
+        [CascaderClear] = "Clear",
         [AppShellMenu] = "Navigation",
         [AppShellNavigation] = "Main",
         [AppShellSkipToContent] = "Skip to content",

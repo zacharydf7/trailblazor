@@ -540,3 +540,11 @@ Trailblazor.Testing.Playwright.TbKanbanLocator.Kanban.get -> Microsoft.Playwrigh
 Trailblazor.Testing.Playwright.TbKanbanLocator.MoveToColumnAsync(string! card, string! column) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbKanbanLocator.TbKanbanLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Kanban(string? name = null) -> Trailblazor.Testing.Playwright.TbKanbanLocator!
+Trailblazor.Testing.Playwright.TbCascaderLocator
+Trailblazor.Testing.Playwright.TbCascaderLocator.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbCascaderLocator.ChooseResultAsync(string! text, string! result) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbCascaderLocator.ResultsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbCascaderLocator.SearchAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbCascaderLocator.TbCascaderLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
+Trailblazor.Testing.Playwright.TbCascaderLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TrailblazorPage.Cascader(string! label) -> Trailblazor.Testing.Playwright.TbCascaderLocator!

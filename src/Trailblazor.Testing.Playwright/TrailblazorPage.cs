@@ -63,6 +63,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbAutocomplete</c> with this label.</summary>
     public TbAutocompleteLocator Autocomplete(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
 
+    /// <summary>The <c>TbCascader</c> with this label.</summary>
+    public TbCascaderLocator Cascader(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
     /// <summary>The <c>TbAutocomplete</c> this finds, inside the scope, such as one in a row of fields that share their
     /// labels, as <c>row.GetByLabel("Town")</c>, or one with an id, as <c>page.Locator("#town")</c>.</summary>
     public TbAutocompleteLocator Autocomplete(ILocator field) => new(scope, field);

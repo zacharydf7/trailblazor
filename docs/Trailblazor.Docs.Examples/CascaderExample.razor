@@ -1,0 +1,31 @@
+<TbStack Gap="2" Style="max-inline-size: 24rem">
+    <TbCascader TValue="string" @bind-Value="_trailhead" Label="Trailhead" Items="Regions" Clearable />
+    <output>Trailhead value: @(_trailhead ?? "null")</output>
+</TbStack>
+
+@code {
+    private static readonly CascaderItem<string>[] Regions =
+    [
+        new("North ridge", "north")
+        {
+            Children =
+            [
+                new("Pine Hollow", "pine")
+                {
+                    Children = [new("Lower lot", "pine-lower"), new("Upper lot", "pine-upper")],
+                },
+                new("Eagle Ridge", "eagle")
+                {
+                    Children = [new("Main lot", "eagle-main"), new("Overflow lot", "eagle-overflow")],
+                },
+            ],
+        },
+        new("River valley", "river")
+        {
+            Children = [new("Cedar Flats", "cedar") { Children = [new("Boat ramp", "cedar-ramp")] }],
+        },
+        new("High peaks", "peaks") { Disabled = true },
+    ];
+
+    private string? _trailhead;
+}

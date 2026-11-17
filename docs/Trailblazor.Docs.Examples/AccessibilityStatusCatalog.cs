@@ -79,6 +79,7 @@ public static class AccessibilityStatusCatalog
         new("select", Tested, Tested, Tested),
         new("tree-select", Tested, NotYet, Tested),
         new("autocomplete", Tested, NotYet, Tested),
+        new("cascader", Tested, NotYet, NotYet),
         new("tag-input", Tested, NotYet, Tested),
         new("color-picker", Tested, NotYet, Tested),
         new("file-upload", NotYet, NotYet, Tested),

@@ -6167,3 +6167,69 @@ override Trailblazor.AutocompleteColumn<TValue>.GetHashCode() -> int
 override Trailblazor.AutocompleteColumn<TValue>.ToString() -> string!
 static Trailblazor.AutocompleteColumn<TValue>.operator !=(Trailblazor.AutocompleteColumn<TValue>? left, Trailblazor.AutocompleteColumn<TValue>? right) -> bool
 static Trailblazor.AutocompleteColumn<TValue>.operator ==(Trailblazor.AutocompleteColumn<TValue>? left, Trailblazor.AutocompleteColumn<TValue>? right) -> bool
+Trailblazor.CascaderItem<TValue>
+Trailblazor.CascaderItem<TValue>.<Clone>$() -> Trailblazor.CascaderItem<TValue>!
+Trailblazor.CascaderItem<TValue>.CascaderItem(string! Text, TValue Value) -> void
+Trailblazor.CascaderItem<TValue>.Children.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.CascaderItem<TValue>!>!
+Trailblazor.CascaderItem<TValue>.Children.init -> void
+Trailblazor.CascaderItem<TValue>.Deconstruct(out string! Text, out TValue Value) -> void
+Trailblazor.CascaderItem<TValue>.Disabled.get -> bool
+Trailblazor.CascaderItem<TValue>.Disabled.init -> void
+Trailblazor.CascaderItem<TValue>.Equals(Trailblazor.CascaderItem<TValue>? other) -> bool
+Trailblazor.CascaderItem<TValue>.Text.get -> string!
+Trailblazor.CascaderItem<TValue>.Text.init -> void
+Trailblazor.CascaderItem<TValue>.Value.get -> TValue
+Trailblazor.CascaderItem<TValue>.Value.init -> void
+Trailblazor.CascaderLabels
+Trailblazor.CascaderLabels.<Clone>$() -> Trailblazor.CascaderLabels!
+Trailblazor.CascaderLabels.CascaderLabels() -> void
+Trailblazor.CascaderLabels.Clear.get -> string?
+Trailblazor.CascaderLabels.Clear.init -> void
+Trailblazor.CascaderLabels.Equals(Trailblazor.CascaderLabels? other) -> bool
+Trailblazor.CascaderLabels.More.get -> string?
+Trailblazor.CascaderLabels.More.init -> void
+Trailblazor.CascaderLabels.NoResults.get -> string?
+Trailblazor.CascaderLabels.NoResults.init -> void
+Trailblazor.CascaderLabels.Results.get -> string?
+Trailblazor.CascaderLabels.Results.init -> void
+Trailblazor.TbCascader<TValue>
+Trailblazor.TbCascader<TValue>.AllowParents.get -> bool
+Trailblazor.TbCascader<TValue>.AllowParents.set -> void
+Trailblazor.TbCascader<TValue>.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbCascader<TValue>.Classes.set -> void
+Trailblazor.TbCascader<TValue>.Clearable.get -> bool
+Trailblazor.TbCascader<TValue>.Clearable.set -> void
+Trailblazor.TbCascader<TValue>.Comparer.get -> System.Collections.Generic.IEqualityComparer<TValue>?
+Trailblazor.TbCascader<TValue>.Comparer.set -> void
+Trailblazor.TbCascader<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbCascader<TValue>.Items.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.CascaderItem<TValue>!>!
+Trailblazor.TbCascader<TValue>.Items.set -> void
+Trailblazor.TbCascader<TValue>.Labels.get -> Trailblazor.CascaderLabels!
+Trailblazor.TbCascader<TValue>.Labels.set -> void
+Trailblazor.TbCascader<TValue>.MaxItems.get -> int?
+Trailblazor.TbCascader<TValue>.MaxItems.set -> void
+Trailblazor.TbCascader<TValue>.Placeholder.get -> string?
+Trailblazor.TbCascader<TValue>.Placeholder.set -> void
+Trailblazor.TbCascader<TValue>.Separator.get -> string!
+Trailblazor.TbCascader<TValue>.Separator.set -> void
+Trailblazor.TbCascader<TValue>.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCascader<TValue>.Start.set -> void
+Trailblazor.TbCascader<TValue>.TbCascader() -> void
+const Trailblazor.TbStrings.CascaderClear = "Cascader.Clear" -> string!
+const Trailblazor.TbStrings.CascaderMore = "Cascader.More" -> string!
+const Trailblazor.TbStrings.CascaderNoResults = "Cascader.NoResults" -> string!
+const Trailblazor.TbStrings.CascaderResults = "Cascader.Results" -> string!
+override Trailblazor.CascaderItem<TValue>.Equals(object? obj) -> bool
+override Trailblazor.CascaderItem<TValue>.GetHashCode() -> int
+override Trailblazor.CascaderItem<TValue>.ToString() -> string!
+override Trailblazor.CascaderLabels.Equals(object? obj) -> bool
+override Trailblazor.CascaderLabels.GetHashCode() -> int
+override Trailblazor.CascaderLabels.ToString() -> string!
+override Trailblazor.TbCascader<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbCascader<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbCascader<TValue>.OnParametersSet() -> void
+static Trailblazor.CascaderItem<TValue>.operator !=(Trailblazor.CascaderItem<TValue>? left, Trailblazor.CascaderItem<TValue>? right) -> bool
+static Trailblazor.CascaderItem<TValue>.operator ==(Trailblazor.CascaderItem<TValue>? left, Trailblazor.CascaderItem<TValue>? right) -> bool
+static Trailblazor.CascaderLabels.operator !=(Trailblazor.CascaderLabels? left, Trailblazor.CascaderLabels? right) -> bool
+static Trailblazor.CascaderLabels.operator ==(Trailblazor.CascaderLabels? left, Trailblazor.CascaderLabels? right) -> bool
+~override Trailblazor.TbCascader<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

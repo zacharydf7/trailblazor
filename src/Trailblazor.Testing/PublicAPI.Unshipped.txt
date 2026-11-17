@@ -510,3 +510,10 @@ Trailblazor.Testing.TbKanbanDriver.Column(string! column) -> Trailblazor.Testing
 Trailblazor.Testing.TbKanbanDriver.Columns.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbKanbanDriver.MoveToColumnAsync(string! card, string! column) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.Kanban(string? name = null) -> Trailblazor.Testing.TbKanbanDriver!
+Trailblazor.Testing.TbCascaderDriver
+Trailblazor.Testing.TbCascaderDriver.ChooseAsync(params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCascaderDriver.ChooseResultAsync(string! text, string! result) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCascaderDriver.Results.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbCascaderDriver.SearchAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCascaderDriver.Text.get -> string?
+Trailblazor.Testing.TrailblazorMarkup.Cascader(string! label) -> Trailblazor.Testing.TbCascaderDriver!

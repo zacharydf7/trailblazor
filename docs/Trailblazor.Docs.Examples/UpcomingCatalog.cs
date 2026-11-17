@@ -48,7 +48,6 @@ public static class UpcomingCatalog
         new("Ribbon", ExampleCategory.Actions, 83),
         new("Smart paste", ExampleCategory.Actions, 198),
         new("Speech-to-text button", ExampleCategory.Actions, 197),
-        new("Cascader", ExampleCategory.Inputs, 186),
         new("In-place editor", ExampleCategory.Inputs, 196),
         new("Markdown editor", ExampleCategory.Inputs, 189),
         new("Mention input", ExampleCategory.Inputs, 190),

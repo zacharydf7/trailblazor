@@ -359,6 +359,10 @@ public sealed class TrailblazorMarkup
     public TbAutocompleteDriver Autocomplete(string label) =>
         new(() => Field(label, ".tb-autocomplete input[data-part=input]"), _findAll, _scripts);
 
+    /// <summary>The <c>TbCascader</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
+    public TbCascaderDriver Cascader(string label) =>
+        new(() => Field(label, ".tb-cascader input[data-part=input]"), _findAll);
+
     /// <summary>The <c>TbColorPicker</c> with this label, or with this <c>AriaLabel</c> when it has no label.
     /// </summary>
     public TbColorPickerDriver ColorPicker(string label) =>
@@ -2924,6 +2928,76 @@ internal static class SliderThumb
 
     private static decimal Attribute(IElement input, string name) =>
         decimal.Parse(input.GetAttribute(name)!, CultureInfo.InvariantCulture);
+}
+
+/// <summary>A <c>TbCascader</c>, found by its label. Its choices are named by their text.</summary>
+public sealed class TbCascaderDriver : TbFieldDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+
+    internal TbCascaderDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) : base(find) =>
+        (_find, _findAll) = (find, findAll);
+
+    /// <summary>The text the field shows: the chosen path, or what was typed.</summary>
+    public string? Text => _find().GetAttribute("value");
+
+    /// <summary>The paths that match what was typed, as the field shows them.</summary>
+    public IReadOnlyList<string> Results => [.. Popup().QuerySelectorAll("[data-part=results] [data-part=option]")
+        .Select(option => option.TextContent.Trim())];
+
+    /// <summary>Chooses a path a level at a time, as a user clicks through the lists: the choice with each text in
+    /// turn, such as <c>ChooseAsync("Canada", "Ontario", "Toronto")</c>. Throws when a level has no such choice, or
+    /// it is disabled.</summary>
+    public async Task ChooseAsync(params string[] path)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(path.Length, nameof(path));
+        Usable();
+        Choices.ThrowIfLocked(_find());
+        for (var level = 0; level < path.Length; level++)
+        {
+            var choice = Popup().QuerySelectorAll($"[data-part=column][data-level='{level}'] [data-part=option]")
+                .FirstOrDefault(option => option.QuerySelector(".tb-cascader__text")?.TextContent == path[level])
+                ?? throw new InvalidOperationException($"Level {level + 1} has no choice \"{path[level]}\".");
+            if (choice.GetAttribute("aria-disabled") == "true")
+            {
+                throw new InvalidOperationException($"\"{path[level]}\" is disabled.");
+            }
+
+            await choice.ClickAsync(new MouseEventArgs { Detail = 1 });
+        }
+    }
+
+    /// <summary>Types the text, as a user does, which searches every level for paths that hold it; read them with
+    /// <see cref="Results"/>.</summary>
+    public async Task SearchAsync(string text)
+    {
+        Usable();
+        Choices.ThrowIfLocked(_find());
+        await _find().InputAsync(new ChangeEventArgs { Value = text });
+    }
+
+    /// <summary>Types the text, then chooses the matching path shown as <paramref name="result"/>, such as
+    /// <c>"Canada / Ontario / Toronto"</c>. Throws when no such path matches.</summary>
+    public async Task ChooseResultAsync(string text, string result)
+    {
+        await SearchAsync(text);
+        await Choices.Named([.. Popup().QuerySelectorAll("[data-part=results] [data-part=option]")], result)
+            .ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private void Usable()
+    {
+        var input = _find();
+        if (input.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("A cascader on a static page is a plain input that posts with its "
+                + "form; render it on an interactive page to choose.");
+        }
+
+    }
+
+    private IElement Popup() => _findAll($"#{_find().GetAttribute("aria-controls")}").Single();
 }
 
 /// <summary>A <c>TbAutocomplete</c>, found by its label.</summary>

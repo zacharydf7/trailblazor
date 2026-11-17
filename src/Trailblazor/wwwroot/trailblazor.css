@@ -6313,6 +6313,50 @@
         display: none;
     }
 
+    /* A cascader's lists sit side by side, one for each level, each scrolling on its own. */
+    .tb-cascader__popup {
+        max-inline-size: calc(100vw - 2 * var(--tb-space-2));
+        overflow-x: auto;
+    }
+
+    /* Only while open, so the browser's own rule still hides a closed popover. */
+    .tb-cascader__popup:popover-open {
+        display: flex;
+    }
+
+    .tb-cascader__list {
+        flex: 0 0 auto;
+        min-inline-size: 10rem;
+        max-block-size: min(20rem, 50vh);
+        padding: var(--tb-space-1);
+        overflow-y: auto;
+    }
+
+    .tb-cascader__list + .tb-cascader__list {
+        border-inline-start: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-cascader__popup[data-searching] .tb-cascader__list {
+        flex: 1 1 auto;
+    }
+
+    .tb-cascader__text {
+        flex: 1 1 auto;
+    }
+
+    .tb-cascader__more {
+        flex: none;
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-cascader__list > [data-open] {
+        background: var(--tb-color-neutral-subtle);
+    }
+
+    .tb-cascader__status {
+        color: var(--tb-color-text-muted);
+    }
+
     /* The titles stick to the top, so scroll padding keeps them from covering the active suggestion. */
     .tb-autocomplete__listbox[data-columns] {
         inline-size: max-content;

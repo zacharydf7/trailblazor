@@ -5358,6 +5358,85 @@ public static class ExampleCatalog
                 + "default, become options, so type enough to bring the one you want into the list. For fields that "
                 + "share a label, pass a locator in Playwright, as `Autocomplete(row.GetByLabel(\"Town\"))`.",
         },
+        new("cascader", "Cascader", ExampleCategory.Inputs,
+            "A field that chooses a path through nested choices, such as a region, then a trailhead, then a parking "
+                + "lot, from lists side by side.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it when a choice sits at the end of a path through levels, such as a city under a country and "
+                    + "region, and people know the path.",
+            ],
+            WhenNotToUse =
+            [
+                "For one flat list, use a [select](components/select) or an [autocomplete](components/autocomplete).",
+                "For a deep tree people browse and expand, use a [tree select](components/tree-select).",
+            ],
+            Related = ["select", "autocomplete", "tree-select"],
+            Pattern = new("combobox", "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/"),
+            Sections =
+            [
+                new("basic", "Cascader", "`Items` holds the first level as `CascaderItem` records, each with its "
+                    + "`Text`, its `Value` and the `Children` under it. Choosing one with children opens their list "
+                    + "beside it; choosing one at the end of a path makes its `Value` the field's value, and the "
+                    + "field shows the path, joined by `Separator`. Typing searches every level and lists the "
+                    + "paths that match. `AllowParents` lets any choice be the value, and `Disabled` on an item keeps "
+                    + "it from being chosen, as High peaks is here.", typeof(CascaderExample)),
+            ],
+            Api = [typeof(TbCascader<>), typeof(CascaderItem<>), typeof(CascaderLabels), typeof(FieldClasses)],
+            Keyboard =
+            [
+                new(["Down", "Up"], "Opens the lists, or moves to the next or previous choice in a list."),
+                new(["Right"], "Opens the active choice's list and moves into it, without choosing it.")
+                    { When = "On a choice with more" },
+                new(["Left"], "Moves back to the choice that opened this list.") { When = "In a list after the first" },
+                new(["Home", "End"], "Moves to the first or last choice in the list.") { When = "While open" },
+                new(["Enter"], "Chooses the active choice, or opens its list when it has more and can't be chosen.")
+                    { When = "While open" },
+                new(["Escape"], "Closes the lists.") { When = "While open" },
+            ],
+            Labeling =
+            [
+                "The input is a `combobox` named by the field's label, and its `aria-controls` names the popup.",
+                "The first list is named by the label, and each list after it by the choice that opened it. A choice "
+                    + "with more under it is named with \"more choices\" after its text, or by `Labels.More`.",
+            ],
+            Announcements =
+            [
+                "Typing reads out how many paths match, such as \"Results: 3\", when the number changes.",
+            ],
+            Accessibility =
+            [
+                "Focus stays in the input, and `aria-activedescendant` names the active choice in whichever list "
+                    + "it's in.",
+                "In a right-to-left page, Left opens the next list and Right goes back, following the layout.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "It is a plain text input, so a static form still posts what was typed.",
+            ],
+            Ready = new("[role=combobox]", "the input"),
+            Target = new("combobox", "Trailhead"),
+            Blocks = ["tb-field", "tb-cascader"],
+            DataParts =
+            [
+                .. FieldParts,
+                new("input", "The combobox the user types in."),
+                new("clear", "The button that clears the text."),
+                new("popup", "What opens under the field: the lists, or the search results."),
+                new("column", "One level's list, with `data-level` from 0."),
+                new("results", "The list of paths that match what was typed."),
+                new("option", "One choice, with `data-more` when it has more under it and `data-open` when its list "
+                    + "is open; or one matching path."),
+                new("status", "The message shown when no path matches. It's an option that can't be chosen."),
+            ],
+            TestingTip = "`page.Tb().Cascader(\"Trailhead\")` in Playwright, or `cut.Tb().Cascader(...)` in bUnit, "
+                + "finds the field by its label: `ChooseAsync(\"North ridge\", \"Pine Hollow\", \"Lower lot\")` "
+                + "clicks through the lists, `ChooseResultAsync(\"lower\", \"North ridge / Pine Hollow / Lower lot\")` "
+                + "searches and chooses a path, and `TextAsync()` or `Text` reads the path the field shows.",
+        },
         new("tag-input", "Tag input", ExampleCategory.Inputs,
             "A field where people type any number of short labels, such as a trail's features, each shown as a chip.")
         {
