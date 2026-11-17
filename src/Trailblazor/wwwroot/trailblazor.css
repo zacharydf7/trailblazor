@@ -1787,6 +1787,21 @@
         border: 1px solid var(--tb-border-subtle);
     }
 
+    /* A match keeps the text's own color on the theme's warning tint, and the system's highlight in forced colors. */
+    .tb-highlight__match {
+        background: var(--tb-color-warning-subtle);
+        color: inherit;
+        border-radius: var(--tb-radius-sm);
+    }
+
+    @media (forced-colors: active) {
+        .tb-highlight__match {
+            forced-color-adjust: none;
+            background: Mark;
+            color: MarkText;
+        }
+    }
+
     /* A key looks like a keycap: a raised box in the monospace font, sized to the text around it. */
     /* A combination draws only its keys, whatever a base stylesheet gives kbd. */
     .tb-kbd {

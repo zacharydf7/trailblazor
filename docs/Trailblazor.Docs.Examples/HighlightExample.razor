@@ -1,0 +1,23 @@
+<TbStack Gap="3" Style="max-inline-size: 24rem">
+    <TbTextField TValue="string" Label="Search trails" @bind-Value="_search" Type="TextFieldType.Search"
+                 UpdateOnInput />
+    <ul aria-label="Trails">
+        @foreach (var trail in Trails.Where(Matches))
+        {
+            <li><TbHighlight Text="@trail" Search="@_search" /></li>
+        }
+    </ul>
+</TbStack>
+
+@code {
+    private static readonly string[] Trails =
+    [
+        "Pine Hollow loop", "Eagle Ridge climb", "Cedar Falls walk", "Pine Creek crossing", "Lookout Point trail",
+    ];
+
+    private string? _search = "pine";
+
+    // A trail shows while it holds every word of the search.
+    private bool Matches(string trail) => (_search ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        .All(word => trail.Contains(word, StringComparison.CurrentCultureIgnoreCase));
+}

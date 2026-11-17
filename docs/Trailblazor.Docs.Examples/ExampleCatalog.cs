@@ -367,6 +367,55 @@ public static class ExampleCatalog
             ],
             TestingTip = "Keys have no role of their own; find them by their text, as `GetByText(\"Ctrl\")`.",
         },
+        new("highlight", "Highlight", ExampleCategory.Content,
+            "Text with the parts that match a search marked, for search results and filtered lists.")
+        {
+            WhenToUse =
+            [
+                "Use it in search results and filtered lists, so people see why each one matched.",
+            ],
+            WhenNotToUse =
+            [
+                "To make a passage stand out for its own sake, use emphasis or a [badge](components/badge); marks "
+                    + "suggest a search.",
+            ],
+            Related = ["text", "text-field", "autocomplete"],
+            Sections =
+            [
+                new("basic", "Highlight", "`Text` shows the text, and each word of `Search` is marked wherever it "
+                    + "appears, in any capitals unless `CaseSensitive` is set. Matches that overlap or touch make one "
+                    + "mark.",
+                    typeof(HighlightExample)),
+            ],
+            Api = [typeof(TbHighlight)],
+            Accessibility =
+            [
+                "The marks don't split the text, so a result is found by its whole text; some screen readers say "
+                    + "\"highlighted\" around a match.",
+                "A match keeps the text's color on a tint, and takes the system's highlight colors in forced colors.",
+            ],
+            AppDuties =
+            [
+                "Say how many results matched, such as in a live region, since screen reader users may not hear "
+                    + "the marks at all.",
+            ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
+            BeforeInteractive =
+            [
+                PlainHtml,
+            ],
+            Target = null,
+            Blocks = ["tb-highlight"],
+            DataParts =
+            [
+                new("match", "A `mark` around a part that matches the search."),
+            ],
+            TestingTips =
+            [
+                "Find a result by its whole text, as `GetByText(\"Pine Hollow loop\")`: the marks don't split it.",
+                "Read what matched from the `match` parts' text.",
+            ],
+        },
         new("qr-code", "QR code and barcode", ExampleCategory.Content,
             "Codes a phone or a scanner reads: a QR code for a link or text, and a barcode for a ticket or product "
                 + "number.")

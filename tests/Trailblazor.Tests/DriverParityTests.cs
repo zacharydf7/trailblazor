@@ -91,6 +91,7 @@ public class DriverParityTests
         ["TbSpacer"] = NotInteractive, ["TbStack"] = NotInteractive, ["TbStyles"] = NotInteractive,
         ["TbSurface"] = NotInteractive,
         ["TbTable"] = NotInteractive, ["TbText"] = NotInteractive,
+        ["TbHighlight"] = NotInteractive,
         ["TbThemeHead"] = NotInteractive, ["TbTimeline"] = NotInteractive, ["TbWatermark"] = NotInteractive,
     };
 

@@ -6658,3 +6658,11 @@ Trailblazor.TbBackToTop.Threshold.set -> void
 override Trailblazor.TbBackToTop.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 ~override Trailblazor.TbBackToTop.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 const Trailblazor.TbStrings.BackToTopLabel = "BackToTop.Label" -> string!
+Trailblazor.TbHighlight
+Trailblazor.TbHighlight.CaseSensitive.get -> bool
+Trailblazor.TbHighlight.CaseSensitive.set -> void
+Trailblazor.TbHighlight.Search.get -> string?
+Trailblazor.TbHighlight.Search.set -> void
+Trailblazor.TbHighlight.TbHighlight() -> void
+Trailblazor.TbHighlight.Text.get -> string!
+Trailblazor.TbHighlight.Text.set -> void

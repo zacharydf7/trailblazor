@@ -88,6 +88,7 @@ they run by version. The docs site's Upgrading page is built from both.
 #### 2026-11-17
 
 - New `TbBackToTop`: a floating button (`tb-back-to-top`, with `data-shown` while it shows, and `data-part="button"`) that appears once the page has scrolled down and takes it back to the top, moving focus there
+- New `TbHighlight`: text (`tb-highlight`) with each match of a search in a `mark` (`data-part="match"`)
 - `TbAccordionItem`, `TbAlert`, `TbBanner`, `TbAppShell`, `TbCarousel`, `TbOverlay`, `TbPagination`, `TbSplitter`, `TbStepper`, `TbThemePicker` and `TbInsertDivider` take a `TelemetryName` and, when given one, count `trailblazor.control.shown` and each use as `trailblazor.control.used`, with what was done as `trailblazor.action`; `TbHotkeysHelp` takes one too and counts as a dialog does
 - New `TbMasonry`: cards of different heights in columns (`tb-masonry`, with `data-ready` once they're placed), each under the shortest column in the order given
 - `TbQrCode`, `TbBarcode`, `TbImage`, `TbTimeline`, `TbTable`, `TbVirtualList`, `TbProgress`, `TbAvatar`, `TbAvatarGroup` and `TbBadge` take a `TelemetryName` and, when given one, count `trailblazor.control.shown` as they first render

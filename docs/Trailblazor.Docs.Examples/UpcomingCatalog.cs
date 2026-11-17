@@ -41,7 +41,6 @@ public static class UpcomingCatalog
         new("Pivot grid", ExampleCategory.Content, 202),
         new("Scheduler", ExampleCategory.Content, 201),
         new("Spreadsheet", ExampleCategory.Content, 206),
-        new("Text highlighter", ExampleCategory.Content, 195),
         new("Ribbon", ExampleCategory.Actions, 83),
         new("Smart paste", ExampleCategory.Actions, 198),
         new("Speech-to-text button", ExampleCategory.Actions, 197),

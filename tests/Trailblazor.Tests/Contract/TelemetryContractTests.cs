@@ -29,6 +29,7 @@ public class TelemetryContractTests : BunitContext
         ["TbLabel"] = "it names another control, which counts itself",
         ["TbSkeleton"] = "it stands in for content until it loads, and the content counts itself",
         ["TbText"] = "it is text inside other components",
+        ["TbHighlight"] = "it is text inside other components, such as search results, which count themselves",
         ["TbTooltip"] =
             "it shows on hover and focus in the browser alone, and a count would cost a round trip each time",
 
