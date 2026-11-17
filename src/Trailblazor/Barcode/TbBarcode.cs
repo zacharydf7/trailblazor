@@ -31,7 +31,8 @@ public partial class TbBarcode
 
     /// <summary>The barcode's width, as a CSS length. Without it, each module is 2 pixels, so the bars stay sharp
     /// however long the value is; a width that doesn't give each module whole pixels draws equal bars at unequal
-    /// widths, which some scanners misread.</summary>
+    /// widths, which some scanners misread. A narrower container shrinks the barcode to fit, so its modules may no
+    /// longer be whole pixels.</summary>
     [Parameter]
     public string? Width { get; set; }
 

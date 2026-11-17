@@ -387,14 +387,15 @@ public static class ExampleCatalog
             [
                 new("qr-code", "QR code", "`Value` is the text or link the code holds. `ErrorCorrection` sets how much "
                     + "of the code can be covered or scratched and still scan: `Medium` by default, `High` for a "
-                    + "printout that gets handled. Each module is 4 pixels unless `Size` sets the width and height. "
-                    + "A value too long for the code throws, so check one from users or data with `TbQrCode.CanEncode` "
-                    + "first.", typeof(QrCodeExample)),
+                    + "printout that gets handled. Each module is 4 pixels unless `Size` sets the width and height, "
+                    + "or a narrower container shrinks the code to fit. A value too long for the code throws, so "
+                    + "check one from users or data with `TbQrCode.CanEncode` first.", typeof(QrCodeExample)),
                 new("barcode", "Barcode", "`Format` is `Code128`, the default, for printable ASCII text, or `Ean13` "
                     + "for a 13-digit product number: give 12 digits and the check digit is added, or all 13 and it's "
                     + "checked. `ShowText` prints the value under the bars. Each module is 2 pixels wide unless "
-                    + "`Width` sets the width, and `Height` sets the bars' height. A value the format can't hold "
-                    + "throws, so check one from users or data with `TbBarcode.CanEncode` first.",
+                    + "`Width` sets the width or a narrower container shrinks the barcode to fit, and `Height` sets "
+                    + "the bars' height. A value the format can't hold throws, so check one from users or data with "
+                    + "`TbBarcode.CanEncode` first.",
                     typeof(BarcodeExample)),
             ],
             Api = [typeof(TbQrCode), typeof(TbBarcode)],

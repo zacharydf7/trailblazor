@@ -30,7 +30,8 @@ public partial class TbQrCode
 
     /// <summary>The code's width and height, as a CSS length. Without it, each module is 4 pixels, so the code stays
     /// sharp however much it holds; a size that doesn't give each module whole pixels draws equal modules at unequal
-    /// sizes, which some scanners misread.</summary>
+    /// sizes, which some scanners misread. A narrower container shrinks the code to fit, so its modules may no longer
+    /// be whole pixels.</summary>
     [Parameter]
     public string? Size { get; set; }
 

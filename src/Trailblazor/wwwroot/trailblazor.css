@@ -1839,8 +1839,10 @@
         forced-color-adjust: none;
     }
 
+    /* A container narrower than the code shrinks it to fit, rather than letting it spill out. */
     .tb-qr-code {
         display: block;
+        max-inline-size: 100%;
         block-size: auto;
         aspect-ratio: 1;
     }
@@ -1856,6 +1858,7 @@
     .tb-barcode {
         display: inline-flex;
         flex-direction: column;
+        max-inline-size: 100%;
         background: var(--tb-barcode-background, white);
         color: var(--tb-barcode-color, black);
     }
@@ -1871,6 +1874,7 @@
 
     .tb-barcode__text {
         padding-block-end: 0.25em;
+        overflow-wrap: anywhere;
         font-family: var(--tb-font-family-mono);
         font-size: 0.875em;
         letter-spacing: 0.1em;
