@@ -18,6 +18,7 @@ namespace Trailblazor.BrowserTests;
 public sealed class BrowserFixture : IAsyncLifetime
 {
     // Circuits log their creation and disposal at Debug, so a test can follow its own circuit in what the server logged.
+    // They log failed event dispatches at Debug too, and the run checks for those when it ends.
     // The derived factory ignores UseKestrel(port), so UseUrls asks for a free one; otherwise the app takes port 5000.
     private readonly WebApplicationFactory<Program> _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(
         host => host.UseUrls("http://127.0.0.1:0")
@@ -89,6 +90,10 @@ public sealed class BrowserFixture : IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
+        // A failed event dispatch only shows in the server log, so any one fails the run.
+        var failed = ServerLogs.GetSnapshot().Where(log => log.Id.Name == "InvokeInstanceDotNetMethodException"
+            && log.Message.Contains("'DispatchEventAsync'", StringComparison.Ordinal)).ToList();
+
         foreach (var browser in _browsers.Values.Where(b => b.IsValueCreated))
         {
             await (await browser.Value).CloseAsync();
@@ -101,5 +106,10 @@ public sealed class BrowserFixture : IAsyncLifetime
         }
 
         await _factory.DisposeAsync();
+        if (failed.Count > 0)
+        {
+            throw new InvalidOperationException($"The test host failed to dispatch {failed.Count} browser events. The first "
+                + $"failed with {failed[0].Exception}");
+        }
     }
 }

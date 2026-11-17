@@ -1097,6 +1097,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // A field removed as the next edit opens reports focus leaving too, and that mustn't save the new edit.
     private Func<FieldFocusEventArgs, Task> LeftHandler(GridEdit edit) => args => OnEditLeftAsync(edit, args);
 
+    // Razor wraps a null handler in a callback that has nothing to run but still draws the browser's events to the
+    // server, so a null handler maps to the default callback, which renders none.
+    private EventCallback<TArgs> Handler<TArgs>(Func<TArgs, Task>? handler) =>
+        handler is null ? default : EventCallback.Factory.Create(this, handler);
+
+    private EventCallback<TArgs> Handler<TArgs>(Func<Task>? handler) =>
+        handler is null ? default : EventCallback.Factory.Create<TArgs>(this, handler);
+
     private async Task OnEditLeftAsync(GridEdit edit, FieldFocusEventArgs args)
     {
         if (args.CrossesEdit && _edit == edit)

@@ -326,6 +326,19 @@ public class TbDataGridEditTests : BunitContext
     }
 
     [Fact]
+    public void Grid_ShouldListenOnlyWhereACellCanBeEdited_WhenItRenders()
+    {
+        var locked = RenderCamps(handled: false).Find("td[data-column=Name]");
+        var editable = RenderCamps(handled: true).Find("td[data-column=Name]");
+
+        // A handler with nothing to run would still bring the browser's events to the server.
+        Assert.Equal((false, false, false), (locked.HasAttribute("blazor:ondblclick"),
+            locked.HasAttribute("blazor:ontbeditstart"), locked.ParentElement!.HasAttribute("blazor:ontbfocusleave")));
+        Assert.Equal((true, true), (editable.HasAttribute("blazor:ondblclick"),
+            editable.HasAttribute("blazor:ontbeditstart")));
+    }
+
+    [Fact]
     public void Editable_ShouldOfferAnEdit_WhenAHandlerTakesAnInitOnlyField()
     {
         var cut = RenderCamps(handled: true);
