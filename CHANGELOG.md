@@ -88,6 +88,7 @@ they run by version. The docs site's Upgrading page is built from both.
 #### 2026-11-17
 
 - `TbAccordionItem`, `TbAlert`, `TbBanner`, `TbAppShell`, `TbCarousel`, `TbOverlay`, `TbPagination`, `TbSplitter`, `TbStepper`, `TbThemePicker` and `TbInsertDivider` take a `TelemetryName` and, when given one, count `trailblazor.control.shown` and each use as `trailblazor.control.used`, with what was done as `trailblazor.action`; `TbHotkeysHelp` takes one too and counts as a dialog does
+- New `TbMasonry`: cards of different heights in columns (`tb-masonry`, with `data-ready` once they're placed), each under the shortest column in the order given
 - `TbQrCode`, `TbBarcode`, `TbImage`, `TbTimeline`, `TbTable`, `TbVirtualList`, `TbProgress`, `TbAvatar`, `TbAvatarGroup` and `TbBadge` take a `TelemetryName` and, when given one, count `trailblazor.control.shown` as they first render
 - New `TbWatermark`: content with tiled marks over it (`data-part="marks"`, `aria-hidden`, taking no clicks) and a visually hidden copy of what they say (`data-part="label"`) before the content
 - New `TbTour`: a full-page layer (`tb-tour`, with `data-step`) whose shade (`data-part="shade"`) dims the page around the step's target, and whose step is a modal `dialog` (`data-part="step"` with `data-target`) named by its title and described by its body, with Back, Next (Done on the last step) and Skip tour buttons, and the step's position; the page behind it is inert while it shows

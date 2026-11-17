@@ -2629,7 +2629,7 @@
     }
 
     /* A layout rendered as a list lays out its items, so the browser's bullets and indent go. */
-    :where(ul, ol):is(.tb-stack, .tb-grid, .tb-container, .tb-surface) {
+    :where(ul, ol):is(.tb-stack, .tb-grid, .tb-masonry, .tb-container, .tb-surface) {
         margin-block: 0;
         padding-inline-start: 0;
         list-style: none;
@@ -2781,6 +2781,26 @@
         max-width: 100%;
         flex: var(--tb-grid-flex);
         margin-inline-start: calc(var(--tb-grid-offset) * (var(--tb-grid-column) + var(--tb-grid-gap)));
+    }
+
+    /* Until its script places them, the cards sit in a plain grid, which also works out the columns they're placed in. */
+    .tb-masonry {
+        box-sizing: border-box;
+        inline-size: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(var(--tb-masonry-column), 100%), 1fr));
+        gap: var(--tb-masonry-gap);
+        align-items: start;
+    }
+
+    .tb-masonry[data-ready] {
+        position: relative;
+    }
+
+    .tb-masonry[data-ready] > * {
+        position: absolute;
+        box-sizing: border-box;
+        margin: 0;
     }
 
     /* These widths repeat the --tb-breakpoint-* tokens, because media queries can't read custom properties. */

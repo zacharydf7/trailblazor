@@ -1,0 +1,27 @@
+<TbMasonry MinColumnWidth="12rem" Gap="3">
+    @foreach (var stop in Stops)
+    {
+        <TbCard Title="@stop.Name">
+            <ChildContent>@stop.Note</ChildContent>
+            <Actions>
+                <TbButton Variant="Variant.Text" aria-label="@($"Save {stop.Name}")">Save</TbButton>
+            </Actions>
+        </TbCard>
+    }
+</TbMasonry>
+
+@code {
+    private sealed record Stop(string Name, string Note);
+
+    private static readonly Stop[] Stops =
+    [
+        new("Pine Hollow", "A shaded loop with a creek crossing."),
+        new("Eagle Ridge", "The climb is steep for the first mile, then the ridge opens onto views of three valleys. "
+            + "Start early in summer: there's no shade above the tree line."),
+        new("Cedar Falls", "A short walk to a waterfall."),
+        new("Fern Gully", "Wet and green all year, with boardwalks over the boggy parts and a bench halfway."),
+        new("Lookout Point", "Benches and a map board at the top."),
+        new("Granite Steps", "Carved stairs most of the way. Hard on the knees coming down, so bring poles if you "
+            + "have them, and allow extra time for the descent."),
+    ];
+}

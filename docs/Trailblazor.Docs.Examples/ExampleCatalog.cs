@@ -2364,6 +2364,63 @@ public static class ExampleCatalog
             Target = null,
             Blocks = ["tb-grid", "tb-grid-item"],
         },
+        new("masonry", "Masonry", ExampleCategory.Layout,
+            "Lays out cards of different heights in columns without gaps, in the order they're given.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for cards of different heights, such as notes, photos or trail reports, where rows of equal "
+                    + "height would leave gaps under the shorter ones.",
+            ],
+            WhenNotToUse =
+            [
+                "When cards should line up in rows, or people compare them across a row, use a "
+                    + "[grid](components/grid).",
+            ],
+            Related = ["grid", "stack", "card"],
+            Sections =
+            [
+                new("basic", "Masonry", "Each card goes under the shortest column, in the order given, so cards of "
+                    + "different heights leave no gaps. `MinColumnWidth` sets how narrow a column can get, and the "
+                    + "masonry fits as many columns as its width allows; `Gap` sets the space between cards. Render it "
+                    + "`As` `LayoutElement.Ul`, with each card in an `li`, for a list that screen readers count.",
+                    typeof(MasonryExample)),
+            ],
+            Api = [typeof(TbMasonry)],
+            Accessibility =
+            [
+                "A plain `div` by default; it only lays out what it holds.",
+                "The cards keep the order they're given in the page, so screen readers and Tab follow it: across the "
+                    + "top first, then each next card under the shortest column.",
+            ],
+            AppDuties =
+            [
+                "Give the cards in the order people should read them. The masonry places them on screen in that "
+                    + "order but never changes it.",
+                "Put it in a container with a width of its own, such as the page or a card. It fills that width, so "
+                    + "a box that sizes itself to its content leaves it no width to fill.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "Until its script runs, the cards sit in a plain grid of rows, in the same order, with gaps under the "
+                    + "shorter ones. They move into columns once the page is interactive.",
+            ],
+            Ready = new(".tb-masonry", "the masonry, once its cards are placed"),
+            Target = null,
+            Blocks = ["tb-masonry"],
+            TestingTips =
+            [
+                "Find the cards as you would anywhere: the masonry changes where they show, not their roles or names.",
+                "In Playwright, wait for `data-ready` on `.tb-masonry` before measuring where the cards are.",
+            ],
+            Telemetry =
+            [
+                "It counts nothing itself, since it only lays out its cards. Give the cards a `TelemetryName` to "
+                    + "count them.",
+            ],
+        },
         new("splitter", "Splitter", ExampleCategory.Layout,
             "Lays out panes side by side or stacked, with separators that resize them by dragging, with the "
                 + "keyboard or from a menu.")

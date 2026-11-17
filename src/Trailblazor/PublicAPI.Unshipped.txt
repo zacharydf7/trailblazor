@@ -6629,3 +6629,14 @@ override Trailblazor.TbPagination.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbStepper.OnAfterRender(bool firstRender) -> void
 Trailblazor.TbCarousel.TelemetryName.get -> string?
 Trailblazor.TbCarousel.TelemetryName.set -> void
+Trailblazor.TbMasonry
+Trailblazor.TbMasonry.As.get -> Trailblazor.LayoutElement
+Trailblazor.TbMasonry.As.set -> void
+Trailblazor.TbMasonry.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbMasonry.ChildContent.set -> void
+Trailblazor.TbMasonry.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbMasonry.Gap.get -> int
+Trailblazor.TbMasonry.Gap.set -> void
+Trailblazor.TbMasonry.MinColumnWidth.get -> string!
+Trailblazor.TbMasonry.MinColumnWidth.set -> void
+Trailblazor.TbMasonry.TbMasonry() -> void

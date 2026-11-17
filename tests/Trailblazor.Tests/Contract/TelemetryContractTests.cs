@@ -20,8 +20,8 @@ public class TelemetryContractTests : BunitContext
     {
         ["TbAppBar"] = Layout, ["TbButtonGroup"] = Layout, ["TbContainer"] = Layout,
         ["TbDivider"] = "it is a line between other components, which count themselves",
-        ["TbFieldRow"] = Layout, ["TbGrid"] = Layout, ["TbGridItem"] = Layout, ["TbSpacer"] = Layout,
-        ["TbStack"] = Layout, ["TbSurface"] = Layout,
+        ["TbFieldRow"] = Layout, ["TbGrid"] = Layout, ["TbGridItem"] = Layout, ["TbMasonry"] = Layout,
+        ["TbSpacer"] = Layout, ["TbStack"] = Layout, ["TbSurface"] = Layout,
 
         ["TbIcon"] = "it is a glyph inside text or another control",
         ["TbKbd"] = "it is a key name inside text",
