@@ -2334,6 +2334,19 @@
         box-shadow: var(--tb-shadow-lg);
     }
 
+    .tb-back-to-top > .tb-fab {
+        transition: background-color var(--tb-motion-duration-fast) var(--tb-motion-easing-standard),
+            box-shadow var(--tb-motion-duration-fast) var(--tb-motion-easing-standard),
+            opacity var(--tb-motion-duration-normal) var(--tb-motion-easing-standard),
+            visibility var(--tb-motion-duration-normal);
+    }
+
+    /* Until the page scrolls down, the button is out of sight, out of the tab order and hidden from screen readers. */
+    .tb-back-to-top:not([data-shown]) > .tb-fab {
+        visibility: hidden;
+        opacity: 0;
+    }
+
     .tb-fab--extended {
         padding-inline: var(--tb-space-4) var(--tb-space-5);
     }

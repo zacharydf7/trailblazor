@@ -1,0 +1,23 @@
+@* Layout containment makes the frame hold the fixed button, which on a real page keeps the window's corner. *@
+<TbSurface Outlined style="contain: layout">
+    <div id="trail-log" tabindex="0" role="region" aria-label="Trail log" style="block-size: 18rem; overflow: auto">
+        <TbStack Gap="2" class="tb-p-4">
+            <TbText TextStyle="TextStyle.Title" id="trail-log-title">Trail log</TbText>
+            @foreach (var day in Enumerable.Range(1, 60))
+            {
+                <TbText>Day @day: @Notes[day % Notes.Length]</TbText>
+            }
+        </TbStack>
+    </div>
+    <TbBackToTop ScrollContainer="#trail-log" Threshold="200" FocusTarget="#trail-log-title" />
+</TbSurface>
+
+@code {
+    private static readonly string[] Notes =
+    [
+        "Clear skies on the ridge, and the creek ford was dry.",
+        "Rain by noon; the lower bridge path was muddy but open.",
+        "Saw two deer near the lookout before the fog came in.",
+        "Cleared a fallen branch from the switchbacks past Cedar Falls.",
+    ];
+}

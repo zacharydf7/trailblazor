@@ -586,6 +586,15 @@ public sealed class TrailblazorMarkup
             : $"Expected one nav menu in a navigation landmark named \"{name}\", found {menus.Count}.");
     }, _scripts);
 
+    /// <summary>The page's <c>TbBackToTop</c>.</summary>
+    public TbBackToTopDriver BackToTop() => new(() =>
+    {
+        var buttons = _findAll(".tb-back-to-top").ToList();
+        return buttons.Count == 1 ? buttons[0] : throw new InvalidOperationException(buttons.Count == 0
+            ? "No back to top button is on the page."
+            : $"{buttons.Count} back to top buttons are on the page.");
+    });
+
     /// <summary>The <c>TbInsertDivider</c> whose insert button has this <c>Label</c>.</summary>
     public TbInsertDividerDriver InsertDivider(string label) => new(() =>
     {
@@ -2344,6 +2353,19 @@ public sealed class TbInsertDividerDriver
 
         await insert.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
+}
+
+/// <summary>The page's <c>TbBackToTop</c>.</summary>
+public sealed class TbBackToTopDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbBackToTopDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>Presses the button. In bUnit it is there whether or not the page has scrolled, since only a browser
+    /// scrolls.</summary>
+    public async Task ClickAsync() =>
+        await _find().QuerySelector("[data-part=button]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
 }
 
 /// <summary>A <c>TbToolbar</c>, found by its <c>AriaLabel</c>.</summary>

@@ -1,0 +1,128 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+@inject ITbLocalizer Localizer
+@inject IServiceProvider Services
+
+@* The button shows once the page has scrolled past Threshold, which only its script can tell. *@
+<div @ref="_root" @attributes="AdditionalAttributes" style="@Style" class="@ClassNames.Join("tb-back-to-top", Class)">
+    <TbFab Icon="BuiltInIcons.ArrowUp" Label="@(Label ?? Localizer[TbStrings.BackToTopLabel])" Position="Position"
+           Size="Size.Small" OnClick="TopAsync" data-part="button" />
+</div>
+
+@code {
+    private ElementReference _root;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<BackToTopEvents>? _events;
+    // What the script was last given, so a change is sent on.
+    private (string? ScrollContainer, int Threshold) _sent;
+    // Set once the button has shown, so a TelemetryName given later still counts it seen.
+    private bool _shown;
+    private bool _disposed;
+
+    /// <summary>How far, in CSS pixels, the page scrolls down before the button shows. Defaults to 400.</summary>
+    [Parameter]
+    public int Threshold { get; set; } = 400;
+
+    /// <summary>A CSS selector for the element that scrolls, such as <c>"#trail-log"</c>, when it isn't the page.
+    /// </summary>
+    [Parameter]
+    public string? ScrollContainer { get; set; }
+
+    /// <summary>A CSS selector for where focus goes at the top, such as <c>"#page-title"</c>, so keyboard and screen
+    /// reader users start there too. Defaults to the page's <c>main</c> landmark.</summary>
+    [Parameter]
+    public string FocusTarget { get; set; } = "main";
+
+    /// <summary>The button's accessible name. Defaults to "Back to top".</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>Where the button sits. Defaults to <see cref="FabPosition.BottomEnd"/>.</summary>
+    [Parameter]
+    public FabPosition Position { get; set; } = FabPosition.BottomEnd;
+
+    /// <summary>A label this button's use is counted under, such as <c>"article-top"</c>, so the app can count how
+    /// often people see it and press it through the <c>Trailblazor</c> meter. It counts as seen the first time it
+    /// shows, once the page has scrolled down. Controls that share a label count together; a control without one
+    /// isn't counted. It names what the control does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (!firstRender)
+            {
+                if (_shown)
+                {
+                    Telemetry.Rendered(TelemetryName);
+                }
+
+                if (_handle is not null && _sent != (ScrollContainer, Threshold))
+                {
+                    _sent = (ScrollContainer, Threshold);
+                    await _handle.InvokeVoidAsync("set", ScrollContainer, Threshold);
+                }
+
+                return;
+            }
+
+            var module = await Modules.ImportAsync("./_content/Trailblazor/back-to-top.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            _events = DotNetObjectReference.Create(new BackToTopEvents(Shown));
+            _sent = (ScrollContainer, Threshold);
+            var handle = await module.InvokeAsync<IJSObjectReference?>("attachBackToTop", _root, _events,
+                ScrollContainer, Threshold);
+            if (_disposed && handle is not null)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the button went with it.
+        }
+    }
+
+    private void Shown()
+    {
+        _shown = true;
+        Telemetry.Rendered(TelemetryName);
+    }
+
+    private async Task TopAsync()
+    {
+        Telemetry.Used(TelemetryName);
+        if (_handle is not null)
+        {
+            await _handle.InvokeVoidAsync("top", FocusTarget);
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _events?.Dispose();
+    }
+}

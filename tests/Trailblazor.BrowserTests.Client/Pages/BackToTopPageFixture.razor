@@ -1,0 +1,9 @@
+@page "/back-to-top-page"
+
+@* The page itself scrolls, as on a long article. *@
+<TbText TextStyle="TextStyle.Title" id="page-title">Long article</TbText>
+@foreach (var paragraph in Enumerable.Range(1, 80))
+{
+    <TbText>Paragraph @paragraph of a long article about the trail.</TbText>
+}
+<TbBackToTop FocusTarget="#page-title" />

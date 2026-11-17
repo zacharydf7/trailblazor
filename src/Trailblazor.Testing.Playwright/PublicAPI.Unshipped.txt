@@ -603,3 +603,10 @@ Trailblazor.Testing.Playwright.TbTourLocator.TbTourLocator(Microsoft.Playwright.
 Trailblazor.Testing.Playwright.TbTourLocator.TitleAsync() -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TbTourLocator.Tour.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.Tour() -> Trailblazor.Testing.Playwright.TbTourLocator!
+Trailblazor.Testing.Playwright.TbBackToTopLocator
+Trailblazor.Testing.Playwright.TbBackToTopLocator.BackToTop.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbBackToTopLocator.Button.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbBackToTopLocator.ClickAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbBackToTopLocator.IsShownAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbBackToTopLocator.TbBackToTopLocator(Microsoft.Playwright.ILocator! scope) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.BackToTop() -> Trailblazor.Testing.Playwright.TbBackToTopLocator!

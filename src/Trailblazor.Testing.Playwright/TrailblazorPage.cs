@@ -348,6 +348,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// shown.</summary>
     public TbNavMenuLocator NavMenu(string? name = null) => new(scope, name);
 
+    /// <summary>The page's <c>TbBackToTop</c>.</summary>
+    public TbBackToTopLocator BackToTop() => new(scope);
+
     /// <summary>The <c>TbInsertDivider</c> whose insert button has this <c>Label</c>.</summary>
     public TbInsertDividerLocator InsertDivider(string label) => new(scope, label);
 

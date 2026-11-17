@@ -7,8 +7,9 @@ using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 namespace Trailblazor.Tests.Contract;
 
 // Every component takes a TelemetryName, or DialogOptions that carry one, or is listed in Uncounted with the reason
-// it isn't counted. Every component that renders alone and takes a TelemetryName, apart from those in UsesOnly, counts
-// itself shown under it; one that renders only inside a parent is covered by its parent's tests.
+// it isn't counted. Every component that renders alone and takes a TelemetryName, apart from those in
+// NotShownAsRendered, counts itself shown under it; one that renders only inside a parent is covered by its
+// parent's tests.
 public class TelemetryContractTests : BunitContext
 {
     private const string Layout = "it only lays out other components, which count themselves";
@@ -48,9 +49,11 @@ public class TelemetryContractTests : BunitContext
         ["TbRoot"] = Plumbing, ["TbStyles"] = Plumbing, ["TbThemeHead"] = Plumbing,
     };
 
-    // Components rendered alone that take a TelemetryName but count only uses, with the reason.
-    private static readonly Dictionary<Type, string> UsesOnly = new()
+    // Components rendered alone that take a TelemetryName but don't count shown as they render, with the reason.
+    private static readonly Dictionary<Type, string> NotShownAsRendered = new()
     {
+        [typeof(TbBackToTop)] = "it counts shown once the page scrolls far enough to show it, which its script "
+            + "reports; TbBackToTopTests checks it",
         [typeof(TbMenuItem)] = "it renders hidden until its menu opens, which the menu counts",
         [typeof(TbMenuCheckboxItem)] = "it renders hidden until its menu opens, which the menu counts",
     };
@@ -58,7 +61,8 @@ public class TelemetryContractTests : BunitContext
     public TelemetryContractTests() => this.AddTrailblazor();
 
     public static TheoryData<Type> Named => new(ComponentContractTests.Components.Select(row => row.Data)
-        .Where(type => type.GetProperty(nameof(TbButton.TelemetryName)) is not null && !UsesOnly.ContainsKey(type)));
+        .Where(type => type.GetProperty(nameof(TbButton.TelemetryName)) is not null
+            && !NotShownAsRendered.ContainsKey(type)));
 
     [Fact]
     public void Components_ShouldEachTakeATelemetryNameOrAReason_WhenTheLibraryIsScanned()

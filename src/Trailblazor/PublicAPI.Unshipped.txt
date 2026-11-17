@@ -6640,3 +6640,21 @@ Trailblazor.TbMasonry.Gap.set -> void
 Trailblazor.TbMasonry.MinColumnWidth.get -> string!
 Trailblazor.TbMasonry.MinColumnWidth.set -> void
 Trailblazor.TbMasonry.TbMasonry() -> void
+Trailblazor.TbBackToTop
+Trailblazor.TbBackToTop.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbBackToTop.FocusTarget.get -> string!
+Trailblazor.TbBackToTop.FocusTarget.set -> void
+Trailblazor.TbBackToTop.Label.get -> string?
+Trailblazor.TbBackToTop.Label.set -> void
+Trailblazor.TbBackToTop.Position.get -> Trailblazor.FabPosition
+Trailblazor.TbBackToTop.Position.set -> void
+Trailblazor.TbBackToTop.ScrollContainer.get -> string?
+Trailblazor.TbBackToTop.ScrollContainer.set -> void
+Trailblazor.TbBackToTop.TbBackToTop() -> void
+Trailblazor.TbBackToTop.TelemetryName.get -> string?
+Trailblazor.TbBackToTop.TelemetryName.set -> void
+Trailblazor.TbBackToTop.Threshold.get -> int
+Trailblazor.TbBackToTop.Threshold.set -> void
+override Trailblazor.TbBackToTop.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+~override Trailblazor.TbBackToTop.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+const Trailblazor.TbStrings.BackToTopLabel = "BackToTop.Label" -> string!

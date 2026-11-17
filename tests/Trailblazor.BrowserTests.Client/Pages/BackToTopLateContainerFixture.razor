@@ -1,0 +1,18 @@
+@page "/back-to-top-late"
+
+@* The log that scrolls renders only after the button, as one that waits for its data would. *@
+<TbButton OnClick="() => _loaded = true">Load the log</TbButton>
+@if (_loaded)
+{
+    <div id="late-log" tabindex="0" role="region" aria-label="Late log" style="block-size: 12rem; overflow: auto">
+        @foreach (var line in Enumerable.Range(1, 60))
+        {
+            <TbText>Line @line</TbText>
+        }
+    </div>
+}
+<TbBackToTop ScrollContainer="#late-log" Threshold="100" />
+
+@code {
+    private bool _loaded;
+}

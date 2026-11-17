@@ -1735,6 +1735,75 @@ public static class ExampleCatalog
                     + "action with its own `TelemetryName` counts `trailblazor.control.used` each time it is chosen.",
             ],
         },
+        new("back-to-top", "Back to top", ExampleCategory.Actions,
+            "A button that shows once the page has scrolled down, and takes it back to the top.")
+        {
+            WhenToUse =
+            [
+                "Use it on long pages, such as an article, a log or a long list, where getting back to the top takes "
+                    + "a lot of scrolling.",
+            ],
+            WhenNotToUse =
+            [
+                "On a page that fits a screen or two, where it only gets in the way.",
+            ],
+            Related = ["floating-action-button", "table-of-contents"],
+            Pattern = new("button", "https://www.w3.org/WAI/ARIA/apg/patterns/button/"),
+            Sections =
+            [
+                new("basic", "Back to top", "The button shows once the page has scrolled down past `Threshold`, 400 "
+                    + "pixels by default, in the corner `Position` names. Pressing it scrolls back to the top and "
+                    + "moves focus to `FocusTarget`, so the next Tab starts there; for someone who asks for reduced "
+                    + "motion, it jumps there at once. For an element that scrolls on its own, such as this "
+                    + "example's log, give its selector as `ScrollContainer`.",
+                    typeof(BackToTopExample)),
+            ],
+            Api = [typeof(TbBackToTop), typeof(FabPosition)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Scrolls to the top and moves focus there."),
+            ],
+            Labeling =
+            [
+                "The button is named \"Back to top\", unless `Label` names it.",
+            ],
+            Accessibility =
+            [
+                "Until the page scrolls down, the button is hidden, so Tab and screen readers pass over it.",
+                "Pressing it moves focus to the top as well, by default to the page's `main` landmark, so keyboard and "
+                    + "screen reader users don't stay at the bottom while the page scrolls up.",
+            ],
+            AppDuties =
+            [
+                "Point `FocusTarget` at the page's title or first heading, if the page has no `main` landmark.",
+            ],
+            Modes = new(ModeSupport.None, ModeSupport.None),
+            BeforeInteractive =
+            [
+                "The button shows only once the page is interactive, because telling how far it has scrolled takes "
+                    + "a script.",
+            ],
+            Ready = new(".tb-back-to-top", "the button, once its script listens for scrolling"),
+            Target = new("button", "Back to top"),
+            Blocks = ["tb-back-to-top", "tb-fab"],
+            DataParts =
+            [
+                new("button", "The button, inside a root with `data-shown` while it shows."),
+            ],
+            TestingTips =
+            [
+                "In bUnit, `cut.Tb().BackToTop().ClickAsync()` presses it; it's there whether or not the page has "
+                    + "scrolled, since only a browser scrolls.",
+                "In Playwright, scroll the page first: `page.Tb().BackToTop().ClickAsync()` waits until it shows, "
+                    + "and `IsShownAsync()` says whether it does.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"article-top\"`, it counts `trailblazor.control.shown` the first "
+                    + "time it shows, once the page has scrolled down, and `trailblazor.control.used` each time it is "
+                    + "pressed.",
+            ],
+        },
         new("toggle-group", "Toggle group", ExampleCategory.Actions,
             "A row of toggle buttons where one, or any number, can be pressed.")
         {

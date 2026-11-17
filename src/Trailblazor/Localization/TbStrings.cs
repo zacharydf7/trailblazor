@@ -934,6 +934,9 @@ public static class TbStrings
     /// <summary>"{0} of {1}": shows which tour step shows; {0} is its number and {1} the number of steps.</summary>
     public const string TourPosition = "Tour.Position";
 
+    /// <summary>"Back to top": the name of the button that takes a scrolled page back to its top.</summary>
+    public const string BackToTopLabel = "BackToTop.Label";
+
     /// <summary>"Preview": names a markdown editor's Preview button and the preview it shows.</summary>
     public const string MarkdownEditorPreview = "MarkdownEditor.Preview";
 
@@ -1599,6 +1602,7 @@ public static class TbStrings
         [TourDone] = "Done",
         [TourSkip] = "Skip tour",
         [TourPosition] = "{0} of {1}",
+        [BackToTopLabel] = "Back to top",
         [ThemePicker] = "Theme",
         [ThemeLight] = "Light",
         [ThemeDark] = "Dark",

@@ -557,3 +557,6 @@ Trailblazor.Testing.TbTourDriver.SkipAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbTourDriver.Step.get -> int
 Trailblazor.Testing.TbTourDriver.Title.get -> string!
 Trailblazor.Testing.TrailblazorMarkup.Tour() -> Trailblazor.Testing.TbTourDriver!
+Trailblazor.Testing.TbBackToTopDriver
+Trailblazor.Testing.TbBackToTopDriver.ClickAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.BackToTop() -> Trailblazor.Testing.TbBackToTopDriver!
