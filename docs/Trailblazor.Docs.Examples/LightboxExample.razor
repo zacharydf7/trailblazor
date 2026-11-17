@@ -1,0 +1,41 @@
+<div style="display: flex; flex-wrap: wrap; gap: var(--tb-space-2)">
+    @for (var i = 0; i < Photos.Length; i++)
+    {
+        var index = i;
+        <TbButton Variant="Variant.Text" OnClick="() => Show(index)" Style="padding: 0; block-size: auto">
+            <TbImage Src="@Photos[index].Src" Alt="@Photos[index].Alt" Width="120" Height="80" Fit="ImageFit.Cover" />
+        </TbButton>
+    }
+</div>
+<TbLightbox Title="Trail photos" Images="Photos" @bind-Open="_open" @bind-Index="_index" />
+
+@code {
+    private static readonly LightboxImage[] Photos =
+    [
+        new(Scene(1200, 800, "#9cc9e8", "#4f7d5b", "#2f5d8a"), "Eagle Ridge above the lake at noon")
+        {
+            Caption = "Eagle Ridge, from the north shore",
+        },
+        new(Scene(1200, 800, "#f2b58a", "#6b5a7e", "#38446e"), "Cedar Flats at dusk"),
+        new(Scene(800, 1200, "#cfe3ef", "#5e7f62", "#3e6f8f"), "The falls on the Pine Hollow loop")
+        {
+            Caption = "Pine Hollow falls, a tall photo",
+        },
+    ];
+
+    private bool _open;
+    private int _index;
+
+    private void Show(int index) => (_index, _open) = (index, true);
+
+    // Drawn scenes stand in for photos, so the example needs no image files.
+    private static string Scene(int width, int height, string sky, string hills, string water) =>
+        "data:image/svg+xml," + Uri.EscapeDataString(
+            $"<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>"
+            + $"<rect width='{width}' height='{height}' fill='{sky}'/>"
+            + $"<circle cx='{width * 3 / 4}' cy='{height / 5}' r='{width / 16}' fill='#fff6d5'/>"
+            + $"<path d='M0 {height * 7 / 10} L{width * 3 / 10} {height * 35 / 100} "
+            + $"L{width * 55 / 100} {height * 6 / 10} L{width * 8 / 10} {height * 4 / 10} "
+            + $"L{width} {height * 65 / 100} V{height} H0Z' fill='{hills}'/>"
+            + $"<rect y='{height * 3 / 4}' width='{width}' height='{height / 4}' fill='{water}'/></svg>");
+}

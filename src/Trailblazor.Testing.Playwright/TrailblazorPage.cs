@@ -350,6 +350,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The dialog or drawer with this title, or the only open one when no title is given.</summary>
     public TbDialogLocator Dialog(string? title = null) => new(Scope.Document(scope), title);
 
+    /// <summary>The open <c>TbLightbox</c> with this title, or the only open one when no title is given.</summary>
+    public TbLightboxLocator Lightbox(string? title = null) => new(Scope.Document(scope), title);
+
     /// <summary>Waits for a <c>data-tb-interactive</c> mark. <c>TbRoot</c> renders one once its dialogs, toasts and
     /// announcements run interactively, which they do once the session that serves the page's interactive components
     /// starts, and a <c>TbInteractiveMark</c> renders one once its part of the page runs interactively. When

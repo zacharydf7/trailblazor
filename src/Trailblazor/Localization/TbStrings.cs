@@ -109,6 +109,39 @@ public static class TbStrings
     /// <summary>"Clear": names a cascader's clear button.</summary>
     public const string CascaderClear = "Cascader.Clear";
 
+    /// <summary>"Previous image": names a lightbox's previous button.</summary>
+    public const string LightboxPrevious = "Lightbox.Previous";
+
+    /// <summary>"Next image": names a lightbox's next button.</summary>
+    public const string LightboxNext = "Lightbox.Next";
+
+    /// <summary>"Zoom in": names a lightbox's zoom in button.</summary>
+    public const string LightboxZoomIn = "Lightbox.ZoomIn";
+
+    /// <summary>"Zoom out": names a lightbox's zoom out button.</summary>
+    public const string LightboxZoomOut = "Lightbox.ZoomOut";
+
+    /// <summary>"Fit to window": names a lightbox's button that undoes zoom and rotation.</summary>
+    public const string LightboxFit = "Lightbox.Fit";
+
+    /// <summary>"Rotate left": names a lightbox's button that turns the image a quarter turn counterclockwise.
+    /// </summary>
+    public const string LightboxRotateLeft = "Lightbox.RotateLeft";
+
+    /// <summary>"Rotate right": names a lightbox's button that turns the image a quarter turn clockwise.</summary>
+    public const string LightboxRotateRight = "Lightbox.RotateRight";
+
+    /// <summary>"{0} of {1}": shows which image a lightbox shows; {0} is its number and {1} the number of images.
+    /// </summary>
+    public const string LightboxPosition = "Lightbox.Position";
+
+    /// <summary>"{0}, {1} of {2}": read out when a lightbox shows another image; {0} is its alt text, {1} its number
+    /// and {2} the number of images.</summary>
+    public const string LightboxShown = "Lightbox.Shown";
+
+    /// <summary>"{0}%": shows a lightbox's zoom, where 100% fits the image to the window.</summary>
+    public const string LightboxZoom = "Lightbox.Zoom";
+
     /// <summary>"Navigation": names an app shell's menu button and titles its navigation drawer.</summary>
     public const string AppShellMenu = "AppShell.Menu";
 
@@ -1302,6 +1335,16 @@ public static class TbStrings
         [CascaderResults] = "Results: {0}",
         [CascaderNoResults] = "No matches",
         [CascaderClear] = "Clear",
+        [LightboxPrevious] = "Previous image",
+        [LightboxNext] = "Next image",
+        [LightboxZoomIn] = "Zoom in",
+        [LightboxZoomOut] = "Zoom out",
+        [LightboxFit] = "Fit to window",
+        [LightboxRotateLeft] = "Rotate left",
+        [LightboxRotateRight] = "Rotate right",
+        [LightboxPosition] = "{0} of {1}",
+        [LightboxShown] = "{0}, {1} of {2}",
+        [LightboxZoom] = "{0}%",
         [AppShellMenu] = "Navigation",
         [AppShellNavigation] = "Main",
         [AppShellSkipToContent] = "Skip to content",

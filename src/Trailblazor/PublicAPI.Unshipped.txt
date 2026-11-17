@@ -6243,3 +6243,80 @@ Trailblazor.TbMenubar.TbMenubar() -> void
 override Trailblazor.TbMenubar.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbMenubar.OnParametersSet() -> void
 ~override Trailblazor.TbMenubar.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.LightboxImage
+Trailblazor.LightboxImage.<Clone>$() -> Trailblazor.LightboxImage!
+Trailblazor.LightboxImage.Alt.get -> string!
+Trailblazor.LightboxImage.Alt.init -> void
+Trailblazor.LightboxImage.Caption.get -> string?
+Trailblazor.LightboxImage.Caption.init -> void
+Trailblazor.LightboxImage.Deconstruct(out string! Src, out string! Alt) -> void
+Trailblazor.LightboxImage.Equals(Trailblazor.LightboxImage? other) -> bool
+Trailblazor.LightboxImage.LightboxImage(string! Src, string! Alt) -> void
+Trailblazor.LightboxImage.Src.get -> string!
+Trailblazor.LightboxImage.Src.init -> void
+Trailblazor.LightboxLabels
+Trailblazor.LightboxLabels.<Clone>$() -> Trailblazor.LightboxLabels!
+Trailblazor.LightboxLabels.Equals(Trailblazor.LightboxLabels? other) -> bool
+Trailblazor.LightboxLabels.Fit.get -> string?
+Trailblazor.LightboxLabels.Fit.init -> void
+Trailblazor.LightboxLabels.LightboxLabels() -> void
+Trailblazor.LightboxLabels.Next.get -> string?
+Trailblazor.LightboxLabels.Next.init -> void
+Trailblazor.LightboxLabels.Position.get -> string?
+Trailblazor.LightboxLabels.Position.init -> void
+Trailblazor.LightboxLabels.Previous.get -> string?
+Trailblazor.LightboxLabels.Previous.init -> void
+Trailblazor.LightboxLabels.RotateLeft.get -> string?
+Trailblazor.LightboxLabels.RotateLeft.init -> void
+Trailblazor.LightboxLabels.RotateRight.get -> string?
+Trailblazor.LightboxLabels.RotateRight.init -> void
+Trailblazor.LightboxLabels.Shown.get -> string?
+Trailblazor.LightboxLabels.Shown.init -> void
+Trailblazor.LightboxLabels.Zoom.get -> string?
+Trailblazor.LightboxLabels.Zoom.init -> void
+Trailblazor.LightboxLabels.ZoomIn.get -> string?
+Trailblazor.LightboxLabels.ZoomIn.init -> void
+Trailblazor.LightboxLabels.ZoomOut.get -> string?
+Trailblazor.LightboxLabels.ZoomOut.init -> void
+Trailblazor.TbLightbox
+Trailblazor.TbLightbox.Images.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.LightboxImage!>!
+Trailblazor.TbLightbox.Images.set -> void
+Trailblazor.TbLightbox.Index.get -> int
+Trailblazor.TbLightbox.Index.set -> void
+Trailblazor.TbLightbox.IndexChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Trailblazor.TbLightbox.IndexChanged.set -> void
+Trailblazor.TbLightbox.Labels.get -> Trailblazor.LightboxLabels!
+Trailblazor.TbLightbox.Labels.set -> void
+Trailblazor.TbLightbox.Loop.get -> bool
+Trailblazor.TbLightbox.Loop.set -> void
+Trailblazor.TbLightbox.Open.get -> bool
+Trailblazor.TbLightbox.Open.set -> void
+Trailblazor.TbLightbox.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbLightbox.OpenChanged.set -> void
+Trailblazor.TbLightbox.TbLightbox() -> void
+Trailblazor.TbLightbox.TelemetryName.get -> string?
+Trailblazor.TbLightbox.TelemetryName.set -> void
+Trailblazor.TbLightbox.Title.get -> string!
+Trailblazor.TbLightbox.Title.set -> void
+const Trailblazor.TbStrings.LightboxFit = "Lightbox.Fit" -> string!
+const Trailblazor.TbStrings.LightboxNext = "Lightbox.Next" -> string!
+const Trailblazor.TbStrings.LightboxPosition = "Lightbox.Position" -> string!
+const Trailblazor.TbStrings.LightboxPrevious = "Lightbox.Previous" -> string!
+const Trailblazor.TbStrings.LightboxRotateLeft = "Lightbox.RotateLeft" -> string!
+const Trailblazor.TbStrings.LightboxRotateRight = "Lightbox.RotateRight" -> string!
+const Trailblazor.TbStrings.LightboxShown = "Lightbox.Shown" -> string!
+const Trailblazor.TbStrings.LightboxZoom = "Lightbox.Zoom" -> string!
+const Trailblazor.TbStrings.LightboxZoomIn = "Lightbox.ZoomIn" -> string!
+const Trailblazor.TbStrings.LightboxZoomOut = "Lightbox.ZoomOut" -> string!
+override Trailblazor.LightboxImage.Equals(object? obj) -> bool
+override Trailblazor.LightboxImage.GetHashCode() -> int
+override Trailblazor.LightboxImage.ToString() -> string!
+override Trailblazor.LightboxLabels.Equals(object? obj) -> bool
+override Trailblazor.LightboxLabels.GetHashCode() -> int
+override Trailblazor.LightboxLabels.ToString() -> string!
+override Trailblazor.TbLightbox.OnParametersSet() -> void
+static Trailblazor.LightboxImage.operator !=(Trailblazor.LightboxImage? left, Trailblazor.LightboxImage? right) -> bool
+static Trailblazor.LightboxImage.operator ==(Trailblazor.LightboxImage? left, Trailblazor.LightboxImage? right) -> bool
+static Trailblazor.LightboxLabels.operator !=(Trailblazor.LightboxLabels? left, Trailblazor.LightboxLabels? right) -> bool
+static Trailblazor.LightboxLabels.operator ==(Trailblazor.LightboxLabels? left, Trailblazor.LightboxLabels? right) -> bool
+~override Trailblazor.TbLightbox.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

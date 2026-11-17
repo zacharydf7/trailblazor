@@ -102,6 +102,7 @@ public static class AccessibilityStatusCatalog
         new("hotkeys", Tested, None, None),
         new("dialog", Tested, NotYet, Tested),
         new("drawer", Tested, NotYet, Tested),
+        new("lightbox", Tested, NotYet, Tested),
         new("focus-scope", Tested, None, None),
         new("popover", Tested, NotYet, None),
         new("popconfirm", Tested, NotYet, None),

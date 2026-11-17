@@ -88,7 +88,7 @@ public class DocsSearchTests
 
     [Theory]
     [InlineData("overlays", new[] { "Tooltip", "Menu", "Context menu", "Command palette", "Dialog", "Drawer",
-        "Focus scope", "Popover", "Popconfirm", "Overlay" })]
+        "Lightbox", "Focus scope", "Popover", "Popconfirm", "Overlay" })]
     [InlineData("guides",
         new[] { "Getting started", "Forms and validation", "Accessibility", "Theming", "Palettes", "Spacing",
             "Browser", "Announcements", "Rich text", "Icons", "Localization", "Right-to-left and culture", "Testing",

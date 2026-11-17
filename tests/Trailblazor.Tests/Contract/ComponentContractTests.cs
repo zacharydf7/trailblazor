@@ -54,6 +54,7 @@ public class ComponentContractTests : BunitContext
         [typeof(TbMultiToggleGroup<string>)] = (nameof(TbMultiToggleGroup<string>.AriaLabel), "Sample"),
         [typeof(TbDialog)] = (nameof(TbDialog.Open), true),
         [typeof(TbDrawer)] = (nameof(TbDrawer.Open), true),
+        [typeof(TbLightbox)] = (nameof(TbLightbox.Open), true),
         [typeof(TbCommandPalette<string>)] = (nameof(TbCommandPalette<string>.Open), true),
         [typeof(TbAvatar)] = (nameof(TbAvatar.Name), "Sample"),
         [typeof(TbKbd)] = (nameof(TbKbd.Keys), "Ctrl+K"),
@@ -287,6 +288,8 @@ public class ComponentContractTests : BunitContext
                 var type when type == typeof(IReadOnlyList<string>) => Array.Empty<string>(),
                 var type when type == typeof(IReadOnlyList<CascaderItem<string>>) =>
                     new[] { new CascaderItem<string>("Canada", "ca") { Children = [new("Ontario", "on")] } },
+                var type when type == typeof(IReadOnlyList<LightboxImage>) =>
+                    new[] { new LightboxImage("/a.png", "A") },
                 var type when type == typeof(IReadOnlyList<KanbanColumn<string>>) =>
                     new[] { new KanbanColumn<string>("todo", "To do", []) },
                 var type when type == typeof(IReadOnlyList<QueryField>) => new[] { new QueryField("Name", "Name",

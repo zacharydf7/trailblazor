@@ -521,3 +521,18 @@ Trailblazor.Testing.TbMenubarDriver
 Trailblazor.Testing.TbMenubarDriver.Menu(string! name) -> Trailblazor.Testing.TbMenuDriver!
 Trailblazor.Testing.TbMenubarDriver.Menus.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TrailblazorMarkup.Menubar(string? name = null) -> Trailblazor.Testing.TbMenubarDriver!
+Trailblazor.Testing.TbLightboxDriver
+Trailblazor.Testing.TbLightboxDriver.Alt.get -> string!
+Trailblazor.Testing.TbLightboxDriver.Caption.get -> string?
+Trailblazor.Testing.TbLightboxDriver.CloseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbLightboxDriver.FitAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbLightboxDriver.Index.get -> int
+Trailblazor.Testing.TbLightboxDriver.NextAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbLightboxDriver.PreviousAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbLightboxDriver.RotateLeftAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbLightboxDriver.RotateRightAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbLightboxDriver.Rotation.get -> int
+Trailblazor.Testing.TbLightboxDriver.Zoom.get -> double
+Trailblazor.Testing.TbLightboxDriver.ZoomInAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbLightboxDriver.ZoomOutAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Lightbox(string? title = null) -> Trailblazor.Testing.TbLightboxDriver!

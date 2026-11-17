@@ -51,7 +51,6 @@ public static class UpcomingCatalog
         new("In-place editor", ExampleCategory.Inputs, 196),
         new("Markdown editor", ExampleCategory.Inputs, 189),
         new("Mention input", ExampleCategory.Inputs, 190),
-        new("Image preview", ExampleCategory.Overlays, 188),
         new("Product tour", ExampleCategory.Overlays, 191),
         new("File manager", ExampleCategory.Navigation, 209),
     ];

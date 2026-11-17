@@ -554,3 +554,20 @@ Trailblazor.Testing.Playwright.TbMenubarLocator.Menubar.get -> Microsoft.Playwri
 Trailblazor.Testing.Playwright.TbMenubarLocator.MenusAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbMenubarLocator.TbMenubarLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Menubar(string? name = null) -> Trailblazor.Testing.Playwright.TbMenubarLocator!
+Trailblazor.Testing.Playwright.TbLightboxLocator
+Trailblazor.Testing.Playwright.TbLightboxLocator.AltAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbLightboxLocator.CloseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbLightboxLocator.FitAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbLightboxLocator.IndexAsync() -> System.Threading.Tasks.Task<int>!
+Trailblazor.Testing.Playwright.TbLightboxLocator.Lightbox.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbLightboxLocator.NextAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbLightboxLocator.PreviousAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbLightboxLocator.RotateLeftAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbLightboxLocator.RotateRightAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbLightboxLocator.RotationAsync() -> System.Threading.Tasks.Task<int>!
+Trailblazor.Testing.Playwright.TbLightboxLocator.TbLightboxLocator(Microsoft.Playwright.ILocator! scope, string? title) -> void
+Trailblazor.Testing.Playwright.TbLightboxLocator.ZoomAsync() -> System.Threading.Tasks.Task<double>!
+Trailblazor.Testing.Playwright.TbLightboxLocator.ZoomInAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbLightboxLocator.ZoomOutAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TrailblazorPage.Lightbox(string? title = null) -> Trailblazor.Testing.Playwright.TbLightboxLocator!
+Trailblazor.Testing.Playwright.TbLightboxLocator.CaptionAsync() -> System.Threading.Tasks.Task<string?>!

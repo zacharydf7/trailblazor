@@ -7978,6 +7978,111 @@ public static class ExampleCatalog
                     + "Its `trailblazor.component` is `TbDialog`.",
             ],
         },
+        new("lightbox", "Lightbox", ExampleCategory.Overlays,
+            "Shows images one at a time over the whole window, such as a gallery's photos at full size, with zoom, "
+                + "rotation and previous and next buttons.")
+        {
+            WhenToUse =
+            [
+                "Use it to let people look closely at images shown small on the page, such as a gallery's "
+                    + "thumbnails or an item's photos.",
+            ],
+            WhenNotToUse =
+            [
+                "For images that take turns on the page itself, use a [carousel](components/carousel).",
+                "For one image that fits the page, use an [image](components/image).",
+            ],
+            Related = ["image", "carousel", "dialog"],
+            Pattern = new("dialog (modal)", "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"),
+            Sections =
+            [
+                new("basic", "Lightbox", "`Images` takes `LightboxImage` records, each with its address, alt text and "
+                    + "an optional `Caption`. Set `@bind-Index` to the thumbnail's position and `@bind-Open` to true "
+                    + "to open it there. Its header holds the zoom and rotation buttons; previous and next sit over "
+                    + "the image, and wrap around unless `Loop` is off. A double click zooms to twice the fitted size "
+                    + "and back, a zoomed image pans by dragging, and on a touch screen a swipe moves between images.",
+                    typeof(LightboxExample)),
+            ],
+            Api = [typeof(TbLightbox), typeof(LightboxImage), typeof(LightboxLabels)],
+            Keyboard =
+            [
+                new(["Left", "Right"], "Shows the previous or next image.")
+                {
+                    When = "Except on a zoomed image, where they scroll it",
+                },
+                new(["+", "-"], "Zooms in or out a step, from the fitted size up to four times it."),
+                new(["0"], "Fits the image to the window again, undoing zoom and rotation."),
+                new(["R", "Shift+R"], "Turns the image a quarter turn clockwise or counterclockwise."),
+                new(["Tab", "Shift+Tab"], "Moves between the buttons, and to a zoomed image, which the arrow keys "
+                    + "then scroll."),
+                new(["Escape"], "Closes the lightbox, and focus goes back to what opened it."),
+            ],
+            Labeling =
+            [
+                "A modal `<dialog>` named by its `Title`. Each image keeps its alt text, and the area it sits in is "
+                    + "a `group` named by that alt text, which joins the tab order while the image is zoomed.",
+                "The buttons are named \"Previous image\", \"Next image\", \"Zoom in\", \"Zoom out\", \"Rotate "
+                    + "left\", \"Rotate right\" and \"Fit to window\", unless `Labels` names them.",
+            ],
+            Accessibility =
+            [
+                "Focus stays on the button that changed the image, so a polite live region reads out the new image's "
+                    + "alt text and position, such as \"Cedar Flats at dusk, 2 of 3\".",
+                "The letter and number keys act only while focus is in the lightbox, so they never fire while typing "
+                    + "elsewhere.",
+                "Buttons that can't act, such as Next on the last image without `Loop`, stay focusable and say they "
+                    + "are unavailable.",
+            ],
+            AppDuties =
+            [
+                "Give each image alt text that says what it shows; the lightbox throws on an image without it.",
+                "Name the thumbnail buttons that open it, for example by the image's alt text.",
+            ],
+            Modes = new(ModeSupport.None, ModeSupport.None),
+            BeforeInteractive =
+            [
+                "The lightbox opens only once the page is interactive, because opening it takes a script.",
+            ],
+            Target = new("dialog", "Trail photos") { OpenedBy = new("button", "Eagle Ridge above the lake at noon") },
+            Blocks = ["tb-lightbox", "tb-dialog"],
+            DataParts =
+            [
+                new("tools", "The zoom and rotation buttons in the header."),
+                new("zoom-in", "The button that zooms in."),
+                new("zoom-out", "The button that zooms out."),
+                new("zoom", "The zoom, as a percentage of the fitted size."),
+                new("rotate-left", "The button that turns the image counterclockwise."),
+                new("rotate-right", "The button that turns the image clockwise."),
+                new("fit", "The button that undoes zoom and rotation."),
+                new("viewer", "The area under the header, with the image, its buttons and caption."),
+                new("stage", "The area the image fits, which scrolls once it's zoomed, with `data-zoom` and "
+                    + "`data-turns`."),
+                new("frame", "Holds the shown image, with its position in `data-index`."),
+                new("image", "The shown image."),
+                new("previous", "The button that shows the previous image."),
+                new("next", "The button that shows the next image."),
+                new("footer", "The row under the image, with its caption and position."),
+                new("caption", "The shown image's caption."),
+                new("position", "Which image shows, such as \"2 of 3\"."),
+                new("status", "The live region that reads out each new image."),
+            ],
+            TestingTips =
+            [
+                "In Playwright, `page.Tb().Lightbox(\"Trail photos\")` from `Trailblazor.Testing.Playwright` finds the "
+                    + "open lightbox by its title: `NextAsync()`, `ZoomInAsync()` and `RotateRightAsync()` press its "
+                    + "buttons and wait for the change; `IndexAsync()`, `AltAsync()`, `ZoomAsync()` and "
+                    + "`RotationAsync()` read what it shows; and `CloseAsync()` closes it with Escape.",
+                "In bUnit, `cut.Tb().Lightbox(\"Trail photos\")` from `Trailblazor.Testing` does the same, with "
+                    + "`Index`, `Alt`, `Caption`, `Zoom` and `Rotation` as properties.",
+                "The images are sized to fit in the browser, so test the fit and the gestures in Playwright.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, it counts as a dialog does: `trailblazor.control.shown` each time it "
+                    + "opens, and `trailblazor.dialog.closed` and `trailblazor.dialog.duration` with how it closed. "
+                    + "Its `trailblazor.component` is `TbDialog`.",
+            ],
+        },
         new("focus-scope", "Focus scope", ExampleCategory.Overlays,
             "Manages focus for a custom overlay or panel: it moves focus in, can keep Tab inside, and gives focus "
                 + "back when it goes.")

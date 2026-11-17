@@ -90,6 +90,21 @@ internal static class BuiltInIcons
 
     public static Icon Plus { get; } = new("<path d=\"M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z\" />");
 
+    public static Icon ZoomIn { get; } = new("<path d=\"M10 3a7 7 0 1 0 4.2 12.6l5.1 5.1 1.4-1.4-5.1-5.1A7 7 0 0 0 "
+        + "10 3zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10zM9 7h2v2h2v2h-2v2H9v-2H7V9h2z\" />");
+
+    public static Icon ZoomOut { get; } = new("<path d=\"M10 3a7 7 0 1 0 4.2 12.6l5.1 5.1 1.4-1.4-5.1-5.1A7 7 0 0 0 "
+        + "10 3zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10zM7 9h6v2H7z\" />");
+
+    public static Icon RotateLeft { get; } =
+        new("<path d=\"M12 4a8 8 0 1 1-8 8h2a6 6 0 1 0 6-6v3L8 5l4-4z\" />");
+
+    public static Icon RotateRight { get; } =
+        new("<path d=\"M12 4a8 8 0 1 0 8 8h-2a6 6 0 1 1-6-6v3l4-4-4-4z\" />");
+
+    public static Icon Fit { get; } =
+        new("<path d=\"M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 0h2v6h-6v-2h4z\" />");
+
     public static Icon Menu { get; } = new("<path d=\"M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z\" />");
 
     public static Icon Star { get; } =

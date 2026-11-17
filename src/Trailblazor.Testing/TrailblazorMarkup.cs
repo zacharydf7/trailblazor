@@ -379,6 +379,9 @@ public sealed class TrailblazorMarkup
     /// host.</summary>
     public TbDialogDriver Dialog(string? title = null) => new(title, _findAll, _scripts);
 
+    /// <summary>The open <c>TbLightbox</c> with this title, or the only open one when no title is given.</summary>
+    public TbLightboxDriver Lightbox(string? title = null) => new(Dialog(title));
+
     /// <summary>The <c>TbTagInput</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbTagInputDriver TagInput(string label) =>
         new(() => Field(label, "input[data-part=input].tb-tag-input__input"));
@@ -3205,6 +3208,74 @@ public sealed class TbFileUploadDriver : TbFieldDriver
     }
 }
 
+/// <summary>An open <c>TbLightbox</c>, found by its title.</summary>
+public sealed class TbLightboxDriver
+{
+    private readonly TbDialogDriver _dialog;
+
+    internal TbLightboxDriver(TbDialogDriver dialog) => _dialog = dialog;
+
+    /// <summary>The shown image's position, from 0.</summary>
+    public int Index => int.Parse(Part("frame").GetAttribute("data-index")!, CultureInfo.InvariantCulture);
+
+    /// <summary>The shown image's alt text.</summary>
+    public string Alt => Part("image").GetAttribute("alt")!;
+
+    /// <summary>The shown image's caption, or null when it has none.</summary>
+    public string? Caption => Find().QuerySelector("[data-part=caption]")?.TextContent.Trim();
+
+    /// <summary>The zoom, as a multiple of the size that fits the image to the window: 1 until zoomed in.</summary>
+    public double Zoom => double.Parse(Part("stage").GetAttribute("data-zoom")!, CultureInfo.InvariantCulture);
+
+    /// <summary>How far the image is turned clockwise, in degrees: 0, 90, 180 or 270.</summary>
+    public int Rotation => 90 * int.Parse(Part("stage").GetAttribute("data-turns")!, CultureInfo.InvariantCulture);
+
+    /// <summary>Shows the next image, as pressing Next does. On the last image of a lightbox that doesn't loop, Next
+    /// is off, so this throws.</summary>
+    public Task NextAsync() => PressAsync("next");
+
+    /// <summary>Shows the previous image, as pressing Previous does. On the first image of a lightbox that doesn't
+    /// loop, Previous is off, so this throws.</summary>
+    public Task PreviousAsync() => PressAsync("previous");
+
+    /// <summary>Zooms in one step, as pressing Zoom in does. At the closest zoom it's off, so this throws.</summary>
+    public Task ZoomInAsync() => PressAsync("zoom-in");
+
+    /// <summary>Zooms out one step, as pressing Zoom out does. At the fitted size it's off, so this throws.</summary>
+    public Task ZoomOutAsync() => PressAsync("zoom-out");
+
+    /// <summary>Turns the image a quarter turn counterclockwise, as pressing Rotate left does.</summary>
+    public Task RotateLeftAsync() => PressAsync("rotate-left");
+
+    /// <summary>Turns the image a quarter turn clockwise, as pressing Rotate right does.</summary>
+    public Task RotateRightAsync() => PressAsync("rotate-right");
+
+    /// <summary>Undoes zoom and rotation, as pressing Fit to window does. With neither, it's off, so this throws.
+    /// </summary>
+    public Task FitAsync() => PressAsync("fit");
+
+    /// <summary>Closes the lightbox with Escape, as a keyboard user does, and waits for the app's <c>OpenChanged</c>
+    /// to finish.</summary>
+    public Task CloseAsync() => _dialog.CancelAsync();
+
+    private async Task PressAsync(string part)
+    {
+        var button = Part(part);
+        if (button.GetAttribute("aria-disabled") == "true" || button.HasAttribute("disabled"))
+        {
+            throw new InvalidOperationException($"The lightbox's {part} button is off right now, so it can't be pressed.");
+        }
+
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private IElement Part(string part) => Find().QuerySelector($"[data-part={part}]")
+        ?? throw new InvalidOperationException($"The lightbox has no {part}; it shows only one image, or none.");
+
+    private IElement Find() => _dialog.Find() is var dialog && dialog.ClassList.Contains("tb-lightbox") ? dialog
+        : throw new InvalidOperationException("The open dialog isn't a lightbox; give the lightbox's title.");
+}
+
 /// <summary>An open dialog, found by its title: a <c>TbDialog</c> or <c>TbDrawer</c>, or one from
 /// <c>IDialogService</c> such as a confirm.</summary>
 public sealed class TbDialogDriver
@@ -3303,7 +3374,7 @@ public sealed class TbDialogDriver
     private Task AnsweredAsync(DialogReference dialog, int answered) =>
         dialog.IsClosing ? _scripts.WaitForAnswerAsync(answered) : Task.CompletedTask;
 
-    private IElement Find()
+    internal IElement Find()
     {
         var dialogs = Matching();
         return dialogs.Count == 1 ? dialogs[0] : throw new InvalidOperationException(dialogs.Count == 0

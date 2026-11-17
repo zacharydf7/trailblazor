@@ -5220,6 +5220,133 @@
         min-block-size: 0;
     }
 
+    /* A lightbox's body is the stage its image sits on, with the previous and next buttons over it. */
+    .tb-lightbox > .tb-dialog__body {
+        display: flex;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .tb-lightbox__tools {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-lightbox__zoom {
+        min-inline-size: 3.5em;
+        font-size: var(--tb-font-size-sm);
+        font-variant-numeric: tabular-nums;
+        text-align: center;
+    }
+
+    .tb-lightbox__viewer {
+        position: relative;
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-block-size: 0;
+        background: var(--tb-lightbox-background, var(--tb-color-surface-sunken));
+    }
+
+    /* The stage is the size container the image fits; a zoomed image scrolls in it. A finger swipes between images
+       until the image is zoomed, and then scrolls it. */
+    .tb-lightbox__stage {
+        display: grid;
+        flex: 1 1 auto;
+        min-block-size: 0;
+        overflow: auto;
+        overscroll-behavior: contain;
+        container-type: size;
+        padding: var(--tb-space-4);
+        touch-action: pan-y pinch-zoom;
+    }
+
+    .tb-lightbox__stage[data-zoomed] {
+        cursor: grab;
+        touch-action: auto;
+    }
+
+    .tb-lightbox__stage[data-zoomed]:active {
+        cursor: grabbing;
+    }
+
+    /* Auto margins center the image while it fits, and keep all of it reachable once it overflows. */
+    .tb-lightbox__frame {
+        position: relative;
+        margin: auto;
+    }
+
+    /* Until the script has read the image's size, it fits the stage as it is. */
+    .tb-lightbox__image {
+        display: block;
+        max-width: 100cqw;
+        max-height: 100cqh;
+        rotate: var(--tb-lightbox-turn);
+    }
+
+    /* Once its size is known, the image fits the stage at its own shape, never past its own size, and is then scaled
+       by the zoom. A quarter turn swaps its sides, so its height fits the stage's width. */
+    .tb-lightbox__frame[data-measured] {
+        --tb-lightbox-fit: min(100cqw, 100cqh * var(--tb-lightbox-ratio), var(--tb-lightbox-natural-width));
+        --tb-lightbox-width: calc(var(--tb-lightbox-fit) * var(--tb-lightbox-zoom));
+        width: var(--tb-lightbox-width);
+        height: calc(var(--tb-lightbox-width) / var(--tb-lightbox-ratio));
+    }
+
+    .tb-lightbox__stage:is([data-turns="1"], [data-turns="3"]) > .tb-lightbox__frame[data-measured] {
+        --tb-lightbox-fit: min(100cqh, 100cqw * var(--tb-lightbox-ratio), var(--tb-lightbox-natural-width));
+        width: calc(var(--tb-lightbox-width) / var(--tb-lightbox-ratio));
+        height: var(--tb-lightbox-width);
+    }
+
+    .tb-lightbox__frame[data-measured] > .tb-lightbox__image {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: var(--tb-lightbox-width);
+        height: calc(var(--tb-lightbox-width) / var(--tb-lightbox-ratio));
+        max-width: none;
+        max-height: none;
+        translate: -50% -50%;
+    }
+
+    .tb-lightbox__previous,
+    .tb-lightbox__next {
+        position: absolute;
+        inset-block-start: 50%;
+        translate: 0 -50%;
+    }
+
+    .tb-lightbox__previous {
+        inset-inline-start: var(--tb-space-3);
+    }
+
+    .tb-lightbox__next {
+        inset-inline-end: var(--tb-space-3);
+    }
+
+    .tb-lightbox__footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: var(--tb-space-1) var(--tb-space-4);
+        padding: var(--tb-space-2) var(--tb-space-4);
+        border-block-start: 1px solid var(--tb-border-subtle);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-lightbox__caption,
+    .tb-lightbox__position {
+        margin: 0;
+    }
+
+    .tb-lightbox__position {
+        margin-inline-start: auto;
+        color: var(--tb-color-text-muted);
+        font-variant-numeric: tabular-nums;
+    }
+
     /* Each group of hotkeys is a table: the keys in a narrow column, and what they do beside them. */
     .tb-hotkeys-help__group {
         inline-size: 100%;

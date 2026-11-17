@@ -1,0 +1,66 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@using System.Globalization
+
+@* lightbox.js, which the library loads on every page, handles the keys, dragging and swiping, and sizes each image to
+   fit once it loads. *@
+<TbDialog @attributes="AdditionalAttributes" Open="Open" OpenChanged="OpenChanged" Title="@Title"
+          Options="LightboxOptions" Style="@Style" Class="@ClassNames.Join("tb-lightbox", Class)">
+    <TbDialogHeaderActions>
+        <div class="tb-lightbox__tools" data-part="tools">
+            <TbIconButton Icon="BuiltInIcons.ZoomOut" AriaLabel="@Text(Labels.ZoomOut, TbStrings.LightboxZoomOut)"
+                          Variant="Variant.Text" Size="Size.Small" ShowTooltip Disabled="@(_zoom == 0)"
+                          FocusableWhenDisabled OnClick="() => ZoomBy(-1)" data-part="zoom-out" />
+            <output class="tb-lightbox__zoom" data-part="zoom">@ZoomText</output>
+            <TbIconButton Icon="BuiltInIcons.ZoomIn" AriaLabel="@Text(Labels.ZoomIn, TbStrings.LightboxZoomIn)"
+                          Variant="Variant.Text" Size="Size.Small" ShowTooltip
+                          Disabled="@(_zoom == Zooms.Length - 1)" FocusableWhenDisabled OnClick="() => ZoomBy(1)"
+                          data-part="zoom-in" />
+            <TbIconButton Icon="BuiltInIcons.RotateLeft"
+                          AriaLabel="@Text(Labels.RotateLeft, TbStrings.LightboxRotateLeft)" Variant="Variant.Text"
+                          Size="Size.Small" ShowTooltip OnClick="() => Turn(-1)" data-part="rotate-left" />
+            <TbIconButton Icon="BuiltInIcons.RotateRight"
+                          AriaLabel="@Text(Labels.RotateRight, TbStrings.LightboxRotateRight)" Variant="Variant.Text"
+                          Size="Size.Small" ShowTooltip OnClick="() => Turn(1)" data-part="rotate-right" />
+            <TbIconButton Icon="BuiltInIcons.Fit" AriaLabel="@Text(Labels.Fit, TbStrings.LightboxFit)"
+                          Variant="Variant.Text" Size="Size.Small" ShowTooltip
+                          Disabled="@(_zoom == 0 && _turns == 0)" FocusableWhenDisabled OnClick="ResetView"
+                          data-part="fit" />
+        </div>
+    </TbDialogHeaderActions>
+    @if (Shown is { } image)
+    {
+        <div class="tb-lightbox__viewer" data-part="viewer">
+            @* A zoomed image scrolls, so the stage is a tab stop for the arrow keys to pan it. Zoomed out, it leaves
+               the tab order but stays focusable, so focus already on it isn't lost. *@
+            <div class="tb-lightbox__stage" data-part="stage" style="@StageStyle"
+                 data-zoom="@Zoom.ToString(CultureInfo.InvariantCulture)" data-turns="@_turns"
+                 data-zoomed="@(_zoom > 0 ? "" : null)" tabindex="@(_zoom > 0 ? "0" : "-1")" role="group"
+                 aria-label="@image.Alt" @ondblclick="ToggleZoom">
+                <div @key="Current" class="tb-lightbox__frame" data-part="frame" data-index="@Current">
+                    <img class="tb-lightbox__image" data-part="image" src="@image.Src" alt="@image.Alt"
+                         draggable="false" />
+                </div>
+            </div>
+            @if (Images.Count > 1)
+            {
+                <TbIconButton Icon="PreviousIcon"
+                              AriaLabel="@Text(Labels.Previous, TbStrings.LightboxPrevious)" Variant="Variant.Filled"
+                              Disabled="@(!CanGoBack)" FocusableWhenDisabled OnClick="() => GoToAsync(Current - 1)"
+                              Class="tb-lightbox__previous" data-part="previous" />
+                <TbIconButton Icon="NextIcon" AriaLabel="@Text(Labels.Next, TbStrings.LightboxNext)"
+                              Variant="Variant.Filled" Disabled="@(!CanGoOn)" FocusableWhenDisabled
+                              OnClick="() => GoToAsync(Current + 1)" Class="tb-lightbox__next" data-part="next" />
+            }
+            <div class="tb-lightbox__footer" data-part="footer">
+                @if (image.Caption is not null)
+                {
+                    <p class="tb-lightbox__caption" data-part="caption">@image.Caption</p>
+                }
+                <p class="tb-lightbox__position" data-part="position" aria-hidden="true">@Position</p>
+            </div>
+            @* Screen readers hear which image came in, since focus stays on the button that brought it. *@
+            <div class="tb-visually-hidden" aria-live="polite" data-part="status">@ShownText</div>
+        </div>
+    }
+</TbDialog>
