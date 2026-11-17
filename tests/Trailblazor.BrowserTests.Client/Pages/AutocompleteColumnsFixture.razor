@@ -1,0 +1,17 @@
+@page "/autocomplete-columns"
+
+@* More campsites than fit in the list's height, so it scrolls under its titles, with notes too long for a phone. *@
+<TbAutocomplete TValue="Campsite" Label="Campsite" Items="Campsites" ItemText="site => site.Name" Columns="Columns"
+                Style="max-inline-size: 24rem" />
+
+@code {
+    private static readonly Campsite[] Campsites =
+        [.. Enumerable.Range(1, 30).Select(number =>
+            new Campsite($"Site {number}", number % 3 == 0 ? "Lake" : "Ridge",
+                "Bear box, a water spigot and a view of the far ridge at dawn"))];
+
+    private static readonly AutocompleteColumn<Campsite>[] Columns =
+        [new("Site", site => site.Name), new("Area", site => site.Area), new("Notes", site => site.Notes)];
+
+    private sealed record Campsite(string Name, string Area, string Notes);
+}

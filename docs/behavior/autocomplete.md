@@ -49,6 +49,8 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - [x] Focus stays in the field while the list is open, and `aria-activedescendant` names the active option. `AutocompleteTests.Autocomplete_ShouldSearchAndChooseWithTheKeys_WhenTheUserTypes`
 - [x] Typing again clears the active option. `autocomplete.js`
 - [x] Leaving the field puts back the chosen value's text, unless it's `FreeText`. `AutocompleteTests.Autocomplete_ShouldCloseAndPutBackTheChosenText_WhenEscapeIsPressedAndTheFieldIsLeft`
+- [x] With `Columns`, the active suggestion is named by each column's title and value, so the titles are heard with each suggestion. `TbAutocompleteColumnsTests.Columns_ShouldNameEachSuggestionByItsTitlesAndValues_WhenGiven`
+- [x] With `Columns`, the titles stay in view as the list scrolls, without covering the active suggestion. `AutocompleteColumnsTests.Columns_ShouldKeepTheActiveSuggestionClearOfTheTitles_WhenTheListWrapsToTheTop`
 - [x] Clearing moves focus to the field. `TbAutocompleteTests.Click_ShouldClearTheFieldAndFocusIt_WhenTheClearButtonIsClicked`
 - [x] A disabled or read-only field doesn't open the list. `autocomplete.js`
 - [x] With `OpenOnFocus`, focus coming into the field opens the list with suggestions for its text. `AutocompleteTests.OpenOnFocus_ShouldShowTheSuggestions_WhenTheFieldGetsFocus`

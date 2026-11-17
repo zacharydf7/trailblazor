@@ -1,0 +1,24 @@
+<TbStack Gap="2" Style="max-inline-size: 24rem">
+    <TbAutocomplete TValue="Trail" @bind-Value="_trail" Label="Trail" Items="Trails" ItemText="trail => trail.Name"
+                    Columns="Columns" />
+    <output>Trail: @(_trail?.Name ?? "none")</output>
+</TbStack>
+
+@code {
+    private static readonly Trail[] Trails =
+    [
+        new("Ridge loop", 7, "North ridge"), new("River walk", 3, "River valley"),
+        new("Summit trail", 11, "High peaks"), new("Lakeshore path", 5, "Lake country"),
+    ];
+
+    private static readonly AutocompleteColumn<Trail>[] Columns =
+    [
+        new("Trail", trail => trail.Name),
+        new("Length", trail => $"{trail.Miles} mi") { Width = "5rem" },
+        new("Region", trail => trail.Region),
+    ];
+
+    private Trail? _trail;
+
+    private sealed record Trail(string Name, int Miles, string Region);
+}

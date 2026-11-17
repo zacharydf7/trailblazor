@@ -88,6 +88,7 @@ they run by version. The docs site's Upgrading page is built from both.
 #### 2026-11-17
 
 - New `TbKanban`: a region of columns (`role="group"`, `data-part="column"` with `data-key` and `data-full`), each with a title, a count and a sortable list of its cards; the columns' lists share one group, so cards move between columns; a move into a full column is refused and read out
+- A `TbAutocomplete` with `Columns` shows its suggestions as cells (`data-part="cell"`) under a row of titles (`data-part="columns"`, each `data-part="column-title"`, hidden from screen readers), and names each option by its columns' titles and values
 - New `TbQrCode` and `TbBarcode` (Code 128 and EAN-13): SVG images (`role="img"`) named by their value, which `data-value` holds; a QR code's modules are `data-part="modules"`, and a barcode's image is `data-part="bars"` with its printed value in `data-part="text"`
 - New `TbAiPrompt`: a region named by its visible label, with a prompt box, suggestions (`data-part="suggestion"`), a generate button that turns into Stop, and responses newest first (`data-part="output"`, `data-status` of generating, done, stopped or failed); a response's start, end, stop or failure is read out through the announcer
 

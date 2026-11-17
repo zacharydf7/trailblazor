@@ -6313,6 +6313,43 @@
         display: none;
     }
 
+    /* The titles stick to the top, so scroll padding keeps them from covering the active suggestion. */
+    .tb-autocomplete__listbox[data-columns] {
+        inline-size: max-content;
+        min-inline-size: var(--tb-anchor-width, 0px);
+        max-inline-size: calc(100vw - 2 * var(--tb-space-2));
+        padding-block-start: 0;
+        scroll-padding-block-start: var(--tb-autocomplete-titles-height);
+        --tb-autocomplete-titles-height: 2rem;
+    }
+
+    .tb-autocomplete__columns,
+    .tb-autocomplete__listbox[data-columns] > .tb-select__option {
+        display: grid;
+        grid-template-columns: var(--tb-autocomplete-columns);
+        column-gap: var(--tb-space-3);
+    }
+
+    .tb-autocomplete__columns {
+        position: sticky;
+        inset-block-start: 0;
+        box-sizing: border-box;
+        align-items: center;
+        block-size: var(--tb-autocomplete-titles-height);
+        padding-inline: var(--tb-space-3);
+        border-block-end: 1px solid var(--tb-border-subtle);
+        background: var(--tb-color-surface-raised);
+        font-size: var(--tb-font-size-xs);
+        font-weight: 600;
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-autocomplete__cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .tb-select__option {
         display: flex;
         align-items: center;

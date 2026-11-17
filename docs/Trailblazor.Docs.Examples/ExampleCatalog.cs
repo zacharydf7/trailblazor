@@ -5232,6 +5232,12 @@ public static class ExampleCatalog
                     + "usable, and typing again searches again. Type a campsite's name, then something that matches "
                     + "nothing. To see a failure, check the box and type again.",
                     typeof(AutocompleteStatesOfSearchExample)),
+                new("columns", "Suggestions in columns", "`Columns` shows each suggestion as a row of columns under "
+                    + "their titles, like a small grid. Each column is an `AutocompleteColumn` record with a `Title`, a "
+                    + "`Value` function that gives its text for a suggestion, and an optional `Width`. Screen readers "
+                    + "hear each suggestion as each column's title and value, such as \"Trail: Ridge loop, Length: 7 "
+                    + "mi, Region: North ridge\". `ItemText` still gives the text put in the field.",
+                    typeof(AutocompleteColumnsExample)),
                 new("limits", "Minimum characters and maximum items", "`MinCharacters` sets how much someone must type "
                     + "before suggestions show, and `MaxItems` caps how many the list shows. It defaults to 50; set it to "
                     + "`null` to show every match.",
@@ -5270,7 +5276,8 @@ public static class ExampleCatalog
                     + "button's name, the searching, no-results and failure messages, the prompt to type, and the "
                     + "number of suggestions.", typeof(AutocompleteLabelsExample)),
             ],
-            Api = [typeof(TbAutocomplete<>), typeof(AutocompleteLabels), typeof(FieldClasses)],
+            Api = [typeof(TbAutocomplete<>), typeof(AutocompleteColumn<>), typeof(AutocompleteLabels),
+                typeof(FieldClasses)],
             Keyboard =
             [
                 new(["Down"], "Opens the list. If it already holds suggestions, also moves to the first.")
@@ -5327,7 +5334,10 @@ public static class ExampleCatalog
                 new("input", "The combobox the user types in."),
                 new("clear", "The button that clears the text."),
                 new("listbox", "The list of suggestions."),
-                new("option", "One suggestion."),
+                new("option", "One suggestion. With `Columns`, it's named by each column's title and value."),
+                new("columns", "The columns' titles above the suggestions, hidden from screen readers."),
+                new("column-title", "One column's title."),
+                new("cell", "One column of a suggestion."),
                 new("status", "The message shown while suggestions load, when none match, when a search fails, or "
                     + "before someone has typed enough. It's an option that can't be chosen."),
             ],

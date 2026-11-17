@@ -52,7 +52,6 @@ public static class UpcomingCatalog
         new("In-place editor", ExampleCategory.Inputs, 196),
         new("Markdown editor", ExampleCategory.Inputs, 189),
         new("Mention input", ExampleCategory.Inputs, 190),
-        new("Multi-column combobox", ExampleCategory.Inputs, 185),
         new("Image preview", ExampleCategory.Overlays, 188),
         new("Product tour", ExampleCategory.Overlays, 191),
         new("File manager", ExampleCategory.Navigation, 209),

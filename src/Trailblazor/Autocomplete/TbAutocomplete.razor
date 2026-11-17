@@ -8,8 +8,18 @@
     {
         <div @ref="_listbox" id="@ListboxId" popover="manual" role="listbox" data-part="listbox"
              aria-labelledby="@(ShownLabel is null ? null : LabelId)" aria-busy="@(_searching ? "true" : null)"
-             data-results-for="@_resultsFor" data-handled="@_handled"
+             data-results-for="@_resultsFor" data-handled="@_handled" data-columns="@(ShowsColumns ? "" : null)"
              class="tb-select__listbox tb-autocomplete__listbox">
+            @if (ShowsColumns)
+            {
+                @* Sighted users see the titles here; screen readers hear them in each suggestion's name. *@
+                <div aria-hidden="true" data-part="columns" style="@ColumnsStyle" class="tb-autocomplete__columns">
+                    @foreach (var column in Columns!)
+                    {
+                        <span data-part="column-title" class="tb-autocomplete__cell">@column.Title</span>
+                    }
+                </div>
+            }
             @* A listbox must hold options, so a message that stands in for them is one that can't be chosen. *@
             @if (_results.Count == 0)
             {
@@ -25,8 +35,16 @@
             {
                 var item = _results[index];
                 <div id="@($"{ListboxId}-{index}")" role="option" data-part="option" class="tb-select__option"
-                     aria-selected="@(IsChosen(item) ? "true" : "false")" @onclick="_choose.For(item)">
-                    @if (ItemTemplate is null)
+                     aria-selected="@(IsChosen(item) ? "true" : "false")" @onclick="_choose.For(item)"
+                     aria-label="@(ShowsColumns ? ColumnsLabel(item) : null)" style="@ColumnsStyle">
+                    @if (ShowsColumns)
+                    {
+                        @foreach (var column in Columns!)
+                        {
+                            <span data-part="cell" class="tb-autocomplete__cell">@column.Value(item)</span>
+                        }
+                    }
+                    else if (ItemTemplate is null)
                     {
                         @TextOf(item)
                     }

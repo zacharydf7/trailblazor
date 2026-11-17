@@ -61,6 +61,21 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter]
     public RenderFragment<TValue>? ItemTemplate { get; set; }
 
+    /// <summary>Shows each suggestion as a row of columns under their titles, like a small grid, such as a trail's
+    /// name, length and region. Screen readers hear each suggestion as each column's title and value. When
+    /// <see cref="ItemTemplate"/> is also set, it draws the suggestions and the columns aren't shown.</summary>
+    [Parameter]
+    public IReadOnlyList<AutocompleteColumn<TValue>>? Columns { get; set; }
+
+    private bool ShowsColumns => Columns is { Count: > 0 } && ItemTemplate is null;
+
+    private string? ColumnsStyle => ShowsColumns
+        ? "--tb-autocomplete-columns: " + string.Join(" ", Columns!.Select(column => column.Width ?? "minmax(0, 1fr)"))
+        : null;
+
+    private string ColumnsLabel(TValue item) =>
+        string.Join(", ", Columns!.Select(column => $"{column.Title}: {column.Value(item)}"));
+
     /// <summary>Makes what the user typed the value when it isn't a suggestion, read as the value's type. Without
     /// it, leaving the field puts back the chosen value's text.</summary>
     [Parameter]
