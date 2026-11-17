@@ -6498,3 +6498,74 @@ Trailblazor.TbWatermark.ImageWidth.set -> void
 Trailblazor.TbWatermark.TelemetryName.get -> string?
 Trailblazor.TbWatermark.TelemetryName.set -> void
 override Trailblazor.TbWatermark.OnAfterRender(bool firstRender) -> void
+Trailblazor.TbTour
+Trailblazor.TbTour.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbTour.Labels.get -> Trailblazor.TourLabels!
+Trailblazor.TbTour.Labels.set -> void
+Trailblazor.TbTour.OnFinished.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.TourEnd>
+Trailblazor.TbTour.OnFinished.set -> void
+Trailblazor.TbTour.Open.get -> bool
+Trailblazor.TbTour.Open.set -> void
+Trailblazor.TbTour.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbTour.OpenChanged.set -> void
+Trailblazor.TbTour.Step.get -> int
+Trailblazor.TbTour.Step.set -> void
+Trailblazor.TbTour.StepChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Trailblazor.TbTour.StepChanged.set -> void
+Trailblazor.TbTour.Steps.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.TourStep!>!
+Trailblazor.TbTour.Steps.set -> void
+Trailblazor.TbTour.TbTour() -> void
+Trailblazor.TourEnd
+Trailblazor.TourEnd.Completed = 0 -> Trailblazor.TourEnd
+Trailblazor.TourEnd.Skipped = 1 -> Trailblazor.TourEnd
+Trailblazor.TourLabels
+Trailblazor.TourLabels.<Clone>$() -> Trailblazor.TourLabels!
+Trailblazor.TourLabels.Back.get -> string?
+Trailblazor.TourLabels.Back.init -> void
+Trailblazor.TourLabels.Done.get -> string?
+Trailblazor.TourLabels.Done.init -> void
+Trailblazor.TourLabels.Equals(Trailblazor.TourLabels? other) -> bool
+Trailblazor.TourLabels.Next.get -> string?
+Trailblazor.TourLabels.Next.init -> void
+Trailblazor.TourLabels.Position.get -> string?
+Trailblazor.TourLabels.Position.init -> void
+Trailblazor.TourLabels.Skip.get -> string?
+Trailblazor.TourLabels.Skip.init -> void
+Trailblazor.TourLabels.TourLabels() -> void
+Trailblazor.TourStep
+Trailblazor.TourStep.<Clone>$() -> Trailblazor.TourStep!
+Trailblazor.TourStep.Align.get -> Trailblazor.PlacementAlign
+Trailblazor.TourStep.Align.init -> void
+Trailblazor.TourStep.Body.get -> string?
+Trailblazor.TourStep.Body.init -> void
+Trailblazor.TourStep.Content.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TourStep.Content.init -> void
+Trailblazor.TourStep.Deconstruct(out string! Target, out string! Title) -> void
+Trailblazor.TourStep.Equals(Trailblazor.TourStep? other) -> bool
+Trailblazor.TourStep.Placement.get -> Trailblazor.Placement
+Trailblazor.TourStep.Placement.init -> void
+Trailblazor.TourStep.Target.get -> string!
+Trailblazor.TourStep.Target.init -> void
+Trailblazor.TourStep.Title.get -> string!
+Trailblazor.TourStep.Title.init -> void
+Trailblazor.TourStep.TourStep(string! Target, string! Title) -> void
+const Trailblazor.TbStrings.TourBack = "Tour.Back" -> string!
+const Trailblazor.TbStrings.TourDone = "Tour.Done" -> string!
+const Trailblazor.TbStrings.TourNext = "Tour.Next" -> string!
+const Trailblazor.TbStrings.TourPosition = "Tour.Position" -> string!
+const Trailblazor.TbStrings.TourSkip = "Tour.Skip" -> string!
+override Trailblazor.TbTour.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbTour.OnParametersSet() -> void
+override Trailblazor.TourLabels.Equals(object? obj) -> bool
+override Trailblazor.TourLabels.GetHashCode() -> int
+override Trailblazor.TourLabels.ToString() -> string!
+override Trailblazor.TourStep.Equals(object? obj) -> bool
+override Trailblazor.TourStep.GetHashCode() -> int
+override Trailblazor.TourStep.ToString() -> string!
+static Trailblazor.TourLabels.operator !=(Trailblazor.TourLabels? left, Trailblazor.TourLabels? right) -> bool
+static Trailblazor.TourLabels.operator ==(Trailblazor.TourLabels? left, Trailblazor.TourLabels? right) -> bool
+static Trailblazor.TourStep.operator !=(Trailblazor.TourStep? left, Trailblazor.TourStep? right) -> bool
+static Trailblazor.TourStep.operator ==(Trailblazor.TourStep? left, Trailblazor.TourStep? right) -> bool
+~override Trailblazor.TbTour.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbTour.TelemetryName.get -> string?
+Trailblazor.TbTour.TelemetryName.set -> void

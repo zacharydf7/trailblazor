@@ -477,6 +477,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// the app draws itself, as <c>page.Locator("#notes")</c>.</summary>
     public TbRichTextEditorLocator RichTextEditor(ILocator input) => new(scope, input);
 
+    /// <summary>The <c>TbTour</c> on the page; a page shows one tour at a time.</summary>
+    public TbTourLocator Tour() => new(Scope.Document(scope));
+
     /// <summary>The <c>TbMarkdownEditor</c> with this label.</summary>
     public TbMarkdownEditorLocator MarkdownEditor(string label) =>
         new(scope, scope.GetByLabel(FieldLabel.Matching(label)));

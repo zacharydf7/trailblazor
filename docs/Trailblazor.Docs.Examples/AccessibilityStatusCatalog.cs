@@ -109,6 +109,7 @@ public static class AccessibilityStatusCatalog
         new("focus-scope", Tested, None, None),
         new("popover", Tested, NotYet, None),
         new("popconfirm", Tested, NotYet, None),
+        new("tour", Tested, NotYet, Tested),
         new("overlay", Tested, NotYet, Tested),
         new("tabs", Tested, Tested, NotYet),
         new("accordion", Tested, NotYet, Tested),

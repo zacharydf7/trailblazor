@@ -48,7 +48,6 @@ public static class UpcomingCatalog
         new("Smart paste", ExampleCategory.Actions, 198),
         new("Speech-to-text button", ExampleCategory.Actions, 197),
         new("In-place editor", ExampleCategory.Inputs, 196),
-        new("Product tour", ExampleCategory.Overlays, 191),
         new("File manager", ExampleCategory.Navigation, 209),
     ];
 

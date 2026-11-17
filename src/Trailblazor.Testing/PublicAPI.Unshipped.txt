@@ -549,3 +549,11 @@ Trailblazor.Testing.TbMentionInputDriver.Suggestions.get -> System.Collections.G
 Trailblazor.Testing.TbMentionInputDriver.Text.get -> string?
 Trailblazor.Testing.TbMentionInputDriver.TypeAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.MentionInput(string! label) -> Trailblazor.Testing.TbMentionInputDriver!
+Trailblazor.Testing.TbTourDriver
+Trailblazor.Testing.TbTourDriver.BackAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTourDriver.IsOpen.get -> bool
+Trailblazor.Testing.TbTourDriver.NextAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTourDriver.SkipAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbTourDriver.Step.get -> int
+Trailblazor.Testing.TbTourDriver.Title.get -> string!
+Trailblazor.Testing.TrailblazorMarkup.Tour() -> Trailblazor.Testing.TbTourDriver!

@@ -919,6 +919,21 @@ public static class TbStrings
     /// <summary>"Open link": the link dialog's link to the URL, which opens in a new tab.</summary>
     public const string RichTextEditorOpenLink = "RichTextEditor.OpenLink";
 
+    /// <summary>"Next": a tour step's button to the next step.</summary>
+    public const string TourNext = "Tour.Next";
+
+    /// <summary>"Back": a tour step's button to the step before.</summary>
+    public const string TourBack = "Tour.Back";
+
+    /// <summary>"Done": the last tour step's button, which ends the tour.</summary>
+    public const string TourDone = "Tour.Done";
+
+    /// <summary>"Skip tour": a tour step's button that ends the tour early.</summary>
+    public const string TourSkip = "Tour.Skip";
+
+    /// <summary>"{0} of {1}": shows which tour step shows; {0} is its number and {1} the number of steps.</summary>
+    public const string TourPosition = "Tour.Position";
+
     /// <summary>"Preview": names a markdown editor's Preview button and the preview it shows.</summary>
     public const string MarkdownEditorPreview = "MarkdownEditor.Preview";
 
@@ -1579,6 +1594,11 @@ public static class TbStrings
         [RichTextEditorRemoveLink] = "Remove link",
         [RichTextEditorOpenLink] = "Open link",
         [MarkdownEditorPreview] = "Preview",
+        [TourNext] = "Next",
+        [TourBack] = "Back",
+        [TourDone] = "Done",
+        [TourSkip] = "Skip tour",
+        [TourPosition] = "{0} of {1}",
         [ThemePicker] = "Theme",
         [ThemeLight] = "Light",
         [ThemeDark] = "Dark",

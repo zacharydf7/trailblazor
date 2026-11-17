@@ -1,0 +1,28 @@
+<TbStack Gap="3">
+    <TbToolbar AriaLabel="Trail tools">
+        <TbButton id="tour-new-trail" Variant="Variant.Filled">New trail</TbButton>
+        <TbTextField TValue="string" id="tour-search" AriaLabel="Search trails" Placeholder="Search trails" />
+    </TbToolbar>
+    <TbSurface id="tour-map" Outlined Style="padding: var(--tb-space-6)">Map of your trails</TbSurface>
+    <div>
+        <TbButton OnClick="() => _open = true">Take the tour</TbButton>
+    </div>
+    <output>@_result</output>
+</TbStack>
+<TbTour Steps="Steps" @bind-Open="_open" @bind-Step="_step" OnFinished="Finished" />
+
+@code {
+    private static readonly TourStep[] Steps =
+    [
+        new("#tour-new-trail", "Add a trail") { Body = "Start here to map a new trail, point by point." },
+        new("#tour-search", "Find trails") { Body = "Search by name, region or length." },
+        new("#tour-map", "See the map") { Body = "Every trail you add shows on the map.", Placement = Placement.Top },
+    ];
+
+    private bool _open;
+    private int _step;
+    private string _result = "Not taken yet";
+
+    // An app would remember this, so the tour doesn't show again.
+    private void Finished(TourEnd end) => (_result, _step) = (end == TourEnd.Completed ? "Completed" : "Skipped", 0);
+}

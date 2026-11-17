@@ -413,6 +413,9 @@ public sealed class TrailblazorMarkup
     public TbRichTextEditorDriver RichTextEditor(string label) =>
         new(() => Field(label, "[role=textbox][contenteditable]"));
 
+    /// <summary>The <c>TbTour</c> on the page; a page shows one tour at a time.</summary>
+    public TbTourDriver Tour() => new(() => _findAll(".tb-tour"));
+
     /// <summary>The <c>TbMarkdownEditor</c> with this label, or with this <c>AriaLabel</c> when it has no label.
     /// </summary>
     public TbMarkdownEditorDriver MarkdownEditor(string label) =>
@@ -3646,6 +3649,44 @@ public sealed class TbRichTextEditorDriver : TbFieldDriver
 
         await editor.TriggerEventAsync("ontbrichtextchange", new RichTextChangeEventArgs { Html = html });
     }
+}
+
+/// <summary>The <c>TbTour</c> on the page.</summary>
+public sealed class TbTourDriver
+{
+    private readonly Func<IReadOnlyList<IElement>> _find;
+
+    internal TbTourDriver(Func<IReadOnlyList<IElement>> find) => _find = find;
+
+    /// <summary>Whether the tour shows.</summary>
+    public bool IsOpen => _find().Count > 0;
+
+    /// <summary>The shown step's position, from 0.</summary>
+    public int Step => int.Parse(Tour().GetAttribute("data-step")!, CultureInfo.InvariantCulture);
+
+    /// <summary>The shown step's title.</summary>
+    public string Title => Tour().QuerySelector("[data-part=title]")!.TextContent.Trim();
+
+    /// <summary>Goes to the next step, as pressing Next does, or ends the tour as completed on the last step, as
+    /// pressing Done does.</summary>
+    public Task NextAsync() => PressAsync("next");
+
+    /// <summary>Goes back a step, as pressing Back does. The first step has no Back button, so this throws there.
+    /// </summary>
+    public Task BackAsync() => PressAsync("back");
+
+    /// <summary>Ends the tour as skipped, as pressing Skip tour does.</summary>
+    public Task SkipAsync() => PressAsync("skip");
+
+    private async Task PressAsync(string part)
+    {
+        var button = Tour().QuerySelector($"[data-part={part}]")
+            ?? throw new InvalidOperationException($"The tour's step has no {part} button.");
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private IElement Tour() => _find() is [var only] ? only
+        : throw new InvalidOperationException(_find().Count == 0 ? "No tour shows." : "More than one tour shows.");
 }
 
 /// <summary>A <c>TbMarkdownEditor</c>, found by its label.</summary>

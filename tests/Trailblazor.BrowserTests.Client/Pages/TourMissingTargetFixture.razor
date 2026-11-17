@@ -1,0 +1,16 @@
+@page "/tour-missing-target"
+
+@* The first step's selector isn't valid and the second's target isn't on the page, so both show in the middle of the
+   window. *@
+<TbButton OnClick="() => _open = true">Start</TbButton>
+<TbTour Steps="Steps" @bind-Open="_open" />
+
+@code {
+    private static readonly TourStep[] Steps =
+    [
+        new("#1st-step", "Not a selector") { Body = "Still shows." },
+        new("#nowhere", "Nothing to point at") { Body = "Still shows." },
+    ];
+
+    private bool _open;
+}

@@ -8595,6 +8595,93 @@ public static class ExampleCatalog
                     + "each answer.",
             ],
         },
+        new("tour", "Product tour", ExampleCategory.Overlays,
+            "Walks people through the parts of a page, one highlighted step at a time, with a way to skip.")
+        {
+            WhenToUse =
+            [
+                "Use it to introduce a page someone sees for the first time, or a feature that moved, in a few short "
+                    + "steps they can skip.",
+            ],
+            WhenNotToUse =
+            [
+                "For help someone looks for when they need it, put it beside the control, such as a "
+                    + "[tooltip](components/tooltip) or a [popover](components/popover).",
+                "For a task with steps that each need input, use a [stepper](components/stepper).",
+            ],
+            Related = ["popover", "dialog", "stepper"],
+            Pattern = new("dialog (modal)", "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"),
+            Sections =
+            [
+                new("basic", "Product tour", "`Steps` takes `TourStep` records, each with a CSS selector for its "
+                    + "`Target`, a `Title`, and a `Body` or richer `Content`. Setting `Open` to true starts the tour, "
+                    + "and with `@bind-Open` it turns false again when the tour ends; `@bind-Step` follows the step "
+                    + "shown. Each step is placed by its target, on its `Placement` side, while the rest of the page "
+                    + "is dimmed around it. `OnFinished` says whether the tour was completed or skipped, so the app "
+                    + "can remember not to show it again.",
+                    typeof(TourExample)),
+            ],
+            Api = [typeof(TbTour), typeof(TourStep), typeof(TourEnd), typeof(TourLabels)],
+            Keyboard =
+            [
+                new(["Tab", "Shift+Tab"], "Moves between the step's buttons, and stays in the step."),
+                new(["Enter", "Space"], "Presses the button with focus: Next, Back, Done or Skip tour."),
+                new(["Escape"], "Skips the tour, and focus goes back to where it was when the tour started."),
+            ],
+            Labeling =
+            [
+                "Each step is a modal `dialog` named by its title and described by its body. The buttons are named "
+                    + "\"Next\", \"Back\", \"Done\" and \"Skip tour\", unless `Labels` names them.",
+            ],
+            Accessibility =
+            [
+                "Each new step gets focus, so screen readers read its title and body, and focus stays in it until the "
+                    + "tour ends.",
+                "The page behind the tour is inert while it shows, so it can't be clicked and screen readers can't "
+                    + "reach it.",
+                "For someone who asks for reduced motion, the highlight moves to each target at once.",
+                "A step whose target isn't on the page, or whose selector isn't valid, shows in the middle of the "
+                    + "window.",
+            ],
+            AppDuties =
+            [
+                "Keep each step short, and point each step at a selector that stays stable, such as an id.",
+                "Remember when someone has finished or skipped the tour, through `OnFinished`, so it doesn't show "
+                    + "again uninvited.",
+            ],
+            Modes = new(ModeSupport.None, ModeSupport.None),
+            BeforeInteractive =
+            [
+                "The tour shows only once the page is interactive, because placing its steps takes a script.",
+            ],
+            Ready = new(".tb-tour", "the tour, while it shows") { OpenedBy = new("button", "Take the tour") },
+            Target = new("dialog", "Add a trail") { OpenedBy = new("button", "Take the tour") },
+            Blocks = ["tb-tour"],
+            DataParts =
+            [
+                new("shade", "The dimmed page, with a hole around the step's target."),
+                new("step", "The step's dialog, with its target's selector in `data-target`."),
+                new("title", "The step's title."),
+                new("body", "The step's text."),
+                new("footer", "The step's position and buttons."),
+                new("position", "Which step shows, such as \"2 of 3\"."),
+                new("back", "The button to the step before."),
+                new("next", "The button to the next step, or Done on the last."),
+                new("skip", "The button that ends the tour early."),
+            ],
+            TestingTips =
+            [
+                "In bUnit, `cut.Tb().Tour()` finds the tour: `NextAsync()`, `BackAsync()` and `SkipAsync()` press its "
+                    + "buttons, and `Step`, `Title` and `IsOpen` read it.",
+                "In Playwright, `page.Tb().Tour()` does the same, and waits for each step to show.",
+                "Test what your app does with `OnFinished`, such as not showing the tour again.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, it counts `trailblazor.control.shown` as it first shows, and "
+                    + "`trailblazor.control.used` with the action `complete` or `skip` as it ends.",
+            ],
+        },
         new("overlay", "Overlay", ExampleCategory.Overlays,
             "A scrim over the page or over one region, which blocks clicks behind it and can hold a message or a "
                 + "spinner in its center.")

@@ -1,0 +1,241 @@
+@namespace Trailblazor
+@using System.Globalization
+@using Microsoft.Extensions.Options
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+@inject ITbLocalizer Localizer
+@inject IServiceProvider Services
+@inject IOptions<TrailblazorOptions> Settings
+
+@if (Open && Shown is { } step)
+{
+    @* The tour covers the page and takes its clicks, and the page behind it is inert until the tour ends; the shade
+       only dims the page. *@
+    <div @ref="_root" @attributes="AdditionalAttributes" style="@Style" data-step="@Current"
+         data-ready="@(_handle is null ? null : "")" class="@ClassNames.Join("tb-tour", Class)">
+        <div class="tb-tour__shade" data-part="shade" aria-hidden="true"></div>
+        <div @key="Current" role="dialog" aria-modal="true" aria-labelledby="@TitleId"
+             aria-describedby="@(step.Body is null && step.Content is null ? null : BodyId)" tabindex="-1"
+             data-part="step" data-target="@step.Target" data-side="@step.Placement" data-align="@step.Align"
+             class="tb-tour__step">
+            <h2 id="@TitleId" data-part="title" class="tb-tour__title">@step.Title</h2>
+            @if (step.Content is not null || step.Body is not null)
+            {
+                <div id="@BodyId" data-part="body" class="tb-tour__body">@(step.Content ?? (RenderFragment)(body =>
+                    body.AddContent(0, step.Body)))</div>
+            }
+            <div class="tb-tour__footer" data-part="footer">
+                <span data-part="position" class="tb-tour__position">@Position</span>
+                <TbButton Variant="Variant.Text" OnClick="() => EndAsync(TourEnd.Skipped)" data-part="skip">
+                    @(Labels.Skip ?? Localizer[TbStrings.TourSkip])
+                </TbButton>
+                @if (Current > 0)
+                {
+                    <TbButton Variant="Variant.Outlined" OnClick="() => GoToAsync(Current - 1)" data-part="back">
+                        @(Labels.Back ?? Localizer[TbStrings.TourBack])
+                    </TbButton>
+                }
+                <TbButton Variant="Variant.Filled" OnClick="NextAsync" data-part="next"
+                          data-last="@(Last ? "" : null)">
+                    @(Last ? Labels.Done ?? Localizer[TbStrings.TourDone] : Labels.Next ?? Localizer[TbStrings.TourNext])
+                </TbButton>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private readonly string _id = $"tb-tour-{Guid.NewGuid():N}";
+    private ElementReference _root;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<TourEvents>? _events;
+    private int _current;
+    private int _stepGiven;
+    private bool _wasOpen;
+    private bool _starting;
+    // The step the script last showed, so each new one is shown once it renders.
+    private int? _placed;
+    private bool _disposed;
+
+    /// <summary>The steps, in order.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<TourStep> Steps { get; set; } = [];
+
+    /// <summary>Whether the tour shows. Bind it with <c>@bind-Open</c>: it turns false when the tour ends.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised with false when the tour ends.</summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>The shown step's position in <see cref="Steps"/>, from 0. Bind it with <c>@bind-Step</c>.</summary>
+    [Parameter]
+    public int Step { get; set; }
+
+    /// <summary>Raised when another step shows.</summary>
+    [Parameter]
+    public EventCallback<int> StepChanged { get; set; }
+
+    /// <summary>Raised when the tour ends, with whether it was completed or skipped, so an app can remember not to
+    /// show it again.</summary>
+    [Parameter]
+    public EventCallback<TourEnd> OnFinished { get; set; }
+
+    /// <summary>The words the tour's buttons show.</summary>
+    [Parameter]
+    public TourLabels Labels { get; set; } = new();
+
+    /// <summary>A label the tour's use is counted under, such as <c>"first-run"</c>, through the <c>Trailblazor</c>
+    /// meter: shown as it first shows, and used with how it ended. It names the tour, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    private int Current => Steps.Count == 0 ? 0 : Math.Clamp(_current, 0, Steps.Count - 1);
+
+    private TourStep? Shown => Steps.Count == 0 ? null : Steps[Current];
+
+    private bool Last => Current == Steps.Count - 1;
+
+    private string TitleId => $"{_id}-title";
+
+    private string BodyId => $"{_id}-body";
+
+    private string Position => string.Format(CultureInfo.CurrentCulture,
+        Labels.Position ?? Localizer[TbStrings.TourPosition], Current + 1, Steps.Count);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Steps.Any(step => string.IsNullOrWhiteSpace(step.Title)))
+        {
+            throw new InvalidOperationException($"Each {nameof(TourStep)} in a {nameof(TbTour)} needs a "
+                + $"{nameof(TourStep.Title)}.");
+        }
+
+        // A new Step from the parent, or opening again, shows that step.
+        if (Step != _stepGiven || (Open && !_wasOpen))
+        {
+            _current = Step;
+        }
+
+        _stepGiven = Step;
+        _wasOpen = Open;
+    }
+
+    private async Task GoToAsync(int index)
+    {
+        _current = index;
+        await StepChanged.InvokeAsync(index);
+    }
+
+    private Task NextAsync() => Last ? EndAsync(TourEnd.Completed) : GoToAsync(Current + 1);
+
+    private async Task EndAsync(TourEnd end)
+    {
+        if (!Open)
+        {
+            return;
+        }
+
+        Open = false;
+        Telemetry.Used(TelemetryName, end == TourEnd.Completed ? "complete" : "skip");
+        await OpenChanged.InvokeAsync(false);
+        await OnFinished.InvokeAsync(end);
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (!Open || Shown is null)
+            {
+                await CloseScriptAsync();
+                return;
+            }
+
+            if (_handle is null && !_starting)
+            {
+                _starting = true;
+                try
+                {
+                    _module ??= await Modules.ImportAsync("./_content/Trailblazor/tour.js");
+                    if (_disposed || !Open)
+                    {
+                        return;
+                    }
+
+                    _events ??= DotNetObjectReference.Create(new TourEvents(() => EndAsync(TourEnd.Skipped)));
+                    var root = _root;
+                    var handle = await _module.InvokeAsync<IJSObjectReference?>("createTour", root, _events,
+                        Settings.Value.Dialogs.OutsidePopups);
+                    // A script started for a tour that closed, or reopened on a new element, is thrown away.
+                    if (_disposed || !Open || !root.Equals(_root))
+                    {
+                        if (handle is not null)
+                        {
+                            await handle.DisposeHandleAsync();
+                        }
+
+                        if (_disposed || !Open)
+                        {
+                            return;
+                        }
+                    }
+                    else if (handle is null)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        _handle = handle;
+                        _placed = null;
+                        Telemetry.Rendered(TelemetryName);
+                    }
+                }
+                finally
+                {
+                    _starting = false;
+                }
+
+                StateHasChanged();
+            }
+
+            if (_handle is not null && _placed != Current)
+            {
+                _placed = Current;
+                await _handle.InvokeVoidAsync("show");
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the tour went with it.
+        }
+    }
+
+    // Focus goes back to where it was when the tour started, as the script's focus scope ends.
+    private async Task CloseScriptAsync()
+    {
+        if (_handle is not null)
+        {
+            var handle = _handle;
+            _handle = null;
+            await handle.DisposeHandleAsync();
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        await CloseScriptAsync();
+        _events?.Dispose();
+    }
+}

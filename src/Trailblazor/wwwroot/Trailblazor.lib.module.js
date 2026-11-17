@@ -38,6 +38,7 @@ import './dialog.js';
 import './field.js';
 import './inert.js';
 import './option-filter.js';
+import './overlay.js';
 import './shortcuts.js';
 import './typeahead.js';
 import './unnamed-options.js';

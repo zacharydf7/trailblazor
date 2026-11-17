@@ -592,3 +592,14 @@ Trailblazor.Testing.Playwright.TbMentionInputLocator.TextAsync() -> System.Threa
 Trailblazor.Testing.Playwright.TbMentionInputLocator.TypeAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TrailblazorPage.MentionInput(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbMentionInputLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.MentionInput(string! label) -> Trailblazor.Testing.Playwright.TbMentionInputLocator!
+Trailblazor.Testing.Playwright.TbTourLocator
+Trailblazor.Testing.Playwright.TbTourLocator.BackAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTourLocator.IsOpenAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbTourLocator.NextAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTourLocator.SkipAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbTourLocator.StepAsync() -> System.Threading.Tasks.Task<int>!
+Trailblazor.Testing.Playwright.TbTourLocator.StepDialog.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbTourLocator.TbTourLocator(Microsoft.Playwright.ILocator! scope) -> void
+Trailblazor.Testing.Playwright.TbTourLocator.TitleAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbTourLocator.Tour.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.Tour() -> Trailblazor.Testing.Playwright.TbTourLocator!
