@@ -367,6 +367,61 @@ public static class ExampleCatalog
             ],
             TestingTip = "Keys have no role of their own; find them by their text, as `GetByText(\"Ctrl\")`.",
         },
+        new("qr-code", "QR code and barcode", ExampleCategory.Content,
+            "Codes a phone or a scanner reads: a QR code for a link or text, and a barcode for a ticket or product "
+                + "number.")
+        {
+            WhenToUse =
+            [
+                "Use a QR code to pass a link or a short text from a screen or a printout to a phone, such as the "
+                    + "trail map's page on a trailhead sign.",
+                "Use a barcode where a scanner reads it, such as a permit number at a gate or a product's EAN-13 "
+                    + "number.",
+            ],
+            WhenNotToUse =
+            [
+                "On a page people are already reading, don't make a code the only way to a link: show the link too.",
+            ],
+            Related = ["image", "link"],
+            Sections =
+            [
+                new("qr-code", "QR code", "`Value` is the text or link the code holds. `ErrorCorrection` sets how much "
+                    + "of the code can be covered or scratched and still scan: `Medium` by default, `High` for a "
+                    + "printout that gets handled. Each module is 4 pixels unless `Size` sets the width and height. "
+                    + "A value too long for the code throws, so check one from users or data with `TbQrCode.CanEncode` "
+                    + "first.", typeof(QrCodeExample)),
+                new("barcode", "Barcode", "`Format` is `Code128`, the default, for printable ASCII text, or `Ean13` "
+                    + "for a 13-digit product number: give 12 digits and the check digit is added, or all 13 and it's "
+                    + "checked. `ShowText` prints the value under the bars. Each module is 2 pixels wide unless "
+                    + "`Width` sets the width, and `Height` sets the bars' height. A value the format can't hold "
+                    + "throws, so check one from users or data with `TbBarcode.CanEncode` first.",
+                    typeof(BarcodeExample)),
+            ],
+            Api = [typeof(TbQrCode), typeof(TbBarcode)],
+            Accessibility =
+            [
+                "Each code is an image named by its value, so screen readers read the link or number. `AriaLabel` "
+                    + "names it instead, such as \"Link to the trail map\".",
+                "A barcode's printed value is hidden from screen readers, since the image's name already reads it.",
+                "Codes stay dark on light in dark mode and in forced-colors mode, such as Windows high contrast, "
+                    + "since many scanners can't read a code reversed.",
+            ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
+            BeforeInteractive =
+            [
+                PlainHtml,
+            ],
+            Target = null,
+            Blocks = ["tb-qr-code", "tb-barcode"],
+            DataParts =
+            [
+                new("modules", "A QR code's dark modules, drawn as one path."),
+                new("bars", "A barcode's image."),
+                new("text", "The value printed under a barcode's bars."),
+            ],
+            TestingTip = "Find a code by its role and name, as `GetByRole(AriaRole.Img, new() { Name = \"PERMIT-1042\" "
+                + "})`, and read what it holds from its `data-value`.",
+        },
         new("avatar", "Avatar", ExampleCategory.Content,
             "A small picture of a person or a team: their photo, their initials, or an icon.")
         {

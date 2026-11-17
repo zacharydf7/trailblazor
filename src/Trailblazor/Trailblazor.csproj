@@ -31,6 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Trailblazor.Tests" />
     <!-- So a test's dialog can find its own content among others of its type. -->
     <InternalsVisibleTo Include="Trailblazor.Testing" />

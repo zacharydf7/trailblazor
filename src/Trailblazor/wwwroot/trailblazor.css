@@ -1833,6 +1833,50 @@
         display: inline;
     }
 
+    /* Dark marks on light, in every theme and in forced colors, since many scanners can't read a code reversed. */
+    .tb-qr-code,
+    .tb-barcode {
+        forced-color-adjust: none;
+    }
+
+    .tb-qr-code {
+        display: block;
+        block-size: auto;
+        aspect-ratio: 1;
+    }
+
+    .tb-qr-code__background {
+        fill: var(--tb-qr-code-background, white);
+    }
+
+    .tb-qr-code__modules {
+        fill: var(--tb-qr-code-color, black);
+    }
+
+    .tb-barcode {
+        display: inline-flex;
+        flex-direction: column;
+        background: var(--tb-barcode-background, white);
+        color: var(--tb-barcode-color, black);
+    }
+
+    .tb-barcode__bars {
+        display: block;
+        inline-size: 100%;
+    }
+
+    .tb-barcode__marks {
+        fill: currentColor;
+    }
+
+    .tb-barcode__text {
+        padding-block-end: 0.25em;
+        font-family: var(--tb-font-family-mono);
+        font-size: 0.875em;
+        letter-spacing: 0.1em;
+        text-align: center;
+    }
+
     /* An empty state sits centered in the space it stands in for, with a muted icon above its title. */
     .tb-empty-state {
         --tb-empty-state-icon-size: 3rem;

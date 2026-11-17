@@ -57,6 +57,8 @@ public class ComponentContractTests : BunitContext
         [typeof(TbCommandPalette<string>)] = (nameof(TbCommandPalette<string>.Open), true),
         [typeof(TbAvatar)] = (nameof(TbAvatar.Name), "Sample"),
         [typeof(TbKbd)] = (nameof(TbKbd.Keys), "Ctrl+K"),
+        [typeof(TbQrCode)] = (nameof(TbQrCode.Value), "Sample"),
+        [typeof(TbBarcode)] = (nameof(TbBarcode.Value), "Sample"),
         [typeof(TbHotkey)] = (nameof(TbHotkey.AllowCharacterKey), true),
         [typeof(TbPropertyGrid<string>)] = (nameof(TbPropertyGrid<string>.Fields), Array.Empty<PropertyGridField>()),
         [typeof(TbVirtualList<string>)] = (nameof(TbVirtualList<string>.Items), Array.Empty<string>()),

@@ -5957,3 +5957,41 @@ static Trailblazor.ChatSend.operator ==(Trailblazor.ChatSend? left, Trailblazor.
 ~override Trailblazor.TbChat.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 Trailblazor.TbChat.TimeZone.get -> System.TimeZoneInfo?
 Trailblazor.TbChat.TimeZone.set -> void
+Trailblazor.BarcodeFormat
+Trailblazor.BarcodeFormat.Code128 = 0 -> Trailblazor.BarcodeFormat
+Trailblazor.BarcodeFormat.Ean13 = 1 -> Trailblazor.BarcodeFormat
+Trailblazor.QrErrorCorrection
+Trailblazor.QrErrorCorrection.High = 3 -> Trailblazor.QrErrorCorrection
+Trailblazor.QrErrorCorrection.Low = 0 -> Trailblazor.QrErrorCorrection
+Trailblazor.QrErrorCorrection.Medium = 1 -> Trailblazor.QrErrorCorrection
+Trailblazor.QrErrorCorrection.Quartile = 2 -> Trailblazor.QrErrorCorrection
+Trailblazor.TbBarcode
+Trailblazor.TbBarcode.AriaLabel.get -> string?
+Trailblazor.TbBarcode.AriaLabel.set -> void
+Trailblazor.TbBarcode.Format.get -> Trailblazor.BarcodeFormat
+Trailblazor.TbBarcode.Format.set -> void
+Trailblazor.TbBarcode.Height.get -> string!
+Trailblazor.TbBarcode.Height.set -> void
+Trailblazor.TbBarcode.ShowText.get -> bool
+Trailblazor.TbBarcode.ShowText.set -> void
+Trailblazor.TbBarcode.TbBarcode() -> void
+Trailblazor.TbBarcode.Value.get -> string!
+Trailblazor.TbBarcode.Value.set -> void
+Trailblazor.TbBarcode.Width.get -> string?
+Trailblazor.TbBarcode.Width.set -> void
+Trailblazor.TbQrCode
+Trailblazor.TbQrCode.AriaLabel.get -> string?
+Trailblazor.TbQrCode.AriaLabel.set -> void
+Trailblazor.TbQrCode.ErrorCorrection.get -> Trailblazor.QrErrorCorrection
+Trailblazor.TbQrCode.ErrorCorrection.set -> void
+Trailblazor.TbQrCode.Size.get -> string?
+Trailblazor.TbQrCode.Size.set -> void
+Trailblazor.TbQrCode.TbQrCode() -> void
+Trailblazor.TbQrCode.Value.get -> string!
+Trailblazor.TbQrCode.Value.set -> void
+override Trailblazor.TbBarcode.OnParametersSet() -> void
+override Trailblazor.TbQrCode.OnParametersSet() -> void
+~override Trailblazor.TbBarcode.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbQrCode.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+static Trailblazor.TbBarcode.CanEncode(string! value, Trailblazor.BarcodeFormat format = Trailblazor.BarcodeFormat.Code128) -> bool
+static Trailblazor.TbQrCode.CanEncode(string! value, Trailblazor.QrErrorCorrection errorCorrection = Trailblazor.QrErrorCorrection.Medium) -> bool

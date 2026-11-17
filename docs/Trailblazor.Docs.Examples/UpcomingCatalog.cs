@@ -41,7 +41,6 @@ public static class UpcomingCatalog
         new("Maps", ExampleCategory.Content, 208),
         new("PDF viewer", ExampleCategory.Content, 205),
         new("Pivot grid", ExampleCategory.Content, 202),
-        new("QR code and barcode", ExampleCategory.Content, 183),
         new("Scheduler", ExampleCategory.Content, 201),
         new("Spreadsheet", ExampleCategory.Content, 206),
         new("Text highlighter", ExampleCategory.Content, 195),

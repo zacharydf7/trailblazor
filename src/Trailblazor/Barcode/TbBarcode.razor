@@ -1,0 +1,15 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* A picture named by what it holds, with the value printed under the bars unless ShowText is off. *@
+<div @attributes="AdditionalAttributes" style="@Styles.Join($"inline-size: {Width ?? _width}", Style)"
+     class="@ClassNames.Join("tb-barcode", Class)">
+    <svg role="img" aria-label="@(AriaLabel ?? _text)" data-value="@_text" viewBox="@_viewBox" data-part="bars"
+         shape-rendering="crispEdges" preserveAspectRatio="none" style="block-size: @Height" class="tb-barcode__bars">
+        <path d="@_path" class="tb-barcode__marks" />
+    </svg>
+    @if (ShowText)
+    {
+        <div data-part="text" aria-hidden="true" class="tb-barcode__text">@_text</div>
+    }
+</div>

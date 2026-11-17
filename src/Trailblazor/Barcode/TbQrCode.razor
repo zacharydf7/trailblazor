@@ -1,0 +1,10 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* A picture named by what it holds; the light quiet zone around the modules is part of the code. *@
+<svg @attributes="AdditionalAttributes" role="img" aria-label="@(AriaLabel ?? Value)" viewBox="@_viewBox"
+     data-value="@Value" shape-rendering="crispEdges" style="@Styles.Join($"inline-size: {Size ?? _size}", Style)"
+     class="@ClassNames.Join("tb-qr-code", Class)">
+    <rect x="0" y="0" width="100%" height="100%" class="tb-qr-code__background" />
+    <path data-part="modules" d="@_path" class="tb-qr-code__modules" />
+</svg>

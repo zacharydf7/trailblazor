@@ -85,6 +85,10 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Markup and behavior
 
+#### 2026-11-17
+
+- New `TbQrCode` and `TbBarcode` (Code 128 and EAN-13): SVG images (`role="img"`) named by their value, which `data-value` holds; a QR code's modules are `data-part="modules"`, and a barcode's image is `data-part="bars"` with its printed value in `data-part="text"`
+
 #### 2026-11-16
 
 - New `TbChat`: a `feed` of `article` messages (`data-part="message"`, `data-own` on the user's own), who is typing, attachments, replies that stream in and a composer; new messages from others are read out through the announcer
