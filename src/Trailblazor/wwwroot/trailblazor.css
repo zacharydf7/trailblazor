@@ -2358,6 +2358,58 @@
         display: none;
     }
 
+    /* The value reads as plain text beside its label until it's pressed, and shows it can be pressed on hover. */
+    .tb-in-place-editor {
+        display: grid;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-in-place-editor__label {
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-in-place-editor__display {
+        justify-self: start;
+        margin-inline: calc(-1 * var(--tb-space-2));
+        padding: var(--tb-space-1) var(--tb-space-2);
+        border: 1px solid transparent;
+        border-radius: var(--tb-radius-sm);
+        background: none;
+        color: inherit;
+        font: inherit;
+        text-align: start;
+        cursor: pointer;
+    }
+
+    .tb-in-place-editor__display:hover:not(:disabled) {
+        background: var(--tb-color-hover);
+    }
+
+    .tb-in-place-editor__display:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-in-place-editor__display:disabled {
+        cursor: default;
+    }
+
+    .tb-in-place-editor__value--empty {
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-in-place-editor__editor {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-in-place-editor__actions {
+        display: flex;
+        gap: var(--tb-space-1);
+    }
+
     .tb-back-to-top > .tb-fab {
         transition: background-color var(--tb-motion-duration-fast) var(--tb-motion-easing-standard),
             box-shadow var(--tb-motion-duration-fast) var(--tb-motion-easing-standard),

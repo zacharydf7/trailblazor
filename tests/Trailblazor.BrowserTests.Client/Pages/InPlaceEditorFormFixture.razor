@@ -1,0 +1,16 @@
+@page "/in-place-editor-form"
+
+@* An in-place editor inside a form, whose Enter must save the edit, not submit the form. *@
+<form @onsubmit="() => _submits++">
+    <TbInPlaceEditor Label="Trail name" @bind-Value="_name">
+        <Editor>
+            <TbTextField TValue="string" @bind-Value="context.Draft" AriaLabel="Trail name" />
+        </Editor>
+    </TbInPlaceEditor>
+</form>
+<output data-testid="submits">@_submits</output>
+
+@code {
+    private string? _name = "Pine Hollow loop";
+    private int _submits;
+}

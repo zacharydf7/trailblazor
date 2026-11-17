@@ -946,6 +946,16 @@ public static class TbStrings
     /// <summary>"Back to top": the name of the button that takes a scrolled page back to its top.</summary>
     public const string BackToTopLabel = "BackToTop.Label";
 
+    /// <summary>"Edit": the start of the name of an in-place editor's button that shows its value and starts editing
+    /// it, before the label and the value.</summary>
+    public const string InPlaceEditorEdit = "InPlaceEditor.Edit";
+
+    /// <summary>"Save": an in-place editor's button that saves the edit.</summary>
+    public const string InPlaceEditorSave = "InPlaceEditor.Save";
+
+    /// <summary>"Cancel": an in-place editor's button that throws the edit away.</summary>
+    public const string InPlaceEditorCancel = "InPlaceEditor.Cancel";
+
     /// <summary>"Preview": names a markdown editor's Preview button and the preview it shows.</summary>
     public const string MarkdownEditorPreview = "MarkdownEditor.Preview";
 
@@ -1615,6 +1625,9 @@ public static class TbStrings
         [SpeechToTextListening] = "Listening",
         [SpeechToTextStopped] = "Stopped listening",
         [BackToTopLabel] = "Back to top",
+        [InPlaceEditorEdit] = "Edit",
+        [InPlaceEditorSave] = "Save",
+        [InPlaceEditorCancel] = "Cancel",
         [ThemePicker] = "Theme",
         [ThemeLight] = "Light",
         [ThemeDark] = "Dark",

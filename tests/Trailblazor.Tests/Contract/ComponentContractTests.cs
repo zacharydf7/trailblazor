@@ -298,6 +298,8 @@ public class ComponentContractTests : BunitContext
                     new[] { new KanbanColumn<string>("todo", "To do", []) },
                 var type when type == typeof(IReadOnlyList<QueryField>) => new[] { new QueryField("Name", "Name",
                     QueryFieldKind.Text) },
+                var type when type == typeof(RenderFragment<InPlaceEditorContext<string>>) =>
+                    (RenderFragment<InPlaceEditorContext<string>>)(_ => field => field.AddContent(0, "Editing")),
                 var type when type == typeof(RenderFragment<string>) =>
                     (RenderFragment<string>)(text => item => item.AddContent(0, text)),
                 var type when type == typeof(Func<string, object>) => (Func<string, object>)(text => text),

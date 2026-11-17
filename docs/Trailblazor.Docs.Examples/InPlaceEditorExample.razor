@@ -1,0 +1,18 @@
+<TbStack Gap="4" Style="max-inline-size: 24rem">
+    <TbInPlaceEditor Label="Trail name" @bind-Value="_name" Placeholder="Add a name">
+        <Editor>
+            <TbTextField TValue="string" @bind-Value="context.Draft" AriaLabel="Trail name" />
+        </Editor>
+    </TbInPlaceEditor>
+    <TbInPlaceEditor Label="Length in miles" @bind-Value="_miles">
+        <Editor>
+            <TbNumberField TValue="int" @bind-Value="context.Draft" AriaLabel="Length in miles" Min="1" />
+        </Editor>
+    </TbInPlaceEditor>
+    <output>@_name, @_miles miles</output>
+</TbStack>
+
+@code {
+    private string? _name = "Pine Hollow loop";
+    private int _miles = 4;
+}

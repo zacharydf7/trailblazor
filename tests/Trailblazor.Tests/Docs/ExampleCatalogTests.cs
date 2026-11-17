@@ -99,6 +99,16 @@ public class ExampleCatalogTests
     }
 
     [Fact]
+    public void Steps_ShouldScrollTheOpenerFirst_WhenTheTargetOpensOnScroll()
+    {
+        var steps = ExampleCatalog.Find("back-to-top")!.Target!.Steps;
+
+        Assert.Equal("await page.GetByRole(AriaRole.Region, new() { Name = \"Trail log\" })"
+            + ".EvaluateAsync(\"element => element.scrollTop = element.scrollHeight\");\n"
+            + "page.GetByRole(AriaRole.Button, new() { Name = \"Back to top\" })", steps);
+    }
+
+    [Fact]
     public void Steps_ShouldFilterByText_WhenTheTargetIsFoundByItsText()
     {
         var steps = ExampleCatalog.Find("alert")!.Target!.Steps;

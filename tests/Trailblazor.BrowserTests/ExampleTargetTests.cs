@@ -17,14 +17,21 @@ public class ExampleTargetTests(BrowserFixture fixture) : BrowserTest(fixture)
         var target = ExampleCatalog.Find(example)!.Target!;
         var page = await OpenAsync(browser, $"/examples/{example}");
 
-        if (target.OpenedBy is { } opener)
+        if (target.OpenedBy is not null)
         {
-            var trigger = Find(page, opener);
-            await (target.OpenOnHover ? trigger.HoverAsync() : trigger.ClickAsync());
+            await OpenAsync(page, target);
         }
 
         // Strict, as a test that copies the locator would be: one visible match, not several.
         await Expect(Find(page, target)).ToBeVisibleAsync();
+    }
+
+    // Clicks, hovers or scrolls the target's opener, as the steps on its docs page do.
+    internal static Task OpenAsync(IPage page, TestTarget target)
+    {
+        var opener = Find(page, target.OpenedBy!);
+        return target.OpenOnScroll ? opener.EvaluateAsync(TestTarget.ScrollToEnd)
+            : target.OpenOnHover ? opener.HoverAsync() : opener.ClickAsync();
     }
 
     internal static ILocator Find(IPage page, TestTarget target)

@@ -193,18 +193,24 @@ public sealed record TestTarget(string Role, string? Name = null)
 {
     public string? Text { get; init; }
 
-    // A component that shows only once something is clicked, or hovered, is found after that.
+    // A component that shows only once something is clicked, hovered or scrolled to its end is found after that.
     public TestTarget? OpenedBy { get; init; }
 
     public bool OpenOnHover { get; init; }
+
+    public bool OpenOnScroll { get; init; }
+
+    // The script that scrolls an opener to its end, for a target that shows only once its container is scrolled.
+    public const string ScrollToEnd = "element => element.scrollTop = element.scrollHeight";
 
     public string Locator => Text is null
         ? $"page.GetByRole(AriaRole.{RoleName}, new() {{ Name = \"{Name}\" }})"
         : $"page.GetByRole(AriaRole.{RoleName}).Filter(new() {{ HasText = \"{Text}\" }})";
 
-    public string Steps => OpenedBy is null
-        ? Locator
-        : $"await {OpenedBy.Locator}.{(OpenOnHover ? "Hover" : "Click")}Async();\n{Locator}";
+    public string Steps => OpenedBy is null ? Locator : $"await {OpenedBy.Locator}.{Opening};\n{Locator}";
+
+    private string Opening => OpenOnScroll ? $"EvaluateAsync(\"{ScrollToEnd}\")"
+        : OpenOnHover ? "HoverAsync()" : "ClickAsync()";
 
     private string RoleName => $"{char.ToUpperInvariant(Role[0])}{Role[1..]}";
 }
@@ -1833,7 +1839,7 @@ public static class ExampleCatalog
                     + "a script.",
             ],
             Ready = new(".tb-back-to-top", "the button, once its script listens for scrolling"),
-            Target = new("button", "Back to top"),
+            Target = new("button", "Back to top") { OpenedBy = new("region", "Trail log"), OpenOnScroll = true },
             Blocks = ["tb-back-to-top", "tb-fab"],
             DataParts =
             [
@@ -7544,6 +7550,88 @@ public static class ExampleCatalog
                 "With a `TelemetryName`, such as `\"trail-search\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders, and `trailblazor.control.used` with the action `add_condition`, `add_group`, `remove` or "
                     + "`change` each time the user does that. The fields and values are never recorded.",
+            ],
+        },
+        new("in-place-editor", "In-place editor", ExampleCategory.Inputs,
+            "A value shown as text that turns into its editor when pressed, and back again on save or cancel.")
+        {
+            WhenToUse =
+            [
+                "Use it for details people read far more often than they change, such as a trail's name on its page, "
+                    + "so the page reads as text until someone wants to edit one.",
+            ],
+            WhenNotToUse =
+            [
+                "When people fill several values in at once, use a form of [text fields](components/text-field), which "
+                    + "shows every field and saves them together.",
+            ],
+            Related = ["text-field", "property-grid", "form"],
+            Pattern = new("button", "https://www.w3.org/WAI/ARIA/apg/patterns/button/"),
+            Sections =
+            [
+                new("basic", "In-place editor", "The value shows as text under its `Label`, or `Placeholder` while it "
+                    + "is empty. Pressing it shows the `Editor` template, whose field binds to `context.Draft`, with "
+                    + "save and cancel buttons. Saving sets the value through `@bind-Value`; canceling throws the "
+                    + "draft away. The draft starts as the value itself, so for an object, set `Draft` to a changed "
+                    + "copy, such as a record made `with` the change: canceling can't undo a change made to the "
+                    + "object. `Display` shows the value some other way, such as with a unit.",
+                    typeof(InPlaceEditorExample)),
+            ],
+            Api = [typeof(TbInPlaceEditor<>), typeof(InPlaceEditorContext<>), typeof(InPlaceEditorLabels)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "On the value: shows the editor and moves focus into it."),
+                new(["Enter"], "In the editor: saves, except in a text area, where it starts a new line."),
+                new(["Escape"], "In the editor: throws the draft away."),
+            ],
+            Labeling =
+            [
+                "The value is a button named \"Edit\", the `Label` and the value it shows, such as \"Edit Trail name "
+                    + "Pine Hollow loop\", so speech control can say what is on screen. The editor is a group named by "
+                    + "the `Label`, and its buttons are named \"Save\" and \"Cancel\", unless `Labels` names them.",
+            ],
+            Accessibility =
+            [
+                "Pressing the value moves focus to the editor's first control, and saving or canceling moves it back "
+                    + "to the value.",
+                "Enter and Escape are kept from the page while editing, so a form around the editor doesn't submit "
+                    + "and a dialog around it doesn't close.",
+            ],
+            AppDuties =
+            [
+                "Give the editor's field an `AriaLabel`, such as the editor's `Label`, since the field shows no label "
+                    + "of its own.",
+            ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
+            BeforeInteractive =
+            [
+                "The value and its label show, and editing starts once the page is interactive.",
+            ],
+            Ready = new(".tb-in-place-editor", "the editor, once its script hears Enter and Escape"),
+            Target = new("button", "Edit Trail name"),
+            Blocks = ["tb-in-place-editor"],
+            DataParts =
+            [
+                new("label", "The label above the value or the editor."),
+                new("display", "The button that shows the value and starts editing it."),
+                new("value", "The value's text, or the placeholder while it is empty."),
+                new("editor", "The editor's group, holding the `Editor` template and its buttons."),
+                new("actions", "The save and cancel buttons."),
+                new("save", "The button that saves the draft."),
+                new("cancel", "The button that throws the draft away."),
+            ],
+            TestingTips =
+            [
+                "In bUnit, `cut.Tb().InPlaceEditor(\"Trail name\")` finds it: `EditAsync()`, `SaveAsync()` and "
+                    + "`CancelAsync()` press its parts, and `Text` and `IsEditing` read it. Change the draft through "
+                    + "the field's own helper, such as `cut.Tb().TextField(\"Trail name\").EnterAsync(...)`.",
+                "In Playwright, `page.Tb().InPlaceEditor(\"Trail name\")` does the same, and waits for each change.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-name\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders and `trailblazor.control.used` with the action `edit`, `save` or `cancel`. The value is "
+                    + "never recorded.",
             ],
         },
         new("tooltip", "Tooltip", ExampleCategory.Overlays,

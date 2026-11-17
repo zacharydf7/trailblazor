@@ -6710,3 +6710,49 @@ override Trailblazor.SpeechToTextLabels.ToString() -> string!
 override Trailblazor.TbSpeechToText.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 static Trailblazor.SpeechToTextLabels.operator !=(Trailblazor.SpeechToTextLabels? left, Trailblazor.SpeechToTextLabels? right) -> bool
 static Trailblazor.SpeechToTextLabels.operator ==(Trailblazor.SpeechToTextLabels? left, Trailblazor.SpeechToTextLabels? right) -> bool
+Trailblazor.InPlaceEditorContext<TValue>
+Trailblazor.InPlaceEditorContext<TValue>.CancelAsync() -> System.Threading.Tasks.Task!
+Trailblazor.InPlaceEditorContext<TValue>.Draft.get -> TValue?
+Trailblazor.InPlaceEditorContext<TValue>.Draft.set -> void
+Trailblazor.InPlaceEditorContext<TValue>.SaveAsync() -> System.Threading.Tasks.Task!
+Trailblazor.InPlaceEditorLabels
+Trailblazor.InPlaceEditorLabels.<Clone>$() -> Trailblazor.InPlaceEditorLabels!
+Trailblazor.InPlaceEditorLabels.Cancel.get -> string?
+Trailblazor.InPlaceEditorLabels.Cancel.init -> void
+Trailblazor.InPlaceEditorLabels.Edit.get -> string?
+Trailblazor.InPlaceEditorLabels.Edit.init -> void
+Trailblazor.InPlaceEditorLabels.Equals(Trailblazor.InPlaceEditorLabels? other) -> bool
+Trailblazor.InPlaceEditorLabels.InPlaceEditorLabels() -> void
+Trailblazor.InPlaceEditorLabels.Save.get -> string?
+Trailblazor.InPlaceEditorLabels.Save.init -> void
+Trailblazor.TbInPlaceEditor<TValue>
+Trailblazor.TbInPlaceEditor<TValue>.Disabled.get -> bool
+Trailblazor.TbInPlaceEditor<TValue>.Disabled.set -> void
+Trailblazor.TbInPlaceEditor<TValue>.Display.get -> Microsoft.AspNetCore.Components.RenderFragment<TValue?>?
+Trailblazor.TbInPlaceEditor<TValue>.Display.set -> void
+Trailblazor.TbInPlaceEditor<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbInPlaceEditor<TValue>.Editor.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.InPlaceEditorContext<TValue>!>!
+Trailblazor.TbInPlaceEditor<TValue>.Editor.set -> void
+Trailblazor.TbInPlaceEditor<TValue>.Label.get -> string!
+Trailblazor.TbInPlaceEditor<TValue>.Label.set -> void
+Trailblazor.TbInPlaceEditor<TValue>.Labels.get -> Trailblazor.InPlaceEditorLabels!
+Trailblazor.TbInPlaceEditor<TValue>.Labels.set -> void
+Trailblazor.TbInPlaceEditor<TValue>.Placeholder.get -> string?
+Trailblazor.TbInPlaceEditor<TValue>.Placeholder.set -> void
+Trailblazor.TbInPlaceEditor<TValue>.TbInPlaceEditor() -> void
+Trailblazor.TbInPlaceEditor<TValue>.TelemetryName.get -> string?
+Trailblazor.TbInPlaceEditor<TValue>.TelemetryName.set -> void
+Trailblazor.TbInPlaceEditor<TValue>.Value.get -> TValue?
+Trailblazor.TbInPlaceEditor<TValue>.Value.set -> void
+Trailblazor.TbInPlaceEditor<TValue>.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<TValue?>
+Trailblazor.TbInPlaceEditor<TValue>.ValueChanged.set -> void
+const Trailblazor.TbStrings.InPlaceEditorCancel = "InPlaceEditor.Cancel" -> string!
+const Trailblazor.TbStrings.InPlaceEditorEdit = "InPlaceEditor.Edit" -> string!
+const Trailblazor.TbStrings.InPlaceEditorSave = "InPlaceEditor.Save" -> string!
+override Trailblazor.InPlaceEditorLabels.Equals(object? obj) -> bool
+override Trailblazor.InPlaceEditorLabels.GetHashCode() -> int
+override Trailblazor.InPlaceEditorLabels.ToString() -> string!
+override Trailblazor.TbInPlaceEditor<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+static Trailblazor.InPlaceEditorLabels.operator !=(Trailblazor.InPlaceEditorLabels? left, Trailblazor.InPlaceEditorLabels? right) -> bool
+static Trailblazor.InPlaceEditorLabels.operator ==(Trailblazor.InPlaceEditorLabels? left, Trailblazor.InPlaceEditorLabels? right) -> bool
+~override Trailblazor.TbInPlaceEditor<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

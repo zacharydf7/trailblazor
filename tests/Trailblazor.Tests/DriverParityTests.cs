@@ -43,7 +43,7 @@ public class DriverParityTests
         ["TbMarkdownEditor"] = "MarkdownEditor", ["TbMentionInput"] = "MentionInput", ["TbTour"] = "Tour",
         ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",
         ["TbSpeedDial"] = "Menu", ["TbToolbar"] = "Toolbar", ["TbInsertDivider"] = "InsertDivider",
-        ["TbBackToTop"] = "BackToTop", ["TbSpeechToText"] = "SpeechToText",
+        ["TbBackToTop"] = "BackToTop", ["TbSpeechToText"] = "SpeechToText", ["TbInPlaceEditor"] = "InPlaceEditor",
         ["TbNavMenu"] = "NavMenu", ["TbCodeField"] = "TextField", ["TbButton"] = "Button",
         ["TbIconButton"] = "Button",
     };

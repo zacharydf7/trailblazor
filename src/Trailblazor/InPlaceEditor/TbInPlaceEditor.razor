@@ -1,0 +1,206 @@
+@namespace Trailblazor
+@typeparam TValue
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+@inject ITbLocalizer Localizer
+@inject IServiceProvider Services
+
+<div @ref="_root" @attributes="AdditionalAttributes" style="@Style" data-editing="@(_draft is null ? null : "")"
+     class="@ClassNames.Join("tb-in-place-editor", Class)">
+    <span id="@LabelId" data-part="label" class="tb-in-place-editor__label">@Label</span>
+    @if (_draft is not null)
+    {
+        @* Enter saves and Escape cancels, which the script hears, so a form around it doesn't submit. *@
+        <div role="group" aria-labelledby="@LabelId" data-part="editor" class="tb-in-place-editor__editor">
+            @Editor(_draft)
+            <span data-part="actions" class="tb-in-place-editor__actions">
+                <TbIconButton Icon="BuiltInIcons.Check"
+                              AriaLabel="@(Labels.Save ?? Localizer[TbStrings.InPlaceEditorSave])" Size="Size.Small"
+                              OnClick="SaveAsync" data-part="save" />
+                <TbIconButton Icon="BuiltInIcons.Close"
+                              AriaLabel="@(Labels.Cancel ?? Localizer[TbStrings.InPlaceEditorCancel])"
+                              Size="Size.Small" Variant="Variant.Text" OnClick="CancelAsync" data-part="cancel" />
+            </span>
+        </div>
+    }
+    else
+    {
+        @* Its name is Edit, the label and the value it shows, so speech control users can say what's on screen. *@
+        <span id="@EditId" hidden>@(Labels.Edit ?? Localizer[TbStrings.InPlaceEditorEdit])</span>
+        <button @ref="_display" type="button" data-part="display" class="tb-in-place-editor__display"
+                disabled="@Disabled" aria-labelledby="@($"{EditId} {LabelId} {ValueId}")" @onclick="Edit">
+            <span id="@ValueId" data-part="value"
+                  class="@ClassNames.Join("tb-in-place-editor__value",
+                                          IsEmpty ? "tb-in-place-editor__value--empty" : null)">
+                @if (IsEmpty)
+                {
+                    @Placeholder
+                }
+                else if (Display is not null)
+                {
+                    @Display(Value)
+                }
+                else
+                {
+                    @Value
+                }
+            </span>
+        </button>
+    }
+</div>
+
+@code {
+    private readonly string _id = $"tb-in-place-editor-{Guid.NewGuid():N}";
+    private ElementReference _root;
+    private ElementReference _display;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<InPlaceEditorEvents>? _events;
+    // The draft while editing, null while the value shows.
+    private InPlaceEditorContext<TValue>? _draft;
+    // Where focus goes once the next render lands: into the editor, or back to the value.
+    private bool _focusEditor;
+    private bool _focusDisplay;
+    private bool _disposed;
+
+    /// <summary>What the value is, shown above it and naming its button and editor, such as "Trail name".</summary>
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    /// <summary>The value. Bind it with <c>@bind-Value</c>: it changes when an edit is saved.</summary>
+    [Parameter]
+    public TValue? Value { get; set; }
+
+    /// <summary>Raised with the draft when an edit is saved.</summary>
+    [Parameter]
+    public EventCallback<TValue?> ValueChanged { get; set; }
+
+    /// <summary>The field that edits the value, given the draft to bind to, such as
+    /// <c>&lt;TbTextField @bind-Value="context.Draft" AriaLabel="Trail name" /&gt;</c>.</summary>
+    [Parameter, EditorRequired]
+    public RenderFragment<InPlaceEditorContext<TValue>> Editor { get; set; } = default!;
+
+    /// <summary>How the value shows while it isn't being edited. Leave it null to show the value as text.</summary>
+    [Parameter]
+    public RenderFragment<TValue?>? Display { get; set; }
+
+    /// <summary>What shows while the value is empty, such as "Add a name".</summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>Shows the value without letting it be edited.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>The words its buttons say to screen readers.</summary>
+    [Parameter]
+    public InPlaceEditorLabels Labels { get; set; } = new();
+
+    /// <summary>A label this editor's use is counted under, such as <c>"trail-name"</c>, so the app can count how
+    /// often people see it and edit it through the <c>Trailblazor</c> meter. Controls that share a label count
+    /// together; a control without one isn't counted. It names what the control does, never the user, and the value
+    /// is never recorded.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    private string LabelId => $"{_id}-label";
+
+    private string ValueId => $"{_id}-value";
+
+    private string EditId => $"{_id}-edit";
+
+    private bool IsEmpty => Value is null || Value is string { Length: 0 };
+
+    private void Edit()
+    {
+        _draft = new(Value, SaveAsync, CancelAsync);
+        _focusEditor = true;
+        Telemetry.Used(TelemetryName, "edit");
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_draft is null)
+        {
+            return;
+        }
+
+        Value = _draft.Draft;
+        _draft = null;
+        _focusDisplay = true;
+        Telemetry.Used(TelemetryName, "save");
+        await ValueChanged.InvokeAsync(Value);
+        StateHasChanged();
+    }
+
+    private Task CancelAsync()
+    {
+        if (_draft is not null)
+        {
+            _draft = null;
+            _focusDisplay = true;
+            Telemetry.Used(TelemetryName, "cancel");
+            StateHasChanged();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Telemetry.Rendered(TelemetryName);
+        try
+        {
+            if (firstRender)
+            {
+                var module = await Modules.ImportAsync("./_content/Trailblazor/in-place-editor.js");
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _events = DotNetObjectReference.Create(new InPlaceEditorEvents(SaveAsync, CancelAsync));
+                var handle = await module.InvokeAsync<IJSObjectReference?>("attachInPlaceEditor", _root, _events);
+                if (_disposed && handle is not null)
+                {
+                    await handle.DisposeHandleAsync();
+                    return;
+                }
+
+                _handle = handle;
+            }
+
+            if (_focusEditor && _draft is not null && _handle is not null)
+            {
+                _focusEditor = false;
+                await _handle.InvokeVoidAsync("focusEditor");
+            }
+            else if (_focusDisplay && _draft is null)
+            {
+                _focusDisplay = false;
+                await _display.FocusAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the editor went with it.
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _events?.Dispose();
+    }
+}

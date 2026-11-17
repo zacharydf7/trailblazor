@@ -604,6 +604,16 @@ public sealed class TrailblazorMarkup
             : $"{buttons.Count} dictation buttons are labeled \"{label}\".");
     }, _scripts);
 
+    /// <summary>The <c>TbInPlaceEditor</c> with this <c>Label</c>.</summary>
+    public TbInPlaceEditorDriver InPlaceEditor(string label) => new(() =>
+    {
+        var editors = _findAll(".tb-in-place-editor").Where(editor =>
+            editor.QuerySelector("[data-part=label]")?.TextContent == label).ToList();
+        return editors.Count == 1 ? editors[0] : throw new InvalidOperationException(editors.Count == 0
+            ? $"No in-place editor is labeled \"{label}\"."
+            : $"{editors.Count} in-place editors are labeled \"{label}\".");
+    });
+
     /// <summary>The page's <c>TbBackToTop</c>.</summary>
     public TbBackToTopDriver BackToTop() => new(() =>
     {
@@ -2421,6 +2431,47 @@ public sealed class TbSpeechToTextDriver
         }
 
         await _find().ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+}
+
+/// <summary>A <c>TbInPlaceEditor</c>, found by its <c>Label</c>.</summary>
+public sealed class TbInPlaceEditorDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbInPlaceEditorDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>Whether the editor shows, rather than the value.</summary>
+    public bool IsEditing => _find().HasAttribute("data-editing");
+
+    /// <summary>The value's text while it shows, or the placeholder while it's empty.</summary>
+    public string Text => _find().QuerySelector("[data-part=value]")?.TextContent.Trim()
+        ?? throw new InvalidOperationException("The in-place editor is editing; save or cancel it to read its value.");
+
+    /// <summary>Presses the value to start editing it. Throws while it's editing already, or disabled.</summary>
+    public async Task EditAsync()
+    {
+        var display = _find().QuerySelector("[data-part=display]")
+            ?? throw new InvalidOperationException("The in-place editor is editing already.");
+        if (display.HasAttribute("disabled"))
+        {
+            throw new InvalidOperationException("This in-place editor is disabled.");
+        }
+
+        await display.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    /// <summary>Presses the save button, which sets the value to the draft. Throws while the value shows.</summary>
+    public Task SaveAsync() => PressAsync("save");
+
+    /// <summary>Presses the cancel button, which throws the draft away. Throws while the value shows.</summary>
+    public Task CancelAsync() => PressAsync("cancel");
+
+    private async Task PressAsync(string part)
+    {
+        var button = _find().QuerySelector($"[data-part={part}]")
+            ?? throw new InvalidOperationException("The in-place editor isn't editing; call EditAsync first.");
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 }
 

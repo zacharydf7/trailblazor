@@ -277,9 +277,8 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static Opening[] OpeningsOf(Example example) =>
     [
-        .. example.Target is { OpenedBy: { } opener } target
-            ? [new Opening(target, page => target.OpenOnHover ? ExampleTargetTests.Find(page, opener).HoverAsync()
-                : ExampleTargetTests.Find(page, opener).ClickAsync(), target.OpenOnHover)]
+        .. example.Target is { OpenedBy: not null } target
+            ? [new Opening(target, page => ExampleTargetTests.OpenAsync(page, target), target.OpenOnHover)]
             : Array.Empty<Opening>(),
         .. Opened.GetValueOrDefault(example.Name, []),
     ];

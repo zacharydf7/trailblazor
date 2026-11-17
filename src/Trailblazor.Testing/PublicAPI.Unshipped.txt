@@ -567,3 +567,10 @@ Trailblazor.Testing.TbSpeechToTextDriver.SayAsync(string! text) -> System.Thread
 Trailblazor.Testing.TbSpeechToTextDriver.StartAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbSpeechToTextDriver.StopAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.SpeechToText(string! label) -> Trailblazor.Testing.TbSpeechToTextDriver!
+Trailblazor.Testing.TbInPlaceEditorDriver
+Trailblazor.Testing.TbInPlaceEditorDriver.CancelAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbInPlaceEditorDriver.EditAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbInPlaceEditorDriver.IsEditing.get -> bool
+Trailblazor.Testing.TbInPlaceEditorDriver.SaveAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbInPlaceEditorDriver.Text.get -> string!
+Trailblazor.Testing.TrailblazorMarkup.InPlaceEditor(string! label) -> Trailblazor.Testing.TbInPlaceEditorDriver!

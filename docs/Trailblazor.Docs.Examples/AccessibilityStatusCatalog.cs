@@ -101,6 +101,7 @@ public static class AccessibilityStatusCatalog
         new("property-grid", Tested, NotYet, None),
         new("model-fields", None, None, None),
         new("query-builder", Tested, NotYet, None),
+        new("in-place-editor", Tested, NotYet, None),
         new("tooltip", Tested, NotYet, None),
         new("menu", Tested, NotYet, None),
         new("menubar", Tested, NotYet, None),
