@@ -9335,6 +9335,58 @@
         position: relative;
     }
 
+    /* The columns sit side by side and scroll sideways together; each column's cards look like cards. */
+    .tb-kanban {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--tb-space-3);
+        overflow-x: auto;
+        padding-block-end: var(--tb-space-2);
+    }
+
+    .tb-kanban__column {
+        display: flex;
+        flex: 0 0 var(--tb-kanban-column-width, 18rem);
+        flex-direction: column;
+        gap: var(--tb-space-2);
+        padding: var(--tb-space-2);
+        border-radius: var(--tb-radius-lg);
+        background: var(--tb-color-surface-sunken);
+    }
+
+    .tb-kanban__header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--tb-space-2);
+        padding-inline: var(--tb-space-1);
+    }
+
+    .tb-kanban__title {
+        font-weight: 600;
+    }
+
+    .tb-kanban__count {
+        font-size: var(--tb-font-size-sm);
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-kanban__column[data-full] .tb-kanban__count {
+        color: var(--tb-color-danger-text);
+    }
+
+    /* An empty column keeps room to drop a card into. */
+    .tb-kanban__cards .tb-sortable__list {
+        min-block-size: var(--tb-space-12);
+    }
+
+    .tb-kanban__cards .tb-sortable__item {
+        padding: var(--tb-space-2);
+        border: 1px solid var(--tb-border-subtle);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-surface-raised);
+    }
+
     .tb-sortable__list {
         display: flex;
         flex-direction: column;

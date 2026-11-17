@@ -682,6 +682,12 @@ public sealed class TrailblazorMarkup
                 : $"No command palette is named \"{name}\".");
     }, _findAll);
 
+    /// <summary>The <c>TbKanban</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is given.
+    /// </summary>
+    public TbKanbanDriver Kanban(string? name = null) => new(() => Only(_findAll("section.tb-kanban")
+        .Where(board => name is null || board.GetAttribute("aria-label") == name).ToList(), "Kanban board", name),
+        _findAll, _scripts);
+
     /// <summary>The <c>TbSortable</c> with this label, or the only one in the markup when no label is given.
     /// </summary>
     public TbSortableDriver Sortable(string? name = null) => new(() =>
@@ -4133,6 +4139,48 @@ public sealed class TbCommandPaletteDriver
         "The command palette is closed; open it as the app does, such as with its button.");
 
     private IElement Listbox() => _findAll($"[id='{Open().GetAttribute("aria-controls")}']").Single();
+}
+
+/// <summary>A <c>TbKanban</c>, found by its <c>AriaLabel</c>. Each column is a sortable list named by its title.
+/// </summary>
+public sealed class TbKanbanDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
+
+    internal TbKanbanDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts)
+        => (_find, _findAll, _scripts) = (find, findAll, scripts);
+
+    /// <summary>The columns' titles, left to right.</summary>
+    public IReadOnlyList<string> Columns => [.. ColumnElements().Select(TitleOf)];
+
+    /// <summary>The names of the cards in the column titled <paramref name="column"/>, top first.</summary>
+    public IReadOnlyList<string> Cards(string column) => Column(column).Items;
+
+    /// <summary>The column titled <paramref name="column"/>, as a sortable list: its cards move within it with
+    /// <c>MoveAsync</c>, or to another column with <c>MoveToListAsync</c>. Throws when the board has no such column.
+    /// </summary>
+    public TbSortableDriver Column(string column) => new(() => ColumnElement(column)
+        .QuerySelector("[data-part=list][data-sortable]")!, _findAll, _scripts);
+
+    /// <summary>Moves the card named <paramref name="card"/> to the end of the column titled <paramref name="column"/>,
+    /// through its handle's menu as a user would. Throws when the board has no such card or column.</summary>
+    public async Task MoveToColumnAsync(string card, string column)
+    {
+        ColumnElement(column);
+        var from = Columns.FirstOrDefault(title => Cards(title).Contains(card))
+            ?? throw new InvalidOperationException($"This board has no card \"{card}\".");
+        await Column(from).MoveToListAsync(card, column);
+    }
+
+    private List<IElement> ColumnElements() => [.. _find().QuerySelectorAll(":scope > [data-part=column]")];
+
+    private static string TitleOf(IElement column) =>
+        column.QuerySelector(":scope > [data-part=header] > [data-part=title]")!.TextContent.Trim();
+
+    private IElement ColumnElement(string title) => ColumnElements().FirstOrDefault(column => TitleOf(column) == title)
+        ?? throw new InvalidOperationException($"This board has no column \"{title}\".");
 }
 
 /// <summary>A <c>TbSortable</c>, found by its label. Its items are named by the list's <c>ItemLabel</c>, or by their

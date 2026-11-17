@@ -1,0 +1,29 @@
+<TbKanban TItem="TrailTask" AriaLabel="Trail work" Columns="Columns" CardLabel="task => task.Title"
+          KeySelector="task => task.Id" OnMove="Move">
+    <CardTemplate Context="task">
+        <TbText>@task.Title</TbText>
+        <TbText TextStyle="TextStyle.Caption" Muted>@task.Trail</TbText>
+    </CardTemplate>
+</TbKanban>
+
+@code {
+    private readonly Dictionary<string, List<TrailTask>> _cards = new()
+    {
+        ["todo"] = [new(1, "Clear fallen trees", "Ridge loop"), new(2, "Repaint blazes", "River walk")],
+        ["doing"] = [new(3, "Fix the footbridge", "River walk")],
+        ["done"] = [new(4, "Trim the switchbacks", "Summit trail")],
+    };
+
+    // Doing takes two cards at most, so a third is refused with the reason read out.
+    private IReadOnlyList<KanbanColumn<TrailTask>> Columns =>
+    [
+        new("todo", "To do", _cards["todo"]),
+        new("doing", "Doing", _cards["doing"]) { Limit = 2 },
+        new("done", "Done", _cards["done"]),
+    ];
+
+    private void Move(SortableMove<TrailTask> move) =>
+        move.ApplyBetween(_cards[move.FromList!], _cards[move.ToList!]);
+
+    private sealed record TrailTask(int Id, string Title, string Trail);
+}

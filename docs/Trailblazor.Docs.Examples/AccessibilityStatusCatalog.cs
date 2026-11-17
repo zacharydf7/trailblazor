@@ -61,6 +61,7 @@ public static class AccessibilityStatusCatalog
         new("chip", Tested, Tested, None),
         new("list", Tested, NotYet, None),
         new("sortable", Tested, NotYet, None),
+        new("kanban", Tested, Tested, None),
         new("badge", None, Tested, None),
         new("progress", None, Tested, Tested),
         new("label", None, NotYet, None),

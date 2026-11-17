@@ -504,3 +504,9 @@ Trailblazor.Testing.TbAiPromptDriver.RetryAsync(int index = 0) -> System.Threadi
 Trailblazor.Testing.TbAiPromptDriver.Statuses.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.AiPromptStatus>!
 Trailblazor.Testing.TbAiPromptDriver.StopAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.AiPrompt(string? label = null) -> Trailblazor.Testing.TbAiPromptDriver!
+Trailblazor.Testing.TbKanbanDriver
+Trailblazor.Testing.TbKanbanDriver.Cards(string! column) -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbKanbanDriver.Column(string! column) -> Trailblazor.Testing.TbSortableDriver!
+Trailblazor.Testing.TbKanbanDriver.Columns.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbKanbanDriver.MoveToColumnAsync(string! card, string! column) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.Kanban(string? name = null) -> Trailblazor.Testing.TbKanbanDriver!

@@ -532,3 +532,11 @@ Trailblazor.Testing.Playwright.TbAiPromptLocator.StatusesAsync() -> System.Threa
 Trailblazor.Testing.Playwright.TbAiPromptLocator.StopAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbAiPromptLocator.TbAiPromptLocator(Microsoft.Playwright.ILocator! scope, string? label) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.AiPrompt(string? label = null) -> Trailblazor.Testing.Playwright.TbAiPromptLocator!
+Trailblazor.Testing.Playwright.TbKanbanLocator
+Trailblazor.Testing.Playwright.TbKanbanLocator.CardsAsync(string! column) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbKanbanLocator.Column(string! column) -> Trailblazor.Testing.Playwright.TbSortableLocator!
+Trailblazor.Testing.Playwright.TbKanbanLocator.ColumnsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbKanbanLocator.Kanban.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbKanbanLocator.MoveToColumnAsync(string! card, string! column) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbKanbanLocator.TbKanbanLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.Kanban(string? name = null) -> Trailblazor.Testing.Playwright.TbKanbanLocator!

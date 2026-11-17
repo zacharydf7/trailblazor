@@ -89,6 +89,14 @@ public static class TbStrings
     /// <summary>"Copied": read out once a response is copied.</summary>
     public const string AiPromptCopied = "AiPrompt.Copied";
 
+    /// <summary>"{0} of {1}": a Kanban column's count against its limit; {0} is the cards in it and {1} the limit.
+    /// </summary>
+    public const string KanbanCount = "Kanban.Count";
+
+    /// <summary>"{0} is full: its limit is {1}.": why a card can't move into a full Kanban column; {0} is the
+    /// column's title and {1} its limit.</summary>
+    public const string KanbanFull = "Kanban.Full";
+
     /// <summary>"Navigation": names an app shell's menu button and titles its navigation drawer.</summary>
     public const string AppShellMenu = "AppShell.Menu";
 
@@ -1276,6 +1284,8 @@ public static class TbStrings
         [AiPromptStopped] = "Response stopped",
         [AiPromptFailed] = "Couldn't generate a response. Try again.",
         [AiPromptCopied] = "Copied",
+        [KanbanCount] = "{0} of {1}",
+        [KanbanFull] = "{0} is full: its limit is {1}.",
         [AppShellMenu] = "Navigation",
         [AppShellNavigation] = "Main",
         [AppShellSkipToContent] = "Skip to content",

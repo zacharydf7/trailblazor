@@ -250,6 +250,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbSortable</c> with this label, or the only one in the scope when no label is given.</summary>
     public TbSortableLocator Sortable(string? name = null) => new(scope, name);
 
+    /// <summary>The <c>TbKanban</c> with this <c>AriaLabel</c>, or the only one in the scope when no name is given.
+    /// </summary>
+    public TbKanbanLocator Kanban(string? name = null) => new(scope, name);
+
     /// <summary>The <c>TbAlert</c> whose text contains this, ignoring case and treating any run of whitespace as one
     /// space.</summary>
     public TbAlertLocator Alert(string text) => new(scope, text);

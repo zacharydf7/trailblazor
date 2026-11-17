@@ -3097,6 +3097,89 @@ public static class ExampleCatalog
                     + "made with `MoveAsync` aren't counted, and which item moved is never recorded.",
             ],
         },
+        new("kanban", "Kanban board", ExampleCategory.Content,
+            "Columns of cards that move within a column and between columns, by dragging or with the keyboard.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for work that moves through stages, such as tasks from To do to Done, where people move a "
+                    + "card to show its progress.",
+            ],
+            WhenNotToUse =
+            [
+                "For one list people put in order, use a [sortable list](components/sortable).",
+                "For records people mostly read, sort or filter, use a [data grid](components/data-grid).",
+            ],
+            Related = ["sortable", "card", "data-grid"],
+            Sections =
+            [
+                new("basic", "Kanban board", "`Columns` holds the columns, left to right, as `KanbanColumn` records, "
+                    + "each with an `Id`, a `Title` and its `Cards`. Each column is a "
+                    + "[sortable list](components/sortable) of one group, so a card moves within its column and to the "
+                    + "others by its handle. `OnMove` gets each move: apply it with `ApplyBetween`, whose `FromList` "
+                    + "and `ToList` are the columns' ids. A column's `Limit` caps its cards, as Doing's does here: a "
+                    + "move into a full column is refused, with the reason read out, before `CanMove` is asked. "
+                    + "`ColumnFooterTemplate` adds something under each column, such as a button that adds a card.",
+                    typeof(KanbanExample)),
+            ],
+            Api = [typeof(TbKanban<>), typeof(KanbanColumn<>), typeof(KanbanLabels), typeof(SortableMove<>)],
+            Keyboard =
+            [
+                new(["Up", "Down"], "Moves the card one place in its column, and focus stays on the handle.")
+                    { When = "On a card's handle" },
+                new(["Home", "End"], "Moves the card to the top or bottom of its column.")
+                    { When = "On a card's handle" },
+                new(["Left", "Right"], "Moves the card to the column before or after, and focus follows it.")
+                    { When = "On a card's handle" },
+                new(["Enter", "Space"], "Opens its menu: Move up, Move down, Move to the start and Move to the end, then "
+                    + "Move to each other column.")
+                    { When = "On a card's handle" },
+                new(["Escape"], "Cancels a drag.") { When = "While dragging" },
+            ],
+            Labeling =
+            [
+                "The board is a region named by `AriaLabel`. Each column is a `group` named by its title and described "
+                    + "by its count, and its cards are a `list` named by its title.",
+                "Each card's handle is named \"Move\" followed by the card's `CardLabel`. `Labels.Moves` rewords the "
+                    + "handles and their announcements, and `Labels.Count` and `Labels.Full` the count and the "
+                    + "refusal.",
+            ],
+            Announcements =
+            [
+                "Each move is announced with the card's new place, such as \"Fix the footbridge moved to Done, "
+                    + "position 2 of 2.\"",
+                "A move into a full column is refused, and the reason is read out, such as \"Doing is full: its "
+                    + "limit is 2.\" A reason `CanMove` gives is read out the same way.",
+            ],
+            Accessibility =
+            [
+                "A click on a handle opens the same menu as Enter or Space, the single-pointer way that replaces "
+                    + "dragging (WCAG 2.5.7).",
+                "A full column's count turns red and says how many it takes, so being full doesn't rely on color.",
+            ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
+            BeforeInteractive =
+            [
+                "The columns and cards render. Dragging and the handles start working once the page is interactive.",
+            ],
+            Ready = new(".tb-sortable", "each column's list"),
+            Target = new("region", "Trail work"),
+            Blocks = ["tb-kanban"],
+            DataParts =
+            [
+                new("column", "One column, with `data-key` for its `Id` and `data-full` once it holds its `Limit`."),
+                new("header", "The column's title and count."),
+                new("title", "The column's title."),
+                new("count", "How many cards it holds, against its `Limit` when it has one."),
+                new("footer", "What `ColumnFooterTemplate` draws under the column."),
+            ],
+            TestingTip = "`page.Tb().Kanban(\"Trail work\")` in Playwright, or `cut.Tb().Kanban(...)` in bUnit, finds "
+                + "the board by its `AriaLabel`: `ColumnsAsync()` or `Columns` reads the titles, "
+                + "`CardsAsync(column)` or `Cards(column)` a column's cards, and `MoveToColumnAsync(card, column)` "
+                + "moves a card to the end of another column through its handle's menu. `Column(title)` gives that "
+                + "column's sortable list, for `MoveAsync` within it or a drag.",
+        },
         new("badge", "Badge", ExampleCategory.Feedback,
             "A small count or dot on an icon or button, or in a line of text, that draws the eye to something new.")
         {

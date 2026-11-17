@@ -6087,3 +6087,65 @@ static Trailblazor.AiPromptLabels.operator ==(Trailblazor.AiPromptLabels? left, 
 static Trailblazor.AiPromptOutput.operator !=(Trailblazor.AiPromptOutput? left, Trailblazor.AiPromptOutput? right) -> bool
 static Trailblazor.AiPromptOutput.operator ==(Trailblazor.AiPromptOutput? left, Trailblazor.AiPromptOutput? right) -> bool
 ~override Trailblazor.TbAiPrompt.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.KanbanColumn<TItem>
+Trailblazor.KanbanColumn<TItem>.<Clone>$() -> Trailblazor.KanbanColumn<TItem>!
+Trailblazor.KanbanColumn<TItem>.Cards.get -> System.Collections.Generic.IReadOnlyList<TItem>!
+Trailblazor.KanbanColumn<TItem>.Cards.init -> void
+Trailblazor.KanbanColumn<TItem>.Deconstruct(out string! Id, out string! Title, out System.Collections.Generic.IReadOnlyList<TItem>! Cards) -> void
+Trailblazor.KanbanColumn<TItem>.Equals(Trailblazor.KanbanColumn<TItem>? other) -> bool
+Trailblazor.KanbanColumn<TItem>.Id.get -> string!
+Trailblazor.KanbanColumn<TItem>.Id.init -> void
+Trailblazor.KanbanColumn<TItem>.KanbanColumn(string! Id, string! Title, System.Collections.Generic.IReadOnlyList<TItem>! Cards) -> void
+Trailblazor.KanbanColumn<TItem>.Limit.get -> int?
+Trailblazor.KanbanColumn<TItem>.Limit.init -> void
+Trailblazor.KanbanColumn<TItem>.Title.get -> string!
+Trailblazor.KanbanColumn<TItem>.Title.init -> void
+Trailblazor.KanbanLabels
+Trailblazor.KanbanLabels.<Clone>$() -> Trailblazor.KanbanLabels!
+Trailblazor.KanbanLabels.Count.get -> string?
+Trailblazor.KanbanLabels.Count.init -> void
+Trailblazor.KanbanLabels.Equals(Trailblazor.KanbanLabels? other) -> bool
+Trailblazor.KanbanLabels.Full.get -> string?
+Trailblazor.KanbanLabels.Full.init -> void
+Trailblazor.KanbanLabels.KanbanLabels() -> void
+Trailblazor.KanbanLabels.Moves.get -> Trailblazor.SortableLabels!
+Trailblazor.KanbanLabels.Moves.init -> void
+Trailblazor.TbKanban<TItem>
+Trailblazor.TbKanban<TItem>.AriaLabel.get -> string!
+Trailblazor.TbKanban<TItem>.AriaLabel.set -> void
+Trailblazor.TbKanban<TItem>.CanMove.get -> System.Func<Trailblazor.SortableMove<TItem>!, System.Threading.Tasks.Task<Trailblazor.MoveCheck!>!>?
+Trailblazor.TbKanban<TItem>.CanMove.set -> void
+Trailblazor.TbKanban<TItem>.CardLabel.get -> System.Func<TItem, string!>?
+Trailblazor.TbKanban<TItem>.CardLabel.set -> void
+Trailblazor.TbKanban<TItem>.CardTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>!
+Trailblazor.TbKanban<TItem>.CardTemplate.set -> void
+Trailblazor.TbKanban<TItem>.ColumnFooterTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.KanbanColumn<TItem>!>?
+Trailblazor.TbKanban<TItem>.ColumnFooterTemplate.set -> void
+Trailblazor.TbKanban<TItem>.Columns.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.KanbanColumn<TItem>!>!
+Trailblazor.TbKanban<TItem>.Columns.set -> void
+Trailblazor.TbKanban<TItem>.Disabled.get -> bool
+Trailblazor.TbKanban<TItem>.Disabled.set -> void
+Trailblazor.TbKanban<TItem>.KeySelector.get -> System.Func<TItem, object!>?
+Trailblazor.TbKanban<TItem>.KeySelector.set -> void
+Trailblazor.TbKanban<TItem>.Labels.get -> Trailblazor.KanbanLabels!
+Trailblazor.TbKanban<TItem>.Labels.set -> void
+Trailblazor.TbKanban<TItem>.OnMove.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.SortableMove<TItem>!>
+Trailblazor.TbKanban<TItem>.OnMove.set -> void
+Trailblazor.TbKanban<TItem>.TbKanban() -> void
+Trailblazor.TbKanban<TItem>.TelemetryName.get -> string?
+Trailblazor.TbKanban<TItem>.TelemetryName.set -> void
+const Trailblazor.TbStrings.KanbanCount = "Kanban.Count" -> string!
+const Trailblazor.TbStrings.KanbanFull = "Kanban.Full" -> string!
+override Trailblazor.KanbanColumn<TItem>.Equals(object? obj) -> bool
+override Trailblazor.KanbanColumn<TItem>.GetHashCode() -> int
+override Trailblazor.KanbanColumn<TItem>.ToString() -> string!
+override Trailblazor.KanbanLabels.Equals(object? obj) -> bool
+override Trailblazor.KanbanLabels.GetHashCode() -> int
+override Trailblazor.KanbanLabels.ToString() -> string!
+override Trailblazor.TbKanban<TItem>.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbKanban<TItem>.OnParametersSet() -> void
+static Trailblazor.KanbanColumn<TItem>.operator !=(Trailblazor.KanbanColumn<TItem>? left, Trailblazor.KanbanColumn<TItem>? right) -> bool
+static Trailblazor.KanbanColumn<TItem>.operator ==(Trailblazor.KanbanColumn<TItem>? left, Trailblazor.KanbanColumn<TItem>? right) -> bool
+static Trailblazor.KanbanLabels.operator !=(Trailblazor.KanbanLabels? left, Trailblazor.KanbanLabels? right) -> bool
+static Trailblazor.KanbanLabels.operator ==(Trailblazor.KanbanLabels? left, Trailblazor.KanbanLabels? right) -> bool
+~override Trailblazor.TbKanban<TItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

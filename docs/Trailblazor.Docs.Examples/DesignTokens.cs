@@ -20,10 +20,11 @@ public static partial class DesignTokens
         "--tb-carousel-duration", "--tb-chat-max-height", "--tb-data-grid-row-height", "--tb-dialog-radius",
         "--tb-dialog-z-index", "--tb-fab-offset", "--tb-fab-radius", "--tb-fab-z-index", "--tb-field-background",
         "--tb-field-border-color", "--tb-field-border-width", "--tb-field-height", "--tb-field-radius",
-        "--tb-menu-item-height", "--tb-menu-radius", "--tb-popover-max-width", "--tb-popover-radius",
-        "--tb-qr-code-background", "--tb-qr-code-color", "--tb-table-row-height", "--tb-table-sticky-top",
-        "--tb-tabs-indicator-color", "--tb-tabs-indicator-size", "--tb-tooltip-max-width", "--tb-tree-insert-band",
-        "--tb-tree-insert-offset", "--tb-tree-item-height", "--tb-tree-item-radius", "--tb-tree-text-min-width",
+        "--tb-kanban-column-width", "--tb-menu-item-height", "--tb-menu-radius", "--tb-popover-max-width",
+        "--tb-popover-radius", "--tb-qr-code-background", "--tb-qr-code-color", "--tb-table-row-height",
+        "--tb-table-sticky-top", "--tb-tabs-indicator-color", "--tb-tabs-indicator-size", "--tb-tooltip-max-width",
+        "--tb-tree-insert-band", "--tb-tree-insert-offset", "--tb-tree-item-height", "--tb-tree-item-radius",
+        "--tb-tree-text-min-width",
     ];
 
     private static readonly string[] Tones =
