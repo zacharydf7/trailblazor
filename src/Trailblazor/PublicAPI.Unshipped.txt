@@ -5776,3 +5776,8 @@ Trailblazor.TbFieldRow.Columns.set -> void
 Trailblazor.TbFieldRow.Gap.get -> int
 Trailblazor.TbFieldRow.Gap.set -> void
 Trailblazor.TbFieldRow.TbFieldRow() -> void
+Trailblazor.TbTreeItemEnd
+Trailblazor.TbTreeItemEnd.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTreeItemEnd.ChildContent.set -> void
+Trailblazor.TbTreeItemEnd.Dispose() -> void
+Trailblazor.TbTreeItemEnd.TbTreeItemEnd() -> void

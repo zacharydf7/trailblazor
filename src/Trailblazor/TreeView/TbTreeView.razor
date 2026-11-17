@@ -156,11 +156,11 @@
                   class="@ClassNames.Join("tb-tree__content", Classes?.Content)">
                 @if (ItemTemplate is not null && valued)
                 {
-                    @ItemTemplate(context)
+                    <CascadingValue Value="EndSlotOf(node.Key)" IsFixed="true">@ItemTemplate(context)</CascadingValue>
                 }
                 else if (declared is not null)
                 {
-                    @declared.Row
+                    <CascadingValue Value="EndSlotOf(node.Key)" IsFixed="true">@declared.Row</CascadingValue>
                 }
                 else
                 {
@@ -171,15 +171,11 @@
                     <span data-part="text" class="tb-tree__text">@TextOf(node)</span>
                 }
             </span>
-            @if ((declared?.End ?? (ItemEndTemplate is not null && valued ? ItemEndTemplate(context) : null))
-                is { } end)
+            @if ((declared?.End ?? (ItemEndTemplate is not null && valued ? ItemEndTemplate(context) : null)) is var end
+                && (end is not null || _slottedEnds))
             {
-                @* The end slot's own controls keep their clicks and keys from the row. *@
-                <span data-part="end" id="@(InsertTemplate is null ? null : $"{nameId}-end")"
-                      class="@ClassNames.Join("tb-tree__end", Classes?.End)"
-                      @onclick:stopPropagation @ondblclick:stopPropagation @onkeydown:stopPropagation>
-                    @end
-                </span>
+                @TreeRowEnd.Render(end, EndSlotOf(node.Key), InsertTemplate is null ? null : $"{nameId}-end",
+                    ClassNames.Join("tb-tree__end", Classes?.End))
             }
             @if (InsertTemplate is not null)
             {

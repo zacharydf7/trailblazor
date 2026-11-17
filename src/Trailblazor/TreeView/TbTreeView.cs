@@ -32,6 +32,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private readonly HashSet<object> _failed = [];
     private readonly Dictionary<object, bool?> _checkStates = [];
     private readonly Dictionary<object, ElementReference> _rowRefs = [];
+    // What a TbTreeItemEnd in a row's template shows at the row's end, by the row's key.
+    private readonly Dictionary<object, ContentSlot> _endSlots = [];
+    // Set once a TbTreeItemEnd fills a row's end; from then on every row draws its end through a TreeRowEnd.
+    private bool _slottedEnds;
     private readonly Dictionary<object, int> _rowIndex = [];
     // Kept across rebuilds, so a row keeps its id and the focus held by that id.
     private readonly KeyIds _ids = new();
@@ -923,6 +927,12 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         _rowDoubleClick.KeepOnly(_nodes.ContainsKey);
         _toggle.KeepOnly(_nodes.ContainsKey);
         _toggleCheck.KeepOnly(_nodes.ContainsKey);
+        // A row's template keeps the slot it was first given, so a key keeps one slot while it exists, shown or not.
+        foreach (var gone in _endSlots.Keys.Where(key => !_nodes.ContainsKey(key)).ToList())
+        {
+            _endSlots.Remove(gone);
+        }
+
         _builtFor = BuiltFor;
     }
 
@@ -1512,6 +1522,25 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     private bool CanSelect(TreeNode<TItem> node) => SelectionMode != SelectionMode.None && HasValue(node)
         && IsSelectable?.Invoke(node.Item) != false && !IsItemDisabled(node);
+
+    private ContentSlot EndSlotOf(object key)
+    {
+        if (!_endSlots.TryGetValue(key, out var slot))
+        {
+            slot = _endSlots[key] = new();
+            slot.Changed += () =>
+            {
+                if (!_slottedEnds && slot.Content is not null)
+                {
+                    _slottedEnds = true;
+                    _rowVersion++;
+                    StateHasChanged();
+                }
+            };
+        }
+
+        return slot;
+    }
 
     private bool IsItemDisabled(TreeNode<TItem> node) => _declared.GetValueOrDefault(node.Key)?.Disabled == true
         || (HasValue(node) && ItemDisabled?.Invoke(node.Item) == true);

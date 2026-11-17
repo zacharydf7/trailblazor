@@ -1,0 +1,12 @@
+@* A tree row of an app's own: one count shown in the row's text and raised by a button at the row's end. *@
+<span data-part="text">@Camp (@_visits)</span>
+<TbTreeItemEnd>
+    <TbButton Size="Size.Small" OnClick="() => _visits++">Visit @Camp</TbButton>
+</TbTreeItemEnd>
+
+@code {
+    private int _visits;
+
+    [Parameter, EditorRequired]
+    public string Camp { get; set; } = "";
+}

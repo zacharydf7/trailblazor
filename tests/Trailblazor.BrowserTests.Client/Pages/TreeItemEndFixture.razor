@@ -1,0 +1,15 @@
+@page "/tree-item-end"
+
+<TbTreeView TItem="string" TKey="string" AriaLabel="Camps" Items="Camps" KeySelector="camp => camp"
+            ItemText="camp => camp" @bind-SelectedKeys="_selected">
+    <ItemTemplate>
+        <CampRow Camp="@context.Item" />
+    </ItemTemplate>
+</TbTreeView>
+<TbButton>After</TbButton>
+<output data-testid="selected">@string.Join(", ", _selected)</output>
+
+@code {
+    private static readonly string[] Camps = ["Pine", "Cedar"];
+    private IReadOnlyCollection<string> _selected = [];
+}

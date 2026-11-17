@@ -26,11 +26,10 @@ else
          aria-expanded="@(ChildContent is null ? null : open ? "true" : "false")" style="@RowStyle"
          class="@ClassNames.Join("tb-tree__item", classes?.Item, Class)">
         <span class="@ClassNames.Join("tb-tree__toggle", classes?.Toggle)" aria-hidden="true"></span>
-        <span data-part="content" class="@ClassNames.Join("tb-tree__content", classes?.Content)">@Row</span>
-        @if (End is not null)
-        {
-            <span data-part="end" class="@ClassNames.Join("tb-tree__end", classes?.End)">@End</span>
-        }
+        <span data-part="content" class="@ClassNames.Join("tb-tree__content", classes?.Content)">
+            <CascadingValue Value="_endSlot" IsFixed="true">@Row</CascadingValue>
+        </span>
+        @TreeRowEnd.Render(End, _endSlot, null, ClassNames.Join("tb-tree__end", classes?.End))
     </div>
     @if (open)
     {
@@ -43,6 +42,8 @@ else
     private (object Key, string? Text, Icon? Icon, bool Disabled, bool HasChildren) _last;
     private TreeScope<TItem>? _inner;
     private bool? _lastExpanded;
+    // Filled by a TbTreeItemEnd in TextContent while the item draws its own row, without a circuit.
+    private readonly ContentSlot _endSlot = new();
 
     /// <summary>The item this row stands for. With no <c>KeySelector</c> on the tree, it is also the key, so it must
     /// stay equal across renders. Selection, checks and expansion report these keys. A row with no value, such as a

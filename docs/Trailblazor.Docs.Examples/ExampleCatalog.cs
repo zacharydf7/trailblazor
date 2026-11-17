@@ -8120,9 +8120,8 @@ public static class ExampleCatalog
                 new("item-template", "Item template", "`ItemTemplate` draws a row's content. Keep `ItemText` so typing "
                     + "still finds the row, and put the text in an element with `data-part=\"text\"`, directly in the "
                     + "template, to keep the row's ellipsis. To draw a row's text and its controls from one "
-                    + "component of your own, render it in both `ItemTemplate` and `ItemEndTemplate` with a parameter "
-                    + "saying which part to draw; each slot gets its own instance, so keep any state they share on the "
-                    + "item rather than in the component.",
+                    + "component of your own, put a `TbTreeItemEnd` in it. What the `TbTreeItemEnd` holds shows at the "
+                    + "row's end, after any `ItemEndTemplate`, and your component keeps one set of state for both.",
                     typeof(TreeViewTemplateExample)),
                 new("flat-data", "Flat data", "`ParentKeySelector` builds the tree from one list of every item, each "
                     + "naming its parent's key, with null for a root. Children keep the list's order.",
@@ -8176,8 +8175,8 @@ public static class ExampleCatalog
             ],
             Api =
             [
-                typeof(TbTreeView<,>), typeof(TbTreeItem<>), typeof(TreeViewLabels), typeof(TreeMove<>),
-                typeof(MoveCheck), typeof(TreeInsertContext<>), typeof(TreeViewClasses),
+                typeof(TbTreeView<,>), typeof(TbTreeItem<>), typeof(TbTreeItemEnd), typeof(TreeViewLabels),
+                typeof(TreeMove<>), typeof(MoveCheck), typeof(TreeInsertContext<>), typeof(TreeViewClasses),
             ],
             Keyboard =
             [
@@ -8284,10 +8283,10 @@ public static class ExampleCatalog
                 new("With cascading checks, a `TbTreeItem` with no `Value` checks the rows inside it. Such a row is "
                     + "never in the bound keys, so several of them can share a text without needing keys."),
                 new("`ExpandAllAsync` opens rows with `HasChildren` too, and the rows that appear in them."),
-                new("Put a row's buttons and menus in `ItemEndTemplate`, or a `TbTreeItem`'s `End`, not in "
-                    + "`ItemTemplate`. `ItemTemplate` renders in the row's content (`data-part=\"content\"`), where a "
-                    + "click selects the row, or opens it when it can't be selected. The end (`data-part=\"end\"`) "
-                    + "keeps clicks and keys to itself."),
+                new("Put a row's buttons and menus in `ItemEndTemplate`, a `TbTreeItem`'s `End` or a "
+                    + "`TbTreeItemEnd`, not directly in `ItemTemplate`. `ItemTemplate` renders in the row's content "
+                    + "(`data-part=\"content\"`), where a click selects the row, or opens it when it can't be selected. "
+                    + "The end (`data-part=\"end\"`) keeps clicks and keys to itself."),
                 new("A row's `data-key` is its key's text for a string, number or date key. Any other key gets a "
                     + "made-up id such as `key-3`, and so does a key whose text is empty or that another key already "
                     + "has."),

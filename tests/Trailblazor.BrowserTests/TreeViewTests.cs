@@ -167,4 +167,23 @@ public class TreeViewTests(BrowserFixture fixture) : TreeViewKeysTests(fixture)
         await Expect(row).ToHaveCSSAsync("outline-style", "solid");
         await Expect(row).ToHaveCSSAsync("outline-color", await SystemColorAsync(page, "Highlight"));
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ItemEnd_ShouldTakeTabAndKeepItsPressFromTheRow_WhenTheTemplateFillsItWithAButton(string browser)
+    {
+        var page = await OpenAsync(browser, "/tree-item-end");
+        var tree = page.GetByRole(AriaRole.Tree, new() { Name = "Camps" });
+        await Expect(tree).ToHaveAttributeAsync("data-ready", "");
+        await tree.Locator("[role=treeitem][data-text='Pine']").FocusAsync();
+
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Visit Pine" })).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(tree.Locator("[data-text='Pine'] [data-part=text]")).ToHaveTextAsync("Pine (1)");
+        await Expect(page.GetByTestId("selected")).ToBeEmptyAsync();
+        // Only the focused row's end controls are tab stops, so the next Tab leaves the tree.
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "After" })).ToBeFocusedAsync();
+    }
 }
