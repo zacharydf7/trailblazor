@@ -143,23 +143,25 @@
                     It also has tokens of its own, which change only this component. Set one on the page or on any
                     element that contains it; a token you don't set keeps the default shown here.
                 </TbText>
-                <TbTable aria-label="Its own tokens" Size="Size.Small">
-                    <thead>
-                        <tr>
-                            <th scope="col">Token</th>
-                            <th scope="col">Default</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var (name, fallback) in hooks)
-                        {
+                <div class="docs-api" tabindex="0" role="region" aria-label="Its own tokens">
+                    <table>
+                        <thead>
                             <tr>
-                                <th scope="row"><code>@name</code></th>
-                                <td><code>@fallback</code></td>
+                                <th scope="col">Token</th>
+                                <th scope="col">Default</th>
                             </tr>
-                        }
-                    </tbody>
-                </TbTable>
+                        </thead>
+                        <tbody>
+                            @foreach (var (name, fallback) in hooks)
+                            {
+                                <tr>
+                                    <th scope="row"><code>@name</code></th>
+                                    <td><code>@fallback</code></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
 
             <DocsHeading Id="testing" Text="Testing" Class="docs-section" />

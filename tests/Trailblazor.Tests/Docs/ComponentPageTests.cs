@@ -28,7 +28,7 @@ public class ComponentPageTests : DocsTest
     {
         var cut = ComponentPage("button");
 
-        var rows = cut.FindAll("table[aria-label='Its own tokens'] tbody tr").Select(row => row.TextContent.Trim());
+        var rows = cut.FindAll("[aria-label='Its own tokens'] tbody tr").Select(row => row.TextContent.Trim());
 
         Assert.Contains(rows, row => row.StartsWith("--tb-button-radius") && row.EndsWith("var(--tb-radius-md)"));
     }
