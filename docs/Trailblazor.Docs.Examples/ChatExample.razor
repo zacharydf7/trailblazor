@@ -1,7 +1,7 @@
 @implements IDisposable
 
 <TbChat AriaLabel="Trip planning" Messages="_messages" CurrentAuthorId="@You.Id" TypingAuthors="_typing"
-        OnSend="Send" Placeholder="Write to Robin" Style="max-inline-size: 32rem" />
+        OnSend="Send" Placeholder="Write to Robin" TelemetryName="trip-chat" Style="max-inline-size: 32rem" />
 
 @code {
     private static readonly ChatAuthor You = new("you", "You");

@@ -7,6 +7,20 @@ namespace Trailblazor;
 /// Screen readers hear the value, or <see cref="AriaLabel"/>.</summary>
 public partial class TbBarcode
 {
+    /// <summary>A label this barcode's use is counted under, such as <c>"shipping-barcode"</c>, so the app can count how
+    /// often people see it through the <c>Trailblazor</c> meter. Controls that share a label count together; a control
+    /// without one isn't counted. It names what the control shows, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
     // Whole pixels for each module by default, so every bar of the same width draws at the same width.
     private const int ModulePixels = 2;
     private string _viewBox = "";

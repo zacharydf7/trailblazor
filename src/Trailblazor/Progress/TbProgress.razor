@@ -54,6 +54,20 @@
 </div>
 
 @code {
+    /// <summary>A label this progress indicator's use is counted under, such as <c>"upload-progress"</c>, so the app
+    /// can count how often people see it through the <c>Trailblazor</c> meter. Controls that share a label count
+    /// together; a control without one isn't counted. It names what the control shows, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
     private readonly string _labelId = $"tb-progress-{Guid.NewGuid():N}-label";
     private string? _valueText;
 

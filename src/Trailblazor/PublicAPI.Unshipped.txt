@@ -6569,3 +6569,32 @@ static Trailblazor.TourStep.operator ==(Trailblazor.TourStep? left, Trailblazor.
 ~override Trailblazor.TbTour.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 Trailblazor.TbTour.TelemetryName.get -> string?
 Trailblazor.TbTour.TelemetryName.set -> void
+Trailblazor.TbAvatar.TelemetryName.get -> string?
+Trailblazor.TbAvatar.TelemetryName.set -> void
+Trailblazor.TbAvatarGroup.TelemetryName.get -> string?
+Trailblazor.TbAvatarGroup.TelemetryName.set -> void
+Trailblazor.TbBadge.TelemetryName.get -> string?
+Trailblazor.TbBadge.TelemetryName.set -> void
+Trailblazor.TbBarcode.TelemetryName.get -> string?
+Trailblazor.TbBarcode.TelemetryName.set -> void
+Trailblazor.TbImage.TelemetryName.get -> string?
+Trailblazor.TbImage.TelemetryName.set -> void
+Trailblazor.TbProgress.TelemetryName.get -> string?
+Trailblazor.TbProgress.TelemetryName.set -> void
+Trailblazor.TbQrCode.TelemetryName.get -> string?
+Trailblazor.TbQrCode.TelemetryName.set -> void
+Trailblazor.TbTable.TelemetryName.get -> string?
+Trailblazor.TbTable.TelemetryName.set -> void
+Trailblazor.TbTimeline.TelemetryName.get -> string?
+Trailblazor.TbTimeline.TelemetryName.set -> void
+Trailblazor.TbVirtualList<TItem>.TelemetryName.get -> string?
+Trailblazor.TbVirtualList<TItem>.TelemetryName.set -> void
+override Trailblazor.TbAvatar.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbAvatarGroup.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbBadge.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbBarcode.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbImage.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbProgress.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbQrCode.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbTable.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbTimeline.OnAfterRender(bool firstRender) -> void

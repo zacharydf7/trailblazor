@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-17
 
+- `TbQrCode`, `TbBarcode`, `TbImage`, `TbTimeline`, `TbTable`, `TbVirtualList`, `TbProgress`, `TbAvatar`, `TbAvatarGroup` and `TbBadge` take a `TelemetryName` and, when given one, count `trailblazor.control.shown` as they first render
 - New `TbWatermark`: content with tiled marks over it (`data-part="marks"`, `aria-hidden`, taking no clicks) and a visually hidden copy of what they say (`data-part="label"`) before the content
 - New `TbTour`: a full-page layer (`tb-tour`, with `data-step`) whose shade (`data-part="shade"`) dims the page around the step's target, and whose step is a modal `dialog` (`data-part="step"` with `data-target`) named by its title and described by its body, with Back, Next (Done on the last step) and Skip tour buttons, and the step's position; the page behind it is inert while it shows
 - New `TbMentionInput`: a field whose text area or input (`data-part="input"`, with `aria-autocomplete="list"`, `aria-controls` and `data-triggers`; a one-line input is a `combobox` with `aria-expanded`) opens a listbox of suggestions (`data-part="listbox"`, with `data-results-for`; each `data-part="option"` with `data-insert`) under the trigger being typed; the field marks the active suggestion with `aria-activedescendant`, and the count of suggestions is read out

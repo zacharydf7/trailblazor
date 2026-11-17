@@ -31,6 +31,20 @@
 </span>
 
 @code {
+    /// <summary>A label this badge's use is counted under, such as <c>"unread-badge"</c>, so the app can count how
+    /// often people see it through the <c>Trailblazor</c> meter. Controls that share a label count together; a control
+    /// without one isn't counted. It names what the control shows, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
     /// <summary>The number the badge shows, such as unread messages. Leave it null for a dot.</summary>
     [Parameter]
     public int? Count { get; set; }

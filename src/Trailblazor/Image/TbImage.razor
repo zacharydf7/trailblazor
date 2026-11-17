@@ -9,6 +9,20 @@
                 Fit is ImageFit fit ? ClassNames.Modifier("tb-image", "fit", fit) : null, Class)" />
 
 @code {
+    /// <summary>A label this image's use is counted under, such as <c>"trail-photo"</c>, so the app can count how
+    /// often people see it through the <c>Trailblazor</c> meter. Controls that share a label count together; a control
+    /// without one isn't counted. It names what the control shows, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
     /// <summary>The image's address, which can be a <c>data:</c> URL.</summary>
     [Parameter, EditorRequired]
     public string Src { get; set; } = "";

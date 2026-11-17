@@ -7,6 +7,20 @@ namespace Trailblazor;
 /// readers hear the value, or <see cref="AriaLabel"/>.</summary>
 public partial class TbQrCode
 {
+    /// <summary>A label this QR code's use is counted under, such as <c>"checkout-qr"</c>, so the app can count how
+    /// often people see it through the <c>Trailblazor</c> meter. Controls that share a label count together; a control
+    /// without one isn't counted. It names what the control shows, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
     // Four light modules on every side, as the standard asks, so a scanner can find the code.
     private const int QuietZone = 4;
     // Whole pixels for each module by default, so every module draws at the same size.

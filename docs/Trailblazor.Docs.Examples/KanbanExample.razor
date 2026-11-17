@@ -1,5 +1,5 @@
 <TbKanban TItem="TrailTask" AriaLabel="Trail work" Columns="Columns" CardLabel="task => task.Title"
-          KeySelector="task => task.Id" OnMove="Move">
+          KeySelector="task => task.Id" OnMove="Move" TelemetryName="trail-work">
     <CardTemplate Context="task">
         <TbText>@task.Title</TbText>
         <TbText TextStyle="TextStyle.Caption" Muted>@task.Trail</TbText>

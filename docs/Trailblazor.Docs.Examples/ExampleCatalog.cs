@@ -422,6 +422,12 @@ public static class ExampleCatalog
             ],
             TestingTip = "Find a code by its role and name, as `GetByRole(AriaRole.Img, new() { Name = \"PERMIT-1042\" "
                 + "})`, and read what it holds from its `data-value`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"checkout-qr\"`, a QR code or barcode counts "
+                    + "`trailblazor.control.shown` as it first renders. Nothing about it can be used, so it counts "
+                    + "nothing else. What it shows is never recorded.",
+            ],
         },
         new("avatar", "Avatar", ExampleCategory.Content,
             "A small picture of a person or a team: their photo, their initials, or an icon.")
@@ -496,6 +502,12 @@ public static class ExampleCatalog
             ],
             TestingTip = "Find an avatar by its role and name: `GetByRole(AriaRole.Img, new() { Name = \"Ada Lovelace\" })` "
                 + "in Playwright, or `[data-part=avatar][aria-label='Ada Lovelace']` in bUnit.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"profile-avatar\"`, an avatar or avatar group counts "
+                    + "`trailblazor.control.shown` as it first renders. Nothing about it can be used, so it counts "
+                    + "nothing else. What it shows is never recorded.",
+            ],
         },
         new("timeline", "Timeline", ExampleCategory.Content,
             "A list of events in order, such as a trip's history or an order's progress, each with a dot on a line "
@@ -565,6 +577,12 @@ public static class ExampleCatalog
             TestingTip = "Find the timeline with `GetByRole(AriaRole.List, new() { Name = \"Trip history\" })` and an "
                 + "event with `GetByRole(AriaRole.Listitem).Filter(new() { HasText = \"Trip booked\" })`. A `time` "
                 + "element's `datetime` attribute holds the time in ISO 8601, whatever the culture.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trip-history\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders. Nothing about it can be used, so it counts nothing else. What it shows is never "
+                    + "recorded.",
+            ],
         },
         new("carousel", "Carousel", ExampleCategory.Content,
             "Slides shown one at a time, such as featured trails or photos, with buttons to move between them.")
@@ -755,6 +773,11 @@ public static class ExampleCatalog
                 + "Playwright. By hand, find the list as "
                 + "`GetByRole(AriaRole.Feed, new() { Name = \"Trail reports\" })` and an item as "
                 + "`GetByRole(AriaRole.Article, new() { Name = \"Report 12: Trail 13\" })`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-list\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders. Scrolling through it isn't counted. What it shows is never recorded.",
+            ],
         },
         new("chat", "Chat", ExampleCategory.Content,
             "A conversation: messages from several people, who is typing, replies that stream in, and a box to write "
@@ -993,6 +1016,12 @@ public static class ExampleCatalog
             TestingTip = "Find an image by its alternative text: `GetByRole(AriaRole.Img, new() { Name = \"A trail "
                 + "winding between two hills\" })` in Playwright, or `img[alt='A trail winding between two hills']` in "
                 + "bUnit.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-photo\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders. Loading and failing aren't uses, so `OnLoad` and `OnError` count nothing. What "
+                    + "it shows is never recorded.",
+            ],
         },
         new("watermark", "Watermark", ExampleCategory.Content,
             "Tiles text or an image over content, such as \"Draft\" across a page, without getting in its way.")
@@ -1053,7 +1082,8 @@ public static class ExampleCatalog
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"draft-report\"`, it counts `trailblazor.control.shown` as it first "
-                    + "renders. Nothing about it can be used, so it counts nothing else.",
+                    + "renders. Nothing about it can be used, so it counts nothing else. What it shows is never "
+                    + "recorded.",
             ],
         },
         new("divider", "Divider", ExampleCategory.Layout,
@@ -3307,6 +3337,12 @@ public static class ExampleCatalog
             TestingTip = "The badge's element has `data-part=\"badge\"` and carries the full `Count` in `data-count`, "
                 + "such as `120`. Its `data-part=\"count\"` child holds the number it shows, such as \"99+\", and its "
                 + "text also holds the `Label` when there is one.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"unread-badge\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders. Nothing about it can be used, so it counts nothing else. What it shows is never "
+                    + "recorded.",
+            ],
         },
         new("progress", "Progress", ExampleCategory.Feedback,
             "Shows how far along work is, as a bar or a circle, or that it is still going.")
@@ -3384,6 +3420,12 @@ public static class ExampleCatalog
             TestingTip = "Find it with `GetByRole(AriaRole.Progressbar, new() { Name = \"Upload\" })` and check "
                 + "`aria-valuenow`, or `aria-valuetext` when it has a `ValueFormatter`. The shown text is in "
                 + "`[data-part=label]` and `[data-part=value]`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"upload-progress\"`, it counts `trailblazor.control.shown` as "
+                    + "it first renders. Nothing about it can be used, so it counts nothing else. What it shows is "
+                    + "never recorded.",
+            ],
         },
         new("label", "Label", ExampleCategory.Inputs,
             "A label for a control or a group of controls, with an optional info button that explains the setting.")
@@ -9982,6 +10024,12 @@ public static class ExampleCatalog
             Blocks = ["tb-table"],
             TestingTip = "Find it by role and name, `GetByRole(AriaRole.Table, new() { Name = \"Opening hours\" })`, "
                 + "and its cells with `GetByRole(AriaRole.Cell, ...)`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-table\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders. Nothing about it can be used, so it counts nothing else. What it shows is never "
+                    + "recorded.",
+            ],
         },
         new("breadcrumbs", "Breadcrumbs", ExampleCategory.Navigation,
             "A trail of links from the top of a site down to the current page, so people can see where they are and "
