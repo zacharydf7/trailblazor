@@ -57,22 +57,34 @@ public class DisposeContractTests : BunitContext
     {
         var values = parametersOf(component);
         var shown = component;
-        if (component.IsGenericType && Parents.TryGetValue(component.GetGenericTypeDefinition(), out var parent)
+        var own = values;
+        RenderFragment child = builder =>
+        {
+            builder.OpenComponent(0, component);
+            foreach (var (name, value) in own)
+            {
+                builder.AddAttribute(1, name, value);
+            }
+
+            builder.CloseComponent();
+        };
+        // A TbTreeItemEnd fills the end slot of the row whose template it's in, so it renders in a tree's
+        // ItemTemplate, not its ChildContent, which some tests set and a tree with Items mustn't have.
+        if (component == typeof(TbTreeItemEnd))
+        {
+            shown = typeof(TbTreeView<string, string>);
+            values = parametersOf(shown);
+            values.Remove(nameof(TbTreeView<string, string>.ChildContent));
+            values[nameof(TbTreeView<string, string>.Items)] = new[] { "Pine" };
+            values[nameof(TbTreeView<string, string>.ItemTemplate)] =
+                (RenderFragment<TreeItemContext<string, string>>)(_ => child);
+        }
+        else if (component.IsGenericType && Parents.TryGetValue(component.GetGenericTypeDefinition(), out var parent)
             || Parents.TryGetValue(component, out parent))
         {
-            var child = values;
             shown = Close(parent);
             values = parametersOf(shown);
-            values["ChildContent"] = (RenderFragment)(builder =>
-            {
-                builder.OpenComponent(0, component);
-                foreach (var (name, value) in child)
-                {
-                    builder.AddAttribute(1, name, value);
-                }
-
-                builder.CloseComponent();
-            });
+            values["ChildContent"] = child;
         }
 
         parameters.Add(host => host.Type, shown).Add(host => host.Parameters, values);

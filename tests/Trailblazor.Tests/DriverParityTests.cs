@@ -65,7 +65,7 @@ public class DriverParityTests
         ["TbTableOfContentsItem"] = "part of TbTableOfContents", ["TbTimelineItem"] = "part of TbTimeline",
         ["TbToggleItem"] = "part of TbToggleGroup", ["TbToolbarButton"] = "part of TbToolbar",
         ["TbToolbarSeparator"] = "part of TbToolbar",
-        ["TbTreeItem"] = "part of TbTreeView",
+        ["TbTreeItem"] = "part of TbTreeView", ["TbTreeItemEnd"] = "part of TbTreeView",
 
         ["TbAppShell"] = "its menu button is a plain button found by its role, and whether the navigation is open "
             + "or collapsed shows on the page",
