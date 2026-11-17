@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-17
 
+- `TbCarousel`'s previous and next chevrons mirror in right-to-left text (their icons get `tb-icon--mirrored`), so next points toward the end of the line and previous toward the start
 - New `TbMenubar`: a `menubar` whose `TbMenu` children's triggers become `menuitem`s, shown as text without a chevron, with one tab stop between them once the page is interactive (`tabindex` 0 on one, -1 on the rest)
 - New `TbCascader`: a combobox whose popup (`data-part="popup"`) holds one listbox for each level (`data-part="column"` with `data-level`), or a list of matching paths while the user types (`data-part="results"`); a choice with more under it has `data-more` and is named with "more choices"
 - New `TbKanban`: a region of columns (`role="group"`, `data-part="column"` with `data-key` and `data-full`), each with a title, a count and a sortable list of its cards; the columns' lists share one group, so cards move between columns; a move into a full column is refused and read out

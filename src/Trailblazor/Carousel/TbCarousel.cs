@@ -9,6 +9,8 @@ namespace Trailblazor;
 /// each slide and, with <see cref="AutoPlayInterval"/>, slides that turn by themselves.</summary>
 public partial class TbCarousel
 {
+    private static readonly Icon PreviousIcon = BuiltInIcons.ChevronStart with { MirrorsInRightToLeft = true };
+    private static readonly Icon NextIcon = BuiltInIcons.ChevronEnd with { MirrorsInRightToLeft = true };
     private readonly string _slidesId = $"tb-carousel-{Guid.NewGuid():N}-slides";
     private readonly List<TbCarouselSlide> _slides = [];
     private ElementReference _section;

@@ -89,6 +89,16 @@ public class TbCarouselTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldMirrorThePreviousAndNextChevronsInRightToLeftText_WhenCalled()
+    {
+        var cut = RenderCarousel();
+
+        var icons = cut.FindAll("[data-part=previous] .tb-icon, [data-part=next] .tb-icon");
+        Assert.Equal(2, icons.Count);
+        Assert.All(icons, icon => Assert.Contains("tb-icon--mirrored", icon.ClassList));
+    }
+
+    [Fact]
     public async Task Buttons_ShouldMoveBetweenSlidesAndWrapAround_WhenPressed()
     {
         var cut = RenderCarousel();
