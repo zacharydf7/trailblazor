@@ -20,6 +20,9 @@ An issue is done when all of these hold:
   with the same names: a bUnit read such as `Text` is `TextAsync()` in Playwright. `DriverParityTests` fails when
   either package lacks one or their names differ; a component without a driver goes in its exemption list, with the
   reason.
+- A component can be counted: it takes a `TelemetryName` (its own, from a base class, or through its items), and when
+  given one it counts `trailblazor.control.shown` as it first renders and `trailblazor.control.used` for each thing a
+  user does with it. Only layout pieces, such as a stack or a spacer, go without. Its docs page says what it counts.
 - A new component has a behavior checklist in `docs/behavior`, written before it's built, and a change to a component's
   behavior updates its checklist. See [the format](docs/behavior/README.md).
 - The docs site is updated: a new or changed component, parameter or behavior has its page, interactive example, API
