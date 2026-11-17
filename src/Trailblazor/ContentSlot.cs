@@ -4,7 +4,7 @@ namespace Trailblazor;
 
 // Content a component in the dialog puts in its header. One swapped in sets its content before the one it replaces is
 // disposed, so only the component that set the content last clears it.
-internal sealed class DialogSlot
+internal sealed class ContentSlot
 {
     private object? _owner;
 

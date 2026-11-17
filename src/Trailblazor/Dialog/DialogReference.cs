@@ -211,13 +211,13 @@ public abstract class DialogReference
     internal Func<DialogDismissReason, Task>? Dismiss { get; set; }
 
     // Filled while a TbDialogTitle is in the dialog, so the header shows it in place of the title's text.
-    internal DialogSlot TitleContent { get; } = new();
+    internal ContentSlot TitleContent { get; } = new();
 
     // Filled while a TbDialogHeaderActions is in the dialog, so the header shows it after the title.
-    internal DialogSlot HeaderActions { get; } = new();
+    internal ContentSlot HeaderActions { get; } = new();
 
     // Filled while a TbDialogHeader is in the dialog, so the header shows it in place of its own content.
-    internal DialogSlot CustomHeader { get; } = new();
+    internal ContentSlot CustomHeader { get; } = new();
 
     /// <summary>Raised with the new state each time <see cref="WindowState"/> changes.</summary>
     public event Action<DialogWindowState>? WindowStateChanged;
@@ -314,13 +314,13 @@ public abstract class DialogReference
         }
     }
 
-    internal void Fill(DialogSlot slot, object owner, RenderFragment? content)
+    internal void Fill(ContentSlot slot, object owner, RenderFragment? content)
     {
         slot.Set(owner, content);
         OnHeaderContentChanged();
     }
 
-    internal void Empty(DialogSlot slot, object owner)
+    internal void Empty(ContentSlot slot, object owner)
     {
         if (slot.Clear(owner))
         {
