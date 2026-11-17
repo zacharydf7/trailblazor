@@ -381,6 +381,8 @@
 
     internal void Add(IFormField field) => _fields.Add(field);
 
+    internal IReadOnlyList<IFormField> Fields => _fields;
+
     // One edit renders the parent and raises several events, so they share one report, made once the edit's renders are
     // done.
     internal async Task EditAsync(Func<Task> edit)

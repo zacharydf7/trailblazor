@@ -1932,6 +1932,100 @@ public static class ExampleCatalog
                     + "`start` or `stop`. What is said is never recorded.",
             ],
         },
+        new("smart-paste", "Smart paste", ExampleCategory.Actions,
+            "A button that fills a form's fields from pasted text, such as an email signature, through the app's "
+                + "model.")
+        {
+            WhenToUse =
+            [
+                "Use it on a form people often fill from text they already have, such as a contact from an email "
+                    + "signature or an address from a message, so one paste fills several fields.",
+            ],
+            WhenNotToUse =
+            [
+                "When the values come from a file or another system, import them in code rather than through a "
+                    + "model, which can misread text.",
+            ],
+            Related = ["form", "ai-prompt", "text-field"],
+            Pattern = new("button", "https://www.w3.org/WAI/ARIA/apg/patterns/button/"),
+            Sections =
+            [
+                new("basic", "Smart paste", "Put it inside a `TbForm`. Pressing it reads the clipboard and calls "
+                    + "`Extract` with the text and the fields it can fill, each named by its label, with its helper "
+                    + "text as a description. `Extract` returns each value it finds as text under its field's name, "
+                    + "and each one is set as if the user had typed it, so the field's own limits, binding, validation "
+                    + "and the form's dirty state follow. In a real app, `Extract` asks a language model, "
+                    + "such as through an `IChatClient`, for JSON keyed by the field names; this example matches "
+                    + "patterns instead. Where the browser won't share the clipboard, a box asks for the text.",
+                    typeof(SmartPasteExample)),
+            ],
+            Api = [typeof(TbSmartPaste), typeof(SmartPasteRequest), typeof(SmartPasteField), typeof(SmartPasteLabels)],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Reads the clipboard and fills the form, or opens the box for the text."),
+            ],
+            Labeling =
+            [
+                "The button reads \"Smart paste\", unless `Label` words it. The box is a dialog titled \"Paste text to "
+                    + "fill the form\", with a text area labeled \"Text to fill from\", unless `Labels` words them.",
+            ],
+            Announcements =
+            [
+                "\"Filling the form\" while `Extract` runs, then \"Filled 3 fields\", \"Filled 1 field\", \"Found "
+                    + "nothing to fill\" or \"Couldn't fill the form\", which also show beside the button, unless "
+                    + "`Labels` words them.",
+            ],
+            Accessibility =
+            [
+                "The box gets focus when it opens and gives it back to the button when it closes.",
+                "The button shows it's busy while `Extract` runs, and takes no second press meanwhile.",
+            ],
+            AppDuties =
+            [
+                "If pasted text leaves the app, tell people it goes to a model, and to which one.",
+                "Have `Extract` write numbers and dates in the invariant format, such as `1234.5`, `2026-11-17` and "
+                    + "`2026-11-17T14:30`, whatever the user's culture. A date-time keeps the time as written, "
+                    + "whatever offset follows it, and a value a field can't take is skipped.",
+            ],
+            Notes =
+            [
+                new("It fills text fields, number fields, date, time and date-time pickers, checkboxes, and "
+                    + "autocompletes with `FreeText`. It leaves out password fields, disabled and read-only ones, "
+                    + "fields without a label, and fields that pick from options or a range, such as a select, radio "
+                    + "group, slider or rating."),
+            ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
+            BeforeInteractive =
+            [
+                "The button is turned off until the page is interactive.",
+            ],
+            Target = new("button", "Smart paste"),
+            Blocks = ["tb-smart-paste"],
+            DataParts =
+            [
+                new("button", "The button that reads the clipboard and fills the form."),
+                new("status", "The result beside the button, such as \"Filled 3 fields\"."),
+                new("label", "The label of the box's text area."),
+                new("text", "The box's text area."),
+                new("fill", "The box's button that fills the form."),
+                new("cancel", "The box's button that closes it without filling."),
+            ],
+            TestingTips =
+            [
+                "In bUnit, `cut.Tb().SmartPaste()` finds it: `PasteAsync(\"...\")` presses it and fills the form "
+                    + "from that text through the box, since bUnit has no clipboard, and `Status` reads the result. "
+                    + "Pass `Extract` a fake that returns fixed values.",
+                "In Playwright, `page.Tb().SmartPaste()` does the same and waits until the form is filled; it makes "
+                    + "the page's clipboard refuse first, so the box opens in every browser. To test the clipboard "
+                    + "itself, replace `navigator.clipboard.readText` in an init script and click `Button`.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"contact-paste\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` with the action `paste` each time it's pressed. "
+                    + "Nothing pasted or filled is recorded.",
+            ],
+        },
         new("toggle-group", "Toggle group", ExampleCategory.Actions,
             "A row of toggle buttons where one, or any number, can be pressed.")
         {

@@ -627,3 +627,9 @@ Trailblazor.Testing.Playwright.TbInPlaceEditorLocator.SaveAsync() -> System.Thre
 Trailblazor.Testing.Playwright.TbInPlaceEditorLocator.TbInPlaceEditorLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TbInPlaceEditorLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.InPlaceEditor(string! label) -> Trailblazor.Testing.Playwright.TbInPlaceEditorLocator!
+Trailblazor.Testing.Playwright.TbSmartPasteLocator
+Trailblazor.Testing.Playwright.TbSmartPasteLocator.Button.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbSmartPasteLocator.PasteAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbSmartPasteLocator.StatusAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbSmartPasteLocator.TbSmartPasteLocator(Microsoft.Playwright.ILocator! scope, string? label) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.SmartPaste(string? label = null) -> Trailblazor.Testing.Playwright.TbSmartPasteLocator!

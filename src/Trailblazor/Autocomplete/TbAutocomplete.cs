@@ -253,6 +253,9 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private protected override string FieldModifiers => ClassNames.Join(base.FieldModifiers, "tb-autocomplete");
 
+    // Only free text can be pasted; a value from its items needs the item, which the model can't see.
+    private protected override bool Pastable => FreeText && SmartPasteField.Takes(typeof(TValue));
+
     // Each keystroke cancels the search before it, so only the latest text's suggestions are shown.
     private async Task OnTypedAsync(string? text)
     {

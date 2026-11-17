@@ -2358,6 +2358,41 @@
         display: none;
     }
 
+    .tb-smart-paste {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-smart-paste__status {
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-smart-paste__label {
+        display: block;
+        margin-block-end: var(--tb-space-1);
+        font-weight: 600;
+    }
+
+    .tb-smart-paste__text {
+        box-sizing: border-box;
+        inline-size: 100%;
+        padding: var(--tb-space-2);
+        border: var(--tb-field-border-width, 1px) solid var(--tb-field-border-color, var(--tb-border-strong));
+        border-radius: var(--tb-field-radius, var(--tb-radius-md));
+        background: var(--tb-field-background, var(--tb-color-surface));
+        color: inherit;
+        font: inherit;
+        resize: vertical;
+    }
+
+    .tb-smart-paste__text:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
     /* The value reads as plain text beside its label until it's pressed, and shows it can be pressed on hover. */
     .tb-in-place-editor {
         display: grid;

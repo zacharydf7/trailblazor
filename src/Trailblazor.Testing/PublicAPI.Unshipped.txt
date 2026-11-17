@@ -574,3 +574,7 @@ Trailblazor.Testing.TbInPlaceEditorDriver.IsEditing.get -> bool
 Trailblazor.Testing.TbInPlaceEditorDriver.SaveAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbInPlaceEditorDriver.Text.get -> string!
 Trailblazor.Testing.TrailblazorMarkup.InPlaceEditor(string! label) -> Trailblazor.Testing.TbInPlaceEditorDriver!
+Trailblazor.Testing.TbSmartPasteDriver
+Trailblazor.Testing.TbSmartPasteDriver.PasteAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbSmartPasteDriver.Status.get -> string!
+Trailblazor.Testing.TrailblazorMarkup.SmartPaste(string? label = null) -> Trailblazor.Testing.TbSmartPasteDriver!

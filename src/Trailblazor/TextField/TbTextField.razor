@@ -312,6 +312,9 @@
 
     private protected override string FieldModifiers => ClassNames.Join(base.FieldModifiers, "tb-text-field");
 
+    // A password is never pasted from text that may hold someone else's.
+    private protected override bool Pastable => Type != TextFieldType.Password && SmartPasteField.Takes(typeof(TValue));
+
     private protected override string? FormatValue(TValue? value)
     {
         var text = base.FormatValue(value);

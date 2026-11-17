@@ -53,6 +53,8 @@ public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
         }
     }
 
+    private protected override bool Pastable => SmartPasteField.Takes(typeof(TTime));
+
     // The time box reads and writes 24-hour times, whatever the user sees.
     private protected override string? FormatValue(TTime? value) => IsoOf(value);
 

@@ -83,6 +83,8 @@
     // A required checkbox, such as one accepting terms, needs to be checked.
     private protected override bool IsMissing(TValue? value) => value is not true;
 
+    private protected override bool Pastable => SmartPasteField.Takes(typeof(TValue));
+
     // Only a bool? can be null, so only it is ever mixed.
     private bool Indeterminate => Value is null;
 

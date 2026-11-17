@@ -14,8 +14,8 @@ public class ComponentContractTests : BunitContext
     // TbStyles only a <link>, TbThemeHead only a <script> and TbInteractiveMark only a hidden mark, which take no class
     // or style; TbRadio, TbCheckboxItem, TbTab, TbOption, TbToggleItem, TbSplitterPane, TbTreeItem, TbMenuRadioItem,
     // TbDialogDescription, TbColumn, TbColumnGroup, TbTableOfContentsItem, TbBreadcrumb, TbNavLink, TbNavGroup, TbStep
-    // and TbCarouselSlide only render inside their parent (see their parents' tests), and TbTreeItemEnd only in a
-    // tree row's template.
+    // and TbCarouselSlide only render inside their parent (see their parents' tests), TbTreeItemEnd only in a tree
+    // row's template, and TbSmartPaste only inside a TbForm.
     internal static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbInteractiveMark), typeof(TbRadio<>),
@@ -24,7 +24,7 @@ public class ComponentContractTests : BunitContext
         typeof(TbDialogTitle),
         typeof(TbTableOfContentsItem), typeof(TbBreadcrumb), typeof(TbNavLink), typeof(TbNavGroup),
         typeof(TbStep), typeof(TbCarouselSlide), typeof(TbColumnGroup<>), typeof(TbModelField),
-        typeof(TbDialogHeaderActions), typeof(TbDialogHeader), typeof(TbTreeItemEnd),
+        typeof(TbDialogHeaderActions), typeof(TbDialogHeader), typeof(TbTreeItemEnd), typeof(TbSmartPaste),
     ];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.
@@ -307,6 +307,10 @@ public class ComponentContractTests : BunitContext
                 var type when type == typeof(Func<string, CancellationToken, IAsyncEnumerable<string>>) =>
                     (Func<string, CancellationToken, IAsyncEnumerable<string>>)((_, _) =>
                         AsyncEnumerable.Empty<string>()),
+                var type when type == typeof(Func<SmartPasteRequest, CancellationToken,
+                    Task<IReadOnlyDictionary<string, string>>>) =>
+                    (Func<SmartPasteRequest, CancellationToken, Task<IReadOnlyDictionary<string, string>>>)((_, _) =>
+                        Task.FromResult<IReadOnlyDictionary<string, string>>(new Dictionary<string, string>())),
                 _ => throw new NotSupportedException($"Add a sample {property.PropertyType.Name} to the contract " +
                     $"kit for {component.Name}.{property.Name}."),
             };

@@ -604,6 +604,13 @@ public sealed class TrailblazorMarkup
             : $"{buttons.Count} dictation buttons are labeled \"{label}\".");
     }, _scripts);
 
+    /// <summary>The <c>TbSmartPaste</c> whose button has this <c>Label</c>, or the only one when no label is given.
+    /// </summary>
+    public TbSmartPasteDriver SmartPaste(string? label = null) => new(() => Only(_findAll(".tb-smart-paste")
+        .Where(paste => label is null
+            || paste.QuerySelector("[data-part=button] [data-part=label]")!.TextContent.Trim() == label)
+        .ToList(), "smart paste button", label), _findAll);
+
     /// <summary>The <c>TbInPlaceEditor</c> with this <c>Label</c>.</summary>
     public TbInPlaceEditorDriver InPlaceEditor(string label) => new(() =>
     {
@@ -2473,6 +2480,41 @@ public sealed class TbInPlaceEditorDriver
             ?? throw new InvalidOperationException("The in-place editor isn't editing; call EditAsync first.");
         await button.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
+}
+
+/// <summary>A <c>TbSmartPaste</c>, found by its button's <c>Label</c>.</summary>
+public sealed class TbSmartPasteDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+
+    internal TbSmartPasteDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll) =>
+        (_find, _findAll) = (find, findAll);
+
+    /// <summary>What it last showed beside the button, such as "Filled 3 fields", or an empty string before the first
+    /// paste.</summary>
+    public string Status => _find().QuerySelector("[data-part=status]")!.TextContent.Trim();
+
+    /// <summary>Presses the button, enters this text in the box that opens, and fills the form from it, which calls
+    /// <c>Extract</c>. bUnit has no clipboard to read, so the box opens as it does where the browser won't share the
+    /// clipboard. A disabled button throws.</summary>
+    public async Task PasteAsync(string text)
+    {
+        var button = _find().QuerySelector("[data-part=button]")!;
+        if (button.HasAttribute("disabled"))
+        {
+            throw new InvalidOperationException("The smart paste button is disabled.");
+        }
+
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+        await Box().QuerySelector("[data-part=text]")!.ChangeAsync(new ChangeEventArgs { Value = text });
+        await Box().QuerySelector("[data-part=fill]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    // A modal box opens one at a time, so the open one is this button's.
+    private IElement Box() => _findAll("dialog.tb-smart-paste__box:not([data-leaving])").SingleOrDefault()
+        ?? throw new InvalidOperationException("The paste box didn't open. It opens only when the clipboard can't be "
+            + "read, so a test that sets up the script's readClipboard to return text fills the form without it.");
 }
 
 /// <summary>The page's <c>TbBackToTop</c>.</summary>

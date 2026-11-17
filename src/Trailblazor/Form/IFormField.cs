@@ -37,4 +37,10 @@ internal interface IFormField
 
     // Applies the form's new Disabled or ReadOnly.
     Task FollowFormAsync();
+
+    // The field as smart paste describes it to the app's model, or null for one it can't fill.
+    SmartPasteField? DescribeForPaste();
+
+    // Sets the value from text the model read out of pasted text; false when the text isn't a value the field takes.
+    Task<bool> PasteAsync(string text);
 }

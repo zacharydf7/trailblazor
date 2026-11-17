@@ -42,7 +42,6 @@ public static class UpcomingCatalog
         new("Scheduler", ExampleCategory.Content, 201),
         new("Spreadsheet", ExampleCategory.Content, 206),
         new("Ribbon", ExampleCategory.Actions, 83),
-        new("Smart paste", ExampleCategory.Actions, 198),
         new("File manager", ExampleCategory.Navigation, 209),
     ];
 

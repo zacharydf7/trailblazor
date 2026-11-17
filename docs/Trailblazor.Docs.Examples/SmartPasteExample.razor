@@ -1,0 +1,46 @@
+@using System.Text.RegularExpressions
+
+<TbForm aria-label="Trip leader" Style="max-inline-size: 24rem">
+    <TbSmartPaste Extract="ExtractAsync" />
+    <TbTextField Label="Leader's name" @bind-Value="_leader" />
+    <TbTextField Label="Email" Type="TextFieldType.Email" @bind-Value="_email" />
+    <TbTextField Label="Phone" Type="TextFieldType.Tel" @bind-Value="_phone" />
+    <TbNumberField Label="Party size" @bind-Value="_partySize" HelperText="How many are going." />
+</TbForm>
+<TbText class="tb-mt-3">Try: Robin Vale, robin@ridge.example, 555-0100, a party of 4</TbText>
+
+@code {
+    private string? _leader;
+    private string? _email;
+    private string? _phone;
+    private int? _partySize;
+
+    // A stand-in for a language model, which a real app would ask for each field's value.
+    private static Task<IReadOnlyDictionary<string, string>> ExtractAsync(SmartPasteRequest request,
+        CancellationToken cancellationToken)
+    {
+        var found = new Dictionary<string, string>();
+        var parts = request.Text.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        foreach (var part in parts)
+        {
+            if (Regex.Match(part, @"[\w.+-]+@[\w-]+(\.[\w-]+)+") is { Success: true } email)
+            {
+                found["Email"] = email.Value;
+            }
+            else if (Regex.Match(part, @"party of (\d+)", RegexOptions.IgnoreCase) is { Success: true } party)
+            {
+                found["Party size"] = party.Groups[1].Value;
+            }
+            else if (Regex.IsMatch(part, @"^\+?[\d\s().-]{7,}$"))
+            {
+                found["Phone"] = part;
+            }
+            else if (!found.ContainsKey("Leader's name"))
+            {
+                found["Leader's name"] = part;
+            }
+        }
+
+        return Task.FromResult<IReadOnlyDictionary<string, string>>(found);
+    }
+}

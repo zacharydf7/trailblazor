@@ -6756,3 +6756,86 @@ override Trailblazor.TbInPlaceEditor<TValue>.OnAfterRenderAsync(bool firstRender
 static Trailblazor.InPlaceEditorLabels.operator !=(Trailblazor.InPlaceEditorLabels? left, Trailblazor.InPlaceEditorLabels? right) -> bool
 static Trailblazor.InPlaceEditorLabels.operator ==(Trailblazor.InPlaceEditorLabels? left, Trailblazor.InPlaceEditorLabels? right) -> bool
 ~override Trailblazor.TbInPlaceEditor<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.SmartPasteField
+Trailblazor.SmartPasteField.<Clone>$() -> Trailblazor.SmartPasteField!
+Trailblazor.SmartPasteField.Deconstruct(out string! Name, out string? Description, out System.Type! Type) -> void
+Trailblazor.SmartPasteField.Description.get -> string?
+Trailblazor.SmartPasteField.Description.init -> void
+Trailblazor.SmartPasteField.Equals(Trailblazor.SmartPasteField? other) -> bool
+Trailblazor.SmartPasteField.Name.get -> string!
+Trailblazor.SmartPasteField.Name.init -> void
+Trailblazor.SmartPasteField.SmartPasteField(string! Name, string? Description, System.Type! Type) -> void
+Trailblazor.SmartPasteField.Type.get -> System.Type!
+Trailblazor.SmartPasteField.Type.init -> void
+Trailblazor.SmartPasteLabels
+Trailblazor.SmartPasteLabels.<Clone>$() -> Trailblazor.SmartPasteLabels!
+Trailblazor.SmartPasteLabels.Cancel.get -> string?
+Trailblazor.SmartPasteLabels.Cancel.init -> void
+Trailblazor.SmartPasteLabels.Equals(Trailblazor.SmartPasteLabels? other) -> bool
+Trailblazor.SmartPasteLabels.Failed.get -> string?
+Trailblazor.SmartPasteLabels.Failed.init -> void
+Trailblazor.SmartPasteLabels.Fill.get -> string?
+Trailblazor.SmartPasteLabels.Fill.init -> void
+Trailblazor.SmartPasteLabels.Filled.get -> string?
+Trailblazor.SmartPasteLabels.Filled.init -> void
+Trailblazor.SmartPasteLabels.FilledOne.get -> string?
+Trailblazor.SmartPasteLabels.FilledOne.init -> void
+Trailblazor.SmartPasteLabels.Filling.get -> string?
+Trailblazor.SmartPasteLabels.Filling.init -> void
+Trailblazor.SmartPasteLabels.Nothing.get -> string?
+Trailblazor.SmartPasteLabels.Nothing.init -> void
+Trailblazor.SmartPasteLabels.SmartPasteLabels() -> void
+Trailblazor.SmartPasteLabels.Text.get -> string?
+Trailblazor.SmartPasteLabels.Text.init -> void
+Trailblazor.SmartPasteLabels.Title.get -> string?
+Trailblazor.SmartPasteLabels.Title.init -> void
+Trailblazor.SmartPasteRequest
+Trailblazor.SmartPasteRequest.<Clone>$() -> Trailblazor.SmartPasteRequest!
+Trailblazor.SmartPasteRequest.Deconstruct(out string! Text, out System.Collections.Generic.IReadOnlyList<Trailblazor.SmartPasteField!>! Fields) -> void
+Trailblazor.SmartPasteRequest.Equals(Trailblazor.SmartPasteRequest? other) -> bool
+Trailblazor.SmartPasteRequest.Fields.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.SmartPasteField!>!
+Trailblazor.SmartPasteRequest.Fields.init -> void
+Trailblazor.SmartPasteRequest.SmartPasteRequest(string! Text, System.Collections.Generic.IReadOnlyList<Trailblazor.SmartPasteField!>! Fields) -> void
+Trailblazor.SmartPasteRequest.Text.get -> string!
+Trailblazor.SmartPasteRequest.Text.init -> void
+Trailblazor.TbSmartPaste
+Trailblazor.TbSmartPaste.Disabled.get -> bool
+Trailblazor.TbSmartPaste.Disabled.set -> void
+Trailblazor.TbSmartPaste.Dispose() -> void
+Trailblazor.TbSmartPaste.Extract.get -> System.Func<Trailblazor.SmartPasteRequest!, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string!, string!>!>!>?
+Trailblazor.TbSmartPaste.Extract.set -> void
+Trailblazor.TbSmartPaste.Label.get -> string?
+Trailblazor.TbSmartPaste.Label.set -> void
+Trailblazor.TbSmartPaste.Labels.get -> Trailblazor.SmartPasteLabels!
+Trailblazor.TbSmartPaste.Labels.set -> void
+Trailblazor.TbSmartPaste.TbSmartPaste() -> void
+Trailblazor.TbSmartPaste.TelemetryName.get -> string?
+Trailblazor.TbSmartPaste.TelemetryName.set -> void
+const Trailblazor.TbStrings.SmartPasteCancel = "SmartPaste.Cancel" -> string!
+const Trailblazor.TbStrings.SmartPasteFailed = "SmartPaste.Failed" -> string!
+const Trailblazor.TbStrings.SmartPasteFill = "SmartPaste.Fill" -> string!
+const Trailblazor.TbStrings.SmartPasteFilled = "SmartPaste.Filled" -> string!
+const Trailblazor.TbStrings.SmartPasteFilledOne = "SmartPaste.FilledOne" -> string!
+const Trailblazor.TbStrings.SmartPasteFilling = "SmartPaste.Filling" -> string!
+const Trailblazor.TbStrings.SmartPasteLabel = "SmartPaste.Label" -> string!
+const Trailblazor.TbStrings.SmartPasteNothing = "SmartPaste.Nothing" -> string!
+const Trailblazor.TbStrings.SmartPasteText = "SmartPaste.Text" -> string!
+const Trailblazor.TbStrings.SmartPasteTitle = "SmartPaste.Title" -> string!
+override Trailblazor.SmartPasteField.Equals(object? obj) -> bool
+override Trailblazor.SmartPasteField.GetHashCode() -> int
+override Trailblazor.SmartPasteField.ToString() -> string!
+override Trailblazor.SmartPasteLabels.Equals(object? obj) -> bool
+override Trailblazor.SmartPasteLabels.GetHashCode() -> int
+override Trailblazor.SmartPasteLabels.ToString() -> string!
+override Trailblazor.SmartPasteRequest.Equals(object? obj) -> bool
+override Trailblazor.SmartPasteRequest.GetHashCode() -> int
+override Trailblazor.SmartPasteRequest.ToString() -> string!
+override Trailblazor.TbSmartPaste.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbSmartPaste.OnParametersSet() -> void
+static Trailblazor.SmartPasteField.operator !=(Trailblazor.SmartPasteField? left, Trailblazor.SmartPasteField? right) -> bool
+static Trailblazor.SmartPasteField.operator ==(Trailblazor.SmartPasteField? left, Trailblazor.SmartPasteField? right) -> bool
+static Trailblazor.SmartPasteLabels.operator !=(Trailblazor.SmartPasteLabels? left, Trailblazor.SmartPasteLabels? right) -> bool
+static Trailblazor.SmartPasteLabels.operator ==(Trailblazor.SmartPasteLabels? left, Trailblazor.SmartPasteLabels? right) -> bool
+static Trailblazor.SmartPasteRequest.operator !=(Trailblazor.SmartPasteRequest? left, Trailblazor.SmartPasteRequest? right) -> bool
+static Trailblazor.SmartPasteRequest.operator ==(Trailblazor.SmartPasteRequest? left, Trailblazor.SmartPasteRequest? right) -> bool
+~override Trailblazor.TbSmartPaste.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

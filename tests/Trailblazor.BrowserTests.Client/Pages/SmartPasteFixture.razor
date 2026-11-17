@@ -1,0 +1,18 @@
+@page "/smart-paste"
+
+@* A model that takes a moment, as a real one does, so a test can't read the form before it's filled. *@
+<TbForm aria-label="Hiker">
+    <TbSmartPaste Extract="ExtractAsync" />
+    <TbTextField TValue="string" Label="Name" @bind-Value="_name" />
+</TbForm>
+
+@code {
+    private string? _name;
+
+    private static async Task<IReadOnlyDictionary<string, string>> ExtractAsync(SmartPasteRequest request,
+        CancellationToken cancellationToken)
+    {
+        await Task.Delay(500, cancellationToken);
+        return new Dictionary<string, string> { ["Name"] = request.Text };
+    }
+}

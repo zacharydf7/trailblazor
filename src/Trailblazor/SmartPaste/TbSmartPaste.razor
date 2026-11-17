@@ -1,0 +1,27 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IDisposable
+
+<span @attributes="AdditionalAttributes" style="@Style" class="@ClassNames.Join("tb-smart-paste", Class)">
+    <TbButton Variant="Variant.Outlined" StartIcon="BuiltInIcons.Paste" Loading="_busy"
+              Disabled="@(Disabled || FormDisabled || !RendererInfo.IsInteractive)" OnClick="PasteAsync"
+              data-part="button">
+        @(Label ?? Localizer[TbStrings.SmartPasteLabel])
+    </TbButton>
+    <span data-part="status" class="tb-smart-paste__status">@_status</span>
+</span>
+@* Beside the root rather than in it, since a dialog can't go in a span. Its text area is plain, not a TbTextField,
+   so the form doesn't take it for one of its fields. *@
+<TbDialog Title="@Text(Labels.Title, TbStrings.SmartPasteTitle)" Open="_boxOpen" OpenChanged="SetBoxOpen"
+          Class="tb-smart-paste__box">
+    <label for="@_textId" data-part="label" class="tb-smart-paste__label">
+        @Text(Labels.Text, TbStrings.SmartPasteText)
+    </label>
+    <textarea id="@_textId" rows="6" data-part="text" class="tb-smart-paste__text" @bind="_draft"></textarea>
+    <TbDialogActions>
+        <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="() => SetBoxOpen(false)" data-part="cancel">
+            @Text(Labels.Cancel, TbStrings.SmartPasteCancel)
+        </TbButton>
+        <TbButton OnClick="FillFromBoxAsync" data-part="fill">@Text(Labels.Fill, TbStrings.SmartPasteFill)</TbButton>
+    </TbDialogActions>
+</TbDialog>

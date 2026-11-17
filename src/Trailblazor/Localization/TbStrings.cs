@@ -943,6 +943,38 @@ public static class TbStrings
     /// <summary>"Stopped listening": said when the dictation button stops listening.</summary>
     public const string SpeechToTextStopped = "SpeechToText.Stopped";
 
+    /// <summary>"Smart paste": the button that fills a form from text on the clipboard.</summary>
+    public const string SmartPasteLabel = "SmartPaste.Label";
+
+    /// <summary>"Paste text to fill the form": the title of the box that asks for the text when the clipboard can't be
+    /// read.</summary>
+    public const string SmartPasteTitle = "SmartPaste.Title";
+
+    /// <summary>"Text to fill from": the label of that box's text area.</summary>
+    public const string SmartPasteText = "SmartPaste.Text";
+
+    /// <summary>"Fill": that box's button that fills the form.</summary>
+    public const string SmartPasteFill = "SmartPaste.Fill";
+
+    /// <summary>"Cancel": that box's button that closes it without filling.</summary>
+    public const string SmartPasteCancel = "SmartPaste.Cancel";
+
+    /// <summary>"Filling the form": shown and said while the model reads the text.</summary>
+    public const string SmartPasteFilling = "SmartPaste.Filling";
+
+    /// <summary>"Filled {0} fields": shown and said once fields are filled; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="SmartPasteFilledOne"/> as its one-form.</summary>
+    public const string SmartPasteFilled = "SmartPaste.Filled";
+
+    /// <summary>"Filled 1 field": shown and said once one field is filled; {0}, if used, is the count.</summary>
+    public const string SmartPasteFilledOne = "SmartPaste.FilledOne";
+
+    /// <summary>"Found nothing to fill": shown and said when the text held no value for any field.</summary>
+    public const string SmartPasteNothing = "SmartPaste.Nothing";
+
+    /// <summary>"Couldn't fill the form": shown and said when the model failed.</summary>
+    public const string SmartPasteFailed = "SmartPaste.Failed";
+
     /// <summary>"Back to top": the name of the button that takes a scrolled page back to its top.</summary>
     public const string BackToTopLabel = "BackToTop.Label";
 
@@ -1344,6 +1376,7 @@ public static class TbStrings
         [FileUploadTooMany] = FileUploadTooManyOne,
         [RatingStars] = RatingStar,
         [TagInputTooMany] = TagInputTooManyOne,
+        [SmartPasteFilled] = SmartPasteFilledOne,
     }.ToFrozenDictionary();
 
     private static readonly FrozenDictionary<string, string> EnglishText = new Dictionary<string, string>
@@ -1624,6 +1657,16 @@ public static class TbStrings
         [SpeechToTextLabel] = "Dictate",
         [SpeechToTextListening] = "Listening",
         [SpeechToTextStopped] = "Stopped listening",
+        [SmartPasteLabel] = "Smart paste",
+        [SmartPasteTitle] = "Paste text to fill the form",
+        [SmartPasteText] = "Text to fill from",
+        [SmartPasteFill] = "Fill",
+        [SmartPasteCancel] = "Cancel",
+        [SmartPasteFilling] = "Filling the form",
+        [SmartPasteFilled] = "Filled {0} fields",
+        [SmartPasteFilledOne] = "Filled 1 field",
+        [SmartPasteNothing] = "Found nothing to fill",
+        [SmartPasteFailed] = "Couldn't fill the form",
         [BackToTopLabel] = "Back to top",
         [InPlaceEditorEdit] = "Edit",
         [InPlaceEditorSave] = "Save",

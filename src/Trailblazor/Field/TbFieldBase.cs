@@ -277,6 +277,30 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // RootAttributes.
     private protected virtual bool IdNamesControl => true;
 
+    // Whether smart paste can fill the field: yes for one value written as text, such as words, a number, a date or a
+    // yes or no; no for a field that picks from options or a range, which the model can't see.
+    private protected virtual bool Pastable => false;
+
+    // Takes the model's text, written in the invariant culture (such as 2026-11-17 and 1234.5), the way the field
+    // takes typed text, so its limits, such as a date picker's Min, apply. False when the field refuses it.
+    private protected virtual bool TryTakePasted(string text, out TValue? taken)
+    {
+        taken = default;
+        TValue? value;
+        // A date-time keeps the time as written, whatever offset follows it; BindConverter would convert it to local time.
+        if ((Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue)) == typeof(DateTime)
+            && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out var read))
+        {
+            value = (TValue)(object)read.DateTime;
+        }
+        else if (!BindConverter.TryConvertTo(text, CultureInfo.InvariantCulture, out value))
+        {
+            return false;
+        }
+
+        return TryParse(FormatValue(value), out taken, out _);
+    }
+
     private string? IdOfControl => IdNamesControl ? GivenId : null;
 
     // Attributes only an input takes, which people write on the field itself; a field with one control passes them on.
@@ -974,6 +998,33 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     private List<string> HeldMessages() => [.. _editContext!.GetValidationMessages(_field!.Value)];
 
     bool IFormField.IsDirty() => _parseError is not null || !SameValue(Value, _valueToResetTo);
+
+    SmartPasteField? IFormField.DescribeForPaste() => Pastable && !Disabled && !ReadOnly && ShownLabel is { } label
+        ? new(label, HelperText, typeof(TValue))
+        : null;
+
+    async Task<bool> IFormField.PasteAsync(string text)
+    {
+        text = text.Trim();
+        TValue? value;
+        // A yes or no skips TryTakePasted, since it has no limits.
+        if ((Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue)) == typeof(bool))
+        {
+            if (!bool.TryParse(text, out var flag))
+            {
+                return false;
+            }
+
+            value = (TValue)(object)flag;
+        }
+        else if (!TryTakePasted(text, out value))
+        {
+            return false;
+        }
+
+        await SetValueAsync(value);
+        return true;
+    }
 
     void IFormField.MarkAsSaved() => _lastValue = _valueToResetTo = Value;
 

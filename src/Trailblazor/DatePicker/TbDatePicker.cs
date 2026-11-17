@@ -84,6 +84,8 @@ public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
     /// <inheritdoc />
     protected override void OnInitialized() => ThrowUnlessDate<TDate>(nameof(TbDatePicker<TDate>));
 
+    private protected override bool Pastable => SmartPasteField.Takes(typeof(TDate));
+
     private protected override string? FormatValue(TDate? value) =>
         value is { } date ? ToDate(date).ToString(DateFormat, DateCulture) : null;
 

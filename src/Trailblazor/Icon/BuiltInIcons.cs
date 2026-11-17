@@ -40,6 +40,9 @@ internal static class BuiltInIcons
     public static Icon Microphone { get; } = new("<path d=\"M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 "
         + "5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11z\" />");
 
+    public static Icon Paste { get; } = new("<path d=\"M9 2h6v2h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 "
+        + "1 1-1h3zm0 4H7v13h10V6h-2v2H9zm2-2v2h2V4z\" />");
+
     public static Icon Filter { get; } = new("<path d=\"M3 4h18v2l-7 7v7l-4-2v-5L3 6z\" />");
 
     public static Icon ArrowDown { get; } = new("<path d=\"M13 4v12.2l5.6-5.6L20 12l-8 8-8-8 1.4-1.4 5.6 5.6V4z\" />");

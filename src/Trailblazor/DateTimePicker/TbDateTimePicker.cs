@@ -97,6 +97,23 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     // Its two boxes are named from the field's own ids, so an id it is given stays on its root.
     private protected override bool IdNamesControl => false;
 
+    private protected override bool Pastable => SmartPasteField.Takes(typeof(TDateTime));
+
+    // Its boxes don't go through TryParse, so a pasted value gets the checks they make: a disabled date is refused,
+    // and the time as written, whatever offset follows it, takes the field's zone.
+    private protected override bool TryTakePasted(string text, out TDateTime? taken)
+    {
+        taken = null;
+        if (!DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out var read)
+            || (IsDateDisabled?.Invoke(DateOnly.FromDateTime(read.DateTime)) ?? false))
+        {
+            return false;
+        }
+
+        taken = Combine(DateOnly.FromDateTime(read.DateTime), TimeOnly.FromDateTime(read.DateTime));
+        return true;
+    }
+
     private string DateId => $"{InputId}-date";
 
     private string TimeId => $"{InputId}-time";

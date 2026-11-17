@@ -350,6 +350,18 @@
         }
     }
 
+    private protected override bool Pastable => SmartPasteField.Takes(typeof(TValue));
+
+    // The full value, which the display format could round, written as the field reads it, and times 100 for a
+    // percent format.
+    private protected override bool TryTakePasted(string text, out TValue? taken)
+    {
+        taken = default;
+        return BindConverter.TryConvertTo<TValue>(text, CultureInfo.InvariantCulture, out var value)
+            && TryParse(Formatted && NumberTypes.TryToDecimal(value, out var exact)
+                ? (Percent ? exact * 100 : exact).ToString(NumberCulture) : FormatValue(value), out taken, out _);
+    }
+
     // A number input always holds its value with a period; the browser shows it in the user's own format.
     private protected override string? FormatValue(TValue? value) => Formatted && value is IFormattable number
         ? number.ToString(Format, NumberCulture)

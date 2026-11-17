@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-17
 
+- New `TbSmartPaste`: a button (`tb-smart-paste`, `data-part="button"`) inside a `TbForm` that fills the form's fields from the clipboard through the app's `Extract` model, with the result beside it (`data-part="status"`) and a dialog (`tb-smart-paste__box`) that asks for the text where the clipboard can't be read
 - New `TbSpeechToText`: a toggle button (`tb-speech-to-text`, `data-part="button"`, `aria-pressed` while listening) that shows only where the browser recognizes speech and hands each phrase it hears to the app
 - New `TbInPlaceEditor`: a value (`tb-in-place-editor`, with `data-editing` while editing) shown in a button (`data-part="display"`) that turns into its editor (`data-part="editor"`) with save and cancel buttons
 - New `TbBackToTop`: a floating button (`tb-back-to-top`, with `data-shown` while it shows, and `data-part="button"`) that appears once the page has scrolled down and takes it back to the top, moving focus there
