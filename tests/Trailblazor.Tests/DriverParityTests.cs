@@ -38,7 +38,7 @@ public class DriverParityTests
         ["TbVirtualList"] = "VirtualList", ["TbOverlay"] = "Overlay", ["TbHotkeysHelp"] = "Dialog",
         ["TbFab"] = "Button",
         ["TbTimePicker"] = "TimePicker", ["TbChip"] = "Chip", ["TbChipGroup"] = "ChipGroup",
-        ["TbCarousel"] = "Carousel", ["TbForm"] = "Form", ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",
+        ["TbCarousel"] = "Carousel", ["TbChat"] = "Chat", ["TbForm"] = "Form", ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",
         ["TbSpeedDial"] = "Menu", ["TbToolbar"] = "Toolbar", ["TbInsertDivider"] = "InsertDivider",
         ["TbNavMenu"] = "NavMenu", ["TbCodeField"] = "TextField", ["TbButton"] = "Button",
         ["TbIconButton"] = "Button",
@@ -97,6 +97,8 @@ public class DriverParityTests
             + "SelectedCells",
         ["TbFileUploadLocator.Choose(FilePayload[])"] = InTestFile,
         ["TbFileUploadDriver.Choose(InputFileContent[])"] = InTestFile,
+        ["TbChatLocator.Attach(FilePayload[])"] = InTestFile,
+        ["TbChatDriver.Attach(InputFileContent[])"] = InTestFile,
         ["TbTreeSelectLocator.Open()"] = InMarkup, ["TbTreeSelectLocator.Close()"] = InMarkup,
         ["TbTreeSelectLocator.IsOpen()"] = InMarkup,
     };

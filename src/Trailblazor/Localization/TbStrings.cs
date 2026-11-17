@@ -34,6 +34,25 @@ public static class TbStrings
     /// <summary>"Start slide rotation": names the button that starts a carousel turning its slides again.</summary>
     public const string CarouselStart = "Carousel.Start";
 
+    /// <summary>"Message": names the box a chat's user types in.</summary>
+    public const string ChatMessage = "Chat.Message";
+
+    /// <summary>"Send": the chat composer's send button.</summary>
+    public const string ChatSend = "Chat.Send";
+
+    /// <summary>"Attach files": the chat composer's attach button.</summary>
+    public const string ChatAttach = "Chat.Attach";
+
+    /// <summary>"{0} is typing…": shown under a chat's messages while one person types; {0} is their name.</summary>
+    public const string ChatTyping = "Chat.Typing";
+
+    /// <summary>"{0} and {1} are typing…": shown while several people type; {0} is the list of all but the last
+    /// name, and {1} the last name.</summary>
+    public const string ChatTypingMany = "Chat.TypingMany";
+
+    /// <summary>"Newest messages": the button that goes back to the newest message after scrolling up.</summary>
+    public const string ChatNewest = "Chat.Newest";
+
     /// <summary>"Navigation": names an app shell's menu button and titles its navigation drawer.</summary>
     public const string AppShellMenu = "AppShell.Menu";
 
@@ -1203,6 +1222,12 @@ public static class TbStrings
         [CarouselSlideOf] = "{0} of {1}",
         [CarouselStop] = "Stop slide rotation",
         [CarouselStart] = "Start slide rotation",
+        [ChatMessage] = "Message",
+        [ChatSend] = "Send",
+        [ChatAttach] = "Attach files",
+        [ChatTyping] = "{0} is typing…",
+        [ChatTypingMany] = "{0} and {1} are typing…",
+        [ChatNewest] = "Newest messages",
         [AppShellMenu] = "Navigation",
         [AppShellNavigation] = "Main",
         [AppShellSkipToContent] = "Skip to content",

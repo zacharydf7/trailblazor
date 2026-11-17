@@ -1,0 +1,60 @@
+@implements IDisposable
+
+<TbChat AriaLabel="Trip planning" Messages="_messages" CurrentAuthorId="@You.Id" TypingAuthors="_typing"
+        OnSend="Send" Placeholder="Write to Robin" Style="max-inline-size: 32rem" />
+
+@code {
+    private static readonly ChatAuthor You = new("you", "You");
+    private static readonly ChatAuthor Robin = new("robin", "Robin");
+    private readonly CancellationTokenSource _closing = new();
+    private List<ChatMessage> _messages =
+    [
+        new("1", Robin, "Shall we take the ridge trail on Saturday?", DateTimeOffset.Now.AddMinutes(-12)),
+        new("2", You, "Yes, if the weather holds.", DateTimeOffset.Now.AddMinutes(-10)),
+    ];
+    private IReadOnlyList<ChatAuthor> _typing = [];
+
+    // The reply comes later, so OnSend returns at once and the user can send again right away.
+    private void Send(ChatSend send)
+    {
+        _messages = [.. _messages, new($"{_messages.Count + 1}", You, send.Text, DateTimeOffset.Now)];
+        _ = ReplyAsync();
+    }
+
+    // Stands in for a reply that streams in, a few words at a time.
+    private async Task ReplyAsync()
+    {
+        try
+        {
+            _typing = [Robin];
+            await Task.Delay(600, _closing.Token);
+            _typing = [];
+            var reply = new ChatMessage($"{_messages.Count + 1}", Robin, "", DateTimeOffset.Now) { IsStreaming = true };
+            foreach (var word in "Sounds good. I'll bring the map and meet you at the trailhead at eight.".Split(' '))
+            {
+                reply = reply with { Text = $"{reply.Text} {word}".TrimStart() };
+                Show(reply);
+                StateHasChanged();
+                await Task.Delay(80, _closing.Token);
+            }
+
+            Show(reply with { IsStreaming = false });
+            StateHasChanged();
+        }
+        catch (OperationCanceledException)
+        {
+            // The page closed before the reply finished.
+        }
+    }
+
+    // Replaces the reply where it is, or adds it the first time.
+    private void Show(ChatMessage reply) => _messages = _messages.Any(message => message.Id == reply.Id)
+        ? [.. _messages.Select(message => message.Id == reply.Id ? reply : message)]
+        : [.. _messages, reply];
+
+    public void Dispose()
+    {
+        _closing.Cancel();
+        _closing.Dispose();
+    }
+}

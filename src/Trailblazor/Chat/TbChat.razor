@@ -1,0 +1,91 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@using Microsoft.AspNetCore.Components.Forms
+
+@* data-ready marks that the feed's keys, Enter to send and keeping the newest message in view work. *@
+<section @ref="_root" @attributes="AdditionalAttributes" aria-label="@AriaLabel" style="@Style"
+         data-ready="@(_handle is not null ? "" : null)" data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
+         class="@ClassNames.Join("tb-chat", Class)">
+    @* The messages are a feed of articles; screen readers hear new ones through the announcer, not a live region. *@
+    <div role="feed" aria-label="@AriaLabel"
+         aria-busy="@(Messages.Any(message => message.IsStreaming) ? "true" : "false")" tabindex="-1" data-part="messages" class="tb-chat__messages">
+        @for (var index = 0; index < Messages.Count; index++)
+        {
+            var message = Messages[index];
+            var id = $"{_id}-{index}";
+            var own = message.Author.Id == CurrentAuthorId;
+            <article @key="message.Id" data-part="message" data-key="@message.Id" data-own="@(own ? "" : null)"
+                     tabindex="-1" aria-posinset="@(index + 1)" aria-setsize="@Messages.Count"
+                     aria-labelledby="@($"{id}-author {id}-time")" aria-busy="@(message.IsStreaming ? "true" : null)"
+                     class="@ClassNames.Join("tb-chat__message", own ? "tb-chat__message--own" : null)">
+                <div class="tb-chat__meta">
+                    <span data-part="author" id="@($"{id}-author")" class="tb-chat__author">@message.Author.Name</span>
+                    <time data-part="time" id="@($"{id}-time")" datetime="@message.Sent.ToString("O")"
+                          class="tb-chat__time">@Time(message.Sent)</time>
+                </div>
+                <div data-part="body" class="tb-chat__body">
+                    @if (MessageTemplate is not null)
+                    {
+                        @MessageTemplate(message)
+                    }
+                    else
+                    {
+                        @message.Text
+                    }
+                </div>
+                @if (message.Attachments.Count > 0)
+                {
+                    <ul data-part="attachments" class="tb-chat__attachments">
+                        @foreach (var attachment in message.Attachments)
+                        {
+                            <li>
+                                <a data-part="attachment" href="@attachment.Url" target="_blank" rel="noopener">
+                                    @attachment.Name
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+            </article>
+        }
+    </div>
+    @if (TypingText is { } typing)
+    {
+        <div data-part="typing" class="tb-chat__typing">@typing</div>
+    }
+    @* The script shows this while the user has scrolled away from the newest message. *@
+    <TbButton Variant="Variant.Outlined" Size="Size.Small" data-part="newest" class="tb-chat__newest">
+        @Text(Labels.Newest, TbStrings.ChatNewest)
+    </TbButton>
+    @if (ShowComposer)
+    {
+        <form data-part="composer" class="tb-chat__composer" @onsubmit="SendAsync" @onsubmit:preventDefault>
+            @if (_files.Count > 0)
+            {
+                <ul data-part="chosen" class="tb-chat__chosen">
+                    @foreach (var file in _files)
+                    {
+                        <li>
+                            <TbChip Text="@file.Name" Size="Size.Small" OnRemove="() => _files.Remove(file)" />
+                        </li>
+                    }
+                </ul>
+            }
+            @Box
+            @if (AllowAttachments)
+            {
+                @* The visually hidden file input takes focus, and the label around it is the button people see. *@
+                <label data-part="attach" aria-disabled="@(Disabled || _sending ? "true" : null)"
+                       class="tb-button tb-button--text tb-button--neutral tb-button--small tb-chat__attach">
+                    @Files
+                    @Text(Labels.Attach, TbStrings.ChatAttach)
+                </label>
+            }
+            <TbButton Type="ButtonType.Submit" Variant="Variant.Filled" Size="Size.Small" data-part="send"
+                      Disabled="@(Disabled || _sending || (string.IsNullOrWhiteSpace(_draft) && _files.Count == 0))">
+                @Text(Labels.Send, TbStrings.ChatSend)
+            </TbButton>
+        </form>
+    }
+</section>

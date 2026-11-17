@@ -511,3 +511,12 @@ Trailblazor.Testing.Playwright.TbLinkLocator.ClickAsync() -> System.Threading.Ta
 Trailblazor.Testing.Playwright.TbLinkLocator.Link.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbLinkLocator.TbLinkLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! link) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Link(string! name) -> Trailblazor.Testing.Playwright.TbLinkLocator!
+Trailblazor.Testing.Playwright.TbChatLocator
+Trailblazor.Testing.Playwright.TbChatLocator.AttachAsync(params Microsoft.Playwright.FilePayload![]! files) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbChatLocator.AttachAsync(params string![]! paths) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbChatLocator.Chat.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbChatLocator.MessagesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbChatLocator.SendAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbChatLocator.TbChatLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TbChatLocator.TypingAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TrailblazorPage.Chat(string? name = null) -> Trailblazor.Testing.Playwright.TbChatLocator!

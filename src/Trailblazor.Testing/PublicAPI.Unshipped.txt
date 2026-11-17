@@ -487,3 +487,10 @@ Trailblazor.Testing.TbSelectDriver.CloseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbLinkDriver
 Trailblazor.Testing.TbLinkDriver.ClickAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.Link(string! name) -> Trailblazor.Testing.TbLinkDriver!
+Trailblazor.Testing.TbChatDriver
+Trailblazor.Testing.TbChatDriver.AttachAsync(params Bunit.InputFileContent![]! files) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbChatDriver.AttachAsync(params string![]! paths) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbChatDriver.Messages.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbChatDriver.SendAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbChatDriver.Typing.get -> string?
+Trailblazor.Testing.TrailblazorMarkup.Chat(string? name = null) -> Trailblazor.Testing.TbChatDriver!

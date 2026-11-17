@@ -2837,6 +2837,116 @@
         gap: var(--tb-space-2);
     }
 
+    /* A chat's messages scroll above its composer; the user's own sit at the end of the line. */
+    .tb-chat {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-chat__messages {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-3);
+        max-block-size: var(--tb-chat-max-height, 28rem);
+        overflow-y: auto;
+        padding: var(--tb-space-2);
+    }
+
+    .tb-chat__message {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        align-self: flex-start;
+        max-inline-size: min(36rem, 85%);
+        padding: var(--tb-space-2) var(--tb-space-3);
+        border: 1px solid var(--tb-border-subtle);
+        border-radius: var(--tb-radius-lg);
+        background: var(--tb-color-surface-raised);
+        overflow-wrap: anywhere;
+    }
+
+    .tb-chat__message--own {
+        align-self: flex-end;
+    }
+
+    .tb-chat__message:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-chat__meta {
+        display: flex;
+        gap: var(--tb-space-2);
+        font-size: var(--tb-font-size-sm);
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-chat__author {
+        font-weight: 600;
+    }
+
+    .tb-chat__body {
+        white-space: pre-wrap;
+    }
+
+    .tb-chat__attachments,
+    .tb-chat__chosen {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tb-space-2);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .tb-chat__typing {
+        font-size: var(--tb-font-size-sm);
+        color: var(--tb-color-text-muted);
+    }
+
+    /* The script marks the chat while the user has scrolled away from the newest message. */
+    .tb-chat__newest {
+        position: absolute;
+        inset-inline-end: var(--tb-space-4);
+        inset-block-end: var(--tb-space-16);
+    }
+
+    .tb-chat:not([data-away]) > .tb-chat__newest {
+        display: none;
+    }
+
+    .tb-chat__composer {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: end;
+        gap: var(--tb-space-2);
+    }
+
+    .tb-chat__chosen {
+        grid-column: 1 / -1;
+    }
+
+    .tb-chat__input {
+        min-block-size: var(--tb-control-height);
+        max-block-size: 8rem;
+        padding: var(--tb-space-2);
+        border: var(--tb-field-border-width, 1px) solid var(--tb-field-border-color, var(--tb-border-strong));
+        border-radius: var(--tb-field-radius, var(--tb-radius-md));
+        background: var(--tb-field-background, var(--tb-color-surface));
+        color: inherit;
+        font: inherit;
+        field-sizing: content;
+        resize: none;
+    }
+
+    .tb-chat__input:focus-visible,
+    .tb-chat__attach:focus-within {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
     /* The controls sit above the slides, and the slide buttons below them, as small dots. */
     .tb-carousel {
         display: grid;

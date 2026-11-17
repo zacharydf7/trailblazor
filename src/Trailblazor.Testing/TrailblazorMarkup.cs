@@ -485,6 +485,11 @@ public sealed class TrailblazorMarkup
             ? banner.QuerySelector($"[id='{id}']")?.TextContent.Trim() : banner.GetAttribute("aria-label")) == name)
         .ToList(), "banner", name));
 
+    /// <summary>The <c>TbChat</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is given.
+    /// </summary>
+    public TbChatDriver Chat(string? name = null) => new(() => Only(_findAll("section.tb-chat")
+        .Where(chat => name is null || chat.GetAttribute("aria-label") == name).ToList(), "chat", name), _scripts);
+
     /// <summary>The <c>TbCarousel</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
     /// given.</summary>
     public TbCarouselDriver Carousel(string? name = null) => new(() => Only(_findAll("section.tb-carousel")
@@ -1763,6 +1768,69 @@ public sealed class TbVirtualListDriver
     }
 }
 
+/// <summary>A <c>TbChat</c>, found by its <c>AriaLabel</c>.</summary>
+public sealed class TbChatDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbChatDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>Each message, oldest first, as its author's name and its text, such as <c>"Robin: Meet at nine"</c>.
+    /// </summary>
+    public IReadOnlyList<string> Messages => [.. _find()
+        .QuerySelectorAll(":scope > [data-part=messages] > [data-part=message]")
+        .Select(message => $"{message.QuerySelector("[data-part=author]")!.TextContent.Trim()}: "
+            + message.QuerySelector("[data-part=body]")!.TextContent.Trim())];
+
+    /// <summary>Who the chat says is typing, such as <c>"Robin is typing…"</c>, or null when no one is.</summary>
+    public string? Typing => _find().QuerySelector(":scope > [data-part=typing]")?.TextContent.Trim();
+
+    /// <summary>Types the text in the box and sends it, as pressing Enter does, which raises <c>OnSend</c>. A chat
+    /// without its composer, or with <c>Disabled</c> set, throws.</summary>
+    public async Task SendAsync(string text)
+    {
+        var composer = Composer();
+        await composer.QuerySelector("[data-part=input]")!.InputAsync(new ChangeEventArgs { Value = text });
+        await composer.SubmitAsync();
+    }
+
+    /// <summary>Chooses the files at these paths with the attach button, to go with the next message. A chat without
+    /// its composer or <c>AllowAttachments</c>, with <c>Disabled</c> set, or still waiting on <c>OnSend</c>, throws.
+    /// </summary>
+    public async Task AttachAsync(params string[] paths)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(paths.Length, nameof(paths));
+        Files().UploadFiles(TbFileUploadDriver.FromPaths(paths));
+    }
+
+    /// <summary>Chooses files made in the test, such as <c>InputFileContent.CreateFromText("Day one", "route.txt")</c>,
+    /// to go with the next message. Throws as the paths overload does.</summary>
+    public async Task AttachAsync(params InputFileContent[] files)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(files.Length, nameof(files));
+        Files().UploadFiles(files);
+    }
+
+    private IElement Composer()
+    {
+        var composer = _find().QuerySelector(":scope > [data-part=composer]")
+            ?? throw new InvalidOperationException("This chat has no composer; turn ShowComposer on.");
+        return composer.QuerySelector("[data-part=input]")!.HasAttribute("disabled")
+            ? throw new InvalidOperationException("This chat is disabled.")
+            : composer;
+    }
+
+    private IRenderedComponent<InputFile> Files()
+    {
+        var input = Composer().QuerySelector("[data-part=attach] input[type=file]")
+            ?? throw new InvalidOperationException("This chat doesn't take files; turn AllowAttachments on.");
+        return input.HasAttribute("disabled")
+            ? throw new InvalidOperationException("This chat is still sending; attach once OnSend has run.")
+            : _scripts.InputFile(input.Id!);
+    }
+}
+
 /// <summary>A <c>TbCarousel</c>, found by its <c>AriaLabel</c>.</summary>
 public sealed class TbCarouselDriver
 {
@@ -2910,9 +2978,7 @@ public sealed class TbFileUploadDriver : TbFieldDriver
     public async Task ChooseAsync(params string[] paths)
     {
         ArgumentOutOfRangeException.ThrowIfZero(paths.Length, nameof(paths));
-        Upload().UploadFiles([.. paths.Select(path => InputFileContent.CreateFromBinary(
-            File.ReadAllBytes(path), Path.GetFileName(path), File.GetLastWriteTimeUtc(path),
-            Types.GetValueOrDefault(Path.GetExtension(path), "")))]);
+        Upload().UploadFiles(FromPaths(paths));
     }
 
     /// <summary>Chooses files made in the test, such as <c>InputFileContent.CreateFromText("Day one", "notes.txt")</c>,
@@ -2927,6 +2993,11 @@ public sealed class TbFileUploadDriver : TbFieldDriver
     /// </summary>
     public IReadOnlyList<string> Files =>
         [.. FieldRoot().QuerySelectorAll("[data-part=file] .tb-file-upload__name").Select(name => name.TextContent)];
+
+    // The files at these paths, each with the type a browser gives its extension.
+    internal static InputFileContent[] FromPaths(string[] paths) => [.. paths.Select(path =>
+        InputFileContent.CreateFromBinary(File.ReadAllBytes(path), Path.GetFileName(path), File.GetLastWriteTimeUtc(path),
+            Types.GetValueOrDefault(Path.GetExtension(path), "")))];
 
     private IElement FieldRoot() => _find().Closest(".tb-file-upload")!;
 

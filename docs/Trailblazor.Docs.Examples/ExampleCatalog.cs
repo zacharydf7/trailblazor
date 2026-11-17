@@ -700,6 +700,100 @@ public static class ExampleCatalog
                 + "`GetByRole(AriaRole.Feed, new() { Name = \"Trail reports\" })` and an item as "
                 + "`GetByRole(AriaRole.Article, new() { Name = \"Report 12: Trail 13\" })`.",
         },
+        new("chat", "Chat", ExampleCategory.Content,
+            "A conversation: messages from several people, who is typing, replies that stream in, and a box to write "
+                + "and send a message.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a conversation between people, or with an assistant whose replies stream in.",
+            ],
+            WhenNotToUse =
+            [
+                "For a feed of posts that people read rather than answer, use a "
+                    + "[virtual list](components/virtual-list).",
+                "For a single message to the user, use a [toast](components/toast) or an [alert](components/alert).",
+            ],
+            Related = ["virtual-list", "text-field", "file-upload"],
+            Pattern = new("feed", "https://www.w3.org/WAI/ARIA/apg/patterns/feed/"),
+            Sections =
+            [
+                new("basic", "Chat", "`Messages` holds the conversation, oldest first, as `ChatMessage` records, and "
+                    + "`CurrentAuthorId` marks the user's own, which sit at the end of the line. `OnSend` gets what "
+                    + "the user wrote; Enter sends it and Shift+Enter starts a new line. `TypingAuthors` names who is "
+                    + "typing, and a message with `IsStreaming` grows as its text arrives, as Robin's reply does here. "
+                    + "`AllowAttachments` adds a button that chooses files to send, and a message's `Attachments` "
+                    + "show as links. `ShowComposer=\"false\"` leaves out the box for a chat people only read.",
+                    typeof(ChatExample)),
+            ],
+            Api =
+            [
+                typeof(TbChat), typeof(ChatMessage), typeof(ChatAuthor), typeof(ChatAttachment), typeof(ChatSend),
+                typeof(ChatLabels),
+            ],
+            Keyboard =
+            [
+                new(["Tab"], "Moves into the messages, to the one that last had focus or else the newest, then to the "
+                    + "box and its buttons."),
+                new(["Page Down", "Page Up"], "Moves to the next or previous message.") { When = "In the messages" },
+                new(["Ctrl+End"], "Moves to the first control after the messages, such as the box.")
+                    { When = "In the messages" },
+                new(["Ctrl+Home"], "Moves to the last control before the messages.") { When = "In the messages" },
+                new(["Enter"], "Sends the message.") { When = "In the box" },
+                new(["Shift+Enter"], "Starts a new line.") { When = "In the box" },
+            ],
+            Labeling =
+            [
+                "The chat is a region named by `AriaLabel`. Its messages are a `feed` with the same name, and each "
+                    + "message is an `article` named by its author and time, with its place and the total.",
+                "The box is named \"Message\", and the buttons \"Attach files\" and \"Send\", or by `Labels`.",
+            ],
+            Announcements =
+            [
+                "A new message from someone else is read out as its author and text, such as \"Robin: See you at "
+                    + "eight\". The user's own messages aren't, and neither are the ones there when the chat first "
+                    + "shows.",
+                "A reply that streams in is read out once, when `IsStreaming` turns false; meanwhile the message and "
+                    + "the feed are `aria-busy`. Who is typing shows but isn't read out.",
+            ],
+            Accessibility =
+            [
+                "The view stays on the newest message while the user is there. Once they scroll up, it stays put and "
+                    + "a \"Newest messages\" button takes them back.",
+                "The Enter that ends an input method's composition doesn't send.",
+            ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
+            BeforeInteractive =
+            [
+                "The messages show, and sending works once the page is interactive.",
+            ],
+            Ready = new(".tb-chat", "the chat"),
+            Target = new("region", "Trip planning"),
+            Blocks = ["tb-chat"],
+            DataParts =
+            [
+                new("messages", "The feed of messages."),
+                new("message", "One message, with `data-key` for its `Id` and `data-own` on the user's own."),
+                new("author", "The message's author."),
+                new("time", "When it was sent."),
+                new("body", "Its text, or what `MessageTemplate` draws."),
+                new("attachments", "The files sent with it."),
+                new("attachment", "One file's link."),
+                new("typing", "Who is typing."),
+                new("newest", "The button that goes back to the newest message."),
+                new("composer", "The box and its buttons."),
+                new("input", "The box the user writes in."),
+                new("chosen", "The files chosen to go with the next message."),
+                new("attach", "The button that chooses files."),
+                new("send", "The send button."),
+            ],
+            TestingTip = "`page.Tb().Chat(\"Trip planning\")` in Playwright, or `cut.Tb().Chat(...)` in bUnit, finds "
+                + "the chat by its `AriaLabel`: `SendAsync(text)` writes and sends a message, and in Playwright waits "
+                + "until `OnSend` has run, which the chat counts in `data-commits`; `AttachAsync(paths)` chooses files "
+                + "for the next message; `MessagesAsync()` or `Messages` reads each message as \"Author: text\", and "
+                + "`TypingAsync()` or `Typing` reads who is typing.",
+        },
         new("image", "Image", ExampleCategory.Content,
             "An image that requires alternative text and can scale to fit its container.")
         {

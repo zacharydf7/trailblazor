@@ -5834,3 +5834,126 @@ Trailblazor.TbFieldBase<TValue>.ValidationStatus.get -> Trailblazor.FieldValidat
 Trailblazor.TbFieldBase<TValue>.ValidationStatusChanged.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.FieldValidationStatus>
 Trailblazor.TbFieldBase<TValue>.ValidationStatusChanged.set -> void
 Trailblazor.TbForm.IsValidating.get -> bool
+Trailblazor.ChatAttachment
+Trailblazor.ChatAttachment.<Clone>$() -> Trailblazor.ChatAttachment!
+Trailblazor.ChatAttachment.ChatAttachment(string! Name, string! Url) -> void
+Trailblazor.ChatAttachment.Deconstruct(out string! Name, out string! Url) -> void
+Trailblazor.ChatAttachment.Equals(Trailblazor.ChatAttachment? other) -> bool
+Trailblazor.ChatAttachment.Name.get -> string!
+Trailblazor.ChatAttachment.Name.init -> void
+Trailblazor.ChatAttachment.Url.get -> string!
+Trailblazor.ChatAttachment.Url.init -> void
+Trailblazor.ChatAuthor
+Trailblazor.ChatAuthor.<Clone>$() -> Trailblazor.ChatAuthor!
+Trailblazor.ChatAuthor.ChatAuthor(string! Id, string! Name) -> void
+Trailblazor.ChatAuthor.Deconstruct(out string! Id, out string! Name) -> void
+Trailblazor.ChatAuthor.Equals(Trailblazor.ChatAuthor? other) -> bool
+Trailblazor.ChatAuthor.Id.get -> string!
+Trailblazor.ChatAuthor.Id.init -> void
+Trailblazor.ChatAuthor.Name.get -> string!
+Trailblazor.ChatAuthor.Name.init -> void
+Trailblazor.ChatLabels
+Trailblazor.ChatLabels.<Clone>$() -> Trailblazor.ChatLabels!
+Trailblazor.ChatLabels.Attach.get -> string?
+Trailblazor.ChatLabels.Attach.init -> void
+Trailblazor.ChatLabels.ChatLabels() -> void
+Trailblazor.ChatLabels.Equals(Trailblazor.ChatLabels? other) -> bool
+Trailblazor.ChatLabels.Message.get -> string?
+Trailblazor.ChatLabels.Message.init -> void
+Trailblazor.ChatLabels.Newest.get -> string?
+Trailblazor.ChatLabels.Newest.init -> void
+Trailblazor.ChatLabels.Send.get -> string?
+Trailblazor.ChatLabels.Send.init -> void
+Trailblazor.ChatLabels.Typing.get -> string?
+Trailblazor.ChatLabels.Typing.init -> void
+Trailblazor.ChatLabels.TypingMany.get -> string?
+Trailblazor.ChatLabels.TypingMany.init -> void
+Trailblazor.ChatMessage
+Trailblazor.ChatMessage.<Clone>$() -> Trailblazor.ChatMessage!
+Trailblazor.ChatMessage.Attachments.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.ChatAttachment!>!
+Trailblazor.ChatMessage.Attachments.init -> void
+Trailblazor.ChatMessage.Author.get -> Trailblazor.ChatAuthor!
+Trailblazor.ChatMessage.Author.init -> void
+Trailblazor.ChatMessage.ChatMessage(string! Id, Trailblazor.ChatAuthor! Author, string! Text, System.DateTimeOffset Sent) -> void
+Trailblazor.ChatMessage.Deconstruct(out string! Id, out Trailblazor.ChatAuthor! Author, out string! Text, out System.DateTimeOffset Sent) -> void
+Trailblazor.ChatMessage.Equals(Trailblazor.ChatMessage? other) -> bool
+Trailblazor.ChatMessage.Id.get -> string!
+Trailblazor.ChatMessage.Id.init -> void
+Trailblazor.ChatMessage.IsStreaming.get -> bool
+Trailblazor.ChatMessage.IsStreaming.init -> void
+Trailblazor.ChatMessage.Sent.get -> System.DateTimeOffset
+Trailblazor.ChatMessage.Sent.init -> void
+Trailblazor.ChatMessage.Text.get -> string!
+Trailblazor.ChatMessage.Text.init -> void
+Trailblazor.ChatSend
+Trailblazor.ChatSend.<Clone>$() -> Trailblazor.ChatSend!
+Trailblazor.ChatSend.ChatSend(string! Text, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>! Files) -> void
+Trailblazor.ChatSend.Deconstruct(out string! Text, out System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>! Files) -> void
+Trailblazor.ChatSend.Equals(Trailblazor.ChatSend? other) -> bool
+Trailblazor.ChatSend.Files.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>!
+Trailblazor.ChatSend.Files.init -> void
+Trailblazor.ChatSend.Text.get -> string!
+Trailblazor.ChatSend.Text.init -> void
+Trailblazor.TbChat
+Trailblazor.TbChat.AllowAttachments.get -> bool
+Trailblazor.TbChat.AllowAttachments.set -> void
+Trailblazor.TbChat.AriaLabel.get -> string!
+Trailblazor.TbChat.AriaLabel.set -> void
+Trailblazor.TbChat.CurrentAuthorId.get -> string?
+Trailblazor.TbChat.CurrentAuthorId.set -> void
+Trailblazor.TbChat.Disabled.get -> bool
+Trailblazor.TbChat.Disabled.set -> void
+Trailblazor.TbChat.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbChat.Labels.get -> Trailblazor.ChatLabels!
+Trailblazor.TbChat.Labels.set -> void
+Trailblazor.TbChat.MessageTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.ChatMessage!>?
+Trailblazor.TbChat.MessageTemplate.set -> void
+Trailblazor.TbChat.Messages.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.ChatMessage!>!
+Trailblazor.TbChat.Messages.set -> void
+Trailblazor.TbChat.OnSend.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.ChatSend!>
+Trailblazor.TbChat.OnSend.set -> void
+Trailblazor.TbChat.Placeholder.get -> string?
+Trailblazor.TbChat.Placeholder.set -> void
+Trailblazor.TbChat.ShowComposer.get -> bool
+Trailblazor.TbChat.ShowComposer.set -> void
+Trailblazor.TbChat.TbChat() -> void
+Trailblazor.TbChat.TelemetryName.get -> string?
+Trailblazor.TbChat.TelemetryName.set -> void
+Trailblazor.TbChat.TypingAuthors.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.ChatAuthor!>!
+Trailblazor.TbChat.TypingAuthors.set -> void
+const Trailblazor.TbStrings.ChatAttach = "Chat.Attach" -> string!
+const Trailblazor.TbStrings.ChatMessage = "Chat.Message" -> string!
+const Trailblazor.TbStrings.ChatNewest = "Chat.Newest" -> string!
+const Trailblazor.TbStrings.ChatSend = "Chat.Send" -> string!
+const Trailblazor.TbStrings.ChatTyping = "Chat.Typing" -> string!
+const Trailblazor.TbStrings.ChatTypingMany = "Chat.TypingMany" -> string!
+override Trailblazor.ChatAttachment.Equals(object? obj) -> bool
+override Trailblazor.ChatAttachment.GetHashCode() -> int
+override Trailblazor.ChatAttachment.ToString() -> string!
+override Trailblazor.ChatAuthor.Equals(object? obj) -> bool
+override Trailblazor.ChatAuthor.GetHashCode() -> int
+override Trailblazor.ChatAuthor.ToString() -> string!
+override Trailblazor.ChatLabels.Equals(object? obj) -> bool
+override Trailblazor.ChatLabels.GetHashCode() -> int
+override Trailblazor.ChatLabels.ToString() -> string!
+override Trailblazor.ChatMessage.Equals(object? obj) -> bool
+override Trailblazor.ChatMessage.GetHashCode() -> int
+override Trailblazor.ChatMessage.ToString() -> string!
+override Trailblazor.ChatSend.Equals(object? obj) -> bool
+override Trailblazor.ChatSend.GetHashCode() -> int
+override Trailblazor.ChatSend.ToString() -> string!
+override Trailblazor.TbChat.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbChat.OnParametersSet() -> void
+static Trailblazor.ChatAttachment.operator !=(Trailblazor.ChatAttachment? left, Trailblazor.ChatAttachment? right) -> bool
+static Trailblazor.ChatAttachment.operator ==(Trailblazor.ChatAttachment? left, Trailblazor.ChatAttachment? right) -> bool
+static Trailblazor.ChatAuthor.operator !=(Trailblazor.ChatAuthor? left, Trailblazor.ChatAuthor? right) -> bool
+static Trailblazor.ChatAuthor.operator ==(Trailblazor.ChatAuthor? left, Trailblazor.ChatAuthor? right) -> bool
+static Trailblazor.ChatLabels.operator !=(Trailblazor.ChatLabels? left, Trailblazor.ChatLabels? right) -> bool
+static Trailblazor.ChatLabels.operator ==(Trailblazor.ChatLabels? left, Trailblazor.ChatLabels? right) -> bool
+static Trailblazor.ChatMessage.operator !=(Trailblazor.ChatMessage? left, Trailblazor.ChatMessage? right) -> bool
+static Trailblazor.ChatMessage.operator ==(Trailblazor.ChatMessage? left, Trailblazor.ChatMessage? right) -> bool
+static Trailblazor.ChatSend.operator !=(Trailblazor.ChatSend? left, Trailblazor.ChatSend? right) -> bool
+static Trailblazor.ChatSend.operator ==(Trailblazor.ChatSend? left, Trailblazor.ChatSend? right) -> bool
+~override Trailblazor.TbChat.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbChat.TimeZone.get -> System.TimeZoneInfo?
+Trailblazor.TbChat.TimeZone.set -> void

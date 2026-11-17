@@ -33,7 +33,6 @@ public static class UpcomingCatalog
         new("Dock manager", ExampleCategory.Layout, 75),
         new("Masonry layout", ExampleCategory.Layout, 193),
         new("Charts", ExampleCategory.Content, 199),
-        new("Chat", ExampleCategory.Content, 181),
         new("Diagram", ExampleCategory.Content, 207),
         new("Gantt chart", ExampleCategory.Content, 203),
         new("Gauges", ExampleCategory.Content, 200),

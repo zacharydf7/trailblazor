@@ -1,0 +1,36 @@
+@page "/chat"
+
+<TbButton>Before</TbButton>
+@* Enough messages to scroll in a short chat; the button below adds a reply from Robin. *@
+<TbChat AriaLabel="Trip planning" Messages="_messages" CurrentAuthorId="you" OnSend="Send" AllowAttachments
+        Style="--tb-chat-max-height: 12rem; max-inline-size: 28rem" />
+<TbButton OnClick="Reply">Robin replies</TbButton>
+<output data-testid="sent">@_sent</output>
+
+@code {
+    private static readonly ChatAuthor You = new("you", "You");
+    private static readonly ChatAuthor Robin = new("robin", "Robin");
+    private static readonly DateTimeOffset Morning = new(2026, 11, 16, 9, 0, 0, TimeSpan.Zero);
+    private List<ChatMessage> _messages = [.. Enumerable.Range(1, 12).Select(at => new ChatMessage($"{at}",
+        at % 2 == 0 ? You : Robin, $"Message {at}", Morning.AddMinutes(at)))];
+    private string _sent = "";
+
+    // Reads every file, so a file the browser has forgotten fails the send.
+    private async Task Send(ChatSend send)
+    {
+        var files = new List<string>();
+        foreach (var file in send.Files)
+        {
+            await using var stream = file.OpenReadStream();
+            var content = await new StreamReader(stream).ReadToEndAsync();
+            files.Add($"{file.Name} ({content})");
+        }
+
+        _sent = string.Join(", ", [send.Text, .. files]);
+        _messages = [.. _messages,
+            new($"{_messages.Count + 1}", You, send.Text, Morning.AddMinutes(_messages.Count + 1))];
+    }
+
+    private void Reply() => _messages = [.. _messages,
+        new($"{_messages.Count + 1}", Robin, $"Reply {_messages.Count + 1}", Morning.AddMinutes(_messages.Count + 1))];
+}

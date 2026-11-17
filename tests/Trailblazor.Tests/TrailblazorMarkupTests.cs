@@ -2400,6 +2400,44 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Chat_ShouldSendWithAFileAndReadTheMessages_WhenTheHelperIsUsed()
+    {
+        ChatSend? sent = null;
+        var robin = new ChatAuthor("robin", "Robin");
+        var cut = Render<TbChat>(parameters => parameters.Add(chat => chat.AriaLabel, "Trip planning")
+            .Add(chat => chat.Messages, [new ChatMessage("1", robin, "Bring water", DateTimeOffset.Now)])
+            .Add(chat => chat.TypingAuthors, [robin]).Add(chat => chat.AllowAttachments, true)
+            .Add(chat => chat.OnSend, (ChatSend send) => sent = send));
+        var chat = cut.Tb().Chat("Trip planning");
+
+        await chat.AttachAsync(InputFileContent.CreateFromText("Day one", "route.txt"));
+        await chat.SendAsync("Here's the route");
+
+        Assert.Equal(("Here's the route", "route.txt"), (sent!.Text, sent.Files.Single().Name));
+        Assert.Equal(["Robin: Bring water"], chat.Messages);
+        Assert.Equal("Robin is typing…", chat.Typing);
+    }
+
+    [Fact]
+    public async Task Chat_ShouldRefuseToSendOrAttach_WhenTheChatCantTakeIt()
+    {
+        var cut = Render<TbChat>(parameters => parameters.Add(chat => chat.AriaLabel, "Trip planning")
+            .Add(chat => chat.Disabled, true));
+        var reading = Render<TbChat>(parameters => parameters.Add(chat => chat.AriaLabel, "Trail log")
+            .Add(chat => chat.ShowComposer, false));
+
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Chat().SendAsync("Hi"));
+        var noComposer = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => reading.Tb().Chat().SendAsync("Hi"));
+        var noFiles = await Assert.ThrowsAsync<InvalidOperationException>(() => Render<TbChat>(parameters =>
+            parameters.Add(chat => chat.AriaLabel, "Trail notes")).Tb().Chat().AttachAsync("route.txt"));
+
+        Assert.Equal(("This chat is disabled.", "This chat has no composer; turn ShowComposer on.",
+            "This chat doesn't take files; turn AllowAttachments on."),
+            (disabled.Message, noComposer.Message, noFiles.Message));
+    }
+
+    [Fact]
     public async Task Carousel_ShouldStepAndJumpBetweenSlides_WhenTheHelperIsUsed()
     {
         var shown = new List<int>();
