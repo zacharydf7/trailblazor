@@ -6233,3 +6233,13 @@ static Trailblazor.CascaderItem<TValue>.operator ==(Trailblazor.CascaderItem<TVa
 static Trailblazor.CascaderLabels.operator !=(Trailblazor.CascaderLabels? left, Trailblazor.CascaderLabels? right) -> bool
 static Trailblazor.CascaderLabels.operator ==(Trailblazor.CascaderLabels? left, Trailblazor.CascaderLabels? right) -> bool
 ~override Trailblazor.TbCascader<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbMenubar
+Trailblazor.TbMenubar.AriaLabel.get -> string!
+Trailblazor.TbMenubar.AriaLabel.set -> void
+Trailblazor.TbMenubar.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbMenubar.ChildContent.set -> void
+Trailblazor.TbMenubar.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbMenubar.TbMenubar() -> void
+override Trailblazor.TbMenubar.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbMenubar.OnParametersSet() -> void
+~override Trailblazor.TbMenubar.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

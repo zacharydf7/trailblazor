@@ -324,6 +324,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// share a name, as <c>page.Locator("#actions")</c>.</summary>
     public TbMenuLocator Menu(ILocator trigger) => new(scope, trigger);
 
+    /// <summary>The <c>TbMenubar</c> with this <c>AriaLabel</c>, or the only one in the scope when no name is given.
+    /// </summary>
+    public TbMenubarLocator Menubar(string? name = null) => new(scope, name);
+
     /// <summary>The <c>TbContextMenu</c> whose menu has this <c>AriaLabel</c>, or the only one in the scope when no
     /// name is given. It opens on its whole area, or on an element in it picked with <c>On</c>.</summary>
     public TbContextMenuLocator ContextMenu(string? name = null) => TbContextMenuLocator.Named(scope, name);

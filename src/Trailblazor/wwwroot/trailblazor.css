@@ -4583,6 +4583,14 @@
         top: var(--tb-tooltip-arrow-along);
     }
 
+    /* A menubar's menus sit in a row. */
+    .tb-menubar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--tb-space-1);
+    }
+
     .tb-menu {
         display: inline-flex;
     }

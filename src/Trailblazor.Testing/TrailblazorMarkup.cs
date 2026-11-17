@@ -608,6 +608,11 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbMenu</c> whose trigger has this name.</summary>
     public TbMenuDriver Menu(string trigger) => new(trigger, _findAll, _scripts);
 
+    /// <summary>The <c>TbMenubar</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is given.
+    /// </summary>
+    public TbMenubarDriver Menubar(string? name = null) => new(() => Only(_findAll("[role=menubar].tb-menubar")
+        .Where(bar => name is null || bar.GetAttribute("aria-label") == name).ToList(), "menubar", name), _scripts);
+
     /// <summary>The <c>TbHotkey</c> with these keys, written as its <c>Keys</c> are, such as <c>"Mod+S"</c>.</summary>
     public TbHotkeyDriver Hotkey(string keys) => new(() =>
     {
@@ -4686,6 +4691,25 @@ public sealed class TbQueryBuilderDriver
 
         return group;
     }
+}
+
+/// <summary>A <c>TbMenubar</c>, found by its <c>AriaLabel</c>. Its menus are named by their labels.</summary>
+public sealed class TbMenubarDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbMenubarDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>The names of the bar's menus, in order.</summary>
+    public IReadOnlyList<string> Menus => [.. _find().QuerySelectorAll(":scope > .tb-menu > [data-part=trigger]")
+        .Select(Choices.NameOf)];
+
+    /// <summary>The bar's menu with this name, to open it or choose its items, as in
+    /// <c>Menu("Edit").ChooseAsync("Undo")</c>. Throws when the bar has no such menu.</summary>
+    public TbMenuDriver Menu(string name) => Menus.Contains(name)
+        ? new(name, selector => [.. _find().QuerySelectorAll(selector)], _scripts)
+        : throw new InvalidOperationException($"The menubar has no menu \"{name}\".");
 }
 
 /// <summary>A <c>TbMenu</c>, found by its trigger's name.</summary>

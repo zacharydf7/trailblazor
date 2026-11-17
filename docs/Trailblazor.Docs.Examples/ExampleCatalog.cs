@@ -7211,6 +7211,64 @@ public static class ExampleCatalog
                     + "render hidden until the menu opens, so they count uses only.",
             ],
         },
+        new("menubar", "Menubar", ExampleCategory.Navigation,
+            "A row of menus, such as File, Edit and View, that the keyboard moves along as one control.")
+        {
+            WhenToUse =
+            [
+                "Use it for an app's commands grouped under a few headings, like a desktop editor's File, Edit and "
+                    + "View menus.",
+            ],
+            WhenNotToUse =
+            [
+                "For links between pages, use the nav menu of an [app shell](components/app-shell).",
+                "For one set of commands, use a single [menu](components/menu).",
+                "For a row of buttons that act at once, use a [toolbar](components/toolbar).",
+            ],
+            Related = ["menu", "toolbar", "app-shell"],
+            Pattern = new("menubar", "https://www.w3.org/WAI/ARIA/apg/patterns/menubar/"),
+            Sections =
+            [
+                new("basic", "Menubar", "Put `TbMenu` components in a `TbMenubar` named by its `AriaLabel`. Each "
+                    + "menu's trigger becomes one of the bar's items, shown as plain text, and the bar keeps one of "
+                    + "them in the tab order. Everything a menu takes, such as submenus, checkbox items and "
+                    + "separators, works the same.", typeof(MenubarExample)),
+            ],
+            Api = [typeof(TbMenubar), typeof(TbMenu), typeof(MenuClasses)],
+            Keyboard =
+            [
+                new(["Tab"],
+                    "Moves into the bar at the menu it was last on, or the first one; Tab again moves out of it."),
+                new(["Right", "Left"], "Moves to the next or previous menu, wrapping around.") { When = "On the bar" },
+                new(["Home", "End"], "Moves to the first or last menu.") { When = "On the bar" },
+                new(["Down", "Enter", "Space"], "Opens the menu and moves into it.") { When = "On the bar" },
+                new(["Right", "Left"], "Closes the menu and opens the one beside it, on its first item, unless the "
+                    + "key opens or closes a submenu instead.") { When = "In an open menu" },
+                new(["Escape"], "Closes the menu and goes back to its place on the bar.") { When = "In an open menu" },
+            ],
+            Labeling =
+            [
+                "The bar is a `menubar` named by `AriaLabel`. Each menu's trigger is a `menuitem` with "
+                    + "`aria-haspopup=\"menu\"`, named by its `Label`.",
+            ],
+            Accessibility =
+            [
+                "In right-to-left text, Left moves to the next menu.",
+                "With one menu open, pointing at another opens it instead, as desktop menubars do.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "Each menu opens natively from its trigger, and each trigger is in the tab order. The bar becomes one "
+                    + "tab stop with arrow keys once the page is interactive.",
+            ],
+            Ready = new("[role=menubar]", "the bar"),
+            Target = new("menubar", "Trail editor"),
+            Blocks = ["tb-menubar"],
+            TestingTip = "`page.Tb().Menubar(\"Trail editor\")` in Playwright, or `cut.Tb().Menubar(...)` in bUnit, "
+                + "finds the bar by its `AriaLabel`: `MenusAsync()` or `Menus` reads the menus' names, and "
+                + "`Menu(\"Edit\").ChooseAsync(\"Undo\")` opens a menu and chooses one of its items.",
+        },
         new("context-menu", "Context menu", ExampleCategory.Overlays,
             "A menu that opens where an area is right-clicked or long-pressed, with items for what was clicked.")
         {

@@ -96,6 +96,7 @@ public static class AccessibilityStatusCatalog
         new("query-builder", Tested, NotYet, None),
         new("tooltip", Tested, NotYet, None),
         new("menu", Tested, NotYet, None),
+        new("menubar", Tested, NotYet, None),
         new("context-menu", Tested, NotYet, None),
         new("command-palette", Tested, NotYet, NotYet),
         new("hotkeys", Tested, None, None),

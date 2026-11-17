@@ -1,0 +1,9 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IAsyncDisposable
+
+@* data-ready marks that the arrow keys move along the bar and between open menus. *@
+<div @ref="_root" @attributes="AdditionalAttributes" role="menubar" aria-label="@AriaLabel" style="@Style"
+     data-ready="@(_handle is not null ? "" : null)" class="@ClassNames.Join("tb-menubar", Class)">
+    <CascadingValue Value="this" IsFixed>@ChildContent</CascadingValue>
+</div>

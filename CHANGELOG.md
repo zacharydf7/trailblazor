@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-17
 
+- New `TbMenubar`: a `menubar` whose `TbMenu` children's triggers become `menuitem`s, shown as text without a chevron, with one tab stop between them once the page is interactive (`tabindex` 0 on one, -1 on the rest)
 - New `TbCascader`: a combobox whose popup (`data-part="popup"`) holds one listbox for each level (`data-part="column"` with `data-level`), or a list of matching paths while the user types (`data-part="results"`); a choice with more under it has `data-more` and is named with "more choices"
 - New `TbKanban`: a region of columns (`role="group"`, `data-part="column"` with `data-key` and `data-full`), each with a title, a count and a sortable list of its cards; the columns' lists share one group, so cards move between columns; a move into a full column is refused and read out
 - A `TbAutocomplete` with `Columns` shows its suggestions as cells (`data-part="cell"`) under a row of titles (`data-part="columns"`, each `data-part="column-title"`, hidden from screen readers), and names each option by its columns' titles and values

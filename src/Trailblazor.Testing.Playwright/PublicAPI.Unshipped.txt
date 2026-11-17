@@ -548,3 +548,9 @@ Trailblazor.Testing.Playwright.TbCascaderLocator.SearchAsync(string! text) -> Sy
 Trailblazor.Testing.Playwright.TbCascaderLocator.TbCascaderLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
 Trailblazor.Testing.Playwright.TbCascaderLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.Cascader(string! label) -> Trailblazor.Testing.Playwright.TbCascaderLocator!
+Trailblazor.Testing.Playwright.TbMenubarLocator
+Trailblazor.Testing.Playwright.TbMenubarLocator.Menu(string! name) -> Trailblazor.Testing.Playwright.TbMenuLocator!
+Trailblazor.Testing.Playwright.TbMenubarLocator.Menubar.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbMenubarLocator.MenusAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbMenubarLocator.TbMenubarLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.Menubar(string? name = null) -> Trailblazor.Testing.Playwright.TbMenubarLocator!

@@ -54,7 +54,6 @@ public static class UpcomingCatalog
         new("Image preview", ExampleCategory.Overlays, 188),
         new("Product tour", ExampleCategory.Overlays, 191),
         new("File manager", ExampleCategory.Navigation, 209),
-        new("Menubar", ExampleCategory.Navigation, 187),
     ];
 
     public static IReadOnlyList<RoadmapIssue> Issues { get; } = Load();

@@ -1,0 +1,23 @@
+<TbStack Gap="2">
+    <TbMenubar AriaLabel="Trail editor">
+        <TbMenu Label="File">
+            <TbMenuItem OnClick="@(() => _last = "New trail")">New trail</TbMenuItem>
+            <TbMenuItem OnClick="@(() => _last = "Open")">Open…</TbMenuItem>
+            <TbMenuSeparator />
+            <TbMenuItem OnClick="@(() => _last = "Export")">Export as GPX</TbMenuItem>
+        </TbMenu>
+        <TbMenu Label="Edit">
+            <TbMenuItem OnClick="@(() => _last = "Undo")">Undo</TbMenuItem>
+            <TbMenuItem OnClick="@(() => _last = "Redo")">Redo</TbMenuItem>
+        </TbMenu>
+        <TbMenu Label="View">
+            <TbMenuItem OnClick="@(() => _last = "Zoom in")">Zoom in</TbMenuItem>
+            <TbMenuItem OnClick="@(() => _last = "Zoom out")">Zoom out</TbMenuItem>
+        </TbMenu>
+    </TbMenubar>
+    <output>Last command: @(_last ?? "none")</output>
+</TbStack>
+
+@code {
+    private string? _last;
+}

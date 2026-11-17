@@ -517,3 +517,7 @@ Trailblazor.Testing.TbCascaderDriver.Results.get -> System.Collections.Generic.I
 Trailblazor.Testing.TbCascaderDriver.SearchAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbCascaderDriver.Text.get -> string?
 Trailblazor.Testing.TrailblazorMarkup.Cascader(string! label) -> Trailblazor.Testing.TbCascaderDriver!
+Trailblazor.Testing.TbMenubarDriver
+Trailblazor.Testing.TbMenubarDriver.Menu(string! name) -> Trailblazor.Testing.TbMenuDriver!
+Trailblazor.Testing.TbMenubarDriver.Menus.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TrailblazorMarkup.Menubar(string? name = null) -> Trailblazor.Testing.TbMenubarDriver!

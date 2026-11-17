@@ -1,0 +1,15 @@
+@page "/menubar-changes"
+
+<TbMenubar AriaLabel="Trail editor">
+    <TbMenu Label="File"><TbMenuItem>New trail</TbMenuItem></TbMenu>
+    <TbMenu Label="Edit"><TbMenuItem>Undo</TbMenuItem></TbMenu>
+    @if (_withView)
+    {
+        <TbMenu Label="View"><TbMenuItem>Zoom in</TbMenuItem></TbMenu>
+    }
+</TbMenubar>
+<button type="button" @onclick="() => _withView = false">Remove View</button>
+
+@code {
+    private bool _withView = true;
+}

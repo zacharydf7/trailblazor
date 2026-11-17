@@ -22,7 +22,13 @@
         <TbButton Variant="TriggerVariant" Tone="TriggerTone" Size="TriggerSize" Disabled="Disabled" StartIcon="Icon"
                   Class="@Classes?.Trigger" @attributes="TriggerAttributes">
             <ChildContent>@Label</ChildContent>
-            <End><TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" /></End>
+            <End>
+                @* A menubar's menus are known to open, so they show no chevron. *@
+                @if (Menubar is null)
+                {
+                    <TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" />
+                }
+            </End>
         </TbButton>
     }
     @if (Description is not null)
@@ -156,7 +162,12 @@
     [CascadingParameter]
     private TbButtonGroup? Group { get; set; }
 
-    private Variant TriggerVariant => TbButtonGroup.Choose(_givenVariant, Variant, Group?.Variant);
+    [CascadingParameter]
+    private TbMenubar? Menubar { get; set; }
+
+    // A menubar's triggers show as plain text unless the menu is given its own Variant.
+    private Variant TriggerVariant => Menubar is not null && !_givenVariant ? Variant.Text
+        : TbButtonGroup.Choose(_givenVariant, Variant, Group?.Variant);
 
     private Tone TriggerTone => TbButtonGroup.Choose(_givenTone, Tone, Group?.Tone);
 
@@ -197,6 +208,12 @@
             if (DescriptionId is not null)
             {
                 attributes["aria-describedby"] = DescriptionId;
+            }
+
+            // In a menubar the trigger is one of the bar's items; the bar's script gives them one tab stop.
+            if (Menubar is not null)
+            {
+                attributes["role"] = "menuitem";
             }
 
             // A static page never runs the script, so tests know not to wait for it; popovertarget still opens it.
