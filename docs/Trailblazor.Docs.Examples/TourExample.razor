@@ -1,8 +1,8 @@
 <TbStack Gap="3">
-    <TbToolbar AriaLabel="Trail tools">
+    <TbStack Row Gap="2" Align="Align.Center" Wrap>
         <TbButton id="tour-new-trail" Variant="Variant.Filled">New trail</TbButton>
         <TbTextField TValue="string" id="tour-search" AriaLabel="Search trails" Placeholder="Search trails" />
-    </TbToolbar>
+    </TbStack>
     <TbSurface id="tour-map" Outlined Style="padding: var(--tb-space-6)">Map of your trails</TbSurface>
     <div>
         <TbButton OnClick="() => _open = true">Take the tour</TbButton>
