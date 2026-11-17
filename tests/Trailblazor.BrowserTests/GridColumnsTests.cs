@@ -182,9 +182,51 @@ public class GridColumnsTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.Locator($"th[data-column=s{shown[0] + 5}]")).ToHaveCountAsync(1);
     }
 
-    private async Task<IPage> OpenReadyAsync(string browser)
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldReachTheLastCell_WhenControlEndIsPressedInAGridThatDrawsRowsAndColumnsInView(
+        string browser)
     {
-        var page = await OpenAsync(browser, "/grid-columns");
+        var page = await OpenReadyAsync(browser, "/grid-columns-rows");
+        var table = page.GetByRole(AriaRole.Grid, new() { Name = "Readings" });
+        await table.Locator("tr[aria-rowindex='2'] td[data-column=Id]").ClickAsync();
+        for (var sensor = 0; sensor <= 9; sensor++)
+        {
+            await page.Keyboard.PressAsync("ArrowRight");
+            await Expect(table.Locator($"tr[aria-rowindex='2'] td[data-column=s{sensor}]")).ToBeFocusedAsync();
+        }
+
+        await page.Keyboard.PressAsync("Control+End");
+
+        await Expect(table.Locator("tr[aria-rowindex='501'] td[data-column=total]")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CellNavigation_ShouldReachTheLastCell_WhenControlEndIsPressedWhileAColumnIsStillBeingDrawn(
+        string browser)
+    {
+        var page = await OpenReadyAsync(browser, "/grid-columns-rows");
+        var table = page.GetByRole(AriaRole.Grid, new() { Name = "Readings" });
+        await Expect(table.Locator("tr[aria-rowindex='2'] td[data-column=total]")).ToBeVisibleAsync();
+
+        // Left from the pinned total asks for the last sensor, which isn't drawn, and Control+End follows at once.
+        // WebKit scrolls a cell focused from script into view on the next frame, so wait for that scroll first, or it
+        // would undo Control+End's jump.
+        await table.EvaluateAsync("""
+            async table => {
+                const total = table.querySelector("tr[aria-rowindex='2'] td[data-column=total]");
+                total.focus();
+                await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
+                total.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+                total.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', ctrlKey: true, bubbles: true }));
+            }
+            """);
+
+        await Expect(table.Locator("tr[aria-rowindex='501'] td[data-column=total]")).ToBeFocusedAsync();
+    }
+
+    private async Task<IPage> OpenReadyAsync(string browser, string path = "/grid-columns")
+    {
+        var page = await OpenAsync(browser, path);
         await Expect(page.Locator("[data-part=grid]")).ToHaveAttributeAsync("data-ready", "");
         return page;
     }

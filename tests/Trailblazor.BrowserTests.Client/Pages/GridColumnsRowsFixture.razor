@@ -1,0 +1,25 @@
+@page "/grid-columns-rows"
+
+@* A grid that draws only the rows and columns in view: 500 readings, with forty sensor columns between a pinned Id
+   column and a pinned total. *@
+<TbDataGrid TItem="Reading" Items="_readings" AriaLabel="Readings" KeySelector="reading => reading.Id" Virtualize
+            VirtualizeColumns CellNavigation Height="12rem">
+    <TbColumn Field="reading => reading.Id" Pinned="ColumnPin.Start" />
+    @for (var at = 0; at < 40; at++)
+    {
+        var sensor = at;
+        <TbColumn @key="sensor" TItem="Reading" Id="@($"s{sensor}")" Title="@($"Sensor {sensor}")">
+            <CellTemplate>@context.Values[sensor]</CellTemplate>
+        </TbColumn>
+    }
+    <TbColumn TItem="Reading" Id="total" Title="Total" Pinned="ColumnPin.End">
+        <CellTemplate>@context.Values.Sum()</CellTemplate>
+    </TbColumn>
+</TbDataGrid>
+
+@code {
+    private readonly Reading[] _readings =
+        [.. Enumerable.Range(1, 500).Select(id => new Reading(id, [.. Enumerable.Range(0, 40).Select(at => id + at)]))];
+
+    public sealed record Reading(int Id, int[] Values);
+}
