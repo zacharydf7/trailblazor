@@ -5787,3 +5787,50 @@ Trailblazor.CarouselTransition.None = 2 -> Trailblazor.CarouselTransition
 Trailblazor.CarouselTransition.Slide = 0 -> Trailblazor.CarouselTransition
 Trailblazor.TbCarousel.Transition.get -> Trailblazor.CarouselTransition
 Trailblazor.TbCarousel.Transition.set -> void
+const Trailblazor.TbStrings.FieldChecking = "Field.Checking" -> string!
+Trailblazor.ChoiceClasses.Status.get -> string?
+Trailblazor.ChoiceClasses.Status.init -> void
+Trailblazor.FieldClasses.Status.get -> string?
+Trailblazor.FieldClasses.Status.init -> void
+Trailblazor.FieldSettings
+Trailblazor.FieldSettings.FieldSettings() -> void
+Trailblazor.FieldSettings.ShowValidationStatus.get -> bool
+Trailblazor.FieldSettings.ShowValidationStatus.set -> void
+Trailblazor.FieldSettings.StatusIcons.get -> Trailblazor.FieldStatusIcons!
+Trailblazor.FieldSettings.StatusIcons.set -> void
+Trailblazor.FieldStatusIcons
+Trailblazor.FieldStatusIcons.Checking.get -> Trailblazor.Icon?
+Trailblazor.FieldStatusIcons.Checking.init -> void
+Trailblazor.FieldStatusIcons.FieldStatusIcons() -> void
+Trailblazor.FieldStatusIcons.Invalid.get -> Trailblazor.Icon?
+Trailblazor.FieldStatusIcons.Invalid.init -> void
+Trailblazor.FieldStatusIcons.Valid.get -> Trailblazor.Icon?
+Trailblazor.FieldStatusIcons.Valid.init -> void
+Trailblazor.FieldValidationStatus
+Trailblazor.FieldValidationStatus.Checking = 1 -> Trailblazor.FieldValidationStatus
+Trailblazor.FieldValidationStatus.Invalid = 3 -> Trailblazor.FieldValidationStatus
+Trailblazor.FieldValidationStatus.None = 0 -> Trailblazor.FieldValidationStatus
+Trailblazor.FieldValidationStatus.Valid = 2 -> Trailblazor.FieldValidationStatus
+Trailblazor.TrailblazorOptions.Fields.get -> Trailblazor.FieldSettings!
+
+Trailblazor.FieldStatusIcons.<Clone>$() -> Trailblazor.FieldStatusIcons!
+Trailblazor.FieldStatusIcons.Equals(Trailblazor.FieldStatusIcons? other) -> bool
+override Trailblazor.FieldStatusIcons.Equals(object? obj) -> bool
+override Trailblazor.FieldStatusIcons.GetHashCode() -> int
+override Trailblazor.FieldStatusIcons.ToString() -> string!
+static Trailblazor.FieldStatusIcons.operator !=(Trailblazor.FieldStatusIcons? left, Trailblazor.FieldStatusIcons? right) -> bool
+static Trailblazor.FieldStatusIcons.operator ==(Trailblazor.FieldStatusIcons? left, Trailblazor.FieldStatusIcons? right) -> bool
+Trailblazor.TbFieldBase<TValue>.CheckingMessage.get -> string?
+Trailblazor.TbFieldBase<TValue>.CheckingMessage.set -> void
+Trailblazor.TbFieldBase<TValue>.ShowValidationStatus.get -> bool?
+Trailblazor.TbFieldBase<TValue>.ShowValidationStatus.set -> void
+Trailblazor.TbFieldBase<TValue>.StatusIcons.get -> Trailblazor.FieldStatusIcons?
+Trailblazor.TbFieldBase<TValue>.StatusIcons.set -> void
+Trailblazor.TbFieldBase<TValue>.StatusTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.FieldValidationStatus>?
+Trailblazor.TbFieldBase<TValue>.StatusTemplate.set -> void
+Trailblazor.TbFieldBase<TValue>.ValidMessage.get -> string?
+Trailblazor.TbFieldBase<TValue>.ValidMessage.set -> void
+Trailblazor.TbFieldBase<TValue>.ValidationStatus.get -> Trailblazor.FieldValidationStatus
+Trailblazor.TbFieldBase<TValue>.ValidationStatusChanged.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.FieldValidationStatus>
+Trailblazor.TbFieldBase<TValue>.ValidationStatusChanged.set -> void
+Trailblazor.TbForm.IsValidating.get -> bool

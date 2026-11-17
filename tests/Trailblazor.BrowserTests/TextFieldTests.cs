@@ -630,4 +630,23 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     private static Task<int> Caret(ILocator input) => input.EvaluateAsync<int>("input => input.selectionStart");
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Status_ShouldSpinOnlyWithoutReducedMotion_WhenTheFieldIsChecking(string browser)
+    {
+        var spins = new List<string>();
+        foreach (var motion in new[] { ReducedMotion.NoPreference, ReducedMotion.Reduce })
+        {
+            var page = await OpenAsync(browser, "/field-status", new() { ReducedMotion = motion });
+            var name = page.GetByLabel("Trail name");
+            await Expect(name).ToHaveAttributeAsync("data-ready", "");
+            await name.FillAsync("Robin");
+            await name.BlurAsync();
+            var spinner = page.Locator("[data-part=validation-status] .tb-field__spinner");
+            await Expect(spinner).ToBeVisibleAsync();
+            spins.Add(await spinner.EvaluateAsync<string>("spinner => getComputedStyle(spinner).animationName"));
+        }
+
+        Assert.Equal(["tb-spin", "none"], spins);
+    }
 }

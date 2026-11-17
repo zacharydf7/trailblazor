@@ -14,6 +14,9 @@ public sealed record ChoiceClasses
     /// <summary>Added to the helper text (<c>data-part="helper"</c>).</summary>
     public string? Helper { get; init; }
 
+    /// <summary>Added to the validation status (<c>data-part="validation-status"</c>).</summary>
+    public string? Status { get; init; }
+
     /// <summary>Added to the validation messages (<c>data-part="error"</c>).</summary>
     public string? Error { get; init; }
 }

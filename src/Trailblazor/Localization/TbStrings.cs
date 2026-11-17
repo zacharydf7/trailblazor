@@ -342,6 +342,10 @@ public static class TbStrings
     /// <c>aria-required</c>.</summary>
     public const string FieldRequiredMark = "Field.RequiredMark";
 
+    /// <summary>"Checking…": shown under a field that shows its validation status while its <c>ValidationAsync</c>
+    /// check runs.</summary>
+    public const string FieldChecking = "Field.Checking";
+
     /// <summary>"Drop files here, or click to choose them.": the file upload's drop zone.</summary>
     public const string FileUploadZone = "FileUpload.Zone";
 
@@ -1295,6 +1299,7 @@ public static class TbStrings
         [FieldInvalid] = "{0} isn't valid.",
         [FieldRequired] = "{0} is required.",
         [FieldRequiredMark] = "required",
+        [FieldChecking] = "Checking…",
         [FieldUnnamed] = "The field",
         [FileUploadZone] = "Drop files here, or click to choose them.",
         [FileUploadChoose] = "Choose files",

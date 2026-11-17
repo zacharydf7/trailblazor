@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Trailblazor.Internal.Events;
 
@@ -60,6 +61,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     private (TValue? Value, List<string>? Messages)? _checked;
     // A check that a form's validation starts says nothing aloud, as the rest of that validation doesn't.
     private bool _validationRequested;
+    private FieldValidationStatus _reportedStatus;
+    private IReadOnlyDictionary<string, object>? _controlAttributes;
 
     /// <summary>The field's value.</summary>
     [Parameter]
@@ -152,6 +155,47 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     [Parameter]
     public Func<TValue?, CancellationToken, Task<IEnumerable<string>>>? ValidationAsync { get; set; }
 
+    /// <summary>Shows the field's validation status: a spinner and <see cref="CheckingMessage"/> under the field while
+    /// <see cref="ValidationAsync"/> runs, with <c>aria-busy</c> on the input; a check mark and
+    /// <see cref="ValidMessage"/> once that check passes; and an icon beside each error. Defaults to the app's
+    /// <see cref="FieldSettings.ShowValidationStatus"/>.</summary>
+    [Parameter]
+    public bool? ShowValidationStatus { get; set; }
+
+    /// <summary>The text under the field while its <see cref="ValidationAsync"/> check runs, with
+    /// <see cref="ShowValidationStatus"/>. Defaults to "Checking…".</summary>
+    [Parameter]
+    public string? CheckingMessage { get; set; }
+
+    /// <summary>The text under the field once its <see cref="ValidationAsync"/> check passes, such as "That name is
+    /// free.", with <see cref="ShowValidationStatus"/>. It's read out when it appears. Without it, only the check
+    /// mark shows.</summary>
+    [Parameter]
+    public string? ValidMessage { get; set; }
+
+    /// <summary>The validation status icons in place of the app's <see cref="FieldSettings.StatusIcons"/>; each one
+    /// left null falls back to the app's.</summary>
+    [Parameter]
+    public FieldStatusIcons? StatusIcons { get; set; }
+
+    /// <summary>Draws the checking and valid status in place of the built-in icon and text, with
+    /// <see cref="ShowValidationStatus"/>. The input's <c>aria-describedby</c> includes what it draws.</summary>
+    [Parameter]
+    public RenderFragment<FieldValidationStatus>? StatusTemplate { get; set; }
+
+    /// <summary>Raised when <see cref="ValidationStatus"/> changes, such as to turn off a submit button while a
+    /// check runs.</summary>
+    [Parameter]
+    public EventCallback<FieldValidationStatus> ValidationStatusChanged { get; set; }
+
+    /// <summary>Where the field's validation stands: invalid while it shows an error, checking while its
+    /// <see cref="ValidationAsync"/> runs, valid once that check has passed the field's current value, and none
+    /// otherwise.
+    /// </summary>
+    public FieldValidationStatus ValidationStatus => ShowsInvalid ? FieldValidationStatus.Invalid
+        : IsChecking ? FieldValidationStatus.Checking
+        : CheckedMessages is { Count: 0 } ? FieldValidationStatus.Valid : FieldValidationStatus.None;
+
     /// <summary>Attributes for the input element itself, such as <c>name</c> or <c>data-*</c> ones. On a field with
     /// one input, the attributes only an input takes, <c>autocomplete</c>, <c>maxlength</c>, <c>minlength</c>,
     /// <c>pattern</c>, <c>inputmode</c>, <c>enterkeyhint</c>, <c>spellcheck</c> and <c>autocapitalize</c>, reach it
@@ -215,6 +259,9 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
+
+    [Inject]
+    private IOptions<TrailblazorOptions> Options { get; set; } = default!;
 
     [CascadingParameter]
     private TbFocusScope? FocusScope { get; set; }
@@ -291,7 +338,15 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // focus scopes look for. It isn't the native autofocus, which browsers act on even where a closed dialog or a
     // focus scope should place focus. A field with several controls marks one itself: a group its root, a range its
     // first part.
-    private protected IReadOnlyDictionary<string, object>? ControlAttributes { get; private set; }
+    // While a check runs on a field that shows its status, the input is marked busy, as its validity is about to
+    // change.
+    private protected IReadOnlyDictionary<string, object>? ControlAttributes =>
+        ShownStatus is FieldValidationStatus.Checking
+            ? new Dictionary<string, object>(_controlAttributes ?? new Dictionary<string, object>())
+            {
+                ["aria-busy"] = "true",
+            }
+            : _controlAttributes;
 
     private protected string? AutoFocusMark => AutoFocus ? "" : null;
 
@@ -307,6 +362,26 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     private protected string HelperId => $"{FieldId}-helper";
 
     private protected string ErrorId => $"{FieldId}-error";
+
+    private protected string StatusId => $"{FieldId}-status";
+
+    private protected bool ShowsStatus => ShowValidationStatus ?? FieldSettings.ShowValidationStatus;
+
+    private FieldSettings FieldSettings => Options.Value.Fields;
+
+    // The status shown under the field: checking or valid, while the field shows its status.
+    private protected FieldValidationStatus? ShownStatus => ShowsStatus
+        && ValidationStatus is FieldValidationStatus.Checking or FieldValidationStatus.Valid ? ValidationStatus : null;
+
+    // No checking icon means the built-in spinner.
+    private protected Icon? StatusIcon(FieldValidationStatus status) => status == FieldValidationStatus.Checking
+        ? StatusIcons?.Checking ?? FieldSettings.StatusIcons.Checking
+        : StatusIcons?.Valid ?? FieldSettings.StatusIcons.Valid ?? BuiltInIcons.Check;
+
+    private protected Icon ErrorIcon => StatusIcons?.Invalid ?? FieldSettings.StatusIcons.Invalid ?? BuiltInIcons.Error;
+
+    private protected string? StatusText(FieldValidationStatus status) => status == FieldValidationStatus.Checking
+        ? CheckingMessage ?? Localizer[TbStrings.FieldChecking] : ValidMessage;
 
     private protected string RequiredId => $"{FieldId}-required";
 
@@ -392,13 +467,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // A blank error from the parent is no error, so it doesn't mark the field invalid.
     private string? ParentError => string.IsNullOrWhiteSpace(Error) ? null : Error;
 
-    private protected string? DescribedBy => (HelperText is null, Errors.Count == 0) switch
-    {
-        (true, true) => null,
-        (false, true) => HelperId,
-        (true, false) => ErrorId,
-        (false, false) => $"{HelperId} {ErrorId}",
-    };
+    private protected string? DescribedBy => ClassNames.Joined([HelperText is null ? null : HelperId,
+        ShownStatus is null ? null : StatusId, Errors.Count == 0 ? null : ErrorId], " ");
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -423,7 +493,7 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
             control = merged;
         }
 
-        ControlAttributes = AutoFocus ? WithAutofocus(control) : control;
+        _controlAttributes = AutoFocus ? WithAutofocus(control) : control;
         // A value the field didn't report itself came from the parent, and a form reset goes back to it.
         if (!EqualityComparer<TValue>.Default.Equals(Value, _lastValue))
         {
@@ -777,6 +847,11 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     private List<string>? CheckedMessages =>
         _checked is { } found && SameValue(found.Value, Value) ? found.Messages : null;
 
+    // A check has started for the value the field holds and hasn't answered. This reads the field's state, not the
+    // check's task, which is still finishing when its answer first renders.
+    private bool IsChecking => ValidationAsync is not null && _checking?.IsCancellationRequested == false
+        && SameValue(_checkingValue, Value) && !(_checked is { } found && SameValue(found.Value, Value));
+
     private bool CheckFailed => _checked is { Messages: null } found && SameValue(found.Value, Value);
 
     private void Check(TValue? value)
@@ -824,6 +899,12 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         if (announce)
         {
             AnnounceNewErrors(before);
+        }
+
+        // A pass is read out only with a ValidMessage, such as that a name is free; a bare check mark has nothing to say.
+        if (announce && ShownStatus is FieldValidationStatus.Valid && ValidMessage is not null)
+        {
+            Announcer.Polite(ValidMessage);
         }
 
         StateHasChanged();
@@ -914,6 +995,8 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // A canceled check's answer is dropped, so a form has no reason to wait for it.
     Task IFormField.CheckingAsync() => _checking?.IsCancellationRequested == true ? Task.CompletedTask : _check;
 
+    bool IFormField.IsChecking() => IsChecking;
+
     bool IFormField.AwaitsCheck() => ValidationAsync is not null && _messages.Count == 0 && CheckedMessages is null;
 
     void IFormField.CountIfInvalid()
@@ -939,6 +1022,12 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (ValidationStatus is var status && status != _reportedStatus)
+        {
+            _reportedStatus = status;
+            await ValidationStatusChanged.InvokeAsync(status);
+        }
+
         // A focus scope decides when its field takes focus; elsewhere the browser focuses the marked control as it is
         // added (autofocus.js), or an opening dialog does.
         if (firstRender && AutoFocus && RendererInfo.IsInteractive && FocusScope is not null)

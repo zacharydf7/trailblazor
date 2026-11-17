@@ -2418,7 +2418,8 @@
     }
 
     .tb-button__spinner,
-    .tb-tree__spinner {
+    .tb-tree__spinner,
+    .tb-field__spinner {
         width: 1em;
         height: 1em;
         border: 2px solid currentColor;
@@ -2429,7 +2430,8 @@
 
     @media (prefers-reduced-motion: reduce) {
         .tb-button__spinner,
-        .tb-tree__spinner {
+        .tb-tree__spinner,
+        .tb-field__spinner {
             animation: none;
         }
     }
@@ -3642,6 +3644,26 @@
 
     .tb-field__error {
         color: var(--tb-color-danger-text);
+    }
+
+    /* Puts the icon or spinner before the text, in the validation status and in each error message that has an icon. */
+    .tb-field__status,
+    .tb-field__error > [data-part="message"]:has(> .tb-icon) {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-field__status {
+        color: var(--tb-color-text-muted);
+    }
+
+    .tb-field__status[data-status="valid"] {
+        color: var(--tb-color-success-text);
+    }
+
+    .tb-field__spinner {
+        flex: none;
     }
 
     .tb-field--invalid .tb-field__control {

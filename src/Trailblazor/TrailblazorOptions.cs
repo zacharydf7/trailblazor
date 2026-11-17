@@ -12,6 +12,9 @@ public sealed class TrailblazorOptions
     /// <summary>Defaults for dialogs whose own options leave a setting unset.</summary>
     public DialogSettings Dialogs { get; } = new();
 
+    /// <summary>Whether fields show their validation status, and its icons.</summary>
+    public FieldSettings Fields { get; } = new();
+
     /// <summary>How long tooltips wait before they appear and disappear.</summary>
     public TooltipSettings Tooltips { get; } = new();
 

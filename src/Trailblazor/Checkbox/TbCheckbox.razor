@@ -14,7 +14,7 @@
                 ShowsInvalid ? $"{Block}--invalid" : null,
                 Disabled ? $"{Block}--disabled" : null, Class)">
     @WithInfo(ChoiceLabel)
-    @Messages(Classes?.Helper, Classes?.Error)
+    @Messages(Classes?.Helper, Classes?.Status, Classes?.Error)
 </div>
 
 @code {

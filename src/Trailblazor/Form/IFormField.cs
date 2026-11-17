@@ -18,6 +18,9 @@ internal interface IFormField
     // Whether the field's ValidationAsync hasn't passed the value it holds now, such as when the check threw.
     bool AwaitsCheck();
 
+    // Whether the field's ValidationAsync check is running for the value it holds and hasn't answered.
+    bool IsChecking();
+
     // Messages in the edit context that the field hides while it shows only its required message.
     IEnumerable<string> HiddenMessages();
 

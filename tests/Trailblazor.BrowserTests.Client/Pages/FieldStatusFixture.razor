@@ -1,0 +1,11 @@
+@page "/field-status"
+
+@* A name field whose check never answers, so a test can look at the field while it checks. *@
+<TbTextField @bind-Value="_name" Label="Trail name" ShowValidationStatus ValidationAsync="CheckAsync" />
+
+@code {
+    private string? _name;
+
+    private static Task<IEnumerable<string>> CheckAsync(string? name, CancellationToken token) =>
+        new TaskCompletionSource<IEnumerable<string>>().Task;
+}

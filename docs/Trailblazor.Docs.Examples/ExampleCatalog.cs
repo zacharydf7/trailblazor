@@ -270,6 +270,8 @@ public static class ExampleCatalog
         new("end", "Content after the input, such as a unit or a button."),
         new("helper", "The help text under the field."),
         new("error", "The validation messages, shown while the value is invalid."),
+        new("validation-status", "With `ShowValidationStatus`, the check's status: \"Checking…\" while it runs, "
+            + "then a check mark and `ValidMessage` once it passes."),
         new("message", "One validation message, inside the error part."),
     ];
 
@@ -3121,6 +3123,12 @@ public static class ExampleCatalog
                 new("checks-that-take-time", "Checks that take time", "`ValidationAsync` checks a value with a slow "
                     + "call, such as asking the server whether a name is taken, once the field's other checks pass. A newer value "
                     + "cancels the check still running, and a submit waits for it.", typeof(FormCheckExample)),
+                new("check-status", "Showing a check's status", "`ShowValidationStatus` shows \"Checking…\" and a "
+                    + "spinner under the field while its check runs, a check mark and `ValidMessage` once it passes, "
+                    + "and an icon beside each error. `ValidationStatusChanged` says when the status changes; here it "
+                    + "turns off the button until the check answers. The form's `IsValidating` says whether any check is "
+                    + "running. `TrailblazorOptions.Fields` turns the status on for every field and sets its icons; "
+                    + "`StatusTemplate` draws it your own way.", typeof(FormCheckStatusExample)),
                 new("model-and-annotations", "Model and data annotations", "`Model` and `DataAnnotations` check a "
                     + "class's annotations alongside the fields' own checks. Here each field's `Required` covers "
                     + "empty values, and the annotations cover the rest.", typeof(FormModelExample)),

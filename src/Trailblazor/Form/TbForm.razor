@@ -301,6 +301,10 @@
         return valid;
     }
 
+    /// <summary>Whether any field's <c>ValidationAsync</c> check is running, such as to turn off the submit button
+    /// meanwhile. It raises no event of its own; a field's <c>ValidationStatusChanged</c> is the one to watch.</summary>
+    public bool IsValidating => _fields.Any(member => member.IsChecking());
+
     /// <summary>Hides the messages from the fields' own <c>Required</c> and <c>Validation</c> checks, as on a form the
     /// user hasn't touched yet.
     /// Messages a validator such as <c>DataAnnotationsValidator</c> added stay until it validates again.</summary>
