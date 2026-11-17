@@ -8,7 +8,7 @@
 <TbToggleGroup TValue="ThemeMode?" @attributes="AdditionalAttributes"
                aria-busy="@(!_loaded && (RendererInfo.IsInteractive || AssignedRenderMode is not null) ? "true" : null)"
                AriaLabel="@(AriaLabel ?? Localizer[TbStrings.ThemePicker])" Value="@(_loaded ? Theme.Mode : null)"
-               ValueChanged="(ThemeMode? mode) => mode is { } chosen ? Theme.SetModeAsync(chosen) : Task.CompletedTask"
+               ValueChanged="(ThemeMode? mode) => ChooseAsync(mode)"
                Size="Size" Class="@Class" Style="@Style">
     <TbToggleItem TValue="ThemeMode?" Value="ThemeMode.Light" Icon="BuiltInIcons.Sun"
                   AriaLabel="@(Labels.Light ?? Localizer[TbStrings.ThemeLight])" />
@@ -33,18 +33,42 @@
     [Parameter]
     public Size Size { get; set; } = Size.Medium;
 
+    /// <summary>A label this picker's use is counted under, such as <c>"header-theme"</c>, so the app can count how
+    /// often people see it and choose a theme through the <c>Trailblazor</c> meter. Controls that share a label count
+    /// together; a control without one isn't counted. It names what the control does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
     /// <inheritdoc />
     protected override void OnInitialized() => Theme.Changed += OnThemeChanged;
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Telemetry.Rendered(TelemetryName);
         if (firstRender && RendererInfo.IsInteractive)
         {
             await Theme.LoadAsync();
             _loaded = true;
             StateHasChanged();
         }
+    }
+
+    // The mode chosen is the action, since which theme people pick is what the count is for.
+    private Task ChooseAsync(ThemeMode? mode)
+    {
+        if (mode is not { } chosen)
+        {
+            return Task.CompletedTask;
+        }
+
+        Telemetry.Used(TelemetryName, chosen.ToString().ToLowerInvariant());
+        return Theme.SetModeAsync(chosen);
     }
 
     private void OnThemeChanged() => InvokeAsync(StateHasChanged);

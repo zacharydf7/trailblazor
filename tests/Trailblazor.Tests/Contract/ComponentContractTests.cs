@@ -55,6 +55,7 @@ public class ComponentContractTests : BunitContext
         [typeof(TbDialog)] = (nameof(TbDialog.Open), true),
         [typeof(TbDrawer)] = (nameof(TbDrawer.Open), true),
         [typeof(TbLightbox)] = (nameof(TbLightbox.Open), true),
+        [typeof(TbHotkeysHelp)] = (nameof(TbHotkeysHelp.Open), true),
         [typeof(TbTour)] = (nameof(TbTour.Open), true),
         [typeof(TbCommandPalette<string>)] = (nameof(TbCommandPalette<string>.Open), true),
         [typeof(TbAvatar)] = (nameof(TbAvatar.Name), "Sample"),

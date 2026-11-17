@@ -1,3 +1,5 @@
+using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -85,6 +87,20 @@ public class TbAppShellTests : BunitContext
         Services.GetRequiredService<NavigationManager>().NavigateTo("trails");
 
         cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("dialog")));
+    }
+
+    [Fact]
+    public void TelemetryName_ShouldCountOpeningClosingAndCollapsingTheNavigation_WhenGiven()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var cut = RenderShell(parameters => parameters.Add(shell => shell.TelemetryName, "main-shell"));
+
+        cut.Find("[data-part=menu-button]").Click();
+        cut.Find("[data-part=collapse-button]").Click();
+
+        Assert.Equal(["open", "collapse"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
     }
 
     [Fact]

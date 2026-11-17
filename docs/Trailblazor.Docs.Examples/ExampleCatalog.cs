@@ -687,6 +687,13 @@ public static class ExampleCatalog
                 + "and `GoToAsync(index)` also wait until the slides have stopped moving. In bUnit, slides turn "
                 + "without moving; register a `FakeTimeProvider` as the `TimeProvider` and advance it past the "
                 + "`AutoPlayInterval` to turn the slides.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"featured-trails\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` for each turn a person makes, with the action "
+                    + "`next` or `previous` for the arrow buttons and `pick` for a slide chosen from the picker. Turns "
+                    + "it makes on its own aren't counted.",
+            ],
         },
         new("virtual-list", "Virtual list", ExampleCategory.Content,
             "A long list of items of any height, such as thousands of trail reports, that draws only those near the "
@@ -2004,6 +2011,12 @@ public static class ExampleCatalog
                 + "`ChosenAsync()` or `Chosen` reads it. Check the page with "
                 + "`ToHaveAttributeAsync(\"data-tb-theme\", \"dark\")` on `html`. A test that needs one theme can set "
                 + "`data-tb-theme` on `html` itself. Focusing a choice shows a `tooltip` role with its name.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"header-theme\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` each time a mode is chosen, with the mode, "
+                    + "`light`, `dark` or `system`, as the action.",
+            ],
         },
         new("toolbar", "Toolbar", ExampleCategory.Actions,
             "A row of controls that is one tab stop. When it is too narrow, its toolbar buttons move into a menu at "
@@ -2158,6 +2171,12 @@ public static class ExampleCatalog
                 + "Playwright, or `cut.Tb().InsertDivider(...)` in bUnit, presses the insert button with that label "
                 + "once the page is interactive. By hand, click it by its name, as `GetByRole(AriaRole.Button, new() { "
                 + "Name = \"Add a step after Pack the tent\" })`; Playwright hovers it first, which shows it.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"add-stop\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders and `trailblazor.control.used` with the action `insert` each time its button is "
+                    + "pressed.",
+            ],
         },
         new("stack", "Stack", ExampleCategory.Layout,
             "Lays its children out in a row or a column, evenly spaced.")
@@ -2443,6 +2462,13 @@ public static class ExampleCatalog
                 + "`CollapsedAsync()` or `Collapsed` reads whether it's collapsed. In "
                 + "Playwright they wait until the app's `CollapsedChanged` has run, which the splitter counts in "
                 + "`data-commits`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"map-and-list\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` with the action `resize` each time a person "
+                    + "moves a separator, by pointer, key or the grip's menu, and `collapse` or `expand` each time "
+                    + "they collapse or restore a pane. Sizes are never recorded.",
+            ],
         },
         new("viewport", "Viewport", ExampleCategory.Layout,
             "A box that pans and zooms its content, such as a map, a diagram or a scanned page, and fits it to the "
@@ -2739,8 +2765,14 @@ public static class ExampleCatalog
                 "With a `TelemetryName` on the `TbNavMenu`, such as `\"main-menu\"`, it counts "
                     + "`trailblazor.control.shown` as it first renders and `trailblazor.control.used` for each link "
                     + "followed. Which link was followed is never recorded.",
+                "A `TbNavGroup` counts `trailblazor.control.used` under its menu's name, with the action `expand` or "
+                    + "`collapse`, each time a person opens or closes it.",
                 "In the shell, the menu beside the page counts as shown once, even on a narrow window that hides it, "
                     + "and the drawer's copy counts again each time the drawer opens.",
+                "With a `TelemetryName` on the `TbAppShell` itself, such as `\"main-shell\"`, it counts "
+                    + "`trailblazor.control.shown` as it first renders and `trailblazor.control.used` with the "
+                    + "action `open` or `close` as its navigation drawer opens or closes, and `collapse` or `expand` "
+                    + "as the navigation narrows to a rail or widens again.",
             ],
         },
         new("alert", "Alert", ExampleCategory.Feedback,
@@ -2821,6 +2853,12 @@ public static class ExampleCatalog
                 + "finds an alert by its text: `CloseAsync()` presses its close button, and `TextAsync()` or `Text` "
                 + "reads its message. `AlertsAsync()`, or `Alerts` in bUnit, reads every alert's message, in order. "
                 + "A danger or warning alert has the `alert` role, and the other tones have `status`.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"sync-failed\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` with the action `close` each time it is closed. "
+                    + "What it says is never recorded.",
+            ],
         },
         new("banner", "Banner", ExampleCategory.Feedback,
             "A strip across the top of the page or app with a notice for everyone using it, such as planned "
@@ -2886,6 +2924,12 @@ public static class ExampleCatalog
             TestingTip = "`page.Tb().Banner(\"Maintenance tonight\")` in Playwright, or `cut.Tb().Banner(...)` in "
                 + "bUnit, finds the banner by its title: `CloseAsync()` presses its close button, and `TextAsync()` or "
                 + "`Text` reads its message.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"maintenance\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` with the action `close` each time it is closed. "
+                    + "What it says is never recorded.",
+            ],
         },
         new("chip", "Chip", ExampleCategory.Content,
             "A compact label for a tag, a filter or a choice, which can be clicked, toggled or removed.")
@@ -7893,6 +7937,9 @@ public static class ExampleCatalog
             [
                 "With a `TelemetryName`, such as `\"save-shortcut\"`, a hotkey counts `trailblazor.control.shown` as "
                     + "it first renders and `trailblazor.control.used` each time it fires.",
+                "A `TbHotkeysHelp` with a `TelemetryName` counts as a dialog does: `trailblazor.control.shown` each "
+                    + "time it opens, and `trailblazor.dialog.closed` and `trailblazor.dialog.duration` with how it "
+                    + "closed.",
             ],
         },
         new("dialog", "Dialog", ExampleCategory.Overlays,
@@ -8792,6 +8839,12 @@ public static class ExampleCatalog
                 + "overlay by its `aria-label`, or the only one. `ClickAsync()` clicks it outside its content and "
                 + "waits for its `OnClick`; with `CloseOnClick`, both `ClickAsync()` and `PressEscapeAsync()` close "
                 + "the overlay, and the value bound with `@bind-Open` turns false.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"saving-overlay\"`, it counts `trailblazor.control.shown` as it "
+                    + "first shows and `trailblazor.control.used` with the action `close` each time a person closes "
+                    + "it.",
+            ],
         },
         new("tabs", "Tabs", ExampleCategory.Navigation,
             "Switches between panels of related content, one at a time.")
@@ -9064,6 +9117,12 @@ public static class ExampleCatalog
                 + "and `CollapseAsync`; bUnit runs no script, so an item it opens or closes stays `opening` or "
                 + "`closing`. Both find an item by its header's full name, or by its title alone when the header "
                 + "also shows a badge, such as \"Reviews\" beside a count.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"shipping-details\"`, an item counts `trailblazor.control.shown` "
+                    + "as it first renders and `trailblazor.control.used` with the action `expand` or `collapse` "
+                    + "each time it is toggled.",
+            ],
         },
         new("tree-view", "Tree view", ExampleCategory.Navigation,
             "Shows nested items that open and close, with selection, checkboxes, a filter and children that load "
@@ -10224,6 +10283,12 @@ public static class ExampleCatalog
                 "To find a finished step by role yourself, match its accessible name, which ends in \"Completed\", or "
                     + "`Labels.Completed`, as in \"Trip Completed\".",
             ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"checkout-steps\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` with the action `step` each time a person goes "
+                    + "to another step.",
+            ],
         },
         new("pagination", "Pagination", ExampleCategory.Navigation,
             "Moves between the pages of a long list, with numbered page buttons or, in compact mode, a box for the "
@@ -10316,6 +10381,12 @@ public static class ExampleCatalog
                 + "counts in `data-commits` since it shows the new page first. In bUnit, "
                 + "`cut.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from `Trailblazor.Testing` does the same, and "
                 + "`Page` reads the current page.",
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-pages\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` with the action `page` each time a person "
+                    + "changes the page. Page numbers are never recorded.",
+            ],
         },
         new("table-of-contents", "Table of contents", ExampleCategory.Navigation,
             "Links to the sections of a page that mark the section in view as the page scrolls.")

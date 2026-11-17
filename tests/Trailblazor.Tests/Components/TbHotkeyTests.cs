@@ -1,3 +1,6 @@
+using System.Diagnostics.Metrics;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -128,6 +131,19 @@ public class TbHotkeyTests : BunitContext
         Assert.Equal(["Save", "Show keyboard shortcuts"], Descriptions(groups[0]));
         Assert.Equal(["Bold"], Descriptions(groups[1]));
         Assert.Contains("Keyboard shortcuts", cut.Markup);
+    }
+
+    [Fact]
+    public void TelemetryName_ShouldCountTheHelpShownAsADialog_WhenGiven()
+    {
+        using var shown = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.shown");
+
+        Render<TbHotkeysHelp>(parameters => parameters.Add(help => help.Open, true)
+            .Add(help => help.TelemetryName, "shortcut-help"));
+
+        Assert.Equal(["shortcut-help"],
+            shown.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.telemetry_name"]));
     }
 
     [Fact]

@@ -1,3 +1,6 @@
+using System.Diagnostics.Metrics;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -51,6 +54,20 @@ public class TbThemePickerTests : BunitContext
 
         Assert.Equal(["Dark"], cut.Tb().ToggleGroup("Theme").Chosen);
         Assert.Equal(["tbTheme", "dark", true], _module.VerifyInvoke("apply").Arguments);
+    }
+
+    [Fact]
+    public void TelemetryName_ShouldCountTheModeChosen_WhenGiven()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var cut = Render<TbThemePicker>(parameters => parameters.Add(picker => picker.TelemetryName, "header-theme"));
+
+        cut.WaitForAssertion(() => Assert.Equal("true", Item(cut, "Light").GetAttribute("aria-pressed")));
+        Item(cut, "Dark").Click();
+
+        Assert.Equal(["dark"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
     }
 
     [Fact]

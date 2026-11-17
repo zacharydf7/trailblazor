@@ -5,7 +5,9 @@
 @inject ITbLocalizer Localizer
 
 <TbDialog @attributes="AdditionalAttributes" Title="@(Labels.Title ?? Localizer[TbStrings.HotkeysHelpTitle])"
-          Open="_open" OpenChanged="SetOpenAsync" Class="@ClassNames.Join("tb-hotkeys-help", Class)" Style="@Style">
+          Open="_open" OpenChanged="SetOpenAsync"
+          Options="@(new DialogOptions { TelemetryName = TelemetryName })"
+          Class="@ClassNames.Join("tb-hotkeys-help", Class)" Style="@Style">
     @foreach (var group in Groups)
     {
         <table class="tb-hotkeys-help__group" data-part="group">
@@ -40,6 +42,12 @@
 }
 
 @code {
+    /// <summary>A label the help's use is counted under, such as <c>"shortcut-help"</c>, through the
+    /// <c>Trailblazor</c> meter, as for a dialog: shown each time it opens, and counted with how it closed. It names
+    /// the help, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
     private bool _open;
     private bool _lastOpen;
 

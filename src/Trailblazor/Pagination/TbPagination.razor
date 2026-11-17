@@ -79,6 +79,20 @@
 </nav>
 
 @code {
+    /// <summary>A label this pagination's use is counted under, such as <c>"trail-pages"</c>, so the app can count how
+    /// often people see it and change pages through the <c>Trailblazor</c> meter. Controls that share a label count
+    /// together; a control without one isn't counted. It names what the control does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
     private int _commits;
 
     /// <summary>The current page, from 1. Bind it with <c>@bind-Page</c>.</summary>
@@ -195,6 +209,7 @@
         }
 
         Page = page;
+        Telemetry.Used(TelemetryName, "page");
         await PageChanged.InvokeAsync(page);
     }
 

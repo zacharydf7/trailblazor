@@ -12,6 +12,18 @@
 </div>
 
 @code {
+    /// <summary>A label this splitter's use is counted under, such as <c>"map-and-list"</c>, so the app can count how
+    /// often people see it and resize or collapse its panes through the <c>Trailblazor</c> meter. Controls that share a
+    /// label count together; a control without one isn't counted. It names what the control does, never the
+    /// user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
     private List<TbSplitterPane> _panes = [];
     private ElementReference _root;
     private IJSObjectReference? _handle;
@@ -43,6 +55,7 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Telemetry.Rendered(TelemetryName);
         try
         {
             if (firstRender)
@@ -160,6 +173,7 @@
     // around what the collapsed panes keep, so a restored pane comes back at its own size.
     private async Task OnResizeAsync(string[] ids, double[] shares, int report)
     {
+        Telemetry.Used(TelemetryName, "resize");
         var open = OpenSpace;
         for (var index = 0; index < ids.Length && index < shares.Length; index++)
         {
@@ -212,6 +226,7 @@
     {
         if (ToggleTarget(before) is { } pane)
         {
+            Telemetry.Used(TelemetryName, pane.IsCollapsed ? "expand" : "collapse");
             try
             {
                 await pane.SetCollapsedAsync(!pane.IsCollapsed);

@@ -39,6 +39,21 @@
 </div>
 
 @code {
+    /// <summary>A label this shell's use is counted under, such as <c>"main-shell"</c>, so the app can count how often
+    /// people see it and open, close or collapse its navigation through the <c>Trailblazor</c> meter. Controls that
+    /// share a label count together; a control without one isn't counted. It names what the control does, never the
+    /// user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
     private readonly string _id = $"tb-app-shell-{Guid.NewGuid():N}";
     private ElementReference _main;
     private bool _open;
@@ -127,6 +142,7 @@
     internal Task ToggleCollapsedAsync()
     {
         _collapsed = !_collapsed;
+        Telemetry.Used(TelemetryName, _collapsed ? "collapse" : "expand");
         StateHasChanged();
         return NavigationCollapsedChanged.InvokeAsync(_collapsed);
     }
@@ -139,6 +155,7 @@
         }
 
         _open = open;
+        Telemetry.Used(TelemetryName, open ? "open" : "close");
         StateHasChanged();
         return NavigationOpenChanged.InvokeAsync(open);
     }

@@ -12,6 +12,20 @@
 </ol>
 
 @code {
+    /// <summary>A label this stepper's use is counted under, such as <c>"checkout-steps"</c>, so the app can count how
+    /// often people see it and move between its steps through the <c>Trailblazor</c> meter. Controls that share a label
+    /// count together; a control without one isn't counted. It names what the control does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
     private int _commits;
     private string? _lastActive;
 
@@ -67,6 +81,7 @@
         try
         {
             Current = key;
+            Telemetry.Used(TelemetryName, "step");
             StateHasChanged();
             await ActiveKeyChanged.InvokeAsync(key);
         }

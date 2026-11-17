@@ -9,6 +9,17 @@ namespace Trailblazor;
 /// each slide and, with <see cref="AutoPlayInterval"/>, slides that turn by themselves.</summary>
 public partial class TbCarousel
 {
+    /// <summary>A label this carousel's use is counted under, such as <c>"featured-trails"</c>, so the app can count
+    /// how often people see it and turn its slides through the <c>Trailblazor</c> meter. Controls that share a label
+    /// count together; a control without one isn't counted. It names what the control does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
     private static readonly Icon PreviousIcon = BuiltInIcons.ChevronStart with { MirrorsInRightToLeft = true };
     private static readonly Icon NextIcon = BuiltInIcons.ChevronEnd with { MirrorsInRightToLeft = true };
     private readonly string _slidesId = $"tb-carousel-{Guid.NewGuid():N}-slides";
@@ -164,6 +175,7 @@ public partial class TbCarousel
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Telemetry.Rendered(TelemetryName);
         if (_indexMoved)
         {
             _indexMoved = false;
@@ -219,6 +231,16 @@ public partial class TbCarousel
         StateHasChanged();
     }
 
+    private Task StepAsync(int by)
+    {
+        if (_slides.Count > 1)
+        {
+            Telemetry.Used(TelemetryName, by < 0 ? "previous" : "next");
+        }
+
+        return GoToAsync(Current + by);
+    }
+
     private async Task GoToAsync(int index)
     {
         if (_slides.Count == 0)
@@ -255,6 +277,7 @@ public partial class TbCarousel
             return;
         }
 
+        Telemetry.Used(TelemetryName, "pick");
         try
         {
             await GoToAsync(index);

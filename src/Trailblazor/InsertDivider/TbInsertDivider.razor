@@ -6,11 +6,31 @@
      data-ready="@(RendererInfo.IsInteractive ? "" : null)"
      class="@ClassNames.Join("tb-insert-divider", AlwaysVisible ? "tb-insert-divider--visible" : null, Class)">
     <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@Label" Variant="Variant.Filled" Tone="Tone.Primary"
-                  Size="Size.Small" Disabled="Disabled" OnClick="OnInsert" data-part="insert"
+                  Size="Size.Small" Disabled="Disabled" OnClick="InsertAsync" data-part="insert"
                   class="tb-insert-divider__button" />
 </div>
 
 @code {
+    /// <summary>A label this divider's use is counted under, such as <c>"add-stop"</c>, so the app can count how often
+    /// people see it and insert an item with it through the <c>Trailblazor</c> meter. Controls that share a label count
+    /// together; a control without one isn't counted. It names what the control does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
+    private Task InsertAsync(MouseEventArgs args)
+    {
+        Telemetry.Used(TelemetryName, "insert");
+        return OnInsert.InvokeAsync(args);
+    }
+
     /// <summary>The insert button's accessible name, which says where the new item goes, such as "Insert a row after
     /// Invoice 3". Required.</summary>
     [Parameter, EditorRequired]

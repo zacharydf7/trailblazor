@@ -1,3 +1,5 @@
+using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -96,6 +98,36 @@ public class TbCarouselTests : BunitContext
         var icons = cut.FindAll("[data-part=previous] .tb-icon, [data-part=next] .tb-icon");
         Assert.Equal(2, icons.Count);
         Assert.All(icons, icon => Assert.Contains("tb-icon--mirrored", icon.ClassList));
+    }
+
+    [Fact]
+    public async Task TelemetryName_ShouldCountTheTurnsAPersonMakes_WhenGiven()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var cut = RenderCarousel(parameters => parameters.Add(carousel => carousel.TelemetryName, "featured-trails"));
+        var carousel = cut.Tb().Carousel("Featured trails");
+
+        await carousel.NextAsync();
+        await carousel.PreviousAsync();
+        await carousel.GoToAsync(2);
+
+        Assert.Equal(["next", "previous", "pick"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public void TelemetryName_ShouldCountNothing_WhenTheOnlySlideIsShownAgain()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var cut = Render<TbCarousel>(parameters => parameters.Add(carousel => carousel.AriaLabel, "One trail")
+            .Add(carousel => carousel.Loop, true).Add(carousel => carousel.TelemetryName, "featured-trails")
+            .AddChildContent<TbCarouselSlide>(slide => slide.AddChildContent("Pine")));
+
+        cut.Find("[data-part=next]").Click();
+
+        Assert.Empty(used.GetMeasurementSnapshot());
     }
 
     [Fact]

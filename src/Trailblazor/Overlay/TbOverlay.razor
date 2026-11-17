@@ -25,6 +25,17 @@
 }
 
 @code {
+    /// <summary>A label this overlay's use is counted under, such as <c>"saving-overlay"</c>, so the app can count how
+    /// often people see it and close it through the <c>Trailblazor</c> meter. Controls that share a label count
+    /// together; a control without one isn't counted. It names what the control does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
     private ElementReference _overlay;
     private DismissableLayer? _layer;
     private IJSObjectReference? _block;
@@ -97,6 +108,11 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (Open)
+        {
+            Telemetry.Rendered(TelemetryName);
+        }
+
         await BlockAsync();
         var wantsLayer = Open && CloseOnClick && RendererInfo.IsInteractive;
         if (wantsLayer && _layer is null)
@@ -194,6 +210,7 @@
     {
         Open = false;
         _openOrder = 0;
+        Telemetry.Used(TelemetryName, "close");
         await OpenChanged.InvokeAsync(false);
     }
 

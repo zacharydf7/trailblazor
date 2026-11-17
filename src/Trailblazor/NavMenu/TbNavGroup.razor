@@ -103,6 +103,7 @@
         try
         {
             _expanded = !_expanded;
+            Menu!.Toggled(_expanded);
             await ExpandedChanged.InvokeAsync(_expanded);
         }
         finally

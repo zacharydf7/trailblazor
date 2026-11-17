@@ -6598,3 +6598,34 @@ override Trailblazor.TbProgress.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbQrCode.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbTable.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbTimeline.OnAfterRender(bool firstRender) -> void
+Trailblazor.TbAccordionItem.TelemetryName.get -> string?
+Trailblazor.TbAccordionItem.TelemetryName.set -> void
+Trailblazor.TbAlert.TelemetryName.get -> string?
+Trailblazor.TbAlert.TelemetryName.set -> void
+Trailblazor.TbAppShell.TelemetryName.get -> string?
+Trailblazor.TbAppShell.TelemetryName.set -> void
+Trailblazor.TbBanner.TelemetryName.get -> string?
+Trailblazor.TbBanner.TelemetryName.set -> void
+Trailblazor.TbHotkeysHelp.TelemetryName.get -> string?
+Trailblazor.TbHotkeysHelp.TelemetryName.set -> void
+Trailblazor.TbInsertDivider.TelemetryName.get -> string?
+Trailblazor.TbInsertDivider.TelemetryName.set -> void
+Trailblazor.TbOverlay.TelemetryName.get -> string?
+Trailblazor.TbOverlay.TelemetryName.set -> void
+Trailblazor.TbPagination.TelemetryName.get -> string?
+Trailblazor.TbPagination.TelemetryName.set -> void
+Trailblazor.TbSplitter.TelemetryName.get -> string?
+Trailblazor.TbSplitter.TelemetryName.set -> void
+Trailblazor.TbStepper.TelemetryName.get -> string?
+Trailblazor.TbStepper.TelemetryName.set -> void
+Trailblazor.TbThemePicker.TelemetryName.get -> string?
+Trailblazor.TbThemePicker.TelemetryName.set -> void
+override Trailblazor.TbAccordionItem.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbAlert.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbAppShell.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbBanner.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbInsertDivider.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbPagination.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbStepper.OnAfterRender(bool firstRender) -> void
+Trailblazor.TbCarousel.TelemetryName.get -> string?
+Trailblazor.TbCarousel.TelemetryName.set -> void

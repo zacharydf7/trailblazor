@@ -6,6 +6,26 @@ namespace Trailblazor;
 /// maintenance or a new feature. People can dismiss it when <see cref="OnClose"/> is set.</summary>
 public partial class TbBanner
 {
+    /// <summary>A label this banner's use is counted under, such as <c>"maintenance"</c>, so the app can count how
+    /// often people see it and close it through the <c>Trailblazor</c> meter. Controls that share a label count
+    /// together; a control without one isn't counted. It names what the control does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
+    private Task CloseAsync()
+    {
+        Telemetry.Used(TelemetryName, "close");
+        return OnClose.InvokeAsync();
+    }
+
     private readonly string _titleId = $"tb-banner-{Guid.NewGuid():N}-title";
 
     /// <summary>The notice's meaning, which sets its color and icon. Defaults to <see cref="Trailblazor.Tone.Info"/>.

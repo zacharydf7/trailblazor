@@ -29,10 +29,10 @@ public static class TelemetryCatalog
             + "labeled dialog or toast each time it opens."),
         new("trailblazor.control.used", "Counter", "{use}",
             "Uses of controls with a TelemetryName, such as clicks and choices.", [.. CommonTags, ActionTag, InputTag],
-            "A control with a TelemetryName is used: clicked, chosen, changed or selected while it is enabled. A data "
-            + "grid, tree view, chip, select or list box also says what it did, as trailblazor.action, and a choice "
-            + "in a select "
-            + "or list box, or of an option, whether a pointer or the keyboard made it, as trailblazor.input."),
+            "A control with a TelemetryName is used: clicked, chosen, changed, opened, closed or selected while it "
+            + "is enabled. Many also say what they did, as trailblazor.action, such as next on a carousel or close "
+            + "on an alert, and a choice in a select or list box, or of an option, whether a pointer or the keyboard "
+            + "made it, as trailblazor.input."),
         new("trailblazor.dialog.closed", "Counter", "{dialog}",
             "Dialogs with a TelemetryName that closed, by how they closed.", [.. CommonTags, OutcomeTag],
             "A dialog with a TelemetryName closes: confirmed, canceled, or dismissed by escape, backdrop or "

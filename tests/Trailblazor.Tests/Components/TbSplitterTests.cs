@@ -1,3 +1,6 @@
+using System.Diagnostics.Metrics;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -358,6 +361,23 @@ public class TbSplitterTests : BunitContext
     public void Render_ShouldThrow_WhenAPaneIsOutsideASplitter()
     {
         Assert.Throws<InvalidOperationException>(() => Render<TbSplitterPane>());
+    }
+
+    [Fact]
+    public async Task TelemetryName_ShouldCountResizingAndCollapsing_WhenGiven()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var module = SetUpScript();
+        var cut = RenderSplitter(new Pane("Left", 30, Collapsible: true), new Pane("Right"));
+        cut.Render(parameters => parameters.Add(splitter => splitter.TelemetryName, "map-and-list"));
+        var report = (DotNetObjectReference<SplitterReport>)module.Invocations["attachSplitter"].Single().Arguments[1]!;
+
+        await cut.InvokeAsync(() => report.Value.OnResize(PaneIds(cut), [45, 55], 1));
+        await cut.Tb().Splitter("Resize Left").CollapseAsync();
+
+        Assert.Equal(["resize", "collapse"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
     }
 
     // The script's handle answers with defaults, so the splitter finds no saved layout.

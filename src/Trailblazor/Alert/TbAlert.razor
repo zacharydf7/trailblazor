@@ -26,12 +26,32 @@
     @if (OnClose.HasDelegate)
     {
         <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(CloseLabel ?? Localizer[TbStrings.AlertClose])"
-                      Size="Size.Small" OnClick="() => OnClose.InvokeAsync()"
+                      Size="Size.Small" OnClick="CloseAsync"
                       data-part="close" Class="@ClassNames.Join("tb-alert__close", Classes?.Close)" />
     }
 </div>
 
 @code {
+    /// <summary>A label this alert's use is counted under, such as <c>"sync-failed"</c>, so the app can count how often
+    /// people see it and close it through the <c>Trailblazor</c> meter. Controls that share a label count together; a
+    /// control without one isn't counted. It names what the control does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
+    private Task CloseAsync()
+    {
+        Telemetry.Used(TelemetryName, "close");
+        return OnClose.InvokeAsync();
+    }
+
     /// <summary>The alert's meaning, which sets its color and role: <c>alert</c> for danger and warning,
     /// <c>status</c> for the others. Screen readers may not announce a status alert that is added to the page
     /// with its message already in it. Defaults to <see cref="Trailblazor.Tone.Info"/>.</summary>

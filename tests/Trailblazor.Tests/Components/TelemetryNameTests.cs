@@ -66,6 +66,19 @@ public class TelemetryNameTests : BunitContext
     }
 
     [Fact]
+    public void NavMenu_ShouldCountItsGroupsOpeningAndClosing_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbNavMenu>(parameters => parameters.Add(menu => menu.TelemetryName, "main-menu")
+            .AddChildContent<TbNavGroup>(group => group.Add(g => g.Text, "Settings")
+                .AddChildContent<TbNavLink>(link => link.Add(l => l.Href, "settings").AddChildContent("Profile"))));
+
+        cut.Find("[data-part=group-toggle]").Click();
+        cut.Find("[data-part=group-toggle]").Click();
+
+        Assert.Equal([("main-menu", "TbNavMenu", "expand"), ("main-menu", "TbNavMenu", "collapse")], Uses());
+    }
+
+    [Fact]
     public void Card_ShouldCountItsLinkFollowed_WhenItHasATelemetryName()
     {
         var cut = Render<TbCard>(parameters => parameters.Add(card => card.TelemetryName, "trail-card")
@@ -627,6 +640,96 @@ public class TelemetryNameTests : BunitContext
 
         Assert.Equal([("crew", (object?)"TbTransferList", (object?)"move"), ("crew", "TbTransferList", "move")],
             Uses());
+    }
+
+    [Fact]
+    public async Task AccordionItem_ShouldCountExpandingAndCollapsing_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbAccordionItem>(parameters => parameters.Add(item => item.Title, "Gear")
+            .Add(item => item.TelemetryName, "gear-list").AddChildContent("Boots and poles"));
+
+        await cut.Tb().AccordionItem("Gear").ExpandAsync();
+        await cut.Tb().AccordionItem("Gear").CollapseAsync();
+
+        Assert.Equal(["gear-list"], Names(_shown));
+        Assert.Equal([("gear-list", "TbAccordionItem", "expand"), ("gear-list", "TbAccordionItem", "collapse")],
+            Uses());
+    }
+
+    [Fact]
+    public async Task Alert_ShouldCountClosing_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbAlert>(parameters => parameters.Add(alert => alert.OnClose, () => { })
+            .Add(alert => alert.TelemetryName, "sync-failed").AddChildContent("Pine trail didn't sync."));
+
+        await cut.Tb().Alert("Pine").CloseAsync();
+
+        Assert.Equal(["sync-failed"], Names(_shown));
+        Assert.Equal([("sync-failed", "TbAlert", "close")], Uses());
+    }
+
+    [Fact]
+    public async Task Banner_ShouldCountClosing_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbBanner>(parameters => parameters.Add(banner => banner.Title, "Notice")
+            .Add(banner => banner.OnClose, () => { }).Add(banner => banner.TelemetryName, "maintenance")
+            .AddChildContent("Trail maps are offline."));
+
+        await cut.Tb().Banner("Notice").CloseAsync();
+
+        Assert.Equal(["maintenance"], Names(_shown));
+        Assert.Equal([("maintenance", "TbBanner", "close")], Uses());
+    }
+
+    [Fact]
+    public async Task Overlay_ShouldCountShowingAndClosing_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbOverlay>(parameters => parameters.Add(overlay => overlay.Open, true)
+            .Add(overlay => overlay.CloseOnClick, true).AddUnmatched("aria-label", "Cover")
+            .Add(overlay => overlay.TelemetryName, "saving-overlay"));
+
+        await cut.Tb().Overlay("Cover").PressEscapeAsync();
+
+        Assert.Equal(["saving-overlay"], Names(_shown));
+        Assert.Equal([("saving-overlay", "TbOverlay", "close")], Uses());
+    }
+
+    [Fact]
+    public async Task Pagination_ShouldCountPageChanges_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbPagination>(parameters => parameters.Add(pager => pager.AriaLabel, "Trail pages")
+            .Add(pager => pager.PageCount, 20).Add(pager => pager.TelemetryName, "trail-pages"));
+
+        await cut.Tb().Pagination("Trail pages").GoToPageAsync(3);
+
+        Assert.Equal(["trail-pages"], Names(_shown));
+        Assert.Equal([("trail-pages", "TbPagination", "page")], Uses());
+    }
+
+    [Fact]
+    public async Task Stepper_ShouldCountStepChanges_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbStepper>(parameters => parameters.Add(stepper => stepper.AriaLabel, "Trip booking")
+            .Add(stepper => stepper.ActiveKey, "Gear").Add(stepper => stepper.TelemetryName, "checkout-steps")
+            .AddChildContent<TbStep>(step => step.Add(each => each.Title, "Trip").Add(each => each.Completed, true))
+            .AddChildContent<TbStep>(step => step.Add(each => each.Title, "Gear")));
+
+        await cut.Tb().Stepper("Trip booking").GoToAsync("Trip");
+
+        Assert.Equal(["checkout-steps"], Names(_shown));
+        Assert.Equal([("checkout-steps", "TbStepper", "step")], Uses());
+    }
+
+    [Fact]
+    public async Task InsertDivider_ShouldCountInserts_WhenItHasATelemetryName()
+    {
+        var cut = Render<TbInsertDivider>(parameters => parameters.Add(divider => divider.Label, "Add a stop")
+            .Add(divider => divider.OnInsert, () => { }).Add(divider => divider.TelemetryName, "add-stop"));
+
+        await cut.Tb().InsertDivider("Add a stop").InsertAsync();
+
+        Assert.Equal(["add-stop"], Names(_shown));
+        Assert.Equal([("add-stop", "TbInsertDivider", "insert")], Uses());
     }
 
     private static List<object?> Names(MetricCollector<long> collector) =>

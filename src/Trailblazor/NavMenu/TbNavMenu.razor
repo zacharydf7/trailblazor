@@ -33,4 +33,6 @@
     protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
 
     internal void Followed() => Telemetry.Used(TelemetryName);
+
+    internal void Toggled(bool expanded) => Telemetry.Used(TelemetryName, expanded ? "expand" : "collapse");
 }
