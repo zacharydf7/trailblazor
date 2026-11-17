@@ -87,6 +87,14 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             call.Arguments.ElementAtOrDefault(2) as DotNetObjectReference<Trailblazor.Primitives.DismissableLayer>)
         .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value).LastOrDefault();
 
+    // The events the mention script calls back for this field's input, as a trigger is typed and a suggestion chosen.
+    public MentionInputEvents MentionInput(IElement input) => Js.Invocations["createMentionInput"]
+        .Select(call => call.Arguments.ElementAtOrDefault(2) as DotNetObjectReference<MentionInputEvents>)
+        .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
+        .LastOrDefault(events => events.InputId == input.Id)
+            ?? throw new InvalidOperationException("The mention input's script hasn't attached, as it does once the "
+                + "field renders interactively.");
+
     // A link goes to its address, as in a browser, unless it opens in a new tab and leaves this page where it is.
     public void Follow(IElement action)
     {
@@ -358,6 +366,11 @@ public sealed class TrailblazorMarkup
     /// </summary>
     public TbAutocompleteDriver Autocomplete(string label) =>
         new(() => Field(label, ".tb-autocomplete input[data-part=input]"), _findAll, _scripts);
+
+    /// <summary>The <c>TbMentionInput</c> with this label, or with this <c>AriaLabel</c> when it has no label.
+    /// </summary>
+    public TbMentionInputDriver MentionInput(string label) =>
+        new(() => Field(label, ".tb-mention-input__input"), _findAll, _scripts);
 
     /// <summary>The <c>TbCascader</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbCascaderDriver Cascader(string label) =>
@@ -3089,6 +3102,81 @@ public sealed class TbAutocompleteDriver : TbFieldDriver
         await _scripts.WaitForAsync(() => typing.IsCompleted || (_find().GetAttribute("value") == text
             && _findAll($"[id='{_find().GetAttribute("aria-controls")}'][aria-busy]").Count == 0));
         return typing;
+    }
+
+    private IEnumerable<IElement> Options() =>
+        _findAll($"[id='{_find().GetAttribute("aria-controls")}'] [role=option][data-part=option]");
+}
+
+/// <summary>A <c>TbMentionInput</c>, found by its label.</summary>
+public sealed class TbMentionInputDriver : TbFieldDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
+
+    internal TbMentionInputDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll,
+        ScriptCalls scripts) : base(find) => (_find, _findAll, _scripts) = (find, findAll, scripts);
+
+    /// <summary>The text the field shows.</summary>
+    public string? Text => _find().GetAttribute("value");
+
+    /// <summary>The names of the suggestions for the mention being typed, in order.</summary>
+    public IReadOnlyList<string> Suggestions => [.. Options().Select(Choices.NameOf)];
+
+    /// <summary>Types this text, as a user does with the caret at its end. When it ends with a trigger and the start of
+    /// a mention, such as <c>"Thanks @an"</c>, this waits for the suggestions. A read-only or disabled field throws.
+    /// </summary>
+    public async Task TypeAsync(string text)
+    {
+        Typing.ThrowIfLocked(_find(), "text");
+        await _find().InputAsync(new ChangeEventArgs { Value = text });
+        var query = QueryAt(text);
+        var events = _scripts.MentionInput(_find());
+        var number = ResultsFor() + 1;
+        await _scripts.InvokeAsync(() => events.OnQuery(query?.Trigger, query?.Text ?? "", number));
+    }
+
+    /// <summary>Chooses the suggestion with this name for the mention being typed, as clicking it does: the trigger and
+    /// the text after it become the trigger, the suggestion's text and a space. Type the start of the mention first
+    /// with <see cref="TypeAsync"/>.</summary>
+    public async Task ChooseAsync(string suggestion)
+    {
+        var text = Text ?? "";
+        var query = QueryAt(text) ?? throw new InvalidOperationException(
+            "No mention is being typed; type a trigger and the start of the mention with TypeAsync first.");
+        var options = Options().ToList();
+        var option = Choices.Named(options, suggestion);
+        var events = _scripts.MentionInput(_find());
+        var resultsFor = ResultsFor();
+        await _scripts.InvokeAsync(() => events.OnChosen(options.IndexOf(option), resultsFor));
+        var start = text.Length - query.Text.Length - query.Trigger.Length;
+        await _find().InputAsync(new ChangeEventArgs { Value = $"{text[..start]}{option.GetAttribute("data-insert")} " });
+    }
+
+    // The number of the query the suggestions answer, which the script numbers as it asks.
+    private int ResultsFor() => int.Parse(_findAll($"[id='{_find().GetAttribute("aria-controls")}']")[0]
+        .GetAttribute("data-results-for")!, CultureInfo.InvariantCulture);
+
+    // The trigger and text before the end, found as the field's script finds them before the caret.
+    private MentionQuery? QueryAt(string text)
+    {
+        var triggers = _find().GetAttribute("data-triggers") ?? "@";
+        for (var start = text.Length - 1; start >= 0 && text.Length - start <= 50; start--)
+        {
+            if (char.IsWhiteSpace(text[start]))
+            {
+                return null;
+            }
+
+            if (triggers.Contains(text[start]) && (start == 0 || char.IsWhiteSpace(text[start - 1])
+                || "([{\"'".Contains(text[start - 1])))
+            {
+                return new MentionQuery(text[start].ToString(), text[(start + 1)..]);
+            }
+        }
+
+        return null;
     }
 
     private IEnumerable<IElement> Options() =>

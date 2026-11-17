@@ -255,6 +255,8 @@ internal static class ContractRules
         _ when type == typeof(GridState) => (new GridState { Sorts = [new("Name", SortDirection.Ascending)] },
             new GridState { Sorts = [new("Name", SortDirection.Descending)] }),
         _ when type.IsAssignableFrom(typeof(string[])) => (new[] { "Pine" }, new[] { "Cedar" }),
+        _ when type.IsAssignableFrom(typeof(Mention[])) => (new[] { new Mention("@", new MentionItem("Ana")) },
+            new[] { new Mention("@", new MentionItem("Dan")) }),
         _ when type.IsAssignableFrom(typeof(GridSort[])) => (new[] { new GridSort("Name", SortDirection.Ascending) },
             new[] { new GridSort("Name", SortDirection.Descending) }),
         _ when type.IsAssignableFrom(typeof(GridFilter[])) => (

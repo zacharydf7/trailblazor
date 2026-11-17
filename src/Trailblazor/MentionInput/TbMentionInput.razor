@@ -1,0 +1,345 @@
+@namespace Trailblazor
+@using System.Globalization
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbBoxedFieldBase<string>
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+@Layout(Classes, @<text>
+    @Input
+    @* The script moves this mark to the caret, and the list of suggestions opens under it. *@
+    <span data-part="caret" class="tb-mention-input__caret" aria-hidden="true"></span>
+    @if (RendererInfo.IsInteractive)
+    {
+        <div @ref="_listbox" id="@ListboxId" popover="manual" role="listbox" data-part="listbox"
+             aria-labelledby="@(ShownLabel is null ? null : LabelId)" data-results-for="@_resultsFor"
+             class="tb-select__listbox tb-mention-input__listbox">
+            @for (var index = 0; index < _results.Count; index++)
+            {
+                var item = _results[index];
+                var id = $"{ListboxId}-{index}";
+                @* The item's text is its accessible name and its description goes in aria-describedby, so the name
+                   matches the text inserted. *@
+                <div id="@id" role="option" aria-selected="false" data-part="option"
+                     data-insert="@(_resultsTrigger + item.Text)" class="tb-select__option"
+                     aria-label="@(ItemTemplate is null ? item.Text : null)"
+                     aria-describedby="@(ItemTemplate is null && item.Description is not null
+                                            ? $"{id}-description" : null)">
+                    @if (ItemTemplate is not null)
+                    {
+                        @ItemTemplate(item)
+                    }
+                    else
+                    {
+                        <span class="tb-mention-input__text">@item.Text</span>
+                        @if (item.Description is not null)
+                        {
+                            <span id="@($"{id}-description")" data-part="description"
+                                  class="tb-mention-input__description">@item.Description</span>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    }
+</text>, null, null)
+
+@code {
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment Input => builder =>
+    {
+        var interactive = RendererInfo.IsInteractive;
+        builder.OpenElement(0, Lines > 1 ? "textarea" : "input");
+        builder.AddMultipleAttributes(1, ControlAttributes);
+        builder.AddAttribute(2, "data-part", "input");
+        builder.AddAttribute(3, "id", InputId);
+        builder.AddAttribute(4, "name", InputNameAttribute);
+        builder.AddAttribute(5, "type", Lines > 1 ? null : "text");
+        builder.AddAttribute(6, "rows", Lines > 1 ? Lines : null);
+        builder.AddAttribute(7, "value", Text);
+        builder.AddAttribute(8, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, OnTextAsync));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(9, "placeholder", Placeholder);
+        builder.AddAttribute(10, "disabled", Disabled);
+        builder.AddAttribute(11, "readonly", ReadOnly);
+        builder.AddAttribute(12, "autocomplete", "off");
+        builder.AddAttribute(13, "aria-autocomplete", interactive ? "list" : null);
+        // An input can be a combobox, with an expanded state; a text area stays a text box.
+        builder.AddAttribute(14, "role", interactive && Lines <= 1 ? "combobox" : null);
+        builder.AddAttribute(15, "aria-expanded", interactive && Lines <= 1 ? "false" : null);
+        builder.AddAttribute(16, "aria-controls", interactive ? ListboxId : null);
+        builder.AddAttribute(17, "aria-required", AriaRequired);
+        builder.AddAttribute(18, "aria-invalid", ShowsInvalid ? "true" : null);
+        builder.AddAttribute(19, "aria-describedby", InputDescribedBy);
+        builder.AddAttribute(20, "data-triggers", Triggers);
+        builder.AddAttribute(21, "class",
+            ClassNames.Join("tb-field__input", "tb-mention-input__input", Classes?.Input));
+        builder.AddElementReferenceCapture(22, input => _input = input);
+        builder.CloseElement();
+    };
+
+    private ElementReference _input;
+    private ElementReference _listbox;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<MentionInputEvents>? _events;
+    private CancellationTokenSource? _search;
+    private bool _disposed;
+    // Whether the script is attached to a text area, so it attaches again when Lines swaps the input for a text area or
+    // back.
+    private bool _attachedToTextArea;
+    private IReadOnlyList<MentionItem> _results = [];
+    private string _resultsTrigger = "";
+    // The script's number for the query these results answer, so it knows when the latest suggestions have landed.
+    private int _resultsFor;
+    private int? _announcedCount;
+    // The mentions chosen, and those last reported to the app: the chosen ones still in the text.
+    private List<Mention> _chosen = [];
+    private IReadOnlyList<Mention> _reported = [];
+
+    /// <summary>The characters that start a mention, such as <c>"@"</c>, or <c>"@#"</c> for people and tags. A trigger
+    /// counts at the start of the text, after a space or line break, or after an opening bracket or quote. Defaults to
+    /// <c>"@"</c>.</summary>
+    [Parameter]
+    public string Triggers { get; set; } = "@";
+
+    /// <summary>Finds the suggestions for a trigger and the text typed after it, such as people whose names start with
+    /// it. Typing more cancels the previous search. Without it, <see cref="Items"/> are filtered by the text.</summary>
+    [Parameter]
+    public Func<MentionQuery, CancellationToken, Task<IEnumerable<MentionItem>>>? Search { get; set; }
+
+    /// <summary>Suggestions to filter by the text typed after a trigger, when there is no <see cref="Search"/>.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<MentionItem>? Items { get; set; }
+
+    /// <summary>The most suggestions the list shows. Defaults to 8.</summary>
+    [Parameter]
+    public int MaxItems { get; set; } = 8;
+
+    /// <summary>The mentions in the text, each with the item chosen, so the app has their ids without reading the
+    /// text. Bind it with <c>@bind-Mentions</c>; a mention leaves it when its text is deleted. When the field opens
+    /// with saved text, set this to that text's saved mentions so they're kept.</summary>
+    [Parameter]
+    public IReadOnlyList<Mention>? Mentions { get; set; }
+
+    /// <summary>Raised when a mention is chosen or its text is deleted.</summary>
+    [Parameter]
+    public EventCallback<IReadOnlyList<Mention>> MentionsChanged { get; set; }
+
+    /// <summary>Raised when <see cref="Search"/> fails. The list closes, screen readers hear that suggestions couldn't
+    /// load, and typing again searches again.</summary>
+    [Parameter]
+    public EventCallback<Exception> OnSearchFailed { get; set; }
+
+    /// <summary>Shows each suggestion in the list, in place of its text and description.</summary>
+    [Parameter]
+    public RenderFragment<MentionItem>? ItemTemplate { get; set; }
+
+    /// <summary>Example text shown while the field is empty. It is not a label.</summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>The field's height, in lines of text. Defaults to 3; 1 makes it a one-line input.</summary>
+    [Parameter]
+    public int Lines { get; set; } = 3;
+
+    /// <summary>The words the field says to screen readers.</summary>
+    [Parameter]
+    public MentionInputLabels Labels { get; set; } = new();
+
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public FieldClasses? Classes { get; set; }
+
+    private string ListboxId => $"{FieldId}-listbox";
+
+    private protected override string FieldModifiers => $"{base.FieldModifiers} tb-mention-input";
+
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrEmpty(Triggers) || Triggers.Any(char.IsWhiteSpace))
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbMentionInput)} needs at least one character in {nameof(Triggers)}, and no whitespace.");
+        }
+
+        // Mentions the app gives, such as for text being edited again, are kept as chosen.
+        if (Mentions is not null && !Mentions.SequenceEqual(_reported))
+        {
+            _chosen = [.. Mentions];
+            _reported = Mentions;
+        }
+
+        base.OnParametersSet();
+    }
+
+    // A mention whose text is gone is forgotten, so typing its text again later doesn't bring it back.
+    private async Task OnTextAsync(ChangeEventArgs change)
+    {
+        await SetTextAsync(change.Value as string);
+        _chosen = Present();
+        await ReportMentionsAsync();
+    }
+
+    private async Task OnQueryAsync(string? trigger, string text, int number)
+    {
+        StopSearch();
+        var query = trigger is null || ReadOnly || Disabled ? null : new MentionQuery(trigger, text);
+        if (query is null)
+        {
+            _results = [];
+            _resultsFor = number;
+            _announcedCount = null;
+            StateHasChanged();
+            return;
+        }
+
+        _search = new CancellationTokenSource();
+        var token = _search.Token;
+        try
+        {
+            var found = Search is not null ? await Search(query, token)
+                : Items?.Where(item => TextFold.Contains(item.Text, query.Text)) ?? [];
+            token.ThrowIfCancellationRequested();
+            _results = [.. found.Take(MaxItems)];
+            _resultsTrigger = query.Trigger;
+            _resultsFor = number;
+            // Only a new count is spoken, so typing doesn't bring an announcement with every key.
+            if (_results.Count != _announcedCount)
+            {
+                _announcedCount = _results.Count;
+                Announcer.Polite(string.Format(CultureInfo.CurrentCulture,
+                    Labels.Suggestions ?? Localizer[TbStrings.MentionInputSuggestions], _results.Count));
+            }
+
+            StateHasChanged();
+        }
+        // A search the user moved on from ends quietly, even when it reports the cancel its own way.
+        catch (Exception) when (token.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            _results = [];
+            _resultsFor = number;
+            _announcedCount = null;
+            StateHasChanged();
+            Announcer.Polite(Labels.SearchFailed ?? Localizer[TbStrings.MentionInputSearchFailed]);
+            await OnSearchFailed.InvokeAsync(exception);
+        }
+    }
+
+    private void StopSearch()
+    {
+        _search?.Cancel();
+        _search?.Dispose();
+        _search = null;
+    }
+
+    // The script calls this before it puts the mention's text in, so the input event that follows reports it. A choice
+    // from suggestions a later search has replaced isn't counted.
+    private async Task OnChosenAsync(int index, int resultsFor)
+    {
+        StopSearch();
+        if (resultsFor == _resultsFor && index >= 0 && index < _results.Count)
+        {
+            _chosen.Add(new Mention(_resultsTrigger, _results[index]));
+        }
+
+        _results = [];
+        StateHasChanged();
+        await ReportMentionsAsync();
+    }
+
+    private List<Mention> Present() =>
+        [.. _chosen.Where(mention => Mentioned(Text ?? "", mention.Trigger + mention.Item.Text)).Distinct()];
+
+    private async Task ReportMentionsAsync()
+    {
+        var present = Present();
+        if (!present.SequenceEqual(_reported))
+        {
+            _reported = present;
+            await MentionsChanged.InvokeAsync(present);
+        }
+    }
+
+    // A mention's text counts where it stands as a whole word, not as the start of a longer one.
+    private static bool Mentioned(string text, string mention)
+    {
+        for (var at = text.IndexOf(mention, StringComparison.Ordinal); at >= 0;
+             at = text.IndexOf(mention, at + 1, StringComparison.Ordinal))
+        {
+            var end = at + mention.Length;
+            if (end == text.Length || !char.IsLetterOrDigit(text[end]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        var swapped = _handle is not null && _attachedToTextArea != Lines > 1;
+        if (!RendererInfo.IsInteractive || (!firstRender && !swapped))
+        {
+            return;
+        }
+
+        try
+        {
+            if (swapped)
+            {
+                await _handle!.DisposeHandleAsync();
+                _handle = null;
+            }
+
+            var module = await Modules.ImportAsync("./_content/Trailblazor/mention-input.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            _events ??= DotNetObjectReference.Create(new MentionInputEvents(InputId, OnQueryAsync, OnChosenAsync));
+            _attachedToTextArea = Lines > 1;
+            var handle = await module.InvokeAsync<IJSObjectReference?>("createMentionInput", _input, _listbox,
+                _events);
+            if (_disposed && handle is not null)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the field went with it.
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
+        Dispose();
+        _disposed = true;
+        _search?.Cancel();
+        _search?.Dispose();
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _events?.Dispose();
+    }
+}

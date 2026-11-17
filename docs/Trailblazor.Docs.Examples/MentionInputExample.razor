@@ -1,0 +1,30 @@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbMentionInput Label="Comment" @bind-Value="_comment" @bind-Mentions="_mentions" Triggers="@("@#")"
+                    Search="FindAsync" HelperText="Type @@ to mention someone, or # for a trail." />
+    <output>Mentioned: @(_mentions is { Count: > 0 } ? string.Join(", ", _mentions.Select(Name)) : "no one yet")</output>
+</TbStack>
+
+@code {
+    private static readonly MentionItem[] People =
+    [
+        new("Ana Lopez") { Id = "u1", Description = "Trail crew" },
+        new("Dan Ng") { Id = "u2", Description = "Ranger" },
+        new("Priya Shah") { Id = "u3", Description = "Volunteer" },
+    ];
+
+    private static readonly MentionItem[] Trails =
+    [
+        new("pine-hollow") { Id = "t1", Description = "Pine Hollow loop" },
+        new("eagle-ridge") { Id = "t2", Description = "Eagle Ridge traverse" },
+    ];
+
+    private string? _comment;
+    private IReadOnlyList<Mention>? _mentions;
+
+    // An app would search its own people and trails here, such as with a database query.
+    private static Task<IEnumerable<MentionItem>> FindAsync(MentionQuery query, CancellationToken cancellation) =>
+        Task.FromResult((query.Trigger == "#" ? Trails : People).Where(item =>
+            item.Text.Contains(query.Text, StringComparison.OrdinalIgnoreCase)));
+
+    private static string Name(Mention mention) => $"{mention.Trigger}{mention.Item.Text} ({mention.Item.Id})";
+}

@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-17
 
+- New `TbMentionInput`: a field whose text area or input (`data-part="input"`, with `aria-autocomplete="list"`, `aria-controls` and `data-triggers`; a one-line input is a `combobox` with `aria-expanded`) opens a listbox of suggestions (`data-part="listbox"`, with `data-results-for`; each `data-part="option"` with `data-insert`) under the trigger being typed; the field marks the active suggestion with `aria-activedescendant`, and the count of suggestions is read out
 - New `TbMarkdownEditor`: a field whose `textarea` (`data-part="input"`) holds markdown, with a toolbar of marks (each button has `data-command` and `aria-keyshortcuts`), a Preview toggle (`data-part="preview-toggle"`, `aria-pressed`) and a preview region (`data-part="preview"`) of the rich text editor's HTML; `data-ready` on `data-part="editor"` once the toolbar works
 - New `RichTextDocument.FromMarkdown` and `ToMarkdown` read and write markdown
 - `TbCarousel`'s previous and next chevrons mirror in right-to-left text (their icons get `tb-icon--mirrored`), so next points toward the end of the line and previous toward the start

@@ -4078,6 +4078,106 @@ public static class ExampleCatalog
                     + "editor.",
             ],
         },
+        new("mention-input", "Mention input", ExampleCategory.Inputs,
+            "A text field where typing @ suggests people to mention, as in a comment box.")
+        {
+            WhenToUse =
+            [
+                "Use it where people write to or about others, such as comments, notes or messages, and the app "
+                    + "should know whom they mentioned, for example to notify them.",
+            ],
+            WhenNotToUse =
+            [
+                "To pick one person or thing as the field's whole value, use an "
+                    + "[autocomplete](components/autocomplete).",
+                "For a list of people or tags as their own items, use a [tag input](components/tag-input).",
+            ],
+            Related = ["autocomplete", "tag-input", "text-field"],
+            Pattern = new("combobox", "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/"),
+            Sections =
+            [
+                new("basic", "Mention input", "`Triggers` lists the characters that start a mention, `@` unless set. "
+                    + "Typing one at the start of a word passes the trigger and the text typed after it to `Search`, "
+                    + "and the suggestions open under the trigger. Choosing a suggestion replaces what was typed with "
+                    + "the trigger, the suggestion's text and a space. The value is plain text; `@bind-Mentions` "
+                    + "holds the `MentionItem`, with its `Id`, of each mention whose text is still in the field. "
+                    + "Without `Search`, `Items` are filtered by the text typed after the trigger. If `Search` fails, "
+                    + "the list closes, screen readers hear that suggestions couldn't load, and `OnSearchFailed` gets "
+                    + "the exception.",
+                    typeof(MentionInputExample)),
+            ],
+            Api =
+            [
+                typeof(TbMentionInput), typeof(MentionItem), typeof(MentionQuery), typeof(Mention),
+                typeof(MentionInputLabels), typeof(FieldClasses),
+            ],
+            Keyboard =
+            [
+                new(["Down", "Up"], "Moves to the next or previous suggestion, wrapping around.")
+                {
+                    When = "While suggestions show",
+                },
+                new(["Enter", "Tab"], "Puts the active suggestion in.") { When = "While suggestions show" },
+                new(["Escape"], "Closes the suggestions until the text changes.") { When = "While suggestions show" },
+            ],
+            Labeling =
+            [
+                "The `Label` names the field, and the list of suggestions too. Each suggestion is named by its text, "
+                    + "and its `Description` describes it.",
+            ],
+            Announcements =
+            [
+                "As suggestions come in, the count is read out, such as \"Suggestions: 3\", once for each new count.",
+                "When `Search` fails, \"Couldn't load suggestions.\" is read out.",
+            ],
+            Accessibility =
+            [
+                "The field keeps focus while the keys move through the suggestions: it marks the active one with "
+                    + "`aria-activedescendant` and points at the list with `aria-controls`, and "
+                    + "`aria-autocomplete=\"list\"` tells screen readers it offers suggestions.",
+                "With `Lines=\"1\"` the input is a `combobox` whose `aria-expanded` says whether the list is open. A "
+                    + "text area can't be a combobox, so it stays a text box, and screen readers hear the count of "
+                    + "suggestions instead.",
+                "A mention goes in through the browser's own editing, so undo takes it out again, as for typing.",
+            ],
+            AppDuties =
+            [
+                "Give the field a `Label`, or an `AriaLabel` where its purpose is plain from what surrounds it.",
+                "Search people the user may mention, and give each item an `Id` to act on, such as to notify them.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "The field works and posts with a static form as plain text. Suggestions start once the page is "
+                    + "interactive.",
+            ],
+            Notes =
+            [
+                new("When the field opens with saved text, pass its saved mentions in `Mentions` too, so they're kept "
+                    + "until their text is deleted."),
+                new("`Lines=\"1\"` makes it a one-line input, such as for a chat message."),
+            ],
+            Ready = new(".tb-mention-input__input[data-ready]", "the field"),
+            Target = new("textbox", "Comment"),
+            Blocks = ["tb-field", "tb-mention-input"],
+            DataParts =
+            [
+                .. FieldParts.Where(part => part.Name is not ("start" or "end")),
+                new("input", "The text area, or the input with `Lines=\"1\"`."),
+                new("caret", "The mark the script moves to the trigger being typed; the list opens under it."),
+                new("listbox", "The list of suggestions."),
+                new("option", "A suggestion, with the text it puts in as `data-insert`."),
+                new("description", "A suggestion's description."),
+            ],
+            TestingTips =
+            [
+                "In bUnit, `cut.Tb().MentionInput(label)` finds the field: `TypeAsync(\"Thanks @an\")` types and waits "
+                    + "for the suggestions; `Suggestions` reads them; and `ChooseAsync(\"Ana Lopez\")` puts one in, "
+                    + "as clicking it does.",
+                "In Playwright, `page.Tb().MentionInput(label)` does the same, with `SuggestionsAsync()`.",
+                "Read the mentions from your `@bind-Mentions` field, or from what your component does with them.",
+            ],
+        },
         new("number-field", "Number field", ExampleCategory.Inputs,
             "A labeled number input with step buttons and limits.")
         {

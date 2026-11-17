@@ -583,3 +583,12 @@ Trailblazor.Testing.Playwright.TbMarkdownEditorLocator.TextAsync() -> System.Thr
 Trailblazor.Testing.Playwright.TrailblazorPage.MarkdownEditor(Microsoft.Playwright.ILocator! input) -> Trailblazor.Testing.Playwright.TbMarkdownEditorLocator!
 Trailblazor.Testing.Playwright.TrailblazorPage.MarkdownEditor(string! label) -> Trailblazor.Testing.Playwright.TbMarkdownEditorLocator!
 Trailblazor.Testing.Playwright.TbMarkdownEditorLocator.PreviewHtmlAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbMentionInputLocator
+Trailblazor.Testing.Playwright.TbMentionInputLocator.ChooseAsync(string! suggestion) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbMentionInputLocator.Input.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbMentionInputLocator.SuggestionsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbMentionInputLocator.TbMentionInputLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! field) -> void
+Trailblazor.Testing.Playwright.TbMentionInputLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbMentionInputLocator.TypeAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TrailblazorPage.MentionInput(Microsoft.Playwright.ILocator! field) -> Trailblazor.Testing.Playwright.TbMentionInputLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.MentionInput(string! label) -> Trailblazor.Testing.Playwright.TbMentionInputLocator!

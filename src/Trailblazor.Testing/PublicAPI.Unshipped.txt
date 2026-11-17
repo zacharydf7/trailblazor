@@ -543,3 +543,9 @@ Trailblazor.Testing.TbMarkdownEditorDriver.PreviewHtml.get -> string?
 Trailblazor.Testing.TbMarkdownEditorDriver.ShowPreviewAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbMarkdownEditorDriver.Text.get -> string?
 Trailblazor.Testing.TrailblazorMarkup.MarkdownEditor(string! label) -> Trailblazor.Testing.TbMarkdownEditorDriver!
+Trailblazor.Testing.TbMentionInputDriver
+Trailblazor.Testing.TbMentionInputDriver.ChooseAsync(string! suggestion) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbMentionInputDriver.Suggestions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbMentionInputDriver.Text.get -> string?
+Trailblazor.Testing.TbMentionInputDriver.TypeAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.MentionInput(string! label) -> Trailblazor.Testing.TbMentionInputDriver!

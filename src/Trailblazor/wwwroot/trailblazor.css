@@ -6542,6 +6542,27 @@
         color: var(--tb-color-text-muted);
     }
 
+    /* The script puts the caret mark at the trigger being typed, and the suggestions open under it. */
+    .tb-mention-input .tb-field__control {
+        position: relative;
+    }
+
+    .tb-mention-input__caret {
+        position: absolute;
+        inline-size: 0;
+        pointer-events: none;
+    }
+
+    .tb-mention-input__listbox .tb-select__option {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tb-mention-input__description {
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
     /* The titles stick to the top, so scroll padding keeps them from covering the active suggestion. */
     .tb-autocomplete__listbox[data-columns] {
         inline-size: max-content;

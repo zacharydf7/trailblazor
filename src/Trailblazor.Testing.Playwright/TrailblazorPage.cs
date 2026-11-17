@@ -63,6 +63,14 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbAutocomplete</c> with this label.</summary>
     public TbAutocompleteLocator Autocomplete(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
 
+    /// <summary>The <c>TbMentionInput</c> with this label.</summary>
+    public TbMentionInputLocator MentionInput(string label) =>
+        new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbMentionInput</c> whose field this finds, inside the scope, such as one with an id, as
+    /// <c>page.Locator("#comment")</c>.</summary>
+    public TbMentionInputLocator MentionInput(ILocator field) => new(scope, field);
+
     /// <summary>The <c>TbCascader</c> with this label.</summary>
     public TbCascaderLocator Cascader(string label) => new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
 

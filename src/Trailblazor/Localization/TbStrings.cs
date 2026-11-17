@@ -109,6 +109,12 @@ public static class TbStrings
     /// <summary>"Clear": names a cascader's clear button.</summary>
     public const string CascaderClear = "Cascader.Clear";
 
+    /// <summary>"Suggestions: {0}": read out as a mention input's suggestions come in; {0} is how many.</summary>
+    public const string MentionInputSuggestions = "MentionInput.Suggestions";
+
+    /// <summary>"Couldn't load suggestions.": read out when a mention input's search fails.</summary>
+    public const string MentionInputSearchFailed = "MentionInput.SearchFailed";
+
     /// <summary>"Previous image": names a lightbox's previous button.</summary>
     public const string LightboxPrevious = "Lightbox.Previous";
 
@@ -1338,6 +1344,8 @@ public static class TbStrings
         [CascaderResults] = "Results: {0}",
         [CascaderNoResults] = "No matches",
         [CascaderClear] = "Clear",
+        [MentionInputSuggestions] = "Suggestions: {0}",
+        [MentionInputSearchFailed] = "Couldn't load suggestions.",
         [LightboxPrevious] = "Previous image",
         [LightboxNext] = "Next image",
         [LightboxZoomIn] = "Zoom in",

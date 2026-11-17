@@ -6385,3 +6385,93 @@ static Trailblazor.MarkdownEditorLabels.operator ==(Trailblazor.MarkdownEditorLa
 Trailblazor.TbMarkdownEditor.Schema.get -> Trailblazor.RichTextSchema!
 Trailblazor.TbMarkdownEditor.Schema.set -> void
 static Trailblazor.RichTextDocument.FromMarkdown(string? markdown, Trailblazor.RichTextSchema! schema) -> Trailblazor.RichTextDocument!
+Trailblazor.Mention
+Trailblazor.Mention.<Clone>$() -> Trailblazor.Mention!
+Trailblazor.Mention.Deconstruct(out string! Trigger, out Trailblazor.MentionItem! Item) -> void
+Trailblazor.Mention.Equals(Trailblazor.Mention? other) -> bool
+Trailblazor.Mention.Item.get -> Trailblazor.MentionItem!
+Trailblazor.Mention.Item.init -> void
+Trailblazor.Mention.Mention(string! Trigger, Trailblazor.MentionItem! Item) -> void
+Trailblazor.Mention.Trigger.get -> string!
+Trailblazor.Mention.Trigger.init -> void
+Trailblazor.MentionInputLabels
+Trailblazor.MentionInputLabels.<Clone>$() -> Trailblazor.MentionInputLabels!
+Trailblazor.MentionInputLabels.Equals(Trailblazor.MentionInputLabels? other) -> bool
+Trailblazor.MentionInputLabels.MentionInputLabels() -> void
+Trailblazor.MentionInputLabels.Suggestions.get -> string?
+Trailblazor.MentionInputLabels.Suggestions.init -> void
+Trailblazor.MentionItem
+Trailblazor.MentionItem.<Clone>$() -> Trailblazor.MentionItem!
+Trailblazor.MentionItem.Deconstruct(out string! Text) -> void
+Trailblazor.MentionItem.Description.get -> string?
+Trailblazor.MentionItem.Description.init -> void
+Trailblazor.MentionItem.Equals(Trailblazor.MentionItem? other) -> bool
+Trailblazor.MentionItem.Id.get -> string?
+Trailblazor.MentionItem.Id.init -> void
+Trailblazor.MentionItem.MentionItem(string! Text) -> void
+Trailblazor.MentionItem.Text.get -> string!
+Trailblazor.MentionItem.Text.init -> void
+Trailblazor.MentionQuery
+Trailblazor.MentionQuery.<Clone>$() -> Trailblazor.MentionQuery!
+Trailblazor.MentionQuery.Deconstruct(out string! Trigger, out string! Text) -> void
+Trailblazor.MentionQuery.Equals(Trailblazor.MentionQuery? other) -> bool
+Trailblazor.MentionQuery.MentionQuery(string! Trigger, string! Text) -> void
+Trailblazor.MentionQuery.Text.get -> string!
+Trailblazor.MentionQuery.Text.init -> void
+Trailblazor.MentionQuery.Trigger.get -> string!
+Trailblazor.MentionQuery.Trigger.init -> void
+Trailblazor.TbMentionInput
+Trailblazor.TbMentionInput.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbMentionInput.Classes.set -> void
+Trailblazor.TbMentionInput.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbMentionInput.ItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.MentionItem!>?
+Trailblazor.TbMentionInput.ItemTemplate.set -> void
+Trailblazor.TbMentionInput.Items.get -> System.Collections.Generic.IEnumerable<Trailblazor.MentionItem!>?
+Trailblazor.TbMentionInput.Items.set -> void
+Trailblazor.TbMentionInput.Labels.get -> Trailblazor.MentionInputLabels!
+Trailblazor.TbMentionInput.Labels.set -> void
+Trailblazor.TbMentionInput.Lines.get -> int
+Trailblazor.TbMentionInput.Lines.set -> void
+Trailblazor.TbMentionInput.MaxItems.get -> int
+Trailblazor.TbMentionInput.MaxItems.set -> void
+Trailblazor.TbMentionInput.Mentions.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.Mention!>?
+Trailblazor.TbMentionInput.Mentions.set -> void
+Trailblazor.TbMentionInput.MentionsChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyList<Trailblazor.Mention!>!>
+Trailblazor.TbMentionInput.MentionsChanged.set -> void
+Trailblazor.TbMentionInput.Placeholder.get -> string?
+Trailblazor.TbMentionInput.Placeholder.set -> void
+Trailblazor.TbMentionInput.Search.get -> System.Func<Trailblazor.MentionQuery!, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Trailblazor.MentionItem!>!>!>?
+Trailblazor.TbMentionInput.Search.set -> void
+Trailblazor.TbMentionInput.TbMentionInput() -> void
+Trailblazor.TbMentionInput.Triggers.get -> string!
+Trailblazor.TbMentionInput.Triggers.set -> void
+const Trailblazor.TbStrings.MentionInputSuggestions = "MentionInput.Suggestions" -> string!
+override Trailblazor.Mention.Equals(object? obj) -> bool
+override Trailblazor.Mention.GetHashCode() -> int
+override Trailblazor.Mention.ToString() -> string!
+override Trailblazor.MentionInputLabels.Equals(object? obj) -> bool
+override Trailblazor.MentionInputLabels.GetHashCode() -> int
+override Trailblazor.MentionInputLabels.ToString() -> string!
+override Trailblazor.MentionItem.Equals(object? obj) -> bool
+override Trailblazor.MentionItem.GetHashCode() -> int
+override Trailblazor.MentionItem.ToString() -> string!
+override Trailblazor.MentionQuery.Equals(object? obj) -> bool
+override Trailblazor.MentionQuery.GetHashCode() -> int
+override Trailblazor.MentionQuery.ToString() -> string!
+override Trailblazor.TbMentionInput.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbMentionInput.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+override Trailblazor.TbMentionInput.OnParametersSet() -> void
+static Trailblazor.Mention.operator !=(Trailblazor.Mention? left, Trailblazor.Mention? right) -> bool
+static Trailblazor.Mention.operator ==(Trailblazor.Mention? left, Trailblazor.Mention? right) -> bool
+static Trailblazor.MentionInputLabels.operator !=(Trailblazor.MentionInputLabels? left, Trailblazor.MentionInputLabels? right) -> bool
+static Trailblazor.MentionInputLabels.operator ==(Trailblazor.MentionInputLabels? left, Trailblazor.MentionInputLabels? right) -> bool
+static Trailblazor.MentionItem.operator !=(Trailblazor.MentionItem? left, Trailblazor.MentionItem? right) -> bool
+static Trailblazor.MentionItem.operator ==(Trailblazor.MentionItem? left, Trailblazor.MentionItem? right) -> bool
+static Trailblazor.MentionQuery.operator !=(Trailblazor.MentionQuery? left, Trailblazor.MentionQuery? right) -> bool
+static Trailblazor.MentionQuery.operator ==(Trailblazor.MentionQuery? left, Trailblazor.MentionQuery? right) -> bool
+~override Trailblazor.TbMentionInput.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.MentionInputLabels.SearchFailed.get -> string?
+Trailblazor.MentionInputLabels.SearchFailed.init -> void
+Trailblazor.TbMentionInput.OnSearchFailed.get -> Microsoft.AspNetCore.Components.EventCallback<System.Exception!>
+Trailblazor.TbMentionInput.OnSearchFailed.set -> void
+const Trailblazor.TbStrings.MentionInputSearchFailed = "MentionInput.SearchFailed" -> string!
