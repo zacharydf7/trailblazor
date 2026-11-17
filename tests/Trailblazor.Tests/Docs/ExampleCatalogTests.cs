@@ -184,7 +184,7 @@ public class ExampleCatalogTests
         [
             "text-field", "number-field", "checkbox", "checkbox-group", "switch", "slider", "radio-group", "select",
             "autocomplete", "color-picker", "file-upload", "date-range-picker", "listbox", "rich-text-editor", "rating",
-            "tag-input", "calendar", "date-picker", "time-picker", "date-time-picker", "cascader",
+            "tag-input", "calendar", "date-picker", "time-picker", "date-time-picker", "cascader", "markdown-editor",
         ],
         ["Select"] = ["select", "listbox"],
         ["Sortable"] = ["data-grid"],

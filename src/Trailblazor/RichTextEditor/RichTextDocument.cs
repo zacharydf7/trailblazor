@@ -179,6 +179,34 @@ public sealed class RichTextDocument
         }
     }
 
+    /// <summary>Reads markdown into a document, keeping what <see cref="RichTextSchema.Default"/> allows.</summary>
+    /// <inheritdoc cref="FromMarkdown(string?, RichTextSchema)" path="/remarks"/>
+    /// <param name="markdown">The markdown. Null or empty gives an empty document.</param>
+    public static RichTextDocument FromMarkdown(string? markdown) => FromMarkdown(markdown, RichTextSchema.Default);
+
+    /// <summary>Reads markdown into a document, keeping what the schema allows, as <see cref="Parse(string?,
+    /// RichTextSchema)"/> does for HTML.</summary>
+    /// <remarks>It reads headings (<c>#</c> to <c>###</c>, deeper ones as <c>###</c>, or text underlined with
+    /// <c>=</c> or <c>-</c>), paragraphs, <c>&gt;</c> quotes, <c>-</c>, <c>*</c>, <c>+</c> and <c>1.</c> list items
+    /// nested by indentation, rules, an image alone on its line, fenced code as code text, and <c>**bold**</c>,
+    /// <c>*italic*</c>, <c>~~strikethrough~~</c>, <c>`code`</c>, <c>[links](url)</c> and <c>&lt;url&gt;</c> inside a
+    /// paragraph. Anything else, such as HTML, stays as text. A link or image the schema doesn't allow becomes text or
+    /// is dropped, as in HTML.</remarks>
+    /// <param name="markdown">The markdown. Null or empty gives an empty document.</param>
+    /// <param name="schema">What to keep: the formats, blocks, and link and image schemes.</param>
+    public static RichTextDocument FromMarkdown(string? markdown, RichTextSchema schema)
+    {
+        ArgumentNullException.ThrowIfNull(schema);
+        return Parse(RichTextMarkdown.Read(markdown).ToHtml(), schema);
+    }
+
+    /// <summary>Writes the document as markdown that <see cref="FromMarkdown(string?)"/> reads back the same, apart
+    /// from what markdown can't hold: underline, subscript and superscript text is written plain; empty paragraphs,
+    /// line breaks at a paragraph's end and spaces at a line's start or end are left out; line breaks in a heading or
+    /// in code that shares its paragraph become spaces; and a space or line break at a format's edge moves outside
+    /// it.</summary>
+    public string ToMarkdown() => RichTextMarkdown.Write(this);
+
     /// <summary>The document's text without formats, with a <c>'\n'</c> between paragraphs and for each line
     /// break.</summary>
     public string ToPlainText() => string.Join('\n', Paragraphs.Select(paragraph => paragraph.Text));

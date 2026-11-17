@@ -68,6 +68,7 @@ public static class AccessibilityStatusCatalog
         new("form", Tested, None, None),
         new("text-field", Tested, NotYet, Tested),
         new("rich-text-editor", Tested, NotYet, Tested),
+        new("markdown-editor", Tested, NotYet, Tested),
         new("number-field", Tested, NotYet, Tested),
         new("checkbox", Tested, Tested, Tested),
         new("checkbox-group", Tested, Tested, Tested),

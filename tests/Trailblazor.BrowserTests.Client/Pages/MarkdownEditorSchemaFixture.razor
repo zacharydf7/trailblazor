@@ -1,0 +1,4 @@
+@page "/markdown-editor-schema"
+
+@* Bold only, so the link shortcut must leave the text alone. *@
+<TbMarkdownEditor Label="Summary" Schema="@(new RichTextSchema { Formats = RichTextFormats.Bold, Blocks = RichTextBlocks.None })" />

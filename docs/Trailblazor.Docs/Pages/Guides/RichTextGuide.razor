@@ -9,6 +9,7 @@
         <TbTableOfContentsItem TargetId="reading-html" Text="Reading HTML" />
         <TbTableOfContentsItem TargetId="safe-to-show" Text="Safe to show" />
         <TbTableOfContentsItem TargetId="paragraphs-and-runs" Text="Paragraphs and runs" />
+        <TbTableOfContentsItem TargetId="markdown" Text="Markdown" />
         <TbTableOfContentsItem TargetId="api" Text="API" />
         <TbTableOfContentsItem TargetId="related" Text="Related" />
     </Contents>
@@ -144,6 +145,30 @@
         <CodeBlock Label="Reading runs" Code="@ReadingRuns" />
         <CodeBlock Label="Building a document" Code="@Building" />
 
+        <DocsHeading Id="markdown" Text="Markdown" Class="docs-section" />
+        <TbText>
+            <code>FromMarkdown</code> reads markdown into a document, keeping what a schema allows, as
+            <code>Parse</code> does for HTML, and <code>ToMarkdown</code> writes a document as markdown. That turns a
+            <a href="components/markdown-editor">markdown editor</a>'s value into safe HTML to show, or a
+            <a href="components/rich-text-editor">rich text editor</a>'s HTML into markdown to store.
+        </TbText>
+        <ul>
+            <li>
+                <code>FromMarkdown</code> reads headings, paragraphs, quotes, bulleted and numbered lists nested by
+                indentation, rules, an
+                image alone on its line, fenced code as code text, and bold, italic, strikethrough, code, links and
+                <code>&lt;url&gt;</code> inside a paragraph. Anything else, such as HTML, stays as text.
+            </li>
+            <li>
+                <code>ToMarkdown</code> writes markdown that reads back the same, apart from what markdown can't hold:
+                underline, subscript and superscript text is written plain; empty paragraphs, line breaks at a
+                paragraph's end and spaces at a line's start or end are left out; line breaks in a heading or in code
+                that shares its paragraph become spaces; and a space or line break at a format's edge moves outside
+                it.
+            </li>
+        </ul>
+        <CodeBlock Label="Markdown both ways" Code="@MarkdownBothWays" />
+
         <DocsHeading Id="api" Text="API" Class="docs-section" />
         <ApiTable Type="typeof(RichTextDocument)" />
         <ApiTable Type="typeof(RichTextParagraph)" />
@@ -198,6 +223,14 @@
 
             writer.EndParagraph();
         }
+        """;
+
+    private const string MarkdownBothWays = """
+        // A markdown editor's value, shown as HTML
+        var html = RichTextDocument.FromMarkdown(trail.Description).ToHtml();
+
+        // A rich text editor's value, stored as markdown
+        var markdown = RichTextDocument.Parse(notesHtml).ToMarkdown();
         """;
 
     private const string Building = """

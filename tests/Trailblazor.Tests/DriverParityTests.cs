@@ -40,6 +40,7 @@ public class DriverParityTests
         ["TbTimePicker"] = "TimePicker", ["TbChip"] = "Chip", ["TbChipGroup"] = "ChipGroup",
         ["TbCarousel"] = "Carousel", ["TbChat"] = "Chat", ["TbAiPrompt"] = "AiPrompt", ["TbKanban"] = "Kanban",
         ["TbCascader"] = "Cascader", ["TbMenubar"] = "Menubar", ["TbLightbox"] = "Lightbox", ["TbForm"] = "Form",
+        ["TbMarkdownEditor"] = "MarkdownEditor",
         ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",
         ["TbSpeedDial"] = "Menu", ["TbToolbar"] = "Toolbar", ["TbInsertDivider"] = "InsertDivider",
         ["TbNavMenu"] = "NavMenu", ["TbCodeField"] = "TextField", ["TbButton"] = "Button",
@@ -105,6 +106,8 @@ public class DriverParityTests
         ["TbChatDriver.Attach(InputFileContent[])"] = InTestFile,
         ["TbTreeSelectLocator.Open()"] = InMarkup, ["TbTreeSelectLocator.Close()"] = InMarkup,
         ["TbTreeSelectLocator.IsOpen()"] = InMarkup,
+        ["TbMarkdownEditorLocator.Press(String)"] = "the editor's script adds the marks, which only a browser runs; bUnit "
+            + "enters the markdown with EnterAsync",
     };
 
     [Fact]

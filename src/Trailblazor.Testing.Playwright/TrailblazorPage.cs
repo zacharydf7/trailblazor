@@ -468,6 +468,14 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbRichTextEditor</c> whose editing area this finds, inside the scope, such as one whose label
     /// the app draws itself, as <c>page.Locator("#notes")</c>.</summary>
     public TbRichTextEditorLocator RichTextEditor(ILocator input) => new(scope, input);
+
+    /// <summary>The <c>TbMarkdownEditor</c> with this label.</summary>
+    public TbMarkdownEditorLocator MarkdownEditor(string label) =>
+        new(scope, scope.GetByLabel(FieldLabel.Matching(label)));
+
+    /// <summary>The <c>TbMarkdownEditor</c> whose text area this finds, inside the scope, such as one whose label the
+    /// app draws itself, as <c>page.Locator("#notes")</c>.</summary>
+    public TbMarkdownEditorLocator MarkdownEditor(ILocator input) => new(scope, input);
 }
 
 /// <summary>A <c>TbPopover</c>, found by its trigger's name.</summary>

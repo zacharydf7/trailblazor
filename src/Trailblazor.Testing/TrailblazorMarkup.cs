@@ -400,6 +400,11 @@ public sealed class TrailblazorMarkup
     public TbRichTextEditorDriver RichTextEditor(string label) =>
         new(() => Field(label, "[role=textbox][contenteditable]"));
 
+    /// <summary>The <c>TbMarkdownEditor</c> with this label, or with this <c>AriaLabel</c> when it has no label.
+    /// </summary>
+    public TbMarkdownEditorDriver MarkdownEditor(string label) =>
+        new(() => Field(label, "textarea.tb-markdown-editor__input"));
+
     /// <summary>The <c>TbTimePicker</c> with this label, or with this <c>AriaLabel</c> when it has no label.</summary>
     public TbTimePickerDriver TimePicker(string label) => new(() => Field(label, "input[type=time][data-part=input]"));
 
@@ -3553,6 +3558,49 @@ public sealed class TbRichTextEditorDriver : TbFieldDriver
 
         await editor.TriggerEventAsync("ontbrichtextchange", new RichTextChangeEventArgs { Html = html });
     }
+}
+
+/// <summary>A <c>TbMarkdownEditor</c>, found by its label.</summary>
+public sealed class TbMarkdownEditorDriver : TbFieldDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbMarkdownEditorDriver(Func<IElement> find) : base(find) => _find = find;
+
+    /// <summary>The markdown the editor holds.</summary>
+    public string? Text => _find().GetAttribute("value");
+
+    /// <summary>The HTML the preview shows, or null while it isn't shown.</summary>
+    public string? PreviewHtml => Editor().QuerySelector("[data-part=preview]:not([hidden])")?.InnerHtml;
+
+    /// <summary>Replaces the editor's markdown with this text, as typing it does, and leaves the editor. A read-only
+    /// or disabled editor throws, since a user can't type into it.</summary>
+    public async Task EnterAsync(string text)
+    {
+        Typing.ThrowIfLocked(_find(), "text");
+        await _find().InputAsync(new ChangeEventArgs { Value = text });
+        await LeaveAsync();
+    }
+
+    /// <summary>Shows the preview with the Preview button, unless it shows already. An editor whose preview isn't
+    /// <c>MarkdownPreview.Toggle</c> throws, since it has no such button.</summary>
+    public Task ShowPreviewAsync() => PreviewAsync(true);
+
+    /// <summary>Hides the preview with the Preview button, showing the text again, unless it's hidden already. It
+    /// throws as <see cref="ShowPreviewAsync"/> does.</summary>
+    public Task HidePreviewAsync() => PreviewAsync(false);
+
+    private async Task PreviewAsync(bool shown)
+    {
+        var button = Editor().QuerySelector("[data-part=preview-toggle]")
+            ?? throw new InvalidOperationException("This editor has no Preview button; its Preview is Beside or None.");
+        if ((button.GetAttribute("aria-pressed") == "true") != shown)
+        {
+            await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+        }
+    }
+
+    private IElement Editor() => _find().Closest("[data-part=editor]")!;
 }
 
 /// <summary>A <c>TbTreeView</c>, found by its accessible name, with the same helper names as the Playwright locator.

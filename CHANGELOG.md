@@ -87,6 +87,8 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-17
 
+- New `TbMarkdownEditor`: a field whose `textarea` (`data-part="input"`) holds markdown, with a toolbar of marks (each button has `data-command` and `aria-keyshortcuts`), a Preview toggle (`data-part="preview-toggle"`, `aria-pressed`) and a preview region (`data-part="preview"`) of the rich text editor's HTML; `data-ready` on `data-part="editor"` once the toolbar works
+- New `RichTextDocument.FromMarkdown` and `ToMarkdown` read and write markdown
 - `TbCarousel`'s previous and next chevrons mirror in right-to-left text (their icons get `tb-icon--mirrored`), so next points toward the end of the line and previous toward the start
 - New `TbMenubar`: a `menubar` whose `TbMenu` children's triggers become `menuitem`s, shown as text without a chevron, with one tab stop between them once the page is interactive (`tabindex` 0 on one, -1 on the rest)
 - New `TbLightbox`: a full-window modal dialog (`tb-lightbox`) whose header holds zoom and rotation buttons (`data-part="tools"`), and whose body shows one image in a scrolling stage (`data-part="stage"` with `data-zoom` and `data-turns`) with previous and next buttons over it; under the image are a caption and a position, and a polite live region reads out each new image

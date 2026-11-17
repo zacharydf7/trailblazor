@@ -1,0 +1,209 @@
+@namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbBoxedFieldBase<string>
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+
+@Layout(Classes, @<text>
+    @* data-ready marks that the toolbar and shortcuts work; until then the buttons are off. *@
+    <div @ref="_editor" data-part="editor" data-ready="@(_handle is null ? null : "")"
+         data-commands="@string.Join(' ', Tools.Select(tool => tool.Command))"
+         class="@ClassNames.Join("tb-markdown-editor",
+                    Preview == MarkdownPreview.Beside ? "tb-markdown-editor--beside" : null)">
+        @if (ShowToolbar || Preview == MarkdownPreview.Toggle)
+        {
+            <TbToolbar AriaLabel="@(Labels.Toolbar ?? Localizer[TbStrings.RichTextEditorToolbar])" data-part="toolbar"
+                       aria-controls="@InputId" Class="tb-markdown-editor__toolbar">
+                @if (ShowToolbar)
+                {
+                    @foreach (var tool in Tools)
+                    {
+                        <TbIconButton Icon="tool.Icon" AriaLabel="@tool.Label" ShowTooltip Size="Size.Small"
+                                      Disabled="@(!Editable || _previewing || _handle is null)"
+                                      data-command="@tool.Command" aria-keyshortcuts="@tool.Shortcuts" />
+                    }
+                }
+                @if (Preview == MarkdownPreview.Toggle)
+                {
+                    <TbIconButton Icon="BuiltInIcons.Eye" AriaLabel="@PreviewLabel" ShowTooltip Size="Size.Small"
+                                  Pressed="_previewing" PressedChanged="value => _previewing = value"
+                                  aria-controls="@PreviewId" data-part="preview-toggle" />
+                }
+            </TbToolbar>
+        }
+        <div class="tb-markdown-editor__panes">
+            @Input
+            @* The region stays in the page while hidden, since the Preview button points at it. *@
+            @if (Preview != MarkdownPreview.None)
+            {
+                var shown = Preview == MarkdownPreview.Beside || _previewing;
+                <div id="@PreviewId" role="region" aria-label="@PreviewLabel" data-part="preview" hidden="@(!shown)"
+                     class="tb-markdown-editor__preview">@(shown ? (MarkupString)PreviewHtml : null)</div>
+            }
+        </div>
+    </div>
+</text>, null, null)
+
+@code {
+    // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
+    private RenderFragment Input => builder =>
+    {
+        builder.OpenElement(0, "textarea");
+        builder.AddMultipleAttributes(1, ControlAttributes);
+        builder.AddAttribute(2, "data-part", "input");
+        builder.AddAttribute(3, "id", InputId);
+        builder.AddAttribute(4, "name", InputNameAttribute);
+        builder.AddAttribute(5, "rows", Lines);
+        builder.AddAttribute(6, "value", Text);
+        builder.AddAttribute(7, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, OnTextAsync));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddAttribute(8, "placeholder", Placeholder);
+        builder.AddAttribute(9, "disabled", Disabled);
+        builder.AddAttribute(10, "readonly", ReadOnly);
+        builder.AddAttribute(11, "aria-required", AriaRequired);
+        builder.AddAttribute(12, "aria-invalid", ShowsInvalid ? "true" : null);
+        builder.AddAttribute(13, "aria-describedby", InputDescribedBy);
+        builder.AddAttribute(14, "hidden", _previewing);
+        builder.AddAttribute(15, "spellcheck", "true");
+        builder.AddAttribute(16, "class",
+            ClassNames.Join("tb-field__input", "tb-markdown-editor__input", Classes?.Input));
+        builder.AddElementReferenceCapture(17, input => _input = input);
+        builder.CloseElement();
+    };
+
+    private ElementReference _editor;
+    private ElementReference _input;
+    private IJSObjectReference? _handle;
+    private bool _disposed;
+    private bool _previewing;
+
+    /// <summary>Where the markdown shows as it will look. Defaults to <see cref="MarkdownPreview.Toggle"/>, a Preview
+    /// button in the toolbar.</summary>
+    [Parameter]
+    public MarkdownPreview Preview { get; set; }
+
+    /// <summary>Shows the toolbar of formats. Turn it off for an editor whose formats come from shortcuts and typing
+    /// only; with <see cref="MarkdownPreview.Toggle"/>, the toolbar still holds the Preview button. Defaults to true.
+    /// </summary>
+    [Parameter]
+    public bool ShowToolbar { get; set; } = true;
+
+    /// <summary>Example text shown while the editor is empty. It is not a label.</summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>The text area's height, in lines of text. Defaults to 6; people can drag it taller.</summary>
+    [Parameter]
+    public int Lines { get; set; } = 6;
+
+    /// <summary>What the preview keeps, as for <see cref="RichTextDocument.FromMarkdown(string?, RichTextSchema)"/>:
+    /// its formats, blocks, and link and image schemes. Defaults to <see cref="RichTextSchema.Default"/>, which
+    /// leaves out images; allow <see cref="RichTextBlocks.Images"/> to show them. The toolbar and shortcuts offer only
+    /// the formats and blocks it keeps.</summary>
+    [Parameter]
+    public RichTextSchema Schema { get; set; } = RichTextSchema.Default;
+
+    /// <summary>The words the toolbar and preview show and say to screen readers.</summary>
+    [Parameter]
+    public MarkdownEditorLabels Labels { get; set; } = new();
+
+    /// <summary>Extra CSS classes for the field's inner parts.</summary>
+    [Parameter]
+    public FieldClasses? Classes { get; set; }
+
+    private sealed record Tool(string Command, Icon Icon, string Label, string? Shortcuts);
+
+    // Only the marks the preview keeps get a button.
+    private IEnumerable<Tool> Tools => new (bool Kept, string Command, Icon Icon, string? Label, string Key,
+        string? Shortcuts)[]
+    {
+        (Keeps(RichTextFormats.Bold), "bold", RichTextEditorIcons.Bold, Labels.Bold, TbStrings.RichTextEditorBold,
+            "Control+B Meta+B"),
+        (Keeps(RichTextFormats.Italic), "italic", RichTextEditorIcons.Italic, Labels.Italic,
+            TbStrings.RichTextEditorItalic, "Control+I Meta+I"),
+        (Keeps(RichTextFormats.Strikethrough), "strikethrough", RichTextEditorIcons.Strikethrough,
+            Labels.Strikethrough, TbStrings.RichTextEditorStrikethrough, "Control+Shift+X Meta+Shift+X"),
+        (Keeps(RichTextFormats.Code), "code", RichTextEditorIcons.Code, Labels.Code, TbStrings.RichTextEditorCode,
+            "Control+E Meta+E"),
+        (Keeps(RichTextFormats.Link), "link", RichTextEditorIcons.Link, Labels.Link, TbStrings.RichTextEditorLink,
+            "Control+K Meta+K"),
+        (Keeps(RichTextBlocks.Headings), "heading1", RichTextEditorIcons.Heading1, Labels.Heading1,
+            TbStrings.RichTextEditorHeading1, "Control+Alt+1 Meta+Alt+1"),
+        (Keeps(RichTextBlocks.Headings), "heading2", RichTextEditorIcons.Heading2, Labels.Heading2,
+            TbStrings.RichTextEditorHeading2, "Control+Alt+2 Meta+Alt+2"),
+        (Keeps(RichTextBlocks.Headings), "heading3", RichTextEditorIcons.Heading3, Labels.Heading3,
+            TbStrings.RichTextEditorHeading3, "Control+Alt+3 Meta+Alt+3"),
+        (Keeps(RichTextBlocks.Quotes), "quote", RichTextEditorIcons.Quote, Labels.Quote, TbStrings.RichTextEditorQuote,
+            "Control+Shift+9 Meta+Shift+9"),
+        (Keeps(RichTextBlocks.BulletedLists), "bullet", RichTextEditorIcons.BulletedList, Labels.BulletedList,
+            TbStrings.RichTextEditorBulletedList, "Control+Shift+8 Meta+Shift+8"),
+        (Keeps(RichTextBlocks.NumberedLists), "number", RichTextEditorIcons.NumberedList, Labels.NumberedList,
+            TbStrings.RichTextEditorNumberedList, "Control+Shift+7 Meta+Shift+7"),
+        (Keeps(RichTextBlocks.Rules), "rule", RichTextEditorIcons.HorizontalRule, Labels.HorizontalRule,
+            TbStrings.RichTextEditorHorizontalRule, null),
+    }.Where(tool => tool.Kept)
+        .Select(tool => new Tool(tool.Command, tool.Icon, tool.Label ?? Localizer[tool.Key], tool.Shortcuts));
+
+    private bool Keeps(RichTextFormats format) => Schema.Formats.HasFlag(format);
+
+    private bool Keeps(RichTextBlocks block) => Schema.Blocks.HasFlag(block);
+
+    private string PreviewLabel => Labels.Preview ?? Localizer[TbStrings.MarkdownEditorPreview];
+
+    private string PreviewId => $"{FieldId}-preview";
+
+    // The rich text editor's canonical HTML, which escapes all text and keeps only what the schema allows.
+    private string PreviewHtml => RichTextDocument.FromMarkdown(Text, Schema).ToHtml();
+
+    private bool Editable => !Disabled && !ReadOnly;
+
+    private protected override string FieldModifiers => $"{base.FieldModifiers} tb-markdown-editor-field";
+
+    /// <inheritdoc />
+    public override ValueTask FocusAsync(bool preventScroll = false) => _input.FocusAsync(preventScroll);
+
+    private Task OnTextAsync(ChangeEventArgs change) => SetTextAsync(change.Value as string);
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender || !RendererInfo.IsInteractive)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/markdown-editor.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            var handle = await module.InvokeAsync<IJSObjectReference?>("createMarkdownEditor", _editor);
+            if (_disposed && handle is not null)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+            StateHasChanged();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the editor went with it.
+        }
+    }
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
+    {
+        // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
+        Dispose();
+        _disposed = true;
+        return _handle?.DisposeHandleAsync() ?? ValueTask.CompletedTask;
+    }
+}

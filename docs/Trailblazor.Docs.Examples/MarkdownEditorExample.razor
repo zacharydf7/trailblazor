@@ -1,0 +1,9 @@
+<TbStack Gap="4" Style="max-inline-size: 36rem">
+    <TbMarkdownEditor Label="Trail notes" @bind-Value="_notes"
+                      HelperText="Conditions, closures and anything the next group should know." />
+    <output>Value: <code>@(_notes ?? "null until something is typed")</code></output>
+</TbStack>
+
+@code {
+    private string? _notes = "## Pine Hollow loop\n\n**Muddy** after the rain. Bring:\n\n- Water\n- A map";
+}

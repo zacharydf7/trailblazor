@@ -536,3 +536,10 @@ Trailblazor.Testing.TbLightboxDriver.Zoom.get -> double
 Trailblazor.Testing.TbLightboxDriver.ZoomInAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbLightboxDriver.ZoomOutAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TrailblazorMarkup.Lightbox(string? title = null) -> Trailblazor.Testing.TbLightboxDriver!
+Trailblazor.Testing.TbMarkdownEditorDriver
+Trailblazor.Testing.TbMarkdownEditorDriver.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbMarkdownEditorDriver.HidePreviewAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbMarkdownEditorDriver.PreviewHtml.get -> string?
+Trailblazor.Testing.TbMarkdownEditorDriver.ShowPreviewAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbMarkdownEditorDriver.Text.get -> string?
+Trailblazor.Testing.TrailblazorMarkup.MarkdownEditor(string! label) -> Trailblazor.Testing.TbMarkdownEditorDriver!

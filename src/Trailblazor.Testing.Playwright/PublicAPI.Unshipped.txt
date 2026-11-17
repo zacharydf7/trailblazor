@@ -571,3 +571,15 @@ Trailblazor.Testing.Playwright.TbLightboxLocator.ZoomInAsync() -> System.Threadi
 Trailblazor.Testing.Playwright.TbLightboxLocator.ZoomOutAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TrailblazorPage.Lightbox(string? title = null) -> Trailblazor.Testing.Playwright.TbLightboxLocator!
 Trailblazor.Testing.Playwright.TbLightboxLocator.CaptionAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbMarkdownEditorLocator
+Trailblazor.Testing.Playwright.TbMarkdownEditorLocator.EnterAsync(string! text) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbMarkdownEditorLocator.HidePreviewAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbMarkdownEditorLocator.Input.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbMarkdownEditorLocator.PressAsync(string! button) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbMarkdownEditorLocator.Preview.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbMarkdownEditorLocator.ShowPreviewAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbMarkdownEditorLocator.TbMarkdownEditorLocator(Microsoft.Playwright.ILocator! scope, Microsoft.Playwright.ILocator! input) -> void
+Trailblazor.Testing.Playwright.TbMarkdownEditorLocator.TextAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TrailblazorPage.MarkdownEditor(Microsoft.Playwright.ILocator! input) -> Trailblazor.Testing.Playwright.TbMarkdownEditorLocator!
+Trailblazor.Testing.Playwright.TrailblazorPage.MarkdownEditor(string! label) -> Trailblazor.Testing.Playwright.TbMarkdownEditorLocator!
+Trailblazor.Testing.Playwright.TbMarkdownEditorLocator.PreviewHtmlAsync() -> System.Threading.Tasks.Task<string?>!

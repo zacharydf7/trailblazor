@@ -3794,39 +3794,39 @@
         overflow-y: auto;
     }
 
-    .tb-rich-text-editor__content :is(p, h1, h2, h3, ul, ol, blockquote) {
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) :is(p, h1, h2, h3, ul, ol, blockquote) {
         margin: 0;
     }
 
-    .tb-rich-text-editor__content :is(h1, h2, h3) {
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) :is(h1, h2, h3) {
         font-weight: var(--tb-font-weight-semibold);
         line-height: var(--tb-line-height-tight);
     }
 
-    .tb-rich-text-editor__content h1 {
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) h1 {
         font-size: var(--tb-font-size-xl);
     }
 
-    .tb-rich-text-editor__content h2 {
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) h2 {
         font-size: var(--tb-font-size-lg);
     }
 
-    .tb-rich-text-editor__content h3 {
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) h3 {
         font-size: var(--tb-font-size-md);
     }
 
-    .tb-rich-text-editor__content :is(ul, ol) {
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) :is(ul, ol) {
         padding-inline-start: 1.5em;
     }
 
-    .tb-rich-text-editor__content blockquote {
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) blockquote {
         padding-inline-start: 0.75em;
         border-inline-start: 3px solid var(--tb-border-subtle);
         color: var(--tb-color-text-muted);
     }
 
     /* A tint of the text color, since a read-only or filled editor already sits on the sunken surface. */
-    .tb-rich-text-editor__content code {
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) code {
         padding-inline: 0.2em;
         border-radius: var(--tb-radius-sm);
         background: color-mix(in srgb, var(--tb-color-text) 8%, transparent);
@@ -3834,17 +3834,67 @@
         font-size: 0.9em;
     }
 
-    .tb-rich-text-editor__content hr {
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) hr {
         margin-block: 0.75em;
         border: 0;
         border-block-start: 1px solid var(--tb-border-subtle);
     }
 
-    .tb-rich-text-editor__content a {
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) a {
         color: var(--tb-color-primary-text);
         text-decoration: underline;
         text-decoration-thickness: 1px;
         text-underline-offset: 0.2em;
+    }
+
+    /* The toolbar sits over the text, and the preview shows the rich text editor's content styles. */
+    .tb-markdown-editor__toolbar {
+        flex-wrap: wrap;
+        border-block-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-markdown-editor__panes {
+        display: grid;
+    }
+
+    .tb-markdown-editor__input {
+        box-sizing: border-box;
+        inline-size: 100%;
+        padding-inline: var(--tb-control-padding-inline);
+        font-family: var(--tb-font-family-mono);
+        font-size: var(--tb-font-size-sm);
+        line-height: var(--tb-line-height-normal);
+        resize: vertical;
+    }
+
+    .tb-markdown-editor__preview {
+        box-sizing: border-box;
+        min-block-size: 6lh;
+        padding: var(--tb-field-padding-block) var(--tb-control-padding-inline);
+        line-height: var(--tb-line-height-normal);
+        overflow-wrap: anywhere;
+    }
+
+    /* Beside the text from a medium width up, and under it below. */
+    @container (min-width: 40rem) {
+        .tb-markdown-editor--beside .tb-markdown-editor__panes {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .tb-markdown-editor--beside .tb-markdown-editor__preview {
+        border-block-start: 1px solid var(--tb-border-subtle);
+    }
+
+    @container (min-width: 40rem) {
+        .tb-markdown-editor--beside .tb-markdown-editor__preview {
+            border-block-start: 0;
+            border-inline-start: 1px solid var(--tb-border-subtle);
+        }
+    }
+
+    .tb-markdown-editor {
+        container-type: inline-size;
     }
 
     .tb-rich-text-editor__content[data-empty]::before {

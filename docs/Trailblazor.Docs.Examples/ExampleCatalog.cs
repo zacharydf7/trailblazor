@@ -3969,6 +3969,115 @@ public static class ExampleCatalog
                     + "editor, or when the form submits.",
             ],
         },
+        new("markdown-editor", "Markdown editor", ExampleCategory.Inputs,
+            "A labeled field for writing markdown, with a toolbar, shortcuts and a preview of how it will look.")
+        {
+            WhenToUse =
+            [
+                "Use it where people write formatted text and the app keeps it as markdown, such as a description, a "
+                    + "comment or a README, or where its writers already know markdown.",
+            ],
+            WhenNotToUse =
+            [
+                "For formatting without seeing any marks, use a [rich text editor](components/rich-text-editor).",
+                "For plain text, use a [text field](components/text-field) with `Lines`.",
+            ],
+            Related = ["rich-text-editor", "text-field", "toolbar"],
+            Sections =
+            [
+                new("basic", "Markdown editor", "The value is the markdown text. The toolbar's buttons and their "
+                    + "shortcuts put marks around the selected text, such as `**bold**`, or at the start of its "
+                    + "lines, such as `## ` or `- `, and take them off again; Ctrl+Z undoes each one, as for typing. "
+                    + "The Preview button shows the markdown as it will look, in place of the text, and hides it "
+                    + "again.", typeof(MarkdownEditorExample)),
+                new("beside", "Preview beside the text", "With `Preview=\"MarkdownPreview.Beside\"`, the preview "
+                    + "shows beside the text as it's typed, and under it on a narrow screen. `MarkdownPreview.None` "
+                    + "leaves the preview out.", typeof(MarkdownEditorBesideExample)),
+            ],
+            Api =
+            [
+                typeof(TbMarkdownEditor), typeof(MarkdownPreview), typeof(MarkdownEditorLabels), typeof(FieldClasses),
+            ],
+            Keyboard =
+            [
+                new(["Ctrl+B", "Ctrl+I"], "Puts bold or italic marks around the selection, or takes them off. Cmd on "
+                    + "macOS."),
+                new(["Ctrl+Shift+X"], "Puts strikethrough marks around the selection, or takes them off."),
+                new(["Ctrl+E"], "Puts code marks around the selection, or a code block around selected lines."),
+                new(["Ctrl+K"], "Makes the selection a link, with its address selected to type over."),
+                new(["Ctrl+Alt+1", "Ctrl+Alt+2", "Ctrl+Alt+3"], "Makes the selected lines headings of that level, or "
+                    + "plain lines again. Cmd+Option on macOS."),
+                new(["Ctrl+Shift+7", "Ctrl+Shift+8"], "Makes the selected lines a numbered or bulleted list, or plain "
+                    + "lines again."),
+                new(["Ctrl+Shift+9"], "Makes the selected lines a quote, or plain lines again."),
+                new(["Ctrl+Z"], "Undoes the last change, a mark at a time."),
+                new(["Tab"], "Leaves the editor, as from any field."),
+                new(["Left", "Right"], "Moves between the buttons.") { When = "In the toolbar" },
+                new(["Home", "End"], "Goes to the first or last button.") { When = "In the toolbar" },
+            ],
+            RightToLeftKeys = "In the toolbar, Left moves to the next button and Right to the previous one.",
+            Labeling =
+            [
+                "The `Label` names the text area, a plain `<textarea>`.",
+                "The toolbar is named \"Formatting\" and each button by what it does, as in the rich text editor; the "
+                    + "Preview button is a toggle named \"Preview\", and the preview is a region with the same name. "
+                    + "`Labels` changes "
+                    + "these words.",
+            ],
+            Accessibility =
+            [
+                "The toolbar is a [toolbar](components/toolbar), following its WAI-ARIA pattern: one Tab stop, with "
+                    + "the arrow keys moving between its buttons, each naming its shortcuts with `aria-keyshortcuts`.",
+                "The Preview button reports whether the preview shows with `aria-pressed`, and points at it with "
+                    + "`aria-controls`. While it shows, the text area is hidden and the format buttons are off.",
+                "The preview is real headings, lists, quotes and links, which screen readers can report and move "
+                    + "between.",
+                "Each mark goes in through the browser's own editing, so undo, redo and screen readers' typing echo "
+                    + "work as for typing.",
+            ],
+            AppDuties =
+            [
+                "Give the editor a `Label`, or an `AriaLabel` where its purpose is plain from what surrounds it.",
+                "To show the markdown elsewhere, read it with `RichTextDocument.FromMarkdown` first, which keeps only "
+                    + "safe links, as the preview does.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "The text area works and posts with a static form. The toolbar and shortcuts start working once the "
+                    + "page is interactive, and so does the preview.",
+            ],
+            Notes =
+            [
+                new("`Schema` sets what the preview keeps, as for `RichTextDocument.FromMarkdown`, and the toolbar "
+                    + "and shortcuts offer only what it keeps. The default leaves out images, and `RichTextBlocks.Images` "
+                    + "shows them."),
+                new("[Rich text](guides/rich-text) covers reading markdown in C# with `FromMarkdown`, and writing it "
+                    + "with `ToMarkdown`, such as to turn a rich text editor's value into markdown."),
+                new("`@ref` the editor and call `FocusAsync()` to move focus to it."),
+            ],
+            Ready = new("[data-part=editor][data-ready]", "the editor"),
+            Target = new("textbox", "Trail notes"),
+            Blocks = ["tb-field", "tb-markdown-editor"],
+            DataParts =
+            [
+                .. FieldParts.Where(part => part.Name is not ("start" or "end")),
+                new("editor", "The toolbar, text area and preview together, with `data-ready` once the toolbar works."),
+                new("toolbar", "The formatting toolbar."),
+                new("input", "The text area."),
+                new("preview-toggle", "The Preview button."),
+                new("preview", "The preview, while it shows."),
+            ],
+            TestingTips =
+            [
+                "In bUnit, `cut.Tb().MarkdownEditor(label)` finds the editor: `EnterAsync(markdown)` sets its text, "
+                    + "`ShowPreviewAsync()` presses Preview, and `PreviewHtml` reads what the preview shows.",
+                "In Playwright, `page.Tb().MarkdownEditor(label)` does the same, with `PreviewHtmlAsync()`, and "
+                    + "`PressAsync(\"Bold\")` presses a toolbar button for the text selected in `Input`.",
+                "`FromMarkdown` is a plain method, so test how markdown reads on a `RichTextDocument` without the "
+                    + "editor.",
+            ],
+        },
         new("number-field", "Number field", ExampleCategory.Inputs,
             "A labeled number input with step buttons and limits.")
         {

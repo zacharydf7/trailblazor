@@ -913,6 +913,9 @@ public static class TbStrings
     /// <summary>"Open link": the link dialog's link to the URL, which opens in a new tab.</summary>
     public const string RichTextEditorOpenLink = "RichTextEditor.OpenLink";
 
+    /// <summary>"Preview": names a markdown editor's Preview button and the preview it shows.</summary>
+    public const string MarkdownEditorPreview = "MarkdownEditor.Preview";
+
     /// <summary>"Theme": names a theme picker.</summary>
     public const string ThemePicker = "Theme.Picker";
 
@@ -1567,6 +1570,7 @@ public static class TbStrings
         [RichTextEditorApplyLink] = "Apply",
         [RichTextEditorRemoveLink] = "Remove link",
         [RichTextEditorOpenLink] = "Open link",
+        [MarkdownEditorPreview] = "Preview",
         [ThemePicker] = "Theme",
         [ThemeLight] = "Light",
         [ThemeDark] = "Dark",

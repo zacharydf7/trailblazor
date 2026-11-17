@@ -6320,3 +6320,68 @@ static Trailblazor.LightboxImage.operator ==(Trailblazor.LightboxImage? left, Tr
 static Trailblazor.LightboxLabels.operator !=(Trailblazor.LightboxLabels? left, Trailblazor.LightboxLabels? right) -> bool
 static Trailblazor.LightboxLabels.operator ==(Trailblazor.LightboxLabels? left, Trailblazor.LightboxLabels? right) -> bool
 ~override Trailblazor.TbLightbox.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.RichTextDocument.ToMarkdown() -> string!
+static Trailblazor.RichTextDocument.FromMarkdown(string? markdown) -> Trailblazor.RichTextDocument!
+Trailblazor.MarkdownEditorLabels
+Trailblazor.MarkdownEditorLabels.<Clone>$() -> Trailblazor.MarkdownEditorLabels!
+Trailblazor.MarkdownEditorLabels.Bold.get -> string?
+Trailblazor.MarkdownEditorLabels.Bold.init -> void
+Trailblazor.MarkdownEditorLabels.BulletedList.get -> string?
+Trailblazor.MarkdownEditorLabels.BulletedList.init -> void
+Trailblazor.MarkdownEditorLabels.Code.get -> string?
+Trailblazor.MarkdownEditorLabels.Code.init -> void
+Trailblazor.MarkdownEditorLabels.Equals(Trailblazor.MarkdownEditorLabels? other) -> bool
+Trailblazor.MarkdownEditorLabels.Heading1.get -> string?
+Trailblazor.MarkdownEditorLabels.Heading1.init -> void
+Trailblazor.MarkdownEditorLabels.Heading2.get -> string?
+Trailblazor.MarkdownEditorLabels.Heading2.init -> void
+Trailblazor.MarkdownEditorLabels.Heading3.get -> string?
+Trailblazor.MarkdownEditorLabels.Heading3.init -> void
+Trailblazor.MarkdownEditorLabels.HorizontalRule.get -> string?
+Trailblazor.MarkdownEditorLabels.HorizontalRule.init -> void
+Trailblazor.MarkdownEditorLabels.Italic.get -> string?
+Trailblazor.MarkdownEditorLabels.Italic.init -> void
+Trailblazor.MarkdownEditorLabels.Link.get -> string?
+Trailblazor.MarkdownEditorLabels.Link.init -> void
+Trailblazor.MarkdownEditorLabels.MarkdownEditorLabels() -> void
+Trailblazor.MarkdownEditorLabels.NumberedList.get -> string?
+Trailblazor.MarkdownEditorLabels.NumberedList.init -> void
+Trailblazor.MarkdownEditorLabels.Preview.get -> string?
+Trailblazor.MarkdownEditorLabels.Preview.init -> void
+Trailblazor.MarkdownEditorLabels.Quote.get -> string?
+Trailblazor.MarkdownEditorLabels.Quote.init -> void
+Trailblazor.MarkdownEditorLabels.Strikethrough.get -> string?
+Trailblazor.MarkdownEditorLabels.Strikethrough.init -> void
+Trailblazor.MarkdownEditorLabels.Toolbar.get -> string?
+Trailblazor.MarkdownEditorLabels.Toolbar.init -> void
+Trailblazor.MarkdownPreview
+Trailblazor.MarkdownPreview.Beside = 1 -> Trailblazor.MarkdownPreview
+Trailblazor.MarkdownPreview.None = 2 -> Trailblazor.MarkdownPreview
+Trailblazor.MarkdownPreview.Toggle = 0 -> Trailblazor.MarkdownPreview
+Trailblazor.TbMarkdownEditor
+Trailblazor.TbMarkdownEditor.Classes.get -> Trailblazor.FieldClasses?
+Trailblazor.TbMarkdownEditor.Classes.set -> void
+Trailblazor.TbMarkdownEditor.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbMarkdownEditor.Labels.get -> Trailblazor.MarkdownEditorLabels!
+Trailblazor.TbMarkdownEditor.Labels.set -> void
+Trailblazor.TbMarkdownEditor.Lines.get -> int
+Trailblazor.TbMarkdownEditor.Lines.set -> void
+Trailblazor.TbMarkdownEditor.Placeholder.get -> string?
+Trailblazor.TbMarkdownEditor.Placeholder.set -> void
+Trailblazor.TbMarkdownEditor.Preview.get -> Trailblazor.MarkdownPreview
+Trailblazor.TbMarkdownEditor.Preview.set -> void
+Trailblazor.TbMarkdownEditor.ShowToolbar.get -> bool
+Trailblazor.TbMarkdownEditor.ShowToolbar.set -> void
+Trailblazor.TbMarkdownEditor.TbMarkdownEditor() -> void
+const Trailblazor.TbStrings.MarkdownEditorPreview = "MarkdownEditor.Preview" -> string!
+override Trailblazor.MarkdownEditorLabels.Equals(object? obj) -> bool
+override Trailblazor.MarkdownEditorLabels.GetHashCode() -> int
+override Trailblazor.MarkdownEditorLabels.ToString() -> string!
+override Trailblazor.TbMarkdownEditor.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbMarkdownEditor.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+static Trailblazor.MarkdownEditorLabels.operator !=(Trailblazor.MarkdownEditorLabels? left, Trailblazor.MarkdownEditorLabels? right) -> bool
+static Trailblazor.MarkdownEditorLabels.operator ==(Trailblazor.MarkdownEditorLabels? left, Trailblazor.MarkdownEditorLabels? right) -> bool
+~override Trailblazor.TbMarkdownEditor.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbMarkdownEditor.Schema.get -> Trailblazor.RichTextSchema!
+Trailblazor.TbMarkdownEditor.Schema.set -> void
+static Trailblazor.RichTextDocument.FromMarkdown(string? markdown, Trailblazor.RichTextSchema! schema) -> Trailblazor.RichTextDocument!
