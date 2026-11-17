@@ -6475,3 +6475,26 @@ Trailblazor.MentionInputLabels.SearchFailed.init -> void
 Trailblazor.TbMentionInput.OnSearchFailed.get -> Microsoft.AspNetCore.Components.EventCallback<System.Exception!>
 Trailblazor.TbMentionInput.OnSearchFailed.set -> void
 const Trailblazor.TbStrings.MentionInputSearchFailed = "MentionInput.SearchFailed" -> string!
+Trailblazor.TbWatermark
+Trailblazor.TbWatermark.TbWatermark() -> void
+override Trailblazor.TbWatermark.OnParametersSet() -> void
+~override Trailblazor.TbWatermark.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbWatermark.Alt.get -> string?
+Trailblazor.TbWatermark.Alt.set -> void
+Trailblazor.TbWatermark.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbWatermark.ChildContent.set -> void
+Trailblazor.TbWatermark.Decorative.get -> bool
+Trailblazor.TbWatermark.Decorative.set -> void
+Trailblazor.TbWatermark.Gap.get -> int
+Trailblazor.TbWatermark.Gap.set -> void
+Trailblazor.TbWatermark.Image.get -> string?
+Trailblazor.TbWatermark.Image.set -> void
+Trailblazor.TbWatermark.Rotate.get -> double
+Trailblazor.TbWatermark.Rotate.set -> void
+Trailblazor.TbWatermark.Text.get -> string?
+Trailblazor.TbWatermark.Text.set -> void
+Trailblazor.TbWatermark.ImageWidth.get -> int
+Trailblazor.TbWatermark.ImageWidth.set -> void
+Trailblazor.TbWatermark.TelemetryName.get -> string?
+Trailblazor.TbWatermark.TelemetryName.set -> void
+override Trailblazor.TbWatermark.OnAfterRender(bool firstRender) -> void

@@ -994,6 +994,68 @@ public static class ExampleCatalog
                 + "winding between two hills\" })` in Playwright, or `img[alt='A trail winding between two hills']` in "
                 + "bUnit.",
         },
+        new("watermark", "Watermark", ExampleCategory.Content,
+            "Tiles text or an image over content, such as \"Draft\" across a page, without getting in its way.")
+        {
+            WhenToUse =
+            [
+                "Use it to mark what a page is, such as a draft, a sample or a confidential copy, so it shows on "
+                    + "screen, in screenshots and on paper.",
+            ],
+            WhenNotToUse =
+            [
+                "To protect content: the marks are page markup, which anyone can remove in the browser's tools.",
+                "For a status people must notice, use a [banner](components/banner) or an [alert](components/alert).",
+            ],
+            Related = ["image", "banner", "alert"],
+            Sections =
+            [
+                new("basic", "Watermark", "`Text` tiles across the content, a line for each `\\n`, slanted by "
+                    + "`Rotate` with `Gap` between marks; `Image` tiles an image `ImageWidth` wide instead, with `Alt` "
+                    + "saying what it means. The marks lie over the content but take no clicks, so the button still "
+                    + "works, and they print.", typeof(WatermarkExample)),
+            ],
+            Api = [typeof(TbWatermark)],
+            Labeling =
+            [
+                "The marks are hidden from screen readers. What they say, `Text` or the image's `Alt`, is read once, "
+                    + "from a visually hidden copy before the content, unless the marks are `Decorative`.",
+            ],
+            Accessibility =
+            [
+                "Text marks take the theme's text color at low opacity (`--tb-watermark-color` and "
+                    + "`--tb-watermark-opacity`), and the system's gray in forced colors, so they stay visible "
+                    + "without hiding the content.",
+                "Nothing about the marks can be focused or clicked.",
+            ],
+            AppDuties =
+            [
+                "Keep the content readable through the marks: lower `--tb-watermark-opacity` behind small text.",
+                "Don't rely on the marks to protect anything; check access on the server.",
+            ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
+            BeforeInteractive =
+            [
+                PlainHtml,
+            ],
+            Target = null,
+            Blocks = ["tb-watermark"],
+            DataParts =
+            [
+                new("label", "The visually hidden copy of what the marks say."),
+                new("marks", "The tiled marks over the content."),
+            ],
+            TestingTips =
+            [
+                "The marks have no behavior to drive: test your content as usual, through the marks.",
+                "To check what a page is marked as, read the `label` part's text, such as \"Draft Do not share\".",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"draft-report\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders. Nothing about it can be used, so it counts nothing else.",
+            ],
+        },
         new("divider", "Divider", ExampleCategory.Layout,
             "A horizontal or vertical line that separates content.")
         {

@@ -89,7 +89,7 @@ public class DriverParityTests
         ["TbSpacer"] = NotInteractive, ["TbStack"] = NotInteractive, ["TbStyles"] = NotInteractive,
         ["TbSurface"] = NotInteractive,
         ["TbTable"] = NotInteractive, ["TbText"] = NotInteractive,
-        ["TbThemeHead"] = NotInteractive, ["TbTimeline"] = NotInteractive,
+        ["TbThemeHead"] = NotInteractive, ["TbTimeline"] = NotInteractive, ["TbWatermark"] = NotInteractive,
     };
 
     // Members only one package has, by type and member signature, and why.

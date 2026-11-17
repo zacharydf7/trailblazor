@@ -1,0 +1,16 @@
+<TbWatermark Text="@("Draft\nDo not share")">
+    <TbCard>
+        <TbStack Gap="2" Style="padding: var(--tb-space-4)">
+            <TbText TextStyle="TextStyle.Title">Pine Hollow trail report</TbText>
+            <TbText>The lower bridge is out until spring; use the creek ford in dry weather.</TbText>
+            <div>
+                <TbButton OnClick="() => _approved = true">Approve report</TbButton>
+            </div>
+            <output>@(_approved ? "Approved" : "Not approved yet")</output>
+        </TbStack>
+    </TbCard>
+</TbWatermark>
+
+@code {
+    private bool _approved;
+}

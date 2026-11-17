@@ -1,0 +1,116 @@
+@namespace Trailblazor
+@using System.Net
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" style="@Style" class="@ClassNames.Join("tb-watermark", Class)">
+    @if (!Decorative && Meaning is { } meaning)
+    {
+        @* Screen readers hear what the marks say, once, before the content. *@
+        <span data-part="label" class="tb-visually-hidden">@meaning</span>
+    }
+    @ChildContent
+    @* The marks lie over the content but take no clicks, and screen readers skip them. *@
+    <div data-part="marks" aria-hidden="true" style="@MarksStyle"
+         class="@ClassNames.Join("tb-watermark__marks", Image is null ? "tb-watermark__marks--text" : null)"></div>
+</div>
+
+@code {
+    /// <summary>The text the marks show, such as "Draft". A line break in it starts a new line in each mark.</summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>The address of an image the marks show instead of text, such as a logo; it can be a <c>data:</c> URL.
+    /// </summary>
+    [Parameter]
+    public string? Image { get; set; }
+
+    /// <summary>What the image says, for people who can't see it, such as "Confidential". Required with
+    /// <see cref="Image"/>, unless the marks are <see cref="Decorative"/>.</summary>
+    [Parameter]
+    public string? Alt { get; set; }
+
+    /// <summary>How far text marks slant, in degrees; negative turns them counterclockwise. Defaults to -22. Image
+    /// marks aren't rotated.</summary>
+    [Parameter]
+    public double Rotate { get; set; } = -22;
+
+    /// <summary>The space between text marks, in CSS pixels. Defaults to 96.</summary>
+    [Parameter]
+    public int Gap { get; set; } = 96;
+
+    /// <summary>The width of each image mark, in CSS pixels. Image marks tile edge to edge, so an image with clear
+    /// space around it spaces them out. Defaults to 160.</summary>
+    [Parameter]
+    public int ImageWidth { get; set; } = 160;
+
+    /// <summary>Leaves out the text screen readers hear for the marks, for marks that only decorate, such as a logo
+    /// repeated behind a page that already says what it is.</summary>
+    [Parameter]
+    public bool Decorative { get; set; }
+
+    /// <summary>The content the marks lie over.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>A label this watermark's use is counted under, such as <c>"draft-report"</c>, so the app can count how
+    /// often people see it through the <c>Trailblazor</c> meter. Controls that share a label count together; a control
+    /// without one isn't counted. It names what the control marks, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    private string? Meaning => Image is null ? Text?.Replace('\n', ' ') : Alt;
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Text is null && Image is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbWatermark)} needs a {nameof(Text)} or an {nameof(Image)}.");
+        }
+
+        if (Image is not null && Alt is null && !Decorative)
+        {
+            throw new InvalidOperationException($"{nameof(TbWatermark)} needs {nameof(Alt)} text for its "
+                + $"{nameof(Image)}, or {nameof(Decorative)} for marks that say nothing.");
+        }
+    }
+
+    private string MarksStyle => Image is not null
+        ? $"--tb-watermark-tile: {TbAvatar.CssUrl(Image)}; --tb-watermark-size: {ImageWidth}px"
+        : $"--tb-watermark-tile: url(\"{TextTile()}\")";
+
+    // The text's tile: each line centered and slanted, in a box that holds the slanted text plus the gap. Its fill is
+    // only the mask's shape; the color comes from the stylesheet. Capitals and wide characters, such as CJK, count a
+    // whole em.
+    private string TextTile()
+    {
+        var lines = (Text ?? "").Split('\n');
+        const double size = 16;
+        var textWidth = lines.Max(line => line.Sum(character =>
+            char.IsUpper(character) || character >= '\u2E80' ? 1 : 0.6)) * size;
+        var textHeight = lines.Length * size * 1.4;
+        var angle = Rotate * Math.PI / 180;
+        var (cos, sin) = (Math.Abs(Math.Cos(angle)), Math.Abs(Math.Sin(angle)));
+        var width = textWidth * cos + textHeight * sin + Gap;
+        var height = textWidth * sin + textHeight * cos + Gap;
+        var spans = string.Concat(lines.Select((line, index) => FormattableString.Invariant(
+            $"<tspan x='50%' dy='{(index == 0 ? (1 - lines.Length) * 0.7 : 1.4)}em'>")
+            + WebUtility.HtmlEncode(line) + "</tspan>"));
+        var svg = FormattableString.Invariant(
+                $"<svg xmlns='http://www.w3.org/2000/svg' width='{width:0}' height='{height:0}'>")
+            + "<text x='50%' y='50%' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif' "
+            + FormattableString.Invariant(
+                $"font-size='{size}' transform='rotate({Rotate} {width / 2:0} {height / 2:0})'>")
+            + spans + "</text></svg>";
+        return "data:image/svg+xml," + Uri.EscapeDataString(svg);
+    }
+}

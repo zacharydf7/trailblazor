@@ -5397,6 +5397,37 @@
         font-variant-numeric: tabular-nums;
     }
 
+    /* The marks lie over the content, take no clicks, and print. Text marks are a mask over the theme's color, so
+       they follow light and dark; image marks are the image itself, faded. */
+    .tb-watermark {
+        position: relative;
+        isolation: isolate;
+    }
+
+    .tb-watermark__marks {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        opacity: var(--tb-watermark-opacity, 0.12);
+        background-image: var(--tb-watermark-tile);
+        background-size: var(--tb-watermark-size) auto;
+        print-color-adjust: exact;
+    }
+
+    .tb-watermark__marks--text {
+        background: var(--tb-watermark-color, var(--tb-color-text));
+        mask-image: var(--tb-watermark-tile);
+        mask-repeat: repeat;
+    }
+
+    @media (forced-colors: active) {
+        .tb-watermark__marks--text {
+            forced-color-adjust: none;
+            background: GrayText;
+        }
+    }
+
     /* Each group of hotkeys is a table: the keys in a narrow column, and what they do beside them. */
     .tb-hotkeys-help__group {
         inline-size: 100%;

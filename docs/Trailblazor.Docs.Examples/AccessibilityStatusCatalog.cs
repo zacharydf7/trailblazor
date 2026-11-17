@@ -35,6 +35,7 @@ public static class AccessibilityStatusCatalog
         new("chat", Tested, NotYet, None),
         new("ai-prompt", Tested, NotYet, None),
         new("image", None, NotYet, None),
+        new("watermark", None, Tested, None),
         new("divider", None, NotYet, None),
         new("surface", None, NotYet, None),
         new("card", Tested, Tested, None),
