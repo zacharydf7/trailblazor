@@ -408,6 +408,9 @@
 
     private async Task OnResizeAsync(int index, double fraction, int report)
     {
+        // Set first, so the render that the app's LayoutChanged brings carries the number along with the sizes. The
+        // script would otherwise show those sizes for a moment in place of a later move's.
+        _reported = report;
         try
         {
             if (Shown().Separators.ElementAtOrDefault(index) is { } separator && fraction is > 0 and < 1)
@@ -418,7 +421,6 @@
         }
         finally
         {
-            _reported = report;
             _commits++;
             StateHasChanged();
         }

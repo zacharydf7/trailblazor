@@ -94,6 +94,22 @@ public class DockManagerTests(BrowserFixture fixture) : DockManagerPage(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldLeaveTheKeysToASplitterInsideAPanel_WhenTheyAreUsedThere(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        var errors = new List<string>();
+        page.PageError += (_, error) => errors.Add(error);
+        await Tab(page, "Map").ClickAsync();
+
+        await page.Tb().Splitter("Resize Legend").ResizeAsync(45);
+
+        Assert.Equal(45, await page.Tb().Splitter("Resize Legend").SizeAsync());
+        // The dock's script took none of those keys for a separator of its own, and the dock heard only the click.
+        Assert.Empty(errors);
+        await Expect(page.Locator(".tb-dock")).ToHaveAttributeAsync("data-commits", "1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dock_ShouldKeepAHiddenPanelOutOfReachAndAtItsScrollPosition_WhenAnotherTabShows(string browser)
     {
         var page = await OpenDockAsync(browser);
@@ -171,6 +187,8 @@ public class DockManagerTests(BrowserFixture fixture) : DockManagerPage(fixture)
     {
         var page = await OpenDockAsync(browser);
         await page.GetByRole(AriaRole.Button, new() { Name = "Only notes" }).ClickAsync();
+        // The notes' tab is drawn anew in the one group left, so it is focused once that group is the only one.
+        await Expect(page.Locator(".tb-dock__group")).ToHaveCountAsync(1);
         await Tab(page, "Notes").FocusAsync();
 
         await page.Keyboard.PressAsync("Delete");
@@ -228,6 +246,14 @@ public class DockManagerTests(BrowserFixture fixture) : DockManagerPage(fixture)
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Crowd" }).ClickAsync();
         await Expect(Tab(page, "Weather")).ToHaveAttributeAsync("aria-selected", "true");
+
+        await page.WaitForFunctionAsync(ShowingTabInView);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldShowItsShowingTab_WhenTheTabStartsOutOfSight(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=crowded");
 
         await page.WaitForFunctionAsync(ShowingTabInView);
     }

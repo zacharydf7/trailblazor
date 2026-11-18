@@ -80,6 +80,10 @@
             <TbSplitterPane Label="Slow page">Page</TbSplitterPane>
         </TbSplitter>
     </div>
+    <TbDockManager AriaLabel="Slow planner" LayoutChanged="DockAsync" Style="block-size: 8rem">
+        <TbDockPanel Id="trails" Title="Slow trails">Trails</TbDockPanel>
+        <TbDockPanel Id="map" Title="Slow map">Map</TbDockPanel>
+    </TbDockManager>
     <TbStepper AriaLabel="Slow booking" Linear="false" ActiveKey="@_step" ActiveKeyChanged="StepAsync">
         <TbStep Key="dates" Title="Dates" />
         <TbStep Key="gear" Title="Gear" />
@@ -174,6 +178,9 @@
     private Task OutlineAsync(bool collapsed) => SlowlyAsync($"outline {collapsed}");
 
     private Task RouteAsync(bool expanded) => SlowlyAsync($"route {expanded}");
+
+    private Task DockAsync(DockLayout layout) =>
+        SlowlyAsync($"dock shows {layout.Groups.First().Active}, closed {layout.Closed.Count}");
 
     private Task SignAsync(Signature? signature) => SlowlyAsync(signature?.TypedName is { } name ? $"signed {name}"
         : $"strokes {signature?.Strokes.Count ?? 0}", () => _signature = signature);

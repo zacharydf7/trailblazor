@@ -176,17 +176,21 @@ public class DockManagerDragTests(BrowserFixture fixture) : DockManagerPage(fixt
 
         // The drag is still held, so the app has no sizes yet, and the stacked pair is wider than it last rendered.
         // The key and the reading share one script, so no render from the app comes between them.
-        var weather = await page.Locator(".tb-dock").EvaluateAsync<double[]>("""
+        var edges = await page.Locator(".tb-dock").EvaluateAsync<double[]>("""
             dock => {
                 const stacked = dock.querySelector('.tb-dock__separator--vertical');
                 stacked.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
                 const box = dock.querySelectorAll('.tb-dock__group')[2].getBoundingClientRect();
-                return [box.x - dock.getBoundingClientRect().x, box.y - dock.getBoundingClientRect().y];
+                const notes = dock.querySelector('.tb-dock__panel[data-panel="notes"]').getBoundingClientRect();
+                const own = dock.getBoundingClientRect();
+                return [box.x - own.x, box.y - own.y, notes.bottom - own.y];
             }
             """);
 
-        Assert.Equal(1 + 0.15 * 766, weather[0], 1.0);
-        Assert.Equal(1 + 0.76 * 382, weather[1], 1.0);
+        // The weather below the separator and the notes above it both follow, at the width the drag gave them.
+        Assert.Equal(1 + 0.15 * 766, edges[0], 1.0);
+        Assert.Equal(1 + 0.76 * 382, edges[1], 1.0);
+        Assert.Equal(1 + 0.76 * 382, edges[2], 1.0);
         await page.Mouse.UpAsync();
         // The stacked pair shared a size of 4, and so did the two side-by-side parts.
         await Expect(page.GetByTestId("layout")).ToContainTextAsync(new System.Text.RegularExpressions.Regex(

@@ -6,7 +6,6 @@
 <TbButton OnClick="() => _layout = Columns">Columns</TbButton>
 <TbButton OnClick="() => _layout = OnlyNotes">Only notes</TbButton>
 <TbButton OnClick="@(() => _layout = _layout.Open("notes"))">Open notes</TbButton>
-<p data-testid="layout">@_layout.ToJson()</p>
 <div style="inline-size: 48rem; block-size: 24rem" dir="@Direction">
     <TbDockManager @bind-Layout="_layout" AriaLabel="Hike planner" MinGroupSize="64">
         <EmptyContent>Nothing is open.</EmptyContent>
@@ -22,6 +21,12 @@
                 <TbTab Text="Terrain">Terrain</TbTab>
                 <TbTab Text="Satellite">Satellite</TbTab>
             </TbTabs>
+            <div style="block-size: 4rem">
+                <TbSplitter>
+                    <TbSplitterPane Label="Legend" Size="40">Legend</TbSplitterPane>
+                    <TbSplitterPane Label="Scale">Scale</TbSplitterPane>
+                </TbSplitter>
+            </div>
         </TbDockPanel>
         <TbDockPanel Id="notes" Title="Notes">
             <input aria-label="Note" />
@@ -48,6 +53,8 @@
         <TbSplitterPane Label="Elevation">Profile</TbSplitterPane>
     </TbSplitter>
 </div>
+@* Below the dock, so text that wraps as the layout changes never moves what a test has measured. *@
+<p data-testid="layout">@_layout.ToJson()</p>
 
 @code {
     // Trails and Map share a group beside Notes and Gear, which sit above the weather.
@@ -79,4 +86,15 @@
 
     [SupplyParameterFromQuery]
     private string? Direction { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? Layout { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Layout == "crowded")
+        {
+            _layout = Crowded;
+        }
+    }
 }

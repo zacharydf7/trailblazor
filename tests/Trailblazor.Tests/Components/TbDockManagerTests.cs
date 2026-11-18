@@ -431,6 +431,27 @@ public class TbDockManagerTests : BunitContext
             Assert.IsType<DockSplit>(changed!.Root).Children.Select(child => Math.Round(child.Size, 4)));
     }
 
+    [Fact]
+    public async Task Resize_ShouldNumberTheRenderThatFirstShowsTheNewSizes_WhenTheAppBindsTheLayout()
+    {
+        IRenderedComponent<TbDockManager> cut = null!;
+        var renders = new List<(string? Report, string? FirstGroup)>();
+        // As @bind-Layout does, the app hands the new layout back, which renders the dock before OnResize is done.
+        cut = RenderDock(Hike, HikePanels, layout =>
+        {
+            cut.Render(parameters => parameters.Add(dock => dock.Layout, layout));
+            renders.Add((cut.Find("[data-part=dock]").GetAttribute("data-report"),
+                cut.FindAll("[data-part=group]")[0].GetAttribute("style")));
+        });
+
+        await cut.InvokeAsync(() => Report().OnResize(0, 0.4, 1));
+
+        // The script shows its own boxes over the app's until it sees the report's number, so the two arrive together.
+        var (report, firstGroup) = Assert.Single(renders);
+        Assert.Contains("--tb-dock-w: 40;", firstGroup);
+        Assert.Equal("1", report);
+    }
+
     [Theory]
     [InlineData(5, 0.5)]
     [InlineData(-1, 0.5)]
