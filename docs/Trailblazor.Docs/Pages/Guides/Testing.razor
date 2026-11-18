@@ -511,7 +511,9 @@
                             <code>MoveTabAsync(panel, places)</code>, <code>MoveToGroupAsync(panel, group)</code>,
                             <code>MoveToNewGroupAsync(panel, side)</code> and
                             <code>MoveToEdgeAsync(panel, edge)</code> move a panel as its group's menu does, selecting
-                            it first.
+                            it first. <code>ChooseFromTabMenuAsync(panel, path)</code> opens the menu of a panel's
+                            tab, as a right-click does, and clicks an item in it, through the submenus named before
+                            it.
                         </td>
                     </tr>
                     <tr>
@@ -1310,7 +1312,9 @@
             + "itself. `ResizeAsync(separator, percent)` moves a separator with its keys and waits until the app has "
             + "the sizes, and `SizeAsync(separator)` reads its percent. `MoveTabAsync(panel, places)`, "
             + "`MoveToGroupAsync(panel, group)`, `MoveToNewGroupAsync(panel, side)` and `MoveToEdgeAsync(panel, "
-            + "edge)` select a panel and move it from its group's menu, and wait until the app has the layout."),
+            + "edge)` select a panel and move it from its group's menu, and wait until the app has the layout. "
+            + "`ChooseFromTabMenuAsync(panel, path)` right-clicks a panel's tab, clicks an item in the menu that "
+            + "opens, through the submenus named before it, and waits until the app has the layout."),
         new("Stepper", "Its name, or none for the only one", "`Stepper(name).GoToAsync(title)` goes to a step and "
             + "waits until it's current and the app's `ActiveKeyChanged` has run, `StepsAsync()` reads the steps' "
             + "titles, and `CurrentAsync()` reads the current step's."),

@@ -145,6 +145,21 @@ public sealed class TbDockLocator(ILocator scope, string? name)
             ? throw new ArgumentOutOfRangeException(parameter, side, "A new group goes to the start, end, top or bottom.")
             : side.ToString().ToLowerInvariant();
 
+    /// <summary>Right-clicks the tab of the panel with this title and clicks the item with this name in the menu
+    /// that opens, through the submenus named before it, as in
+    /// <c>ChooseFromTabMenuAsync("Notes", "Move to group", "Group 2: Map")</c>. The menu acts on that panel whether or
+    /// not it shows. Waits until the app's <c>LayoutChanged</c> has run.</summary>
+    public async Task ChooseFromTabMenuAsync(string panel, params string[] path)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        // The tab's group can go as the item is chosen, and its menu with it, so the wait is on the dock's own count.
+        await Commit.CountedAsync(Root, "data-commits", async () =>
+        {
+            await TbContextMenuLocator.Named(scope, null).On(Tab(panel)).ChooseAsync(path);
+            return true;
+        });
+    }
+
     /// <summary>The share, in percent, that the part before the separator with this name has of the space it and
     /// the part after it take together.</summary>
     public async Task<int> SizeAsync(string separator) => int.Parse(

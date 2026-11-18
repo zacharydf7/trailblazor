@@ -716,6 +716,10 @@ public static class TbStrings
     /// <summary>"Options for {0}": names a dock group's menu button; {0} is the title of its showing panel.</summary>
     public const string DockMenu = "Dock.Menu";
 
+    /// <summary>"Tab options": names the menu that opens on a dock's tab with a right-click, a long press, Shift+F10
+    /// or the context menu key.</summary>
+    public const string DockTabMenu = "Dock.TabMenu";
+
     /// <summary>"Move tab back": a dock menu item that moves the tab one place toward the start of its row.</summary>
     public const string DockMoveTabBack = "Dock.MoveTabBack";
 
@@ -1719,6 +1723,7 @@ public static class TbStrings
         [DockResize] = "Resize {0}",
         [DockCloseHint] = "Press Delete to close",
         [DockMenu] = "Options for {0}",
+        [DockTabMenu] = "Tab options",
         [DockMoveTabBack] = "Move tab back",
         [DockMoveTabForward] = "Move tab forward",
         [DockMoveToGroup] = "Move to group",

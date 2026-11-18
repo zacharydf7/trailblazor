@@ -109,9 +109,9 @@ export function attachDock(root, reporter) {
     });
     const watchGroups = () => {
         for (const group of parts('group')) {
-            selected.observe(group.firstElementChild,
-                { subtree: true, attributes: true, attributeFilter: ['aria-selected'] });
-            reveal(group.firstElementChild);
+            const row = group.querySelector('.tb-dock__tabs');
+            selected.observe(row, { subtree: true, attributes: true, attributeFilter: ['aria-selected'] });
+            reveal(row);
         }
     };
     const added = new MutationObserver(() => {
@@ -348,9 +348,10 @@ export function attachDock(root, reporter) {
     const closable = event => event.button === 1 && ownPart(event.target, 'tab')?.hasAttribute('aria-keyshortcuts')
         ? ownPart(event.target, 'tab') : null;
     // A press on a close mark would focus its tab in some browsers and not in others, so in all of them the focus
-    // stays where it is, as for a middle click.
+    // stays where it is, as for a middle click, and for the right press that opens a tab's menu.
     const onMouseDown = event => {
-        if (closable(event) || (event.button === 0 && ownPart(event.target, 'close'))) {
+        if (closable(event) || (event.button === 0 && ownPart(event.target, 'close'))
+            || (event.button === 2 && ownPart(event.target, 'tab-area'))) {
             event.preventDefault();
         }
     };
@@ -362,7 +363,7 @@ export function attachDock(root, reporter) {
     let landing = null;
     const isRtl = () => getComputedStyle(root).direction === 'rtl';
     const inside = (box, x, y) => x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
-    const tabsOf = group => [...group.querySelectorAll(':scope > .tb-dock__tabs > .tb-dock__tab')];
+    const tabsOf = group => [...group.querySelectorAll('.tb-dock__tabs > .tb-dock__tab')];
     // The side of a box that a point is nearest, when it is within reach of it.
     const nearSide = (box, x, y, reachX, reachY) => {
         const gaps = [['left', (x - box.left) / reachX], ['right', (box.right - x) / reachX],
@@ -485,8 +486,30 @@ export function attachDock(root, reporter) {
         onCancel: endCarry,
     });
 
-    const holdsFocus = tab => tab === document.activeElement
-        || Boolean(document.getElementById(tab.getAttribute('aria-controls'))?.contains(document.activeElement));
+    // The tab menu that last opened and what held the focus then. The menu gives the focus back a moment after it
+    // closes, and in WebAssembly the dock asks who holds the focus before that, so until the menu has closed this is
+    // the answer. A menu whose group has gone never tells the dock that it closed, so it only counts while it's on
+    // the page.
+    let beforeMenu = null;
+    const ownTabMenu = menu =>
+        menu.matches('.tb-dock__tab-area > [role="menu"]') && menu.closest('.tb-dock') === root;
+    // A finger resting longer than a pickup opens the tab's menu, which takes the press from the drag.
+    const onMenuOpening = event => {
+        if (event.newState === 'open' && ownTabMenu(event.target)) {
+            beforeMenu = { menu: event.target, holder: document.activeElement };
+            tabDrag.cancel();
+        }
+    };
+    const onMenuToggled = event => {
+        if (event.newState === 'closed' && ownTabMenu(event.target)) {
+            beforeMenu = null;
+        }
+    };
+
+    const holdsFocus = tab => {
+        const holder = beforeMenu?.menu.isConnected ? beforeMenu.holder : document.activeElement;
+        return tab === holder || Boolean(document.getElementById(tab.getAttribute('aria-controls'))?.contains(holder));
+    };
     const onAuxClick = event => {
         const tab = closable(event);
         if (tab) {
@@ -504,6 +527,9 @@ export function attachDock(root, reporter) {
     root.addEventListener('focusout', onFocusOut);
     root.addEventListener('mousedown', onMouseDown);
     root.addEventListener('auxclick', onAuxClick);
+    // A popover's toggle events don't bubble, so they are heard on their way down.
+    root.addEventListener('beforetoggle', onMenuOpening, { capture: true });
+    root.addEventListener('toggle', onMenuToggled, { capture: true });
 
     // Marks that the keys and drags work, which tests wait for.
     root.dataset.ready = '';
@@ -531,7 +557,7 @@ export function attachDock(root, reporter) {
             }
         },
         // Whether the tab with this id, or its panel, holds the focus. The dock asks when the tab's close mark is
-        // clicked.
+        // clicked, or Close is chosen in its own menu.
         holdsFocus(id) {
             const tab = document.getElementById(id);
             return Boolean(tab) && holdsFocus(tab);
@@ -549,6 +575,8 @@ export function attachDock(root, reporter) {
             root.removeEventListener('focusout', onFocusOut);
             root.removeEventListener('mousedown', onMouseDown);
             root.removeEventListener('auxclick', onAuxClick);
+            root.removeEventListener('beforetoggle', onMenuOpening, { capture: true });
+            root.removeEventListener('toggle', onMenuToggled, { capture: true });
             grips.dispose();
             tabDrag.dispose();
         },

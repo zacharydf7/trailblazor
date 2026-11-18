@@ -2748,7 +2748,8 @@ public static class ExampleCatalog
                     + "group along it. A mark shows where the panel would land, and Escape cancels the drag. "
                     + "Without a drag, the menu after each group's tabs moves the group's showing panel back or "
                     + "forward in its row, to the end of another group, or to a new group beside its own or along "
-                    + "an edge of the dock, and can also close it.", typeof(DockManagerDragExample)),
+                    + "an edge of the dock, and can also close it. A right-click on a tab opens the same menu "
+                    + "for that tab's panel, whether or not it shows.", typeof(DockManagerDragExample)),
                 new("moving-from-code", "Moving panels from code", "`DockLayout.Move(panel, target, position)` gives "
                     + "back a layout with a panel beside another one, for the app to set as `Layout`: "
                     + "`DockPosition.Before` or `After` makes it a tab next to the target's and shows it, and "
@@ -2793,6 +2794,8 @@ public static class ExampleCatalog
                 new(["Delete", "Backspace"], "Closes the panel, unless its `Closable` is false.")
                     { When = "On a tab" },
                 new(["Tab"], "Goes to the group's menu button.") { When = "On a tab" },
+                new(["Shift+F10", "Context menu key"], "Opens the tab's menu, which moves or closes its panel, on "
+                    + "its first item.") { When = "On a tab" },
                 new(["Escape"], "Cancels the drag and leaves the panel where it was.")
                     { When = "While a tab is dragged" },
                 new(["Enter", "Space", "Down"], "Opens the menu that moves or closes the group's showing panel, "
@@ -2820,8 +2823,8 @@ public static class ExampleCatalog
                     + "before it, and the grip on its line is a menu `button` named \"Size of\" followed by the "
                     + "same title.",
                 "Each group's menu button is named \"Options for\" followed by the title of the group's showing "
-                    + "panel.",
-                "The dock's `Labels` replaces these words, the items of both menus and what is said after a move, "
+                    + "panel, and the menu that opens on a tab is named \"Tab options\".",
+                "The dock's `Labels` replaces these words, the items of the menus and what is said after a move, "
                     + "with `{0}` for the number or the title. Two take both: `GroupItem` has `{0}` for a group's "
                     + "number and `{1}` for its showing panel's title, and `Moved` has `{0}` for the moved panel's "
                     + "title and `{1}` for its group's number.",
@@ -2831,8 +2834,9 @@ public static class ExampleCatalog
             [
                 "On a tab, screen readers say its title, that it's a tab, whether it's selected and its place "
                     + "among the group's tabs. A closable tab adds \"Press Delete to close\".",
-                "After a panel moves, from a group's menu or a dropped tab, screen readers hear where it went, as "
-                    + "in \"Trails moved to panel group 2.\"",
+                "After a panel moves, from a menu or a dropped tab, screen readers hear where it went, as in "
+                    + "\"Trails moved to panel group 2.\"",
+                "As a tab's menu opens, screen readers hear its name, \"Tab options\".",
                 "On a separator, `aria-valuenow` gives the share, in percent, that the part before it has of the "
                     + "space its two sides take together.",
             ],
@@ -2843,11 +2847,18 @@ public static class ExampleCatalog
                     + "what the panel holds, and to the separator after the group.",
                 "A group's menu moves and closes panels with single clicks, taps or key presses, so nothing needs "
                     + "a drag (WCAG 2.5.7). After a move, focus is on the moved panel's tab.",
+                "A tab's own menu holds the same items for that tab. It opens on its first item, and Escape gives "
+                    + "the focus back to where it was. Nothing on a tab announces this menu, and the group's menu "
+                    + "button, the next stop after the tabs, has the same items for the showing tab.",
+                "A right press on a row of tabs doesn't take the focus, so when the menu closes the focus is "
+                    + "back where it was. Close in a tab's own menu moves focus on as the close mark does: only "
+                    + "when the tab or its panel held it.",
                 "Tab and screen readers meet the groups in reading order, and still do after the layout changes.",
                 "A hidden panel is `inert`: nothing in it can be focused or read until its tab shows it.",
                 "A click on a close mark, or a middle click, leaves the focus where it is. Closing a tab that "
                     + "holds the focus, or whose panel does, moves focus to the next tab of its "
-                    + "group, or else the one before. When its last tab closes and the group goes too, focus moves "
+                    + "group, or else the one before; a closed tab that wasn't showing gives it to the group's "
+                    + "showing tab. When its last tab closes and the group goes too, focus moves "
                     + "to the next group's showing tab, or else the previous group's. With no panel left, the dock "
                     + "itself takes the focus. Close in a group's menu moves focus the same way.",
                 "Each separator is a focusable `separator` that follows the window splitter pattern: its arrow "
@@ -2874,7 +2885,8 @@ public static class ExampleCatalog
             [
                 "The groups render where the layout puts them, each showing its panel. Selecting tabs, dragging "
                     + "them, closing panels and resizing start working once the page is interactive, which is "
-                    + "also when the groups' menus and the separators' grips appear.",
+                    + "also when the groups' menus and the separators' grips appear. Until then, a right-click on "
+                    + "a tab opens the browser's own menu.",
             ],
             Notes =
             [
@@ -2895,6 +2907,11 @@ public static class ExampleCatalog
                     + "`Element.moveBefore`, and loads again where it doesn't.") { Pitfall = true },
                 new("A mouse or a pen drags a tab once it has moved a few pixels. With a finger, the drag starts "
                     + "only once the tab has been held still for a moment, so a swipe still scrolls a row of tabs."),
+                new("A tab's menu opens with a right-click, or with Shift+F10 or the context menu key on the tab. "
+                    + "It also opens when a finger rests on the tab a little longer than it takes to pick the "
+                    + "tab up, and the tab is put down again; a pen that rests on the tab opens the menu too. A "
+                    + "right-click on the empty part of a row of tabs opens the menu for the group's showing "
+                    + "panel."),
                 new("A drop within a few pixels of the dock's edge goes along that edge, even where a row of tabs "
                     + "reaches it. The mark shows where the panel will land."),
                 new("A `PersistenceKey` names the layout in the browser's local storage, as `tb-dock:` followed by "
@@ -2913,7 +2930,10 @@ public static class ExampleCatalog
                 new("dock", "The dock itself, around its groups, panels, separators, grips and drop mark, which "
                     + "are all its children. It has `data-moving` while a tab is dragged."),
                 new("group", "One group's row, across the top of the group's box."),
-                new("tabs", "The tab list in a group's row."),
+                new("tabs", "The tab list in a group's row. It sits inside a `TbContextMenu` with the class "
+                    + "`tb-dock__tab-area`, which opens a tab's menu and brings its own `target` and `menu` parts "
+                    + "into each group. Each tab carries `data-context-key` with its panel's `Id`, and the tab "
+                    + "list carries the showing panel's."),
                 new("group-menu", "The menu after a group's tabs, which moves or closes the group's showing panel. "
                     + "Its items carry `data-move` (`back`, `forward` or `close`), `data-move-group` with a "
                     + "group's number, or `data-move-beside` or `data-move-edge` with `start`, `end`, `top` or "
@@ -2962,6 +2982,13 @@ public static class ExampleCatalog
                     + "part, so they work whatever the `Labels` say.",
                 "When the menu doesn't offer a move, as for a tab already at the end of its row or a panel alone "
                     + "in its group, the move helper throws an `InvalidOperationException` that says why.",
+                "`ChooseFromTabMenuAsync(\"Notes\", \"Close\")` opens the menu of a panel's tab, as a right-click "
+                    + "does, and clicks an item in it, through the submenus named before it, as in "
+                    + "`ChooseFromTabMenuAsync(\"Notes\", \"Move to group\", \"Group 2: Map\")`. It acts on that "
+                    + "panel without selecting it first, and in Playwright it waits until the app's "
+                    + "`LayoutChanged` has run. The open menu is the `menu` named \"Tab options\".",
+                "Each group's row of tabs is a context menu named \"Tab options\", so on a page with a dock, find "
+                    + "your own context menu by its name, as in `ContextMenu(\"Trail actions\")`.",
                 "In Playwright, `SelectAsync`, `CloseAsync`, `ResizeAsync` and the move helpers wait until the "
                     + "app's `LayoutChanged` has run, which the dock counts in `data-commits`.",
                 "A dropped tab goes through the same move as the menu, with the same focus, announcement and "

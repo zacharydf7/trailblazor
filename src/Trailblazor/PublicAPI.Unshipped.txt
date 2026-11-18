@@ -7099,3 +7099,6 @@ Trailblazor.DockLabels.Larger.init -> void
 Trailblazor.DockLabels.Smaller.get -> string?
 Trailblazor.TbDockManager.PersistenceKey.get -> string?
 Trailblazor.TbDockManager.PersistenceKey.set -> void
+const Trailblazor.TbStrings.DockTabMenu = "Dock.TabMenu" -> string!
+Trailblazor.DockLabels.TabMenu.get -> string?
+Trailblazor.DockLabels.TabMenu.init -> void

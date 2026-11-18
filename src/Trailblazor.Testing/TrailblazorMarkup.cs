@@ -3079,6 +3079,14 @@ public sealed class TbDockDriver
         await ChooseAsync(panel, $"[data-move-edge={Side(edge, nameof(edge))}]",
             $"The panel \"{panel}\" is the only one docked, so it has nowhere to move.");
 
+    /// <summary>Opens the menu of the tab of the panel with this title, as a right-click does, and clicks the item
+    /// with this name, through the submenus named before it, as in
+    /// <c>ChooseFromTabMenuAsync("Notes", "Move to group", "Group 2: Map")</c>. The menu acts on that panel whether or
+    /// not it shows. Throws for an item the menu doesn't have.</summary>
+    public async Task ChooseFromTabMenuAsync(string panel, params string[] path) => await new TbContextMenuDriver(
+        () => Tab(panel).Closest(".tb-context-menu")!, _scripts, Tab(panel).GetAttribute("data-panel")!)
+        .ChooseAsync(path);
+
     /// <summary>The share, in percent, that the part before the separator with this name has of the space it and
     /// the part after it take together.</summary>
     public int Size(string separator) =>

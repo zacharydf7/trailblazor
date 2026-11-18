@@ -727,10 +727,15 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
         var selected = await slow.TextContentAsync();
         await dock.MoveTabAsync("Slow map", -1);
         var moved = await slow.TextContentAsync();
+        // The trails get a group of their own, which goes again as their tab's menu takes them back.
+        await dock.MoveToNewGroupAsync("Slow trails", DockPosition.Bottom);
+        await dock.ChooseFromTabMenuAsync("Slow trails", "Move to group", "Group 1: Slow map");
+        var joined = await slow.TextContentAsync();
         await dock.CloseAsync("Slow trails");
 
         Assert.Equal(("dock shows map of trails map, closed 0", "dock shows map of map trails, closed 0",
-            "dock shows map of map, closed 1"), (selected, moved, await slow.TextContentAsync()));
+            "dock shows trails of map trails, closed 0", "dock shows map of map, closed 1"),
+            (selected, moved, joined, await slow.TextContentAsync()));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

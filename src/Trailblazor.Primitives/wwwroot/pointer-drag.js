@@ -188,6 +188,8 @@ export function createPointerDrag(container,
     // A release in another window never arrives, and the list would otherwise scroll on by itself.
     window.addEventListener('blur', cancel);
     return {
+        // Ends a drag without a drop, as when something else takes over the press that started it.
+        cancel,
         dispose() {
             end();
             container.removeEventListener('pointerdown', onPointerDown);

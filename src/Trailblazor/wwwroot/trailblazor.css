@@ -7581,10 +7581,15 @@
         cursor: grabbing;
     }
 
+    /* The area that opens a tab's menu holds the row of tabs and takes the room the group's menu button leaves. */
+    .tb-dock__tab-area,
     .tb-dock__tabs {
         display: flex;
         flex: 1;
         min-inline-size: 0;
+    }
+
+    .tb-dock__tabs {
         overflow-x: auto;
         scrollbar-width: none;
     }

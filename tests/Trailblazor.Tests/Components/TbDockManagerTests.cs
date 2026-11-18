@@ -7,6 +7,7 @@ using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components.Web;
 using Trailblazor.Testing;
+using Trailblazor.Internal.Events;
 
 namespace Trailblazor.Tests.Components;
 
@@ -284,7 +285,9 @@ public class TbDockManagerTests : BunitContext
     [Fact]
     public async Task Close_ShouldFocusTheNextTabOrElseTheOneBefore_WhenATabOfAGroupCloses()
     {
-        var cut = RenderDock(new DockLayout(new DockGroup("trails", "map", "notes")), HikePanels.Take(3).ToArray());
+        // The map shows, and the notes show once it has closed.
+        var cut = RenderDock(new DockLayout(new DockGroup("trails", "map", "notes") { Active = "map" }),
+            HikePanels.Take(3).ToArray());
         var (trails, notes) = (Reference(cut, "Trails"), Reference(cut, "Notes"));
 
         await cut.InvokeAsync(() => Report().OnClose("map", true));
@@ -353,6 +356,26 @@ public class TbDockManagerTests : BunitContext
         await Tab(cut, "Map").QuerySelector("[data-part=close]")!.ClickAsync();
 
         Assert.Equal(notes, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+    }
+
+    [Fact]
+    public async Task TabMenu_ShouldMoveTheFocusOnlyWhenTheClosedTabHeldIt_WhenCloseIsChosen()
+    {
+        var cut = RenderDock(new DockLayout(new DockGroup("trails", "map", "notes", "weather")), HikePanels);
+        var dock = cut.Tb().Dock();
+        var trails = Reference(cut, "Trails");
+
+        // The script finds the focus elsewhere, as after a right-click, which leaves it where it was.
+        await dock.ChooseFromTabMenuAsync("Weather", "Close");
+        Assert.DoesNotContain(JSInterop.Invocations, call => call.Identifier.EndsWith("focus"));
+
+        // A tab that isn't showing can hold the focus, and then the row's showing tab takes it, not Notes, the tab
+        // beside the closed one.
+        _handle.Setup<bool>("holdsFocus", _ => true).SetResult(true);
+        await dock.ChooseFromTabMenuAsync("Map", "Close");
+
+        Assert.Equal(["Trails", "Notes"], dock.Panels);
+        Assert.Equal(trails, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
     }
 
     [Fact]
@@ -673,6 +696,52 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public async Task TabMenu_ShouldOfferWhatTheTabItOpenedOnCanDo_WhenOpenedOnATabOrOnTheRestOfItsRow()
+    {
+        var cut = RenderDock(Hike, [new("trails", "Trails"), new("map", "Map", Closable: false), .. HikePanels[2..]]);
+        var area = cut.Find(".tb-dock__tab-area");
+        string[] Items() => [.. cut.Find(".tb-dock__tab-area > [role=menu]").QuerySelectorAll("[data-move]")
+            .Select(item => $"{item.GetAttribute("data-move")} {item.GetAttribute("aria-disabled") ?? "false"}")];
+
+        // Every tab carries its panel's id for the menu, and the row carries the showing panel's.
+        Assert.Equal(["trails", "trails", "map"],
+            area.QuerySelectorAll("[data-context-key]").Select(keyed => keyed.GetAttribute("data-context-key")));
+        Assert.Equal("Tab options", cut.Find(".tb-dock__tab-area > [role=menu]").GetAttribute("aria-label"));
+        // Nothing is drawn until the menu opens on a tab.
+        Assert.Empty(Items());
+
+        // The map is the last of two tabs and can't close.
+        await area.TriggerEventAsync("ontbcontextmenuopen", new ContextMenuOpenEventArgs { Key = "map", Request = 1 });
+        Assert.Equal(["back false", "forward true"], Items());
+        await cut.Find(".tb-dock__tab-area").TriggerEventAsync("ontbcontextmenuopen",
+            new ContextMenuOpenEventArgs { Key = "trails", Request = 2 });
+        Assert.Equal(["back true", "forward false", "close false"], Items());
+        // A panel of another group has no menu in this row.
+        await cut.Find(".tb-dock__tab-area").TriggerEventAsync("ontbcontextmenuopen",
+            new ContextMenuOpenEventArgs { Key = "notes", Request = 3 });
+        Assert.Empty(Items());
+    }
+
+    [Fact]
+    public async Task TabMenu_ShouldMoveOrCloseTheTabItOpenedOn_WhenThatTabIsNotTheShowingOne()
+    {
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(Hike, HikePanels, changes.Add);
+        var dock = cut.Tb().Dock();
+
+        // The map isn't showing, and its own menu moves it without selecting it first.
+        await dock.ChooseFromTabMenuAsync("Map", "Move to group", "Group 3: Weather");
+
+        Assert.Equal([Hike.Move("map", "weather", DockPosition.After)], changes);
+        Assert.Equal(["Trails", "Notes", "Weather", "Map"], dock.Panels);
+        await dock.ChooseFromTabMenuAsync("Weather", "Close");
+        Assert.Equal(["Trails", "Notes", "Map"], dock.Panels);
+        Assert.Equal(["Trails", "Notes", "Map"], dock.Showing);
+        Assert.Equal("No panel is titled \"Photos\".", (await Assert.ThrowsAsync<InvalidOperationException>(
+            () => dock.ChooseFromTabMenuAsync("Photos", "Close"))).Message);
+    }
+
+    [Fact]
     public async Task Render_ShouldLeaveOutTheMenusAndGrips_WhenThePageIsStatic()
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
@@ -896,7 +965,8 @@ public class TbDockManagerTests : BunitContext
         var cut = RenderDock(Hike, HikePanels);
         cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels
         {
-            Menu = "Move {0}", MoveTabBack = "Earlier", MoveTabForward = "Later", MoveToGroup = "Other group",
+            Menu = "Move {0}", TabMenu = "For this tab", MoveTabBack = "Earlier", MoveTabForward = "Later",
+            MoveToGroup = "Other group",
             GroupItem = "No. {0} ({1})", NewGroup = "Split off", NewGroupAtEdge = "Dock edge", AtStart = "Start",
             AtEnd = "End", Above = "Over", Below = "Under", AtTop = "Top", AtBottom = "Bottom", Close = "Shut",
             SizeMenu = "Resize {0}…", Larger = "Grow {0}", Smaller = "Shrink {0}",
@@ -904,6 +974,7 @@ public class TbDockManagerTests : BunitContext
 
         var menu = cut.Find("[data-part=group-menu]");
         Assert.Equal("Move Trails", menu.QuerySelector("button")!.GetAttribute("aria-label"));
+        Assert.Equal("For this tab", cut.Find(".tb-dock__tab-area > [role=menu]").GetAttribute("aria-label"));
         Assert.Equal(["Earlier", "Later", "Shut"],
             menu.QuerySelectorAll("[data-move]").Select(item => item.TextContent.Trim()));
         Assert.Equal(["No. 2 (Notes)", "No. 3 (Weather)"],

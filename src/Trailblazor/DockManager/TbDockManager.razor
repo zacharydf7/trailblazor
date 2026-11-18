@@ -26,103 +26,61 @@
     {
         @if (slot is GroupSlot group)
         {
+            var others = slots.OfType<GroupSlot>().Where(each => each.Index != group.Index).ToList();
             <div @key="group.Key" data-part="group" class="tb-dock__group" style="@BoxStyle(group.Box.Box)">
-                <div role="tablist" data-part="tabs" class="tb-dock__tabs"
-                     aria-label="@Format(Labels.Group, TbStrings.DockGroup, group.Index + 1)">
-                    @foreach (var id in group.Box.Panels)
-                    {
-                        var panel = Panel(id)!;
-                        var selected = id == group.Box.Active;
-                        <button @key="id" @ref="_tabs[id]" type="button" role="tab" id="@TabId(id)"
-                                aria-selected="@(selected ? "true" : "false")"
-                                aria-controls="@(_rendered.Contains(id) ? PanelId(id) : null)"
-                                tabindex="@(selected ? 0 : -1)" data-part="tab" data-panel="@id"
-                                aria-keyshortcuts="@(panel.Closable ? "Delete Backspace" : null)"
-                                aria-describedby="@(panel.Closable ? _closeHintId : null)" class="tb-dock__tab"
-                                @onclick="_select.For(id)">
-                            @if (panel.Icon is { } icon)
+                @* A right-click, a long press, Shift+F10 or the context menu key on a tab opens the menu for that
+                   tab's panel, and on the row's empty part for the group's showing panel. *@
+                <TbContextMenu Class="tb-dock__tab-area"
+                               AriaLabel="@(Labels.TabMenu ?? Localizer[TbStrings.DockTabMenu])">
+                    <ChildContent>
+                        <div role="tablist" data-part="tabs" class="tb-dock__tabs" data-context-key="@group.Box.Active"
+                             aria-label="@Format(Labels.Group, TbStrings.DockGroup, group.Index + 1)">
+                            @foreach (var id in group.Box.Panels)
                             {
-                                <TbIcon Icon="icon" Size="Size.Small" data-part="icon" />
+                                var panel = Panel(id)!;
+                                var selected = id == group.Box.Active;
+                                <button @key="id" @ref="_tabs[id]" type="button" role="tab" id="@TabId(id)"
+                                        aria-selected="@(selected ? "true" : "false")"
+                                        aria-controls="@(_rendered.Contains(id) ? PanelId(id) : null)"
+                                        tabindex="@(selected ? 0 : -1)" data-part="tab" data-panel="@id"
+                                        data-context-key="@id"
+                                        aria-keyshortcuts="@(panel.Closable ? "Delete Backspace" : null)"
+                                        aria-describedby="@(panel.Closable ? _closeHintId : null)" class="tb-dock__tab"
+                                        @onclick="_select.For(id)">
+                                    @if (panel.Icon is { } icon)
+                                    {
+                                        <TbIcon Icon="icon" Size="Size.Small" data-part="icon" />
+                                    }
+                                    <span data-part="title" class="tb-dock__title">@panel.Title</span>
+                                    @* A tab can't hold a button, so the mark serves the pointer and the keys in
+                                       aria-keyshortcuts serve the keyboard. *@
+                                    @if (panel.Closable)
+                                    {
+                                        <span data-part="close" aria-hidden="true" class="tb-dock__close"
+                                              @onclick="_close.For(id)" @onclick:stopPropagation="true">
+                                            <TbIcon Icon="BuiltInIcons.Close" Size="Size.Small" />
+                                        </span>
+                                    }
+                                </button>
                             }
-                            <span data-part="title" class="tb-dock__title">@panel.Title</span>
-                            @* A tab can't hold a button, so the mark serves the pointer and the keys in
-                               aria-keyshortcuts serve the keyboard. *@
-                            @if (panel.Closable)
-                            {
-                                <span data-part="close" aria-hidden="true" class="tb-dock__close"
-                                      @onclick="_close.For(id)" @onclick:stopPropagation="true">
-                                    <TbIcon Icon="BuiltInIcons.Close" Size="Size.Small" />
-                                </span>
-                            }
-                        </button>
-                    }
-                </div>
+                        </div>
+                    </ChildContent>
+                    <Items Context="opened">
+                        @if (opened.Key is { } key && group.Box.Panels.Contains(key))
+                        {
+                            @MenuItems(group, key, others, CloseFromTabAsync)
+                        }
+                    </Items>
+                </TbContextMenu>
                 @* The menu moves a panel with clicks or taps, for people who can't drag its tab (WCAG 2.5.7), and
                    closes a panel where neither its mark nor a key can be reached. It acts on the group's showing
                    panel. *@
                 @if (RendererInfo.IsInteractive)
                 {
-                    var active = group.Box.Active;
-                    var tabs = group.Box.Panels;
-                    var at = tabs.TakeWhile(each => each != active).Count();
-                    var others = slots.OfType<GroupSlot>().Where(each => each.Index != group.Index).ToList();
-                    var sibling = tabs.FirstOrDefault(each => each != active);
                     <TbMenu Icon="BuiltInIcons.More" Size="Size.Small" Align="PlacementAlign.End" AttachOnFirstUse
                             Class="tb-dock__menu" data-part="group-menu"
-                            AriaLabel="@Format(Labels.Menu, TbStrings.DockMenu, Panel(active)!.Title)">
-                        <TbMenuItem Disabled="at == 0" data-move="back"
-                                    OnClick="() => MoveAsync(active, tabs[at - 1], DockPosition.Before)">
-                            @(Labels.MoveTabBack ?? Localizer[TbStrings.DockMoveTabBack])
-                        </TbMenuItem>
-                        <TbMenuItem Disabled="at == tabs.Count - 1" data-move="forward"
-                                    OnClick="() => MoveAsync(active, tabs[at + 1], DockPosition.After)">
-                            @(Labels.MoveTabForward ?? Localizer[TbStrings.DockMoveTabForward])
-                        </TbMenuItem>
-                        @if (others.Count > 0)
-                        {
-                            <TbSubMenu Label="@(Labels.MoveToGroup ?? Localizer[TbStrings.DockMoveToGroup])">
-                                @foreach (var other in others)
-                                {
-                                    var last = other.Box.Panels[^1];
-                                    <TbMenuItem @key="other.Index" data-move-group="@(other.Index + 1)"
-                                                OnClick="() => MoveAsync(active, last, DockPosition.After)">
-                                        @Format(Labels.GroupItem, TbStrings.DockGroupItem, other.Index + 1,
-                                            Panel(other.Box.Active)!.Title)
-                                    </TbMenuItem>
-                                }
-                            </TbSubMenu>
-                        }
-                        @if (sibling is not null)
-                        {
-                            <TbSubMenu Label="@(Labels.NewGroup ?? Localizer[TbStrings.DockNewGroup])">
-                                @foreach (var (position, label, text) in Sides(edge: false))
-                                {
-                                    <TbMenuItem @key="position" data-move-beside="@label"
-                                                OnClick="() => MoveAsync(active, sibling, position)">
-                                        @text
-                                    </TbMenuItem>
-                                }
-                            </TbSubMenu>
-                        }
-                        @if (sibling is not null || others.Count > 0)
-                        {
-                            <TbSubMenu Label="@(Labels.NewGroupAtEdge ?? Localizer[TbStrings.DockNewGroupAtEdge])">
-                                @foreach (var (position, label, text) in Sides(edge: true))
-                                {
-                                    <TbMenuItem @key="position" data-move-edge="@label"
-                                                OnClick="() => MoveAsync(active, position)">
-                                        @text
-                                    </TbMenuItem>
-                                }
-                            </TbSubMenu>
-                        }
-                        @if (Panel(active)!.Closable)
-                        {
-                            <TbMenuSeparator />
-                            <TbMenuItem data-move="close" OnClick="() => CloseAsync(active, true)">
-                                @(Labels.Close ?? Localizer[TbStrings.DockClose])
-                            </TbMenuItem>
-                        }
+                            AriaLabel="@Format(Labels.Menu, TbStrings.DockMenu, Panel(group.Box.Active)!.Title)">
+                        @MenuItems(group, group.Box.Active, others, id => CloseAsync(id, true))
                     </TbMenu>
                 }
             </div>
@@ -236,7 +194,7 @@
     {
         _closeHintId = $"{_id}-close-hint";
         _select = new(panel => () => SelectAsync(panel));
-        _close = new(panel => () => CloseFromMarkAsync(panel));
+        _close = new(panel => () => CloseFromTabAsync(panel));
     }
 
     /// <summary>The <see cref="TbDockPanel"/>s. Where each one is comes from <see cref="Layout"/>, not from their
@@ -494,8 +452,9 @@
         }
     }
 
-    // A press on a tab's mark leaves the focus where it was, so the script says whether the tab or its panel holds it.
-    private async Task CloseFromMarkAsync(string panel) => await CloseAsync(panel,
+    // A press on a tab's mark, or Close in the tab's own menu, leaves the focus where it was, so the script says
+    // whether the tab or its panel holds it.
+    private async Task CloseFromTabAsync(string panel) => await CloseAsync(panel,
         _handle is not null && await _handle.InvokeAsync<bool>("holdsFocus", TabId(panel)));
 
     // The focus the closed tab or its panel held goes to a neighbor, or to the dock when no tab is left.
@@ -517,7 +476,8 @@
     }
 
     // The tab that takes focus from a closed one: the next tab of its group, or else the one before it; with the
-    // group gone, the tab showing in the next group, or else in the one before.
+    // group gone, the tab showing in the next group, or else in the one before. A tab that wasn't showing gives the
+    // focus to its group's showing tab, the row's one tab stop.
     private string? TabAfterClosing(string panel)
     {
         var groups = Shown().Groups.ToList();
@@ -525,6 +485,11 @@
         if (index < 0)
         {
             return null;
+        }
+
+        if (groups[index].Active != panel)
+        {
+            return groups[index].Active;
         }
 
         var tabs = groups[index].Panels.ToList();
@@ -569,6 +534,67 @@
             await _handle.InvokeVoidAsync("step", separator, percent);
         }
     }
+
+    // What a group's menu, and the context menu of its tabs, offer for one of the group's panels.
+    private RenderFragment MenuItems(GroupSlot group, string panel, List<GroupSlot> others,
+        Func<string, Task> close) => __builder =>
+    {
+        var tabs = group.Box.Panels;
+        var at = tabs.TakeWhile(each => each != panel).Count();
+        var sibling = tabs.FirstOrDefault(each => each != panel);
+        <TbMenuItem Disabled="at == 0" data-move="back"
+                    OnClick="() => MoveAsync(panel, tabs[at - 1], DockPosition.Before)">
+            @(Labels.MoveTabBack ?? Localizer[TbStrings.DockMoveTabBack])
+        </TbMenuItem>
+        <TbMenuItem Disabled="at == tabs.Count - 1" data-move="forward"
+                    OnClick="() => MoveAsync(panel, tabs[at + 1], DockPosition.After)">
+            @(Labels.MoveTabForward ?? Localizer[TbStrings.DockMoveTabForward])
+        </TbMenuItem>
+        @if (others.Count > 0)
+        {
+            <TbSubMenu Label="@(Labels.MoveToGroup ?? Localizer[TbStrings.DockMoveToGroup])">
+                @foreach (var other in others)
+                {
+                    var last = other.Box.Panels[^1];
+                    <TbMenuItem @key="other.Index" data-move-group="@(other.Index + 1)"
+                                OnClick="() => MoveAsync(panel, last, DockPosition.After)">
+                        @Format(Labels.GroupItem, TbStrings.DockGroupItem, other.Index + 1,
+                            Panel(other.Box.Active)!.Title)
+                    </TbMenuItem>
+                }
+            </TbSubMenu>
+        }
+        @if (sibling is not null)
+        {
+            <TbSubMenu Label="@(Labels.NewGroup ?? Localizer[TbStrings.DockNewGroup])">
+                @foreach (var (position, label, text) in Sides(edge: false))
+                {
+                    <TbMenuItem @key="position" data-move-beside="@label"
+                                OnClick="() => MoveAsync(panel, sibling, position)">
+                        @text
+                    </TbMenuItem>
+                }
+            </TbSubMenu>
+        }
+        @if (sibling is not null || others.Count > 0)
+        {
+            <TbSubMenu Label="@(Labels.NewGroupAtEdge ?? Localizer[TbStrings.DockNewGroupAtEdge])">
+                @foreach (var (position, label, text) in Sides(edge: true))
+                {
+                    <TbMenuItem @key="position" data-move-edge="@label" OnClick="() => MoveAsync(panel, position)">
+                        @text
+                    </TbMenuItem>
+                }
+            </TbSubMenu>
+        }
+        @if (Panel(panel)!.Closable)
+        {
+            <TbMenuSeparator />
+            <TbMenuItem data-move="close" OnClick="() => close(panel)">
+                @(Labels.Close ?? Localizer[TbStrings.DockClose])
+            </TbMenuItem>
+        }
+    };
 
     // The four sides a panel's new group can go to, each with a name for tests and its menu text. Beside a group they
     // read Above and Below; along the dock's edge, At the top and At the bottom.

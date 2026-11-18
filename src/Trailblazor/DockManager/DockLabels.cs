@@ -20,6 +20,10 @@ public sealed record DockLabels
     /// menu acts on. Leave it null for the app's text for <see cref="TbStrings.DockMenu"/>.</summary>
     public string? Menu { get; init; }
 
+    /// <summary>Names the menu that a right-click, a long press, Shift+F10 or the context menu key opens on a tab.
+    /// Leave it null for the app's text for <see cref="TbStrings.DockTabMenu"/>.</summary>
+    public string? TabMenu { get; init; }
+
     /// <summary>The menu item that moves the tab one place toward the start of its row. Leave it null for the app's
     /// text for <see cref="TbStrings.DockMoveTabBack"/>.</summary>
     public string? MoveTabBack { get; init; }
