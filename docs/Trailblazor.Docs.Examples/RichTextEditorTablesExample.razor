@@ -1,0 +1,12 @@
+<TbStack Gap="4" Style="max-inline-size: 36rem">
+    <TbRichTextEditor Label="Trail lengths" @bind-Value="_lengths" Blocks="Blocks" />
+</TbStack>
+
+@code {
+    private const RichTextBlocks Blocks = RichTextBlocks.Headings | RichTextBlocks.BulletedLists | RichTextBlocks.Rules
+        | RichTextBlocks.Tables;
+
+    private string? _lengths = "<p>Loops near the lodge:</p><table><thead><tr><th scope=\"col\">Trail</th>"
+        + "<th scope=\"col\">Miles</th></tr></thead><tbody><tr><td>Pine ridge</td><td>3.2</td></tr>"
+        + "<tr><td>Lake loop</td><td>1.8</td></tr></tbody></table><p>Both start at the lodge's west door.</p>";
+}

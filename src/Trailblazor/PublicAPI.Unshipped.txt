@@ -6893,3 +6893,33 @@ override Trailblazor.RichTextTableCell.GetHashCode() -> int
 override Trailblazor.RichTextTableCell.ToString() -> string!
 static Trailblazor.RichTextTableCell.operator !=(Trailblazor.RichTextTableCell? left, Trailblazor.RichTextTableCell? right) -> bool
 static Trailblazor.RichTextTableCell.operator ==(Trailblazor.RichTextTableCell? left, Trailblazor.RichTextTableCell? right) -> bool
+const Trailblazor.TbStrings.RichTextEditorTable = "RichTextEditor.Table" -> string!
+Trailblazor.RichTextEditorLabels.Table.get -> string?
+Trailblazor.RichTextEditorLabels.Table.init -> void
+const Trailblazor.TbStrings.RichTextEditorTableMenu = "RichTextEditor.TableMenu" -> string!
+Trailblazor.RichTextEditorLabels.TableMenu.get -> string?
+Trailblazor.RichTextEditorLabels.TableMenu.init -> void
+const Trailblazor.TbStrings.RichTextEditorAddRowAbove = "RichTextEditor.AddRowAbove" -> string!
+Trailblazor.RichTextEditorLabels.AddRowAbove.get -> string?
+Trailblazor.RichTextEditorLabels.AddRowAbove.init -> void
+const Trailblazor.TbStrings.RichTextEditorAddRowBelow = "RichTextEditor.AddRowBelow" -> string!
+Trailblazor.RichTextEditorLabels.AddRowBelow.get -> string?
+Trailblazor.RichTextEditorLabels.AddRowBelow.init -> void
+const Trailblazor.TbStrings.RichTextEditorAddColumnLeft = "RichTextEditor.AddColumnLeft" -> string!
+Trailblazor.RichTextEditorLabels.AddColumnLeft.get -> string?
+Trailblazor.RichTextEditorLabels.AddColumnLeft.init -> void
+const Trailblazor.TbStrings.RichTextEditorAddColumnRight = "RichTextEditor.AddColumnRight" -> string!
+Trailblazor.RichTextEditorLabels.AddColumnRight.get -> string?
+Trailblazor.RichTextEditorLabels.AddColumnRight.init -> void
+const Trailblazor.TbStrings.RichTextEditorDeleteRow = "RichTextEditor.DeleteRow" -> string!
+Trailblazor.RichTextEditorLabels.DeleteRow.get -> string?
+Trailblazor.RichTextEditorLabels.DeleteRow.init -> void
+const Trailblazor.TbStrings.RichTextEditorDeleteColumn = "RichTextEditor.DeleteColumn" -> string!
+Trailblazor.RichTextEditorLabels.DeleteColumn.get -> string?
+Trailblazor.RichTextEditorLabels.DeleteColumn.init -> void
+const Trailblazor.TbStrings.RichTextEditorDeleteTable = "RichTextEditor.DeleteTable" -> string!
+Trailblazor.RichTextEditorLabels.DeleteTable.get -> string?
+Trailblazor.RichTextEditorLabels.DeleteTable.init -> void
+const Trailblazor.TbStrings.RichTextEditorHeaderRow = "RichTextEditor.HeaderRow" -> string!
+Trailblazor.RichTextEditorLabels.HeaderRow.get -> string?
+Trailblazor.RichTextEditorLabels.HeaderRow.init -> void

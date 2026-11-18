@@ -953,6 +953,36 @@ public static class TbStrings
     /// returns an address the editor's ImageSchemes don't allow.</summary>
     public const string RichTextEditorImageNotAllowed = "RichTextEditor.ImageNotAllowed";
 
+    /// <summary>"Table": the button that puts a table in.</summary>
+    public const string RichTextEditorTable = "RichTextEditor.Table";
+
+    /// <summary>"Table options": the menu button with commands for the table the caret is in.</summary>
+    public const string RichTextEditorTableMenu = "RichTextEditor.TableMenu";
+
+    /// <summary>"Add row above": the table menu's command that adds a row above the caret's row.</summary>
+    public const string RichTextEditorAddRowAbove = "RichTextEditor.AddRowAbove";
+
+    /// <summary>"Add row below": the table menu's command that adds a row below the caret's row.</summary>
+    public const string RichTextEditorAddRowBelow = "RichTextEditor.AddRowBelow";
+
+    /// <summary>"Add column left": the table menu's command that adds a column left of the caret's column.</summary>
+    public const string RichTextEditorAddColumnLeft = "RichTextEditor.AddColumnLeft";
+
+    /// <summary>"Add column right": the table menu's command that adds a column right of the caret's column.</summary>
+    public const string RichTextEditorAddColumnRight = "RichTextEditor.AddColumnRight";
+
+    /// <summary>"Delete row": the table menu's command that deletes the caret's row.</summary>
+    public const string RichTextEditorDeleteRow = "RichTextEditor.DeleteRow";
+
+    /// <summary>"Delete column": the table menu's command that deletes the caret's column.</summary>
+    public const string RichTextEditorDeleteColumn = "RichTextEditor.DeleteColumn";
+
+    /// <summary>"Delete table": the table menu's command that deletes the table.</summary>
+    public const string RichTextEditorDeleteTable = "RichTextEditor.DeleteTable";
+
+    /// <summary>"Header row": the table menu's checkbox that makes the first row the table's header row.</summary>
+    public const string RichTextEditorHeaderRow = "RichTextEditor.HeaderRow";
+
     /// <summary>"Next": a tour step's button to the next step.</summary>
     public const string TourNext = "Tour.Next";
 
@@ -1692,6 +1722,16 @@ public static class TbStrings
         [RichTextEditorApplyImage] = "Insert",
         [RichTextEditorImageFailed] = "The image couldn't be stored. Try again.",
         [RichTextEditorImageNotAllowed] = "The image's address isn't one this editor allows.",
+        [RichTextEditorTable] = "Table",
+        [RichTextEditorTableMenu] = "Table options",
+        [RichTextEditorAddRowAbove] = "Add row above",
+        [RichTextEditorAddRowBelow] = "Add row below",
+        [RichTextEditorAddColumnLeft] = "Add column left",
+        [RichTextEditorAddColumnRight] = "Add column right",
+        [RichTextEditorDeleteRow] = "Delete row",
+        [RichTextEditorDeleteColumn] = "Delete column",
+        [RichTextEditorDeleteTable] = "Delete table",
+        [RichTextEditorHeaderRow] = "Header row",
         [MarkdownEditorPreview] = "Preview",
         [TourNext] = "Next",
         [TourBack] = "Back",

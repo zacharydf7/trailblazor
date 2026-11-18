@@ -41,7 +41,7 @@
 <TbButton OnClick="() => _gallery = _source">Set gallery</TbButton>
 
 <TbRichTextEditor Label="Trail table" @bind-Value="_table" UpdateOnInput ImageSchemes="@(["https"])"
-                  Blocks="TableBlocks" />
+                  Blocks="TableBlocks" UploadImage="@((_, _) => Task.FromResult("/avatar-photo.svg"))" />
 <output data-testid="table">@_table</output>
 <TbButton OnClick="() => _table = _source">Set table</TbButton>
 

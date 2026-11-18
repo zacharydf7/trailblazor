@@ -58,6 +58,7 @@ export function attachRichTextEditor(root, value, options) {
         setOptions: changed => editor.setOptions(changed),
         setLink: (url, text) => editor.setLink(url, text),
         insertImage: (source, alt) => editor.insertImage(source, alt),
+        tableState: () => editor.tableState(),
         insertPasted: html => editor.insertPasted(html),
         // Sends the value now, as a change event that reaches .NET before this call returns.
         flush: () => editor.send(),
@@ -162,6 +163,13 @@ class Editor {
         on(toolbar, 'mousedown', event => {
             if (event.target.closest('[data-format], [data-block], [data-command]')) event.preventDefault();
         });
+        // A table menu command runs before the menu closes and moves focus into the editor, so the menu doesn't
+        // return focus to its button. A disabled item does nothing, and tableCommand also refuses a command that
+        // doesn't fit, since the menu's states can lag a moment behind the caret.
+        on(toolbar, 'click', event => {
+            const item = event.target.closest('[data-table-command]');
+            if (item && item.getAttribute('aria-disabled') !== 'true') this.tableCommand(item.dataset.tableCommand);
+        }, true);
         on(toolbar, 'click', event => {
             const button = event.target.closest('[data-format], [data-block], [data-command]');
             if (!button || button.disabled) return;
@@ -171,6 +179,7 @@ class Editor {
             else if (button.dataset.block) this.setBlock(button.dataset.block);
             else if (button.dataset.command === 'link') this.requestLink();
             else if (button.dataset.command === 'rule') this.insertRule();
+            else if (button.dataset.command === 'table') this.insertTable();
             else if (button.dataset.command === 'clear') this.clearFormatting();
             else this.indent(button.dataset.command === 'indent' ? 1 : -1);
             this.writeSelection();
@@ -853,7 +862,96 @@ class Editor {
     insertRule() {
         if (this.readOnly || !this.schema.blocks.has('rule')) return;
         this.readBack();
-        this.edit(() => this.insertParagraphs([paragraph([], 'rule')]));
+        this.edit(() => {
+            this.leaveTable();
+            this.insertParagraphs([paragraph([], 'rule')]);
+        });
+    }
+
+    // A table of three columns, with a header row and two more rows, goes in at the caret, with the caret in its
+    // first cell.
+    insertTable() {
+        if (this.readOnly || !this.schema.blocks.has('table')) return;
+        this.readBack();
+        this.edit(() => {
+            this.leaveTable();
+            const start = this.range().from.block;
+            this.insertParagraphs([0, 1, 2].flatMap(row => [0, 1, 2]
+                .map(column => ({ kind: 'cell', level: 0, runs: [], cell: { row, column, header: row === 0 } }))));
+            const first = this.doc.findIndex((target, i) => i >= start && isTableStart(target));
+            this.selection = { anchor: { block: first, offset: 0 }, head: { block: first, offset: 0 } };
+        });
+    }
+
+    // A rule, image or table chosen from the toolbar in a table goes in after that table.
+    leaveTable() {
+        const { from } = this.range();
+        if (!isCell(this.doc[from.block])) return;
+        const { end } = tableAt(this.doc, from.block);
+        if (end === this.doc.length) this.doc.push(paragraph([]));
+        this.selection = { anchor: { block: end, offset: 0 }, head: { block: end, offset: 0 } };
+    }
+
+    // Where the caret is, for the table menu.
+    tableState() {
+        this.readBack();
+        const { from } = this.range();
+        const target = this.doc[from.block];
+        if (!isCell(target)) return { inCell: false, inHeaderRow: false, hasHeaderRow: false };
+        const hasHeaderRow = tableRows(this.doc, tableAt(this.doc, from.block).first)[0]
+            .every(cell => cell.cell.header);
+        return { inCell: true, inHeaderRow: hasHeaderRow && target.cell.row === 0, hasHeaderRow };
+    }
+
+    // The table menu's commands, on the table the caret is in. A new row is plain, and a new column's cells are
+    // header cells where the cell beside them is.
+    tableCommand(command) {
+        if (this.readOnly) return;
+        this.readBack();
+        const { from } = this.range();
+        if (!isCell(this.doc[from.block])) return;
+        // A plain row above the header row would make the header a body row.
+        if (command === 'rowAbove' && this.tableState().inHeaderRow) return;
+        this.root.focus();
+        this.edit(() => {
+            const { first, end } = tableAt(this.doc, from.block);
+            const rows = tableRows(this.doc, first);
+            let { row, column } = this.doc[from.block].cell;
+            let offset = 0;
+            const blank = header => ({ kind: 'cell', level: 0, runs: [], cell: { row: -1, column: -1, header } });
+            if (command === 'rowAbove' || command === 'rowBelow') {
+                row += command === 'rowBelow' ? 1 : 0;
+                rows.splice(row, 0, rows[0].map(() => blank(false)));
+            } else if (command === 'columnLeft' || command === 'columnRight') {
+                const next = column + (command === 'columnRight' ? 1 : 0);
+                for (const cells of rows) cells.splice(next, 0, blank(cells[column].cell.header));
+                column = next;
+            } else if (command === 'deleteRow') {
+                rows.splice(row, 1);
+                row = Math.min(row, rows.length - 1);
+            } else if (command === 'deleteColumn') {
+                for (const cells of rows) cells.splice(column, 1);
+                column = Math.min(column, rows[0].length - 1);
+            } else if (command === 'header') {
+                const header = !rows[0].every(cell => cell.cell.header);
+                rows[0] = rows[0].map(cell => ({ ...cell, cell: { ...cell.cell, header } }));
+                offset = from.offset;
+            }
+            // Deleting the last row or column, or the table, leaves the caret where the table was.
+            if (command === 'deleteTable' || !rows.length || !rows[0].length) {
+                this.doc.splice(first, end - first);
+                if (first === this.doc.length) this.doc.push(paragraph([]));
+                this.selection = { anchor: { block: first, offset: 0 }, head: { block: first, offset: 0 } };
+                return;
+            }
+            // Numbered here, not left to normalizeTables: a row put above the first one would leave the old first
+            // cell at row 0, column 0, which starts a new table.
+            const cells = rows.flatMap((cells, r) => cells.map((target, c) => target.cell.row === r
+                && target.cell.column === c ? target : { ...target, cell: { ...target.cell, row: r, column: c } }));
+            this.doc.splice(first, end - first, ...cells);
+            const caret = { block: first + row * rows[0].length + column, offset };
+            this.selection = { anchor: caret, head: caret };
+        });
     }
 
     // Takes every format off the selection, or at a caret off the text typed next; links and blocks stay.
@@ -938,7 +1036,10 @@ class Editor {
         if (this.readOnly || this.schema.images === null) return;
         this.selection ??= this.endSelection();
         this.root.focus();
-        this.edit(() => this.insertParagraphs([{ kind: 'image', level: 0, runs: [], image: { source, alt } }]));
+        this.edit(() => {
+            this.leaveTable();
+            this.insertParagraphs([{ kind: 'image', level: 0, runs: [], image: { source, alt } }]);
+        });
         this.writeSelection();
     }
 

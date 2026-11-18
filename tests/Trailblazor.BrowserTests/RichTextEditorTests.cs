@@ -1241,6 +1241,138 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
             .ToHaveTextAsync(Trails().Replace("<p>b</p>", "<p><br></p><hr><p>b</p>"));
     }
 
+    private static string EmptyTable(string first = "<br>") =>
+        $"<table><thead><tr><th scope=\"col\">{first}</th><th scope=\"col\"><br></th><th scope=\"col\"><br></th></tr>"
+        + "</thead><tbody><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td>"
+        + "</tr></tbody></table>";
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldGoInFromTheTableButton_WhenPressedInAParagraphOrAfterTheTableTheCaretIsIn(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, "<p>ab</p>", 0);
+        await Expect(table).ToHaveTextAsync("ab");
+
+        await CaretAsync(table, 0, 1);
+        await Tool(table, "Table").ClickAsync();
+        await page.Keyboard.TypeAsync("Trail");
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync($"<p>a</p>{EmptyTable("Trail")}<p>b</p>");
+        await Tool(table, "Table").ClickAsync();
+        await page.Keyboard.TypeAsync("x");
+        await Tool(table, "Horizontal line").ClickAsync();
+        await Expect(page.GetByTestId("table"))
+            .ToHaveTextAsync($"<p>a</p>{EmptyTable("Trail")}<p><br></p>{EmptyTable("x")}<p><br></p><hr><p>b</p>");
+        await CaretAsync(table, 1, 5);
+        await Tool(table, "Image").ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert image" });
+        await dialog.Locator("input[type=file]").SetInputFilesAsync(new FilePayload
+        {
+            Name = "pine.png", MimeType = "image/png", Buffer = [137, 80, 78, 71],
+        });
+        await dialog.GetByRole(AriaRole.Textbox, new() { Name = "Alt text" }).FillAsync("Pine");
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync($"<p>a</p>{EmptyTable("Trail")}<p><br></p>{Pine}"
+            + $"<p><br></p>{EmptyTable("x")}<p><br></p><hr><p>b</p>");
+    }
+
+    private static ILocator TableMenu(ILocator editor) =>
+        editor.Locator("xpath=ancestor::*[@data-part='editor']").Locator("[data-part=table-menu] [role=menu]");
+
+    // Waits for the table menu to close after the last command, then opens it and chooses a command for the table the
+    // caret is in.
+    private static async Task TableMenuAsync(IPage page, ILocator editor, string command)
+    {
+        await Expect(TableMenu(editor)).ToBeHiddenAsync();
+        await Tool(editor, "Table options").ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = command, Exact = true })
+            .Or(page.GetByRole(AriaRole.Menuitemcheckbox, new() { Name = command, Exact = true })).ClickAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldChangeTheTable_WhenACommandIsChosenFromTheTableMenu(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, Trails(), 4);
+        const string Lake = "<tr><td>Lake</td><td><br></td></tr>";
+
+        await CaretAsync(table, 3, 4);
+        await TableMenuAsync(page, table, "Add row below");
+        await page.Keyboard.TypeAsync("Lake");
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync(Trails(rows: Lake));
+        await TableMenuAsync(page, table, "Add column right");
+        await page.Keyboard.TypeAsync("km");
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync("<p>a</p><table><thead><tr><th scope=\"col\">Trail</th>"
+            + "<th scope=\"col\"><br></th><th scope=\"col\">Miles</th></tr></thead><tbody><tr><td>Pine</td>"
+            + "<td><br></td><td>3</td></tr><tr><td>Lake</td><td>km</td><td><br></td></tr></tbody></table><p>b</p>");
+        await TableMenuAsync(page, table, "Delete column");
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync(Trails(rows: Lake));
+
+        await CaretAsync(table, 1, 0);
+        await Tool(table, "Table options").ClickAsync();
+        var above = page.GetByRole(AriaRole.Menuitem, new() { Name = "Add row above" });
+        await Expect(above).ToBeDisabledAsync();
+        // The menu's states can lag behind the caret, so the command itself refuses a row above the header row, even
+        // when the item isn't marked disabled.
+        await above.EvaluateAsync("item => item.removeAttribute('aria-disabled')");
+        await above.ClickAsync();
+        await TableMenuAsync(page, table, "Header row");
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync("<p>a</p><table><tbody><tr><td>Trail</td><td>Miles</td>"
+            + $"</tr><tr><td>Pine</td><td>3</td></tr>{Lake}</tbody></table><p>b</p>");
+        await TableMenuAsync(page, table, "Add row above");
+        await page.Keyboard.TypeAsync("Top");
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync("<p>a</p><table><tbody><tr><td>Top</td><td><br></td>"
+            + $"</tr><tr><td>Trail</td><td>Miles</td></tr><tr><td>Pine</td><td>3</td></tr>{Lake}</tbody></table>"
+            + "<p>b</p>");
+        await TableMenuAsync(page, table, "Delete row");
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync("<p>a</p><table><tbody><tr><td>Trail</td><td>Miles</td>"
+            + $"</tr><tr><td>Pine</td><td>3</td></tr>{Lake}</tbody></table><p>b</p>");
+        await TableMenuAsync(page, table, "Header row");
+        await TableMenuAsync(page, table, "Add column left");
+        await page.Keyboard.TypeAsync("#");
+        const string Numbered = "<p>a</p><table><thead><tr><th scope=\"col\">#</th><th scope=\"col\">Trail</th>"
+            + "<th scope=\"col\">Miles</th></tr></thead><tbody><tr><td><br></td><td>Pine</td><td>3</td></tr><tr>"
+            + "<td><br></td><td>Lake</td><td><br></td></tr></tbody></table><p>b</p>";
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync(Numbered);
+        // An item the menu shows as disabled does nothing, even when its state lags behind the caret.
+        await Tool(table, "Table options").ClickAsync();
+        var delete = page.GetByRole(AriaRole.Menuitem, new() { Name = "Delete table" });
+        await delete.EvaluateAsync("item => item.setAttribute('aria-disabled', 'true')");
+        await delete.DispatchEventAsync("click");
+        await delete.EvaluateAsync("item => item.removeAttribute('aria-disabled')");
+        await page.Keyboard.PressAsync("Escape");
+        // The menu gives focus back to its button a moment after it closes.
+        await Expect(Tool(table, "Table options")).ToBeFocusedAsync();
+        await CaretAsync(table, 1, 1);
+        await page.Keyboard.TypeAsync("!");
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync(Numbered.Replace(">#<", ">#!<"));
+        await TableMenuAsync(page, table, "Delete table");
+
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync("<p>a</p><p>b</p>");
+        await Expect(table).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldGoAway_WhenTheirLastColumnOrRowIsDeleted(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page,
+            "<p>a</p><table><tr><td>x</td></tr><tr><td>y</td></tr></table><p>b</p>", 2);
+
+        await CaretAsync(table, 1, 0);
+        await TableMenuAsync(page, table, "Delete column");
+        await page.Keyboard.TypeAsync("z");
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync("<p>a</p><p>zb</p>");
+        await page.Keyboard.PressAsync("ControlOrMeta+z");
+        await page.Keyboard.PressAsync("ControlOrMeta+z");
+        await CaretAsync(table, 1, 0);
+        await TableMenuAsync(page, table, "Delete row");
+        await TableMenuAsync(page, table, "Delete row");
+
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync("<p>a</p><p>b</p>");
+    }
+
     // Blocks: 0 "a", 1 "Trail", 2 "Miles", 3 "Pine", 4 "3", 5 "b".
     private static string Trails(string trail = "Trail", string miles = "Miles", string pine = "Pine",
         string three = "3", string rows = "") =>

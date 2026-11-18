@@ -4312,6 +4312,12 @@ public static class ExampleCatalog
                     + "This example allows `data:` and keeps each image in the text itself, where a real app would "
                     + "store the file and return an `https` address. `MaxImageSize` caps the file's size.",
                     typeof(RichTextEditorImagesExample)),
+                new("tables", "Tables", "With `RichTextBlocks.Tables` in `Blocks`, the Table button puts in a "
+                    + "table of three columns with a header row, and the table menu beside it adds and deletes rows "
+                    + "and columns, turns the header row on or off, and deletes the table. Tab moves between cells and "
+                    + "adds a row after the last one. A cell holds text, formats, links and line breaks; pasted "
+                    + "tables keep only that, and `ToMarkdown` writes tables as pipe tables.",
+                    typeof(RichTextEditorTablesExample)),
                 new("changing-what-is-pasted", "Changing what's pasted", "`TransformPaste` changes what is pasted "
                     + "or dropped in, after the built-in cleanup: it gets the pasted text as a `RichTextDocument` and "
                     + "returns the document to put in. This example keeps the formats but drops the links. It's a "
@@ -4361,7 +4367,12 @@ public static class ExampleCatalog
                     + "or back."),
                 new(["Ctrl+Shift+9"], "Turns the selected paragraphs into a quote, or back."),
                 new(["Tab", "Shift+Tab"], "Indents or outdents the list item.") { When = "In a list item" },
-                new(["Escape"], "Lets the next Tab leave the editor.") { When = "In a list item" },
+                new(["Tab", "Shift+Tab"], "Selects the next or previous cell's text; Tab in the last cell adds a row.")
+                {
+                    When = "In a table",
+                },
+                new(["Escape"], "Lets the next Tab leave the editor.") { When = "In a list item or a table" },
+                new(["Enter", "Shift+Enter"], "Breaks the line within the cell.") { When = "In a table" },
                 new(["Enter"], "Starts a new paragraph; at the end of a heading, a plain one."),
                 new(["Enter"], "Leaves the list or quote, a level at a time.")
                 {
@@ -4394,6 +4405,8 @@ public static class ExampleCatalog
                 "The Image button is named \"Image\" and opens a dialog titled \"Insert image\", with a file picker "
                     + "labeled \"Image file\", an \"Alt text\" field and a \"Decorative\" checkbox; `Labels` changes "
                     + "these words too.",
+                "The Table button is named \"Table\", and the table menu's button \"Table options\"; `Labels` "
+                    + "changes these and the menu's commands.",
             ],
             Announcements =
             [
@@ -4418,6 +4431,10 @@ public static class ExampleCatalog
                 "Formats are real `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>`, `<sup>`, `<code>` and `<a>` elements, "
                     + "and blocks are real headings, block quotes, lists and `<hr>` rules, which screen readers can "
                     + "report and move between.",
+                "Tables are real `<table>` elements, with the header row's cells as `<th scope=\"col\">` in the "
+                    + "value, so screen readers announce rows, columns and the header of each cell. The table menu is "
+                    + "a [menu](components/menu) button; a command that doesn't fit where the caret is, such as adding "
+                    + "a row above the header row, is disabled, and the editor keeps focus after a command.",
                 "Tab leaves the editor rather than typing a tab, so keyboard users are never trapped in it. In a list "
                     + "item, Tab indents instead, as in word processors, and Escape lets the next Tab leave.",
                 "An image is an `<img>` that keeps the alt text it came with, if any. The caret steps over it, and "
@@ -4449,6 +4466,10 @@ public static class ExampleCatalog
                     + "steps over it, and Backspace or Delete next to it removes it. A click selects an image whole, "
                     + "so Delete or typing replaces it; an image can't be dragged on its own. `ImageSchemes` sets which "
                     + "sources an image may use, and with `UploadImage` the Image button puts new ones in."),
+                new("Tables are off by default too. With `RichTextBlocks.Tables` in `Blocks`, cells never merge: "
+                    + "Backspace and Delete at a cell's edge do nothing, deleting inside a table empties cells, and a "
+                    + "selection reaching outside a table takes the whole table. A selection that starts or ends in a "
+                    + "table can't be dragged; cut and paste moves it."),
                 new("`@ref` the editor and call `FocusAsync()` to move focus to it."),
             ],
             Ready = new("[role=textbox]", "the editing area"),
@@ -4464,6 +4485,7 @@ public static class ExampleCatalog
                 new("count-shown", "The counter's text, such as 12 / 200, which screen readers skip."),
                 new("count-said", "The counter's words for screen readers, such as 12 of 200 characters."),
                 new("image", "The Image button, with `UploadImage` and `RichTextBlocks.Images`."),
+                new("table-menu", "The table menu, with `RichTextBlocks.Tables`."),
                 new("source-toggle", "The HTML source button, with `ShowSource`."),
                 new("source", "The text area of the value's HTML, while the source shows."),
             ],

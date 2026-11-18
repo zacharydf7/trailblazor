@@ -993,4 +993,75 @@ public class TbRichTextEditorTests : BunitContext
         Assert.Single(host.FindAll("dialog"));
         Assert.Empty(_handle.Invocations["insertImage"]);
     }
+
+    private IRenderedComponent<TbRichTextEditor> RenderWithTables(RichTextTableState state)
+    {
+        _handle.Setup<RichTextTableState>("tableState", _ => true).SetResult(state);
+        return Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Trail report")
+            .Add(editor => editor.Blocks, RichTextBlocks.Tables));
+    }
+
+    private static string? Disabled(IRenderedComponent<TbRichTextEditor> cut, string item) =>
+        cut.FindAll("[role=menuitem]").Single(element => element.TextContent.Trim() == item)
+            .GetAttribute("aria-disabled");
+
+    [Fact]
+    public void Render_ShouldOfferATableButtonAndATableMenu_WhenTheEditorAllowsTables()
+    {
+        var cut = RenderWithTables(new(false, false, false));
+        var without = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes"));
+        var named = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Blocks, RichTextBlocks.Tables)
+            .Add(editor => editor.Labels, new RichTextEditorLabels { Table = "Grid", TableMenu = "Grid tools" }));
+
+        Assert.Equal("Table", cut.Find("button[data-command=table]").GetAttribute("aria-label"));
+        Assert.Equal("Table options", cut.Find("[data-part=table-menu] button").GetAttribute("aria-label"));
+        Assert.Empty(without.FindAll("button[data-command=table], [data-part=table-menu]"));
+        Assert.Equal("Grid", named.Find("button[data-command=table]").GetAttribute("aria-label"));
+        Assert.Equal("Grid tools", named.Find("[data-part=table-menu] button").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public async Task TableMenu_ShouldOfferTheCommandsThatFit_WhenTheCaretIsInATablesHeaderRow()
+    {
+        var cut = RenderWithTables(new(InCell: true, InHeaderRow: true, HasHeaderRow: true));
+        var menu = cut.Tb().Menu("Table options");
+
+        await menu.OpenAsync();
+        cut.WaitForAssertion(() => Assert.True(menu.Checked("Header row")));
+
+        Assert.Equal("true", Disabled(cut, "Add row above"));
+        Assert.Null(Disabled(cut, "Add row below"));
+        Assert.Equal(["rowAbove", "rowBelow", "columnLeft", "columnRight", "header", "deleteRow", "deleteColumn",
+            "deleteTable"],
+            cut.FindAll("[data-table-command]").Select(item => item.GetAttribute("data-table-command")));
+    }
+
+    [Fact]
+    public async Task TableMenu_ShouldTurnItsCommandsOff_WhenItOpensAgainWithTheCaretOutsideATable()
+    {
+        var cut = RenderWithTables(new(InCell: true, InHeaderRow: false, HasHeaderRow: true));
+        var menu = cut.Tb().Menu("Table options");
+        await menu.OpenAsync();
+        cut.WaitForAssertion(() => Assert.Null(Disabled(cut, "Delete table")));
+        await menu.CloseAsync();
+        _handle.Setup<RichTextTableState>("tableState", _ => true)
+            .SetResult(new(InCell: false, InHeaderRow: false, HasHeaderRow: false));
+
+        await menu.OpenAsync();
+
+        cut.WaitForAssertion(() => Assert.All(cut.FindAll("[data-part=table-menu] [role^=menuitem]"),
+            item => Assert.Equal("true", item.GetAttribute("aria-disabled"))));
+    }
+
+    [Fact]
+    public void Render_ShouldTurnTheTableMenuOff_WhenTheEditorIsReadOnly()
+    {
+        _handle.Setup<RichTextTableState>("tableState", _ => true).SetResult(new(false, false, false));
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Trail report")
+            .Add(editor => editor.Blocks, RichTextBlocks.Tables).Add(editor => editor.ReadOnly, true));
+
+        Assert.True(cut.Find("[data-part=table-menu] button").HasAttribute("disabled"));
+        Assert.True(cut.Find("button[data-command=table]").HasAttribute("disabled"));
+    }
 }

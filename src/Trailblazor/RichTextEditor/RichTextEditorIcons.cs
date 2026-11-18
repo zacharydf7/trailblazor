@@ -67,6 +67,15 @@ internal static class RichTextEditorIcons
         + $"<path {Lines} stroke-width=\"2\" d=\"m5 17 4.5-4.5 3 3 2-2L19 18\" />"
         + $"<circle {Lines} stroke-width=\"2\" cx=\"15\" cy=\"9\" r=\"1.5\" />");
 
+    // A grid of three columns, its top row drawn as a header.
+    public static Icon Table { get; } =
+        new($"<path {Lines} stroke-width=\"2\" d=\"M4 5h16v14H4zM4 9.5h16M9.3 5v14M14.7 5v14\" />");
+
+    // A small table with three dots beside it, for its options.
+    public static Icon TableMenu { get; } =
+        new($"<path {Lines} stroke-width=\"2\" d=\"M4 5h11v11H4zM4 9.5h11M9.5 5v11\" />"
+            + $"<path {Lines} stroke-width=\"2.4\" d=\"M19 9v.01M19 13v.01M19 17v.01\" />");
+
     // An "H" with a small level number beside it.
     private static Icon Heading(string number) =>
         new($"<path {Lines} stroke-width=\"2\" d=\"M4 5v14M13 5v14M4 12h9\" />"

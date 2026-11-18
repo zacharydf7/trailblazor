@@ -145,6 +145,46 @@ public sealed record RichTextEditorLabels
     /// cref="TbStrings.RichTextEditorImage"/>.</summary>
     public string? Image { get; init; }
 
+    /// <summary>Names the Table button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorTable"/>.</summary>
+    public string? Table { get; init; }
+
+    /// <summary>Names the table menu's button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorTableMenu"/>.</summary>
+    public string? TableMenu { get; init; }
+
+    /// <summary>The table menu's Add row above command. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorAddRowAbove"/>.</summary>
+    public string? AddRowAbove { get; init; }
+
+    /// <summary>The table menu's Add row below command. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorAddRowBelow"/>.</summary>
+    public string? AddRowBelow { get; init; }
+
+    /// <summary>The table menu's Add column left command. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorAddColumnLeft"/>.</summary>
+    public string? AddColumnLeft { get; init; }
+
+    /// <summary>The table menu's Add column right command. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorAddColumnRight"/>.</summary>
+    public string? AddColumnRight { get; init; }
+
+    /// <summary>The table menu's Delete row command. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorDeleteRow"/>.</summary>
+    public string? DeleteRow { get; init; }
+
+    /// <summary>The table menu's Delete column command. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorDeleteColumn"/>.</summary>
+    public string? DeleteColumn { get; init; }
+
+    /// <summary>The table menu's Delete table command. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorDeleteTable"/>.</summary>
+    public string? DeleteTable { get; init; }
+
+    /// <summary>The table menu's Header row checkbox. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorHeaderRow"/>.</summary>
+    public string? HeaderRow { get; init; }
+
     /// <summary>The image dialog's title. Leave it null for the app's text for <see
     /// cref="TbStrings.RichTextEditorInsertImage"/>.</summary>
     public string? InsertImage { get; init; }

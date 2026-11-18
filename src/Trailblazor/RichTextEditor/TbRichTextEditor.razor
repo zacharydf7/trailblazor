@@ -23,6 +23,44 @@
                                   aria-pressed="@(tool.Command is null ? "false" : null)"
                                   aria-haspopup="@(tool.Command == "link" ? "dialog" : null)"
                                   aria-keyshortcuts="@tool.Shortcuts" />
+                    @if (tool.Command == "table")
+                    {
+                        @* The script says where the caret is as the menu opens, so its commands fit the table there,
+                           and it runs the command chosen. *@
+                        <TbMenu Icon="RichTextEditorIcons.TableMenu" Variant="Trailblazor.Variant.Text"
+                                Size="Size.Small" Disabled="@(Disabled || ReadOnly || _source)" data-part="table-menu"
+                                AriaLabel="@(Labels.TableMenu ?? Localizer[TbStrings.RichTextEditorTableMenu])"
+                                OpenChanged="OpenTableMenuAsync">
+                            <TbMenuItem Disabled="@(!_table.InCell || _table.InHeaderRow)"
+                                        data-table-command="rowAbove">
+                                @(Labels.AddRowAbove ?? Localizer[TbStrings.RichTextEditorAddRowAbove])
+                            </TbMenuItem>
+                            <TbMenuItem Disabled="!_table.InCell" data-table-command="rowBelow">
+                                @(Labels.AddRowBelow ?? Localizer[TbStrings.RichTextEditorAddRowBelow])
+                            </TbMenuItem>
+                            <TbMenuItem Disabled="!_table.InCell" data-table-command="columnLeft">
+                                @(Labels.AddColumnLeft ?? Localizer[TbStrings.RichTextEditorAddColumnLeft])
+                            </TbMenuItem>
+                            <TbMenuItem Disabled="!_table.InCell" data-table-command="columnRight">
+                                @(Labels.AddColumnRight ?? Localizer[TbStrings.RichTextEditorAddColumnRight])
+                            </TbMenuItem>
+                            <TbMenuSeparator />
+                            <TbMenuCheckboxItem Disabled="!_table.InCell" Checked="_table.HasHeaderRow"
+                                                data-table-command="header">
+                                @(Labels.HeaderRow ?? Localizer[TbStrings.RichTextEditorHeaderRow])
+                            </TbMenuCheckboxItem>
+                            <TbMenuSeparator />
+                            <TbMenuItem Disabled="!_table.InCell" data-table-command="deleteRow">
+                                @(Labels.DeleteRow ?? Localizer[TbStrings.RichTextEditorDeleteRow])
+                            </TbMenuItem>
+                            <TbMenuItem Disabled="!_table.InCell" data-table-command="deleteColumn">
+                                @(Labels.DeleteColumn ?? Localizer[TbStrings.RichTextEditorDeleteColumn])
+                            </TbMenuItem>
+                            <TbMenuItem Disabled="!_table.InCell" data-table-command="deleteTable">
+                                @(Labels.DeleteTable ?? Localizer[TbStrings.RichTextEditorDeleteTable])
+                            </TbMenuItem>
+                        </TbMenu>
+                    }
                 }
                 @if (ShowsImageButton)
                 {
@@ -94,6 +132,7 @@
     private bool _disposed;
     private (string? Value, bool Missing)? _missing;
     private bool _source;
+    private RichTextTableState _table = new(false, false, false);
     private int _sourceChanges;
     private ElementReference _sourceArea;
 
@@ -277,6 +316,12 @@
             {
                 yield return new Tool(null, null, "rule", RichTextEditorIcons.HorizontalRule,
                     Labels.HorizontalRule ?? Localizer[TbStrings.RichTextEditorHorizontalRule], null);
+            }
+
+            if (Blocks.HasFlag(RichTextBlocks.Tables))
+            {
+                yield return new Tool(null, null, "table", RichTextEditorIcons.Table,
+                    Labels.Table ?? Localizer[TbStrings.RichTextEditorTable], null);
             }
         }
     }
@@ -522,6 +567,24 @@
         try
         {
             await _handle.InvokeVoidAsync("insertImage", image.Source, image.Alt);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the editor went with it.
+        }
+    }
+
+    // The table menu's commands fit where the caret is as it opens.
+    private async Task OpenTableMenuAsync(bool open)
+    {
+        if (!open || _handle is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _table = await _handle.InvokeAsync<RichTextTableState>("tableState");
         }
         catch (JSDisconnectedException)
         {
