@@ -1,0 +1,37 @@
+<TbStack Gap="2">
+    <TbStack Row Gap="2" Align="Align.Center">
+        <TbButton Size="Size.Small"
+                  OnClick="@(() => _layout = _layout.Move("journal", "elevation", DockPosition.Bottom))">
+            Journal under Elevation
+        </TbButton>
+        <TbButton Size="Size.Small" Variant="Variant.Outlined"
+                  OnClick="@(() => _layout = _layout.Move("forecast", "stops", DockPosition.After))">
+            Forecast after Stops
+        </TbButton>
+        <TbButton Size="Size.Small" Variant="Variant.Text" OnClick="() => _layout = Default">Reset</TbButton>
+    </TbStack>
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Route desk" Style="block-size: 20rem">
+        <TbDockPanel Id="stops" Title="Stops">
+            <TbText class="tb-p-3">Trailhead, creek crossing, saddle and summit.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="elevation" Title="Elevation">
+            <TbText class="tb-p-3">A steady climb of 900 meters, steepest before the saddle.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="journal" Title="Journal">
+            <div class="tb-p-3">
+                <TbTextField Label="Today's entry" @bind-Value="_entry" />
+            </div>
+        </TbDockPanel>
+        <TbDockPanel Id="forecast" Title="Forecast">
+            <TbText class="tb-p-3">Sunny, with wind on the summit after two.</TbText>
+        </TbDockPanel>
+    </TbDockManager>
+</TbStack>
+
+@code {
+    private static readonly DockLayout Default =
+        new(new DockSplit(new DockGroup("stops", "journal"), new DockGroup("elevation", "forecast")));
+
+    private DockLayout _layout = Default;
+    private string? _entry;
+}

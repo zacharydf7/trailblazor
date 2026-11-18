@@ -7034,3 +7034,68 @@ Trailblazor.TbDockManager.TelemetryName.get -> string?
 override Trailblazor.TbDockManager.OnParametersSet() -> void
 override Trailblazor.TbDockManager.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 Trailblazor.TbDockManager.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.DockPosition.Bottom = 5 -> Trailblazor.DockPosition
+Trailblazor.DockPosition.Start = 2 -> Trailblazor.DockPosition
+Trailblazor.DockPosition.Top = 4 -> Trailblazor.DockPosition
+Trailblazor.DockPosition.End = 3 -> Trailblazor.DockPosition
+Trailblazor.DockPosition.Before = 0 -> Trailblazor.DockPosition
+Trailblazor.DockPosition.After = 1 -> Trailblazor.DockPosition
+Trailblazor.DockPosition
+Trailblazor.DockLayout.Move(string! panel, string! target, Trailblazor.DockPosition position) -> Trailblazor.DockLayout!
+Trailblazor.DockLayout.MoveToEdge(string! panel, Trailblazor.DockPosition edge) -> Trailblazor.DockLayout!
+const Trailblazor.TbStrings.DockNewGroup = "Dock.NewGroup" -> string!
+const Trailblazor.TbStrings.DockMoveToGroup = "Dock.MoveToGroup" -> string!
+const Trailblazor.TbStrings.DockMoveTabBack = "Dock.MoveTabBack" -> string!
+const Trailblazor.TbStrings.DockBelow = "Dock.Below" -> string!
+const Trailblazor.TbStrings.DockMenu = "Dock.Menu" -> string!
+const Trailblazor.TbStrings.DockAbove = "Dock.Above" -> string!
+const Trailblazor.TbStrings.DockNewGroupAtEdge = "Dock.NewGroupAtEdge" -> string!
+const Trailblazor.TbStrings.DockAtEnd = "Dock.AtEnd" -> string!
+const Trailblazor.TbStrings.DockGroupItem = "Dock.GroupItem" -> string!
+const Trailblazor.TbStrings.DockMoveTabForward = "Dock.MoveTabForward" -> string!
+const Trailblazor.TbStrings.DockAtBottom = "Dock.AtBottom" -> string!
+const Trailblazor.TbStrings.DockAtStart = "Dock.AtStart" -> string!
+const Trailblazor.TbStrings.DockSizeMenu = "Dock.SizeMenu" -> string!
+const Trailblazor.TbStrings.DockClose = "Dock.Close" -> string!
+const Trailblazor.TbStrings.DockSmaller = "Dock.Smaller" -> string!
+const Trailblazor.TbStrings.DockLarger = "Dock.Larger" -> string!
+const Trailblazor.TbStrings.DockAtTop = "Dock.AtTop" -> string!
+const Trailblazor.TbStrings.DockMoved = "Dock.Moved" -> string!
+Trailblazor.DockLabels.MoveTabBack.get -> string?
+Trailblazor.DockLabels.MoveTabForward.get -> string?
+Trailblazor.DockLabels.MoveTabBack.init -> void
+Trailblazor.DockLabels.Menu.init -> void
+Trailblazor.DockLabels.Menu.get -> string?
+Trailblazor.DockLabels.MoveToGroup.get -> string?
+Trailblazor.DockLabels.MoveToGroup.init -> void
+Trailblazor.DockLabels.MoveTabForward.init -> void
+Trailblazor.DockLabels.NewGroup.init -> void
+Trailblazor.DockLabels.GroupItem.get -> string?
+Trailblazor.DockLabels.GroupItem.init -> void
+Trailblazor.DockLabels.NewGroup.get -> string?
+Trailblazor.DockLabels.NewGroupAtEdge.init -> void
+Trailblazor.DockLabels.NewGroupAtEdge.get -> string?
+Trailblazor.DockLabels.AtStart.get -> string?
+Trailblazor.DockLabels.AtEnd.init -> void
+Trailblazor.DockLabels.AtStart.init -> void
+Trailblazor.DockLabels.Above.init -> void
+Trailblazor.DockLabels.Below.get -> string?
+Trailblazor.DockLabels.Above.get -> string?
+Trailblazor.DockLabels.AtTop.init -> void
+Trailblazor.DockLabels.AtEnd.get -> string?
+Trailblazor.DockLabels.Close.get -> string?
+Trailblazor.DockLabels.AtBottom.init -> void
+Trailblazor.DockLabels.AtTop.get -> string?
+Trailblazor.DockLabels.Below.init -> void
+Trailblazor.DockLabels.Close.init -> void
+Trailblazor.DockLabels.AtBottom.get -> string?
+Trailblazor.DockLabels.Moved.init -> void
+Trailblazor.DockLabels.SizeMenu.init -> void
+Trailblazor.DockLabels.Larger.get -> string?
+Trailblazor.DockLabels.Smaller.init -> void
+Trailblazor.DockLabels.Moved.get -> string?
+Trailblazor.DockLabels.SizeMenu.get -> string?
+Trailblazor.DockLabels.Larger.init -> void
+Trailblazor.DockLabels.Smaller.get -> string?
+Trailblazor.TbDockManager.PersistenceKey.get -> string?
+Trailblazor.TbDockManager.PersistenceKey.set -> void

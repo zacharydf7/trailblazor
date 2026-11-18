@@ -3045,6 +3045,40 @@ public sealed class TbDockDriver
             ?? throw new InvalidOperationException($"The panel \"{panel}\" can't be closed."))
         .ClickAsync(new MouseEventArgs { Detail = 1 });
 
+    /// <summary>Moves the tab of the panel with this title along its row by this many places, forward when the
+    /// number is positive and back when it's negative, as "Move tab forward" and "Move tab back" in its group's menu
+    /// do. The menu acts on the group's showing panel, so each move helper selects the panel first. Throws when the
+    /// tab reaches the start or end of its row before it has moved that far.</summary>
+    public async Task MoveTabAsync(string panel, int places)
+    {
+        for (var moved = 0; moved < Math.Abs(places); moved++)
+        {
+            await ChooseAsync(panel, places > 0 ? "[data-move=forward]" : "[data-move=back]",
+                $"The tab of \"{panel}\" is at the {(places > 0 ? "end" : "start")} of its row.");
+        }
+    }
+
+    /// <summary>Moves the panel with this title to the end of the group with this number, counted from 1 in reading
+    /// order, and shows it there, as "Move to group" in its group's menu does. Throws for the panel's own group or a
+    /// number the dock doesn't have.</summary>
+    public async Task MoveToGroupAsync(string panel, int group) =>
+        await ChooseAsync(panel, $"[data-move-group='{group.ToString(CultureInfo.InvariantCulture)}']",
+            $"The dock has no other group {group} to move \"{panel}\" to.");
+
+    /// <summary>Gives the panel with this title a new group on this side of its own, sharing the space the group
+    /// had, as "New group beside this one" in its group's menu does. Throws for a panel that is alone in its group,
+    /// and for <c>Before</c> or <c>After</c>.</summary>
+    public async Task MoveToNewGroupAsync(string panel, DockPosition side) =>
+        await ChooseAsync(panel, $"[data-move-beside={Side(side, nameof(side))}]",
+            $"The panel \"{panel}\" is alone in its group, so it has no group to split.");
+
+    /// <summary>Gives the panel with this title a new group along this edge of the dock, as "New group at the dock's
+    /// edge" in its group's menu does. Throws when it's the only panel docked, and for <c>Before</c> or <c>After</c>.
+    /// </summary>
+    public async Task MoveToEdgeAsync(string panel, DockPosition edge) =>
+        await ChooseAsync(panel, $"[data-move-edge={Side(edge, nameof(edge))}]",
+            $"The panel \"{panel}\" is the only one docked, so it has nowhere to move.");
+
     /// <summary>The share, in percent, that the part before the separator with this name has of the space it and
     /// the part after it take together.</summary>
     public int Size(string separator) =>
@@ -3072,6 +3106,32 @@ public sealed class TbDockDriver
         var index = int.Parse(bar.GetAttribute("data-index")!, CultureInfo.InvariantCulture);
         await _scripts.InvokeAsync(() => report.OnResize(index, percent / 100.0, number));
     }
+
+    // Clicks an item of the menu of the panel's group, which acts on the group's showing panel.
+    private async Task ChooseAsync(string panel, string item, string missing)
+    {
+        if (Tab(panel).GetAttribute("aria-selected") != "true")
+        {
+            await SelectAsync(panel);
+        }
+
+        var menu = Tab(panel).Closest("[data-part=group]")!.Children
+            .SingleOrDefault(child => child.GetAttribute("data-part") == "group-menu")
+            ?? throw new InvalidOperationException(
+                "The dock is on a static page, where it has no menus; render it on an interactive page.");
+        var found = menu.QuerySelector(item);
+        if (found is null || found.GetAttribute("aria-disabled") == "true")
+        {
+            throw new InvalidOperationException(missing);
+        }
+
+        await found.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    private static string Side(DockPosition side, string parameter) =>
+        side is DockPosition.Before or DockPosition.After
+            ? throw new ArgumentOutOfRangeException(parameter, side, "A new group goes to the start, end, top or bottom.")
+            : side.ToString().ToLowerInvariant();
 
     // The dock's own tabs, not those of tabs inside a panel.
     private IEnumerable<IElement> Tabs() => _find().Children

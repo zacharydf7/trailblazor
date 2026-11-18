@@ -203,6 +203,151 @@ public class DockLayoutTests
         Assert.Same(Workbench, Workbench.Close("terminal"));
     }
 
+    [Theory]
+    [InlineData(DockPosition.Before, "explorer", "problems explorer search")]
+    [InlineData(DockPosition.After, "explorer", "explorer problems search")]
+    [InlineData(DockPosition.After, "search", "explorer search problems")]
+    public void Move_ShouldPutThePanelsTabBesideTheTargetsAndShowIt_WhenGivenBeforeOrAfter(DockPosition position,
+        string target, string expected)
+    {
+        var layout = Workbench.Move("problems", target, position);
+
+        var group = layout.GroupOf("problems")!;
+        Assert.Equal(expected.Split(' '), group.Panels);
+        Assert.Equal("problems", group.Active);
+        Assert.Equal(["output"], layout.GroupOf("output")!.Panels);
+        // The group keeps its size, and so does the one the panel left.
+        Assert.Equal((1, 1), (group.Size, layout.GroupOf("output")!.Size));
+    }
+
+    [Fact]
+    public void Move_ShouldReorderTheTabs_WhenTheTargetIsInThePanelsOwnGroup()
+    {
+        var layout = Workbench.Move("explorer", "search", DockPosition.After);
+
+        Assert.Equal(["search", "explorer"], layout.GroupOf("explorer")!.Panels);
+        Assert.Equal("explorer", layout.GroupOf("explorer")!.Active);
+    }
+
+    [Fact]
+    public void Move_ShouldShowTheNextTabInTheGroupThePanelLeaves_WhenItWasShowing()
+    {
+        var layout = Workbench.Move("output", "editor", DockPosition.After);
+
+        Assert.Equal("problems", layout.GroupOf("problems")!.Active);
+    }
+
+    [Fact]
+    public void Move_ShouldGiveTheGroupsSpaceToItsSiblings_WhenItsLastPanelLeaves()
+    {
+        var layout = Workbench.Move("editor", "search", DockPosition.After);
+
+        var split = Assert.IsType<DockSplit>(layout.Root);
+        Assert.Equal(new DockGroup("output", "problems") { Size = 3 }, split.Children[1]);
+    }
+
+    [Theory]
+    [InlineData(DockPosition.Start, false, true)]
+    [InlineData(DockPosition.End, false, false)]
+    [InlineData(DockPosition.Top, true, true)]
+    [InlineData(DockPosition.Bottom, true, false)]
+    public void Move_ShouldSplitTheTargetsGroupInTwo_WhenGivenASide(DockPosition position, bool vertical, bool first)
+    {
+        var layout = new DockLayout(new DockGroup("map", "notes", "photos") { Size = 2 });
+
+        var moved = layout.Move("photos", "map", position);
+
+        var split = Assert.IsType<DockSplit>(moved.Root);
+        Assert.Equal((vertical, 2d), (split.Vertical, split.Size));
+        Assert.Equal(new DockGroup("photos"), split.Children[first ? 0 : 1]);
+        Assert.Equal(new DockGroup("map", "notes"), split.Children[first ? 1 : 0]);
+    }
+
+    [Fact]
+    public void Move_ShouldJoinTheNewGroupToTheSplitAroundIt_WhenTheyRunTheSameWay()
+    {
+        // The editor's group is 3 of the 4 parts beside the explorer; the output takes half of it.
+        var layout = new DockLayout(new DockSplit(
+            new DockGroup("explorer") { Size = 1 }, new DockGroup("editor", "output") { Size = 3 }));
+
+        var moved = layout.Move("output", "editor", DockPosition.End);
+
+        var split = Assert.IsType<DockSplit>(moved.Root);
+        Assert.Equal(["explorer", "editor", "output"], split.Children.Select(child => ((DockGroup)child).Panels[0]));
+        Assert.Equal([1, 1.5, 1.5], split.Children.Select(child => child.Size));
+    }
+
+    [Fact]
+    public void Move_ShouldDockAClosedOrUnknownPanel_WhenItIsMoved()
+    {
+        var layout = Workbench.Close("search").Move("search", "editor", DockPosition.Bottom)
+            .Move("terminal", "editor", DockPosition.After);
+
+        Assert.Empty(layout.Closed);
+        Assert.Equal(["search"], layout.GroupOf("search")!.Panels);
+        Assert.Equal(["editor", "terminal"], layout.GroupOf("terminal")!.Panels);
+    }
+
+    [Fact]
+    public void Move_ShouldChangeNothing_WhenTheTargetIsThePanelItselfOrIsNotDocked()
+    {
+        Assert.Same(Workbench, Workbench.Move("editor", "editor", DockPosition.End));
+        Assert.Same(Workbench, Workbench.Move("editor", "terminal", DockPosition.After));
+        var closed = Workbench.Close("search");
+        Assert.Same(closed, closed.Move("output", "search", DockPosition.After));
+    }
+
+    [Theory]
+    [InlineData(DockPosition.Start, false, true)]
+    [InlineData(DockPosition.End, false, false)]
+    [InlineData(DockPosition.Top, true, true)]
+    [InlineData(DockPosition.Bottom, true, false)]
+    public void MoveToEdge_ShouldGiveThePanelAQuarterOfTheDockAlongThatEdge_WhenGivenAnEdge(DockPosition position,
+        bool vertical, bool first)
+    {
+        var layout = new DockLayout(new DockSplit(new DockGroup("map"), new DockGroup("notes", "photos"))
+        {
+            Vertical = !vertical,
+        });
+
+        var moved = layout.MoveToEdge("photos", position);
+
+        var split = Assert.IsType<DockSplit>(moved.Root);
+        Assert.Equal(vertical, split.Vertical);
+        Assert.Equal(new DockGroup("photos"), split.Children[first ? 0 : 1]);
+        Assert.Equal(3, split.Children[first ? 1 : 0].Size);
+        Assert.Equal([["map"], ["notes"]],
+            Assert.IsType<DockSplit>(split.Children[first ? 1 : 0]).Children.Select(child => ((DockGroup)child).Panels));
+    }
+
+    [Fact]
+    public void MoveToEdge_ShouldKeepTheQuarter_WhenTheDockAlreadySplitsThatWay()
+    {
+        var layout = new DockLayout(new DockSplit(
+            new DockGroup("map") { Size = 1 }, new DockGroup("notes") { Size = 2 }));
+
+        var moved = layout.MoveToEdge("photos", DockPosition.End);
+
+        Assert.Equal([1, 2, 1], Assert.IsType<DockSplit>(moved.Root).Children.Select(child => child.Size));
+    }
+
+    [Fact]
+    public void MoveToEdge_ShouldLeaveThePanelAlone_WhenItIsTheOnlyOne()
+    {
+        var alone = new DockLayout(new DockGroup("map"));
+
+        Assert.Equal(alone, alone.MoveToEdge("map", DockPosition.Top));
+        Assert.Equal(alone, new DockLayout().MoveToEdge("map", DockPosition.Start));
+    }
+
+    [Theory]
+    [InlineData(DockPosition.Before)]
+    [InlineData(DockPosition.After)]
+    public void MoveToEdge_ShouldThrow_WhenGivenATabPosition(DockPosition position)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => Workbench.MoveToEdge("editor", position));
+    }
+
     [Fact]
     public void Place_ShouldAddAnUnknownPanelToTheLargestGroupWithoutShowingIt_WhenCalled()
     {

@@ -713,6 +713,65 @@ public static class TbStrings
     /// <summary>"Press Delete to close": tells screen readers how to close a dock's closable tab.</summary>
     public const string DockCloseHint = "Dock.CloseHint";
 
+    /// <summary>"Options for {0}": names a dock group's menu button; {0} is the title of its showing panel.</summary>
+    public const string DockMenu = "Dock.Menu";
+
+    /// <summary>"Move tab back": a dock menu item that moves the tab one place toward the start of its row.</summary>
+    public const string DockMoveTabBack = "Dock.MoveTabBack";
+
+    /// <summary>"Move tab forward": a dock menu item that moves the tab one place toward the end of its row.</summary>
+    public const string DockMoveTabForward = "Dock.MoveTabForward";
+
+    /// <summary>"Move to group": a dock submenu that lists the other groups.</summary>
+    public const string DockMoveToGroup = "Dock.MoveToGroup";
+
+    /// <summary>"Group {0}: {1}": names a group in that submenu; {0} is its number and {1} the title of its showing
+    /// panel.</summary>
+    public const string DockGroupItem = "Dock.GroupItem";
+
+    /// <summary>"New group beside this one": a dock submenu that gives the panel a new group on one side of its
+    /// own.</summary>
+    public const string DockNewGroup = "Dock.NewGroup";
+
+    /// <summary>"New group at the dock's edge": a dock submenu that gives the panel a new group along an edge of the
+    /// dock.</summary>
+    public const string DockNewGroupAtEdge = "Dock.NewGroupAtEdge";
+
+    /// <summary>"At the start": the side where text starts, in a dock's new-group submenus.</summary>
+    public const string DockAtStart = "Dock.AtStart";
+
+    /// <summary>"At the end": the side where text ends, in a dock's new-group submenus.</summary>
+    public const string DockAtEnd = "Dock.AtEnd";
+
+    /// <summary>"Above": above the panel's own group, in a dock's menu.</summary>
+    public const string DockAbove = "Dock.Above";
+
+    /// <summary>"Below": below the panel's own group, in a dock's menu.</summary>
+    public const string DockBelow = "Dock.Below";
+
+    /// <summary>"At the top": the dock's top edge, in a dock's menu.</summary>
+    public const string DockAtTop = "Dock.AtTop";
+
+    /// <summary>"At the bottom": the dock's bottom edge, in a dock's menu.</summary>
+    public const string DockAtBottom = "Dock.AtBottom";
+
+    /// <summary>"Close": a dock menu item that closes the panel.</summary>
+    public const string DockClose = "Dock.Close";
+
+    /// <summary>"{0} moved to panel group {1}.": said after a dock's menu moves a panel; {0} is its title and {1} the
+    /// number of its group.</summary>
+    public const string DockMoved = "Dock.Moved";
+
+    /// <summary>"Size of {0}": names the menu button on a dock's separator; {0} is the title of the panel showing
+    /// before it.</summary>
+    public const string DockSizeMenu = "Dock.SizeMenu";
+
+    /// <summary>"Make {0} larger": a dock separator's menu item that grows the part before it by 10%.</summary>
+    public const string DockLarger = "Dock.Larger";
+
+    /// <summary>"Make {0} smaller": a dock separator's menu item that shrinks the part before it by 10%.</summary>
+    public const string DockSmaller = "Dock.Smaller";
+
     /// <summary>"Resize {0}": names a splitter's separator; {0} is the pane before it.</summary>
     public const string SplitterResize = "Splitter.Resize";
 
@@ -1659,6 +1718,24 @@ public static class TbStrings
         [DockGroup] = "Panel group {0}",
         [DockResize] = "Resize {0}",
         [DockCloseHint] = "Press Delete to close",
+        [DockMenu] = "Options for {0}",
+        [DockMoveTabBack] = "Move tab back",
+        [DockMoveTabForward] = "Move tab forward",
+        [DockMoveToGroup] = "Move to group",
+        [DockGroupItem] = "Group {0}: {1}",
+        [DockNewGroup] = "New group beside this one",
+        [DockNewGroupAtEdge] = "New group at the dock's edge",
+        [DockAtStart] = "At the start",
+        [DockAtEnd] = "At the end",
+        [DockAbove] = "Above",
+        [DockBelow] = "Below",
+        [DockAtTop] = "At the top",
+        [DockAtBottom] = "At the bottom",
+        [DockClose] = "Close",
+        [DockMoved] = "{0} moved to panel group {1}.",
+        [DockSizeMenu] = "Size of {0}",
+        [DockLarger] = "Make {0} larger",
+        [DockSmaller] = "Make {0} smaller",
         [SplitterResize] = "Resize {0}",
         [SplitterPane] = "pane {0}",
         [SplitterMenu] = "Size of {0}",

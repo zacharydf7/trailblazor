@@ -84,7 +84,8 @@ public class TbDockManagerTests : BunitContext
     {
         var cut = RenderDock(Hike, HikePanels);
 
-        Assert.Equal(["group", "panel", "separator", "group", "panel", "separator", "group", "panel"], Parts(cut));
+        Assert.Equal(["group", "panel", "separator", "grip", "group", "panel", "separator", "grip", "group", "panel"],
+            Parts(cut));
     }
 
     [Fact]
@@ -93,7 +94,7 @@ public class TbDockManagerTests : BunitContext
         var cut = RenderDock(null, HikePanels);
 
         Assert.Equal(["Trails", "Map", "Notes", "Weather"], Titles(cut.Find("[data-part=group]")));
-        Assert.Empty(cut.FindAll("[role=separator]"));
+        Assert.Empty(cut.FindAll(".tb-dock__separator"));
     }
 
     [Fact]
@@ -273,8 +274,8 @@ public class TbDockManagerTests : BunitContext
         await cut.InvokeAsync(() => Report().OnClose("weather", true));
 
         Assert.Equal([["Trails", "Map"], ["Notes"]], cut.FindAll("[data-part=group]").Select(Titles));
-        Assert.Single(cut.FindAll("[role=separator]"));
-        Assert.Equal(["group", "panel", "separator", "group", "panel"], Parts(cut));
+        Assert.Single(cut.FindAll(".tb-dock__separator"));
+        Assert.Equal(["group", "panel", "separator", "grip", "group", "panel"], Parts(cut));
     }
 
     [Fact]
@@ -386,7 +387,7 @@ public class TbDockManagerTests : BunitContext
     {
         var cut = RenderDock(Hike, HikePanels);
 
-        var separators = cut.FindAll("[role=separator]");
+        var separators = cut.FindAll(".tb-dock__separator");
         Assert.Equal(["Resize Trails", "Resize Notes"], separators.Select(each => each.GetAttribute("aria-label")));
         Assert.Equal(["vertical", "horizontal"], separators.Select(each => each.GetAttribute("aria-orientation")));
         Assert.Equal(["25", "75"], separators.Select(each => each.GetAttribute("aria-valuenow")));
@@ -409,7 +410,7 @@ public class TbDockManagerTests : BunitContext
             new DockSplit(new DockGroup("trails"), new DockGroup("map")) { Vertical = true }, new DockGroup("notes"))),
             HikePanels.Take(3).ToArray());
 
-        var separators = cut.FindAll("[role=separator]");
+        var separators = cut.FindAll(".tb-dock__separator");
         Assert.Equal(["Resize Trails", "Resize Map"], separators.Select(each => each.GetAttribute("aria-label")));
         Assert.Equal(new[] { "trails", "map" }.Select(id => cut.Find($"[role=tabpanel][data-panel={id}]").Id),
             separators.Select(each => each.GetAttribute("aria-controls")));
@@ -425,7 +426,7 @@ public class TbDockManagerTests : BunitContext
 
         Assert.Contains("--tb-dock-w: 40;", cut.FindAll("[data-part=group]")[0].GetAttribute("style"));
         Assert.Contains("--tb-dock-x: 40;", cut.FindAll("[data-part=group]")[1].GetAttribute("style"));
-        Assert.Equal("40", cut.FindAll("[role=separator]")[0].GetAttribute("aria-valuenow"));
+        Assert.Equal("40", cut.FindAll(".tb-dock__separator")[0].GetAttribute("aria-valuenow"));
         Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-report"));
         Assert.Equal([1.6, 2.4],
             Assert.IsType<DockSplit>(changed!.Root).Children.Select(child => Math.Round(child.Size, 4)));
@@ -502,9 +503,10 @@ public class TbDockManagerTests : BunitContext
         cut.Render(parameters => parameters.Add(dock => dock.Layout, new DockLayout(new DockSplit(
             new DockGroup("trails", "map", "weather") { Active = "weather" }, new DockGroup("notes")))));
 
-        Assert.Equal(["group", "trails", "separator", "group", "notes", "weather"],
+        Assert.Equal(["group", "trails", "separator", "grip", "group", "notes", "weather"],
             cut.FindAll("[data-part=dock] > [data-part]").Select(Key));
-        Assert.Equal(["group", "trails", "separator", "group", "notes", "separator", "group", "weather"], before);
+        Assert.Equal(["group", "trails", "separator", "grip", "group", "notes", "separator", "grip", "group", "weather"],
+            before);
         Assert.Equal("0", cut.Find("[role=tabpanel][data-panel=weather]").GetAttribute("data-dock-group"));
         Assert.Equal(["init trails", "init notes", "init weather"], _log.Where(line => line.StartsWith("init")));
         Assert.DoesNotContain(_log, line => line.StartsWith("dispose"));
@@ -564,8 +566,311 @@ public class TbDockManagerTests : BunitContext
             new DockLabels { Group = "Group {0}", Resize = "Size of {0}", CloseHint = "Delete closes this tab" }));
 
         Assert.Equal("Group 1", cut.Find("[role=tablist]").GetAttribute("aria-label"));
-        Assert.Equal("Size of Trails", cut.Find("[role=separator]").GetAttribute("aria-label"));
+        Assert.Equal("Size of Trails", cut.Find(".tb-dock__separator").GetAttribute("aria-label"));
         Assert.Equal("Delete closes this tab", cut.Find("[data-part=dock] > span[hidden]").TextContent);
+    }
+
+    [Fact]
+    public void Menu_ShouldOfferWhatItsGroupsShowingPanelCanDo_WhenRendered()
+    {
+        var cut = RenderDock(Hike, [new("trails", "Trails"), new("map", "Map"), new("notes", "Notes", Closable: false),
+            new("weather", "Weather")]);
+
+        var menus = cut.FindAll("[data-part=group-menu]");
+        Assert.Equal(["Options for Trails", "Options for Notes", "Options for Weather"],
+            menus.Select(menu => menu.QuerySelector("button")!.GetAttribute("aria-label")));
+        // Trails is the first of two tabs, so it can go forward but not back.
+        Assert.Equal(("true", null), (menus[0].QuerySelector("[data-move=back]")!.GetAttribute("aria-disabled"),
+            menus[0].QuerySelector("[data-move=forward]")!.GetAttribute("aria-disabled")));
+        Assert.Equal(["Group 2: Notes", "Group 3: Weather"],
+            menus[0].QuerySelectorAll("[data-move-group]").Select(item => item.TextContent.Trim()));
+        Assert.Equal(["At the start", "At the end", "Above", "Below"],
+            menus[0].QuerySelectorAll("[data-move-beside]").Select(item => item.TextContent.Trim()));
+        Assert.Equal(["At the start", "At the end", "At the top", "At the bottom"],
+            menus[0].QuerySelectorAll("[data-move-edge]").Select(item => item.TextContent.Trim()));
+        Assert.Equal("Close", menus[0].QuerySelector("[data-move=close]")!.TextContent.Trim());
+        // The notes are alone in their group, with no group of their own to split, and they can't close.
+        Assert.Empty(menus[1].QuerySelectorAll("[data-move-beside]"));
+        Assert.Equal(4, menus[1].QuerySelectorAll("[data-move-edge]").Length);
+        Assert.Null(menus[1].QuerySelector("[data-move=close]"));
+    }
+
+    [Fact]
+    public async Task Menu_ShouldMoveTheTabAlongItsRowAndSayWhereItWent_WhenForwardIsChosen()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        DockLayout? changed = null;
+        var cut = RenderDock(Hike, HikePanels, layout => changed = layout);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var trails = Reference(cut, "Trails");
+
+        await cut.Find("[data-part=group-menu] [data-move=forward]").ClickAsync();
+
+        Assert.Equal(["Map", "Trails"], Titles(cut.FindAll("[data-part=group]")[0]));
+        Assert.Equal(Hike.Move("trails", "map", DockPosition.After), changed);
+        Assert.Equal(["Trails moved to panel group 1."], Services.GetRequiredService<FakeAnnouncer>().Polite);
+        Assert.Equal(trails, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+        Assert.Equal(["move"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public async Task Render_ShouldLeaveOutTheMenusAndGrips_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderDock(Hike, HikePanels);
+
+        // Their items need the server, so a static page shows only the tabs, panels and separators.
+        Assert.Empty(cut.FindAll("[data-part=group-menu], [data-part=grip]"));
+        Assert.Equal(2, cut.FindAll("[role=separator]").Count);
+        Assert.Equal("The dock is on a static page, where it has no menus; render it on an interactive page.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Dock().MoveToGroupAsync("Trails", 2)))
+                .Message);
+    }
+
+    [Fact]
+    public async Task Menu_ShouldStillSayWhereThePanelWent_WhenTheAppTakesThePanelAwayWhileItHearsOfTheMove()
+    {
+        var heard = new TaskCompletionSource();
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.LayoutChanged, _ => heard.Task)
+            .Add(dock => dock.ChildContent, Panels(HikePanels)));
+
+        var click = cut.Find("[data-part=group-menu] [data-move-group='3']").ClickAsync();
+        cut.Render(parameters => parameters.Add(dock => dock.ChildContent, Panels(HikePanels[1..])));
+        heard.SetResult();
+        await click;
+
+        Assert.Equal(["Trails moved to panel group 3."], Services.GetRequiredService<FakeAnnouncer>().Polite);
+        Assert.Equal(["Map", "Notes", "Weather"], cut.FindAll("[role=tab]").Select(tab => tab.TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task Menu_ShouldNumberTheGroupAsItsTabListIsNamed_WhenTheLayoutHoldsAGroupThatDoesNotShow()
+    {
+        // The app has no Trails or Map panel, so their group doesn't show and Notes has the first group.
+        var cut = RenderDock(Hike, HikePanels[2..]);
+
+        await cut.FindAll("[data-part=group-menu]")[1].QuerySelector("[data-move-group='1']")!.ClickAsync();
+
+        Assert.Equal(["Weather moved to panel group 1."], Services.GetRequiredService<FakeAnnouncer>().Polite);
+        Assert.Equal("Panel group 1", cut.Find("[role=tablist]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public async Task Menu_ShouldMoveThePanelToTheEndOfAnotherGroup_WhenThatGroupIsChosen()
+    {
+        DockLayout? changed = null;
+        var cut = RenderDock(Hike, HikePanels, layout => changed = layout);
+
+        await cut.Find("[data-part=group-menu] [data-move-group='3']").ClickAsync();
+
+        Assert.Equal([["Map"], ["Notes"], ["Weather", "Trails"]], cut.FindAll("[data-part=group]").Select(Titles));
+        Assert.Equal("true", Tab(cut, "Trails").GetAttribute("aria-selected"));
+        Assert.Equal(Hike.Move("trails", "weather", DockPosition.After), changed);
+        Assert.Equal(["Trails moved to panel group 3."], Services.GetRequiredService<FakeAnnouncer>().Polite);
+    }
+
+    [Theory]
+    [InlineData("start", DockPosition.Start)]
+    [InlineData("end", DockPosition.End)]
+    [InlineData("top", DockPosition.Top)]
+    [InlineData("bottom", DockPosition.Bottom)]
+    public async Task Menu_ShouldGiveThePanelANewGroup_WhenASideOfItsGroupOrOfTheDockIsChosen(string side,
+        DockPosition position)
+    {
+        var changes = new List<DockLayout>();
+
+        await RenderDock(Hike, HikePanels, changes.Add).Find($"[data-part=group-menu] [data-move-beside={side}]")
+            .ClickAsync();
+        await RenderDock(Hike, HikePanels, changes.Add).Find($"[data-part=group-menu] [data-move-edge={side}]")
+            .ClickAsync();
+
+        Assert.Equal([Hike.Move("trails", "map", position), Hike.MoveToEdge("trails", position)], changes);
+    }
+
+    [Fact]
+    public async Task Menu_ShouldCloseItsGroupsShowingPanel_WhenCloseIsChosen()
+    {
+        DockLayout? changed = null;
+        var cut = RenderDock(Hike, HikePanels, layout => changed = layout);
+
+        await cut.FindAll("[data-part=group-menu]")[1].QuerySelector("[data-move=close]")!.ClickAsync();
+
+        Assert.Equal(["notes"], changed!.Closed);
+        Assert.Equal([["Trails", "Map"], ["Weather"]], cut.FindAll("[data-part=group]").Select(Titles));
+    }
+
+    [Fact]
+    public void Menu_ShouldHaveNoWayToMove_WhenTheDockHoldsOnePanel()
+    {
+        var cut = RenderDock(null, new Panel("map", "Map"));
+
+        var menu = cut.Find("[data-part=group-menu]");
+        Assert.Empty(menu.QuerySelectorAll("[data-move-group], [data-move-beside], [data-move-edge]"));
+        Assert.Equal(["true", "true"], menu.QuerySelectorAll("[data-move=back], [data-move=forward]")
+            .Select(item => item.GetAttribute("aria-disabled")));
+    }
+
+    [Fact]
+    public async Task Grip_ShouldStepItsSeparatorThroughTheScript_WhenLargerOrSmallerIsChosen()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+
+        var grips = cut.FindAll("[data-part=grip]");
+        Assert.Equal(["Size of Trails", "Size of Notes"],
+            grips.Select(grip => grip.QuerySelector("button")!.GetAttribute("aria-label")));
+        // The separator's keys do what the grip's menu does, so the grip stays out of the tab order.
+        Assert.All(grips, grip => Assert.Equal("-1", grip.QuerySelector("button")!.GetAttribute("tabindex")));
+        Assert.Equal(["Make Trails larger", "Make Trails smaller"],
+            grips[0].QuerySelectorAll("[role=menuitem]").Select(item => item.TextContent.Trim()));
+        Assert.Equal("tb-menu tb-dock__grip tb-dock__grip--vertical", grips[1].ClassName);
+
+        await grips[0].QuerySelector("[data-step=larger]")!.ClickAsync();
+        await cut.FindAll("[data-part=grip]")[1].QuerySelector("[data-step=smaller]")!.ClickAsync();
+
+        Assert.Equal([[0, 10], [1, -10]], _handle.Invocations["step"].Select(call => call.Arguments.Cast<int>()));
+    }
+
+    [Fact]
+    public void PersistenceKey_ShouldShowTheSavedLayoutAndHandItToTheApp_WhenTheBrowserHoldsOne()
+    {
+        var saved = Hike.Open("map").Close("weather");
+        _handle.Setup<string?>("saved", _ => true).SetResult(saved.ToJson());
+        var changes = new List<DockLayout>();
+
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.PersistenceKey, "hike").Add(dock => dock.LayoutChanged, changes.Add)
+            .Add(dock => dock.ChildContent, Panels(HikePanels)));
+
+        Assert.Equal("hike", _handle.Invocations["saved"].Single().Arguments[0]);
+        Assert.Equal([saved], changes);
+        Assert.Equal("true", Tab(cut, "Map").GetAttribute("aria-selected"));
+        Assert.Equal([["Trails", "Map"], ["Notes"]], cut.FindAll("[data-part=group]").Select(Titles));
+        // What was read isn't written back.
+        Assert.Empty(_handle.Invocations["save"]);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("not a layout")]
+    public void PersistenceKey_ShouldKeepTheAppsLayout_WhenTheBrowserHoldsNoneOrSomethingElse(string? saved)
+    {
+        _handle.Setup<string?>("saved", _ => true).SetResult(saved);
+        var changes = 0;
+
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.PersistenceKey, "hike").Add(dock => dock.LayoutChanged, _ => changes++)
+            .Add(dock => dock.ChildContent, Panels(HikePanels)));
+
+        Assert.Equal(0, changes);
+        Assert.Equal(3, cut.FindAll("[data-part=group]").Count);
+        Assert.Empty(_handle.Invocations["save"]);
+    }
+
+    [Fact]
+    public async Task PersistenceKey_ShouldSaveTheLayout_WhenTheUserOrTheAppChangesIt()
+    {
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.PersistenceKey, "hike").Add(dock => dock.ChildContent, Panels(HikePanels)));
+
+        await Tab(cut, "Map").ClickAsync();
+        var reset = new DockLayout(new DockGroup("trails", "map", "notes", "weather"));
+        cut.Render(parameters => parameters.Add(dock => dock.Layout, reset));
+
+        Assert.Equal([$"hike: {Hike.Open("map").ToJson()}", $"hike: {reset.ToJson()}"],
+            _handle.Invocations["save"].Select(call => $"{call.Arguments[0]}: {call.Arguments[1]}"));
+    }
+
+    [Fact]
+    public async Task PersistenceKey_ShouldSaveEachChangeOnce_WhenTheLayoutIsBound()
+    {
+        DockLayout? bound = null;
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.PersistenceKey, "hike").Add(dock => dock.LayoutChanged, layout => bound = layout)
+            .Add(dock => dock.ChildContent, Panels(HikePanels)));
+
+        await Tab(cut, "Map").ClickAsync();
+        // A binding hands the layout back to the dock as the app renders again.
+        cut.Render(parameters => parameters.Add(dock => dock.Layout, bound));
+
+        Assert.Single(_handle.Invocations["save"]);
+    }
+
+    [Fact]
+    public async Task PersistenceKey_ShouldReadAndSaveUnderTheNewKey_WhenTheKeyArrivesOrChangesLater()
+    {
+        var saved = Hike.Close("weather");
+        _handle.Setup<string?>("saved", call => Equals(call.Arguments[0], "trip")).SetResult(saved.ToJson());
+        var changes = new List<DockLayout>();
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.LayoutChanged, changes.Add).Add(dock => dock.ChildContent, Panels(HikePanels)));
+
+        // The key arrives after the dock attached, as one read from the user's profile does.
+        cut.Render(parameters => parameters.Add(dock => dock.PersistenceKey, "trip"));
+        Assert.Equal([saved], changes);
+        await Tab(cut, "Map").ClickAsync();
+        // Nothing is saved under the next key, so the layout stays and later changes go there.
+        cut.Render(parameters => parameters.Add(dock => dock.PersistenceKey, "walk"));
+        await Tab(cut, "Trails").ClickAsync();
+
+        Assert.Equal(["trip", "walk"], _handle.Invocations["saved"].Select(call => call.Arguments[0]));
+        Assert.Equal([$"trip: {saved.Open("map").ToJson()}", $"walk: {saved.Open("trails").ToJson()}"],
+            _handle.Invocations["save"].Select(call => $"{call.Arguments[0]}: {call.Arguments[1]}"));
+    }
+
+    [Fact]
+    public async Task PersistenceKey_ShouldSaveNothing_WhenNoKeyIsGiven()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+
+        await Tab(cut, "Map").ClickAsync();
+        cut.Render(parameters => parameters.Add(dock => dock.Layout, new DockLayout(new DockGroup("trails"))));
+
+        Assert.Empty(_handle.Invocations["saved"]);
+        Assert.Empty(_handle.Invocations["save"]);
+    }
+
+    [Fact]
+    public void Labels_ShouldWordTheMenusAndGrips_WhenGiven()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels
+        {
+            Menu = "Move {0}", MoveTabBack = "Earlier", MoveTabForward = "Later", MoveToGroup = "Other group",
+            GroupItem = "No. {0} ({1})", NewGroup = "Split off", NewGroupAtEdge = "Dock edge", AtStart = "Start",
+            AtEnd = "End", Above = "Over", Below = "Under", AtTop = "Top", AtBottom = "Bottom", Close = "Shut",
+            SizeMenu = "Resize {0}…", Larger = "Grow {0}", Smaller = "Shrink {0}",
+        }));
+
+        var menu = cut.Find("[data-part=group-menu]");
+        Assert.Equal("Move Trails", menu.QuerySelector("button")!.GetAttribute("aria-label"));
+        Assert.Equal(["Earlier", "Later", "Shut"],
+            menu.QuerySelectorAll("[data-move]").Select(item => item.TextContent.Trim()));
+        Assert.Equal(["No. 2 (Notes)", "No. 3 (Weather)"],
+            menu.QuerySelectorAll("[data-move-group]").Select(item => item.TextContent.Trim()));
+        Assert.Equal(["Start", "End", "Over", "Under", "Start", "End", "Top", "Bottom"],
+            menu.QuerySelectorAll("[data-move-beside], [data-move-edge]").Select(item => item.TextContent.Trim()));
+        Assert.Contains("Other group", menu.TextContent);
+        Assert.Contains("Split off", menu.TextContent);
+        Assert.Contains("Dock edge", menu.TextContent);
+        var grip = cut.Find("[data-part=grip]");
+        Assert.Equal("Resize Trails…", grip.QuerySelector("button")!.GetAttribute("aria-label"));
+        Assert.Equal(["Grow Trails", "Shrink Trails"],
+            grip.QuerySelectorAll("[role=menuitem]").Select(item => item.TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task Labels_ShouldWordWhatIsSaidAfterAMove_WhenGiven()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels { Moved = "{0} is in group {1}" }));
+
+        await cut.Find("[data-part=group-menu] [data-move-group='2']").ClickAsync();
+
+        Assert.Equal(["Trails is in group 2"], Services.GetRequiredService<FakeAnnouncer>().Polite);
     }
 
     [Fact]
@@ -686,6 +991,56 @@ public class TbDockManagerTests : BunitContext
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => dock.ResizeAsync("Resize Trails", 100));
         Assert.Equal("No separator is named \"Resize Map\".",
             Assert.Throws<InvalidOperationException>(() => dock.Size("Resize Map")).Message);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldMoveAPanelAsItsGroupsMenuDoes_WhenAMoveHelperIsUsed()
+    {
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(Hike, HikePanels, changes.Add);
+        var dock = cut.Tb().Dock();
+
+        // The map isn't showing, so the helper selects it before it moves it.
+        await dock.MoveTabAsync("Map", -1);
+        Assert.Equal(["Map", "Trails", "Notes", "Weather"], dock.Panels);
+        await dock.MoveTabAsync("Map", 1);
+        await dock.MoveTabAsync("Map", 0);
+        await dock.MoveToGroupAsync("Map", 3);
+        Assert.Equal(["Trails", "Notes", "Weather", "Map"], dock.Panels);
+        Assert.Equal(["Trails", "Notes", "Map"], dock.Showing);
+        await dock.MoveToNewGroupAsync("Weather", DockPosition.Top);
+        await dock.MoveToEdgeAsync("Trails", DockPosition.End);
+
+        Assert.Equal(["Notes", "Weather", "Map", "Trails"], dock.Panels);
+        Assert.Equal(["Notes", "Weather", "Map", "Trails"], dock.Showing);
+        Assert.Equal(changes[^2].MoveToEdge("trails", DockPosition.End), changes[^1]);
+        Assert.Equal(changes[^3].Move("weather", "map", DockPosition.Top), changes[^2]);
+        // The map and the weather were each selected first, and the move by no places changed nothing.
+        Assert.Equal(7, changes.Count);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldSayWhyAPanelCantMove_WhenItsMenuHasNoSuchItem()
+    {
+        var dock = RenderDock(Hike, HikePanels).Tb().Dock();
+
+        Assert.Equal("The tab of \"Trails\" is at the end of its row.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => dock.MoveTabAsync("Trails", 2))).Message);
+        Assert.Equal("The tab of \"Map\" is at the start of its row.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => dock.MoveTabAsync("Map", -2))).Message);
+        Assert.Equal("The dock has no other group 1 to move \"Trails\" to.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => dock.MoveToGroupAsync("Trails", 1))).Message);
+        Assert.Equal("The dock has no other group 4 to move \"Trails\" to.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => dock.MoveToGroupAsync("Trails", 4))).Message);
+        Assert.Equal("The panel \"Notes\" is alone in its group, so it has no group to split.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(
+                () => dock.MoveToNewGroupAsync("Notes", DockPosition.Start))).Message);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => dock.MoveToNewGroupAsync("Trails", DockPosition.Before));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => dock.MoveToEdgeAsync("Trails", DockPosition.After));
+        Assert.Equal("The panel \"Map\" is the only one docked, so it has nowhere to move.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => RenderDock(null, new Panel("map", "Map")).Tb()
+                .Dock().MoveToEdgeAsync("Map", DockPosition.Top))).Message);
     }
 
     [Fact]

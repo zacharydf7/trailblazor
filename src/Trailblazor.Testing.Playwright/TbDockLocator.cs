@@ -69,6 +69,82 @@ public sealed class TbDockLocator(ILocator scope, string? name)
         await Assertions.Expect(tab).ToHaveCountAsync(0);
     }
 
+    /// <summary>Moves the tab of the panel with this title along its row by this many places, forward when the
+    /// number is positive and back when it's negative, with "Move tab forward" and "Move tab back" in its group's
+    /// menu. The menu acts on the group's showing panel, so each move helper selects the panel first. Throws when
+    /// the tab reaches the start or end of its row before it has moved that far.</summary>
+    public async Task MoveTabAsync(string panel, int places)
+    {
+        for (var moved = 0; moved < Math.Abs(places); moved++)
+        {
+            await ChooseAsync(panel, places > 0 ? "[data-move=forward]" : "[data-move=back]",
+                $"The tab of \"{panel}\" is at the {(places > 0 ? "end" : "start")} of its row.");
+        }
+    }
+
+    /// <summary>Moves the panel with this title to the end of the group with this number, counted from 1 in reading
+    /// order, with "Move to group" in its group's menu, and waits until it shows there. Throws for the panel's own
+    /// group or a number the dock doesn't have.</summary>
+    public async Task MoveToGroupAsync(string panel, int group) =>
+        await ChooseAsync(panel, $"[data-move-group='{group.ToString(CultureInfo.InvariantCulture)}']",
+            $"The dock has no other group {group} to move \"{panel}\" to.");
+
+    /// <summary>Gives the panel with this title a new group on this side of its own, sharing the space the group
+    /// had, with "New group beside this one" in its group's menu. Throws for a panel that is alone in its group, and
+    /// for <c>Before</c> or <c>After</c>.</summary>
+    public async Task MoveToNewGroupAsync(string panel, DockPosition side) =>
+        await ChooseAsync(panel, $"[data-move-beside={Side(side, nameof(side))}]",
+            $"The panel \"{panel}\" is alone in its group, so it has no group to split.");
+
+    /// <summary>Gives the panel with this title a new group along this edge of the dock, with "New group at the
+    /// dock's edge" in its group's menu. Throws when it's the only panel docked, and for <c>Before</c> or
+    /// <c>After</c>.</summary>
+    public async Task MoveToEdgeAsync(string panel, DockPosition edge) =>
+        await ChooseAsync(panel, $"[data-move-edge={Side(edge, nameof(edge))}]",
+            $"The panel \"{panel}\" is the only one docked, so it has nowhere to move.");
+
+    // Clicks an item of the menu of the panel's group, which acts on the group's showing panel, and waits until the
+    // app has the layout.
+    private async Task ChooseAsync(string panel, string hook, string missing)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var tab = Tab(panel);
+        if (await tab.GetAttributeAsync("aria-selected") != "true")
+        {
+            await SelectAsync(panel);
+        }
+
+        var trigger = tab.Locator(
+            "xpath=ancestor::*[@data-part='group'][1]/*[@data-part='group-menu']/*[@data-part='trigger']");
+        // The items are on the page whether the menu is open or not.
+        var item = Scope.Document(scope).Locator($"[id='{await trigger.GetAttributeAsync("aria-controls")}']")
+            .Locator(hook);
+        if (await item.CountAsync() == 0 || await item.GetAttributeAsync("aria-disabled") == "true")
+        {
+            throw new InvalidOperationException(missing);
+        }
+
+        await new TbMenuLocator(scope, trigger).OpenAsync();
+        var submenu = item.Locator(
+            "xpath=ancestor::*[@role='menu'][1]/preceding-sibling::*[@data-part='submenu-trigger']");
+        if (await submenu.CountAsync() > 0)
+        {
+            await submenu.ClickAsync();
+            await Assertions.Expect(submenu).ToHaveAttributeAsync("aria-expanded", "true");
+        }
+
+        await Commit.CountedAsync(Root, "data-commits", async () =>
+        {
+            await item.ClickAsync();
+            return true;
+        });
+    }
+
+    private static string Side(DockPosition side, string parameter) =>
+        side is DockPosition.Before or DockPosition.After
+            ? throw new ArgumentOutOfRangeException(parameter, side, "A new group goes to the start, end, top or bottom.")
+            : side.ToString().ToLowerInvariant();
+
     /// <summary>The share, in percent, that the part before the separator with this name has of the space it and
     /// the part after it take together.</summary>
     public async Task<int> SizeAsync(string separator) => int.Parse(

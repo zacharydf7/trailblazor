@@ -24,7 +24,8 @@ public sealed class TbDockPanel : TbComponentBase, IDisposable
     public Icon? Icon { get; set; }
 
     /// <summary>Whether the user can close the panel, from the mark on its tab, with Delete or Backspace on the tab,
-    /// or with a middle click. Defaults to true. <see cref="DockLayout.Open"/> shows a closed panel again.</summary>
+    /// with a middle click, or from Close in its group's menu. Defaults to true. <see cref="DockLayout.Open"/> shows
+    /// a closed panel again.</summary>
     [Parameter]
     public bool Closable { get; set; } = true;
 
@@ -46,6 +47,9 @@ public sealed class TbDockPanel : TbComponentBase, IDisposable
     internal int Version { get; private set; }
 
     internal IReadOnlyDictionary<string, object>? HostAttributes => AttributesWithoutId;
+
+    // The id the panel registered under, which the dock knows it by even while a changed Id is being refused.
+    internal string Name => _id ?? Id;
 
     /// <inheritdoc />
     protected override void OnParametersSet()

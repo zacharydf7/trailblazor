@@ -588,3 +588,7 @@ Trailblazor.Testing.TbDockDriver.SelectAsync(string! panel) -> System.Threading.
 Trailblazor.Testing.TbDockDriver.CloseAsync(string! panel) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.Size(string! separator) -> int
 Trailblazor.Testing.TbDockDriver.ResizeAsync(string! separator, int percent) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.MoveTabAsync(string! panel, int places) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.MoveToGroupAsync(string! panel, int group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.MoveToNewGroupAsync(string! panel, Trailblazor.DockPosition side) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.MoveToEdgeAsync(string! panel, Trailblazor.DockPosition edge) -> System.Threading.Tasks.Task!

@@ -716,7 +716,8 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Dock_ShouldReturnOnceTheAppsLayoutChangedHasRun_WhenItSelectsOrClosesAPanel(string browser)
+    public async Task Dock_ShouldReturnOnceTheAppsLayoutChangedHasRun_WhenItSelectsMovesOrClosesAPanel(
+        string browser)
     {
         var page = await OpenAsync(browser, "/helpers-slow");
         var dock = page.Tb().Dock("Slow planner");
@@ -724,9 +725,12 @@ public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await dock.SelectAsync("Slow map");
         var selected = await slow.TextContentAsync();
+        await dock.MoveTabAsync("Slow map", -1);
+        var moved = await slow.TextContentAsync();
         await dock.CloseAsync("Slow trails");
 
-        Assert.Equal(("dock shows map, closed 0", "dock shows map, closed 1"), (selected, await slow.TextContentAsync()));
+        Assert.Equal(("dock shows map of trails map, closed 0", "dock shows map of map trails, closed 0",
+            "dock shows map of map, closed 1"), (selected, moved, await slow.TextContentAsync()));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

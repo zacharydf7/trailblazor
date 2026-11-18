@@ -1,4 +1,5 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { createGripDrag } from '../Trailblazor.Primitives/grip-drag.js';
 // Dragging, the keys and the grip's menu resize panes in the browser, keeping every pane's share, and report the new
 // sizes when they stop; Enter asks the server to collapse or restore. `reporter` hears both, and the panes' order in
 // the markup, and `key` names the saved layout. Panes are named by id in every report.
@@ -72,11 +73,9 @@ export function attachSplitter(root, reporter, key) {
     };
 
     let drag = null;
-    // The grip a drag was released on, whose click would open its menu. A touch drag sends no click, so the next
-    // press clears it.
-    let draggedGrip = null;
+    const grips = createGripDrag(root);
     const onPointerDown = event => {
-        draggedGrip = null;
+        grips.pressed();
         const separator = separatorFor(event.target);
         if (!separator || event.button !== 0) {
             return;
@@ -102,8 +101,7 @@ export function attachSplitter(root, reporter, key) {
 
         const moved = (vertical() ? event.clientY : event.clientX) - drag.start;
         const ltr = vertical() || getComputedStyle(root).direction !== 'rtl';
-        // A tap on the grip wanders a few pixels, more with a finger, and still opens its menu without resizing.
-        drag.dragged ||= Math.abs(moved) >= (event.pointerType === 'mouse' ? 4 : 10);
+        drag.dragged ||= grips.isDrag(moved, event);
         if (drag.grip && !drag.dragged) {
             return;
         }
@@ -112,19 +110,10 @@ export function attachSplitter(root, reporter, key) {
     };
     const onPointerUp = () => {
         if (drag) {
-            draggedGrip = drag.dragged ? drag.grip : null;
+            grips.released(drag.dragged ? drag.grip : null);
             report(drag.sizes);
             drag = null;
         }
-    };
-    // A drag's release would open the grip's menu, so that click goes nowhere.
-    const onClick = event => {
-        if (draggedGrip?.contains(event.target)) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-
-        draggedGrip = null;
     };
     const onKeyDown = event => {
         delete separatorFor(event.target)?.dataset.pointerFocus;
@@ -173,7 +162,6 @@ export function attachSplitter(root, reporter, key) {
     root.addEventListener('pointercancel', onPointerUp);
     root.addEventListener('keydown', onKeyDown);
     root.addEventListener('focusout', onFocusOut);
-    root.addEventListener('click', onClick, { capture: true });
 
     // Panes register on the server as they first render, so one added later in the middle needs its place reported.
     let order = '';
@@ -244,7 +232,7 @@ export function attachSplitter(root, reporter, key) {
             root.removeEventListener('pointercancel', onPointerUp);
             root.removeEventListener('keydown', onKeyDown);
             root.removeEventListener('focusout', onFocusOut);
-            root.removeEventListener('click', onClick, { capture: true });
+            grips.dispose();
         },
     };
 }

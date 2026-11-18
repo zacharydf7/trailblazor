@@ -7612,6 +7612,73 @@
         background: var(--tb-color-hover);
     }
 
+    .tb-menu.tb-dock__menu {
+        flex: none;
+        align-self: center;
+    }
+
+    /* The grip sits on the middle of its separator's line, and a drag from it resizes as the line does. It shows
+       while the pointer is on the line or the grip, while its menu is open, and always where the pointer is a finger. */
+    .tb-menu.tb-dock__grip {
+        position: absolute;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        inset-inline-start: calc(var(--tb-dock-live-x, var(--tb-dock-x)) * 1%);
+        inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1%);
+        inline-size: 0;
+        block-size: calc(var(--tb-dock-live-h, var(--tb-dock-h)) * 1%);
+        pointer-events: none;
+    }
+
+    .tb-menu.tb-dock__grip--vertical {
+        inline-size: calc(var(--tb-dock-live-w, var(--tb-dock-w)) * 1%);
+        block-size: 0;
+    }
+
+    /* The grip's box lets the pointer through to the line under it, but its button and its menu take the pointer. */
+    .tb-dock__grip > * {
+        pointer-events: auto;
+    }
+
+    .tb-dock__grip > [data-part="trigger"] {
+        flex: none;
+        min-inline-size: 24px;
+        inline-size: 24px;
+        border: 1px solid var(--tb-border-subtle);
+        background: var(--tb-color-surface);
+        color: var(--tb-color-text-muted);
+        cursor: col-resize;
+        opacity: 0;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    .tb-dock__grip--vertical > [data-part="trigger"] {
+        inline-size: auto;
+        min-inline-size: max(24px, calc(var(--tb-control-height) - 8px));
+        block-size: 24px;
+        cursor: row-resize;
+    }
+
+    .tb-dock__grip--vertical svg {
+        rotate: 90deg;
+    }
+
+    .tb-dock__separator:hover + .tb-dock__grip > [data-part="trigger"],
+    .tb-dock__grip > [data-part="trigger"]:is(:hover, :focus-visible, [aria-expanded="true"]) {
+        opacity: 1;
+    }
+
+    @media (pointer: coarse) {
+        .tb-dock__grip > [data-part="trigger"] {
+            opacity: 1;
+        }
+    }
+
     /* The pointer strip is wider than the 1px line but overlaps each group by less than a scrollbar's width. */
     .tb-dock__separator {
         z-index: 1;

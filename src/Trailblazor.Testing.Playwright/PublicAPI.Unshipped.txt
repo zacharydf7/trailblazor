@@ -644,3 +644,7 @@ Trailblazor.Testing.Playwright.TbDockLocator.CloseAsync(string! panel) -> System
 Trailblazor.Testing.Playwright.TbDockLocator.SizeAsync(string! separator) -> System.Threading.Tasks.Task<int>!
 Trailblazor.Testing.Playwright.TbDockLocator.ResizeAsync(string! separator, int percent) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TrailblazorPage.Dock(string? name = null) -> Trailblazor.Testing.Playwright.TbDockLocator!
+Trailblazor.Testing.Playwright.TbDockLocator.MoveTabAsync(string! panel, int places) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.MoveToGroupAsync(string! panel, int group) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.MoveToNewGroupAsync(string! panel, Trailblazor.DockPosition side) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.MoveToEdgeAsync(string! panel, Trailblazor.DockPosition edge) -> System.Threading.Tasks.Task!

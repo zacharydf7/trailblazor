@@ -8,10 +8,10 @@ public class DockManagerTests(BrowserFixture fixture) : DockManagerPage(fixture)
     public async Task Dock_ShouldPutEachPanelAfterItsGroupsTabs_WhenAPanelChangesGroup(string browser)
     {
         var page = await OpenDockAsync(browser);
-        Assert.Equal("group trails separator group notes separator group weather", await PartsAsync(page));
+        Assert.Equal("group trails separator grip group notes separator grip group weather", await PartsAsync(page));
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Move weather" }).ClickAsync();
-        await page.WaitForFunctionAsync($"() => ({Parts})() === 'group trails weather separator group notes'");
+        await page.WaitForFunctionAsync($"() => ({Parts})() === 'group trails weather separator grip group notes'");
 
         // Shift+Tab from the second group's tabs passes the separator and lands in the weather, now in the first.
         await Tab(page, "Notes").FocusAsync();
@@ -36,7 +36,7 @@ public class DockManagerTests(BrowserFixture fixture) : DockManagerPage(fixture)
 
         // A click from script leaves the focus where it is.
         await page.GetByRole(AriaRole.Button, new() { Name = "Move weather" }).EvaluateAsync("button => button.click()");
-        await page.WaitForFunctionAsync($"() => ({Parts})() === 'group trails weather separator group notes'");
+        await page.WaitForFunctionAsync($"() => ({Parts})() === 'group trails weather separator grip group notes'");
 
         await Expect(refresh).ToBeFocusedAsync();
         Assert.Equal(100, await page.GetByTestId("days").EvaluateAsync<int>("days => days.scrollTop"));
@@ -44,12 +44,10 @@ public class DockManagerTests(BrowserFixture fixture) : DockManagerPage(fixture)
         // The trails didn't move; their panel only went behind the weather.
         await Tab(page, "Trails").ClickAsync();
         await Expect(page.GetByLabel("Trail name")).ToHaveValueAsync("Ridge loop");
-        // Only moveBefore keeps an iframe loaded through a move.
-        if (await page.EvaluateAsync<bool>("() => 'moveBefore' in Element.prototype"))
-        {
-            await Tab(page, "Weather").ClickAsync();
-            await Expect(city).ToHaveValueAsync("Leeds");
-        }
+        // The weather's panel holds an iframe, so the other parts moved around it and what was typed in it is still
+        // there, with or without moveBefore.
+        await Tab(page, "Weather").ClickAsync();
+        await Expect(city).ToHaveValueAsync("Leeds");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -117,7 +115,10 @@ public class DockManagerTests(BrowserFixture fixture) : DockManagerPage(fixture)
 
         await Tab(page, "Gear").ClickAsync();
         await Expect(page.GetByLabel("Note", new() { Exact = true })).ToBeHiddenAsync();
-        // Tab goes from the tabs to the showing panel and its button, and then to the separator, never into the notes.
+        // Tab goes from the tabs to the group's menu, the showing panel and its button, and then to the separator,
+        // never into the notes.
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Options for Gear" })).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Tab");
         await Expect(Panel(page, "Gear")).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Tab");
@@ -334,18 +335,18 @@ public class DockManagerDriverTests(BrowserFixture fixture) : DockManagerPage(fi
         var page = await OpenDockAsync(browser);
         await page.GetByRole(AriaRole.Button, new() { Name = "Columns" }).ClickAsync();
         var dock = page.Tb().Dock();
-        // The first two columns take half the dock, one part to two.
+        // The first two columns take three quarters of the dock, one part to two.
         await Expect(Tab(page, "Gear")).ToHaveAttributeAsync("aria-selected", "true");
         Assert.Equal(33, await dock.SizeAsync("Resize Gear"));
 
         await dock.ResizeAsync("Resize Gear", 50);
 
         Assert.Equal(50, await dock.SizeAsync("Resize Gear"));
-        // Seventeen steps of a percent of that half, from a third of it.
-        Assert.Equal((1.0 / 3 + 0.17) * 0.5 * 766,
+        // Seventeen steps of a percent of those three quarters, from a third of them.
+        Assert.Equal((1.0 / 3 + 0.17) * 0.75 * 766,
             (await page.Locator(".tb-dock__group").First.BoundingBoxAsync())!.Width, 1.0);
-        // The third column, on the far side of the next separator, keeps its half.
-        Assert.Equal(0.5 * 766, (await page.Locator(".tb-dock__group").Nth(2).BoundingBoxAsync())!.Width, 1.0);
+        // The third column, on the far side of the next separator, keeps its quarter.
+        Assert.Equal(0.25 * 766, (await page.Locator(".tb-dock__group").Nth(2).BoundingBoxAsync())!.Width, 1.0);
     }
 }
 

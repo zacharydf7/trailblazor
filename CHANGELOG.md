@@ -89,6 +89,12 @@ they run by version. The docs site's Upgrading page is built from both.
 
 - New `TbDockManager` and `TbDockPanel`: a dock (`tb-dock`, `role="group"`, `data-part="dock"`) whose children are each group's row of tabs (`data-part="group"` around a `tablist`), each rendered panel (`role="tabpanel"`, `data-part="panel"`, `data-panel` with its id) and a `separator` between groups, placed by `--tb-dock-x`, `--tb-dock-y`, `--tb-dock-w` and `--tb-dock-h` in percent of the dock; a `DockLayout` of `DockSplit`s and `DockGroup`s says where each panel is and saves as JSON; `page.Tb().Dock()` and `cut.Tb().Dock()` drive it in tests
 - `TbMarkdownEditor` fills its field's box: its toolbar, text and preview were squeezed into a strip at the box's start
+- `TbDockManager` moves panels: each group has a menu after its tabs (`data-part="group-menu"`, class `tb-dock__menu`) that moves the showing panel along its row, to another group, or to a new group beside its own or along an edge of the dock, and closes it; its button is a new Tab stop between a group's tabs and its panel; `DockLayout.Move` and `MoveToEdge` do the same from code, with the new `DockPosition`; focus follows the moved tab and screen readers hear where it went; telemetry counts the action `move`
+- Each `TbDockManager` separator has a grip on its line (`data-part="grip"`, class `tb-dock__grip`, a child of the dock after its separator); dragging the grip moves the separator, and its menu resizes in steps of 10%, the single-pointer alternative to dragging (WCAG 2.5.7)
+- New `TbDockManager` `PersistenceKey`: saves the layout in the browser's local storage after each change and restores it on the next visit
+- A `TbDockManager` panel that holds an `<iframe>` now stays in place while other parts move around it, so the frame stays loaded in every browser, unless two panels with frames trade places
+- `DockLabels` gains the words of the two menus and of what is said after a move
+- `page.Tb().Dock()` and `cut.Tb().Dock()` gain `MoveTabAsync`, `MoveToGroupAsync`, `MoveToNewGroupAsync` and `MoveToEdgeAsync`
 - `page.Tb().Splitter(name)` and `cut.Tb().Splitter(name)` find only a `TbSplitter`'s separators, so a `TbDockManager`'s separator with the same name isn't taken for one
 
 #### 2026-11-17

@@ -179,8 +179,8 @@
 
     private Task RouteAsync(bool expanded) => SlowlyAsync($"route {expanded}");
 
-    private Task DockAsync(DockLayout layout) =>
-        SlowlyAsync($"dock shows {layout.Groups.First().Active}, closed {layout.Closed.Count}");
+    private Task DockAsync(DockLayout layout) => SlowlyAsync($"dock shows {layout.Groups.First().Active} of "
+        + $"{string.Join(' ', layout.Groups.First().Panels)}, closed {layout.Closed.Count}");
 
     private Task SignAsync(Signature? signature) => SlowlyAsync(signature?.TypedName is { } name ? $"signed {name}"
         : $"strokes {signature?.Strokes.Count ?? 0}", () => _signature = signature);

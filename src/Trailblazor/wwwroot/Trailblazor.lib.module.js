@@ -30,6 +30,7 @@ import '../Trailblazor.Primitives/anchored-position.js';
 import '../Trailblazor.Primitives/composing.js';
 import '../Trailblazor.Primitives/dotnet-call.js';
 import '../Trailblazor.Primitives/focus-scope.js';
+import '../Trailblazor.Primitives/grip-drag.js';
 import '../Trailblazor.Primitives/pointer-drag.js';
 import '../Trailblazor.Primitives/roving-focus.js';
 import './browser.js';

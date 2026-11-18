@@ -7,7 +7,7 @@
 <TbButton OnClick="() => _layout = OnlyNotes">Only notes</TbButton>
 <TbButton OnClick="@(() => _layout = _layout.Open("notes"))">Open notes</TbButton>
 <div style="inline-size: 48rem; block-size: 24rem" dir="@Direction">
-    <TbDockManager @bind-Layout="_layout" AriaLabel="Hike planner" MinGroupSize="64">
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Hike planner" MinGroupSize="64" PersistenceKey="@Key">
         <EmptyContent>Nothing is open.</EmptyContent>
         <ChildContent>
         <TbDockPanel Id="trails" Title="Trails">
@@ -72,12 +72,12 @@
     // Four tabs in a group too narrow for them, with the last one showing.
     private static readonly DockLayout Crowded = new(new DockSplit(
         new DockGroup("trails", "map", "notes", "weather") { Active = "weather", Size = 1 },
-        new DockGroup("gear") { Size = 5 }));
+        new DockGroup("gear") { Size = 3 }));
 
     // Three groups side by side, as many as at the start, with Gear now the showing tab of the narrow first one.
     private static readonly DockLayout Columns = new(new DockSplit(
         new DockGroup("trails", "map", "gear") { Active = "gear", Size = 1 },
-        new DockGroup("notes") { Size = 2 }, new DockGroup("weather") { Size = 3 }));
+        new DockGroup("notes") { Size = 2 }, new DockGroup("weather") { Size = 1 }));
 
     // One panel docked and the rest closed.
     private static readonly DockLayout OnlyNotes = new(new DockGroup("notes"), ["trails", "map", "gear", "weather"]);
@@ -89,6 +89,9 @@
 
     [SupplyParameterFromQuery]
     private string? Layout { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? Key { get; set; }
 
     protected override void OnInitialized()
     {

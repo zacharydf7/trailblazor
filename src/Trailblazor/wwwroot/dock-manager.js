@@ -1,4 +1,5 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { createGripDrag } from '../Trailblazor.Primitives/grip-drag.js';
 import { nextTab, scrollTabIntoRow } from './tabs.js';
 
 const sides = ['x', 'y', 'width', 'height'];
@@ -16,7 +17,8 @@ export function attachDock(root, reporter) {
     }
 
     const parts = name => [...root.children].filter(child => child.dataset.part === name);
-    // The dock's own tab or separator under a target, not one of a dock, tabs or a splitter inside a panel.
+    const storageKey = key => `tb-dock:${key}`;
+    // The dock's own tab, separator or grip under a target, not one of a dock, tabs or a splitter inside a panel.
     const ownPart = (target, name) => {
         const part = target.closest?.(`.tb-dock__${name}`);
         return part?.closest('.tb-dock') === root ? part : null;
@@ -45,18 +47,46 @@ export function attachDock(root, reporter) {
             focused.focus({ preventScroll: true });
         }
     };
+    // What the dock holds, in reading order: each group's row, its panels, then the separator after the group and
+    // that separator's grip.
+    const inReadingOrder = () => {
+        const [panels, separators, grips] = ['panel', 'separator', 'grip'].map(parts);
+        const after = index => [separators, grips].map(list => list.find(each => Number(each.dataset.index) === index));
+        return parts('group').flatMap((group, index) => [group,
+            ...panels.filter(panel => Number(panel.dataset.dockGroup) === index), ...after(index).filter(Boolean)]);
+    };
+    // Where the browser has no moveBefore, a move reloads an iframe, so a panel that holds one costs far more to move
+    // than another panel, and a panel more than a row of tabs or a separator.
+    const cost = part => part.dataset.part !== 'panel' ? 1 : part.querySelector('iframe') ? 1000 : 10;
+    // Puts the parts in reading order by moving the cheapest set of them: the costliest run of parts already in
+    // order stays where it is, and each other part goes before the part that follows it.
     const order = () => {
-        const panels = parts('panel');
-        parts('group').forEach((group, index) => {
-            let last = group;
-            for (const panel of panels.filter(each => Number(each.dataset.dockGroup) === index)) {
-                if (last.nextElementSibling !== panel) {
-                    place(panel, last.nextElementSibling);
+        const wanted = inReadingOrder();
+        const now = [...root.children];
+        const places = wanted.map(part => now.indexOf(part));
+        const kept = wanted.map(cost);
+        const before = wanted.map(() => -1);
+        wanted.forEach((part, at) => {
+            for (let earlier = 0; earlier < at; earlier++) {
+                if (places[earlier] < places[at] && kept[earlier] + cost(part) > kept[at]) {
+                    kept[at] = kept[earlier] + cost(part);
+                    before[at] = earlier;
                 }
-
-                last = panel;
             }
         });
+        const stays = new Set();
+        for (let at = kept.indexOf(Math.max(...kept)); at >= 0; at = before[at]) {
+            stays.add(wanted[at]);
+        }
+
+        let next = null;
+        for (const part of [...wanted].reverse()) {
+            if (!stays.has(part)) {
+                place(part, next);
+            }
+
+            next = part;
+        }
     };
     // A tab selected from code may sit outside a row that overflows. Scrolling only the row leaves the page alone.
     // A tab is revealed only as it becomes its row's selected one, so a row the user has since scrolled stays put.
@@ -104,10 +134,15 @@ export function attachDock(root, reporter) {
         const [x, y, width, height] = separator.dataset[side].split(' ').map(Number);
         return [side, { x, y, width, height }];
     }));
+    // A grip sits on its separator's line, so it goes where the separator goes.
+    const withGrip = element => element.dataset.part !== 'separator' ? [element]
+        : [element, ...parts('grip').filter(grip => grip.dataset.index === element.dataset.index)];
     const show = () => {
         for (const [element, box] of moved) {
-            for (const side of sides) {
-                element.style.setProperty(`--tb-dock-live-${names[side]}`, String(box[side]));
+            for (const shown of withGrip(element)) {
+                for (const side of sides) {
+                    shown.style.setProperty(`--tb-dock-live-${names[side]}`, String(box[side]));
+                }
             }
         }
     };
@@ -117,9 +152,9 @@ export function attachDock(root, reporter) {
             return;
         }
 
-        for (const element of moved.keys()) {
+        for (const shown of [...moved.keys()].flatMap(withGrip)) {
             for (const side of sides) {
-                element.style.removeProperty(`--tb-dock-live-${names[side]}`);
+                shown.style.removeProperty(`--tb-dock-live-${names[side]}`);
             }
         }
 
@@ -201,30 +236,62 @@ export function attachDock(root, reporter) {
             : (event.clientX - box.left) / box.width * 100;
     };
     const edgeOf = separator => boxOf(separator)[vertical(separator) ? 'y' : 'x'];
+    // The place a separator's edge moves to with a step of this many percent of what its two parts take together, so
+    // aria-valuenow moves by as much.
+    const stepped = (separator, percent) => {
+        const { before, after } = sidesOf(separator);
+        const length = vertical(separator) ? 'height' : 'width';
+        return edgeOf(separator) + percent * (before[length] + after[length]) / 100;
+    };
+    // The separator that a press on it, or on its grip's button, drags.
+    const pressed = event => {
+        const separator = ownPart(event.target, 'separator');
+        const grip = separator ? null : ownPart(event.target, 'grip');
+        const trigger = grip && event.target.closest('[data-part="trigger"]');
+        if (separator || !trigger) {
+            return separator ? { separator, grip: null } : null;
+        }
+
+        return { separator: parts('separator').find(each => each.dataset.index === grip.dataset.index), grip: trigger };
+    };
 
     let drag = null;
+    const grips = createGripDrag(root);
     const onPointerDown = event => {
-        const separator = ownPart(event.target, 'separator');
-        if (!separator || event.button !== 0) {
+        grips.pressed();
+        const press = event.button === 0 ? pressed(event) : null;
+        if (!press?.separator) {
             return;
         }
 
-        event.preventDefault();
-        // Focus from script counts as keyboard focus, so the mark keeps a press from showing the focus highlight.
-        separator.dataset.pointerFocus = '';
-        separator.focus();
-        separator.setPointerCapture(event.pointerId);
-        // A panel's iframe would take the pointer as it crosses, so the panels let it through while a drag runs.
-        root.dataset.resizing = '';
-        drag = { separator, grab: along(separator, event) - edgeOf(separator), share: null };
+        const { separator, grip } = press;
+        if (!grip) {
+            event.preventDefault();
+            // Focus from script counts as keyboard focus, so the mark keeps a press from showing the focus highlight.
+            separator.dataset.pointerFocus = '';
+            separator.focus();
+        }
+
+        (grip ?? separator).setPointerCapture(event.pointerId);
+        drag = { separator, grip, grab: along(separator, event) - edgeOf(separator), share: null,
+            start: vertical(separator) ? event.clientY : event.clientX, dragged: false };
     };
     const onPointerMove = event => {
-        if (drag) {
+        if (!drag) {
+            return;
+        }
+
+        const moved = (vertical(drag.separator) ? event.clientY : event.clientX) - drag.start;
+        drag.dragged ||= !drag.grip || grips.isDrag(moved, event);
+        if (drag.dragged) {
+            // A panel's iframe would take the pointer as it crosses, so the panels let it through while a drag runs.
+            root.dataset.resizing = '';
             drag.share = moveTo(drag.separator, along(drag.separator, event) - drag.grab) ?? drag.share;
         }
     };
     const onPointerUp = () => {
         if (drag) {
+            grips.released(drag.dragged ? drag.grip : null);
             delete root.dataset.resizing;
             report(drag.separator, drag.share);
             drag = null;
@@ -242,12 +309,9 @@ export function attachDock(root, reporter) {
             const rtl = !vertical(separator) && getComputedStyle(root).direction === 'rtl';
             const grow = vertical(separator) ? 'ArrowDown' : rtl ? 'ArrowLeft' : 'ArrowRight';
             const shrink = vertical(separator) ? 'ArrowUp' : rtl ? 'ArrowRight' : 'ArrowLeft';
-            // A step is 1% of what the two parts take together, or 10% with Shift, so aria-valuenow moves by as much.
-            const { before, after } = sidesOf(separator);
-            const length = vertical(separator) ? 'height' : 'width';
-            const step = (event.shiftKey ? 10 : 1) * (before[length] + after[length]) / 100;
-            const edge = edgeOf(separator);
-            const to = { [grow]: edge + step, [shrink]: edge - step, Home: 0, End: 100 }[event.key];
+            const step = event.shiftKey ? 10 : 1;
+            const to = { [grow]: stepped(separator, step), [shrink]: stepped(separator, -step), Home: 0,
+                End: 100 }[event.key];
             if (to !== undefined) {
                 event.preventDefault();
                 report(separator, moveTo(separator, to));
@@ -312,6 +376,28 @@ export function attachDock(root, reporter) {
     // Marks that the keys and drags work, which tests wait for.
     root.dataset.ready = '';
     return {
+        // The layout saved under the key, as text. Storage can be turned off.
+        saved(key) {
+            try {
+                return localStorage.getItem(storageKey(key));
+            } catch {
+                return null;
+            }
+        },
+        // Storage can be full or turned off, and then the layout just isn't kept.
+        save(key, layout) {
+            try {
+                localStorage.setItem(storageKey(key), layout);
+            } catch {
+            }
+        },
+        // A grip's menu moves its separator by this many percent, as its keys do.
+        step(index, percent) {
+            const separator = parts('separator').find(each => Number(each.dataset.index) === index);
+            if (separator) {
+                report(separator, moveTo(separator, stepped(separator, percent)));
+            }
+        },
         // Whether the tab with this id, or its panel, holds the focus. The dock asks when the tab's close mark is
         // clicked.
         holdsFocus(id) {
@@ -331,6 +417,7 @@ export function attachDock(root, reporter) {
             root.removeEventListener('focusout', onFocusOut);
             root.removeEventListener('mousedown', onMouseDown);
             root.removeEventListener('auxclick', onAuxClick);
+            grips.dispose();
         },
     };
 }

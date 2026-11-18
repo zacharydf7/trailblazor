@@ -2714,7 +2714,8 @@ public static class ExampleCatalog
         },
         new("dock-manager", "Dock manager", ExampleCategory.Layout,
             "Lays panels out as an IDE does, in groups of tabs side by side or stacked, with separators that "
-                + "resize them. Each panel keeps its state while it's hidden or moved.")
+                + "resize them and menus that move panels between groups. Each panel keeps its state while it's "
+                + "hidden or moved, and the dock can remember the arrangement.")
         {
             RightToLeftKeys = "Left and Right move between tabs, and move a separator, the way they point: Left "
                 + "goes to the next tab and grows the first group, now on the right.",
@@ -2739,15 +2740,32 @@ public static class ExampleCatalog
                     + "stacked when `Vertical`. A part's `Size` is its share of the split relative to its siblings, "
                     + "so a part with 2 is twice as large as one with 1. A separator stops where a group would get "
                     + "smaller than `MinGroupSize`, which is 96 pixels unless set. `@bind-Layout` hears each tab "
-                    + "the user selects, each panel they close and each separator they move.",
+                    + "the user selects, each panel they move or close and each separator they move.",
                     typeof(DockManagerExample)),
-                new("saving", "Saving the layout", "`ToJson` writes a layout as text and `DockLayout.TryParse` "
-                    + "reads it back, giving false for text that isn't a layout. Save the text where the app keeps "
-                    + "its settings. A panel the saved layout doesn't know joins the largest group, and a saved "
-                    + "panel the app no longer has isn't shown, though the layout keeps its place.",
-                    typeof(DockManagerSaveExample)),
+                new("moving", "Moving panels", "The menu after each group's tabs acts on the group's showing panel. "
+                    + "It moves the tab back or forward in its row, moves the panel to another group, gives it a "
+                    + "new group beside its own or along an edge of the dock, and closes it. From code, "
+                    + "`DockLayout.Move(panel, target, position)` gives back a layout with a panel beside another "
+                    + "one, for the app to set as `Layout`: `DockPosition.Before` or `After` makes it a tab next "
+                    + "to the target's and shows it, and `Start`, `End`, `Top` or `Bottom` gives it a new group on "
+                    + "that side of the target's group, with half of the group's space. `MoveToEdge(panel, edge)` "
+                    + "gives it a new group along an edge of the dock, which takes a quarter of the dock, or all "
+                    + "of it when nothing else is docked. A moved panel keeps its content.",
+                    typeof(DockManagerMoveExample)),
+                new("remembering", "Remembering the layout", "With a `PersistenceKey`, the dock saves its layout in "
+                    + "the browser's local storage after each change and reads it back once the page is "
+                    + "interactive, so a reload keeps the arrangement. The saved layout replaces `Layout` and "
+                    + "raises `LayoutChanged`. "
+                    + "Setting another `Layout` later replaces what is saved, which is how the Reset button works.",
+                    typeof(DockManagerRememberExample)),
+                new("saving", "Saving the layout yourself", "To keep layouts with the app's own settings, such as "
+                    + "on a server, `ToJson` writes a layout as text and `DockLayout.TryParse` reads it back, "
+                    + "giving false for text that isn't a layout. A panel the saved layout doesn't know joins the "
+                    + "largest group, and a saved panel the app no longer has isn't shown, though the layout keeps "
+                    + "its place.", typeof(DockManagerSaveExample)),
                 new("closing", "Closing and reopening", "A panel closes from the mark on its tab, with Delete or "
-                    + "Backspace on the tab, or with a middle click. Closing disposes the panel's content. The "
+                    + "Backspace on the tab, with a middle click, or from Close in its group's menu. Closing "
+                    + "disposes the panel's content. The "
                     + "layout lists the closed panels in `Closed`, and `Open` brings one back, built anew, as the "
                     + "showing tab of the largest group. `EmptyContent` shows when every panel is closed. A panel "
                     + "with `Closable=\"false\"` has no mark and stays open, as the Map panel does under Panels and "
@@ -2761,7 +2779,7 @@ public static class ExampleCatalog
                     + "before a tab's title.", typeof(DockManagerManyExample)),
             ],
             Api = [typeof(TbDockManager), typeof(TbDockPanel), typeof(DockLayout), typeof(DockGroup),
-                typeof(DockSplit), typeof(DockNode), typeof(DockLabels)],
+                typeof(DockSplit), typeof(DockNode), typeof(DockPosition), typeof(DockLabels)],
             Keyboard =
             [
                 new(["Left", "Right"], "Moves to the previous or next tab of the group, wrapping at the ends, "
@@ -2770,6 +2788,11 @@ public static class ExampleCatalog
                     { When = "On a tab" },
                 new(["Delete", "Backspace"], "Closes the panel, unless its `Closable` is false.")
                     { When = "On a tab" },
+                new(["Tab"], "Goes to the group's menu button.") { When = "On a tab" },
+                new(["Enter", "Space", "Down"], "Opens the menu that moves or closes the group's showing panel, "
+                    + "on its first item. Inside it, the keys are those of a [menu](components/menu).")
+                    { When = "On a group's menu button" },
+                new(["Up"], "Opens that menu on its last item.") { When = "On a group's menu button" },
                 new(["Left", "Right"], "Moves the separator by 1% of the space its two sides share.")
                     { When = "On a separator between side-by-side parts" },
                 new(["Shift+Left", "Shift+Right"], "Moves the separator by 10%.")
@@ -2788,32 +2811,47 @@ public static class ExampleCatalog
                 "Each tab is named by its panel's `Title`, and each panel by its tab.",
                 "Each group's tab list is named \"Panel group\" followed by its number.",
                 "Each separator is named \"Resize\" followed by the title of the panel showing in the group just "
-                    + "before it.",
-                "The dock's `Labels` replaces these words, with `{0}` for the number or the title, and its "
-                    + "`CloseHint` replaces the hint that describes a closable tab.",
+                    + "before it, and the grip on its line is a menu `button` named \"Size of\" followed by the "
+                    + "same title.",
+                "Each group's menu button is named \"Options for\" followed by the title of the group's showing "
+                    + "panel.",
+                "The dock's `Labels` replaces these words, the items of both menus and what is said after a move, "
+                    + "with `{0}` for the number or the title. Two take both: `GroupItem` has `{0}` for a group's "
+                    + "number and `{1}` for its showing panel's title, and `Moved` has `{0}` for the moved panel's "
+                    + "title and `{1}` for its group's number.",
+                "`Labels.CloseHint` replaces the hint that describes a closable tab.",
             ],
             Announcements =
             [
                 "On a tab, screen readers say its title, that it's a tab, whether it's selected and its place "
                     + "among the group's tabs. A closable tab adds \"Press Delete to close\".",
+                "After a group's menu moves a panel, screen readers hear where it went, as in \"Trails moved to "
+                    + "panel group 2.\"",
                 "On a separator, `aria-valuenow` gives the share, in percent, that the part before it has of the "
                     + "space its two sides take together.",
             ],
             Accessibility =
             [
                 "Each group's tabs are a `tablist`, and each panel is a `tabpanel`. A group's tabs are one stop for "
-                    + "the Tab key, on the showing tab. Tab then goes to the panel, to what the panel holds, and "
-                    + "to the separator after the group.",
+                    + "the Tab key, on the showing tab. Tab then goes to the group's menu button, to the panel, to "
+                    + "what the panel holds, and to the separator after the group.",
+                "A group's menu moves and closes panels with single clicks, taps or key presses, so nothing needs "
+                    + "a drag (WCAG 2.5.7). After a move, focus is on the moved panel's tab.",
                 "Tab and screen readers meet the groups in reading order, and still do after the layout changes.",
                 "A hidden panel is `inert`: nothing in it can be focused or read until its tab shows it.",
                 "A click on a close mark, or a middle click, leaves the focus where it is. Closing a tab that "
                     + "holds the focus, or whose panel does, moves focus to the next tab of its "
                     + "group, or else the one before. When its last tab closes and the group goes too, focus moves "
                     + "to the next group's showing tab, or else the previous group's. With no panel left, the dock "
-                    + "itself takes the focus.",
+                    + "itself takes the focus. Close in a group's menu moves focus the same way.",
                 "Each separator is a focusable `separator` that follows the window splitter pattern: its arrow "
                     + "keys move it, and a mouse or a finger drags it.",
-                "Tabs and close marks work with a tap, and a close mark is a 24px target.",
+                "A click or tap on a separator's grip opens its menu, which makes the part before the separator "
+                    + "larger or smaller by 10%. The menu is the single-pointer alternative to dragging (WCAG "
+                    + "2.5.7). The grip shows while the pointer is on the separator, and always where the main "
+                    + "pointer is a finger, as on a phone or a tablet.",
+                "The grip stays out of the tab order, since the separator's keys do the same as its menu.",
+                "Tabs, close marks, menu buttons and grips work with a tap, and each is at least a 24px target.",
                 "In forced colors, the showing tab's line and a focused separator use the system's highlight "
                     + "color.",
             ],
@@ -2822,14 +2860,15 @@ public static class ExampleCatalog
                 "Give the dock an `AriaLabel` when the page has more than one, and give each panel a short "
                     + "`Title`, since an icon alone doesn't name a tab.",
                 "Offer a way to reopen closed panels, such as a View menu that calls `Open`.",
-                "Offer a command that closes a panel, calling `Close`, where people use a screen reader on a touch "
-                    + "screen: the close mark is hidden from screen readers, and they have no Delete key.",
+                "With a `PersistenceKey`, offer a way back to the starting layout, such as a Reset button that "
+                    + "sets `Layout`.",
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "The groups render where the layout puts them, each showing its panel. Selecting tabs, closing "
-                    + "panels and resizing start working once the page is interactive.",
+                    + "panels and resizing start working once the page is interactive, which is also when the "
+                    + "groups' menus and the separators' grips appear.",
             ],
             Notes =
             [
@@ -2843,12 +2882,16 @@ public static class ExampleCatalog
                     + "split inside a split of the same direction joins it."),
                 new("A `TbDockPanel`'s `Class`, `Style` and other attributes go on its panel element, except `id`, "
                     + "which the dock sets to tie the panel to its tab."),
-                new("A separator can't be moved in steps with a click or a tap (WCAG 2.5.7): it moves by dragging "
-                    + "or with its arrow keys. Where people need that, offer buttons that set the parts' `Size` in "
-                    + "the layout.") { Pitfall = true },
-                new("When the app moves a panel to another group, the panel keeps its content, its scroll "
-                    + "positions and its focus. An `<iframe>` inside it stays loaded where the browser has "
+                new("A panel that moves to another group keeps its content, its scroll positions and its focus. "
+                    + "The dock keeps a panel that holds an `<iframe>` in place in the document and moves the other "
+                    + "parts around it, so the frame stays loaded. Only when two panels that hold frames trade "
+                    + "places does one of them have to move: its frame stays loaded where the browser has "
                     + "`Element.moveBefore`, and loads again where it doesn't.") { Pitfall = true },
+                new("A `PersistenceKey` names the layout in the browser's local storage, as `tb-dock:` followed by "
+                    + "the key, so give each dock a key of its own. The layout is kept for that browser only, and "
+                    + "isn't kept where storage is turned off or full."),
+                new("The saved layout is read once the page is interactive, so a prerendered page shows the "
+                    + "app's layout first and then the saved one.") { Pitfall = true },
                 new("A panel inside an `@if` keeps its place in the layout while it isn't rendered, and comes "
                     + "back there."),
             ],
@@ -2857,9 +2900,14 @@ public static class ExampleCatalog
             Blocks = ["tb-dock"],
             DataParts =
             [
-                new("dock", "The dock itself, around its groups, panels and separators, which are its children."),
+                new("dock", "The dock itself, around its groups, panels, separators and grips, which are its "
+                    + "children."),
                 new("group", "One group's row, across the top of the group's box."),
                 new("tabs", "The tab list in a group's row."),
+                new("group-menu", "The menu after a group's tabs, which moves or closes the group's showing panel. "
+                    + "Its items carry `data-move` (`back`, `forward` or `close`), `data-move-group` with a "
+                    + "group's number, or `data-move-beside` or `data-move-edge` with `start`, `end`, `top` or "
+                    + "`bottom`."),
                 new("tab", "One panel's tab, with `data-panel` holding the panel's `Id`."),
                 new("icon", "A tab's icon."),
                 new("title", "A tab's title."),
@@ -2867,6 +2915,8 @@ public static class ExampleCatalog
                 new("panel", "One panel's content, with `data-panel` holding its `Id`. A hidden one is `inert`."),
                 new("separator", "The focusable line between two parts, dragged or moved with the keyboard to "
                     + "resize them."),
+                new("grip", "A separator's handle menu, on the middle of its line: its button drags the separator "
+                    + "or opens the items that resize, which carry `data-step` (`larger` or `smaller`)."),
                 new("empty", "What shows when no panel is docked."),
             ],
             Anatomy = """
@@ -2888,17 +2938,29 @@ public static class ExampleCatalog
                 "`ResizeAsync(\"Resize Trails\", 40)` moves a separator as its keys do, and `SizeAsync(\"Resize "
                     + "Trails\")` or `Size(\"Resize Trails\")` reads its percent. bUnit has no pixels, so it "
                     + "doesn't apply `MinGroupSize`.",
-                "In Playwright, `SelectAsync`, `CloseAsync` and `ResizeAsync` wait until the app's `LayoutChanged` "
-                    + "has run, which the dock counts in `data-commits`.",
-                "A `DockLayout` needs no renderer: test what your app does with `Open`, `Close`, `ToJson` and "
-                    + "`TryParse` in plain unit tests.",
+                "`MoveTabAsync(\"Notes\", 1)` moves a panel's tab forward in its row, and a negative number moves "
+                    + "it back. `MoveToGroupAsync(\"Notes\", 2)` moves the panel to the group with that number.",
+                "`MoveToNewGroupAsync(\"Notes\", DockPosition.Bottom)` gives a panel a new group on that side of "
+                    + "its own, and `MoveToEdgeAsync(\"Notes\", DockPosition.End)` one along an edge of the dock.",
+                "The move helpers use the group's menu, which acts on the showing panel, so each selects the "
+                    + "panel first. They find the menu's items by the attributes listed for the `group-menu` "
+                    + "part, so they work whatever the `Labels` say.",
+                "When the menu doesn't offer a move, as for a tab already at the end of its row or a panel alone "
+                    + "in its group, the move helper throws an `InvalidOperationException` that says why.",
+                "In Playwright, `SelectAsync`, `CloseAsync`, `ResizeAsync` and the move helpers wait until the "
+                    + "app's `LayoutChanged` has run, which the dock counts in `data-commits`.",
+                "A `DockLayout` needs no renderer: test what your app does with `Open`, `Close`, `Move`, `MoveToEdge`, "
+                    + "`ToJson` and `TryParse` in plain unit tests.",
+                "A dock with a `PersistenceKey` starts from what the browser has saved. Playwright gives each new "
+                    + "context empty storage, and bUnit has no storage, so there the dock starts from `Layout`.",
             ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"hike-planner\"`, it counts `trailblazor.control.shown` as it "
                     + "first renders and `trailblazor.control.used` with the action `select` each time a person "
-                    + "shows another tab, `close` each time they close a panel and `resize` each time they move a "
-                    + "separator. Panel ids, titles and sizes are never recorded.",
+                    + "shows another tab, `move` each time they move a panel, `close` each time they close one "
+                    + "and `resize` each time they move a separator. Panel ids, titles and sizes are never "
+                    + "recorded.",
             ],
         },
         new("splitter", "Splitter", ExampleCategory.Layout,

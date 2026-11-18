@@ -55,14 +55,81 @@
                         </button>
                     }
                 </div>
+                @* The menu does with a click or a tap what dragging a tab does (WCAG 2.5.7), and closes a panel where
+                   neither its mark nor a key can be reached. It acts on the group's showing panel. *@
+                @if (RendererInfo.IsInteractive)
+                {
+                    var active = group.Box.Active;
+                    var tabs = group.Box.Panels;
+                    var at = tabs.TakeWhile(each => each != active).Count();
+                    var others = slots.OfType<GroupSlot>().Where(each => each.Index != group.Index).ToList();
+                    var sibling = tabs.FirstOrDefault(each => each != active);
+                    <TbMenu Icon="BuiltInIcons.More" Size="Size.Small" Align="PlacementAlign.End" AttachOnFirstUse
+                            Class="tb-dock__menu" data-part="group-menu"
+                            AriaLabel="@Format(Labels.Menu, TbStrings.DockMenu, Panel(active)!.Title)">
+                        <TbMenuItem Disabled="at == 0" data-move="back"
+                                    OnClick="() => MoveAsync(active, tabs[at - 1], DockPosition.Before)">
+                            @(Labels.MoveTabBack ?? Localizer[TbStrings.DockMoveTabBack])
+                        </TbMenuItem>
+                        <TbMenuItem Disabled="at == tabs.Count - 1" data-move="forward"
+                                    OnClick="() => MoveAsync(active, tabs[at + 1], DockPosition.After)">
+                            @(Labels.MoveTabForward ?? Localizer[TbStrings.DockMoveTabForward])
+                        </TbMenuItem>
+                        @if (others.Count > 0)
+                        {
+                            <TbSubMenu Label="@(Labels.MoveToGroup ?? Localizer[TbStrings.DockMoveToGroup])">
+                                @foreach (var other in others)
+                                {
+                                    var last = other.Box.Panels[^1];
+                                    <TbMenuItem @key="other.Index" data-move-group="@(other.Index + 1)"
+                                                OnClick="() => MoveAsync(active, last, DockPosition.After)">
+                                        @Format(Labels.GroupItem, TbStrings.DockGroupItem, other.Index + 1,
+                                            Panel(other.Box.Active)!.Title)
+                                    </TbMenuItem>
+                                }
+                            </TbSubMenu>
+                        }
+                        @if (sibling is not null)
+                        {
+                            <TbSubMenu Label="@(Labels.NewGroup ?? Localizer[TbStrings.DockNewGroup])">
+                                @foreach (var (position, label, text) in Sides(edge: false))
+                                {
+                                    <TbMenuItem @key="position" data-move-beside="@label"
+                                                OnClick="() => MoveAsync(active, sibling, position)">
+                                        @text
+                                    </TbMenuItem>
+                                }
+                            </TbSubMenu>
+                        }
+                        @if (sibling is not null || others.Count > 0)
+                        {
+                            <TbSubMenu Label="@(Labels.NewGroupAtEdge ?? Localizer[TbStrings.DockNewGroupAtEdge])">
+                                @foreach (var (position, label, text) in Sides(edge: true))
+                                {
+                                    <TbMenuItem @key="position" data-move-edge="@label"
+                                                OnClick="() => MoveAsync(active, position)">
+                                        @text
+                                    </TbMenuItem>
+                                }
+                            </TbSubMenu>
+                        }
+                        @if (Panel(active)!.Closable)
+                        {
+                            <TbMenuSeparator />
+                            <TbMenuItem data-move="close" OnClick="() => CloseAsync(active, true)">
+                                @(Labels.Close ?? Localizer[TbStrings.DockClose])
+                            </TbMenuItem>
+                        }
+                    </TbMenu>
+                }
             </div>
         }
         else if (slot is PanelSlot host)
         {
             @* A hidden panel is inert, so nothing in it can be reached, even what its own styles make visible. *@
-            <div @key="host.Key" @attributes="host.Panel.HostAttributes" role="tabpanel" id="@PanelId(host.Panel.Id)"
-                 aria-labelledby="@TabId(host.Panel.Id)" tabindex="@(host.Showing ? 0 : null)" inert="@(!host.Showing)"
-                 data-part="panel" data-panel="@host.Panel.Id" data-dock-group="@host.Group"
+            <div @key="host.Key" @attributes="host.Panel.HostAttributes" role="tabpanel" id="@PanelId(host.Panel.Name)"
+                 aria-labelledby="@TabId(host.Panel.Name)" tabindex="@(host.Showing ? 0 : null)" inert="@(!host.Showing)"
+                 data-part="panel" data-panel="@host.Panel.Name" data-dock-group="@host.Group"
                  style="@($"{BoxStyle(host.Box)} {host.Panel.Style}")"
                  class="@ClassNames.Join("tb-dock__panel", host.Showing ? null : "tb-dock__panel--hidden",
                             host.Panel.Class)">
@@ -81,6 +148,29 @@
                  class="@ClassNames.Join("tb-dock__separator",
                             box.Split.Vertical ? "tb-dock__separator--vertical" : null)">
             </div>
+            @* The grip's menu resizes with single clicks or taps (WCAG 2.5.7). It stays out of the tab order, since
+               the separator's keys do the same. *@
+            @if (RendererInfo.IsInteractive)
+            {
+                var name = Panel(separator.Before)!.Title;
+                <TbMenu @key="@($"grip-{separator.Index}")" data-part="grip" data-index="@separator.Index"
+                        Style="@BoxStyle(Line(box))" Class="@ClassNames.Join("tb-dock__grip",
+                                   box.Split.Vertical ? "tb-dock__grip--vertical" : null)">
+                    <Trigger>
+                        <TbIconButton Icon="BuiltInIcons.DragHandle" Size="Size.Small"
+                                      AriaLabel="@Format(Labels.SizeMenu, TbStrings.DockSizeMenu, name)"
+                                      @attributes="context.Attributes" tabindex="-1" />
+                    </Trigger>
+                    <ChildContent>
+                        <TbMenuItem data-step="larger" OnClick="() => StepAsync(separator.Index, 10)">
+                            @Format(Labels.Larger, TbStrings.DockLarger, name)
+                        </TbMenuItem>
+                        <TbMenuItem data-step="smaller" OnClick="() => StepAsync(separator.Index, -10)">
+                            @Format(Labels.Smaller, TbStrings.DockSmaller, name)
+                        </TbMenuItem>
+                    </ChildContent>
+                </TbMenu>
+            }
         }
     }
     @if (slots.Count == 0)
@@ -117,6 +207,9 @@
     private DotNetObjectReference<DockReport>? _report;
     private string? _focusAfterRender;
     private bool _focusDockAfterRender;
+    private bool _saveAfterRender;
+    // The key whose saved layout the dock has read.
+    private string? _restoredKey;
     // Counts the parent's renders, so the panels take new parameters only then.
     private int _declared;
     private int _stamps;
@@ -129,6 +222,9 @@
 
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
+
+    [Inject]
+    private IAnnouncer Announcer { get; set; } = default!;
 
     private ControlTelemetry Telemetry => field ??= new(Services, GetType());
 
@@ -152,14 +248,23 @@
     [Parameter]
     public DockLayout? Layout { get; set; }
 
-    /// <summary>Raised with the new layout when the user selects a tab, closes a panel or moves a separator.
-    /// </summary>
+    /// <summary>Raised with the new layout when the user selects a tab, moves or closes a panel or moves a
+    /// separator, and when the dock restores the layout saved under its <see cref="PersistenceKey"/>.</summary>
     [Parameter]
     public EventCallback<DockLayout> LayoutChanged { get; set; }
 
     /// <summary>What shows in place of the panels when none is docked, such as a hint on how to open one.</summary>
     [Parameter]
     public RenderFragment? EmptyContent { get; set; }
+
+    /// <summary>Saves the layout in the browser under this key after each change, and reads it back once the page
+    /// is interactive, so a reload keeps the user's arrangement. The saved layout replaces <see cref="Layout"/> and
+    /// raises <see cref="LayoutChanged"/>; setting another <see cref="Layout"/> later replaces the saved one, which
+    /// is how a Reset button works. Use a key unique to each dock. When the key changes, the dock reads the layout
+    /// saved under the new one. To keep layouts on a server instead, bind <see cref="Layout"/> and save
+    /// <see cref="DockLayout.ToJson"/>.</summary>
+    [Parameter]
+    public string? PersistenceKey { get; set; }
 
     /// <summary>The smallest width or height a separator leaves a group, in pixels. Defaults to 96.</summary>
     [Parameter]
@@ -169,14 +274,15 @@
     [Parameter]
     public string? AriaLabel { get; set; }
 
-    /// <summary>The words the dock says to screen readers. Each one left null uses the app's text.</summary>
+    /// <summary>The words of the dock's menus and what it says to screen readers. Each one left null uses the app's
+    /// text.</summary>
     [Parameter]
     public DockLabels Labels { get; set; } = new();
 
     /// <summary>A label this dock's use is counted under, such as <c>"workbench"</c>, so the app can count how often
-    /// people see it and select, close and resize its panels through the <c>Trailblazor</c> meter. Controls that
-    /// share a label count together; a control without one isn't counted. It names what the control does, never the
-    /// user.</summary>
+    /// people see it and select, move, close and resize its panels through the <c>Trailblazor</c> meter. Controls
+    /// that share a label count together; a control without one isn't counted. It names what the control does, never
+    /// the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
@@ -189,7 +295,10 @@
         if (!Equals(Layout, _layoutFromParent))
         {
             _layoutFromParent = Layout;
-            _layout = Layout ?? new();
+            var layout = Layout ?? new();
+            // A binding hands back the layout the dock just raised, which is saved already.
+            _saveAfterRender |= !layout.Equals(_layout);
+            _layout = layout;
         }
     }
 
@@ -218,6 +327,15 @@
             {
                 await AttachAsync();
             }
+            else if (_handle is not null && PersistenceKey != _restoredKey)
+            {
+                await RestoreAsync();
+            }
+            else if (_saveAfterRender)
+            {
+                _saveAfterRender = false;
+                await SaveAsync();
+            }
         }
         catch (JSDisconnectedException)
         {
@@ -243,6 +361,32 @@
         }
 
         _handle = handle;
+        await RestoreAsync();
+    }
+
+    // Shows the layout saved under the key, once for each key the dock is given.
+    private async Task RestoreAsync()
+    {
+        _restoredKey = PersistenceKey;
+        // The layout the app starts with isn't saved, only what follows it, so a later version of the app can start
+        // with another one.
+        _saveAfterRender = false;
+        if (_handle is not null && PersistenceKey is { } key
+            && DockLayout.TryParse(await _handle.InvokeAsync<string?>("saved", key), out var saved)
+            && !saved.Equals(_layout))
+        {
+            _layout = saved;
+            await LayoutChanged.InvokeAsync(saved);
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_handle is not null && PersistenceKey is { } key)
+        {
+            await _handle.InvokeVoidAsync("save", key, _layout.ToJson());
+        }
     }
 
     internal void Add(TbDockPanel panel) => _panels.Add(panel);
@@ -252,9 +396,9 @@
         _panels.Remove(panel);
         _select.KeepOnly(id => Panel(id) is not null);
         _close.KeepOnly(id => Panel(id) is not null);
-        if (Panel(panel.Id) is null)
+        if (Panel(panel.Name) is null)
         {
-            _tabs.Remove(panel.Id);
+            _tabs.Remove(panel.Name);
         }
 
         if (!_disposed)
@@ -268,7 +412,7 @@
     // A number no panel of this dock has had, so content renders again for a panel made anew under an old id.
     internal int Stamp() => ++_stamps;
 
-    private TbDockPanel? Panel(string id) => _panels.Find(panel => panel.Id == id);
+    private TbDockPanel? Panel(string id) => _panels.Find(panel => panel.Name == id);
 
     // DockContent is internal, so Razor can't name it.
     private static RenderFragment Content(int version, RenderFragment? content) => builder =>
@@ -291,15 +435,15 @@
     private List<Slot> Arrange()
     {
         // Checked here and not as a panel registers, since a panel made anew registers before the old one goes.
-        if (_panels.GroupBy(panel => panel.Id).FirstOrDefault(same => same.Count() > 1) is { } twice)
+        if (_panels.GroupBy(panel => panel.Name).FirstOrDefault(same => same.Count() > 1) is { } twice)
         {
             throw new InvalidOperationException($"Two panels of a {nameof(TbDockManager)} have the id '{twice.Key}'.");
         }
 
         // A panel the layout doesn't hold is docked now, so everything the user does next starts from what shows.
-        foreach (var panel in _panels.Where(panel => !_layout.Closed.Contains(panel.Id)))
+        foreach (var panel in _panels.Where(panel => !_layout.Closed.Contains(panel.Name)))
         {
-            _layout = _layout.Place(panel.Id);
+            _layout = _layout.Place(panel.Name);
         }
 
         var shown = Shown();
@@ -325,7 +469,7 @@
             }
         }
 
-        _rendered = slots.OfType<PanelSlot>().Select(slot => slot.Panel.Id).ToHashSet();
+        _rendered = slots.OfType<PanelSlot>().Select(slot => slot.Panel.Name).ToHashSet();
         var keys = slots.ToDictionary(slot => slot.Key);
         _order.RemoveAll(key => !keys.ContainsKey(key));
         _order.AddRange(slots.Select(slot => slot.Key).Except(_order).ToList());
@@ -386,11 +530,61 @@
             ?? groups.ElementAtOrDefault(index + 1)?.Active ?? groups.ElementAtOrDefault(index - 1)?.Active;
     }
 
+    // A move from a menu keeps the focus on the moved panel's tab, wherever the tab is drawn now, and says where the
+    // panel went.
+    private async Task MoveAsync(string panel, DockLayout layout)
+    {
+        try
+        {
+            if (!layout.Equals(_layout))
+            {
+                // Read before the app's LayoutChanged runs, since the app may take the panel away in it.
+                var title = Panel(panel)!.Title;
+                var group = layout.Arrange(id => Panel(id) is not null).Groups.ToList()
+                    .FindIndex(each => each.Panels.Contains(panel));
+                _focusAfterRender = panel;
+                await ChangeAsync(layout, "move");
+                Announcer.Polite(Format(Labels.Moved, TbStrings.DockMoved, title, group + 1));
+            }
+        }
+        finally
+        {
+            _commits++;
+        }
+    }
+
+    private Task MoveAsync(string panel, string target, DockPosition position) =>
+        MoveAsync(panel, _layout.Move(panel, target, position));
+
+    private Task MoveAsync(string panel, DockPosition edge) => MoveAsync(panel, _layout.MoveToEdge(panel, edge));
+
+    // The script moves the separator as its keys do, so no group gets smaller than MinGroupSize.
+    private async Task StepAsync(int separator, int percent)
+    {
+        if (_handle is not null)
+        {
+            await _handle.InvokeVoidAsync("step", separator, percent);
+        }
+    }
+
+    // The four sides a panel's new group can go to, each with a name for tests and its menu text. Beside a group they
+    // read Above and Below; along the dock's edge, At the top and At the bottom.
+    private IEnumerable<(DockPosition Position, string Name, string Text)> Sides(bool edge) =>
+    [
+        (DockPosition.Start, "start", Labels.AtStart ?? Localizer[TbStrings.DockAtStart]),
+        (DockPosition.End, "end", Labels.AtEnd ?? Localizer[TbStrings.DockAtEnd]),
+        (DockPosition.Top, "top", edge ? Labels.AtTop ?? Localizer[TbStrings.DockAtTop]
+            : Labels.Above ?? Localizer[TbStrings.DockAbove]),
+        (DockPosition.Bottom, "bottom", edge ? Labels.AtBottom ?? Localizer[TbStrings.DockAtBottom]
+            : Labels.Below ?? Localizer[TbStrings.DockBelow]),
+    ];
+
     private async Task ChangeAsync(DockLayout layout, string action)
     {
         _layout = layout;
         Telemetry.Used(TelemetryName, action);
         await LayoutChanged.InvokeAsync(layout);
+        await SaveAsync();
     }
 
     // The script's calls arrive outside Blazor's events, so the dock renders what they changed itself.
@@ -450,8 +644,8 @@
     // Screen readers hear whole percentages, as the script reports them while the user drags.
     private static string Whole(double value) => Math.Round(value).ToString(CultureInfo.InvariantCulture);
 
-    private string Format(string? label, string key, object value) =>
-        string.Format(CultureInfo.CurrentCulture, label ?? Localizer[key], value);
+    private string Format(string? label, string key, params object[] values) =>
+        string.Format(CultureInfo.CurrentCulture, label ?? Localizer[key], values);
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

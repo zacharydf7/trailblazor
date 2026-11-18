@@ -1,0 +1,26 @@
+<TbStack Gap="2">
+    <TbStack Row Gap="2" Align="Align.Center">
+        <TbButton Size="Size.Small" Variant="Variant.Outlined" OnClick="() => _layout = Default">Reset</TbButton>
+        <TbText>Move a panel or a separator, then reload the page.</TbText>
+    </TbStack>
+    <TbDockManager @bind-Layout="_layout" PersistenceKey="docs-pack-list" AriaLabel="Pack list"
+                   Style="block-size: 16rem">
+        <TbDockPanel Id="shelter" Title="Shelter">
+            <TbText class="tb-p-3">Tent, footprint and six stakes.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="kitchen" Title="Kitchen">
+            <TbText class="tb-p-3">Stove, fuel and two pots.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="clothes" Title="Clothes">
+            <TbText class="tb-p-3">Rain shell, fleece and spare socks.</TbText>
+        </TbDockPanel>
+    </TbDockManager>
+</TbStack>
+
+@code {
+    private static readonly DockLayout Default =
+        new(new DockSplit(new DockGroup("shelter", "kitchen"), new DockGroup("clothes")));
+
+    // The dock swaps this for the saved layout, when the browser has one.
+    private DockLayout _layout = Default;
+}
