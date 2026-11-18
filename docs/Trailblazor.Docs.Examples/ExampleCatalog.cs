@@ -2991,7 +2991,8 @@ public static class ExampleCatalog
                     typeof(SplitterVerticalExample)),
                 new("persistence", "Remembering the layout", "`PersistenceKey` saves the panes' sizes and collapsed "
                     + "state in the browser under that key, so the layout comes back. Use a key unique to "
-                    + "each splitter.",
+                    + "each splitter. When the key changes, the splitter applies the layout saved under the new "
+                    + "one.",
                     typeof(SplitterPersistExample)),
             ],
             Api = [typeof(TbSplitter), typeof(TbSplitterPane), typeof(SplitterLabels)],

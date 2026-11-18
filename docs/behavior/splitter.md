@@ -30,6 +30,7 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] The menu's steps turn off at a limit or while a neighbor is collapsed. `TbSplitterTests.Render_ShouldDisableTheGripsSteps_WhenAPaneIsAtItsLimitOrCollapsed`
 - [x] Hover highlights the line and shows a resize cursor. `trailblazor.css`
 - [x] With a `PersistenceKey`, the layout comes back after a reload. `SplitterTests.Splitter_ShouldKeepTheLayout_WhenThePageIsReloadedWithAPersistenceKey`
+- [x] When the key arrives or changes after the splitter first shows, the splitter reads and saves the layout under the new key from then on. `TbSplitterTests.PersistenceKey_ShouldReadAndSaveUnderTheNewKey_WhenTheKeyArrivesOrChangesLater`
 - [x] A drag doesn't select the text in the panes. `SplitterDragTests.Splitter_ShouldSelectNoText_WhenTheSeparatorIsDraggedOverThePanes`
 
 ## Touch

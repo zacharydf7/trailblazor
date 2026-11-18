@@ -2,14 +2,14 @@ import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { createGripDrag } from '../Trailblazor.Primitives/grip-drag.js';
 // Dragging, the keys and the grip's menu resize panes in the browser, keeping every pane's share, and report the new
 // sizes when they stop; Enter asks the server to collapse or restore. `reporter` hears both, and the panes' order in
-// the markup, and `key` names the saved layout. Panes are named by id in every report.
-export function attachSplitter(root, reporter, key) {
+// the markup. Panes are named by id in every report.
+export function attachSplitter(root, reporter) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!root) {
         return null;
     }
 
-    const storageKey = key ? `tb-splitter:${key}` : null;
+    const storageKey = key => `tb-splitter:${key}`;
     const vertical = () => root.classList.contains('tb-splitter--vertical');
     const panes = () => [...root.children].filter(child => child.dataset.part === 'pane');
     const length = element => {
@@ -190,36 +190,31 @@ export function attachSplitter(root, reporter, key) {
     });
     collapses.observe(root, { subtree: true, attributes: true, attributeFilter: ['data-collapsed'] });
 
-    // A saved layout is read back once so the server can apply it. Anything else under the key, such as a layout
-    // from an older version or another splitter, is ignored.
-    let saved = null;
-    if (storageKey) {
-        try {
-            const value = JSON.parse(localStorage.getItem(storageKey) ?? 'null');
-            const count = panes().length;
-            if (Array.isArray(value?.sizes) && Array.isArray(value?.collapsed) && value.sizes.length === count
-                && value.collapsed.length === count
-                && value.sizes.every(size => typeof size === 'number' && Number.isFinite(size) && size >= 0)
-                && value.collapsed.every(flag => typeof flag === 'boolean')) {
-                saved = value;
-            }
-        } catch {
-            saved = null;
-        }
-    }
-
     // Marks that dragging and the keys work, which tests wait for.
     root.dataset.ready = '';
     return {
-        saved: () => saved,
+        // The layout saved under the key, for the server to apply. Anything else under the key, such as a layout
+        // from an older version or another splitter, is ignored.
+        saved(key) {
+            try {
+                const value = JSON.parse(localStorage.getItem(storageKey(key)) ?? 'null');
+                const count = panes().length;
+                return Array.isArray(value?.sizes) && Array.isArray(value?.collapsed) && value.sizes.length === count
+                    && value.collapsed.length === count
+                    && value.sizes.every(size => typeof size === 'number' && Number.isFinite(size) && size >= 0)
+                    && value.collapsed.every(flag => typeof flag === 'boolean') ? value : null;
+            } catch {
+                return null;
+            }
+        },
         // The grip's menu moves a separator by delta percent, as its keys do.
         step(separator, delta) {
             report(move(separator, shares(), delta));
         },
-        save(sizes, collapsed) {
+        save(key, sizes, collapsed) {
             // Storage can be full or turned off, and then the layout just isn't kept.
             try {
-                localStorage.setItem(storageKey, JSON.stringify({ sizes, collapsed }));
+                localStorage.setItem(storageKey(key), JSON.stringify({ sizes, collapsed }));
             } catch {
             }
         },

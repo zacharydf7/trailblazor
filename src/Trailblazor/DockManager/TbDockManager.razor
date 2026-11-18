@@ -364,7 +364,7 @@
         await RestoreAsync();
     }
 
-    // Shows the layout saved under the key, once for each key the dock is given.
+    // Shows the layout saved under the current key, on attach and each time the key changes.
     private async Task RestoreAsync()
     {
         _restoredKey = PersistenceKey;

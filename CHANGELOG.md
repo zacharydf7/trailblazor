@@ -95,6 +95,7 @@ they run by version. The docs site's Upgrading page is built from both.
 - A `TbDockManager` panel that holds an `<iframe>` now stays in place while other parts move around it, so the frame stays loaded in every browser, unless two panels with frames trade places
 - `DockLabels` gains the words of the two menus and of what is said after a move
 - `page.Tb().Dock()` and `cut.Tb().Dock()` gain `MoveTabAsync`, `MoveToGroupAsync`, `MoveToNewGroupAsync` and `MoveToEdgeAsync`
+- `TbSplitter` reads and saves its layout under its current `PersistenceKey` when the key arrives or changes after the first render, where it used to keep the first key, or save under `null` when it had none at first
 - `page.Tb().Splitter(name)` and `cut.Tb().Splitter(name)` find only a `TbSplitter`'s separators, so a `TbDockManager`'s separator with the same name isn't taken for one
 
 #### 2026-11-17

@@ -29,6 +29,8 @@
     private IJSObjectReference? _handle;
     private DotNetObjectReference<SplitterReport>? _report;
     private bool _saveAfterRender;
+    // The key whose saved layout the splitter has read.
+    private string? _restoredKey;
     // The number of the browser's last resize report this render shows.
     private int _reported;
     private int _commits;
@@ -43,7 +45,8 @@
     public bool Vertical { get; set; }
 
     /// <summary>Saves the panes' sizes and collapsed state in the browser under this key, so a reload keeps the
-    /// user's layout. Use a key unique to each splitter.</summary>
+    /// user's layout. Use a key unique to each splitter. When the key changes, the splitter applies the layout saved
+    /// under the new one.</summary>
     [Parameter]
     public string? PersistenceKey { get; set; }
 
@@ -61,6 +64,10 @@
             if (firstRender)
             {
                 await AttachAsync();
+            }
+            else if (_handle is not null && PersistenceKey != _restoredKey)
+            {
+                await RestoreSavedAsync();
             }
             else if (_saveAfterRender)
             {
@@ -84,7 +91,7 @@
 
         _report = DotNetObjectReference.Create(new SplitterReport(OnResizeAsync, OnToggleAsync, OnOrder,
             pane => _panes.Exists(each => each.Id == pane)));
-        var handle = await module.InvokeAsync<IJSObjectReference?>("attachSplitter", _root, _report, PersistenceKey);
+        var handle = await module.InvokeAsync<IJSObjectReference?>("attachSplitter", _root, _report);
         if (handle is null)
         {
             return;
@@ -97,9 +104,17 @@
         }
 
         _handle = handle;
+        await RestoreSavedAsync();
+    }
+
+    // Applies the layout saved under the current key, on attach and each time the key changes.
+    private async Task RestoreSavedAsync()
+    {
+        _restoredKey = PersistenceKey;
         // The script only hands back a saved layout with a finite size and a state for every pane.
-        if (await handle.InvokeAsync<SplitterLayout?>("saved") is { } saved && saved.Sizes.Length == _panes.Count
-            && saved.Collapsed.Length == _panes.Count)
+        if (_handle is not null && PersistenceKey is { } key
+            && await _handle.InvokeAsync<SplitterLayout?>("saved", key) is { } saved
+            && saved.Sizes.Length == _panes.Count && saved.Collapsed.Length == _panes.Count)
         {
             await RestoreAsync(saved);
         }
@@ -265,10 +280,10 @@
 
     private async Task SaveAsync()
     {
-        if (_handle is not null && PersistenceKey is not null)
+        if (_handle is not null && PersistenceKey is { } key)
         {
             var sizes = _panes.Select(pane => pane.CurrentSize ?? Share(pane));
-            await _handle.InvokeVoidAsync("save", sizes, _panes.Select(pane => pane.IsCollapsed));
+            await _handle.InvokeVoidAsync("save", key, sizes, _panes.Select(pane => pane.IsCollapsed));
         }
     }
 

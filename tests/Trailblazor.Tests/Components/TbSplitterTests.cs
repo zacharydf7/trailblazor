@@ -248,12 +248,43 @@ public class TbSplitterTests : BunitContext
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/splitter.js");
         var handle = module.SetupModule("attachSplitter", _ => true);
-        handle.Setup<SplitterLayout?>("saved").SetResult(new([40, 60], [false, false]));
+        handle.Setup<SplitterLayout?>("saved", "trip").SetResult(new([40, 60], [false, false]));
         handle.SetupVoid("save", _ => true);
 
-        var cut = RenderSplitter(new Pane("Left", 30), new Pane("Right"));
+        var cut = Render<TbSplitter>(parameters => parameters.Add(splitter => splitter.PersistenceKey, "trip")
+            .Add(splitter => splitter.ChildContent, builder =>
+            {
+                AddPane(builder, new Pane("Left", 30));
+                AddPane(builder, new Pane("Right"));
+            }));
 
         Assert.Equal("40", cut.Find("[role=separator]").GetAttribute("aria-valuenow"));
+        Assert.Equal("trip", handle.Invocations["saved"].Single().Arguments[0]);
+    }
+
+    [Fact]
+    public void PersistenceKey_ShouldReadAndSaveUnderTheNewKey_WhenTheKeyArrivesOrChangesLater()
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/splitter.js")
+            .SetupModule("attachSplitter", _ => true);
+        handle.Mode = JSRuntimeMode.Loose;
+        handle.Setup<SplitterLayout?>("saved", "walk").SetResult(new([40, 60], [false, false]));
+        var cut = RenderSplitter(new Pane("Left", 30, Collapsible: true), new Pane("Right"));
+        Assert.Empty(handle.Invocations["saved"]);
+
+        // The key arrives after the splitter attached, as one read from the user's profile does.
+        cut.Render(parameters => parameters.Add(splitter => splitter.PersistenceKey, "trip"));
+        MenuItem(cut, "Collapse Left").Click();
+        Assert.NotEmpty(handle.Invocations["save"]);
+        Assert.All(handle.Invocations["save"], call => Assert.Equal("trip", call.Arguments[0]));
+
+        // A layout is saved under the next key, so it shows, and what the user does next is saved under that key.
+        cut.Render(parameters => parameters.Add(splitter => splitter.PersistenceKey, "walk"));
+        Assert.Equal("40", cut.Find("[role=separator]").GetAttribute("aria-valuenow"));
+        MenuItem(cut, "Collapse Left").Click();
+
+        Assert.Equal(["trip", "walk"], handle.Invocations["saved"].Select(call => call.Arguments[0]));
+        Assert.Equal("walk", handle.Invocations["save"][^1].Arguments[0]);
     }
 
     [Fact]
