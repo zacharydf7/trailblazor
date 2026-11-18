@@ -548,6 +548,8 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await map.ClickAsync();
         await Expect(page.GetByRole(AriaRole.Menu)).ToBeHiddenAsync();
+        // The menu gives focus back to its button a moment after it closes; a click before that would race it.
+        await Expect(view).ToBeFocusedAsync();
         await view.ClickAsync();
         await Expect(map).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("ArrowDown");
@@ -555,6 +557,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync(" ");
 
         await Expect(Output(page, "View state")).ToHaveTextAsync("Miles, elevation");
+        await Expect(view).ToBeFocusedAsync();
         await view.ClickAsync();
         await Expect(map).Not.ToBeCheckedAsync();
         await Expect(elevation).ToBeCheckedAsync();

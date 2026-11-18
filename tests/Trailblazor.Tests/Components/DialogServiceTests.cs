@@ -1313,6 +1313,37 @@ public class DialogServiceTests : BunitContext
     }
 
     [Fact]
+    public async Task CloseAsync_ShouldLeaveTheDialogCanceled_WhenItWasCanceledFirst()
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<GuardedDialog, bool>("Edit");
+        host.WaitForComponent<GuardedDialog>();
+
+        await host.InvokeAsync(dialog.CancelAsync);
+        await host.InvokeAsync(() => dialog.CloseAsync(true));
+
+        Assert.Equal(DialogResult<bool>.Cancel(), await dialog.Result);
+    }
+
+    [Fact]
+    public async Task CloseAsync_ShouldLeaveTheDialogCanceled_WhenItComesWhileTheCancelFadesOut()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
+        module.SetupVoid("nextFrame").SetVoidResult();
+        var close = module.SetupModule("openDialog", _ => true).SetupVoid("close");
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<GuardedDialog, bool>("Edit");
+        host.WaitForComponent<GuardedDialog>();
+
+        var canceling = host.InvokeAsync(dialog.CancelAsync);
+        await host.InvokeAsync(() => dialog.CloseAsync(true));
+        close.SetVoidResult();
+        await canceling;
+
+        Assert.Equal(DialogResult<bool>.Cancel(), await dialog.Result);
+    }
+
+    [Fact]
     public async Task Dismiss_ShouldReportAFailingQuestionToTheRenderer_WhenTheContentThrows()
     {
         var host = Render<DialogHost>();

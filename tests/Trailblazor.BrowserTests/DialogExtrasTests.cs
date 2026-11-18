@@ -132,7 +132,8 @@ public class DialogExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldStopTheExport_WhenItsStopButtonIsPressed(string browser)
     {
-        var page = await OpenAsync(browser, "/examples/dialog");
+        // The example's export ends on its own after a moment, so a page keeps the dialog open until Stop.
+        var page = await OpenAsync(browser, "/export-dialog");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Export report" }).ClickAsync();
         await page.GetByRole(AriaRole.Dialog, new() { Name = "Exporting report" })
