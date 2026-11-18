@@ -88,6 +88,7 @@ they run by version. The docs site's Upgrading page is built from both.
 #### 2026-11-18
 
 - New `TbDockManager` and `TbDockPanel`: a dock (`tb-dock`, `role="group"`, `data-part="dock"`) whose children are each group's row of tabs (`data-part="group"` around a `tablist`), each rendered panel (`role="tabpanel"`, `data-part="panel"`, `data-panel` with its id) and a `separator` between groups, placed by `--tb-dock-x`, `--tb-dock-y`, `--tb-dock-w` and `--tb-dock-h` in percent of the dock; a `DockLayout` of `DockSplit`s and `DockGroup`s says where each panel is and saves as JSON; `page.Tb().Dock()` and `cut.Tb().Dock()` drive it in tests
+- `TbMarkdownEditor` fills its field's box: its toolbar, text and preview were squeezed into a strip at the box's start
 - `page.Tb().Splitter(name)` and `cut.Tb().Splitter(name)` find only a `TbSplitter`'s separators, so a `TbDockManager`'s separator with the same name isn't taken for one
 
 #### 2026-11-17

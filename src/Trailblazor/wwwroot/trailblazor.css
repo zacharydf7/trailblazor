@@ -3893,8 +3893,8 @@
         }
     }
 
-    /* A rich text editor fills its box, with the toolbar across the top and the editing area below. */
-    .tb-field__control:has(> .tb-rich-text-editor) {
+    /* A rich text or markdown editor fills its box, with the toolbar across the top and the editing area below. */
+    .tb-field__control:has(> :is(.tb-rich-text-editor, .tb-markdown-editor)) {
         align-items: stretch;
         padding-inline: 0;
     }
@@ -4064,7 +4064,10 @@
         }
     }
 
+    /* As an inline-size container the editor gets no width from its content, so it grows to fill the field's box. */
     .tb-markdown-editor {
+        flex: 1 1 auto;
+        min-width: 0;
         container-type: inline-size;
     }
 

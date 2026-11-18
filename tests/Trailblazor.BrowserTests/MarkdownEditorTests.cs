@@ -143,6 +143,33 @@ public class MarkdownEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Editor_ShouldFillItsFieldsBox_WhenShownWithOrWithoutThePreviewBeside(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/markdown-editor");
+
+        foreach (var label in new[] { "Trail notes", "Trail description" })
+        {
+            var input = page.Tb().MarkdownEditor(label).Input;
+            var editor = input.Locator("xpath=ancestor::*[@data-part='editor'][1]");
+            // The editor's width, its box's width, and the tops of the first and last visible toolbar buttons.
+            var sizes = await editor.EvaluateAsync<double[]>("""
+                editor => {
+                    const buttons = [...editor.querySelectorAll('[data-part=toolbar] button')]
+                        .filter(button => button.offsetWidth > 0).map(button => button.getBoundingClientRect().top);
+                    return [editor.getBoundingClientRect().width, editor.parentElement.clientWidth, buttons[0],
+                        buttons.at(-1)];
+                }
+                """);
+
+            // The box is far wider than the toolbar, so its buttons share one row.
+            Assert.InRange(sizes[1], 400, 2000);
+            Assert.Equal(sizes[1], sizes[0], 1.0);
+            Assert.Equal(sizes[2], sizes[3], 1.0);
+            Assert.InRange((await input.BoundingBoxAsync())!.Width, sizes[0] / 2 - 20, sizes[0]);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldPressAToolbarButtonAndReadThePreview_WhenFoundByLabel(string browser)
     {
         var page = await OpenAsync(browser, "/examples/markdown-editor");
