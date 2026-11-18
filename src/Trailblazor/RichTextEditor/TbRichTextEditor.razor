@@ -1,5 +1,6 @@
 @namespace Trailblazor
 @using System.Text
+@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.JSInterop
 @using Trailblazor.Primitives
 @inherits TbBoxedFieldBase<string>
@@ -9,7 +10,7 @@
 
 @Layout(Classes, @<text>
     <div data-part="editor" class="tb-rich-text-editor">
-        @if (ShowToolbar && (Tools.Count > 0 || ShowSource))
+        @if (ShowToolbar && (Tools.Count > 0 || ShowsImageButton || ShowSource))
         {
             <TbToolbar AriaLabel="@(Labels.Toolbar ?? Localizer[TbStrings.RichTextEditorToolbar])" data-part="toolbar"
                        aria-controls="@InputId" Class="tb-rich-text-editor__toolbar">
@@ -22,6 +23,13 @@
                                   aria-pressed="@(tool.Command is null ? "false" : null)"
                                   aria-haspopup="@(tool.Command == "link" ? "dialog" : null)"
                                   aria-keyshortcuts="@tool.Shortcuts" />
+                }
+                @if (ShowsImageButton)
+                {
+                    <TbIconButton Icon="RichTextEditorIcons.Image" ShowTooltip Size="Size.Small"
+                                  Disabled="@(Disabled || ReadOnly || _source)" aria-haspopup="dialog"
+                                  AriaLabel="@(Labels.Image ?? Localizer[TbStrings.RichTextEditorImage])"
+                                  OnClick="InsertImageAsync" data-part="image" />
                 }
                 @if (ShowSource)
                 {
@@ -114,6 +122,20 @@
     /// other is dropped, whether it's in the value or pasted in. Defaults to <c>https</c> and <c>http</c>.</summary>
     [Parameter]
     public IReadOnlyList<string> ImageSchemes { get; set; } = RichTextSchema.Default.ImageSchemes;
+
+    /// <summary>Stores an image file the user chose, such as in the app's storage, and returns its URL. Read the file
+    /// with <c>OpenReadStream(MaxImageSize, token)</c>, since the stream's default limit is only 512 KB, and pass the
+    /// token to any other work too: it's canceled if the dialog closes first, as when the user cancels. With this and
+    /// <see cref="RichTextBlocks.Images"/> in <see cref="Blocks"/>, the toolbar gets an Image button that opens a
+    /// dialog to choose the file and give its alt text, or mark it decorative. The URL must be one
+    /// <see cref="ImageSchemes"/> allows.</summary>
+    [Parameter]
+    public Func<IBrowserFile, CancellationToken, Task<string>>? UploadImage { get; set; }
+
+    /// <summary>The largest image file the Image button takes, in bytes; pass it on to <c>OpenReadStream</c> in
+    /// <see cref="UploadImage"/>. Defaults to 5 MB.</summary>
+    [Parameter]
+    public long MaxImageSize { get; set; } = 5_000_000;
 
     /// <summary>Changes what is pasted or dropped in, after the editor's own cleanup: it gets the pasted text as a
     /// document and returns the document to put in, such as one without its links, or
@@ -257,6 +279,8 @@
             }
         }
     }
+
+    private bool ShowsImageButton => Blocks.HasFlag(RichTextBlocks.Images) && UploadImage is not null;
 
     private RichTextSchema Schema => new()
     {
@@ -472,6 +496,30 @@
         try
         {
             await _handle.InvokeVoidAsync("insertPasted", pasted);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the editor went with it.
+        }
+    }
+
+    // The Image button asks for a file and its alt text, has the app store the file, and puts the image in at the
+    // editor's last selection.
+    private async Task InsertImageAsync()
+    {
+        var result = await Dialogs.ShowAsync<RichTextImageDialog, RichTextImage>(
+            Labels.InsertImage ?? Localizer[TbStrings.RichTextEditorInsertImage], parameters => parameters
+                .Set(dialog => dialog.Upload, UploadImage!).Set(dialog => dialog.MaxFileSize, MaxImageSize)
+                .Set(dialog => dialog.Schema, Schema).Set(dialog => dialog.Labels, Labels),
+            new DialogOptions { Size = DialogSize.Small });
+        if (_disposed || result is not { Confirmed: true, Value: { } image } || _handle is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _handle.InvokeVoidAsync("insertImage", image.Source, image.Alt);
         }
         catch (JSDisconnectedException)
         {

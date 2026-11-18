@@ -56,6 +56,7 @@ export function attachRichTextEditor(root, value, options) {
         setValue: html => editor.setValue(html),
         setOptions: changed => editor.setOptions(changed),
         setLink: (url, text) => editor.setLink(url, text),
+        insertImage: (source, alt) => editor.insertImage(source, alt),
         insertPasted: html => editor.insertPasted(html),
         // Sends the value now, as a change event that reaches .NET before this call returns.
         flush: () => editor.send(),
@@ -841,6 +842,16 @@ class Editor {
         this.root.dispatchEvent(new CustomEvent('tb-rich-text-link', {
             bubbles: true, detail: { link: this.linkIn(target), insert: compare(target.from, target.to) === 0 },
         }));
+    }
+
+    // An image from the Image button goes in where the selection was before its dialog took focus, or at the end if
+    // the editor never had a selection, the same way a pasted image goes in.
+    insertImage(source, alt) {
+        if (this.readOnly || this.schema.images === null) return;
+        this.selection ??= this.endSelection();
+        this.root.focus();
+        this.edit(() => this.insertParagraphs([{ kind: 'image', level: 0, runs: [], image: { source, alt } }]));
+        this.writeSelection();
     }
 
     // The selection, or at a caret in or next to a link, the whole link.

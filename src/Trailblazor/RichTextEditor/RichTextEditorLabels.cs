@@ -140,4 +140,49 @@ public sealed record RichTextEditorLabels
     /// <summary>Names the HTML source button. Leave it null for the app's text for <see
     /// cref="TbStrings.RichTextEditorSource"/>.</summary>
     public string? Source { get; init; }
+
+    /// <summary>Names the Image button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorImage"/>.</summary>
+    public string? Image { get; init; }
+
+    /// <summary>The image dialog's title. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorInsertImage"/>.</summary>
+    public string? InsertImage { get; init; }
+
+    /// <summary>Labels the image dialog's file picker. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorImageFile"/>.</summary>
+    public string? ImageFile { get; init; }
+
+    /// <summary>Labels the image dialog's alt text field. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorImageAlt"/>.</summary>
+    public string? ImageAlt { get; init; }
+
+    /// <summary>The help under the image dialog's alt text field. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorImageAltHelp"/>.</summary>
+    public string? ImageAltHelp { get; init; }
+
+    /// <summary>Labels the image dialog's Decorative checkbox. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorImageDecorative"/>.</summary>
+    public string? Decorative { get; init; }
+
+    /// <summary>The help under the image dialog's Decorative checkbox. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorImageDecorativeHelp"/>.</summary>
+    public string? DecorativeHelp { get; init; }
+
+    /// <summary>The image dialog's button that stores the image and puts it in. Leave it null for the app's text for
+    /// <see cref="TbStrings.RichTextEditorApplyImage"/>.</summary>
+    public string? ApplyImage { get; init; }
+
+    /// <summary>Names the image dialog's cancel button. Leave it null for the app's text for <see
+    /// cref="TbStrings.DialogCancel"/>.</summary>
+    public string? CancelImage { get; init; }
+
+    /// <summary>The image dialog's message when the upload fails. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorImageFailed"/>.</summary>
+    public string? ImageFailed { get; init; }
+
+    /// <summary>The image dialog's message when the upload returns an address <see
+    /// cref="TbRichTextEditor.ImageSchemes"/> doesn't allow. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorImageNotAllowed"/>.</summary>
+    public string? ImageNotAllowed { get; init; }
 }

@@ -62,6 +62,11 @@ internal static class RichTextEditorIcons
 
     public static Icon Indent { get; } = Indenting("M4.5 9.5 7 12l-2.5 2.5");
 
+    // A frame with a sun and a hill in it.
+    public static Icon Image { get; } = new($"<path {Lines} stroke-width=\"2\" d=\"M5 5h14v14H5z\" />"
+        + $"<path {Lines} stroke-width=\"2\" d=\"m5 17 4.5-4.5 3 3 2-2L19 18\" />"
+        + $"<circle {Lines} stroke-width=\"2\" cx=\"15\" cy=\"9\" r=\"1.5\" />");
+
     // An "H" with a small level number beside it.
     private static Icon Heading(string number) =>
         new($"<path {Lines} stroke-width=\"2\" d=\"M4 5v14M13 5v14M4 12h9\" />"

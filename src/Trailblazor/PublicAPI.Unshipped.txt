@@ -6841,3 +6841,39 @@ static Trailblazor.SmartPasteRequest.operator ==(Trailblazor.SmartPasteRequest? 
 ~override Trailblazor.TbSmartPaste.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 Trailblazor.TbRichTextEditor.ImageSchemes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.TbRichTextEditor.ImageSchemes.set -> void
+Trailblazor.RichTextEditorLabels.ApplyImage.get -> string?
+Trailblazor.RichTextEditorLabels.ApplyImage.init -> void
+Trailblazor.RichTextEditorLabels.CancelImage.get -> string?
+Trailblazor.RichTextEditorLabels.CancelImage.init -> void
+Trailblazor.RichTextEditorLabels.Decorative.get -> string?
+Trailblazor.RichTextEditorLabels.Decorative.init -> void
+Trailblazor.RichTextEditorLabels.DecorativeHelp.get -> string?
+Trailblazor.RichTextEditorLabels.DecorativeHelp.init -> void
+Trailblazor.RichTextEditorLabels.Image.get -> string?
+Trailblazor.RichTextEditorLabels.Image.init -> void
+Trailblazor.RichTextEditorLabels.ImageAlt.get -> string?
+Trailblazor.RichTextEditorLabels.ImageAlt.init -> void
+Trailblazor.RichTextEditorLabels.ImageAltHelp.get -> string?
+Trailblazor.RichTextEditorLabels.ImageAltHelp.init -> void
+Trailblazor.RichTextEditorLabels.ImageFailed.get -> string?
+Trailblazor.RichTextEditorLabels.ImageFailed.init -> void
+Trailblazor.RichTextEditorLabels.ImageFile.get -> string?
+Trailblazor.RichTextEditorLabels.ImageFile.init -> void
+Trailblazor.RichTextEditorLabels.ImageNotAllowed.get -> string?
+Trailblazor.RichTextEditorLabels.ImageNotAllowed.init -> void
+Trailblazor.RichTextEditorLabels.InsertImage.get -> string?
+Trailblazor.RichTextEditorLabels.InsertImage.init -> void
+Trailblazor.TbRichTextEditor.MaxImageSize.get -> long
+Trailblazor.TbRichTextEditor.MaxImageSize.set -> void
+Trailblazor.TbRichTextEditor.UploadImage.get -> System.Func<Microsoft.AspNetCore.Components.Forms.IBrowserFile!, System.Threading.CancellationToken, System.Threading.Tasks.Task<string!>!>?
+Trailblazor.TbRichTextEditor.UploadImage.set -> void
+const Trailblazor.TbStrings.RichTextEditorApplyImage = "RichTextEditor.ApplyImage" -> string!
+const Trailblazor.TbStrings.RichTextEditorImage = "RichTextEditor.Image" -> string!
+const Trailblazor.TbStrings.RichTextEditorImageAlt = "RichTextEditor.ImageAlt" -> string!
+const Trailblazor.TbStrings.RichTextEditorImageAltHelp = "RichTextEditor.ImageAltHelp" -> string!
+const Trailblazor.TbStrings.RichTextEditorImageDecorative = "RichTextEditor.ImageDecorative" -> string!
+const Trailblazor.TbStrings.RichTextEditorImageDecorativeHelp = "RichTextEditor.ImageDecorativeHelp" -> string!
+const Trailblazor.TbStrings.RichTextEditorImageFailed = "RichTextEditor.ImageFailed" -> string!
+const Trailblazor.TbStrings.RichTextEditorImageFile = "RichTextEditor.ImageFile" -> string!
+const Trailblazor.TbStrings.RichTextEditorImageNotAllowed = "RichTextEditor.ImageNotAllowed" -> string!
+const Trailblazor.TbStrings.RichTextEditorInsertImage = "RichTextEditor.InsertImage" -> string!

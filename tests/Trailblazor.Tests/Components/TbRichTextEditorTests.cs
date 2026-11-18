@@ -811,4 +811,186 @@ public class TbRichTextEditorTests : BunitContext
         Assert.Equal("<p>Pine</p>", arguments[1]);
         Assert.Contains("\"images\":\"https\"", JsonSerializer.Serialize(arguments[2]));
     }
+
+    private static InputFileContent Photo =>
+        InputFileContent.CreateFromBinary([1, 2, 3], "trail.png", contentType: "image/png");
+
+    // An editor that allows images and stores each through upload, which records the file it got.
+    private IRenderedComponent<TbRichTextEditor> RenderWithImages(
+        Func<IBrowserFile, CancellationToken, Task<string>> upload,
+        Action<ComponentParameterCollectionBuilder<TbRichTextEditor>>? more = null) =>
+        Render<TbRichTextEditor>(parameters =>
+        {
+            parameters.Add(editor => editor.Label, "Trail report").Add(editor => editor.Blocks, RichTextBlocks.Images)
+                .Add(editor => editor.UploadImage, upload);
+            more?.Invoke(parameters);
+        });
+
+    private static Task<string> Stored(string url) => Task.FromResult(url);
+
+    [Fact]
+    public void Render_ShouldShowAnImageButton_WhenImagesAndAnUploadAreGiven()
+    {
+        var cut = RenderWithImages((_, _) => Stored("https://example.com/trail.png"));
+        var withoutUpload = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Blocks, RichTextBlocks.Images));
+        var withoutImages = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.UploadImage, (_, _) => Stored("https://example.com/trail.png")));
+
+        var button = cut.Find("button[data-part=image]");
+
+        Assert.Equal(("Image", "dialog"), (button.GetAttribute("aria-label"), button.GetAttribute("aria-haspopup")));
+        Assert.Empty(withoutUpload.FindAll("button[data-part=image]"));
+        Assert.Empty(withoutImages.FindAll("button[data-part=image]"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheImageButton_WhenNoOtherToolIsAllowed()
+    {
+        var cut = RenderWithImages((_, _) => Stored("https://example.com/trail.png"),
+            parameters => parameters.Add(editor => editor.Formats, RichTextFormats.None));
+
+        Assert.Single(cut.FindAll("[data-part=toolbar]"));
+        Assert.Single(cut.FindAll("button[data-part=image]"));
+    }
+
+    [Fact]
+    public void Render_ShouldTurnTheImageButtonOff_WhenTheEditorIsReadOnly()
+    {
+        var cut = RenderWithImages((_, _) => Stored("https://example.com/trail.png"),
+            parameters => parameters.Add(editor => editor.ReadOnly, true));
+
+        Assert.True(cut.Find("button[data-part=image]").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public async Task InsertImage_ShouldRefuseTheFile_WhenItsLargerThanMaxImageSize()
+    {
+        var host = Render<DialogHost>();
+        var uploads = 0;
+        var cut = RenderWithImages((_, _) =>
+        {
+            uploads++;
+            return Stored("https://example.com/trail.png");
+        }, parameters => parameters.Add(editor => editor.MaxImageSize, 2));
+
+        _ = cut.Find("button[data-part=image]").ClickAsync(new() { Detail = 1 });
+        host.WaitForElement("dialog");
+        host.FindComponent<InputFile>().UploadFiles(Photo);
+        await host.Tb().TextField("Alt text").EnterAsync("Pine trail");
+        await host.Find("form").SubmitAsync();
+
+        Assert.Equal(0, uploads);
+        Assert.Single(host.FindAll("dialog"));
+    }
+
+    [Fact]
+    public async Task InsertImage_ShouldCancelTheUploadAndPutNothingIn_WhenTheDialogIsCanceledWhileItStores()
+    {
+        var host = Render<DialogHost>();
+        var token = CancellationToken.None;
+        var cut = RenderWithImages(async (_, given) =>
+        {
+            token = given;
+            await Task.Delay(Timeout.Infinite, given);
+            return "https://example.com/trail.png";
+        });
+
+        var inserting = cut.Find("button[data-part=image]").ClickAsync(new() { Detail = 1 });
+        host.WaitForElement("dialog");
+        host.FindComponent<InputFile>().UploadFiles(Photo);
+        await host.Tb().TextField("Alt text").EnterAsync("Pine trail");
+        _ = host.Find("form").SubmitAsync();
+        await host.FindAll("button").Single(button => button.TextContent.Trim() == "Cancel")
+            .ClickAsync(new() { Detail = 1 });
+        await inserting;
+
+        Assert.True(token.IsCancellationRequested);
+        Assert.Empty(_handle.Invocations["insertImage"]);
+    }
+
+    [Fact]
+    public async Task InsertImage_ShouldStoreTheFileAndPutTheImageIn_WhenTheDialogIsFilled()
+    {
+        _handle.SetupVoid("insertImage", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        string? stored = null;
+        var cut = RenderWithImages((file, _) =>
+        {
+            stored = file.Name;
+            return Stored(" https://example.com/trail.png ");
+        });
+
+        var inserting = cut.Find("button[data-part=image]").ClickAsync(new() { Detail = 1 });
+        host.WaitForElement("dialog");
+        Assert.Equal("Insert image", host.Find("h2").TextContent);
+        host.FindComponent<InputFile>().UploadFiles(Photo);
+        await host.Tb().TextField("Alt text").EnterAsync("Pine trail at dawn");
+        await host.Find("form").SubmitAsync();
+        await inserting;
+
+        Assert.Equal("trail.png", stored);
+        Assert.Equal(["https://example.com/trail.png", "Pine trail at dawn"],
+            _handle.Invocations["insertImage"].Single().Arguments);
+    }
+
+    [Fact]
+    public async Task InsertImage_ShouldGiveNoAltText_WhenTheImageIsDecorative()
+    {
+        _handle.SetupVoid("insertImage", _ => true).SetVoidResult();
+        var host = Render<DialogHost>();
+        var cut = RenderWithImages((_, _) => Stored("/images/divider.png"));
+
+        var inserting = cut.Find("button[data-part=image]").ClickAsync(new() { Detail = 1 });
+        host.WaitForElement("dialog");
+        host.FindComponent<InputFile>().UploadFiles(Photo);
+        await host.Tb().TextField("Alt text").EnterAsync("Divider");
+        await host.Tb().Checkbox("Decorative").CheckAsync();
+        await host.Find("form").SubmitAsync();
+        await inserting;
+
+        Assert.Equal(["/images/divider.png", ""], _handle.Invocations["insertImage"].Single().Arguments);
+    }
+
+    [Fact]
+    public async Task InsertImage_ShouldAskForAltText_WhenTheImageIsntDecorative()
+    {
+        var host = Render<DialogHost>();
+        var uploads = 0;
+        var cut = RenderWithImages((_, _) =>
+        {
+            uploads++;
+            return Stored("https://example.com/trail.png");
+        });
+
+        _ = cut.Find("button[data-part=image]").ClickAsync(new() { Detail = 1 });
+        host.WaitForElement("dialog");
+        host.FindComponent<InputFile>().UploadFiles(Photo);
+        await host.Find("form").SubmitAsync();
+
+        Assert.Equal(0, uploads);
+        Assert.Single(host.FindAll("dialog"));
+        Assert.NotNull(host.Tb().TextField("Alt text").Error);
+    }
+
+    [Theory]
+    [InlineData("http://example.com/trail.png", "The image's address isn't one this editor allows.")]
+    [InlineData(null, "The image couldn't be stored. Try again.")]
+    public async Task InsertImage_ShouldSayWhyAndStayOpen_WhenTheUploadFailsOrGivesAnAddressNotAllowed(string? url,
+        string message)
+    {
+        var host = Render<DialogHost>();
+        var cut = RenderWithImages((_, _) => url is null ? throw new IOException("The disk is full.") : Stored(url),
+            parameters => parameters.Add(editor => editor.ImageSchemes, ["https"]));
+
+        _ = cut.Find("button[data-part=image]").ClickAsync(new() { Detail = 1 });
+        host.WaitForElement("dialog");
+        host.FindComponent<InputFile>().UploadFiles(Photo);
+        await host.Tb().TextField("Alt text").EnterAsync("Pine trail");
+        await host.Find("form").SubmitAsync();
+
+        Assert.Equal(message, host.Find("[role=alert], .tb-alert").TextContent.Trim());
+        Assert.Single(host.FindAll("dialog"));
+        Assert.Empty(_handle.Invocations["insertImage"]);
+    }
 }

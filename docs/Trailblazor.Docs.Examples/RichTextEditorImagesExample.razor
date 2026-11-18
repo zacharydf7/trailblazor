@@ -1,0 +1,24 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbStack Gap="4" Style="max-inline-size: 36rem">
+    <TbRichTextEditor Label="Trail report" @bind-Value="_report" Blocks="Blocks" ImageSchemes="@(["https", "data"])"
+                      UploadImage="StoreAsync" MaxImageSize="MaxSize"
+                      HelperText="Images up to 200 KB. This example keeps each one in the text itself." />
+</TbStack>
+
+@code {
+    private const RichTextBlocks Blocks = RichTextBlocks.Headings | RichTextBlocks.BulletedLists | RichTextBlocks.Rules
+        | RichTextBlocks.Images;
+    private const long MaxSize = 200_000;
+
+    private string? _report = "<p>Above the falls, the trail opens onto the ridge.</p>";
+
+    // A real app would save the file to its storage and return its address; this one keeps it in a data URL.
+    private static async Task<string> StoreAsync(IBrowserFile file, CancellationToken cancellationToken)
+    {
+        await using var source = file.OpenReadStream(MaxSize, cancellationToken);
+        using var stream = new MemoryStream();
+        await source.CopyToAsync(stream, cancellationToken);
+        return $"data:{file.ContentType};base64,{Convert.ToBase64String(stream.ToArray())}";
+    }
+}

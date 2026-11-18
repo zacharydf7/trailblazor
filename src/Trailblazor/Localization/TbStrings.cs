@@ -919,6 +919,40 @@ public static class TbStrings
     /// <summary>"Open link": the link dialog's link to the URL, which opens in a new tab.</summary>
     public const string RichTextEditorOpenLink = "RichTextEditor.OpenLink";
 
+    /// <summary>"Image": the rich text editor's button that inserts an image.</summary>
+    public const string RichTextEditorImage = "RichTextEditor.Image";
+
+    /// <summary>"Insert image": the title of the dialog that inserts an image.</summary>
+    public const string RichTextEditorInsertImage = "RichTextEditor.InsertImage";
+
+    /// <summary>"Image file": labels the image dialog's file picker.</summary>
+    public const string RichTextEditorImageFile = "RichTextEditor.ImageFile";
+
+    /// <summary>"Alt text": labels the image dialog's field for the image's alt text.</summary>
+    public const string RichTextEditorImageAlt = "RichTextEditor.ImageAlt";
+
+    /// <summary>"Describes the image for people who can't see it.": the help under the image dialog's alt text
+    /// field.</summary>
+    public const string RichTextEditorImageAltHelp = "RichTextEditor.ImageAltHelp";
+
+    /// <summary>"Decorative": labels the image dialog's checkbox for an image with no alt text.</summary>
+    public const string RichTextEditorImageDecorative = "RichTextEditor.ImageDecorative";
+
+    /// <summary>"It adds nothing the text doesn't say, so screen readers skip it.": the help under the image dialog's
+    /// Decorative checkbox.</summary>
+    public const string RichTextEditorImageDecorativeHelp = "RichTextEditor.ImageDecorativeHelp";
+
+    /// <summary>"Insert": the image dialog's button that stores the image and puts it in.</summary>
+    public const string RichTextEditorApplyImage = "RichTextEditor.ApplyImage";
+
+    /// <summary>"The image couldn't be stored. Try again.": shown in the image dialog when the app's upload
+    /// fails.</summary>
+    public const string RichTextEditorImageFailed = "RichTextEditor.ImageFailed";
+
+    /// <summary>"The image's address isn't one this editor allows.": shown in the image dialog when the app's upload
+    /// returns an address the editor's ImageSchemes don't allow.</summary>
+    public const string RichTextEditorImageNotAllowed = "RichTextEditor.ImageNotAllowed";
+
     /// <summary>"Next": a tour step's button to the next step.</summary>
     public const string TourNext = "Tour.Next";
 
@@ -1648,6 +1682,16 @@ public static class TbStrings
         [RichTextEditorApplyLink] = "Apply",
         [RichTextEditorRemoveLink] = "Remove link",
         [RichTextEditorOpenLink] = "Open link",
+        [RichTextEditorImage] = "Image",
+        [RichTextEditorInsertImage] = "Insert image",
+        [RichTextEditorImageFile] = "Image file",
+        [RichTextEditorImageAlt] = "Alt text",
+        [RichTextEditorImageAltHelp] = "Describes the image for people who can't see it.",
+        [RichTextEditorImageDecorative] = "Decorative",
+        [RichTextEditorImageDecorativeHelp] = "It adds nothing the text doesn't say, so screen readers skip it.",
+        [RichTextEditorApplyImage] = "Insert",
+        [RichTextEditorImageFailed] = "The image couldn't be stored. Try again.",
+        [RichTextEditorImageNotAllowed] = "The image's address isn't one this editor allows.",
         [MarkdownEditorPreview] = "Preview",
         [TourNext] = "Next",
         [TourBack] = "Back",

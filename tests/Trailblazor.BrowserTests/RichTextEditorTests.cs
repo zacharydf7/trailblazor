@@ -1284,6 +1284,25 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Images_ShouldGoInAtTheCaret_WhenChosenWithTheImageButton(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await GalleryAsync(page, "<p>ab</p>");
+
+        await CaretAsync(gallery, 0, 1);
+        await Tool(gallery, "Image").ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert image" });
+        await dialog.Locator("input[type=file]").SetInputFilesAsync(new FilePayload
+        {
+            Name = "pine.png", MimeType = "image/png", Buffer = [137, 80, 78, 71],
+        });
+        await dialog.GetByRole(AriaRole.Textbox, new() { Name = "Alt text" }).FillAsync("Pine");
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>a</p>{Pine}<p>b</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Images_ShouldJoinTheSelection_WhenShiftClicked(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-editor");

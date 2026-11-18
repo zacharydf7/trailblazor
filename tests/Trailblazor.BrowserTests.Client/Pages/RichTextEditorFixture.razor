@@ -35,7 +35,8 @@
 
 @* Last, since its images are tall and the tests above drop at points on the screen. *@
 <TbRichTextEditor Label="Gallery" @bind-Value="_gallery" UpdateOnInput ImageSchemes="@(["https"])"
-                  Blocks="RichTextBlocks.BulletedLists | RichTextBlocks.Rules | RichTextBlocks.Images" />
+                  Blocks="RichTextBlocks.BulletedLists | RichTextBlocks.Rules | RichTextBlocks.Images"
+                  UploadImage="@((_, _) => Task.FromResult("/avatar-photo.svg"))" />
 <output data-testid="gallery">@_gallery</output>
 <TbButton OnClick="() => _gallery = _source">Set gallery</TbButton>
 

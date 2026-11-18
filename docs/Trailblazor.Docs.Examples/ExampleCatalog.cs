@@ -4305,6 +4305,13 @@ public static class ExampleCatalog
                     + "`example.com` gets `https://`, and an email address gets `mailto:`. `LinkSchemes` lists the URL "
                     + "schemes a link may use; the dialog won't accept a link with any other scheme, and paste drops "
                     + "such links.", typeof(RichTextEditorLinksExample)),
+                new("images", "Images", "With `RichTextBlocks.Images` in `Blocks` and an `UploadImage` function, the "
+                    + "Image button opens a dialog to choose a file and give its alt text, or mark it decorative so "
+                    + "screen readers skip it. Insert calls `UploadImage`, which stores the file and returns its "
+                    + "address, and the image goes in at the caret. The address must be one `ImageSchemes` allows. "
+                    + "This example allows `data:` and keeps each image in the text itself, where a real app would "
+                    + "store the file and return an `https` address. `MaxImageSize` caps the file's size.",
+                    typeof(RichTextEditorImagesExample)),
                 new("changing-what-is-pasted", "Changing what's pasted", "`TransformPaste` changes what is pasted "
                     + "or dropped in, after the built-in cleanup: it gets the pasted text as a `RichTextDocument` and "
                     + "returns the document to put in. This example keeps the formats but drops the links. It's a "
@@ -4384,6 +4391,9 @@ public static class ExampleCatalog
                     + "can point at. Clicking the label still focuses it.",
                 "The toolbar is named \"Formatting\" and each button by what it does, such as \"Bold\" or "
                     + "\"Bulleted list\"; `Labels` changes these words and the link dialog's.",
+                "The Image button is named \"Image\" and opens a dialog titled \"Insert image\", with a file picker "
+                    + "labeled \"Image file\", an \"Alt text\" field and a \"Decorative\" checkbox; `Labels` changes "
+                    + "these words too.",
             ],
             Announcements =
             [
@@ -4438,7 +4448,7 @@ public static class ExampleCatalog
                     + "`RichTextBlocks.Images` in `Blocks`, each image shows on its own between paragraphs, the caret "
                     + "steps over it, and Backspace or Delete next to it removes it. A click selects an image whole, "
                     + "so Delete or typing replaces it; an image can't be dragged on its own. `ImageSchemes` sets which "
-                    + "sources an image may use."),
+                    + "sources an image may use, and with `UploadImage` the Image button puts new ones in."),
                 new("`@ref` the editor and call `FocusAsync()` to move focus to it."),
             ],
             Ready = new("[role=textbox]", "the editing area"),
@@ -4453,6 +4463,7 @@ public static class ExampleCatalog
                 new("count", "The counter under the editor, with `ShowCount`."),
                 new("count-shown", "The counter's text, such as 12 / 200, which screen readers skip."),
                 new("count-said", "The counter's words for screen readers, such as 12 of 200 characters."),
+                new("image", "The Image button, with `UploadImage` and `RichTextBlocks.Images`."),
                 new("source-toggle", "The HTML source button, with `ShowSource`."),
                 new("source", "The text area of the value's HTML, while the source shows."),
             ],
