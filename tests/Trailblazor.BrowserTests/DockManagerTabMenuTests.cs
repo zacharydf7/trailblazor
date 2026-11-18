@@ -114,10 +114,12 @@ public class DockManagerTabMenuTests(BrowserFixture fixture) : DockManagerPage(f
         var page = await OpenDockAsync(browser);
         await Expect(page.Locator(".tb-dock")).ToHaveAttributeAsync("data-ready", "");
 
-        // A finger that rests on a tab picks it up, and one that keeps resting opens the tab's menu instead.
-        var pickedUp = await Tab(page, "Gear").EvaluateAsync<bool>(RestOnTab);
+        // A finger that rests on a tab picks it up after 300 ms and then has half a second to start moving. It still
+        // holds the tab 650 ms after it came down, past the half second a menu waits for a finger that picks nothing
+        // up. One that keeps resting opens the tab's menu instead.
+        var held = await Tab(page, "Gear").EvaluateAsync<bool[]>(RestOnTab, 0);
 
-        Assert.True(pickedUp);
+        Assert.True(held[0]);
         var menu = page.GetByRole(AriaRole.Menu, new() { Name = "Tab options" });
         await Expect(menu).ToBeVisibleAsync();
         await Expect(Tab(page, "Gear")).Not.ToHaveAttributeAsync("data-dragging", "");
@@ -126,15 +128,39 @@ public class DockManagerTabMenuTests(BrowserFixture fixture) : DockManagerPage(f
         await page.GetByTestId("layout").ClickAsync();
         await Expect(menu).ToBeHiddenAsync();
 
-        // The second time, the menu has its items already and opens without asking for them, and still puts the tab
-        // down.
-        Assert.True(await Tab(page, "Gear").EvaluateAsync<bool>(RestOnTab));
+        // The second time, the menu has its items already and opens without asking for them, so the finger holds
+        // the tab until the menu opens, however fast the server is. The menu still puts the tab down.
+        Assert.True((await Tab(page, "Gear").EvaluateAsync<bool[]>(RestOnTab, 0))[0]);
         await Expect(menu).ToBeVisibleAsync();
         await Expect(Tab(page, "Gear")).Not.ToHaveAttributeAsync("data-dragging", "");
         await Expect(page.Locator(".tb-dock")).Not.ToHaveAttributeAsync("data-moving", "");
         await LiftAsync(page);
         await menu.GetByRole(AriaRole.Menuitem, new() { Name = "Close" }).ClickAsync();
         await Expect(Tab(page, "Gear")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldKeepHoldOfATab_WhenTheBrowserAsksForAMenuWhileTheFingerStillHasTimeToMove(
+        string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        var menu = page.GetByRole(AriaRole.Menu, new() { Name = "Tab options" });
+        // The menu has opened on Gear before, so it has the items and would open at once, without the server.
+        await Tab(page, "Gear").ClickAsync(new() { Button = MouseButton.Right });
+        await Expect(menu).ToBeVisibleAsync();
+        await page.GetByTestId("layout").ClickAsync();
+        await Expect(menu).ToBeHiddenAsync();
+
+        // Some browsers ask for a context menu once a finger has rested for half a second or less, here 350 ms after
+        // it came down, when the tab has just been picked up.
+        var rest = await Tab(page, "Gear").EvaluateAsync<bool[]>(RestOnTab, 350);
+
+        // The finger still holds the tab, and the browser's own menu was kept closed.
+        Assert.Equal([true, true], rest);
+        // The finger keeps resting, and the menu opens after its own wait.
+        await Expect(menu).ToBeVisibleAsync();
+        await Expect(Tab(page, "Gear")).Not.ToHaveAttributeAsync("data-dragging", "");
+        await LiftAsync(page);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -225,14 +251,25 @@ public class DockManagerTabMenuTests(BrowserFixture fixture) : DockManagerPage(f
         await Expect(Tab(page, "Gear")).ToBeFocusedAsync();
     }
 
-    // A finger comes down on the middle of a tab and stays; says whether the tab was picked up 400 ms later.
+    // A finger comes down on the middle of a tab and stays; says first whether it holds the tab 650 ms later. With a
+    // `menuAt`, the browser asks for a context menu that many ms after the finger came down, and the second answer
+    // is whether the dock kept the browser's own menu closed.
     private const string RestOnTab = """
-        async tab => {
+        async (tab, menuAt) => {
             const box = tab.getBoundingClientRect();
+            const at = { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 };
             tab.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 7, pointerType: 'touch',
-                isPrimary: true, button: 0, clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 }));
-            await new Promise(resolve => setTimeout(resolve, 400));
-            return tab.hasAttribute('data-dragging');
+                isPrimary: true, button: 0, ...at }));
+            let canceled = false;
+            if (menuAt) {
+                setTimeout(() => {
+                    canceled = !tab.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true,
+                        ...at }));
+                }, menuAt);
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 650));
+            return [tab.hasAttribute('data-dragging'), canceled];
         }
         """;
 

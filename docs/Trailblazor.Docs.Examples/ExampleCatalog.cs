@@ -2908,10 +2908,10 @@ public static class ExampleCatalog
                 new("A mouse or a pen drags a tab once it has moved a few pixels. With a finger, the drag starts "
                     + "only once the tab has been held still for a moment, so a swipe still scrolls a row of tabs."),
                 new("A tab's menu opens with a right-click, or with Shift+F10 or the context menu key on the tab. "
-                    + "It also opens when a finger rests on the tab a little longer than it takes to pick the "
-                    + "tab up, and the tab is put down again; a pen that rests on the tab opens the menu too. A "
-                    + "right-click on the empty part of a row of tabs opens the menu for the group's showing "
-                    + "panel."),
+                    + "It also opens when a finger keeps resting on the tab for half a second after picking it "
+                    + "up, and the tab is put down again; a pen that rests on the tab for half a second opens the "
+                    + "menu too. A right-click on the empty part of a row of tabs opens the menu for the group's "
+                    + "showing panel."),
                 new("A drop within a few pixels of the dock's edge goes along that edge, even where a row of tabs "
                     + "reaches it. The mark shows where the panel will land."),
                 new("A `PersistenceKey` names the layout in the browser's local storage, as `tb-dock:` followed by "
@@ -8420,10 +8420,13 @@ public static class ExampleCatalog
             [
                 new("area", "Opening on an area", "Wrap the area in a `TbContextMenu` and put its items in `Items`. A "
                     + "right-click opens the menu at the pointer, and a touch that rests on the area for half a "
-                    + "second opens it at the finger. Shift+F10 or the context menu key opens it below the focused "
-                    + "element, so give keyboard users something in the area to focus, as this map is. Near the "
-                    + "window's edge, the menu opens on the other side of the pointer. `AriaLabel` names the menu, and "
-                    + "`TbSubMenu`, `TbMenuGroup`, checkbox and radio items work as they do in a [menu](components/menu).",
+                    + "second opens it at the finger. If the finger picks up something to drag before then, such "
+                    + "as a row that can be moved in a [tree view](components/tree-view) inside the area, the half "
+                    + "second starts over from the pickup, so the finger has time to start moving. Shift+F10 or "
+                    + "the context menu key opens it below the focused element, so give keyboard users something "
+                    + "in the area to focus, as this map is. Near the window's edge, the menu opens on the other "
+                    + "side of the pointer. `AriaLabel` names the menu, and `TbSubMenu`, `TbMenuGroup`, checkbox "
+                    + "and radio items work as they do in a [menu](components/menu).",
                     typeof(ContextMenuExample)),
                 new("keys", "Items for what was clicked", "Put `data-context-key` on the elements inside the area "
                     + "that need their own items, such as rows, and read `context.Key` in `Items`: it holds the key of "

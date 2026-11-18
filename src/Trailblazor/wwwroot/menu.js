@@ -144,7 +144,8 @@ export function createContextMenu(target, menu, events) {
 
         event.preventDefault();
         // The context menu key and Shift+F10 also make some browsers fire contextmenu, as the key is pressed or let go.
-        if (keyOpened) {
+        // Some fire it for a resting finger too, sooner than the wait that began when the finger picked an item up.
+        if (keyOpened || press?.pickedUp) {
             return;
         }
 
@@ -171,11 +172,24 @@ export function createContextMenu(target, menu, events) {
         }
 
         cancelPress();
-        const at = { x: event.clientX, y: event.clientY };
-        press = { at, timer: setTimeout(() => {
+        press = { element: event.target, at: { x: event.clientX, y: event.clientY }, pickedUp: false };
+        waitForPress();
+    };
+    const waitForPress = () => {
+        const { element, at } = press;
+        clearTimeout(press.timer);
+        press.timer = setTimeout(() => {
             press = null;
-            open(event.target, at);
-        }, longPressDelay) };
+            open(element, at);
+        }, longPressDelay);
+    };
+    // A finger that rested long enough to pick up an item for dragging gets the whole wait again from the pickup, so
+    // it has time to start moving before the menu opens.
+    const onPickup = () => {
+        if (press) {
+            press.pickedUp = true;
+            waitForPress();
+        }
     };
     const onPointerMove = event => {
         if (press && Math.hypot(event.clientX - press.at.x, event.clientY - press.at.y) > pressSlop) {
@@ -223,6 +237,7 @@ export function createContextMenu(target, menu, events) {
     target.addEventListener('pointermove', onPointerMove);
     target.addEventListener('pointerup', cancelPress);
     target.addEventListener('pointercancel', cancelPress);
+    target.addEventListener('tb-drag-pickup', onPickup);
     document.addEventListener('pointerdown', onOutsidePress, true);
     window.addEventListener('scroll', onScroll, { capture: true, passive: true });
     menu.addEventListener('keydown', onMenuEscape);
@@ -242,6 +257,7 @@ export function createContextMenu(target, menu, events) {
             target.removeEventListener('pointermove', onPointerMove);
             target.removeEventListener('pointerup', cancelPress);
             target.removeEventListener('pointercancel', cancelPress);
+            target.removeEventListener('tb-drag-pickup', onPickup);
             document.removeEventListener('pointerdown', onOutsidePress, true);
             window.removeEventListener('scroll', onScroll, { capture: true });
             menu.removeEventListener('keydown', onMenuEscape);

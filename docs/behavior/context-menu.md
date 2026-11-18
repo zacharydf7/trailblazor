@@ -32,6 +32,8 @@ Familiar apps: Windows and macOS context menus, VS Code's editor and explorer, G
 ## Touch
 
 - [x] A touch that rests on the area for half a second opens the menu, which stays open as the finger lifts; a tap opens nothing. `ContextMenuTests.LongPress_ShouldOpenTheMenuAndKeepItOpen_WhenATouchRestsOnTheTargetAndLifts`
+- [x] If the resting finger picks up something to drag before then, the half second starts over from the pickup, so the finger has time to start moving. `DockManagerTabMenuTests.Dock_ShouldOpenATabsMenuAndPutTheTabDown_WhenAFingerRestsOnItLongerThanItTakesToPickItUp`
+- [x] A context menu the browser itself asks for in that time, as some do for a resting finger, is ignored, and the browser's own menu stays closed. `DockManagerTabMenuTests.Dock_ShouldKeepHoldOfATab_WhenTheBrowserAsksForAMenuWhileTheFingerStillHasTimeToMove`
 - [x] A touch that moves more than a few pixels opens nothing, even on an area that doesn't pan, such as a map. `ContextMenuTests.LongPress_ShouldOpenNothing_WhenTheTouchMovesBeforeTheDelay`
 - [x] A mouse opens the menu only with its right button, not by holding the left one. `ContextMenuTests.MouseHold_ShouldOpenNothing_WhenTheLeftButtonRestsOnTheTarget`
 - [x] iOS shows no callout of its own for a link or image pressed in the area. `trailblazor.css`

@@ -1,6 +1,7 @@
 // Drags items with the pointer, a mouse, pen or finger, without the browser's own drag and drop and its ghost image.
 // A mouse or pen starts a drag by moving a few pixels; a finger holds still for a moment first, so a swipe still
-// scrolls. Escape cancels. The caller decides what the item is dragged over and what a drop does.
+// scrolls. Escape cancels. The caller decides what the item is dragged over and what a drop does. An item a finger
+// picks up sends a bubbling `tb-drag-pickup` event, which a context menu around it waits for.
 const threshold = 4;
 const holdForTouch = 300;
 const edge = 32;
@@ -60,6 +61,10 @@ export function createPointerDrag(container,
         // would start without the user asking.
         if (scrolls) {
             drag.frame = requestAnimationFrame(scrollNearEdge);
+        }
+
+        if (drag.touch) {
+            drag.item.dispatchEvent(new CustomEvent('tb-drag-pickup', { bubbles: true }));
         }
 
         onStart(drag.item);

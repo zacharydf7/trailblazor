@@ -68,7 +68,8 @@ Familiar apps: VS Code's editor groups and panel, Visual Studio's tool windows, 
 - [x] A finger drags a separator, through pointer events, without scrolling the page. `dock-manager.js`
 - [x] A finger that holds a tab still for a moment picks it up, and one that moves at once carries nothing. `DockManagerTabDragTests.Dock_ShouldMoveAPanelAfterAHoldAndLeaveASwipeAlone_WhenAFingerDragsItsTab`
 - [x] A swipe along a row of tabs scrolls it: a finger that moves at once never picks a tab up, and the tabs set no `touch-action`, so the row takes the pan. `pointer-drag.js`, `trailblazor.css`
-- [x] A finger that rests on a tab a little longer than it takes to pick the tab up opens the tab's menu, and the tab is put down, each time the menu opens. `DockManagerTabMenuTests.Dock_ShouldOpenATabsMenuAndPutTheTabDown_WhenAFingerRestsOnItLongerThanItTakesToPickItUp`
+- [x] A finger that picks a tab up has half a second from then to start moving. One that keeps resting that long opens the tab's menu, and the tab is put down, each time the menu opens. `DockManagerTabMenuTests.Dock_ShouldOpenATabsMenuAndPutTheTabDown_WhenAFingerRestsOnItLongerThanItTakesToPickItUp`
+- [x] A browser that fires its own context menu for a resting finger before that half second is up, as some do, doesn't take the tab from a finger that has just picked it up. `DockManagerTabMenuTests.Dock_ShouldKeepHoldOfATab_WhenTheBrowserAsksForAMenuWhileTheFingerStillHasTimeToMove`
 - [x] A slow tap, where the finger rests on a tab for a moment and lifts having moved no more than a resting finger drifts, still selects the tab and moves nothing, also within the band along the dock's edge. `DockManagerTabDragTests.Dock_ShouldSelectATab_WhenAFingerRestsOnItForAMomentBeforeLifting`
 - [x] A close mark is a 24px target. `trailblazor.css`
 - [ ] A separator is as easy to catch with a finger as with a mouse. UNCONFIRMED

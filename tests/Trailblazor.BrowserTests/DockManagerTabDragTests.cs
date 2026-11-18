@@ -321,10 +321,21 @@ public class DockManagerTabDragTests(BrowserFixture fixture) : DockManagerPage(f
         await Expect(Tab(page, "Map")).Not.ToHaveAttributeAsync("data-dragging", "");
         await DialogMoveAndResizeTests.TouchAsync(touch, "touchEnd", null, null);
 
-        // A finger that holds still for a moment picks the tab up.
+        // A finger that holds still for a moment picks the tab up. The page reports the pickup itself: if the finger
+        // then rests for half a second, the tab is put down again, and on a slow machine polling for the attribute
+        // can take that long.
         var commits = int.Parse((await dock.GetAttributeAsync("data-commits"))!, CultureInfo.InvariantCulture);
+        await Tab(page, "Map").EvaluateAsync("""
+            tab => {
+                window.pickedUp = new Promise(resolve => new MutationObserver(() => {
+                    if (tab.hasAttribute('data-dragging')) {
+                        resolve();
+                    }
+                }).observe(tab, { attributes: true, attributeFilter: ['data-dragging'] }));
+            }
+            """);
         await DialogMoveAndResizeTests.TouchAsync(touch, "touchStart", x, y);
-        await Expect(Tab(page, "Map")).ToHaveAttributeAsync("data-dragging", "");
+        await page.EvaluateAsync("() => window.pickedUp");
         await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", (x + notes.X) / 2, y);
         await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", notes.X + notes.Width * 0.75, y);
         await ExpectMarkAsync(page, notes.X + notes.Width - 1, notes.Y, 2, notes.Height);
