@@ -3992,6 +3992,25 @@
         margin-block: 0.75em;
     }
 
+    /* A table takes the text's width, with each cell ruled and the header cells on a light tint. */
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) table {
+        inline-size: 100%;
+        margin-block: 0.75em;
+        border-collapse: collapse;
+    }
+
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) :is(th, td) {
+        padding: 0.25em 0.5em;
+        border: 1px solid var(--tb-border-subtle);
+        text-align: start;
+        vertical-align: top;
+    }
+
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) th {
+        background: color-mix(in srgb, var(--tb-color-text) 4%, transparent);
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
     :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) a {
         color: var(--tb-color-primary-text);
         text-decoration: underline;

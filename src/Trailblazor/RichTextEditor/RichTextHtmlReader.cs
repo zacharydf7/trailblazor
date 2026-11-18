@@ -121,7 +121,13 @@ internal sealed partial class RichTextHtmlReader
     private readonly List<Element>[] _openBounds = [.. Enum.GetValues<Scope>().Select(_ => new List<Element>())];
     private readonly List<Element> _openSkipped = [];
     private readonly List<Element> _openForeign = [];
+    // The tables being read, innermost last; a table inside a cell isn't one of them, as its text joins the cell's.
+    private readonly List<Table> _tables = [];
     private List<Piece>? _runs;
+    // The cell being read, while the schema allows tables.
+    private Element? _cell;
+    // Whether the paragraph's last line has text, so a block ending inside a cell needs a line break there.
+    private bool _lineHasText;
     // The kind and level of the paragraph being read, set when its first text arrives.
     private (RichTextParagraphKind Kind, int Level) _block;
     // The Word list marker being skipped and its text, which says, once it ends, whether its list is numbered.
@@ -274,6 +280,24 @@ internal sealed partial class RichTextHtmlReader
             return;
         }
 
+        // As in a browser, a cell ends the open cell, and a row or a table's section ends the open row too.
+        if (!InSkipped && name is "td" or "th" or "tr" or "tbody" or "thead" or "tfoot")
+        {
+            Close("td");
+            Close("th");
+            if (name is not ("td" or "th"))
+            {
+                Close("tr");
+            }
+        }
+
+        // A table starting in a table, outside its cells and caption, ends that table first, as in a browser.
+        if (!InSkipped && name == "table" && LastOpen("table") is { } openTable
+            && Array.TrueForAll(["td", "th", "caption"], part => (LastOpen(part)?.Serial ?? 0) < openTable.Serial))
+        {
+            Close("table");
+        }
+
         if (!InSkipped && LastOpen("p") is not null && ClosesParagraph.Contains(name) && !(name == "table" && _quirks))
         {
             Close("p");
@@ -285,7 +309,7 @@ internal sealed partial class RichTextHtmlReader
             if (name == "hr" && !InSkipped)
             {
                 FinishParagraph();
-                if (_schema.Blocks.HasFlag(RichTextBlocks.Rules))
+                if (_schema.Blocks.HasFlag(RichTextBlocks.Rules) && _cell is null)
                 {
                     _paragraphs.Add(new RichTextParagraph([], RichTextParagraphKind.Rule));
                 }
@@ -354,6 +378,19 @@ internal sealed partial class RichTextHtmlReader
             return;
         }
 
+        if (name == "table" && _cell is null && _schema.Blocks.HasFlag(RichTextBlocks.Tables))
+        {
+            _tables.Add(new Table(element));
+        }
+        else if (name is "tr" or "tbody" or "thead" or "tfoot" && _tables.Count > 0 && _cell is null)
+        {
+            _tables[^1].EndRow();
+        }
+        else if (name is "td" or "th" && element.Context.Kind == RichTextParagraphKind.TableCell && _cell is null)
+        {
+            _cell = element;
+        }
+
         if (Formatting.Contains(name))
         {
             Remember(element);
@@ -395,9 +432,12 @@ internal sealed partial class RichTextHtmlReader
         }
         else if (name == "p" && !InSkipped && _inBody)
         {
-            // In the body, a </p> that closes no <p> makes an empty paragraph.
+            // A stray </p> in the body makes an empty paragraph, except in a cell, where it shows nothing.
             FinishParagraph();
-            _paragraphs.Add(new RichTextParagraph([]));
+            if (_cell is null)
+            {
+                _paragraphs.Add(new RichTextParagraph([]));
+            }
         }
     }
 
@@ -625,11 +665,27 @@ internal sealed partial class RichTextHtmlReader
             _formatting.RemoveRange(boundary, _formatting.Count - boundary);
         }
 
-        if (element.Block)
+        if (element == _cell)
+        {
+            FinishCell();
+        }
+        else if (element.Block)
         {
             FinishParagraph();
-            // A block with no text is still a paragraph.
-            if (_paragraphs.Count == element.FirstParagraph)
+            if (_tables.Count > 0 && _tables[^1].Element == element)
+            {
+                _paragraphs.AddRange(_tables[^1].Cells);
+                _tables.RemoveAt(_tables.Count - 1);
+            }
+
+            var tableRow = element.Name == "tr" && _tables.Count > 0 && _cell is null;
+            if (tableRow)
+            {
+                _tables[^1].EndRow();
+            }
+
+            // A block with no text is still a paragraph, but a row of a table being read isn't a block of its own.
+            if (_cell is null && _paragraphs.Count == element.FirstParagraph && !tableRow)
             {
                 var (kind, level) = Resolve(element.Context);
                 _numberedMarker = false;
@@ -650,6 +706,7 @@ internal sealed partial class RichTextHtmlReader
             "h2" => (RichTextParagraphKind.Heading2, 0, false),
             "h3" or "h4" or "h5" or "h6" => (RichTextParagraphKind.Heading3, 0, false),
             "blockquote" => (RichTextParagraphKind.Quote, 0, false),
+            "td" or "th" when _tables.Count > 0 => (RichTextParagraphKind.TableCell, 0, false),
             "li" => (parent.Ordered ? RichTextParagraphKind.NumberedItem : RichTextParagraphKind.BulletedItem,
                 Math.Max(parent.Lists - 1, 0), false),
             _ when style.Contains("mso-list", StringComparison.OrdinalIgnoreCase)
@@ -688,6 +745,7 @@ internal sealed partial class RichTextHtmlReader
         RichTextParagraphKind.Quote => RichTextBlocks.Quotes,
         RichTextParagraphKind.BulletedItem => RichTextBlocks.BulletedLists,
         RichTextParagraphKind.NumberedItem => RichTextBlocks.NumberedLists,
+        RichTextParagraphKind.TableCell => RichTextBlocks.Tables,
         _ => RichTextBlocks.Rules,
     });
 
@@ -731,7 +789,8 @@ internal sealed partial class RichTextHtmlReader
     private void AddImage(string? source, string? alt)
     {
         var url = RichTextSchema.CleanLink(source);
-        if (url is null || !_schema.Blocks.HasFlag(RichTextBlocks.Images) || !_schema.AllowsImage(url))
+        if (url is null || !_schema.Blocks.HasFlag(RichTextBlocks.Images) || !_schema.AllowsImage(url)
+            || _cell is not null)
         {
             return;
         }
@@ -775,31 +834,68 @@ internal sealed partial class RichTextHtmlReader
         }
 
         _runs.Add(new Piece(text, Formats & _formats, Link, pre));
+        var shown = text.TrimEnd(' ');
+        if (shown.Length > 0)
+        {
+            _lineHasText = shown[^1] != '\n';
+        }
     }
 
     private void FinishParagraph()
     {
         _afterImage = false;
+        // Inside a cell, a block ends a line of the cell instead.
+        if (_cell is not null)
+        {
+            if (_lineHasText)
+            {
+                _runs!.Add(new Piece("\n", RichTextFormats.None, null, Pre: false));
+                _lineHasText = false;
+            }
+
+            return;
+        }
+
         if (_runs is null)
         {
             return;
         }
 
         var hasBreak = _runs.Exists(run => run.Text.Contains('\n'));
+        var paragraph = new RichTextParagraph(TakeRuns(), _block.Kind, _block.Level);
+        // A line break shows a line even with nothing on it, such as a <br> between two paragraphs.
+        if (paragraph.Runs.Count > 0 || hasBreak)
+        {
+            _paragraphs.Add(paragraph);
+        }
+    }
+
+    // A cell takes the next place in its row, even when it's empty.
+    private void FinishCell()
+    {
+        var table = _tables[^1];
+        var place = table.Next(header: _cell!.Name == "th");
+        _cell = null;
+        _afterImage = false;
+        table.Cells.Add(new RichTextParagraph(TakeRuns(), place));
+    }
+
+    // Takes the paragraph's runs, leaving none for the next paragraph.
+    private List<RichTextRun> TakeRuns()
+    {
+        if (_runs is null)
+        {
+            return [];
+        }
+
         // As HTML renders it outside <pre>: no space after another or at a line's start, and none at a line's end.
         var runs = Keep(_runs, (text, i, pre) => pre || text[i] != ' ' || (i > 0 && text[i - 1] is not (' ' or '\n')));
         runs = Keep(runs, (text, i, pre) => pre || text[i] != ' ' || (i < text.Length - 1 && text[i + 1] != '\n'));
         // A paragraph's last line break shows nothing.
         runs = Keep(runs, (text, i, _) => i < text.Length - 1 || text[i] != '\n');
         _runs = null;
-        var paragraph = new RichTextParagraph(
-            runs.Select(run => new RichTextRun(run.Text, run.Formats, run.Link, vetted: true)), _block.Kind,
-            _block.Level);
-        // A line break shows a line even with nothing on it, such as a <br> between two paragraphs.
-        if (paragraph.Runs.Count > 0 || hasBreak)
-        {
-            _paragraphs.Add(paragraph);
-        }
+        _lineHasText = false;
+        return [.. runs.Select(run => new RichTextRun(run.Text, run.Formats, run.Link, vetted: true))];
     }
 
     // Keeps the characters the test passes, given the paragraph's text, an index into it, and whether it's in <pre>.
@@ -1137,6 +1233,34 @@ internal sealed partial class RichTextHtmlReader
 
         // Rises with each element opened, so of two open elements the one with the higher serial is above.
         public int Serial { get; set; }
+    }
+
+    // A table being read: its cells so far, and the place of the next.
+    private sealed class Table(Element element)
+    {
+        private int _row;
+        private int _column;
+        private bool _rowEnded;
+
+        public Element Element { get; } = element;
+
+        public List<RichTextParagraph> Cells { get; } = [];
+
+        // Ends the row, so the next cell starts a new one.
+        public void EndRow() => _rowEnded = true;
+
+        // A row with no cells takes no place, as a table shows nothing for it.
+        public RichTextTableCell Next(bool header)
+        {
+            if (_rowEnded && _column > 0)
+            {
+                _row++;
+                _column = 0;
+            }
+
+            _rowEnded = false;
+            return new RichTextTableCell(_row, _column++, header);
+        }
     }
 
     private readonly record struct Piece(string Text, RichTextFormats Formats, string? Link, bool Pre);

@@ -106,7 +106,8 @@
 
     /// <summary>The kinds of block the editor allows: the toolbar has a button for each (three for headings, and
     /// Horizontal line for <see cref="RichTextBlocks.Rules"/>), with outdent and indent buttons when it allows a list,
-    /// and text pasted in keeps only these. Defaults to all of them but <see cref="RichTextBlocks.Images"/>;
+    /// and text pasted in keeps only these. Defaults to all of them but <see cref="RichTextBlocks.Images"/> and
+    /// <see cref="RichTextBlocks.Tables"/>;
     /// <see cref="RichTextBlocks.None"/> allows only plain paragraphs.</summary>
     [Parameter]
     public RichTextBlocks Blocks { get; set; } = RichTextHtmlReader.AllBlocks;

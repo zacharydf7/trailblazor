@@ -6877,3 +6877,19 @@ const Trailblazor.TbStrings.RichTextEditorImageFailed = "RichTextEditor.ImageFai
 const Trailblazor.TbStrings.RichTextEditorImageFile = "RichTextEditor.ImageFile" -> string!
 const Trailblazor.TbStrings.RichTextEditorImageNotAllowed = "RichTextEditor.ImageNotAllowed" -> string!
 const Trailblazor.TbStrings.RichTextEditorInsertImage = "RichTextEditor.InsertImage" -> string!
+Trailblazor.RichTextBlocks.Tables = 64 -> Trailblazor.RichTextBlocks
+Trailblazor.RichTextParagraphKind.TableCell = 9 -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraph.RichTextParagraph(System.Collections.Generic.IEnumerable<Trailblazor.RichTextRun!>! runs, Trailblazor.RichTextTableCell! cell) -> void
+Trailblazor.RichTextParagraph.Cell.get -> Trailblazor.RichTextTableCell?
+Trailblazor.RichTextTableCell
+Trailblazor.RichTextTableCell.<Clone>$() -> Trailblazor.RichTextTableCell!
+Trailblazor.RichTextTableCell.Equals(Trailblazor.RichTextTableCell? other) -> bool
+Trailblazor.RichTextTableCell.RichTextTableCell(int row, int column, bool header = false) -> void
+Trailblazor.RichTextTableCell.Row.get -> int
+Trailblazor.RichTextTableCell.Column.get -> int
+Trailblazor.RichTextTableCell.Header.get -> bool
+override Trailblazor.RichTextTableCell.Equals(object? obj) -> bool
+override Trailblazor.RichTextTableCell.GetHashCode() -> int
+override Trailblazor.RichTextTableCell.ToString() -> string!
+static Trailblazor.RichTextTableCell.operator !=(Trailblazor.RichTextTableCell? left, Trailblazor.RichTextTableCell? right) -> bool
+static Trailblazor.RichTextTableCell.operator ==(Trailblazor.RichTextTableCell? left, Trailblazor.RichTextTableCell? right) -> bool

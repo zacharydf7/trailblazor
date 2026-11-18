@@ -1,7 +1,7 @@
 namespace Trailblazor;
 
-/// <summary>What a <see cref="RichTextParagraph"/> is: a plain paragraph, a heading, a quote, a list item, a rule or
-/// an image.</summary>
+/// <summary>What a <see cref="RichTextParagraph"/> is: a plain paragraph, a heading, a quote, a list item, a rule, an
+/// image or a table cell.</summary>
 public enum RichTextParagraphKind
 {
     /// <summary>A plain paragraph, written as <c>&lt;p&gt;</c>.</summary>
@@ -32,4 +32,9 @@ public enum RichTextParagraphKind
     /// <summary>An image, written as <c>&lt;img&gt;</c>. It has no text; <see cref="RichTextParagraph.Image"/> says
     /// what it shows.</summary>
     Image,
+
+    /// <summary>A cell of a table, written as <c>&lt;td&gt;</c> or <c>&lt;th&gt;</c>. It holds text, with formats,
+    /// links and line breaks, but no blocks; <see cref="RichTextParagraph.Cell"/> says where it sits. Neighboring
+    /// cells make one table.</summary>
+    TableCell,
 }

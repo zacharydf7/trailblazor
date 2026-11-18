@@ -6,15 +6,16 @@ namespace Trailblazor;
 /// dropped.</summary>
 public sealed record RichTextSchema
 {
-    /// <summary>Every format and every block but images, and links that use <c>http</c>, <c>https</c>, <c>mailto</c> or
-    /// <c>tel</c>.</summary>
+    /// <summary>Every format and every block but images and tables, and links that use <c>http</c>, <c>https</c>,
+    /// <c>mailto</c> or <c>tel</c>.</summary>
     public static RichTextSchema Default { get; } = new();
 
     /// <summary>The formats to keep. Without <see cref="RichTextFormats.Link"/>, every link becomes plain text.
     /// Defaults to all of them.</summary>
     public RichTextFormats Formats { get; init; } = RichTextHtmlReader.AllFormats;
 
-    /// <summary>The kinds of block to keep. Defaults to all of them but <see cref="RichTextBlocks.Images"/>.</summary>
+    /// <summary>The kinds of block to keep. Defaults to all of them but <see cref="RichTextBlocks.Images"/> and
+    /// <see cref="RichTextBlocks.Tables"/>.</summary>
     public RichTextBlocks Blocks { get; init; } = RichTextHtmlReader.AllBlocks;
 
     /// <summary>The URL schemes a link may use, such as <c>https</c>. A relative URL, which has no scheme, is always

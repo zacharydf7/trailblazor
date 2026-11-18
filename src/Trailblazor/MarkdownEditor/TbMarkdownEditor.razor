@@ -99,8 +99,8 @@
 
     /// <summary>What the preview keeps, as for <see cref="RichTextDocument.FromMarkdown(string?, RichTextSchema)"/>:
     /// its formats, blocks, and link and image schemes. Defaults to <see cref="RichTextSchema.Default"/>, which
-    /// leaves out images; allow <see cref="RichTextBlocks.Images"/> to show them. The toolbar and shortcuts offer only
-    /// the formats and blocks it keeps.</summary>
+    /// leaves out images and tables; allow <see cref="RichTextBlocks.Images"/> or <see cref="RichTextBlocks.Tables"/>
+    /// to show them. The toolbar and shortcuts offer only the formats and blocks it keeps.</summary>
     [Parameter]
     public RichTextSchema Schema { get; set; } = RichTextSchema.Default;
 

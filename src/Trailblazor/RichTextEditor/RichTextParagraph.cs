@@ -3,18 +3,20 @@ using System.Text;
 namespace Trailblazor;
 
 /// <summary>A paragraph of a <see cref="RichTextDocument"/>: what kind of block it is, and either its text as runs,
-/// each with one set of formats, or the image it shows.</summary>
+/// each with one set of formats, or the image it shows. A table cell is a paragraph too.</summary>
 public sealed class RichTextParagraph
 {
     /// <summary>Creates a paragraph from its runs. Empty runs are dropped, and neighbors with the same formats and
     /// link are joined, so the paragraph keeps the fewest runs that say the same thing.</summary>
     /// <param name="runs">The runs, in order. A rule has none.</param>
     /// <param name="kind">What kind of block the paragraph is. An image needs
-    /// <see cref="RichTextParagraph(RichTextImage)"/> instead.</param>
+    /// <see cref="RichTextParagraph(RichTextImage)"/> instead, and a table cell
+    /// <see cref="RichTextParagraph(IEnumerable{RichTextRun}, RichTextTableCell)"/>.</param>
     /// <param name="level">How far a list item is nested, from 0 for the outermost list. Other kinds have level 0.
     /// </param>
     /// <exception cref="ArgumentException">A rule is given runs with text, or the kind is
-    /// <see cref="RichTextParagraphKind.Image"/>, which needs an image.</exception>
+    /// <see cref="RichTextParagraphKind.Image"/> or <see cref="RichTextParagraphKind.TableCell"/>, which need an image
+    /// or a cell.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The level is negative, or not 0 for a paragraph that isn't a
     /// list item.</exception>
     public RichTextParagraph(IEnumerable<RichTextRun> runs,
@@ -25,6 +27,11 @@ public sealed class RichTextParagraph
         if (kind == RichTextParagraphKind.Image)
         {
             throw new ArgumentException("An image paragraph needs an image.", nameof(kind));
+        }
+
+        if (kind == RichTextParagraphKind.TableCell)
+        {
+            throw new ArgumentException("A table cell needs its place in the table.", nameof(kind));
         }
 
         if (level > 0 && !IsListItem(kind))
@@ -78,6 +85,17 @@ public sealed class RichTextParagraph
         Image = image;
     }
 
+    /// <summary>Creates a table cell, of kind <see cref="RichTextParagraphKind.TableCell"/>. Its runs are joined as in
+    /// <see cref="RichTextParagraph(IEnumerable{RichTextRun}, RichTextParagraphKind, int)"/>.</summary>
+    /// <param name="runs">The cell's runs, in order. An empty cell has none.</param>
+    /// <param name="cell">Where the cell sits in its table.</param>
+    public RichTextParagraph(IEnumerable<RichTextRun> runs, RichTextTableCell cell) : this(runs)
+    {
+        ArgumentNullException.ThrowIfNull(cell);
+        Kind = RichTextParagraphKind.TableCell;
+        Cell = cell;
+    }
+
     /// <summary>The runs, in order. An empty paragraph has none.</summary>
     public IReadOnlyList<RichTextRun> Runs { get; }
 
@@ -92,6 +110,9 @@ public sealed class RichTextParagraph
 
     /// <summary>The image an image paragraph shows; null for every other kind.</summary>
     public RichTextImage? Image { get; }
+
+    /// <summary>Where a table cell sits in its table; null for every other kind.</summary>
+    public RichTextTableCell? Cell { get; }
 
     internal static bool IsListItem(RichTextParagraphKind kind) =>
         kind is RichTextParagraphKind.BulletedItem or RichTextParagraphKind.NumberedItem;

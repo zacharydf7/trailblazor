@@ -87,6 +87,8 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-17
 
+- `RichTextDocument` reads and writes tables where the schema allows the new `RichTextBlocks.Tables`: `ToHtml` writes a `<table>` with its first row in a `<thead>` of `<th scope="col">` cells when they're all header cells, and the other rows in a `<tbody>`; markdown reads and writes pipe tables, so `TbMarkdownEditor`'s preview shows them when its `Schema` allows tables
+- When reading HTML, a cell or row that starts while another is open ends it, as in a browser, so formatting left open in one cell no longer carries into the next
 - New `TbSmartPaste`: a button (`tb-smart-paste`, `data-part="button"`) inside a `TbForm` that fills the form's fields from the clipboard through the app's `Extract` model, with the result beside it (`data-part="status"`) and a dialog (`tb-smart-paste__box`) that asks for the text where the clipboard can't be read
 - `TbRichTextEditor` takes an `UploadImage` function: with `RichTextBlocks.Images`, the toolbar gets an Image button (`data-part="image"`, `aria-haspopup="dialog"`) that asks for a file and its alt text (or Decorative, for none), stores the file through the app and puts the image in at the caret; `MaxImageSize` caps the file's size
 - `TbRichTextEditor` shows images where `Blocks` includes `RichTextBlocks.Images`: each is an `<img>` between paragraphs that the caret steps over, a click selects whole, and Backspace or Delete removes; the new `ImageSchemes` sets which sources an image may use

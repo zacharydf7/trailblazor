@@ -27,4 +27,8 @@ public enum RichTextBlocks
     /// <summary>Images between paragraphs. Without this, images are dropped. Unlike the other blocks, it's off by
     /// default, since an app needs somewhere to store the images.</summary>
     Images = 32,
+
+    /// <summary>Tables of text cells. Without this, each cell reads as a paragraph. Like images, it's off by default.
+    /// </summary>
+    Tables = 64,
 }

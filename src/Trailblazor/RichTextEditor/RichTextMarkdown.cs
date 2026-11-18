@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace Trailblazor;
 
 // Reads and writes the markdown a RichTextDocument can hold: headings, paragraphs, quotes, bulleted and numbered lists
-// nested by indentation, rules, images on a line of their own, fenced code as code text, and bold, italic,
+// nested by indentation, rules, images on a line of their own, fenced code as code text, pipe tables, and bold, italic,
 // strikethrough, code and links inside a paragraph. Anything else, such as raw HTML, stays as text.
 internal static partial class RichTextMarkdown
 {
@@ -20,6 +20,9 @@ internal static partial class RichTextMarkdown
         var lists = new List<int>();
         string? fence = null;
         var code = new List<string>();
+        // The rows of the table being read, the first being its header row, and its count of columns.
+        List<List<string>>? table = null;
+        var columns = 0;
 
         foreach (var raw in (markdown ?? "").Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
         {
@@ -38,6 +41,18 @@ internal static partial class RichTextMarkdown
                 }
 
                 continue;
+            }
+
+            // A table's rows run to a blank line or another block.
+            if (table is not null)
+            {
+                if (content.Length > 0 && !StartsBlock(content))
+                {
+                    table.Add(Cells(content));
+                    continue;
+                }
+
+                AddTable();
             }
 
             if (content.Length == 0)
@@ -68,6 +83,19 @@ internal static partial class RichTextMarkdown
                     lines.Add(quoted);
                 }
 
+                continue;
+            }
+
+            // A row of dashes between pipes, under a line with as many cells, makes that line a table's header row.
+            if (kind == RichTextParagraphKind.Paragraph && lines.Count > 0 && Delimiter().IsMatch(content)
+                && Cells(lines[^1]).Count == Cells(content).Count)
+            {
+                var header = Cells(lines[^1]);
+                lines.RemoveAt(lines.Count - 1);
+                Flush();
+                lists.Clear();
+                table = [header];
+                columns = header.Count;
                 continue;
             }
 
@@ -145,6 +173,11 @@ internal static partial class RichTextMarkdown
             AddCode();
         }
 
+        if (table is not null)
+        {
+            AddTable();
+        }
+
         Flush();
         return new RichTextDocument(paragraphs);
 
@@ -159,6 +192,25 @@ internal static partial class RichTextMarkdown
             lines.Clear();
             kind = RichTextParagraphKind.Paragraph;
             level = 0;
+        }
+
+        // A header row of empty cells stands for none, since a markdown table must have one; extra cells are dropped.
+        void AddTable()
+        {
+            var header = table![0].Exists(cell => cell.Length > 0);
+            var row = 0;
+            foreach (var cells in header ? table : table.Skip(1))
+            {
+                for (var column = 0; column < columns; column++)
+                {
+                    paragraphs.Add(new RichTextParagraph(column < cells.Count ? Inline(cells[column]) : [],
+                        new RichTextTableCell(row, column, header && row == 0)));
+                }
+
+                row++;
+            }
+
+            table = null;
         }
 
         void AddCode()
@@ -180,11 +232,13 @@ internal static partial class RichTextMarkdown
         RichTextParagraph? previous = null;
         // Each open list's kind and the number its next item takes, outermost first.
         var counts = new List<(RichTextParagraphKind Kind, int Next)>();
-        foreach (var paragraph in document.Paragraphs)
+        var all = document.Paragraphs;
+        for (var index = 0; index < all.Count; index++)
         {
-            // Markdown has no empty paragraph: blank lines only separate blocks.
-            if (paragraph.Kind is RichTextParagraphKind.Paragraph or RichTextParagraphKind.Quote
-                && paragraph.Text.Trim(' ', '\n').Length == 0)
+            var paragraph = all[index];
+            // Markdown has no empty paragraph: blank lines only separate blocks. A table is written at its first cell.
+            if ((paragraph.Kind is RichTextParagraphKind.Paragraph or RichTextParagraphKind.Quote
+                && paragraph.Text.Trim(' ', '\n').Length == 0) || paragraph.Cell is { Row: > 0 } or { Column: > 0 })
             {
                 continue;
             }
@@ -207,6 +261,9 @@ internal static partial class RichTextMarkdown
             {
                 case RichTextParagraphKind.Rule:
                     markdown.Append("---");
+                    break;
+                case RichTextParagraphKind.TableCell:
+                    WriteTable(markdown, RichTextDocument.TableRows(all, index));
                     break;
                 case RichTextParagraphKind.Image:
                     markdown.Append("![").Append(Escape(paragraph.Image!.Alt ?? "", lineStart: false)).Append("](")
@@ -243,6 +300,28 @@ internal static partial class RichTextMarkdown
         }
 
         return markdown.ToString();
+    }
+
+    // A markdown table needs a header row, so a table without one gets a row of empty cells, which reads back as none.
+    // A cell's line breaks become spaces, and its pipes are escaped, even in code, since a row is split at its pipes
+    // before code spans are read. A pipe after an odd count of backslashes gets one more, or it would end the cell.
+    private static void WriteTable(StringBuilder markdown, List<List<RichTextParagraph>> rows)
+    {
+        var head = rows[0].TrueForAll(cell => cell.Cell!.Header);
+        var lines = rows.Select(row => row.Select(cell =>
+        {
+            var text = new StringBuilder();
+            WriteRuns(text, cell.Runs, lineBreak: null);
+            return PipeAfterBackslashes().Replace(text.ToString(),
+                pipe => pipe.Groups[1].Value + (pipe.Groups[1].Length % 2 == 0 ? "\\|" : "\\\\|"));
+        })).ToList();
+        if (!head)
+        {
+            lines.Insert(0, rows[0].Select(_ => ""));
+        }
+
+        lines.Insert(1, rows[0].Select(_ => "---"));
+        markdown.AppendJoin('\n', lines.Select(line => "| " + string.Join(" | ", line) + " |"));
     }
 
     // A list's items count up from 1, and a list of another kind at the same level starts again.
@@ -438,7 +517,44 @@ internal static partial class RichTextMarkdown
 
         // A backslash only escapes punctuation, so a number that would start a list escapes the mark after it.
         return OrderedStart().Match(result) is { Success: true } number ? result.Insert(number.Length - 1, "\\")
-            : BlockStart().IsMatch(result) ? "\\" + result : result;
+            : BlockStart().IsMatch(result) || Delimiter().IsMatch(result) ? "\\" + result : result;
+    }
+
+    // A quote, heading, fence, rule or list item starts a block of its own.
+    private static bool StartsBlock(string content) => content[0] == '>' || Fence().IsMatch(content)
+        || Heading().IsMatch(content) || Rule().IsMatch(content) || Item().IsMatch(content);
+
+    // A table row's cells: the text between its pipes, without a pipe at either end, and with "\|" read as "|".
+    private static List<string> Cells(string line)
+    {
+        var cells = new List<string>();
+        var cell = new StringBuilder();
+        var text = line.Trim(' ');
+        var ended = false;
+        for (var i = text.StartsWith('|') ? 1 : 0; i < text.Length; i++)
+        {
+            ended = text[i] == '|';
+            if (text[i] == '\\' && i + 1 < text.Length)
+            {
+                cell.Append(text[i + 1] == '|' ? "" : "\\").Append(text[++i]);
+            }
+            else if (ended)
+            {
+                cells.Add(cell.ToString().Trim(' '));
+                cell.Clear();
+            }
+            else
+            {
+                cell.Append(text[i]);
+            }
+        }
+
+        if (!ended)
+        {
+            cells.Add(cell.ToString().Trim(' '));
+        }
+
+        return cells;
     }
 
     private static string Destination(string url) => url.Any(character => character is ' ' or '(' or ')' or '<' or '>')
@@ -725,4 +841,11 @@ internal static partial class RichTextMarkdown
 
     [GeneratedRegex(@"^\d{1,9}[.)](?= |$)")]
     private static partial Regex OrderedStart();
+
+    [GeneratedRegex(@"(\\*)\|")]
+    private static partial Regex PipeAfterBackslashes();
+
+    // A table's delimiter row: cells of dashes, each with an optional colon at either end, with at least one pipe.
+    [GeneratedRegex(@"^(?=[^|]*\|)\|? *:?-+:? *(?:\| *:?-+:? *)*\|? *$")]
+    private static partial Regex Delimiter();
 }

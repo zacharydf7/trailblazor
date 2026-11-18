@@ -124,6 +124,23 @@ public class TbMarkdownEditorTests : BunitContext
     }
 
     [Fact]
+    public async Task ShowPreviewAsync_ShouldShowAPipeTableAsATable_WhenTheSchemaAllowsTables()
+    {
+        var cut = Render<TbMarkdownEditor>(parameters => parameters.Add(editor => editor.Label, "Trail notes")
+            .Add(editor => editor.Value, "| Trail | Miles |\n| --- | --- |\n| Pine | 3 |")
+            .Add(editor => editor.Schema, new RichTextSchema
+            {
+                Blocks = RichTextSchema.Default.Blocks | RichTextBlocks.Tables,
+            }));
+
+        await cut.Tb().MarkdownEditor("Trail notes").ShowPreviewAsync();
+
+        Assert.Equal("<table><thead><tr><th scope=\"col\">Trail</th><th scope=\"col\">Miles</th></tr></thead>"
+            + "<tbody><tr><td>Pine</td><td>3</td></tr></tbody></table>",
+            cut.Tb().MarkdownEditor("Trail notes").PreviewHtml);
+    }
+
+    [Fact]
     public void Labels_ShouldNameTheToolbarButtonsAndPreview_WhenGiven()
     {
         var cut = Render<TbMarkdownEditor>(parameters => parameters.Add(editor => editor.Label, "Trail notes")

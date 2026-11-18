@@ -151,14 +151,96 @@ public class RichTextMarkdownTests
     [Theory, MemberData(nameof(CorpusSamples))]
     public void ToMarkdown_ShouldReadBackEachCorpusSample_WhenWritten(string sample)
     {
-        var images = new RichTextSchema { Blocks = RichTextSchema.Default.Blocks | RichTextBlocks.Images };
-        var document = RichTextDocument.Parse(File.ReadAllText(Path.Combine(Corpus, $"{sample}.html")), images);
+        var schema = new RichTextSchema
+        {
+            Blocks = RichTextSchema.Default.Blocks | RichTextBlocks.Images | RichTextBlocks.Tables,
+        };
+        var document = RichTextDocument.Parse(File.ReadAllText(Path.Combine(Corpus, $"{sample}.html")), schema);
         var markdown = document.ToMarkdown();
 
-        var read = RichTextDocument.FromMarkdown(markdown, images);
+        var read = RichTextDocument.FromMarkdown(markdown, schema);
 
         Assert.Equal(markdown, read.ToMarkdown());
         Assert.Equal(Shape(document), Shape(read));
+    }
+
+    private static readonly RichTextSchema WithTables =
+        new() { Blocks = RichTextSchema.Default.Blocks | RichTextBlocks.Tables };
+
+    [Theory]
+    [InlineData("| Trail | Miles |\n| :--- | ---: |\n| Pine **ridge** | 3 |\n| Lake |",
+        "<table><thead><tr><th scope=\"col\">Trail</th><th scope=\"col\">Miles</th></tr></thead><tbody>"
+        + "<tr><td>Pine <strong>ridge</strong></td><td>3</td></tr><tr><td>Lake</td><td><br></td></tr></tbody></table>")]
+    [InlineData("a | b\n--|--\n1 | 2 | 3",
+        "<table><thead><tr><th scope=\"col\">a</th><th scope=\"col\">b</th></tr></thead><tbody>"
+        + "<tr><td>1</td><td>2</td></tr></tbody></table>")]
+    [InlineData("| | |\n|---|---|\n| 1 | 2 |", "<table><tbody><tr><td>1</td><td>2</td></tr></tbody></table>")]
+    [InlineData("| a \\| b | `c \\| d` |\n|---|---|",
+        "<table><thead><tr><th scope=\"col\">a | b</th><th scope=\"col\"><code>c | d</code></th></tr></thead></table>")]
+    [InlineData("intro\n| a |\n| --- |\n| 1 |\nmore\n\nafter",
+        "<p>intro</p><table><thead><tr><th scope=\"col\">a</th></tr></thead><tbody><tr><td>1</td></tr>"
+        + "<tr><td>more</td></tr></tbody></table><p>after</p>")]
+    [InlineData("| a |\n|---|\n| 1 |\n> quote",
+        "<table><thead><tr><th scope=\"col\">a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"
+        + "<blockquote><p>quote</p></blockquote>")]
+    [InlineData("| a | b |\n| --- |", "<p>| a | b | | --- |</p>")]
+    public void FromMarkdown_ShouldReadPipeTables_WhenTheSchemaAllowsTables(string markdown, string html) =>
+        Assert.Equal(html, RichTextDocument.FromMarkdown(markdown, WithTables).ToHtml());
+
+    [Fact]
+    public void FromMarkdown_ShouldReadEachCellAsAParagraph_WhenTheSchemaDoesNotAllowTables() =>
+        Assert.Equal("<p>a</p><p>1</p>", RichTextDocument.FromMarkdown("| a |\n|---|\n| 1 |").ToHtml());
+
+    [Fact]
+    public void ToMarkdown_ShouldWriteAPipeTable_WhenTheDocumentHasATable()
+    {
+        var document = new RichTextDocument([
+            new([new("Trail")], new RichTextTableCell(0, 0, header: true)),
+            new([new("a|b", RichTextFormats.Code)], new RichTextTableCell(0, 1, header: true)),
+            new([new("x | y")], new RichTextTableCell(1, 0)),
+            new([new("1\n2")], new RichTextTableCell(1, 1)),
+            new([new("--- | ---")]),
+            new([new("p")], new RichTextTableCell(0, 0)),
+            new([], new RichTextTableCell(0, 1)),
+        ]);
+
+        Assert.Equal("| Trail | `a\\|b` |\n| --- | --- |\n| x \\| y | 1 2 |\n\n\\--- | ---\n\n"
+            + "|  |  |\n| --- | --- |\n| p |  |", document.ToMarkdown());
+    }
+
+    [Fact]
+    public void ToMarkdown_ShouldKeepEachCellInItsColumn_WhenCodeInACellHasABackslashBeforeAPipe()
+    {
+        var document = new RichTextDocument([
+            new([new("a\\|b", RichTextFormats.Code)], new RichTextTableCell(0, 0)),
+            new([new("next")], new RichTextTableCell(0, 1)),
+        ]);
+
+        var read = RichTextDocument.FromMarkdown(document.ToMarkdown(), WithTables);
+
+        Assert.Equal([("a\\\\|b", new RichTextTableCell(0, 0)), ("next", new RichTextTableCell(0, 1))],
+            read.Paragraphs.Select(paragraph => (paragraph.Text, paragraph.Cell!)));
+    }
+
+    [Fact]
+    public void ToMarkdown_ShouldReadBackTheSameTables_WhenWritten()
+    {
+        var document = new RichTextDocument([
+            new([new("Trail", RichTextFormats.Bold), new("\\|")], new RichTextTableCell(0, 0, header: true)),
+            new([new("a|b", RichTextFormats.Code)], new RichTextTableCell(0, 1, header: true)),
+            new([new("map", link: "https://x/?a|b")], new RichTextTableCell(1, 0)),
+            new([], new RichTextTableCell(1, 1)),
+            new([new("| --- |")]),
+            new([new("p")], new RichTextTableCell(0, 0)),
+            new([new("q")], new RichTextTableCell(0, 1)),
+        ]);
+
+        var read = RichTextDocument.FromMarkdown(document.ToMarkdown(), WithTables);
+
+        Assert.Equal(document.Paragraphs.Select(paragraph => (paragraph.Kind, paragraph.Cell)),
+            read.Paragraphs.Select(paragraph => (paragraph.Kind, paragraph.Cell)));
+        Assert.Equal(document.Paragraphs.Select(paragraph => paragraph.Runs.ToList()),
+            read.Paragraphs.Select(paragraph => paragraph.Runs.ToList()));
     }
 
     // Each paragraph's kind, level and lines without spaces at their ends, leaving out the empty paragraphs.

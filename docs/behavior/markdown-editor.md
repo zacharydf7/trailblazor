@@ -20,6 +20,7 @@ Familiar apps: GitHub's comment box, with its Write and Preview tabs; Reddit's a
 - [x] Only the marks the preview's `Schema` keeps get a button or a shortcut. `TbMarkdownEditorTests.Render_ShouldOfferOnlyTheMarksThePreviewKeeps_WhenGivenASchema`, `MarkdownEditorTests.Shortcuts_ShouldDoNothing_WhenTheSchemaLeavesTheirMarkOut`
 - [x] Each toolbar button marks up the selected text, and the value updates. `MarkdownEditorTests.Helper_ShouldPressAToolbarButtonAndReadThePreview_WhenFoundByLabel`
 - [x] The Preview button shows the preview in place of the text and hides it again, and the format buttons are off meanwhile. `TbMarkdownEditorTests.ShowPreviewAsync_ShouldShowTheMarkdownAsHtmlInPlaceOfTheText_WhenPressed`
+- [x] With `RichTextBlocks.Tables` in the `Schema`, the preview shows a pipe table as a table with a header row. `TbMarkdownEditorTests.ShowPreviewAsync_ShouldShowAPipeTableAsATable_WhenTheSchemaAllowsTables`
 - [x] A preview beside the text follows it as it's typed. `TbMarkdownEditorTests.EnterAsync_ShouldUpdateThePreviewBesideTheText_WhenPreviewIsBeside`
 
 ## Touch

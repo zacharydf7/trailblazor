@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace Trailblazor.Tests.Components;
 
@@ -613,5 +614,159 @@ public class RichTextDocumentTests
         Assert.Equal("one two three four ", image.Alt);
         Assert.Equal(new RichTextImage("/a.png", "A"), new RichTextImage(" /a.png", "A"));
         Assert.Null(new RichTextImage("/a.png", null).Alt);
+    }
+
+    private static readonly RichTextSchema WithTables =
+        new() { Blocks = RichTextSchema.Default.Blocks | RichTextBlocks.Tables | RichTextBlocks.Images };
+
+    private const string Grid =
+        "<table><tbody><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></tbody></table>";
+
+    [Theory]
+    [InlineData("<table><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></table>", Grid)]
+    [InlineData("<TABLE border=1><TBODY><TR><TD colspan=2>a<TD>b<TR><TD>c<TD>d</TABLE>", Grid)]
+    [InlineData("<table><td>a<td>b<tr><td>c<td>d</table>", Grid)]
+    [InlineData("<table><tr><td>a</td><td>b</td></tr><td>c</td><td>d</td></table>", Grid)]
+    [InlineData("<table><tr></tr><tr><td>a<td>b</tr><tr></tr><tr><td>c<td>d</table>", Grid)]
+    [InlineData(
+        "<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>a</td><td>b</td></tr></tbody></table>",
+        "<table><thead><tr><th scope=\"col\">A</th><th scope=\"col\">B</th></tr></thead>"
+        + "<tbody><tr><td>a</td><td>b</td></tr></tbody></table>")]
+    [InlineData("<table><tr><th>A</th><th>B</th></tr></table>",
+        "<table><thead><tr><th scope=\"col\">A</th><th scope=\"col\">B</th></tr></thead></table>")]
+    [InlineData("<table><tr><th>A</th><td>b</td></tr><tr><th>C</th><td>d</td></tr></table>",
+        "<table><tbody><tr><th>A</th><td>b</td></tr><tr><th>C</th><td>d</td></tr></tbody></table>")]
+    [InlineData("<table><tr><th>A</th></tr><tr><td>a</td><td>b</td></tr></table>",
+        "<table><thead><tr><th scope=\"col\">A</th><th scope=\"col\"><br></th></tr></thead>"
+        + "<tbody><tr><td>a</td><td>b</td></tr></tbody></table>")]
+    [InlineData("<table><tr><td>a</td><td>b</td></tr><tr><td></td></tr></table>",
+        "<table><tbody><tr><td>a</td><td>b</td></tr><tr><td><br></td><td><br></td></tr></tbody></table>")]
+    [InlineData("<table><tr><td>a</td></tr></table><table><tr></tr><tr><td>b</td></tr></table>",
+        "<table><tbody><tr><td>a</td></tr></tbody></table><table><tbody><tr><td>b</td></tr></tbody></table>")]
+    [InlineData("<p>a</p><table><tr><td>b</td></tr></table><ul><li>c</li></ul>",
+        "<p>a</p><table><tbody><tr><td>b</td></tr></tbody></table><ul><li>c</li></ul>")]
+    public void Parse_ShouldReadEachTableAsAFullGridOfCells_WhenTheSchemaAllowsTables(string html, string expected) =>
+        Assert.Equal(expected, RichTextDocument.Parse(html, WithTables).ToHtml());
+
+    [Theory]
+    [InlineData("<td><b>a <a href=\"/x\">link</a></b><br>b</td>",
+        "<td><strong>a </strong><a href=\"/x\"><strong>link</strong></a><br>b</td>")]
+    [InlineData("<td><p>a</p><p>b</p></td>", "<td>a<br>b</td>")]
+    [InlineData("<td><h1>a</h1><ul><li>b</li><li>c</li></ul><blockquote>d</blockquote></td>",
+        "<td>a<br>b<br>c<br>d</td>")]
+    [InlineData("<td><p>a<br></p><p>b</p></td>", "<td>a<br>b</td>")]
+    [InlineData("<td><p>a<br><br></p><p>b</p></td>", "<td>a<br><br>b</td>")]
+    [InlineData("<td><p>a<br> </p> <p>b</p></td>", "<td>a<br>b</td>")]
+    [InlineData("<td> <p></p> <p>a</p> </td>", "<td>a</td>")]
+    [InlineData("<td><p><br></p><p>a</p></td>", "<td><br>a</td>")]
+    [InlineData("<td>a</p>b</td>", "<td>a<br>b</td>")]
+    [InlineData("<td>a<hr>b</td>", "<td>a<br>b</td>")]
+    [InlineData("<td>a<img src=\"/a\" alt=\"A\">b</td>", "<td>ab</td>")]
+    [InlineData("<td>a<br><br></td>", "<td>a<br><br></td>")]
+    [InlineData("<td> </td>", "<td><br></td>")]
+    [InlineData("<td><b>a<td>b</td>", "<td><strong>a</strong></td><td>b</td>")]
+    [InlineData("<td>a<table><tr><td>b</td><td>c</td></tr></table>d</td>", "<td>a<br>b<br>c<br>d</td>")]
+    public void Parse_ShouldKeepOnlyTextInACell_WhenTheSchemaAllowsTables(string cells, string expected) =>
+        Assert.Equal($"<table><tbody><tr>{expected}</tr></tbody></table>",
+            RichTextDocument.Parse($"<table><tr>{cells}</tr></table>", WithTables).ToHtml());
+
+    [Theory]
+    [InlineData("<table><caption>Trails</caption><tr><td>a</td></tr></table>",
+        "<p>Trails</p><table><tbody><tr><td>a</td></tr></tbody></table>")]
+    [InlineData("<table><tr><td>a</td>b</tr><tr><td>c</td></tr></table>",
+        "<p>b</p><table><tbody><tr><td>a</td></tr><tr><td>c</td></tr></tbody></table>")]
+    [InlineData("<table><tr><td>a</td></tr><table><tr><td>b</td></tr></table></table>",
+        "<table><tbody><tr><td>a</td></tr></tbody></table><table><tbody><tr><td>b</td></tr></tbody></table>")]
+    [InlineData("<p>c<table><tr><td>t</td></tr></table>d</p>",
+        "<p>c</p><table><tbody><tr><td>t</td></tr></tbody></table><p>d</p>")]
+    public void Parse_ShouldPutWhatsOutsideTheCellsBeforeTheTable_WhenTheSchemaAllowsTables(string html,
+        string expected) =>
+        Assert.Equal(expected, RichTextDocument.Parse(html, WithTables).ToHtml());
+
+    [Theory]
+    [InlineData("<table><tr><th>A</th><td>b</td></tr></table>", "<p>A</p><p>b</p>")]
+    [InlineData("<table><tr><td><b>a<td>b</table>", "<p><strong>a</strong></p><p>b</p>")]
+    [InlineData("<table><tr><td>a<tr><td>b</table>", "<p>a</p><p>b</p>")]
+    [InlineData("<table><tr></tr><tr></tr></table>", "<p><br></p><p><br></p>")]
+    public void Parse_ShouldReadEachCellAsAParagraph_WhenTheSchemaDoesNotAllowTables(string html, string expected) =>
+        Assert.Equal(expected, RichTextDocument.Parse(html).ToHtml());
+
+    [Fact]
+    public void Parse_ShouldReadEveryRow_WhenALongTableLeavesItsRowsAndCellsOpen()
+    {
+        var html = "<table>" + string.Concat(Enumerable.Range(0, 600).Select(row => $"<tr><td>{row}<td>x"))
+            + "</table>";
+
+        var cells = RichTextDocument.Parse(html, WithTables).Paragraphs;
+
+        Assert.Equal(1200, cells.Count);
+        Assert.Equal(("599", new RichTextTableCell(599, 0)), (cells[^2].Text, cells[^2].Cell));
+    }
+
+    [Fact]
+    public void Parse_ShouldGiveBackTheSameTables_WhenReadingItsOwnHtml()
+    {
+        var document = new RichTextDocument([
+            new([new("Trail", RichTextFormats.Bold)], new RichTextTableCell(0, 0, header: true)),
+            new([new("Miles")], new RichTextTableCell(0, 1, header: true)),
+            new([new("Pine  ridge"), new("map", link: "https://x/map?a=1&b=2")], new RichTextTableCell(1, 0)),
+            new([new("3\n")], new RichTextTableCell(1, 1)),
+            new([], new RichTextTableCell(2, 0)),
+            new([new("<4>")], new RichTextTableCell(2, 1)),
+            new([new("between")]),
+            new([new("x")], new RichTextTableCell(0, 0, header: true)),
+            new([new("y")], new RichTextTableCell(1, 0)),
+            new([new("z")], new RichTextTableCell(0, 0)),
+        ]);
+
+        var again = RichTextDocument.Parse(document.ToHtml(), WithTables);
+
+        Assert.Equal(document.Paragraphs.Select(paragraph => (paragraph.Kind, paragraph.Cell)),
+            again.Paragraphs.Select(paragraph => (paragraph.Kind, paragraph.Cell)));
+        Assert.Equal(document.Paragraphs.Select(paragraph => paragraph.Runs.ToList()),
+            again.Paragraphs.Select(paragraph => paragraph.Runs.ToList()));
+    }
+
+    [Fact]
+    public void RichTextDocument_ShouldNumberEachTableAndPadItsRows_WhenGivenCells()
+    {
+        var document = new RichTextDocument([
+            new([new("a")], new RichTextTableCell(4, 2, header: true)),
+            new([new("b")], new RichTextTableCell(4, 7, header: true)),
+            new([new("c")], new RichTextTableCell(9, 0)),
+            new([new("d")], new RichTextTableCell(0, 0)),
+            new([new("e")], new RichTextTableCell(0, 1)),
+            new([new("f")], new RichTextTableCell(1, 3)),
+        ]);
+
+        Assert.Equal([
+            ("a", new RichTextTableCell(0, 0, true)), ("b", new RichTextTableCell(0, 1, true)),
+            ("c", new RichTextTableCell(1, 0)), ("", new RichTextTableCell(1, 1)),
+            ("d", new RichTextTableCell(0, 0)), ("e", new RichTextTableCell(0, 1)),
+            ("f", new RichTextTableCell(1, 0)), ("", new RichTextTableCell(1, 1)),
+        ], document.Paragraphs.Select(paragraph => (paragraph.Text, paragraph.Cell!)));
+        Assert.Equal(2, Regex.Count(document.ToHtml(), "<table>"));
+    }
+
+    [Fact]
+    public void RichTextParagraph_ShouldBeATableCell_WhenCreatedFromACell()
+    {
+        var cell = new RichTextTableCell(1, 2, header: true);
+        var paragraph = new RichTextParagraph([new("a"), new("b")], cell);
+
+        Assert.Equal(RichTextParagraphKind.TableCell, paragraph.Kind);
+        Assert.Same(cell, paragraph.Cell);
+        Assert.Equal([new("ab")], paragraph.Runs);
+        Assert.Null(new RichTextParagraph([new("a")]).Cell);
+        Assert.Equal((1, 2, true), (cell.Row, cell.Column, cell.Header));
+    }
+
+    [Fact]
+    public void RichTextParagraph_ShouldThrow_WhenATableCellHasNoPlace()
+    {
+        Assert.Throws<ArgumentException>(() => new RichTextParagraph([], RichTextParagraphKind.TableCell));
+        Assert.Throws<ArgumentNullException>(() => new RichTextParagraph([], (RichTextTableCell)null!));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new RichTextTableCell(-1, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new RichTextTableCell(0, -1));
     }
 }
