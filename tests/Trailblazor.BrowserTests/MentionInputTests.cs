@@ -76,7 +76,7 @@ public class MentionInputTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var (page, input) = await OpenAsync(browser);
         await page.Keyboard.TypeAsync("@an");
-        await Expect(Listbox(page)).ToBeVisibleAsync();
+        await Expect(Listbox(page).GetByRole(AriaRole.Option)).ToHaveCountAsync(2);
         await page.Keyboard.PressAsync("Enter");
         await Expect(input).ToHaveValueAsync("@Ana Lopez ");
 
