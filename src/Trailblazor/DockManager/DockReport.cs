@@ -2,10 +2,10 @@ using Microsoft.JSInterop;
 
 namespace Trailblazor;
 
-// Hears the browser select a tab with the arrow keys, close one with a key or a middle click, and move a separator,
-// so the public dock needn't expose [JSInvokable] methods.
+// Hears the browser select a tab with the arrow keys, close one with a key or a middle click, move a separator, and
+// drop a dragged tab, so the public dock needn't expose [JSInvokable] methods.
 internal sealed class DockReport(Func<string, Task> onSelect, Func<string, bool, Task> onClose,
-    Func<int, double, int, Task> onResize, Func<string, bool> holds)
+    Func<int, double, int, Task> onResize, Func<string, string?, string, Task> onMove, Func<string, bool> holds)
 {
     // Whether the dock holds the tab with this element id, by which the bUnit driver finds a dock's reports. Panel
     // ids won't do, since two docks can use the same ones.
@@ -20,4 +20,8 @@ internal sealed class DockReport(Func<string, Task> onSelect, Func<string, bool,
 
     [JSInvokable]
     public Task OnResize(int separator, double fraction, int report) => onResize(separator, fraction, report);
+
+    // The position is a DockPosition by name. With no target, the panel goes along that edge of the dock.
+    [JSInvokable]
+    public Task OnMove(string panel, string? target, string position) => onMove(panel, target, position);
 }

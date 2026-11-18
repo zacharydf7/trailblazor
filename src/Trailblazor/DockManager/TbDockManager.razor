@@ -20,6 +20,8 @@
     @Content(_declared, panels)
     @* A tab list holds only tabs, so the hint that describes a closable tab sits outside it. *@
     <span id="@_closeHintId" hidden>@(Labels.CloseHint ?? Localizer[TbStrings.DockCloseHint])</span>
+    @* The script shows this over the place where a dragged tab's panel would land. *@
+    <div data-part="drop-mark" aria-hidden="true" class="tb-dock__drop"></div>
     @foreach (var slot in slots)
     {
         @if (slot is GroupSlot group)
@@ -55,8 +57,9 @@
                         </button>
                     }
                 </div>
-                @* The menu does with a click or a tap what dragging a tab does (WCAG 2.5.7), and closes a panel where
-                   neither its mark nor a key can be reached. It acts on the group's showing panel. *@
+                @* The menu moves a panel with clicks or taps, for people who can't drag its tab (WCAG 2.5.7), and
+                   closes a panel where neither its mark nor a key can be reached. It acts on the group's showing
+                   panel. *@
                 @if (RendererInfo.IsInteractive)
                 {
                     var active = group.Box.Active;
@@ -352,7 +355,7 @@
         }
 
         _report = DotNetObjectReference.Create(new DockReport(SelectFromScriptAsync, CloseFromScriptAsync,
-            OnResizeAsync, tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
+            OnResizeAsync, MoveFromScriptAsync, tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);
         if (handle is not null && _disposed)
         {
@@ -597,6 +600,22 @@
     private async Task CloseFromScriptAsync(string panel, bool focused)
     {
         await CloseAsync(panel, focused);
+        StateHasChanged();
+    }
+
+    // A dragged tab was dropped beside the target panel, or along an edge of the dock when there is no target.
+    private async Task MoveFromScriptAsync(string panel, string? target, string position)
+    {
+        // A drop the dock can't use keeps the layout: a panel or a place it doesn't have, or an edge given Before or
+        // After. It still counts as a move that changed nothing, so a test that waits for the drop goes on.
+        var layout = _layout;
+        if (Panel(panel) is not null && Enum.TryParse<DockPosition>(position, out var where) && Enum.IsDefined(where))
+        {
+            layout = target is not null ? _layout.Move(panel, target, where)
+                : where is DockPosition.Before or DockPosition.After ? _layout : _layout.MoveToEdge(panel, where);
+        }
+
+        await MoveAsync(panel, layout);
         StateHasChanged();
     }
 

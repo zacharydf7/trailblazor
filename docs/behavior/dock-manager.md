@@ -43,7 +43,18 @@ Familiar apps: VS Code's editor groups and panel, Visual Studio's tool windows, 
 - [x] A separator moves in steps of 10% from the menu of the grip on its line, for people who can't drag (WCAG 2.5.7), and stops at `MinGroupSize` as its keys do. `DockManagerMoveTests.Dock_ShouldResizeInSteps_WhenASeparatorsGripMenuIsUsed`
 - [x] The grip shows while the pointer is on its separator or on the grip, and while its menu is open. `DockManagerMoveTests.Dock_ShouldResizeInSteps_WhenASeparatorsGripMenuIsUsed`, `trailblazor.css`
 - [x] A drag that starts on the grip resizes as one on the line does, without opening the menu, and the grip goes with its line while the drag runs. A click on the grip that wanders a few pixels still opens the menu. `DockManagerGripDragTests.Dock_ShouldResizeWithoutOpeningTheMenu_WhenASeparatorsGripIsDragged`, `DockManagerGripDragTests.Dock_ShouldOpenTheGripsMenuWithoutResizing_WhenAClickOnItWandersAFewPixels`
-- [ ] Dragging a tab moves its panel to another group, or to an edge to split a group, with a mark where it will land. #75
+- [x] Dragging a tab onto another group's row of tabs puts its panel where the line shows: after the last tab whose middle the pointer has passed, or before the first one. Nothing changes until the drop. `DockManagerTabDragTests.Dock_ShouldMoveAPanelBesideATab_WhenItsTabIsDroppedOnAnotherGroupsRow`, `DockManagerTabDragTests.Dock_ShouldPutATabFirstInARow_WhenItIsDroppedBeforeTheMiddleOfTheFirstTab`
+- [x] Dragging a tab along its own row reorders it, and a drop on its own place changes nothing and doesn't select the tab as a click would. `DockManagerTabDragTests.Dock_ShouldMoveATabAlongItsRowAndLeaveItAlone_WhenItIsDroppedPastANeighborOrOnItsOwnPlace`
+- [x] A tab dropped on the outer quarter of a group's panel gets a new group on that side, with half of the group's box, and one dropped within a few pixels of the dock's edge gets a new group along that edge, with a quarter of the dock; the mark covers that half or that quarter. `DockManagerTabDragTests.Dock_ShouldGiveAPanelANewGroup_WhenItsTabIsDroppedOnASideOfAGroupOrOfTheDock`, `TbDockManagerTests.Drop_ShouldMoveThePanelAlongTheDocksEdge_WhenTheScriptReportsNoTarget`
+- [x] A drop within a few pixels of the dock's edge goes along that edge even where a row of tabs reaches it. `DockManagerTabDragTests.Dock_ShouldLandAlongTheDocksEdge_WhenATabIsDroppedOnARowWithinAFewPixelsOfThatEdge`
+- [x] A tab dropped on a side of its own group's panel splits off into a new group there, beside the tabs it leaves. `DockManagerTabDragTests.Dock_ShouldSplitATabOffItsOwnGroup_WhenItIsDroppedOnASideOfItsOwnPanel`
+- [x] With one panel docked, a dragged tab has nowhere to land and no mark shows. `DockManagerTabDragTests.Dock_ShouldShowNoMark_WhenTheTabOfItsOnlyPanelIsDragged`
+- [x] A tab dropped on the middle of another group joins it as its last tab, and the mark covers the whole group. `DockManagerTabDragTests.Dock_ShouldTakeAPanelAsAGroupsLastTab_WhenItsTabIsDroppedOnTheMiddleOfThatGroupOverAnIframe`
+- [x] A tab dragged across a panel's iframe isn't lost to it. `DockManagerTabDragTests.Dock_ShouldTakeAPanelAsAGroupsLastTab_WhenItsTabIsDroppedOnTheMiddleOfThatGroupOverAnIframe`
+- [x] Escape cancels a drag, and a release outside the dock changes nothing. `DockManagerTabDragTests.Dock_ShouldLeaveThePanelWhereItWas_WhenTheDragIsCanceledOrEndsOutsideTheDock`
+- [x] In right-to-left text a tab dropped on the left of a group gets a new group at the left, where text ends. `DockManagerTabDragTests.Dock_ShouldPutTheNewGroupWhereThePointerIs_WhenATabIsDroppedInRightToLeftText`
+- [x] After a drop, focus is on the moved panel's tab and screen readers hear where the panel went, as after a move from the menu. `DockManagerTabDragTests.Dock_ShouldMoveAPanelBesideATab_WhenItsTabIsDroppedOnAnotherGroupsRow`, `TbDockManagerTests.Drop_ShouldMoveThePanelBesideTheTargetAndSayWhereItWent_WhenTheScriptReportsADroppedTab`
+- [x] A drop that names a panel or a place the dock doesn't have changes nothing, and still counts as finished in `data-commits`. `TbDockManagerTests.Drop_ShouldChangeNothing_WhenTheReportNamesNoSuchPanelOrPlace`
 - [x] Each group has a menu that moves its showing panel with single clicks, for people who can't drag (WCAG 2.5.7), and closes it. `DockManagerMoveTests.Dock_ShouldMoveAPanelToAnotherGroupAndKeepTheFocusOnItsTab_WhenItsGroupsMenuIsUsed`, `DockManagerMoveTests.Dock_ShouldCloseAPanel_WhenCloseIsChosenFromItsGroupsMenu`
 - [ ] Double-clicking a tab makes its group fill the dock, and again puts it back. #75
 
@@ -51,6 +62,9 @@ Familiar apps: VS Code's editor groups and panel, Visual Studio's tool windows, 
 
 - [x] Tapping a tab selects it, since selection listens for the click. `TbDockManager.razor`
 - [x] A finger drags a separator, through pointer events, without scrolling the page. `dock-manager.js`
+- [x] A finger that holds a tab still for a moment picks it up, and one that moves at once carries nothing. `DockManagerTabDragTests.Dock_ShouldMoveAPanelAfterAHoldAndLeaveASwipeAlone_WhenAFingerDragsItsTab`
+- [x] A swipe along a row of tabs scrolls it: a finger that moves at once never picks a tab up, and the tabs set no `touch-action`, so the row takes the pan. `pointer-drag.js`, `trailblazor.css`
+- [x] A slow tap, where the finger rests on a tab for a moment and lifts having moved no more than a resting finger drifts, still selects the tab and moves nothing, also within the band along the dock's edge. `DockManagerTabDragTests.Dock_ShouldSelectATab_WhenAFingerRestsOnItForAMomentBeforeLifting`
 - [x] A close mark is a 24px target. `trailblazor.css`
 - [ ] A separator is as easy to catch with a finger as with a mouse. UNCONFIRMED
 - [x] Where the main pointer is a finger, as on a phone or a tablet, the grips always show, since nothing hovers there. `trailblazor.css`
@@ -72,6 +86,7 @@ Familiar apps: VS Code's editor groups and panel, Visual Studio's tool windows, 
 - [x] Each group's menu button is named "Options for" and the title of the showing panel, and each grip "Size of" and the title that names its separator. `TbDockManagerTests.Menu_ShouldOfferWhatItsGroupsShowingPanelCanDo_WhenRendered`, `TbDockManagerTests.Grip_ShouldStepItsSeparatorThroughTheScript_WhenLargerOrSmallerIsChosen`
 - [x] `Labels` replaces those words, the items of both menus and what is said after a move. `TbDockManagerTests.Labels_ShouldWordTheGroupsSeparatorsAndCloseHint_WhenGiven`, `TbDockManagerTests.Labels_ShouldWordTheMenusAndGrips_WhenGiven`, `TbDockManagerTests.Labels_ShouldWordWhatIsSaidAfterAMove_WhenGiven`
 - [x] In forced colors, the showing tab and a focused separator are marked in the system's highlight color. `DockManagerResizeTests.Dock_ShouldMarkTheShowingTabAndAFocusedSeparatorInTheHighlight_WhenColorsAreForced`
+- [x] In forced colors, the mark for a dragged tab is a highlight-colored line or outline with nothing filled in. `DockManagerTabDragTests.Dock_ShouldDrawTheMarkInTheHighlight_WhenColorsAreForced`
 
 ## Remembering
 

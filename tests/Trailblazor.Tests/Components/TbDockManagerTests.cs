@@ -17,6 +17,9 @@ public class TbDockManagerTests : BunitContext
         new DockGroup("trails", "map") { Size = 1 },
         new DockSplit(new DockGroup("notes") { Size = 3 }, new DockGroup("weather")) { Vertical = true, Size = 3 }));
 
+    // The dock's children that the script keeps in reading order, which leaves out the mark for a dragged tab.
+    private const string OrderedParts = "[data-part=dock] > [data-part]:not([data-part=drop-mark])";
+
     private static readonly Panel[] HikePanels =
         [new("trails", "Trails"), new("map", "Map"), new("notes", "Notes"), new("weather", "Weather")];
 
@@ -497,14 +500,14 @@ public class TbDockManagerTests : BunitContext
     public void Layout_ShouldLeaveEveryRenderedPartWhereItWasAmongItsSiblings_WhenAPanelChangesGroup()
     {
         var cut = RenderDock(Hike, HikePanels);
-        var before = cut.FindAll("[data-part=dock] > [data-part]").Select(Key).ToList();
+        var before = cut.FindAll(OrderedParts).Select(Key).ToList();
 
         // The weather joins the first group and shows there, so its group and a separator go.
         cut.Render(parameters => parameters.Add(dock => dock.Layout, new DockLayout(new DockSplit(
             new DockGroup("trails", "map", "weather") { Active = "weather" }, new DockGroup("notes")))));
 
         Assert.Equal(["group", "trails", "separator", "grip", "group", "notes", "weather"],
-            cut.FindAll("[data-part=dock] > [data-part]").Select(Key));
+            cut.FindAll(OrderedParts).Select(Key));
         Assert.Equal(["group", "trails", "separator", "grip", "group", "notes", "separator", "grip", "group", "weather"],
             before);
         Assert.Equal("0", cut.Find("[role=tabpanel][data-panel=weather]").GetAttribute("data-dock-group"));
@@ -613,6 +616,60 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal(trails, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
         Assert.Equal(["move"],
             used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public async Task Drop_ShouldMoveThePanelBesideTheTargetAndSayWhereItWent_WhenTheScriptReportsADroppedTab()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        DockLayout? changed = null;
+        var cut = RenderDock(Hike, HikePanels, layout => changed = layout);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        // The mark the script shows where the tab would land is in the markup from the start, hidden.
+        Assert.Equal("true", cut.Find("[data-part=dock] > [data-part=drop-mark]").GetAttribute("aria-hidden"));
+
+        await cut.InvokeAsync(() => Report().OnMove("map", "weather", "Top"));
+
+        Assert.Equal([["Trails"], ["Notes"], ["Map"], ["Weather"]], cut.FindAll("[data-part=group]").Select(Titles));
+        Assert.Equal(Hike.Move("map", "weather", DockPosition.Top), changed);
+        Assert.Equal(["Map moved to panel group 3."], Services.GetRequiredService<FakeAnnouncer>().Polite);
+        Assert.Equal(Reference(cut, "Map"), ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+        Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+        Assert.Equal(["move"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public async Task Drop_ShouldMoveThePanelAlongTheDocksEdge_WhenTheScriptReportsNoTarget()
+    {
+        DockLayout? changed = null;
+        var cut = RenderDock(Hike, HikePanels, layout => changed = layout);
+
+        await cut.InvokeAsync(() => Report().OnMove("notes", null, "Start"));
+
+        Assert.Equal(Hike.MoveToEdge("notes", DockPosition.Start), changed);
+        Assert.Equal(["Notes", "Trails", "Map", "Weather"], cut.Tb().Dock().Panels);
+    }
+
+    [Theory]
+    [InlineData("photos", "notes", "After")]
+    [InlineData("map", "photos", "After")]
+    [InlineData("map", "notes", "Sideways")]
+    [InlineData("map", "notes", "9")]
+    [InlineData("map", null, "Before")]
+    public async Task Drop_ShouldChangeNothing_WhenTheReportNamesNoSuchPanelOrPlace(string panel, string? target,
+        string position)
+    {
+        var changes = 0;
+        var cut = RenderDock(Hike, HikePanels, _ => changes++);
+
+        await cut.InvokeAsync(() => Report().OnMove(panel, target, position));
+
+        Assert.Equal(0, changes);
+        Assert.Equal(["Trails", "Map", "Notes", "Weather"], cut.Tb().Dock().Panels);
+        // The drop still counts as finished, so a test that waits for it goes on.
+        Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
     }
 
     [Fact]
@@ -1191,7 +1248,7 @@ public class TbDockManagerTests : BunitContext
         group.QuerySelectorAll("[role=tab]").Select(tab => tab.TextContent.Trim());
 
     private static IEnumerable<string?> Parts(IRenderedComponent<TbDockManager> cut) =>
-        cut.FindAll("[data-part=dock] > [data-part]").Select(part => part.GetAttribute("data-part"));
+        cut.FindAll(OrderedParts).Select(part => part.GetAttribute("data-part"));
 
     // A panel by its id, and a group or a separator by its part.
     private static string Key(AngleSharp.Dom.IElement part) =>

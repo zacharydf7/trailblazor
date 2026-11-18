@@ -201,10 +201,21 @@ public class DragScrollTests(BrowserFixture fixture) : BrowserTest(fixture)
             """);
 
         await ExpectScrollingAsync(page, box);
-        await page.EvaluateAsync("""
-            () => document.dispatchEvent(new PointerEvent('pointerup', {
-                bubbles: true, pointerId: 7, pointerType: 'touch', isPrimary: true }))
+        // The rows that scrolled past the finger made this a drag, so the click its release sends goes nowhere.
+        var clicked = await box.EvaluateAsync<bool>("""
+            box => {
+                const area = box.getBoundingClientRect();
+                const under = document.elementFromPoint(area.left + area.width / 2, area.bottom - 8);
+                let clicked = false;
+                under.addEventListener('click', () => clicked = true, { once: true });
+                document.dispatchEvent(new PointerEvent('pointerup', {
+                    bubbles: true, pointerId: 7, pointerType: 'touch', isPrimary: true }));
+                under.click();
+                return clicked;
+            }
             """);
+
+        Assert.False(clicked);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

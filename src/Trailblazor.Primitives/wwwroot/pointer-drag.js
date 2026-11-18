@@ -42,6 +42,7 @@ export function createPointerDrag(container,
         scroller.scrollBy({ top: direction * scrollSpeed * elapsed, behavior: 'instant' });
         drag.scrolledAt = now;
         if (scroller.scrollTop !== before) {
+            drag.moved = true;
             onMove(pointer);
         }
 
@@ -104,19 +105,30 @@ export function createPointerDrag(container,
         }
 
         if (drag && event.pointerId === drag.pointerId) {
+            // A finger that rests in place drifts a little, which isn't yet a move.
+            drag.moved ||= Math.hypot(event.clientX - drag.x, event.clientY - drag.y) >= threshold;
             drag.pointer = event;
             // What scrolls can change as rows arrive during the drag.
             drag.scroller = scrollParent();
-            onMove(event);
+            if (drag.moved) {
+                onMove(event);
+            }
         }
     };
 
     const onPointerUp = event => {
         if (drag && event.pointerId === drag.pointerId) {
+            // A finger that held still and then lifted has only tapped slowly: nothing drops, and its click goes on
+            // to the item. A drag has moved once the pointer has, or once the list has scrolled under it.
+            const moved = Boolean(drag.moved);
             end();
-            justDragged = true;
+            justDragged = moved;
             settle();
-            onDrop();
+            if (moved) {
+                onDrop();
+            } else {
+                onCancel();
+            }
         } else {
             end();
             // The release after a drag Escape canceled sends its click now.

@@ -7545,8 +7545,40 @@
     }
 
     /* A panel's iframe would take the pointer from a drag that crosses it. */
-    .tb-dock[data-resizing] > .tb-dock__panel {
+    .tb-dock:is([data-resizing], [data-moving]) > .tb-dock__panel {
         pointer-events: none;
+    }
+
+    /* While a tab is dragged, the mark covers where its panel would land: a line beside a tab, half of a group, a
+       whole group, or a band along the dock's edge. */
+    .tb-dock__drop {
+        position: absolute;
+        z-index: 3;
+        display: none;
+        box-sizing: border-box;
+        border: 2px solid var(--tb-color-primary);
+        border-radius: var(--tb-radius-sm);
+        background: color-mix(in srgb, var(--tb-color-primary) 16%, transparent);
+        pointer-events: none;
+    }
+
+    .tb-dock__drop[data-show] {
+        display: block;
+    }
+
+    .tb-dock__drop[data-show="line"] {
+        border: none;
+        border-radius: 0;
+        background: var(--tb-color-primary);
+    }
+
+    .tb-dock__tab[data-dragging] {
+        opacity: 0.5;
+    }
+
+    .tb-dock[data-moving],
+    .tb-dock[data-moving] * {
+        cursor: grabbing;
     }
 
     .tb-dock__tabs {
@@ -7744,6 +7776,15 @@
         .tb-dock__separator:focus-visible:not([data-pointer-focus])::before {
             background: Highlight;
             box-shadow: 0 0 0 1px Highlight;
+        }
+
+        .tb-dock__drop {
+            border-color: Highlight;
+            background: none;
+        }
+
+        .tb-dock__drop[data-show="line"] {
+            background: Highlight;
         }
     }
 

@@ -354,7 +354,8 @@ public abstract class DockManagerPage(BrowserFixture fixture) : BrowserTest(fixt
 {
     // The dock's parts in the order the page holds them: each panel by its id, and each group and separator by name.
     protected const string Parts = "() => [...document.querySelector('.tb-dock').children]"
-        + ".filter(part => part.dataset.part).map(part => part.dataset.panel ?? part.dataset.part).join(' ')";
+        + ".filter(part => part.dataset.part && part.dataset.part !== 'drop-mark')"
+        + ".map(part => part.dataset.panel ?? part.dataset.part).join(' ')";
 
     // Whether the first group's row is too narrow for its tabs and still shows all of its showing tab.
     protected const string ShowingTabInView = """

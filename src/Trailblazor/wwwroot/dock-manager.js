@@ -1,5 +1,6 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { createGripDrag } from '../Trailblazor.Primitives/grip-drag.js';
+import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
 import { nextTab, scrollTabIntoRow } from './tabs.js';
 
 const sides = ['x', 'y', 'width', 'height'];
@@ -8,8 +9,8 @@ const names = { x: 'x', y: 'y', width: 'w', height: 'h' };
 // The dock renders its groups, panels and separators as siblings, each placed by a box in percent of the dock. This
 // script keeps each panel after its group's tabs, so Tab and screen readers meet them in reading order; moves
 // between tabs with the arrow keys; closes a tab with Delete, Backspace or a middle click; and moves the separators,
-// by dragging or with the keys, showing the new boxes at once and reporting the move when it stops. `reporter` hears
-// it all.
+// by dragging or with the keys, showing the new boxes at once and reporting the move when it stops; and moves a
+// panel where its tab is dragged to. `reporter` hears it all.
 export function attachDock(root, reporter) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!root) {
@@ -353,6 +354,137 @@ export function attachDock(root, reporter) {
             event.preventDefault();
         }
     };
+    // Dragging a tab moves its panel: beside another tab, to a new group on one side of a group, or to one along an
+    // edge of the dock. The mark shows where the panel would land, and nothing changes until the drop.
+    const mark = parts('drop-mark')[0];
+    const edgeReach = 8;
+    let carried = null;
+    let landing = null;
+    const isRtl = () => getComputedStyle(root).direction === 'rtl';
+    const inside = (box, x, y) => x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
+    const tabsOf = group => [...group.querySelectorAll(':scope > .tb-dock__tabs > .tb-dock__tab')];
+    // The side of a box that a point is nearest, when it is within reach of it.
+    const nearSide = (box, x, y, reachX, reachY) => {
+        const gaps = [['left', (x - box.left) / reachX], ['right', (box.right - x) / reachX],
+            ['top', (y - box.top) / reachY], ['bottom', (box.bottom - y) / reachY]];
+        const [side, gap] = gaps.reduce((nearest, each) => each[1] < nearest[1] ? each : nearest);
+        return gap < 1 ? side : null;
+    };
+    // This share of a box, along one of its sides.
+    const sideOf = (box, side, share) => {
+        const [width, height] = [box.width * share, box.height * share];
+        return {
+            left: side === 'right' ? box.right - width : box.left,
+            top: side === 'bottom' ? box.bottom - height : box.top,
+            width: side === 'left' || side === 'right' ? width : box.width,
+            height: side === 'top' || side === 'bottom' ? height : box.height,
+        };
+    };
+    const positionOn = side => ({ left: isRtl() ? 'End' : 'Start', right: isRtl() ? 'Start' : 'End', top: 'Top',
+        bottom: 'Bottom' })[side];
+    // Where the carried tab's panel would land from a point: beside a target panel, or along an edge of the dock
+    // when there is no target, with the box its mark takes. Null where a drop would change nothing.
+    const landingAt = (x, y) => {
+        const dock = root.getBoundingClientRect();
+        const groups = parts('group');
+        if (!inside(dock, x, y) || groups.flatMap(tabsOf).length < 2) {
+            return null;
+        }
+
+        const edge = nearSide(dock, x, y, edgeReach, edgeReach);
+        if (edge) {
+            return { target: null, position: positionOn(edge), box: sideOf(dock, edge, 0.25) };
+        }
+
+        const own = carried.closest('.tb-dock__group');
+        const row = groups.find(group => inside(group.getBoundingClientRect(), x, y));
+        if (row) {
+            // The tab goes after the last tab whose middle the pointer has passed, or before the first one.
+            const all = tabsOf(row);
+            const others = all.filter(tab => tab !== carried);
+            const passed = others.filter(tab => {
+                const box = tab.getBoundingClientRect();
+                return isRtl() ? x < box.left + box.width / 2 : x > box.left + box.width / 2;
+            }).length;
+            if (!others.length || (row === own && passed === all.indexOf(carried))) {
+                return null;
+            }
+
+            const beside = others[Math.max(passed - 1, 0)];
+            const box = beside.getBoundingClientRect();
+            const atLeft = (passed === 0) !== isRtl();
+            return { target: beside.dataset.panel, position: passed === 0 ? 'Before' : 'After', line: true,
+                box: { left: (atLeft ? box.left : box.right) - 1, top: box.top, width: 2, height: box.height } };
+        }
+
+        const shown = parts('panel').find(panel => !panel.classList.contains('tb-dock__panel--hidden')
+            && inside(panel.getBoundingClientRect(), x, y));
+        const group = shown && groups[Number(shown.dataset.dockGroup)];
+        const others = group ? tabsOf(group).filter(tab => tab !== carried) : [];
+        if (!others.length) {
+            return null;
+        }
+
+        // The group's box is its row and the panel under it.
+        const [top, body] = [group.getBoundingClientRect(), shown.getBoundingClientRect()];
+        const whole = { left: body.left, right: body.right, top: top.top, bottom: body.bottom, width: body.width,
+            height: body.bottom - top.top };
+        const side = nearSide(body, x, y, body.width / 4, body.height / 4);
+        if (side) {
+            const beside = others.find(tab => tab.getAttribute('aria-selected') === 'true') ?? others[0];
+            return { target: beside.dataset.panel, position: positionOn(side), box: sideOf(whole, side, 0.5) };
+        }
+
+        // The middle of another group takes the panel as its last tab.
+        return group === own ? null : { target: others.at(-1).dataset.panel, position: 'After', box: whole };
+    };
+    const showMark = () => {
+        if (!landing) {
+            delete mark.dataset.show;
+            return;
+        }
+
+        const dock = root.getBoundingClientRect();
+        mark.style.left = `${landing.box.left - dock.left - root.clientLeft}px`;
+        mark.style.top = `${landing.box.top - dock.top - root.clientTop}px`;
+        mark.style.width = `${landing.box.width}px`;
+        mark.style.height = `${landing.box.height}px`;
+        mark.dataset.show = landing.line ? 'line' : 'box';
+    };
+    const endCarry = () => {
+        if (carried) {
+            delete carried.dataset.dragging;
+        }
+
+        carried = landing = null;
+        delete root.dataset.moving;
+        showMark();
+    };
+    const tabDrag = createPointerDrag(root, {
+        itemSelector: '.tb-dock__tab',
+        ignoreSelector: '[data-part="close"]',
+        ownsPress: target => Boolean(ownPart(target, 'tab')),
+        scrolls: false,
+        onStart: tab => {
+            carried = tab;
+            tab.dataset.dragging = '';
+            // A panel's iframe would take the pointer as it crosses, so the panels let it through meanwhile.
+            root.dataset.moving = '';
+        },
+        onMove: event => {
+            landing = landingAt(event.clientX, event.clientY);
+            showMark();
+        },
+        onDrop: () => {
+            const [panel, to] = [carried.dataset.panel, landing];
+            endCarry();
+            if (to) {
+                callDotNet(reporter, 'OnMove', panel, to.target, to.position);
+            }
+        },
+        onCancel: endCarry,
+    });
+
     const holdsFocus = tab => tab === document.activeElement
         || Boolean(document.getElementById(tab.getAttribute('aria-controls'))?.contains(document.activeElement));
     const onAuxClick = event => {
@@ -418,6 +550,7 @@ export function attachDock(root, reporter) {
             root.removeEventListener('mousedown', onMouseDown);
             root.removeEventListener('auxclick', onAuxClick);
             grips.dispose();
+            tabDrag.dispose();
         },
     };
 }
