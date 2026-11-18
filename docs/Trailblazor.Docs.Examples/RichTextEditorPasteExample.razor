@@ -6,8 +6,9 @@
 @code {
     private string? _comment;
 
+    // An image's paragraph has no runs to change, so it goes through as it is.
     private static RichTextDocument WithoutLinks(RichTextDocument pasted) => new(pasted.Paragraphs.Select(paragraph =>
-        new RichTextParagraph(
+        paragraph.Image is not null ? paragraph : new RichTextParagraph(
             paragraph.Runs.Select(run => new RichTextRun(run.Text, run.Formats & ~RichTextFormats.Link)),
             paragraph.Kind, paragraph.Level)));
 }

@@ -99,8 +99,7 @@
     /// <summary>The kinds of block the editor allows: the toolbar has a button for each (three for headings, and
     /// Horizontal line for <see cref="RichTextBlocks.Rules"/>), with outdent and indent buttons when it allows a list,
     /// and text pasted in keeps only these. Defaults to all of them but <see cref="RichTextBlocks.Images"/>;
-    /// <see cref="RichTextBlocks.None"/> allows only plain paragraphs. The editor can't show images yet, so it leaves
-    /// them out even when this includes <see cref="RichTextBlocks.Images"/>.</summary>
+    /// <see cref="RichTextBlocks.None"/> allows only plain paragraphs.</summary>
     [Parameter]
     public RichTextBlocks Blocks { get; set; } = RichTextHtmlReader.AllBlocks;
 
@@ -109,6 +108,12 @@
     /// <c>mailto</c> and <c>tel</c>.</summary>
     [Parameter]
     public IReadOnlyList<string> LinkSchemes { get; set; } = RichTextSchema.Default.LinkSchemes;
+
+    /// <summary>The URL schemes an image's source may use when <see cref="Blocks"/> has
+    /// <see cref="RichTextBlocks.Images"/>, as <see cref="RichTextSchema.ImageSchemes"/> describes: an image with any
+    /// other is dropped, whether it's in the value or pasted in. Defaults to <c>https</c> and <c>http</c>.</summary>
+    [Parameter]
+    public IReadOnlyList<string> ImageSchemes { get; set; } = RichTextSchema.Default.ImageSchemes;
 
     /// <summary>Changes what is pasted or dropped in, after the editor's own cleanup: it gets the pasted text as a
     /// document and returns the document to put in, such as one without its links, or
@@ -253,10 +258,9 @@
         }
     }
 
-    // The editing script can't show images yet, so the editor leaves them out.
     private RichTextSchema Schema => new()
     {
-        Formats = Formats, Blocks = Blocks & ~RichTextBlocks.Images, LinkSchemes = LinkSchemes,
+        Formats = Formats, Blocks = Blocks, LinkSchemes = LinkSchemes, ImageSchemes = ImageSchemes,
     };
 
     // The value as the editor holds it: parsed, so only the allowed formats and safe markup reach the page.
@@ -325,6 +329,7 @@
         blocks = string.Join(' ', BlockTools.Select(tool => tool.Block).OfType<string>()
             .Concat(Blocks.HasFlag(RichTextBlocks.Rules) ? ["rule"] : [])),
         links = Formats.HasFlag(RichTextFormats.Link) ? string.Join(' ', LinkSchemes) : null,
+        images = Blocks.HasFlag(RichTextBlocks.Images) ? string.Join(' ', ImageSchemes) : null,
         transformsPaste = TransformPaste is not null,
         readOnly = ReadOnly,
         updateOnInput = UpdateOnInput,

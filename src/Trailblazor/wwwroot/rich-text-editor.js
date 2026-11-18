@@ -39,15 +39,15 @@ const SKIPPED = new Set(['head', 'iframe', 'math', 'noembed', 'noframes', 'noscr
     'style', 'svg', 'template', 'textarea', 'title']);
 const PREFORMATTED = new Set(['pre', 'listing', 'xmp', 'plaintext']);
 const LISTS = new Set(['ul', 'ol', 'menu', 'dir']);
-// The elements that hold one paragraph's own text in the editor, and rules, which hold none.
-const BLOCK_ELEMENTS = 'p, h1, h2, h3, li, hr';
+// The elements that hold one paragraph's own text in the editor, and rules and images, which hold none.
+const BLOCK_ELEMENTS = 'p, h1, h2, h3, li, hr, img';
 const TYPING_PAUSE = 1000;
 // Keeps each part under Blazor Server's default 32 KB message limit, even at 6 bytes of JSON per control character.
 const MAX_PART = 5000;
 
-// options: { formats, blocks, links, transformsPaste, readOnly, updateOnInput, updateDelay }, with formats as mark
-// names, blocks as kinds and links as URL schemes split by spaces, links null where links aren't allowed, and
-// updateDelay in milliseconds.
+// options: { formats, blocks, links, images, transformsPaste, readOnly, updateOnInput, updateDelay }, with formats as
+// mark names, blocks as kinds, and links and images as URL schemes split by spaces, links null where links aren't
+// allowed, images null where images aren't, and updateDelay in milliseconds.
 export function attachRichTextEditor(root, value, options) {
     const toolbar = root.closest('.tb-rich-text-editor')?.querySelector('[data-part="toolbar"]') ?? null;
     const label = document.getElementById(root.getAttribute('aria-labelledby') ?? '');
@@ -96,7 +96,12 @@ class Editor {
         on(root, 'keyup', () => this.plainPaste = false);
         on(root, 'pointerdown', () => this.caretMove = 0);
         on(root, 'paste', event => this.onPaste(event));
-        on(root, 'dragstart', () => {
+        on(root, 'dragstart', event => {
+            // An image dragged by itself would drop a copy, since no range of the document is selected.
+            if (event.target.localName === 'img') {
+                event.preventDefault();
+                return;
+            }
             this.selection = this.readSelection() ?? this.selection;
             this.dragged = this.hasRange() ? this.range() : null;
         });
@@ -116,6 +121,17 @@ class Editor {
             if (!this.restoreSelection) return;
             this.restoreSelection = false;
             this.writeSelection();
+        });
+        // A click on an image selects it whole, as word processors do, so Delete or typing replaces it; browsers would
+        // put the caret beside it, outside the editor or nowhere. Shift+click extends the selection over the image.
+        on(root, 'click', event => {
+            const block = event.target.localName === 'img' ? this.blockElements().indexOf(event.target) : -1;
+            if (block < 0) return;
+            const anchor = event.shiftKey && this.selection ? this.selection.anchor : { block, offset: 0 };
+            const head = anchor.block > block ? { block, offset: 0 } : { block: block + 1, offset: 0 };
+            this.selection = { anchor, head };
+            this.writeSelection();
+            this.updateToolbar();
         });
         // A click on a link places the caret and mustn't follow it, which Blazor's router would do for a link in the
         // app; Ctrl+click (Cmd+click on a Mac) opens it in a new tab, as word processors do.
@@ -159,6 +175,7 @@ class Editor {
             formats: new Set(options.formats.split(' ').filter(mark => MARKS.includes(mark))),
             blocks: new Set(options.blocks.split(' ').filter(kind => KINDS.includes(kind))),
             links: options.links === null ? null : options.links.toLowerCase().split(' ').filter(Boolean),
+            images: options.images === null ? null : options.images.toLowerCase().split(' ').filter(Boolean),
         };
         this.transformsPaste = !!options.transformsPaste;
         this.readOnly = !!options.readOnly;
@@ -312,8 +329,8 @@ class Editor {
         if (type === 'insertLineBreak') return handle(() => this.edit(() => this.insertText('\n')));
         const start = type === 'insertText' && event.data === ' ' && collapsed ? this.markdownStart(from) : null;
         if (start) return handle(() => this.startBlock(from, start));
-        // The browser types at its own caret, which can still be beside a rule before selectionchange moves it.
-        if (type === 'insertText' && (spans || this.browserCaretBesideRule())) {
+        // The browser types at its own caret, which can sit beside a rule or image until selectionchange moves it.
+        if (type === 'insertText' && (spans || this.browserCaretBesideAtom())) {
             return handle(() => this.edit(() => this.insertText(event.data ?? '')));
         }
         if (type === 'insertText' || type === 'insertReplacementText') return;
@@ -436,7 +453,7 @@ class Editor {
         if (!node || !this.root.contains(node)) return;
         this.readBack();
         let target = this.positionOf(node, point?.offset ?? range.startOffset);
-        if (this.doc[target.block].kind === 'rule') target = this.outOfRule(target, false);
+        if (isAtom(this.doc[target.block])) target = this.outOfAtom(target, false);
         const copy = isApple() ? event.altKey : event.ctrlKey;
         if (!dragged || copy) {
             this.root.focus();
@@ -448,11 +465,12 @@ class Editor {
             return;
         }
 
-        const { from, to } = dragged;
+        const { from } = dragged;
+        const to = endBeforeAtom(this.doc, from, dragged.to);
         if (compare(target, from) >= 0 && compare(target, to) <= 0) return;
         this.edit(() => {
             const moved = this.paragraphsIn(from, to);
-            this.deleteRange(from, to);
+            this.deleteRange(from, dragged.to);
             if (compare(target, to) > 0) {
                 target = target.block === to.block
                     ? { block: from.block, offset: from.offset + target.offset - to.offset }
@@ -486,23 +504,24 @@ class Editor {
             this.selection = selection;
             this.storedMarks = null;
         }
-        // If readSelection moved the caret off a rule, move it on the page too.
-        if (this.browserCaretBesideRule()) this.writeSelection();
+        // If readSelection moved the caret off a rule or image, move it on the page too.
+        if (this.browserCaretBesideAtom()) this.writeSelection();
         this.updateToolbar();
     }
 
-    browserCaretBesideRule() {
+    browserCaretBesideAtom() {
         const dom = document.getSelection();
-        return dom.isCollapsed && this.root.contains(dom.focusNode) && this.besideRule(dom.focusNode, dom.focusOffset);
+        return dom.isCollapsed && this.root.contains(dom.focusNode) && this.besideAtom(dom.focusNode, dom.focusOffset);
     }
 
-    // Whether a point is on a rule or between paragraphs next to one, where browsers put the caret crossing a rule.
-    besideRule(node, offset) {
-        if ((node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.localName === 'hr') return true;
+    // Whether a point is on a rule or image, or between paragraphs beside one, where a caret crossing it lands.
+    besideAtom(node, offset) {
+        if (['hr', 'img'].includes((node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.localName)) {
+            return true;
+        }
         if (this.blockOf(node) >= 0) return false;
         const position = this.positionOf(node, offset);
-        return this.doc[position.block]?.kind === 'rule'
-            || (position.offset === 0 && this.doc[position.block - 1]?.kind === 'rule');
+        return isAtom(this.doc[position.block]) || (position.offset === 0 && isAtom(this.doc[position.block - 1]));
     }
 
     // Paste and drop: HTML keeps its formats and blocks, and plain text takes those of where it goes.
@@ -546,12 +565,13 @@ class Editor {
     }
 
     deleteRange(from, to) {
+        to = endBeforeAtom(this.doc, from, to);
         const merged = normalize([
             ...slice(this.doc[from.block].runs, 0, from.offset), ...slice(this.doc[to.block].runs, to.offset)]);
-        // A range that starts on a rule takes the rule with it: what's left takes the kind of the block it ends in, or
-        // is plain.
-        const kept = this.doc[from.block].kind !== 'rule' ? this.doc[from.block]
-            : this.doc[to.block].kind !== 'rule' ? this.doc[to.block] : paragraph([]);
+        // A range that starts on a rule or image takes it along: what's left takes the kind of the block it ends in,
+        // or is plain.
+        const kept = !isAtom(this.doc[from.block]) ? this.doc[from.block]
+            : !isAtom(this.doc[to.block]) ? this.doc[to.block] : paragraph([]);
         this.doc.splice(from.block, to.block - from.block + 1, { ...kept, runs: merged });
         this.selection = { anchor: from, head: from };
     }
@@ -580,8 +600,8 @@ class Editor {
     }
 
     // Pasted plain paragraphs take the kind of the one at the caret, and so does the first unless the caret starts it.
-    // A pasted rule leaves the text around it in paragraphs of their own. A rule pasted last gets one after it for the
-    // caret (plain at a heading's end), and one pasted first at the document's start gets one before it.
+    // A pasted rule or image leaves the text around it in paragraphs of their own. One pasted last gets a paragraph
+    // after it for the caret (plain at a heading's end), and one pasted at the document's start gets one before it.
     insertParagraphs(paragraphs) {
         const { from, to } = this.range();
         this.deleteRange(from, to);
@@ -592,7 +612,7 @@ class Editor {
         const blocks = paragraphs.flatMap((pasted, i) => {
             const head = i === 0 ? before : [];
             const tail = i === last ? after : [];
-            if (pasted.kind === 'rule') {
+            if (isAtom(pasted)) {
                 return [...(head.length || (i === 0 && from.block === 0) ? [{ ...target, runs: head }] : []), pasted,
                     ...(i === last ? [HEADING_TAGS[target.kind] && !tail.length ? paragraph([])
                         : { ...target, runs: tail }] : [])];
@@ -640,7 +660,7 @@ class Editor {
         const target = this.doc[block];
         if (target.kind === 'quote' || isListItem(target.kind)) {
             this.edit(() => this.doc[block] = outdented(target));
-        } else if (block > 0 && this.doc[block - 1].kind === 'rule') {
+        } else if (block > 0 && isAtom(this.doc[block - 1])) {
             this.edit(() => {
                 this.doc.splice(block - 1, 1);
                 this.selection = { anchor: { block: block - 1, offset: 0 }, head: { block: block - 1, offset: 0 } };
@@ -703,11 +723,11 @@ class Editor {
         this.readBack();
         const { from, to } = this.range();
         const next = this.blockState(kind) === 'on' ? 'paragraph' : kind;
-        if (this.doc.slice(from.block, to.block + 1).every(target => [next, 'rule'].includes(target.kind))) return;
+        if (this.doc.slice(from.block, to.block + 1).every(target => target.kind === next || isAtom(target))) return;
         this.edit(() => {
             for (let block = from.block; block <= to.block; block++) {
                 const target = this.doc[block];
-                if (target.kind === 'rule') continue;
+                if (isAtom(target)) continue;
                 const level = isListItem(next) && isListItem(target.kind) ? target.level : 0;
                 this.doc[block] = { ...target, kind: next, level };
             }
@@ -734,8 +754,8 @@ class Editor {
 
     blockState(kind) {
         const { from, to } = this.range();
-        const kinds = this.doc.slice(from.block, to.block + 1).map(target => target.kind)
-            .filter(each => each !== 'rule');
+        const kinds = this.doc.slice(from.block, to.block + 1).filter(target => !isAtom(target))
+            .map(target => target.kind);
         if (!kinds.length) return 'off';
         return kinds.every(each => each === kind) ? 'on' : kinds.some(each => each === kind) ? 'mixed' : 'off';
     }
@@ -768,11 +788,11 @@ class Editor {
         });
     }
 
-    // Moves a caret just before the given block off a rule:
+    // Moves a caret just before the given block off a rule or image:
     // to the next text's start, or back to the previous text's end.
-    outOfRule(position, backward) {
-        const after = this.doc.findIndex((target, i) => i >= position.block && target.kind !== 'rule');
-        const before = this.doc.findLastIndex((target, i) => i < position.block && target.kind !== 'rule');
+    outOfAtom(position, backward) {
+        const after = this.doc.findIndex((target, i) => i >= position.block && !isAtom(target));
+        const before = this.doc.findLastIndex((target, i) => i < position.block && !isAtom(target));
         if (before >= 0 && (backward || after < 0)) return { block: before, offset: length(this.doc[before].runs) };
         return after >= 0 ? { block: after, offset: 0 } : position;
     }
@@ -946,13 +966,16 @@ class Editor {
     // Rendering and selection: the editor holds the same lists and quotes as the value, with spaces as typed.
 
     render() {
-        const html = documentHtml(this.doc, false);
-        if (this.root.innerHTML !== html) {
+        // Compared as the browser writes both, since it writes some attributes unlike documentHtml, such as a < in alt.
+        // Safe: documentHtml escapes all text and each href, src and alt, and its only tags are the blocks', images',
+        // marks' and links'.
+        const shown = document.createElement('template');
+        shown.innerHTML = documentHtml(this.doc, false);
+        if (this.root.innerHTML !== shown.innerHTML) {
             const elements = this.blockElements();
             if (elements.length === this.doc.length) this.doc.forEach((target, i) => updateBlock(elements[i], target));
             // Changed lists or quotes, or anything else the browser left in the editor, mean rewriting it whole.
-            // Safe: documentHtml escapes all text and each href, and its only tags are the blocks', marks' and links'.
-            if (this.root.innerHTML !== html) this.root.innerHTML = html;
+            if (this.root.innerHTML !== shown.innerHTML) this.root.innerHTML = shown.innerHTML;
         }
         this.root.toggleAttribute('data-empty',
             this.doc.length === 1 && this.doc[0].kind === 'paragraph' && !this.doc[0].runs.length);
@@ -974,12 +997,12 @@ class Editor {
         if (!selection.rangeCount || !this.root.contains(selection.anchorNode)) return null;
         const anchor = this.positionOf(selection.anchorNode, selection.anchorOffset);
         const head = this.positionOf(selection.focusNode, selection.focusOffset);
-        if (!selection.isCollapsed || !this.besideRule(selection.focusNode, selection.focusOffset)) {
+        if (!selection.isCollapsed || !this.besideAtom(selection.focusNode, selection.focusOffset)) {
             return { anchor, head };
         }
-        // A caret can't rest on a rule: a key moves it on past the rule, and a point goes to the side it's on.
-        const backward = this.caretMove !== 0 ? this.caretMove < 0 : this.doc[head.block]?.kind === 'rule';
-        const caret = this.outOfRule(head, backward);
+        // A caret can't rest on a rule or image: a key moves it on past one, and a point goes to the side it's on.
+        const backward = this.caretMove !== 0 ? this.caretMove < 0 : isAtom(this.doc[head.block]);
+        const caret = this.outOfAtom(head, backward);
         return { anchor: caret, head: caret };
     }
 
@@ -1068,6 +1091,14 @@ class Editor {
 // Paragraph helpers.
 
 const paragraph = (runs, kind = 'paragraph', level = 0) => ({ kind, level, runs });
+// A rule or an image, whose block holds no text, so the caret steps over it. An image's block is { kind: 'image',
+// level: 0, runs: [], image: { source, alt } }.
+const isAtom = target => target?.kind === 'rule' || target?.kind === 'image';
+// A range that ends at the start of a rule or image leaves it in place, so a click on an image doesn't take the next one
+// too. A rule or image has no length, so when the block before is one too, the end this gives is also its start:
+// apply it once, to the range as selected.
+const endBeforeAtom = (doc, from, to) => to.block > from.block && to.offset === 0 && isAtom(doc[to.block])
+    ? { block: to.block - 1, offset: length(doc[to.block - 1].runs) } : to;
 const isListItem = kind => kind === 'bullet' || kind === 'number';
 const outdented = target => isListItem(target.kind) && target.level > 0
     ? { ...target, level: target.level - 1 } : { ...target, kind: 'paragraph', level: 0 };
@@ -1212,6 +1243,11 @@ function documentHtml(doc, forValue) {
             html += '<hr>';
             continue;
         }
+        if (target.kind === 'image') {
+            const { source, alt } = target.image;
+            html += `<img src="${attribute(source)}"${alt === null ? '' : ` alt="${attribute(alt)}"`}>`;
+            continue;
+        }
         if (target.kind === 'quote' && !inQuote) {
             html += '<blockquote>';
             inQuote = true;
@@ -1232,7 +1268,7 @@ function paragraphHtml(runs, forValue) {
         // One link stays one <a> across its differently formatted runs, as RichTextDocument writes it.
         if (run.link !== link) {
             if (link !== null) html += '</a>';
-            if (run.link !== null) html += `<a href="${run.link.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">`;
+            if (run.link !== null) html += `<a href="${attribute(run.link)}">`;
             link = run.link;
         }
         let inner = '';
@@ -1262,7 +1298,7 @@ function characterHtml(text, i, forValue) {
 
 // Puts a paragraph's new text into its element in place, leaving the lists nested in a list item where they are.
 function updateBlock(element, target) {
-    if (target.kind === 'rule') return;
+    if (isAtom(target)) return;
     const html = paragraphHtml(target.runs, false);
     const nested = [...element.childNodes].filter(node => LISTS.has(node.localName));
     const own = [...element.childNodes].filter(node => !nested.includes(node));
@@ -1278,6 +1314,7 @@ function updateBlock(element, target) {
 }
 
 const escapeText = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const attribute = value => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 
 // HTML in: as RichTextDocument reads it, with the browser's own parser building the tree. The allowed blocks and marks
 // survive, other blocks become paragraphs, and everything else becomes plain text.
@@ -1289,21 +1326,23 @@ function parseHtml(html, schema) {
     return withText(normalizeLevels(readBlocks(parseDocument(html ?? ''), true, schema)));
 }
 
-// The caret needs a paragraph on each side of a rule, so a document that starts or ends with one, or is empty, gets
-// an empty paragraph there.
+// The caret needs a paragraph on each side of a rule or image, so a document that starts or ends with one, or is
+// empty, gets an empty paragraph there.
 function withText(doc) {
     if (!doc.length) return [paragraph([])];
-    const head = doc[0].kind === 'rule' ? [paragraph([])] : [];
-    const tail = doc.at(-1).kind === 'rule' ? [paragraph([])] : [];
+    const head = isAtom(doc[0]) ? [paragraph([])] : [];
+    const tail = isAtom(doc.at(-1)) ? [paragraph([])] : [];
     return head.length || tail.length ? [...head, ...doc, ...tail] : doc;
 }
 
 // A block context is what an element puts its text in: its own allowed heading, quote, list item or Word list
 // paragraph, else its parent's, with the lists around it counted.
-function readBlocks(container, collapse, { formats, blocks, links }) {
+function readBlocks(container, collapse, { formats, blocks, links, images }) {
     const paragraphs = [];
     let runs = null;
     let block = null;
+    // Set by a kept image until text follows it, since a <br> right after one only ends the image's line.
+    let afterImage = false;
     // Whether the last Word list marker was a number or letters, which makes its list numbered.
     let numbered = false;
     const resolve = context => {
@@ -1318,6 +1357,7 @@ function readBlocks(container, collapse, { formats, blocks, links }) {
         numbered = false;
     };
     const finish = () => {
+        afterImage = false;
         if (runs) {
             const hasBreak = runs.some(run => run.text.includes('\n'));
             const finished = finishParagraph(runs, collapse);
@@ -1341,13 +1381,20 @@ function readBlocks(container, collapse, { formats, blocks, links }) {
     const walk = (node, marks, pre, link, context) => {
         for (const child of node.childNodes) {
             if (child.nodeType === Node.TEXT_NODE) {
-                const text = collapse && !pre ? child.data.replace(/[\t\n\r\f ]+/g, ' ') : child.data;
+                let text = collapse && !pre ? child.data.replace(/[\t\n\r\f ]+/g, ' ') : child.data;
+                // In a <pre>, a newline right after an image only ends the image's line, as a <br> does.
+                if (afterImage && pre && text.startsWith('\n')) [text, afterImage] = [text.slice(1), false];
+                afterImage &&= /^[\t\n\f\r ]*$/.test(text);
                 start(context);
                 runs.push({ text, marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre });
             } else if (child.nodeType === Node.ELEMENT_NODE && isWordListMarker(child)) {
                 numbered = /^\(?([0-9]+|[a-z]+|[A-Z]+)[.)]$/.test(child.textContent.trim());
             } else if (child.nodeType === Node.ELEMENT_NODE && !SKIPPED.has(child.localName)) {
                 if (child.localName === 'br') {
+                    if (afterImage) {
+                        afterImage = false;
+                        continue;
+                    }
                     start(context);
                     runs.push({ text: '\n', marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre });
                     continue;
@@ -1356,6 +1403,16 @@ function readBlocks(container, collapse, { formats, blocks, links }) {
                 if (child.localName === 'hr') {
                     finish();
                     if (blocks.has('rule')) paragraphs.push(paragraph([], 'rule'));
+                    continue;
+                }
+                // Unlike in a browser, an image is a block, so one kept inside a paragraph splits it in two.
+                if (child.localName === 'img') {
+                    const image = imageOf(child, images);
+                    if (image) {
+                        finish();
+                        paragraphs.push({ kind: 'image', level: 0, runs: [], image });
+                        afterImage = true;
+                    }
                     continue;
                 }
                 const childLink = child.localName === 'a' ? linkStateOf(child, links) : link;
@@ -1388,9 +1445,20 @@ function readBlocks(container, collapse, { formats, blocks, links }) {
 // spaces and controls around it. The text inside keeps the link only if the schema allows it, as in RichTextSchema.
 // Text inside an <a> without an href has no link.
 function linkStateOf(element, links) {
-    const href = (element.getAttribute('href') ?? '').replace(/[\t\n\r]/g, '');
-    const target = href.replace(/^[\x00-\x20]+|[\x00-\x20]+$/g, '') || null;
+    const target = cleanUrl(element.getAttribute('href') ?? '');
     return { target, kept: target !== null && links !== null && allowsLink(target, links) ? target : null };
+}
+
+// As a browser reads a URL: without the tabs and line breaks inside it or the spaces and controls around it.
+const cleanUrl = url => url.replace(/[\t\n\r]/g, '').replace(/^[\x00-\x20]+|[\x00-\x20]+$/g, '') || null;
+
+// An <img> is kept where images are allowed and its source's scheme is, as in RichTextSchema. Its alt text, as in
+// RichTextImage, has each line break and other control as a space; it's null when the image has none.
+function imageOf(element, schemes) {
+    const source = cleanUrl(element.getAttribute('src') ?? '');
+    if (schemes === null || source === null || !allowsLink(source, schemes)) return null;
+    const alt = element.getAttribute('alt')?.replace(/\r\n/g, '\n').replace(/[\x00-\x1f\x7f-\x9f]/g, ' ') ?? null;
+    return { source, alt };
 }
 
 // A relative URL, which has no scheme, is always allowed; a listed scheme is, unless following the link runs script.

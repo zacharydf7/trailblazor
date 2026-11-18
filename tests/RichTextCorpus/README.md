@@ -16,5 +16,6 @@ editor's schema, so the two readers agree.
 | `hostile.html` | Hand-built: scripts, event handlers, `javascript:` URLs and elements whose content never shows. |
 | `loose.html` | Hand-built: markup a browser repairs, such as formatting left open across paragraphs and unclosed SVG. |
 | `font-styles.html` | Hand-built: font shorthands and styles that are easy to misread, such as a shorthand resetting `font-family`, `var()` and oblique angles. |
+| `images.html` | Hand-built: images in paragraphs, a list item, a quote, a link, bold text and preformatted text, with line breaks after them, alt text that has a line break or quotes, is empty or is missing, and sources that are relative, padded, missing, `http:` or `javascript:`. |
 
 The Word samples keep everything Word wrote, except that the user folder in its file paths is renamed.

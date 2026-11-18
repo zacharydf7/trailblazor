@@ -538,6 +538,37 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(expected, await page.EvaluateAsync<string>("() => window.sent"));
     }
 
+    public static TheoryData<string, string> ImageCorpusSamples => new(AllBrowsers.Names.SelectMany(browser =>
+        Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "RichTextCorpus"), "*.html")
+            .Where(path => !path.EndsWith(".expected.html", StringComparison.Ordinal)
+                && File.ReadAllText(path).Contains("<img", StringComparison.OrdinalIgnoreCase))
+            .Select(path => (browser, Path.GetFileNameWithoutExtension(path)))));
+
+    // Where images are allowed, the engine keeps and drops each one as the .NET reader does.
+    [Theory, MemberData(nameof(ImageCorpusSamples))]
+    public async Task Paste_ShouldReadImagesAsDotNetDoes_WhenACorpusSampleIsPastedWhereImagesAreAllowed(string browser,
+        string sample)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = Editor(page, "Gallery");
+        var html = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RichTextCorpus", $"{sample}.html"));
+        var expected = RichTextDocument.Parse(html, new RichTextSchema
+        {
+            Blocks = RichTextBlocks.BulletedLists | RichTextBlocks.Rules | RichTextBlocks.Images,
+            ImageSchemes = ["https"],
+        }).ToHtml();
+        // The editor keeps an empty paragraph before an image that starts the document, for the caret.
+        expected = expected.StartsWith("<img", StringComparison.Ordinal) ? $"<p><br></p>{expected}" : expected;
+
+        await CaretAsync(gallery, 0, 0);
+        await gallery.EvaluateAsync(
+            "editor => editor.addEventListener('tb-rich-text-change', event => window.sent = event.detail.html)");
+        await PasteAsync(gallery, html, "ignored");
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync(expected);
+        Assert.Equal(expected, await page.EvaluateAsync<string>("() => window.sent"));
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Blocks_ShouldApplyAndRemoveEachKind_WhenEachBlockButtonIsPressed(string browser)
     {
@@ -906,7 +937,7 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Rules_ShouldStayRules_WhenABlockIsSetOrADeletionStartsOnOne(string browser)
+    public async Task Rules_ShouldStayRules_WhenABlockIsSetOrADeletionStartsOrEndsAtOne(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-editor");
         var notes = await SetAsync(page, "<p>a</p><hr><p>b</p>", "b");
@@ -916,8 +947,13 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<ul><li>a</li></ul><hr><ul><li>b</li></ul>");
         await SelectAsync(notes, 1, 0, 2, 1);
         await page.Keyboard.PressAsync("Delete");
-
         await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<ul><li>a</li><li><br></li></ul>");
+        // A selection that only reaches a rule leaves it.
+        await SetAsync(page, "<p>ab</p><hr><p>c</p>", "ab");
+        await SelectAsync(notes, 0, 1, 1, 0);
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>a</p><hr><p>c</p>");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -1117,6 +1153,262 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>on日wo</p>");
     }
 
+    private const string Pine = "<img src=\"/avatar-photo.svg\" alt=\"Pine\">";
+
+    // Sets the gallery, which allows images, from .NET and waits for the editor to show them.
+    private static async Task<ILocator> SetGalleryAsync(IPage page, string html, int images)
+    {
+        await page.GetByRole(AriaRole.Textbox, new() { Name = "Source" }).FillAsync(html);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Set gallery" }).ClickAsync();
+        var gallery = Editor(page, "Gallery");
+        await Expect(gallery.Locator("img")).ToHaveCountAsync(images);
+        return gallery;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Images_ShouldLeaveRoomToTypeBeforeAndAfter_WhenTheValueStartsOrEndsWithAnImage(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await SetGalleryAsync(page, $"{Pine}<p>a</p>{Pine}", 2);
+
+        await CaretAsync(gallery, 4, 0);
+        await page.Keyboard.TypeAsync("z");
+        await CaretAsync(gallery, 0, 0);
+        await page.Keyboard.TypeAsync("y");
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>y</p>{Pine}<p>a</p>{Pine}<p>z</p>");
+        await gallery.FocusAsync();
+        await page.Keyboard.PressAsync("ControlOrMeta+a");
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync("");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Images_ShouldStayImages_WhenABlockIsSetOrADeletionStartsOnOne(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await SetGalleryAsync(page, $"<p>a</p>{Pine}<p>b</p>", 1);
+
+        await SelectAsync(gallery, 0, 0, 2, 1);
+        await Tool(gallery, "Bulleted list").ClickAsync();
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<ul><li>a</li></ul>{Pine}<ul><li>b</li></ul>");
+        await SelectAsync(gallery, 1, 0, 2, 1);
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync("<ul><li>a</li><li><br></li></ul>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Images_ShouldTakeDroppedTextAfterThem_WhenTextIsDroppedOnOne(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await SetGalleryAsync(page, $"<p>a</p>{Pine}<p>b</p>", 1);
+        await gallery.EvaluateAsync("""
+            editor => {
+                // Near the image's top, since an image without a size of its own fills the editor's width.
+                editor.querySelector('img').scrollIntoView();
+                const box = editor.querySelector('img').getBoundingClientRect();
+                const data = new DataTransfer();
+                data.setData('text/html', '<b>x</b>');
+                const event = new DragEvent('drop', { bubbles: true, cancelable: true, clientX: box.left + 10,
+                    clientY: box.top + 10 });
+                Object.defineProperty(event, 'dataTransfer', { value: data });
+                editor.dispatchEvent(event);
+            }
+            """);
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>a</p>{Pine}<p><strong>x</strong>b</p>");
+    }
+
+    // Fills the empty gallery editor, which allows images, through a paste.
+    private static async Task<ILocator> GalleryAsync(IPage page, string html)
+    {
+        var gallery = Editor(page, "Gallery");
+        await CaretAsync(gallery, 0, 0);
+        await PasteAsync(gallery, html, "ignored");
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync(html);
+        return gallery;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Images_ShouldKeepTheCaretOffTheImage_WhenTheArrowKeysCrossIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await GalleryAsync(page, $"<p>a</p>{Pine}<p>b</p>");
+
+        await CaretAsync(gallery, 0, 1);
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.TypeAsync("x");
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>a</p>{Pine}<p>xb</p>");
+        await page.Keyboard.PressAsync("ArrowUp");
+        await page.Keyboard.TypeAsync("y");
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>ay</p>{Pine}<p>xb</p>");
+        await CaretAsync(gallery, 2, 0);
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await page.Keyboard.TypeAsync("z");
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>ayz</p>{Pine}<p>xb</p>");
+        await CaretAsync(gallery, 1, 0);
+        await page.Keyboard.TypeAsync("w");
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>ayzw</p>{Pine}<p>xb</p>");
+    }
+
+    // The browser writes a < or no-break space in alt text its own way, which mustn't make every edit redraw.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Images_ShouldStayAsTheyAre_WhenTextBesideThemIsTyped(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await SetGalleryAsync(page, "<p>a</p><img src=\"/avatar-photo.svg\" alt=\"a &lt; b&nbsp;c\">", 1);
+        await gallery.EvaluateAsync("editor => window.image = editor.querySelector('img')");
+
+        await CaretAsync(gallery, 0, 1);
+        await page.Keyboard.TypeAsync("x");
+
+        await Expect(page.GetByTestId("gallery")).ToContainTextAsync("<p>ax</p>");
+        Assert.True(await page.EvaluateAsync<bool>("() => window.image.isConnected"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Images_ShouldComeOutAndNotBeDragged_WhenClickedAndDeleted(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await SetGalleryAsync(page, $"<p>a</p>{Pine}<p>b</p>", 1);
+
+        // Dragging the image alone would drop a copy of it.
+        Assert.False(await gallery.EvaluateAsync<bool>("editor => editor.querySelector('img')"
+            + ".dispatchEvent(new DragEvent('dragstart', { bubbles: true, cancelable: true }))"));
+        await gallery.Locator("img").ClickAsync(new() { Position = new() { X = 10, Y = 10 } });
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync("<p>a</p><p>b</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Images_ShouldJoinTheSelection_WhenShiftClicked(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await SetGalleryAsync(page, $"<p>ab</p>{Pine}<p>c</p>", 1);
+
+        await CaretAsync(gallery, 0, 1);
+        await gallery.Locator("img")
+            .ClickAsync(new() { Position = new() { X = 10, Y = 10 }, Modifiers = [KeyboardModifier.Shift] });
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync("<p>ac</p>");
+        await SetGalleryAsync(page, $"<p>ab</p>{Pine}<p>cd</p>", 1);
+        await CaretAsync(gallery, 2, 1);
+        await gallery.Locator("img")
+            .ClickAsync(new() { Position = new() { X = 10, Y = 10 }, Modifiers = [KeyboardModifier.Shift] });
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync("<p>ab</p><p>d</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Images_ShouldMoveOnlyTheSelectedBlocks_WhenASelectionEndingBeforeAnImageIsDragged(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await SetGalleryAsync(page, $"<p>ab</p>{Pine}{Pine}<p>ef</p>", 2);
+        await CaretAsync(gallery, 0, 1);
+        await gallery.Locator("img").First
+            .ClickAsync(new() { Position = new() { X = 10, Y = 10 }, Modifiers = [KeyboardModifier.Shift] });
+
+        // The selection "b" and the first image, dragged from "b" and dropped between "e" and "f".
+        await gallery.EvaluateAsync("""
+            editor => {
+                editor.querySelector('p').dispatchEvent(new DragEvent('dragstart', { bubbles: true }));
+                const last = editor.querySelectorAll('p')[1];
+                last.scrollIntoView();
+                const range = document.createRange();
+                range.setStart(last.firstChild, 1);
+                range.setEnd(last.firstChild, 2);
+                const box = range.getBoundingClientRect();
+                const event = new DragEvent('drop', { bubbles: true, cancelable: true, clientX: box.left + 1,
+                    clientY: box.top + box.height / 2 });
+                Object.defineProperty(event, 'dataTransfer', { value: new DataTransfer() });
+                editor.dispatchEvent(event);
+            }
+            """);
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>a</p>{Pine}<p>eb</p>{Pine}<p>f</p>");
+    }
+
+    // A click selects up to the start of the next block, which mustn't take a following image or rule with it.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Images_ShouldRemoveOnlyTheClickedImage_WhenAnotherFollowsIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await SetGalleryAsync(page, $"<p>a</p>{Pine}{Pine}<p>b</p>", 2);
+
+        await gallery.Locator("img").First.ClickAsync(new() { Position = new() { X = 10, Y = 10 } });
+        await page.Keyboard.TypeAsync("x");
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>a</p><p>x</p>{Pine}<p>b</p>");
+        // Delete leaves the empty paragraph the image stood in, as for a picture on its own line in a word processor.
+        await SetGalleryAsync(page, $"<p>a</p>{Pine}{Pine}<p>b</p>", 2);
+        await gallery.Locator("img").First.ClickAsync(new() { Position = new() { X = 10, Y = 10 } });
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>a</p><p><br></p>{Pine}<p>b</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Images_ShouldComeOut_WhenBackspaceOrDeleteMeetsThem(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await GalleryAsync(page, $"<p>a</p>{Pine}<p>b</p>{Pine}<p>c</p>");
+
+        await CaretAsync(gallery, 2, 0);
+        await page.Keyboard.PressAsync("Backspace");
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>a</p><p>b</p>{Pine}<p>c</p>");
+        await CaretAsync(gallery, 1, 1);
+        await page.Keyboard.PressAsync("Delete");
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync("<p>a</p><p>b</p><p>c</p>");
+        await page.Keyboard.PressAsync("ControlOrMeta+z");
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync($"<p>a</p><p>b</p>{Pine}<p>c</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Paste_ShouldSplitTheParagraphAroundAnImage_WhenItsSourceIsAllowed(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await GalleryAsync(page, "<p>ab</p>");
+
+        await CaretAsync(gallery, 0, 1);
+        await PasteAsync(gallery, "<p>x<img src=\"https://example.invalid/lake.png\" alt=\"Lake\nshore\"><br>y</p>",
+            "ignored");
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync(
+            "<p>ax</p><img src=\"https://example.invalid/lake.png\" alt=\"Lake shore\"><p>yb</p>");
+        await CaretAsync(gallery, 2, 2);
+        await PasteAsync(gallery, "<img src=\"/avatar-photo.svg\">", "ignored");
+        await page.Keyboard.TypeAsync("z");
+
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync("<p>ax</p><img "
+            + "src=\"https://example.invalid/lake.png\" alt=\"Lake shore\"><p>yb</p><img src=\"/avatar-photo.svg\">"
+            + "<p>z</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Paste_ShouldDropAnImage_WhenItsSourceOrTheEditorDoesntAllowIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var gallery = await GalleryAsync(page, "<p>ab</p>");
+
+        await CaretAsync(gallery, 0, 1);
+        await PasteAsync(gallery, "x<img src=\"http://example.invalid/a.png\"><img src=\"javascript:alert(1)\">y",
+            "ignored");
+        await Expect(page.GetByTestId("gallery")).ToHaveTextAsync("<p>axyb</p>");
+        var notes = await SetAsync(page, "<p>cd</p>", "cd");
+        await CaretAsync(notes, 0, 1);
+        // .NET drops the image from the value too, so what the script sends shows whether it kept it.
+        await notes.EvaluateAsync(
+            "editor => editor.addEventListener('tb-rich-text-change', event => window.sent = event.detail.html)");
+        await PasteAsync(notes, $"<p>x</p>{Pine}<p>y</p>", "ignored");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>cx</p><p>yd</p>");
+        Assert.Equal("<p>cx</p><p>yd</p>", await page.EvaluateAsync<string>("() => window.sent"));
+    }
+
     private static ILocator Editor(IPage page, string label) =>
         page.GetByRole(AriaRole.Textbox, new() { Name = label, Exact = true });
 
@@ -1145,8 +1437,8 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         await editor.EvaluateAsync("""
             (editor, [anchorBlock, anchorOffset, headBlock, headOffset]) => {
                 const point = (block, offset) => {
-                    // A list item's own text leaves out the lists nested in it, and a rule counts as a block.
-                    const paragraph = editor.querySelectorAll('p, h1, h2, h3, li, hr')[block];
+                    // A list item's own text leaves out the lists nested in it, and a rule or image counts as a block.
+                    const paragraph = editor.querySelectorAll('p, h1, h2, h3, li, hr, img')[block];
                     const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
                         { acceptNode: node => node !== paragraph && /^[uo]l$/.test(node.localName) ? 2
                             : node.nodeType === 3 || node.localName === 'br' ? 1 : 3 });

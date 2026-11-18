@@ -4364,9 +4364,9 @@ public static class ExampleCatalog
                 {
                     When = "At the start of a list item or quote paragraph",
                 },
-                new(["Backspace", "Delete"], "Takes away the rule before or after the paragraph.")
+                new(["Backspace", "Delete"], "Takes away the rule or image before or after the paragraph.")
                 {
-                    When = "At the start or end of a paragraph next to a rule",
+                    When = "At the start or end of a paragraph next to a rule or image",
                 },
                 new(["Enter"], "Turns the paragraph into a horizontal rule.") { When = "In a plain paragraph of `---`" },
                 new(["Shift+Enter"], "Breaks the line within the paragraph."),
@@ -4410,6 +4410,8 @@ public static class ExampleCatalog
                     + "report and move between.",
                 "Tab leaves the editor rather than typing a tab, so keyboard users are never trapped in it. In a list "
                     + "item, Tab indents instead, as in word processors, and Escape lets the next Tab leave.",
+                "An image is an `<img>` that keeps the alt text it came with, if any. The caret steps over it, and "
+                    + "Backspace or Delete next to it removes it.",
             ],
             AppDuties =
             [
@@ -4417,6 +4419,8 @@ public static class ExampleCatalog
                 "Put a `TbRoot` in the layout, which hosts the link dialog.",
                 "Parse the value with `RichTextDocument` on the server before storing it; the editor does, but a "
                     + "value posted some other way may not have gone through it.",
+                "With `RichTextBlocks.Images`, an image loads from wherever its source points, since `ImageSchemes` "
+                    + "limits schemes, not hosts; check or copy the sources on the server before storing the value.",
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
@@ -4430,6 +4434,11 @@ public static class ExampleCatalog
                     + "work as in any text box, and the editor reads back the result."),
                 new("A click on a link places the caret, as on any text. Ctrl+click (Cmd+click on macOS) opens the link "
                     + "in a new tab, and so does the link dialog's Open link."),
+                new("Images are off by default, since the app needs somewhere to store them. With "
+                    + "`RichTextBlocks.Images` in `Blocks`, each image shows on its own between paragraphs, the caret "
+                    + "steps over it, and Backspace or Delete next to it removes it. A click selects an image whole, "
+                    + "so Delete or typing replaces it; an image can't be dragged on its own. `ImageSchemes` sets which "
+                    + "sources an image may use."),
                 new("`@ref` the editor and call `FocusAsync()` to move focus to it."),
             ],
             Ready = new("[role=textbox]", "the editing area"),

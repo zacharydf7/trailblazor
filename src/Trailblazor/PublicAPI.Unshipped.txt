@@ -6839,3 +6839,5 @@ static Trailblazor.SmartPasteLabels.operator ==(Trailblazor.SmartPasteLabels? le
 static Trailblazor.SmartPasteRequest.operator !=(Trailblazor.SmartPasteRequest? left, Trailblazor.SmartPasteRequest? right) -> bool
 static Trailblazor.SmartPasteRequest.operator ==(Trailblazor.SmartPasteRequest? left, Trailblazor.SmartPasteRequest? right) -> bool
 ~override Trailblazor.TbSmartPaste.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbRichTextEditor.ImageSchemes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.TbRichTextEditor.ImageSchemes.set -> void

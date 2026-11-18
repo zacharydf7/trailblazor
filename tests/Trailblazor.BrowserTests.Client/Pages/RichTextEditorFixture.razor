@@ -33,11 +33,18 @@
 <TbRichTextEditor Label="Approved" ReadOnly Value="@("<p>Read <strong>only</strong></p>")" />
 <TbRichTextEditor Label="Archived" Disabled Value="@("<p>Old</p>")" />
 
+@* Last, since its images are tall and the tests above drop at points on the screen. *@
+<TbRichTextEditor Label="Gallery" @bind-Value="_gallery" UpdateOnInput ImageSchemes="@(["https"])"
+                  Blocks="RichTextBlocks.BulletedLists | RichTextBlocks.Rules | RichTextBlocks.Images" />
+<output data-testid="gallery">@_gallery</output>
+<TbButton OnClick="() => _gallery = _source">Set gallery</TbButton>
+
 @code {
     private string? _notes;
     private string? _source;
     private string? _formula;
     private string? _citations;
+    private string? _gallery;
     private string? _shouting;
     private string? _summary;
     private string? _saved;

@@ -162,7 +162,8 @@ public class TbRichTextEditorTests : BunitContext
         var arguments = _module.Invocations["attachRichTextEditor"].Single().Arguments;
 
         Assert.Equal("<p><strong>Hi</strong> there</p>", arguments[1]);
-        Assert.Equal("""{"formats":"bold","blocks":"quote bullet","links":null,"transformsPaste":false,"""
+        Assert.Equal("""{"formats":"bold","blocks":"quote bullet","links":null,"images":null,"""
+            + "\"transformsPaste\":false,"
             + "\"readOnly\":false,\"updateOnInput\":true,\"updateDelay\":250}", JsonSerializer.Serialize(arguments[2]));
     }
 
@@ -788,12 +789,26 @@ public class TbRichTextEditorTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldLeaveImagesOut_WhenTheBlocksAllowThem()
+    public void Render_ShouldKeepImagesAndTellTheScriptTheirSchemes_WhenTheBlocksAllowThem()
     {
-        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Trail report")
+        Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Trail report")
             .Add(editor => editor.Blocks, RichTextBlocks.Images)
             .Add(editor => editor.Value, "<p>Pine</p><img src=\"https://example.com/pine.png\" alt=\"Pine\">"));
 
-        Assert.Equal("<p>Pine</p>", _module.Invocations["attachRichTextEditor"].Single().Arguments[1]);
+        var arguments = _module.Invocations["attachRichTextEditor"].Single().Arguments;
+        Assert.Equal("<p>Pine</p><img src=\"https://example.com/pine.png\" alt=\"Pine\">", arguments[1]);
+        Assert.Contains("\"images\":\"https http\"", JsonSerializer.Serialize(arguments[2]));
+    }
+
+    [Fact]
+    public void Render_ShouldDropAnImage_WhenItsSchemeIsntAllowed()
+    {
+        Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Trail report")
+            .Add(editor => editor.Blocks, RichTextBlocks.Images).Add(editor => editor.ImageSchemes, ["https"])
+            .Add(editor => editor.Value, "<p>Pine</p><img src=\"http://example.com/pine.png\" alt=\"Pine\">"));
+
+        var arguments = _module.Invocations["attachRichTextEditor"].Single().Arguments;
+        Assert.Equal("<p>Pine</p>", arguments[1]);
+        Assert.Contains("\"images\":\"https\"", JsonSerializer.Serialize(arguments[2]));
     }
 }
