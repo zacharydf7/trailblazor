@@ -63,6 +63,14 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             ?? throw new InvalidOperationException("The splitter's script hasn't attached, as it does once the "
                 + "splitter renders interactively.");
 
+    // The reports the dock script sends for the dock that holds the tab with this element id.
+    public DockReport Dock(string tab) => Js.Invocations["attachDock"]
+        .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<DockReport>)
+        .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
+        .LastOrDefault(report => report.Holds(tab))
+            ?? throw new InvalidOperationException("The dock's script hasn't attached, as it does once the dock "
+                + "renders interactively.");
+
     // The events the popover script calls back for the panel with this id, which a popover has only when a bound Open
     // or its telemetry has to hear it open and close.
     public PopoverEvents? Popover(string panelId) => Js.Invocations["createPopover"]
@@ -281,6 +289,18 @@ public sealed class TrailblazorMarkup
                 : $"Expected one query builder labeled \"{label}\", found {builders.Count}.");
     }, _findAll, _scripts);
 
+    /// <summary>The <c>TbDockManager</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
+    /// given.</summary>
+    public TbDockDriver Dock(string? name = null) => new(() =>
+    {
+        var docks = _findAll("[data-part=dock]").Where(dock => name is null || dock.GetAttribute("aria-label") == name)
+            .ToList();
+        return docks.Count == 1 ? docks[0]
+            : throw new InvalidOperationException(name is null
+                ? $"Expected one dock, found {docks.Count}; name the one to use."
+                : $"Expected one dock named \"{name}\", found {docks.Count}.");
+    }, _findAll, _scripts);
+
     /// <summary>The <c>TbTextField</c> or <c>TbCodeField</c> with this label, or with this <c>AriaLabel</c> when it
     /// has no label.</summary>
     public TbTextFieldDriver TextField(string label) => new(() => Field(label, ".tb-text-field input[data-part=input]",
@@ -360,7 +380,7 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbSplitter</c> separator with this name, such as "Resize Trails".</summary>
     public TbSplitterDriver Splitter(string separator) => new(() =>
     {
-        var found = _findAll("[role=separator][data-part=separator]")
+        var found = _findAll(".tb-splitter__separator")
             .Where(element => element.GetAttribute("aria-label") == separator).ToList();
         return found.Count == 1 ? found[0] : throw new InvalidOperationException(found.Count == 0
             ? $"No separator is named \"{separator}\"." : $"{found.Count} separators are named \"{separator}\".");
@@ -2982,6 +3002,90 @@ public sealed class TbSliderDriver : TbFieldDriver
     /// step, and one past an end on that end, as in a browser. On a static page the slider is a native one that posts
     /// with its form, so this throws, as it does for a disabled or read-only slider.</summary>
     public Task SetAsync(decimal value) => SliderThumb.MoveAsync(_find, value);
+}
+
+/// <summary>A <c>TbDockManager</c>, found by its accessible name, or the only one in the markup. Its panels are
+/// named by their titles and its separators by their names, such as "Resize Trails".</summary>
+public sealed class TbDockDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
+
+    internal TbDockDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts) =>
+        (_find, _findAll, _scripts) = (find, findAll, scripts);
+
+    /// <summary>The helpers inside the panel with this title, such as
+    /// <c>cut.Tb().Dock().Panel("Notes").TextField("Title")</c>, so a field that several panels have can be told
+    /// apart. Throws when the panel's content isn't in the markup, as happens until the panel first shows.</summary>
+    public TrailblazorMarkup Panel(string panel) =>
+        new TrailblazorMarkup(_findAll, _scripts).Within(() => PanelElement(panel));
+
+    /// <summary>The panel with this title, to assert on what it shows. Throws when the panel's content isn't in the
+    /// markup, as <see cref="Panel"/> does.</summary>
+    public IElement PanelElement(string panel) => Tab(panel).GetAttribute("aria-controls") is { } id
+        ? _find().Children.Single(child => child.Id == id)
+        : throw new InvalidOperationException($"The content of the panel \"{panel}\" isn't in the markup; select the "
+            + "panel first.");
+
+    /// <summary>The titles of every panel's tab, group by group in reading order.</summary>
+    public IReadOnlyList<string> Panels => Tabs().Select(Title).ToList();
+
+    /// <summary>The titles of the panels that show, one for each group, in reading order.</summary>
+    public IReadOnlyList<string> Showing =>
+        Tabs().Where(tab => tab.GetAttribute("aria-selected") == "true").Select(Title).ToList();
+
+    /// <summary>Selects the panel with this title, as clicking its tab does.</summary>
+    public async Task SelectAsync(string panel) => await Tab(panel).ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    /// <summary>Closes the panel with this title, as clicking the close mark on its tab does. Throws for a panel that
+    /// can't be closed.</summary>
+    public async Task CloseAsync(string panel) =>
+        await (Tab(panel).QuerySelector("[data-part=close]")
+            ?? throw new InvalidOperationException($"The panel \"{panel}\" can't be closed."))
+        .ClickAsync(new MouseEventArgs { Detail = 1 });
+
+    /// <summary>The share, in percent, that the part before the separator with this name has of the space it and
+    /// the part after it take together.</summary>
+    public int Size(string separator) =>
+        int.Parse(Separator(separator).GetAttribute("aria-valuenow")!, CultureInfo.InvariantCulture);
+
+    /// <summary>Moves the separator with this name, as its keys do, until the part before it has this percent of the
+    /// space it and the part after it take together. bUnit has no pixels, so <c>MinGroupSize</c> isn't applied; a
+    /// percent below 1 or above 99 throws.</summary>
+    public async Task ResizeAsync(string separator, int percent)
+    {
+        if (percent is < 1 or > 99)
+        {
+            throw new ArgumentOutOfRangeException(nameof(percent), percent, "A separator moves from 1% to 99%.");
+        }
+
+        var bar = Separator(separator);
+        // The keys aren't pressed for a separator already there, so nothing is reported.
+        if (percent == Size(separator))
+        {
+            return;
+        }
+
+        var report = _scripts.Dock(Tabs().First().Id!);
+        var number = int.Parse(_find().GetAttribute("data-report") ?? "0", CultureInfo.InvariantCulture) + 1;
+        var index = int.Parse(bar.GetAttribute("data-index")!, CultureInfo.InvariantCulture);
+        await _scripts.InvokeAsync(() => report.OnResize(index, percent / 100.0, number));
+    }
+
+    // The dock's own tabs, not those of tabs inside a panel.
+    private IEnumerable<IElement> Tabs() => _find().Children
+        .Where(child => child.GetAttribute("data-part") == "group")
+        .SelectMany(group => group.QuerySelectorAll("[role=tab]"));
+
+    private IElement Tab(string panel) => Tabs().SingleOrDefault(tab => Title(tab) == panel)
+        ?? throw new InvalidOperationException($"No panel is titled \"{panel}\".");
+
+    private IElement Separator(string separator) => _find().Children.SingleOrDefault(child =>
+        child.GetAttribute("data-part") == "separator" && child.GetAttribute("aria-label") == separator)
+            ?? throw new InvalidOperationException($"No separator is named \"{separator}\".");
+
+    private static string Title(IElement tab) => tab.QuerySelector("[data-part=title]")!.TextContent;
 }
 
 /// <summary>The <c>TbSplitter</c> separator that resizes one pane, found by its name, such as "Resize Trails".

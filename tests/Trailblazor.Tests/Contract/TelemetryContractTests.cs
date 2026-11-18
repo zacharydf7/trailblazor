@@ -41,6 +41,7 @@ public class TelemetryContractTests : BunitContext
         ["TbBreadcrumb"] = Part, ["TbCarouselSlide"] = Part, ["TbCheckboxItem"] = Part, ["TbColumn"] = Part,
         ["TbColumnGroup"] = Part, ["TbDialogActions"] = Part,
         ["TbDialogDescription"] = Part, ["TbDialogHeader"] = Part, ["TbDialogHeaderActions"] = Part,
+        ["TbDockPanel"] = Part,
         ["TbDialogTitle"] = Part, ["TbMenuGroup"] = Part, ["TbMenuRadioGroup"] = Part, ["TbMenuSeparator"] = Part,
         ["TbNavGroup"] = Part, ["TbNavLink"] = Part, ["TbOptionGroup"] = Part, ["TbRadio"] = Part,
         ["TbSplitterPane"] = Part, ["TbStep"] = Part, ["TbSubMenu"] = Part, ["TbTableOfContentsItem"] = Part,

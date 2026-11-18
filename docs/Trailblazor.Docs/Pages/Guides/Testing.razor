@@ -501,6 +501,16 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Dock(name).SelectAsync(panel)</code></th>
+                        <td>
+                            Shows a panel, by its title, as clicking its tab does, and
+                            <code>CloseAsync(panel)</code> closes one. <code>Panels</code> reads every tab's title
+                            and <code>Showing</code> the panels that show. <code>Panel(panel)</code> gives the
+                            helpers for what a panel holds. <code>ResizeAsync(separator, percent)</code> moves a
+                            separator as its keys do, and <code>Size(separator)</code> reads its percent.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Autocomplete(label).ChooseAsync(text, option)</code></th>
                         <td>
                             Types the text and chooses a suggestion by its name. <code>TypeAsync</code> types without
@@ -1289,6 +1299,12 @@
             + "`CollapseAsync()` and `RestoreAsync()` press Enter on the separator, unless the pane it toggles is "
             + "already collapsed or open as asked, and wait until the app's `CollapsedChanged` has run; "
             + "`CollapsedAsync()` reads whether that pane is collapsed."),
+        new("Dock manager", "Its name, or none for the only one", "`Dock(name).SelectAsync(panel)` clicks a "
+            + "panel's tab, by the panel's title, and `CloseAsync(panel)` its close mark; both wait until the app's "
+            + "`LayoutChanged` has run. `PanelsAsync()` reads every tab's title and `ShowingAsync()` the panels that "
+            + "show. `Panel(panel)` gives the helpers for what a panel holds, and `PanelElement(panel)` the panel "
+            + "itself. `ResizeAsync(separator, percent)` moves a separator with its keys and waits until the app has "
+            + "the sizes, and `SizeAsync(separator)` reads its percent."),
         new("Stepper", "Its name, or none for the only one", "`Stepper(name).GoToAsync(title)` goes to a step and "
             + "waits until it's current and the app's `ActiveKeyChanged` has run, `StepsAsync()` reads the steps' "
             + "titles, and `CurrentAsync()` reads the current step's."),

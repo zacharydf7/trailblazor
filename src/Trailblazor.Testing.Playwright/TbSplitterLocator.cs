@@ -8,7 +8,8 @@ namespace Trailblazor.Testing.Playwright;
 public sealed class TbSplitterLocator(ILocator scope, string separator)
 {
     /// <summary>The separator, whose <c>aria-valuenow</c> is the pane's size in percent.</summary>
-    public ILocator Separator => scope.GetByRole(AriaRole.Separator, new() { Name = separator, Exact = true });
+    public ILocator Separator => scope.GetByRole(AriaRole.Separator, new() { Name = separator, Exact = true })
+        .And(scope.Locator(".tb-splitter__separator"));
 
     // The nearest splitter around the separator is its own, even when splitters are nested.
     private ILocator Splitter => Separator.Locator(
@@ -20,18 +21,11 @@ public sealed class TbSplitterLocator(ILocator scope, string separator)
     {
         // The keys work once the splitter's script has attached.
         await Assertions.Expect(Splitter).ToHaveAttributeAsync("data-ready", "");
-        var vertical = await Separator.GetAttributeAsync("aria-orientation") == "horizontal";
-        var rightToLeft = await Separator.EvaluateAsync<bool>("separator => getComputedStyle(separator).direction "
-            + "=== 'rtl'");
-        var (grow, shrink) = vertical ? ("ArrowDown", "ArrowUp")
-            : rightToLeft ? ("ArrowLeft", "ArrowRight") : ("ArrowRight", "ArrowLeft");
-        var gap = percent - await SizeAsync();
-        var key = gap > 0 ? grow : shrink;
+        var presses = await SeparatorKeys.PressesAsync(Separator, percent - await SizeAsync());
         await Separator.FocusAsync();
-        // Shift moves by ten, so a long way goes in tens first.
-        for (var left = Math.Abs(gap); left > 0; left -= left >= 10 ? 10 : 1)
+        foreach (var press in presses)
         {
-            await Separator.Page.Keyboard.PressAsync(left >= 10 ? $"Shift+{key}" : key);
+            await Separator.Page.Keyboard.PressAsync(press);
         }
 
         // The app has the size once every report the keys sent has come back.

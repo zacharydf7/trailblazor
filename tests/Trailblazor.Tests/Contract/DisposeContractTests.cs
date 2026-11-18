@@ -26,6 +26,7 @@ public class DisposeContractTests : BunitContext
         [typeof(TbNavGroup)] = typeof(TbNavMenu), [typeof(TbStep)] = typeof(TbStepper),
         [typeof(TbCarouselSlide)] = typeof(TbCarousel), [typeof(TbColumnGroup<>)] = typeof(TbDataGrid<>),
         [typeof(TbModelField)] = typeof(TbModelFields<>), [typeof(TbSmartPaste)] = typeof(TbForm),
+        [typeof(TbDockPanel)] = typeof(TbDockManager),
     };
 
     // Callbacks left without a handler: a handled ActiveKeyChanged makes the tabs keyed, so every tab would need a Key.

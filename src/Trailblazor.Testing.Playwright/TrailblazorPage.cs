@@ -152,6 +152,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbSplitter</c> separator with this name, such as "Resize Trails".</summary>
     public TbSplitterLocator Splitter(string separator) => new(scope, separator);
 
+    /// <summary>The <c>TbDockManager</c> with this <c>AriaLabel</c>, or the only one in the scope when no name is
+    /// given.</summary>
+    public TbDockLocator Dock(string? name = null) => new(scope, name);
+
     /// <summary>The <c>TbQueryBuilder</c> with this <c>Label</c>, or the only one in the scope when no label is
     /// given.</summary>
     public TbQueryBuilderLocator QueryBuilder(string? label = null) => new(scope, label);

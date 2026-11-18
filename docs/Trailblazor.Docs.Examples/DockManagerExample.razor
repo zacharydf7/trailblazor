@@ -1,0 +1,25 @@
+<TbDockManager @bind-Layout="_layout" AriaLabel="Hike planner" Style="block-size: 24rem">
+    <TbDockPanel Id="trails" Title="Trails">
+        <TbText class="tb-p-3">Ridge loop, creek path and summit spur.</TbText>
+    </TbDockPanel>
+    <TbDockPanel Id="map" Title="Map" Closable="false">
+        <TbText class="tb-p-3">The map of the chosen trail.</TbText>
+    </TbDockPanel>
+    <TbDockPanel Id="notes" Title="Notes">
+        <div class="tb-p-3">
+            <TbTextField Label="Packing note" @bind-Value="_note" />
+        </div>
+    </TbDockPanel>
+    <TbDockPanel Id="weather" Title="Weather">
+        <TbText class="tb-p-3">Clear until noon, then showers.</TbText>
+    </TbDockPanel>
+</TbDockManager>
+
+@code {
+    private string? _note;
+
+    // Trails and Map share a group, with Map showing. Beside them, the notes sit above the weather.
+    private DockLayout _layout = new(new DockSplit(
+        new DockGroup("trails", "map") { Active = "map", Size = 1 },
+        new DockSplit(new DockGroup("notes") { Size = 2 }, new DockGroup("weather")) { Vertical = true, Size = 2 }));
+}

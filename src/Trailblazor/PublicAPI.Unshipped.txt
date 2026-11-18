@@ -6923,3 +6923,114 @@ Trailblazor.RichTextEditorLabels.DeleteTable.init -> void
 const Trailblazor.TbStrings.RichTextEditorHeaderRow = "RichTextEditor.HeaderRow" -> string!
 Trailblazor.RichTextEditorLabels.HeaderRow.get -> string?
 Trailblazor.RichTextEditorLabels.HeaderRow.init -> void
+const Trailblazor.TbStrings.DockGroup = "Dock.Group" -> string!
+const Trailblazor.TbStrings.DockCloseHint = "Dock.CloseHint" -> string!
+const Trailblazor.TbStrings.DockResize = "Dock.Resize" -> string!
+Trailblazor.DockGroup
+override Trailblazor.DockGroup.ToString() -> string!
+static Trailblazor.DockGroup.operator !=(Trailblazor.DockGroup? left, Trailblazor.DockGroup? right) -> bool
+static Trailblazor.DockGroup.operator ==(Trailblazor.DockGroup? left, Trailblazor.DockGroup? right) -> bool
+override Trailblazor.DockGroup.Equals(object? obj) -> bool
+override sealed Trailblazor.DockGroup.Equals(Trailblazor.DockNode? other) -> bool
+override Trailblazor.DockGroup.<Clone>$() -> Trailblazor.DockGroup!
+Trailblazor.DockLabels
+override Trailblazor.DockLabels.ToString() -> string!
+static Trailblazor.DockLabels.operator !=(Trailblazor.DockLabels? left, Trailblazor.DockLabels? right) -> bool
+static Trailblazor.DockLabels.operator ==(Trailblazor.DockLabels? left, Trailblazor.DockLabels? right) -> bool
+override Trailblazor.DockLabels.GetHashCode() -> int
+Trailblazor.DockLayout
+override Trailblazor.DockLabels.Equals(object? obj) -> bool
+override Trailblazor.DockLayout.ToString() -> string!
+static Trailblazor.DockLayout.operator !=(Trailblazor.DockLayout? left, Trailblazor.DockLayout? right) -> bool
+Trailblazor.DockLabels.Equals(Trailblazor.DockLabels? other) -> bool
+Trailblazor.DockLabels.<Clone>$() -> Trailblazor.DockLabels!
+Trailblazor.DockLabels.DockLabels() -> void
+static Trailblazor.DockLayout.operator ==(Trailblazor.DockLayout? left, Trailblazor.DockLayout? right) -> bool
+override Trailblazor.DockLayout.Equals(object? obj) -> bool
+Trailblazor.DockLayout.<Clone>$() -> Trailblazor.DockLayout!
+Trailblazor.DockNode
+virtual Trailblazor.DockNode.EqualityContract.get -> System.Type!
+override Trailblazor.DockNode.ToString() -> string!
+virtual Trailblazor.DockNode.PrintMembers(System.Text.StringBuilder! builder) -> bool
+static Trailblazor.DockNode.operator !=(Trailblazor.DockNode? left, Trailblazor.DockNode? right) -> bool
+static Trailblazor.DockNode.operator ==(Trailblazor.DockNode? left, Trailblazor.DockNode? right) -> bool
+override Trailblazor.DockNode.GetHashCode() -> int
+override Trailblazor.DockNode.Equals(object? obj) -> bool
+virtual Trailblazor.DockNode.Equals(Trailblazor.DockNode? other) -> bool
+abstract Trailblazor.DockNode.<Clone>$() -> Trailblazor.DockNode!
+Trailblazor.DockNode.DockNode(Trailblazor.DockNode! original) -> void
+Trailblazor.DockSplit
+override Trailblazor.DockSplit.ToString() -> string!
+static Trailblazor.DockSplit.operator !=(Trailblazor.DockSplit? left, Trailblazor.DockSplit? right) -> bool
+static Trailblazor.DockSplit.operator ==(Trailblazor.DockSplit? left, Trailblazor.DockSplit? right) -> bool
+override Trailblazor.DockSplit.Equals(object? obj) -> bool
+override sealed Trailblazor.DockSplit.Equals(Trailblazor.DockNode? other) -> bool
+override Trailblazor.DockSplit.<Clone>$() -> Trailblazor.DockSplit!
+Trailblazor.TbDockManager
+Trailblazor.TbDockPanel
+Trailblazor.TbDockPanel.TbDockPanel() -> void
+Trailblazor.DockLabels.Group.get -> string?
+Trailblazor.DockLabels.Group.init -> void
+Trailblazor.DockLabels.Resize.get -> string?
+Trailblazor.DockLabels.Resize.init -> void
+Trailblazor.DockLabels.CloseHint.init -> void
+Trailblazor.DockGroup.DockGroup(params System.Collections.Generic.IEnumerable<string!>! panels) -> void
+Trailblazor.DockGroup.Panels.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.DockLabels.CloseHint.get -> string?
+Trailblazor.DockLayout.DockLayout(Trailblazor.DockNode? root = null, System.Collections.Generic.IEnumerable<string!>? closed = null) -> void
+Trailblazor.DockNode.Size.get -> double
+Trailblazor.DockLayout.Root.get -> Trailblazor.DockNode?
+Trailblazor.DockLayout.Groups.get -> System.Collections.Generic.IEnumerable<Trailblazor.DockGroup!>!
+Trailblazor.DockLayout.Closed.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.DockGroup.Active.get -> string?
+Trailblazor.DockGroup.Active.init -> void
+Trailblazor.DockNode.Size.init -> void
+Trailblazor.DockGroup.Equals(Trailblazor.DockGroup? other) -> bool
+Trailblazor.DockLayout.Open(string! panel) -> Trailblazor.DockLayout!
+Trailblazor.DockLayout.GroupOf(string! panel) -> Trailblazor.DockGroup?
+override Trailblazor.DockGroup.GetHashCode() -> int
+Trailblazor.DockLayout.Close(string! panel) -> Trailblazor.DockLayout!
+Trailblazor.DockLayout.ToJson() -> string!
+static Trailblazor.DockLayout.TryParse(string? json, out Trailblazor.DockLayout? layout) -> bool
+Trailblazor.DockLayout.Equals(Trailblazor.DockLayout? other) -> bool
+override Trailblazor.DockLayout.GetHashCode() -> int
+Trailblazor.DockSplit.Children.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DockNode!>!
+Trailblazor.DockSplit.DockSplit(params System.Collections.Generic.IEnumerable<Trailblazor.DockNode!>! children) -> void
+Trailblazor.DockSplit.Vertical.get -> bool
+Trailblazor.DockSplit.Vertical.init -> void
+Trailblazor.DockSplit.Equals(Trailblazor.DockSplit? other) -> bool
+override Trailblazor.DockSplit.GetHashCode() -> int
+Trailblazor.TbDockPanel.Id.get -> string!
+Trailblazor.TbDockPanel.Id.set -> void
+Trailblazor.TbDockPanel.Title.get -> string!
+Trailblazor.TbDockPanel.Title.set -> void
+Trailblazor.TbDockPanel.Icon.set -> void
+Trailblazor.TbDockPanel.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbDockPanel.Closable.set -> void
+Trailblazor.TbDockPanel.Closable.get -> bool
+Trailblazor.TbDockPanel.KeepAlive.get -> bool
+Trailblazor.TbDockPanel.KeepAlive.set -> void
+Trailblazor.TbDockPanel.ChildContent.set -> void
+Trailblazor.TbDockPanel.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDockPanel.Dispose() -> void
+~override Trailblazor.TbDockManager.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbDockManager.TbDockManager() -> void
+Trailblazor.TbDockManager.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDockManager.ChildContent.set -> void
+Trailblazor.TbDockManager.Layout.get -> Trailblazor.DockLayout?
+Trailblazor.TbDockManager.Layout.set -> void
+Trailblazor.TbDockManager.LayoutChanged.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.DockLayout!>
+Trailblazor.TbDockManager.EmptyContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDockManager.LayoutChanged.set -> void
+Trailblazor.TbDockManager.EmptyContent.set -> void
+Trailblazor.TbDockManager.MinGroupSize.get -> int
+Trailblazor.TbDockManager.MinGroupSize.set -> void
+Trailblazor.TbDockManager.AriaLabel.set -> void
+Trailblazor.TbDockManager.Labels.get -> Trailblazor.DockLabels!
+Trailblazor.TbDockManager.AriaLabel.get -> string?
+Trailblazor.TbDockManager.Labels.set -> void
+Trailblazor.TbDockManager.TelemetryName.set -> void
+Trailblazor.TbDockManager.TelemetryName.get -> string?
+override Trailblazor.TbDockManager.OnParametersSet() -> void
+override Trailblazor.TbDockManager.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+Trailblazor.TbDockManager.DisposeAsync() -> System.Threading.Tasks.ValueTask

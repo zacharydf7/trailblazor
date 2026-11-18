@@ -74,6 +74,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         ("Trailblazor.TbToggleItem`1", "Trailblazor.TbToggleGroupBase`1"),
         ("Trailblazor.TbTab", "Trailblazor.TbTabs"),
         ("Trailblazor.TbSplitterPane", "Trailblazor.TbSplitter"),
+        ("Trailblazor.TbDockPanel", "Trailblazor.TbDockManager"),
         ("Trailblazor.TbTableOfContentsItem", "Trailblazor.TbTableOfContents"),
         ("Trailblazor.TbTreeItem`1", "Trailblazor.TbTreeView`2"),
         ("Trailblazor.TbMenuRadioItem`1", "Trailblazor.TbMenuRadioGroup`1"),

@@ -251,6 +251,7 @@ internal static class ContractRules
             (Activator.CreateInstance(type, ends.First, ends.First)!,
                 Activator.CreateInstance(type, ends.First, ends.Second)!),
         _ when type == typeof(QueryGroup) => (new QueryGroup(), new QueryGroup { Join = QueryJoin.Or }),
+        _ when type == typeof(DockLayout) => (new DockLayout(new DockGroup("Pine")), new DockLayout(new DockGroup("Cedar"))),
         _ when type == typeof(Signature) => (new Signature([], "Ada"), new Signature([], "Grace")),
         _ when type == typeof(GridState) => (new GridState { Sorts = [new("Name", SortDirection.Ascending)] },
             new GridState { Sorts = [new("Name", SortDirection.Descending)] }),

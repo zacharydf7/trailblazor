@@ -58,6 +58,7 @@ public static class AccessibilityStatusCatalog
         new("field-row", None, None, None),
         new("grid", None, None, None),
         new("masonry", None, None, None),
+        new("dock-manager", Tested, Tested, NotYet),
         new("splitter", Tested, Tested, NotYet),
         new("viewport", Tested, NotYet, None),
         new("container", None, None, None),

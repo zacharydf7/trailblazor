@@ -1,0 +1,23 @@
+<TbDockManager Layout="Layout" AriaLabel="Field guide" Style="block-size: 14rem">
+    @foreach (var chapter in Chapters)
+    {
+        <TbDockPanel @key="chapter.Id" Id="@chapter.Id" Title="@chapter.Title" Icon="chapter.Icon">
+            <TbText class="tb-p-3">@chapter.Title</TbText>
+        </TbDockPanel>
+    }
+</TbDockManager>
+
+@code {
+    private sealed record Chapter(string Id, string Title, Icon? Icon = null);
+
+    private static readonly Chapter[] Chapters =
+    [
+        new("birds", "Birds", ExampleIcons.Trail), new("mammals", "Mammals"), new("trees", "Trees"),
+        new("flowers", "Wildflowers of the high meadows in early summer"), new("fungi", "Fungi"),
+        new("insects", "Insects"), new("tracks", "Tracks and signs"), new("weather", "Reading the weather"),
+        new("index", "Index"),
+    ];
+
+    private static readonly DockLayout Layout = new(new DockSplit(
+        new DockGroup(Chapters[..^1].Select(chapter => chapter.Id)) { Size = 2 }, new DockGroup("index")));
+}

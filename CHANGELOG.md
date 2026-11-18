@@ -85,6 +85,11 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Markup and behavior
 
+#### 2026-11-18
+
+- New `TbDockManager` and `TbDockPanel`: a dock (`tb-dock`, `role="group"`, `data-part="dock"`) whose children are each group's row of tabs (`data-part="group"` around a `tablist`), each rendered panel (`role="tabpanel"`, `data-part="panel"`, `data-panel` with its id) and a `separator` between groups, placed by `--tb-dock-x`, `--tb-dock-y`, `--tb-dock-w` and `--tb-dock-h` in percent of the dock; a `DockLayout` of `DockSplit`s and `DockGroup`s says where each panel is and saves as JSON; `page.Tb().Dock()` and `cut.Tb().Dock()` drive it in tests
+- `page.Tb().Splitter(name)` and `cut.Tb().Splitter(name)` find only a `TbSplitter`'s separators, so a `TbDockManager`'s separator with the same name isn't taken for one
+
 #### 2026-11-17
 
 - With `RichTextBlocks.Tables` in `Blocks`, `TbRichTextEditor`'s toolbar gets a Table button (`data-command="table"`) that puts in a table of three columns with a header row, and a table menu (`data-part="table-menu"`) that adds rows above or below and columns left or right, deletes the row, column or table, and turns the header row on or off; a table, rule or image chosen from the toolbar while the caret is in a table goes in after it

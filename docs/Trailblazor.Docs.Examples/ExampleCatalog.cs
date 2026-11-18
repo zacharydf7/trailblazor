@@ -2712,6 +2712,195 @@ public static class ExampleCatalog
                     + "count them.",
             ],
         },
+        new("dock-manager", "Dock manager", ExampleCategory.Layout,
+            "Lays panels out as an IDE does, in groups of tabs side by side or stacked, with separators that "
+                + "resize them. Each panel keeps its state while it's hidden or moved.")
+        {
+            RightToLeftKeys = "Left and Right move between tabs, and move a separator, the way they point: Left "
+                + "goes to the next tab and grows the first group, now on the right.",
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a workspace with several panels that people arrange for themselves and come back to.",
+            ],
+            WhenNotToUse =
+            [
+                "For two or three panes that only change size, use a [splitter](components/splitter).",
+                "To show one view at a time, use [tabs](components/tabs).",
+                "For a panel that slides over the page from an edge, use a [drawer](components/drawer).",
+            ],
+            Related = ["splitter", "tabs", "drawer"],
+            Pattern = new("tabs", "https://www.w3.org/WAI/ARIA/apg/patterns/tabs/"),
+            Sections =
+            [
+                new("layout", "Panels and their layout", "Each `TbDockPanel` has an `Id`, a `Title` and its content. "
+                    + "A `DockLayout` says where the panels are: a `DockGroup` shows panels as tabs, with `Active` "
+                    + "naming the one that shows, and a `DockSplit` puts groups and other splits side by side, or "
+                    + "stacked when `Vertical`. A part's `Size` is its share of the split relative to its siblings, "
+                    + "so a part with 2 is twice as large as one with 1. A separator stops where a group would get "
+                    + "smaller than `MinGroupSize`, which is 96 pixels unless set. `@bind-Layout` hears each tab "
+                    + "the user selects, each panel they close and each separator they move.",
+                    typeof(DockManagerExample)),
+                new("saving", "Saving the layout", "`ToJson` writes a layout as text and `DockLayout.TryParse` "
+                    + "reads it back, giving false for text that isn't a layout. Save the text where the app keeps "
+                    + "its settings. A panel the saved layout doesn't know joins the largest group, and a saved "
+                    + "panel the app no longer has isn't shown, though the layout keeps its place.",
+                    typeof(DockManagerSaveExample)),
+                new("closing", "Closing and reopening", "A panel closes from the mark on its tab, with Delete or "
+                    + "Backspace on the tab, or with a middle click. Closing disposes the panel's content. The "
+                    + "layout lists the closed panels in `Closed`, and `Open` brings one back, built anew, as the "
+                    + "showing tab of the largest group. `EmptyContent` shows when every panel is closed. A panel "
+                    + "with `Closable=\"false\"` has no mark and stays open, as the Map panel does under Panels and "
+                    + "their layout.", typeof(DockManagerCloseExample)),
+                new("keep-alive", "Keeping content alive", "A panel's content renders when the panel first shows "
+                    + "and then stays, hidden, while another tab shows, so what the user typed, opened or scrolled "
+                    + "to is still there. `KeepAlive=\"false\"` drops the content while it's hidden, for content "
+                    + "that is cheap to build again.", typeof(DockManagerKeepAliveExample)),
+                new("many", "Many panels and long titles", "A row with more tabs than fit scrolls sideways, and "
+                    + "the showing tab is brought into view. A long title is cut short. `Icon` puts an icon "
+                    + "before a tab's title.", typeof(DockManagerManyExample)),
+            ],
+            Api = [typeof(TbDockManager), typeof(TbDockPanel), typeof(DockLayout), typeof(DockGroup),
+                typeof(DockSplit), typeof(DockNode), typeof(DockLabels)],
+            Keyboard =
+            [
+                new(["Left", "Right"], "Moves to the previous or next tab of the group, wrapping at the ends, "
+                    + "and shows its panel.") { When = "On a tab" },
+                new(["Home", "End"], "Moves to the group's first or last tab and shows its panel.")
+                    { When = "On a tab" },
+                new(["Delete", "Backspace"], "Closes the panel, unless its `Closable` is false.")
+                    { When = "On a tab" },
+                new(["Left", "Right"], "Moves the separator by 1% of the space its two sides share.")
+                    { When = "On a separator between side-by-side parts" },
+                new(["Shift+Left", "Shift+Right"], "Moves the separator by 10%.")
+                    { When = "On a separator between side-by-side parts" },
+                new(["Up", "Down"], "Moves the separator by 1% of the space its two sides share.")
+                    { When = "On a separator between stacked parts" },
+                new(["Shift+Up", "Shift+Down"], "Moves the separator by 10%.")
+                    { When = "On a separator between stacked parts" },
+                new(["Home", "End"], "Makes the part before the separator as small or as large as "
+                    + "`MinGroupSize` allows.") { When = "On a separator" },
+            ],
+            Labeling =
+            [
+                "`AriaLabel` names the dock, which is a `group`. Without one the group has no name, which suits a "
+                    + "page with one dock.",
+                "Each tab is named by its panel's `Title`, and each panel by its tab.",
+                "Each group's tab list is named \"Panel group\" followed by its number.",
+                "Each separator is named \"Resize\" followed by the title of the panel showing in the group just "
+                    + "before it.",
+                "The dock's `Labels` replaces these words, with `{0}` for the number or the title, and its "
+                    + "`CloseHint` replaces the hint that describes a closable tab.",
+            ],
+            Announcements =
+            [
+                "On a tab, screen readers say its title, that it's a tab, whether it's selected and its place "
+                    + "among the group's tabs. A closable tab adds \"Press Delete to close\".",
+                "On a separator, `aria-valuenow` gives the share, in percent, that the part before it has of the "
+                    + "space its two sides take together.",
+            ],
+            Accessibility =
+            [
+                "Each group's tabs are a `tablist`, and each panel is a `tabpanel`. A group's tabs are one stop for "
+                    + "the Tab key, on the showing tab. Tab then goes to the panel, to what the panel holds, and "
+                    + "to the separator after the group.",
+                "Tab and screen readers meet the groups in reading order, and still do after the layout changes.",
+                "A hidden panel is `inert`: nothing in it can be focused or read until its tab shows it.",
+                "A click on a close mark, or a middle click, leaves the focus where it is. Closing a tab that "
+                    + "holds the focus, or whose panel does, moves focus to the next tab of its "
+                    + "group, or else the one before. When its last tab closes and the group goes too, focus moves "
+                    + "to the next group's showing tab, or else the previous group's. With no panel left, the dock "
+                    + "itself takes the focus.",
+                "Each separator is a focusable `separator` that follows the window splitter pattern: its arrow "
+                    + "keys move it, and a mouse or a finger drags it.",
+                "Tabs and close marks work with a tap, and a close mark is a 24px target.",
+                "In forced colors, the showing tab's line and a focused separator use the system's highlight "
+                    + "color.",
+            ],
+            AppDuties =
+            [
+                "Give the dock an `AriaLabel` when the page has more than one, and give each panel a short "
+                    + "`Title`, since an icon alone doesn't name a tab.",
+                "Offer a way to reopen closed panels, such as a View menu that calls `Open`.",
+                "Offer a command that closes a panel, calling `Close`, where people use a screen reader on a touch "
+                    + "screen: the close mark is hidden from screen readers, and they have no Delete key.",
+            ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
+            BeforeInteractive =
+            [
+                "The groups render where the layout puts them, each showing its panel. Selecting tabs, closing "
+                    + "panels and resizing start working once the page is interactive.",
+            ],
+            Notes =
+            [
+                new("The dock fills its container's height, so give it or its container a height."),
+                new("A panel's `Id` names it in a saved layout. Keep ids the same between versions of the app."),
+                new("The dock replaces its own layout only when the parent passes a different one, so a parent "
+                    + "that renders again with the same layout doesn't undo what the user did since. Bind the "
+                    + "layout to keep the two in step."),
+                new("A layout tidies its tree as it's made: a panel listed twice stays where it's first listed, a "
+                    + "group with no panels is dropped, a split with one part gives its place to that part, and a "
+                    + "split inside a split of the same direction joins it."),
+                new("A `TbDockPanel`'s `Class`, `Style` and other attributes go on its panel element, except `id`, "
+                    + "which the dock sets to tie the panel to its tab."),
+                new("A separator can't be moved in steps with a click or a tap (WCAG 2.5.7): it moves by dragging "
+                    + "or with its arrow keys. Where people need that, offer buttons that set the parts' `Size` in "
+                    + "the layout.") { Pitfall = true },
+                new("When the app moves a panel to another group, the panel keeps its content, its scroll "
+                    + "positions and its focus. An `<iframe>` inside it stays loaded where the browser has "
+                    + "`Element.moveBefore`, and loads again where it doesn't.") { Pitfall = true },
+                new("A panel inside an `@if` keeps its place in the layout while it isn't rendered, and comes "
+                    + "back there."),
+            ],
+            Ready = new("[data-part=dock]", "the dock"),
+            Target = new("tab", "Notes"),
+            Blocks = ["tb-dock"],
+            DataParts =
+            [
+                new("dock", "The dock itself, around its groups, panels and separators, which are its children."),
+                new("group", "One group's row, across the top of the group's box."),
+                new("tabs", "The tab list in a group's row."),
+                new("tab", "One panel's tab, with `data-panel` holding the panel's `Id`."),
+                new("icon", "A tab's icon."),
+                new("title", "A tab's title."),
+                new("close", "The close mark on a closable tab."),
+                new("panel", "One panel's content, with `data-panel` holding its `Id`. A hidden one is `inert`."),
+                new("separator", "The focusable line between two parts, dragged or moved with the keyboard to "
+                    + "resize them."),
+                new("empty", "What shows when no panel is docked."),
+            ],
+            Anatomy = """
+                <TbDockManager @bind-Layout="_layout" AriaLabel="…">
+                    <TbDockPanel Id="…" Title="…">…</TbDockPanel>
+                    <TbDockPanel Id="…" Title="…">…</TbDockPanel>
+                </TbDockManager>
+                """,
+            TestingTips =
+            [
+                "`page.Tb().Dock(\"Hike planner\")` in Playwright, or `cut.Tb().Dock(\"Hike planner\")` in bUnit, "
+                    + "finds the dock by its `AriaLabel`; with no name it finds the only one.",
+                "`SelectAsync(\"Notes\")` and `CloseAsync(\"Notes\")` click a panel's tab or its close mark, by "
+                    + "the panel's title. `PanelsAsync()` or `Panels` lists every tab in reading order, and "
+                    + "`ShowingAsync()` or `Showing` the panels that show.",
+                "`Panel(\"Notes\")` gives the helpers for what a panel holds, such as "
+                    + "`Panel(\"Notes\").TextField(\"Packing note\")`, and `PanelElement(\"Notes\")` the panel "
+                    + "itself.",
+                "`ResizeAsync(\"Resize Trails\", 40)` moves a separator as its keys do, and `SizeAsync(\"Resize "
+                    + "Trails\")` or `Size(\"Resize Trails\")` reads its percent. bUnit has no pixels, so it "
+                    + "doesn't apply `MinGroupSize`.",
+                "In Playwright, `SelectAsync`, `CloseAsync` and `ResizeAsync` wait until the app's `LayoutChanged` "
+                    + "has run, which the dock counts in `data-commits`.",
+                "A `DockLayout` needs no renderer: test what your app does with `Open`, `Close`, `ToJson` and "
+                    + "`TryParse` in plain unit tests.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"hike-planner\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders and `trailblazor.control.used` with the action `select` each time a person "
+                    + "shows another tab, `close` each time they close a panel and `resize` each time they move a "
+                    + "separator. Panel ids, titles and sizes are never recorded.",
+            ],
+        },
         new("splitter", "Splitter", ExampleCategory.Layout,
             "Lays out panes side by side or stacked, with separators that resize them by dragging, with the "
                 + "keyboard or from a menu.")

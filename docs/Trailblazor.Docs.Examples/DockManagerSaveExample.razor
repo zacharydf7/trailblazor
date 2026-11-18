@@ -1,0 +1,38 @@
+<TbStack Gap="2">
+    <TbStack Row Gap="2" Align="Align.Center">
+        <TbButton Size="Size.Small" OnClick="() => _saved = _layout.ToJson()">Save layout</TbButton>
+        <TbButton Size="Size.Small" Variant="Variant.Outlined" Disabled="_saved is null" OnClick="Restore">
+            Restore
+        </TbButton>
+        <TbButton Size="Size.Small" Variant="Variant.Text" OnClick="() => _layout = Default">Reset</TbButton>
+    </TbStack>
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Trip board" Style="block-size: 16rem">
+        <TbDockPanel Id="route" Title="Route">
+            <TbText class="tb-p-3">Trailhead to the summit by the east ridge.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="gear" Title="Gear">
+            <TbText class="tb-p-3">Tent, stove and two liters of water.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="crew" Title="Crew">
+            <TbText class="tb-p-3">Ana, Dan and Mei.</TbText>
+        </TbDockPanel>
+    </TbDockManager>
+    <TbText TextStyle="TextStyle.Caption">@(_saved ?? "Nothing saved yet.")</TbText>
+</TbStack>
+
+@code {
+    private static readonly DockLayout Default =
+        new(new DockSplit(new DockGroup("route"), new DockGroup("gear", "crew")));
+
+    private DockLayout _layout = Default;
+    private string? _saved;
+
+    // Saved text can be stale or damaged, and then the layout stays as it is.
+    private void Restore()
+    {
+        if (DockLayout.TryParse(_saved, out var layout))
+        {
+            _layout = layout;
+        }
+    }
+}

@@ -606,6 +606,21 @@ public class ComponentAnalyzerTests
     }
 
     [Fact]
+    public async Task ComponentAnalyzer_ShouldReportOutsideItsParent_WhenAPagesDockPanelIsOutsideADock()
+    {
+        var diagnostics = await RunAsync("""
+            __builder.OpenComponent<TbDockPanel>(0);
+            __builder.AddComponentParameter(1, nameof(TbDockPanel.Id), "map");
+            __builder.AddComponentParameter(2, nameof(TbDockPanel.Title), "Map");
+            __builder.CloseComponent();
+            """, attributes: Routed);
+
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("TB006", diagnostic.Id);
+        Assert.Equal("TbDockPanel isn't inside a TbDockManager, so it throws as it renders", diagnostic.GetMessage());
+    }
+
+    [Fact]
     public async Task ComponentAnalyzer_ShouldReportNothing_WhenATabsContentHoldsTheTabThroughAnotherComponent()
     {
         var ids = await IdsAsync($$"""

@@ -704,6 +704,15 @@ public static class TbStrings
     /// <summary>"Clear": names a select's clear button.</summary>
     public const string SelectClear = "Select.Clear";
 
+    /// <summary>"Panel group {0}": names the tab list of a dock's group; {0} is the group's number.</summary>
+    public const string DockGroup = "Dock.Group";
+
+    /// <summary>"Resize {0}": names a dock's separator; {0} is the title of the panel showing before it.</summary>
+    public const string DockResize = "Dock.Resize";
+
+    /// <summary>"Press Delete to close": tells screen readers how to close a dock's closable tab.</summary>
+    public const string DockCloseHint = "Dock.CloseHint";
+
     /// <summary>"Resize {0}": names a splitter's separator; {0} is the pane before it.</summary>
     public const string SplitterResize = "Splitter.Resize";
 
@@ -1647,6 +1656,9 @@ public static class TbStrings
         [SelectNoResults] = "No matches",
         [SelectEmpty] = "Nothing to choose from",
         [SelectClear] = "Clear",
+        [DockGroup] = "Panel group {0}",
+        [DockResize] = "Resize {0}",
+        [DockCloseHint] = "Press Delete to close",
         [SplitterResize] = "Resize {0}",
         [SplitterPane] = "pane {0}",
         [SplitterMenu] = "Size of {0}",

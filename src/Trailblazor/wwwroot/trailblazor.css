@@ -7489,6 +7489,194 @@
         }
     }
 
+    /* A dock's groups, panels and separators are siblings, each placed by its box in percent of the dock. A box
+       that a separator has moved comes from the script's own properties until the app renders it. */
+    .tb-dock {
+        --tb-dock-tabs-size: var(--tb-control-height-sm);
+        position: relative;
+        box-sizing: border-box;
+        block-size: 100%;
+        min-block-size: 12rem;
+        overflow: hidden;
+        border: 1px solid var(--tb-border-subtle);
+        background: var(--tb-color-surface);
+    }
+
+    .tb-dock__group,
+    .tb-dock__panel,
+    .tb-dock__separator {
+        position: absolute;
+        box-sizing: border-box;
+        inset-inline-start: calc(var(--tb-dock-live-x, var(--tb-dock-x)) * 1%);
+        inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1%);
+        inline-size: calc(var(--tb-dock-live-w, var(--tb-dock-w)) * 1%);
+        block-size: calc(var(--tb-dock-live-h, var(--tb-dock-h)) * 1%);
+    }
+
+    /* A group's element is the row of tabs along the top of its box, and its panels fill the rest. */
+    .tb-dock__group {
+        display: flex;
+        block-size: var(--tb-dock-tabs-size);
+        border-block-end: 1px solid var(--tb-border-subtle);
+        background: var(--tb-color-surface-sunken);
+    }
+
+    .tb-dock__panel {
+        inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1% + var(--tb-dock-tabs-size));
+        block-size: calc(var(--tb-dock-live-h, var(--tb-dock-h)) * 1% - var(--tb-dock-tabs-size));
+        overflow: auto;
+    }
+
+    /* A hidden panel keeps its content and its scroll position, out of sight, out of the tab order and out of
+       layout. */
+    .tb-dock__panel--hidden {
+        visibility: hidden;
+        content-visibility: hidden;
+    }
+
+    /* The dock takes the focus when its last panel closes. */
+    .tb-dock:focus-visible,
+    .tb-dock__panel:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    /* A panel's iframe would take the pointer from a drag that crosses it. */
+    .tb-dock[data-resizing] > .tb-dock__panel {
+        pointer-events: none;
+    }
+
+    .tb-dock__tabs {
+        display: flex;
+        flex: 1;
+        min-inline-size: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .tb-dock__tab {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+        flex: none;
+        max-inline-size: 16rem;
+        padding: 0 var(--tb-space-3);
+        border: none;
+        border-inline-end: 1px solid var(--tb-border-subtle);
+        background: transparent;
+        color: var(--tb-color-text-muted);
+        font: inherit;
+        font-size: var(--tb-font-size-sm);
+        line-height: var(--tb-line-height-tight);
+        cursor: pointer;
+        /* The selected tab's line sits along the top of the row. */
+        box-shadow: inset 0 2px 0 transparent;
+    }
+
+    .tb-dock__tab:hover {
+        color: var(--tb-color-text);
+    }
+
+    .tb-dock__tab[aria-selected="true"] {
+        background: var(--tb-color-surface);
+        color: var(--tb-color-text);
+        box-shadow: inset 0 2px 0 var(--tb-color-primary);
+    }
+
+    .tb-dock__tab:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
+    .tb-dock__title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .tb-dock__close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        inline-size: 24px;
+        block-size: 24px;
+        margin-inline-end: calc(-1 * var(--tb-space-2));
+        border-radius: var(--tb-radius-sm);
+    }
+
+    .tb-dock__close:hover {
+        background: var(--tb-color-hover);
+    }
+
+    /* The pointer strip is wider than the 1px line but overlaps each group by less than a scrollbar's width. */
+    .tb-dock__separator {
+        z-index: 1;
+        inline-size: 9px;
+        margin-inline-start: -4px;
+        cursor: col-resize;
+        touch-action: none;
+    }
+
+    .tb-dock__separator--vertical {
+        inline-size: calc(var(--tb-dock-live-w, var(--tb-dock-w)) * 1%);
+        block-size: 9px;
+        margin-inline-start: 0;
+        margin-block-start: -4px;
+        cursor: row-resize;
+    }
+
+    .tb-dock__separator::before {
+        content: "";
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 4px;
+        inline-size: 1px;
+        background: var(--tb-border-subtle);
+        transition: background-color var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
+    }
+
+    .tb-dock__separator--vertical::before {
+        inset-inline: 0;
+        inset-block-start: 4px;
+        inline-size: auto;
+        block-size: 1px;
+    }
+
+    .tb-dock__separator:hover::before,
+    .tb-dock__separator:focus-visible:not([data-pointer-focus])::before {
+        background: var(--tb-color-primary);
+        box-shadow: 0 0 0 1px var(--tb-color-primary);
+    }
+
+    .tb-dock__separator:focus-visible {
+        outline: none;
+    }
+
+    .tb-dock__empty {
+        display: grid;
+        place-items: center;
+        block-size: 100%;
+        color: var(--tb-color-text-muted);
+    }
+
+    @media (forced-colors: active) {
+        /* Forced colors drop shadows, so the showing tab's line is a border. */
+        .tb-dock__tab[aria-selected="true"] {
+            border-block-start: 2px solid Highlight;
+        }
+
+        .tb-dock__separator::before {
+            background: CanvasText;
+        }
+
+        .tb-dock__separator:hover::before,
+        .tb-dock__separator:focus-visible:not([data-pointer-focus])::before {
+            background: Highlight;
+            box-shadow: 0 0 0 1px Highlight;
+        }
+    }
+
     .tb-autocomplete__status,
     .tb-select__status,
     .tb-select__no-results {

@@ -1,0 +1,82 @@
+@page "/dock-manager"
+
+<TbButton OnClick="() => _layout = Start">Reset</TbButton>
+<TbButton OnClick="() => _layout = Moved">Move weather</TbButton>
+<TbButton OnClick="() => _layout = Crowded">Crowd</TbButton>
+<TbButton OnClick="() => _layout = Columns">Columns</TbButton>
+<TbButton OnClick="() => _layout = OnlyNotes">Only notes</TbButton>
+<TbButton OnClick="@(() => _layout = _layout.Open("notes"))">Open notes</TbButton>
+<p data-testid="layout">@_layout.ToJson()</p>
+<div style="inline-size: 48rem; block-size: 24rem" dir="@Direction">
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Hike planner" MinGroupSize="64">
+        <EmptyContent>Nothing is open.</EmptyContent>
+        <ChildContent>
+        <TbDockPanel Id="trails" Title="Trails">
+            <input aria-label="Trail name" />
+            <button type="button">Add trail</button>
+        </TbDockPanel>
+        <TbDockPanel Id="map" Title="Map" Closable="false">
+            <button type="button">Zoom in</button>
+            <TbTabs AriaLabel="Layers">
+                <TbTab Text="Roads">Roads</TbTab>
+                <TbTab Text="Terrain">Terrain</TbTab>
+                <TbTab Text="Satellite">Satellite</TbTab>
+            </TbTabs>
+        </TbDockPanel>
+        <TbDockPanel Id="notes" Title="Notes">
+            <input aria-label="Note" />
+            <div style="block-size: 60rem">Pack list</div>
+        </TbDockPanel>
+        <TbDockPanel Id="gear" Title="Gear">
+            <button type="button">Add gear</button>
+        </TbDockPanel>
+        <TbDockPanel Id="weather" Title="Weather">
+            <iframe title="Forecast" srcdoc="<input aria-label='City'>" style="block-size: 3rem"></iframe>
+            <button type="button">Refresh</button>
+            <div data-testid="days" style="block-size: 3rem; overflow: auto">
+                <div style="block-size: 20rem">Five days</div>
+            </div>
+            <div style="block-size: 60rem">Hourly</div>
+        </TbDockPanel>
+        </ChildContent>
+    </TbDockManager>
+</div>
+@* Its separator has the name of the dock's first one. *@
+<div style="inline-size: 48rem; block-size: 4rem">
+    <TbSplitter>
+        <TbSplitterPane Label="Trails" Size="30">Trail list</TbSplitterPane>
+        <TbSplitterPane Label="Elevation">Profile</TbSplitterPane>
+    </TbSplitter>
+</div>
+
+@code {
+    // Trails and Map share a group beside Notes and Gear, which sit above the weather.
+    private static readonly DockLayout Start = new(new DockSplit(
+        new DockGroup("trails", "map") { Size = 1 },
+        new DockSplit(new DockGroup("notes", "gear") { Size = 3 }, new DockGroup("weather"))
+        {
+            Vertical = true,
+            Size = 3,
+        }));
+
+    private static readonly DockLayout Moved = new(new DockSplit(
+        new DockGroup("trails", "map", "weather") { Active = "weather" }, new DockGroup("notes", "gear")));
+
+    // Four tabs in a group too narrow for them, with the last one showing.
+    private static readonly DockLayout Crowded = new(new DockSplit(
+        new DockGroup("trails", "map", "notes", "weather") { Active = "weather", Size = 1 },
+        new DockGroup("gear") { Size = 5 }));
+
+    // Three groups side by side, as many as at the start, with Gear now the showing tab of the narrow first one.
+    private static readonly DockLayout Columns = new(new DockSplit(
+        new DockGroup("trails", "map", "gear") { Active = "gear", Size = 1 },
+        new DockGroup("notes") { Size = 2 }, new DockGroup("weather") { Size = 3 }));
+
+    // One panel docked and the rest closed.
+    private static readonly DockLayout OnlyNotes = new(new DockGroup("notes"), ["trails", "map", "gear", "weather"]);
+
+    private DockLayout _layout = Start;
+
+    [SupplyParameterFromQuery]
+    private string? Direction { get; set; }
+}

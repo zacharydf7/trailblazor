@@ -44,7 +44,7 @@ public class DriverParityTests
         ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",
         ["TbSpeedDial"] = "Menu", ["TbToolbar"] = "Toolbar", ["TbInsertDivider"] = "InsertDivider",
         ["TbBackToTop"] = "BackToTop", ["TbSpeechToText"] = "SpeechToText", ["TbSmartPaste"] = "SmartPaste",
-        ["TbInPlaceEditor"] = "InPlaceEditor",
+        ["TbInPlaceEditor"] = "InPlaceEditor", ["TbDockManager"] = "Dock",
         ["TbNavMenu"] = "NavMenu", ["TbCodeField"] = "TextField", ["TbButton"] = "Button",
         ["TbIconButton"] = "Button",
     };
@@ -56,6 +56,7 @@ public class DriverParityTests
         ["TbCarouselSlide"] = "part of TbCarousel", ["TbCheckboxItem"] = "part of TbCheckboxGroup",
         ["TbColumn"] = "part of TbDataGrid", ["TbColumnGroup"] = "part of TbDataGrid",
         ["TbDialogActions"] = "part of TbDialog", ["TbDialogDescription"] = "part of TbDialog",
+        ["TbDockPanel"] = "part of TbDockManager",
         ["TbDialogHeader"] = "part of TbDialog", ["TbDialogHeaderActions"] = "part of TbDialog",
         ["TbDialogTitle"] = "part of TbDialog", ["TbGridItem"] = "part of TbGrid", ["TbListItem"] = "part of TbList",
         ["TbMenuCheckboxItem"] = "part of TbMenu", ["TbMenuGroup"] = "part of TbMenu",

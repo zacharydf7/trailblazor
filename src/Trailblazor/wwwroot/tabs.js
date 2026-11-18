@@ -50,15 +50,7 @@ export function attachTabs(list, order) {
         }
 
         revealed = place;
-        const own = tab.getBoundingClientRect();
-        const row = list.getBoundingClientRect();
-        const start = own.left - row.left;
-        const end = own.right - row.right;
-        // A tab wider than the row shows the start of its label.
-        const wider = own.width > row.width;
-        const left = wider ? (getComputedStyle(list).direction === 'rtl' ? end : start)
-            : start < 0 ? start : Math.max(end, 0);
-        list.scrollBy({ left, behavior: 'instant' });
+        scrollTabIntoRow(list, tab);
     };
     // Scroll buttons show while the row overflows, each turned off at its own end; a click scrolls by most of the row.
     const scrollStep = 0.8;
@@ -222,8 +214,20 @@ export function attachTabs(list, order) {
     return { handle };
 }
 
+// Scrolls a row of tabs, and only the row, until the tab shows. A tab wider than the row shows the start of its label.
+export function scrollTabIntoRow(list, tab) {
+    const own = tab.getBoundingClientRect();
+    const row = list.getBoundingClientRect();
+    const start = own.left - row.left;
+    const end = own.right - row.right;
+    const wider = own.width > row.width;
+    const left = wider ? (getComputedStyle(list).direction === 'rtl' ? end : start)
+        : start < 0 ? start : Math.max(end, 0);
+    list.scrollBy({ left, behavior: 'instant' });
+}
+
 // The enabled tab that an arrow key, Home or End moves to from the focused one, if the key moves at all.
-function nextTab(list, event) {
+export function nextTab(list, event) {
     const tabs = [...list.querySelectorAll(':scope > [role="tab"]:not(:disabled)')];
     const index = tabs.indexOf(event.target);
     if (index < 0 || event.altKey || event.ctrlKey || event.metaKey) {

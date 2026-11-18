@@ -1,0 +1,38 @@
+<TbStack Gap="2">
+    <TbStack Row Gap="2" Align="Align.Center">
+        @foreach (var panel in _layout.Closed)
+        {
+            <TbButton @key="panel" Size="Size.Small" Variant="Variant.Outlined"
+                      OnClick="() => _layout = _layout.Open(panel)">
+                Open @Titles[panel]
+            </TbButton>
+        }
+        @if (_layout.Closed.Count == 0)
+        {
+            <TbText>Close a tab, and a button that reopens it shows here.</TbText>
+        }
+    </TbStack>
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Camp log" Style="block-size: 14rem">
+        <ChildContent>
+            <TbDockPanel Id="log" Title="@Titles["log"]">
+                <TbText class="tb-p-3">Camp made by the lake at four.</TbText>
+            </TbDockPanel>
+            <TbDockPanel Id="photos" Title="@Titles["photos"]">
+                <TbText class="tb-p-3">Sunrise from the ridge.</TbText>
+            </TbDockPanel>
+            <TbDockPanel Id="sightings" Title="@Titles["sightings"]">
+                <TbText class="tb-p-3">Two marmots and a hawk.</TbText>
+            </TbDockPanel>
+        </ChildContent>
+        <EmptyContent>Every panel is closed.</EmptyContent>
+    </TbDockManager>
+</TbStack>
+
+@code {
+    private static readonly Dictionary<string, string> Titles = new()
+    {
+        ["log"] = "Log", ["photos"] = "Photos", ["sightings"] = "Sightings",
+    };
+
+    private DockLayout _layout = new(new DockSplit(new DockGroup("log", "photos"), new DockGroup("sightings")));
+}

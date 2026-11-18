@@ -39,6 +39,16 @@ public class ApiDocsTests
         Assert.All(reference.Concat(dialogs), member => Assert.NotEmpty(member.Description));
     }
 
+    [Fact]
+    public void Describe_ShouldMarkAnOutParameterAndKeepItsNullability_WhenGivenAMethodWithOne()
+    {
+        var layout = ApiDocs.Describe(typeof(DockLayout)).Members;
+
+        var parse = Assert.Single(layout, member => member.ShortName == "TryParse");
+        Assert.Equal("TryParse(string? json, out DockLayout? layout)", parse.Name);
+        Assert.NotEmpty(parse.Description);
+    }
+
     [Theory, MemberData(nameof(Types))]
     public void Describe_ShouldGiveEveryMemberADescription_WhenGivenATypeTheDocsTable(string type)
     {

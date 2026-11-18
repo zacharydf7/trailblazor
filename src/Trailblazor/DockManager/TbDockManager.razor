@@ -1,0 +1,465 @@
+@namespace Trailblazor
+@using System.Globalization
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
+@inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+@inject ITbLocalizer Localizer
+
+@{
+    var slots = Arrange();
+    RenderFragment panels = @<CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>;
+}
+@* The groups, panels and separators are siblings, each placed by its box, so a panel that changes group never
+   changes parent and keeps its state. The script sets data-ready here once its keys and drags work. *@
+<div @attributes="AdditionalAttributes" @ref="_root" role="group" aria-label="@AriaLabel" data-part="dock"
+     tabindex="@(slots.Count == 0 ? "-1" : null)"
+     data-report="@_reported" data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
+     data-min-size="@MinGroupSize" style="@Style" class="@ClassNames.Join("tb-dock", Class)">
+    @Content(_declared, panels)
+    @* A tab list holds only tabs, so the hint that describes a closable tab sits outside it. *@
+    <span id="@_closeHintId" hidden>@(Labels.CloseHint ?? Localizer[TbStrings.DockCloseHint])</span>
+    @foreach (var slot in slots)
+    {
+        @if (slot is GroupSlot group)
+        {
+            <div @key="group.Key" data-part="group" class="tb-dock__group" style="@BoxStyle(group.Box.Box)">
+                <div role="tablist" data-part="tabs" class="tb-dock__tabs"
+                     aria-label="@Format(Labels.Group, TbStrings.DockGroup, group.Index + 1)">
+                    @foreach (var id in group.Box.Panels)
+                    {
+                        var panel = Panel(id)!;
+                        var selected = id == group.Box.Active;
+                        <button @key="id" @ref="_tabs[id]" type="button" role="tab" id="@TabId(id)"
+                                aria-selected="@(selected ? "true" : "false")"
+                                aria-controls="@(_rendered.Contains(id) ? PanelId(id) : null)"
+                                tabindex="@(selected ? 0 : -1)" data-part="tab" data-panel="@id"
+                                aria-keyshortcuts="@(panel.Closable ? "Delete Backspace" : null)"
+                                aria-describedby="@(panel.Closable ? _closeHintId : null)" class="tb-dock__tab"
+                                @onclick="_select.For(id)">
+                            @if (panel.Icon is { } icon)
+                            {
+                                <TbIcon Icon="icon" Size="Size.Small" data-part="icon" />
+                            }
+                            <span data-part="title" class="tb-dock__title">@panel.Title</span>
+                            @* A tab can't hold a button, so the mark serves the pointer and the keys in
+                               aria-keyshortcuts serve the keyboard. *@
+                            @if (panel.Closable)
+                            {
+                                <span data-part="close" aria-hidden="true" class="tb-dock__close"
+                                      @onclick="_close.For(id)" @onclick:stopPropagation="true">
+                                    <TbIcon Icon="BuiltInIcons.Close" Size="Size.Small" />
+                                </span>
+                            }
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+        else if (slot is PanelSlot host)
+        {
+            @* A hidden panel is inert, so nothing in it can be reached, even what its own styles make visible. *@
+            <div @key="host.Key" @attributes="host.Panel.HostAttributes" role="tabpanel" id="@PanelId(host.Panel.Id)"
+                 aria-labelledby="@TabId(host.Panel.Id)" tabindex="@(host.Showing ? 0 : null)" inert="@(!host.Showing)"
+                 data-part="panel" data-panel="@host.Panel.Id" data-dock-group="@host.Group"
+                 style="@($"{BoxStyle(host.Box)} {host.Panel.Style}")"
+                 class="@ClassNames.Join("tb-dock__panel", host.Showing ? null : "tb-dock__panel--hidden",
+                            host.Panel.Class)">
+                @Content(host.Panel.Version, host.Panel.ChildContent)
+            </div>
+        }
+        else if (slot is SeparatorSlot separator)
+        {
+            var box = separator.Box;
+            <div @key="separator.Key" role="separator" tabindex="0" data-part="separator"
+                 data-index="@separator.Index" data-before="@BoxText(box.BeforeBox)" data-after="@BoxText(box.AfterBox)"
+                 aria-orientation="@(box.Split.Vertical ? "horizontal" : "vertical")"
+                 aria-controls="@PanelId(separator.Before)" aria-valuenow="@Whole(Fraction(box) * 100)"
+                 aria-label="@Format(Labels.Resize, TbStrings.DockResize, Panel(separator.Before)!.Title)"
+                 style="@BoxStyle(Line(box))"
+                 class="@ClassNames.Join("tb-dock__separator",
+                            box.Split.Vertical ? "tb-dock__separator--vertical" : null)">
+            </div>
+        }
+    }
+    @if (slots.Count == 0)
+    {
+        <div data-part="empty" class="tb-dock__empty">@EmptyContent</div>
+    }
+</div>
+
+@code {
+    private abstract record Slot(string Key);
+
+    private sealed record GroupSlot(string Key, int Index, DockGroupBox Box) : Slot(Key);
+
+    private sealed record PanelSlot(string Key, TbDockPanel Panel, int Group, DockBox Box, bool Showing) : Slot(Key);
+
+    // Before is the panel showing in the group just before the separator, which names the separator.
+    private sealed record SeparatorSlot(string Key, int Index, DockSeparatorBox Box, string Before) : Slot(Key);
+
+    private readonly string _id = $"tb-dock-{Guid.NewGuid():N}";
+    private readonly string _closeHintId;
+    private readonly List<TbDockPanel> _panels = [];
+    // Each panel's tab, which the dock focuses when a neighbor closes.
+    private readonly Dictionary<string, ElementReference> _tabs = [];
+    // The slots' keys in the order they were first rendered, which never changes, so Blazor never moves a panel.
+    private readonly List<string> _order = [];
+    private readonly ItemHandlers<string, Func<Task>> _select;
+    private readonly ItemHandlers<string, Func<Task>> _close;
+    // The panels whose content is rendered: the ones showing, and the ones kept alive since they last showed.
+    private HashSet<string> _rendered = [];
+    private DockLayout _layout = new();
+    private DockLayout? _layoutFromParent;
+    private ElementReference _root;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<DockReport>? _report;
+    private string? _focusAfterRender;
+    private bool _focusDockAfterRender;
+    // Counts the parent's renders, so the panels take new parameters only then.
+    private int _declared;
+    private int _stamps;
+    // The number of the browser's last resize report this render shows.
+    private int _reported;
+    // Counts the selections, closes and resizes the dock has finished with, the app's LayoutChanged included, so a
+    // test can wait for its own.
+    private int _commits;
+    private bool _disposed;
+
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
+    private ControlTelemetry Telemetry => field ??= new(Services, GetType());
+
+    /// <summary>Creates the dock.</summary>
+    public TbDockManager()
+    {
+        _closeHintId = $"{_id}-close-hint";
+        _select = new(panel => () => SelectAsync(panel));
+        _close = new(panel => () => CloseFromMarkAsync(panel));
+    }
+
+    /// <summary>The <see cref="TbDockPanel"/>s. Where each one is comes from <see cref="Layout"/>, not from their
+    /// order here.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Where each panel is. Bind it with <c>@bind-Layout</c> to hear the user's changes, and save it with
+    /// <see cref="DockLayout.ToJson"/>. Without one, every panel is a tab of a single group. A panel the layout
+    /// doesn't hold joins the largest group, and a panel id with no <see cref="TbDockPanel"/> keeps its place for
+    /// when the panel comes back.</summary>
+    [Parameter]
+    public DockLayout? Layout { get; set; }
+
+    /// <summary>Raised with the new layout when the user selects a tab, closes a panel or moves a separator.
+    /// </summary>
+    [Parameter]
+    public EventCallback<DockLayout> LayoutChanged { get; set; }
+
+    /// <summary>What shows in place of the panels when none is docked, such as a hint on how to open one.</summary>
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    /// <summary>The smallest width or height a separator leaves a group, in pixels. Defaults to 96.</summary>
+    [Parameter]
+    public int MinGroupSize { get; set; } = 96;
+
+    /// <summary>The dock's accessible name, such as "Workbench".</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>The words the dock says to screen readers. Each one left null uses the app's text.</summary>
+    [Parameter]
+    public DockLabels Labels { get; set; } = new();
+
+    /// <summary>A label this dock's use is counted under, such as <c>"workbench"</c>, so the app can count how often
+    /// people see it and select, close and resize its panels through the <c>Trailblazor</c> meter. Controls that
+    /// share a label count together; a control without one isn't counted. It names what the control does, never the
+    /// user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        _declared++;
+        // The dock replaces its own layout only when the parent passes a different one, so a render with the same
+        // layout keeps what the user did since.
+        if (!Equals(Layout, _layoutFromParent))
+        {
+            _layoutFromParent = Layout;
+            _layout = Layout ?? new();
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Telemetry.Rendered(TelemetryName);
+        try
+        {
+            if (_focusAfterRender is { } focused)
+            {
+                _focusAfterRender = null;
+                if (_tabs.TryGetValue(focused, out var tab)
+                    && Shown().Groups.Any(group => group.Panels.Contains(focused)))
+                {
+                    await tab.FocusAsync();
+                }
+            }
+            else if (_focusDockAfterRender)
+            {
+                _focusDockAfterRender = false;
+                await _root.FocusAsync();
+            }
+
+            if (firstRender)
+            {
+                await AttachAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the dock went with it.
+        }
+    }
+
+    private async Task AttachAsync()
+    {
+        var module = await Modules.ImportAsync("./_content/Trailblazor/dock-manager.js");
+        if (_disposed)
+        {
+            return;
+        }
+
+        _report = DotNetObjectReference.Create(new DockReport(SelectFromScriptAsync, CloseFromScriptAsync,
+            OnResizeAsync, tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
+        var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);
+        if (handle is not null && _disposed)
+        {
+            await handle.DisposeHandleAsync();
+            return;
+        }
+
+        _handle = handle;
+    }
+
+    internal void Add(TbDockPanel panel) => _panels.Add(panel);
+
+    internal void Remove(TbDockPanel panel)
+    {
+        _panels.Remove(panel);
+        _select.KeepOnly(id => Panel(id) is not null);
+        _close.KeepOnly(id => Panel(id) is not null);
+        if (Panel(panel.Id) is null)
+        {
+            _tabs.Remove(panel.Id);
+        }
+
+        if (!_disposed)
+        {
+            StateHasChanged();
+        }
+    }
+
+    internal void Refresh() => StateHasChanged();
+
+    // A number no panel of this dock has had, so content renders again for a panel made anew under an old id.
+    internal int Stamp() => ++_stamps;
+
+    private TbDockPanel? Panel(string id) => _panels.Find(panel => panel.Id == id);
+
+    // DockContent is internal, so Razor can't name it.
+    private static RenderFragment Content(int version, RenderFragment? content) => builder =>
+    {
+        builder.OpenComponent<DockContent>(0);
+        builder.AddComponentParameter(1, nameof(DockContent.Version), version);
+        builder.AddComponentParameter(2, nameof(DockContent.ChildContent), content);
+        builder.CloseComponent();
+    };
+
+    private string TabId(string panel) => $"{_id}-tab-{panel}";
+
+    private string PanelId(string panel) => $"{_id}-panel-{panel}";
+
+    // What the layout shows now. The server can hold renders back while the browser catches up, so what the script
+    // reports is matched against this, not against what was last rendered.
+    private DockArrangement Shown() => _layout.Arrange(id => Panel(id) is not null);
+
+    // Works out what shows and where, and keeps every slot rendered before at its place among the slots.
+    private List<Slot> Arrange()
+    {
+        // Checked here and not as a panel registers, since a panel made anew registers before the old one goes.
+        if (_panels.GroupBy(panel => panel.Id).FirstOrDefault(same => same.Count() > 1) is { } twice)
+        {
+            throw new InvalidOperationException($"Two panels of a {nameof(TbDockManager)} have the id '{twice.Key}'.");
+        }
+
+        // A panel the layout doesn't hold is docked now, so everything the user does next starts from what shows.
+        foreach (var panel in _panels.Where(panel => !_layout.Closed.Contains(panel.Id)))
+        {
+            _layout = _layout.Place(panel.Id);
+        }
+
+        var shown = Shown();
+        var slots = new List<Slot>();
+        for (var index = 0; index < shown.Groups.Count; index++)
+        {
+            var group = shown.Groups[index];
+            slots.Add(new GroupSlot($"group-{index}", index, group));
+            foreach (var id in group.Panels)
+            {
+                var panel = Panel(id)!;
+                var showing = id == group.Active;
+                if (showing || (panel.KeepAlive && _rendered.Contains(id)))
+                {
+                    slots.Add(new PanelSlot($"panel-{id}", panel, index, group.Box, showing));
+                }
+            }
+
+            if (index < shown.Separators.Count)
+            {
+                var separator = shown.Separators[index];
+                slots.Add(new SeparatorSlot($"separator-{index}", index, separator, group.Active));
+            }
+        }
+
+        _rendered = slots.OfType<PanelSlot>().Select(slot => slot.Panel.Id).ToHashSet();
+        var keys = slots.ToDictionary(slot => slot.Key);
+        _order.RemoveAll(key => !keys.ContainsKey(key));
+        _order.AddRange(slots.Select(slot => slot.Key).Except(_order).ToList());
+        return _order.ConvertAll(key => keys[key]);
+    }
+
+    private async Task SelectAsync(string panel)
+    {
+        try
+        {
+            if (_layout.GroupOf(panel) is { } group && group.Active != panel)
+            {
+                await ChangeAsync(_layout.Open(panel), "select");
+            }
+        }
+        finally
+        {
+            _commits++;
+        }
+    }
+
+    // A press on a tab's mark leaves the focus where it was, so the script says whether the tab or its panel holds it.
+    private async Task CloseFromMarkAsync(string panel) => await CloseAsync(panel,
+        _handle is not null && await _handle.InvokeAsync<bool>("holdsFocus", TabId(panel)));
+
+    // The focus the closed tab or its panel held goes to a neighbor, or to the dock when no tab is left.
+    private async Task CloseAsync(string panel, bool focused)
+    {
+        try
+        {
+            if (Panel(panel) is { Closable: true } && _layout.GroupOf(panel) is not null)
+            {
+                _focusAfterRender = focused ? TabAfterClosing(panel) : null;
+                _focusDockAfterRender = focused && _focusAfterRender is null;
+                await ChangeAsync(_layout.Close(panel), "close");
+            }
+        }
+        finally
+        {
+            _commits++;
+        }
+    }
+
+    // The tab that takes focus from a closed one: the next tab of its group, or else the one before it; with the
+    // group gone, the tab showing in the next group, or else in the one before.
+    private string? TabAfterClosing(string panel)
+    {
+        var groups = Shown().Groups.ToList();
+        var index = groups.FindIndex(group => group.Panels.Contains(panel));
+        if (index < 0)
+        {
+            return null;
+        }
+
+        var tabs = groups[index].Panels.ToList();
+        var at = tabs.IndexOf(panel);
+        return tabs.ElementAtOrDefault(at + 1) ?? tabs.ElementAtOrDefault(at - 1)
+            ?? groups.ElementAtOrDefault(index + 1)?.Active ?? groups.ElementAtOrDefault(index - 1)?.Active;
+    }
+
+    private async Task ChangeAsync(DockLayout layout, string action)
+    {
+        _layout = layout;
+        Telemetry.Used(TelemetryName, action);
+        await LayoutChanged.InvokeAsync(layout);
+    }
+
+    // The script's calls arrive outside Blazor's events, so the dock renders what they changed itself.
+    private async Task SelectFromScriptAsync(string panel)
+    {
+        await SelectAsync(panel);
+        StateHasChanged();
+    }
+
+    private async Task CloseFromScriptAsync(string panel, bool focused)
+    {
+        await CloseAsync(panel, focused);
+        StateHasChanged();
+    }
+
+    private async Task OnResizeAsync(int index, double fraction, int report)
+    {
+        try
+        {
+            if (Shown().Separators.ElementAtOrDefault(index) is { } separator && fraction is > 0 and < 1)
+            {
+                await ChangeAsync(_layout.Resize(separator.Split, separator.Before, separator.After, fraction),
+                    "resize");
+            }
+        }
+        finally
+        {
+            _reported = report;
+            _commits++;
+            StateHasChanged();
+        }
+    }
+
+    // A separator is a line along the edge its two parts share.
+    private static DockBox Line(DockSeparatorBox separator) => separator.Split.Vertical
+        ? separator.BeforeBox with { Y = separator.AfterBox.Y, Height = 0 }
+        : separator.BeforeBox with { X = separator.AfterBox.X, Width = 0 };
+
+    // The share that the part before a separator has of what it and the part after hold together.
+    private static double Fraction(DockSeparatorBox separator)
+    {
+        var before = separator.Split.Children[separator.Before].Size;
+        return before / (before + separator.Split.Children[separator.After].Size);
+    }
+
+    private static string BoxStyle(DockBox box) => string.Create(CultureInfo.InvariantCulture,
+        $"--tb-dock-x: {Round(box.X)}; --tb-dock-y: {Round(box.Y)}; --tb-dock-w: {Round(box.Width)}; "
+            + $"--tb-dock-h: {Round(box.Height)};");
+
+    private static string BoxText(DockBox box) => string.Create(CultureInfo.InvariantCulture,
+        $"{Round(box.X)} {Round(box.Y)} {Round(box.Width)} {Round(box.Height)}");
+
+    private static double Round(double value) => Math.Round(value, 4);
+
+    // Screen readers hear whole percentages, as the script reports them while the user drags.
+    private static string Whole(double value) => Math.Round(value).ToString(CultureInfo.InvariantCulture);
+
+    private string Format(string? label, string key, object value) =>
+        string.Format(CultureInfo.CurrentCulture, label ?? Localizer[key], value);
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _report?.Dispose();
+    }
+}

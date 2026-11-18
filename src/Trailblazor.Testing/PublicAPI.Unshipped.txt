@@ -578,3 +578,13 @@ Trailblazor.Testing.TbSmartPasteDriver
 Trailblazor.Testing.TbSmartPasteDriver.PasteAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbSmartPasteDriver.Status.get -> string!
 Trailblazor.Testing.TrailblazorMarkup.SmartPaste(string? label = null) -> Trailblazor.Testing.TbSmartPasteDriver!
+Trailblazor.Testing.TbDockDriver
+Trailblazor.Testing.TrailblazorMarkup.Dock(string? name = null) -> Trailblazor.Testing.TbDockDriver!
+Trailblazor.Testing.TbDockDriver.Panel(string! panel) -> Trailblazor.Testing.TrailblazorMarkup!
+Trailblazor.Testing.TbDockDriver.PanelElement(string! panel) -> AngleSharp.Dom.IElement!
+Trailblazor.Testing.TbDockDriver.Panels.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbDockDriver.Showing.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbDockDriver.SelectAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.CloseAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.Size(string! separator) -> int
+Trailblazor.Testing.TbDockDriver.ResizeAsync(string! separator, int percent) -> System.Threading.Tasks.Task!

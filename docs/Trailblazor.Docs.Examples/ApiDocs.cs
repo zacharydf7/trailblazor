@@ -199,7 +199,10 @@ public static partial class ApiDocs
 
     private static string Parameter(ParameterInfo parameter, NullabilityInfoContext context)
     {
-        var text = $"{TypeName(parameter.ParameterType, context.Create(parameter))} {parameter.Name}";
+        // An out parameter's type is a reference to the type it hands back.
+        var text = parameter.IsOut
+            ? $"out {TypeName(parameter.ParameterType.GetElementType()!, context.Create(parameter))} {parameter.Name}"
+            : $"{TypeName(parameter.ParameterType, context.Create(parameter))} {parameter.Name}";
         return parameter.HasDefaultValue
             ? $"{text} = {(parameter.DefaultValue is null ? "null" : FormatDefault(parameter.DefaultValue))}"
             : text;
@@ -210,6 +213,7 @@ public static partial class ApiDocs
     // method's and one for a type's.
     private static string DocId(Type type) => type switch
     {
+        { IsByRef: true } => $"{DocId(type.GetElementType()!)}@",
         { IsGenericMethodParameter: true } => $"``{type.GenericParameterPosition}",
         { IsGenericTypeParameter: true } => $"`{type.GenericParameterPosition}",
         { IsGenericTypeDefinition: true } => type.FullName!.Replace('+', '.'),

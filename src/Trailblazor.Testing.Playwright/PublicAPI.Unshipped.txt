@@ -633,3 +633,14 @@ Trailblazor.Testing.Playwright.TbSmartPasteLocator.PasteAsync(string! text) -> S
 Trailblazor.Testing.Playwright.TbSmartPasteLocator.StatusAsync() -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TbSmartPasteLocator.TbSmartPasteLocator(Microsoft.Playwright.ILocator! scope, string? label) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.SmartPaste(string? label = null) -> Trailblazor.Testing.Playwright.TbSmartPasteLocator!
+Trailblazor.Testing.Playwright.TbDockLocator
+Trailblazor.Testing.Playwright.TbDockLocator.TbDockLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TbDockLocator.PanelElement(string! panel) -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbDockLocator.PanelsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbDockLocator.SelectAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.ShowingAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbDockLocator.Panel(string! panel) -> Trailblazor.Testing.Playwright.TrailblazorPage!
+Trailblazor.Testing.Playwright.TbDockLocator.CloseAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.SizeAsync(string! separator) -> System.Threading.Tasks.Task<int>!
+Trailblazor.Testing.Playwright.TbDockLocator.ResizeAsync(string! separator, int percent) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TrailblazorPage.Dock(string? name = null) -> Trailblazor.Testing.Playwright.TbDockLocator!

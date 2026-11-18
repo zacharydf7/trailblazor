@@ -13,9 +13,9 @@ public class ComponentContractTests : BunitContext
     // TbRoot, TbDialogTitle, TbDialogHeader, TbDialogHeaderActions and TbModelField render no element of their own,
     // TbStyles only a <link>, TbThemeHead only a <script> and TbInteractiveMark only a hidden mark, which take no class
     // or style; TbRadio, TbCheckboxItem, TbTab, TbOption, TbToggleItem, TbSplitterPane, TbTreeItem, TbMenuRadioItem,
-    // TbDialogDescription, TbColumn, TbColumnGroup, TbTableOfContentsItem, TbBreadcrumb, TbNavLink, TbNavGroup, TbStep
-    // and TbCarouselSlide only render inside their parent (see their parents' tests), TbTreeItemEnd only in a tree
-    // row's template, and TbSmartPaste only inside a TbForm.
+    // TbDialogDescription, TbColumn, TbColumnGroup, TbTableOfContentsItem, TbBreadcrumb, TbNavLink, TbNavGroup, TbStep,
+    // TbCarouselSlide and TbDockPanel only render inside their parent (see their parents' tests), TbTreeItemEnd only
+    // in a tree row's template, and TbSmartPaste only inside a TbForm.
     internal static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbInteractiveMark), typeof(TbRadio<>),
@@ -25,6 +25,7 @@ public class ComponentContractTests : BunitContext
         typeof(TbTableOfContentsItem), typeof(TbBreadcrumb), typeof(TbNavLink), typeof(TbNavGroup),
         typeof(TbStep), typeof(TbCarouselSlide), typeof(TbColumnGroup<>), typeof(TbModelField),
         typeof(TbDialogHeaderActions), typeof(TbDialogHeader), typeof(TbTreeItemEnd), typeof(TbSmartPaste),
+        typeof(TbDockPanel),
     ];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.
