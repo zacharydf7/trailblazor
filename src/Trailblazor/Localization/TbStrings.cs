@@ -776,6 +776,18 @@ public static class TbStrings
     /// <summary>"Make {0} smaller": a dock separator's menu item that shrinks the part before it by 10%.</summary>
     public const string DockSmaller = "Dock.Smaller";
 
+    /// <summary>"Maximize": a dock menu item that has the panel's group fill the dock.</summary>
+    public const string DockMaximize = "Dock.Maximize";
+
+    /// <summary>"Restore": a dock menu item, and the name of the button, that show every group again.</summary>
+    public const string DockRestore = "Dock.Restore";
+
+    /// <summary>"Panel group {0} fills the dock.": said when a dock's group is maximized; {0} is its number.</summary>
+    public const string DockMaximized = "Dock.Maximized";
+
+    /// <summary>"All panel groups show again.": said when a dock's maximized group is restored.</summary>
+    public const string DockRestored = "Dock.Restored";
+
     /// <summary>"Resize {0}": names a splitter's separator; {0} is the pane before it.</summary>
     public const string SplitterResize = "Splitter.Resize";
 
@@ -1741,6 +1753,10 @@ public static class TbStrings
         [DockSizeMenu] = "Size of {0}",
         [DockLarger] = "Make {0} larger",
         [DockSmaller] = "Make {0} smaller",
+        [DockMaximize] = "Maximize",
+        [DockRestore] = "Restore",
+        [DockMaximized] = "Panel group {0} fills the dock.",
+        [DockRestored] = "All panel groups show again.",
         [SplitterResize] = "Resize {0}",
         [SplitterPane] = "pane {0}",
         [SplitterMenu] = "Size of {0}",

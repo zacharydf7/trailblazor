@@ -345,6 +345,29 @@ public class DockManagerTabDragTests(BrowserFixture fixture) : DockManagerPage(f
         Assert.Equal(["Trails", "Notes", "Map", "Gear", "Weather"], await page.Tb().Dock().PanelsAsync());
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldShowEveryGroupAgain_WhenATabOfTheGroupThatFillsTheDockIsDroppedOnItsSide(
+        string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        await page.Tb().Dock().MaximizeAsync("Gear");
+        var row = (await page.Locator(".tb-dock__group[data-maximized]").BoundingBoxAsync())!;
+        var panel = (await Panel(page, "Gear").BoundingBoxAsync())!;
+
+        // The side of the group where text ends, clear of the dock's own edge.
+        await CarryAsync(page, "Gear", panel.X + panel.Width - 20, panel.Y + panel.Height / 2);
+
+        await ExpectMarkAsync(page, row.X + row.Width / 2, row.Y, row.Width / 2, panel.Y + panel.Height - row.Y);
+
+        await DropAsync(page);
+
+        // Gear has a group of its own beside the notes, so nothing fills the dock anymore.
+        await Expect(page.Locator(".tb-dock__group[data-maximized]")).ToHaveCountAsync(0);
+        Assert.Equal(["Trails", "Map", "Notes", "Gear", "Weather"], await page.Tb().Dock().PanelsAsync());
+        Assert.Equal(["Trails", "Notes", "Gear", "Weather"], await page.Tb().Dock().ShowingAsync());
+        await Expect(Tab(page, "Gear")).ToBeFocusedAsync();
+    }
+
     private static ILocator Mark(IPage page) => page.Locator(".tb-dock__drop");
 
     // The box the mark covers, within a pixel and a half.

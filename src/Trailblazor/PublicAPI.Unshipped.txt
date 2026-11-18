@@ -7102,3 +7102,20 @@ Trailblazor.TbDockManager.PersistenceKey.set -> void
 const Trailblazor.TbStrings.DockTabMenu = "Dock.TabMenu" -> string!
 Trailblazor.DockLabels.TabMenu.get -> string?
 Trailblazor.DockLabels.TabMenu.init -> void
+const Trailblazor.TbStrings.DockMaximize = "Dock.Maximize" -> string!
+const Trailblazor.TbStrings.DockMaximized = "Dock.Maximized" -> string!
+const Trailblazor.TbStrings.DockRestore = "Dock.Restore" -> string!
+const Trailblazor.TbStrings.DockRestored = "Dock.Restored" -> string!
+Trailblazor.DockGroup.Maximized.get -> bool
+Trailblazor.DockGroup.Maximized.init -> void
+Trailblazor.DockLabels.Maximize.get -> string?
+Trailblazor.DockLabels.Maximize.init -> void
+Trailblazor.DockLabels.Maximized.get -> string?
+Trailblazor.DockLabels.Maximized.init -> void
+Trailblazor.DockLabels.Restore.get -> string?
+Trailblazor.DockLabels.Restore.init -> void
+Trailblazor.DockLabels.Restored.get -> string?
+Trailblazor.DockLabels.Restored.init -> void
+Trailblazor.DockLayout.Maximize(string! panel) -> Trailblazor.DockLayout!
+Trailblazor.DockLayout.Maximized.get -> Trailblazor.DockGroup?
+Trailblazor.DockLayout.Restore() -> Trailblazor.DockLayout!

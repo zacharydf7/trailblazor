@@ -9,8 +9,8 @@ const names = { x: 'x', y: 'y', width: 'w', height: 'h' };
 // The dock renders its groups, panels and separators as siblings, each placed by a box in percent of the dock. This
 // script keeps each panel after its group's tabs, so Tab and screen readers meet them in reading order; moves
 // between tabs with the arrow keys; closes a tab with Delete, Backspace or a middle click; and moves the separators,
-// by dragging or with the keys, showing the new boxes at once and reporting the move when it stops; and moves a
-// panel where its tab is dragged to. `reporter` hears it all.
+// by dragging or with the keys, showing the new boxes at once and reporting the move when it stops; moves a panel
+// where its tab is dragged to; and has a double-clicked tab's group fill the dock. `reporter` hears it all.
 export function attachDock(root, reporter) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!root) {
@@ -355,6 +355,18 @@ export function attachDock(root, reporter) {
             event.preventDefault();
         }
     };
+    // A double click on a tab has its group fill the dock, or shows every group again. The first click can close a
+    // tab and bring the next one under the pointer, so both clicks have to land on the one tab.
+    let clicked = [null, null];
+    const onClick = event => {
+        clicked = [clicked[1], ownPart(event.target, 'tab')];
+    };
+    const onDoubleClick = () => {
+        const [first, second] = clicked;
+        if (second && first === second) {
+            callDotNet(reporter, 'OnMaximize', second.dataset.panel);
+        }
+    };
     // Dragging a tab moves its panel: beside another tab, to a new group on one side of a group, or to one along an
     // edge of the dock. The mark shows where the panel would land, and nothing changes until the drop.
     const mark = parts('drop-mark')[0];
@@ -527,6 +539,8 @@ export function attachDock(root, reporter) {
     root.addEventListener('focusout', onFocusOut);
     root.addEventListener('mousedown', onMouseDown);
     root.addEventListener('auxclick', onAuxClick);
+    root.addEventListener('click', onClick);
+    root.addEventListener('dblclick', onDoubleClick);
     // A popover's toggle events don't bubble, so they are heard on their way down.
     root.addEventListener('beforetoggle', onMenuOpening, { capture: true });
     root.addEventListener('toggle', onMenuToggled, { capture: true });
@@ -575,6 +589,8 @@ export function attachDock(root, reporter) {
             root.removeEventListener('focusout', onFocusOut);
             root.removeEventListener('mousedown', onMouseDown);
             root.removeEventListener('auxclick', onAuxClick);
+            root.removeEventListener('click', onClick);
+            root.removeEventListener('dblclick', onDoubleClick);
             root.removeEventListener('beforetoggle', onMenuOpening, { capture: true });
             root.removeEventListener('toggle', onMenuToggled, { capture: true });
             grips.dispose();

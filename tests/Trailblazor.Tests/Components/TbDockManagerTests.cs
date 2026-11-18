@@ -712,10 +712,10 @@ public class TbDockManagerTests : BunitContext
 
         // The map is the last of two tabs and can't close.
         await area.TriggerEventAsync("ontbcontextmenuopen", new ContextMenuOpenEventArgs { Key = "map", Request = 1 });
-        Assert.Equal(["back false", "forward true"], Items());
+        Assert.Equal(["back false", "forward true", "maximize false"], Items());
         await cut.Find(".tb-dock__tab-area").TriggerEventAsync("ontbcontextmenuopen",
             new ContextMenuOpenEventArgs { Key = "trails", Request = 2 });
-        Assert.Equal(["back true", "forward false", "close false"], Items());
+        Assert.Equal(["back true", "forward false", "maximize false", "close false"], Items());
         // A panel of another group has no menu in this row.
         await cut.Find(".tb-dock__tab-area").TriggerEventAsync("ontbcontextmenuopen",
             new ContextMenuOpenEventArgs { Key = "notes", Request = 3 });
@@ -969,13 +969,13 @@ public class TbDockManagerTests : BunitContext
             MoveToGroup = "Other group",
             GroupItem = "No. {0} ({1})", NewGroup = "Split off", NewGroupAtEdge = "Dock edge", AtStart = "Start",
             AtEnd = "End", Above = "Over", Below = "Under", AtTop = "Top", AtBottom = "Bottom", Close = "Shut",
-            SizeMenu = "Resize {0}…", Larger = "Grow {0}", Smaller = "Shrink {0}",
+            SizeMenu = "Resize {0}…", Larger = "Grow {0}", Smaller = "Shrink {0}", Maximize = "Fill",
         }));
 
         var menu = cut.Find("[data-part=group-menu]");
         Assert.Equal("Move Trails", menu.QuerySelector("button")!.GetAttribute("aria-label"));
         Assert.Equal("For this tab", cut.Find(".tb-dock__tab-area > [role=menu]").GetAttribute("aria-label"));
-        Assert.Equal(["Earlier", "Later", "Shut"],
+        Assert.Equal(["Earlier", "Later", "Fill", "Shut"],
             menu.QuerySelectorAll("[data-move]").Select(item => item.TextContent.Trim()));
         Assert.Equal(["No. 2 (Notes)", "No. 3 (Weather)"],
             menu.QuerySelectorAll("[data-move-group]").Select(item => item.TextContent.Trim()));
@@ -988,6 +988,234 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal("Resize Trails…", grip.QuerySelector("button")!.GetAttribute("aria-label"));
         Assert.Equal(["Grow Trails", "Shrink Trails"],
             grip.QuerySelectorAll("[role=menuitem]").Select(item => item.TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task Maximize_ShouldFillTheDockWithTheGroupAndCoverTheOthers_WhenChosenInAGroupsMenu()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        DockLayout? changed = null;
+        var cut = RenderDock(Hike, HikePanels, layout => changed = layout);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var (dock, notes) = (cut.Tb().Dock(), Reference(cut, "Notes"));
+
+        await dock.MaximizeAsync("Notes");
+
+        Assert.Equal(Hike.Maximize("notes"), changed);
+        var groups = cut.FindAll("[data-part=group]");
+        const string full = "--tb-dock-x: 0; --tb-dock-y: 0; --tb-dock-w: 100; --tb-dock-h: 100;";
+        Assert.Equal(full, groups[1].GetAttribute("style"));
+        Assert.Equal([false, true, false], groups.Select(group => group.HasAttribute("data-maximized")));
+        Assert.Equal([true, false, true],
+            groups.Select(group => group.ClassList.Contains("tb-dock__group--covered")));
+        Assert.StartsWith(full, cut.Find("[role=tabpanel][data-panel=notes]").GetAttribute("style"));
+        // The covered panels keep their content, out of reach, and no separator shows.
+        Assert.Equal(["trails", "weather"],
+            cut.FindAll("[role=tabpanel][inert]").Select(panel => panel.GetAttribute("data-panel")));
+        Assert.DoesNotContain(_log, line => line.StartsWith("dispose", StringComparison.Ordinal));
+        Assert.Empty(cut.FindAll(".tb-dock__separator, [data-part=grip]"));
+        Assert.Equal(["Notes"], dock.Showing);
+        Assert.Equal(["Trails", "Map", "Notes", "Weather"], dock.Panels);
+        Assert.Equal(["Panel group 2 fills the dock."], Services.GetRequiredService<FakeAnnouncer>().Polite);
+        Assert.Equal(notes, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+        Assert.Equal(["maximize"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public async Task Maximize_ShouldOfferRestoreInPlaceOfMaximize_WhenAGroupFillsTheDock()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        string?[] Moves(int group) => [.. cut.FindAll("[data-part=group-menu]")[group]
+            .QuerySelectorAll("[data-move=maximize], [data-move=restore]")
+            .Select(item => item.GetAttribute("data-move"))];
+        Assert.Equal(["maximize"], Moves(1));
+        Assert.Empty(cut.FindAll("[data-part=restore]"));
+
+        await cut.Tb().Dock().MaximizeAsync("Notes");
+
+        Assert.Equal(["restore"], Moves(1));
+        Assert.Equal("Restore", cut.Find("[data-part=group][data-maximized] [data-part=restore]")
+            .GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Maximize_ShouldNotBeOffered_WhenTheDockHasOneGroup()
+    {
+        var cut = RenderDock(null, HikePanels);
+
+        Assert.Empty(cut.FindAll("[data-move=maximize], [data-move=restore], [data-part=restore]"));
+    }
+
+    [Fact]
+    public async Task Restore_ShouldShowEveryGroupWhereItWasAndFocusTheShowingTab_WhenTheButtonIsClicked()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(Hike, HikePanels, changes.Add);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var (dock, notes) = (cut.Tb().Dock(), Reference(cut, "Notes"));
+        var before = cut.FindAll("[data-part=group]").Select(group => group.GetAttribute("style")).ToList();
+        await dock.MaximizeAsync("Notes");
+
+        await dock.RestoreAsync();
+
+        Assert.Equal(Hike, changes[^1]);
+        Assert.Equal(before, cut.FindAll("[data-part=group]").Select(group => group.GetAttribute("style")));
+        Assert.Empty(cut.FindAll(".tb-dock__group--covered, [data-maximized], [data-part=restore]"));
+        Assert.Equal(2, cut.FindAll(".tb-dock__separator").Count);
+        Assert.Equal(["Trails", "Notes", "Weather"], dock.Showing);
+        Assert.Equal(["Panel group 2 fills the dock.", "All panel groups show again."],
+            Services.GetRequiredService<FakeAnnouncer>().Polite);
+        // The button goes with the click, so the focus it held goes to the group's showing tab.
+        Assert.Equal(notes, ((ElementReference)JSInterop.Invocations.Last(
+            call => call.Identifier.EndsWith("focus", StringComparison.Ordinal)).Arguments[0]!).Id);
+        Assert.Equal(["maximize", "restore"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public async Task Restore_ShouldFocusTheGroupsShowingTab_WhenChosenInTheMenuOfATabThatIsNotShowing()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        var (dock, trails) = (cut.Tb().Dock(), Reference(cut, "Trails"));
+        await dock.MaximizeAsync("Map");
+        await dock.SelectAsync("Trails");
+
+        // The map's tab isn't showing now, and Restore doesn't show it, so the row's one tab stop takes the focus.
+        await dock.ChooseFromTabMenuAsync("Map", "Restore");
+
+        Assert.Equal(["Trails", "Notes", "Weather"], dock.Showing);
+        Assert.Equal(trails, ((ElementReference)JSInterop.Invocations.Last(
+            call => call.Identifier.EndsWith("focus", StringComparison.Ordinal)).Arguments[0]!).Id);
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveOutTheRestoreButton_WhenThePageIsStaticAndAGroupFillsTheDock()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderDock(Hike.Maximize("notes"), HikePanels);
+
+        // The group fills the dock as the layout says, and the button that restores comes with interactivity.
+        Assert.Single(cut.FindAll("[data-part=group][data-maximized]"));
+        Assert.Equal(2, cut.FindAll(".tb-dock__group--covered").Count);
+        Assert.Empty(cut.FindAll("[data-part=restore]"));
+    }
+
+    [Fact]
+    public async Task Maximize_ShouldShowTheTabAndFillTheDockThenRestore_WhenTheScriptReportsDoubleClicks()
+    {
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(Hike, HikePanels, changes.Add);
+
+        // The map isn't showing, and a double click on its tab shows it as its group fills the dock.
+        await cut.InvokeAsync(() => Report().OnMaximize("map"));
+
+        Assert.Equal(Hike.Maximize("map"), changes[^1]);
+        Assert.Equal(["Map"], cut.Tb().Dock().Showing);
+
+        // A double click on any tab of the group that fills the dock shows every group again.
+        await cut.InvokeAsync(() => Report().OnMaximize("trails"));
+
+        Assert.Equal(Hike.Open("map"), changes[^1]);
+        Assert.Equal(["Map", "Notes", "Weather"], cut.Tb().Dock().Showing);
+    }
+
+    [Fact]
+    public async Task Maximize_ShouldChangeNothingButCountTheReport_WhenADoubleClickCanDoNothing()
+    {
+        var changes = 0;
+        var cut = RenderDock(null, HikePanels, _ => changes++);
+        var commits = cut.Find("[data-part=dock]").GetAttribute("data-commits");
+
+        // A dock with one group has nothing to cover, and the dock has no panel by the other name.
+        await cut.InvokeAsync(() => Report().OnMaximize("map"));
+        await cut.InvokeAsync(() => Report().OnMaximize("photos"));
+
+        Assert.Equal(0, changes);
+        Assert.Empty(cut.FindAll("[data-maximized]"));
+        Assert.Equal((int.Parse(commits!) + 2).ToString(), cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
+    public async Task Maximize_ShouldDropACoveredPanelsContent_WhenItsKeepAliveIsOff()
+    {
+        var cut = RenderDock(Hike, [new("trails", "Trails", KeepAlive: false), .. HikePanels.Skip(1)]);
+
+        await cut.Tb().Dock().MaximizeAsync("Notes");
+
+        Assert.Contains("dispose trails", _log);
+        Assert.Empty(cut.FindAll("[role=tabpanel][data-panel=trails]"));
+
+        await cut.Tb().Dock().RestoreAsync();
+
+        Assert.Equal(2, _log.Count(line => line == "init trails"));
+    }
+
+    [Fact]
+    public async Task Maximize_ShouldEnd_WhenThePanelMovesToAnotherGroupOrTheGroupGoes()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        var dock = cut.Tb().Dock();
+
+        // The other groups are still in the menu, and a move to one shows where the panel went.
+        await dock.MaximizeAsync("Trails");
+        await dock.MoveToGroupAsync("Trails", 3);
+
+        Assert.Empty(cut.FindAll(".tb-dock__group--covered, [data-maximized]"));
+        Assert.Equal(["Map", "Notes", "Trails"], dock.Showing);
+
+        // The notes are alone in their group, which goes when they close.
+        await dock.MaximizeAsync("Notes");
+        await dock.CloseAsync("Notes");
+
+        Assert.Empty(cut.FindAll(".tb-dock__group--covered, [data-maximized]"));
+        Assert.Equal(["Map", "Trails"], dock.Showing);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldSayWhyItCannotClick_WhenThePanelIsBehindTheGroupThatFillsTheDock()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        var dock = cut.Tb().Dock();
+        Assert.Equal("No group fills the dock.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(dock.RestoreAsync)).Message);
+        await dock.MaximizeAsync("Notes");
+
+        const string behind = "The panel \"Trails\" is behind the group that fills the dock; restore the groups first.";
+        Assert.Equal(behind, (await Assert.ThrowsAsync<InvalidOperationException>(
+            () => dock.SelectAsync("Trails"))).Message);
+        Assert.Equal(behind, (await Assert.ThrowsAsync<InvalidOperationException>(
+            () => dock.CloseAsync("Trails"))).Message);
+        Assert.Equal(behind, (await Assert.ThrowsAsync<InvalidOperationException>(
+            () => dock.MaximizeAsync("Trails"))).Message);
+        Assert.Equal(behind, (await Assert.ThrowsAsync<InvalidOperationException>(
+            () => dock.ChooseFromTabMenuAsync("Trails", "Close"))).Message);
+        Assert.Equal("The group of \"Notes\" is the dock's only one, or fills the dock already.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => dock.MaximizeAsync("Notes"))).Message);
+    }
+
+    [Fact]
+    public async Task Labels_ShouldWordMaximizingAndRestoring_WhenGiven()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels
+        {
+            Maximize = "Fill", Restore = "Back", Maximized = "Group {0} is alone", Restored = "All back",
+        }));
+        Assert.Equal("Fill", cut.Find("[data-part=group-menu] [data-move=maximize]").TextContent.Trim());
+
+        await cut.Tb().Dock().MaximizeAsync("Notes");
+
+        Assert.Equal("Back", cut.Find("[data-part=group-menu] [data-move=restore]").TextContent.Trim());
+        Assert.Equal("Back", cut.Find("[data-part=restore]").GetAttribute("aria-label"));
+
+        await cut.Tb().Dock().RestoreAsync();
+
+        Assert.Equal(["Group 2 is alone", "All back"], Services.GetRequiredService<FakeAnnouncer>().Polite);
     }
 
     [Fact]
@@ -1192,6 +1420,50 @@ public class TbDockManagerTests : BunitContext
             Assert.Throws<InvalidOperationException>(() => cut.Tb().Dock().Panels).Message);
         Assert.Equal("Expected one dock named \"Planner\", found 0.",
             Assert.Throws<InvalidOperationException>(() => cut.Tb().Dock("Planner").Panels).Message);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldRestoreOnlyItsOwnDock_WhenAPanelHoldsADockWhoseGroupFillsIt()
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbDockManager>(0);
+            builder.AddAttribute(1, nameof(TbDockManager.AriaLabel), "Hike planner");
+            builder.AddAttribute(2, nameof(TbDockManager.Layout),
+                new DockLayout(new DockSplit(new DockGroup("trails"), new DockGroup("map"))));
+            builder.AddAttribute(3, nameof(TbDockManager.ChildContent), (RenderFragment)(panels =>
+            {
+                panels.OpenComponent<TbDockPanel>(0);
+                panels.AddAttribute(1, nameof(TbDockPanel.Id), "trails");
+                panels.AddAttribute(2, nameof(TbDockPanel.Title), "Trails");
+                panels.AddAttribute(3, nameof(TbDockPanel.ChildContent), (RenderFragment)(content =>
+                {
+                    content.OpenComponent<TbDockManager>(0);
+                    content.AddAttribute(1, nameof(TbDockManager.AriaLabel), "Gear planner");
+                    content.AddAttribute(2, nameof(TbDockManager.Layout), new DockLayout(
+                        new DockSplit(new DockGroup("tents") { Maximized = true }, new DockGroup("stoves"))));
+                    content.AddAttribute(3, nameof(TbDockManager.ChildContent),
+                        Panels(new Panel("tents", "Tents"), new Panel("stoves", "Stoves")));
+                    content.CloseComponent();
+                }));
+                panels.CloseComponent();
+                panels.OpenComponent<TbDockPanel>(4);
+                panels.AddAttribute(5, nameof(TbDockPanel.Id), "map");
+                panels.AddAttribute(6, nameof(TbDockPanel.Title), "Map");
+                panels.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+        var (outer, inner) = (cut.Tb().Dock("Hike planner"), cut.Tb().Dock("Gear planner"));
+
+        // Only the dock inside the trails' panel has a group that fills it.
+        Assert.Equal("No group fills the dock.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(outer.RestoreAsync)).Message);
+        Assert.Equal(["Tents"], inner.Showing);
+
+        await inner.RestoreAsync();
+
+        Assert.Equal(["Tents", "Stoves"], inner.Showing);
     }
 
     [Fact]

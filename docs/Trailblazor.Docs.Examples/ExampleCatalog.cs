@@ -2757,6 +2757,15 @@ public static class ExampleCatalog
                     + "with half of the group's space. `MoveToEdge(panel, edge)` gives it a new group along an "
                     + "edge of the dock, which takes a quarter of the dock, or all of it when nothing else is "
                     + "docked. A moved panel keeps its content.", typeof(DockManagerMoveExample)),
+                new("maximizing", "Maximizing a group", "A double click on a tab has its group fill the dock, "
+                    + "over the other groups, and a double click on any tab of that group shows them all again. "
+                    + "Maximize in a group's menu, or in a tab's own, does the same with single clicks, and "
+                    + "Restore, there and on the button that shows beside the group's menu, brings the other "
+                    + "groups back where they were. The covered panels keep their content. From code, "
+                    + "`DockLayout.Maximize(panel)` gives back a layout in which that panel shows and its group "
+                    + "fills the dock, `Restore()` one in which every group shows, and `Maximized` is the group "
+                    + "that fills the dock, or null. Opening a panel in a covered group, or moving one to a "
+                    + "covered group or a new one, shows every group again.", typeof(DockManagerMaximizeExample)),
                 new("remembering", "Remembering the layout", "With a `PersistenceKey`, the dock saves its layout in "
                     + "the browser's local storage after each change and reads it back once the page is "
                     + "interactive, so a reload keeps the arrangement. The saved layout replaces `Layout` and "
@@ -2793,13 +2802,15 @@ public static class ExampleCatalog
                     { When = "On a tab" },
                 new(["Delete", "Backspace"], "Closes the panel, unless its `Closable` is false.")
                     { When = "On a tab" },
-                new(["Tab"], "Goes to the group's menu button.") { When = "On a tab" },
-                new(["Shift+F10", "Context menu key"], "Opens the tab's menu, which moves or closes its panel, on "
-                    + "its first item.") { When = "On a tab" },
+                new(["Tab"], "Goes to the group's menu button, by way of the Restore button in a group that fills "
+                    + "the dock.") { When = "On a tab" },
+                new(["Shift+F10", "Context menu key"], "Opens the tab's menu, which moves or closes its panel "
+                    + "and maximizes or restores its group, on its first item.") { When = "On a tab" },
                 new(["Escape"], "Cancels the drag and leaves the panel where it was.")
                     { When = "While a tab is dragged" },
-                new(["Enter", "Space", "Down"], "Opens the menu that moves or closes the group's showing panel, "
-                    + "on its first item. Inside it, the keys are those of a [menu](components/menu).")
+                new(["Enter", "Space", "Down"], "Opens the menu that moves or closes the group's showing panel "
+                    + "and maximizes or restores the group, on its first item. Inside it, the keys are those of a "
+                    + "[menu](components/menu).")
                     { When = "On a group's menu button" },
                 new(["Up"], "Opens that menu on its last item.") { When = "On a group's menu button" },
                 new(["Left", "Right"], "Moves the separator by 1% of the space its two sides share.")
@@ -2824,10 +2835,12 @@ public static class ExampleCatalog
                     + "same title.",
                 "Each group's menu button is named \"Options for\" followed by the title of the group's showing "
                     + "panel, and the menu that opens on a tab is named \"Tab options\".",
+                "The button beside the menu of a group that fills the dock is named \"Restore\".",
                 "The dock's `Labels` replaces these words, the items of the menus and what is said after a move, "
                     + "with `{0}` for the number or the title. Two take both: `GroupItem` has `{0}` for a group's "
                     + "number and `{1}` for its showing panel's title, and `Moved` has `{0}` for the moved panel's "
-                    + "title and `{1}` for its group's number.",
+                    + "title and `{1}` for its group's number. `Maximized`, which is said when a group fills the "
+                    + "dock, has `{0}` for the group's number, and `Restored` is said when every group shows again.",
                 "`Labels.CloseHint` replaces the hint that describes a closable tab.",
             ],
             Announcements =
@@ -2837,22 +2850,30 @@ public static class ExampleCatalog
                 "After a panel moves, from a menu or a dropped tab, screen readers hear where it went, as in "
                     + "\"Trails moved to panel group 2.\"",
                 "As a tab's menu opens, screen readers hear its name, \"Tab options\".",
+                "When a group fills the dock, screen readers hear \"Panel group 2 fills the dock.\", with the "
+                    + "group's number, and \"All panel groups show again.\" when it's restored.",
                 "On a separator, `aria-valuenow` gives the share, in percent, that the part before it has of the "
                     + "space its two sides take together.",
             ],
             Accessibility =
             [
                 "Each group's tabs are a `tablist`, and each panel is a `tabpanel`. A group's tabs are one stop for "
-                    + "the Tab key, on the showing tab. Tab then goes to the group's menu button, to the panel, to "
-                    + "what the panel holds, and to the separator after the group.",
+                    + "the Tab key, on the showing tab. Tab then goes to the Restore button when the group fills "
+                    + "the dock, then to the group's menu button, to the panel, to what the panel holds, and to "
+                    + "the separator after the group.",
                 "A group's menu moves and closes panels with single clicks, taps or key presses, so nothing needs "
                     + "a drag (WCAG 2.5.7). After a move, focus is on the moved panel's tab.",
                 "A tab's own menu holds the same items for that tab. It opens on its first item, and Escape gives "
                     + "the focus back to where it was. Nothing on a tab announces this menu, and the group's menu "
-                    + "button, the next stop after the tabs, has the same items for the showing tab.",
+                    + "button, which comes after the tabs, has the same items for the showing tab.",
                 "A right press on a row of tabs doesn't take the focus, so when the menu closes the focus is "
                     + "back where it was. Close in a tab's own menu moves focus on as the close mark does: only "
                     + "when the tab or its panel held it.",
+                "Maximize and Restore are in each group's menu and in each tab's own, so nothing needs a double "
+                    + "click. While a group fills the dock, the other groups' tabs and panels and the separators "
+                    + "can't be focused or read. After Maximize or Restore, focus is in the group's row, on its "
+                    + "showing tab or on the group's menu button; when what held the focus is now covered, the "
+                    + "showing tab takes it.",
                 "Tab and screen readers meet the groups in reading order, and still do after the layout changes.",
                 "A hidden panel is `inert`: nothing in it can be focused or read until its tab shows it.",
                 "A click on a close mark, or a middle click, leaves the focus where it is. Closing a tab that "
@@ -2868,7 +2889,8 @@ public static class ExampleCatalog
                     + "2.5.7). The grip shows while the pointer is on the separator, and always where the main "
                     + "pointer is a finger, as on a phone or a tablet.",
                 "The grip stays out of the tab order, since the separator's keys do the same as its menu.",
-                "Tabs, close marks, menu buttons and grips work with a tap, and each is at least a 24px target.",
+                "Tabs, close marks, menu buttons, the Restore button and grips work with a tap, and each is at "
+                    + "least a 24px target.",
                 "In forced colors, the showing tab's line, a focused separator and the mark for a dragged tab use "
                     + "the system's highlight color.",
             ],
@@ -2885,8 +2907,8 @@ public static class ExampleCatalog
             [
                 "The groups render where the layout puts them, each showing its panel. Selecting tabs, dragging "
                     + "them, closing panels and resizing start working once the page is interactive, which is "
-                    + "also when the groups' menus and the separators' grips appear. Until then, a right-click on "
-                    + "a tab opens the browser's own menu.",
+                    + "also when the groups' menus, the separators' grips and the Restore button of a group that "
+                    + "fills the dock appear. Until then, a right-click on a tab opens the browser's own menu.",
             ],
             Notes =
             [
@@ -2896,8 +2918,9 @@ public static class ExampleCatalog
                     + "that renders again with the same layout doesn't undo what the user did since. Bind the "
                     + "layout to keep the two in step."),
                 new("A layout tidies its tree as it's made: a panel listed twice stays where it's first listed, a "
-                    + "group with no panels is dropped, a split with one part gives its place to that part, and a "
-                    + "split inside a split of the same direction joins it."),
+                    + "group with no panels is dropped, a split with one part gives its place to that part, a split "
+                    + "inside a split of the same direction joins it, and only the first group marked `Maximized` "
+                    + "stays so, and only as long as the layout has another group for it to cover."),
                 new("A `TbDockPanel`'s `Class`, `Style` and other attributes go on its panel element, except `id`, "
                     + "which the dock sets to tie the panel to its tab."),
                 new("A panel that moves to another group keeps its content, its scroll positions and its focus. "
@@ -2912,6 +2935,12 @@ public static class ExampleCatalog
                     + "up, and the tab is put down again; a pen that rests on the tab for half a second opens the "
                     + "menu too. A right-click on the empty part of a row of tabs opens the menu for the group's "
                     + "showing panel."),
+                new("A dock with one group has nothing to cover, so its menus leave Maximize out and a double "
+                    + "click on a tab does nothing more than select it."),
+                new("A group that fills the dock is part of the layout: `ToJson` writes it, and a dock with a "
+                    + "`PersistenceKey` comes back from a reload with the group still filling it."),
+                new("A covered panel with `KeepAlive=\"false\"` drops its content, as one behind another tab "
+                    + "does.") { Pitfall = true },
                 new("A drop within a few pixels of the dock's edge goes along that edge, even where a row of tabs "
                     + "reaches it. The mark shows where the panel will land."),
                 new("A `PersistenceKey` names the layout in the browser's local storage, as `tb-dock:` followed by "
@@ -2929,15 +2958,18 @@ public static class ExampleCatalog
             [
                 new("dock", "The dock itself, around its groups, panels, separators, grips and drop mark, which "
                     + "are all its children. It has `data-moving` while a tab is dragged."),
-                new("group", "One group's row, across the top of the group's box."),
+                new("group", "One group's row, across the top of the group's box. The one that fills the dock has "
+                    + "`data-maximized`, and the ones it covers have the class `tb-dock__group--covered`."),
+                new("restore", "The button beside the menu of the group that fills the dock, which shows every "
+                    + "group again."),
                 new("tabs", "The tab list in a group's row. It sits inside a `TbContextMenu` with the class "
                     + "`tb-dock__tab-area`, which opens a tab's menu and brings its own `target` and `menu` parts "
                     + "into each group. Each tab carries `data-context-key` with its panel's `Id`, and the tab "
                     + "list carries the showing panel's."),
-                new("group-menu", "The menu after a group's tabs, which moves or closes the group's showing panel. "
-                    + "Its items carry `data-move` (`back`, `forward` or `close`), `data-move-group` with a "
-                    + "group's number, or `data-move-beside` or `data-move-edge` with `start`, `end`, `top` or "
-                    + "`bottom`."),
+                new("group-menu", "The menu after a group's tabs, which moves or closes the group's showing panel "
+                    + "and maximizes or restores the group. Its items carry `data-move` (`back`, `forward`, "
+                    + "`maximize`, `restore` or `close`), `data-move-group` with a group's number, or "
+                    + "`data-move-beside` or `data-move-edge` with `start`, `end`, `top` or `bottom`."),
                 new("tab", "One panel's tab, with `data-panel` holding the panel's `Id`, and `data-dragging` while "
                     + "it is dragged."),
                 new("icon", "A tab's icon."),
@@ -2982,6 +3014,12 @@ public static class ExampleCatalog
                     + "part, so they work whatever the `Labels` say.",
                 "When the menu doesn't offer a move, as for a tab already at the end of its row or a panel alone "
                     + "in its group, the move helper throws an `InvalidOperationException` that says why.",
+                "`MaximizeAsync(\"Notes\")` shows a panel and has its group fill the dock, with Maximize in the "
+                    + "group's menu, and `RestoreAsync()` clicks the Restore button. While a group fills the dock, "
+                    + "`ShowingAsync()` or `Showing` lists only its showing panel, and a helper that clicks a "
+                    + "covered panel's tab throws an `InvalidOperationException` that says to restore the groups "
+                    + "first. `MaximizeAsync` throws one too when the group is the dock's only one or fills the "
+                    + "dock already, and `RestoreAsync` when no group fills the dock.",
                 "`ChooseFromTabMenuAsync(\"Notes\", \"Close\")` opens the menu of a panel's tab, as a right-click "
                     + "does, and clicks an item in it, through the submenus named before it, as in "
                     + "`ChooseFromTabMenuAsync(\"Notes\", \"Move to group\", \"Group 2: Map\")`. It acts on that "
@@ -2989,16 +3027,17 @@ public static class ExampleCatalog
                     + "`LayoutChanged` has run. The open menu is the `menu` named \"Tab options\".",
                 "Each group's row of tabs is a context menu named \"Tab options\", so on a page with a dock, find "
                     + "your own context menu by its name, as in `ContextMenu(\"Trail actions\")`.",
-                "In Playwright, `SelectAsync`, `CloseAsync`, `ResizeAsync` and the move helpers wait until the "
-                    + "app's `LayoutChanged` has run, which the dock counts in `data-commits`.",
+                "In Playwright, `SelectAsync`, `CloseAsync`, `ResizeAsync`, `MaximizeAsync`, `RestoreAsync` and "
+                    + "the move helpers wait until the app's `LayoutChanged` has run, which the dock counts in "
+                    + "`data-commits`.",
                 "A dropped tab goes through the same move as the menu, with the same focus, announcement and "
                     + "telemetry, and the move helpers reach every layout a drop can, some in two steps. bUnit has "
                     + "no pointer, so it tests moves with the helpers.",
                 "To test the drag itself in Playwright, press on the tab, move the mouse in a few steps and "
                     + "release, then wait for `data-commits` to go up. A drop where no mark shows changes nothing "
                     + "and leaves `data-commits` as it was.",
-                "A `DockLayout` needs no renderer: test what your app does with `Open`, `Close`, `Move`, `MoveToEdge`, "
-                    + "`ToJson` and `TryParse` in plain unit tests.",
+                "A `DockLayout` needs no renderer: test what your app does with `Open`, `Close`, `Move`, "
+                    + "`MoveToEdge`, `Maximize`, `Restore`, `ToJson` and `TryParse` in plain unit tests.",
                 "A dock with a `PersistenceKey` starts from what the browser has saved. Playwright gives each new "
                     + "context empty storage, and bUnit has no storage, so there the dock starts from `Layout`.",
             ],
@@ -3006,8 +3045,9 @@ public static class ExampleCatalog
             [
                 "With a `TelemetryName`, such as `\"hike-planner\"`, it counts `trailblazor.control.shown` as it "
                     + "first renders and `trailblazor.control.used` with the action `select` each time a person "
-                    + "shows another tab, `move` each time they move a panel, `close` each time they close one "
-                    + "and `resize` each time they move a separator. Panel ids, titles and sizes are never "
+                    + "shows another tab, `move` each time they move a panel, `close` each time they close one, "
+                    + "`resize` each time they move a separator, `maximize` each time they maximize a group and "
+                    + "`restore` each time they restore the groups. Panel ids, titles and sizes are never "
                     + "recorded.",
             ],
         },

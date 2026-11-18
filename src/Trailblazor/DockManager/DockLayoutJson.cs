@@ -3,8 +3,8 @@ using System.Text.Json;
 
 namespace Trailblazor;
 
-// A layout as JSON: {"version":1,"root":…,"closed":[…]}, where a group is {"panels":[…],"active":…,"size":…} and a
-// split is {"split":"row" or "column","size":…,"children":[…]}.
+// A layout as JSON: {"version":1,"root":…,"closed":[…]}, where a group is {"panels":[…],"active":…,"size":…}, with
+// "maximized":true when it fills the dock, and a split is {"split":"row" or "column","size":…,"children":[…]}.
 internal static class DockLayoutJson
 {
     private const int Version = 1;
@@ -77,6 +77,10 @@ internal static class DockLayoutJson
 
             writer.WriteEndArray();
             writer.WriteString("active", group.Active);
+            if (group.Maximized)
+            {
+                writer.WriteBoolean("maximized", true);
+            }
         }
         else
         {
@@ -102,7 +106,12 @@ internal static class DockLayoutJson
         var size = node.GetProperty("size").GetDouble();
         if (node.TryGetProperty("panels", out var panels))
         {
-            return new DockGroup(Strings(panels)) { Active = node.GetProperty("active").GetString(), Size = size };
+            return new DockGroup(Strings(panels))
+            {
+                Active = node.GetProperty("active").GetString(),
+                Size = size,
+                Maximized = node.TryGetProperty("maximized", out var maximized) && maximized.GetBoolean(),
+            };
         }
 
         var direction = node.GetProperty("split").GetString();

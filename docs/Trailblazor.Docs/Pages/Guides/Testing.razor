@@ -513,7 +513,8 @@
                             <code>MoveToEdgeAsync(panel, edge)</code> move a panel as its group's menu does, selecting
                             it first. <code>ChooseFromTabMenuAsync(panel, path)</code> opens the menu of a panel's
                             tab, as a right-click does, and clicks an item in it, through the submenus named before
-                            it.
+                            it. <code>MaximizeAsync(panel)</code> has a panel's group fill the dock, and
+                            <code>RestoreAsync()</code> shows every group again.
                         </td>
                     </tr>
                     <tr>
@@ -1314,7 +1315,9 @@
             + "`MoveToGroupAsync(panel, group)`, `MoveToNewGroupAsync(panel, side)` and `MoveToEdgeAsync(panel, "
             + "edge)` select a panel and move it from its group's menu, and wait until the app has the layout. "
             + "`ChooseFromTabMenuAsync(panel, path)` right-clicks a panel's tab, clicks an item in the menu that "
-            + "opens, through the submenus named before it, and waits until the app has the layout."),
+            + "opens, through the submenus named before it, and waits until the app has the layout. "
+            + "`MaximizeAsync(panel)` has a panel's group fill the dock from its group's menu, and `RestoreAsync()` "
+            + "clicks the Restore button; both wait until the app has the layout."),
         new("Stepper", "Its name, or none for the only one", "`Stepper(name).GoToAsync(title)` goes to a step and "
             + "waits until it's current and the app's `ActiveKeyChanged` has run, `StepsAsync()` reads the steps' "
             + "titles, and `CurrentAsync()` reads the current step's."),

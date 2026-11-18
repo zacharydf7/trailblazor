@@ -3031,17 +3031,19 @@ public sealed class TbDockDriver
     /// <summary>The titles of every panel's tab, group by group in reading order.</summary>
     public IReadOnlyList<string> Panels => Tabs().Select(Title).ToList();
 
-    /// <summary>The titles of the panels that show, one for each group, in reading order.</summary>
+    /// <summary>The titles of the panels that show, one for each group, in reading order. While a group fills the
+    /// dock, only its panel shows.</summary>
     public IReadOnlyList<string> Showing =>
-        Tabs().Where(tab => tab.GetAttribute("aria-selected") == "true").Select(Title).ToList();
+        Tabs().Where(tab => tab.GetAttribute("aria-selected") == "true" && !Covered(tab)).Select(Title).ToList();
 
-    /// <summary>Selects the panel with this title, as clicking its tab does.</summary>
-    public async Task SelectAsync(string panel) => await Tab(panel).ClickAsync(new MouseEventArgs { Detail = 1 });
+    /// <summary>Selects the panel with this title, as clicking its tab does. Throws for a panel behind the group
+    /// that fills the dock, as every helper that clicks does.</summary>
+    public async Task SelectAsync(string panel) => await Reachable(panel).ClickAsync(new MouseEventArgs { Detail = 1 });
 
     /// <summary>Closes the panel with this title, as clicking the close mark on its tab does. Throws for a panel that
     /// can't be closed.</summary>
     public async Task CloseAsync(string panel) =>
-        await (Tab(panel).QuerySelector("[data-part=close]")
+        await (Reachable(panel).QuerySelector("[data-part=close]")
             ?? throw new InvalidOperationException($"The panel \"{panel}\" can't be closed."))
         .ClickAsync(new MouseEventArgs { Detail = 1 });
 
@@ -3079,12 +3081,25 @@ public sealed class TbDockDriver
         await ChooseAsync(panel, $"[data-move-edge={Side(edge, nameof(edge))}]",
             $"The panel \"{panel}\" is the only one docked, so it has nowhere to move.");
 
+    /// <summary>Shows the panel with this title and has its group fill the dock, as "Maximize" in its group's menu
+    /// does. Throws when the group is the dock's only one, or fills the dock already.</summary>
+    public async Task MaximizeAsync(string panel) => await ChooseAsync(panel, "[data-move=maximize]",
+        $"The group of \"{panel}\" is the dock's only one, or fills the dock already.");
+
+    /// <summary>Shows every group again, as the Restore button of the group that fills the dock does. Throws when
+    /// no group fills the dock.</summary>
+    public async Task RestoreAsync() =>
+        await (_find().Children.FirstOrDefault(child => child.HasAttribute("data-maximized"))
+                ?.QuerySelector("[data-part=restore]")
+            ?? throw new InvalidOperationException("No group fills the dock."))
+        .ClickAsync(new MouseEventArgs { Detail = 1 });
+
     /// <summary>Opens the menu of the tab of the panel with this title, as a right-click does, and clicks the item
     /// with this name, through the submenus named before it, as in
     /// <c>ChooseFromTabMenuAsync("Notes", "Move to group", "Group 2: Map")</c>. The menu acts on that panel whether or
     /// not it shows. Throws for an item the menu doesn't have.</summary>
     public async Task ChooseFromTabMenuAsync(string panel, params string[] path) => await new TbContextMenuDriver(
-        () => Tab(panel).Closest(".tb-context-menu")!, _scripts, Tab(panel).GetAttribute("data-panel")!)
+        () => Tab(panel).Closest(".tb-context-menu")!, _scripts, Reachable(panel).GetAttribute("data-panel")!)
         .ChooseAsync(path);
 
     /// <summary>The share, in percent, that the part before the separator with this name has of the space it and
@@ -3118,7 +3133,7 @@ public sealed class TbDockDriver
     // Clicks an item of the menu of the panel's group, which acts on the group's showing panel.
     private async Task ChooseAsync(string panel, string item, string missing)
     {
-        if (Tab(panel).GetAttribute("aria-selected") != "true")
+        if (Reachable(panel).GetAttribute("aria-selected") != "true")
         {
             await SelectAsync(panel);
         }
@@ -3148,6 +3163,14 @@ public sealed class TbDockDriver
 
     private IElement Tab(string panel) => Tabs().SingleOrDefault(tab => Title(tab) == panel)
         ?? throw new InvalidOperationException($"No panel is titled \"{panel}\".");
+
+    // On a page, a tab behind the group that fills the dock can't be clicked.
+    private IElement Reachable(string panel) => Tab(panel) is var tab && !Covered(tab) ? tab
+        : throw new InvalidOperationException(
+            $"The panel \"{panel}\" is behind the group that fills the dock; restore the groups first.");
+
+    private static bool Covered(IElement tab) =>
+        tab.Closest("[data-part=group]")!.ClassList.Contains("tb-dock__group--covered");
 
     private IElement Separator(string separator) => _find().Children.SingleOrDefault(child =>
         child.GetAttribute("data-part") == "separator" && child.GetAttribute("aria-label") == separator)

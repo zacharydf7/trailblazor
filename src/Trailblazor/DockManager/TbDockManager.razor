@@ -27,7 +27,9 @@
         @if (slot is GroupSlot group)
         {
             var others = slots.OfType<GroupSlot>().Where(each => each.Index != group.Index).ToList();
-            <div @key="group.Key" data-part="group" class="tb-dock__group" style="@BoxStyle(group.Box.Box)">
+            @* A group that another one covers keeps its row, out of sight and out of reach. *@
+            <div @key="group.Key" data-part="group" data-maximized="@group.Maximized" style="@BoxStyle(group.Box.Box)"
+                 class="@ClassNames.Join("tb-dock__group", group.Covered ? "tb-dock__group--covered" : null)">
                 @* A right-click, a long press, Shift+F10 or the context menu key on a tab opens the menu for that
                    tab's panel, and on the row's empty part for the group's showing panel. *@
                 <TbContextMenu Class="tb-dock__tab-area"
@@ -77,6 +79,13 @@
                    panel. *@
                 @if (RendererInfo.IsInteractive)
                 {
+                    @if (group.Maximized)
+                    {
+                        <TbIconButton Icon="BuiltInIcons.Restore" Size="Size.Small" Variant="Variant.Text"
+                                      Class="tb-dock__restore" data-part="restore"
+                                      AriaLabel="@(Labels.Restore ?? Localizer[TbStrings.DockRestore])"
+                                      OnClick="() => MaximizeAsync(group.Box.Active, false)" />
+                    }
                     <TbMenu Icon="BuiltInIcons.More" Size="Size.Small" Align="PlacementAlign.End" AttachOnFirstUse
                             Class="tb-dock__menu" data-part="group-menu"
                             AriaLabel="@Format(Labels.Menu, TbStrings.DockMenu, Panel(group.Box.Active)!.Title)">
@@ -143,7 +152,7 @@
 @code {
     private abstract record Slot(string Key);
 
-    private sealed record GroupSlot(string Key, int Index, DockGroupBox Box) : Slot(Key);
+    private sealed record GroupSlot(string Key, int Index, DockGroupBox Box, bool Maximized, bool Covered) : Slot(Key);
 
     private sealed record PanelSlot(string Key, TbDockPanel Panel, int Group, DockBox Box, bool Showing) : Slot(Key);
 
@@ -313,7 +322,8 @@
         }
 
         _report = DotNetObjectReference.Create(new DockReport(SelectFromScriptAsync, CloseFromScriptAsync,
-            OnResizeAsync, MoveFromScriptAsync, tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
+            OnResizeAsync, MoveFromScriptAsync, ToggleMaximizedFromScriptAsync,
+            tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);
         if (handle is not null && _disposed)
         {
@@ -411,19 +421,25 @@
         var slots = new List<Slot>();
         for (var index = 0; index < shown.Groups.Count; index++)
         {
+            var (maximized, covered) = (shown.Maximized == index, shown.Maximized is { } filling && filling != index);
             var group = shown.Groups[index];
-            slots.Add(new GroupSlot($"group-{index}", index, group));
+            if (maximized)
+            {
+                group = group with { Box = new DockBox(0, 0, 100, 100) };
+            }
+
+            slots.Add(new GroupSlot($"group-{index}", index, group, maximized, covered));
             foreach (var id in group.Panels)
             {
                 var panel = Panel(id)!;
-                var showing = id == group.Active;
+                var showing = id == group.Active && !covered;
                 if (showing || (panel.KeepAlive && _rendered.Contains(id)))
                 {
                     slots.Add(new PanelSlot($"panel-{id}", panel, index, group.Box, showing));
                 }
             }
 
-            if (index < shown.Separators.Count)
+            if (index < shown.Separators.Count && shown.Maximized is null)
             {
                 var separator = shown.Separators[index];
                 slots.Add(new SeparatorSlot($"separator-{index}", index, separator, group.Active));
@@ -526,6 +542,30 @@
 
     private Task MoveAsync(string panel, DockPosition edge) => MoveAsync(panel, _layout.MoveToEdge(panel, edge));
 
+    // Has the group of a panel fill the dock, or shows every group again. The focus goes to the group's showing
+    // tab, the row's one tab stop, since the button that restores goes away with the click.
+    private async Task MaximizeAsync(string panel, bool maximize)
+    {
+        try
+        {
+            var groups = Shown().Groups.ToList();
+            var group = groups.FindIndex(each => each.Panels.Contains(panel));
+            var layout = !maximize ? _layout.Restore()
+                : group >= 0 && groups.Count > 1 ? _layout.Maximize(panel) : _layout;
+            if (!layout.Equals(_layout))
+            {
+                _focusAfterRender = maximize || group < 0 ? panel : groups[group].Active;
+                await ChangeAsync(layout, maximize ? "maximize" : "restore");
+                Announcer.Polite(maximize ? Format(Labels.Maximized, TbStrings.DockMaximized, group + 1)
+                    : Labels.Restored ?? Localizer[TbStrings.DockRestored]);
+            }
+        }
+        finally
+        {
+            _commits++;
+        }
+    }
+
     // The script moves the separator as its keys do, so no group gets smaller than MinGroupSize.
     private async Task StepAsync(int separator, int percent)
     {
@@ -587,6 +627,18 @@
                 }
             </TbSubMenu>
         }
+        @if (group.Maximized)
+        {
+            <TbMenuItem data-move="restore" OnClick="() => MaximizeAsync(panel, false)">
+                @(Labels.Restore ?? Localizer[TbStrings.DockRestore])
+            </TbMenuItem>
+        }
+        else if (others.Count > 0)
+        {
+            <TbMenuItem data-move="maximize" OnClick="() => MaximizeAsync(panel, true)">
+                @(Labels.Maximize ?? Localizer[TbStrings.DockMaximize])
+            </TbMenuItem>
+        }
         @if (Panel(panel)!.Closable)
         {
             <TbMenuSeparator />
@@ -642,6 +694,15 @@
         }
 
         await MoveAsync(panel, layout);
+        StateHasChanged();
+    }
+
+    // A tab was double-clicked: its group fills the dock or, when it already does, every group shows again.
+    private async Task ToggleMaximizedFromScriptAsync(string panel)
+    {
+        var shown = Shown();
+        await MaximizeAsync(panel,
+            !(shown.Maximized is { } filling && shown.Groups[filling].Panels.Contains(panel)));
         StateHasChanged();
     }
 

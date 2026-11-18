@@ -7524,6 +7524,10 @@
         background: var(--tb-color-surface-sunken);
     }
 
+    .tb-dock__group--covered {
+        display: none;
+    }
+
     .tb-dock__panel {
         inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1% + var(--tb-dock-tabs-size));
         block-size: calc(var(--tb-dock-live-h, var(--tb-dock-h)) * 1% - var(--tb-dock-tabs-size));
@@ -7649,7 +7653,8 @@
         background: var(--tb-color-hover);
     }
 
-    .tb-menu.tb-dock__menu {
+    .tb-menu.tb-dock__menu,
+    .tb-dock__restore {
         flex: none;
         align-self: center;
     }

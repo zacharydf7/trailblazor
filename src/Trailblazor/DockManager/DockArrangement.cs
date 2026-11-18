@@ -11,5 +11,7 @@ internal sealed record DockGroupBox(DockGroup Group, DockBox Box, IReadOnlyList<
 internal sealed record DockSeparatorBox(DockSplit Split, int Before, int After, DockBox BeforeBox, DockBox AfterBox);
 
 // What a dock shows, in reading order. Separator n sits between group n and group n + 1, since every part of a split
-// begins and ends with a group.
-internal sealed record DockArrangement(IReadOnlyList<DockGroupBox> Groups, IReadOnlyList<DockSeparatorBox> Separators);
+// begins and ends with a group. Maximized is the place in Groups of the group that fills the dock, or null; the
+// groups it covers keep their boxes.
+internal sealed record DockArrangement(IReadOnlyList<DockGroupBox> Groups, IReadOnlyList<DockSeparatorBox> Separators,
+    int? Maximized);

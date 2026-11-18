@@ -422,6 +422,135 @@ public class DockLayoutTests
     }
 
     [Fact]
+    public void Maximize_ShouldShowThePanelAndMarkItsGroup_WhenGivenADockedPanel()
+    {
+        var layout = Workbench.Maximize("problems");
+
+        Assert.Equal([false, false, true], layout.Groups.Select(group => group.Maximized));
+        Assert.Equal("problems", layout.Maximized?.Active);
+        // The other groups keep their places and sizes for when the group is restored.
+        Assert.Equal(Workbench.Open("problems"), layout.Restore());
+    }
+
+    [Fact]
+    public void Maximize_ShouldMoveTheMark_WhenAnotherGroupFilledTheDock()
+    {
+        var layout = Workbench.Maximize("editor").Maximize("search");
+
+        Assert.Equal([true, false, false], layout.Groups.Select(group => group.Maximized));
+    }
+
+    [Fact]
+    public void Maximize_ShouldChangeNothing_WhenGivenAPanelThatIsNotDocked()
+    {
+        var layout = Workbench.Close("search");
+
+        Assert.Same(layout, layout.Maximize("search"));
+        Assert.Same(layout, layout.Maximize("photos"));
+    }
+
+    [Fact]
+    public void Restore_ShouldChangeNothing_WhenNoGroupFillsTheDock()
+    {
+        Assert.Null(Workbench.Maximized);
+        Assert.Same(Workbench, Workbench.Restore());
+    }
+
+    [Fact]
+    public void Constructor_ShouldKeepOnlyTheFirstMaximizedGroup_WhenGivenTwo()
+    {
+        var layout = new DockLayout(new DockSplit(new DockGroup("map"), new DockGroup("notes") { Maximized = true },
+            new DockGroup("photos") { Maximized = true }));
+
+        Assert.Equal([false, true, false], layout.Groups.Select(group => group.Maximized));
+    }
+
+    [Fact]
+    public void Constructor_ShouldMarkNoGroup_WhenTheLayoutHasOneGroup()
+    {
+        var notes = new DockLayout(new DockGroup("map", "notes") { Maximized = true });
+
+        Assert.Null(notes.Maximized);
+        // With nothing to cover, Maximize only shows the panel.
+        Assert.Equal(new DockLayout(new DockGroup("map", "notes") { Active = "notes" }), notes.Maximize("notes"));
+        // The mark goes when the last group it covered does.
+        Assert.Null(new DockLayout(new DockSplit(new DockGroup("map") { Maximized = true }, new DockGroup("notes")))
+            .Close("notes").Maximized);
+    }
+
+    [Fact]
+    public void Equals_ShouldTellTwoLayoutsApart_WhenOnlyOneHasAMaximizedGroup()
+    {
+        Assert.NotEqual(Workbench, Workbench.Maximize("editor"));
+        Assert.Equal(Workbench.Maximize("editor"), Workbench.Maximize("editor"));
+    }
+
+    [Fact]
+    public void Maximized_ShouldStay_WhenAChangeLeavesItsPanelInTheGroupThatFillsTheDock()
+    {
+        var layout = Workbench.Maximize("output");
+
+        Assert.Equal("problems", layout.Open("problems").Maximized?.Active);
+        Assert.Equal(["problems", "output"], layout.Move("output", "problems", DockPosition.After).Maximized?.Panels);
+        Assert.Equal(["problems"], layout.Close("output").Maximized?.Panels);
+        // A panel that joins the group shows there.
+        Assert.Equal(["output", "search", "problems"],
+            layout.Move("search", "output", DockPosition.After).Maximized?.Panels);
+        // A covered panel can close behind it.
+        Assert.NotNull(layout.Close("explorer").Maximized);
+    }
+
+    [Fact]
+    public void Maximized_ShouldEnd_WhenAPanelIsShownOutsideTheGroupThatFillsTheDockOrTheGroupGoes()
+    {
+        var layout = Workbench.Maximize("output");
+
+        Assert.Equal(Workbench.Open("search"), layout.Open("search"));
+        Assert.Equal(Workbench.Move("output", "editor", DockPosition.After),
+            layout.Move("output", "editor", DockPosition.After));
+        Assert.Equal(Workbench.Move("output", "problems", DockPosition.Start),
+            layout.Move("output", "problems", DockPosition.Start));
+        Assert.Equal(Workbench.MoveToEdge("output", DockPosition.Bottom),
+            layout.MoveToEdge("output", DockPosition.Bottom));
+        Assert.Equal(Workbench.Close("output").Close("problems"), layout.Close("output").Close("problems"));
+        // A closed panel opens in the largest group, which the editor's is.
+        Assert.Null(layout.Close("output").Open("output").Maximized);
+    }
+
+    [Fact]
+    public void Arrange_ShouldSayWhichGroupFillsTheDockAndKeepEveryBox_WhenOneIsMaximized()
+    {
+        var arrangement = Workbench.Maximize("editor").Arrange(_ => true);
+
+        Assert.Equal(1, arrangement.Maximized);
+        Assert.Equal(Workbench.Arrange(_ => true).Groups.Select(group => group.Box),
+            arrangement.Groups.Select(group => group.Box));
+        Assert.Null(Workbench.Arrange(_ => true).Maximized);
+    }
+
+    [Fact]
+    public void Arrange_ShouldSayNoGroupFillsTheDock_WhenTheMaximizedOneIsTheOnlyOneThatShows()
+    {
+        var layout = Workbench.Maximize("editor");
+
+        Assert.Null(layout.Arrange(panel => panel == "editor").Maximized);
+        // Nor when the maximized group is the one with no panel to show.
+        Assert.Null(layout.Arrange(panel => panel != "editor").Maximized);
+    }
+
+    [Fact]
+    public void ToJson_ShouldMarkTheGroupThatFillsTheDock_WhenOneDoes()
+    {
+        var layout = new DockLayout(new DockSplit(new DockGroup("map"), new DockGroup("notes") { Maximized = true }));
+
+        Assert.Equal("""{"version":1,"root":{"split":"row","children":[{"panels":["map"],"active":"map","size":1},{"panels":["notes"],"active":"notes","maximized":true,"size":1}],"size":1},"closed":[]}""",
+            layout.ToJson());
+        Assert.True(DockLayout.TryParse(layout.ToJson(), out var read));
+        Assert.Equal(layout, read);
+        Assert.Equal(["notes"], read.Maximized?.Panels);
+    }
+
+    [Fact]
     public void ToJson_ShouldWriteALayoutThatTryParseReadsBack_WhenCalled()
     {
         var layout = Workbench.Open("problems").Close("search");
@@ -461,6 +590,7 @@ public class DockLayoutTests
     [InlineData("""{"version":1,"root":{"panels":["map"],"active":"map"}}""")]
     [InlineData("""{"version":1,"root":{"panels":["map"],"active":"map","size":0}}""")]
     [InlineData("""{"version":1,"root":{"panels":["map"],"active":"map","size":"wide"}}""")]
+    [InlineData("""{"version":1,"root":{"panels":["map"],"active":"map","maximized":"yes","size":1}}""")]
     [InlineData("""{"version":1,"root":{"panels":["trail map"],"active":"map","size":1}}""")]
     [InlineData("""{"version":1,"root":{"panels":[7],"active":"map","size":1}}""")]
     [InlineData("""{"version":1,"root":{"panels":"map","active":"map","size":1}}""")]

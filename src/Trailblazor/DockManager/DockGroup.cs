@@ -31,10 +31,15 @@ public sealed record DockGroup : DockNode
         init;
     }
 
-    /// <summary>Whether the other group has the same panels in the same order, the same showing panel and the same
-    /// size.</summary>
-    public bool Equals(DockGroup? other) =>
-        base.Equals(other) && Active == other.Active && Panels.SequenceEqual(other.Panels);
+    /// <summary>Whether the group fills the dock and covers the other groups, which keep their places for when
+    /// it's restored. A layout keeps this only for the first group that has it, and only while the layout has
+    /// another group.</summary>
+    public bool Maximized { get; init; }
+
+    /// <summary>Whether the other group has the same panels in the same order, the same showing panel, the same
+    /// size and the same <see cref="Maximized"/>.</summary>
+    public bool Equals(DockGroup? other) => base.Equals(other) && Active == other.Active
+        && Maximized == other.Maximized && Panels.SequenceEqual(other.Panels);
 
     /// <summary>A hash that equal groups share.</summary>
     public override int GetHashCode()

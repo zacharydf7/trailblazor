@@ -72,6 +72,22 @@ public sealed record DockLabels
     /// <see cref="TbStrings.DockAtBottom"/>.</summary>
     public string? AtBottom { get; init; }
 
+    /// <summary>The menu item that has the panel's group fill the dock. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockMaximize"/>.</summary>
+    public string? Maximize { get; init; }
+
+    /// <summary>The menu item, and the name of the button, that show every group again. Leave it null for the app's
+    /// text for <see cref="TbStrings.DockRestore"/>.</summary>
+    public string? Restore { get; init; }
+
+    /// <summary>What screen readers hear when a group fills the dock, with <c>{0}</c> for the group's number. Leave
+    /// it null for the app's text for <see cref="TbStrings.DockMaximized"/>.</summary>
+    public string? Maximized { get; init; }
+
+    /// <summary>What screen readers hear when every group shows again. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockRestored"/>.</summary>
+    public string? Restored { get; init; }
+
     /// <summary>The menu item that closes the panel. Leave it null for the app's text for
     /// <see cref="TbStrings.DockClose"/>.</summary>
     public string? Close { get; init; }

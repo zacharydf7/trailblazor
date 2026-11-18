@@ -16,6 +16,23 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     private ILocator Tab(string panel) =>
         Tabs.And(Root.GetByRole(AriaRole.Tab, new() { Name = panel, Exact = true }));
 
+    // Waits until clicks reach the server, which data-ready marks, and gives the panel's tab. A tab behind the group
+    // that fills the dock can't be clicked, so this throws rather than let the click wait until it times out.
+    private async Task<ILocator> ReachableAsync(string panel)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        // A covered tab is hidden from screen readers, so only IncludeHidden finds it by role.
+        var covered = Root.Locator(":scope > .tb-dock__group--covered .tb-dock__tab")
+            .And(Root.GetByRole(AriaRole.Tab, new() { Name = panel, Exact = true, IncludeHidden = true }));
+        if (await covered.CountAsync() > 0)
+        {
+            throw new InvalidOperationException(
+                $"The panel \"{panel}\" is behind the group that fills the dock; restore the groups first.");
+        }
+
+        return Tab(panel);
+    }
+
     private ILocator Separator(string separator) => Root.Locator(":scope > .tb-dock__separator")
         .And(Root.GetByRole(AriaRole.Separator, new() { Name = separator, Exact = true }));
 
@@ -32,16 +49,17 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     public async Task<IReadOnlyList<string>> PanelsAsync() =>
         await Tabs.Locator("[data-part=title]").AllTextContentsAsync();
 
-    /// <summary>The titles of the panels that show, one for each group, in reading order.</summary>
+    /// <summary>The titles of the panels that show, one for each group, in reading order. While a group fills the
+    /// dock, only its panel shows.</summary>
     public async Task<IReadOnlyList<string>> ShowingAsync() =>
-        await Tabs.And(Root.Locator("[aria-selected=true]")).Locator("[data-part=title]").AllTextContentsAsync();
+        await Root.Locator(":scope > .tb-dock__group:not(.tb-dock__group--covered) .tb-dock__tab[aria-selected=true]")
+            .Locator("[data-part=title]").AllTextContentsAsync();
 
-    /// <summary>Clicks the tab of the panel with this title and waits until it shows.</summary>
+    /// <summary>Clicks the tab of the panel with this title and waits until it shows. Throws for a panel behind
+    /// the group that fills the dock, as every helper that clicks does.</summary>
     public async Task SelectAsync(string panel)
     {
-        // Clicks reach the server only once the page is interactive, which data-ready marks.
-        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
-        var tab = Tab(panel);
+        var tab = await ReachableAsync(panel);
         await Commit.CountedAsync(Root, "data-commits", async () =>
         {
             await tab.ClickAsync();
@@ -54,8 +72,7 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     /// for a panel that can't be closed.</summary>
     public async Task CloseAsync(string panel)
     {
-        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
-        var tab = Tab(panel);
+        var tab = await ReachableAsync(panel);
         if (await tab.GetAttributeAsync("aria-keyshortcuts") is null)
         {
             throw new InvalidOperationException($"The panel \"{panel}\" can't be closed.");
@@ -107,8 +124,7 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     // app has the layout.
     private async Task ChooseAsync(string panel, string hook, string missing)
     {
-        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
-        var tab = Tab(panel);
+        var tab = await ReachableAsync(panel);
         if (await tab.GetAttributeAsync("aria-selected") != "true")
         {
             await SelectAsync(panel);
@@ -145,17 +161,40 @@ public sealed class TbDockLocator(ILocator scope, string? name)
             ? throw new ArgumentOutOfRangeException(parameter, side, "A new group goes to the start, end, top or bottom.")
             : side.ToString().ToLowerInvariant();
 
+    /// <summary>Shows the panel with this title and has its group fill the dock, with "Maximize" in its group's
+    /// menu. Throws when the group is the dock's only one, or fills the dock already.</summary>
+    public async Task MaximizeAsync(string panel) => await ChooseAsync(panel, "[data-move=maximize]",
+        $"The group of \"{panel}\" is the dock's only one, or fills the dock already.");
+
+    /// <summary>Shows every group again, with the Restore button of the group that fills the dock, and waits until
+    /// the app's <c>LayoutChanged</c> has run. Throws when no group fills the dock.</summary>
+    public async Task RestoreAsync()
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var button = Root.Locator(":scope > .tb-dock__group[data-maximized] [data-part=restore]");
+        if (await button.CountAsync() == 0)
+        {
+            throw new InvalidOperationException("No group fills the dock.");
+        }
+
+        await Commit.CountedAsync(Root, "data-commits", async () =>
+        {
+            await button.ClickAsync();
+            return true;
+        });
+    }
+
     /// <summary>Right-clicks the tab of the panel with this title and clicks the item with this name in the menu
     /// that opens, through the submenus named before it, as in
     /// <c>ChooseFromTabMenuAsync("Notes", "Move to group", "Group 2: Map")</c>. The menu acts on that panel whether or
     /// not it shows. Waits until the app's <c>LayoutChanged</c> has run.</summary>
     public async Task ChooseFromTabMenuAsync(string panel, params string[] path)
     {
-        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var tab = await ReachableAsync(panel);
         // The tab's group can go as the item is chosen, and its menu with it, so the wait is on the dock's own count.
         await Commit.CountedAsync(Root, "data-commits", async () =>
         {
-            await TbContextMenuLocator.Named(scope, null).On(Tab(panel)).ChooseAsync(path);
+            await TbContextMenuLocator.Named(scope, null).On(tab).ChooseAsync(path);
             return true;
         });
     }

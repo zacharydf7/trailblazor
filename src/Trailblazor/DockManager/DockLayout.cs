@@ -8,8 +8,10 @@ namespace Trailblazor;
 public sealed record DockLayout
 {
     /// <summary>Creates a layout. Its tree is tidied as it's taken: a panel listed twice stays where it's first
-    /// listed, a group with no panels is dropped, a split with one part gives its place to that part, and a split
-    /// inside a split of the same direction joins it.</summary>
+    /// listed, a group with no panels is dropped, a split with one part gives its place to that part, a split
+    /// inside a split of the same direction joins it, and only the first group marked
+    /// <see cref="DockGroup.Maximized"/> stays so, and only while the layout has another group for it to cover.
+    /// </summary>
     /// <param name="root">The docked panels: a group, or a split of groups and other splits. Null docks nothing.
     /// </param>
     /// <param name="closed">The ids of the panels the user closed, which stay hidden until
@@ -18,6 +20,12 @@ public sealed record DockLayout
     {
         var docked = new HashSet<string>(StringComparer.Ordinal);
         Root = root is null ? null : Tidy(root, docked);
+        var alone = Root is DockGroup;
+        foreach (var extra in Groups.Where(group => group.Maximized).Skip(alone ? 0 : 1).ToList())
+        {
+            Root = Swap(Root!, extra, extra with { Maximized = false });
+        }
+
         Closed = [.. (closed ?? []).Distinct().Where(panel => !docked.Contains(panel))];
     }
 
@@ -31,16 +39,20 @@ public sealed record DockLayout
     /// <summary>The groups, in reading order.</summary>
     public IEnumerable<DockGroup> Groups => GroupsIn(Root);
 
+    /// <summary>The group that fills the dock and covers the others, or null when every group shows.</summary>
+    public DockGroup? Maximized => Groups.FirstOrDefault(group => group.Maximized);
+
     /// <summary>The group that holds the panel with this id, or null when that panel isn't docked.</summary>
     public DockGroup? GroupOf(string panel) => Groups.FirstOrDefault(group => group.Panels.Contains(panel));
 
     /// <summary>Shows the panel with this id. A docked one becomes the showing tab of its group. A closed one, or
-    /// one the layout doesn't hold, joins the largest group as its showing tab.</summary>
+    /// one the layout doesn't hold, joins the largest group as its showing tab. A group that covers the panel's
+    /// group is restored.</summary>
     public DockLayout Open(string panel)
     {
         var placed = Place(panel);
         var group = placed.GroupOf(panel)!;
-        return group.Active == panel ? placed : placed.Replace(group, group with { Active = panel });
+        return (group.Active == panel ? placed : placed.Replace(group, group with { Active = panel })).Uncovered(panel);
     }
 
     /// <summary>Closes the panel with this id: it leaves its group and joins <see cref="Closed"/>. When it was the
@@ -52,7 +64,7 @@ public sealed record DockLayout
     /// <summary>Moves the panel with this id beside another panel: to a tab before or after the other's tab, as the
     /// group's showing tab, or to a new group on one side of the other's group, which takes half of that group's
     /// space. A closed panel, or one the layout doesn't hold, is docked there. A target that isn't docked changes
-    /// nothing.</summary>
+    /// nothing. A group that covers the group the panel ends in is restored.</summary>
     /// <param name="panel">The id of the panel to move.</param>
     /// <param name="target">The id of the panel it goes beside.</param>
     /// <param name="position">Where it goes.</param>
@@ -69,20 +81,17 @@ public sealed record DockLayout
         {
             var at = group.Panels.TakeWhile(each => each != target).Count() + (position == DockPosition.After ? 1 : 0);
             return new DockLayout(Swap(lifted.Root!, group,
-                new DockGroup([.. group.Panels.Take(at), panel, .. group.Panels.Skip(at)])
-                {
-                    Active = panel,
-                    Size = group.Size,
-                }), Closed);
+                Holding(group, [.. group.Panels.Take(at), panel, .. group.Panels.Skip(at)], panel)), Closed)
+                .Uncovered(panel);
         }
 
         return new DockLayout(Swap(lifted.Root!, group, Beside(group with { Size = 1 }, panel, position, group.Size)),
-            Closed);
+            Closed).Uncovered(panel);
     }
 
     /// <summary>Moves the panel with this id to a new group along an edge of the dock, which takes a quarter of the
     /// dock, or all of it when nothing else is docked. A closed panel, or one the layout doesn't hold, is docked
-    /// there.</summary>
+    /// there. A group that filled the dock is restored.</summary>
     /// <param name="panel">The id of the panel to move.</param>
     /// <param name="edge">The edge: Start, End, Top or Bottom.</param>
     /// <exception cref="ArgumentOutOfRangeException">The edge is Before or After, which put a panel beside another
@@ -97,8 +106,26 @@ public sealed record DockLayout
 
         return new DockLayout(
             Without(panel) is { } rest ? Beside(rest with { Size = 3 }, panel, edge, 1) : new DockGroup(panel),
-            Closed);
+            Closed).Uncovered(panel);
     }
+
+    /// <summary>Shows the panel with this id and has its group fill the dock, covering the other groups, which
+    /// keep their places. A panel that isn't docked changes nothing, and in a layout with one group the panel only
+    /// shows, since there is nothing to cover.</summary>
+    public DockLayout Maximize(string panel)
+    {
+        if (GroupOf(panel) is null)
+        {
+            return this;
+        }
+
+        var shown = Open(panel);
+        var group = shown.GroupOf(panel)!;
+        return shown.Replace(group, group with { Maximized = true });
+    }
+
+    /// <summary>Shows every group again when one fills the dock, and changes nothing otherwise.</summary>
+    public DockLayout Restore() => Maximized is { } group ? Replace(group, group with { Maximized = false }) : this;
 
     /// <summary>Writes the layout as JSON, which <see cref="TryParse"/> reads back.</summary>
     public string ToJson() => DockLayoutJson.Write(this);
@@ -127,8 +154,8 @@ public sealed record DockLayout
 
         var largest = Arrange(_ => true).Groups.MaxBy(box => box.Box.Width * box.Box.Height)?.Group;
         return largest is null ? new DockLayout(new DockGroup(panel), Closed)
-            : new DockLayout(Swap(Root!, largest,
-                new DockGroup([.. largest.Panels, panel]) { Active = largest.Active, Size = largest.Size }), Closed);
+            : new DockLayout(Swap(Root!, largest, Holding(largest, [.. largest.Panels, panel], largest.Active)),
+                Closed);
     }
 
     // The layout with one separator moved: the parts on its two sides share their combined size anew, the one
@@ -153,11 +180,21 @@ public sealed record DockLayout
             Arrange(Root, new DockBox(0, 0, 100, 100), shows, groups, separators);
         }
 
-        return new DockArrangement(groups, separators);
+        // A group has nothing to cover when it's the only one that shows.
+        var maximized = groups.Count > 1 ? groups.FindIndex(box => box.Group.Maximized) : -1;
+        return new DockArrangement(groups, separators, maximized < 0 ? null : maximized);
     }
 
     private DockLayout Replace(DockNode node, DockNode replacement) =>
         new(Swap(Root!, node, replacement), Closed);
+
+    // The layout with nothing covering the group of a panel that was just shown.
+    private DockLayout Uncovered(string panel) =>
+        Maximized is { } group && !group.Panels.Contains(panel) ? Restore() : this;
+
+    // A group with other panels, in the place of this one.
+    private static DockGroup Holding(DockGroup group, IEnumerable<string> panels, string? active) =>
+        new(panels) { Active = active, Size = group.Size, Maximized = group.Maximized };
 
     // The tree with the panel out of its group, where the tab after it shows in its place, or the one before it when
     // it was last. A group left empty goes when the tree is tidied.
@@ -171,7 +208,7 @@ public sealed record DockLayout
         var left = group.Panels.Where(each => each != panel).ToList();
         var index = group.Panels.TakeWhile(each => each != panel).Count();
         var active = group.Active == panel ? left.ElementAtOrDefault(Math.Min(index, left.Count - 1)) : group.Active;
-        return Swap(Root!, group, new DockGroup(left) { Active = active, Size = group.Size });
+        return Swap(Root!, group, Holding(group, left, active));
     }
 
     // A split of a part and a new group for the panel on one side of it.
@@ -241,7 +278,7 @@ public sealed record DockLayout
             var panels = group.Panels.Where(docked.Add).ToList();
             return panels.Count == 0 ? null
                 : panels.Count == group.Panels.Count ? group
-                : new DockGroup(panels) { Active = group.Active, Size = group.Size };
+                : Holding(group, panels, group.Active);
         }
 
         var split = (DockSplit)node;

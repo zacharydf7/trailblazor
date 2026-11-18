@@ -593,3 +593,5 @@ Trailblazor.Testing.TbDockDriver.MoveToGroupAsync(string! panel, int group) -> S
 Trailblazor.Testing.TbDockDriver.MoveToNewGroupAsync(string! panel, Trailblazor.DockPosition side) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.MoveToEdgeAsync(string! panel, Trailblazor.DockPosition edge) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.ChooseFromTabMenuAsync(string! panel, params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.MaximizeAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.RestoreAsync() -> System.Threading.Tasks.Task!

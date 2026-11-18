@@ -649,3 +649,5 @@ Trailblazor.Testing.Playwright.TbDockLocator.MoveToGroupAsync(string! panel, int
 Trailblazor.Testing.Playwright.TbDockLocator.MoveToNewGroupAsync(string! panel, Trailblazor.DockPosition side) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDockLocator.MoveToEdgeAsync(string! panel, Trailblazor.DockPosition edge) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDockLocator.ChooseFromTabMenuAsync(string! panel, params string![]! path) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.MaximizeAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.RestoreAsync() -> System.Threading.Tasks.Task!

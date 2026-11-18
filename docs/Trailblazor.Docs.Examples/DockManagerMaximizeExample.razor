@@ -1,0 +1,40 @@
+<TbStack Gap="2">
+    <TbStack Row Gap="2" Align="Align.Center">
+        <TbButton Size="Size.Small" OnClick="@(() => _layout = _layout.Maximize("forecast"))">
+            Only the forecast
+        </TbButton>
+        <TbButton Size="Size.Small" Variant="Variant.Outlined" Disabled="_layout.Maximized is null"
+                  OnClick="() => _layout = _layout.Restore()">
+            Show everything
+        </TbButton>
+        <TbText>@(_layout.Maximized is null ? "Every group shows." : "One group fills the dock.")</TbText>
+    </TbStack>
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Writing desk" Style="block-size: 20rem">
+        <TbDockPanel Id="stops" Title="Stops">
+            <TbText class="tb-p-3">Trailhead, creek crossing, saddle and summit.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="journal" Title="Journal">
+            <div class="tb-p-3">
+                <TbTextField Label="Today's entry" @bind-Value="_entry" />
+            </div>
+        </TbDockPanel>
+        <TbDockPanel Id="photos" Title="Photos">
+            <TbText class="tb-p-3">Twelve photos from the saddle.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="forecast" Title="Forecast">
+            <TbText class="tb-p-3">Sunny, with wind on the summit after two.</TbText>
+        </TbDockPanel>
+    </TbDockManager>
+</TbStack>
+
+@code {
+    private DockLayout _layout = new(new DockSplit(
+        new DockGroup("stops") { Size = 1 },
+        new DockSplit(new DockGroup("journal", "photos") { Size = 2 }, new DockGroup("forecast"))
+        {
+            Vertical = true,
+            Size = 2,
+        }));
+
+    private string? _entry;
+}
