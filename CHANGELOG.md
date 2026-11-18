@@ -87,6 +87,8 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-17
 
+- `TbRichTextEditor` edits tables where `Blocks` includes `RichTextBlocks.Tables`: cells are `<td>` and `<th>` elements in a `<table>`, Tab and Shift+Tab move between cells (Tab in the last cell adds a row), Enter breaks the line in a cell, and cells never merge; deleting inside a table empties cells, and a selection reaching outside it takes the whole table
+- When reading HTML, text and blocks such as paragraphs, headings and rules inside a table but outside its cells go before the table, in the order a browser shows them, whether or not the schema allows tables; a row, cell, caption or column ends whatever else is open in the table, such as bold text, which no longer carries into the cells
 - `RichTextDocument` reads and writes tables where the schema allows the new `RichTextBlocks.Tables`: `ToHtml` writes a `<table>` with its first row in a `<thead>` of `<th scope="col">` cells when they're all header cells, and the other rows in a `<tbody>`; markdown reads and writes pipe tables, so `TbMarkdownEditor`'s preview shows them when its `Schema` allows tables
 - When reading HTML, a cell or row that starts while another is open ends it, as in a browser, so formatting left open in one cell no longer carries into the next
 - New `TbSmartPaste`: a button (`tb-smart-paste`, `data-part="button"`) inside a `TbForm` that fills the form's fields from the clipboard through the app's `Extract` model, with the result beside it (`data-part="status"`) and a dialog (`tb-smart-paste__box`) that asks for the text where the clipboard can't be read

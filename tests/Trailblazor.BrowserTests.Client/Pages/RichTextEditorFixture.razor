@@ -40,12 +40,21 @@
 <output data-testid="gallery">@_gallery</output>
 <TbButton OnClick="() => _gallery = _source">Set gallery</TbButton>
 
+<TbRichTextEditor Label="Trail table" @bind-Value="_table" UpdateOnInput ImageSchemes="@(["https"])"
+                  Blocks="TableBlocks" />
+<output data-testid="table">@_table</output>
+<TbButton OnClick="() => _table = _source">Set table</TbButton>
+
 @code {
+    private const RichTextBlocks TableBlocks = RichTextBlocks.Headings | RichTextBlocks.BulletedLists
+        | RichTextBlocks.Rules | RichTextBlocks.Images | RichTextBlocks.Tables;
+
     private string? _notes;
     private string? _source;
     private string? _formula;
     private string? _citations;
     private string? _gallery;
+    private string? _table;
     private string? _shouting;
     private string? _summary;
     private string? _saved;

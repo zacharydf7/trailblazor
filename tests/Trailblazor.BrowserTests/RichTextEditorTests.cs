@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
@@ -1153,6 +1154,269 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>on日wo</p>");
     }
 
+    public static TheoryData<string, string> TableCorpusSamples => new(AllBrowsers.Names.SelectMany(browser =>
+        Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "RichTextCorpus"), "*.html")
+            .Where(path => !path.EndsWith(".expected.html", StringComparison.Ordinal)
+                && File.ReadAllText(path).Contains("<table", StringComparison.OrdinalIgnoreCase))
+            .Select(path => (browser, Path.GetFileNameWithoutExtension(path)))));
+
+    // Where tables are allowed, the engine reads each table's cells as the .NET reader does.
+    [Theory, MemberData(nameof(TableCorpusSamples))]
+    public async Task Paste_ShouldReadTablesAsDotNetDoes_WhenACorpusSampleIsPastedWhereTablesAreAllowed(string browser,
+        string sample)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = Editor(page, "Trail table");
+        var html = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RichTextCorpus", $"{sample}.html"));
+        var expected = RichTextDocument.Parse(html, new RichTextSchema
+        {
+            Blocks = RichTextBlocks.Headings | RichTextBlocks.BulletedLists | RichTextBlocks.Rules
+                | RichTextBlocks.Images | RichTextBlocks.Tables,
+            ImageSchemes = ["https"],
+        }).ToHtml();
+        // The editor keeps an empty paragraph before a table that starts the document, after one that ends it, and
+        // between a table and another table, a rule or an image.
+        expected = expected.StartsWith("<table", StringComparison.Ordinal) ? $"<p><br></p>{expected}" : expected;
+        expected = expected.EndsWith("</table>", StringComparison.Ordinal) ? $"{expected}<p><br></p>" : expected;
+        expected = Regex.Replace(expected, "</table>(?=<table|<img|<hr)|(?:<hr>|<img[^>]*>)(?=<table)",
+            "$0<p><br></p>");
+
+        await CaretAsync(table, 0, 0);
+        await table.EvaluateAsync(
+            "editor => editor.addEventListener('tb-rich-text-change', event => window.sent = event.detail.html)");
+        await PasteAsync(table, html, "ignored");
+
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync(expected);
+        Assert.Equal(expected, await page.EvaluateAsync<string>("() => window.sent"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldNotDragASelection_WhenItStartsOrEndsInACell(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, Trails(), 4);
+        const string DragStart = "editor => editor.querySelector('p').dispatchEvent("
+            + "new DragEvent('dragstart', { bubbles: true, cancelable: true }))";
+
+        await SelectAsync(table, 2, 2, 3, 2);
+        Assert.False(await table.EvaluateAsync<bool>(DragStart));
+        await SelectAsync(table, 0, 0, 1, 2);
+        Assert.False(await table.EvaluateAsync<bool>(DragStart));
+        await SelectAsync(table, 0, 0, 1, 0);
+        Assert.True(await table.EvaluateAsync<bool>(DragStart));
+        await SelectAsync(table, 0, 0, 5, 1);
+
+        Assert.True(await table.EvaluateAsync<bool>(DragStart));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldKeepAParagraphBetweenTablesImagesAndRules_WhenTheValueOrAPasteHasThemSideBySide(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page,
+            "<table><tr><td>a</td></tr></table><table><tr><td>b</td></tr></table>", 2);
+
+        await CaretAsync(table, 2, 0);
+        await page.Keyboard.TypeAsync("x");
+        await CaretAsync(table, 4, 0);
+        await PasteAsync(table, $"<table><tr><td>c</td></tr></table>{Pine}<hr><table><tr><td>d</td></tr></table>",
+            "ignored");
+
+        static string Cell(string text) => $"<table><tbody><tr><td>{text}</td></tr></tbody></table>";
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync($"<p><br></p>{Cell("a")}<p>x</p>{Cell("b")}<p><br></p>"
+            + $"{Cell("c")}<p><br></p>{Pine}<hr><p><br></p>{Cell("d")}<p><br></p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldKeepAParagraphBeforeARule_WhenOneGoesInRightAfterATable(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, Trails(), 4);
+
+        await CaretAsync(table, 5, 0);
+        await Tool(table, "Horizontal line").ClickAsync();
+
+        await Expect(page.GetByTestId("table"))
+            .ToHaveTextAsync(Trails().Replace("<p>b</p>", "<p><br></p><hr><p>b</p>"));
+    }
+
+    // Blocks: 0 "a", 1 "Trail", 2 "Miles", 3 "Pine", 4 "3", 5 "b".
+    private static string Trails(string trail = "Trail", string miles = "Miles", string pine = "Pine",
+        string three = "3", string rows = "") =>
+        $"<p>a</p><table><thead><tr><th scope=\"col\">{trail}</th><th scope=\"col\">{miles}</th></tr></thead>"
+        + $"<tbody><tr><td>{pine}</td><td>{three}</td></tr>{rows}</tbody></table><p>b</p>";
+
+    // Sets the trail table, which allows tables, from .NET and waits for the editor to show its cells.
+    private static async Task<ILocator> SetTableAsync(IPage page, string html, int cells)
+    {
+        await page.GetByRole(AriaRole.Textbox, new() { Name = "Source" }).FillAsync(html);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Set table" }).ClickAsync();
+        var table = Editor(page, "Trail table");
+        await Expect(table.Locator("td, th")).ToHaveCountAsync(cells);
+        return table;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldShowAFullGrid_WhenTheValueHasAShortRow(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, "<table><tr><td>a</td><td>b</td></tr><tr><td>c</td></tr></table>", 4);
+
+        await CaretAsync(table, 4, 0);
+        await page.Keyboard.TypeAsync("d");
+
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync("<p><br></p><table><tbody><tr><td>a</td><td>b</td></tr>"
+            + "<tr><td>c</td><td>d</td></tr></tbody></table><p><br></p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldBreakTheLineInACell_WhenEnterOrShiftEnterIsPressedThere(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, Trails(), 4);
+
+        await CaretAsync(table, 3, 4);
+        await page.Keyboard.TypeAsync(" ridge");
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.TypeAsync("loop");
+        await page.Keyboard.PressAsync("Shift+Enter");
+        await page.Keyboard.TypeAsync("trail");
+
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync(Trails(pine: "Pine ridge<br>loop<br>trail"));
+        await Expect(table.Locator("td, th")).ToHaveCountAsync(4);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldSelectTheNextCellAndAddARowAfterTheLast_WhenTabIsPressedInACell(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, Trails(), 4);
+
+        await CaretAsync(table, 1, 0);
+        await page.Keyboard.PressAsync("Tab");
+        await page.Keyboard.TypeAsync("Km");
+        await CaretAsync(table, 4, 1);
+        await page.Keyboard.PressAsync("Tab");
+        await page.Keyboard.TypeAsync("Lake");
+        await page.Keyboard.PressAsync("Tab");
+        await page.Keyboard.TypeAsync("2");
+        await page.Keyboard.PressAsync("Shift+Tab");
+        await page.Keyboard.TypeAsync("Loop");
+
+        await Expect(page.GetByTestId("table"))
+            .ToHaveTextAsync(Trails(miles: "Km", rows: "<tr><td>Loop</td><td>2</td></tr>"));
+        await CaretAsync(table, 1, 0);
+        await page.Keyboard.PressAsync("Shift+Tab");
+        await page.Keyboard.TypeAsync("x");
+        await Expect(page.GetByTestId("table"))
+            .ToHaveTextAsync(Trails(trail: "xTrail", miles: "Km", rows: "<tr><td>Loop</td><td>2</td></tr>"));
+        await page.Keyboard.PressAsync("Escape");
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(table).Not.ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldNeverMergeCells_WhenBackspaceOrDeleteIsPressedAtTheirEdges(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, Trails(), 4);
+
+        await CaretAsync(table, 1, 0);
+        await page.Keyboard.PressAsync("Backspace");
+        await CaretAsync(table, 2, 0);
+        await page.Keyboard.PressAsync("Backspace");
+        await CaretAsync(table, 1, 5);
+        await page.Keyboard.PressAsync("Delete");
+        await CaretAsync(table, 0, 1);
+        await page.Keyboard.PressAsync("Delete");
+        await CaretAsync(table, 4, 1);
+        await page.Keyboard.PressAsync("Delete");
+        await CaretAsync(table, 5, 0);
+        await page.Keyboard.PressAsync("Backspace");
+        await page.Keyboard.TypeAsync("!");
+
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync(Trails(three: "3!"));
+        await Expect(table.Locator("td, th")).ToHaveCountAsync(4);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldEmptyTheCellsAndKeepTheTable_WhenASelectionInsideItIsDeleted(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, Trails(), 4);
+
+        await SelectAsync(table, 1, 2, 3, 2);
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync(Trails(trail: "Tr", miles: "<br>", pine: "ne"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldTakeTheWholeTable_WhenASelectionThatReachesOutsideItIsDeleted(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, Trails(), 4);
+
+        await SelectAsync(table, 0, 1, 2, 1);
+        await page.Keyboard.PressAsync("Delete");
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync("<p>a</p><p>b</p>");
+        await page.Keyboard.PressAsync("ControlOrMeta+z");
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync(Trails());
+        await SelectAsync(table, 4, 0, 5, 1);
+        await page.Keyboard.TypeAsync("c");
+
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync("<p>a</p><p>c</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldLeaveTheTable_WhenASelectionOnlyTouchesItsEdge(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, Trails(), 4);
+
+        await SelectAsync(table, 0, 0, 1, 0);
+        await page.Keyboard.TypeAsync("A");
+        await SelectAsync(table, 4, 1, 5, 1);
+        await page.Keyboard.TypeAsync("B");
+
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync(Trails().Replace("<p>a</p>", "<p>A</p>")
+            .Replace("<p>b</p>", "<p>B</p>"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldPasteBlocksAsLinesOfTheCell_WhenPastedIntoACell(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, Trails(), 4);
+
+        await CaretAsync(table, 3, 4);
+        await PasteAsync(table, "<p>x</p><hr><ul><li>y</li></ul><table><tr><td>z</td></tr></table>", "ignored");
+        await CaretAsync(table, 0, 1);
+        await Tool(table, "Heading 1").ClickAsync();
+        await CaretAsync(table, 4, 0);
+        await Tool(table, "Heading 1").ClickAsync();
+
+        await Expect(page.GetByTestId("table"))
+            .ToHaveTextAsync(Trails(pine: "Pinex<br>y<br>z").Replace("<p>a</p>", "<h1>a</h1>"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tables_ShouldGoInAsATableOfTheirOwn_WhenATableIsPastedIntoAParagraph(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var table = await SetTableAsync(page, Trails(), 4);
+
+        await CaretAsync(table, 5, 0);
+        await PasteAsync(table, "<table><tr><th>x</th><th>w</th></tr><tr><td><b>y</b></td></tr></table>", "ignored");
+
+        await Expect(page.GetByTestId("table")).ToHaveTextAsync(Trails().Replace("<p>b</p>", "<p><br></p>")
+            + "<table><thead><tr><th scope=\"col\">x</th><th scope=\"col\">w</th></tr></thead><tbody><tr><td>"
+            + "<strong>y</strong></td><td><br></td></tr></tbody></table><p>b</p>");
+        await Expect(table.Locator("table")).ToHaveCountAsync(2);
+        await Expect(table.Locator("td, th")).ToHaveCountAsync(8);
+    }
+
     private const string Pine = "<img src=\"/avatar-photo.svg\" alt=\"Pine\">";
 
     // Sets the gallery, which allows images, from .NET and waits for the editor to show them.
@@ -1457,7 +1721,7 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
             (editor, [anchorBlock, anchorOffset, headBlock, headOffset]) => {
                 const point = (block, offset) => {
                     // A list item's own text leaves out the lists nested in it, and a rule or image counts as a block.
-                    const paragraph = editor.querySelectorAll('p, h1, h2, h3, li, hr, img')[block];
+                    const paragraph = editor.querySelectorAll('p, h1, h2, h3, li, hr, img, td, th')[block];
                     const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
                         { acceptNode: node => node !== paragraph && /^[uo]l$/.test(node.localName) ? 2
                             : node.nodeType === 3 || node.localName === 'br' ? 1 : 3 });

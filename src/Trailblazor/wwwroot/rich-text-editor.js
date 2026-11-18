@@ -3,7 +3,8 @@ import { isApple } from '../Trailblazor.Primitives/platform.js';
 // The rich text editor's engine. The browser types, composes and spellchecks natively and the engine reads the result
 // back; every other edit the engine makes on its own model and renders. It never uses document.execCommand.
 // A paragraph is { kind, level, runs }, never changed in place; a run is { text, marks in MARKS order, link or null };
-// '\n' is a line break, and offsets count UTF-16 code units.
+// '\n' is a line break, and offsets count UTF-16 code units. A table cell is a paragraph of kind 'cell' with a
+// cell: { row, column, header }; neighboring cells make one table, and a cell at row 0, column 0 starts the next.
 
 const MARKS = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'code'];
 const MARK_TAGS = {
@@ -29,7 +30,7 @@ const MARKDOWN_STARTS = new Map([['#', 'heading1'], ['##', 'heading2'], ['###', 
     ['-', 'bullet'], ['*', 'bullet'], ['1.', 'number']]);
 // Which way each key moves the caret, in left-to-right text.
 const CARET_MOVES = { ArrowLeft: -1, ArrowUp: -1, Home: -1, PageUp: -1, ArrowRight: 1, ArrowDown: 1, End: 1, PageDown: 1 };
-const KINDS = ['paragraph', 'heading1', 'heading2', 'heading3', 'quote', 'bullet', 'number', 'rule'];
+const KINDS = ['paragraph', 'heading1', 'heading2', 'heading3', 'quote', 'bullet', 'number', 'rule', 'table'];
 const HEADING_TAGS = { heading1: 'h1', heading2: 'h2', heading3: 'h3' };
 const BLOCKS = new Set(['address', 'article', 'aside', 'blockquote', 'caption', 'center', 'dd', 'details', 'dialog',
     'dir', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -40,7 +41,7 @@ const SKIPPED = new Set(['head', 'iframe', 'math', 'noembed', 'noframes', 'noscr
 const PREFORMATTED = new Set(['pre', 'listing', 'xmp', 'plaintext']);
 const LISTS = new Set(['ul', 'ol', 'menu', 'dir']);
 // The elements that hold one paragraph's own text in the editor, and rules and images, which hold none.
-const BLOCK_ELEMENTS = 'p, h1, h2, h3, li, hr, img';
+const BLOCK_ELEMENTS = 'p, h1, h2, h3, li, hr, img, td, th';
 const TYPING_PAUSE = 1000;
 // Keeps each part under Blazor Server's default 32 KB message limit, even at 6 bytes of JSON per control character.
 const MAX_PART = 5000;
@@ -105,6 +106,14 @@ class Editor {
             }
             this.selection = this.readSelection() ?? this.selection;
             this.dragged = this.hasRange() ? this.range() : null;
+            // Deleting a range that starts or ends in a table empties cells or takes the whole table, which a move
+            // can't put back as it was, so such a selection can't be dragged; cut and paste moves it instead.
+            const ends = this.dragged
+                ? [this.dragged.from, endBeforeBlock(this.doc, this.dragged.from, this.dragged.to)] : [];
+            if (ends.some(end => isCell(this.doc[end.block]))) {
+                event.preventDefault();
+                this.dragged = null;
+            }
         });
         on(root, 'dragend', () => this.dragged = null);
         on(root, 'drop', event => this.onDrop(event));
@@ -276,7 +285,7 @@ class Editor {
     }
 
     readDocument() {
-        return withText(normalizeLevels(readBlocks(this.root, false, this.schema)));
+        return withText(normalizeTables(normalizeLevels(readBlocks(this.root, false, this.schema))));
     }
 
     // A list item's own text, without the lists nested inside it.
@@ -342,8 +351,10 @@ class Editor {
             if (collapsed && from.offset === 0 && type.endsWith('Backward')) {
                 return handle(() => this.backspaceAtStart(from.block));
             }
+            // Cells never merge, with each other or with the text around their table.
             if (collapsed && from.offset === length(this.doc[from.block].runs) && type.endsWith('Forward')) {
-                return handle(() => from.block < this.doc.length - 1 && this.edit(() => this.join(from.block)));
+                return handle(() => from.block < this.doc.length - 1 && !isCell(this.doc[from.block])
+                    && !isCell(this.doc[from.block + 1]) && this.edit(() => this.join(from.block)));
             }
             return;
         }
@@ -359,10 +370,10 @@ class Editor {
                 && getComputedStyle(this.root).direction === 'rtl';
             this.caretMove = flips ? -move : move;
         }
-        // In a list item, Escape lets the next Tab leave the editor, so a keyboard user is never held in it.
+        // In a list item or a table, Escape lets the next Tab leave the editor, so a keyboard user is never held in it.
         // The first Escape is marked defaultPrevented so a surrounding dialog stays open; a second one closes it.
         if (event.key === 'Escape') {
-            if (!this.tabLeaves && this.caretInListItem()) {
+            if (!this.tabLeaves && this.caretIn(target => isListItem(target.kind) || isCell(target))) {
                 event.preventDefault();
                 this.tabLeaves = true;
             }
@@ -384,7 +395,13 @@ class Editor {
 
         if (event.altKey) return;
         if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey) {
-            if (this.tabLeaves || !this.caretInListItem()) return;
+            if (this.tabLeaves) return;
+            if (this.caretIn(isCell)) {
+                event.preventDefault();
+                this.moveToCell(event.shiftKey ? -1 : 1);
+                return;
+            }
+            if (!this.caretIn(target => isListItem(target.kind))) return;
             event.preventDefault();
             this.indent(event.shiftKey ? -1 : 1);
             return;
@@ -427,10 +444,31 @@ class Editor {
         }
     }
 
-    caretInListItem() {
+    caretIn(test) {
         this.readBack();
         this.selection = this.readSelection() ?? this.selection;
-        return !this.readOnly && isListItem(this.doc[this.range().from.block].kind);
+        return !this.readOnly && test(this.doc[this.range().from.block]);
+    }
+
+    // Tab selects the next cell's text, or adds a row from the last cell, and Shift+Tab selects the previous cell's.
+    moveToCell(direction) {
+        const { from } = this.range();
+        const { first, end } = tableAt(this.doc, from.block);
+        const block = from.block + direction;
+        if (block < first) return;
+        if (block >= end) {
+            // The new row's first cell; normalizeTables fills the row out.
+            const row = this.doc[end - 1].cell.row + 1;
+            this.edit(() => {
+                this.doc.splice(end, 0, { kind: 'cell', level: 0, runs: [], cell: { row, column: 0, header: false } });
+                this.selection = { anchor: { block: end, offset: 0 }, head: { block: end, offset: 0 } };
+            });
+            return;
+        }
+        this.selection = { anchor: { block, offset: 0 }, head: { block, offset: length(this.doc[block].runs) } };
+        this.storedMarks = null;
+        this.writeSelection();
+        this.updateToolbar();
     }
 
     onPaste(event) {
@@ -467,7 +505,7 @@ class Editor {
         }
 
         const { from } = dragged;
-        const to = endBeforeAtom(this.doc, from, dragged.to);
+        const to = endBeforeBlock(this.doc, from, dragged.to);
         if (compare(target, from) >= 0 && compare(target, to) <= 0) return;
         this.edit(() => {
             const moved = this.paragraphsIn(from, to);
@@ -559,20 +597,42 @@ class Editor {
     edit(change) {
         this.checkpoint('edit', '');
         change();
-        this.doc = normalizeLevels(this.doc);
+        this.doc = normalizeTables(normalizeLevels(this.doc));
         this.render();
         this.writeSelection();
         this.changed();
     }
 
+    // A range inside one table empties the cells it covers and keeps the table; one that reaches outside a table takes
+    // the whole table.
     deleteRange(from, to) {
-        to = endBeforeAtom(this.doc, from, to);
+        to = endBeforeBlock(this.doc, from, to);
+        from = startAfterTable(this.doc, from, to);
+        if (from.block !== to.block && isCell(this.doc[from.block]) && isCell(this.doc[to.block])
+            && tableAt(this.doc, from.block).first === tableAt(this.doc, to.block).first) {
+            for (let block = from.block; block <= to.block; block++) {
+                const runs = this.doc[block].runs;
+                this.doc[block] = { ...this.doc[block], runs: normalize([
+                    ...(block === from.block ? slice(runs, 0, from.offset) : []),
+                    ...(block === to.block ? slice(runs, to.offset) : [])]) };
+            }
+            this.selection = { anchor: from, head: from };
+            return;
+        }
+        if (from.block !== to.block && isCell(this.doc[from.block])) {
+            from = { block: tableAt(this.doc, from.block).first, offset: 0 };
+        }
+        if (from.block !== to.block && isCell(this.doc[to.block])) {
+            const last = tableAt(this.doc, to.block).end - 1;
+            to = { block: last, offset: length(this.doc[last].runs) };
+        }
         const merged = normalize([
             ...slice(this.doc[from.block].runs, 0, from.offset), ...slice(this.doc[to.block].runs, to.offset)]);
-        // A range that starts on a rule or image takes it along: what's left takes the kind of the block it ends in,
-        // or is plain.
-        const kept = !isAtom(this.doc[from.block]) ? this.doc[from.block]
-            : !isAtom(this.doc[to.block]) ? this.doc[to.block] : paragraph([]);
+        // A range that starts on a rule, image or table takes it along: what's left takes the kind of the block it ends
+        // in, or is plain. A range inside one cell keeps the cell.
+        const keeps = target => !isAtom(target) && (!isCell(target) || from.block === to.block);
+        const kept = keeps(this.doc[from.block]) ? this.doc[from.block]
+            : keeps(this.doc[to.block]) ? this.doc[to.block] : paragraph([]);
         this.doc.splice(from.block, to.block - from.block + 1, { ...kept, runs: merged });
         this.selection = { anchor: from, head: from };
     }
@@ -587,10 +647,11 @@ class Editor {
     }
 
     insertText(text) {
-        const { from, to } = this.range();
-        const marks = this.storedMarks ?? this.marksForReplacing(from, to);
-        const link = this.linkForReplacing(from, to);
-        this.deleteRange(from, to);
+        const { from: start, to } = this.range();
+        const marks = this.storedMarks ?? this.marksForReplacing(start, to);
+        const link = this.linkForReplacing(start, to);
+        this.deleteRange(start, to);
+        const from = this.selection.anchor;
         const target = this.doc[from.block];
         this.doc[from.block] = {
             ...target, runs: replace(target.runs, from.offset, from.offset, [{ text, marks, link }]),
@@ -604,25 +665,38 @@ class Editor {
     // A pasted rule or image leaves the text around it in paragraphs of their own. One pasted last gets a paragraph
     // after it for the caret (plain at a heading's end), and one pasted at the document's start gets one before it.
     insertParagraphs(paragraphs) {
-        const { from, to } = this.range();
-        this.deleteRange(from, to);
+        const { from: start, to } = this.range();
+        this.deleteRange(start, to);
+        const from = this.selection.anchor;
         const target = this.doc[from.block];
+        // In a cell, the pasted blocks become lines of its text, without rules and images.
+        if (isCell(target)) {
+            const inserted = paragraphs.filter(pasted => !isAtom(pasted))
+                .flatMap((pasted, i) => i ? [{ text: '\n', marks: [], link: null }, ...pasted.runs] : pasted.runs);
+            this.doc[from.block] = { ...target, runs: replace(target.runs, from.offset, from.offset, inserted) };
+            const caret = { block: from.block, offset: from.offset + length(inserted) };
+            this.selection = { anchor: caret, head: caret };
+            this.storedMarks = null;
+            return;
+        }
         const before = slice(target.runs, 0, from.offset);
         const after = slice(target.runs, from.offset);
         const last = paragraphs.length - 1;
         const blocks = paragraphs.flatMap((pasted, i) => {
             const head = i === 0 ? before : [];
             const tail = i === last ? after : [];
-            if (isAtom(pasted)) {
-                return [...(head.length || (i === 0 && from.block === 0) ? [{ ...target, runs: head }] : []), pasted,
+            if (isAtom(pasted) || isCell(pasted)) {
+                const needsHead = i === 0 && (from.block === 0 || needsRoom(this.doc[from.block - 1], pasted));
+                return [...(head.length || needsHead ? [{ ...target, runs: head }] : []), pasted,
                     ...(i === last ? [HEADING_TAGS[target.kind] && !tail.length ? paragraph([])
                         : { ...target, runs: tail }] : [])];
             }
             const kind = (i === 0 && from.offset > 0) || pasted.kind === 'paragraph' ? target : pasted;
             return [{ kind: kind.kind, level: kind.level, runs: normalize([...head, ...pasted.runs, ...tail]) }];
         });
-        this.doc.splice(from.block, 1, ...blocks);
-        const end = from.block + blocks.length - 1;
+        const spaced = withRoomBetweenTables(blocks);
+        this.doc.splice(from.block, 1, ...spaced);
+        const end = from.block + spaced.length - 1;
         const caret = { block: end, offset: length(blocks.at(-1).runs) - length(after) };
         this.selection = { anchor: caret, head: caret };
         this.storedMarks = null;
@@ -630,10 +704,16 @@ class Editor {
 
     // Enter moves an empty list item or quote out a level, and a heading split at its end goes on as a paragraph.
     splitBlock() {
-        const { from, to } = this.range();
-        const marks = this.storedMarks ?? this.marksForReplacing(from, to);
-        this.deleteRange(from, to);
+        const { from: start, to } = this.range();
+        const marks = this.storedMarks ?? this.marksForReplacing(start, to);
+        this.deleteRange(start, to);
+        const from = this.selection.anchor;
         const target = this.doc[from.block];
+        // A cell holds no paragraphs, so Enter breaks its line.
+        if (isCell(target)) {
+            this.insertText('\n');
+            return;
+        }
         if (!target.runs.length && target.kind !== 'paragraph' && !HEADING_TAGS[target.kind]) {
             this.doc[from.block] = outdented(target);
             return;
@@ -657,10 +737,17 @@ class Editor {
     }
 
     // Backspace at the start of a list item or quote takes its list or quote away first, as word processors do.
+    // At a cell's start it does nothing, and just after a table it moves into the last cell, since cells never merge.
     backspaceAtStart(block) {
         const target = this.doc[block];
+        if (isCell(target)) return;
         if (target.kind === 'quote' || isListItem(target.kind)) {
             this.edit(() => this.doc[block] = outdented(target));
+        } else if (block > 0 && isCell(this.doc[block - 1])) {
+            const caret = { block: block - 1, offset: length(this.doc[block - 1].runs) };
+            this.selection = { anchor: caret, head: caret };
+            this.writeSelection();
+            this.updateToolbar();
         } else if (block > 0 && isAtom(this.doc[block - 1])) {
             this.edit(() => {
                 this.doc.splice(block - 1, 1);
@@ -724,11 +811,13 @@ class Editor {
         this.readBack();
         const { from, to } = this.range();
         const next = this.blockState(kind) === 'on' ? 'paragraph' : kind;
-        if (this.doc.slice(from.block, to.block + 1).every(target => target.kind === next || isAtom(target))) return;
+        if (this.doc.slice(from.block, to.block + 1).every(target => target.kind === next || !holdsText(target))) {
+            return;
+        }
         this.edit(() => {
             for (let block = from.block; block <= to.block; block++) {
                 const target = this.doc[block];
-                if (isAtom(target)) continue;
+                if (!holdsText(target)) continue;
                 const level = isListItem(next) && isListItem(target.kind) ? target.level : 0;
                 this.doc[block] = { ...target, kind: next, level };
             }
@@ -755,8 +844,7 @@ class Editor {
 
     blockState(kind) {
         const { from, to } = this.range();
-        const kinds = this.doc.slice(from.block, to.block + 1).filter(target => !isAtom(target))
-            .map(target => target.kind);
+        const kinds = this.doc.slice(from.block, to.block + 1).filter(holdsText).map(target => target.kind);
         if (!kinds.length) return 'off';
         return kinds.every(each => each === kind) ? 'on' : kinds.some(each => each === kind) ? 'mixed' : 'off';
     }
@@ -1105,11 +1193,30 @@ const paragraph = (runs, kind = 'paragraph', level = 0) => ({ kind, level, runs 
 // A rule or an image, whose block holds no text, so the caret steps over it. An image's block is { kind: 'image',
 // level: 0, runs: [], image: { source, alt } }.
 const isAtom = target => target?.kind === 'rule' || target?.kind === 'image';
-// A range that ends at the start of a rule or image leaves it in place, so a click on an image doesn't take the next one
-// too. A rule or image has no length, so when the block before is one too, the end this gives is also its start:
-// apply it once, to the range as selected.
-const endBeforeAtom = (doc, from, to) => to.block > from.block && to.offset === 0 && isAtom(doc[to.block])
+const isCell = target => target?.kind === 'cell';
+const isTableStart = target => isCell(target) && target.cell.row === 0 && target.cell.column === 0;
+// A heading, quote, list item or plain paragraph, which a block button can change.
+const holdsText = target => !isAtom(target) && !isCell(target);
+// A range that ends at the start of a rule, image or table leaves it in place, so a click on an image doesn't take the
+// next one too. A rule or image has no length, so when the block before is one too, the end this gives is also its
+// start: apply it once, to the range as selected.
+const endBeforeBlock = (doc, from, to) => to.block > from.block && to.offset === 0
+    && (isAtom(doc[to.block]) || isTableStart(doc[to.block]))
     ? { block: to.block - 1, offset: length(doc[to.block - 1].runs) } : to;
+// Likewise, a range that starts at the end of a table's last cell and goes on past the table leaves the table.
+function startAfterTable(doc, from, to) {
+    if (!isCell(doc[from.block]) || from.offset < length(doc[from.block].runs)) return from;
+    const { end } = tableAt(doc, from.block);
+    return end === from.block + 1 && to.block >= end ? { block: end, offset: 0 } : from;
+}
+// The table around a cell: first is the index of its first cell, and end is the index just past its last.
+function tableAt(doc, block) {
+    let first = block;
+    while (!isTableStart(doc[first]) && first > 0 && isCell(doc[first - 1])) first--;
+    let end = block + 1;
+    while (end < doc.length && isCell(doc[end]) && !isTableStart(doc[end])) end++;
+    return { first, end };
+}
 const isListItem = kind => kind === 'bullet' || kind === 'number';
 const outdented = target => isListItem(target.kind) && target.level > 0
     ? { ...target, level: target.level - 1 } : { ...target, kind: 'paragraph', level: 0 };
@@ -1129,6 +1236,40 @@ function normalizeLevels(doc) {
         previous = isListItem(target.kind) ? level : -1;
         return level === target.level ? target : { ...target, level };
     });
+}
+
+// As RichTextDocument does: each table's rows and columns are numbered again in order, and a short row is padded with
+// empty cells (header cells when the rest of the row is), so every table is a full grid. Cells that keep their place
+// keep their identity.
+function normalizeTables(doc) {
+    const result = [];
+    let rows = [];
+    const addTable = () => {
+        const width = Math.max(0, ...rows.map(row => row.length));
+        rows.forEach((row, r) => {
+            const header = row.every(target => target.cell.header);
+            for (let column = 0; column < width; column++) {
+                const target = row[column];
+                result.push(target?.cell.row === r && target.cell.column === column ? target : {
+                    kind: 'cell', level: 0, runs: target?.runs ?? [],
+                    cell: { row: r, column, header: target ? target.cell.header : header },
+                });
+            }
+        });
+        rows = [];
+    };
+    for (const target of doc) {
+        if (!isCell(target)) {
+            addTable();
+            result.push(target);
+            continue;
+        }
+        if (rows.length && isTableStart(target)) addTable();
+        if (!rows.length || target.cell.row !== rows.at(-1).at(-1).cell.row) rows.push([]);
+        rows.at(-1).push(target);
+    }
+    addTable();
+    return result;
 }
 
 function normalize(runs) {
@@ -1231,7 +1372,8 @@ function documentHtml(doc, forValue) {
     const closeLists = depth => {
         while (lists.length > depth) html += `</li></${lists.pop()}>`;
     };
-    for (const target of doc) {
+    for (let i = 0; i < doc.length; i++) {
+        const target = doc[i];
         const listItem = isListItem(target.kind);
         closeLists(listItem ? target.level + 1 : 0);
         if (inQuote && target.kind !== 'quote') {
@@ -1259,6 +1401,12 @@ function documentHtml(doc, forValue) {
             html += `<img src="${attribute(source)}"${alt === null ? '' : ` alt="${attribute(alt)}"`}>`;
             continue;
         }
+        if (isCell(target)) {
+            const rows = tableRows(doc, i);
+            html += tableHtml(rows, forValue);
+            i += rows.flat().length - 1;
+            continue;
+        }
         if (target.kind === 'quote' && !inQuote) {
             html += '<blockquote>';
             inQuote = true;
@@ -1268,6 +1416,29 @@ function documentHtml(doc, forValue) {
     }
     closeLists(0);
     return inQuote ? html + '</blockquote>' : html;
+}
+
+// The rows of the table whose first cell is at the index given.
+function tableRows(doc, start) {
+    const rows = [];
+    for (let i = start; i < doc.length && isCell(doc[i]) && (i === start || !isTableStart(doc[i])); i++) {
+        if (doc[i].cell.column === 0) rows.push([]);
+        rows.at(-1).push(doc[i]);
+    }
+    return rows;
+}
+
+// A first row of header cells is the table's head. The value gives its cells scope="col", as RichTextDocument writes
+// them; the editor's cells carry no attributes, which updateBlock would take off.
+function tableHtml(rows, forValue) {
+    const head = rows[0].every(target => target.cell.header);
+    const rowHtml = (cells, scope) => `<tr>${cells.map(target => {
+        const tag = target.cell.header ? 'th' : 'td';
+        return `<${tag}${scope}>${paragraphHtml(target.runs, forValue)}</${tag}>`;
+    }).join('')}</tr>`;
+    const body = rows.slice(head ? 1 : 0);
+    return `<table>${head ? `<thead>${rowHtml(rows[0], forValue ? ' scope="col"' : '')}</thead>` : ''}`
+        + `${body.length ? `<tbody>${body.map(cells => rowHtml(cells, '')).join('')}</tbody>` : ''}</table>`;
 }
 
 function paragraphHtml(runs, forValue) {
@@ -1337,21 +1508,42 @@ function parseHtml(html, schema) {
     return withText(normalizeLevels(readBlocks(parseDocument(html ?? ''), true, schema)));
 }
 
-// The caret needs a paragraph on each side of a rule or image, so a document that starts or ends with one, or is
+// The caret needs a paragraph on each side of a rule, image or table, so a document that starts or ends with one, or is
 // empty, gets an empty paragraph there.
 function withText(doc) {
+    doc = withRoomBetweenTables(doc);
     if (!doc.length) return [paragraph([])];
-    const head = isAtom(doc[0]) ? [paragraph([])] : [];
-    const tail = isAtom(doc.at(-1)) ? [paragraph([])] : [];
+    const head = !holdsText(doc[0]) ? [paragraph([])] : [];
+    const tail = !holdsText(doc.at(-1)) ? [paragraph([])] : [];
     return head.length || tail.length ? [...head, ...doc, ...tail] : doc;
 }
 
+// Two tables, or a table and a rule or image, get an empty paragraph between them, for the caret.
+const needsRoom = (previous, next) => (isTableStart(next) && !holdsText(previous))
+    || (isCell(previous) && isAtom(next));
+
+function withRoomBetweenTables(doc) {
+    const result = [];
+    for (const target of doc) {
+        const previous = result.at(-1);
+        if (previous && needsRoom(previous, target)) result.push(paragraph([]));
+        result.push(target);
+    }
+    return result.length === doc.length ? doc : result;
+}
+
 // A block context is what an element puts its text in: its own allowed heading, quote, list item or Word list
-// paragraph, else its parent's, with the lists around it counted.
+// paragraph, else its parent's, with the lists around it counted. Where tables are allowed, a table's cells wait until
+// it ends, so whatever else it holds, such as its caption, goes before it, as RichTextDocument reads it.
 function readBlocks(container, collapse, { formats, blocks, links, images }) {
     const paragraphs = [];
     let runs = null;
     let block = null;
+    // The table being read, with its cells so far and the next cell's place, and whether a cell of it is being read.
+    let table = null;
+    let inCell = false;
+    // Whether the last line has text, so a block ending inside a cell needs a line break there.
+    let lineHasText = false;
     // Set by a kept image until text follows it, since a <br> right after one only ends the image's line.
     let afterImage = false;
     // Whether the last Word list marker was a number or letters, which makes its list numbered.
@@ -1367,8 +1559,19 @@ function readBlocks(container, collapse, { formats, blocks, links, images }) {
         block = resolve(context);
         numbered = false;
     };
+    const add = run => {
+        runs.push(run);
+        const shown = run.text.replace(/ +$/, '');
+        if (shown) lineHasText = !shown.endsWith('\n');
+    };
     const finish = () => {
         afterImage = false;
+        // Inside a cell, a block ends a line of the cell instead.
+        if (inCell) {
+            if (lineHasText) add({ text: '\n', marks: [], link: null, pre: false });
+            return;
+        }
+        lineHasText = false;
         if (runs) {
             const hasBreak = runs.some(run => run.text.includes('\n'));
             const finished = finishParagraph(runs, collapse);
@@ -1397,7 +1600,7 @@ function readBlocks(container, collapse, { formats, blocks, links, images }) {
                 if (afterImage && pre && text.startsWith('\n')) [text, afterImage] = [text.slice(1), false];
                 afterImage &&= /^[\t\n\f\r ]*$/.test(text);
                 start(context);
-                runs.push({ text, marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre });
+                add({ text, marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre });
             } else if (child.nodeType === Node.ELEMENT_NODE && isWordListMarker(child)) {
                 numbered = /^\(?([0-9]+|[a-z]+|[A-Z]+)[.)]$/.test(child.textContent.trim());
             } else if (child.nodeType === Node.ELEMENT_NODE && !SKIPPED.has(child.localName)) {
@@ -1407,18 +1610,19 @@ function readBlocks(container, collapse, { formats, blocks, links, images }) {
                         continue;
                     }
                     start(context);
-                    runs.push({ text: '\n', marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre });
+                    add({ text: '\n', marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre });
                     continue;
                 }
                 // A rule between two lines leaves them separate paragraphs, with the rule between if it's allowed.
                 if (child.localName === 'hr') {
                     finish();
-                    if (blocks.has('rule')) paragraphs.push(paragraph([], 'rule'));
+                    if (blocks.has('rule') && !inCell) paragraphs.push(paragraph([], 'rule'));
                     continue;
                 }
-                // Unlike in a browser, an image is a block, so one kept inside a paragraph splits it in two.
+                // Unlike in a browser, an image is a block, so one kept inside a paragraph splits it in two; a cell
+                // holds only text, so one inside a cell is dropped.
                 if (child.localName === 'img') {
-                    const image = imageOf(child, images);
+                    const image = inCell ? null : imageOf(child, images);
                     if (image) {
                         finish();
                         paragraphs.push({ kind: 'image', level: 0, runs: [], image });
@@ -1436,9 +1640,34 @@ function readBlocks(container, collapse, { formats, blocks, links, images }) {
                 }
                 finish();
                 const first = paragraphs.length;
+                const outer = table;
+                const name = child.localName;
+                const part = table && !inCell && ['tr', 'td', 'th'].includes(name);
+                if (name === 'table' && blocks.has('table') && !inCell) table = { cells: [], row: 0, column: 0 };
+                if (part && name !== 'tr') inCell = true;
                 walk(child, childMarks, childPre, childLink, childContext);
+                if (part && name !== 'tr') {
+                    // A cell takes the next place in its row, even when it's empty.
+                    inCell = false;
+                    afterImage = false;
+                    lineHasText = false;
+                    const cell = { row: table.row, column: table.column++, header: name === 'th' };
+                    const cellRuns = runs ? finishParagraph(runs, collapse) : [];
+                    table.cells.push({ kind: 'cell', level: 0, runs: cellRuns, cell });
+                    runs = null;
+                    continue;
+                }
                 finish();
-                if (paragraphs.length === first) {
+                if (part) {
+                    // A row with no cells takes no place.
+                    if (table.column > 0) [table.row, table.column] = [table.row + 1, 0];
+                    continue;
+                }
+                if (table !== outer) {
+                    paragraphs.push(...table.cells);
+                    table = outer;
+                }
+                if (paragraphs.length === first && !inCell) {
                     const empty = resolve(childContext);
                     numbered = false;
                     paragraphs.push(paragraph([], empty.kind, empty.level));

@@ -666,6 +666,8 @@ public class RichTextDocumentTests
     [InlineData("<td> </td>", "<td><br></td>")]
     [InlineData("<td><b>a<td>b</td>", "<td><strong>a</strong></td><td>b</td>")]
     [InlineData("<td>a<table><tr><td>b</td><td>c</td></tr></table>d</td>", "<td>a<br>b<br>c<br>d</td>")]
+    [InlineData("<td>a<table>\n<tr><td>b</td></tr>\n</table></td>", "<td>a<br>b</td>")]
+    [InlineData("<td><table>x<tr><td>b</td></tr></table></td>", "<td>x<br>b</td>")]
     public void Parse_ShouldKeepOnlyTextInACell_WhenTheSchemaAllowsTables(string cells, string expected) =>
         Assert.Equal($"<table><tbody><tr>{expected}</tr></tbody></table>",
             RichTextDocument.Parse($"<table><tr>{cells}</tr></table>", WithTables).ToHtml());
@@ -675,6 +677,14 @@ public class RichTextDocumentTests
         "<p>Trails</p><table><tbody><tr><td>a</td></tr></tbody></table>")]
     [InlineData("<table><tr><td>a</td>b</tr><tr><td>c</td></tr></table>",
         "<p>b</p><table><tbody><tr><td>a</td></tr><tr><td>c</td></tr></tbody></table>")]
+    [InlineData("<table><caption>c</caption>x<tr><td>a</td></tr></table>",
+        "<p>x</p><p>c</p><table><tbody><tr><td>a</td></tr></tbody></table>")]
+    [InlineData("<table><p>x</p><h1>y</h1><tr><td>a</td></tr></table>",
+        "<p>x</p><h1>y</h1><table><tbody><tr><td>a</td></tr></tbody></table>")]
+    [InlineData("<table>x<p>a</p>y<tr><td>b</td></tr><p>c</p>z</table>",
+        "<p>x</p><p>a</p><p>y</p><p>c</p><p>z</p><table><tbody><tr><td>b</td></tr></tbody></table>")]
+    [InlineData("<table><b>x<p>y<tr><td>a</td></tr></table>",
+        "<p><strong>x</strong></p><p><strong>y</strong></p><table><tbody><tr><td>a</td></tr></tbody></table>")]
     [InlineData("<table><tr><td>a</td></tr><table><tr><td>b</td></tr></table></table>",
         "<table><tbody><tr><td>a</td></tr></tbody></table><table><tbody><tr><td>b</td></tr></tbody></table>")]
     [InlineData("<p>c<table><tr><td>t</td></tr></table>d</p>",
@@ -688,6 +698,22 @@ public class RichTextDocumentTests
     [InlineData("<table><tr><td><b>a<td>b</table>", "<p><strong>a</strong></p><p>b</p>")]
     [InlineData("<table><tr><td>a<tr><td>b</table>", "<p>a</p><p>b</p>")]
     [InlineData("<table><tr></tr><tr></tr></table>", "<p><br></p><p><br></p>")]
+    [InlineData("<table><caption>c</caption>x<tr><td>a</td>y</tr></table>", "<p>xy</p><p>c</p><p>a</p>")]
+    [InlineData("<table>x</table>", "<p>x</p><p><br></p>")]
+    [InlineData("<table><tr>x</tr></table>", "<p>x</p><p><br></p>")]
+    [InlineData("<ul><li><table>x<tr><td>a</td></tr></table></li></ul>", "<ul><li>x</li><li>a</li></ul>")]
+    [InlineData("<table><p>x</p><p>y</p><tr><td>a</td></tr></table>", "<p>x</p><p>y</p><p>a</p>")]
+    [InlineData("<table><h1>x</h1><tr><td>a</td></tr></table>", "<h1>x</h1><p>a</p>")]
+    [InlineData("<table>x<p>a</p>y<tr><td>b</td></tr><p>c</p></table>", "<p>x</p><p>a</p><p>y</p><p>c</p><p>b</p>")]
+    [InlineData("<table>x<hr>y<tr><td>a</td></tr></table>", "<p>x</p><hr><p>y</p><p>a</p>")]
+    [InlineData("<table><hr><p>a</p><tr><td>b</td></tr></table>", "<hr><p>a</p><p>b</p>")]
+    [InlineData("<table><p>x<tr><td>a</td></tr></table>", "<p>x</p><p>a</p>")]
+    [InlineData("<table><b>x<tr><td>a</td></tr></table>", "<p><strong>x</strong></p><p>a</p>")]
+    [InlineData("<table><b>x<caption>c</caption><tr><td>a</td></tr></table>",
+        "<p><strong>x</strong></p><p>c</p><p>a</p>")]
+    [InlineData("<table><p>x<caption>c</caption>y<tr><td>a</td></tr></table>", "<p>x</p><p>y</p><p>c</p><p>a</p>")]
+    [InlineData("<table><p>x<colgroup></colgroup>y<tr><td>a</td></tr></table>", "<p>x</p><p>y</p><p>a</p>")]
+    [InlineData("<table><p>x<col>y<tr><td>a</td></tr></table>", "<p>x</p><p>y</p><p>a</p>")]
     public void Parse_ShouldReadEachCellAsAParagraph_WhenTheSchemaDoesNotAllowTables(string html, string expected) =>
         Assert.Equal(expected, RichTextDocument.Parse(html).ToHtml());
 

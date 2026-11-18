@@ -106,8 +106,9 @@ public sealed class RichTextDocument
     /// and browsers write them. Word's list paragraphs read as lists. Everything else, including scripts, attributes,
     /// images the schema doesn't allow and links with a scheme it doesn't allow, becomes plain text or is dropped, so
     /// the result is safe to render. Tabs and no-break spaces read as plain spaces. A few rare cases can still read
-    /// differently from a browser, such as tags misnested beyond a simple reorder and character references whose names
-    /// HTML 4 lacks, which stay as written.</remarks>
+    /// differently from a browser, such as tags misnested beyond a simple reorder, character references whose names
+    /// HTML 4 lacks (which stay as written), and stray text in a table that a browser joins to the line just before the
+    /// table.</remarks>
     /// <param name="html">The HTML. Null or empty gives an empty document.</param>
     /// <param name="schema">What to keep. Formats it doesn't allow are dropped from the text that has them, and blocks
     /// it doesn't allow give way to an allowed block around them or a plain paragraph.</param>

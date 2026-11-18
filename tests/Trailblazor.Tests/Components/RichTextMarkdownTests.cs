@@ -243,10 +243,12 @@ public class RichTextMarkdownTests
             read.Paragraphs.Select(paragraph => paragraph.Runs.ToList()));
     }
 
-    // Each paragraph's kind, level and lines without spaces at their ends, leaving out the empty paragraphs.
+    // Each paragraph's kind, level and lines without spaces at their ends, leaving out the empty paragraphs. A cell's
+    // lines are joined with spaces, since markdown can't break a line in a cell.
     private static List<(RichTextParagraphKind, int, string)> Shape(RichTextDocument document) =>
         [.. document.Paragraphs.Where(paragraph => paragraph.Kind is not (RichTextParagraphKind.Paragraph
                 or RichTextParagraphKind.Quote) || paragraph.Text.Length > 0)
             .Select(paragraph => (paragraph.Kind, paragraph.Level,
-                string.Join('\n', paragraph.Text.Split('\n').Select(line => line.Trim(' ')))))];
+                string.Join(paragraph.Cell is null ? "\n" : " ",
+                    paragraph.Text.Split('\n').Select(line => line.Trim(' ')))))];
 }

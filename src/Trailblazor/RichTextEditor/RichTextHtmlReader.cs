@@ -280,9 +280,22 @@ internal sealed partial class RichTextHtmlReader
             return;
         }
 
-        // As in a browser, a cell ends the open cell, and a row or a table's section ends the open row too.
-        if (!InSkipped && name is "td" or "th" or "tr" or "tbody" or "thead" or "tfoot")
+        // As in a browser, a cell ends the open cell, and a row or a table's section ends the open row too. Outside
+        // the cells, these and a caption or column end whatever else is open in the table first, such as a paragraph or
+        // bold text.
+        if (!InSkipped && name is "td" or "th" or "tr" or "tbody" or "thead" or "tfoot" or "caption" or "colgroup"
+            or "col")
         {
+            if (TableOutsideCells() is { } table)
+            {
+                var stray = _open.FindIndex(open => open.Serial > table.Serial
+                    && open.Name is not ("tbody" or "thead" or "tfoot" or "tr"));
+                if (stray >= 0)
+                {
+                    PopTo(stray);
+                }
+            }
+
             Close("td");
             Close("th");
             if (name is not ("td" or "th"))
@@ -292,8 +305,7 @@ internal sealed partial class RichTextHtmlReader
         }
 
         // A table starting in a table, outside its cells and caption, ends that table first, as in a browser.
-        if (!InSkipped && name == "table" && LastOpen("table") is { } openTable
-            && Array.TrueForAll(["td", "th", "caption"], part => (LastOpen(part)?.Serial ?? 0) < openTable.Serial))
+        if (!InSkipped && name == "table" && TableOutsideCells() is not null)
         {
             Close("table");
         }
@@ -311,7 +323,7 @@ internal sealed partial class RichTextHtmlReader
                 FinishParagraph();
                 if (_schema.Blocks.HasFlag(RichTextBlocks.Rules) && _cell is null)
                 {
-                    _paragraphs.Add(new RichTextParagraph([], RichTextParagraphKind.Rule));
+                    AddAtom(new RichTextParagraph([], RichTextParagraphKind.Rule));
                 }
             }
             else if (name == "img" && !InSkipped)
@@ -357,6 +369,13 @@ internal sealed partial class RichTextHtmlReader
         }
 
         var block = Blocks.Contains(name);
+        // A browser moves a block directly in a table to just before the table, after any stray text read so far.
+        var fosteredInto = block && name != "table" && !TableParts.Contains(name) ? FosteringTable() : null;
+        if (fosteredInto is not null)
+        {
+            InsertFostered(fosteredInto);
+        }
+
         if (block)
         {
             FinishParagraph();
@@ -378,6 +397,7 @@ internal sealed partial class RichTextHtmlReader
             return;
         }
 
+        element.FosteredInto = fosteredInto;
         if (name == "table" && _cell is null && _schema.Blocks.HasFlag(RichTextBlocks.Tables))
         {
             _tables.Add(new Table(element));
@@ -672,6 +692,7 @@ internal sealed partial class RichTextHtmlReader
         else if (element.Block)
         {
             FinishParagraph();
+            InsertFostered(element);
             if (_tables.Count > 0 && _tables[^1].Element == element)
             {
                 _paragraphs.AddRange(_tables[^1].Cells);
@@ -691,6 +712,31 @@ internal sealed partial class RichTextHtmlReader
                 _numberedMarker = false;
                 _paragraphs.Add(new RichTextParagraph([], kind, level));
             }
+
+            if (element.FosteredInto is { } table)
+            {
+                var moved = _paragraphs.GetRange(element.FirstParagraph, _paragraphs.Count - element.FirstParagraph);
+                _paragraphs.RemoveRange(element.FirstParagraph, moved.Count);
+                _paragraphs.InsertRange(table.FirstParagraph, moved);
+                table.FirstParagraph += moved.Count;
+            }
+        }
+    }
+
+    // Puts a table's stray text read so far before the table, after what went there before it.
+    private void InsertFostered(Element table)
+    {
+        if (table.Fostered is not { } fostered)
+        {
+            return;
+        }
+
+        table.Fostered = null;
+        var (kind, level) = Resolve(table.Context);
+        var paragraph = new RichTextParagraph(Shown(fostered), kind, level);
+        if (paragraph.Runs.Count > 0 || fostered.Exists(piece => piece.Text.Contains('\n')))
+        {
+            _paragraphs.Insert(table.FirstParagraph++, paragraph);
         }
     }
 
@@ -796,8 +842,22 @@ internal sealed partial class RichTextHtmlReader
         }
 
         FinishParagraph();
-        _paragraphs.Add(new RichTextParagraph(new RichTextImage(url, alt)));
+        AddAtom(new RichTextParagraph(new RichTextImage(url, alt)));
         _afterImage = true;
+    }
+
+    // As a browser does, a rule or image directly in a table goes before the table, after the stray text read so far.
+    private void AddAtom(RichTextParagraph paragraph)
+    {
+        if (FosteringTable() is { } table)
+        {
+            InsertFostered(table);
+            _paragraphs.Insert(table.FirstParagraph++, paragraph);
+        }
+        else
+        {
+            _paragraphs.Add(paragraph);
+        }
     }
 
     private void AddBreak()
@@ -826,6 +886,14 @@ internal sealed partial class RichTextHtmlReader
 
         _afterImage &= text.AsSpan().IndexOfAnyExcept(" \t\n\f\r") < 0;
         Reconstruct();
+        // A browser moves text inside a table but outside its cells to just before the table; the text between two
+        // blocks there goes in as one paragraph.
+        if (FosteringTable() is { } table)
+        {
+            (table.Fostered ??= []).Add(new Piece(text, Formats & _formats, Link, pre));
+            return;
+        }
+
         if (_runs is null)
         {
             _block = CurrentBlock();
@@ -883,20 +951,32 @@ internal sealed partial class RichTextHtmlReader
     // Takes the paragraph's runs, leaving none for the next paragraph.
     private List<RichTextRun> TakeRuns()
     {
-        if (_runs is null)
-        {
-            return [];
-        }
+        var runs = _runs is null ? [] : Shown(_runs);
+        _runs = null;
+        _lineHasText = false;
+        return runs;
+    }
 
-        // As HTML renders it outside <pre>: no space after another or at a line's start, and none at a line's end.
-        var runs = Keep(_runs, (text, i, pre) => pre || text[i] != ' ' || (i > 0 && text[i - 1] is not (' ' or '\n')));
+    // A paragraph's pieces as HTML renders them outside <pre>: no space after another or at a line's start, and none
+    // at a line's end.
+    private static List<RichTextRun> Shown(List<Piece> pieces)
+    {
+        var runs = Keep(pieces, (text, i, pre) => pre || text[i] != ' ' || (i > 0 && text[i - 1] is not (' ' or '\n')));
         runs = Keep(runs, (text, i, pre) => pre || text[i] != ' ' || (i < text.Length - 1 && text[i + 1] != '\n'));
         // A paragraph's last line break shows nothing.
         runs = Keep(runs, (text, i, _) => i < text.Length - 1 || text[i] != '\n');
-        _runs = null;
-        _lineHasText = false;
         return [.. runs.Select(run => new RichTextRun(run.Text, run.Formats, run.Link, vetted: true))];
     }
+
+    // The open table when the parser is inside it but outside its cells and caption.
+    private Element? TableOutsideCells() => LastOpen("table") is { } table
+        && Array.TrueForAll(["td", "th", "caption"], part => (LastOpen(part)?.Serial ?? 0) < table.Serial)
+            ? table : null;
+
+    // The table that text goes before: the innermost open block is the table or one of its sections or rows, and no
+    // cell is being read, since inside a cell a nested table's stray text joins the cell's text.
+    private Element? FosteringTable() => _cell is null && _openBounds[(int)Scope.Inline] is [.., var inner]
+        && inner.Name is "table" or "tbody" or "thead" or "tfoot" or "tr" ? LastOpen("table") : null;
 
     // Keeps the characters the test passes, given the paragraph's text, an index into it, and whether it's in <pre>.
     private static List<Piece> Keep(List<Piece> runs, Func<string, int, bool, bool> keep)
@@ -1227,7 +1307,14 @@ internal sealed partial class RichTextHtmlReader
 
         public bool Skipped { get; } = skipped;
 
-        public int FirstParagraph { get; } = firstParagraph;
+        // For a table, moves past each paragraph inserted ahead of it for text and blocks a browser moves out of it.
+        public int FirstParagraph { get; set; } = firstParagraph;
+
+        // A table's text outside its cells, which a browser shows before it.
+        public List<Piece>? Fostered { get; set; }
+
+        // For a block directly in a table, the table it goes before.
+        public Element? FosteredInto { get; set; }
 
         public bool IsOpen { get; set; }
 

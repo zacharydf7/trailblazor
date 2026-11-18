@@ -352,7 +352,8 @@
     {
         formats = string.Join(' ', MarkTools.Select(tool => tool.Format)),
         blocks = string.Join(' ', BlockTools.Select(tool => tool.Block).OfType<string>()
-            .Concat(Blocks.HasFlag(RichTextBlocks.Rules) ? ["rule"] : [])),
+            .Concat(Blocks.HasFlag(RichTextBlocks.Rules) ? ["rule"] : [])
+            .Concat(Blocks.HasFlag(RichTextBlocks.Tables) ? ["table"] : [])),
         links = Formats.HasFlag(RichTextFormats.Link) ? string.Join(' ', LinkSchemes) : null,
         images = Blocks.HasFlag(RichTextBlocks.Images) ? string.Join(' ', ImageSchemes) : null,
         transformsPaste = TransformPaste is not null,
