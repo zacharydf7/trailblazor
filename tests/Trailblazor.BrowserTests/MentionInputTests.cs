@@ -6,6 +6,16 @@ public class MentionInputTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     private static ILocator Listbox(IPage page) => page.Locator(".tb-mention-input__listbox");
 
+    // Types the text and presses the key in one task, so its suggestions can't arrive before the key. Returns whether
+    // the field kept the key from the browser.
+    private static Task<bool> TypeAndPressAtOnceAsync(ILocator input, string text, string key) =>
+        input.EvaluateAsync<bool>("""
+            (input, { text, key }) => {
+                document.execCommand('insertText', false, text);
+                return !input.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+            }
+            """, new { text, key });
+
     private async Task<(IPage Page, ILocator Input)> OpenAsync(string browser)
     {
         var page = await OpenAsync(browser, "/examples/mention-input");
@@ -52,6 +62,70 @@ public class MentionInputTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(input).ToHaveValueAsync("@Priya Shah #pine-hollow ");
         await Expect(input).ToBeFocusedAsync();
         await Expect(page.GetByText("Mentioned: @Priya Shah (u3), #pine-hollow (t1)")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MentionInput_ShouldChooseTheFirstOfTheLatestSuggestions_WhenEnterOrTabIsPressedBeforeTheyArrive(
+        string browser)
+    {
+        var (page, input) = await OpenAsync(browser);
+        var options = Listbox(page).GetByRole(AriaRole.Option);
+        await page.Keyboard.TypeAsync("#");
+        await Expect(options).ToHaveCountAsync(2);
+
+        // The first suggestion for "#" is another trail, and the one for "#ea" hasn't arrived when Tab is pressed.
+        // The field keeps the key, so the focus stays in it.
+        Assert.True(await TypeAndPressAtOnceAsync(input, "ea", "Tab"));
+
+        await Expect(input).ToHaveValueAsync("#eagle-ridge ");
+        await page.Keyboard.TypeAsync("@");
+        await Expect(options).ToHaveCountAsync(3);
+        Assert.True(await TypeAndPressAtOnceAsync(input, "pr", "Enter"));
+
+        await Expect(input).ToHaveValueAsync("#eagle-ridge @Priya Shah ");
+        await Expect(page.GetByText("Mentioned: #eagle-ridge (t2), @Priya Shah (u3)")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MentionInput_ShouldDropTheWaitingChoice_WhenNothingMatchesMoreIsTypedOrTheFocusLeaves(
+        string browser)
+    {
+        var (page, input) = await OpenAsync(browser);
+        var options = Listbox(page).GetByRole(AriaRole.Option);
+        await page.Keyboard.TypeAsync("#");
+        await Expect(options).ToHaveCountAsync(2);
+
+        // Nothing matches "#zz", so nothing is chosen, and the suggestions that come back later aren't chosen either.
+        await TypeAndPressAtOnceAsync(input, "zz", "Tab");
+        await Expect(Listbox(page)).ToBeHiddenAsync();
+        await page.Keyboard.PressAsync("Backspace");
+        await page.Keyboard.PressAsync("Backspace");
+        await Expect(options).ToHaveCountAsync(2);
+        await Expect(input).ToHaveValueAsync("#");
+
+        // Text typed after the key drops the waiting choice, so the suggestions for "#ea" just show.
+        await input.EvaluateAsync("""
+            input => {
+                document.execCommand('insertText', false, 'e');
+                input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+                document.execCommand('insertText', false, 'a');
+            }
+            """);
+        await Expect(options).ToHaveCountAsync(1);
+        await Expect(input).ToHaveValueAsync("#ea");
+
+        // Leaving the field drops it too, even when the focus is back before the suggestions arrive.
+        await input.EvaluateAsync("""
+            input => {
+                document.execCommand('insertText', false, 'g');
+                input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+                input.blur();
+                input.focus();
+            }
+            """);
+        await Expect(Listbox(page)).ToBeVisibleAsync();
+        await Expect(options).ToHaveCountAsync(1);
+        await Expect(input).ToHaveValueAsync("#eag");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

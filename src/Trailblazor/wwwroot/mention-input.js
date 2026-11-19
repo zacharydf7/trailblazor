@@ -23,6 +23,8 @@ export function createMentionInput(input, listbox, events) {
     let asked = Number(listbox.dataset.resultsFor) || 0;
     let askedQuery = false;
     let waiting = false;
+    // Enter or Tab pressed before the latest suggestions land chooses the first, unless the query or the focus changes.
+    let chooseOnArrival = false;
     let dismissed = null;
     let active = null;
     let position = null;
@@ -58,6 +60,7 @@ export function createMentionInput(input, listbox, events) {
         }
 
         query = next && next.start !== dismissed ? next : null;
+        chooseOnArrival = false;
         if (query) {
             placeCaret(query.start);
             askedQuery = true;
@@ -167,7 +170,12 @@ export function createMentionInput(input, listbox, events) {
                 break;
             case 'Enter':
             case 'Tab':
-                choose(active);
+                if (waiting) {
+                    chooseOnArrival = true;
+                } else {
+                    choose(active);
+                }
+
                 break;
             case 'Escape':
                 // Escape closes the list until the text changes, without leaving a dialog the field is in.
@@ -184,6 +192,7 @@ export function createMentionInput(input, listbox, events) {
     };
     const onFocusOut = event => {
         if (!listbox.contains(event.relatedTarget)) {
+            chooseOnArrival = false;
             close();
         }
     };
@@ -211,6 +220,9 @@ export function createMentionInput(input, listbox, events) {
         waiting = false;
         if (query && options().length > 0 && document.activeElement === input) {
             open();
+            if (chooseOnArrival) {
+                choose(active);
+            }
         } else {
             close();
         }

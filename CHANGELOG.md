@@ -91,6 +91,7 @@ they run by version. The docs site's Upgrading page is built from both.
 - A `TbDockManager` panel that is slid out from a strip resizes by its inner edge, a focusable separator (`data-part="slide-separator"`, class `tb-dock__slide-separator`) with a grip menu on it (`data-part="slide-grip"`): a drag, the arrow keys (1% of the dock, or 10% with Shift; Home and End for the smallest and the largest) or the grip's two steps, between a tenth and nine tenths of the dock and no less than `MinGroupSize`. `DockLayout.ResizeAutoHidden(panel, size)` does it from code, telemetry counts `resize_auto_hidden`, and the helpers' `Size`/`SizeAsync` and `ResizeAsync` take the edge's name, such as "Resize Notes"
 - `TbDockManager`'s outermost element is now a frame (`data-part="frame"`, class `tb-dock-frame`) around its strips and the area its groups share; that area keeps `data-part="dock"` and the class `tb-dock`. `Class`, `Style` and other attributes go on the frame, which is the element they size; a dock without strips is laid out as before, and the dock's border and background stay on `.tb-dock`, so restyle them there
 - `TbDockManager` no longer loses the focus when a window goes with its last tab while a group fills the dock: the focus goes to a tab that shows, not to one the maximized group covers
+- In a `TbMentionInput`, Enter or Tab pressed while suggestions show and newer ones are on their way puts the first of the newer ones in once they arrive, where the key used to do nothing
 
 #### 2026-11-18
 

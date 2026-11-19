@@ -5217,7 +5217,8 @@ public static class ExampleCatalog
                 {
                     When = "While suggestions show",
                 },
-                new(["Enter", "Tab"], "Puts the active suggestion in.") { When = "While suggestions show" },
+                new(["Enter", "Tab"], "Puts the active suggestion in. Pressed while newer suggestions are on their "
+                    + "way, it puts the first of those in once they arrive.") { When = "While suggestions show" },
                 new(["Escape"], "Closes the suggestions until the text changes.") { When = "While suggestions show" },
             ],
             Labeling =

@@ -10,7 +10,9 @@ Familiar apps: mentioning someone with @ in GitHub, Slack or Google Docs comment
 - [x] Down and Up move through the suggestions and wrap, with `aria-activedescendant` on the field. `MentionInputTests.MentionInput_ShouldChooseWithTheKeys_WhenSuggestionsShow`
 - [x] Enter or Tab puts the active suggestion in, with a space after it. `MentionInputTests.MentionInput_ShouldChooseWithTheKeys_WhenSuggestionsShow`
 - [x] Escape closes the suggestions until the text changes. `MentionInputTests.MentionInput_ShouldStayClosedUntilTheTextChanges_WhenEscapeIsPressed`
-- [x] A choice from suggestions that newer typing replaced isn't counted, and the keys wait for the latest suggestions. `TbMentionInputTests.OnChosen_ShouldNotCountTheChoice_WhenItComesFromSuggestionsALaterQueryReplaced`
+- [x] A choice from suggestions that newer typing replaced isn't counted. `TbMentionInputTests.OnChosen_ShouldNotCountTheChoice_WhenItComesFromSuggestionsALaterQueryReplaced`
+- [x] Enter or Tab pressed while suggestions show and newer ones are on their way puts the first of the newer ones in once they arrive. `MentionInputTests.MentionInput_ShouldChooseTheFirstOfTheLatestSuggestions_WhenEnterOrTabIsPressedBeforeTheyArrive`
+- [x] That waiting choice is dropped when the newer suggestions come back empty, when more is typed before they arrive, or when the focus leaves the field. `MentionInputTests.MentionInput_ShouldDropTheWaitingChoice_WhenNothingMatchesMoreIsTypedOrTheFocusLeaves`
 - [x] Undo takes a mention out again. `MentionInputTests.MentionInput_ShouldTakeTheMentionOut_WhenUndone`
 
 ## Pointer
