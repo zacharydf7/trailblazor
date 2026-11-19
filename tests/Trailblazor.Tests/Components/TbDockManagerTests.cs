@@ -1462,6 +1462,47 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public async Task Close_ShouldFocusTheNextWindowsTab_WhenAWindowGoesBeforeAnotherWindow()
+    {
+        var cut = RenderDock(Hike.Float("map").Float("weather"), HikePanels);
+        var weather = Reference(cut, "Weather");
+
+        await cut.InvokeAsync(() => Report().OnClose("map", true));
+
+        Assert.Single(cut.FindAll("[data-part=group][data-floating]"));
+        Assert.Equal(weather, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+    }
+
+    [Fact]
+    public async Task Close_ShouldFocusTheDock_WhenTheLastTabThatShowsClosesBesideAStrip()
+    {
+        var cut = RenderDock(new DockLayout(new DockGroup("trails"), autoHidden: [new("notes", DockPosition.Start)]),
+            HikePanels[0], HikePanels[2]);
+        var button = cut.Find("[data-part=strip-button]").GetAttribute("blazor:elementreference");
+
+        await cut.InvokeAsync(() => Report().OnClose("trails", true));
+
+        // The notes stay on their strip, and the dock's area, empty now, takes the focus, not the strip's button.
+        Assert.Equal(["Notes"], cut.Tb().Dock().AutoHidden);
+        Assert.Equal("-1", cut.Find("[data-part=dock]").GetAttribute("tabindex"));
+        Assert.NotEqual(button, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+    }
+
+    [Fact]
+    public async Task Close_ShouldFocusTheGroupThatFillsTheDock_WhenAWindowGoesBesideAGroupItCovers()
+    {
+        // The trails' group fills the dock and covers the notes, the last docked group, which the window follows.
+        var cut = RenderDock(Hike.Float("weather").Maximize("trails"), HikePanels);
+        var trails = Reference(cut, "Trails");
+
+        await cut.InvokeAsync(() => Report().OnClose("weather", true));
+
+        Assert.Empty(cut.FindAll("[data-floating]"));
+        Assert.Contains("tb-dock__group--covered", cut.FindAll("[data-part=group]")[1].ClassList);
+        Assert.Equal(trails, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+    }
+
+    [Fact]
     public async Task Maximize_ShouldLeaveTheWindowsAboveTheGroupThatFillsTheDock_WhenAGroupIsMaximized()
     {
         var cut = RenderDock(Hike.Float("map"), HikePanels);

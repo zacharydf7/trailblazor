@@ -679,8 +679,9 @@
     }
 
     // The tab that takes focus from a closed one: the next tab of its group, or else the one before it; with the
-    // group gone, the tab showing in the next group, or else in the one before. A tab that wasn't showing gives the
-    // focus to its group's showing tab, the row's one tab stop.
+    // group gone, the tab showing in the next group, or else in the one before, or else in the group that fills the
+    // dock when it covers every neighbor. A tab that wasn't showing gives the focus to its group's showing tab, the
+    // row's one tab stop.
     private string? TabAfterClosing(string panel)
     {
         var shown = Shown();
@@ -698,8 +699,17 @@
 
         var tabs = groups[index].Panels.ToList();
         var at = tabs.IndexOf(panel);
-        return tabs.ElementAtOrDefault(at + 1) ?? tabs.ElementAtOrDefault(at - 1)
-            ?? groups.ElementAtOrDefault(index + 1)?.Active ?? groups.ElementAtOrDefault(index - 1)?.Active;
+        if ((tabs.ElementAtOrDefault(at + 1) ?? tabs.ElementAtOrDefault(at - 1)) is { } beside)
+        {
+            return beside;
+        }
+
+        // The group goes with its last tab, and a group that the maximized one covers can't take the focus.
+        var after = _layout.Close(panel).Arrange(id => Panel(id) is not null);
+        var reachable = (after.Maximized is { } filling ? after.Groups.Skip(filling).Take(1) : after.Groups)
+            .Concat(after.Floats).Select(group => group.Active).ToList();
+        return new[] { groups.ElementAtOrDefault(index + 1)?.Active, groups.ElementAtOrDefault(index - 1)?.Active }
+            .FirstOrDefault(tab => tab is not null && reachable.Contains(tab)) ?? reachable.FirstOrDefault();
     }
 
     // A move from a menu keeps the focus on the moved panel's tab, wherever the tab is drawn now, and says where the

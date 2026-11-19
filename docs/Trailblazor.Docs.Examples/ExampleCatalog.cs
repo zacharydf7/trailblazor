@@ -2971,12 +2971,14 @@ public static class ExampleCatalog
                     + "showing tab takes it.",
                 "Tab and screen readers meet the groups in reading order, and still do after the layout changes.",
                 "A hidden panel is `inert`: nothing in it can be focused or read until its tab shows it.",
-                "A click on a close mark, or a middle click, leaves the focus where it is. Closing a tab that "
-                    + "holds the focus, or whose panel does, moves focus to the next tab of its "
-                    + "group, or else the one before; a closed tab that wasn't showing gives it to the group's "
-                    + "showing tab. When its last tab closes and the group goes too, focus moves "
-                    + "to the next group's showing tab, or else the previous group's. With no panel left, the dock "
-                    + "itself takes the focus. Close in a group's menu moves focus the same way.",
+                "A click on a close mark, or a middle click, leaves the focus where it is. Closing a tab that holds "
+                    + "the focus, or whose panel does, moves focus to the next tab of its group, or else the one "
+                    + "before; a closed tab that wasn't showing gives it to the group's showing tab. When its last tab "
+                    + "closes and the group goes too, focus moves to the next group's showing tab, or else the "
+                    + "previous group's, skipping a group that another one covers. With no tab left showing, the dock "
+                    + "itself takes the focus. Closing a panel that is slid out from a strip gives the focus to the "
+                    + "next button on its strip, or else the one before, or else to a tab that shows. Close in a "
+                    + "group's menu moves focus the same way.",
                 "Each separator is a focusable `separator` that follows the window splitter pattern: its arrow "
                     + "keys move it, and a mouse or a finger drags it.",
                 "A click or tap on a separator's grip opens its menu, which makes the part before the separator "
