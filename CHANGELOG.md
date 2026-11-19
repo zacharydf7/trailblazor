@@ -93,6 +93,7 @@ they run by version. The docs site's Upgrading page is built from both.
 - `TbDockManager`'s outermost element is now a frame (`data-part="frame"`, class `tb-dock-frame`) around its strips and the area its groups share; that area keeps `data-part="dock"` and the class `tb-dock`. `Class`, `Style` and other attributes go on the frame, which is the element they size; a dock without strips is laid out as before, and the dock's border and background stay on `.tb-dock`, so restyle them there
 - `TbDockManager` no longer loses the focus when a window goes with its last tab while a group fills the dock: the focus goes to a tab that shows, not to one the maximized group covers
 - `TbDockManager` separators now state how far they can go in `aria-valuemin` and `aria-valuemax`, and a slid-out panel's edge states the real least size where `MinGroupSize` is more than a tenth of the dock. The Playwright helper's `ResizeAsync` throws `ArgumentOutOfRangeException` for a percent outside those limits, where it used to time out. A share exactly halfway between two whole percents now rounds up in `aria-valuenow`, as the script rounds it
+- A slow tap on a `TbSortable` handle, or on a `TbDataGrid` row's move handle, now opens its menu: a finger that rested on the handle for a moment and lifted in place had its click swallowed as the end of a drag
 - In a `TbMentionInput`, Enter or Tab pressed while suggestions show and newer ones are on their way puts the first of the newer ones in once they arrive, where the key used to do nothing
 
 #### 2026-11-18

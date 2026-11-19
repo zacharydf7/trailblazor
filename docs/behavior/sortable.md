@@ -28,7 +28,7 @@ Familiar apps: Trello's lists, Jira's backlog, a mail app's filter rules
 - [x] Letting go outside the list changes nothing. `sortable.js`
 - [x] Dragged over another list of its group, the item lands before or after the item under the pointer, or at the nearest gap between that list's items; a line marks the spot, or an outline marks the list when it's empty. `SortableBoardTests.Handle_ShouldMoveTheItemIntoAnotherListBeforeTheItemDroppedOn_WhenDraggedThere`, `SortableBoardTests.Handle_ShouldMoveTheItemIntoAnEmptyList_WhenDraggedOntoIt`
 - [x] A list of the group that refuses the item shows why beside the drop, and a drop there changes neither list. `SortableBoardTests.Handle_ShouldShowWhyAndLeaveBothLists_WhenTheListItGoesToRefuses`
-- [x] Escape during a drag cancels it. `sortable.js`
+- [x] Escape during a drag cancels it, and the release that follows doesn't open the handle's menu, whether or not the item had moved. `SortableTests.Handle_ShouldLeaveItsMenuClosed_WhenEscapeCancelsAMouseDragBeforeTheRelease`, `SortableTests.Handle_ShouldLeaveItsMenuClosed_WhenEscapeCancelsAFingersHoldBeforeItMoves`
 - [x] A click on a handle opens its menu, but a drag's release doesn't. `sortable.js`
 - [x] The menu moves the item in one click, and offers no move that goes nowhere. `SortableTests.Menu_ShouldMoveTheItemWithOneClick_WhenAMoveIsChosenFromItsHandle`
 - [x] Only the primary button starts a drag. `pointer-drag.js`
@@ -41,6 +41,7 @@ Familiar apps: Trello's lists, Jira's backlog, a mail app's filter rules
 
 - [x] A finger held on a handle for 300 ms starts a drag, through pointer events, and the page doesn't scroll under it. `pointer-drag.js`
 - [x] A tap on a handle opens its menu, which moves the item with no drag. `MoveHandle.cs`
+- [x] A slow tap, where the finger rests on a handle past the moment that picks the item up and lifts without moving, still opens the menu and moves nothing. `SortableTests.Handle_ShouldOpenItsMenu_WhenAFingerRestsOnItForAMomentBeforeLifting`
 - [x] A swipe on an item's content scrolls the page, since only the handle sets `touch-action: none`. `trailblazor.css`
 
 ## Focus

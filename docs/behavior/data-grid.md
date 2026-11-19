@@ -72,7 +72,7 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] A row's Cancel button throws the edit away instead of saving it as focus leaves. `DataGridTests.RowEdit_ShouldSaveNothing_WhenCancelIsClicked`
 - [x] Dragging a row's handle moves the row. `SortableTests.GridRows_ShouldReorderByKeysAndByDragging_WhenTheGridLetsRowsMove`
 - [x] A refused move leaves the order alone and says why. `TbDataGridTests.RowMove_ShouldAskFirstAndLeaveTheOrder_WhenTheMoveIsRefused`
-- [x] Escape during a drag cancels it, and its release doesn't open the handle's menu. `sortable.js`
+- [x] Escape during a drag cancels it, and its release doesn't open the handle's menu. `sortable.js`, `SortableTests.Handle_ShouldLeaveItsMenuClosed_WhenEscapeCancelsAMouseDragBeforeTheRelease`
 - [x] Handles go away while the rows are sorted, filtered or grouped, since a move would mean nothing. `TbDataGridTests.RowMove_ShouldOfferNoHandles_WhenTheGridIsSorted`
 - [x] A drag held still near the top or bottom of the scroll box keeps scrolling. `DragScrollTests.DataGrid_ShouldKeepScrolling_WhenARowDragIsHeldStillNearTheBottom`
 - [x] Double-clicking a row that isn't being edited raises one row click, and doesn't select and unselect it. `DataGridTests.Row_ShouldBeClickedOnce_WhenDoubleClicked`
@@ -99,6 +99,8 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 - [x] A tap on a row selects it: the grid listens for the click a tap sends. `Trailblazor.lib.module.js`
 - [x] A finger held on a handle for 300 ms starts a drag, through pointer events, and a swipe elsewhere scrolls. `pointer-drag.js`
 - [x] A tap on a handle opens its menu, which moves the row with no drag. `MoveHandle.cs`
+- [x] A slow tap on a row's handle, where the finger rests past the moment that picks the row up and lifts without moving, still opens the handle's menu and moves nothing. `SortableTests.GridRows_ShouldOpenAHandlesMenu_WhenAFingerRestsOnItForAMomentBeforeLifting`
+- [x] A slow tap on a draggable header, where the finger rests past the moment that picks the column up and lifts without moving, still sorts the column and moves nothing. `GridResizeDragTests.Grid_ShouldSortAndLeaveTheColumnsWhereTheyAre_WhenAFingerRestsOnAHeaderBeforeLifting`
 - [ ] A double tap opens a cell's edit, which touch has no other way to do. UNCONFIRMED
 - [ ] A finger drags a column's edge too, since the edge takes pointer events and turns off touch scrolling. #332
 

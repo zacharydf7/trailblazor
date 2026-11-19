@@ -130,6 +130,27 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
 
     private static readonly TimeSpan PauseMargin = TimeSpan.FromSeconds(5);
 
+    // A slow tap: a finger holds still on the target past the moment that picks a draggable item up, then lifts where
+    // it was. Returns whether the hold picked the item up: whether the target, or the ancestor it is carried with, had
+    // the attribute that marks a carried item. The target is brought to the middle of the window first: a finger held
+    // near the top or bottom of what scrolls keeps it scrolling, which counts as a move.
+    protected static Task<bool> SlowTapAsync(ILocator target, string carrier, string attribute) =>
+        target.EvaluateAsync<bool>("""
+            async (target, { carrier, attribute }) => {
+                target.scrollIntoView({ block: 'center', behavior: 'instant' });
+                const box = target.getBoundingClientRect();
+                const fire = type => target.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 7,
+                    pointerType: 'touch', isPrimary: true, button: 0, clientX: box.left + box.width / 2,
+                    clientY: box.top + box.height / 2 }));
+                fire('pointerdown');
+                await new Promise(resolve => setTimeout(resolve, 400));
+                const carried = target.closest(carrier).hasAttribute(attribute);
+                fire('pointerup');
+                target.click();
+                return carried;
+            }
+            """, new { carrier, attribute });
+
     // Waits out fades and color transitions before a check reads colors, but not infinite animations like a spinner.
     protected static Task WaitForFadesAsync(IPage page) => page.WaitForFunctionAsync("""
         () => document.getAnimations().every(animation => animation.playState !== 'running'

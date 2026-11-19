@@ -47,6 +47,7 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 ## Touch
 
 - [x] Tapping a row selects it, even on the hidden edge of an insert slot. `TreeReorderTests.Tree_ShouldSelectTheRowAndAddNothing_WhenAHiddenSlotsEdgeIsTappedOnATouchScreen`
+- [x] A slow tap, where the finger rests on a row past the moment that picks it up and lifts without moving, still selects the row and moves nothing. `TreeReorderTests.Tree_ShouldSelectARowAndMoveNothing_WhenAFingerRestsOnItForAMomentBeforeLifting`
 - [x] A finger held still starts a drag and a swipe scrolls, through pointer events. `pointer-drag.js`, `TreeReorderTests.Tree_ShouldLetTheNextKeyAndClickThrough_WhenATouchDragEndsWithoutAClick`
 - [ ] Double-tapping a row opens and activates it. UNCONFIRMED
 - [ ] A long press starts a drag without the system's own menu getting in the way. UNCONFIRMED

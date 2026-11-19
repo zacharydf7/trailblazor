@@ -91,6 +91,81 @@ public class SortableTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Handle_ShouldOpenItsMenu_WhenAFingerRestsOnItForAMomentBeforeLifting(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+
+        Assert.True(await SlowTapAsync(Handle(page, "Block spam"), "[data-part=item]", "data-dragging"));
+
+        // The tap opened the handle's menu, as a tap does, and the item was put down where it was.
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Move down" })).ToBeVisibleAsync();
+        await Expect(Item(page, "Block spam")).Not.ToHaveAttributeAsync("data-dragging", "");
+        await Expect(page.GetByTestId("order")).ToHaveTextAsync("Block spam, Flag invoices, Star the team, Catch-all");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task GridRows_ShouldOpenAHandlesMenu_WhenAFingerRestsOnItForAMomentBeforeLifting(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        var grid = page.GetByRole(AriaRole.Table, new() { Name = "Route stops" });
+
+        Assert.True(await SlowTapAsync(Handle(page, "Trailhead"), "tr[data-part=row]", "data-dragging"));
+
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Move down" })).ToBeVisibleAsync();
+        await Expect(grid.Locator("tbody td[data-column=stop]"))
+            .ToHaveTextAsync(["Trailhead", "Lake camp", "Summit Gate"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Handle_ShouldLeaveItsMenuClosed_WhenEscapeCancelsAMouseDragBeforeTheRelease(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        var box = (await Handle(page, "Block spam").BoundingBoxAsync())!;
+        var (x, y) = (box.X + box.Width / 2, box.Y + box.Height / 2);
+
+        // The item is carried a little way and back, so the release lands on the handle it was pressed on.
+        await page.Mouse.MoveAsync(x, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(x, y + 12, new() { Steps = 3 });
+        await Expect(Item(page, "Block spam")).ToHaveAttributeAsync("data-dragging", "");
+        await page.Mouse.MoveAsync(x, y, new() { Steps = 3 });
+        await page.Keyboard.PressAsync("Escape");
+        await page.Mouse.UpAsync();
+
+        await Expect(Item(page, "Block spam")).Not.ToHaveAttributeAsync("data-dragging", "");
+        await Expect(page.GetByRole(AriaRole.Menu)).ToHaveCountAsync(0);
+        await Expect(page.GetByTestId("order")).ToHaveTextAsync("Block spam, Flag invoices, Star the team, Catch-all");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Handle_ShouldLeaveItsMenuClosed_WhenEscapeCancelsAFingersHoldBeforeItMoves(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+
+        // The finger picks the item up and holds still, Escape calls the drag off, and then the finger lifts.
+        var pickedUp = await Handle(page, "Block spam").EvaluateAsync<bool>("""
+            async handle => {
+                const box = handle.getBoundingClientRect();
+                const fire = type => handle.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 7,
+                    pointerType: 'touch', isPrimary: true, button: 0, clientX: box.left + box.width / 2,
+                    clientY: box.top + box.height / 2 }));
+                fire('pointerdown');
+                await new Promise(resolve => setTimeout(resolve, 400));
+                const carried = handle.closest('[data-part="item"]').hasAttribute('data-dragging');
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true,
+                    cancelable: true }));
+                fire('pointerup');
+                handle.click();
+                return carried;
+            }
+            """);
+
+        Assert.True(pickedUp);
+        await Expect(Item(page, "Block spam")).Not.ToHaveAttributeAsync("data-dragging", "");
+        await Expect(page.GetByRole(AriaRole.Menu)).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task GridRows_ShouldReorderByKeysAndByDragging_WhenTheGridLetsRowsMove(string browser)
     {
         var page = await OpenReadyAsync(browser);

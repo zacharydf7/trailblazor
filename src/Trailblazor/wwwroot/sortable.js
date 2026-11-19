@@ -197,9 +197,10 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
                 callDotNet(events, 'OnDrop', moved.dataset.key, target.item.dataset.key, target.before);
             }
         },
-        // Escape ends a drag before its release, whose click would open the menu.
-        onCancel: () => {
-            draggedHandle = handleOf(triggerOf(source));
+        // A drag that is called off, as by Escape, ends before its release, whose click would open the menu. A finger
+        // that lifts without having moved the item has only tapped slowly, and its click opens the menu as a tap does.
+        onCancel: ({ released }) => {
+            draggedHandle = released ? null : handleOf(triggerOf(source));
             endDrag();
         },
     });

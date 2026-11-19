@@ -122,6 +122,21 @@ public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tree_ShouldSelectARowAndMoveNothing_WhenAFingerRestsOnItForAMomentBeforeLifting(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tree-view");
+        await PlanReadyAsync(page);
+
+        Assert.True(await SlowTapAsync(Row(page, "Lake camp"), "[role=treeitem]", "data-dragging"));
+
+        // The tap selected the row, as a tap does, and the row was put down where it was.
+        await Expect(Row(page, "Lake camp")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(Row(page, "Lake camp")).Not.ToHaveAttributeAsync("data-dragging", "");
+        await Expect(Rows(page)).ToHaveTextAsync(["Day 1", "Trailhead", "Pine Hollow", "Lake camp", "Day 2",
+            "Eagle Ridge", "Summit Gate"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tree_ShouldOpenAClosedRow_WhenADragRestsOnIt(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tree-view");

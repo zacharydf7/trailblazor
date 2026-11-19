@@ -4122,9 +4122,12 @@ public static class ExampleCatalog
             ],
             Accessibility =
             [
-                "A click on a handle opens the same menu as Enter or Space, the single-pointer way that replaces "
-                    + "dragging (WCAG 2.5.7). "
-                    + "The menu also works where a screen reader keeps the arrow keys for itself.",
+                "A click or tap on a handle opens the same menu as Enter or Space, the single-pointer way that "
+                    + "replaces dragging (WCAG 2.5.7). The menu also works where a screen reader keeps the arrow keys "
+                    + "for itself.",
+                "A finger starts a drag only once it has held a handle still for a moment, and a finger that lifts "
+                    + "without having moved the item opens the handle's menu. A swipe on an item's content still "
+                    + "scrolls the page.",
                 "A drop lands before or after the item under the pointer, shown by a line. Where it can't go, the line "
                     + "is dashed, so it doesn't rely on color.",
                 "A drag held near the top or bottom of what scrolls keeps it scrolling, so a drop can reach any item.",

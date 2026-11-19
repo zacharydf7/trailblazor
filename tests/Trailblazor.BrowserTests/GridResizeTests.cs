@@ -333,25 +333,8 @@ public class GridResizeDragTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await GridResizeTests.ReadyAsync(await OpenAsync(browser, "/examples/data-grid"));
         var region = GridResizeTests.Header(page, "Region");
-        await region.ScrollIntoViewIfNeededAsync();
 
-        // A slow tap: the finger holds still past the moment that picks the column up, then lifts where it was.
-        var pickedUp = await region.Locator("[data-part=sort]").EvaluateAsync<bool>("""
-            async sort => {
-                const box = sort.getBoundingClientRect();
-                const fire = type => sort.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 7,
-                    pointerType: 'touch', isPrimary: true, button: 0, clientX: box.left + box.width / 2,
-                    clientY: box.top + box.height / 2 }));
-                fire('pointerdown');
-                await new Promise(resolve => setTimeout(resolve, 400));
-                const carried = sort.closest('th').hasAttribute('data-moving');
-                fire('pointerup');
-                sort.click();
-                return carried;
-            }
-            """);
-
-        Assert.True(pickedUp);
+        Assert.True(await SlowTapAsync(region.Locator("[data-part=sort]"), "th", "data-moving"));
         // The tap sorted the column, as a tap does, and dropped it nowhere.
         await Expect(region).ToHaveAttributeAsync("aria-sort", "ascending");
         await Expect(region).Not.ToHaveAttributeAsync("data-moving", "");
