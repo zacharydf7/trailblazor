@@ -1308,9 +1308,10 @@
         z-index: 1000;
     }
 
+    /* Above any layer the region's content sets up, such as a grid's sticky header or a dialog's actions. */
     .tb-overlay--contained {
         position: absolute;
-        z-index: 1;
+        z-index: 5;
     }
 
     .tb-overlay__scrim {
@@ -5089,11 +5090,13 @@
     }
 
     /* Kept out of the top layer, a dialog sits over the page by z-index, so other scripts' popups can open above it,
-       and draws its own backdrop. */
+       and draws its own backdrop. It clips its content to its rounded corners, as the browser does in the top layer,
+       without becoming a scroll container. */
     .tb-dialog[data-layer="page"] {
         position: fixed;
         inset: 0;
         z-index: calc(var(--tb-dialog-z-index, 1100) + var(--tb-dialog-level, 0));
+        overflow: clip;
     }
 
     .tb-dialog[data-layer="page"][data-backdrop] {
@@ -5802,17 +5805,22 @@
 
     /* The sticky actions cover the bottom of the body, so a field that Tab reaches scrolls to rest above them (WCAG
        2.4.11). The padding fits one row of actions; a second row covers part of the field. */
-    :is(.tb-drawer, .tb-dialog--full, .tb-dialog[data-window-state="maximized"])
-        > .tb-dialog__body:has(.tb-dialog__actions) {
+    .tb-dialog__body:has(.tb-dialog__actions) {
         scroll-padding-block-end: calc(var(--tb-control-height) + 2 * var(--tb-space-3) + 1px);
+    }
+
+    /* Above any layer the body's content sets up, such as a grid's pinned cells, so that content scrolls under the
+       actions. */
+    .tb-dialog__body .tb-dialog__actions {
+        position: sticky;
+        inset-block-end: calc(-1 * var(--tb-space-5));
+        z-index: 4;
+        background: var(--tb-color-surface-raised);
     }
 
     :is(.tb-drawer, .tb-dialog--full, .tb-dialog[data-window-state="maximized"])
         > .tb-dialog__body .tb-dialog__actions {
-        position: sticky;
-        inset-block-end: calc(-1 * var(--tb-space-5));
         margin-block-start: auto;
-        background: var(--tb-color-surface-raised);
     }
 
     /* The bar runs across the top, the navigation sits beside the page, and the page and its footer fill the rest.

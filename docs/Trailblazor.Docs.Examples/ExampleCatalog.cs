@@ -9256,15 +9256,15 @@ public static class ExampleCatalog
                     + "and a click on the backdrop from closing a dialog that needs an answer. On a `TbDialog`, "
                     + "`CanDismiss` is asked first, and can keep it open. Closing from code doesn't ask.",
                     typeof(DialogDismissExample)),
-                new("long-content", "Long content", "A dialog never grows past the window. Its header stays in view "
-                    + "and its body scrolls, and the buttons in `TbDialogActions` scroll with the body. Give long "
+                new("long-content", "Long content", "A dialog never grows past the window. Its header and the "
+                    + "buttons in `TbDialogActions` stay in view, and its body scrolls between them. Give long "
                     + "content that has no controls `tabindex=\"0\"` and a name, so keyboard users can scroll it.",
                     typeof(DialogLongExample)),
                 new("full-window", "Filling the window", "In a `DialogSize.Full` or maximized dialog, the buttons in "
-                    + "`TbDialogActions` stay at the bottom of the window while the body scrolls. `Fill` on `TbTabs` "
-                    + "and `TbDataGrid` makes them as tall as the body, so the tab list and the grid's header stay "
-                    + "in view and only the rows scroll. With actions, such a dialog's body lays its content out in "
-                    + "a column, so put text in a `TbText` rather than straight in the body.",
+                    + "`TbDialogActions` sit at the bottom of the window however little is above them. `Fill` on "
+                    + "`TbTabs` and `TbDataGrid` makes them as tall as the body, so the tab list and the grid's "
+                    + "header stay in view and only the rows scroll. With actions, such a dialog's body lays its "
+                    + "content out in a column, so put text in a `TbText` rather than straight in the body.",
                     typeof(DialogFullWindowExample)),
                 new("saving", "Saving and errors", "While a dialog saves, set `Loading` on its button, and "
                     + "`CanDismiss` can keep it open until the work ends. Show a failure in the dialog with an alert, "
@@ -9333,6 +9333,8 @@ public static class ExampleCatalog
             [
                 "A modal dialog makes the rest of the page inert, so focus and screen readers stay inside; a non-modal "
                     + "one leaves the page usable.",
+                "A field that takes focus behind the buttons in `TbDialogActions` scrolls clear of them as long as "
+                    + "they fit on one row; a second row of buttons can cover part of it.",
                 "A modal stops the page from scrolling behind it and makes up for the width of the scrollbar it takes "
                     + "away, so the page doesn't shift sideways. An element of your own with `position: fixed` against "
                     + "the window's right edge holds still too if it adds `var(--tb-scroll-lock-offset, 0px)` to its "
@@ -9518,6 +9520,8 @@ public static class ExampleCatalog
                     + "page inert and keeps it from scrolling, a click on the backdrop closes it, and focus goes back "
                     + "to the button that opened it as it closes.",
                 "It slides in and out with the motion tokens; reduced motion opens and closes it at once.",
+                "A field that takes focus behind the buttons in `TbDialogActions` scrolls clear of them as long as "
+                    + "they fit on one row, as in a dialog.",
             ],
             AppDuties =
             [

@@ -32,6 +32,34 @@ public class DialogLayerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldKeepItsRoundedCornersClearOfItsActions_WhenItIsOnThePageLayer(string browser)
+    {
+        var page = await OpenAsync(browser, "/foreign-popups");
+        await Button(page, "Note").ClickAsync();
+        await page.GetByRole(AriaRole.Dialog, new() { Name = "Note" })
+            .GetByRole(AriaRole.Button, new() { Name = "Details" }).ClickAsync();
+        var details = page.GetByRole(AriaRole.Dialog, new() { Name = "Details" });
+        await Expect(details.GetByLabel("Name")).ToBeFocusedAsync();
+
+        // The actions fill the body to its square corners, so the dialog clips them to its rounded ones, as the
+        // browser does for a dialog in the top layer.
+        await Expect(details).ToHaveCSSAsync("overflow", "clip");
+        // WebKit's hit test ignores the rounded clip, in the top layer too, so only the others can be asked what is
+        // at a point inside the border's square and outside its curve.
+        if (browser != "webkit")
+        {
+            var covered = await details.EvaluateAsync<bool>("""
+                dialog => {
+                    const box = dialog.getBoundingClientRect();
+                    const corner = document.elementFromPoint(box.left + 2, box.bottom - 2);
+                    return dialog.querySelector('[data-part=actions]').contains(corner);
+                }
+                """);
+            Assert.False(covered, "The actions paint over the dialog's bottom corner.");
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldLeaveAPopupMadeBeforeItAndBlazorsErrorBarUsable_WhenItIsOnThePageLayer(
         string browser)
     {

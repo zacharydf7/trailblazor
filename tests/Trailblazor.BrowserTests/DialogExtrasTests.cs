@@ -185,21 +185,156 @@ public class DialogExtrasTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Dialog_ShouldScrollItsBodyAndKeepItsHeaderInView_WhenItsContentIsLong(string browser)
+    public async Task Dialog_ShouldScrollItsBodyAndKeepItsHeaderAndActionsInView_WhenItsContentIsLong(string browser)
     {
         var page = await OpenAsync(browser, "/examples/dialog");
         await page.GetByRole(AriaRole.Button, new() { Name = "Read the trail rules" }).ClickAsync();
         var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Trail rules" });
         var close = dialog.GetByRole(AriaRole.Button, new() { Name = "Close" });
         var done = dialog.GetByRole(AriaRole.Button, new() { Name = "Done" });
+        var body = dialog.Locator("[data-part=body]");
         await Expect(close).ToBeInViewportAsync();
-        await Expect(done).Not.ToBeInViewportAsync();
+        await Expect(done).ToBeInViewportAsync(new() { Ratio = 1 });
+        Assert.True(await body.EvaluateAsync<bool>("body => body.scrollHeight > body.clientHeight"));
+        Assert.InRange(await ActionsBelowBodyAsync(dialog), -1, 1);
+        // The actions hide the rules that scroll under them, in the dialog's own color.
+        var surface = await dialog.EvaluateAsync<string>("dialog => getComputedStyle(dialog).backgroundColor");
+        await Expect(dialog.Locator("[data-part=actions]")).ToHaveCSSAsync("background-color", surface);
 
-        await done.ScrollIntoViewIfNeededAsync();
+        // Scrolled to the middle of the rules, the actions are still at the bottom of the body.
+        await body.EvaluateAsync("body => body.scrollTop = (body.scrollHeight - body.clientHeight) / 2");
 
-        await Expect(done).ToBeInViewportAsync();
+        Assert.InRange(await ActionsBelowBodyAsync(dialog), -1, 1);
+        await Expect(done).ToBeInViewportAsync(new() { Ratio = 1 });
         await Expect(close).ToBeInViewportAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldScrollAFocusedFieldOutFromBehindItsActions_WhenTheyCoverIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Read the trail rules" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Trail rules" });
+        var done = dialog.GetByRole(AriaRole.Button, new() { Name = "Done" });
+        await Expect(done).ToBeInViewportAsync();
+        // Add a control at the end of the rules and scroll the body so it sits just behind the actions.
+        await dialog.Locator("[data-part=body]").EvaluateAsync("""
+            body => {
+                const field = Object.assign(document.createElement('button'), { textContent: 'Low field' });
+                const actions = body.querySelector('[data-part=actions]');
+                actions.before(field);
+                body.scrollTop += field.getBoundingClientRect().bottom - body.getBoundingClientRect().bottom + 2;
+            }
+            """);
+        var field = dialog.GetByRole(AriaRole.Button, new() { Name = "Low field" });
+        await done.FocusAsync();
+
+        await page.Keyboard.PressAsync("Shift+Tab");
+
+        await Expect(field).ToBeFocusedAsync();
+        var fieldBox = (await field.BoundingBoxAsync())!;
+        var actionsBox = (await dialog.Locator("[data-part=actions]").BoundingBoxAsync())!;
+        Assert.True(fieldBox.Y + fieldBox.Height <= actionsBox.Y + 1,
+            $"The field ends at {fieldBox.Y + fieldBox.Height}, below the top of the actions at {actionsBox.Y}.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldKeepItsActionsInView_WhenAFormHoldsThemAndItsContentScrolls(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Form name", Exact = true }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Form name" });
+        await Expect(dialog).ToBeVisibleAsync();
+        var body = dialog.Locator("[data-part=body]");
+
+        await body.EvaluateAsync("""
+            body => {
+                const filler = Object.assign(document.createElement('div'), { style: 'flex: none; height: 3000px' });
+                body.querySelector('[data-part=actions]').before(filler);
+                body.scrollTop = (body.scrollHeight - body.clientHeight) / 2;
+            }
+            """);
+
+        Assert.InRange(await ActionsBelowBodyAsync(dialog), -1, 1);
+        var save = dialog.GetByRole(AriaRole.Button, new() { Name = "Save" });
+        await Expect(save).ToBeInViewportAsync(new() { Ratio = 1 });
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldDrawItsActionsOverContentScrolledUnderThem_WhenTheContentHasALayerOfItsOwn(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Read the trail rules" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Trail rules" });
+        var done = dialog.GetByRole(AriaRole.Button, new() { Name = "Done" });
+        await Expect(done).ToBeInViewportAsync();
+        // The highest layer the library gives content that isn't a popup, as a reloading grid's progress line has.
+        await dialog.Locator("[data-part=body]").EvaluateAsync("""
+            body => {
+                body.prepend(Object.assign(document.createElement('div'),
+                    { style: 'position: relative; z-index: 3; height: 3000px; background: canvas' }));
+                body.scrollTop = 1000;
+            }
+            """);
+
+        var onTop = await done.EvaluateAsync<bool>("""
+            done => {
+                const box = done.getBoundingClientRect();
+                return done.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2));
+            }
+            """);
+
+        Assert.True(onTop, "The content covers the Done button.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldBeCoveredActionsAndAll_WhenAContainedOverlayIsPutOverIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/dialog");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Read the trail rules" }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Trail rules" });
+        var done = dialog.GetByRole(AriaRole.Button, new() { Name = "Done" });
+        await Expect(done).ToBeInViewportAsync();
+        // The markup of a contained TbOverlay, as an app puts over a dialog while it saves. With no positioned
+        // parent in the body, it covers the dialog.
+        await dialog.Locator("[data-part=body]").EvaluateAsync("""
+            body => body.append(Object.assign(document.createElement('div'),
+                { className: 'tb-overlay tb-overlay--contained', id: 'saving' }))
+            """);
+
+        var covered = await done.EvaluateAsync<bool>("""
+            done => {
+                const box = done.getBoundingClientRect();
+                return document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2).id === 'saving';
+            }
+            """);
+
+        Assert.True(covered, "The Done button shows through the overlay.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldEndWithItsActionsAndNotScroll_WhenItsContentIsShort(string browser)
+    {
+        var page = await OpenAsync(browser, "/dialogs");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Rename", Exact = true }).ClickAsync();
+        var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Rename" });
+        await Expect(dialog).ToBeVisibleAsync();
+        var body = dialog.Locator("[data-part=body]");
+
+        Assert.False(await body.EvaluateAsync<bool>("body => body.scrollHeight > body.clientHeight"));
+        Assert.InRange(await ActionsBelowBodyAsync(dialog), -1, 1);
+        // The actions follow the content after a gap and aren't pushed to the bottom of a taller body.
+        var gap = await body.EvaluateAsync<double>("body => { const actions = body.querySelector("
+            + "'[data-part=actions]'); return actions.getBoundingClientRect().top - "
+            + "actions.previousElementSibling.getBoundingClientRect().bottom; }");
+        Assert.InRange(gap, 16, 28);
+    }
+
+    // How far the bottom of the actions is below the bottom of the body they sit in.
+    private static Task<double> ActionsBelowBodyAsync(ILocator dialog) => dialog.Locator("[data-part=body]")
+        .EvaluateAsync<double>("body => body.querySelector('[data-part=actions]').getBoundingClientRect().bottom "
+            + "- body.getBoundingClientRect().bottom");
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldStayOpenWithItsErrorThenClose_WhenSavingFailsThenSucceeds(string browser)

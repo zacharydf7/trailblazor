@@ -64,8 +64,11 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] A `TbDialogHeader` reports each new window state through its `WindowStateChanged` callback, which renders the component that passed the callback again, and stops once the header leaves. `DialogServiceTests.CustomHeader_ShouldRaiseWindowStateChangedUntilItLeaves_WhenTheStateChangesFromCode`
 - [x] `HasOpenDialogs` and the page's `data-tb-open-dialogs` count the open dialogs, leaving out one that is closing. `DialogServiceTests.HasOpenDialogs_ShouldLeaveOutAClosingDialogAndShowTheCountOnThePage_WhenOneOpensAndCloses`
 - [x] Maximize fills the window, and Restore brings it back. `DialogTests.Dialog_ShouldFillTheWindowAndComeBack_WhenMaximizedAndRestored`
-- [x] A long dialog keeps its header in view and scrolls its body. `DialogExtrasTests.Dialog_ShouldScrollItsBodyAndKeepItsHeaderInView_WhenItsContentIsLong`
-- [x] A full or maximized dialog, or a drawer, keeps its actions at the bottom of the window, even when a form holds them. `DialogTests.Dialog_ShouldPinItsActionsToTheBottomOfTheWindow_WhenFullOrMaximized`
+- [x] A long dialog keeps its header and its actions in view and scrolls its body between them, even when a form holds the actions. `DialogExtrasTests.Dialog_ShouldScrollItsBodyAndKeepItsHeaderAndActionsInView_WhenItsContentIsLong`, `DialogExtrasTests.Dialog_ShouldKeepItsActionsInView_WhenAFormHoldsThemAndItsContentScrolls`
+- [x] Library content that sits on a layer of its own, such as a grid's pinned cells or sticky header, scrolls under the actions and doesn't cover them. `DialogExtrasTests.Dialog_ShouldDrawItsActionsOverContentScrolledUnderThem_WhenTheContentHasALayerOfItsOwn`
+- [x] In a short dialog, the actions follow the content after a gap, and the body doesn't scroll. `DialogExtrasTests.Dialog_ShouldEndWithItsActionsAndNotScroll_WhenItsContentIsShort`
+- [x] A dialog on the page layer clips its actions to its rounded corners, as one in the top layer does. `DialogLayerTests.Dialog_ShouldKeepItsRoundedCornersClearOfItsActions_WhenItIsOnThePageLayer`
+- [x] A full or maximized dialog, or a drawer, keeps its actions at its bottom edge however short its content is, even when a form holds them. `DialogTests.Dialog_ShouldPinItsActionsToTheBottomOfTheWindow_WhenFullOrMaximized`
 - [x] In a full dialog with actions, a filling grid scrolls only its own rows, whether it sits straight in the body, in filling tabs or in a form. `DialogTests.Dialog_ShouldScrollOnlyTheGridsRows_WhenAFullDialogHoldsAFillingGridAndActions`
 
 ## Touch
@@ -77,6 +80,7 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 
 ## Focus
 
+- [x] A field that takes focus behind the actions, such as by Tab, scrolls out from behind them as long as they fit on one row. `DialogExtrasTests.Dialog_ShouldScrollAFocusedFieldOutFromBehindItsActions_WhenTheyCoverIt`
 - [x] Focus starts on the first field. `DialogTests.Dialog_ShouldFocusTheFirstFieldAndKeepFocusOffThePage_WhenModal`
 - [x] An element marked `autofocus` starts with focus. `DialogTests.Dialog_ShouldFocusTheFieldMarkedAutofocus_WhenOneIsInside`
 - [x] `InitialFocus` set to the dialog starts on the dialog itself. `DialogTests.Dialog_ShouldFocusItself_WhenItsInitialFocusIsTheDialog`
