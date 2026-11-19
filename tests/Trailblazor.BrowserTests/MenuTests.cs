@@ -200,6 +200,59 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldLeaveFocusWhereItWent_WhenAnotherControlTakesItBeforeTheMenuHearsItClosed(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/menu");
+        var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Actions" });
+        await trigger.ClickAsync();
+        await Expect(Item(page, "Duplicate")).ToBeFocusedAsync();
+        // The browser fires the menu's toggle event a task after the menu closes. Holding that event back stands in
+        // for a slow machine, where a test or the app focuses something else in between.
+        await page.EvaluateAsync("""
+            () => {
+                document.addEventListener('toggle', event => {
+                    if (event.isTrusted && event.newState === 'closed' && event.target.matches('[role=menu]')) {
+                        event.stopImmediatePropagation();
+                        window.tellTheMenu = () => event.target.dispatchEvent(
+                            new ToggleEvent('toggle', { oldState: 'open', newState: 'closed' }));
+                    }
+                }, true);
+                const other = document.createElement('button');
+                other.textContent = 'Elsewhere';
+                document.body.append(other);
+            }
+            """);
+        var elsewhere = page.GetByRole(AriaRole.Button, new() { Name = "Elsewhere" });
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(page.GetByRole(AriaRole.Menu)).ToBeHiddenAsync();
+        await page.WaitForFunctionAsync("() => typeof window.tellTheMenu === 'function'");
+        await elsewhere.FocusAsync();
+        await page.EvaluateAsync("() => window.tellTheMenu()");
+
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(elsewhere).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldGiveFocusToItsTrigger_WhenItWasOpenedFromCodeAndEscapeClosesIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu-open");
+        var tools = page.GetByRole(AriaRole.Menu, new() { Name = "Tools" });
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Report" })).ToHaveAttributeAsync("data-ready", "");
+        // The button that opens the menu from code has the focus as the menu opens, so the browser puts focus
+        // back on it as the menu closes. That isn't a control that took focus since, and the trigger gets it.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open the tools" }).ClickAsync();
+        await Expect(tools.GetByRole(AriaRole.Menuitem).First).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(tools).ToBeHiddenAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Tools", Exact = true })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Menu_ShouldCloseAndMoveOn_WhenTabIsPressed(string browser)
     {
         var page = await OpenAsync(browser, "/examples/menu");

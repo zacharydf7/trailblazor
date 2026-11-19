@@ -271,6 +271,7 @@ function attachLists(menu, events, hooks) {
     const submenuOptions = { side: 'End', align: 'Start', offset: 0 };
     const positions = new Map();
     const returnFocus = new Set();
+    const openedFrom = new Map();
     const openedByHover = new Set();
     const shown = new Set();
     // Whether the server last knew the menu as open, from its own setOpen or from a toggle reported to it.
@@ -312,6 +313,8 @@ function attachLists(menu, events, hooks) {
             return;
         }
 
+        // What has focus as the list opens is where the browser puts focus back as it closes.
+        openedFrom.set(list, document.activeElement);
         // toggle fires a task later, possibly after a paint, so the list is placed in the next frame, before it paints.
         requestAnimationFrame(() => {
             if (list.matches(':popover-open') && !positions.has(list)) {
@@ -368,7 +371,13 @@ function attachLists(menu, events, hooks) {
             forgetPointer();
         }
 
-        if (returnFocus.delete(list)) {
+        // The toggle event comes a task after the list closes, so a control outside the menu that took focus in
+        // between keeps it. Where the browser put focus back itself doesn't count as such a control.
+        const active = document.activeElement;
+        const elsewhere = active !== null && active !== document.body && !menu.contains(active)
+            && active !== openedFrom.get(list);
+        openedFrom.delete(list);
+        if (returnFocus.delete(list) && !elsewhere) {
             if (list === menu) {
                 hooks.returnFocus();
             } else {
