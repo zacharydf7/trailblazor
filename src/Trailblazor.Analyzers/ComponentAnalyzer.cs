@@ -11,7 +11,8 @@ namespace Trailblazor.Analyzers;
 /// <summary>Reports Trailblazor controls and fields with no accessible name, dialogs with no title, inputs given a
 /// Value without ValueChanged, attributes that look like a misnamed type parameter, components written outside the
 /// one they belong in, items whose value isn't their list's type, sliders of something other than a number, tree
-/// views whose parameters don't go together, and string parameters given text that looks like code.</summary>
+/// views whose parameters don't go together, and string parameters given text that looks like code. It also suggests
+/// a filterable select for an autocomplete that opens a known list on focus.</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ComponentAnalyzer : DiagnosticAnalyzer
 {
@@ -110,7 +111,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         Rules.NoAccessibleName, Rules.NoDialogTitle, Rules.ValueWithoutValueChanged, Rules.NoFieldLabel,
         Rules.TypeParameterAsAttribute, Rules.OutsideItsParent, Rules.ItemTypeMismatch, Rules.SliderNotANumber,
-        Rules.TreeSetup, Rules.CodeAsText);
+        Rules.TreeSetup, Rules.CodeAsText, Rules.KnownListAutocomplete);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -134,7 +135,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                 Pairs(compilation, Listed), [.. new[] { "Trailblazor.TbSlider`1", "Trailblazor.TbRangeSlider`1" }
                     .Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()],
                 compilation.GetTypeByMetadataName("Trailblazor.TbTreeView`2"),
-                [.. Labeled.Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()]);
+                [.. Labeled.Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()],
+                compilation.GetTypeByMetadataName("Trailblazor.TbAutocomplete`1"));
             // Razor passes each .razor file to analyzers too, which is where a component's tag is found.
             var razorFiles = start.Options.AdditionalFiles
                 .Where(file => file.Path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
@@ -196,6 +198,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         CheckSliderType(context, invocation, usage, types.Sliders);
         CheckTreeSetup(context, invocation, usage, types.TreeView);
         CheckCodeAsText(context, invocation, usage);
+        CheckKnownList(context, usage, types.Autocomplete);
 
         if (component.ContainingNamespace.ToDisplayString() == "Trailblazor" && Property(component, "Value") is not null
             && Property(component, "ValueChanged") is not null && usage.Has("Value") && !usage.Has("ValueChanged")
@@ -403,6 +406,23 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    // OpenOnFocus on a list the page already has is there so people can pick without typing, which is a select's
+    // job. A select has no Search, FreeText, OnTextChanged or Columns, and splatted attributes may hold any of them.
+    private static void CheckKnownList(OperationAnalysisContext context, ComponentUsage usage,
+        INamedTypeSymbol? autocomplete)
+    {
+        if (SymbolEqualityComparer.Default.Equals(usage.Component.OriginalDefinition, autocomplete)
+            && usage.Parameters.TryGetValue("OpenOnFocus", out var opens)
+            && Unwrap(opens.Value)?.ConstantValue is { HasValue: true, Value: true }
+            && usage.Parameters.TryGetValue("Items", out var items) && IsSurelySet(items.Value)
+            && !usage.Has("Search") && !IsOn(usage, "FreeText") && !usage.Has("OnTextChanged")
+            && !usage.Has("Columns") && !usage.HasSplattedAttributes)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Rules.KnownListAutocomplete, opens.Location,
+                usage.Component.Name));
+        }
+    }
+
     // Whether markup surely gives the parameter a value. A component's own parameter passed along, or a ?: choice,
     // may be null as the page runs, and the tree view's checks treat null as not given.
     private static bool IsSurelySet(IOperation? value) => Unwrap(value) switch
@@ -585,7 +605,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         (INamedTypeSymbol Type, string[] Names)[] otherFields, INamedTypeSymbol? dialog,
         INamedTypeSymbol? dialogService, (INamedTypeSymbol Child, INamedTypeSymbol Host)[] hosted,
         (INamedTypeSymbol Item, INamedTypeSymbol List)[] listed, INamedTypeSymbol[] sliders,
-        INamedTypeSymbol? treeView, INamedTypeSymbol[] labeled)
+        INamedTypeSymbol? treeView, INamedTypeSymbol[] labeled, INamedTypeSymbol? autocomplete)
     {
         public (INamedTypeSymbol Type, string[] Names)[] Named { get; } = named;
 
@@ -606,5 +626,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         public INamedTypeSymbol? TreeView { get; } = treeView;
 
         public INamedTypeSymbol[] Labeled { get; } = labeled;
+
+        public INamedTypeSymbol? Autocomplete { get; } = autocomplete;
     }
 }

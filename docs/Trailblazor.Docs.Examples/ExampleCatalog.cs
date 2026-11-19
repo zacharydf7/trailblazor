@@ -6708,6 +6708,14 @@ public static class ExampleCatalog
                 new("search", "Search", "`Search` finds the suggestions as someone types, and is canceled when they "
                     + "type again. `ItemText` turns a suggestion into text, and `ItemTemplate` draws it in the list.",
                     typeof(AutocompleteExample)),
+                new("or-select", "Autocomplete or filterable select?", "Both narrow a list as someone types. An "
+                    + "autocomplete is a text field first: it shows no arrow, a click on a field that already has "
+                    + "focus doesn't open its list, and with `FreeText` it takes a value the list doesn't have. To "
+                    + "pick from a list you already have, use a [select](components/select#filtering) with "
+                    + "`Filterable`, which shows an arrow and opens on a click even when it already has focus. "
+                    + "Analyzer rule [TB011](guides/analyzers#rules) suggests one for an autocomplete given `Items` "
+                    + "and `OpenOnFocus` with no `Search`, `FreeText`, `OnTextChanged` or `Columns`.",
+                    typeof(AutocompleteOrSelectExample)),
                 new("items", "A fixed list", "`Items` is a list you already have, filtered by what someone types, "
                     + "ignoring case and accents. A long suggestion widens the list.",
                     typeof(AutocompleteItemsExample)),
@@ -6741,7 +6749,10 @@ public static class ExampleCatalog
                 new("open-on-focus", "Opening on focus", "`OpenOnFocus` opens the list as focus comes into the field, "
                     + "with suggestions for the text already there or for an empty field, so people can pick without "
                     + "typing. Focus coming back from within the field, such as after a choice or a clear, doesn't open "
-                    + "it again.", typeof(AutocompleteOpenOnFocusExample)),
+                    + "it again. It suits a field that takes any text but offers common values, as this one does "
+                    + "with `FreeText`. For a list people only pick from, use a "
+                    + "[select](components/select#filtering) with `Filterable`.",
+                    typeof(AutocompleteOpenOnFocusExample)),
                 new("clearing", "Clearing", "`Clearable` shows a button that clears the field, and a nullable value "
                     + "clears to `null`.", typeof(AutocompleteClearExample)),
                 new("start", "Start content", "`Start` puts content before the input, usually an icon.",

@@ -1,0 +1,16 @@
+<TbStack Gap="3" Style="max-inline-size: 24rem">
+    <TbSelect @bind-Value="_district" Label="Ranger district" Items="Districts" Filterable />
+    <TbAutocomplete @bind-Value="_meetingPoint" Label="Meeting point" Items="Landmarks" FreeText />
+    <output>District: @(_district ?? "none"). Meeting point: @(_meetingPoint ?? "none").</output>
+</TbStack>
+
+@code {
+    private static readonly string[] Districts = [
+        "North ridge", "River valley", "High peaks", "Lake country", "Cedar basin", "Stone canyon", "Pine plateau",
+        "Willow marsh",
+    ];
+    private static readonly string[] Landmarks = ["Pine Hollow lot", "Eagle Ridge gate", "Cedar Flats bridge"];
+
+    private string? _district;
+    private string? _meetingPoint;
+}

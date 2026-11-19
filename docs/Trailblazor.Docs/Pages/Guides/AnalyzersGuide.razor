@@ -17,7 +17,8 @@
             a value that snaps back after the user changes it, a type parameter given under the wrong name, a
             component written outside the one it belongs in, an option whose value isn't its list's type, a slider of
             something other than a number, a tree view whose parameters don't go together, and code written as plain
-            text without its <code>@@</code>.
+            text without its <code>@@</code>. It also suggests a filterable select where an autocomplete opens a known
+            list.
         </TbText>
     </Header>
     <ChildContent>
@@ -136,6 +137,20 @@
                         </td>
                         <td>Add the <code>@@</code>: <code>Value="@@GetColor()"</code>.</td>
                     </tr>
+                    <tr>
+                        <th scope="row">TB011</th>
+                        <td>
+                            A suggestion, not a warning: a <code>TbAutocomplete</code> is given <code>Items</code> and
+                            <code>OpenOnFocus</code> with no <code>Search</code>, <code>FreeText</code>,
+                            <code>OnTextChanged</code> or <code>Columns</code>, so people pick from a list the page
+                            already has.
+                        </td>
+                        <td>
+                            Use a <code>TbSelect</code> with <code>Filterable</code>, which shows an arrow and opens on
+                            a click even when it already has focus. Keep the autocomplete where people mostly type
+                            their answer.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -223,6 +238,15 @@
                 "app.css" or "Program.cs" isn't reported, and neither is a C# string literal written after an
                 <code>@@</code>.
             </li>
+            <li>
+                TB011 needs <code>OpenOnFocus</code> set to true in the markup itself, as <code>OpenOnFocus</code>
+                or <code>OpenOnFocus="true"</code>, so one set from a variable isn't reported. As with TB009,
+                <code>Items</code> passed along from one of your component's own parameters, or chosen with
+                <code>?:</code>, isn't counted. An autocomplete with a <code>Search</code>, an
+                <code>OnTextChanged</code>, <code>Columns</code>, <code>FreeText</code> set to anything but
+                <code>false</code>, or attributes spread with <code>@@attributes</code> isn't reported either, since a
+                select has none of the first four.
+            </li>
         </ul>
 
         <DocsHeading Id="turning-a-rule-off" Text="Turning a rule off" Class="docs-section" />
@@ -230,7 +254,8 @@
             The rules are warnings, or errors in a project that treats warnings as errors. To turn one off for a whole
             project, list it in <code>NoWarn</code>. A <code>#pragma warning disable</code> in a page doesn't silence a
             warning on a component with no parameters set in its markup, because that warning is reported at the
-            component's tag.
+            component's tag. TB011 is a suggestion: it shows in the editor and doesn't fail a build, even one that
+            treats warnings as errors. It is turned off the same way.
         </TbText>
         <CodeBlock Label="MyApp.csproj" Code="@NoWarn" />
         <TbText>

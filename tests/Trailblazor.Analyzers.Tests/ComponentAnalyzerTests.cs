@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis;
 using static Trailblazor.Analyzers.Tests.Analysis;
 
 namespace Trailblazor.Analyzers.Tests;
@@ -1265,6 +1266,85 @@ public class ComponentAnalyzerTests
                 public string? Text { get; set; }
             }
             """);
+
+        Assert.Empty(ids);
+    }
+
+    private const string KnownList = "private string[] _regions = []; private bool _open; "
+        + "private Task<IEnumerable<string>> FindAsync(string text, System.Threading.CancellationToken stop) => "
+        + "Task.FromResult<IEnumerable<string>>(_regions);";
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("__builder.AddComponentParameter(4, \"FreeText\", false);")]
+    public async Task ComponentAnalyzer_ShouldSuggestAFilterableSelect_WhenAnAutocompleteOpensAKnownListOnFocus(
+        string more)
+    {
+        var diagnostics = await RunAsync($$"""
+            __builder.OpenComponent<TbAutocomplete<string>>(0);
+            __builder.AddComponentParameter(1, "Label", "Region");
+            __builder.AddComponentParameter(2, "Items", _regions);
+            __builder.AddComponentParameter(3, "OpenOnFocus", true);
+            {{more}}
+            __builder.CloseComponent();
+            """, KnownList);
+
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal(("TB011", DiagnosticSeverity.Info), (diagnostic.Id, diagnostic.Severity));
+        Assert.Equal("TbAutocomplete opens a known list on focus. A TbSelect with Filterable fits better.",
+            diagnostic.GetMessage());
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldPointAtOpenOnFocus_WhenAnAutocompleteOpensAKnownListOnFocus()
+    {
+        var diagnostics = await RunAsync("""
+            __builder.OpenComponent<TbAutocomplete<string>>(0);
+            __builder.AddComponentParameter(1, "Label", "Region");
+            __builder.AddComponentParameter(2, nameof(TbAutocomplete<string>.
+            #line (6,30)-(6,35) "Page.razor"
+            Items
+            #line default
+            #line hidden
+            ), _regions);
+            __builder.AddComponentParameter(3, nameof(TbAutocomplete<string>.
+            #line (6,48)-(6,59) "Page.razor"
+            OpenOnFocus
+            #line default
+            #line hidden
+            ), true);
+            __builder.CloseComponent();
+            """, KnownList);
+
+        var span = Assert.Single(diagnostics).Location.GetMappedLineSpan();
+        Assert.Equal(("Page.razor", 5, 47), (span.Path, span.StartLinePosition.Line, span.StartLinePosition.Character));
+    }
+
+    [Theory]
+    [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"Search\", "
+        + "(System.Func<string, System.Threading.CancellationToken, Task<IEnumerable<string>>>)FindAsync);")]
+    [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"FreeText\", true);")]
+    [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"OnTextChanged\", "
+        + "EventCallback.Factory.Create<string>(this, _ => { }));")]
+    [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"Columns\", "
+        + "new AutocompleteColumn<string>[0]);")]
+    [InlineData("_regions", "true", "__builder.AddMultipleAttributes(4, new Dictionary<string, object>());")]
+    [InlineData("_regions", "false", "")]
+    [InlineData("_regions", "_open", "")]
+    [InlineData("_regions", "", "")]
+    [InlineData("_open ? _regions : null", "true", "")]
+    [InlineData("", "true", "")]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenAnAutocompleteIsStillATextField(string items,
+        string opens, string more)
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<TbAutocomplete<string>>(0);
+            __builder.AddComponentParameter(1, "Label", "Region");
+            {{(items == "" ? "" : $"__builder.AddComponentParameter(2, \"Items\", {items});")}}
+            {{(opens == "" ? "" : $"__builder.AddComponentParameter(3, \"OpenOnFocus\", {opens});")}}
+            {{more}}
+            __builder.CloseComponent();
+            """, KnownList);
 
         Assert.Empty(ids);
     }

@@ -83,7 +83,9 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>Opens the list as focus comes into the input from elsewhere on the page, with suggestions for the
     /// text already there or for an empty field, so people can pick without typing. Focus moving within the field,
-    /// such as back from the list, doesn't open it again, and a read-only or disabled field stays closed.</summary>
+    /// such as back from the list, doesn't open it again, and a read-only or disabled field stays closed. For a list
+    /// people only pick from, a <see cref="TbSelect{TValue}"/> with <c>Filterable</c> fits better: it shows an arrow
+    /// and opens on a click even when it already has focus.</summary>
     [Parameter]
     public bool OpenOnFocus { get; set; }
 

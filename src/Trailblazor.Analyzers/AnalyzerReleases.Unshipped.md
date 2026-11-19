@@ -15,3 +15,4 @@ TB007 | Usage | Warning | An item's value isn't the type its list holds
 TB008 | Usage | Warning | A slider holds something other than a number
 TB009 | Usage | Warning | A tree view's parameters don't go together
 TB010 | Usage | Warning | A parameter's text looks like code
+TB011 | Usage | Info | An autocomplete opens a known list on focus
