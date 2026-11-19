@@ -17,7 +17,8 @@ public static class TbContract
     /// <item>Once disposed, it leaves no handler on Trailblazor's services or the navigation manager and no reference
     /// the browser can still call, and as time passes it neither calls its parent nor raises an error.</item>
     /// <item>Each of its parts takes its events again after the component renders again, so a test can use an element
-    /// it found before.</item>
+    /// it found before. A trigger marked <c>data-attach-on-use</c> listens for its first use only, and may drop its
+    /// focus and click handlers together with the mark.</item>
     /// </list>
     /// Each rule renders the component afresh. Throws a <see cref="TbContractException"/> listing every failure,
     /// including any bound type that needs a <see cref="TbContractSetup.Sample{T}"/>.</summary>

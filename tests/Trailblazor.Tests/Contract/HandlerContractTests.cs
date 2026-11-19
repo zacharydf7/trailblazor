@@ -9,7 +9,8 @@ namespace Trailblazor.Tests.Contract;
 // component, including the parts that only show once others are used, such as an open menu's items.
 public class HandlerContractTests : BunitContext
 {
-    // Components whose repeated parts come from their items get two, so those parts are used too.
+    // Components whose repeated parts come from their items get two, so those parts are used too. The sortable
+    // list's items and the board's cards each have a move handle, which waits for its first use.
     private static readonly Dictionary<Type, Dictionary<string, object>> Items = new()
     {
         [typeof(TbDataGrid<string>)] = new()
@@ -24,6 +25,11 @@ public class HandlerContractTests : BunitContext
         [typeof(TbTransferList<string>)] = new() { ["Items"] = new[] { "Pine", "Cedar" } },
         [typeof(TbSelect<string>)] = new() { ["Items"] = new[] { "Pine", "Cedar" } },
         [typeof(TbMultiSelect<string>)] = new() { ["Items"] = new[] { "Pine", "Cedar" } },
+        [typeof(TbSortable<string>)] = new() { ["Items"] = new[] { "Pine", "Cedar" } },
+        [typeof(TbKanban<string>)] = new()
+        {
+            ["Columns"] = new[] { new KanbanColumn<string>("todo", "To do", ["Pine", "Cedar"]) },
+        },
     };
 
     public HandlerContractTests() => this.AddTrailblazor();

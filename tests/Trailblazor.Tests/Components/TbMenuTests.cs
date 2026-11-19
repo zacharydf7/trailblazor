@@ -256,12 +256,17 @@ public class TbMenuTests : BunitContext
         Assert.Empty(JSInterop.Invocations["createMenu"]);
         var trigger = cut.Find("[data-part=trigger]");
         Assert.True(trigger.HasAttribute("data-attach-on-use"));
+        Assert.Equal(2, trigger.Attributes.Count(attribute =>
+            attribute.Name is "blazor:onfocus" or "blazor:onpointerenter"));
         Assert.Equal(cut.Find("[role=menu]").Id, trigger.GetAttribute("popovertarget"));
 
         trigger.Focus();
 
         Assert.Single(JSInterop.Invocations["createMenu"]);
         Assert.False(cut.Find("[data-part=trigger]").HasAttribute("data-attach-on-use"));
+        // The trigger listened for its first use only, so later focus and hovers stay in the browser.
+        Assert.DoesNotContain(cut.Find("[data-part=trigger]").Attributes, attribute =>
+            attribute.Name is "blazor:onfocus" or "blazor:onpointerenter");
     }
 
     [Fact]

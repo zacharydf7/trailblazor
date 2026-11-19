@@ -37,6 +37,9 @@ internal static class ContractRules
 
     private static readonly string Handled = string.Join(", ", Events.Keys.Select(name => $"[blazor\\:{name}]"));
 
+    // Of the events raised here, those a trigger marked data-attach-on-use listens to only until its first use.
+    private static readonly string[] FirstUseEvents = ["onfocus", "onclick"];
+
     // Setting a value from the parent never raises its Changed callback, so a parent that handles the callback doesn't
     // take its own change for the user's. A component may still report a value it corrected or refused.
     public static List<string> CheckEcho(BunitContext context, Type component, string parameter,
@@ -300,6 +303,14 @@ internal static class ContractRules
                 || later.Contains(HandlerIdsOf(shown)))
             {
                 return;
+            }
+
+            // A trigger that attaches its script on first use drops these handlers along with its mark once it's used;
+            // a test checks the mark to tell whether the trigger still waits.
+            if (FirstUseEvents.Contains(name) && part.HasAttribute("data-attach-on-use")
+                && !shown.HasAttribute("data-attach-on-use") && !shown.HasAttribute($"blazor:{name}"))
+            {
+                continue;
             }
 
             var error = await CatchAsync(() => raise(part));

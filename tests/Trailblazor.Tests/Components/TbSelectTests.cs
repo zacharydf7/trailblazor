@@ -672,11 +672,16 @@ public class TbSelectTests : BunitContext
             .Add(select => select.AttachOnFirstUse, true));
         Assert.Empty(JSInterop.Invocations["createSelect"]);
         Assert.True(cut.Find("[role=combobox]").HasAttribute("data-attach-on-use"));
+        Assert.Equal(2, cut.Find("[role=combobox]").Attributes.Count(attribute =>
+            attribute.Name is "blazor:onfocus" or "blazor:onpointerenter"));
 
         cut.Find("[role=combobox]").Focus();
 
         Assert.Single(JSInterop.Invocations["createSelect"]);
         Assert.False(cut.Find("[role=combobox]").HasAttribute("data-attach-on-use"));
+        // The combobox listened for its first use only, so later focus and hovers stay in the browser.
+        Assert.DoesNotContain(cut.Find("[role=combobox]").Attributes, attribute =>
+            attribute.Name is "blazor:onfocus" or "blazor:onpointerenter");
     }
 
     [Fact]

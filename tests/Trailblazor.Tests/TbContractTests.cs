@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -141,6 +142,95 @@ public class TbContractTests
             _removes.TryGetValue(trail, out var remove) ? remove : _removes[trail] = () => _trails.Remove(trail);
     }
 
+    // An app's own list, built on a sortable one. Each move handle's menu attaches its script when the handle is
+    // first used, and the handle listens for that use only.
+    private sealed class TrailOrder : ComponentBase
+    {
+        private static readonly string[] Trails = ["Pine", "Cedar"];
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbSortable<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbSortable<string>.Items), Trails);
+            builder.AddComponentParameter(2, nameof(TbSortable<string>.Label), "Trails");
+            builder.AddComponentParameter(3, nameof(TbSortable<string>.ItemTemplate),
+                (RenderFragment<string>)(trail => text => text.AddContent(0, trail)));
+            builder.CloseComponent();
+        }
+    }
+
+    // An app's own table, built on a data grid whose rows can be moved. Each row's handle waits for its first use too.
+    private sealed class TrailTable : ComponentBase
+    {
+        private static readonly string[] Trails = ["Pine", "Cedar"];
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<TbDataGrid<string>>(0);
+            builder.AddComponentParameter(1, nameof(TbDataGrid<string>.Items), Trails);
+            builder.AddComponentParameter(2, nameof(TbDataGrid<string>.AriaLabel), "Trails");
+            builder.AddComponentParameter(3, nameof(TbDataGrid<string>.OnRowMove),
+                EventCallback.Factory.Create<SortableMove<string>>(this, _ => { }));
+            builder.AddComponentParameter(4, nameof(TbDataGrid<string>.ChildContent), (RenderFragment)(columns =>
+            {
+                columns.OpenComponent<TbColumn<string>>(0);
+                columns.AddComponentParameter(1, nameof(TbColumn<string>.Field),
+                    (Expression<Func<string, object?>>)(name => name));
+                columns.AddComponentParameter(2, nameof(TbColumn<string>.Title), "Name");
+                columns.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }
+    }
+
+    // How a CarelessTrigger departs from a Trailblazor trigger that waits for its first use. Whatever its flaw, it
+    // drops its key handler once used, which no Trailblazor trigger does.
+    public enum TriggerFlaw
+    {
+        // Otherwise like a Trailblazor trigger: the mark and the focus and click handlers are dropped together.
+        DropsItsKeyHandler,
+        CarriesNoMark,
+        KeepsItsMark,
+        SwapsItsFocusHandler,
+    }
+
+    // A trigger that waits for its first use. It keeps its blur handler, so it is still a part with events once it
+    // has been used.
+    private sealed class CarelessTrigger : ComponentBase
+    {
+        private bool _used;
+
+        [Parameter]
+        public TriggerFlaw Flaw { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "data-attach-on-use",
+                Flaw != TriggerFlaw.CarriesNoMark && (!_used || Flaw == TriggerFlaw.KeepsItsMark));
+            if (!_used)
+            {
+                builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, Use));
+                builder.AddAttribute(3, "onfocus", EventCallback.Factory.Create(this, Use));
+                builder.AddAttribute(4, "onkeydown", EventCallback.Factory.Create(this, Press));
+            }
+            else if (Flaw == TriggerFlaw.SwapsItsFocusHandler)
+            {
+                builder.AddAttribute(3, "onfocus", EventCallback.Factory.Create(this, Press));
+            }
+
+            builder.AddAttribute(5, "onblur", EventCallback.Factory.Create(this, Press));
+            builder.AddContent(6, "Move");
+            builder.CloseElement();
+        }
+
+        private void Use() => _used = true;
+
+        private static void Press()
+        {
+        }
+    }
+
     private sealed class LinkField : ComponentBase
     {
         [Parameter]
@@ -232,6 +322,40 @@ public class TbContractTests
     public async Task VerifyAsync_ShouldPass_WhenRemovingARowMovesTheNextRowsPartsIntoItsPlace()
     {
         await TbContract.VerifyAsync<TrailList>();
+    }
+
+    [Fact]
+    public async Task VerifyAsync_ShouldPass_WhenAListsMoveHandlesDropTheirFirstUseHandlersOnceUsed()
+    {
+        await TbContract.VerifyAsync<TrailOrder>();
+    }
+
+    [Fact]
+    public async Task VerifyAsync_ShouldPass_WhenAGridsRowHandlesDropTheirFirstUseHandlersOnceUsed()
+    {
+        await TbContract.VerifyAsync<TrailTable>();
+    }
+
+    [Fact]
+    public async Task VerifyAsync_ShouldReportTheOtherHandler_WhenATriggerDropsItWithItsFirstUseHandlers()
+    {
+        var error = await Assert.ThrowsAsync<TbContractException>(() => TbContract.VerifyAsync<CarelessTrigger>());
+
+        Assert.Contains("lost its onkeydown handler", Assert.Single(error.Failures));
+    }
+
+    [Theory]
+    [InlineData(TriggerFlaw.CarriesNoMark)]
+    [InlineData(TriggerFlaw.KeepsItsMark)]
+    [InlineData(TriggerFlaw.SwapsItsFocusHandler)]
+    public async Task VerifyAsync_ShouldReportTheFocusHandlerToo_WhenGivenATriggerThatIsNotDoneWaitingAsItsMarkSays(
+        TriggerFlaw flaw)
+    {
+        var error = await Assert.ThrowsAsync<TbContractException>(() => TbContract.VerifyAsync<CarelessTrigger>(
+            setup => setup.Parameter(nameof(CarelessTrigger.Flaw), flaw)));
+
+        Assert.Contains(error.Failures, failure => failure.Contains("lost its onkeydown handler"));
+        Assert.Contains(error.Failures, failure => failure.Contains("lost its onfocus handler"));
     }
 
     [Fact]

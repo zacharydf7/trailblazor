@@ -752,6 +752,12 @@
                 input, key presses, focus and blur, focus entering and leaving a field, and the data grid's row and
                 edit events; it doesn't raise pointer or drag events.
             </li>
+            <li>
+                One kind of element doesn't keep all its handlers: a trigger with <code>AttachOnFirstUse</code>, such
+                as a move handle, listens for its first use only to start its script, then drops the handlers that
+                listened for it together with its <code>data-attach-on-use</code> mark. Raise focus or a click on it
+                only while it carries the mark, as the helpers do.
+            </li>
         </ul>
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">Check your own components</TbText>
         <TbText>
