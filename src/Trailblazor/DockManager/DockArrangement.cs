@@ -12,6 +12,6 @@ internal sealed record DockSeparatorBox(DockSplit Split, int Before, int After, 
 
 // What a dock shows, in reading order. Separator n sits between group n and group n + 1, since every part of a split
 // begins and ends with a group. Maximized is the place in Groups of the group that fills the dock, or null; the
-// groups it covers keep their boxes.
+// groups it covers keep their boxes. Floats are the windows that show a panel, back to front.
 internal sealed record DockArrangement(IReadOnlyList<DockGroupBox> Groups, IReadOnlyList<DockSeparatorBox> Separators,
-    int? Maximized);
+    int? Maximized, IReadOnlyList<DockGroupBox> Floats);

@@ -595,3 +595,6 @@ Trailblazor.Testing.TbDockDriver.MoveToEdgeAsync(string! panel, Trailblazor.Dock
 Trailblazor.Testing.TbDockDriver.ChooseFromTabMenuAsync(string! panel, params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.MaximizeAsync(string! panel) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.RestoreAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.DockAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.FloatAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.Floating.get -> System.Collections.Generic.IReadOnlyList<string!>!

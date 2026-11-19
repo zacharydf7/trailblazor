@@ -4,7 +4,8 @@ using System.Text.Json;
 namespace Trailblazor;
 
 // A layout as JSON: {"version":1,"root":…,"closed":[…]}, where a group is {"panels":[…],"active":…,"size":…}, with
-// "maximized":true when it fills the dock, and a split is {"split":"row" or "column","size":…,"children":[…]}.
+// "maximized":true when it fills the dock, and a split is {"split":"row" or "column","size":…,"children":[…]}. A
+// layout with windows adds "floating":[…], each {"panels":[…],"active":…,"x":…,"y":…,"width":…,"height":…}.
 internal static class DockLayoutJson
 {
     private const int Version = 1;
@@ -29,6 +30,23 @@ internal static class DockLayoutJson
             }
 
             writer.WriteEndArray();
+            if (layout.Floating.Count > 0)
+            {
+                writer.WriteStartArray("floating");
+                foreach (var window in layout.Floating)
+                {
+                    writer.WriteStartObject();
+                    WritePanels(writer, window.Group);
+                    writer.WriteNumber("x", window.X);
+                    writer.WriteNumber("y", window.Y);
+                    writer.WriteNumber("width", window.Width);
+                    writer.WriteNumber("height", window.Height);
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
+            }
+
             writer.WriteEndObject();
         }
 
@@ -54,8 +72,9 @@ internal static class DockLayoutJson
             }
 
             var closed = root.TryGetProperty("closed", out var list) ? Strings(list) : [];
-            return root.TryGetProperty("root", out var node) ? new DockLayout(Read(node), closed)
-                : new DockLayout(null, closed);
+            var floating = root.TryGetProperty("floating", out var windows)
+                ? windows.EnumerateArray().Select(ReadWindow).ToList() : [];
+            return new DockLayout(root.TryGetProperty("root", out var node) ? Read(node) : null, closed, floating);
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException
             or KeyNotFoundException or ArgumentException or FormatException)
@@ -69,14 +88,7 @@ internal static class DockLayoutJson
         writer.WriteStartObject();
         if (node is DockGroup group)
         {
-            writer.WriteStartArray("panels");
-            foreach (var panel in group.Panels)
-            {
-                writer.WriteStringValue(panel);
-            }
-
-            writer.WriteEndArray();
-            writer.WriteString("active", group.Active);
+            WritePanels(writer, group);
             if (group.Maximized)
             {
                 writer.WriteBoolean("maximized", true);
@@ -98,6 +110,23 @@ internal static class DockLayoutJson
         writer.WriteNumber("size", node.Size);
         writer.WriteEndObject();
     }
+
+    private static void WritePanels(Utf8JsonWriter writer, DockGroup group)
+    {
+        writer.WriteStartArray("panels");
+        foreach (var panel in group.Panels)
+        {
+            writer.WriteStringValue(panel);
+        }
+
+        writer.WriteEndArray();
+        writer.WriteString("active", group.Active);
+    }
+
+    private static DockFloat ReadWindow(JsonElement window) => new(
+        new DockGroup(Strings(window.GetProperty("panels"))) { Active = window.GetProperty("active").GetString() },
+        window.GetProperty("x").GetDouble(), window.GetProperty("y").GetDouble(),
+        window.GetProperty("width").GetDouble(), window.GetProperty("height").GetDouble());
 
     // A missing property throws KeyNotFoundException, a value of the wrong kind InvalidOperationException, and a bad
     // size or panel id ArgumentException.

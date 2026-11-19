@@ -48,13 +48,20 @@ export function attachDock(root, reporter) {
             focused.focus({ preventScroll: true });
         }
     };
+    // The groups' rows by their numbers: the docked groups, then the windows. A row needn't have been rendered in
+    // that place, since a window can be older than a docked group.
+    const groupsInOrder = () => parts('group').sort((a, b) => Number(a.dataset.group) - Number(b.dataset.group));
+    // How high a part draws: a window's layer, and below every window for what is docked.
+    const layerOf = part => part?.hasAttribute('data-floating')
+        ? Number(part.style.getPropertyValue('--tb-dock-z')) : -1;
     // What the dock holds, in reading order: each group's row, its panels, then the separator after the group and
     // that separator's grip.
     const inReadingOrder = () => {
         const [panels, separators, grips] = ['panel', 'separator', 'grip'].map(parts);
         const after = index => [separators, grips].map(list => list.find(each => Number(each.dataset.index) === index));
-        return parts('group').flatMap((group, index) => [group,
-            ...panels.filter(panel => Number(panel.dataset.dockGroup) === index), ...after(index).filter(Boolean)]);
+        return groupsInOrder().flatMap(group => [group,
+            ...panels.filter(panel => panel.dataset.dockGroup === group.dataset.group),
+            ...after(Number(group.dataset.group)).filter(Boolean)]);
     };
     // Where the browser has no moveBefore, a move reloads an iframe, so a panel that holds one costs far more to move
     // than another panel, and a panel more than a row of tabs or a separator.
@@ -120,7 +127,7 @@ export function attachDock(root, reporter) {
     });
     added.observe(root, { childList: true });
     const regrouped = new MutationObserver(order);
-    regrouped.observe(root, { subtree: true, attributes: true, attributeFilter: ['data-dock-group'] });
+    regrouped.observe(root, { subtree: true, attributes: true, attributeFilter: ['data-dock-group', 'data-group'] });
     order();
     watchGroups();
 
@@ -174,8 +181,9 @@ export function attachDock(root, reporter) {
     const moveTo = (separator, to) => {
         const [start, length] = vertical(separator) ? ['y', 'height'] : ['x', 'width'];
         const { before, after } = sidesOf(separator);
+        // A window floats over the docked parts and keeps its box as they resize.
         const others = [...root.children].filter(child => child !== separator
-            && ['group', 'panel', 'separator'].includes(child.dataset.part));
+            && ['group', 'panel', 'separator'].includes(child.dataset.part) && !child.hasAttribute('data-floating'));
         const least = Number(root.dataset.minSize) / (vertical(separator) ? root.clientHeight : root.clientWidth) * 100;
         // The smallest a part can be: the size at which its narrowest group, scaled with the part, is down to the
         // least size.
@@ -400,17 +408,25 @@ export function attachDock(root, reporter) {
     const landingAt = (x, y) => {
         const dock = root.getBoundingClientRect();
         const groups = parts('group');
-        if (!inside(dock, x, y) || groups.flatMap(tabsOf).length < 2) {
+        if (!inside(dock, x, y)) {
             return null;
         }
 
-        const edge = nearSide(dock, x, y, edgeReach, edgeReach);
+        // The pointer is over the part drawn highest there: a window in front, or else a docked row or panel.
+        const over = [...groups, ...parts('panel').filter(panel => !panel.classList.contains('tb-dock__panel--hidden'))]
+            .filter(part => inside(part.getBoundingClientRect(), x, y))
+            .sort((a, b) => layerOf(b) - layerOf(a))[0];
+        // An edge would give the only docked panel the group it has.
+        const docked = groups.filter(group => layerOf(group) < 0).flatMap(tabsOf);
+        const edge = layerOf(over) < 0 && !(docked.length === 1 && docked[0] === carried)
+            && nearSide(dock, x, y, edgeReach, edgeReach);
         if (edge) {
-            return { target: null, position: positionOn(edge), box: sideOf(dock, edge, 0.25) };
+            // With nothing docked, the new group takes the whole dock.
+            return { target: null, position: positionOn(edge), box: sideOf(dock, edge, docked.length ? 0.25 : 1) };
         }
 
         const own = carried.closest('.tb-dock__group');
-        const row = groups.find(group => inside(group.getBoundingClientRect(), x, y));
+        const row = over?.dataset.part === 'group' ? over : null;
         if (row) {
             // The tab goes after the last tab whose middle the pointer has passed, or before the first one.
             const all = tabsOf(row);
@@ -430,9 +446,8 @@ export function attachDock(root, reporter) {
                 box: { left: (atLeft ? box.left : box.right) - 1, top: box.top, width: 2, height: box.height } };
         }
 
-        const shown = parts('panel').find(panel => !panel.classList.contains('tb-dock__panel--hidden')
-            && inside(panel.getBoundingClientRect(), x, y));
-        const group = shown && groups[Number(shown.dataset.dockGroup)];
+        const shown = over;
+        const group = shown && groups.find(each => each.dataset.group === shown.dataset.dockGroup);
         const others = group ? tabsOf(group).filter(tab => tab !== carried) : [];
         if (!others.length) {
             return null;
@@ -442,7 +457,8 @@ export function attachDock(root, reporter) {
         const [top, body] = [group.getBoundingClientRect(), shown.getBoundingClientRect()];
         const whole = { left: body.left, right: body.right, top: top.top, bottom: body.bottom, width: body.width,
             height: body.bottom - top.top };
-        const side = nearSide(body, x, y, body.width / 4, body.height / 4);
+        // A window has no sides to split off, so all of it takes the panel as a tab.
+        const side = layerOf(group) < 0 && nearSide(body, x, y, body.width / 4, body.height / 4);
         if (side) {
             const beside = others.find(tab => tab.getAttribute('aria-selected') === 'true') ?? others[0];
             return { target: beside.dataset.panel, position: positionOn(side), box: sideOf(whole, side, 0.5) };
@@ -522,6 +538,16 @@ export function attachDock(root, reporter) {
         const holder = beforeMenu?.menu.isConnected ? beforeMenu.holder : document.activeElement;
         return tab === holder || Boolean(document.getElementById(tab.getAttribute('aria-controls'))?.contains(holder));
     };
+    // A press or the focus inside a window that isn't in front brings it forward.
+    const onEngage = event => {
+        const floating = [...root.children].filter(child => child.hasAttribute('data-floating'));
+        const part = floating.find(child => child.contains(event.target));
+        if (part && layerOf(part) < Math.max(...floating.map(layerOf))) {
+            const group = groupsInOrder().find(each =>
+                each.dataset.group === (part.dataset.dockGroup ?? part.dataset.group));
+            callDotNet(reporter, 'OnRaise', tabsOf(group)[0].dataset.panel);
+        }
+    };
     const onAuxClick = event => {
         const tab = closable(event);
         if (tab) {
@@ -541,6 +567,8 @@ export function attachDock(root, reporter) {
     root.addEventListener('auxclick', onAuxClick);
     root.addEventListener('click', onClick);
     root.addEventListener('dblclick', onDoubleClick);
+    root.addEventListener('pointerdown', onEngage, { capture: true });
+    root.addEventListener('focusin', onEngage, { capture: true });
     // A popover's toggle events don't bubble, so they are heard on their way down.
     root.addEventListener('beforetoggle', onMenuOpening, { capture: true });
     root.addEventListener('toggle', onMenuToggled, { capture: true });
@@ -591,6 +619,8 @@ export function attachDock(root, reporter) {
             root.removeEventListener('auxclick', onAuxClick);
             root.removeEventListener('click', onClick);
             root.removeEventListener('dblclick', onDoubleClick);
+            root.removeEventListener('pointerdown', onEngage, { capture: true });
+            root.removeEventListener('focusin', onEngage, { capture: true });
             root.removeEventListener('beforetoggle', onMenuOpening, { capture: true });
             root.removeEventListener('toggle', onMenuToggled, { capture: true });
             grips.dispose();

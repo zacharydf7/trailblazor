@@ -3031,8 +3031,8 @@ public sealed class TbDockDriver
     /// <summary>The titles of every panel's tab, group by group in reading order.</summary>
     public IReadOnlyList<string> Panels => Tabs().Select(Title).ToList();
 
-    /// <summary>The titles of the panels that show, one for each group, in reading order. While a group fills the
-    /// dock, only its panel shows.</summary>
+    /// <summary>The titles of the panels that show, one for each group and each floating window, in reading order.
+    /// While a group fills the dock, its panel shows and each window's.</summary>
     public IReadOnlyList<string> Showing =>
         Tabs().Where(tab => tab.GetAttribute("aria-selected") == "true" && !Covered(tab)).Select(Title).ToList();
 
@@ -3080,6 +3080,20 @@ public sealed class TbDockDriver
     public async Task MoveToEdgeAsync(string panel, DockPosition edge) =>
         await ChooseAsync(panel, $"[data-move-edge={Side(edge, nameof(edge))}]",
             $"The panel \"{panel}\" is the only one docked, so it has nowhere to move.");
+
+    /// <summary>The titles of the panels in floating windows, window by window, oldest window first.</summary>
+    public IReadOnlyList<string> Floating =>
+        Tabs().Where(tab => tab.Closest("[data-part=group]")!.HasAttribute("data-floating")).Select(Title).ToList();
+
+    /// <summary>Takes the panel with this title out into a floating window, as "Float" in its group's menu does.
+    /// Throws for a panel that floats already.</summary>
+    public async Task FloatAsync(string panel) =>
+        await ChooseAsync(panel, "[data-move=float]", $"The panel \"{panel}\" floats already.");
+
+    /// <summary>Docks the floating panel with this title as the showing tab of the largest group, as "Dock" in its
+    /// window's menu does. Throws for a panel that is docked already.</summary>
+    public async Task DockAsync(string panel) =>
+        await ChooseAsync(panel, "[data-move=dock]", $"The panel \"{panel}\" is docked already.");
 
     /// <summary>Shows the panel with this title and has its group fill the dock, as "Maximize" in its group's menu
     /// does. Throws when the group is the dock's only one, or fills the dock already.</summary>
@@ -3156,9 +3170,11 @@ public sealed class TbDockDriver
             ? throw new ArgumentOutOfRangeException(parameter, side, "A new group goes to the start, end, top or bottom.")
             : side.ToString().ToLowerInvariant();
 
-    // The dock's own tabs, not those of tabs inside a panel.
+    // The dock's own tabs, not those of tabs inside a panel, by their groups' numbers: bUnit has the rows as they
+    // were first rendered, and a window can be older than a docked group.
     private IEnumerable<IElement> Tabs() => _find().Children
         .Where(child => child.GetAttribute("data-part") == "group")
+        .OrderBy(group => int.Parse(group.GetAttribute("data-group")!, CultureInfo.InvariantCulture))
         .SelectMany(group => group.QuerySelectorAll("[role=tab]"));
 
     private IElement Tab(string panel) => Tabs().SingleOrDefault(tab => Title(tab) == panel)

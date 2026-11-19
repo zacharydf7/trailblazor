@@ -466,6 +466,164 @@ public class DockLayoutTests
     }
 
     [Fact]
+    public void Float_ShouldTakeThePanelIntoAWindowInFront_WhenCalled()
+    {
+        var layout = Workbench.Float("search").Float("problems");
+
+        Assert.Equal([["search"], ["problems"]], layout.Floating.Select(window => window.Group.Panels));
+        Assert.Equal([["explorer"], ["editor"], ["output"]], layout.Groups.Select(group => group.Panels));
+        Assert.Equal(["problems"], layout.GroupOf("problems")?.Panels);
+        // Half of the dock over its middle, and each new window a little down and along from the last.
+        Assert.Equal([(25.0, 25.0, 50.0, 50.0), (28.0, 28.0, 50.0, 50.0)], layout.Floating.Select(Box));
+    }
+
+    [Fact]
+    public void FloatAt_ShouldFloatAPanelThatIsClosedOrNew_WhenGivenOne()
+    {
+        var layout = Workbench.Close("search").FloatAt("search", 10, 20, 30, 40).FloatAt("terminal", 0, 0, 20, 20);
+
+        Assert.Empty(layout.Closed);
+        Assert.Equal(["search", "terminal"], layout.Floating.Select(window => window.Group.Active));
+        Assert.Equal((10.0, 20.0, 30.0, 40.0), Box(layout.Floating[0]));
+    }
+
+    [Fact]
+    public void Constructor_ShouldKeepAWindowsBoxInsideTheDock_WhenItReachesOutOrIsTooSmall()
+    {
+        var layout = new DockLayout(new DockGroup("map"), null, [new DockFloat(new DockGroup("notes"), 80, -5, 40, 3),
+            new DockFloat(new DockGroup("photos"), 0, 0, 250, 50)]);
+
+        Assert.Equal([(60.0, 0.0, 40.0, 10.0), (0.0, 0.0, 100.0, 50.0)], layout.Floating.Select(Box));
+    }
+
+    [Fact]
+    public void Constructor_ShouldKeepAPanelInOnePlace_WhenAWindowListsOneThatIsDockedOrInAnEarlierWindow()
+    {
+        var layout = new DockLayout(new DockGroup("map", "notes"), ["photos"],
+        [
+            new DockFloat(new DockGroup("notes", "photos"), 0, 0, 50, 50),
+            new DockFloat(new DockGroup("photos", "map"), 0, 0, 50, 50),
+        ]);
+
+        // The second window is left with no panel and goes, and a floating panel isn't closed.
+        Assert.Equal([["photos"]], layout.Floating.Select(window => window.Group.Panels));
+        Assert.Empty(layout.Closed);
+    }
+
+    [Fact]
+    public void Constructor_ShouldThrow_WhenAWindowIsNullOrItsBoxIsNotMadeOfNumbers()
+    {
+        Assert.Throws<ArgumentException>(() => new DockLayout(null, null, [null!]));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new DockFloat(new DockGroup("map"), double.NaN, 0, 50, 50));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new DockFloat(new DockGroup("map"), 0, 0, double.PositiveInfinity, 50));
+    }
+
+    [Fact]
+    public void Move_ShouldMakeThePanelATabOfTheWindowAndBringItToTheFront_WhenTheTargetFloats()
+    {
+        var layout = Workbench.Float("search").Float("problems");
+
+        var joined = layout.Move("output", "search", DockPosition.Before);
+
+        Assert.Equal([["problems"], ["output", "search"]], joined.Floating.Select(window => window.Group.Panels));
+        Assert.Equal("output", joined.Floating[1].Group.Active);
+        Assert.Equal((25.0, 25.0, 50.0, 50.0), Box(joined.Floating[1]));
+        // A window has no sides, so a side of one puts the tab after the target's.
+        Assert.Equal(["search", "editor"], layout.Move("editor", "search", DockPosition.Top).Floating[1].Group.Panels);
+    }
+
+    [Fact]
+    public void Open_ShouldShowTheTabAndBringItsWindowToTheFront_WhenThePanelFloats()
+    {
+        var layout = Workbench.Float("search").Float("problems").Move("output", "search", DockPosition.Before);
+
+        var opened = layout.Open("search").Open("problems");
+
+        Assert.Equal([["output", "search"], ["problems"]], opened.Floating.Select(window => window.Group.Panels));
+        Assert.Equal("search", opened.Floating[0].Group.Active);
+        // A showing tab of the window in front changes nothing.
+        Assert.Same(opened, opened.Open("problems"));
+    }
+
+    [Fact]
+    public void Move_ShouldDockAFloatingPanelAndDropItsWindow_WhenTheTargetIsDockedOrAnEdgeIsGiven()
+    {
+        var layout = Workbench.Float("search");
+
+        Assert.Equal(Workbench.Move("search", "editor", DockPosition.After),
+            layout.Move("search", "editor", DockPosition.After));
+        Assert.Equal(Workbench.Move("search", "editor", DockPosition.Start),
+            layout.Move("search", "editor", DockPosition.Start));
+        Assert.Equal(Workbench.MoveToEdge("search", DockPosition.Bottom),
+            layout.MoveToEdge("search", DockPosition.Bottom));
+    }
+
+    [Fact]
+    public void Close_ShouldTakeThePanelOutOfItsWindow_WhenThePanelFloats()
+    {
+        var layout = Workbench.Float("search").Move("problems", "search", DockPosition.After);
+
+        // The tab before the closed one shows, as in a group, and a window goes with its last panel.
+        Assert.Equal("search", layout.Close("problems").Floating[0].Group.Active);
+        Assert.Empty(layout.Close("problems").Close("search").Floating);
+        Assert.Equal(["problems", "search"], layout.Close("problems").Close("search").Closed);
+    }
+
+    [Fact]
+    public void Maximized_ShouldStay_WhenAFloatingPanelIsShown()
+    {
+        var layout = Workbench.Maximize("editor").Float("search");
+
+        // A window floats above the group that fills the dock, and isn't itself a group to maximize.
+        Assert.NotNull(layout.Open("search").Maximized);
+        Assert.Same(layout, layout.Maximize("search"));
+    }
+
+    [Fact]
+    public void Equals_ShouldTellTwoLayoutsApart_WhenTheirWindowsDiffer()
+    {
+        var layout = Workbench.FloatAt("search", 10, 20, 30, 40);
+
+        Assert.Equal(layout, Workbench.FloatAt("search", 10, 20, 30, 40));
+        Assert.NotEqual(layout, Workbench.FloatAt("search", 10, 20, 30, 45));
+        Assert.NotEqual(layout.Float("problems"), layout.Float("problems").Open("search"));
+    }
+
+    [Fact]
+    public void Raise_ShouldBringTheWindowOfAFloatingPanelToTheFront_WhenItIsBehindAnother()
+    {
+        var layout = Workbench.Float("search").Float("problems");
+
+        Assert.Equal(["problems", "search"], layout.Raise("search").Floating.Select(window => window.Group.Active));
+        Assert.Same(layout, layout.Raise("problems"));
+        Assert.Same(layout, layout.Raise("editor"));
+    }
+
+    [Fact]
+    public void Arrange_ShouldGiveEachWindowThatShowsAPanelItsBox_WhenTheLayoutHasWindows()
+    {
+        var arrangement = Workbench.FloatAt("search", 10, 20, 30, 40).Float("problems")
+            .Arrange(panel => panel != "problems");
+
+        var window = Assert.Single(arrangement.Floats);
+        Assert.Equal((new DockBox(10, 20, 30, 40), "search"), (window.Box, window.Active));
+        Assert.Equal(3, arrangement.Groups.Count);
+    }
+
+    [Fact]
+    public void ToJson_ShouldWriteTheWindowsAndReadThemBack_WhenTheLayoutHasSome()
+    {
+        var layout = new DockLayout(new DockGroup("map"), null,
+            [new DockFloat(new DockGroup("notes", "photos") { Active = "photos" }, 10, 20, 30, 40)]);
+
+        Assert.Equal("""{"version":1,"root":{"panels":["map"],"active":"map","size":1},"closed":[],"floating":[{"panels":["notes","photos"],"active":"photos","x":10,"y":20,"width":30,"height":40}]}""",
+            layout.ToJson());
+        Assert.True(DockLayout.TryParse(layout.ToJson(), out var read));
+        Assert.Equal(layout, read);
+    }
+
+    [Fact]
     public void Constructor_ShouldMarkNoGroup_WhenTheLayoutHasOneGroup()
     {
         var notes = new DockLayout(new DockGroup("map", "notes") { Maximized = true });
@@ -591,6 +749,9 @@ public class DockLayoutTests
     [InlineData("""{"version":1,"root":{"panels":["map"],"active":"map","size":0}}""")]
     [InlineData("""{"version":1,"root":{"panels":["map"],"active":"map","size":"wide"}}""")]
     [InlineData("""{"version":1,"root":{"panels":["map"],"active":"map","maximized":"yes","size":1}}""")]
+    [InlineData("""{"version":1,"floating":"none"}""")]
+    [InlineData("""{"version":1,"floating":[{"panels":["map"],"active":"map","x":0,"y":0,"width":50}]}""")]
+    [InlineData("""{"version":1,"floating":[{"panels":["map"],"active":"map","x":"left","y":0,"width":50,"height":50}]}""")]
     [InlineData("""{"version":1,"root":{"panels":["trail map"],"active":"map","size":1}}""")]
     [InlineData("""{"version":1,"root":{"panels":[7],"active":"map","size":1}}""")]
     [InlineData("""{"version":1,"root":{"panels":"map","active":"map","size":1}}""")]
@@ -614,4 +775,7 @@ public class DockLayoutTests
 
         Assert.Equal(new DockGroup("map"), layout.Root);
     }
+
+    private static (double X, double Y, double Width, double Height) Box(DockFloat window) =>
+        (window.X, window.Y, window.Width, window.Height);
 }

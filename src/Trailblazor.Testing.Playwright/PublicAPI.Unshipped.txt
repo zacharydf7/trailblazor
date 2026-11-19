@@ -651,3 +651,6 @@ Trailblazor.Testing.Playwright.TbDockLocator.MoveToEdgeAsync(string! panel, Trai
 Trailblazor.Testing.Playwright.TbDockLocator.ChooseFromTabMenuAsync(string! panel, params string![]! path) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDockLocator.MaximizeAsync(string! panel) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDockLocator.RestoreAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.DockAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.FloatAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.FloatingAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!

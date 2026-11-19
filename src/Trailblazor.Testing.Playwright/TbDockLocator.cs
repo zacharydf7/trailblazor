@@ -49,8 +49,8 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     public async Task<IReadOnlyList<string>> PanelsAsync() =>
         await Tabs.Locator("[data-part=title]").AllTextContentsAsync();
 
-    /// <summary>The titles of the panels that show, one for each group, in reading order. While a group fills the
-    /// dock, only its panel shows.</summary>
+    /// <summary>The titles of the panels that show, one for each group and each floating window, in reading order.
+    /// While a group fills the dock, its panel shows and each window's.</summary>
     public async Task<IReadOnlyList<string>> ShowingAsync() =>
         await Root.Locator(":scope > .tb-dock__group:not(.tb-dock__group--covered) .tb-dock__tab[aria-selected=true]")
             .Locator("[data-part=title]").AllTextContentsAsync();
@@ -160,6 +160,21 @@ public sealed class TbDockLocator(ILocator scope, string? name)
         side is DockPosition.Before or DockPosition.After
             ? throw new ArgumentOutOfRangeException(parameter, side, "A new group goes to the start, end, top or bottom.")
             : side.ToString().ToLowerInvariant();
+
+    /// <summary>The titles of the panels in floating windows, window by window, oldest window first.</summary>
+    public async Task<IReadOnlyList<string>> FloatingAsync() =>
+        await Root.Locator(":scope > .tb-dock__group--floating .tb-dock__tab [data-part=title]")
+            .AllTextContentsAsync();
+
+    /// <summary>Takes the panel with this title out into a floating window, with "Float" in its group's menu. Throws
+    /// for a panel that floats already.</summary>
+    public async Task FloatAsync(string panel) =>
+        await ChooseAsync(panel, "[data-move=float]", $"The panel \"{panel}\" floats already.");
+
+    /// <summary>Docks the floating panel with this title as the showing tab of the largest group, with "Dock" in its
+    /// window's menu. Throws for a panel that is docked already.</summary>
+    public async Task DockAsync(string panel) =>
+        await ChooseAsync(panel, "[data-move=dock]", $"The panel \"{panel}\" is docked already.");
 
     /// <summary>Shows the panel with this title and has its group fill the dock, with "Maximize" in its group's
     /// menu. Throws when the group is the dock's only one, or fills the dock already.</summary>

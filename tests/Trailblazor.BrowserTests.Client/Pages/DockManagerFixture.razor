@@ -99,5 +99,20 @@
         {
             _layout = Crowded;
         }
+        else if (Layout == "corner")
+        {
+            // Gear floats in the corner where the dock begins, over the trails.
+            _layout = Start.FloatAt("gear", 0, 0, 40, 50);
+        }
+        else if (Layout == "lone")
+        {
+            // The notes are the only panel docked, with Gear in a window.
+            _layout = OnlyNotes.FloatAt("gear", 50, 10, 40, 40);
+        }
+        else if (Layout == "adrift")
+        {
+            // Gear's window is all the dock holds.
+            _layout = OnlyNotes.Close("notes").FloatAt("gear", 50, 10, 40, 40);
+        }
     }
 }

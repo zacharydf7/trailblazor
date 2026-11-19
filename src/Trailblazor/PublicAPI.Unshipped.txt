@@ -6977,7 +6977,7 @@ Trailblazor.DockLabels.CloseHint.init -> void
 Trailblazor.DockGroup.DockGroup(params System.Collections.Generic.IEnumerable<string!>! panels) -> void
 Trailblazor.DockGroup.Panels.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.DockLabels.CloseHint.get -> string?
-Trailblazor.DockLayout.DockLayout(Trailblazor.DockNode? root = null, System.Collections.Generic.IEnumerable<string!>? closed = null) -> void
+Trailblazor.DockLayout.DockLayout(Trailblazor.DockNode? root = null, System.Collections.Generic.IEnumerable<string!>? closed = null, System.Collections.Generic.IEnumerable<Trailblazor.DockFloat!>? floating = null) -> void
 Trailblazor.DockNode.Size.get -> double
 Trailblazor.DockLayout.Root.get -> Trailblazor.DockNode?
 Trailblazor.DockLayout.Groups.get -> System.Collections.Generic.IEnumerable<Trailblazor.DockGroup!>!
@@ -7119,3 +7119,32 @@ Trailblazor.DockLabels.Restored.init -> void
 Trailblazor.DockLayout.Maximize(string! panel) -> Trailblazor.DockLayout!
 Trailblazor.DockLayout.Maximized.get -> Trailblazor.DockGroup?
 Trailblazor.DockLayout.Restore() -> Trailblazor.DockLayout!
+Trailblazor.DockFloat
+Trailblazor.DockFloat.DockFloat(Trailblazor.DockGroup! group, double x, double y, double width, double height) -> void
+Trailblazor.DockFloat.Group.get -> Trailblazor.DockGroup!
+Trailblazor.DockFloat.Height.get -> double
+Trailblazor.DockFloat.Width.get -> double
+Trailblazor.DockFloat.X.get -> double
+Trailblazor.DockFloat.Y.get -> double
+Trailblazor.DockFloat.Equals(Trailblazor.DockFloat? other) -> bool
+override Trailblazor.DockFloat.Equals(object? obj) -> bool
+override Trailblazor.DockFloat.GetHashCode() -> int
+override Trailblazor.DockFloat.ToString() -> string!
+static Trailblazor.DockFloat.operator !=(Trailblazor.DockFloat? left, Trailblazor.DockFloat? right) -> bool
+static Trailblazor.DockFloat.operator ==(Trailblazor.DockFloat? left, Trailblazor.DockFloat? right) -> bool
+Trailblazor.DockLayout.Float(string! panel) -> Trailblazor.DockLayout!
+Trailblazor.DockLayout.FloatAt(string! panel, double x, double y, double width, double height) -> Trailblazor.DockLayout!
+Trailblazor.DockLayout.Floating.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DockFloat!>!
+Trailblazor.DockFloat.<Clone>$() -> Trailblazor.DockFloat!
+const Trailblazor.TbStrings.DockDock = "Dock.Dock" -> string!
+const Trailblazor.TbStrings.DockFloat = "Dock.Float" -> string!
+const Trailblazor.TbStrings.DockFloated = "Dock.Floated" -> string!
+const Trailblazor.TbStrings.DockFloatingGroup = "Dock.FloatingGroup" -> string!
+Trailblazor.DockLabels.Dock.get -> string?
+Trailblazor.DockLabels.Dock.init -> void
+Trailblazor.DockLabels.Float.get -> string?
+Trailblazor.DockLabels.Float.init -> void
+Trailblazor.DockLabels.Floated.get -> string?
+Trailblazor.DockLabels.Floated.init -> void
+Trailblazor.DockLabels.FloatingGroup.get -> string?
+Trailblazor.DockLabels.FloatingGroup.init -> void

@@ -788,6 +788,20 @@ public static class TbStrings
     /// <summary>"All panel groups show again.": said when a dock's maximized group is restored.</summary>
     public const string DockRestored = "Dock.Restored";
 
+    /// <summary>"Floating panel group {0}": names the tab list of a dock's floating window; {0} is its number.
+    /// </summary>
+    public const string DockFloatingGroup = "Dock.FloatingGroup";
+
+    /// <summary>"Float": a dock menu item that takes a docked panel out into a floating window.</summary>
+    public const string DockFloat = "Dock.Float";
+
+    /// <summary>"Dock": a dock menu item that docks a floating panel.</summary>
+    public const string DockDock = "Dock.Dock";
+
+    /// <summary>"{0} floats in a window.": said when a dock's panel ends up in a floating window; {0} is its title.
+    /// </summary>
+    public const string DockFloated = "Dock.Floated";
+
     /// <summary>"Resize {0}": names a splitter's separator; {0} is the pane before it.</summary>
     public const string SplitterResize = "Splitter.Resize";
 
@@ -1757,6 +1771,10 @@ public static class TbStrings
         [DockRestore] = "Restore",
         [DockMaximized] = "Panel group {0} fills the dock.",
         [DockRestored] = "All panel groups show again.",
+        [DockFloatingGroup] = "Floating panel group {0}",
+        [DockFloat] = "Float",
+        [DockDock] = "Dock",
+        [DockFloated] = "{0} floats in a window.",
         [SplitterResize] = "Resize {0}",
         [SplitterPane] = "pane {0}",
         [SplitterMenu] = "Size of {0}",

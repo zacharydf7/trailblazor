@@ -368,6 +368,108 @@ public class DockManagerTabDragTests(BrowserFixture fixture) : DockManagerPage(f
         await Expect(Tab(page, "Gear")).ToBeFocusedAsync();
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldJoinAWindowOrLeaveIt_WhenATabIsDroppedOnAWindowOrOnADockedGroup(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        var dock = page.Tb().Dock();
+        await dock.FloatAsync("Gear");
+        var row = (await page.Locator(".tb-dock__group--floating").BoundingBoxAsync())!;
+        var body = (await Panel(page, "Gear").BoundingBoxAsync())!;
+
+        // A window has no sides to split off: anywhere on it, the mark covers all of it and the panel joins its tabs.
+        await CarryAsync(page, "Trails", body.X + 10, body.Y + body.Height / 2);
+        await ExpectMarkAsync(page, row.X, row.Y, row.Width, body.Y + body.Height - row.Y);
+        await DropAsync(page);
+
+        Assert.Equal(["Gear", "Trails"], await dock.FloatingAsync());
+        await Expect(Tab(page, "Trails")).ToBeFocusedAsync();
+
+        // A floating panel's tab dropped on the middle of a docked group docks there, as its last tab.
+        var weather = (await Panel(page, "Weather").BoundingBoxAsync())!;
+        await CarryAsync(page, "Gear", weather.X + weather.Width / 2, weather.Y + weather.Height / 2);
+        await DropAsync(page);
+
+        Assert.Equal(["Trails"], await dock.FloatingAsync());
+        Assert.Equal(["Map", "Notes", "Weather", "Gear", "Trails"], await dock.PanelsAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldJoinAWindow_WhenATabIsDroppedOnOneThatReachesTheDocksEdge(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=corner");
+        var whole = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        var row = (await page.Locator(".tb-dock__group--floating").BoundingBoxAsync())!;
+        var body = (await Panel(page, "Gear").BoundingBoxAsync())!;
+
+        // Within the few pixels of the dock's edge that would give the panel a group along it, but on the window.
+        await CarryAsync(page, "Weather", whole.X + 4, body.Y + body.Height / 2);
+
+        await ExpectMarkAsync(page, row.X, row.Y, row.Width, body.Y + body.Height - row.Y);
+        await DropAsync(page);
+        Assert.Equal(["Gear", "Weather"], await page.Tb().Dock().FloatingAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldLeaveAWindowWhereItIs_WhenASeparatorUnderItIsDragged(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        await page.Tb().Dock().FloatAsync("Gear");
+        var window = page.Locator(".tb-dock__group--floating");
+        var before = (await window.BoundingBoxAsync())!;
+        var whole = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        // The dock's first separator, after the trails, which the page's splitter shares its name with.
+        var line = (await page.Locator(".tb-dock > .tb-dock__separator").First.BoundingBoxAsync())!;
+
+        // It runs down the dock and under the window's edge, and is pressed above the window.
+        await page.Mouse.MoveAsync(line.X + line.Width / 2, whole.Y + 20);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(line.X + line.Width / 2 + 60, whole.Y + 20, new() { Steps = 4 });
+
+        // The docked groups follow the pointer at once, and the window keeps its box meanwhile.
+        await Expect(page.Locator(".tb-dock")).ToHaveAttributeAsync("data-resizing", "");
+        var during = (await window.BoundingBoxAsync())!;
+        Assert.Equal(before.X, during.X, 0.5);
+        Assert.Equal(before.Width, during.Width, 0.5);
+        await DropAsync(page);
+        Assert.Equal(before.X, (await window.BoundingBoxAsync())!.X, 0.5);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldShowNoMarkAtTheDocksEdge_WhenTheOnlyDockedPanelIsDraggedBesideAWindow(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=lone");
+        var dock = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        var window = (await Panel(page, "Gear").BoundingBoxAsync())!;
+
+        // An edge would give the notes the group they have, so it is no place to land.
+        await CarryAsync(page, "Notes", dock.X + 4, dock.Y + dock.Height - 40);
+
+        await Expect(Tab(page, "Notes")).ToHaveAttributeAsync("data-dragging", "");
+        await Expect(Mark(page)).ToBeHiddenAsync();
+
+        // The window is a place to land, though.
+        await page.Mouse.MoveAsync(window.X + window.Width / 2, window.Y + window.Height / 2, new() { Steps = 4 });
+        await Expect(Mark(page)).ToBeVisibleAsync();
+        await DropAsync(page);
+        Assert.Equal(["Gear", "Notes"], await page.Tb().Dock().FloatingAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldDockAPanelAlongTheDocksEdge_WhenTheTabOfTheOnlyWindowIsDroppedThere(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=adrift");
+        var dock = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+
+        // Nothing is docked, so the edge gives Gear a group that takes the whole dock, as the window's menu would.
+        await CarryAsync(page, "Gear", dock.X + dock.Width - 5, dock.Y + dock.Height - 40);
+
+        await ExpectMarkAsync(page, dock.X, dock.Y, dock.Width, dock.Height);
+        await DropAsync(page);
+        Assert.Empty(await page.Tb().Dock().FloatingAsync());
+        Assert.Equal(["Gear"], await page.Tb().Dock().ShowingAsync());
+    }
+
     private static ILocator Mark(IPage page) => page.Locator(".tb-dock__drop");
 
     // The box the mark covers, within a pixel and a half.

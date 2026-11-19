@@ -1,0 +1,37 @@
+<TbStack Gap="2">
+    <TbStack Row Gap="2" Align="Align.Center">
+        <TbButton Size="Size.Small" OnClick="@(() => _layout = _layout.Float("journal"))">
+            Float the journal
+        </TbButton>
+        <TbButton Size="Size.Small" Variant="Variant.Outlined"
+                  OnClick="@(() => _layout = _layout.FloatAt("forecast", 60, 10, 35, 45))">
+            Forecast in the corner
+        </TbButton>
+        <TbButton Size="Size.Small" Variant="Variant.Text" OnClick="() => _layout = Default">Reset</TbButton>
+        <TbText>Floating windows: @_layout.Floating.Count</TbText>
+    </TbStack>
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Trip desk" Style="block-size: 22rem">
+        <TbDockPanel Id="stops" Title="Stops">
+            <TbText class="tb-p-3">Trailhead, creek crossing, saddle and summit.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="journal" Title="Journal">
+            <div class="tb-p-3">
+                <TbTextField Label="Today's entry" @bind-Value="_entry" />
+            </div>
+        </TbDockPanel>
+        <TbDockPanel Id="photos" Title="Photos">
+            <TbText class="tb-p-3">Twelve photos from the saddle.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="forecast" Title="Forecast">
+            <TbText class="tb-p-3">Sunny, with wind on the summit after two.</TbText>
+        </TbDockPanel>
+    </TbDockManager>
+</TbStack>
+
+@code {
+    private static readonly DockLayout Default = new(new DockSplit(
+        new DockGroup("stops", "journal") { Size = 1 }, new DockGroup("photos", "forecast") { Size = 2 }));
+
+    private DockLayout _layout = Default;
+    private string? _entry;
+}

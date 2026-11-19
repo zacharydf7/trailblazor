@@ -514,7 +514,9 @@
                             it first. <code>ChooseFromTabMenuAsync(panel, path)</code> opens the menu of a panel's
                             tab, as a right-click does, and clicks an item in it, through the submenus named before
                             it. <code>MaximizeAsync(panel)</code> has a panel's group fill the dock, and
-                            <code>RestoreAsync()</code> shows every group again.
+                            <code>RestoreAsync()</code> shows every group again. <code>FloatAsync(panel)</code> takes a
+                            panel out into a floating window, <code>DockAsync(panel)</code> docks it again, and
+                            <code>Floating</code> reads the panels in windows.
                         </td>
                     </tr>
                     <tr>
@@ -1317,7 +1319,9 @@
             + "`ChooseFromTabMenuAsync(panel, path)` right-clicks a panel's tab, clicks an item in the menu that "
             + "opens, through the submenus named before it, and waits until the app has the layout. "
             + "`MaximizeAsync(panel)` has a panel's group fill the dock from its group's menu, and `RestoreAsync()` "
-            + "clicks the Restore button; both wait until the app has the layout."),
+            + "clicks the Restore button; both wait until the app has the layout. `FloatAsync(panel)` and "
+            + "`DockAsync(panel)` float and dock a panel from its menu and wait the same way, and `FloatingAsync()` "
+            + "reads the panels in windows."),
         new("Stepper", "Its name, or none for the only one", "`Stepper(name).GoToAsync(title)` goes to a step and "
             + "waits until it's current and the app's `ActiveKeyChanged` has run, `StepsAsync()` reads the steps' "
             + "titles, and `CurrentAsync()` reads the current step's."),

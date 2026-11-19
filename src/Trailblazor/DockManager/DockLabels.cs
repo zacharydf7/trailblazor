@@ -72,6 +72,22 @@ public sealed record DockLabels
     /// <see cref="TbStrings.DockAtBottom"/>.</summary>
     public string? AtBottom { get; init; }
 
+    /// <summary>Names a floating window's tab list, with <c>{0}</c> for its number, which counts on from the docked
+    /// groups. Leave it null for the app's text for <see cref="TbStrings.DockFloatingGroup"/>.</summary>
+    public string? FloatingGroup { get; init; }
+
+    /// <summary>The menu item that takes a docked panel out into a floating window. Leave it null for the app's text
+    /// for <see cref="TbStrings.DockFloat"/>.</summary>
+    public string? Float { get; init; }
+
+    /// <summary>The menu item that docks a floating panel. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockDock"/>.</summary>
+    public string? Dock { get; init; }
+
+    /// <summary>What screen readers hear when a panel ends up in a floating window, with <c>{0}</c> for the panel's
+    /// title. Leave it null for the app's text for <see cref="TbStrings.DockFloated"/>.</summary>
+    public string? Floated { get; init; }
+
     /// <summary>The menu item that has the panel's group fill the dock. Leave it null for the app's text for
     /// <see cref="TbStrings.DockMaximize"/>.</summary>
     public string? Maximize { get; init; }

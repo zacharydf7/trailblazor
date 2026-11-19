@@ -7497,6 +7497,8 @@
     .tb-dock {
         --tb-dock-tabs-size: var(--tb-control-height-sm);
         position: relative;
+        /* Its windows and marks stack among themselves, under whatever the page layers above the dock. */
+        isolation: isolate;
         box-sizing: border-box;
         block-size: 100%;
         min-block-size: 12rem;
@@ -7528,6 +7530,26 @@
         display: none;
     }
 
+    /* A window floats above the docked parts, as high among the windows as its layer says. Its row and its panel
+       each cast the window's shadow on their own three sides, so neither shades the other. */
+    .tb-dock__group--floating,
+    .tb-dock__panel--floating {
+        z-index: calc(10 + var(--tb-dock-z));
+        border: 1px solid var(--tb-border-strong);
+        box-shadow: var(--tb-shadow-lg);
+    }
+
+    .tb-dock__group--floating {
+        border-block-end-color: var(--tb-border-subtle);
+        clip-path: inset(-3rem -3rem 0 -3rem);
+    }
+
+    .tb-dock__panel--floating {
+        border-block-start: none;
+        background: var(--tb-color-surface);
+        clip-path: inset(0 -3rem -3rem -3rem);
+    }
+
     .tb-dock__panel {
         inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1% + var(--tb-dock-tabs-size));
         block-size: calc(var(--tb-dock-live-h, var(--tb-dock-h)) * 1% - var(--tb-dock-tabs-size));
@@ -7557,7 +7579,8 @@
        whole group, or a band along the dock's edge. */
     .tb-dock__drop {
         position: absolute;
-        z-index: 3;
+        /* Above every window. */
+        z-index: 1000;
         display: none;
         box-sizing: border-box;
         border: 2px solid var(--tb-color-primary);

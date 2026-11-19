@@ -712,10 +712,10 @@ public class TbDockManagerTests : BunitContext
 
         // The map is the last of two tabs and can't close.
         await area.TriggerEventAsync("ontbcontextmenuopen", new ContextMenuOpenEventArgs { Key = "map", Request = 1 });
-        Assert.Equal(["back false", "forward true", "maximize false"], Items());
+        Assert.Equal(["back false", "forward true", "float false", "maximize false"], Items());
         await cut.Find(".tb-dock__tab-area").TriggerEventAsync("ontbcontextmenuopen",
             new ContextMenuOpenEventArgs { Key = "trails", Request = 2 });
-        Assert.Equal(["back true", "forward false", "maximize false", "close false"], Items());
+        Assert.Equal(["back true", "forward false", "float false", "maximize false", "close false"], Items());
         // A panel of another group has no menu in this row.
         await cut.Find(".tb-dock__tab-area").TriggerEventAsync("ontbcontextmenuopen",
             new ContextMenuOpenEventArgs { Key = "notes", Request = 3 });
@@ -970,12 +970,13 @@ public class TbDockManagerTests : BunitContext
             GroupItem = "No. {0} ({1})", NewGroup = "Split off", NewGroupAtEdge = "Dock edge", AtStart = "Start",
             AtEnd = "End", Above = "Over", Below = "Under", AtTop = "Top", AtBottom = "Bottom", Close = "Shut",
             SizeMenu = "Resize {0}…", Larger = "Grow {0}", Smaller = "Shrink {0}", Maximize = "Fill",
+            Float = "Loose",
         }));
 
         var menu = cut.Find("[data-part=group-menu]");
         Assert.Equal("Move Trails", menu.QuerySelector("button")!.GetAttribute("aria-label"));
         Assert.Equal("For this tab", cut.Find(".tb-dock__tab-area > [role=menu]").GetAttribute("aria-label"));
-        Assert.Equal(["Earlier", "Later", "Fill", "Shut"],
+        Assert.Equal(["Earlier", "Later", "Loose", "Fill", "Shut"],
             menu.QuerySelectorAll("[data-move]").Select(item => item.TextContent.Trim()));
         Assert.Equal(["No. 2 (Notes)", "No. 3 (Weather)"],
             menu.QuerySelectorAll("[data-move-group]").Select(item => item.TextContent.Trim()));
@@ -1216,6 +1217,246 @@ public class TbDockManagerTests : BunitContext
         await cut.Tb().Dock().RestoreAsync();
 
         Assert.Equal(["Group 2 is alone", "All back"], Services.GetRequiredService<FakeAnnouncer>().Polite);
+    }
+
+    [Fact]
+    public async Task Float_ShouldDrawThePanelInAWindowAboveTheGroups_WhenChosenInAGroupsMenu()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        DockLayout? changed = null;
+        var cut = RenderDock(Hike, HikePanels, layout => changed = layout);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var dock = cut.Tb().Dock();
+
+        await dock.FloatAsync("Notes");
+
+        Assert.Equal(Hike.Float("notes"), changed);
+        // The window is numbered after the docked groups, and drawn half as large as the dock over its middle.
+        var window = cut.Find("[data-part=group][data-floating]");
+        const string box = "--tb-dock-x: 25; --tb-dock-y: 25; --tb-dock-w: 50; --tb-dock-h: 50; --tb-dock-z: 0;";
+        Assert.Equal(("2", box, "Floating panel group 3"), (window.GetAttribute("data-group"),
+            window.GetAttribute("style"), window.QuerySelector("[role=tablist]")!.GetAttribute("aria-label")));
+        Assert.Contains("tb-dock__group--floating", window.ClassList);
+        var panel = cut.Find("[role=tabpanel][data-panel=notes]");
+        Assert.StartsWith(box, panel.GetAttribute("style"));
+        Assert.Equal(("2", true), (panel.GetAttribute("data-dock-group"), panel.HasAttribute("data-floating")));
+        Assert.Contains("tb-dock__panel--floating", panel.ClassList);
+        Assert.Equal(["Notes"], dock.Floating);
+        Assert.Equal(["Trails", "Map", "Weather", "Notes"], dock.Panels);
+        // The panel kept its content, and its tab, made anew in the window's row, takes the focus.
+        Assert.DoesNotContain(_log, line => line.StartsWith("dispose", StringComparison.Ordinal));
+        Assert.Equal(["Notes floats in a window."], Services.GetRequiredService<FakeAnnouncer>().Polite);
+        Assert.Equal(Reference(cut, "Notes"),
+            ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+        Assert.Equal(["float"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public async Task Float_ShouldOfferAWindowWhatItCanDo_WhenItsMenuIsRendered()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        await cut.Tb().Dock().FloatAsync("Notes");
+        await cut.Tb().Dock().FloatAsync("Weather");
+
+        var menu = cut.Find("[data-part=group][data-floating] [data-part=group-menu]");
+
+        // A window docks, moves to a group, another window or an edge, and closes; it has no group to split or to
+        // fill the dock.
+        Assert.Equal(["back", "forward", "dock", "close"],
+            menu.QuerySelectorAll("[data-move]").Select(item => item.GetAttribute("data-move")));
+        Assert.Equal(["Group 1: Trails", "Group 3: Weather"],
+            menu.QuerySelectorAll("[data-move-group]").Select(item => item.TextContent.Trim()));
+        Assert.Equal(4, menu.QuerySelectorAll("[data-move-edge]").Length);
+        Assert.Empty(menu.QuerySelectorAll("[data-move-beside]"));
+        // A docked group can move a panel into a window, by its number.
+        Assert.Equal(["Group 2: Notes", "Group 3: Weather"], cut.FindAll("[data-part=group-menu]")[0]
+            .QuerySelectorAll("[data-move-group]").Select(item => item.TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task Dock_ShouldPutAFloatingPanelInTheLargestGroup_WhenDockIsChosenInItsWindowsMenu()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var cut = RenderDock(Hike, HikePanels);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var dock = cut.Tb().Dock();
+        await dock.FloatAsync("Map");
+
+        await dock.DockAsync("Map");
+
+        // The notes' group is the largest docked one.
+        Assert.Empty(dock.Floating);
+        Assert.Empty(cut.FindAll("[data-floating]"));
+        Assert.Equal(["Trails", "Notes", "Map", "Weather"], dock.Panels);
+        Assert.Equal(["Trails", "Map", "Weather"], dock.Showing);
+        Assert.Equal("Map moved to panel group 2.", Services.GetRequiredService<FakeAnnouncer>().Polite[^1]);
+        Assert.Equal(["select", "float", "dock"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public async Task Float_ShouldTakeAPanelIntoAWindow_WhenMoveToGroupNamesTheWindow()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        var dock = cut.Tb().Dock();
+        await dock.FloatAsync("Notes");
+
+        await dock.MoveToGroupAsync("Weather", 3);
+
+        Assert.Equal(["Notes", "Weather"], dock.Floating);
+        Assert.Equal("Weather floats in a window.", Services.GetRequiredService<FakeAnnouncer>().Polite[^1]);
+        // A window with two tabs still has no group of its own to split.
+        Assert.Empty(cut.FindAll("[data-floating] [data-move-beside]"));
+    }
+
+    [Fact]
+    public async Task Float_ShouldOfferTheDocksEdges_WhenAWindowWithOneTabIsAllTheDockHas()
+    {
+        var cut = RenderDock(new DockLayout(null, null, [new DockFloat(new DockGroup("notes"), 10, 10, 50, 50)]),
+            new Panel("notes", "Notes"));
+        var dock = cut.Tb().Dock();
+        Assert.Equal(4, cut.FindAll("[data-floating] [data-move-edge]").Count);
+
+        await dock.MoveToEdgeAsync("Notes", DockPosition.Start);
+
+        Assert.Empty(dock.Floating);
+        Assert.Equal(["Notes"], dock.Showing);
+    }
+
+    [Fact]
+    public async Task Menu_ShouldLeaveOutTheDocksEdges_WhenTheOnlyDockedPanelHasOnlyWindowsBesideIt()
+    {
+        var cut = RenderDock(
+            new DockLayout(new DockGroup("trails"), null, [new DockFloat(new DockGroup("notes"), 10, 10, 50, 50)]),
+            new Panel("trails", "Trails"), new Panel("notes", "Notes"));
+        var docked = cut.Find("[data-part=group]:not([data-floating]) [data-part=group-menu]");
+
+        // An edge would give the trails the group they have, though they can still join the window or float.
+        Assert.Empty(docked.QuerySelectorAll("[data-move-edge]"));
+        Assert.Equal(["Group 2: Notes"],
+            docked.QuerySelectorAll("[data-move-group]").Select(item => item.TextContent.Trim()));
+        Assert.Equal("The panel \"Trails\" is the only one docked, so it has nowhere to move.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(
+                () => cut.Tb().Dock().MoveToEdgeAsync("Trails", DockPosition.Start))).Message);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldListTheDockedGroupsBeforeTheWindows_WhenAWindowIsOlderThanAGroup()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        var dock = cut.Tb().Dock();
+        await dock.FloatAsync("Notes");
+
+        // The map's new group is rendered after the window's row, and still comes before it.
+        await dock.MoveToNewGroupAsync("Map", DockPosition.Bottom);
+
+        Assert.Equal(["Trails", "Map", "Weather", "Notes"], dock.Panels);
+        Assert.Equal(["0", "1", "3", "2"],
+            cut.FindAll("[data-part=group]").Select(group => group.GetAttribute("data-group")));
+    }
+
+    [Fact]
+    public async Task Raise_ShouldDrawAWindowInFrontAndKeepItsNumber_WhenTheScriptReportsAPressInIt()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var start = Hike.Float("map").Float("weather");
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(start, HikePanels, changes.Add);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        string[] Layers() => [.. cut.FindAll("[data-part=group][data-floating]").Select(window =>
+            $"{window.QuerySelector("[role=tablist]")!.GetAttribute("aria-label")}: "
+                + window.GetAttribute("style")![^15..])];
+        Assert.Equal(["Floating panel group 3: --tb-dock-z: 0;", "Floating panel group 4: --tb-dock-z: 1;"], Layers());
+        var commits = cut.Find("[data-part=dock]").GetAttribute("data-commits");
+
+        await cut.InvokeAsync(() => Report().OnRaise("map"));
+
+        // The windows keep their numbers and trade layers.
+        Assert.Equal(["Floating panel group 3: --tb-dock-z: 1;", "Floating panel group 4: --tb-dock-z: 0;"], Layers());
+        Assert.Equal([start.Raise("map")], changes);
+        // Coming forward isn't counted as use, or as an action a test would wait for.
+        Assert.Empty(used.GetMeasurementSnapshot());
+        Assert.Equal(commits, cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+
+        // The window in front has nowhere to come.
+        await cut.InvokeAsync(() => Report().OnRaise("map"));
+        Assert.Single(changes);
+    }
+
+    [Fact]
+    public async Task Close_ShouldFocusAGroupsShowingTab_WhenAWindowGoesWithItsOnlyTab()
+    {
+        var cut = RenderDock(Hike.Float("map"), HikePanels);
+        var weather = Reference(cut, "Weather");
+
+        await cut.InvokeAsync(() => Report().OnClose("map", true));
+
+        Assert.Empty(cut.FindAll("[data-floating]"));
+        Assert.Equal(weather, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+    }
+
+    [Fact]
+    public async Task Maximize_ShouldLeaveTheWindowsAboveTheGroupThatFillsTheDock_WhenAGroupIsMaximized()
+    {
+        var cut = RenderDock(Hike.Float("map"), HikePanels);
+        var dock = cut.Tb().Dock();
+
+        await dock.MaximizeAsync("Notes");
+
+        Assert.Equal(["Notes", "Map"], dock.Showing);
+        Assert.DoesNotContain("tb-dock__group--covered", cut.Find("[data-part=group][data-floating]").ClassList);
+        // A window isn't a group to maximize, from its menu or with a double click.
+        Assert.Empty(cut.FindAll("[data-floating] [data-move=maximize], [data-floating] [data-move=restore]"));
+        await cut.InvokeAsync(() => Report().OnMaximize("map"));
+        Assert.Equal(["Notes", "Map"], dock.Showing);
+    }
+
+    [Fact]
+    public void Render_ShouldDrawTheWindowsOfItsLayout_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderDock(Hike.FloatAt("map", 10, 20, 30, 40), HikePanels);
+
+        Assert.Equal("--tb-dock-x: 10; --tb-dock-y: 20; --tb-dock-w: 30; --tb-dock-h: 40; --tb-dock-z: 0;",
+            cut.Find("[data-part=group][data-floating]").GetAttribute("style"));
+        Assert.Equal(["Map"], cut.Tb().Dock().Floating);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldSayWhy_WhenAPanelFloatsOrIsDockedAlready()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        var dock = cut.Tb().Dock();
+        Assert.Equal("The panel \"Notes\" is docked already.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => dock.DockAsync("Notes"))).Message);
+
+        await dock.FloatAsync("Notes");
+
+        Assert.Equal("The panel \"Notes\" floats already.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => dock.FloatAsync("Notes"))).Message);
+    }
+
+    [Fact]
+    public async Task Labels_ShouldWordFloatingAndDocking_WhenGiven()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels
+        {
+            Float = "Loose", Dock = "Pin", Floated = "{0} is loose", FloatingGroup = "Window {0}",
+        }));
+        Assert.Equal("Loose", cut.Find("[data-part=group-menu] [data-move=float]").TextContent.Trim());
+
+        await cut.Tb().Dock().FloatAsync("Notes");
+
+        var window = cut.Find("[data-part=group][data-floating]");
+        Assert.Equal("Window 3", window.QuerySelector("[role=tablist]")!.GetAttribute("aria-label"));
+        Assert.Equal("Pin", window.QuerySelector("[data-move=dock]")!.TextContent.Trim());
+        Assert.Equal(["Notes is loose"], Services.GetRequiredService<FakeAnnouncer>().Polite);
     }
 
     [Fact]
