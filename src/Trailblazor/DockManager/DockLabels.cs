@@ -8,8 +8,9 @@ public sealed record DockLabels
     /// for <see cref="TbStrings.DockGroup"/>.</summary>
     public string? Group { get; init; }
 
-    /// <summary>Names a separator, with <c>{0}</c> for the title of the panel showing before it. Leave it null for
-    /// the app's text for <see cref="TbStrings.DockResize"/>.</summary>
+    /// <summary>Names a separator, with <c>{0}</c> for the title of the panel showing before it, and a slid-out
+    /// panel's inner edge, with that panel's title. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockResize"/>.</summary>
     public string? Resize { get; init; }
 
     /// <summary>Tells screen readers how to close a closable tab. Leave it null for the app's text for
@@ -187,15 +188,18 @@ public sealed record DockLabels
     /// <see cref="TbStrings.DockMoved"/>.</summary>
     public string? Moved { get; init; }
 
-    /// <summary>Names the menu button on a separator, with <c>{0}</c> for the title of the panel showing before it.
-    /// Leave it null for the app's text for <see cref="TbStrings.DockSizeMenu"/>.</summary>
+    /// <summary>Names the menu button on a separator, with <c>{0}</c> for the title of the panel showing before it,
+    /// and the one on a slid-out panel's inner edge, with that panel's title. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockSizeMenu"/>.</summary>
     public string? SizeMenu { get; init; }
 
     /// <summary>The menu item that makes the part before a separator larger, with <c>{0}</c> for the title of the
-    /// panel showing in it. Leave it null for the app's text for <see cref="TbStrings.DockLarger"/>.</summary>
+    /// panel showing in it, and the one that makes a slid-out panel larger, with that panel's title. Leave it null
+    /// for the app's text for <see cref="TbStrings.DockLarger"/>.</summary>
     public string? Larger { get; init; }
 
     /// <summary>The menu item that makes the part before a separator smaller, with <c>{0}</c> for the title of the
-    /// panel showing in it. Leave it null for the app's text for <see cref="TbStrings.DockSmaller"/>.</summary>
+    /// panel showing in it, and the one that makes a slid-out panel smaller, with that panel's title. Leave it null
+    /// for the app's text for <see cref="TbStrings.DockSmaller"/>.</summary>
     public string? Smaller { get; init; }
 }

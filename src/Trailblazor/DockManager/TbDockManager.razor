@@ -160,6 +160,28 @@
                 }
             </TbMenu>
         }
+        else if (slot is SlideSeparatorSlot slide)
+        {
+            var (edge, upright) = (EdgeName(slide.Hidden.Edge),
+                slide.Hidden.Edge is DockPosition.Start or DockPosition.End);
+            @* A slid-out panel resizes by its inner edge, a separator like the ones between groups: a drag, its keys,
+               or the steps of its grip's menu (WCAG 2.5.7). *@
+            <div @key="slide.Key" role="separator" tabindex="0" data-part="slide-separator" data-group="@slide.Index"
+                 data-floating data-edge="@edge" aria-orientation="@(upright ? "vertical" : "horizontal")"
+                 aria-controls="@PanelId(slide.Hidden.Panel)" aria-valuenow="@Whole(slide.Hidden.Size)"
+                 aria-valuemin="10" aria-valuemax="90"
+                 aria-label="@Format(Labels.Resize, TbStrings.DockResize, slide.Title)"
+                 style="@BoxStyle(slide.Box, slide.Layer)"
+                 class="@($"tb-dock__slide-separator tb-dock__slide-separator--{edge}")">
+            </div>
+            @if (RendererInfo.IsInteractive)
+            {
+                <TbMenu @key="@($"{slide.Key}-grip")" data-part="slide-grip" data-group="@slide.Index" data-floating
+                        data-edge="@edge" Style="@BoxStyle(slide.Box, slide.Layer)"
+                        Class="@($"tb-dock__slide-grip tb-dock__slide-grip--{edge}")"
+                        Trigger="GripButton(slide.Title)" ChildContent="GripSteps(slide.Title, StepSlideAsync)" />
+            }
+        }
         else if (slot is SeparatorSlot separator)
         {
             var box = separator.Box;
@@ -179,21 +201,9 @@
                 var name = Panel(separator.Before)!.Title;
                 <TbMenu @key="@($"grip-{separator.Index}")" data-part="grip" data-index="@separator.Index"
                         Style="@BoxStyle(Line(box))" Class="@ClassNames.Join("tb-dock__grip",
-                                   box.Split.Vertical ? "tb-dock__grip--vertical" : null)">
-                    <Trigger>
-                        <TbIconButton Icon="BuiltInIcons.DragHandle" Size="Size.Small"
-                                      AriaLabel="@Format(Labels.SizeMenu, TbStrings.DockSizeMenu, name)"
-                                      @attributes="context.Attributes" tabindex="-1" />
-                    </Trigger>
-                    <ChildContent>
-                        <TbMenuItem data-step="larger" OnClick="() => StepAsync(separator.Index, 10)">
-                            @Format(Labels.Larger, TbStrings.DockLarger, name)
-                        </TbMenuItem>
-                        <TbMenuItem data-step="smaller" OnClick="() => StepAsync(separator.Index, -10)">
-                            @Format(Labels.Smaller, TbStrings.DockSmaller, name)
-                        </TbMenuItem>
-                    </ChildContent>
-                </TbMenu>
+                                   box.Split.Vertical ? "tb-dock__grip--vertical" : null)"
+                        Trigger="GripButton(name)"
+                        ChildContent="GripSteps(name, percent => StepAsync(separator.Index, percent))" />
             }
         }
     }
@@ -220,12 +230,17 @@
     // The grip in a window's corner, named by the window's showing panel.
     private sealed record WindowGripSlot(string Key, int Index, DockBox Box, int Layer, string Title) : Slot(Key);
 
+    // The inner edge of the auto-hidden panel that is slid out, which resizes it.
+    private sealed record SlideSeparatorSlot(string Key, int Index, DockAutoHidden Hidden, DockBox Box, int Layer,
+        string Title) : Slot(Key);
+
     // Before is the panel showing in the group just before the separator, which names the separator.
     private sealed record SeparatorSlot(string Key, int Index, DockSeparatorBox Box, string Before) : Slot(Key);
 
     private const string FloatAction = "float";
     private const string AutoHideAction = "auto_hide";
     private const string RevealAction = "reveal";
+    private const string ResizeAutoHiddenAction = "resize_auto_hidden";
     private const string DockAction = "dock";
 
     private readonly string _id = $"tb-dock-{Guid.NewGuid():N}";
@@ -317,7 +332,8 @@
     [Parameter]
     public string? PersistenceKey { get; set; }
 
-    /// <summary>The smallest width or height a separator leaves a group, in pixels. Defaults to 96.</summary>
+    /// <summary>The smallest width or height, in pixels, that a separator leaves a group and that a floating window
+    /// or a slid-out panel resizes to. Defaults to 96.</summary>
     [Parameter]
     public int MinGroupSize { get; set; } = 96;
 
@@ -420,7 +436,7 @@
 
         _report = DotNetObjectReference.Create(new DockReport(SelectFromScriptAsync, CloseFromScriptAsync,
             OnResizeAsync, MoveFromScriptAsync, ToggleMaximizedFromScriptAsync, RaiseFromScriptAsync, OnFloatAsync,
-            PullOutFromScriptAsync, ConcealFromScriptAsync,
+            PullOutFromScriptAsync, ConcealFromScriptAsync, SlideFromScriptAsync,
             tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);
         if (handle is not null && _disposed)
@@ -580,6 +596,7 @@
             {
                 slots.Add(new GroupSlot("revealed", strip, revealed, false, false, front, hidden.Edge));
                 slots.Add(new PanelSlot($"panel-{hidden.Panel}", panel, strip, revealed.Box, true, front, hidden.Edge));
+                slots.Add(new SlideSeparatorSlot("revealed-edge", strip, hidden, revealed.Box, front, panel.Title));
             }
             else if (panel.KeepAlive && _rendered.Contains(hidden.Panel))
             {
@@ -775,6 +792,15 @@
         }
     }
 
+    // The script moves the slid-out panel's inner edge as its keys do, so the panel stays within its limits.
+    private async Task StepSlideAsync(int percent)
+    {
+        if (_handle is not null)
+        {
+            await _handle.InvokeVoidAsync("stepSlide", percent);
+        }
+    }
+
     // The script takes this tenth-of-the-dock step, as it does the arrow keys' smaller ones, so the window stays
     // inside the dock and no smaller than a group may be.
     private async Task StepWindowAsync(int window, string step)
@@ -801,6 +827,24 @@
         ("taller", Labels.Taller ?? Localizer[TbStrings.DockTaller]),
         ("shorter", Labels.Shorter ?? Localizer[TbStrings.DockShorter]),
     ];
+
+    // The button and the two steps of a grip's menu, on a separator and on a slid-out panel's edge.
+    private RenderFragment<MenuTrigger> GripButton(string name) => context => __builder =>
+    {
+        <TbIconButton Icon="BuiltInIcons.DragHandle" Size="Size.Small"
+                      AriaLabel="@Format(Labels.SizeMenu, TbStrings.DockSizeMenu, name)"
+                      @attributes="context.Attributes" tabindex="-1" />
+    };
+
+    private RenderFragment GripSteps(string name, Func<int, Task> step) => __builder =>
+    {
+        <TbMenuItem data-step="larger" OnClick="() => step(10)">
+            @Format(Labels.Larger, TbStrings.DockLarger, name)
+        </TbMenuItem>
+        <TbMenuItem data-step="smaller" OnClick="() => step(-10)">
+            @Format(Labels.Smaller, TbStrings.DockSmaller, name)
+        </TbMenuItem>
+    };
 
     // What a group's menu, and the context menu of its tabs, offer for one of the group's panels.
     private RenderFragment MenuItems(GroupSlot group, string panel, List<GroupSlot> others,
@@ -980,6 +1024,27 @@
         finally
         {
             _commits++;
+        }
+    }
+
+    // The script moved the inner edge of the slid-out panel.
+    private async Task SlideFromScriptAsync(string panel, double size, int report)
+    {
+        // Set first, as for a separator, so the render that the app's LayoutChanged brings carries the number.
+        _reported = report;
+        try
+        {
+            // Rounded as the panel's style is, so a step at a limit reports the size the layout has.
+            var layout = _layout.ResizeAutoHidden(panel, Round(size));
+            if (!layout.Equals(_layout))
+            {
+                await ChangeAsync(layout, ResizeAutoHiddenAction);
+            }
+        }
+        finally
+        {
+            _commits++;
+            StateHasChanged();
         }
     }
 

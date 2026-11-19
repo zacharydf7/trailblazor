@@ -14,7 +14,10 @@ internal static class SeparatorKeys
             "separator => getComputedStyle(separator).direction === 'rtl'");
         var (grow, shrink) = vertical ? ("ArrowDown", "ArrowUp")
             : rightToLeft ? ("ArrowLeft", "ArrowRight") : ("ArrowRight", "ArrowLeft");
-        var key = gap > 0 ? grow : shrink;
+        // A dock's slid-out panel grows away from its strip, so for a strip at the end or the bottom the key that
+        // grows it is the one that shrinks a separator's part before it.
+        var away = await separator.GetAttributeAsync("data-edge") is "end" or "bottom";
+        var key = gap > 0 != away ? grow : shrink;
         var presses = new List<string>();
         for (var left = Math.Abs(gap); left > 0; left -= left >= 10 ? 10 : 1)
         {

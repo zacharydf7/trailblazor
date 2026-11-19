@@ -224,6 +224,17 @@ public sealed record DockLayout
             [.. AutoHidden.Where(each => each.Panel != panel), hidden], Revealed == panel ? null : Revealed);
     }
 
+    /// <summary>Gives the auto-hidden panel with this id another size to slide out to, in percent of the dock, which
+    /// the layout keeps between 10 and 90. A panel that isn't on a strip changes nothing.</summary>
+    /// <param name="panel">The id of the panel on a strip.</param>
+    /// <param name="size">How much of the dock it takes when it slides out, as <see cref="DockAutoHidden.Size"/>.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">The panel is on a strip and the size isn't a finite number.
+    /// </exception>
+    public DockLayout ResizeAutoHidden(string panel, double size) => StripOf(panel) is not { } hidden ? this
+        : new(Root, Closed, Floating,
+            AutoHidden.Select(each => ReferenceEquals(each, hidden) ? each with { Size = size } : each), Revealed);
+
     /// <summary>Slides the auto-hidden panel that is out over the dock back to its strip, and changes nothing when
     /// none is out.</summary>
     public DockLayout Conceal() => Revealed is null ? this : new(Root, Closed, Floating, AutoHidden);

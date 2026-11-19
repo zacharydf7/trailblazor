@@ -7836,11 +7836,11 @@
     }
 
     /* The grip's box lets the pointer through to the line under it, but its button and its menu take the pointer. */
-    .tb-dock__grip > * {
+    :is(.tb-dock__grip, .tb-dock__slide-grip) > * {
         pointer-events: auto;
     }
 
-    .tb-dock__grip > [data-part="trigger"] {
+    :is(.tb-dock__grip, .tb-dock__slide-grip) > [data-part="trigger"] {
         flex: none;
         min-inline-size: 24px;
         inline-size: 24px;
@@ -7854,24 +7854,82 @@
         user-select: none;
     }
 
-    .tb-dock__grip--vertical > [data-part="trigger"] {
+    :is(.tb-dock__grip--vertical, .tb-dock__slide-grip--top, .tb-dock__slide-grip--bottom) > [data-part="trigger"] {
         inline-size: auto;
         min-inline-size: max(24px, calc(var(--tb-control-height) - 8px));
         block-size: 24px;
         cursor: row-resize;
     }
 
-    .tb-dock__grip--vertical svg {
+    :is(.tb-dock__grip--vertical, .tb-dock__slide-grip--top, .tb-dock__slide-grip--bottom) svg {
         rotate: 90deg;
     }
 
     .tb-dock__separator:hover + .tb-dock__grip > [data-part="trigger"],
-    .tb-dock__grip > [data-part="trigger"]:is(:hover, :focus-visible, [aria-expanded="true"]) {
+    .tb-dock__slide-separator:hover + .tb-dock__slide-grip > [data-part="trigger"],
+    :is(.tb-dock__grip, .tb-dock__slide-grip)
+        > [data-part="trigger"]:is(:hover, :focus-visible, [aria-expanded="true"]) {
         opacity: 1;
     }
 
+    /* A slid-out panel's inner edge is a separator like the ones between groups, drawn over the panel where its box
+       ends, away from its strip: along the box's end side for a strip at the start, its bottom for the top, its
+       start side for the end and its top for the bottom. */
+    .tb-dock__slide-separator,
+    .tb-menu.tb-dock__slide-grip {
+        position: absolute;
+        z-index: calc(11 + var(--tb-dock-z) * 2);
+        box-sizing: border-box;
+        inset-inline-start: calc(
+            (var(--tb-dock-live-x, var(--tb-dock-x)) + var(--tb-dock-live-w, var(--tb-dock-w))) * 1%);
+        inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1%);
+        inline-size: 0;
+        block-size: calc(var(--tb-dock-live-h, var(--tb-dock-h)) * 1%);
+    }
+
+    /* Each selector is written out, since :is() would give the separator the grip's higher specificity. */
+    .tb-dock__slide-separator:is([data-edge="end"], [data-edge="top"], [data-edge="bottom"]),
+    .tb-menu.tb-dock__slide-grip:is([data-edge="end"], [data-edge="top"], [data-edge="bottom"]) {
+        inset-inline-start: calc(var(--tb-dock-live-x, var(--tb-dock-x)) * 1%);
+    }
+
+    .tb-dock__slide-separator:is([data-edge="top"], [data-edge="bottom"]),
+    .tb-menu.tb-dock__slide-grip:is([data-edge="top"], [data-edge="bottom"]) {
+        inset-block-start: calc(
+            (var(--tb-dock-live-y, var(--tb-dock-y)) + var(--tb-dock-live-h, var(--tb-dock-h))) * 1%);
+        inline-size: calc(var(--tb-dock-live-w, var(--tb-dock-w)) * 1%);
+        block-size: 0;
+    }
+
+    .tb-dock__slide-separator[data-edge="bottom"],
+    .tb-menu.tb-dock__slide-grip[data-edge="bottom"] {
+        inset-block-start: calc(var(--tb-dock-live-y, var(--tb-dock-y)) * 1%);
+    }
+
+    .tb-dock__slide-separator {
+        inline-size: 9px;
+        margin-inline-start: -4px;
+        cursor: col-resize;
+        touch-action: none;
+    }
+
+    .tb-dock__slide-separator:is([data-edge="top"], [data-edge="bottom"]) {
+        block-size: 9px;
+        margin-inline-start: 0;
+        margin-block-start: -4px;
+        cursor: row-resize;
+    }
+
+    .tb-menu.tb-dock__slide-grip {
+        z-index: calc(12 + var(--tb-dock-z) * 2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+    }
+
     @media (pointer: coarse) {
-        .tb-dock__grip > [data-part="trigger"] {
+        :is(.tb-dock__grip, .tb-dock__slide-grip) > [data-part="trigger"] {
             opacity: 1;
         }
     }
@@ -7893,7 +7951,7 @@
         cursor: row-resize;
     }
 
-    .tb-dock__separator::before {
+    :is(.tb-dock__separator, .tb-dock__slide-separator)::before {
         content: "";
         position: absolute;
         inset-block: 0;
@@ -7903,20 +7961,20 @@
         transition: background-color var(--tb-motion-duration-fast) var(--tb-motion-easing-standard);
     }
 
-    .tb-dock__separator--vertical::before {
+    :is(.tb-dock__separator--vertical, .tb-dock__slide-separator--top, .tb-dock__slide-separator--bottom)::before {
         inset-inline: 0;
         inset-block-start: 4px;
         inline-size: auto;
         block-size: 1px;
     }
 
-    .tb-dock__separator:hover::before,
-    .tb-dock__separator:focus-visible:not([data-pointer-focus])::before {
+    :is(.tb-dock__separator, .tb-dock__slide-separator):hover::before,
+    :is(.tb-dock__separator, .tb-dock__slide-separator):focus-visible:not([data-pointer-focus])::before {
         background: var(--tb-color-primary);
         box-shadow: 0 0 0 1px var(--tb-color-primary);
     }
 
-    .tb-dock__separator:focus-visible {
+    :is(.tb-dock__separator, .tb-dock__slide-separator):focus-visible {
         outline: none;
     }
 
@@ -7940,12 +7998,12 @@
             forced-color-adjust: none;
         }
 
-        .tb-dock__separator::before {
+        :is(.tb-dock__separator, .tb-dock__slide-separator)::before {
             background: CanvasText;
         }
 
-        .tb-dock__separator:hover::before,
-        .tb-dock__separator:focus-visible:not([data-pointer-focus])::before {
+        :is(.tb-dock__separator, .tb-dock__slide-separator):hover::before,
+        :is(.tb-dock__separator, .tb-dock__slide-separator):focus-visible:not([data-pointer-focus])::before {
             background: Highlight;
             box-shadow: 0 0 0 1px Highlight;
         }

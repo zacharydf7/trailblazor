@@ -2162,6 +2162,87 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public async Task SlideSeparator_ShouldResizeTheSlidOutPanel_WhenTheScriptReportsItsEdgeOrItsGripsMenuSteps()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var layout = Hike.AutoHide("notes", DockPosition.End).Open("notes");
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(layout, HikePanels, changes.Add);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+
+        // The panel's inner edge is a separator like the ones between groups, with the share of the dock it takes.
+        var edge = cut.Find("[data-part=slide-separator]");
+        Assert.Equal(("separator", "0", "vertical", "Resize Notes", "end"),
+            (edge.GetAttribute("role"), edge.GetAttribute("tabindex"), edge.GetAttribute("aria-orientation"),
+                edge.GetAttribute("aria-label"), edge.GetAttribute("data-edge")));
+        Assert.Equal(("25", "10", "90"), (edge.GetAttribute("aria-valuenow"), edge.GetAttribute("aria-valuemin"),
+            edge.GetAttribute("aria-valuemax")));
+        Assert.Equal(cut.Find("[data-part=panel][data-panel=notes]").Id, edge.GetAttribute("aria-controls"));
+        Assert.Equal("tb-dock__slide-separator tb-dock__slide-separator--end", edge.ClassName);
+        const string box = "--tb-dock-x: 75; --tb-dock-y: 0; --tb-dock-w: 25; --tb-dock-h: 100; --tb-dock-z: 0;";
+        var grip = cut.Find("[data-part=slide-grip]");
+        Assert.Equal((box, box, "2", "2"), (edge.GetAttribute("style"), grip.GetAttribute("style"),
+            edge.GetAttribute("data-group"), grip.GetAttribute("data-group")));
+        // The grip's button stays out of the tab order, since the edge's keys do the same as its menu.
+        var button = grip.QuerySelector("button")!;
+        Assert.Equal(("Size of Notes", "-1"), (button.GetAttribute("aria-label"), button.GetAttribute("tabindex")));
+        Assert.Equal(["Make Notes larger", "Make Notes smaller"],
+            grip.QuerySelectorAll("[data-step]").Select(item => item.TextContent.Trim()));
+
+        // The layout keeps the size to the four decimals the panel's style shows.
+        await cut.InvokeAsync(() => Report().OnSlide("notes", 33.333333, 1));
+
+        Assert.Equal([layout.ResizeAutoHidden("notes", 33.3333)], changes);
+        Assert.Equal("33", cut.Find("[data-part=slide-separator]").GetAttribute("aria-valuenow"));
+        Assert.StartsWith("--tb-dock-x: 66.6667; --tb-dock-y: 0; --tb-dock-w: 33.3333;",
+            cut.Find("[data-part=group][data-edge]").GetAttribute("style"));
+        Assert.Equal(("1", "1"), (cut.Find("[data-part=dock]").GetAttribute("data-report"),
+            cut.Find("[data-part=dock]").GetAttribute("data-commits")));
+        Assert.Equal(["resize_auto_hidden"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+
+        // A step at a limit reports the size the panel has, and a panel that isn't on a strip has no edge: neither
+        // changes anything, and both count as finished.
+        await cut.InvokeAsync(() => Report().OnSlide("notes", 33.3333, 2));
+        await cut.InvokeAsync(() => Report().OnSlide("trails", 50, 3));
+
+        Assert.Single(changes);
+        Assert.Equal("3", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+
+        // The grip's menu asks the script for a step, so that the panel stays within its limits.
+        await cut.Find("[data-part=slide-grip] [data-step=larger]").ClickAsync(new MouseEventArgs { Detail = 1 });
+        await cut.Find("[data-part=slide-grip] [data-step=smaller]").ClickAsync(new MouseEventArgs { Detail = 1 });
+
+        Assert.Equal(["10", "-10"], _handle.Invocations["stepSlide"].Select(call => $"{call.Arguments[0]}"));
+    }
+
+    [Fact]
+    public async Task Driver_ShouldReadAndSetTheSizeOfASlidOutPanel_WhenGivenItsEdgesName()
+    {
+        var cut = RenderDock(Hike.AutoHide("notes", DockPosition.Top).Open("notes"), HikePanels);
+        var dock = cut.Tb().Dock();
+        Assert.Equal("horizontal", cut.Find("[data-part=slide-separator]").GetAttribute("aria-orientation"));
+        Assert.Equal(25, dock.Size("Resize Notes"));
+
+        await dock.ResizeAsync("Resize Notes", 40);
+
+        Assert.Equal(40, dock.Size("Resize Notes"));
+        Assert.StartsWith("--tb-dock-x: 0; --tb-dock-y: 0; --tb-dock-w: 100; --tb-dock-h: 40;",
+            cut.Find("[data-part=group][data-edge]").GetAttribute("style"));
+        // A docked separator keeps its own name and its own share.
+        Assert.Equal(25, dock.Size("Resize Trails"));
+
+        // The panel takes from a tenth to nine tenths of the dock, and no keys take its edge further.
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => dock.ResizeAsync("Resize Notes", 9));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => dock.ResizeAsync("Resize Notes", 91));
+        await dock.ResizeAsync("Resize Notes", 10);
+        Assert.Equal(10, dock.Size("Resize Notes"));
+        await dock.ResizeAsync("Resize Notes", 90);
+        Assert.Equal(90, dock.Size("Resize Notes"));
+    }
+
+    [Fact]
     public async Task Strip_ShouldSlideItsPanelBack_WhenTheScriptReportsEscapeOrAPressElsewhere()
     {
         var layout = Hike.AutoHide("notes", DockPosition.Bottom);
@@ -2391,6 +2472,9 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal([("start", "Notes Weather"), ("bottom", "Map")], cut.FindAll("[data-part=strip]").Select(strip =>
             (strip.GetAttribute("data-edge"), string.Join(' ', strip.Children.Select(Text)))));
         Assert.Equal("bottom", cut.Find("[data-part=panel][data-panel=map]").GetAttribute("data-edge"));
+        // The slid-out panel's edge is drawn, and its grip's menu waits for the page to be interactive.
+        Assert.Single(cut.FindAll("[data-part=slide-separator]"));
+        Assert.Empty(cut.FindAll("[data-part=slide-grip]"));
     }
 
     [Fact]
@@ -2411,6 +2495,22 @@ public class TbDockManagerTests : BunitContext
         await menu.QuerySelector("[data-move-hide=top]")!.ClickAsync();
 
         Assert.Equal("Trails is put away", Services.GetRequiredService<FakeAnnouncer>().Polite[^1]);
+    }
+
+    [Fact]
+    public void Labels_ShouldWordASlidOutPanelsEdgeAndItsGrip_WhenGiven()
+    {
+        var cut = RenderDock(Hike.AutoHide("notes", DockPosition.Start).Open("notes"), HikePanels);
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels
+        {
+            Resize = "Edge of {0}", SizeMenu = "Sizes for {0}", Larger = "Grow {0}", Smaller = "Shrink {0}",
+        }));
+
+        Assert.Equal("Edge of Notes", cut.Find("[data-part=slide-separator]").GetAttribute("aria-label"));
+        var grip = cut.Find("[data-part=slide-grip]");
+        Assert.Equal("Sizes for Notes", grip.QuerySelector("button")!.GetAttribute("aria-label"));
+        Assert.Equal(["Grow Notes", "Shrink Notes"],
+            grip.QuerySelectorAll("[data-step]").Select(item => item.TextContent.Trim()));
     }
 
     private IRenderedComponent<TbDockManager> RenderDock(DockLayout? layout, params Panel[] panels) =>

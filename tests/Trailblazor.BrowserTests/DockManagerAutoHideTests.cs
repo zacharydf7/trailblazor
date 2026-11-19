@@ -242,6 +242,130 @@ public class DockManagerAutoHideTests(BrowserFixture fixture) : DockManagerPage(
         Assert.NotEqual(plain, highlight);
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SlideSeparator_ShouldResizeTheSlidOutPanel_WhenItsKeysOrItsGripsMenuAreUsed(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        await dock.RevealAsync("Weather");
+        var edge = page.GetByRole(AriaRole.Separator, new() { Name = "Resize Weather", Exact = true });
+        var button = page.GetByRole(AriaRole.Button, new() { Name = "Size of Weather", Exact = true });
+        var area = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+
+        // The edge lies along the top of the panel's row, nine pixels deep around its line, with its grip on it.
+        var line = (await edge.BoundingBoxAsync())!;
+        var top = (await page.Locator(".tb-dock__group--revealed").BoundingBoxAsync())!;
+        var grip = (await button.BoundingBoxAsync())!;
+        Assert.Equal(top.Y, line.Y + line.Height / 2, 1.0);
+        Assert.Equal(9, line.Height, 0.01);
+        Assert.Equal(top.Width, line.Width, 1.0);
+        Assert.Equal(top.Y, grip.Y + grip.Height / 2, 1.0);
+        // It comes after its panel for the Tab key and for screen readers, and its grip's button is no Tab stop.
+        Assert.EndsWith("weather slide-separator slide-grip", await PartsAsync(page));
+        await Expect(edge).ToHaveAttributeAsync("tabindex", "0");
+        await Expect(button).ToHaveAttributeAsync("tabindex", "-1");
+
+        // The weather slides up from the bottom, so the helper's keys grow it upward: three tens and two ones.
+        await dock.ResizeAsync("Resize Weather", 57);
+
+        Assert.Equal(57, await dock.SizeAsync("Resize Weather"));
+        var row = (await page.Locator(".tb-dock__group--revealed").BoundingBoxAsync())!;
+        Assert.Equal(area.Y + 1 + (area.Height - 2) * 0.43, row.Y, 1.0);
+        await Expect(edge).ToBeFocusedAsync();
+        await Expect(edge).ToHaveAttributeAsync("aria-orientation", "horizontal");
+
+        // Home and End take the panel to its smallest and its largest. The arrows along the edge do nothing, and Alt,
+        // Ctrl or Cmd with an arrow stays with the browser.
+        // The smallest here is the 64 pixels a group may be, which is more than a tenth of the area's height.
+        var least = (int)Math.Round(6400 / (area.Height - 2));
+        await ChangeAsync(page, () => edge.PressAsync("End"));
+        Assert.Equal(90, await dock.SizeAsync("Resize Weather"));
+        await ChangeAsync(page, () => edge.PressAsync("Home"));
+        Assert.Equal(least, await dock.SizeAsync("Resize Weather"));
+        Assert.True(least > 10, $"{least}");
+        foreach (var key in new[] { "ArrowRight", "Alt+ArrowUp", "Control+ArrowUp", "Meta+ArrowUp" })
+        {
+            await edge.PressAsync(key);
+        }
+
+        await ChangeAsync(page, () => edge.PressAsync("ArrowUp"));
+        Assert.Equal(least + 1, await dock.SizeAsync("Resize Weather"));
+
+        // The grip on the edge opens a menu of single steps, for those who can't drag.
+        await button.ClickAsync();
+        await ChangeAsync(page,
+            () => page.GetByRole(AriaRole.Menuitem, new() { Name = "Make Weather larger" }).ClickAsync());
+        Assert.Equal(least + 11, await dock.SizeAsync("Resize Weather"));
+
+        // Escape on the edge slides the panel back, as anywhere in it.
+        await edge.FocusAsync();
+        await edge.PressAsync("Escape");
+        await Expect(page.Locator(".tb-dock__group--revealed")).ToHaveCountAsync(0);
+        await Expect(StripButton(page, "Weather")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SlideSeparator_ShouldGrowThePanelAwayFromItsStrip_WhenTextRunsRightToLeft(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips&direction=rtl");
+        var dock = page.Tb().Dock();
+        await dock.RevealAsync("Gear");
+        var edge = page.GetByRole(AriaRole.Separator, new() { Name = "Resize Gear", Exact = true });
+        var area = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+
+        // The strip is at the right here, so the edge is the panel's left side and Left grows the panel.
+        var row = (await page.Locator(".tb-dock__group--revealed").BoundingBoxAsync())!;
+        var line = (await edge.BoundingBoxAsync())!;
+        Assert.Equal(row.X, line.X + line.Width / 2, 1.0);
+        await edge.FocusAsync();
+        await ChangeAsync(page, () => edge.PressAsync("Shift+ArrowLeft"));
+
+        Assert.Equal(35, await dock.SizeAsync("Resize Gear"));
+        row = (await page.Locator(".tb-dock__group--revealed").BoundingBoxAsync())!;
+        Assert.Equal(area.X + area.Width - 1, row.X + row.Width, 1.0);
+        Assert.Equal((area.Width - 2) * 0.35, row.Width, 1.0);
+
+        // The helper presses the same keys.
+        await dock.ResizeAsync("Resize Gear", 30);
+        Assert.Equal(30, await dock.SizeAsync("Resize Gear"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SlideSeparator_ShouldBeDrawnInTheHighlight_WhenItHasTheFocusAndColorsAreForced(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips", new() { ForcedColors = ForcedColors.Active });
+        // The panel slides out by a key, which keeps the browser in keyboard mode: after a click, Firefox wouldn't
+        // match :focus-visible for focus from a script.
+        await StripButton(page, "Gear").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        var edge = page.GetByRole(AriaRole.Separator, new() { Name = "Resize Gear", Exact = true });
+        await Expect(edge).ToBeVisibleAsync();
+        var line = () => edge.EvaluateAsync<string>("line => getComputedStyle(line, '::before').backgroundColor");
+        Assert.Equal(await SystemColorAsync(page, "CanvasText"), await line());
+
+        await edge.FocusAsync();
+        // The line's color eases in, so it is read once the transition ends.
+        await WaitForFadesAsync(page);
+
+        Assert.Equal(await SystemColorAsync(page, "Highlight"), await line());
+    }
+
+    // Only Chromium emulates a phone, whose pointer can't hover.
+    [Fact]
+    public async Task Dock_ShouldAlwaysShowItsGrips_WhenTheMainPointerIsAFinger()
+    {
+        var page = await OpenDockAsync("chromium", "?layout=strips", new() { IsMobile = true, HasTouch = true });
+        Assert.True(await page.EvaluateAsync<bool>("() => matchMedia('(pointer: coarse)').matches"));
+        await page.Tb().Dock().RevealAsync("Gear");
+
+        // The grip on a separator and the one on a slid-out panel's edge both show with nothing hovering.
+        foreach (var name in new[] { "Size of Trails", "Size of Gear" })
+        {
+            await Expect(page.Locator(".tb-dock").GetByRole(AriaRole.Button, new() { Name = name, Exact = true }))
+                .ToHaveCSSAsync("opacity", "1");
+        }
+    }
+
     private static ILocator StripButton(IPage page, string title) => page.Locator("[data-part=strip-button]")
         .And(page.GetByRole(AriaRole.Button, new() { Name = title, Exact = true }));
 }

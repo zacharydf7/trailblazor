@@ -254,6 +254,138 @@ public class DockManagerWindowTests(BrowserFixture fixture) : DockManagerPage(fi
         await Expect(row).ToHaveCountAsync(1);
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SlideSeparator_ShouldResizeTheSlidOutPanelWithinItsLimits_WhenItIsDragged(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        await dock.RevealAsync("Gear");
+        var row = page.Locator(".tb-dock__group--revealed");
+        var edge = page.GetByRole(AriaRole.Separator, new() { Name = "Resize Gear", Exact = true });
+        var area = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        var inner = area.Width - 2;
+        var before = (await row.BoundingBoxAsync())!;
+        // The edge lies where the panel's box ends, a quarter of the area from the start, nine pixels wide.
+        var line = (await edge.BoundingBoxAsync())!;
+        Assert.Equal(before.X + before.Width, line.X + line.Width / 2, 1.0);
+        Assert.Equal(9, line.Width, 0.01);
+        var color = () => edge.EvaluateAsync<string>("line => getComputedStyle(line, '::before').backgroundColor");
+        var plain = await color();
+
+        // A tenth of the area further in. The panel follows at once, and stays out while its edge is pressed.
+        var (x, y) = await PressLineAsync(page, edge);
+        await page.Mouse.MoveAsync(x + inner / 10, y, new() { Steps = 4 });
+        // The drag selects none of the text it crosses.
+        Assert.Equal("", await page.EvaluateAsync<string>("() => getSelection().toString()"));
+        Assert.Equal(inner * 0.35, (await row.BoundingBoxAsync())!.Width, 1.5);
+        Assert.Equal(inner * 0.35, (await Panel(page, "Gear").BoundingBoxAsync())!.Width, 1.5);
+        await ReleaseAsync(page);
+
+        Assert.Equal(35, await dock.SizeAsync("Resize Gear"));
+        await Expect(page.GetByTestId("layout")).ToContainTextAsync(
+            "{\"panel\":\"gear\",\"edge\":\"start\",\"size\":35");
+        await Expect(row).ToHaveCountAsync(1);
+        // The press gave the edge the focus and marked it, and once the pointer leaves, its line has none of keyboard
+        // focus's highlight. A key on the edge takes the mark away.
+        await Expect(edge).ToBeFocusedAsync();
+        await Expect(edge).ToHaveAttributeAsync("data-pointer-focus", "");
+        await page.Mouse.MoveAsync(area.X + inner * 0.8f, y);
+        await WaitForFadesAsync(page);
+        Assert.Equal(plain, await color());
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(edge).Not.ToHaveAttributeAsync("data-pointer-focus", "");
+
+        // It stops at nine tenths of the area, also while the drag runs, and at a tenth of it.
+        await PressLineAsync(page, edge);
+        await page.Mouse.MoveAsync(1200, 400, new() { Steps = 4 });
+        Assert.Equal(inner * 0.9, (await row.BoundingBoxAsync())!.Width, 1.5);
+        await ReleaseAsync(page);
+        Assert.Equal(90, await dock.SizeAsync("Resize Gear"));
+        await PressLineAsync(page, edge);
+        await page.Mouse.MoveAsync(area.X + 2, 400, new() { Steps = 4 });
+        await ReleaseAsync(page);
+        Assert.Equal(10, await dock.SizeAsync("Resize Gear"));
+        // The mark from that press goes when the focus leaves the edge.
+        await Expect(edge).ToHaveAttributeAsync("data-pointer-focus", "");
+        await Tab(page, "Gear").FocusAsync();
+        await Expect(edge).Not.ToHaveAttributeAsync("data-pointer-focus", "");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SlideSeparator_ShouldKeepThePanelAgainstItsStrip_WhenTheEdgeOfAnEndOrBottomPanelIsDragged(
+        string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        await dock.AutoHideAsync("Notes", DockPosition.End);
+        await dock.RevealAsync("Notes");
+        var row = page.Locator(".tb-dock__group--revealed");
+        var area = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        var (width, height) = (area.Width - 2, area.Height - 2);
+
+        // The end strip's panel grows toward the start: its far side stays at the area's end while the drag runs.
+        var edge = page.GetByRole(AriaRole.Separator, new() { Name = "Resize Notes", Exact = true });
+        var line = (await edge.BoundingBoxAsync())!;
+        Assert.Equal((await row.BoundingBoxAsync())!.X, line.X + line.Width / 2, 1.0);
+        var (x, y) = await PressLineAsync(page, edge);
+        await page.Mouse.MoveAsync(x - width / 10, y, new() { Steps = 4 });
+        var during = (await row.BoundingBoxAsync())!;
+        Assert.Equal(width * 0.35, during.Width, 1.5);
+        Assert.Equal(area.X + area.Width - 1, during.X + during.Width, 1.0);
+        await ReleaseAsync(page);
+        Assert.Equal(35, await dock.SizeAsync("Resize Notes"));
+
+        // The bottom strip's panel grows upward, and its far side stays at the area's bottom.
+        await dock.RevealAsync("Weather");
+        edge = page.GetByRole(AriaRole.Separator, new() { Name = "Resize Weather", Exact = true });
+        (x, y) = await PressLineAsync(page, edge);
+        await page.Mouse.MoveAsync(x, y - height / 10, new() { Steps = 4 });
+        during = (await row.BoundingBoxAsync())!;
+        var panel = (await Panel(page, "Weather").BoundingBoxAsync())!;
+        Assert.Equal(area.Y + 1 + height * 0.65, during.Y, 1.5);
+        Assert.Equal(area.Y + area.Height - 1, panel.Y + panel.Height, 1.0);
+        await ReleaseAsync(page);
+        Assert.Equal(35, await dock.SizeAsync("Resize Weather"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SlideSeparator_ShouldLieUnderThePanelAndDragByItsGrip_WhenThePanelSlidOutFromTheTop(
+        string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        await dock.AutoHideAsync("Notes", DockPosition.Top);
+        await dock.RevealAsync("Notes");
+        var edge = page.GetByRole(AriaRole.Separator, new() { Name = "Resize Notes", Exact = true });
+        var button = page.GetByRole(AriaRole.Button, new() { Name = "Size of Notes", Exact = true });
+        var area = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        var height = area.Height - 2;
+
+        // The edge lies along the bottom of the panel, a quarter of the area down and nine pixels deep around its
+        // line, with its grip on its middle.
+        var panel = (await Panel(page, "Notes").BoundingBoxAsync())!;
+        var line = (await edge.BoundingBoxAsync())!;
+        var grip = (await button.BoundingBoxAsync())!;
+        Assert.Equal(area.Y + 1 + height * 0.25, panel.Y + panel.Height, 1.0);
+        Assert.Equal(panel.Y + panel.Height, line.Y + line.Height / 2, 1.0);
+        Assert.Equal(9, line.Height, 0.01);
+        Assert.Equal(panel.Width, line.Width, 1.0);
+        var (x, y) = (grip.X + grip.Width / 2, grip.Y + grip.Height / 2);
+        Assert.Equal(line.X + line.Width / 2, x, 1.0);
+        Assert.Equal(line.Y + line.Height / 2, y, 1.0);
+
+        // A drag that starts on the grip resizes as one on the line does, and the grip's menu stays shut.
+        await page.Mouse.MoveAsync(x, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(x, y + height / 10, new() { Steps = 4 });
+        var during = (await Panel(page, "Notes").BoundingBoxAsync())!;
+        Assert.Equal(area.Y + 1 + height * 0.35, during.Y + during.Height, 1.5);
+        await ReleaseAsync(page);
+
+        Assert.Equal(35, await dock.SizeAsync("Resize Notes"));
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Make Notes larger" })).ToBeHiddenAsync();
+    }
+
     // Only Chromium can drive touch from Playwright.
     [Fact]
     public async Task Window_ShouldFollowAFinger_WhenItDragsTheEmptyPartOfItsRow()
@@ -309,15 +441,17 @@ public class DockManagerWindowTests(BrowserFixture fixture) : DockManagerPage(fi
         await page.Mouse.DownAsync();
     }
 
-    // Lets go of the mouse and waits until the app has the window's box.
-    private static Task ReleaseAsync(IPage page) => ChangeAsync(page, () => page.Mouse.UpAsync());
-
-    // Does something the dock counts as one finished action, and waits for the count.
-    private static async Task ChangeAsync(IPage page, Func<Task> act)
+    // Presses the mouse on a slid-out panel's edge a quarter of the way along it, clear of the grip on its middle.
+    private static async Task<(float X, float Y)> PressLineAsync(IPage page, ILocator edge)
     {
-        var dock = page.Locator(".tb-dock");
-        var commits = int.Parse((await dock.GetAttributeAsync("data-commits"))!, CultureInfo.InvariantCulture);
-        await act();
-        await Expect(dock).ToHaveAttributeAsync("data-commits", (commits + 1).ToString(CultureInfo.InvariantCulture));
+        var box = (await edge.BoundingBoxAsync())!;
+        var (x, y) = box.Height > box.Width ? (box.X + box.Width / 2, box.Y + box.Height / 4)
+            : (box.X + box.Width / 4, box.Y + box.Height / 2);
+        await page.Mouse.MoveAsync(x, y);
+        await page.Mouse.DownAsync();
+        return (x, y);
     }
+
+    // Lets go of the mouse and waits until the dock counts the drag.
+    private static Task ReleaseAsync(IPage page) => ChangeAsync(page, () => page.Mouse.UpAsync());
 }

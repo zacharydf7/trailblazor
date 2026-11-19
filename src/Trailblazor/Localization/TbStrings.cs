@@ -707,7 +707,8 @@ public static class TbStrings
     /// <summary>"Panel group {0}": names the tab list of a dock's group; {0} is the group's number.</summary>
     public const string DockGroup = "Dock.Group";
 
-    /// <summary>"Resize {0}": names a dock's separator; {0} is the title of the panel showing before it.</summary>
+    /// <summary>"Resize {0}": names a dock's separator, where {0} is the title of the panel showing before it, and
+    /// a slid-out panel's inner edge, where it is that panel's title.</summary>
     public const string DockResize = "Dock.Resize";
 
     /// <summary>"Press Delete to close": tells screen readers how to close a dock's closable tab.</summary>
@@ -766,14 +767,16 @@ public static class TbStrings
     /// number of its group.</summary>
     public const string DockMoved = "Dock.Moved";
 
-    /// <summary>"Size of {0}": names the menu button on a dock's separator; {0} is the title of the panel showing
-    /// before it.</summary>
+    /// <summary>"Size of {0}": names the menu button on a dock's separator, where {0} is the title of the panel
+    /// showing before it, and the one on a slid-out panel's inner edge, where it is that panel's title.</summary>
     public const string DockSizeMenu = "Dock.SizeMenu";
 
-    /// <summary>"Make {0} larger": a dock separator's menu item that grows the part before it by 10%.</summary>
+    /// <summary>"Make {0} larger": a dock separator's menu item that grows the part before it by 10%, and the item
+    /// on a slid-out panel's inner edge that grows the panel by 10% of the dock.</summary>
     public const string DockLarger = "Dock.Larger";
 
-    /// <summary>"Make {0} smaller": a dock separator's menu item that shrinks the part before it by 10%.</summary>
+    /// <summary>"Make {0} smaller": a dock separator's menu item that shrinks the part before it by 10%, and the
+    /// item on a slid-out panel's inner edge that shrinks the panel by 10% of the dock.</summary>
     public const string DockSmaller = "Dock.Smaller";
 
     /// <summary>"Maximize": a dock menu item that has the panel's group fill the dock.</summary>

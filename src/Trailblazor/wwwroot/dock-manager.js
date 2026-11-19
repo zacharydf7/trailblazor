@@ -59,11 +59,13 @@ export function attachDock(root, reporter) {
     // that separator's grip.
     const inReadingOrder = () => {
         const [panels, separators, grips, corners] = ['panel', 'separator', 'grip', 'window-grip'].map(parts);
+        const edges = [...parts('slide-separator'), ...parts('slide-grip')];
         const after = index => [separators, grips].map(list => list.find(each => Number(each.dataset.index) === index));
         return groupsInOrder().flatMap(group => [group,
             ...panels.filter(panel => panel.dataset.dockGroup === group.dataset.group),
             ...after(Number(group.dataset.group)).filter(Boolean),
-            ...corners.filter(corner => corner.dataset.group === group.dataset.group)]);
+            ...corners.filter(corner => corner.dataset.group === group.dataset.group),
+            ...(group.hasAttribute('data-edge') ? edges : [])]);
     };
     // Where the browser has no moveBefore, a move reloads an iframe, so a panel that holds one costs far more to move
     // than another panel, and a panel more than a row of tabs or a separator.
@@ -309,6 +311,40 @@ export function attachDock(root, reporter) {
         placeWindow(row, box);
         reportWindow(row, box, resize);
     };
+    // A slid-out panel resizes by its inner edge, the one away from its strip. Its box grows from the dock's edge by
+    // a percent of the dock, and stays between nine tenths of the dock and a tenth, or the smallest a group may be if
+    // that is more.
+    const slideRow = () => parts('group').find(row => row.hasAttribute('data-edge'));
+    const upright = edge => edge === 'start' || edge === 'end';
+    const slid = (start, edge, by) => {
+        const least = Number(root.dataset.minSize) / (upright(edge) ? root.clientWidth : root.clientHeight) * 100;
+        const size = between((upright(edge) ? start.width : start.height) + by, Math.max(10, least), 90);
+        return upright(edge) ? { ...start, width: size, x: edge === 'end' ? 100 - size : 0 }
+            : { ...start, height: size, y: edge === 'bottom' ? 100 - size : 0 };
+    };
+    // How far a move across the screen takes the edge away from its strip.
+    const outward = (edge, dx, dy) =>
+        ({ start: isRtl() ? -dx : dx, end: isRtl() ? dx : -dx, top: dy, bottom: -dy })[edge];
+    const reportSlide = (row, box) => {
+        reports++;
+        callDotNet(reporter, 'OnSlide', tabsOf(row)[0].dataset.panel,
+            upright(row.dataset.edge) ? box.width : box.height, reports);
+    };
+    const stepSlide = by => {
+        const row = slideRow();
+        if (row) {
+            const box = slid(boxOf(row), row.dataset.edge, by);
+            placeWindow(row, box);
+            reportSlide(row, box);
+        }
+    };
+    // The edge a press is on: the separator itself, which drags at once, or the button of its grip's menu.
+    const slideHandle = target => {
+        const part = ownPart(target, 'slide-separator') ?? ownPart(target, 'slide-grip');
+        const handle = part?.dataset.part === 'slide-grip' ? target.closest('[data-part="trigger"]') : part;
+        return handle && slideRow() ? { row: slideRow(), edge: part.dataset.edge, handle, atOnce: handle === part }
+            : null;
+    };
     // The handle a press or a key is on: the button of a window's Move menu or of its grip, not the menu's items.
     const windowHandle = target => {
         const corner = ownPart(target, 'window-grip');
@@ -320,7 +356,8 @@ export function attachDock(root, reporter) {
     // The window a press moves or resizes: by a handle, or by the empty part of its row.
     const windowPress = event => {
         const row = ownPart(event.target, 'group');
-        return windowHandle(event.target) ?? (row?.hasAttribute('data-floating') && !row.hasAttribute('data-edge')
+        return slideHandle(event.target) ?? windowHandle(event.target)
+            ?? (row?.hasAttribute('data-floating') && !row.hasAttribute('data-edge')
             && event.target.matches('.tb-dock__group, .tb-dock__tab-area, .tb-dock__tabs')
             ? { row, resize: false, handle: null } : null);
     };
@@ -335,6 +372,13 @@ export function attachDock(root, reporter) {
             if (!lifted.handle) {
                 // The row's empty part would otherwise start a selection of the tabs' text.
                 event.preventDefault();
+            }
+
+            if (lifted.atOnce) {
+                // As on a separator between groups: the drag selects no text, and the focus shows no highlight.
+                event.preventDefault();
+                lifted.handle.dataset.pointerFocus = '';
+                lifted.handle.focus();
             }
 
             // Captured where it was pressed, inside the tab menu's area, so that menu still hears the press end.
@@ -364,12 +408,14 @@ export function attachDock(root, reporter) {
     const onPointerMove = event => {
         if (windowDrag) {
             const [dx, dy] = [event.clientX - windowDrag.x, event.clientY - windowDrag.y];
-            windowDrag.dragged ||= grips.isDrag(Math.hypot(dx, dy), event);
+            windowDrag.dragged ||= windowDrag.atOnce || grips.isDrag(Math.hypot(dx, dy), event);
             if (windowDrag.dragged && windowDrag.row.isConnected) {
                 // A panel's iframe would take the pointer as it crosses.
                 root.dataset.resizing = '';
-                windowDrag.box = changed(windowDrag.start, (isRtl() ? -dx : dx) / root.clientWidth * 100,
-                    dy / root.clientHeight * 100, windowDrag.resize);
+                const [across, down] = [dx / root.clientWidth * 100, dy / root.clientHeight * 100];
+                windowDrag.box = windowDrag.edge
+                    ? slid(windowDrag.start, windowDrag.edge, outward(windowDrag.edge, across, down))
+                    : changed(windowDrag.start, isRtl() ? -across : across, down, windowDrag.resize);
                 placeWindow(windowDrag.row, windowDrag.box);
             }
 
@@ -390,13 +436,13 @@ export function attachDock(root, reporter) {
     };
     const onPointerUp = () => {
         if (windowDrag) {
-            const { row, handle, box, resize, dragged } = windowDrag;
+            const { row, handle, box, resize, dragged, edge } = windowDrag;
             windowDrag = null;
             grips.released(dragged ? handle : null);
             delete root.dataset.resizing;
             // The app can take the window away while it is dragged.
             if (box && row.isConnected) {
-                reportWindow(row, box, resize);
+                (edge ? reportSlide : reportWindow)(row, box, resize);
             }
         }
 
@@ -468,13 +514,32 @@ export function attachDock(root, reporter) {
             right: isRtl() ? 'narrower' : 'wider', up: 'shorter', down: 'taller' }[way];
         stepWindow(pressed.row, step, event.shiftKey ? 10 : 1);
     };
+    // On a slid-out panel's edge, the arrows that cross it move it by 1% of the dock, or 10% with Shift, and Home and
+    // End take the panel to its smallest and its largest.
+    const onSlideKey = event => {
+        const separator = ownPart(event.target, 'slide-separator');
+        if (separator !== event.target || event.altKey || event.ctrlKey || event.metaKey) {
+            return;
+        }
+
+        delete separator.dataset.pointerFocus;
+        const edge = separator.dataset.edge;
+        const arrows = upright(edge) ? { ArrowLeft: outward(edge, -1, 0), ArrowRight: outward(edge, 1, 0) }
+            : { ArrowUp: outward(edge, 0, -1), ArrowDown: outward(edge, 0, 1) };
+        const by = { Home: -100, End: 100 }[event.key] ?? (arrows[event.key] ?? 0) * (event.shiftKey ? 10 : 1);
+        if (by) {
+            event.preventDefault();
+            stepSlide(by);
+        }
+    };
     // The browser would take a finger's drag on the empty part of a window's row for scrolling, and end it.
     const onTouchMove = event => {
         if (windowDrag) {
             event.preventDefault();
         }
     };
-    const onFocusOut = event => delete ownPart(event.target, 'separator')?.dataset.pointerFocus;
+    const onFocusOut = event =>
+        delete (ownPart(event.target, 'separator') ?? ownPart(event.target, 'slide-separator'))?.dataset.pointerFocus;
     // A middle click closes a closable tab, as in a browser. Its press would start the browser's scrolling mode.
     const closable = event => event.button === 1 && ownPart(event.target, 'tab')?.hasAttribute('aria-keyshortcuts')
         ? ownPart(event.target, 'tab') : null;
@@ -734,6 +799,7 @@ export function attachDock(root, reporter) {
     root.addEventListener('auxclick', onAuxClick);
     root.addEventListener('click', onClick);
     root.addEventListener('keydown', onRevealedKey);
+    root.addEventListener('keydown', onSlideKey);
     document.addEventListener('pointerdown', onElsewhere, { capture: true });
     document.addEventListener('focusin', onElsewhere, { capture: true });
     root.addEventListener('dblclick', onDoubleClick);
@@ -768,6 +834,8 @@ export function attachDock(root, reporter) {
                 report(separator, moveTo(separator, stepped(separator, percent)));
             }
         },
+        // The menu of the grip on a slid-out panel's edge moves the edge by this many percent, as its keys do.
+        stepSlide,
         // A window's Move menu and its grip's menu move or resize it by a tenth of the dock.
         stepWindow(index, step) {
             const row = rowOf(index);
@@ -798,6 +866,7 @@ export function attachDock(root, reporter) {
             root.removeEventListener('auxclick', onAuxClick);
             root.removeEventListener('click', onClick);
             root.removeEventListener('keydown', onRevealedKey);
+            root.removeEventListener('keydown', onSlideKey);
             document.removeEventListener('pointerdown', onElsewhere, { capture: true });
             document.removeEventListener('focusin', onElsewhere, { capture: true });
             root.removeEventListener('dblclick', onDoubleClick);

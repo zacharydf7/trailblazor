@@ -507,7 +507,8 @@
                             <code>CloseAsync(panel)</code> closes one. <code>Panels</code> reads every tab's title
                             and <code>Showing</code> the panels that show. <code>Panel(panel)</code> gives the
                             helpers for what a panel holds. <code>ResizeAsync(separator, percent)</code> moves a
-                            separator as its keys do, and <code>Size(separator)</code> reads its percent.
+                            separator as its keys do, and <code>Size(separator)</code> reads its percent; both take
+                            a slid-out panel's inner edge too, by its name, such as "Resize Notes".
                             <code>MoveTabAsync(panel, places)</code>, <code>MoveToGroupAsync(panel, group)</code>,
                             <code>MoveToNewGroupAsync(panel, side)</code> and
                             <code>MoveToEdgeAsync(panel, edge)</code> move a panel as its group's menu does, selecting
@@ -1314,25 +1315,25 @@
             + "`CollapseAsync()` and `RestoreAsync()` press Enter on the separator, unless the pane it toggles is "
             + "already collapsed or open as asked, and wait until the app's `CollapsedChanged` has run; "
             + "`CollapsedAsync()` reads whether that pane is collapsed."),
-        new("Dock manager", "Its name, or none for the only one", "`Dock(name).SelectAsync(panel)` clicks a "
-            + "panel's tab, by the panel's title, and `CloseAsync(panel)` its close mark; both wait until the app's "
+        new("Dock manager", "Its name, or none for the only one", "`Dock(name).SelectAsync(panel)` clicks a panel's "
+            + "tab, by the panel's title, and `CloseAsync(panel)` its close mark; both wait until the app's "
             + "`LayoutChanged` has run. `PanelsAsync()` reads every tab's title and `ShowingAsync()` the panels that "
             + "show. `Panel(panel)` gives the helpers for what a panel holds, and `PanelElement(panel)` the panel "
             + "itself. `ResizeAsync(separator, percent)` moves a separator with its keys and waits until the app has "
-            + "the sizes, and `SizeAsync(separator)` reads its percent. `MoveTabAsync(panel, places)`, "
-            + "`MoveToGroupAsync(panel, group)`, `MoveToNewGroupAsync(panel, side)` and `MoveToEdgeAsync(panel, "
-            + "edge)` select a panel and move it from its group's menu, and wait until the app has the layout. "
-            + "`ChooseFromTabMenuAsync(panel, path)` right-clicks a panel's tab, clicks an item in the menu that "
-            + "opens, through the submenus named before it, and waits until the app has the layout. "
-            + "`MaximizeAsync(panel)` has a panel's group fill the dock from its group's menu, and `RestoreAsync()` "
-            + "clicks the Restore button; both wait until the app has the layout. `FloatAsync(panel)` and "
-            + "`DockAsync(panel)` float and dock a panel from its menu and wait the same way, and `FloatingAsync()` "
-            + "reads the panels in windows. `MoveWindowAsync(panel, right, down)` and "
+            + "the sizes, and `SizeAsync(separator)` reads its percent; both take a slid-out panel's inner edge too, "
+            + "by its name, such as \"Resize Notes\". `MoveTabAsync(panel, places)`, `MoveToGroupAsync(panel, group)`, "
+            + "`MoveToNewGroupAsync(panel, side)` and `MoveToEdgeAsync(panel, edge)` select a panel and move it from "
+            + "its group's menu, and wait until the app has the layout. `ChooseFromTabMenuAsync(panel, path)` "
+            + "right-clicks a panel's tab, clicks an item in the menu that opens, through the submenus named before "
+            + "it, and waits until the app has the layout. `MaximizeAsync(panel)` has a panel's group fill the dock "
+            + "from its group's menu, and `RestoreAsync()` clicks the Restore button; both wait until the app has the "
+            + "layout. `FloatAsync(panel)` and `DockAsync(panel)` float and dock a panel from its menu and wait the "
+            + "same way, and `FloatingAsync()` reads the panels in windows. `MoveWindowAsync(panel, right, down)` and "
             + "`ResizeWindowAsync(panel, wider, taller)` press the arrow keys on a window's Move button or grip, by "
-            + "percents of the dock, and wait the same way; `WindowAsync(panel)` reads its box. "
-            + "`AutoHideAsync(panel, edge)` puts a panel away on a strip from its menu, `RevealAsync(panel)` clicks "
-            + "its button on the strip, and `ConcealAsync()` presses Escape in the panel that is out; each waits "
-            + "until the app has the layout. `AutoHiddenAsync()` reads the strips' panels."),
+            + "percents of the dock, and wait the same way; `WindowAsync(panel)` reads its box. `AutoHideAsync(panel, "
+            + "edge)` puts a panel away on a strip from its menu, `RevealAsync(panel)` clicks its button on the strip, "
+            + "and `ConcealAsync()` presses Escape in the panel that is out; each waits until the app has the layout. "
+            + "`AutoHiddenAsync()` reads the strips' panels."),
         new("Stepper", "Its name, or none for the only one", "`Stepper(name).GoToAsync(title)` goes to a step and "
             + "waits until it's current and the app's `ActiveKeyChanged` has run, `StepsAsync()` reads the steps' "
             + "titles, and `CurrentAsync()` reads the current step's."),

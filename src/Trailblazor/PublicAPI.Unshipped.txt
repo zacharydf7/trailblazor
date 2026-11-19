@@ -6994,6 +6994,7 @@ Trailblazor.DockLayout.AutoHidden.get -> System.Collections.Generic.IReadOnlyLis
 Trailblazor.DockLayout.Revealed.get -> string?
 Trailblazor.DockLayout.AutoHide(string! panel, Trailblazor.DockPosition edge) -> Trailblazor.DockLayout!
 Trailblazor.DockLayout.Conceal() -> Trailblazor.DockLayout!
+Trailblazor.DockLayout.ResizeAutoHidden(string! panel, double size) -> Trailblazor.DockLayout!
 Trailblazor.DockAutoHidden
 Trailblazor.DockAutoHidden.DockAutoHidden(string! panel, Trailblazor.DockPosition edge) -> void
 Trailblazor.DockAutoHidden.Panel.get -> string!

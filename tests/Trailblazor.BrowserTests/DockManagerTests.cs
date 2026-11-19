@@ -1,3 +1,4 @@
+using System.Globalization;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
@@ -386,4 +387,13 @@ public abstract class DockManagerPage(BrowserFixture fixture) : BrowserTest(fixt
     // The fixture's splitter has a separator named like the dock's first one.
     protected static ILocator Separator(IPage page, string name) =>
         page.Locator(".tb-dock").GetByRole(AriaRole.Separator, new() { Name = name, Exact = true });
+
+    // Does something the dock counts as one finished action, and waits for the count.
+    protected static async Task ChangeAsync(IPage page, Func<Task> act)
+    {
+        var dock = page.Locator(".tb-dock");
+        var commits = int.Parse((await dock.GetAttributeAsync("data-commits"))!, CultureInfo.InvariantCulture);
+        await act();
+        await Expect(dock).ToHaveAttributeAsync("data-commits", (commits + 1).ToString(CultureInfo.InvariantCulture));
+    }
 }

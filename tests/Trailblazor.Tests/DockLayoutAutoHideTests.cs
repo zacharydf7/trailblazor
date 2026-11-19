@@ -69,6 +69,28 @@ public class DockLayoutAutoHideTests
         Assert.Same(layout, layout.Conceal());
     }
 
+    [Theory]
+    [InlineData(40, 40)]
+    [InlineData(4, 10)]
+    [InlineData(96.5, 90)]
+    public void ResizeAutoHidden_ShouldGiveThePanelAnotherSizeToSlideOutTo_WhenThePanelIsOnAStrip(double size,
+        double kept)
+    {
+        var layout = Workbench.AutoHide("search", DockPosition.Start).AutoHide("output", DockPosition.Bottom)
+            .Open("search");
+
+        var resized = layout.ResizeAutoHidden("search", size);
+
+        // The panel keeps its strip and stays out, and the other panel keeps its size.
+        Assert.Equal([("search", DockPosition.Start, kept), ("output", DockPosition.Bottom, 25.0)],
+            resized.AutoHidden.Select(hidden => (hidden.Panel, hidden.Edge, hidden.Size)));
+        Assert.Equal("search", resized.Revealed);
+        // A panel that isn't on a strip has no such size, and a size is a number.
+        Assert.Same(layout, layout.ResizeAutoHidden("editor", size));
+        Assert.Same(layout, layout.ResizeAutoHidden("editor", double.NaN));
+        Assert.Throws<ArgumentOutOfRangeException>(() => layout.ResizeAutoHidden("search", double.NaN));
+    }
+
     [Fact]
     public void Close_ShouldTakeThePanelOffItsStrip_WhenThePanelIsOnAStrip()
     {

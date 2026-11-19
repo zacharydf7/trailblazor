@@ -82,7 +82,8 @@ public sealed class TbDockLocator(ILocator scope, string? name)
         }, presses.Count);
     }
 
-    private ILocator Separator(string separator) => Root.Locator(":scope > .tb-dock__separator")
+    private ILocator Separator(string separator) => Root
+        .Locator(":scope > .tb-dock__separator, :scope > .tb-dock__slide-separator")
         .And(Root.GetByRole(AriaRole.Separator, new() { Name = separator, Exact = true }));
 
     /// <summary>The helpers inside the panel with this title, such as
@@ -357,13 +358,15 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     }
 
     /// <summary>The share, in percent, that the part before the separator with this name has of the space it and
-    /// the part after it take together.</summary>
+    /// the part after it take together. For a slid-out panel's inner edge, which is named like a separator, as in
+    /// "Resize Notes", it is the share of the dock the panel takes.</summary>
     public async Task<int> SizeAsync(string separator) => int.Parse(
         await Separator(separator).GetAttributeAsync("aria-valuenow") ?? "", CultureInfo.InvariantCulture);
 
     /// <summary>Moves the separator with this name with its keys, as a keyboard user would, until the part before it
     /// has this percent of the space it and the part after it take together, and waits until the app has the sizes.
-    /// A percent that <c>MinGroupSize</c> doesn't allow fails.</summary>
+    /// A percent that <c>MinGroupSize</c> doesn't allow fails. For a slid-out panel's inner edge, the percent is the
+    /// share of the dock the panel takes, and one below 10 or above 90 fails too.</summary>
     public async Task ResizeAsync(string separator, int percent)
     {
         // The keys work once the dock's script has attached.

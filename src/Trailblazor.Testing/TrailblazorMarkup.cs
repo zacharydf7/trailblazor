@@ -3193,21 +3193,26 @@ public sealed class TbDockDriver
     }
 
     /// <summary>The share, in percent, that the part before the separator with this name has of the space it and
-    /// the part after it take together.</summary>
+    /// the part after it take together. For a slid-out panel's inner edge, which is named like a separator, as in
+    /// "Resize Notes", it is the share of the dock the panel takes.</summary>
     public int Size(string separator) =>
         int.Parse(Separator(separator).GetAttribute("aria-valuenow")!, CultureInfo.InvariantCulture);
 
     /// <summary>Moves the separator with this name, as its keys do, until the part before it has this percent of the
     /// space it and the part after it take together. bUnit has no pixels, so <c>MinGroupSize</c> isn't applied; a
-    /// percent below 1 or above 99 throws.</summary>
+    /// percent below 1 or above 99 throws. For a slid-out panel's inner edge, the percent is the share of the dock the
+    /// panel takes, and one below 10 or above 90 throws.</summary>
     public async Task ResizeAsync(string separator, int percent)
     {
-        if (percent is < 1 or > 99)
+        var bar = Separator(separator);
+        var slides = bar.GetAttribute("data-part") == "slide-separator";
+        var (least, most) = slides ? (10, 90) : (1, 99);
+        if (percent < least || percent > most)
         {
-            throw new ArgumentOutOfRangeException(nameof(percent), percent, "A separator moves from 1% to 99%.");
+            throw new ArgumentOutOfRangeException(nameof(percent), percent,
+                slides ? "A slid-out panel takes from 10% to 90% of the dock." : "A separator moves from 1% to 99%.");
         }
 
-        var bar = Separator(separator);
         // The keys aren't pressed for a separator already there, so nothing is reported.
         if (percent == Size(separator))
         {
@@ -3216,6 +3221,15 @@ public sealed class TbDockDriver
 
         var report = _scripts.Dock(Tabs().First().Id!);
         var number = int.Parse(_find().GetAttribute("data-report") ?? "0", CultureInfo.InvariantCulture) + 1;
+        if (slides)
+        {
+            // The edge of the panel that is slid out, whose tab is the one in the row at that edge.
+            var panel = Tabs().First(tab => tab.Closest("[data-part=group]")!.HasAttribute("data-edge"))
+                .GetAttribute("data-panel")!;
+            await _scripts.InvokeAsync(() => report.OnSlide(panel, percent, number));
+            return;
+        }
+
         var index = int.Parse(bar.GetAttribute("data-index")!, CultureInfo.InvariantCulture);
         await _scripts.InvokeAsync(() => report.OnResize(index, percent / 100.0, number));
     }
@@ -3297,7 +3311,8 @@ public sealed class TbDockDriver
         tab.Closest("[data-part=group]")!.ClassList.Contains("tb-dock__group--covered");
 
     private IElement Separator(string separator) => _find().Children.SingleOrDefault(child =>
-        child.GetAttribute("data-part") == "separator" && child.GetAttribute("aria-label") == separator)
+        child.GetAttribute("data-part") is "separator" or "slide-separator"
+        && child.GetAttribute("aria-label") == separator)
             ?? throw new InvalidOperationException($"No separator is named \"{separator}\".");
 
     private static string Title(IElement tab) => tab.QuerySelector("[data-part=title]")!.TextContent;
