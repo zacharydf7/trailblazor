@@ -435,6 +435,14 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Ribbon(name).ClickAsync(button)</code></th>
+                        <td>
+                            Clicks the button with this name in the ribbon's selected tab, which
+                            <code>SelectAsync(tab)</code> changes. <code>Tabs</code>, <code>Selected</code> and
+                            <code>Groups</code> read the tabs' titles, the selected one's, and its groups' names.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Tooltip(trigger).Text</code></th>
                         <td>
                             Reads the text of the tooltip around the button or link with this name. bUnit's markup
@@ -1426,6 +1434,10 @@
         new("Toolbar", "Its AriaLabel, or none for the only one", "`Toolbar(name).ClickAsync(button)` clicks a "
             + "button by its name once the toolbar has fitted its buttons, after a resize too, choosing it from the "
             + "overflow menu when it has moved there."),
+        new("Ribbon", "Its AriaLabel, or none for the only one", "`Ribbon(name).SelectAsync(tab)` selects a tab, and "
+            + "`ClickAsync(button)` clicks a button of the selected tab by its name once that tab's commands are "
+            + "ready. `TabsAsync()`, `SelectedAsync()` and `GroupsAsync()` read the tabs' titles, the selected "
+            + "one's, and its groups' names."),
         new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows, `DismissAsync(text)` closes "
             + "it, and `ChooseAsync(text, action)` clicks its action and waits until the app has run it."),
     ];

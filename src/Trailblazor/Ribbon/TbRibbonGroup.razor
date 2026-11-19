@@ -1,0 +1,31 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" role="group" aria-labelledby="@_labelId" data-part="group" style="@Style"
+     class="@ClassNames.Join("tb-ribbon__group", Class)">
+    <div data-part="items" class="tb-ribbon__items">@ChildContent</div>
+    <span id="@_labelId" data-part="group-label" class="tb-ribbon__group-label">@Label</span>
+</div>
+
+@code {
+    private readonly string _labelId = $"tb-ribbon-group-{Guid.NewGuid():N}";
+
+    /// <summary>The group's name, such as "Clipboard", shown under its controls. Required.</summary>
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    /// <summary>The group's controls: <see cref="TbRibbonButton"/>s, menus, selects, toggle groups or anything
+    /// else. They fill columns of up to three rows, and a large <see cref="TbRibbonButton"/> takes a whole
+    /// column.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(Label))
+        {
+            throw new InvalidOperationException($"{nameof(TbRibbonGroup)} needs a {nameof(Label)}.");
+        }
+    }
+}

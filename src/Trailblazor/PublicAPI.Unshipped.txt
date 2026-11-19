@@ -7221,3 +7221,68 @@ const Trailblazor.TbStrings.DockShorter = "Dock.Shorter" -> string!
 Trailblazor.DockLabels.Shorter.get -> string?
 Trailblazor.DockLabels.Shorter.init -> void
 Trailblazor.DockLayout.MoveWindow(string! panel, double x, double y, double width, double height) -> Trailblazor.DockLayout!
+Trailblazor.TbRibbon
+Trailblazor.TbRibbon.ActiveIndex.get -> int
+Trailblazor.TbRibbon.ActiveIndex.set -> void
+Trailblazor.TbRibbon.ActiveIndexChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Trailblazor.TbRibbon.ActiveIndexChanged.set -> void
+Trailblazor.TbRibbon.ActiveKey.get -> string?
+Trailblazor.TbRibbon.ActiveKey.set -> void
+Trailblazor.TbRibbon.ActiveKeyChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
+Trailblazor.TbRibbon.ActiveKeyChanged.set -> void
+Trailblazor.TbRibbon.AriaLabel.get -> string!
+Trailblazor.TbRibbon.AriaLabel.set -> void
+Trailblazor.TbRibbon.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbRibbon.ChildContent.set -> void
+Trailblazor.TbRibbon.TbRibbon() -> void
+Trailblazor.TbRibbonButton
+Trailblazor.TbRibbonButton.Disabled.get -> bool
+Trailblazor.TbRibbonButton.Disabled.set -> void
+Trailblazor.TbRibbonButton.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbRibbonButton.Icon.set -> void
+Trailblazor.TbRibbonButton.IconOnly.get -> bool
+Trailblazor.TbRibbonButton.IconOnly.set -> void
+Trailblazor.TbRibbonButton.Label.get -> string!
+Trailblazor.TbRibbonButton.Label.set -> void
+Trailblazor.TbRibbonButton.Large.get -> bool
+Trailblazor.TbRibbonButton.Large.set -> void
+Trailblazor.TbRibbonButton.OnClick.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+Trailblazor.TbRibbonButton.OnClick.set -> void
+Trailblazor.TbRibbonButton.Pressed.get -> bool
+Trailblazor.TbRibbonButton.Pressed.set -> void
+Trailblazor.TbRibbonButton.PressedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbRibbonButton.PressedChanged.set -> void
+Trailblazor.TbRibbonButton.TbRibbonButton() -> void
+Trailblazor.TbRibbonButton.TelemetryName.get -> string?
+Trailblazor.TbRibbonButton.TelemetryName.set -> void
+Trailblazor.TbRibbonGroup
+Trailblazor.TbRibbonGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbRibbonGroup.ChildContent.set -> void
+Trailblazor.TbRibbonGroup.Label.get -> string!
+Trailblazor.TbRibbonGroup.Label.set -> void
+Trailblazor.TbRibbonGroup.TbRibbonGroup() -> void
+Trailblazor.TbRibbonTab
+Trailblazor.TbRibbonTab.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbRibbonTab.ChildContent.set -> void
+Trailblazor.TbRibbonTab.Disabled.get -> bool
+Trailblazor.TbRibbonTab.Disabled.set -> void
+Trailblazor.TbRibbonTab.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbRibbonTab.Icon.set -> void
+Trailblazor.TbRibbonTab.Key.get -> string?
+Trailblazor.TbRibbonTab.Key.set -> void
+Trailblazor.TbRibbonTab.TbRibbonTab() -> void
+Trailblazor.TbRibbonTab.TelemetryName.get -> string?
+Trailblazor.TbRibbonTab.TelemetryName.set -> void
+Trailblazor.TbRibbonTab.Title.get -> string!
+Trailblazor.TbRibbonTab.Title.set -> void
+Trailblazor.TbTabs.FocusablePanels.get -> bool
+Trailblazor.TbTabs.FocusablePanels.set -> void
+override Trailblazor.TbRibbon.OnParametersSet() -> void
+override Trailblazor.TbRibbon.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
+override Trailblazor.TbRibbonButton.OnParametersSet() -> void
+override Trailblazor.TbRibbonGroup.OnParametersSet() -> void
+override Trailblazor.TbRibbonTab.OnParametersSet() -> void
+~override Trailblazor.TbRibbon.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbRibbonButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbRibbonGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbRibbonTab.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

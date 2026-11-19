@@ -1,0 +1,26 @@
+<TbStack>
+    <TbRibbon AriaLabel="Gear list" @bind-ActiveKey="_tab">
+        <TbRibbonTab Title="Packing" Key="packing">
+            <TbRibbonGroup Label="Items">
+                <TbRibbonButton Label="Add an item" Icon="ExampleIcons.Plus" OnClick="@(() => _items++)" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        <TbRibbonTab Title="Weight" Key="weight">
+            <TbRibbonGroup Label="Scale">
+                <TbRibbonButton Label="Weigh the pack" Icon="ExampleIcons.Check" OnClick="@(() => _weighings++)" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+    </TbRibbon>
+    <TbButton Variant="Variant.Outlined" OnClick="@(() => _tab = _tab == "packing" ? "weight" : "packing")">
+        Show the other gear tab
+    </TbButton>
+    <output aria-label="Selected gear tab">
+        The @_tab tab is selected. Items packed: @_items. Times weighed: @_weighings.
+    </output>
+</TbStack>
+
+@code {
+    private string? _tab = "packing";
+    private int _items = 3;
+    private int _weighings;
+}

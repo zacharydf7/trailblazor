@@ -372,6 +372,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// given.</summary>
     public TbToolbarLocator Toolbar(string? name = null) => new(scope, name);
 
+    /// <summary>The <c>TbRibbon</c> with this <c>AriaLabel</c>, or the only one in the scope when no name is
+    /// given.</summary>
+    public TbRibbonLocator Ribbon(string? name = null) => new(scope, name);
+
     /// <summary>The dialog or drawer with this title, or the only open one when no title is given.</summary>
     public TbDialogLocator Dialog(string? title = null) => new(Scope.Document(scope), title);
 

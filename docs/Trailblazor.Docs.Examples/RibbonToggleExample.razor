@@ -1,0 +1,26 @@
+<TbRibbon AriaLabel="Map layers">
+    <TbRibbonTab Title="Layers">
+        <TbRibbonGroup Label="Show on the map">
+            <TbRibbonButton Label="Huts" Icon="ExampleIcons.Check" @bind-Pressed="_huts" />
+            <TbRibbonButton Label="Closures" Icon="ExampleIcons.Close" @bind-Pressed="_closures" />
+            <TbRibbonButton Label="Summits" Icon="ExampleIcons.ArrowUp" @bind-Pressed="_summits" />
+        </TbRibbonGroup>
+    </TbRibbonTab>
+</TbRibbon>
+<TbText>The map shows @Shown.</TbText>
+
+@code {
+    private bool _huts = true;
+    private bool _closures;
+    private bool _summits;
+
+    private string Shown
+    {
+        get
+        {
+            string?[] layers = [_huts ? "huts" : null, _closures ? "closures" : null, _summits ? "summits" : null];
+            var shown = layers.OfType<string>().ToList();
+            return shown.Count == 0 ? "no layers" : string.Join(", ", shown);
+        }
+    }
+}

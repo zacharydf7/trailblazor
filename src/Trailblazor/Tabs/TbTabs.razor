@@ -23,6 +23,7 @@
     <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list" data-commits="@_answered"
          aria-orientation="@(Vertical ? "vertical" : "horizontal")"
          data-activation="@(Activation == TabActivation.Automatic ? "automatic" : "manual")"
+         data-focusable-panels="@(FocusablePanels ? null : "false")"
          class="@ClassNames.Join("tb-tabs__list", Centered ? "tb-tabs__list--centered" : null, Classes?.List)">
         @foreach (var tab in _tabs)
         {
@@ -113,6 +114,12 @@
     /// <summary>Raised with the tab's key when the user selects another tab.</summary>
     [Parameter]
     public EventCallback<string?> ActiveKeyChanged { get; set; }
+
+    /// <summary>Whether the selected tab's panel is a tab stop of its own, so the Tab key reaches a panel that holds
+    /// no control. Turn it off when every panel starts with a control, as a panel that is a toolbar does. Defaults to
+    /// true.</summary>
+    [Parameter]
+    public bool FocusablePanels { get; set; } = true;
 
     /// <summary>Stacks the tabs in a column beside their panels, moved between with Up and Down.</summary>
     [Parameter]

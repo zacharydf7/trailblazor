@@ -291,7 +291,9 @@ function select(tab) {
         const panel = document.getElementById(other.getAttribute('aria-controls'));
         if (panel && selected) {
             panel.removeAttribute('hidden');
-            panel.tabIndex = 0;
+            if (tab.parentElement.dataset.focusablePanels !== 'false') {
+                panel.tabIndex = 0;
+            }
         } else if (panel) {
             // Like the server's markup, a disabled tab's panel is plain hidden, so find skips it.
             panel.setAttribute('hidden', other.disabled ? '' : 'until-found');

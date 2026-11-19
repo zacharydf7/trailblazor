@@ -661,3 +661,12 @@ Trailblazor.Testing.Playwright.TbDockLocator.AutoHiddenAsync() -> System.Threadi
 Trailblazor.Testing.Playwright.TbDockLocator.AutoHideAsync(string! panel, Trailblazor.DockPosition edge) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDockLocator.RevealAsync(string! panel) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDockLocator.ConcealAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRibbonLocator
+Trailblazor.Testing.Playwright.TbRibbonLocator.ClickAsync(string! button) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRibbonLocator.GroupsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbRibbonLocator.Ribbon.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbRibbonLocator.SelectAsync(string! tab) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRibbonLocator.SelectedAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbRibbonLocator.TabsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbRibbonLocator.TbRibbonLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.Ribbon(string? name = null) -> Trailblazor.Testing.Playwright.TbRibbonLocator!

@@ -605,3 +605,10 @@ Trailblazor.Testing.TbDockDriver.AutoHidden.get -> System.Collections.Generic.IR
 Trailblazor.Testing.TbDockDriver.AutoHideAsync(string! panel, Trailblazor.DockPosition edge) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.RevealAsync(string! panel) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.ConcealAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbRibbonDriver
+Trailblazor.Testing.TbRibbonDriver.ClickAsync(string! button) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbRibbonDriver.Groups.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbRibbonDriver.SelectAsync(string! tab) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbRibbonDriver.Selected.get -> string?
+Trailblazor.Testing.TbRibbonDriver.Tabs.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TrailblazorMarkup.Ribbon(string? name = null) -> Trailblazor.Testing.TbRibbonDriver!

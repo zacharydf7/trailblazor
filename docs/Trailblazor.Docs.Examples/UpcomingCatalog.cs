@@ -25,7 +25,7 @@ public static class UpcomingCatalog
 {
     // The milestone title of the phase under way, whose components show as coming soon; update it when the next
     // phase starts.
-    public const string CurrentPhase = "Phase 4 · Advanced tier";
+    public const string CurrentPhase = "Phase 5 · Flagship components";
 
     public static IReadOnlyList<UpcomingComponent> All { get; } =
     [
@@ -40,7 +40,6 @@ public static class UpcomingCatalog
         new("Pivot grid", ExampleCategory.Content, 202),
         new("Scheduler", ExampleCategory.Content, 201),
         new("Spreadsheet", ExampleCategory.Content, 206),
-        new("Ribbon", ExampleCategory.Actions, 83),
         new("File manager", ExampleCategory.Navigation, 209),
     ];
 

@@ -621,6 +621,26 @@ public class ComponentAnalyzerTests
     }
 
     [Fact]
+    public async Task ComponentAnalyzer_ShouldReportOutsideItsParent_WhenAPagesRibbonTabIsOutsideARibbon()
+    {
+        // A ribbon tab in plain tabs throws too, so the tabs don't count as its parent.
+        var diagnostics = await RunAsync("""
+            __builder.OpenComponent<TbTabs>(0);
+            __builder.AddComponentParameter(1, nameof(TbTabs.AriaLabel), "Tools");
+            __builder.AddAttribute(2, "ChildContent", (RenderFragment)((__builder2) => {
+                __builder2.OpenComponent<TbRibbonTab>(3);
+                __builder2.AddComponentParameter(4, nameof(TbRibbonTab.Title), "Home");
+                __builder2.CloseComponent();
+            }));
+            __builder.CloseComponent();
+            """, attributes: Routed);
+
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal("TB006", diagnostic.Id);
+        Assert.Equal("TbRibbonTab isn't inside a TbRibbon, so it throws as it renders", diagnostic.GetMessage());
+    }
+
+    [Fact]
     public async Task ComponentAnalyzer_ShouldReportNothing_WhenATabsContentHoldsTheTabThroughAnotherComponent()
     {
         var ids = await IdsAsync($$"""

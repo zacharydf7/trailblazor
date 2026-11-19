@@ -14,12 +14,13 @@ public class ComponentContractTests : BunitContext
     // TbStyles only a <link>, TbThemeHead only a <script> and TbInteractiveMark only a hidden mark, which take no class
     // or style; TbRadio, TbCheckboxItem, TbTab, TbOption, TbToggleItem, TbSplitterPane, TbTreeItem, TbMenuRadioItem,
     // TbDialogDescription, TbColumn, TbColumnGroup, TbTableOfContentsItem, TbBreadcrumb, TbNavLink, TbNavGroup, TbStep,
-    // TbCarouselSlide and TbDockPanel only render inside their parent (see their parents' tests), TbTreeItemEnd only
-    // in a tree row's template, and TbSmartPaste only inside a TbForm.
+    // TbCarouselSlide, TbDockPanel and TbRibbonTab only render inside their parent (see their parents' tests),
+    // TbTreeItemEnd only in a tree row's template, and TbSmartPaste only inside a TbForm.
     internal static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbInteractiveMark), typeof(TbRadio<>),
         typeof(TbCheckboxItem<>), typeof(TbTab), typeof(TbOption<>), typeof(TbToggleItem<>), typeof(TbSplitterPane),
+        typeof(TbRibbonTab),
         typeof(TbTreeItem<>), typeof(TbMenuRadioItem<>), typeof(TbDialogDescription), typeof(TbColumn<>),
         typeof(TbDialogTitle),
         typeof(TbTableOfContentsItem), typeof(TbBreadcrumb), typeof(TbNavLink), typeof(TbNavGroup),

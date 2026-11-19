@@ -2309,6 +2309,149 @@ public static class ExampleCatalog
                     + "`light`, `dark` or `system`, as the action.",
             ],
         },
+        new("ribbon", "Ribbon", ExampleCategory.Actions,
+            "A tabbed band of commands in named groups, as at the top of an office app.")
+        {
+            FullWidth = true,
+            RightToLeftKeys = "Left moves to the next tab or control and Right to the previous one.",
+            WhenToUse =
+            [
+                "Use it for an app with many commands that fall into a few tasks, such as an editor: each tab "
+                    + "shows the commands of one task, in groups people learn to find.",
+            ],
+            WhenNotToUse =
+            [
+                "For one row of tools, use a [toolbar](components/toolbar).",
+                "For commands in drop-down menus along a bar, use a [menubar](components/menubar).",
+                "To switch between views of content, use [tabs](components/tabs).",
+            ],
+            Related = ["toolbar", "tabs", "menubar", "button"],
+            Sections =
+            [
+                new("basic", "Ribbon", "A `TbRibbon` holds `TbRibbonTab`s, each with a `Title` and its "
+                    + "`TbRibbonGroup`s. A group has a `Label`, shown under its controls, and the controls fill "
+                    + "columns of up to three rows. This ribbon also holds a toggle, a select, a menu and, on its "
+                    + "Trails tab, a button turned off with `Disabled`, which the arrow keys pass over.",
+                    typeof(RibbonExample)),
+                new("buttons", "Button sizes", "A `TbRibbonButton` shows its `Icon` beside its `Label`. `Large` makes "
+                    + "it as tall as the group's rows, with the icon above the text, for a group's main command; "
+                    + "`IconOnly` leaves the text to a tooltip.", typeof(RibbonButtonsExample)),
+                new("toggles", "Toggle buttons", "`@bind-Pressed` makes a `TbRibbonButton` a toggle, which stays on "
+                    + "until it is pressed again.", typeof(RibbonToggleExample)),
+                new("controls", "Other controls", "A group takes other controls too, such as a select, and a "
+                    + "`TbRibbonButton` works as a menu's `Trigger`.", typeof(RibbonControlsExample)),
+                new("active-tab", "Selecting a tab from code", "Give each tab a `Key` and bind `ActiveKey` to set or "
+                    + "follow the selected tab, or bind `ActiveIndex` to go by position. With neither, the ribbon "
+                    + "starts on its first tab and keeps the selection itself.", typeof(RibbonActiveKeyExample)),
+            ],
+            Api = [typeof(TbRibbon), typeof(TbRibbonTab), typeof(TbRibbonGroup), typeof(TbRibbonButton)],
+            Keyboard =
+            [
+                new(["Left", "Right"], "Moves to the tab before or after and selects it.") { When = "On a tab" },
+                new(["Home", "End"], "Goes to the first or last tab and selects it.") { When = "On a tab" },
+                new(["Tab"], "Moves from the selected tab into its row of commands, which is one tab stop, and "
+                    + "then out of the ribbon."),
+                new(["Left", "Right"], "Moves between every control of the tab's groups, across the groups.")
+                    { When = "In the commands" },
+                new(["Home", "End"], "Goes to the tab's first or last control.") { When = "In the commands" },
+            ],
+            Labeling =
+            [
+                "The tabs are a `tablist` named by the ribbon's required `AriaLabel`. Each tab's commands are a "
+                    + "`toolbar` named by the tab's `Title`, inside the tab's `tabpanel`.",
+                "Each `TbRibbonGroup` is a `group` named by its `Label`.",
+                "A `TbRibbonButton` is named by its `Label`, which an `IconOnly` button shows in a tooltip.",
+                "The ribbon, its tabs, its groups and its buttons each need a name. A blank name written as "
+                    + "text in markup gets build warning TB001, and any blank name throws when it renders.",
+            ],
+            Announcements =
+            [
+                "The tabs are read as a `tablist` of `tab`s, and the selected one as selected.",
+                "As focus moves into a tab's commands, a screen reader reads the `toolbar` by the tab's `Title`, and "
+                    + "each `group` by its `Label` as focus enters it.",
+                "A toggle button is read as pressed or not, from its `aria-pressed`.",
+                "An `IconOnly` button's tooltip repeats its name, so it isn't read a second time as its description.",
+            ],
+            Accessibility =
+            [
+                "The ribbon follows two WAI-ARIA patterns: the tabs pattern for its tabs, and the toolbar pattern "
+                    + "for each tab's commands, as a [toolbar](components/toolbar) does.",
+                "A tab's panel isn't a tab stop of its own, since its commands are the next stop.",
+                "A control that takes focus in a row scrolled out of view is brought into view.",
+                "In forced-colors mode, such as Windows high contrast, the lines between groups and the line under "
+                    + "the ribbon are drawn in the system's text color.",
+                "Every button is a target of at least 24 by 24 pixels.",
+            ],
+            AppDuties =
+            [
+                "Name every other control you put in a group, such as a select with its `AriaLabel` or a menu with "
+                    + "its `Label`: the ribbon names only its tabs, groups and buttons.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "Every tab's groups render and the selected tab's show, and the browser's find shows the tab whose "
+                    + "commands hold a match. A click on a tab, or an arrow key on one, selects it. The single tab "
+                    + "stop and the arrow keys in the commands start working once the page is interactive; until "
+                    + "then each control is a tab stop. On a static page, a `TbRibbonButton` does nothing, since "
+                    + "nothing runs its `OnClick`.",
+            ],
+            Notes =
+            [
+                new("A text field, select or editable area in a group keeps its own arrow, Home and End keys."),
+                new("A tab's commands stay rendered once the tab has been shown, so what a control in them holds "
+                    + "survives a switch to another tab and back."),
+                new("A row too narrow for its groups scrolls sideways."),
+                new("An `id` on a `TbRibbonTab` goes on its tab, the button people click, while `Class`, `Style` and "
+                    + "other attributes go on its panel, around its commands."),
+            ],
+            Pattern = new("tabs", "https://www.w3.org/WAI/ARIA/apg/patterns/tabs/"),
+            Ready = new("[data-part=commands]", "the selected tab's row of commands"),
+            Target = new("tablist", "Trail planner"),
+            Blocks = ["tb-ribbon", "tb-tabs"],
+            DataParts =
+            [
+                new("ribbon", "The ribbon, around its tabs and their commands."),
+                new("commands", "A tab's row of groups, a `toolbar`."),
+                new("group", "One group, a `group` named by its label."),
+                new("items", "The group's controls, in columns of up to three rows."),
+                new("group-label", "The group's name, under its controls."),
+            ],
+            Anatomy = """
+                <TbRibbon AriaLabel="…">
+                    <TbRibbonTab Title="…">
+                        <TbRibbonGroup Label="…">
+                            <TbRibbonButton Large Label="…" Icon="…" OnClick="…" />
+                            <TbRibbonButton Label="…" Icon="…" OnClick="…" />
+                        </TbRibbonGroup>
+                    </TbRibbonTab>
+                </TbRibbon>
+                """,
+            TestingTips =
+            [
+                "`page.Tb().Ribbon(\"Trail planner\")` in Playwright, or `cut.Tb().Ribbon(...)` in bUnit, finds the "
+                    + "ribbon by its `AriaLabel`.",
+                "`SelectAsync(\"Trails\")` selects a tab, and in Playwright waits until it is selected and the app's "
+                    + "callbacks have run. `TabsAsync()` or `Tabs` reads the tabs' titles, `SelectedAsync()` or "
+                    + "`Selected` the selected tab's, and `GroupsAsync()` or `Groups` the selected tab's group names.",
+                "`ClickAsync(\"New note\")` clicks a button of the selected tab by its name. In Playwright it waits "
+                    + "for the tab's commands to be ready first, and then until the app's handler has run. It throws "
+                    + "for a disabled button, for a static page, or for a name the selected tab doesn't have, so "
+                    + "select the button's tab first.",
+                "By hand, find a tab's commands with `GetByRole(AriaRole.Toolbar, new() { Name = \"Notes\" })` and "
+                    + "wait for their `data-ready`, which is set once the arrow keys work.",
+            ],
+            Telemetry =
+            [
+                "A `TbRibbonTab` with a `TelemetryName`, such as `\"ribbon-insert\"`, counts "
+                    + "`trailblazor.control.shown` as its tab first renders and `trailblazor.control.used` each time "
+                    + "the user selects it.",
+                "A `TbRibbonButton` with a `TelemetryName` counts `trailblazor.control.shown` as it first renders, "
+                    + "which for a button in a tab shown later is when that tab is first shown, and "
+                    + "`trailblazor.control.used` each time it is chosen. Whether a toggle turned on or off is "
+                    + "never recorded.",
+            ],
+        },
         new("toolbar", "Toolbar", ExampleCategory.Actions,
             "A row of controls that is one tab stop. When it is too narrow, its toolbar buttons move into a menu at "
                 + "its end.")
@@ -2324,8 +2467,9 @@ public static class ExampleCatalog
                 "For two or three related buttons, use a [button group](components/button-group).",
                 "To pick one view from a few, use a [toggle group](components/toggle-group) on its own.",
                 "For site navigation, use a list of [links](components/link) in a `nav`.",
+                "For many commands sorted into tabs by task, use a [ribbon](components/ribbon).",
             ],
-            Related = ["button-group", "toggle-group", "icon-button", "spacer"],
+            Related = ["button-group", "toggle-group", "icon-button", "spacer", "ribbon"],
             Pattern = new("toolbar", "https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/"),
             Sections =
             [
@@ -8651,8 +8795,9 @@ public static class ExampleCatalog
                 "For links between pages, use the nav menu of an [app shell](components/app-shell).",
                 "For one set of commands, use a single [menu](components/menu).",
                 "For a row of buttons that act at once, use a [toolbar](components/toolbar).",
+                "For commands shown in tabs of labeled groups, use a [ribbon](components/ribbon).",
             ],
-            Related = ["menu", "toolbar", "app-shell"],
+            Related = ["menu", "toolbar", "ribbon", "app-shell"],
             Pattern = new("menubar", "https://www.w3.org/WAI/ARIA/apg/patterns/menubar/"),
             Sections =
             [
@@ -9933,8 +10078,9 @@ public static class ExampleCatalog
                 "For sections people may want open side by side, or read in order down the page, use an "
                     + "[accordion](components/accordion).",
                 "For moving between pages, use links.",
+                "For tabs of commands, use a [ribbon](components/ribbon).",
             ],
-            Related = ["accordion", "toggle-group", "pagination"],
+            Related = ["accordion", "toggle-group", "pagination", "ribbon"],
             Sections =
             [
                 new("try-it", "Try it", "Use the controls to see what each parameter does.",
@@ -10017,7 +10163,8 @@ public static class ExampleCatalog
                 },
                 new(["Home", "End"], "Jumps to the first or last tab and selects it, unless activation is manual."),
                 new(["Enter", "Space"], "Selects the focused tab.") { When = "With manual activation" },
-                new(["Tab"], "Moves from the tab list, which is one tab stop, into the panel."),
+                new(["Tab"], "Moves from the tab list, which is one tab stop, into the panel, or to the panel's first "
+                    + "control when `FocusablePanels` is off."),
                 new(["Delete", "Backspace"], "Closes the focused tab.") { When = "On a tab with an `OnClose`" },
             ],
             Labeling =
@@ -10034,7 +10181,8 @@ public static class ExampleCatalog
             ],
             Accessibility =
             [
-                "Each panel is focusable, so keyboard users can reach content that has no controls.",
+                "Each panel is a tab stop, so keyboard users can reach content that has no controls. Turn "
+                    + "`FocusablePanels` off only when every panel starts with a control.",
                 "A screen reader on a touch screen can't reach a tab's close mark, and a double tap selects the tab, so "
                     + "when tabs can close, also offer a way to close one from its panel or a menu.",
                 "In forced-colors mode, such as Windows high contrast, the selected tab keeps its underline in the "

@@ -1,0 +1,76 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div @attributes="AdditionalAttributes" data-part="ribbon" style="@Style" class="@ClassNames.Join("tb-ribbon", Class)">
+    <CascadingValue Value="this" IsFixed="true">@Tabs</CascadingValue>
+</div>
+
+@code {
+    private bool _givenKey;
+
+    /// <summary>The ribbon's accessible name, which names its row of tabs, such as "Document tools". Required.</summary>
+    [Parameter, EditorRequired]
+    public string AriaLabel { get; set; } = "";
+
+    /// <summary>The ribbon's <see cref="TbRibbonTab"/>s.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The selected tab's position, counting from 0. Bind it with <c>@bind-ActiveIndex</c>. Use it or
+    /// <see cref="ActiveKey"/>, not both. Without either, the ribbon keeps the selection itself and starts on its
+    /// first tab.</summary>
+    [Parameter]
+    public int ActiveIndex { get; set; }
+
+    /// <summary>Raised with the tab's position when the user selects another tab.</summary>
+    [Parameter]
+    public EventCallback<int> ActiveIndexChanged { get; set; }
+
+    /// <summary>The selected tab's <see cref="TbRibbonTab.Key"/>. Bind it with <c>@bind-ActiveKey</c> to select tabs
+    /// by key instead of by position, so tabs that come and go don't move the selection; every tab then needs a key.
+    /// When it is bound to null, or to a key no tab has, no tab is selected.</summary>
+    [Parameter]
+    public string? ActiveKey { get; set; }
+
+    /// <summary>Raised with the tab's key when the user selects another tab.</summary>
+    [Parameter]
+    public EventCallback<string?> ActiveKeyChanged { get; set; }
+
+    // The tabs select by key once they are given one, even a null one, so a key is passed on only when the ribbon
+    // was given it.
+    private RenderFragment Tabs => builder =>
+    {
+        builder.OpenComponent<TbTabs>(0);
+        builder.AddComponentParameter(1, nameof(TbTabs.AriaLabel), AriaLabel);
+        builder.AddComponentParameter(2, nameof(TbTabs.Size), Size.Small);
+        builder.AddComponentParameter(3, nameof(TbTabs.KeepAlive), true);
+        builder.AddComponentParameter(4, nameof(TbTabs.FocusablePanels), false);
+        if (_givenKey)
+        {
+            builder.AddComponentParameter(5, nameof(TbTabs.ActiveKey), ActiveKey);
+            builder.AddComponentParameter(6, nameof(TbTabs.ActiveKeyChanged), ActiveKeyChanged);
+        }
+
+        builder.AddComponentParameter(7, nameof(TbTabs.ActiveIndex), ActiveIndex);
+        builder.AddComponentParameter(8, nameof(TbTabs.ActiveIndexChanged), ActiveIndexChanged);
+        builder.AddComponentParameter(9, nameof(TbTabs.ChildContent), ChildContent);
+        builder.CloseComponent();
+    };
+
+    /// <inheritdoc />
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        _givenKey |= parameters.TryGetValue<string?>(nameof(ActiveKey), out _)
+            || parameters.TryGetValue<EventCallback<string?>>(nameof(ActiveKeyChanged), out _);
+        return base.SetParametersAsync(parameters);
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(AriaLabel))
+        {
+            throw new InvalidOperationException($"{nameof(TbRibbon)} needs an {nameof(AriaLabel)}.");
+        }
+    }
+}

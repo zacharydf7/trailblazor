@@ -10606,6 +10606,75 @@
             border-style: dashed;
         }
     }
+
+    .tb-ribbon {
+        border-block-end: 1px solid var(--tb-border-subtle);
+        color: var(--tb-color-text);
+    }
+
+    .tb-ribbon .tb-tabs__panel {
+        padding-block: 0;
+    }
+
+    /* A row too narrow for its groups scrolls sideways. */
+    .tb-ribbon__commands {
+        display: flex;
+        align-items: stretch;
+        box-sizing: border-box;
+        padding: var(--tb-space-1) 0;
+        overflow-x: auto;
+    }
+
+    .tb-ribbon__group {
+        display: flex;
+        flex: none;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        padding-inline: var(--tb-space-2);
+    }
+
+    .tb-ribbon__group + .tb-ribbon__group {
+        border-inline-start: 1px solid var(--tb-border-subtle);
+    }
+
+    /* Controls fill columns of three rows, and a large button takes a whole column. */
+    .tb-ribbon__items {
+        display: grid;
+        flex: 1;
+        grid-template-rows: repeat(3, auto);
+        grid-auto-flow: column;
+        gap: calc(var(--tb-space-1) / 2) var(--tb-space-1);
+        align-content: center;
+        align-items: center;
+        justify-items: start;
+    }
+
+    .tb-ribbon__group-label {
+        font-size: var(--tb-font-size-xs);
+        color: var(--tb-color-text-muted);
+        text-align: center;
+    }
+
+    .tb-ribbon__button--large {
+        flex-direction: column;
+        grid-row: 1 / -1;
+        gap: var(--tb-space-1);
+        align-self: stretch;
+        min-inline-size: var(--tb-space-12);
+        padding-block: var(--tb-space-1);
+    }
+
+    .tb-ribbon__button--large .tb-icon {
+        inline-size: 1.75rem;
+        block-size: 1.75rem;
+    }
+
+    @media (forced-colors: active) {
+        .tb-ribbon,
+        .tb-ribbon__group + .tb-ribbon__group {
+            border-color: CanvasText;
+        }
+    }
 }
 
 @layer tb.utilities {

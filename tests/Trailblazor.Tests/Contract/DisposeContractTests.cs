@@ -17,6 +17,7 @@ public class DisposeContractTests : BunitContext
     {
         [typeof(TbRadio<>)] = typeof(TbRadioGroup<>), [typeof(TbCheckboxItem<>)] = typeof(TbCheckboxGroup<>),
         [typeof(TbTab)] = typeof(TbTabs), [typeof(TbOption<>)] = typeof(TbSelect<>),
+        [typeof(TbRibbonTab)] = typeof(TbRibbon),
         [typeof(TbToggleItem<>)] = typeof(TbToggleGroup<>), [typeof(TbSplitterPane)] = typeof(TbSplitter),
         [typeof(TbTreeItem<>)] = typeof(TbTreeView<,>), [typeof(TbMenuRadioItem<>)] = typeof(TbMenuRadioGroup<>),
         [typeof(TbDialogDescription)] = typeof(TbDialog), [typeof(TbDialogTitle)] = typeof(TbDialog),
@@ -30,7 +31,7 @@ public class DisposeContractTests : BunitContext
     };
 
     // Callbacks left without a handler: a handled ActiveKeyChanged makes the tabs keyed, so every tab would need a Key.
-    private static readonly HashSet<string> Unhandled = ["TbTabs.ActiveKeyChanged"];
+    private static readonly HashSet<string> Unhandled = ["TbTabs.ActiveKeyChanged", "TbRibbon.ActiveKeyChanged"];
 
     private readonly FakeTimeProvider _time = new();
     private readonly List<object?> _callbacks = [];

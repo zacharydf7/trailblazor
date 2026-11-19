@@ -37,6 +37,7 @@ public class TelemetryContractTests : BunitContext
         ["TbList"] = "its items count themselves", ["TbMenubar"] = "its menus' items count themselves",
         ["TbMultiToggleGroup"] = "its items count themselves", ["TbTabs"] = "its tabs count themselves",
         ["TbToggleGroup"] = "its items count themselves", ["TbToolbar"] = "its buttons count themselves",
+        ["TbRibbon"] = "its tabs and buttons count themselves",
 
         ["TbBreadcrumb"] = Part, ["TbCarouselSlide"] = Part, ["TbCheckboxItem"] = Part, ["TbColumn"] = Part,
         ["TbColumnGroup"] = Part, ["TbDialogActions"] = Part,
@@ -44,6 +45,7 @@ public class TelemetryContractTests : BunitContext
         ["TbDockPanel"] = Part,
         ["TbDialogTitle"] = Part, ["TbMenuGroup"] = Part, ["TbMenuRadioGroup"] = Part, ["TbMenuSeparator"] = Part,
         ["TbNavGroup"] = Part, ["TbNavLink"] = Part, ["TbOptionGroup"] = Part, ["TbRadio"] = Part,
+        ["TbRibbonGroup"] = Part,
         ["TbSplitterPane"] = Part, ["TbStep"] = Part, ["TbSubMenu"] = Part, ["TbTableOfContentsItem"] = Part,
         ["TbTimelineItem"] = Part, ["TbToolbarSeparator"] = Part, ["TbTreeItem"] = Part, ["TbTreeItemEnd"] = Part,
 

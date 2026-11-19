@@ -5,13 +5,13 @@ namespace Trailblazor.Tests.Docs;
 
 public partial class ReadyMarkTests
 {
-    // Classes no docs page lists in its API: ToastHost and CommandPaletteKeys are checked through the toast and command
-    // palette pages; DialogFrame needs no mark, since its script is what opens the dialog, so a test waits for the
-    // dialog itself; BrowserService is a service.
+    // Classes no docs page lists in its API: ToastHost, CommandPaletteKeys and RibbonPanel are checked through the
+    // toast, command palette and ribbon pages; DialogFrame needs no mark, since its script is what opens the dialog,
+    // so a test waits for the dialog itself; BrowserService is a service.
     private static readonly Dictionary<string, string?> Hosts = new()
     {
         ["ToastHost"] = "toast", ["CommandPaletteKeys"] = "command-palette", ["DialogFrame"] = null,
-        ["BrowserService"] = null,
+        ["BrowserService"] = null, ["RibbonPanel"] = "ribbon",
     };
 
     [GeneratedRegex(@"InvokeAsync<(IJSObjectReference|TabsAttachment)\??>\(")]

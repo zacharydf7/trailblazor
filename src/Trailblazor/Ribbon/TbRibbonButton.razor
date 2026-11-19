@@ -1,0 +1,77 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@if (IconOnly && Icon is Icon icon)
+{
+    <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@Label" ShowTooltip Variant="Variant.Text"
+                  Tone="Tone.Neutral" Size="Size.Small" Disabled="Disabled" Pressed="Pressed"
+                  PressedChanged="PressedChanged" OnClick="OnClick" TelemetryName="@TelemetryName"
+                  Class="@ClassNames.Join("tb-ribbon__button", Class)" Style="@Style" />
+}
+else
+{
+    <TbButton @attributes="AdditionalAttributes" StartIcon="Icon" Variant="Variant.Text" Tone="Tone.Neutral"
+              Size="Size.Small" Disabled="Disabled" Pressed="Pressed" PressedChanged="PressedChanged"
+              OnClick="OnClick" TelemetryName="@TelemetryName" Style="@Style"
+              Class="@ClassNames.Join("tb-ribbon__button", Large ? "tb-ribbon__button--large" : null, Class)">
+        @Label
+    </TbButton>
+}
+
+@code {
+    /// <summary>The button's text, which is its accessible name. Required.</summary>
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    /// <summary>An icon before the text, or above it when the button is <see cref="Large"/>.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>Makes the button as tall as its group, with its icon above its text, for a group's main
+    /// command.</summary>
+    [Parameter]
+    public bool Large { get; set; }
+
+    /// <summary>Shows only the <see cref="Icon"/>, with <see cref="Label"/> as its accessible name and its
+    /// tooltip. It needs an icon and can't be combined with <see cref="Large"/>.</summary>
+    [Parameter]
+    public bool IconOnly { get; set; }
+
+    /// <summary>Turns the button off.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>Whether a toggle button is on, such as Bold. Bind it with <c>@bind-Pressed</c>, which makes the
+    /// button a toggle.</summary>
+    [Parameter]
+    public bool Pressed { get; set; }
+
+    /// <summary>Raised with the new state when a toggle button is pressed.</summary>
+    [Parameter]
+    public EventCallback<bool> PressedChanged { get; set; }
+
+    /// <summary>Raised when the button is chosen.</summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>A label this button's use is counted under, such as <c>"ribbon-paste"</c>, through the
+    /// <c>Trailblazor</c> meter: shown as the button renders, and used each time it is chosen. Controls that share
+    /// a label count together. It names what the button does, never the user.</summary>
+    [Parameter]
+    public string? TelemetryName { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(Label))
+        {
+            throw new InvalidOperationException($"{nameof(TbRibbonButton)} needs a {nameof(Label)}.");
+        }
+
+        if (IconOnly && (Icon is null || Large))
+        {
+            throw new InvalidOperationException($"{nameof(TbRibbonButton)} with {nameof(IconOnly)} needs an "
+                + $"{nameof(Icon)} and can't be {nameof(Large)}.");
+        }
+    }
+}

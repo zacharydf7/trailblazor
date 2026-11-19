@@ -1,0 +1,16 @@
+@page "/static-ribbon"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, where the startup script switches the tabs and a button has nothing to run its OnClick. *@
+<TbRibbon AriaLabel="Map tools">
+    <TbRibbonTab Title="View">
+        <TbRibbonGroup Label="Move">
+            <TbRibbonButton Label="Pan" OnClick="() => { }" />
+        </TbRibbonGroup>
+    </TbRibbonTab>
+    <TbRibbonTab Title="Layers">
+        <TbRibbonGroup Label="Show">
+            <TbRibbonButton Label="Trails" OnClick="() => { }" />
+        </TbRibbonGroup>
+    </TbRibbonTab>
+</TbRibbon>

@@ -648,6 +648,21 @@ public class TbTabsTests : BunitContext
         Assert.Contains(modifier, cut.Find(".tb-tabs").ClassList);
     }
 
+    [Fact]
+    public void FocusablePanels_ShouldLeaveThePanelsOutOfTheTabOrder_WhenTurnedOff()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.FocusablePanels, false)
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+            {
+                AddTab(builder, 0, "Overview", "Overview panel");
+                AddTab(builder, 10, "Specs", "Specs panel");
+            })));
+
+        Assert.All(cut.FindAll("[role=tabpanel]"), panel => Assert.False(panel.HasAttribute("tabindex")));
+        // The mark tells the script that shows a static page's panels to leave them out too.
+        Assert.Equal("false", cut.Find("[role=tablist]").GetAttribute("data-focusable-panels"));
+    }
+
     private IRenderedComponent<TbTabs> RenderKeyedTabs(string active, bool includeIntro,
         Action<string?>? keyChanged = null, Action? indexChanged = null) =>
         Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ActiveKey, active)

@@ -48,6 +48,7 @@ Familiar apps: Windows property dialogs, browser developer tools, VS Code's sett
 - [x] Tab reaches the list once, on the selected tab. `TbTabsTests.Render_ShouldLinkEachTabToItsPanel_WhenCalled`
 - [x] With the selected tab disabled, or none selected, Tab reaches the first enabled tab. `TbTabsTests.Render_ShouldMakeTheFirstEnabledTabReachable_WhenTheSelectedTabIsDisabled`
 - [x] Tab from the selected tab moves into its panel. `TabsTests.Tabs_ShouldMoveFocusIntoThePanel_WhenTabIsPressedOnTheSelectedTab`
+- [x] With `FocusablePanels` off, for panels that start with a control as a ribbon's do, the panel is no tab stop of its own. That holds on a static page too, where the script shows the panels. `TbTabsTests.FocusablePanels_ShouldLeaveThePanelsOutOfTheTabOrder_WhenTurnedOff`, `RibbonTests.Ribbon_ShouldSwitchTabsAndRefuseAHelpersClick_WhenThePageIsStatic`
 - [x] A focused tab shows a focus ring. `trailblazor.css`
 - [x] A tab that can close is described by "Press Delete to close", or `Labels.CloseHint`, since nothing else tells a screen reader user how. A screen reader on a touch screen has no Delete key, so an app with closable tabs should offer another way to close them, such as a close button in the panel. `TbTabsTests.Render_ShouldDescribeAClosableTabByHowToCloseIt_WhenATabCanClose`, `TbTabsTests.Labels_ShouldWordTheCloseHint_WhenGiven`
 - [x] Focus stays on the same tab when a tab renders before it. `TabsTests.Tabs_ShouldKeepFocusOnTheSameTab_WhenALateTabRendersBeforeIt`

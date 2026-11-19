@@ -665,6 +665,12 @@ public sealed class TrailblazorMarkup
     public TbToolbarDriver Toolbar(string? name = null) => new(() => Only(_findAll(".tb-toolbar[role=toolbar]")
         .Where(toolbar => name is null || toolbar.GetAttribute("aria-label") == name).ToList(), "toolbar", name));
 
+    /// <summary>The <c>TbRibbon</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
+    /// given.</summary>
+    public TbRibbonDriver Ribbon(string? name = null) => new(() => Only(_findAll(".tb-ribbon")
+        .Where(ribbon => name is null || ribbon.QuerySelector("[role=tablist]")?.GetAttribute("aria-label") == name)
+        .ToList(), "ribbon", name), _findAll, _scripts);
+
     private static IElement Only(List<IElement> found, string kind, string? name) => found.Count switch
     {
         1 => found[0],
@@ -2583,6 +2589,59 @@ public sealed class TbToolbarDriver
 
         await only.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
+}
+
+/// <summary>A <c>TbRibbon</c>, found by its <c>AriaLabel</c>.</summary>
+public sealed class TbRibbonDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly TbTabsDriver _tabs;
+
+    internal TbRibbonDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll, ScriptCalls scripts)
+    {
+        _find = find;
+        _tabs = new(() => find().QuerySelector(":scope > .tb-tabs > [role=tablist]")!, findAll, scripts);
+    }
+
+    /// <summary>The tabs' titles, in order.</summary>
+    public IReadOnlyList<string> Tabs => _tabs.Tabs;
+
+    /// <summary>The selected tab's title.</summary>
+    public string? Selected => _tabs.Selected;
+
+    /// <summary>Selects the tab with this title, as clicking it does.</summary>
+    public Task SelectAsync(string tab) => _tabs.SelectAsync(tab);
+
+    /// <summary>The names of the selected tab's groups, in order.</summary>
+    public IReadOnlyList<string> Groups => Commands?.QuerySelectorAll("[data-part=group-label]")
+        .Select(label => label.TextContent.Trim()).ToList() ?? [];
+
+    /// <summary>Clicks the button with this name in the selected tab, as a user does. Throws for a disabled button,
+    /// a name the selected tab doesn't have, or a static page, where the buttons do nothing.</summary>
+    public async Task ClickAsync(string button)
+    {
+        // Leaves out a menu's items, which are <button> elements with a menu item role.
+        var buttons = Commands?.QuerySelectorAll("button:not([role]), button[role=button]")
+            .Where(found => Choices.NameOf(found) == button).ToList() ?? [];
+        var only = buttons.Count == 1 ? buttons[0] : throw new InvalidOperationException(buttons.Count == 0
+            ? $"The ribbon's selected tab has no button named \"{button}\"."
+            : $"The ribbon's selected tab has {buttons.Count} buttons named \"{button}\".");
+        if (only.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("On a static page the ribbon's buttons do nothing; render the page "
+                + "interactively to use them.");
+        }
+
+        if (Choices.IsDisabled(only))
+        {
+            throw new InvalidOperationException($"The ribbon button \"{button}\" is disabled.");
+        }
+
+        await only.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    // The selected tab's row of commands: the other tabs' rows stay in the markup, hidden, once they have been shown.
+    private IElement? Commands => _find().QuerySelector("[role=tabpanel]:not([hidden]) [data-part=commands]");
 }
 
 /// <summary>A <c>TbTooltip</c>, found by its trigger's name.</summary>
