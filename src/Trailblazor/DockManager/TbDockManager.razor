@@ -1227,8 +1227,9 @@
 
     private static double Round(double value) => Math.Round(value, 4);
 
-    // Screen readers hear whole percentages, as the script reports them while the user drags.
-    private static string Whole(double value) => Math.Round(value).ToString(CultureInfo.InvariantCulture);
+    // Screen readers hear whole percentages, rounded as the script rounds them: a half goes up.
+    private static string Whole(double value) =>
+        Math.Round(value, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture);
 
     private string Format(string? label, string key, params object[] values) =>
         string.Format(CultureInfo.CurrentCulture, label ?? Localizer[key], values);

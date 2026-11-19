@@ -365,13 +365,23 @@ public sealed class TbDockLocator(ILocator scope, string? name)
 
     /// <summary>Moves the separator with this name with its keys, as a keyboard user would, until the part before it
     /// has this percent of the space it and the part after it take together, and waits until the app has the sizes.
-    /// A percent that <c>MinGroupSize</c> doesn't allow fails. For a slid-out panel's inner edge, the percent is the
-    /// share of the dock the panel takes, and one below 10 or above 90 fails too.</summary>
+    /// For a slid-out panel's inner edge, the percent is the share of the dock the panel takes. A percent outside the
+    /// separator's <c>aria-valuemin</c> and <c>aria-valuemax</c> throws: they are how far <c>MinGroupSize</c> lets it
+    /// go at the dock's current size, and for the edge never less than 10 or more than 90. The separator's own value,
+    /// if a smaller dock has left it out of reach, counts as a limit until the separator moves.</summary>
     public async Task ResizeAsync(string separator, int percent)
     {
-        // The keys work once the dock's script has attached.
+        // The keys work, and the separator states its limits, once the dock's script has attached.
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
         var bar = Separator(separator);
+        var least = int.Parse(await bar.GetAttributeAsync("aria-valuemin") ?? "", CultureInfo.InvariantCulture);
+        var most = int.Parse(await bar.GetAttributeAsync("aria-valuemax") ?? "", CultureInfo.InvariantCulture);
+        if (percent < least || percent > most)
+        {
+            throw new ArgumentOutOfRangeException(nameof(percent), percent,
+                $"\"{separator}\" goes from {least}% to {most}% at the dock's current size.");
+        }
+
         var presses = await SeparatorKeys.PressesAsync(bar, percent - await SizeAsync(separator));
         await bar.FocusAsync();
         // The dock counts each press once the app has its sizes.

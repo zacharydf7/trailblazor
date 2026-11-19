@@ -277,7 +277,11 @@ public class DockManagerAutoHideTests(BrowserFixture fixture) : DockManagerPage(
         // Home and End take the panel to its smallest and its largest. The arrows along the edge do nothing, and Alt,
         // Ctrl or Cmd with an arrow stays with the browser.
         // The smallest here is the 64 pixels a group may be, which is more than a tenth of the area's height.
-        var least = (int)Math.Round(6400 / (area.Height - 2));
+        var least = (int)Math.Round(6400 / (area.Height - 2), MidpointRounding.AwayFromZero);
+        await Expect(edge).ToHaveAttributeAsync("aria-valuemin",
+            least.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        await Expect(edge).ToHaveAttributeAsync("aria-valuemax", "90");
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => dock.ResizeAsync("Resize Weather", least - 1));
         await ChangeAsync(page, () => edge.PressAsync("End"));
         Assert.Equal(90, await dock.SizeAsync("Resize Weather"));
         await ChangeAsync(page, () => edge.PressAsync("Home"));
@@ -302,6 +306,40 @@ public class DockManagerAutoHideTests(BrowserFixture fixture) : DockManagerPage(
         await edge.PressAsync("Escape");
         await Expect(page.Locator(".tb-dock__group--revealed")).ToHaveCountAsync(0);
         await Expect(StripButton(page, "Weather")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SlideSeparator_ShouldRestateItsLeastSize_WhenAnotherPanelSlidesOutOrTheDockShrinks(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        var area = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        var across = (int)Math.Round(6400 / (area.Height - 2), MidpointRounding.AwayFromZero);
+
+        // Gear slides out from the side and the weather from the bottom, where the same 64 pixels are a larger share
+        // of the dock. The edge is the same element each time, and states the least size of the panel that is out.
+        foreach (var (panel, least) in new[] { ("Gear", 10), ("Weather", across), ("Gear", 10), ("Weather", across) })
+        {
+            await dock.RevealAsync(panel);
+            var edge = page.GetByRole(AriaRole.Separator, new() { Name = $"Resize {panel}", Exact = true });
+            await Expect(edge).ToHaveAttributeAsync("aria-valuemin",
+                least.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        // In a dock narrower than a group may be, Gear's quarter of it is out of reach, and counts as the least.
+        await dock.RevealAsync("Gear");
+        var gear = page.GetByRole(AriaRole.Separator, new() { Name = "Resize Gear", Exact = true });
+        await page.Locator(".tb-dock-frame").EvaluateAsync("frame => frame.parentElement.style.inlineSize = '6rem'");
+        await Expect(gear).ToHaveAttributeAsync("aria-valuemin", "25");
+        await Expect(gear).ToHaveAttributeAsync("aria-valuemax", "90");
+
+        // Once the edge has moved, the quarter no longer counts: the least it states is where Home now takes it.
+        await gear.FocusAsync();
+        await ChangeAsync(page, () => page.Keyboard.PressAsync("End"));
+        await ChangeAsync(page, () => page.Keyboard.PressAsync("Home"));
+        var smallest = (await gear.GetAttributeAsync("aria-valuenow"))!;
+        Assert.NotEqual("25", smallest);
+        await Expect(gear).ToHaveAttributeAsync("aria-valuemin", smallest);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

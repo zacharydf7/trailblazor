@@ -796,6 +796,9 @@ public class TbDockManagerTests : BunitContext
         // Their items need the server, so a static page shows only the tabs, panels and separators.
         Assert.Empty(cut.FindAll("[data-part=group-menu], [data-part=grip]"));
         Assert.Equal(2, cut.FindAll("[role=separator]").Count);
+        // The script states a separator's limits, so a static page has none.
+        Assert.DoesNotContain(cut.FindAll("[role=separator]"),
+            separator => separator.HasAttribute("aria-valuemin") || separator.HasAttribute("aria-valuemax"));
         Assert.Equal("The dock is on a static page, where it has no menus; render it on an interactive page.",
             (await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Dock().MoveToGroupAsync("Trails", 2)))
                 .Message);
@@ -2246,6 +2249,19 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal(10, dock.Size("Resize Notes"));
         await dock.ResizeAsync("Resize Notes", 90);
         Assert.Equal(90, dock.Size("Resize Notes"));
+    }
+
+    [Fact]
+    public void Render_ShouldRoundAHalfPercentUp_WhenAShareLiesHalfwayBetweenTwoWholePercents()
+    {
+        // The script rounds a half up when it states a separator's limits, so the page's value does too.
+        var eighth = new DockLayout(new DockSplit(
+            new DockGroup("trails", "map") { Size = 1 }, new DockGroup("notes", "weather") { Size = 7 }));
+        var slid = Hike.AutoHide("notes", DockPosition.Start).ResizeAutoHidden("notes", 12.5).Open("notes");
+
+        Assert.Equal("13", RenderDock(eighth, HikePanels).Find("[data-part=separator]").GetAttribute("aria-valuenow"));
+        Assert.Equal("13",
+            RenderDock(slid, HikePanels).Find("[data-part=slide-separator]").GetAttribute("aria-valuenow"));
     }
 
     [Fact]

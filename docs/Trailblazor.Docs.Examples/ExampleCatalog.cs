@@ -2958,11 +2958,14 @@ public static class ExampleCatalog
                     + "panel's title. When it slides out, focus moves to its tab, in a tab list named "
                     + "\"Auto-hidden panel\". A strip's button has `aria-expanded`, so on the button screen readers "
                     + "hear whether its panel is out.",
-                "On a separator, `aria-valuenow` gives the share, in percent, that the part before it has of the "
-                    + "space its two sides take together. On the inner edge of a slid-out panel, it gives the "
-                    + "share of the dock the panel takes, between an `aria-valuemin` of 10 and an `aria-valuemax` "
-                    + "of 90. Those are the layout's limits: in a small dock, `MinGroupSize` can keep the panel larger "
-                    + "than 10%.",
+                "On a separator, `aria-valuenow` gives the share, in percent, that the part before it has of the space "
+                    + "its two sides take together, and `aria-valuemin` and `aria-valuemax` give how far the separator "
+                    + "can go before a group on either side is down to `MinGroupSize`.",
+                "On the inner edge of a slid-out panel, `aria-valuenow` gives the share of the dock the panel "
+                    + "takes, between an `aria-valuemin` of 10 and an `aria-valuemax` of 90; `aria-valuemin` is "
+                    + "higher where `MinGroupSize` keeps the panel larger than 10%.",
+                "The dock's script updates a separator's and the edge's limits as the dock is resized and the "
+                    + "layout changes, and a value always lies within them.",
             ],
             Accessibility =
             [
@@ -3043,8 +3046,9 @@ public static class ExampleCatalog
                     + "window's Move button and grip appear. Until then, a right-click on a tab opens the browser's "
                     + "own menu.",
                 "The strips render with their buttons, and a panel the layout has slid out shows over the dock. The "
-                    + "buttons start working once the page is interactive, as does the panel's inner edge, whose "
-                    + "grip appears then.",
+                    + "buttons start working once the page is interactive, as does the panel's inner edge, whose grip "
+                    + "appears then. Until then, the separators state no `aria-valuemin` or `aria-valuemax`, and the "
+                    + "edge states 10 and 90.",
             ],
             Notes =
             [
@@ -3201,8 +3205,10 @@ public static class ExampleCatalog
                     + "`Panel(\"Notes\").TextField(\"Packing note\")`, and `PanelElement(\"Notes\")` the panel "
                     + "itself.",
                 "`ResizeAsync(\"Resize Trails\", 40)` moves a separator as its keys do, and `SizeAsync(\"Resize "
-                    + "Trails\")` or `Size(\"Resize Trails\")` reads its percent. bUnit has no pixels, so it "
-                    + "doesn't apply `MinGroupSize`.",
+                    + "Trails\")` or `Size(\"Resize Trails\")` reads its percent. In Playwright, `ResizeAsync` throws "
+                    + "an `ArgumentOutOfRangeException` for a percent outside the separator's `aria-valuemin` and "
+                    + "`aria-valuemax`, which follow `MinGroupSize` and the dock's size. bUnit has no pixels, so there "
+                    + "`ResizeAsync` doesn't apply `MinGroupSize`, and throws for a percent below 1 or above 99.",
                 "`MoveTabAsync(\"Notes\", 1)` moves a panel's tab forward in its row, and a negative number moves "
                     + "it back. `MoveToGroupAsync(\"Notes\", 2)` moves the panel to the group with that number.",
                 "`MoveToNewGroupAsync(\"Notes\", DockPosition.Bottom)` gives a panel a new group on that side of "
@@ -3259,10 +3265,11 @@ public static class ExampleCatalog
                     + "`Panel` and `PanelElement` don't, so call `RevealAsync` before them. `RevealAsync` throws an "
                     + "`InvalidOperationException` for a panel that isn't on a strip, and `ConcealAsync` when none "
                     + "is out.",
-                "A slid-out panel's inner edge is a separator the helpers find by its name: "
-                    + "`SizeAsync(\"Resize Notes\")` or `Size(\"Resize Notes\")` reads the share of the dock the "
-                    + "panel takes, and `ResizeAsync(\"Resize Notes\", 40)` sets it, in Playwright with the edge's "
-                    + "own arrow keys. A percent below 10 or above 90 throws in bUnit and fails in Playwright.",
+                "A slid-out panel's inner edge is a separator the helpers find by its name: `SizeAsync(\"Resize "
+                    + "Notes\")` or `Size(\"Resize Notes\")` reads the share of the dock the panel takes, and "
+                    + "`ResizeAsync(\"Resize Notes\", 40)` sets it, in Playwright with the edge's own arrow keys. A "
+                    + "percent below 10 or above 90 throws in bUnit, and in Playwright one outside the edge's "
+                    + "`aria-valuemin` and `aria-valuemax`.",
                 "A window drags the same way: press on its Move button, its grip or the empty part of its row, "
                     + "move in a few steps and release, then wait for `data-commits` to go up by one.",
                 "So does a strip's button, into the dock or onto another strip, and a tab onto a strip: the strip "

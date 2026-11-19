@@ -1,3 +1,6 @@
+using System.Globalization;
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 // The fixture's dock is 766 by 382 pixels inside its border, and no separator leaves a group under 64.
@@ -116,6 +119,116 @@ public class DockManagerResizeTests(BrowserFixture fixture) : DockManagerPage(fi
 
         Assert.Equal(highlight, await line());
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldStateHowFarASeparatorCanGo_WhenTheSmallestGroupSizeLimitsIt(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        var trails = Separator(page, "Resize Trails");
+        var least = await LimitAsync(trails, "aria-valuemin");
+        var most = await LimitAsync(trails, "aria-valuemax");
+        Assert.InRange(least, 1, 49);
+        Assert.InRange(most, 51, 99);
+
+        // Home and End take the separator to the limits it states, where a group is down to its 64 pixels.
+        await trails.FocusAsync();
+        await ChangeAsync(page, () => page.Keyboard.PressAsync("Home"));
+        await Expect(trails).ToHaveAttributeAsync("aria-valuenow", least.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal(64, await WidthAsync(page, 0), 1.0);
+        await ChangeAsync(page, () => page.Keyboard.PressAsync("End"));
+        await Expect(trails).ToHaveAttributeAsync("aria-valuenow", most.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal(64, await WidthAsync(page, 1), 1.0);
+        Assert.Equal(least, await LimitAsync(trails, "aria-valuemin"));
+        Assert.Equal(most, await LimitAsync(trails, "aria-valuemax"));
+
+        // The helper refuses a percent past a limit before it presses a key.
+        var dock = page.Tb().Dock();
+        var refused = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => dock.ResizeAsync("Resize Trails", least - 1));
+        Assert.Contains($"goes from {least}% to {most}%", refused.Message);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => dock.ResizeAsync("Resize Trails", most + 1));
+        await dock.ResizeAsync("Resize Trails", least);
+        Assert.Equal(least, await dock.SizeAsync("Resize Trails"));
+
+        // In a narrower dock the same 64 pixels are a larger share, so the limits move in.
+        await dock.ResizeAsync("Resize Trails", 50);
+        await NarrowAsync(page, "30rem");
+        await Expect(trails).Not.ToHaveAttributeAsync("aria-valuemin", least.ToString(CultureInfo.InvariantCulture));
+        var narrower = await LimitAsync(trails, "aria-valuemin");
+        var widest = await LimitAsync(trails, "aria-valuemax");
+        Assert.True(narrower > least);
+
+        // A dock that shrinks further can leave the separator's value out of reach. The value still lies within the
+        // limits: it counts as the least until the separator moves.
+        await trails.FocusAsync();
+        await ChangeAsync(page, () => page.Keyboard.PressAsync("Home"));
+        await Expect(trails).ToHaveAttributeAsync("aria-valuenow", narrower.ToString(CultureInfo.InvariantCulture));
+        await NarrowAsync(page, "20rem");
+        await Expect(trails).Not.ToHaveAttributeAsync("aria-valuemax", widest.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal(narrower, await LimitAsync(trails, "aria-valuemin"));
+        Assert.InRange(await LimitAsync(trails, "aria-valuemax"), 51, widest - 1);
+
+        // In a dock too narrow for two groups of 64 pixels nothing can move, and the separator states the value it
+        // has as both limits.
+        await NarrowAsync(page, "6rem");
+        var now = narrower.ToString(CultureInfo.InvariantCulture);
+        await Expect(trails).ToHaveAttributeAsync("aria-valuemax", now);
+        await Expect(trails).ToHaveAttributeAsync("aria-valuemin", now);
+        await Expect(trails).ToHaveAttributeAsync("aria-valuenow", now);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldCountASeparatorsValueAsItsMost_WhenTheDockShrinksWhileItIsAtItsLargest(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        var trails = Separator(page, "Resize Trails");
+        var least = (await trails.GetAttributeAsync("aria-valuemin"))!;
+        await trails.FocusAsync();
+        await ChangeAsync(page, () => page.Keyboard.PressAsync("End"));
+        var most = await LimitAsync(trails, "aria-valuemax");
+        await Expect(trails).ToHaveAttributeAsync("aria-valuenow", most.ToString(CultureInfo.InvariantCulture));
+
+        // The narrower dock leaves the value past the separator's reach, so the value counts as the most.
+        await NarrowAsync(page, "20rem");
+
+        await Expect(trails).Not.ToHaveAttributeAsync("aria-valuemin", least);
+        Assert.Equal(most, await LimitAsync(trails, "aria-valuemax"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldStateItsFirstSeparatorsLimits_WhenAPanelGetsTheDocksSecondGroup(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=lone");
+
+        // Gear leaves its window for a group of its own, and the separator that comes with it states its limits.
+        await page.Tb().Dock().MoveToEdgeAsync("Gear", DockPosition.End);
+
+        var notes = Separator(page, "Resize Notes");
+        Assert.InRange(await LimitAsync(notes, "aria-valuemin"), 1, 49);
+        Assert.InRange(await LimitAsync(notes, "aria-valuemax"), 51, 99);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldRestateASeparatorsLimits_WhenAnotherSeparatorChangesWhatItsSidesHold(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        await page.Tb().Dock().MoveToNewGroupAsync("Map", DockPosition.End);
+        var map = Separator(page, "Resize Map");
+        var before = await LimitAsync(map, "aria-valuemin");
+
+        // Trails goes down to its smallest, which changes what the next separator's first side holds.
+        await Separator(page, "Resize Trails").FocusAsync();
+        await ChangeAsync(page, () => page.Keyboard.PressAsync("Home"));
+
+        await Expect(map).Not.ToHaveAttributeAsync("aria-valuemin", before.ToString(CultureInfo.InvariantCulture));
+    }
+
+    // Gives the box around the dock another width, as a page's layout would.
+    private static Task NarrowAsync(IPage page, string width) => page.Locator(".tb-dock-frame").EvaluateAsync(
+        "(frame, width) => frame.parentElement.style.inlineSize = width", width);
+
+    private static async Task<int> LimitAsync(ILocator separator, string attribute) =>
+        int.Parse((await separator.GetAttributeAsync(attribute))!, CultureInfo.InvariantCulture);
 
     private static Task<double> WidthAsync(IPage page, int group) => page.Locator(".tb-dock__group").Nth(group)
         .EvaluateAsync<double>("group => group.getBoundingClientRect().width");

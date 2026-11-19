@@ -128,6 +128,7 @@ export function attachDock(root, reporter) {
     const added = new MutationObserver(() => {
         order();
         watchGroups();
+        stateLimits();
     });
     added.observe(root, { childList: true });
     const regrouped = new MutationObserver(order);
@@ -179,10 +180,9 @@ export function attachDock(root, reporter) {
     const vertical = separator => separator.getAttribute('aria-orientation') === 'horizontal';
     const within = (box, region) => box.x >= region.x - 0.01 && box.y >= region.y - 0.01
         && box.x + box.width <= region.x + region.width + 0.01 && box.y + box.height <= region.y + region.height + 0.01;
-    // Moves a separator's edge to a place along its split, in percent of the dock, as far as the smallest group on
-    // each side allows. Everything inside the two parts keeps its share of its part. Gives the share the part before
-    // has of the two, or null when nothing can move.
-    const moveTo = (separator, to) => {
+    // How far a separator's edge can go along its split, from low to high in percent of the dock: as far as the
+    // smallest group on each side allows. When low is past high, nothing can move.
+    const reachOf = separator => {
         const [start, length] = vertical(separator) ? ['y', 'height'] : ['x', 'width'];
         const { before, after } = sidesOf(separator);
         // A window floats over the docked parts and keeps its box as they resize.
@@ -194,8 +194,14 @@ export function attachDock(root, reporter) {
         const floor = part => least / Math.min(...others
             .filter(element => element.dataset.part === 'group' && within(boxOf(element), part))
             .map(element => boxOf(element)[length] / part[length]));
-        const low = before[start] + floor(before);
-        const high = after[start] + after[length] - floor(after);
+        return { start, length, before, after, others, low: before[start] + floor(before),
+            high: after[start] + after[length] - floor(after) };
+    };
+    // Moves a separator's edge to a place along its split, in percent of the dock, as far as it can go. Everything
+    // inside the two parts keeps its share of its part. Gives the share the part before has of the two, or null when
+    // nothing can move.
+    const moveTo = (separator, to) => {
+        const { start, length, before, after, others, low, high } = reachOf(separator);
         if (!(low <= high)) {
             return null;
         }
@@ -316,9 +322,10 @@ export function attachDock(root, reporter) {
     // that is more.
     const slideRow = () => parts('group').find(row => row.hasAttribute('data-edge'));
     const upright = edge => edge === 'start' || edge === 'end';
+    const smallest = edge =>
+        Math.max(10, Number(root.dataset.minSize) / (upright(edge) ? root.clientWidth : root.clientHeight) * 100);
     const slid = (start, edge, by) => {
-        const least = Number(root.dataset.minSize) / (upright(edge) ? root.clientWidth : root.clientHeight) * 100;
-        const size = between((upright(edge) ? start.width : start.height) + by, Math.max(10, least), 90);
+        const size = between((upright(edge) ? start.width : start.height) + by, smallest(edge), 90);
         return upright(edge) ? { ...start, width: size, x: edge === 'end' ? 100 - size : 0 }
             : { ...start, height: size, y: edge === 'bottom' ? 100 - size : 0 };
     };
@@ -338,6 +345,37 @@ export function attachDock(root, reporter) {
             reportSlide(row, box);
         }
     };
+    // Each separator states the least and the most its value can be, as the window splitter pattern asks, and so
+    // does a slid-out panel's edge. The script does it, since the limits follow from the dock's size in pixels.
+    const stateLimits = () => {
+        // A value always lies within its limits: a separator that can't move states the value it has for both, and
+        // a value that a smaller dock has left out of reach counts as a limit until the separator moves.
+        for (const separator of parts('separator')) {
+            const { start, length, before, after, low, high } = reachOf(separator);
+            const share = edge => Math.round((edge - before[start]) / (before[length] + after[length]) * 100);
+            const now = Number(separator.getAttribute('aria-valuenow'));
+            const [least, most] = low <= high ? [Math.min(share(low), now), Math.max(share(high), now)] : [now, now];
+            separator.setAttribute('aria-valuemin', String(least));
+            separator.setAttribute('aria-valuemax', String(most));
+        }
+
+        for (const edge of parts('slide-separator')) {
+            const now = Number(edge.getAttribute('aria-valuenow'));
+            edge.setAttribute('aria-valuemin', String(Math.min(Math.round(smallest(edge.dataset.edge)), now)));
+        }
+    };
+    // The limits change when a separator's sides or its value do, when the slid-out panel's edge changes, when the
+    // least size does, and when the dock is resized. A panel's content can have such attributes of its own, which
+    // don't count.
+    const limited = new MutationObserver(records => {
+        if (records.some(record => record.target === root || record.target.parentElement === root)) {
+            stateLimits();
+        }
+    });
+    limited.observe(root, { subtree: true, attributes: true,
+        attributeFilter: ['aria-valuenow', 'data-before', 'data-after', 'data-edge', 'data-min-size'] });
+    const sized = new ResizeObserver(stateLimits);
+    sized.observe(root);
     // The edge a press is on: the separator itself, which drags at once, or the button of its grip's menu.
     const slideHandle = target => {
         const part = ownPart(target, 'slide-separator') ?? ownPart(target, 'slide-grip');
@@ -845,6 +883,7 @@ export function attachDock(root, reporter) {
     root.addEventListener('beforetoggle', onMenuOpening, { capture: true });
     root.addEventListener('toggle', onMenuToggled, { capture: true });
 
+    stateLimits();
     // Marks that the keys and drags work, which tests wait for.
     root.dataset.ready = '';
     return {
@@ -890,6 +929,8 @@ export function attachDock(root, reporter) {
             regrouped.disconnect();
             selected.disconnect();
             rendered.disconnect();
+            limited.disconnect();
+            sized.disconnect();
             root.removeEventListener('pointerdown', onPointerDown);
             root.removeEventListener('pointermove', onPointerMove);
             root.removeEventListener('pointerup', onPointerUp);
