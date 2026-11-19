@@ -9524,7 +9524,9 @@
         color: var(--tb-color-text-disabled);
     }
 
-    .tb-tree__item--match > .tb-tree__content > :is(.tb-tree__text, [data-part="text"]) {
+    .tb-tree__item--match > .tb-tree__content > :is(.tb-tree__text, [data-part="text"]),
+    .tb-tree__item--match > .tb-tree__content > * > [data-part="text"]:not(.tb-label__text, .tb-barcode__text,
+        .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text) {
         font-weight: var(--tb-font-weight-medium);
     }
 
@@ -9571,6 +9573,23 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    /* A template may put its marked text in one wrapper of its own, which shrinks with the row. */
+    .tb-tree__content > :has(> [data-part="text"]) {
+        min-width: 0;
+    }
+
+    /* The wrapped text is cut off within its wrapper. Other components' text parts are left alone, so add a new
+       component's text part to this list and to the match rule's. */
+    .tb-tree__content > * > [data-part="text"]:not(.tb-label__text, .tb-barcode__text, .tb-breadcrumbs__text,
+        .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text) {
+        display: inline-block;
+        max-inline-size: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: bottom;
     }
 
     .tb-tree__end {

@@ -99,6 +99,66 @@ public class TreeItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Text_ShouldKeepItsEllipsisAndItsMatchHighlight_WhenATemplateWrapsItsMarkedText(string browser)
+    {
+        var page = await OpenItemsAsync(browser);
+        var tree = page.GetByRole(AriaRole.Tree, new() { Name = "Wrapped names" });
+        var region = tree.Locator("[role=treeitem][data-text^='North']");
+        var trail = tree.Locator("[role=treeitem][data-text^='Pine']");
+        var spur = tree.Locator("[role=treeitem][data-text^='Waterfall']");
+        await Expect(spur).ToBeVisibleAsync();
+
+        // Each name is cut off and ends before the row's button: the two in a wrapper, and the spur's, a TbText
+        // marked straight in the template. The loop's wrapper lays a mark out beside its name, on the same line.
+        foreach (var row in new[] { region, trail, spur })
+        {
+            var layout = await row.EvaluateAsync<string>("""
+                row => {
+                    const text = row.querySelector('[data-part=text]');
+                    const end = row.querySelector('[data-part=end]');
+                    return [text.scrollWidth > text.clientWidth, getComputedStyle(text).textOverflow,
+                        text.getBoundingClientRect().right <= end.getBoundingClientRect().left + 1].join(' ');
+                }
+                """);
+            Assert.Equal("true ellipsis true", layout);
+        }
+
+        var beside = await trail.EvaluateAsync<bool>("""
+            row => {
+                const mark = row.querySelector('[data-testid=mark]').getBoundingClientRect();
+                const text = row.querySelector('[data-part=text]').getBoundingClientRect();
+                return mark.right <= text.left + 1 && mark.top < text.bottom && text.top < mark.bottom;
+            }
+            """);
+        Assert.True(beside, "The loop's name isn't beside its mark.");
+
+        // The filter's matches stand out, and their parent row doesn't.
+        var weights = new List<int>();
+        foreach (var row in new[] { region, trail, spur })
+        {
+            weights.Add(await row.Locator("[data-part=text]").First.EvaluateAsync<int>(
+                "text => Number(getComputedStyle(text).fontWeight)"));
+        }
+
+        Assert.True(weights[1] > weights[0] && weights[2] > weights[0],
+            $"The matches' weights are {weights[1]} and {weights[2]}, their region's {weights[0]}.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Text_ShouldLeaveAnotherComponentsTextPartAlone_WhenARowsTemplateHoldsALabel(string browser)
+    {
+        var page = await OpenItemsAsync(browser);
+        var tree = page.GetByRole(AriaRole.Tree, new() { Name = "Wrapped names" });
+        var label = tree.Locator("[role=treeitem][data-text^='Stone'] .tb-label__text");
+        await Expect(label).ToBeVisibleAsync();
+
+        // The label's text is a part named text too, and keeps wrapping as a label does.
+        Assert.Equal("text", await label.GetAttributeAsync("data-part"));
+        await Expect(label).ToHaveCSSAsync("text-overflow", "clip");
+        await Expect(label).Not.ToHaveCSSAsync("white-space", "nowrap");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Text_ShouldKeepAFewCharactersClearOfTheEnd_WhenARowIsDeeperThanTheTreeIsWide(
         string browser)
     {

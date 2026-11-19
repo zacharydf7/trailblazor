@@ -30,4 +30,25 @@ public class TbStylesTests : BunitContext
         Assert.Contains(rules, body => body.Contains("user-select"));
         Assert.Empty(unprefixed);
     }
+
+    // A tree row's template may wrap its marked text, so the tree's rules for wrapped text must list every other
+    // component's text part, since a row can hold those too.
+    [Fact]
+    public void Stylesheet_ShouldNameEveryOtherComponentsTextPartInTheTreesWrappedTextRules_WhenRead()
+    {
+        var source = Path.Combine(Repository.Root, "src", "Trailblazor");
+        var others = Directory.GetFiles(source, "*.razor", SearchOption.AllDirectories)
+            .SelectMany(file => Regex.Matches(File.ReadAllText(file), @"<[^>]*data-part=""text""[^>]*>"))
+            .Select(tag => Regex.Match(tag.Value, @"class=""(tb-[a-z-]+__[a-z-]+)""").Groups[1].Value)
+            .Where(name => name != "tb-tree__text").Distinct().Order().ToList();
+        var css = File.ReadAllText(Path.Combine(source, "wwwroot", "trailblazor.css"));
+
+        var lists = Regex.Matches(css, @"\.tb-tree__content > \* > \[data-part=""text""\]:not\(([^)]*)\)")
+            .Select(rule => rule.Groups[1].Value.Split(',').Select(name => name.Trim().TrimStart('.')).Order())
+            .ToList();
+
+        Assert.DoesNotContain("", others);
+        Assert.Equal(2, lists.Count);
+        Assert.All(lists, list => Assert.Equal(others, list));
+    }
 }

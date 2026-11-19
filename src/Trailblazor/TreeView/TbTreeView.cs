@@ -174,7 +174,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     public TreeViewClasses? Classes { get; set; }
 
     /// <summary>Draws a row's content instead of its icon and text. Put the text in an element with
-    /// <c>data-part="text"</c>, directly in the template, to keep the row's ellipsis.</summary>
+    /// <c>data-part="text"</c> to keep the row's ellipsis and the heavier weight of a filter's match. The template
+    /// can put that element in one wrapper of its own, which should be a flex container when it holds other content
+    /// beside the text.</summary>
     [Parameter]
     public RenderFragment<TreeItemContext<TItem, TKey>>? ItemTemplate { get; set; }
 

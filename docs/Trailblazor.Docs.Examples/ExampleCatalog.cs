@@ -10395,10 +10395,14 @@ public static class ExampleCatalog
                 new("disabled", "Disabled rows", "`ItemDisabled` turns off single rows, and `Disabled` turns off the "
                     + "whole tree.", typeof(TreeViewDisabledExample)),
                 new("item-template", "Item template", "`ItemTemplate` draws a row's content. Keep `ItemText` so typing "
-                    + "still finds the row, and put the text in an element with `data-part=\"text\"`, directly in the "
-                    + "template, to keep the row's ellipsis. To draw a row's text and its controls from one "
-                    + "component of your own, put a `TbTreeItemEnd` in it. What the `TbTreeItemEnd` holds shows at the "
-                    + "row's end, after any `ItemEndTemplate`, and your component keeps one set of state for both.",
+                    + "still finds the row, and put the text in an element with `data-part=\"text\"` to keep the "
+                    + "row's ellipsis and the heavier weight of a filter's match. The template can put that element "
+                    + "in one wrapper of its own, such as a `div` that carries an id. Make the wrapper a flex "
+                    + "container when it holds other content beside the text, such as an icon, so the text is cut "
+                    + "off in the room that is left. Text nested any deeper gets neither the ellipsis nor the match "
+                    + "weight, so style it yourself. To draw a row's text and its controls from one component of "
+                    + "your own, put a `TbTreeItemEnd` in it. What the `TbTreeItemEnd` holds shows at the row's end, "
+                    + "after any `ItemEndTemplate`, and your component keeps one set of state for both.",
                     typeof(TreeViewTemplateExample)),
                 new("flat-data", "Flat data", "`ParentKeySelector` builds the tree from one list of every item, each "
                     + "naming its parent's key, with null for a root. Children keep the list's order.",
@@ -10584,8 +10588,8 @@ public static class ExampleCatalog
                 new("toggle", "The arrow that opens and closes a row."),
                 new("check", "A checkable tree's checkbox."),
                 new("content", "The row's text or template."),
-                new("text", "The row's text, inside its content. A template keeps the ellipsis by marking its text "
-                    + "with this part too."),
+                new("text", "The row's text, inside its content. A template keeps the ellipsis and a filter match's "
+                    + "weight by marking its own text with this part, straight in the template or in one wrapper."),
                 new("end", "Content at the end of the row, such as a count or a menu."),
                 new("insert", "The slot between rows that holds InsertTemplate content, such as an add button."),
                 new("loading", "The message shown while rows load."),

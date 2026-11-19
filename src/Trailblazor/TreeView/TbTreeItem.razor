@@ -66,7 +66,9 @@ else
     public bool Disabled { get; set; }
 
     /// <summary>The row's content in place of its <see cref="Icon"/> and <see cref="Text"/>. Put the text in an
-    /// element with <c>data-part="text"</c>, directly in this content, to keep the row's ellipsis.</summary>
+    /// element with <c>data-part="text"</c> to keep the row's ellipsis and the heavier weight of a filter's match.
+    /// This content can put that element in one wrapper of its own, which should be a flex container when it holds
+    /// other content beside the text.</summary>
     [Parameter]
     public RenderFragment? TextContent { get; set; }
 
