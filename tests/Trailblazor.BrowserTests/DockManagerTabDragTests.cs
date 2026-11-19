@@ -558,6 +558,317 @@ public class DockManagerTabDragTests(BrowserFixture fixture) : DockManagerPage(f
         Assert.Equal(["Gear"], await page.Tb().Dock().ShowingAsync());
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldGiveAPanelTheWholeDock_WhenTheTabOfTheOnlyWindowIsDroppedOnTheDocksEmptyArea(
+        string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=adrift");
+        var dock = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+
+        // Nothing is docked, so the empty area beside the window takes the panel, far from the dock's edges too.
+        await CarryAsync(page, "Gear", dock.X + dock.Width * 0.25f, dock.Y + dock.Height * 0.75f);
+
+        await ExpectMarkAsync(page, dock.X, dock.Y, dock.Width, dock.Height);
+        await DropAsync(page);
+        Assert.Empty(await page.Tb().Dock().FloatingAsync());
+        Assert.Equal(["Gear"], await page.Tb().Dock().ShowingAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldPutAPanelAwayOnAStrip_WhenItsTabIsDroppedOnTheStrip(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        var start = Strip(page, "start");
+        var box = (await start.BoundingBoxAsync())!;
+
+        // Over a strip, the strip itself is marked, since the dock's mark can't leave the dock's area.
+        await CarryAsync(page, "Notes", box.X + box.Width / 2, box.Y + box.Height * 0.75f);
+        await Expect(start).ToHaveAttributeAsync("data-drop", "");
+        await Expect(Strip(page, "bottom")).Not.ToHaveAttributeAsync("data-drop", "");
+        await Expect(Mark(page)).ToBeHiddenAsync();
+        // The strips and their buttons show the cursor of the drag, as the dock's area does.
+        await Expect(start).ToHaveCSSAsync("cursor", "grabbing");
+        await Expect(StripButton(page, "Gear")).ToHaveCSSAsync("cursor", "grabbing");
+        await DropAsync(page);
+
+        // The panel goes after the strip's last button, and its own button takes the focus.
+        Assert.Equal(["Gear", "Notes", "Weather"], await dock.AutoHiddenAsync());
+        Assert.Equal(["Trails", "Map"], await dock.PanelsAsync());
+        await Expect(StripButton(page, "Notes")).ToBeFocusedAsync();
+        await Expect(start).Not.ToHaveAttributeAsync("data-drop", "");
+        await Expect(page.GetByTestId("layout")).ToContainTextAsync("{\"panel\":\"notes\",\"edge\":\"start\"");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Strip_ShouldDockItsPanel_WhenItsButtonIsDraggedIntoTheDock(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        var notes = (await Panel(page, "Notes").BoundingBoxAsync())!;
+
+        // Onto the middle of a group, the panel joins it as its last tab.
+        await CarryAsync(page, StripButton(page, "Gear"), notes.X + notes.Width / 2, notes.Y + notes.Height / 2);
+        await Expect(StripButton(page, "Gear")).ToHaveAttributeAsync("data-dragging", "");
+        await Expect(Mark(page)).ToBeVisibleAsync();
+        await DropAsync(page);
+
+        Assert.Equal(["Trails", "Map", "Notes", "Gear"], await dock.PanelsAsync());
+        Assert.Equal(["Weather"], await dock.AutoHiddenAsync());
+        // The drag wasn't taken for a click on the button: nothing slid out, and the docked panel's tab has the focus.
+        await Expect(page.Locator(".tb-dock__group--revealed")).ToHaveCountAsync(0);
+        await Expect(Tab(page, "Gear")).ToBeFocusedAsync();
+        await Expect(Strip(page, "start")).ToHaveCountAsync(0);
+
+        // Onto an edge of the dock, the panel gets a new group along it.
+        var area = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        await CarryAsync(page, StripButton(page, "Weather"), area.X + area.Width / 2, area.Y + 4);
+        await DropAsync(page);
+
+        Assert.Equal(["Weather", "Trails", "Map", "Notes", "Gear"], await dock.PanelsAsync());
+        Assert.Empty(await dock.AutoHiddenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Strip_ShouldSendItsPanelToAnotherStripAndSlideTheOpenPanelBack_WhenItsButtonIsDragged(
+        string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        await dock.RevealAsync("Gear");
+        var own = (await Strip(page, "start").BoundingBoxAsync())!;
+        var other = (await Strip(page, "bottom").BoundingBoxAsync())!;
+        var commits = await page.Locator(".tb-dock").GetAttributeAsync("data-commits");
+
+        // A button that is dragged slides back the panel that is out, so that it doesn't cover where the button can
+        // go. The button's own strip takes no drop.
+        await CarryAsync(page, StripButton(page, "Gear"), own.X + own.Width / 2, own.Y + own.Height * 0.75f);
+        await Expect(page.Locator(".tb-dock__group--revealed")).ToHaveCountAsync(0);
+        await Expect(Strip(page, "start")).Not.ToHaveAttributeAsync("data-drop", "");
+        await page.Mouse.MoveAsync(other.X + other.Width * 0.75f, other.Y + other.Height / 2, new() { Steps = 4 });
+        await Expect(Strip(page, "bottom")).ToHaveAttributeAsync("data-drop", "");
+        // Escape puts the button down where it was.
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(Strip(page, "bottom")).Not.ToHaveAttributeAsync("data-drop", "");
+        await Expect(StripButton(page, "Gear")).Not.ToHaveAttributeAsync("data-dragging", "");
+        await page.Mouse.UpAsync();
+        Assert.Equal(["Gear", "Weather"], await dock.AutoHiddenAsync());
+        // The panel that slid back for the drag wasn't counted as a finished action.
+        await Expect(page.Locator(".tb-dock")).ToHaveAttributeAsync("data-commits", commits!);
+
+        // The next drag slides back the panel that is out then.
+        await dock.RevealAsync("Weather");
+        await CarryAsync(page, StripButton(page, "Gear"), other.X + other.Width * 0.75f, other.Y + other.Height / 2);
+        await Expect(page.Locator(".tb-dock__group--revealed")).ToHaveCountAsync(0);
+        await DropAsync(page);
+
+        Assert.Equal(["Weather", "Gear"], await dock.AutoHiddenAsync());
+        await Expect(page.GetByTestId("layout")).ToContainTextAsync("{\"panel\":\"gear\",\"edge\":\"bottom\"");
+        // A click on a button still slides its panel out.
+        await dock.RevealAsync("Gear");
+        await Expect(page.Locator(".tb-dock__group--revealed")).ToHaveCountAsync(1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Strip_ShouldGiveItsPanelTheWholeDock_WhenItsButtonIsDroppedOnADockWithNothingDocked(
+        string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        foreach (var panel in new[] { "Trails", "Map", "Notes" })
+        {
+            await dock.AutoHideAsync(panel, DockPosition.Start);
+        }
+
+        // Nothing is docked, so all of the dock's empty area takes the panel, not only the band along its edges.
+        var area = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        await CarryAsync(page, StripButton(page, "Map"), area.X + area.Width / 2, area.Y + area.Height / 2);
+        await ExpectMarkAsync(page, area.X, area.Y, area.Width, area.Height);
+        await DropAsync(page);
+
+        Assert.Equal(["Map"], await dock.ShowingAsync());
+        Assert.Equal(["Gear", "Trails", "Notes", "Weather"], await dock.AutoHiddenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Strip_ShouldPutItsPanelInAWindow_WhenItsButtonIsDroppedOnOne(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        await dock.FloatAsync("Notes");
+        var window = (await Panel(page, "Notes").BoundingBoxAsync())!;
+
+        await CarryAsync(page, StripButton(page, "Weather"), window.X + window.Width / 2,
+            window.Y + window.Height / 2);
+        await DropAsync(page);
+
+        Assert.Equal(["Notes", "Weather"], await dock.FloatingAsync());
+        Assert.Equal(["Gear"], await dock.AutoHiddenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Strip_ShouldSlideItsPanelBack_WhenAFingerRestsOnItsButtonForAMomentBeforeLifting(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        await page.Tb().Dock().RevealAsync("Gear");
+
+        // A slow tap: the finger holds still past the moment that picks the button up, drifts by a pixel or two as a
+        // resting finger does, then lifts.
+        var carried = false;
+        await ChangeAsync(page, async () => carried = await StripButton(page, "Gear").EvaluateAsync<bool>("""
+            async button => {
+                const box = button.getBoundingClientRect();
+                const fire = (type, drift) => button.dispatchEvent(new PointerEvent(type, { bubbles: true,
+                    pointerId: 7, pointerType: 'touch', isPrimary: true, button: type === 'pointermove' ? -1 : 0,
+                    clientX: box.left + box.width / 2 + drift, clientY: box.top + box.height / 2 }));
+                fire('pointerdown', 0);
+                await new Promise(resolve => setTimeout(resolve, 400));
+                const carried = button.hasAttribute('data-dragging');
+                fire('pointermove', 2);
+                fire('pointerup', 2);
+                button.click();
+                return carried;
+            }
+            """));
+
+        // The hold picked the button up, and the tap still did what a tap does: the panel slid back, and stays back.
+        Assert.True(carried);
+        await Expect(page.Locator(".tb-dock__group--revealed")).ToHaveCountAsync(0);
+        await Expect(StripButton(page, "Gear")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(StripButton(page, "Gear")).Not.ToHaveAttributeAsync("data-dragging", "");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Strip_ShouldTakeNoDropOnThePanelThatIsStillOut_WhenAButtonIsCarriedOverItAtOnce(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        await dock.RevealAsync("Gear");
+
+        // The press, the moves and the release come in one task, so the panel can't have slid back in between.
+        var seen = await page.EvaluateAsync<string>("""
+            () => {
+                const button = document.querySelector('[data-part="strip-button"][data-panel="weather"]');
+                const from = button.getBoundingClientRect();
+                const out = document.querySelector('.tb-dock__panel--revealed').getBoundingClientRect();
+                const fire = (target, type, x, y) => target.dispatchEvent(new PointerEvent(type, { bubbles: true,
+                    cancelable: true, pointerId: 7, isPrimary: true, button: 0, pointerType: 'mouse', clientX: x,
+                    clientY: y }));
+                fire(button, 'pointerdown', from.x + 5, from.y + 5);
+                fire(document, 'pointermove', from.x + 15, from.y + 5);
+                fire(document, 'pointermove', out.x + out.width / 2, out.y + out.height / 2);
+                const seen = `${button.hasAttribute('data-dragging')} ${document.querySelector('.tb-dock__drop')
+                    .dataset.show ?? 'no mark'}`;
+                fire(document, 'pointerup', out.x + out.width / 2, out.y + out.height / 2);
+                return seen;
+            }
+            """);
+
+        Assert.Equal("true no mark", seen);
+        await Expect(page.Locator(".tb-dock__group--revealed")).ToHaveCountAsync(0);
+        Assert.Equal(["Gear", "Weather"], await dock.AutoHiddenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldDockASlidOutPanel_WhenItsTabIsDroppedOnADockedGroup(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var dock = page.Tb().Dock();
+        await dock.RevealAsync("Gear");
+        var own = (await Panel(page, "Gear").BoundingBoxAsync())!;
+        var notes = (await Panel(page, "Notes").BoundingBoxAsync())!;
+
+        // Over the slid-out panel itself there is nowhere to land.
+        await CarryAsync(page, "Gear", own.X + own.Width / 2, own.Y + own.Height / 2);
+        await Expect(Tab(page, "Gear")).ToHaveAttributeAsync("data-dragging", "");
+        await Expect(Mark(page)).ToBeHiddenAsync();
+        await page.Mouse.MoveAsync(notes.X + notes.Width / 2, notes.Y + notes.Height / 2, new() { Steps = 4 });
+        await Expect(Mark(page)).ToBeVisibleAsync();
+        await DropAsync(page);
+
+        Assert.Equal(["Trails", "Map", "Notes", "Gear"], await dock.PanelsAsync());
+        Assert.Equal(["Weather"], await dock.AutoHiddenAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Strip_ShouldBeOutlinedInTheHighlight_WhenATabIsCarriedOverItAndColorsAreForced(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips", new() { ForcedColors = ForcedColors.Active });
+        var strip = Strip(page, "bottom");
+        var box = (await strip.BoundingBoxAsync())!;
+
+        await CarryAsync(page, "Notes", box.X + box.Width * 0.75f, box.Y + box.Height / 2);
+
+        await Expect(strip).ToHaveCSSAsync("outline-style", "solid");
+        await Expect(strip).ToHaveCSSAsync("outline-color", await SystemColorAsync(page, "Highlight"));
+        // Escape puts the tab down, and the strip's outline goes.
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(strip).Not.ToHaveAttributeAsync("data-drop", "");
+        await page.Mouse.UpAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldLeaveAStripButtonInsideAPanelAlone_WhenItIsDragged(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        var root = page.Locator(".tb-dock");
+        // A dock inside a panel has strips of its own, whose buttons this dock doesn't carry.
+        await Panel(page, "Notes").EvaluateAsync("""
+            panel => {
+                const strip = document.createElement('div');
+                strip.dataset.part = 'strip';
+                strip.innerHTML = '<button type="button" data-part="strip-button" data-panel="gear">Inner</button>';
+                panel.prepend(strip);
+            }
+            """);
+        var inner = page.GetByRole(AriaRole.Button, new() { Name = "Inner", Exact = true });
+        var box = (await inner.BoundingBoxAsync())!;
+
+        await CarryAsync(page, inner, box.X + box.Width / 2 + 120, box.Y + box.Height / 2 + 80);
+
+        await Expect(inner).Not.ToHaveAttributeAsync("data-dragging", "");
+        await Expect(root).Not.ToHaveAttributeAsync("data-moving", "");
+        await Expect(Mark(page)).ToBeHiddenAsync();
+        await page.Mouse.UpAsync();
+    }
+
+    // Only Chromium can drive touch from Playwright.
+    [Fact]
+    public async Task Strip_ShouldDockItsPanel_WhenAFingerHoldsItsButtonAndDragsItIntoTheDock()
+    {
+        var page = await OpenDockAsync("chromium", "?layout=strips", new() { HasTouch = true });
+        var dock = page.Locator(".tb-dock");
+        var button = StripButton(page, "Gear");
+        var from = (await button.BoundingBoxAsync())!;
+        var notes = (await Panel(page, "Notes").BoundingBoxAsync())!;
+        var (x, y) = (from.X + from.Width / 2, from.Y + from.Height / 2);
+        var (toX, toY) = (notes.X + notes.Width / 2, notes.Y + notes.Height / 2);
+        var touch = await page.Context.NewCDPSessionAsync(page);
+        var commits = int.Parse((await dock.GetAttributeAsync("data-commits"))!, CultureInfo.InvariantCulture);
+
+        // A finger that holds still for a moment picks the button up, as it does a tab. The page reports the pickup.
+        await button.EvaluateAsync("""
+            button => {
+                window.pickedUp = new Promise(resolve => new MutationObserver(() => {
+                    if (button.hasAttribute('data-dragging')) {
+                        resolve();
+                    }
+                }).observe(button, { attributes: true, attributeFilter: ['data-dragging'] }));
+            }
+            """);
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchStart", x, y);
+        await page.EvaluateAsync("() => window.pickedUp");
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", (x + toX) / 2, (y + toY) / 2);
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", toX, toY);
+        await Expect(Mark(page)).ToBeVisibleAsync();
+        await DialogMoveAndResizeTests.TouchAsync(touch, "touchEnd", null, null);
+
+        await Expect(dock).ToHaveAttributeAsync("data-commits", (commits + 1).ToString(CultureInfo.InvariantCulture));
+        Assert.Equal(["Trails", "Map", "Notes", "Gear"], await page.Tb().Dock().PanelsAsync());
+    }
+
+    private static ILocator Strip(IPage page, string edge) => page.Locator($"[data-part=strip][data-edge={edge}]");
+
     private static ILocator Mark(IPage page) => page.Locator(".tb-dock__drop");
 
     // The box the mark covers, within a pixel and a half.
@@ -582,10 +893,13 @@ public class DockManagerTabDragTests(BrowserFixture fixture) : DockManagerPage(f
     }
 
     // Presses on a tab and carries it to a point, without letting go.
-    private static async Task CarryAsync(IPage page, string tab, float x, float y)
+    private static Task CarryAsync(IPage page, string tab, float x, float y) => CarryAsync(page, Tab(page, tab), x, y);
+
+    // Presses on a tab or a strip's button and carries it to a point, without letting go.
+    private static async Task CarryAsync(IPage page, ILocator item, float x, float y)
     {
         await Expect(page.Locator(".tb-dock")).ToHaveAttributeAsync("data-ready", "");
-        var box = (await Tab(page, tab).BoundingBoxAsync())!;
+        var box = (await item.BoundingBoxAsync())!;
         await page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
         await page.Mouse.DownAsync();
         await page.Mouse.MoveAsync(x, y, new() { Steps = 6 });

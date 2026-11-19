@@ -436,7 +436,7 @@
 
         _report = DotNetObjectReference.Create(new DockReport(SelectFromScriptAsync, CloseFromScriptAsync,
             OnResizeAsync, MoveFromScriptAsync, ToggleMaximizedFromScriptAsync, RaiseFromScriptAsync, OnFloatAsync,
-            PullOutFromScriptAsync, ConcealFromScriptAsync, SlideFromScriptAsync,
+            PullOutFromScriptAsync, ConcealFromScriptAsync, SlideFromScriptAsync, AutoHideFromScriptAsync,
             tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);
         if (handle is not null && _disposed)
@@ -1006,6 +1006,24 @@
         }
     }
 
+    // A dragged tab or strip button was dropped on a strip, which puts its panel away there.
+    private async Task AutoHideFromScriptAsync(string panel, string edge)
+    {
+        // A drop the dock can't use, for a panel it doesn't have or a name that isn't one of the four edges, keeps the
+        // layout and still counts.
+        if (Panel(panel) is not null && Enum.TryParse<DockPosition>(edge, ignoreCase: true, out var where)
+            && where is DockPosition.Start or DockPosition.End or DockPosition.Top or DockPosition.Bottom)
+        {
+            await AutoHideAsync(panel, where);
+        }
+        else
+        {
+            _commits++;
+        }
+
+        StateHasChanged();
+    }
+
     // A strip's button slides its panel out, with the focus on the panel's tab, and slides it back.
     private async Task ToggleRevealAsync(string panel)
     {
@@ -1106,7 +1124,8 @@
         StateHasChanged();
     }
 
-    // A dragged tab was dropped beside the target panel, or along an edge of the dock when there is no target.
+    // A dragged tab or strip button was dropped beside the target panel, or along an edge of the dock when there is
+    // no target.
     private async Task MoveFromScriptAsync(string panel, string? target, string position)
     {
         // A drop the dock can't use keeps the layout: a panel or a place it doesn't have, or an edge given Before or

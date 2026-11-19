@@ -3,12 +3,14 @@ using Microsoft.JSInterop;
 namespace Trailblazor;
 
 // Hears the browser select a tab with the arrow keys, close one with a key or a middle click, move a separator,
-// drop a dragged tab or pull it out into a window, double-click a tab, press or focus a window behind another, move
-// or resize a window, and resize or leave a slid-out panel, so the public dock needn't expose [JSInvokable] methods.
+// drop a dragged tab or strip button or pull a tab out into a window, double-click a tab, press or focus a window
+// behind another, move or resize a window, and resize or leave a slid-out panel, so the public dock needn't expose
+// [JSInvokable] methods.
 internal sealed class DockReport(Func<string, Task> onSelect, Func<string, bool, Task> onClose,
     Func<int, double, int, Task> onResize, Func<string, string?, string, Task> onMove, Func<string, Task> onMaximize,
     Func<string, Task> onRaise, Func<string, DockBox, bool, int, Task> onFloat, Func<string, DockBox, Task> onPullOut,
-    Func<bool, Task> onConceal, Func<string, double, int, Task> onSlide, Func<string, bool> holds)
+    Func<bool, Task> onConceal, Func<string, double, int, Task> onSlide, Func<string, string, Task> onAutoHide,
+    Func<string, bool> holds)
 {
     // Whether the dock holds the tab with this element id, by which the bUnit driver finds a dock's reports. Panel
     // ids won't do, since two docks can use the same ones.
@@ -46,6 +48,10 @@ internal sealed class DockReport(Func<string, Task> onSelect, Func<string, bool,
     [JSInvokable]
     public Task OnPullOut(string panel, double x, double y, double width, double height) =>
         onPullOut(panel, new DockBox(x, y, width, height));
+
+    // A dragged tab or strip button was dropped on the strip along this edge, a DockPosition name in any letter case.
+    [JSInvokable]
+    public Task OnAutoHide(string panel, string edge) => onAutoHide(panel, edge);
 
     // The slid-out panel slides back: Escape was pressed in it, or a press or the focus went elsewhere.
     [JSInvokable]

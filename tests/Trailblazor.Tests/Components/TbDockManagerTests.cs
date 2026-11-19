@@ -2249,6 +2249,37 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public async Task Strip_ShouldTakeAPanel_WhenTheScriptReportsADropOnIt()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var layout = Hike.AutoHide("notes", DockPosition.Start);
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(layout, HikePanels, changes.Add);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+
+        // The script names the edge as the strip's data-edge does, in lower case.
+        await cut.InvokeAsync(() => Report().OnAutoHide("trails", "start"));
+
+        Assert.Equal([layout.AutoHide("trails", DockPosition.Start)], changes);
+        Assert.Equal(["Notes", "Trails"],
+            cut.FindAll("[data-part=strip-button]").Select(button => button.TextContent.Trim()));
+        Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+        Assert.Equal("Trails is auto-hidden.", Services.GetRequiredService<FakeAnnouncer>().Polite[^1]);
+        Assert.Equal(["auto_hide"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+
+        // A drop the dock can't use changes nothing and still counts: a panel it doesn't have, or a name that isn't
+        // one of the four edges.
+        await cut.InvokeAsync(() => Report().OnAutoHide("nowhere", "start"));
+        await cut.InvokeAsync(() => Report().OnAutoHide("weather", "before"));
+        await cut.InvokeAsync(() => Report().OnAutoHide("weather", "middle"));
+
+        Assert.Single(changes);
+        Assert.Equal("4", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
     public async Task Strip_ShouldSlideItsPanelBack_WhenTheScriptReportsEscapeOrAPressElsewhere()
     {
         var layout = Hike.AutoHide("notes", DockPosition.Bottom);

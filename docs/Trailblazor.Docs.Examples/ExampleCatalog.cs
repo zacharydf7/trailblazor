@@ -2751,12 +2751,14 @@ public static class ExampleCatalog
                 new("moving", "Moving panels", "Dragging a tab moves its panel: along a row of tabs, its own or "
                     + "another group's, to where the line shows; onto the middle of another group to join it as its "
                     + "last tab; onto a side of a group for a new group there; onto an edge of the dock for a new "
-                    + "group along it; or onto the middle of its own group, or anywhere on its panel when the tab is "
-                    + "alone in a docked group, to float in a window. A mark shows where the panel would land, and "
-                    + "Escape cancels the drag. Without a drag, the menu after each group's tabs moves the group's "
-                    + "showing panel back or forward in its row, to the end of another group, or to a new group beside "
-                    + "its own or along an edge of the dock, and can also close it. A right-click on a tab opens the "
-                    + "same menu for that tab's panel, whether or not it shows.", typeof(DockManagerDragExample)),
+                    + "group along it, or anywhere on the dock's empty area when nothing is docked; or onto the middle "
+                    + "of its own group, or anywhere on its panel when the tab is alone in a docked group, to float in "
+                    + "a window; or onto a strip of auto-hidden panels, which puts it away there. A mark shows where "
+                    + "the panel would land, a strip that would take it is outlined, and Escape cancels the drag. "
+                    + "Without a drag, the menu after each group's tabs moves the group's showing panel back or "
+                    + "forward in its row, to the end of another group, or to a new group beside its own or along an "
+                    + "edge of the dock, and can also close it. A right-click on a tab opens the same menu for that "
+                    + "tab's panel, whether or not it shows.", typeof(DockManagerDragExample)),
                 new("moving-from-code", "Moving panels from code", "`DockLayout.Move(panel, target, position)` gives "
                     + "back a layout with a panel beside another one, for the app to set as `Layout`: "
                     + "`DockPosition.Before` or `After` makes it a tab next to the target's and shows it, and "
@@ -2803,13 +2805,17 @@ public static class ExampleCatalog
                     + "edge is a separator like the ones between groups: dragging it, its arrow keys or the steps in "
                     + "its grip's menu resize the panel, between a tenth and nine tenths of the dock and no smaller "
                     + "than `MinGroupSize`. Slid out, a panel has its tab and its menu, which docks it, floats it, "
-                    + "sends it to a group or to another strip, or closes it. A panel on a strip keeps its content "
-                    + "unless its `KeepAlive` is false. From code, `DockLayout.AutoHide(panel, edge)` puts a panel on "
-                    + "a strip, and `AutoHidden` lists the strips' panels, each a `DockAutoHidden` with its `Edge` and "
-                    + "the `Size` it slides out to, in percent of the dock. `Open(panel)` slides one out, `Revealed` "
-                    + "is the one that is out, `Conceal()` slides it back, and `ResizeAutoHidden(panel, size)` gives a "
-                    + "panel another size to slide out to. A saved layout keeps the strips and their sizes, but not "
-                    + "which panel is out.",
+                    + "sends it to a group or to another strip, or closes it. Its tab drags as any tab does, except "
+                    + "that its own panel takes no drop; Float in its menu floats it instead. A strip's button drags "
+                    + "too: into the dock, which puts its panel where the mark shows (in a group, a new group or a "
+                    + "window), or onto another strip. A button that is dragged slides back the panel that is out. An "
+                    + "edge with no strip yet has nothing to drop on, so the first panel goes there from a menu. A "
+                    + "panel on a strip keeps its content unless its `KeepAlive` is false. From code, "
+                    + "`DockLayout.AutoHide(panel, edge)` puts a panel on a strip, and `AutoHidden` lists the strips' "
+                    + "panels, each a `DockAutoHidden` with its `Edge` and the `Size` it slides out to, in percent of "
+                    + "the dock. `Open(panel)` slides one out, `Revealed` is the one that is out, `Conceal()` slides "
+                    + "it back, and `ResizeAutoHidden(panel, size)` gives a panel another size to slide out to. A "
+                    + "saved layout keeps the strips and their sizes, but not which panel is out.",
                     typeof(DockManagerAutoHideExample)),
                 new("remembering", "Remembering the layout", "With a `PersistenceKey`, the dock saves its layout in "
                     + "the browser's local storage after each change and reads it back once the page is "
@@ -2854,7 +2860,7 @@ public static class ExampleCatalog
                     + "auto-hides or closes its panel and maximizes or restores its group, on its first item.")
                     { When = "On a tab" },
                 new(["Escape"], "Cancels the drag and leaves the panel where it was.")
-                    { When = "While a tab is dragged" },
+                    { When = "While a tab or a strip's button is dragged" },
                 new(["Enter", "Space", "Down"], "Opens the menu that moves, floats, docks, auto-hides or closes the "
                     + "group's showing panel and maximizes or restores the group, on its first item. Inside it, the "
                     + "keys are those of a [menu](components/menu).")
@@ -2936,8 +2942,8 @@ public static class ExampleCatalog
             [
                 "On a tab, screen readers say its title, that it's a tab, whether it's selected and its place "
                     + "among the group's tabs. A closable tab adds \"Press Delete to close\".",
-                "After a panel moves, from a menu or a dropped tab, screen readers hear where it went, as in "
-                    + "\"Trails moved to panel group 2.\"",
+                "After a panel moves, from a menu or a dropped tab or strip button, screen readers hear where it went, "
+                    + "as in \"Trails moved to panel group 2.\"",
                 "As a tab's menu opens, screen readers hear its name, \"Tab options\".",
                 "When a group fills the dock, screen readers hear \"Panel group 2 fills the dock.\", with the "
                     + "group's number, and \"All panel groups show again.\" when it's restored.",
@@ -2976,12 +2982,13 @@ public static class ExampleCatalog
                     + "the Tab key and for screen readers, oldest window first, no matter which window is in front. "
                     + "After Float or Dock, focus is on the panel's tab, and a window behind another comes forward "
                     + "when it is pressed or takes the focus.",
-                "Auto-hide is a menu item too, and each strip's button is a Tab stop of at least 24 by 24 pixels. "
-                    + "The strips at the top and the start come before the groups for the Tab key and for screen "
-                    + "readers, and those at the end and the bottom after them, as they do on the screen. After "
-                    + "Auto-hide, focus is on the panel's button; when its panel slides out, focus moves to the "
-                    + "panel's tab, and Escape brings it back to the button. A panel on a strip is `inert` until "
-                    + "it slides out.",
+                "Auto-hide is a menu item too, and each strip's button is a Tab stop of at least 24 by 24 pixels. The "
+                    + "strips at the top and the start come before the groups for the Tab key and for screen readers, "
+                    + "and those at the end and the bottom after them, as they do on the screen. After Auto-hide, "
+                    + "focus is on the panel's button; when its panel slides out, focus moves to the panel's tab, and "
+                    + "Escape brings it back to the button. A panel on a strip is `inert` until it slides out. Each "
+                    + "drag of a strip's button has a single-pointer alternative: slid out, the panel's menu docks it, "
+                    + "floats it, or sends it to a group or to another strip (WCAG 2.5.7).",
                 "A slid-out panel resizes without a drag too: its inner edge is a focusable `separator` that the arrow "
                     + "keys move, and a Tab stop after the panel. The two steps in its grip's menu make the panel "
                     + "larger or smaller by 10% of the dock, the single-pointer alternative to dragging (WCAG 2.5.7). "
@@ -3014,8 +3021,9 @@ public static class ExampleCatalog
                 "A separator's grip stays out of the tab order, since the separator's keys do the same as its menu.",
                 "Tabs, close marks, menu buttons, the Restore button, a window's Move button and the grips work "
                     + "with a tap, and each is at least a 24px target.",
-                "In forced colors, the showing tab's line, a focused separator, the mark for a dragged tab and the "
-                    + "strip button of the panel that is slid out use the system's highlight color.",
+                "In forced colors, the showing tab's line, a focused separator, the mark for a dragged tab, the "
+                    + "outline of a strip that a drop would go to and the strip button of the panel that is slid out "
+                    + "use the system's highlight color.",
             ],
             AppDuties =
             [
@@ -3056,8 +3064,9 @@ public static class ExampleCatalog
                     + "parts around it, so the frame stays loaded. Only when two panels that hold frames trade "
                     + "places does one of them have to move: its frame stays loaded where the browser has "
                     + "`Element.moveBefore`, and loads again where it doesn't.") { Pitfall = true },
-                new("A mouse or a pen drags a tab once it has moved a few pixels. With a finger, the drag starts "
-                    + "only once the tab has been held still for a moment, so a swipe still scrolls a row of tabs."),
+                new("A mouse or a pen drags a tab or a strip's button once it has moved a few pixels. With a finger, "
+                    + "the drag starts only once it has been held still for a moment, so a swipe still scrolls a row "
+                    + "of tabs or a strip."),
                 new("A tab's menu opens with a right-click, or with Shift+F10 or the context menu key on the tab. "
                     + "It also opens when a finger keeps resting on the tab for half a second after picking it "
                     + "up, and the tab is put down again; a pen that rests on the tab for half a second opens the "
@@ -3114,18 +3123,20 @@ public static class ExampleCatalog
                     + "and holds the strips of auto-hidden panels around the `dock` part, along the edges that have "
                     + "any."),
                 new("strip", "A strip of auto-hidden panels along one edge, with that edge in `data-edge` (`start`, "
-                    + "`end`, `top` or `bottom`). The top and start strips come before the `dock` part in the "
-                    + "frame, and the end and bottom ones after it."),
-                new("strip-button", "An auto-hidden panel's button on its strip, with `data-panel` holding the "
-                    + "panel's `Id` and `aria-expanded` saying whether the panel is slid out."),
+                    + "`end`, `top` or `bottom`). The top and start strips come before the `dock` part in the frame, "
+                    + "and the end and bottom ones after it. It has `data-drop` while a dragged tab or strip button "
+                    + "would go to it."),
+                new("strip-button", "An auto-hidden panel's button on its strip, with `data-panel` holding the panel's "
+                    + "`Id`, `aria-expanded` saying whether the panel is slid out, and `data-dragging` while it is "
+                    + "dragged."),
                 new("slide-separator", "The inner edge of the panel that is slid out, a focusable `separator` that "
                     + "resizes it. It has the panel's box and layer, `data-group` with the number of the panel's "
                     + "row, `data-floating` and `data-edge`."),
                 new("slide-grip", "The grip menu on that edge, with the same attributes. Its button drags the edge "
                     + "or opens two items that resize the panel, which carry `data-step` (`larger` or `smaller`)."),
-                new("dock", "The dock itself, around its groups, panels, separators, grips and drop mark, which "
-                    + "are all its children. It has `data-moving` while a tab is dragged, and `data-resizing` "
-                    + "while a separator, a window or a slid-out panel's edge is."),
+                new("dock", "The dock itself, around its groups, panels, separators, grips and drop mark, which are "
+                    + "all its children. It has `data-moving` while a tab or a strip's button is dragged, and "
+                    + "`data-resizing` while a separator, a window or a slid-out panel's edge is."),
                 new("group", "One group's row, across the top of the group's box. `data-group` holds its number, "
                     + "from 0. The one that fills the dock has `data-maximized`, and the ones it covers have the "
                     + "class `tb-dock__group--covered`. A floating window's row has `data-floating`, the class "
@@ -3165,10 +3176,11 @@ public static class ExampleCatalog
                     + "resize them."),
                 new("grip", "A separator's handle menu, on the middle of its line: its button drags the separator "
                     + "or opens the items that resize, which carry `data-step` (`larger` or `smaller`)."),
-                new("drop-mark", "The mark over the place where a dragged tab's panel would land. `data-show` is "
-                    + "`line` for the line beside a tab and `box` for a group, half of one, a band along the dock's "
-                    + "edge or the window a panel would float in. It is absent while nothing is dragged, and while a "
-                    + "dragged tab is over a place where a drop would change nothing."),
+                new("drop-mark", "The mark over the place where a dragged tab's or strip button's panel would land. "
+                    + "`data-show` is `line` for the line beside a tab and `box` for a group, half of one, a band "
+                    + "along the dock's edge, the whole dock when nothing is docked, or the window a panel would float "
+                    + "in. It is absent while nothing is dragged, and while a dragged tab or strip button is over a "
+                    + "strip, which is outlined instead, or over a place where a drop would change nothing."),
                 new("empty", "What shows when no panel is docked or in a window, as when every panel is closed or on "
                     + "a strip."),
             ],
@@ -3227,12 +3239,13 @@ public static class ExampleCatalog
                     + "your own context menu by its name, as in `ContextMenu(\"Trail actions\")`.",
                 "In Playwright, `SelectAsync`, `CloseAsync`, `ResizeAsync`, `MaximizeAsync`, `RestoreAsync`, "
                     + "`FloatAsync`, `DockAsync`, `MoveWindowAsync`, `ResizeWindowAsync`, `AutoHideAsync`, "
-                    + "`RevealAsync`, `ConcealAsync` and the move helpers wait until the app's `LayoutChanged` has "
-                    + "run and the focus has moved, which the dock counts in `data-commits` for everything but a "
-                    + "window coming forward and a panel sliding back because a press or the focus went elsewhere.",
-                "A dropped tab goes through the same move as the menu, with the same focus, announcement and "
-                    + "telemetry, and the move helpers reach every layout a drop can, some in two steps. bUnit has "
-                    + "no pointer, so it tests moves with the helpers.",
+                    + "`RevealAsync`, `ConcealAsync` and the move helpers wait until the app's `LayoutChanged` has run "
+                    + "and the focus has moved, which the dock counts in `data-commits` for everything but a window "
+                    + "coming forward and a panel sliding back because a press or the focus went elsewhere, or because "
+                    + "a strip's button was dragged.",
+                "A dropped tab or strip button goes through the same move as the menu, with the same focus, "
+                    + "announcement and telemetry, and the move helpers reach every layout a drop can, some in two "
+                    + "steps. bUnit has no pointer, so it tests moves with the helpers.",
                 "To test the drag itself in Playwright, press on the tab, move the mouse in a few steps and "
                     + "release, then wait for `data-commits` to go up. A drop where no mark shows changes nothing "
                     + "and leaves `data-commits` as it was.",
@@ -3252,6 +3265,8 @@ public static class ExampleCatalog
                     + "own arrow keys. A percent below 10 or above 90 throws in bUnit and fails in Playwright.",
                 "A window drags the same way: press on its Move button, its grip or the empty part of its row, "
                     + "move in a few steps and release, then wait for `data-commits` to go up by one.",
+                "So does a strip's button, into the dock or onto another strip, and a tab onto a strip: the strip "
+                    + "has `data-drop` while the drop would go to it, and the drop counts in `data-commits`.",
                 "A `DockLayout` needs no renderer: test what your app does with `Open`, `Close`, `Move`, `MoveToEdge`, "
                     + "`Float`, `FloatAt`, `MoveWindow`, `AutoHide`, `Conceal`, `ResizeAutoHidden`, `Maximize`, "
                     + "`Restore`, `ToJson` and `TryParse` in plain unit tests.",
@@ -3262,15 +3277,16 @@ public static class ExampleCatalog
             [
                 "With a `TelemetryName`, such as `\"hike-planner\"`, it counts `trailblazor.control.shown` as it first "
                     + "renders and `trailblazor.control.used` with the action `select` each time a person shows "
-                    + "another tab, `move` each time they move a panel, `close` each time they close one, `resize` "
-                    + "each time they move a separator, `maximize` each time they maximize a group, `restore` each "
-                    + "time they restore the groups, `float` each time they float a panel, from a menu or by dragging "
-                    + "its tab, and `dock` each time they dock one with Dock. A window coming to the front isn't "
-                    + "counted. `move_window` and `resize_window` count each time they move or resize a window, once "
-                    + "per drag, key press or menu step. `auto_hide` counts each time they put a panel away on a "
-                    + "strip, `reveal` each time they slide one out, and `resize_auto_hidden` each time they resize "
-                    + "one that is out, once per drag, key press or menu step; sliding back isn't counted. Panel ids, "
-                    + "titles and sizes are never recorded.",
+                    + "another tab, `move` each time they move a panel, including by dragging a strip's button into "
+                    + "the dock, `close` each time they close one, `resize` each time they move a separator, "
+                    + "`maximize` each time they maximize a group, `restore` each time they restore the groups, "
+                    + "`float` each time they float a panel, from a menu or by dragging its tab, and `dock` each time "
+                    + "they dock one with Dock. A window coming to the front isn't counted. `move_window` and "
+                    + "`resize_window` count each time they move or resize a window, once per drag, key press or menu "
+                    + "step. `auto_hide` counts each time they put a panel away on a strip, `reveal` each time they "
+                    + "slide one out, and `resize_auto_hidden` each time they resize one that is out, once per drag, "
+                    + "key press or menu step; sliding back isn't counted. Panel ids, titles and sizes are never "
+                    + "recorded.",
             ],
         },
         new("splitter", "Splitter", ExampleCategory.Layout,

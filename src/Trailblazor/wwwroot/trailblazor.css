@@ -7731,12 +7731,20 @@
         background: var(--tb-color-primary);
     }
 
-    .tb-dock__tab[data-dragging] {
+    :is(.tb-dock__tab, .tb-dock__strip-button)[data-dragging] {
         opacity: 0.5;
     }
 
+    /* The strip a dragged tab or button would go to is outlined, since the mark is drawn inside the dock's area. */
+    .tb-dock__strip[data-drop] {
+        outline: 2px solid var(--tb-color-primary);
+        outline-offset: -2px;
+    }
+
     .tb-dock[data-moving],
-    .tb-dock[data-moving] * {
+    .tb-dock[data-moving] *,
+    .tb-dock-frame:has(> .tb-dock[data-moving]) > .tb-dock__strip,
+    .tb-dock-frame:has(> .tb-dock[data-moving]) > .tb-dock__strip > * {
         cursor: grabbing;
     }
 
@@ -8011,6 +8019,10 @@
         .tb-dock__drop {
             border-color: Highlight;
             background: none;
+        }
+
+        .tb-dock__strip[data-drop] {
+            outline-color: Highlight;
         }
 
         .tb-dock__drop[data-show="line"] {

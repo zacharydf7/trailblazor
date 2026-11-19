@@ -573,6 +573,9 @@ export function attachDock(root, reporter) {
     const pulledOut = { along: 48, down: 16, size: 50 };
     let carried = null;
     let landing = null;
+    let slidBack = false;
+    // The strips lie around the dock's area, in the frame they share with it.
+    const strips = () => [...root.parentElement.children].filter(each => each.dataset.part === 'strip');
     const inside = (box, x, y) => x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
     const tabsOf = group => [...group.querySelectorAll('.tb-dock__tabs > .tb-dock__tab')];
     // The side of a box that a point is nearest, when it is within reach of it.
@@ -608,10 +611,17 @@ export function attachDock(root, reporter) {
             top: top + float.y / 100 * root.clientHeight, width: float.width / 100 * root.clientWidth,
             height: float.height / 100 * root.clientHeight } };
     };
-    // Where the carried tab's panel would land from a point: beside a target panel, along an edge of the dock when
-    // there is no target, or in a window of its own, with the box its mark takes. Null where a drop would change
-    // nothing.
+    // Where the carried tab's or strip button's panel would land from a point: on a strip, which has no mark, beside
+    // a target panel, along an edge of the dock when there is no target, or in a window of its own, with the box its
+    // mark takes. Null where a drop would change nothing.
     const landingAt = (x, y) => {
+        const strip = strips().find(each => inside(each.getBoundingClientRect(), x, y));
+        if (strip) {
+            // A strip takes the panel after its last button, unless it has the panel already.
+            const has = [...strip.children].some(button => button.dataset.panel === carried.dataset.panel);
+            return has ? null : { strip };
+        }
+
         const dock = root.getBoundingClientRect();
         const groups = parts('group');
         if (!inside(dock, x, y)) {
@@ -622,6 +632,11 @@ export function attachDock(root, reporter) {
         const over = [...groups, ...parts('panel').filter(panel => !panel.classList.contains('tb-dock__panel--hidden'))]
             .filter(part => inside(part.getBoundingClientRect(), x, y))
             .sort((a, b) => layerOf(b) - layerOf(a))[0];
+        // A slid-out panel covers the dock where it lies and takes no drop.
+        if (over?.hasAttribute('data-edge')) {
+            return null;
+        }
+
         // An edge would give the only docked panel the group it has.
         const docked = groups.filter(group => layerOf(group) < 0).flatMap(tabsOf);
         const edge = layerOf(over) < 0 && !(docked.length === 1 && docked[0] === carried)
@@ -629,6 +644,11 @@ export function attachDock(root, reporter) {
         if (edge) {
             // With nothing docked, the new group takes the whole dock.
             return { target: null, position: positionOn(edge), box: sideOf(dock, edge, docked.length ? 0.25 : 1) };
+        }
+
+        // With nothing docked, all of the dock's empty area takes the panel, as the one group.
+        if (!over && !docked.length) {
+            return { target: null, position: positionOn('left'), box: sideOf(dock, 'left', 1) };
         }
 
         const own = carried.closest('.tb-dock__group');
@@ -678,7 +698,11 @@ export function attachDock(root, reporter) {
             : { target: others.at(-1).dataset.panel, position: 'After', box: whole };
     };
     const showMark = () => {
-        if (!landing) {
+        for (const strip of strips()) {
+            strip.toggleAttribute('data-drop', strip === landing?.strip);
+        }
+
+        if (!landing?.box) {
             delete mark.dataset.show;
             return;
         }
@@ -699,32 +723,44 @@ export function attachDock(root, reporter) {
         delete root.dataset.moving;
         showMark();
     };
-    const tabDrag = createPointerDrag(root, {
-        itemSelector: '.tb-dock__tab',
-        ignoreSelector: '[data-part="close"]',
-        ownsPress: target => Boolean(ownPart(target, 'tab')),
+    const carrying = {
         scrolls: false,
-        onStart: tab => {
-            carried = tab;
-            tab.dataset.dragging = '';
+        onStart: item => {
+            carried = item;
+            item.dataset.dragging = '';
             // A panel's iframe would take the pointer as it crosses, so the panels let it through meanwhile.
             root.dataset.moving = '';
+            slidBack = false;
         },
         onMove: event => {
+            // A panel that is out would cover where a strip's button can go, so it slides back once the button moves.
+            // Waiting for a move keeps a slow tap a tap: a resting finger picks the button up without moving it.
+            if (!slidBack && carried.dataset.part === 'strip-button' && slidOut().length) {
+                slidBack = true;
+                callDotNet(reporter, 'OnConceal', false);
+            }
+
             landing = landingAt(event.clientX, event.clientY);
             showMark();
         },
         onDrop: () => {
             const [panel, to] = [carried.dataset.panel, landing];
             endCarry();
-            if (to?.float) {
+            if (to?.strip) {
+                callDotNet(reporter, 'OnAutoHide', panel, to.strip.dataset.edge);
+            } else if (to?.float) {
                 callDotNet(reporter, 'OnPullOut', panel, to.float.x, to.float.y, to.float.width, to.float.height);
             } else if (to) {
                 callDotNet(reporter, 'OnMove', panel, to.target, to.position);
             }
         },
         onCancel: endCarry,
-    });
+    };
+    const tabDrag = createPointerDrag(root, { ...carrying, itemSelector: '.tb-dock__tab',
+        ignoreSelector: '[data-part="close"]', ownsPress: target => Boolean(ownPart(target, 'tab')) });
+    // A strip's button drags as a tab does: into the dock, to where the mark shows, or onto another strip.
+    const stripDrag = createPointerDrag(root.parentElement, { ...carrying, itemSelector: '[data-part="strip-button"]',
+        ownsPress: target => target.closest('[data-part="strip"]')?.parentElement === root.parentElement });
 
     // The tab menu that last opened and what held the focus then. The menu gives the focus back a moment after it
     // closes, and in WebAssembly the dock asks who holds the focus before that, so until the menu has closed this is
@@ -876,6 +912,7 @@ export function attachDock(root, reporter) {
             root.removeEventListener('toggle', onMenuToggled, { capture: true });
             grips.dispose();
             tabDrag.dispose();
+            stripDrag.dispose();
         },
     };
 }
