@@ -510,16 +510,67 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
-    public async Task OnKey_ShouldOpenAndCloseARowWithChildrenAndActivateIt_WhenEnterIsPressed()
+    public async Task OnKey_ShouldOpenAndCloseARowWithChildren_WhenEnterIsPressedInATreeWithNoOnActivate()
     {
-        var cut = RenderPlaces(Nested);
+        var cut = RenderPlaces(Nested, activates: false);
 
         await cut.InvokeAsync(() => Events().OnKey("4", "Enter", false, false));
         Assert.Equal("true", Row(cut, "4").GetAttribute("aria-expanded"));
         await cut.InvokeAsync(() => Events().OnKey("4", "Enter", false, false));
 
         Assert.Equal("false", Row(cut, "4").GetAttribute("aria-expanded"));
-        Assert.Equal(["South", "South"], _activated);
+        Assert.Equal([4], _selectedChanges[^1]);
+    }
+
+    [Fact]
+    public async Task Activate_ShouldLeaveTheRowAsItIs_WhenEnterOrADoubleClickRunsAnOnActivateThatWaits()
+    {
+        // The app's handler waits, as one that opens a dialog does, and the row was open before it.
+        var answer = new TaskCompletionSource();
+        var cut = RenderPlaces(Nested, onActivate: async place =>
+        {
+            _activated.Add(place.Name);
+            await answer.Task;
+        });
+        Toggle(cut, "1");
+        var changes = _expandedChanges.Count;
+
+        var enter = cut.InvokeAsync(() => Events().OnKey("1", "Enter", false, false));
+        var doubleClick = Row(cut, "1").DoubleClickAsync(new());
+        answer.SetResult();
+        await enter;
+        await doubleClick;
+
+        Assert.Equal(["North", "North"], _activated);
+        Assert.Equal("true", Row(cut, "1").GetAttribute("aria-expanded"));
+        Assert.Equal(changes, _expandedChanges.Count);
+    }
+
+    [Fact]
+    public async Task OnKey_ShouldOpenAParentRowThatCantBeSelectedBeforeItsOnActivateRuns_WhenEnterIsPressed()
+    {
+        var answer = new TaskCompletionSource();
+        IRenderedComponent<TbTreeView<Place, int>>? tree = null;
+        var cut = tree = RenderPlaces(Nested,
+            parameters => parameters.Add(places => places.SelectionMode, SelectionMode.None), onActivate: async place =>
+            {
+                _activated.Add($"{place.Name} while {Row(tree!, "1").GetAttribute("aria-expanded")}");
+                await answer.Task;
+            });
+
+        var enter = cut.InvokeAsync(() => Events().OnKey("1", "Enter", false, false));
+        answer.SetResult();
+        await enter;
+
+        // A click opens such a row, so Enter does too, and it has opened by the time the app hears of it.
+        Assert.Equal(["North while true"], _activated);
+        Assert.Equal("true", Row(cut, "1").GetAttribute("aria-expanded"));
+        Assert.Single(_expandedChanges);
+
+        await cut.InvokeAsync(() => Events().OnKey("1", "Enter", false, false));
+
+        Assert.Equal(["North while true", "North while false"], _activated);
+        Assert.Equal("false", Row(cut, "1").GetAttribute("aria-expanded"));
     }
 
     [Fact]
@@ -573,30 +624,45 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
-    public void DoubleClick_ShouldOpenAndActivateARowWithChildrenButOnlyActivateALeaf_WhenEachIsDoubleClicked()
+    public void DoubleClick_ShouldOpenARowWithChildrenAndLeaveALeaf_WhenTheTreeHasNoOnActivate()
     {
-        var cut = RenderPlaces(Nested);
+        var cut = RenderPlaces(Nested, activates: false);
 
         Row(cut, "1").DoubleClick();
         Row(cut, "6").DoubleClick();
 
         Assert.Equal("true", Row(cut, "1").GetAttribute("aria-expanded"));
         Assert.DoesNotContain(_expandedChanges, keys => keys.Contains(6));
-        Assert.Equal(["North", "Pass"], _activated);
     }
 
     [Fact]
-    public async Task OnKey_ShouldSelectAndActivateTheRowAtOnce_WhenEnterOpensChildrenThatAreStillLoading()
+    public void DoubleClick_ShouldActivateARowWithoutOpeningOrClosingIt_WhenTheTreeHasAnOnActivate()
     {
+        var cut = RenderPlaces(Nested);
+
+        Row(cut, "4").DoubleClick();
+        Toggle(cut, "1");
+        Row(cut, "1").DoubleClick();
+        Row(cut, "6").DoubleClick();
+
+        Assert.Equal("false", Row(cut, "4").GetAttribute("aria-expanded"));
+        Assert.Equal("true", Row(cut, "1").GetAttribute("aria-expanded"));
+        Assert.Equal(["South", "North", "Pass"], _activated);
+    }
+
+    [Fact]
+    public async Task OnKey_ShouldActivateTheRowAtOnce_WhenEnterOpensChildrenThatAreStillLoading()
+    {
+        // The row can't be selected, so Enter opens it even though the tree has an OnActivate.
         var load = new TaskCompletionSource<IEnumerable<Place>>();
         var cut = RenderPlaces([new(1, "North")], parameters => parameters
+            .Add(tree => tree.SelectionMode, SelectionMode.None)
             .Add(tree => tree.LoadChildren, (_, _) => load.Task), nested: false);
 
         var enter = cut.InvokeAsync(() => Events().OnKey("1", "Enter", false, false));
 
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll("[data-part=loading]")));
         Assert.Equal(["North"], _activated);
-        Assert.Equal([1], _selectedChanges.Single());
         await cut.InvokeAsync(() => load.SetResult([]));
         await enter;
     }
@@ -1123,10 +1189,22 @@ public class TbTreeViewTests : BunitContext
     }
 
     // Nested places give their own children; the others come as a flat list or load lazily.
+    // The tree notes each activated place's name, unless a test passes its own onActivate, or turns activates off
+    // for a tree with no OnActivate.
     private IRenderedComponent<TbTreeView<Place, int>> RenderPlaces(IReadOnlyList<Place> items,
-        Action<ComponentParameterCollectionBuilder<TbTreeView<Place, int>>>? configure = null, bool nested = true) =>
+        Action<ComponentParameterCollectionBuilder<TbTreeView<Place, int>>>? configure = null, bool nested = true,
+        bool activates = true, Func<Place, Task>? onActivate = null) =>
         Render<TbTreeView<Place, int>>(parameters =>
         {
+            if (onActivate is not null)
+            {
+                parameters.Add(tree => tree.OnActivate, onActivate);
+            }
+            else if (activates)
+            {
+                parameters.Add(tree => tree.OnActivate, (Place place) => _activated.Add(place.Name));
+            }
+
             if (nested)
             {
                 parameters.Add(tree => tree.ChildrenSelector, place => place.Children);
@@ -1136,8 +1214,7 @@ public class TbTreeViewTests : BunitContext
                 .Add(tree => tree.AriaLabel, "Places")
                 .Add(tree => tree.ExpandedKeysChanged, (IReadOnlyCollection<int> keys) => _expandedChanges.Add(keys))
                 .Add(tree => tree.SelectedKeysChanged, (IReadOnlyCollection<int> keys) => _selectedChanges.Add(keys))
-                .Add(tree => tree.CheckedKeysChanged, (IReadOnlyCollection<int> keys) => _checkedChanges.Add(keys))
-                .Add(tree => tree.OnActivate, (Place place) => _activated.Add(place.Name));
+                .Add(tree => tree.CheckedKeysChanged, (IReadOnlyCollection<int> keys) => _checkedChanges.Add(keys));
             configure?.Invoke(parameters);
         });
 }

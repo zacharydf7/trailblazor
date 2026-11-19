@@ -31,16 +31,43 @@ public class TreeViewTests(BrowserFixture fixture) : TreeViewKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Row_ShouldOpenAndCloseAndBeActivated_WhenARowWithChildrenIsDoubleClicked(string browser)
+    public async Task Row_ShouldOpenAndClose_WhenARowWithChildrenIsDoubleClickedInATreeWithNoOnActivate(string browser)
     {
         var page = await OpenTreeAsync(browser);
+        var north = Row(page, "North", "Outline");
 
-        await Row(page, "North").DblClickAsync();
-        await Expect(Row(page, "North")).ToHaveAttributeAsync("aria-expanded", "true");
-        await Expect(page.GetByTestId("activated")).ToHaveTextAsync("North");
-        await Row(page, "North").DblClickAsync();
+        await north.DblClickAsync();
+        await Expect(north).ToHaveAttributeAsync("aria-expanded", "true");
+        await north.DblClickAsync();
 
-        await Expect(Row(page, "North")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(north).ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Row_ShouldStayAsItIs_WhenItsOnActivateOpensADialogThatIsCanceled(string browser)
+    {
+        var page = await OpenTreeAsync(browser);
+        var north = Row(page, "North", "Editable");
+        var cancel = page.GetByRole(AriaRole.Alertdialog, new() { Name = "Edit North" })
+            .GetByRole(AriaRole.Button, new() { Name = "Cancel" });
+        await north.Locator("[data-part=toggle]").ClickAsync();
+        await Expect(north).ToHaveAttributeAsync("aria-expanded", "true");
+
+        // The dialog keeps the app's handler waiting, and the row is the same before and after its answer.
+        await north.DblClickAsync();
+        await Expect(cancel).ToBeVisibleAsync();
+        await Expect(north).ToHaveAttributeAsync("aria-expanded", "true");
+        await cancel.ClickAsync();
+        await Expect(cancel).ToBeHiddenAsync();
+        await Expect(north).ToHaveAttributeAsync("aria-expanded", "true");
+
+        await north.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(cancel).ToBeVisibleAsync();
+        await cancel.ClickAsync();
+        await Expect(cancel).ToBeHiddenAsync();
+        await Expect(north).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(Row(page, "Ridge", "Editable")).ToBeVisibleAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

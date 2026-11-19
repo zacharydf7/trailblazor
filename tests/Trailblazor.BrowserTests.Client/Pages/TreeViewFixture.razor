@@ -1,4 +1,5 @@
 @page "/tree-view"
+@inject IDialogService Dialogs
 
 <TbStack Gap="4" Style="max-inline-size: 28rem">
     <TbButton>Before</TbButton>
@@ -30,6 +31,9 @@
                 SelectedKeysChanged="SlowSelectAsync" CheckedKeys="_slowChecked" CheckedKeysChanged="SlowCheckAsync"
                 ExpandedKeysChanged="SlowExpandAsync" OnActivate="SlowActivateAsync" OnMove="SlowMoveAsync" />
     <output data-testid="slow">@_slow</output>
+    @* An OnActivate that waits for the user, as one that opens an editor does. *@
+    <TbTreeView TItem="Place" TKey="int" AriaLabel="Editable" Items="Places" KeySelector="place => place.Id"
+                ChildrenSelector="place => place.Children" OnActivate="EditAsync" />
 </TbStack>
 
 @code {
@@ -55,6 +59,8 @@
     private string? _slow;
 
     private void Activate(Place place) => _activated = place.Name;
+
+    private Task EditAsync(Place place) => Dialogs.ConfirmAsync($"Edit {place.Name}", "Change this place?");
 
     // Slow enough for a test to see the loading row.
     private static async Task<IEnumerable<Place>> LoadAsync(Place place, CancellationToken token)

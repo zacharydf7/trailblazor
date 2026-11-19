@@ -10461,8 +10461,9 @@ public static class ExampleCatalog
                 new(["*"], "Opens the row's siblings.") { When = "Moving around" },
                 new(["A letter"], "Finds a row by its text. Pressed again quickly, it moves to the next row that "
                     + "starts with that letter.") { When = "Moving around" },
-                new(["Enter"], "Selects and activates the row and, like a double-click, opens or closes it if it has "
-                    + "children. On a failed row, tries again.") { When = "Selecting" },
+                new(["Enter"], "Selects the row and, like a double-click, activates it. It also opens or closes a "
+                    + "row with children when the tree has no `OnActivate` or the row can't be selected. On a failed "
+                    + "row, tries again.") { When = "Selecting" },
                 new(["Space"], "Selects the row, or checks it in a `Checkable` tree. In a `Multiple` tree, selects or "
                     + "unselects it.") { When = "Selecting" },
                 new(["Shift+Up", "Shift+Down", "Shift+Home", "Shift+End", "Shift+Space"], "Extends a `Multiple` "
@@ -10532,6 +10533,10 @@ public static class ExampleCatalog
             [
                 new("After changing `Items` in place, call `RefreshAsync`. A new collection, or an `OnMove`, builds the "
                     + "rows again by itself.") { Pitfall = true },
+                new("With an `OnActivate`, Enter and a double-click run it and leave a row that can be selected as it "
+                    + "is, so the handler can wait for the user, such as in a dialog. The chevron and the arrow keys "
+                    + "still open and close the row. A parent row that can't be selected still opens or closes on "
+                    + "Enter."),
                 new("With `Items`, choosing, opening or checking a row draws again only the rows that change, even "
                     + "when the page binds `SelectedKeys`, so a long tree stays quick without `Virtualize`. Every row "
                     + "draws again when `RefreshAsync` runs, when the items or a tree-wide setting such as `Classes` "

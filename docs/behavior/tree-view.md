@@ -11,7 +11,9 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 - [x] Home and End go to the first and last visible rows, rendered or not. `TreeVirtualizeTests.Tree_ShouldReachRowsThatArentRendered_WhenEndHomeAndTypingMoveFocus`
 - [x] Typing moves to the next visible row that starts with the letters, unless `TypeAhead` is off. `TreeVirtualizeTests.Tree_ShouldReachRowsThatArentRendered_WhenEndHomeAndTypingMoveFocus`, `TreeViewTests.Tree_ShouldLeaveALetterToThePage_WhenTypeAheadIsOff`
 - [x] `*` opens the row's siblings. `TbTreeViewTests.Keys_ShouldOpenCloseActivateAndCheck_WhenTheBrowserReportsThem`
-- [x] Enter selects and activates the row, and opens or closes one with children. `TbTreeViewTests.OnKey_ShouldOpenAndCloseARowWithChildrenAndActivateIt_WhenEnterIsPressed`, `TbTreeView.cs`
+- [x] Enter selects and activates the row. It also opens or closes a row with children when the tree has no `OnActivate` or the row can't be selected. `TbTreeViewTests.Keys_ShouldOpenCloseActivateAndCheck_WhenTheBrowserReportsThem`, `TbTreeViewTests.OnKey_ShouldOpenAndCloseARowWithChildren_WhenEnterIsPressedInATreeWithNoOnActivate`
+- [x] In a tree with an `OnActivate`, Enter and a double-click leave a row that can be selected as it is, however long the app's handler waits, such as on a dialog. `TbTreeViewTests.Activate_ShouldLeaveTheRowAsItIs_WhenEnterOrADoubleClickRunsAnOnActivateThatWaits`, `TreeViewTests.Row_ShouldStayAsItIs_WhenItsOnActivateOpensADialogThatIsCanceled`
+- [x] Enter opens or closes a parent row that a click opens and closes, even in a tree with an `OnActivate`. A row that opens has opened by the time the handler runs, and the handler doesn't wait for its children to load. `TbTreeViewTests.OnKey_ShouldOpenAParentRowThatCantBeSelectedBeforeItsOnActivateRuns_WhenEnterIsPressed`, `TbTreeViewTests.OnKey_ShouldActivateTheRowAtOnce_WhenEnterOpensChildrenThatAreStillLoading`
 - [x] Space selects the row, toggles it in multiple selection, or checks it in a checkable tree. `TbTreeView.cs`, `TreeViewTests.Space_ShouldCheckTheRowAndMarkItsParentMixed_WhenTheTreeIsCheckable`
 - [x] With `SelectionFollowsFocus`, the keys select each row they reach, and Ctrl with a key moves focus alone. `TreeViewTests.Tree_ShouldSelectEachRowTheArrowsReachButNotWithCtrl_WhenSelectionFollowsFocus`
 - [x] Shift+Up and Shift+Down extend a selection from the row last chosen. `TreeViewTests.ShiftArrows_ShouldExtendTheSelection_WhenTheTreeTakesSeveral`
@@ -29,7 +31,7 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 
 - [x] Clicking a row selects it, and clicking its chevron opens or closes it without selecting. `TreeViewTests.Mouse_ShouldSelectOnClickAndActivateOnDoubleClick_WhenUsed`
 - [x] Ctrl+click adds or removes a row, and Shift+click selects a range. `TbTreeViewTests.Click_ShouldAddWithCtrlAndRangeWithShift_WhenTheModeIsMultiple`
-- [x] Double-clicking a row with children opens or closes it and activates it, and double-clicking a leaf activates it. `TreeViewTests.Row_ShouldOpenAndCloseAndBeActivated_WhenARowWithChildrenIsDoubleClicked`, `TbTreeViewTests.DoubleClick_ShouldOpenAndActivateARowWithChildrenButOnlyActivateALeaf_WhenEachIsDoubleClicked`
+- [x] Double-clicking a row activates it. In a tree with no `OnActivate`, it also opens or closes a row with children. `TbTreeViewTests.DoubleClick_ShouldActivateARowWithoutOpeningOrClosingIt_WhenTheTreeHasAnOnActivate`, `TbTreeViewTests.DoubleClick_ShouldOpenARowWithChildrenAndLeaveALeaf_WhenTheTreeHasNoOnActivate`, `TreeViewTests.Row_ShouldOpenAndClose_WhenARowWithChildrenIsDoubleClickedInATreeWithNoOnActivate`
 - [x] Double-clicking or Shift+clicking a row doesn't highlight its text. `TreeViewTests.Rows_ShouldHighlightNoText_WhenDoubleClickedOrShiftClicked`
 - [x] Clicking a parent row that can't be selected opens or closes it, rather than doing nothing, and a double-click toggles it once. A disabled row stays as it is. `TbTreeViewTests.Click_ShouldOpenAndCloseAParentRow_WhenTheRowCantBeSelected`, `TbTreeViewTests.Click_ShouldLeaveADisabledParentRowClosed_WhenTheRowCantBeSelected`, `TbTreeViewTests.DoubleClick_ShouldOpenAParentRowThatCantBeSelectedOnce_WhenItsClicksComeFirst`
 - [x] Clicks and keys in a row's end slot stay with its controls. `TreeViewTests.EndSlot_ShouldKeepItsClicksFromTheRow_WhenAButtonInItIsPressed`, `tree-view.js`
@@ -49,7 +51,7 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 - [x] Tapping a row selects it, even on the hidden edge of an insert slot. `TreeReorderTests.Tree_ShouldSelectTheRowAndAddNothing_WhenAHiddenSlotsEdgeIsTappedOnATouchScreen`
 - [x] A slow tap, where the finger rests on a row past the moment that picks it up and lifts without moving, still selects the row and moves nothing. `TreeReorderTests.Tree_ShouldSelectARowAndMoveNothing_WhenAFingerRestsOnItForAMomentBeforeLifting`
 - [x] A finger held still starts a drag and a swipe scrolls, through pointer events. `pointer-drag.js`, `TreeReorderTests.Tree_ShouldLetTheNextKeyAndClickThrough_WhenATouchDragEndsWithoutAClick`
-- [ ] Double-tapping a row opens and activates it. UNCONFIRMED
+- [ ] Double-tapping a row activates it, and in a tree with no `OnActivate` also opens or closes a row with children. UNCONFIRMED
 - [ ] A long press starts a drag without the system's own menu getting in the way. UNCONFIRMED
 
 ## Focus

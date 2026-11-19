@@ -222,8 +222,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public EventCallback<IReadOnlyCollection<TKey>> SelectedKeysChanged { get; set; }
 
-    /// <summary>Raised when a row is activated with Enter or a double-click. Either one also opens or closes a row with
-    /// children.</summary>
+    /// <summary>Raised when a row is activated with Enter or a double-click. With a handler, neither one opens or
+    /// closes a row that can be selected, so the handler can wait for the user, such as in a dialog. Without one,
+    /// either opens or closes a row with children.</summary>
     [Parameter]
     public EventCallback<TItem> OnActivate { get; set; }
 
@@ -1223,8 +1224,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
                 break;
             case "Enter":
                 await SelectAsync(node, shift: false, toggle: false);
-                await ActivateAsync(node);
-                await ToggleIfParentAsync(node);
+                await ToggleAndActivateAsync(node, mayToggle: true);
                 break;
             case " " when Checkable:
                 await ToggleCheckAsync(node);
@@ -1469,15 +1469,18 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     {
         if (!Disabled)
         {
-            await ActivateAsync(node);
-            if (!TogglesOnClick(node))
-            {
-                await ToggleIfParentAsync(node);
-            }
+            await ToggleAndActivateAsync(node, mayToggle: !TogglesOnClick(node));
         }
     }
 
-    private Task ToggleIfParentAsync(TreeNode<TItem> node) => node.HasChildren ? ToggleAsync(node) : Task.CompletedTask;
+    // With an OnActivate, a row that can be selected is left as it is. Any toggle starts before the handler, which
+    // may wait on a dialog: a toggle after it would go by whether the row was open once the dialog closed. The
+    // handler doesn't wait for the row's children to load.
+    private Task ToggleAndActivateAsync(TreeNode<TItem> node, bool mayToggle)
+    {
+        var toggles = mayToggle && node.HasChildren && !(OnActivate.HasDelegate && CanSelect(node));
+        return Task.WhenAll(toggles ? ToggleAsync(node) : Task.CompletedTask, ActivateAsync(node));
+    }
 
     private async Task ToggleAsync(TreeNode<TItem> node)
     {

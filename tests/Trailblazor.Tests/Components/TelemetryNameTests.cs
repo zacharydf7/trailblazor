@@ -621,11 +621,13 @@ public class TelemetryNameTests : BunitContext
         TreeRow(cut, "4").DoubleClick();
         await cut.Find(".tb-tree").TriggerEventAsync("ontbtreedrop",
             new TreeDropEventArgs { Rows = ["4"], Target = "1", Position = TreeMovePosition.Before });
-        await cut.InvokeAsync(() => cut.Instance.ExpandAsync(4));
+        await cut.InvokeAsync(() => cut.Instance.CollapseAsync(4));
         await cut.InvokeAsync(() => cut.Instance.SelectAsync(1));
 
         Assert.Equal(["places"], Names(_shown));
-        Assert.Equal(["expand", "collapse", "select", "expand", "check", "activate", "collapse", "move"],
+        // The double-click only activates South, since the tree has an OnActivate, so South is still open when the
+        // code closes it, which isn't counted.
+        Assert.Equal(["expand", "collapse", "select", "expand", "check", "activate", "move"],
             Uses().Select(use => use.Action));
     }
 
