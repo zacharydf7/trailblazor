@@ -388,6 +388,9 @@ public abstract class DockManagerPage(BrowserFixture fixture) : BrowserTest(fixt
     protected static ILocator Separator(IPage page, string name) =>
         page.Locator(".tb-dock").GetByRole(AriaRole.Separator, new() { Name = name, Exact = true });
 
+    protected static ILocator StripButton(IPage page, string title) => page.Locator("[data-part=strip-button]")
+        .And(page.GetByRole(AriaRole.Button, new() { Name = title, Exact = true }));
+
     // Does something the dock counts as one finished action, and waits for the count.
     protected static async Task ChangeAsync(IPage page, Func<Task> act)
     {

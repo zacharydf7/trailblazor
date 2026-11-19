@@ -259,7 +259,10 @@ public class DockManagerWindowTests(BrowserFixture fixture) : DockManagerPage(fi
     {
         var page = await OpenDockAsync(browser, "?layout=strips");
         var dock = page.Tb().Dock();
-        await dock.RevealAsync("Gear");
+        // The panel slides out by a key: in keyboard mode, :focus-visible matches after focus from a script.
+        await StripButton(page, "Gear").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(Tab(page, "Gear")).ToBeFocusedAsync();
         var row = page.Locator(".tb-dock__group--revealed");
         var edge = page.GetByRole(AriaRole.Separator, new() { Name = "Resize Gear", Exact = true });
         var area = (await page.Locator(".tb-dock").BoundingBoxAsync())!;

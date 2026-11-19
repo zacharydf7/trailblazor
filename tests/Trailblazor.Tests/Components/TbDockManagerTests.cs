@@ -1875,6 +1875,12 @@ public class TbDockManagerTests : BunitContext
 
         Assert.Equal((40, 60, 2), (dock.Size("Resize Trails"), dock.Size("Resize Notes"), changes));
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => dock.ResizeAsync("Resize Trails", 100));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => dock.ResizeAsync("Resize Trails", 0));
+        // A separator between groups reaches 1% and 99%; a slid-out panel's edge stops sooner.
+        await dock.ResizeAsync("Resize Trails", 1);
+        Assert.Equal(1, dock.Size("Resize Trails"));
+        await dock.ResizeAsync("Resize Trails", 99);
+        Assert.Equal(99, dock.Size("Resize Trails"));
         Assert.Equal("No separator is named \"Resize Map\".",
             Assert.Throws<InvalidOperationException>(() => dock.Size("Resize Map")).Message);
     }

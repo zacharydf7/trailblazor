@@ -365,7 +365,4 @@ public class DockManagerAutoHideTests(BrowserFixture fixture) : DockManagerPage(
                 .ToHaveCSSAsync("opacity", "1");
         }
     }
-
-    private static ILocator StripButton(IPage page, string title) => page.Locator("[data-part=strip-button]")
-        .And(page.GetByRole(AriaRole.Button, new() { Name = title, Exact = true }));
 }
