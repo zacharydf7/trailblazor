@@ -3022,6 +3022,11 @@ public static class ExampleCatalog
                     + "2.5.7). The grip shows while the pointer is on the separator, and always where the main "
                     + "pointer is a finger, as on a phone or a tablet.",
                 "A separator's grip stays out of the tab order, since the separator's keys do the same as its menu.",
+                "A step that has nowhere left to go shows as disabled (`aria-disabled`) when its menu opens, so the "
+                    + "limit is known before the step is chosen: Larger or Smaller for a separator or a slid-out "
+                    + "panel's edge at its limit, and a window's steps toward an edge of the dock it is already "
+                    + "against, or that would make it smaller than the smallest it may be. A step that can go part "
+                    + "of the way stays on and goes that far.",
                 "Tabs, close marks, menu buttons, the Restore button, a window's Move button and the grips work "
                     + "with a tap, and each is at least a 24px target.",
                 "In forced colors, the showing tab's line, a focused separator, the mark for a dragged tab, the "
@@ -3236,6 +3241,10 @@ public static class ExampleCatalog
                     + "box, in percent of the dock. They throw an `InvalidOperationException` for a panel that "
                     + "isn't in a window. bUnit has no pixels and no direction, so it doesn't apply `MinGroupSize` "
                     + "and takes text to run left to right.",
+                "The items of the grips' menus and of a window's two menus carry `data-step`. The dock's script "
+                    + "marks a step that has nowhere left to go with `aria-disabled=\"true\"` when its menu opens, and "
+                    + "`page.Tb().Menu(\"Size of Notes\").ChooseAsync(...)` throws an `InvalidOperationException` "
+                    + "for it, as for any disabled item. bUnit doesn't run the script, so there every step stays on.",
                 "`ChooseFromTabMenuAsync(\"Notes\", \"Close\")` opens the menu of a panel's tab, as a right-click "
                     + "does, and clicks an item in it, through the submenus named before it, as in "
                     + "`ChooseFromTabMenuAsync(\"Notes\", \"Move to group\", \"Group 2: Map\")`. It acts on that "

@@ -94,8 +94,8 @@ public class DockManagerMoveTests(BrowserFixture fixture) : DockManagerPage(fixt
         await Expect(Separator(page, "Resize Notes")).ToHaveAttributeAsync("aria-valuenow", "65");
         await Expect(page.GetByTestId("layout")).ToContainTextAsync("\"size\":1.4");
 
-        // The steps stop where the keys do: 64 pixels is a little over 8% of the width.
-        for (var step = 0; step < 4; step++)
+        // The third step stops where the keys do: 64 pixels is a little over 8% of the width.
+        for (var step = 0; step < 3; step++)
         {
             await dock.Tb().Menu("Size of Trails").ChooseAsync("Make Trails smaller");
         }

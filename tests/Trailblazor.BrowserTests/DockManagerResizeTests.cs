@@ -223,10 +223,6 @@ public class DockManagerResizeTests(BrowserFixture fixture) : DockManagerPage(fi
         await Expect(map).Not.ToHaveAttributeAsync("aria-valuemin", before.ToString(CultureInfo.InvariantCulture));
     }
 
-    // Gives the box around the dock another width, as a page's layout would.
-    private static Task NarrowAsync(IPage page, string width) => page.Locator(".tb-dock-frame").EvaluateAsync(
-        "(frame, width) => frame.parentElement.style.inlineSize = width", width);
-
     private static async Task<int> LimitAsync(ILocator separator, string attribute) =>
         int.Parse((await separator.GetAttributeAsync(attribute))!, CultureInfo.InvariantCulture);
 

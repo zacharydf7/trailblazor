@@ -197,16 +197,19 @@ export function attachDock(root, reporter) {
         return { start, length, before, after, others, low: before[start] + floor(before),
             high: after[start] + after[length] - floor(after) };
     };
+    // Where an edge that is sent to a place ends up: as near as its reach lets it, or null when nothing can move.
+    const withinReach = ({ low, high }, to) => low <= high ? Math.min(Math.max(to, low), high) : null;
     // Moves a separator's edge to a place along its split, in percent of the dock, as far as it can go. Everything
     // inside the two parts keeps its share of its part. Gives the share the part before has of the two, or null when
     // nothing can move.
     const moveTo = (separator, to) => {
-        const { start, length, before, after, others, low, high } = reachOf(separator);
-        if (!(low <= high)) {
+        const reach = reachOf(separator);
+        const { start, length, before, after, others } = reach;
+        const edge = withinReach(reach, to);
+        if (edge === null) {
             return null;
         }
 
-        const edge = Math.min(Math.max(to, low), high);
         const parts = [
             [before, { ...before, [length]: edge - before[start] }],
             [after, { ...after, [start]: edge, [length]: after[start] + after[length] - edge }],
@@ -308,12 +311,18 @@ export function attachDock(root, reporter) {
             reports);
     };
     // Left and Right are sides of the screen, while a window's box counts from the side where text starts.
-    const stepWindow = (row, step, percent) => {
+    const windowStep = (row, step, percent) => {
         const [dx, dy] = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1], wider: [1, 0], narrower: [-1, 0],
             taller: [0, 1], shorter: [0, -1] }[step];
         const resize = ['wider', 'narrower', 'taller', 'shorter'].includes(step);
         const sideways = (step === 'left' || step === 'right') && isRtl() ? -dx : dx;
-        const box = changed(boxOf(row), sideways * percent, dy * percent, resize);
+        const start = boxOf(row);
+        const side = resize ? (dx ? 'width' : 'height') : (dx ? 'x' : 'y');
+        return { resize, side, asked: start[side] + (dx ? sideways : dy) * percent,
+            box: changed(start, sideways * percent, dy * percent, resize) };
+    };
+    const stepWindow = (row, step, percent) => {
+        const { resize, box } = windowStep(row, step, percent);
         placeWindow(row, box);
         reportWindow(row, box, resize);
     };
@@ -362,6 +371,51 @@ export function attachDock(root, reporter) {
         for (const edge of parts('slide-separator')) {
             const now = Number(edge.getAttribute('aria-valuenow'));
             edge.setAttribute('aria-valuemin', String(Math.min(Math.round(smallest(edge.dataset.edge)), now)));
+        }
+    };
+    // A step that can't go the way it says gets aria-disabled when its menu opens, and a click on it is stopped. The
+    // script does it, since the limits follow from the dock's size in pixels and from which way the text runs.
+    const stepMenus = '.tb-dock__grip, .tb-dock__slide-grip, .tb-dock__window-move, .tb-dock__window-grip';
+    const stepMenuOf = element => {
+        const holder = element.closest?.(stepMenus);
+        return holder?.closest('.tb-dock') === root ? holder : null;
+    };
+    // Whether a value that was asked to go toward another got anywhere that way. A value that a smaller dock has left
+    // past a limit can only come back, which is the other way.
+    const went = (from, toward, reached) => (reached - from) * Math.sign(toward - from) >= 0.01;
+    const stepMoves = (holder, step) => {
+        const by = step === 'larger' ? 10 : -10;
+        if (holder.dataset.part === 'grip') {
+            const separator = parts('separator').find(each => each.dataset.index === holder.dataset.index);
+            const to = stepped(separator, by);
+            const edge = withinReach(reachOf(separator), to);
+            return edge !== null && went(edgeOf(separator), to, edge);
+        }
+
+        if (holder.dataset.part === 'slide-grip') {
+            const row = slideRow();
+            const start = boxOf(row);
+            const side = upright(row.dataset.edge) ? 'width' : 'height';
+            return went(start[side], start[side] + by, slid(start, row.dataset.edge, by)[side]);
+        }
+
+        const row = holder.dataset.part === 'window-grip' ? rowOf(holder.dataset.group) : ownPart(holder, 'group');
+        const { side, asked, box } = windowStep(row, step, 10);
+        return went(boxOf(row)[side], asked, box[side]);
+    };
+    const markSteps = menu => {
+        const holder = stepMenuOf(menu);
+        for (const item of holder ? menu.querySelectorAll('[data-step]') : []) {
+            if (stepMoves(holder, item.dataset.step)) {
+                item.removeAttribute('aria-disabled');
+            } else {
+                item.setAttribute('aria-disabled', 'true');
+            }
+        }
+    };
+    const onStepClick = event => {
+        if (stepMenuOf(event.target) && event.target.closest('[data-step][aria-disabled="true"]')) {
+            event.stopPropagation();
         }
     };
     // The limits change when a separator's sides or its value do, when the slid-out panel's edge changes, when the
@@ -809,7 +863,12 @@ export function attachDock(root, reporter) {
         menu.matches('.tb-dock__tab-area > [role="menu"]') && menu.closest('.tb-dock') === root;
     // A finger resting longer than a pickup opens the tab's menu, which takes the press from the drag.
     const onMenuOpening = event => {
-        if (event.newState === 'open' && ownTabMenu(event.target)) {
+        if (event.newState !== 'open') {
+            return;
+        }
+
+        markSteps(event.target);
+        if (ownTabMenu(event.target)) {
             beforeMenu = { menu: event.target, holder: document.activeElement };
             tabDrag.cancel();
         }
@@ -872,6 +931,7 @@ export function attachDock(root, reporter) {
     root.addEventListener('mousedown', onMouseDown);
     root.addEventListener('auxclick', onAuxClick);
     root.addEventListener('click', onClick);
+    root.addEventListener('click', onStepClick, { capture: true });
     root.addEventListener('keydown', onRevealedKey);
     root.addEventListener('keydown', onSlideKey);
     document.addEventListener('pointerdown', onElsewhere, { capture: true });
@@ -942,6 +1002,7 @@ export function attachDock(root, reporter) {
             root.removeEventListener('mousedown', onMouseDown);
             root.removeEventListener('auxclick', onAuxClick);
             root.removeEventListener('click', onClick);
+            root.removeEventListener('click', onStepClick, { capture: true });
             root.removeEventListener('keydown', onRevealedKey);
             root.removeEventListener('keydown', onSlideKey);
             document.removeEventListener('pointerdown', onElsewhere, { capture: true });

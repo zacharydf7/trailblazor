@@ -391,6 +391,10 @@ public abstract class DockManagerPage(BrowserFixture fixture) : BrowserTest(fixt
     protected static ILocator StripButton(IPage page, string title) => page.Locator("[data-part=strip-button]")
         .And(page.GetByRole(AriaRole.Button, new() { Name = title, Exact = true }));
 
+    // Gives the box around the dock another width, as a page's layout would.
+    protected static Task NarrowAsync(IPage page, string width) => page.Locator(".tb-dock-frame").EvaluateAsync(
+        "(frame, width) => frame.parentElement.style.inlineSize = width", width);
+
     // Does something the dock counts as one finished action, and waits for the count.
     protected static async Task ChangeAsync(IPage page, Func<Task> act)
     {
