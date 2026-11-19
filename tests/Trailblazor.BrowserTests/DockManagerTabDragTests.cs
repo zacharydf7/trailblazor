@@ -161,11 +161,17 @@ public class DockManagerTabDragTests(BrowserFixture fixture) : DockManagerPage(f
         await Expect(page.GetByRole(AriaRole.Tablist)).ToHaveCountAsync(1);
         var dock = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
 
+        // On the dock's border, outside its one group, there is nowhere to land: Notes is docked, so the empty area
+        // takes no drop, and the edge would only give it the group it has. A fifth of a pixel in stays on the
+        // border however a browser rounds it.
+        await CarryAsync(page, "Notes", dock.X + 0.2f, dock.Y + dock.Height / 2);
+        await Expect(Tab(page, "Notes")).ToHaveAttributeAsync("data-dragging", "");
+        await Expect(Mark(page)).ToBeHiddenAsync();
+
         // With nothing else docked, the panel has no other docked place to go, the dock's edge included. The mark is
         // the window a drop would float it in, against the edge the pointer is at.
-        await CarryAsync(page, "Notes", dock.X + dock.Width - 5, dock.Y + dock.Height / 2);
+        await page.Mouse.MoveAsync(dock.X + dock.Width - 5, dock.Y + dock.Height / 2, new() { Steps = 6 });
 
-        await Expect(Tab(page, "Notes")).ToHaveAttributeAsync("data-dragging", "");
         await ExpectMarkAsync(page, dock.X + 1 + 383, dock.Y + dock.Height / 2 - 16, 383, 191);
         await DropAsync(page);
         Assert.Equal(["Notes"], await page.Tb().Dock().FloatingAsync());
@@ -564,9 +570,15 @@ public class DockManagerTabDragTests(BrowserFixture fixture) : DockManagerPage(f
     {
         var page = await OpenDockAsync(browser, "?layout=adrift");
         var dock = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        var window = (await Panel(page, "Gear").BoundingBoxAsync())!;
+
+        // Over its own window the tab has nowhere to go, as when something is docked.
+        await CarryAsync(page, "Gear", window.X + window.Width / 2, window.Y + window.Height / 2);
+        await Expect(Tab(page, "Gear")).ToHaveAttributeAsync("data-dragging", "");
+        await Expect(Mark(page)).ToBeHiddenAsync();
 
         // Nothing is docked, so the empty area beside the window takes the panel, far from the dock's edges too.
-        await CarryAsync(page, "Gear", dock.X + dock.Width * 0.25f, dock.Y + dock.Height * 0.75f);
+        await page.Mouse.MoveAsync(dock.X + dock.Width * 0.25f, dock.Y + dock.Height * 0.75f, new() { Steps = 6 });
 
         await ExpectMarkAsync(page, dock.X, dock.Y, dock.Width, dock.Height);
         await DropAsync(page);
