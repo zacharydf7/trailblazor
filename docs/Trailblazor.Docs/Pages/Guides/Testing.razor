@@ -517,6 +517,9 @@
                             <code>RestoreAsync()</code> shows every group again. <code>FloatAsync(panel)</code> takes a
                             panel out into a floating window, <code>DockAsync(panel)</code> docks it again, and
                             <code>Floating</code> reads the panels in windows.
+                            <code>MoveWindowAsync(panel, right, down)</code> and
+                            <code>ResizeWindowAsync(panel, wider, taller)</code> move and resize a panel's window by
+                            percents of the dock, and <code>Window(panel)</code> reads its box.
                         </td>
                     </tr>
                     <tr>
@@ -1321,7 +1324,9 @@
             + "`MaximizeAsync(panel)` has a panel's group fill the dock from its group's menu, and `RestoreAsync()` "
             + "clicks the Restore button; both wait until the app has the layout. `FloatAsync(panel)` and "
             + "`DockAsync(panel)` float and dock a panel from its menu and wait the same way, and `FloatingAsync()` "
-            + "reads the panels in windows."),
+            + "reads the panels in windows. `MoveWindowAsync(panel, right, down)` and "
+            + "`ResizeWindowAsync(panel, wider, taller)` press the arrow keys on a window's Move button or grip, by "
+            + "percents of the dock, and wait the same way; `WindowAsync(panel)` reads its box."),
         new("Stepper", "Its name, or none for the only one", "`Stepper(name).GoToAsync(title)` goes to a step and "
             + "waits until it's current and the app's `ActiveKeyChanged` has run, `StepsAsync()` reads the steps' "
             + "titles, and `CurrentAsync()` reads the current step's."),

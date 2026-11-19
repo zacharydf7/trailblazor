@@ -6,6 +6,7 @@
 <TbButton OnClick="() => _layout = Columns">Columns</TbButton>
 <TbButton OnClick="() => _layout = OnlyNotes">Only notes</TbButton>
 <TbButton OnClick="@(() => _layout = _layout.Open("notes"))">Open notes</TbButton>
+<TbButton OnClick="@(() => _layout = _layout.Close("gear"))">Close gear</TbButton>
 <div style="inline-size: 48rem; block-size: 24rem" dir="@Direction">
     <TbDockManager @bind-Layout="_layout" AriaLabel="Hike planner" MinGroupSize="64" PersistenceKey="@Key">
         <EmptyContent>Nothing is open.</EmptyContent>

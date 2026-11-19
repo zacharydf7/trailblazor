@@ -46,9 +46,9 @@ public class DockManagerFloatTests(BrowserFixture fixture) : DockManagerPage(fix
                 return top === cover;
             }
             """));
-        // The frame stayed loaded, and the window comes last in reading order.
+        // The frame stayed loaded, and the window comes last in reading order: its row, its panel and its grip.
         await Expect(city).ToHaveValueAsync("Zermatt");
-        Assert.EndsWith("group weather", await PartsAsync(page));
+        Assert.EndsWith("group weather window-grip", await PartsAsync(page));
 
         // A separator moves the docked groups under the window, which keeps its box.
         await dock.ResizeAsync("Resize Trails", 40);
@@ -56,7 +56,7 @@ public class DockManagerFloatTests(BrowserFixture fixture) : DockManagerPage(fix
         Assert.Equal(row.Width, (await page.Locator(".tb-dock__group--floating").BoundingBoxAsync())!.Width, 0.5);
         // A group docked after the window was made still comes before it in reading order.
         await dock.MoveToNewGroupAsync("Gear", DockPosition.Bottom);
-        Assert.EndsWith("group weather", await PartsAsync(page));
+        Assert.EndsWith("group weather window-grip", await PartsAsync(page));
 
         await dock.DockAsync("Weather");
 

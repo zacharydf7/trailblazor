@@ -591,6 +591,21 @@ public class DockLayoutTests
     }
 
     [Fact]
+    public void MoveWindow_ShouldGiveThePanelsWindowAnotherBoxInsideTheDock_WhenThePanelFloats()
+    {
+        var layout = Workbench.Float("search").Float("problems");
+
+        var moved = layout.MoveWindow("search", 5, 6, 150, 20);
+
+        // The windows keep their order and their panels.
+        Assert.Equal([(0.0, 6.0, 100.0, 20.0), (28.0, 28.0, 50.0, 50.0)], moved.Floating.Select(Box));
+        Assert.Equal(["search", "problems"], moved.Floating.Select(window => window.Group.Active));
+        // A docked panel has no window to move, and a box is made of numbers.
+        Assert.Same(layout, layout.MoveWindow("editor", 5, 6, 50, 50));
+        Assert.Throws<ArgumentOutOfRangeException>(() => layout.MoveWindow("search", double.NaN, 6, 50, 50));
+    }
+
+    [Fact]
     public void Raise_ShouldBringTheWindowOfAFloatingPanelToTheFront_WhenItIsBehindAnother()
     {
         var layout = Workbench.Float("search").Float("problems");

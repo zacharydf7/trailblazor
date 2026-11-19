@@ -33,6 +33,34 @@ public sealed class TbDockLocator(ILocator scope, string? name)
         return Tab(panel);
     }
 
+    // The row of the window that holds a panel, once the dock's script has attached.
+    private async Task<ILocator> WindowRowAsync(string panel)
+    {
+        var tab = await ReachableAsync(panel);
+        var row = tab.Locator("xpath=ancestor::*[@data-part='group'][1]")
+            .And(Root.Locator(":scope > .tb-dock__group--floating"));
+        return await row.CountAsync() > 0 ? row
+            : throw new InvalidOperationException($"The panel \"{panel}\" isn't in a floating window.");
+    }
+
+    // Presses arrow keys on a window's Move button or grip, ten percent at a time with Shift and then one at a time.
+    // The dock counts each press once the app has the layout.
+    private async Task PressAsync(ILocator handle, params (string Key, int Percent)[] moves)
+    {
+        var presses = moves.SelectMany(move => Enumerable.Repeat($"Shift+{move.Key}", Math.Abs(move.Percent) / 10)
+            .Concat(Enumerable.Repeat(move.Key, Math.Abs(move.Percent) % 10))).ToList();
+        await handle.FocusAsync();
+        await Commit.CountedAsync(Root, "data-commits", async () =>
+        {
+            foreach (var press in presses)
+            {
+                await handle.Page.Keyboard.PressAsync(press);
+            }
+
+            return presses.Count > 0;
+        }, presses.Count);
+    }
+
     private ILocator Separator(string separator) => Root.Locator(":scope > .tb-dock__separator")
         .And(Root.GetByRole(AriaRole.Separator, new() { Name = separator, Exact = true }));
 
@@ -175,6 +203,42 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     /// window's menu. Throws for a panel that is docked already.</summary>
     public async Task DockAsync(string panel) =>
         await ChooseAsync(panel, "[data-move=dock]", $"The panel \"{panel}\" is docked already.");
+
+    /// <summary>The box of the floating window that holds the panel with this title, in percent of the dock: where
+    /// it starts, from the side where text starts and from the top, and its width and height. Throws for a panel
+    /// that isn't in a window.</summary>
+    public async Task<(double X, double Y, double Width, double Height)> WindowAsync(string panel)
+    {
+        var box = await (await WindowRowAsync(panel)).EvaluateAsync<double[]>(
+            "row => ['x', 'y', 'w', 'h'].map(side => Number(row.style.getPropertyValue(`--tb-dock-${side}`)))");
+        return (box[0], box[1], box[2], box[3]);
+    }
+
+    /// <summary>Moves the window that holds the panel with this title by this many percent of the dock, to the right
+    /// and down when the numbers are positive, with the arrow keys on its Move button, and waits until the app has
+    /// the layout. The window stays inside the dock. Throws for a panel that isn't in a window.</summary>
+    public async Task MoveWindowAsync(string panel, int right, int down)
+    {
+        var row = await WindowRowAsync(panel);
+        await PressAsync(row.Locator(":scope > [data-part=window-move] > [data-part=trigger]"),
+            (right < 0 ? "ArrowLeft" : "ArrowRight", right), (down < 0 ? "ArrowUp" : "ArrowDown", down));
+    }
+
+    /// <summary>Resizes the window that holds the panel with this title by this many percent of the dock, wider and
+    /// taller when the numbers are positive, with the arrow keys on its grip, and waits until the app has the
+    /// layout. The window stays inside the dock and no smaller than <c>MinGroupSize</c>. Throws for a panel that
+    /// isn't in a window.</summary>
+    public async Task ResizeWindowAsync(string panel, int wider, int taller)
+    {
+        var row = await WindowRowAsync(panel);
+        var group = await row.GetAttributeAsync("data-group");
+        // The grip is in the corner where the window's box ends, which is on the left where text runs right to left,
+        // so there the left arrow widens.
+        var rightToLeft = await Root.EvaluateAsync<bool>("dock => getComputedStyle(dock).direction === 'rtl'");
+        await PressAsync(Root.Locator($":scope > [data-part=window-grip][data-group='{group}'] > [data-part=trigger]"),
+            (wider > 0 != rightToLeft ? "ArrowRight" : "ArrowLeft", wider),
+            (taller < 0 ? "ArrowUp" : "ArrowDown", taller));
+    }
 
     /// <summary>Shows the panel with this title and has its group fill the dock, with "Maximize" in its group's
     /// menu. Throws when the group is the dock's only one, or fills the dock already.</summary>

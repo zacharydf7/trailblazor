@@ -652,12 +652,14 @@ public class TbDockManagerTests : BunitContext
         // The mark the script shows where the tab would land is in the markup from the start, hidden.
         Assert.Equal("true", cut.Find("[data-part=dock] > [data-part=drop-mark]").GetAttribute("aria-hidden"));
 
+        var map = ReferenceOnceMade(cut, "Map");
+
         await cut.InvokeAsync(() => Report().OnMove("map", "weather", "Top"));
 
         Assert.Equal([["Trails"], ["Notes"], ["Map"], ["Weather"]], cut.FindAll("[data-part=group]").Select(Titles));
         Assert.Equal(Hike.Move("map", "weather", DockPosition.Top), changed);
         Assert.Equal(["Map moved to panel group 3."], Services.GetRequiredService<FakeAnnouncer>().Polite);
-        Assert.Equal(Reference(cut, "Map"), ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+        Assert.Equal(map(), ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
         Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
         Assert.Equal(["move"],
             used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
@@ -1227,7 +1229,7 @@ public class TbDockManagerTests : BunitContext
         DockLayout? changed = null;
         var cut = RenderDock(Hike, HikePanels, layout => changed = layout);
         cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
-        var dock = cut.Tb().Dock();
+        var (dock, notes) = (cut.Tb().Dock(), ReferenceOnceMade(cut, "Notes"));
 
         await dock.FloatAsync("Notes");
 
@@ -1247,8 +1249,7 @@ public class TbDockManagerTests : BunitContext
         // The panel kept its content, and its tab, made anew in the window's row, takes the focus.
         Assert.DoesNotContain(_log, line => line.StartsWith("dispose", StringComparison.Ordinal));
         Assert.Equal(["Notes floats in a window."], Services.GetRequiredService<FakeAnnouncer>().Polite);
-        Assert.Equal(Reference(cut, "Notes"),
-            ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+        Assert.Equal(notes(), ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
         Assert.Equal(["float"],
             used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
     }
@@ -1457,6 +1458,192 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal("Window 3", window.QuerySelector("[role=tablist]")!.GetAttribute("aria-label"));
         Assert.Equal("Pin", window.QuerySelector("[data-move=dock]")!.TextContent.Trim());
         Assert.Equal(["Notes is loose"], Services.GetRequiredService<FakeAnnouncer>().Polite);
+    }
+
+    [Fact]
+    public async Task Window_ShouldTakeTheBoxTheScriptReports_WhenItIsMovedOrResized()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(Hike.Float("notes"), HikePanels, changes.Add);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var dock = cut.Find("[data-part=dock]");
+        var commits = int.Parse(dock.GetAttribute("data-commits")!);
+
+        await cut.InvokeAsync(() => Report().OnFloat("notes", 10, 20, 50, 50, false, 1));
+
+        const string moved = "--tb-dock-x: 10; --tb-dock-y: 20; --tb-dock-w: 50; --tb-dock-h: 50; --tb-dock-z: 0;";
+        Assert.Equal(Hike.FloatAt("notes", 10, 20, 50, 50), changes[^1]);
+        Assert.Equal(moved, cut.Find("[data-part=group][data-floating]").GetAttribute("style"));
+        Assert.StartsWith(moved, cut.Find("[role=tabpanel][data-panel=notes]").GetAttribute("style"));
+        Assert.Equal(moved, cut.Find("[data-part=window-grip]").GetAttribute("style"));
+        // The report's number lets the script drop the box it showed meanwhile.
+        Assert.Equal(("1", (commits + 1).ToString()),
+            (cut.Find("[data-part=dock]").GetAttribute("data-report"),
+                cut.Find("[data-part=dock]").GetAttribute("data-commits")));
+
+        await cut.InvokeAsync(() => Report().OnFloat("notes", 10, 20, 30, 40, true, 2));
+
+        Assert.Equal(Hike.FloatAt("notes", 10, 20, 30, 40), changes[^1]);
+        Assert.Equal(["move_window", "resize_window"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+        Assert.Equal(["The window is 10% across and 20% down.", "The window is 30% wide and 40% tall."],
+            Services.GetRequiredService<FakeAnnouncer>().Polite);
+    }
+
+    [Fact]
+    public async Task Window_ShouldKeepTheBoxItsStyleShows_WhenADragReportsMoreDecimalsThanItShows()
+    {
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(Hike.Float("notes"), HikePanels, changes.Add);
+
+        // A drag reports every decimal. A step against the dock's edge then reports the box the style shows.
+        await cut.InvokeAsync(() => Report().OnFloat("notes", 13.528912, 0, 50, 50, false, 1));
+        await cut.InvokeAsync(() => Report().OnFloat("notes", 13.5289, 0, 50, 50, false, 2));
+
+        Assert.Equal([Hike.FloatAt("notes", 13.5289, 0, 50, 50)], changes);
+    }
+
+    [Fact]
+    public async Task Window_ShouldChangeNothingButCountTheReport_WhenTheScriptNamesNoWindowOrTheBoxItHas()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var changes = 0;
+        var cut = RenderDock(Hike.Float("notes"), HikePanels, _ => changes++);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var commits = int.Parse(cut.Find("[data-part=dock]").GetAttribute("data-commits")!);
+
+        // The trails are docked, and a step against the dock's edge reports the box the window has already.
+        await cut.InvokeAsync(() => Report().OnFloat("trails", 10, 20, 50, 50, false, 1));
+        await cut.InvokeAsync(() => Report().OnFloat("notes", 25, 25, 50, 50, false, 2));
+
+        Assert.Equal(0, changes);
+        Assert.Empty(used.GetMeasurementSnapshot());
+        Assert.Empty(Services.GetRequiredService<FakeAnnouncer>().Polite);
+        Assert.Equal((commits + 2).ToString(), cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
+    public async Task Commits_ShouldCountAnActionOnlyOnceItsFocusHasMoved_WhenTheActionMovesTheFocus()
+    {
+        // The browser hasn't yet answered the dock's call to focus the moved tab.
+        var focus = JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true);
+        var cut = RenderDock(Hike, HikePanels);
+
+        await cut.Tb().Dock().MoveToGroupAsync("Trails", 2);
+
+        // The move shows, but the count waits for the focus, since keys pressed now would go astray.
+        Assert.Equal(["Map", "Notes", "Trails", "Weather"], cut.Tb().Dock().Panels);
+        Assert.Equal("0", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+
+        focus.SetVoidResult();
+
+        cut.WaitForAssertion(() => Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-commits")));
+    }
+
+    [Fact]
+    public async Task Window_ShouldHaveAMoveButtonAndAGripThatAskTheScriptForSteps_WhenRendered()
+    {
+        var cut = RenderDock(Hike.Float("notes"), HikePanels);
+        var (move, grip) = (cut.Find("[data-floating] > [data-part=window-move]"),
+            cut.Find("[data-part=dock] > [data-part=window-grip]"));
+
+        Assert.Equal(("Move the Notes window", "Resize the Notes window"),
+            (move.QuerySelector("button")!.GetAttribute("aria-label"),
+                grip.QuerySelector("button")!.GetAttribute("aria-label")));
+        Assert.Contains("Arrow keys move the window.", move.TextContent);
+        Assert.Contains("Arrow keys resize the window.", grip.TextContent);
+        Assert.Equal(["Left", "Right", "Up", "Down"],
+            move.QuerySelectorAll("[data-step]").Select(item => item.TextContent.Trim()));
+        Assert.Equal(["Wider", "Narrower", "Taller", "Shorter"],
+            grip.QuerySelectorAll("[data-step]").Select(item => item.TextContent.Trim()));
+        // The grip is the window's last part, with the window's number, layer and box.
+        const string box = "--tb-dock-x: 25; --tb-dock-y: 25; --tb-dock-w: 50; --tb-dock-h: 50; --tb-dock-z: 0;";
+        Assert.Equal(("2", true, box),
+            (grip.GetAttribute("data-group"), grip.HasAttribute("data-floating"), grip.GetAttribute("style")));
+        // A docked group has neither.
+        Assert.Equal(2, cut.FindAll("[data-part=window-move], [data-part=window-grip]").Count);
+
+        await move.QuerySelector("[data-step=left]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
+        await grip.QuerySelector("[data-step=taller]")!.ClickAsync(new MouseEventArgs { Detail = 1 });
+
+        // The script makes the step, so that the window stays inside the dock.
+        Assert.Equal(["2 left", "2 taller"],
+            _handle.Invocations["stepWindow"].Select(call => $"{call.Arguments[0]} {call.Arguments[1]}"));
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveOutAWindowsMoveButtonAndGrip_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderDock(Hike.Float("notes"), HikePanels);
+
+        Assert.Single(cut.FindAll("[data-part=group][data-floating]"));
+        Assert.Empty(cut.FindAll("[data-part=window-move], [data-part=window-grip]"));
+    }
+
+    [Fact]
+    public async Task Driver_ShouldMoveAndResizeAWindowInsideTheDock_WhenGivenPercents()
+    {
+        var cut = RenderDock(Hike.Float("notes"), HikePanels);
+        var dock = cut.Tb().Dock();
+        Assert.Equal((25, 25, 50, 50), dock.Window("Notes"));
+
+        await dock.MoveWindowAsync("Notes", 10, -5);
+        Assert.Equal((35, 20, 50, 50), dock.Window("Notes"));
+
+        await dock.ResizeWindowAsync("Notes", -20, 10);
+        Assert.Equal((35, 20, 30, 60), dock.Window("Notes"));
+
+        // The window stops at the dock's edges, and keeps a tenth of the dock's width.
+        await dock.MoveWindowAsync("Notes", 90, 90);
+        Assert.Equal("The window is 70% across and 40% down.", Services.GetRequiredService<FakeAnnouncer>().Polite[^1]);
+        await dock.ResizeWindowAsync("Notes", -90, 90);
+        Assert.Equal((70, 40, 10, 60), dock.Window("Notes"));
+        Assert.Equal("The panel \"Trails\" isn't in a floating window.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => dock.MoveWindowAsync("Trails", 1, 1))).Message);
+        Assert.Equal("The panel \"Trails\" isn't in a floating window.",
+            Assert.Throws<InvalidOperationException>(() => dock.Window("Trails")).Message);
+    }
+
+    [Fact]
+    public void Labels_ShouldWordAWindowsMoveButtonAndGrip_WhenGiven()
+    {
+        var cut = RenderDock(Hike.Float("notes"), HikePanels);
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels
+        {
+            MoveWindow = "Shift {0}", MoveWindowHint = "Arrows shift it", ResizeWindow = "Size {0}",
+            ResizeWindowHint = "Arrows size it", Left = "West", Right = "East", Up = "North", Down = "South",
+            Wider = "Broader", Narrower = "Slimmer", Taller = "Higher", Shorter = "Lower",
+        }));
+
+        var (move, grip) = (cut.Find("[data-part=window-move]"), cut.Find("[data-part=window-grip]"));
+        Assert.Equal(("Shift Notes", "Size Notes"), (move.QuerySelector("button")!.GetAttribute("aria-label"),
+            grip.QuerySelector("button")!.GetAttribute("aria-label")));
+        Assert.Contains("Arrows shift it", move.TextContent);
+        Assert.Contains("Arrows size it", grip.TextContent);
+        Assert.Equal(["West", "East", "North", "South", "Broader", "Slimmer", "Higher", "Lower"],
+            cut.FindAll("[data-step]:not([data-step=larger]):not([data-step=smaller])")
+                .Select(item => item.TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task Labels_ShouldWordWhatIsSaidAfterAWindowMovesOrResizes_WhenGiven()
+    {
+        var cut = RenderDock(Hike.Float("notes"), HikePanels);
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels
+        {
+            MovedWindow = "At {0} by {1}", ResizedWindow = "Now {0} by {1}",
+        }));
+
+        await cut.InvokeAsync(() => Report().OnFloat("notes", 10.4, 20.6, 50, 50, false, 1));
+        await cut.InvokeAsync(() => Report().OnFloat("notes", 10.4, 20.6, 30, 40, true, 2));
+
+        // Whole percents, as for a separator.
+        Assert.Equal(["At 10 by 21", "Now 30 by 40"], Services.GetRequiredService<FakeAnnouncer>().Polite);
     }
 
     [Fact]
@@ -1827,6 +2014,15 @@ public class TbDockManagerTests : BunitContext
     // dock renders again.
     private static string? Reference(IRenderedComponent<TbDockManager> cut, string title) =>
         Tab(cut, title).GetAttribute("blazor:elementreference");
+
+    // The reference a tab gets when it is made anew in another row. bUnit shows it only in that render, and the dock
+    // renders once more after an action, to show its count, so this keeps the last one seen.
+    private static Func<string?> ReferenceOnceMade(IRenderedComponent<TbDockManager> cut, string title)
+    {
+        string? seen = null;
+        cut.OnMarkupUpdated += (_, _) => seen = Reference(cut, title) is { Length: > 0 } made ? made : seen;
+        return () => seen;
+    }
 
     private static IEnumerable<string> Titles(AngleSharp.Dom.IElement group) =>
         group.QuerySelectorAll("[role=tab]").Select(tab => tab.TextContent.Trim());

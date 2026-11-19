@@ -88,6 +88,64 @@ public sealed record DockLabels
     /// title. Leave it null for the app's text for <see cref="TbStrings.DockFloated"/>.</summary>
     public string? Floated { get; init; }
 
+    /// <summary>Names the button that moves a floating window, with <c>{0}</c> for the title of the window's
+    /// showing panel. Leave it null for the app's text for <see cref="TbStrings.DockMoveWindow"/>.</summary>
+    public string? MoveWindow { get; init; }
+
+    /// <summary>Tells screen readers that the arrow keys move a window. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockMoveWindowHint"/>.</summary>
+    public string? MoveWindowHint { get; init; }
+
+    /// <summary>Names the grip that resizes a floating window, with <c>{0}</c> for the title of the window's
+    /// showing panel. Leave it null for the app's text for <see cref="TbStrings.DockResizeWindow"/>.</summary>
+    public string? ResizeWindow { get; init; }
+
+    /// <summary>Tells screen readers that the arrow keys resize a window. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockResizeWindowHint"/>.</summary>
+    public string? ResizeWindowHint { get; init; }
+
+    /// <summary>What screen readers hear when a window has moved, with <c>{0}</c> and <c>{1}</c> for how far across
+    /// and down the dock it starts, in percent. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockMovedWindow"/>.</summary>
+    public string? MovedWindow { get; init; }
+
+    /// <summary>What screen readers hear when a window has been resized, with <c>{0}</c> and <c>{1}</c> for its
+    /// width and height in percent of the dock. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockResizedWindow"/>.</summary>
+    public string? ResizedWindow { get; init; }
+
+    /// <summary>The menu item that moves a window toward the left of the screen. Leave it null for the app's text
+    /// for <see cref="TbStrings.DockLeft"/>.</summary>
+    public string? Left { get; init; }
+
+    /// <summary>The menu item that moves a window toward the right of the screen. Leave it null for the app's text
+    /// for <see cref="TbStrings.DockRight"/>.</summary>
+    public string? Right { get; init; }
+
+    /// <summary>The menu item that moves a window up. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockUp"/>.</summary>
+    public string? Up { get; init; }
+
+    /// <summary>The menu item that moves a window down. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockDown"/>.</summary>
+    public string? Down { get; init; }
+
+    /// <summary>The menu item that makes a window wider. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockWider"/>.</summary>
+    public string? Wider { get; init; }
+
+    /// <summary>The menu item that makes a window narrower. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockNarrower"/>.</summary>
+    public string? Narrower { get; init; }
+
+    /// <summary>The menu item that makes a window taller. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockTaller"/>.</summary>
+    public string? Taller { get; init; }
+
+    /// <summary>The menu item that makes a window shorter. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockShorter"/>.</summary>
+    public string? Shorter { get; init; }
+
     /// <summary>The menu item that has the panel's group fill the dock. Leave it null for the app's text for
     /// <see cref="TbStrings.DockMaximize"/>.</summary>
     public string? Maximize { get; init; }

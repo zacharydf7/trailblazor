@@ -50,8 +50,10 @@ public sealed record DockFloat
             : new DockFloat(plain ? Group : new DockGroup(panels) { Active = Group.Active }, x, y, width, height);
     }
 
-    // The window with another group.
+    // The window with another group, or in another box.
     internal DockFloat With(DockGroup group) => new(group, X, Y, Width, Height);
+
+    internal DockFloat At(double x, double y, double width, double height) => new(Group, x, y, width, height);
 
     private static double Finite(double value, string name) => double.IsFinite(value) ? value
         : throw new ArgumentOutOfRangeException(name, value, "A window's box is made of finite numbers.");

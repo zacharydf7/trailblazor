@@ -7148,3 +7148,46 @@ Trailblazor.DockLabels.Floated.get -> string?
 Trailblazor.DockLabels.Floated.init -> void
 Trailblazor.DockLabels.FloatingGroup.get -> string?
 Trailblazor.DockLabels.FloatingGroup.init -> void
+const Trailblazor.TbStrings.DockMoveWindow = "Dock.MoveWindow" -> string!
+Trailblazor.DockLabels.MoveWindow.get -> string?
+Trailblazor.DockLabels.MoveWindow.init -> void
+const Trailblazor.TbStrings.DockMoveWindowHint = "Dock.MoveWindowHint" -> string!
+Trailblazor.DockLabels.MoveWindowHint.get -> string?
+Trailblazor.DockLabels.MoveWindowHint.init -> void
+const Trailblazor.TbStrings.DockResizeWindow = "Dock.ResizeWindow" -> string!
+Trailblazor.DockLabels.ResizeWindow.get -> string?
+Trailblazor.DockLabels.ResizeWindow.init -> void
+const Trailblazor.TbStrings.DockResizeWindowHint = "Dock.ResizeWindowHint" -> string!
+Trailblazor.DockLabels.ResizeWindowHint.get -> string?
+Trailblazor.DockLabels.ResizeWindowHint.init -> void
+const Trailblazor.TbStrings.DockMovedWindow = "Dock.MovedWindow" -> string!
+Trailblazor.DockLabels.MovedWindow.get -> string?
+Trailblazor.DockLabels.MovedWindow.init -> void
+const Trailblazor.TbStrings.DockResizedWindow = "Dock.ResizedWindow" -> string!
+Trailblazor.DockLabels.ResizedWindow.get -> string?
+Trailblazor.DockLabels.ResizedWindow.init -> void
+const Trailblazor.TbStrings.DockLeft = "Dock.Left" -> string!
+Trailblazor.DockLabels.Left.get -> string?
+Trailblazor.DockLabels.Left.init -> void
+const Trailblazor.TbStrings.DockRight = "Dock.Right" -> string!
+Trailblazor.DockLabels.Right.get -> string?
+Trailblazor.DockLabels.Right.init -> void
+const Trailblazor.TbStrings.DockUp = "Dock.Up" -> string!
+Trailblazor.DockLabels.Up.get -> string?
+Trailblazor.DockLabels.Up.init -> void
+const Trailblazor.TbStrings.DockDown = "Dock.Down" -> string!
+Trailblazor.DockLabels.Down.get -> string?
+Trailblazor.DockLabels.Down.init -> void
+const Trailblazor.TbStrings.DockWider = "Dock.Wider" -> string!
+Trailblazor.DockLabels.Wider.get -> string?
+Trailblazor.DockLabels.Wider.init -> void
+const Trailblazor.TbStrings.DockNarrower = "Dock.Narrower" -> string!
+Trailblazor.DockLabels.Narrower.get -> string?
+Trailblazor.DockLabels.Narrower.init -> void
+const Trailblazor.TbStrings.DockTaller = "Dock.Taller" -> string!
+Trailblazor.DockLabels.Taller.get -> string?
+Trailblazor.DockLabels.Taller.init -> void
+const Trailblazor.TbStrings.DockShorter = "Dock.Shorter" -> string!
+Trailblazor.DockLabels.Shorter.get -> string?
+Trailblazor.DockLabels.Shorter.init -> void
+Trailblazor.DockLayout.MoveWindow(string! panel, double x, double y, double width, double height) -> Trailblazor.DockLayout!

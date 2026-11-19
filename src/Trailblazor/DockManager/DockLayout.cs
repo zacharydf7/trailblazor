@@ -162,6 +162,19 @@ public sealed record DockLayout
             [.. lifted.Floating, new DockFloat(new DockGroup(panel), x, y, width, height)]);
     }
 
+    /// <summary>Gives the window that holds the panel with this id another box, which the layout keeps inside the
+    /// dock. The window keeps its panels and its place among the windows. A panel that isn't in a window changes
+    /// nothing.</summary>
+    /// <param name="panel">The id of a panel in the window.</param>
+    /// <param name="x">Where the box starts, in percent of the dock's width, from the side where text starts.</param>
+    /// <param name="y">Where the box starts, in percent of the dock's height, from the top.</param>
+    /// <param name="width">The box's width, in percent of the dock's.</param>
+    /// <param name="height">The box's height, in percent of the dock's.</param>
+    /// <exception cref="ArgumentOutOfRangeException">A number isn't finite.</exception>
+    public DockLayout MoveWindow(string panel, double x, double y, double width, double height) =>
+        FloatOf(panel) is not { } window ? this : new(Root, Closed,
+            Floating.Select(each => ReferenceEquals(each, window) ? each.At(x, y, width, height) : each));
+
     /// <summary>Shows the panel with this id and has its group fill the dock, covering the other groups, which
     /// keep their places. A panel that isn't docked changes nothing, and in a layout with one group the panel only
     /// shows, since there is nothing to cover.</summary>
@@ -256,7 +269,7 @@ public sealed record DockLayout
         new(Swap(Root!, node, replacement), Closed, Floating);
 
     // The window that holds a panel.
-    private DockFloat? FloatOf(string panel) => Floating.FirstOrDefault(window => window.Group.Panels.Contains(panel));
+    internal DockFloat? FloatOf(string panel) => Floating.FirstOrDefault(window => window.Group.Panels.Contains(panel));
 
     // The layout with a window, as it is or changed, in front of the others.
     private DockLayout InFront(DockFloat window, DockFloat changed) => ReferenceEquals(Floating[^1], window)

@@ -7534,7 +7534,7 @@
        each cast the window's shadow on their own three sides, so neither shades the other. */
     .tb-dock__group--floating,
     .tb-dock__panel--floating {
-        z-index: calc(10 + var(--tb-dock-z));
+        z-index: calc(10 + var(--tb-dock-z) * 2);
         border: 1px solid var(--tb-border-strong);
         box-shadow: var(--tb-shadow-lg);
     }
@@ -7548,6 +7548,53 @@
         border-block-start: none;
         background: var(--tb-color-surface);
         clip-path: inset(0 -3rem -3rem -3rem);
+    }
+
+    /* A window moves by the button that starts its row, and by the row's empty part. */
+    .tb-menu.tb-dock__window-move {
+        flex: none;
+        align-self: center;
+    }
+
+    .tb-dock__window-move > [data-part="trigger"],
+    .tb-dock__group--floating .tb-dock__tabs {
+        cursor: move;
+    }
+
+    .tb-dock__window-move > [data-part="trigger"],
+    .tb-dock__window-grip > [data-part="trigger"] {
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    /* The grip sits in the corner where a window's box ends, above its own panel and under the next window. */
+    .tb-menu.tb-dock__window-grip {
+        position: absolute;
+        z-index: calc(11 + var(--tb-dock-z) * 2);
+        inset-inline-start: calc(
+            (var(--tb-dock-live-x, var(--tb-dock-x)) + var(--tb-dock-live-w, var(--tb-dock-w))) * 1% - 24px);
+        inset-block-start: calc(
+            (var(--tb-dock-live-y, var(--tb-dock-y)) + var(--tb-dock-live-h, var(--tb-dock-h))) * 1% - 24px);
+    }
+
+    .tb-dock__window-grip > [data-part="trigger"] {
+        min-inline-size: 24px;
+        inline-size: 24px;
+        min-block-size: 24px;
+        block-size: 24px;
+        border-color: transparent;
+        background: transparent;
+        color: var(--tb-color-text-muted);
+        cursor: nwse-resize;
+    }
+
+    .tb-dock__window-grip:dir(rtl) > [data-part="trigger"] {
+        cursor: nesw-resize;
+    }
+
+    .tb-dock__window-grip:dir(rtl) svg {
+        scale: -1 1;
     }
 
     .tb-dock__panel {

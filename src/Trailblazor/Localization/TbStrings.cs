@@ -802,6 +802,52 @@ public static class TbStrings
     /// </summary>
     public const string DockFloated = "Dock.Floated";
 
+    /// <summary>"Move the {0} window": names the button that moves a dock's floating window; {0} is the title of
+    /// its showing panel.</summary>
+    public const string DockMoveWindow = "Dock.MoveWindow";
+
+    /// <summary>"Arrow keys move the window.": describes that button to screen readers.</summary>
+    public const string DockMoveWindowHint = "Dock.MoveWindowHint";
+
+    /// <summary>"Resize the {0} window": names the grip that resizes a dock's floating window; {0} is the title
+    /// of its showing panel.</summary>
+    public const string DockResizeWindow = "Dock.ResizeWindow";
+
+    /// <summary>"Arrow keys resize the window.": describes that grip to screen readers.</summary>
+    public const string DockResizeWindowHint = "Dock.ResizeWindowHint";
+
+    /// <summary>"The window is {0}% across and {1}% down.": said when a dock's floating window has moved; {0} and
+    /// {1} are how far across and down the dock it starts, in percent.</summary>
+    public const string DockMovedWindow = "Dock.MovedWindow";
+
+    /// <summary>"The window is {0}% wide and {1}% tall.": said when a dock's floating window has been resized; {0}
+    /// and {1} are its width and height in percent of the dock.</summary>
+    public const string DockResizedWindow = "Dock.ResizedWindow";
+
+    /// <summary>"Left": a dock menu item that moves a floating window toward the left of the screen.</summary>
+    public const string DockLeft = "Dock.Left";
+
+    /// <summary>"Right": a dock menu item that moves a floating window toward the right of the screen.</summary>
+    public const string DockRight = "Dock.Right";
+
+    /// <summary>"Up": a dock menu item that moves a floating window up.</summary>
+    public const string DockUp = "Dock.Up";
+
+    /// <summary>"Down": a dock menu item that moves a floating window down.</summary>
+    public const string DockDown = "Dock.Down";
+
+    /// <summary>"Wider": a dock menu item that makes a floating window wider.</summary>
+    public const string DockWider = "Dock.Wider";
+
+    /// <summary>"Narrower": a dock menu item that makes a floating window narrower.</summary>
+    public const string DockNarrower = "Dock.Narrower";
+
+    /// <summary>"Taller": a dock menu item that makes a floating window taller.</summary>
+    public const string DockTaller = "Dock.Taller";
+
+    /// <summary>"Shorter": a dock menu item that makes a floating window shorter.</summary>
+    public const string DockShorter = "Dock.Shorter";
+
     /// <summary>"Resize {0}": names a splitter's separator; {0} is the pane before it.</summary>
     public const string SplitterResize = "Splitter.Resize";
 
@@ -1775,6 +1821,20 @@ public static class TbStrings
         [DockFloat] = "Float",
         [DockDock] = "Dock",
         [DockFloated] = "{0} floats in a window.",
+        [DockMoveWindow] = "Move the {0} window",
+        [DockMoveWindowHint] = "Arrow keys move the window.",
+        [DockResizeWindow] = "Resize the {0} window",
+        [DockResizeWindowHint] = "Arrow keys resize the window.",
+        [DockMovedWindow] = "The window is {0}% across and {1}% down.",
+        [DockResizedWindow] = "The window is {0}% wide and {1}% tall.",
+        [DockLeft] = "Left",
+        [DockRight] = "Right",
+        [DockUp] = "Up",
+        [DockDown] = "Down",
+        [DockWider] = "Wider",
+        [DockNarrower] = "Narrower",
+        [DockTaller] = "Taller",
+        [DockShorter] = "Shorter",
         [SplitterResize] = "Resize {0}",
         [SplitterPane] = "pane {0}",
         [SplitterMenu] = "Size of {0}",

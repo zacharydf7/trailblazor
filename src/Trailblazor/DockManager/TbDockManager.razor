@@ -15,7 +15,7 @@
    changes parent and keeps its state. The script sets data-ready here once its keys and drags work. *@
 <div @attributes="AdditionalAttributes" @ref="_root" role="group" aria-label="@AriaLabel" data-part="dock"
      tabindex="@(slots.Count == 0 ? "-1" : null)"
-     data-report="@_reported" data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
+     data-report="@_reported" data-commits="@(RendererInfo.IsInteractive ? _counted : null)"
      data-min-size="@MinGroupSize" style="@Style" class="@ClassNames.Join("tb-dock", Class)">
     @Content(_declared, panels)
     @* A tab list holds only tabs, so the hint that describes a closable tab sits outside it. *@
@@ -34,6 +34,24 @@
                  data-floating="@(group.Layer is not null)" style="@BoxStyle(group.Box.Box, group.Layer)"
                  class="@ClassNames.Join("tb-dock__group", group.Covered ? "tb-dock__group--covered" : null,
                             group.Layer is null ? null : "tb-dock__group--floating")">
+                @* A window moves by the button that starts its row: a drag, the arrow keys, or single steps from its
+                   menu, for people who can't drag (WCAG 2.5.7). *@
+                @if (group.Layer is not null && RendererInfo.IsInteractive)
+                {
+                    <TbMenu Icon="BuiltInIcons.Move" Size="Size.Small" AttachOnFirstUse Class="tb-dock__window-move"
+                            data-part="window-move"
+                            AriaLabel="@Format(Labels.MoveWindow, TbStrings.DockMoveWindow,
+                                           Panel(group.Box.Active)!.Title)"
+                            Description="@(Labels.MoveWindowHint ?? Localizer[TbStrings.DockMoveWindowHint])">
+                        @foreach (var (step, text) in MoveSteps())
+                        {
+                            <TbMenuItem @key="step" data-step="@step"
+                                        OnClick="() => StepWindowAsync(group.Index, step)">
+                                @text
+                            </TbMenuItem>
+                        }
+                    </TbMenu>
+                }
                 @* A right-click, a long press, Shift+F10 or the context menu key on a tab opens the menu for that
                    tab's panel, and on the row's empty part for the group's showing panel. *@
                 <TbContextMenu Class="tb-dock__tab-area"
@@ -113,6 +131,23 @@
                 @Content(host.Panel.Version, host.Panel.ChildContent)
             </div>
         }
+        else if (slot is WindowGripSlot grip)
+        {
+            @* A window resizes by the grip in the corner where its box ends: a drag, the arrow keys, or single steps
+               from its menu. *@
+            <TbMenu @key="grip.Key" Icon="BuiltInIcons.ResizeGrip" Size="Size.Small" AttachOnFirstUse
+                    Class="tb-dock__window-grip" data-part="window-grip" data-group="@grip.Index" data-floating
+                    Style="@BoxStyle(grip.Box, grip.Layer)"
+                    AriaLabel="@Format(Labels.ResizeWindow, TbStrings.DockResizeWindow, grip.Title)"
+                    Description="@(Labels.ResizeWindowHint ?? Localizer[TbStrings.DockResizeWindowHint])">
+                @foreach (var (step, text) in SizeSteps())
+                {
+                    <TbMenuItem @key="step" data-step="@step" OnClick="() => StepWindowAsync(grip.Index, step)">
+                        @text
+                    </TbMenuItem>
+                }
+            </TbMenu>
+        }
         else if (slot is SeparatorSlot separator)
         {
             var box = separator.Box;
@@ -166,6 +201,9 @@
     private sealed record PanelSlot(string Key, TbDockPanel Panel, int Group, DockBox Box, bool Showing,
         int? Layer = null) : Slot(Key);
 
+    // The grip in a window's corner, named by the window's showing panel.
+    private sealed record WindowGripSlot(string Key, int Index, DockBox Box, int Layer, string Title) : Slot(Key);
+
     // Before is the panel showing in the group just before the separator, which names the separator.
     private sealed record SeparatorSlot(string Key, int Index, DockSeparatorBox Box, string Before) : Slot(Key);
 
@@ -205,6 +243,8 @@
     // Counts the selections, closes and resizes the dock has finished with, the app's LayoutChanged included, so a
     // test can wait for its own.
     private int _commits;
+    // The count the page shows, which catches up once an action's render and the focus it moves are both done.
+    private int _counted;
     private bool _disposed;
 
     [Inject]
@@ -310,6 +350,13 @@
                 await _root.FocusAsync();
             }
 
+            // A test that waits for an action waits for its focus too, which only now has moved.
+            if (_counted != _commits)
+            {
+                _counted = _commits;
+                StateHasChanged();
+            }
+
             if (firstRender)
             {
                 await AttachAsync();
@@ -339,7 +386,7 @@
         }
 
         _report = DotNetObjectReference.Create(new DockReport(SelectFromScriptAsync, CloseFromScriptAsync,
-            OnResizeAsync, MoveFromScriptAsync, ToggleMaximizedFromScriptAsync, RaiseFromScriptAsync,
+            OnResizeAsync, MoveFromScriptAsync, ToggleMaximizedFromScriptAsync, RaiseFromScriptAsync, OnFloatAsync,
             tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);
         if (handle is not null && _disposed)
@@ -478,6 +525,11 @@
                 {
                     slots.Add(new PanelSlot($"panel-{id}", panel, index, window.Box, showing, layer));
                 }
+            }
+
+            if (RendererInfo.IsInteractive)
+            {
+                slots.Add(new WindowGripSlot($"{key}-grip", index, window.Box, layer, Panel(window.Active)!.Title));
             }
         }
 
@@ -628,6 +680,33 @@
             await _handle.InvokeVoidAsync("step", separator, percent);
         }
     }
+
+    // The script takes this tenth-of-the-dock step, as it does the arrow keys' smaller ones, so the window stays
+    // inside the dock and no smaller than a group may be.
+    private async Task StepWindowAsync(int window, string step)
+    {
+        if (_handle is not null)
+        {
+            await _handle.InvokeVoidAsync("stepWindow", window, step);
+        }
+    }
+
+    // The single steps of a window's Move menu and of its grip's, each with a name for the script and for tests.
+    private IEnumerable<(string Name, string Text)> MoveSteps() =>
+    [
+        ("left", Labels.Left ?? Localizer[TbStrings.DockLeft]),
+        ("right", Labels.Right ?? Localizer[TbStrings.DockRight]),
+        ("up", Labels.Up ?? Localizer[TbStrings.DockUp]),
+        ("down", Labels.Down ?? Localizer[TbStrings.DockDown]),
+    ];
+
+    private IEnumerable<(string Name, string Text)> SizeSteps() =>
+    [
+        ("wider", Labels.Wider ?? Localizer[TbStrings.DockWider]),
+        ("narrower", Labels.Narrower ?? Localizer[TbStrings.DockNarrower]),
+        ("taller", Labels.Taller ?? Localizer[TbStrings.DockTaller]),
+        ("shorter", Labels.Shorter ?? Localizer[TbStrings.DockShorter]),
+    ];
 
     // What a group's menu, and the context menu of its tabs, offer for one of the group's panels.
     private RenderFragment MenuItems(GroupSlot group, string panel, List<GroupSlot> others,
@@ -789,6 +868,32 @@
         await MaximizeAsync(panel,
             !(shown.Maximized is { } filling && shown.Groups[filling].Panels.Contains(panel)));
         StateHasChanged();
+    }
+
+    // The script moved or resized the window that holds the panel.
+    private async Task OnFloatAsync(string panel, DockBox box, bool resized, int report)
+    {
+        // Set first, as for a separator, so the render that the app's LayoutChanged brings carries the number.
+        _reported = report;
+        try
+        {
+            // Rounded as the window's style is, so a step that changes nothing reports the box the layout has.
+            var layout = _layout.MoveWindow(panel, Round(box.X), Round(box.Y), Round(box.Width), Round(box.Height));
+            if (!layout.Equals(_layout))
+            {
+                await ChangeAsync(layout, resized ? "resize_window" : "move_window");
+                // The layout keeps a box inside the dock, whatever was reported.
+                var kept = layout.FloatOf(panel)!;
+                Announcer.Polite(resized
+                    ? Format(Labels.ResizedWindow, TbStrings.DockResizedWindow, Whole(kept.Width), Whole(kept.Height))
+                    : Format(Labels.MovedWindow, TbStrings.DockMovedWindow, Whole(kept.X), Whole(kept.Y)));
+            }
+        }
+        finally
+        {
+            _commits++;
+            StateHasChanged();
+        }
     }
 
     private async Task OnResizeAsync(int index, double fraction, int report)

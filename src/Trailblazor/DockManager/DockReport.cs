@@ -3,11 +3,11 @@ using Microsoft.JSInterop;
 namespace Trailblazor;
 
 // Hears the browser select a tab with the arrow keys, close one with a key or a middle click, move a separator,
-// drop a dragged tab, double-click a tab, and press or focus a window behind another, so the public dock needn't
-// expose [JSInvokable] methods.
+// drop a dragged tab, double-click a tab, press or focus a window behind another, and move or resize a window, so
+// the public dock needn't expose [JSInvokable] methods.
 internal sealed class DockReport(Func<string, Task> onSelect, Func<string, bool, Task> onClose,
     Func<int, double, int, Task> onResize, Func<string, string?, string, Task> onMove, Func<string, Task> onMaximize,
-    Func<string, Task> onRaise, Func<string, bool> holds)
+    Func<string, Task> onRaise, Func<string, DockBox, bool, int, Task> onFloat, Func<string, bool> holds)
 {
     // Whether the dock holds the tab with this element id, by which the bUnit driver finds a dock's reports. Panel
     // ids won't do, since two docks can use the same ones.
@@ -34,4 +34,10 @@ internal sealed class DockReport(Func<string, Task> onSelect, Func<string, bool,
     // The window that holds the panel comes to the front.
     [JSInvokable]
     public Task OnRaise(string panel) => onRaise(panel);
+
+    // The window that holds the panel has this box now, in percent of the dock, after a move or a resize. The number
+    // counts the script's reports, as for a separator.
+    [JSInvokable]
+    public Task OnFloat(string panel, double x, double y, double width, double height, bool resized, int report) =>
+        onFloat(panel, new DockBox(x, y, width, height), resized, report);
 }

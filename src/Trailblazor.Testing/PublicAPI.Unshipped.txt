@@ -598,3 +598,6 @@ Trailblazor.Testing.TbDockDriver.RestoreAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.DockAsync(string! panel) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.FloatAsync(string! panel) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.Floating.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbDockDriver.MoveWindowAsync(string! panel, int right, int down) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.ResizeWindowAsync(string! panel, int wider, int taller) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.Window(string! panel) -> (double X, double Y, double Width, double Height)

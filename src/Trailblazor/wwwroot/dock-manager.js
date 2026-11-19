@@ -10,7 +10,8 @@ const names = { x: 'x', y: 'y', width: 'w', height: 'h' };
 // script keeps each panel after its group's tabs, so Tab and screen readers meet them in reading order; moves
 // between tabs with the arrow keys; closes a tab with Delete, Backspace or a middle click; and moves the separators,
 // by dragging or with the keys, showing the new boxes at once and reporting the move when it stops; moves a panel
-// where its tab is dragged to; and has a double-clicked tab's group fill the dock. `reporter` hears it all.
+// where its tab is dragged to; has a double-clicked tab's group fill the dock; and moves and resizes the floating
+// windows. `reporter` hears it all.
 export function attachDock(root, reporter) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!root) {
@@ -57,11 +58,12 @@ export function attachDock(root, reporter) {
     // What the dock holds, in reading order: each group's row, its panels, then the separator after the group and
     // that separator's grip.
     const inReadingOrder = () => {
-        const [panels, separators, grips] = ['panel', 'separator', 'grip'].map(parts);
+        const [panels, separators, grips, corners] = ['panel', 'separator', 'grip', 'window-grip'].map(parts);
         const after = index => [separators, grips].map(list => list.find(each => Number(each.dataset.index) === index));
         return groupsInOrder().flatMap(group => [group,
             ...panels.filter(panel => panel.dataset.dockGroup === group.dataset.group),
-            ...after(Number(group.dataset.group)).filter(Boolean)]);
+            ...after(Number(group.dataset.group)).filter(Boolean),
+            ...corners.filter(corner => corner.dataset.group === group.dataset.group)]);
     };
     // Where the browser has no moveBefore, a move reloads an iframe, so a panel that holds one costs far more to move
     // than another panel, and a panel more than a row of tabs or a separator.
@@ -264,10 +266,84 @@ export function attachDock(root, reporter) {
         return { separator: parts('separator').find(each => each.dataset.index === grip.dataset.index), grip: trigger };
     };
 
+    // A window moves by the button that starts its row or by the empty part of the row, and resizes by the grip in
+    // its corner. Its row, its panels and its grip take the new box at once, as the parts beside a separator do.
+    const isRtl = () => getComputedStyle(root).direction === 'rtl';
+    const between = (value, low, high) => Math.min(Math.max(value, low), Math.max(low, high));
+    const rowOf = index => groupsInOrder().find(each => each.dataset.group === String(index));
+    // A window's row, its panels and its grip, which all carry the row's number.
+    const windowParts = row => [...root.children].filter(child => child.hasAttribute('data-floating')
+        && (child.dataset.group ?? child.dataset.dockGroup) === row.dataset.group);
+    // The box after a move, or after a resize, by this many percent of the dock: whole inside the dock, and no
+    // smaller than a group may be or than a layout keeps a window.
+    const changed = (start, dx, dy, resize) => {
+        if (!resize) {
+            return { ...start, x: between(start.x + dx, 0, 100 - start.width),
+                y: between(start.y + dy, 0, 100 - start.height) };
+        }
+
+        const least = Number(root.dataset.minSize);
+        return { ...start,
+            width: between(start.width + dx, Math.max(10, least / root.clientWidth * 100), 100 - start.x),
+            height: between(start.height + dy, Math.max(10, least / root.clientHeight * 100), 100 - start.y) };
+    };
+    const placeWindow = (row, box) => {
+        for (const part of windowParts(row)) {
+            moved.set(part, box);
+        }
+
+        show();
+    };
+    const reportWindow = (row, box, resize) => {
+        reports++;
+        callDotNet(reporter, 'OnFloat', tabsOf(row)[0].dataset.panel, box.x, box.y, box.width, box.height, resize,
+            reports);
+    };
+    // Left and Right are sides of the screen, while a window's box counts from the side where text starts.
+    const stepWindow = (row, step, percent) => {
+        const [dx, dy] = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1], wider: [1, 0], narrower: [-1, 0],
+            taller: [0, 1], shorter: [0, -1] }[step];
+        const resize = ['wider', 'narrower', 'taller', 'shorter'].includes(step);
+        const sideways = (step === 'left' || step === 'right') && isRtl() ? -dx : dx;
+        const box = changed(boxOf(row), sideways * percent, dy * percent, resize);
+        placeWindow(row, box);
+        reportWindow(row, box, resize);
+    };
+    // The handle a press or a key is on: the button of a window's Move menu or of its grip, not the menu's items.
+    const windowHandle = target => {
+        const corner = ownPart(target, 'window-grip');
+        const mover = corner ? null : ownPart(target, 'window-move');
+        const handle = (corner ?? mover) && target.closest('[data-part="trigger"]');
+        return handle ? { row: corner ? rowOf(corner.dataset.group) : ownPart(mover, 'group'),
+            resize: Boolean(corner), handle } : null;
+    };
+    // The window a press moves or resizes: by a handle, or by the empty part of its row.
+    const windowPress = event => {
+        const row = ownPart(event.target, 'group');
+        return windowHandle(event.target) ?? (row?.hasAttribute('data-floating')
+            && event.target.matches('.tb-dock__group, .tb-dock__tab-area, .tb-dock__tabs')
+            ? { row, resize: false, handle: null } : null);
+    };
+
     let drag = null;
+    let windowDrag = null;
     const grips = createGripDrag(root);
     const onPointerDown = event => {
         grips.pressed();
+        const lifted = event.button === 0 ? windowPress(event) : null;
+        if (lifted) {
+            if (!lifted.handle) {
+                // The row's empty part would otherwise start a selection of the tabs' text.
+                event.preventDefault();
+            }
+
+            // Captured where it was pressed, inside the tab menu's area, so that menu still hears the press end.
+            (lifted.handle ?? event.target).setPointerCapture(event.pointerId);
+            windowDrag = { ...lifted, x: event.clientX, y: event.clientY, start: boxOf(lifted.row), box: null,
+                dragged: false };
+            return;
+        }
+
         const press = event.button === 0 ? pressed(event) : null;
         if (!press?.separator) {
             return;
@@ -286,6 +362,20 @@ export function attachDock(root, reporter) {
             start: vertical(separator) ? event.clientY : event.clientX, dragged: false };
     };
     const onPointerMove = event => {
+        if (windowDrag) {
+            const [dx, dy] = [event.clientX - windowDrag.x, event.clientY - windowDrag.y];
+            windowDrag.dragged ||= grips.isDrag(Math.hypot(dx, dy), event);
+            if (windowDrag.dragged && windowDrag.row.isConnected) {
+                // A panel's iframe would take the pointer as it crosses.
+                root.dataset.resizing = '';
+                windowDrag.box = changed(windowDrag.start, (isRtl() ? -dx : dx) / root.clientWidth * 100,
+                    dy / root.clientHeight * 100, windowDrag.resize);
+                placeWindow(windowDrag.row, windowDrag.box);
+            }
+
+            return;
+        }
+
         if (!drag) {
             return;
         }
@@ -299,6 +389,17 @@ export function attachDock(root, reporter) {
         }
     };
     const onPointerUp = () => {
+        if (windowDrag) {
+            const { row, handle, box, resize, dragged } = windowDrag;
+            windowDrag = null;
+            grips.released(dragged ? handle : null);
+            delete root.dataset.resizing;
+            // The app can take the window away while it is dragged.
+            if (box && row.isConnected) {
+                reportWindow(row, box, resize);
+            }
+        }
+
         if (drag) {
             grips.released(drag.dragged ? drag.grip : null);
             delete root.dataset.resizing;
@@ -351,6 +452,28 @@ export function attachDock(root, reporter) {
             callDotNet(reporter, 'OnSelect', next.dataset.panel);
         }
     };
+    // The arrow keys on a window's Move button move it, and on its grip resize it, by a percent of the dock, or by
+    // ten with Shift. This runs before the menu's own keys, which would open it on Up and Down.
+    const onWindowKey = event => {
+        const way = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }[event.key];
+        const pressed = way && !event.altKey && !event.ctrlKey && !event.metaKey && windowHandle(event.target);
+        if (!pressed) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        // On the grip, the arrows pull the corner, which sits where the window's box ends.
+        const step = !pressed.resize ? way : { left: isRtl() ? 'wider' : 'narrower',
+            right: isRtl() ? 'narrower' : 'wider', up: 'shorter', down: 'taller' }[way];
+        stepWindow(pressed.row, step, event.shiftKey ? 10 : 1);
+    };
+    // The browser would take a finger's drag on the empty part of a window's row for scrolling, and end it.
+    const onTouchMove = event => {
+        if (windowDrag) {
+            event.preventDefault();
+        }
+    };
     const onFocusOut = event => delete ownPart(event.target, 'separator')?.dataset.pointerFocus;
     // A middle click closes a closable tab, as in a browser. Its press would start the browser's scrolling mode.
     const closable = event => event.button === 1 && ownPart(event.target, 'tab')?.hasAttribute('aria-keyshortcuts')
@@ -381,7 +504,6 @@ export function attachDock(root, reporter) {
     const edgeReach = 8;
     let carried = null;
     let landing = null;
-    const isRtl = () => getComputedStyle(root).direction === 'rtl';
     const inside = (box, x, y) => x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
     const tabsOf = group => [...group.querySelectorAll('.tb-dock__tabs > .tb-dock__tab')];
     // The side of a box that a point is nearest, when it is within reach of it.
@@ -562,6 +684,8 @@ export function attachDock(root, reporter) {
     root.addEventListener('pointerup', onPointerUp);
     root.addEventListener('pointercancel', onPointerUp);
     root.addEventListener('keydown', onKeyDown);
+    root.addEventListener('keydown', onWindowKey, { capture: true });
+    root.addEventListener('touchmove', onTouchMove, { passive: false });
     root.addEventListener('focusout', onFocusOut);
     root.addEventListener('mousedown', onMouseDown);
     root.addEventListener('auxclick', onAuxClick);
@@ -598,6 +722,13 @@ export function attachDock(root, reporter) {
                 report(separator, moveTo(separator, stepped(separator, percent)));
             }
         },
+        // A window's Move menu and its grip's menu move or resize it by a tenth of the dock.
+        stepWindow(index, step) {
+            const row = rowOf(index);
+            if (row) {
+                stepWindow(row, step, 10);
+            }
+        },
         // Whether the tab with this id, or its panel, holds the focus. The dock asks when the tab's close mark is
         // clicked, or Close is chosen in its own menu.
         holdsFocus(id) {
@@ -614,6 +745,8 @@ export function attachDock(root, reporter) {
             root.removeEventListener('pointerup', onPointerUp);
             root.removeEventListener('pointercancel', onPointerUp);
             root.removeEventListener('keydown', onKeyDown);
+            root.removeEventListener('keydown', onWindowKey, { capture: true });
+            root.removeEventListener('touchmove', onTouchMove);
             root.removeEventListener('focusout', onFocusOut);
             root.removeEventListener('mousedown', onMouseDown);
             root.removeEventListener('auxclick', onAuxClick);

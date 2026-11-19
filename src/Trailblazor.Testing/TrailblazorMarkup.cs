@@ -3095,6 +3095,38 @@ public sealed class TbDockDriver
     public async Task DockAsync(string panel) =>
         await ChooseAsync(panel, "[data-move=dock]", $"The panel \"{panel}\" is docked already.");
 
+    /// <summary>The box of the floating window that holds the panel with this title, in percent of the dock: where
+    /// it starts, from the side where text starts and from the top, and its width and height. Throws for a panel
+    /// that isn't in a window.</summary>
+    public (double X, double Y, double Width, double Height) Window(string panel)
+    {
+        var style = WindowRow(panel).GetAttribute("style")!;
+        double Number(string name) => double.Parse(
+            style.Split($"--tb-dock-{name}: ")[1].Split(';')[0], CultureInfo.InvariantCulture);
+        return (Number("x"), Number("y"), Number("w"), Number("h"));
+    }
+
+    /// <summary>Moves the window that holds the panel with this title by this many percent of the dock, to the right
+    /// and down when the numbers are positive, as the arrow keys on its Move button do. The window stays inside the
+    /// dock. bUnit has no layout, so it takes text to run from left to right. Throws for a panel that isn't in a
+    /// window.</summary>
+    public async Task MoveWindowAsync(string panel, int right, int down)
+    {
+        var (x, y, width, height) = Window(panel);
+        await ReportWindowAsync(panel, x + right, y + down, width, height, false);
+    }
+
+    /// <summary>Resizes the window that holds the panel with this title by this many percent of the dock, wider and
+    /// taller when the numbers are positive, as the arrow keys on its grip do. The window stays inside the dock and
+    /// keeps a tenth of the dock's width and height; bUnit has no pixels, so <c>MinGroupSize</c> isn't applied.
+    /// Throws for a panel that isn't in a window.</summary>
+    public async Task ResizeWindowAsync(string panel, int wider, int taller)
+    {
+        var (x, y, width, height) = Window(panel);
+        await ReportWindowAsync(panel, x, y, Math.Clamp(width + wider, 10, 100 - x),
+            Math.Clamp(height + taller, 10, 100 - y), true);
+    }
+
     /// <summary>Shows the panel with this title and has its group fill the dock, as "Maximize" in its group's menu
     /// does. Throws when the group is the dock's only one, or fills the dock already.</summary>
     public async Task MaximizeAsync(string panel) => await ChooseAsync(panel, "[data-move=maximize]",
@@ -3179,6 +3211,19 @@ public sealed class TbDockDriver
 
     private IElement Tab(string panel) => Tabs().SingleOrDefault(tab => Title(tab) == panel)
         ?? throw new InvalidOperationException($"No panel is titled \"{panel}\".");
+
+    private IElement WindowRow(string panel) =>
+        Tab(panel).Closest("[data-part=group]") is { } row && row.HasAttribute("data-floating") ? row
+            : throw new InvalidOperationException($"The panel \"{panel}\" isn't in a floating window.");
+
+    // Tells the dock what its script would after a move or a resize of a window.
+    private async Task ReportWindowAsync(string panel, double x, double y, double width, double height, bool resized)
+    {
+        var id = Tab(panel).GetAttribute("data-panel")!;
+        var report = _scripts.Dock(Tabs().First().Id!);
+        var number = int.Parse(_find().GetAttribute("data-report") ?? "0", CultureInfo.InvariantCulture) + 1;
+        await _scripts.InvokeAsync(() => report.OnFloat(id, x, y, width, height, resized, number));
+    }
 
     // On a page, a tab behind the group that fills the dock can't be clicked.
     private IElement Reachable(string panel) => Tab(panel) is var tab && !Covered(tab) ? tab

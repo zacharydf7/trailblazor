@@ -2718,7 +2718,8 @@ public static class ExampleCatalog
                 + "hidden or moved, and the dock can remember the arrangement.")
         {
             RightToLeftKeys = "Left and Right move between tabs, and move a separator, the way they point: Left "
-                + "goes to the next tab and grows the first group, now on the right.",
+                + "goes to the next tab and grows the first group, now on the right. On a window's Move button they "
+                + "move the window the way they point, and on its grip Left makes the window wider.",
             FullWidth = true,
             WhenToUse =
             [
@@ -2777,7 +2778,13 @@ public static class ExampleCatalog
                     + "dock, over its middle and a little further down and along for each window already floating, and "
                     + "`FloatAt(panel, x, y, width, height)` in a box given in percent of the dock. `Floating` lists "
                     + "the windows back to front, each a `DockFloat` with its `Group` and its box, and a saved layout "
-                    + "keeps them.", typeof(DockManagerFloatExample)),
+                    + "keeps them. `MoveWindow(panel, x, y, width, height)` gives the window that holds a panel "
+                    + "another box. A window moves by the Move button that starts its row, or by the empty part of the "
+                    + "row, and resizes by the grip in the corner where its box ends. The Move button and the grip "
+                    + "each work three ways: by dragging it, with the arrow keys while it has the focus, or with "
+                    + "single steps of a tenth of the dock from the menu that a click or tap opens. The window stays "
+                    + "whole inside the dock and no smaller than a tenth of it, and a drag or a step also keeps it no "
+                    + "smaller than `MinGroupSize`.", typeof(DockManagerFloatExample)),
                 new("remembering", "Remembering the layout", "With a `PersistenceKey`, the dock saves its layout in "
                     + "the browser's local storage after each change and reads it back once the page is "
                     + "interactive, so a reload keeps the arrangement. The saved layout replaces `Layout` and "
@@ -2836,6 +2843,17 @@ public static class ExampleCatalog
                     { When = "On a separator between stacked parts" },
                 new(["Home", "End"], "Makes the part before the separator as small or as large as "
                     + "`MinGroupSize` allows.") { When = "On a separator" },
+                new(["Left", "Right", "Up", "Down"], "Moves the window by 1% of the dock, the way the arrow "
+                    + "points.") { When = "On a window's Move button" },
+                new(["Shift+Left", "Shift+Right", "Shift+Up", "Shift+Down"], "Moves the window by 10%.")
+                    { When = "On a window's Move button" },
+                new(["Left", "Right", "Up", "Down"], "Pulls the window's corner by 1% of the dock, the way the "
+                    + "arrow points, which resizes the window.") { When = "On a window's grip" },
+                new(["Shift+Left", "Shift+Right", "Shift+Up", "Shift+Down"], "Pulls the corner by 10%.")
+                    { When = "On a window's grip" },
+                new(["Enter", "Space"], "Opens the menu of single steps: Left, Right, Up and Down on the Move "
+                    + "button, and Wider, Narrower, Taller and Shorter on the grip.")
+                    { When = "On a window's Move button or grip" },
             ],
             Labeling =
             [
@@ -2858,6 +2876,13 @@ public static class ExampleCatalog
                     + "dock, has `{0}` for the group's number, and `Restored` is said when every group shows again. "
                     + "`FloatingGroup` has `{0}` for a window's number, and `Floated`, which is said when a panel "
                     + "ends up in a window, has `{0}` for the panel's title.",
+                "A window's Move button is named \"Move the Notes window\", with the title of the window's showing "
+                    + "panel, and its grip \"Resize the Notes window\". `Labels.MoveWindow` and `ResizeWindow` "
+                    + "replace those, with `{0}` for the title. `MoveWindowHint` and `ResizeWindowHint` replace the "
+                    + "descriptions that mention the arrow keys, and `Left`, `Right`, `Up`, `Down`, `Wider`, "
+                    + "`Narrower`, `Taller` and `Shorter` replace the menus' items. `MovedWindow` and `ResizedWindow` "
+                    + "replace what is said after a window moves or is resized, with `{0}` and `{1}` for the two "
+                    + "percents.",
                 "`Labels.CloseHint` replaces the hint that describes a closable tab.",
             ],
             Announcements =
@@ -2871,6 +2896,11 @@ public static class ExampleCatalog
                     + "group's number, and \"All panel groups show again.\" when it's restored.",
                 "When a panel ends up in a floating window, from Float or a move, screen readers hear \"Notes "
                     + "floats in a window.\", with the panel's title.",
+                "On a window's Move button, screen readers hear its name and \"Arrow keys move the window.\", "
+                    + "and on its grip \"Arrow keys resize the window.\"",
+                "After a window moves, screen readers hear where it is, as in \"The window is 35% across and 15% "
+                    + "down.\", and after it is resized, how big, as in \"The window is 40% wide and 60% tall.\" "
+                    + "Both are in whole percents of the dock.",
                 "On a separator, `aria-valuenow` gives the share, in percent, that the part before it has of the "
                     + "space its two sides take together.",
             ],
@@ -2892,6 +2922,9 @@ public static class ExampleCatalog
                     + "the Tab key and for screen readers, oldest window first, no matter which window is in front. "
                     + "After Float or Dock, focus is on the panel's tab, and a window behind another comes forward "
                     + "when it is pressed or takes the focus.",
+                "A window moves and resizes without a drag: its Move button and its grip each have the arrow keys "
+                    + "and a menu of single steps (WCAG 2.5.7). Both are stops for the Tab key: the Move button "
+                    + "starts the window's row, before its tabs, and the grip comes after the window's panel.",
                 "Maximize and Restore are in each group's menu and in each tab's own, so nothing needs a double "
                     + "click. While a group fills the dock, the other groups' tabs and panels and the separators "
                     + "can't be focused or read. After Maximize or Restore, focus is in the group's row, on its "
@@ -2911,9 +2944,9 @@ public static class ExampleCatalog
                     + "larger or smaller by 10%. The menu is the single-pointer alternative to dragging (WCAG "
                     + "2.5.7). The grip shows while the pointer is on the separator, and always where the main "
                     + "pointer is a finger, as on a phone or a tablet.",
-                "The grip stays out of the tab order, since the separator's keys do the same as its menu.",
-                "Tabs, close marks, menu buttons, the Restore button and grips work with a tap, and each is at "
-                    + "least a 24px target.",
+                "A separator's grip stays out of the tab order, since the separator's keys do the same as its menu.",
+                "Tabs, close marks, menu buttons, the Restore button, a window's Move button and the grips work "
+                    + "with a tap, and each is at least a 24px target.",
                 "In forced colors, the showing tab's line, a focused separator and the mark for a dragged tab use "
                     + "the system's highlight color.",
             ],
@@ -2928,10 +2961,11 @@ public static class ExampleCatalog
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
-                "The groups render where the layout puts them, each showing its panel, and the windows over them. "
-                    + "Selecting tabs, dragging them, closing panels and resizing start working once the page is "
-                    + "interactive, which is also when the groups' menus, the separators' grips and the Restore button "
-                    + "of a group that fills the dock appear. Until then, a right-click on a tab opens the browser's "
+                "The groups render where the layout puts them, each showing its panel, and the windows over "
+                    + "them. Selecting tabs, dragging them, closing panels, resizing groups, and moving and "
+                    + "resizing windows start working once the page is interactive, which is also when the groups' "
+                    + "menus, the separators' grips, the Restore button of a group that fills the dock, and each "
+                    + "window's Move button and grip appear. Until then, a right-click on a tab opens the browser's "
                     + "own menu.",
             ],
             Notes =
@@ -2978,8 +3012,8 @@ public static class ExampleCatalog
                 new("A window that comes to the front is a change to the layout: it raises `LayoutChanged` and is "
                     + "saved under a `PersistenceKey`. It isn't counted in `data-commits`, since a press that "
                     + "brings a window forward usually does something else that is."),
-                new("A window can't be moved or resized by hand yet. `FloatAt` gives it its box from code.")
-                    { Pitfall = true },
+                new("Where text runs right to left, a window's grip is in its bottom-left corner, and Left and "
+                    + "Right in its Move menu still go the way they say."),
                 new("A drop within a few pixels of the dock's edge goes along that edge, even where a row of tabs "
                     + "reaches it, unless a window is there, which takes the panel as a tab. The mark shows where "
                     + "the panel will land."),
@@ -2997,12 +3031,15 @@ public static class ExampleCatalog
             DataParts =
             [
                 new("dock", "The dock itself, around its groups, panels, separators, grips and drop mark, which "
-                    + "are all its children. It has `data-moving` while a tab is dragged."),
+                    + "are all its children. It has `data-moving` while a tab is dragged, and `data-resizing` "
+                    + "while a separator or a window is."),
                 new("group", "One group's row, across the top of the group's box. `data-group` holds its number, "
                     + "from 0. The one that fills the dock has `data-maximized`, and the ones it covers have the "
                     + "class `tb-dock__group--covered`. A floating window's row has `data-floating`, the class "
                     + "`tb-dock__group--floating` and `--tb-dock-z`, its layer among the windows, from 0 at the "
                     + "back."),
+                new("window-move", "The Move menu that starts a floating window's row: its button drags the window "
+                    + "or opens the items that move it, which carry `data-step` (`left`, `right`, `up` or `down`)."),
                 new("restore", "The button beside the menu of the group that fills the dock, which shows every "
                     + "group again."),
                 new("tabs", "The tab list in a group's row. It sits inside a `TbContextMenu` with the class "
@@ -3021,6 +3058,10 @@ public static class ExampleCatalog
                 new("panel", "One panel's content, with `data-panel` holding its `Id`. A hidden one is `inert`. "
                     + "`data-dock-group` holds the number of its group's row. One in a floating window has "
                     + "`data-floating`, the class `tb-dock__panel--floating` and its window's `--tb-dock-z`."),
+                new("window-grip", "A floating window's grip menu, a child of the dock after the window's panels. "
+                    + "It has `data-group` with the window's number, `data-floating`, and the window's box and "
+                    + "`--tb-dock-z`. Its button drags the corner or opens the items that resize the window, which "
+                    + "carry `data-step` (`wider`, `narrower`, `taller` or `shorter`)."),
                 new("separator", "The focusable line between two parts, dragged or moved with the keyboard to "
                     + "resize them."),
                 new("grip", "A separator's handle menu, on the middle of its line: its button drags the separator "
@@ -3071,6 +3112,13 @@ public static class ExampleCatalog
                     + "`InvalidOperationException` for a panel that floats already, and `DockAsync` for one that "
                     + "is docked. Like the move helpers, both select the panel first and find the menu's item by "
                     + "its `data-move`.",
+                "`MoveWindowAsync(\"Notes\", 10, -5)` moves the window that holds a panel by percents of the dock, "
+                    + "here 10 to the right and 5 up, and `ResizeWindowAsync(\"Notes\", -10, 5)` makes it 10 "
+                    + "narrower and 5 taller. Positive numbers go right, down, wider and taller, as the arrow keys "
+                    + "on its Move button or grip do. `WindowAsync(\"Notes\")` or `Window(\"Notes\")` reads its "
+                    + "box, in percent of the dock. They throw an `InvalidOperationException` for a panel that "
+                    + "isn't in a window. bUnit has no pixels and no direction, so it doesn't apply `MinGroupSize` "
+                    + "and takes text to run left to right.",
                 "`ChooseFromTabMenuAsync(\"Notes\", \"Close\")` opens the menu of a panel's tab, as a right-click "
                     + "does, and clicks an item in it, through the submenus named before it, as in "
                     + "`ChooseFromTabMenuAsync(\"Notes\", \"Move to group\", \"Group 2: Map\")`. It acts on that "
@@ -3079,17 +3127,20 @@ public static class ExampleCatalog
                 "Each group's row of tabs is a context menu named \"Tab options\", so on a page with a dock, find "
                     + "your own context menu by its name, as in `ContextMenu(\"Trail actions\")`.",
                 "In Playwright, `SelectAsync`, `CloseAsync`, `ResizeAsync`, `MaximizeAsync`, `RestoreAsync`, "
-                    + "`FloatAsync`, `DockAsync` and the move helpers wait until the app's `LayoutChanged` has "
-                    + "run, which the dock counts in `data-commits` for everything but a window coming forward.",
+                    + "`FloatAsync`, `DockAsync`, `MoveWindowAsync`, `ResizeWindowAsync` and the move helpers wait "
+                    + "until the app's `LayoutChanged` has run and the focus has moved, which the dock counts in "
+                    + "`data-commits` for everything but a window coming forward.",
                 "A dropped tab goes through the same move as the menu, with the same focus, announcement and "
                     + "telemetry, and the move helpers reach every layout a drop can, some in two steps. bUnit has "
                     + "no pointer, so it tests moves with the helpers.",
                 "To test the drag itself in Playwright, press on the tab, move the mouse in a few steps and "
                     + "release, then wait for `data-commits` to go up. A drop where no mark shows changes nothing "
                     + "and leaves `data-commits` as it was.",
+                "A window drags the same way: press on its Move button, its grip or the empty part of its row, "
+                    + "move in a few steps and release, then wait for `data-commits` to go up by one.",
                 "A `DockLayout` needs no renderer: test what your app does with `Open`, `Close`, `Move`, "
-                    + "`MoveToEdge`, `Float`, `FloatAt`, `Maximize`, `Restore`, `ToJson` and `TryParse` in plain "
-                    + "unit tests.",
+                    + "`MoveToEdge`, `Float`, `FloatAt`, `MoveWindow`, `Maximize`, `Restore`, `ToJson` and "
+                    + "`TryParse` in plain unit tests.",
                 "A dock with a `PersistenceKey` starts from what the browser has saved. Playwright gives each new "
                     + "context empty storage, and bUnit has no storage, so there the dock starts from `Layout`.",
             ],
@@ -3101,7 +3152,8 @@ public static class ExampleCatalog
                     + "`resize` each time they move a separator, `maximize` each time they maximize a group, "
                     + "`restore` each time they restore the groups, `float` each time they float a panel from a "
                     + "menu and `dock` each time they dock one with Dock. A window coming to the front isn't "
-                    + "counted. Panel ids, titles and sizes are never recorded.",
+                    + "counted. `move_window` and `resize_window` count each time they move or resize a window, "
+                    + "once per drag, key press or menu step. Panel ids, titles and sizes are never recorded.",
             ],
         },
         new("splitter", "Splitter", ExampleCategory.Layout,
