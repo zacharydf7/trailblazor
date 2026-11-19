@@ -76,8 +76,8 @@ public sealed record DockLabels
     /// groups. Leave it null for the app's text for <see cref="TbStrings.DockFloatingGroup"/>.</summary>
     public string? FloatingGroup { get; init; }
 
-    /// <summary>The menu item that takes a docked panel out into a floating window. Leave it null for the app's text
-    /// for <see cref="TbStrings.DockFloat"/>.</summary>
+    /// <summary>The menu item that takes a panel out of its group, or out of a window it shares, into a floating
+    /// window of its own. Leave it null for the app's text for <see cref="TbStrings.DockFloat"/>.</summary>
     public string? Float { get; init; }
 
     /// <summary>The menu item that docks a floating panel. Leave it null for the app's text for

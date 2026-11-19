@@ -498,10 +498,14 @@ export function attachDock(root, reporter) {
             callDotNet(reporter, 'OnMaximize', second.dataset.panel);
         }
     };
-    // Dragging a tab moves its panel: beside another tab, to a new group on one side of a group, or to one along an
-    // edge of the dock. The mark shows where the panel would land, and nothing changes until the drop.
+    // Dragging a tab moves its panel: beside another tab, to a new group on one side of a group or along an edge of
+    // the dock, or out into a window of its own. The mark shows where the panel would land, and nothing changes
+    // until the drop.
     const mark = parts('drop-mark')[0];
     const edgeReach = 8;
+    // Where the pointer is on the row of a window a tab is pulled out into, in pixels from where the row starts and
+    // from its top, and the window's width and height in percent of the dock, which are those Float gives.
+    const pulledOut = { along: 48, down: 16, size: 50 };
     let carried = null;
     let landing = null;
     const inside = (box, x, y) => x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
@@ -525,8 +529,23 @@ export function attachDock(root, reporter) {
     };
     const positionOn = side => ({ left: isRtl() ? 'End' : 'Start', right: isRtl() ? 'Start' : 'End', top: 'Top',
         bottom: 'Bottom' })[side];
-    // Where the carried tab's panel would land from a point: beside a target panel, or along an edge of the dock
-    // when there is no target, with the box its mark takes. Null where a drop would change nothing.
+    // The window a tab pulled out of its group would float in: whole inside the dock, with the pointer on its row a
+    // little way in from where the row starts.
+    const windowAt = (x, y) => {
+        const dock = root.getBoundingClientRect();
+        const [left, top] = [dock.left + root.clientLeft, dock.top + root.clientTop];
+        const along = isRtl() ? left + root.clientWidth - x : x - left;
+        const float = changed({ x: (along - pulledOut.along) / root.clientWidth * 100,
+            y: (y - top - pulledOut.down) / root.clientHeight * 100, width: pulledOut.size,
+            height: pulledOut.size }, 0, 0, false);
+        const fromLeft = isRtl() ? 100 - float.x - float.width : float.x;
+        return { float, box: { left: left + fromLeft / 100 * root.clientWidth,
+            top: top + float.y / 100 * root.clientHeight, width: float.width / 100 * root.clientWidth,
+            height: float.height / 100 * root.clientHeight } };
+    };
+    // Where the carried tab's panel would land from a point: beside a target panel, along an edge of the dock when
+    // there is no target, or in a window of its own, with the box its mark takes. Null where a drop would change
+    // nothing.
     const landingAt = (x, y) => {
         const dock = root.getBoundingClientRect();
         const groups = parts('group');
@@ -571,7 +590,8 @@ export function attachDock(root, reporter) {
         const shown = over;
         const group = shown && groups.find(each => each.dataset.group === shown.dataset.dockGroup);
         const others = group ? tabsOf(group).filter(tab => tab !== carried) : [];
-        if (!others.length) {
+        // A tab alone in its window is where a drop here would put it.
+        if (!group || (!others.length && layerOf(group) >= 0)) {
             return null;
         }
 
@@ -579,15 +599,18 @@ export function attachDock(root, reporter) {
         const [top, body] = [group.getBoundingClientRect(), shown.getBoundingClientRect()];
         const whole = { left: body.left, right: body.right, top: top.top, bottom: body.bottom, width: body.width,
             height: body.bottom - top.top };
-        // A window has no sides to split off, so all of it takes the panel as a tab.
-        const side = layerOf(group) < 0 && nearSide(body, x, y, body.width / 4, body.height / 4);
+        // A window has no sides to split off, so all of it takes the panel as a tab, and a tab alone in its group has
+        // no tabs to split off from.
+        const side = others.length && layerOf(group) < 0 && nearSide(body, x, y, body.width / 4, body.height / 4);
         if (side) {
             const beside = others.find(tab => tab.getAttribute('aria-selected') === 'true') ?? others[0];
             return { target: beside.dataset.panel, position: positionOn(side), box: sideOf(whole, side, 0.5) };
         }
 
-        // The middle of another group takes the panel as its last tab.
-        return group === own ? null : { target: others.at(-1).dataset.panel, position: 'After', box: whole };
+        // The middle of the tab's own group pulls its panel out into a window there, and the middle of another
+        // group takes the panel as its last tab.
+        return group === own ? windowAt(x, y)
+            : { target: others.at(-1).dataset.panel, position: 'After', box: whole };
     };
     const showMark = () => {
         if (!landing) {
@@ -629,7 +652,9 @@ export function attachDock(root, reporter) {
         onDrop: () => {
             const [panel, to] = [carried.dataset.panel, landing];
             endCarry();
-            if (to) {
+            if (to?.float) {
+                callDotNet(reporter, 'OnPullOut', panel, to.float.x, to.float.y, to.float.width, to.float.height);
+            } else if (to) {
                 callDotNet(reporter, 'OnMove', panel, to.target, to.position);
             }
         },

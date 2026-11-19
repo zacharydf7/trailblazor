@@ -3085,8 +3085,8 @@ public sealed class TbDockDriver
     public IReadOnlyList<string> Floating =>
         Tabs().Where(tab => tab.Closest("[data-part=group]")!.HasAttribute("data-floating")).Select(Title).ToList();
 
-    /// <summary>Takes the panel with this title out into a floating window, as "Float" in its group's menu does.
-    /// Throws for a panel that floats already.</summary>
+    /// <summary>Takes the panel with this title out into a floating window of its own, as "Float" in its group's
+    /// menu does. Throws for a panel that has a window to itself already.</summary>
     public async Task FloatAsync(string panel) =>
         await ChooseAsync(panel, "[data-move=float]", $"The panel \"{panel}\" floats already.");
 

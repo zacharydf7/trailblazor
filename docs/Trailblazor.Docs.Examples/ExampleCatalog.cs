@@ -2745,13 +2745,14 @@ public static class ExampleCatalog
                     + "group they maximize or restore and each window that comes to the front.",
                     typeof(DockManagerExample)),
                 new("moving", "Moving panels", "Dragging a tab moves its panel: along a row of tabs, its own or "
-                    + "another group's, to where the line shows; onto the middle of a group to join it as its last "
-                    + "tab; onto a side of a group for a new group there; or onto an edge of the dock for a new "
-                    + "group along it. A mark shows where the panel would land, and Escape cancels the drag. "
-                    + "Without a drag, the menu after each group's tabs moves the group's showing panel back or "
-                    + "forward in its row, to the end of another group, or to a new group beside its own or along "
-                    + "an edge of the dock, and can also close it. A right-click on a tab opens the same menu "
-                    + "for that tab's panel, whether or not it shows.", typeof(DockManagerDragExample)),
+                    + "another group's, to where the line shows; onto the middle of another group to join it as its "
+                    + "last tab; onto a side of a group for a new group there; onto an edge of the dock for a new "
+                    + "group along it; or onto the middle of its own group, or anywhere on its panel when the tab is "
+                    + "alone in a docked group, to float in a window. A mark shows where the panel would land, and "
+                    + "Escape cancels the drag. Without a drag, the menu after each group's tabs moves the group's "
+                    + "showing panel back or forward in its row, to the end of another group, or to a new group beside "
+                    + "its own or along an edge of the dock, and can also close it. A right-click on a tab opens the "
+                    + "same menu for that tab's panel, whether or not it shows.", typeof(DockManagerDragExample)),
                 new("moving-from-code", "Moving panels from code", "`DockLayout.Move(panel, target, position)` gives "
                     + "back a layout with a panel beside another one, for the app to set as `Layout`: "
                     + "`DockPosition.Before` or `After` makes it a tab next to the target's and shows it, and "
@@ -2769,13 +2770,18 @@ public static class ExampleCatalog
                     + "that fills the dock, or null. Opening a panel in a covered group, or moving one to a "
                     + "covered group or a new one, shows every group again.", typeof(DockManagerMaximizeExample)),
                 new("floating", "Floating windows", "Float in a panel's menus takes it out of its group into a window "
-                    + "that floats above the docked groups, inside the dock. A window has tabs as a group has: a tab "
-                    + "dropped on it joins it, and so does a panel sent to it from Move to group, which lists the "
-                    + "window by its number. Dock in a window's menus puts a panel back as the showing tab of the "
-                    + "largest group, and a floating panel's tab can also be dragged, or moved from the menu, to any "
-                    + "docked place. A press or the focus in a window behind another brings it to the front. From "
-                    + "code, `DockLayout.Float(panel)` floats a panel in a window half as wide and as tall as the "
-                    + "dock, over its middle and a little further down and along for each window already floating, and "
+                    + "that floats above the docked groups, inside the dock. So does a drag: a tab dropped on the "
+                    + "middle of its own group floats in a window under the pointer, half as wide and as tall as the "
+                    + "dock. A tab alone in its docked group floats when it is dropped anywhere on its panel, though "
+                    + "the dock's edge still gives it a group there while other panels are docked. A tab alone in "
+                    + "its window stays where it is. In a window that holds other panels too, Float gives the panel a "
+                    + "window of its own. A window has tabs as a group has: a tab dropped on it from another group "
+                    + "joins it, and so does a panel sent to it from Move to group, which lists the window by its "
+                    + "number. Dock in a window's menus puts a panel back as the showing tab of the largest group, and "
+                    + "a floating panel's tab can also be dragged, or moved from the menu, to any docked place. A "
+                    + "press or the focus in a window behind another brings it to the front. From code, "
+                    + "`DockLayout.Float(panel)` floats a panel in a window half as wide and as tall as the dock, over "
+                    + "its middle and a little further down and along for each window already floating, and "
                     + "`FloatAt(panel, x, y, width, height)` in a box given in percent of the dock. `Floating` lists "
                     + "the windows back to front, each a `DockFloat` with its `Group` and its box, and a saved layout "
                     + "keeps them. `MoveWindow(panel, x, y, width, height)` gives the window that holds a panel "
@@ -3015,8 +3021,8 @@ public static class ExampleCatalog
                 new("Where text runs right to left, a window's grip is in its bottom-left corner, and Left and "
                     + "Right in its Move menu still go the way they say."),
                 new("A drop within a few pixels of the dock's edge goes along that edge, even where a row of tabs "
-                    + "reaches it, unless a window is there, which takes the panel as a tab. The mark shows where "
-                    + "the panel will land."),
+                    + "reaches it, but not where a window does: there it lands as it would anywhere else on that "
+                    + "window. The mark shows where the panel will land."),
                 new("A `PersistenceKey` names the layout in the browser's local storage, as `tb-dock:` followed by "
                     + "the key, so give each dock a key of its own. The layout is kept for that browser only, and "
                     + "isn't kept where storage is turned off or full."),
@@ -3067,9 +3073,9 @@ public static class ExampleCatalog
                 new("grip", "A separator's handle menu, on the middle of its line: its button drags the separator "
                     + "or opens the items that resize, which carry `data-step` (`larger` or `smaller`)."),
                 new("drop-mark", "The mark over the place where a dragged tab's panel would land. `data-show` is "
-                    + "`line` for the line beside a tab and `box` for a group, half of one or a band along the "
-                    + "dock's edge. It is absent while nothing is dragged, and while a dragged tab is over a place "
-                    + "where a drop would change nothing."),
+                    + "`line` for the line beside a tab and `box` for a group, half of one, a band along the dock's "
+                    + "edge or the window a panel would float in. It is absent while nothing is dragged, and while a "
+                    + "dragged tab is over a place where a drop would change nothing."),
                 new("empty", "What shows when no panel is docked."),
             ],
             Anatomy = """
@@ -3106,12 +3112,11 @@ public static class ExampleCatalog
                     + "clicks a covered panel's tab throws an `InvalidOperationException` that says to restore the "
                     + "groups first. `MaximizeAsync` throws one too when the group is the dock's only one or fills the "
                     + "dock already, and `RestoreAsync` when no group fills the dock.",
-                "`FloatAsync(\"Notes\")` takes a panel out into a floating window, with Float in its group's "
-                    + "menu, and `DockAsync(\"Notes\")` docks it with Dock in its window's menu. `FloatingAsync()` "
-                    + "or `Floating` lists the panels in windows. `FloatAsync` throws an "
-                    + "`InvalidOperationException` for a panel that floats already, and `DockAsync` for one that "
-                    + "is docked. Like the move helpers, both select the panel first and find the menu's item by "
-                    + "its `data-move`.",
+                "`FloatAsync(\"Notes\")` takes a panel out into a floating window, with Float in its group's menu, and "
+                    + "`DockAsync(\"Notes\")` docks it with Dock in its window's menu. `FloatingAsync()` or `Floating` "
+                    + "lists the panels in windows. `FloatAsync` throws an `InvalidOperationException` for a panel "
+                    + "that has a window to itself already, and `DockAsync` for one that is docked. Like the move "
+                    + "helpers, both select the panel first and find the menu's item by its `data-move`.",
                 "`MoveWindowAsync(\"Notes\", 10, -5)` moves the window that holds a panel by percents of the dock, "
                     + "here 10 to the right and 5 up, and `ResizeWindowAsync(\"Notes\", -10, 5)` makes it 10 "
                     + "narrower and 5 taller. Positive numbers go right, down, wider and taller, as the arrow keys "
@@ -3146,14 +3151,14 @@ public static class ExampleCatalog
             ],
             Telemetry =
             [
-                "With a `TelemetryName`, such as `\"hike-planner\"`, it counts `trailblazor.control.shown` as it "
-                    + "first renders and `trailblazor.control.used` with the action `select` each time a person "
-                    + "shows another tab, `move` each time they move a panel, `close` each time they close one, "
-                    + "`resize` each time they move a separator, `maximize` each time they maximize a group, "
-                    + "`restore` each time they restore the groups, `float` each time they float a panel from a "
-                    + "menu and `dock` each time they dock one with Dock. A window coming to the front isn't "
-                    + "counted. `move_window` and `resize_window` count each time they move or resize a window, "
-                    + "once per drag, key press or menu step. Panel ids, titles and sizes are never recorded.",
+                "With a `TelemetryName`, such as `\"hike-planner\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders and `trailblazor.control.used` with the action `select` each time a person shows "
+                    + "another tab, `move` each time they move a panel, `close` each time they close one, `resize` "
+                    + "each time they move a separator, `maximize` each time they maximize a group, `restore` each "
+                    + "time they restore the groups, `float` each time they float a panel, from a menu or by dragging "
+                    + "its tab, and `dock` each time they dock one with Dock. A window coming to the front isn't "
+                    + "counted. `move_window` and `resize_window` count each time they move or resize a window, once "
+                    + "per drag, key press or menu step. Panel ids, titles and sizes are never recorded.",
             ],
         },
         new("splitter", "Splitter", ExampleCategory.Layout,

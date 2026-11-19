@@ -194,8 +194,8 @@ public sealed class TbDockLocator(ILocator scope, string? name)
         await Root.Locator(":scope > .tb-dock__group--floating .tb-dock__tab [data-part=title]")
             .AllTextContentsAsync();
 
-    /// <summary>Takes the panel with this title out into a floating window, with "Float" in its group's menu. Throws
-    /// for a panel that floats already.</summary>
+    /// <summary>Takes the panel with this title out into a floating window of its own, with "Float" in its group's
+    /// menu. Throws for a panel that has a window to itself already.</summary>
     public async Task FloatAsync(string panel) =>
         await ChooseAsync(panel, "[data-move=float]", $"The panel \"{panel}\" floats already.");
 

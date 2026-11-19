@@ -698,6 +698,43 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public async Task PullOut_ShouldFloatThePanelInTheBoxTheScriptGives_WhenATabIsDroppedOnItsOwnGroup()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(Hike, HikePanels, changes.Add);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var notes = ReferenceOnceMade(cut, "Notes");
+
+        await cut.InvokeAsync(() => Report().OnPullOut("notes", 41.252191, 37.5, 50, 50));
+
+        // The layout keeps the four decimals the window's style shows.
+        Assert.Equal([Hike.FloatAt("notes", 41.2522, 37.5, 50, 50)], changes);
+        Assert.Equal(["Notes"], cut.Tb().Dock().Floating);
+        Assert.Equal((41.2522, 37.5, 50, 50), cut.Tb().Dock().Window("Notes"));
+        // As after Float in a menu: the tab takes the focus, and the dock says and counts what happened.
+        Assert.Equal(notes(), ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+        Assert.Equal(["Notes floats in a window."], Services.GetRequiredService<FakeAnnouncer>().Polite);
+        Assert.Equal(["float"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+        Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
+    public async Task PullOut_ShouldChangeNothingButCountTheDrop_WhenTheReportNamesNoSuchPanel()
+    {
+        var changes = 0;
+        var cut = RenderDock(Hike, HikePanels, _ => changes++);
+
+        await cut.InvokeAsync(() => Report().OnPullOut("lake", 10, 10, 50, 50));
+
+        Assert.Equal(0, changes);
+        Assert.Empty(cut.Tb().Dock().Floating);
+        Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
     public async Task TabMenu_ShouldOfferWhatTheTabItOpenedOnCanDo_WhenOpenedOnATabOrOnTheRestOfItsRow()
     {
         var cut = RenderDock(Hike, [new("trails", "Trails"), new("map", "Map", Closable: false), .. HikePanels[2..]]);
@@ -1274,6 +1311,24 @@ public class TbDockManagerTests : BunitContext
         // A docked group can move a panel into a window, by its number.
         Assert.Equal(["Group 2: Notes", "Group 3: Weather"], cut.FindAll("[data-part=group-menu]")[0]
             .QuerySelectorAll("[data-move-group]").Select(item => item.TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task Float_ShouldGiveAPanelAWindowOfItsOwn_WhenChosenInAWindowItShares()
+    {
+        var cut = RenderDock(Hike.Float("notes").Move("weather", "notes", DockPosition.After), HikePanels);
+        var dock = cut.Tb().Dock();
+        string[] Moves() => [.. cut.Find("[data-part=group][data-floating] [data-part=group-menu]")
+            .QuerySelectorAll("[data-move]").Select(item => item.GetAttribute("data-move")!)];
+        Assert.Equal(["back", "forward", "float", "dock", "close"], Moves());
+
+        await dock.FloatAsync("Weather");
+
+        Assert.Equal(2, cut.FindAll("[data-part=group][data-floating]").Count);
+        Assert.Equal(["Notes", "Weather"], dock.Floating);
+        Assert.Equal("Weather floats in a window.", Services.GetRequiredService<FakeAnnouncer>().Polite[^1]);
+        // Alone in its window, a panel has a window to itself already.
+        Assert.Equal(["back", "forward", "dock", "close"], Moves());
     }
 
     [Fact]

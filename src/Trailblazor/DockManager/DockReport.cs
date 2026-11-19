@@ -3,11 +3,12 @@ using Microsoft.JSInterop;
 namespace Trailblazor;
 
 // Hears the browser select a tab with the arrow keys, close one with a key or a middle click, move a separator,
-// drop a dragged tab, double-click a tab, press or focus a window behind another, and move or resize a window, so
-// the public dock needn't expose [JSInvokable] methods.
+// drop a dragged tab or pull it out into a window, double-click a tab, press or focus a window behind another, and
+// move or resize a window, so the public dock needn't expose [JSInvokable] methods.
 internal sealed class DockReport(Func<string, Task> onSelect, Func<string, bool, Task> onClose,
     Func<int, double, int, Task> onResize, Func<string, string?, string, Task> onMove, Func<string, Task> onMaximize,
-    Func<string, Task> onRaise, Func<string, DockBox, bool, int, Task> onFloat, Func<string, bool> holds)
+    Func<string, Task> onRaise, Func<string, DockBox, bool, int, Task> onFloat, Func<string, DockBox, Task> onPullOut,
+    Func<string, bool> holds)
 {
     // Whether the dock holds the tab with this element id, by which the bUnit driver finds a dock's reports. Panel
     // ids won't do, since two docks can use the same ones.
@@ -40,4 +41,9 @@ internal sealed class DockReport(Func<string, Task> onSelect, Func<string, bool,
     [JSInvokable]
     public Task OnFloat(string panel, double x, double y, double width, double height, bool resized, int report) =>
         onFloat(panel, new DockBox(x, y, width, height), resized, report);
+
+    // A dragged tab was pulled out of its group: its panel floats in a window with this box, in percent of the dock.
+    [JSInvokable]
+    public Task OnPullOut(string panel, double x, double y, double width, double height) =>
+        onPullOut(panel, new DockBox(x, y, width, height));
 }

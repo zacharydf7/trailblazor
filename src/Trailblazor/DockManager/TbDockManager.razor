@@ -387,7 +387,7 @@
 
         _report = DotNetObjectReference.Create(new DockReport(SelectFromScriptAsync, CloseFromScriptAsync,
             OnResizeAsync, MoveFromScriptAsync, ToggleMaximizedFromScriptAsync, RaiseFromScriptAsync, OnFloatAsync,
-            tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
+            PullOutFromScriptAsync, tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);
         if (handle is not null && _disposed)
         {
@@ -760,13 +760,14 @@
                 }
             </TbSubMenu>
         }
-        @if (group.Layer is null)
+        @* A panel alone in its window has a window to itself already. *@
+        @if (group.Layer is null || sibling is not null)
         {
             <TbMenuItem data-move="float" OnClick="() => MoveAsync(panel, _layout.Float(panel), FloatAction)">
                 @(Labels.Float ?? Localizer[TbStrings.DockFloat])
             </TbMenuItem>
         }
-        else
+        @if (group.Layer is not null)
         {
             @* Close then Open docks it the way Open docks a panel the layout doesn't hold: as the showing tab of
                the largest group. *@
@@ -858,6 +859,15 @@
         }
 
         await MoveAsync(panel, layout);
+        StateHasChanged();
+    }
+
+    // A dragged tab was dropped on the middle of its own group, which pulls its panel out into a window there.
+    private async Task PullOutFromScriptAsync(string panel, DockBox box)
+    {
+        // Rounded as a window's style is. A panel the dock doesn't have keeps the layout, as any other drop does.
+        await MoveAsync(panel, Panel(panel) is null ? _layout
+            : _layout.FloatAt(panel, Round(box.X), Round(box.Y), Round(box.Width), Round(box.Height)), FloatAction);
         StateHasChanged();
     }
 

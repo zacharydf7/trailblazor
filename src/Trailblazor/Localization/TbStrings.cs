@@ -792,7 +792,8 @@ public static class TbStrings
     /// </summary>
     public const string DockFloatingGroup = "Dock.FloatingGroup";
 
-    /// <summary>"Float": a dock menu item that takes a docked panel out into a floating window.</summary>
+    /// <summary>"Float": a dock menu item that takes a panel out of its group, or out of a window it shares, into a
+    /// floating window of its own.</summary>
     public const string DockFloat = "Dock.Float";
 
     /// <summary>"Dock": a dock menu item that docks a floating panel.</summary>
