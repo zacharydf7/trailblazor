@@ -23,6 +23,7 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] A drag from a field that ends over the backdrop leaves the dialog open. `DialogTests.Dialog_ShouldStayOpen_WhenADragFromAFieldEndsOverTheBackdrop`
 - [x] The close button cancels. `DialogServiceTests.CloseButton_ShouldCancelTheDialog_WhenClicked`
 - [x] Escape, the backdrop and the close button can ask before discarding work. `DialogExtrasTests.Dialog_ShouldAskBeforeDiscardingTheNewName_WhenEscapeTheBackdropCancelOrTheCloseButtonLeaveIt`
+- [x] `ConfirmAsync` answers yes only when its dialog is confirmed with true: canceling it, or closing it from code with false, answers no. `DialogServiceTests.ConfirmAsync_ShouldSayYesOnlyToAConfirmedTrue_WhenItsDialogIsClosedFromCode`, `FakeDialogServiceTests.LastConfirm_ShouldAnswerYesOnlyWithAConfirmedTrue_WhenTheTestClosesIt`
 - [x] A click outside a `ConfirmAsync` or `AlertAsync` dialog doesn't answer it, unless its options set `DismissOnBackdrop`. `DialogServiceTests.ConfirmAndAlert_ShouldStayOpenOnABackdropClickButTakeEscape_WhenTheAppKeepsTheDefaults`
 - [x] `ConfirmAsync` and `AlertAsync` take `DialogOptions`, keeping their small size and backdrop rule where the options leave them out, and a `telemetryName` argument takes the place of the options' own. `DialogServiceTests.ConfirmAndAlert_ShouldTakeTheOptionsAndKeepTheDefaultsTheyLeaveOut_WhenGivenOptions`
 - [x] The page behind a modal can't scroll. `DialogTests.Dialog_ShouldLockPageScroll_WhenModal`

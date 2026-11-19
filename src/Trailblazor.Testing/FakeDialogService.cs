@@ -63,7 +63,8 @@ public sealed class FakeDialogService : IDialogService
     public DialogReference<bool> Last<TDialog>() where TDialog : TbDialogContent<bool> => Last<TDialog, bool>();
 
     /// <summary>The last confirm or alert opened, to check its title and message and answer it:
-    /// <c>CloseAsync(true)</c> confirms and <c>CancelAsync()</c> cancels.</summary>
+    /// <c>ConfirmAsync()</c> or <c>CloseAsync(true)</c> says yes, and <c>CancelAsync()</c> or
+    /// <c>CloseAsync(false)</c> says no. An alert closes on any of them.</summary>
     /// <exception cref="InvalidOperationException">No confirm or alert was opened.</exception>
     public DialogReference<bool> LastConfirm() =>
         _opened.OfType<DialogReference<bool>>().LastOrDefault(dialog => dialog.ContentType == typeof(ConfirmDialog))
@@ -114,7 +115,7 @@ public sealed class FakeDialogService : IDialogService
         var dialog = Record(
             _dialogs.OpenConfirm(title, message, confirmText, cancelText, tone, telemetryName, options));
         await AnswerAsync(dialog);
-        return (await dialog.Result).Confirmed;
+        return DialogService.IsYes(await dialog.Result);
     }
 
     /// <inheritdoc />

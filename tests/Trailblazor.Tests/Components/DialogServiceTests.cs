@@ -109,6 +109,30 @@ public class DialogServiceTests : BunitContext
         Assert.Equal(size ?? DialogSize.Medium, dialog.Size);
     }
 
+    [Theory]
+    [InlineData("ConfirmAsync", true)]
+    [InlineData("CloseAsync(true)", true)]
+    [InlineData("CloseAsync(false)", false)]
+    [InlineData("CancelAsync", false)]
+    public async Task ConfirmAsync_ShouldSayYesOnlyToAConfirmedTrue_WhenItsDialogIsClosedFromCode(string close,
+        bool expected)
+    {
+        // The service an app gets, not the fake that bUnit's AddTrailblazor puts in its place.
+        var dialogs = Services.GetRequiredService<DialogService>();
+        var asking = dialogs.ConfirmAsync("Delete?", "This can't be undone.");
+        var confirm = (DialogReference<bool>)Assert.Single(dialogs.OpenDialogs);
+
+        await (close switch
+        {
+            "ConfirmAsync" => confirm.ConfirmAsync(),
+            "CloseAsync(true)" => confirm.CloseAsync(true),
+            "CloseAsync(false)" => confirm.CloseAsync(false),
+            _ => confirm.CancelAsync(),
+        });
+
+        Assert.Equal(expected, await asking);
+    }
+
     [Fact]
     public void ConfirmAndAlert_ShouldStayOpenOnABackdropClickButTakeEscape_WhenTheAppKeepsTheDefaults()
     {

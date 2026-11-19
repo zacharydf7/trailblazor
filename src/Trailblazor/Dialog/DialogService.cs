@@ -108,7 +108,10 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
     public async Task<bool> ConfirmAsync(string title, string message, string? confirmText = null,
         string? cancelText = null, Tone tone = Tone.Primary, string? telemetryName = null,
         DialogOptions? options = null) =>
-        (await OpenConfirm(title, message, confirmText, cancelText, tone, telemetryName, options).Result).Confirmed;
+        IsYes(await OpenConfirm(title, message, confirmText, cancelText, tone, telemetryName, options).Result);
+
+    // A confirm closed with false says no, as one that is canceled does.
+    internal static bool IsYes(DialogResult<bool> answer) => answer.Confirmed && answer.Value;
 
     public async Task AlertAsync(string title, string message, string? okText = null, Tone tone = Tone.Info,
         string? telemetryName = null, DialogOptions? options = null) =>

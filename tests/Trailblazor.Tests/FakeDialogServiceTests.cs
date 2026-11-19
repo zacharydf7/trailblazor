@@ -76,6 +76,30 @@ public class FakeDialogServiceTests : BunitContext
         Assert.Equal("Deleted", page.Find("output").TextContent);
     }
 
+    [Theory]
+    [InlineData("ConfirmAsync", "Deleted")]
+    [InlineData("CloseAsync(true)", "Deleted")]
+    [InlineData("CloseAsync(false)", "Kept")]
+    [InlineData("CancelAsync", "Kept")]
+    public async Task LastConfirm_ShouldAnswerYesOnlyWithAConfirmedTrue_WhenTheTestClosesIt(string close,
+        string status)
+    {
+        var page = Render<TrailPage>();
+        var click = page.Find("[data-testid=delete]").ClickAsync(new());
+        var confirm = Dialogs.LastConfirm();
+
+        await (close switch
+        {
+            "ConfirmAsync" => confirm.ConfirmAsync(),
+            "CloseAsync(true)" => confirm.CloseAsync(true),
+            "CloseAsync(false)" => confirm.CloseAsync(false),
+            _ => confirm.CancelAsync(),
+        });
+        await click;
+
+        Assert.Equal(status, page.Find("output").TextContent);
+    }
+
     [Fact]
     public async Task Answer_ShouldCloseAnAlert_WhenItAnswersFalse()
     {

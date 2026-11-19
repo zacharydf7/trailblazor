@@ -63,12 +63,13 @@ public interface IDialogService
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type dialog, string? title = null,
         IReadOnlyDictionary<string, object?>? parameters = null, DialogOptions? options = null);
 
-    /// <summary>Asks a yes-or-no question and returns whether it was confirmed. The buttons say the app's text for
-    /// <see cref="TbStrings.DialogConfirm"/> and <see cref="TbStrings.DialogCancel"/>, "OK" and "Cancel" in English,
-    /// unless <paramref name="confirmText"/> and <paramref name="cancelText"/> say otherwise. With a
-    /// <paramref name="telemetryName"/>, it counts as <see cref="DialogOptions.TelemetryName"/> describes, in place of
-    /// the options' own. <paramref name="options"/> work as for any dialog, to size it, place it or keep Escape from
-    /// canceling it. Unless they say otherwise, it's small and a click outside it doesn't answer it.</summary>
+    /// <summary>Asks a yes-or-no question and returns true only when the answer is yes: false when it is canceled, or
+    /// closed from code with false. The buttons say the app's text for <see cref="TbStrings.DialogConfirm"/> and
+    /// <see cref="TbStrings.DialogCancel"/>, "OK" and "Cancel" in English, unless <paramref name="confirmText"/> and
+    /// <paramref name="cancelText"/> say otherwise. With a <paramref name="telemetryName"/>, it counts as
+    /// <see cref="DialogOptions.TelemetryName"/> describes, in place of the options' own. <paramref name="options"/>
+    /// work as for any dialog, to size it, place it or keep Escape from canceling it. Unless they say otherwise, it's
+    /// small and a click outside it doesn't answer it.</summary>
     /// <exception cref="ArgumentException"><paramref name="title"/> is blank.</exception>
     Task<bool> ConfirmAsync(string title, string message, string? confirmText = null, string? cancelText = null,
         Tone tone = Tone.Primary, string? telemetryName = null, DialogOptions? options = null);
