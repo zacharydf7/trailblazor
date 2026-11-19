@@ -9,14 +9,22 @@
 
 @{
     var slots = Arrange();
+    // A slid-out panel and the panels the strips keep hidden leave the dock's area empty.
+    var empty = !slots.OfType<GroupSlot>().Any(group => group.Edge is null);
     RenderFragment panels = @<CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>;
 }
 @* The groups, panels and separators are siblings, each placed by its box, so a panel that changes group never
    changes parent and keeps its state. The script sets data-ready here once its keys and drags work. *@
-<div @attributes="AdditionalAttributes" @ref="_root" role="group" aria-label="@AriaLabel" data-part="dock"
-     tabindex="@(slots.Count == 0 ? "-1" : null)"
+@* The frame lays the strips of auto-hidden panels along the dock's edges, around the area the groups share. A
+   strip comes before or after the area in the page as it does on the screen. *@
+<div @attributes="AdditionalAttributes" data-part="frame" style="@Style"
+     class="@ClassNames.Join("tb-dock-frame", Class)">
+@Strip(DockPosition.Top)
+@Strip(DockPosition.Start)
+<div @ref="_root" role="group" aria-label="@AriaLabel" data-part="dock"
+     tabindex="@(empty ? "-1" : null)"
      data-report="@_reported" data-commits="@(RendererInfo.IsInteractive ? _counted : null)"
-     data-min-size="@MinGroupSize" style="@Style" class="@ClassNames.Join("tb-dock", Class)">
+     data-min-size="@MinGroupSize" class="tb-dock">
     @Content(_declared, panels)
     @* A tab list holds only tabs, so the hint that describes a closable tab sits outside it. *@
     <span id="@_closeHintId" hidden>@(Labels.CloseHint ?? Localizer[TbStrings.DockCloseHint])</span>
@@ -26,17 +34,19 @@
     {
         @if (slot is GroupSlot group)
         {
-            var others = slots.OfType<GroupSlot>().Where(each => each.Index != group.Index)
+            var others = slots.OfType<GroupSlot>().Where(each => each.Index != group.Index && each.Edge is null)
                 .OrderBy(each => each.Index).ToList();
             @* A group that another one covers keeps its row, out of sight and out of reach. The script orders the
                rows by data-group, since a window's row can be rendered out of that order. *@
             <div @key="group.Key" data-part="group" data-group="@group.Index" data-maximized="@group.Maximized"
-                 data-floating="@(group.Layer is not null)" style="@BoxStyle(group.Box.Box, group.Layer)"
+                 data-floating="@(group.Layer is not null)" data-edge="@EdgeName(group.Edge)"
+                 style="@BoxStyle(group.Box.Box, group.Layer)"
                  class="@ClassNames.Join("tb-dock__group", group.Covered ? "tb-dock__group--covered" : null,
-                            group.Layer is null ? null : "tb-dock__group--floating")">
+                            group.Layer is null ? null : "tb-dock__group--floating",
+                            group.Edge is null ? null : "tb-dock__group--revealed")">
                 @* A window moves by the button that starts its row: a drag, the arrow keys, or single steps from its
                    menu, for people who can't drag (WCAG 2.5.7). *@
-                @if (group.Layer is not null && RendererInfo.IsInteractive)
+                @if (group.Layer is not null && group.Edge is null && RendererInfo.IsInteractive)
                 {
                     <TbMenu Icon="BuiltInIcons.Move" Size="Size.Small" AttachOnFirstUse Class="tb-dock__window-move"
                             data-part="window-move"
@@ -58,8 +68,9 @@
                                AriaLabel="@(Labels.TabMenu ?? Localizer[TbStrings.DockTabMenu])">
                     <ChildContent>
                         <div role="tablist" data-part="tabs" class="tb-dock__tabs" data-context-key="@group.Box.Active"
-                             aria-label="@(group.Layer is null
-                                 ? Format(Labels.Group, TbStrings.DockGroup, group.Index + 1)
+                             aria-label="@(group.Edge is not null
+                                 ? Labels.RevealedGroup ?? Localizer[TbStrings.DockRevealedGroup]
+                                 : group.Layer is null ? Format(Labels.Group, TbStrings.DockGroup, group.Index + 1)
                                  : Format(Labels.FloatingGroup, TbStrings.DockFloatingGroup, group.Index + 1))">
                             @foreach (var id in group.Box.Panels)
                             {
@@ -124,10 +135,11 @@
             <div @key="host.Key" @attributes="host.Panel.HostAttributes" role="tabpanel" id="@PanelId(host.Panel.Name)"
                  aria-labelledby="@TabId(host.Panel.Name)" tabindex="@(host.Showing ? 0 : null)" inert="@(!host.Showing)"
                  data-part="panel" data-panel="@host.Panel.Name" data-dock-group="@host.Group"
-                 data-floating="@(host.Layer is not null)"
+                 data-floating="@(host.Layer is not null)" data-edge="@EdgeName(host.Edge)"
                  style="@($"{BoxStyle(host.Box, host.Layer)} {host.Panel.Style}")"
                  class="@ClassNames.Join("tb-dock__panel", host.Showing ? null : "tb-dock__panel--hidden",
-                            host.Layer is null ? null : "tb-dock__panel--floating", host.Panel.Class)">
+                            host.Layer is null ? null : "tb-dock__panel--floating",
+                            host.Edge is null ? null : "tb-dock__panel--revealed", host.Panel.Class)">
                 @Content(host.Panel.Version, host.Panel.ChildContent)
             </div>
         }
@@ -185,21 +197,25 @@
             }
         }
     }
-    @if (slots.Count == 0)
+    @if (empty)
     {
         <div data-part="empty" class="tb-dock__empty">@EmptyContent</div>
     }
+</div>
+@Strip(DockPosition.End)
+@Strip(DockPosition.Bottom)
 </div>
 
 @code {
     private abstract record Slot(string Key);
 
-    // Layer is a window's place among the windows, back to front, and null for what is docked.
+    // Layer is a window's place among the windows, back to front, and null for what is docked. Edge is the edge an
+    // auto-hidden panel slid out from, which is drawn as a window in front of the others.
     private sealed record GroupSlot(string Key, int Index, DockGroupBox Box, bool Maximized, bool Covered,
-        int? Layer = null) : Slot(Key);
+        int? Layer = null, DockPosition? Edge = null) : Slot(Key);
 
     private sealed record PanelSlot(string Key, TbDockPanel Panel, int Group, DockBox Box, bool Showing,
-        int? Layer = null) : Slot(Key);
+        int? Layer = null, DockPosition? Edge = null) : Slot(Key);
 
     // The grip in a window's corner, named by the window's showing panel.
     private sealed record WindowGripSlot(string Key, int Index, DockBox Box, int Layer, string Title) : Slot(Key);
@@ -208,6 +224,8 @@
     private sealed record SeparatorSlot(string Key, int Index, DockSeparatorBox Box, string Before) : Slot(Key);
 
     private const string FloatAction = "float";
+    private const string AutoHideAction = "auto_hide";
+    private const string RevealAction = "reveal";
     private const string DockAction = "dock";
 
     private readonly string _id = $"tb-dock-{Guid.NewGuid():N}";
@@ -215,6 +233,8 @@
     private readonly List<TbDockPanel> _panels = [];
     // Each panel's tab, which the dock focuses when a neighbor closes.
     private readonly Dictionary<string, ElementReference> _tabs = [];
+    // Each auto-hidden panel's button on its strip, which takes the focus when the panel goes or slides back there.
+    private readonly Dictionary<string, ElementReference> _stripButtons = [];
     // The slots' keys in the order they were first rendered, which never changes, so Blazor never moves a panel.
     private readonly List<string> _order = [];
     // The windows' keys with the panels each held at the last render, oldest window first. A window keeps its key,
@@ -231,6 +251,9 @@
     private IJSObjectReference? _handle;
     private DotNetObjectReference<DockReport>? _report;
     private string? _focusAfterRender;
+    private string? _focusStripAfterRender;
+    // The auto-hidden panels the dock shows on its strips, as of the last render.
+    private IReadOnlyList<DockAutoHidden> _strips = [];
     private bool _focusDockAfterRender;
     private bool _saveAfterRender;
     // The key whose saved layout the dock has read.
@@ -275,8 +298,9 @@
     [Parameter]
     public DockLayout? Layout { get; set; }
 
-    /// <summary>Raised with the new layout when the user selects a tab, moves or closes a panel or moves a
-    /// separator, and when the dock restores the layout saved under its <see cref="PersistenceKey"/>.</summary>
+    /// <summary>Raised with the new layout when the user selects a tab, moves, floats, docks, auto-hides or closes
+    /// a panel, slides an auto-hidden panel out or back, moves a separator or a window, or maximizes or restores a
+    /// group, and when the dock restores the layout saved under its <see cref="PersistenceKey"/>.</summary>
     [Parameter]
     public EventCallback<DockLayout> LayoutChanged { get; set; }
 
@@ -339,9 +363,18 @@
             {
                 _focusAfterRender = null;
                 if (_tabs.TryGetValue(focused, out var tab) && Shown() is var shown
-                    && shown.Groups.Concat(shown.Floats).Any(group => group.Panels.Contains(focused)))
+                    && (shown.Revealed?.Active == focused
+                        || shown.Groups.Concat(shown.Floats).Any(group => group.Panels.Contains(focused))))
                 {
                     await tab.FocusAsync();
+                }
+            }
+            else if (_focusStripAfterRender is { } stowed)
+            {
+                _focusStripAfterRender = null;
+                if (_layout.StripOf(stowed) is not null && _stripButtons.TryGetValue(stowed, out var button))
+                {
+                    await button.FocusAsync();
                 }
             }
             else if (_focusDockAfterRender)
@@ -387,7 +420,8 @@
 
         _report = DotNetObjectReference.Create(new DockReport(SelectFromScriptAsync, CloseFromScriptAsync,
             OnResizeAsync, MoveFromScriptAsync, ToggleMaximizedFromScriptAsync, RaiseFromScriptAsync, OnFloatAsync,
-            PullOutFromScriptAsync, tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
+            PullOutFromScriptAsync, ConcealFromScriptAsync,
+            tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);
         if (handle is not null && _disposed)
         {
@@ -462,6 +496,8 @@
 
     private string PanelId(string panel) => $"{_id}-panel-{panel}";
 
+    private static string? EdgeName(DockPosition? edge) => edge?.ToString().ToLowerInvariant();
+
     // What the layout shows now. The server can hold renders back while the browser catches up, so what the script
     // reports is matched against this, not against what was last rendered.
     private DockArrangement Shown() => _layout.Arrange(id => Panel(id) is not null);
@@ -533,6 +569,24 @@
             }
         }
 
+        // A slid-out panel is drawn as a window with one tab, in front of the windows and numbered after them. The
+        // strips' other panels share its number and stay hidden where they are.
+        var (strip, front) = (shown.Groups.Count + _windows.Count, shown.Floats.Count);
+        _strips = shown.Strips;
+        foreach (var hidden in shown.Strips)
+        {
+            var panel = Panel(hidden.Panel)!;
+            if (shown.Revealed is { } revealed && revealed.Active == hidden.Panel)
+            {
+                slots.Add(new GroupSlot("revealed", strip, revealed, false, false, front, hidden.Edge));
+                slots.Add(new PanelSlot($"panel-{hidden.Panel}", panel, strip, revealed.Box, true, front, hidden.Edge));
+            }
+            else if (panel.KeepAlive && _rendered.Contains(hidden.Panel))
+            {
+                slots.Add(new PanelSlot($"panel-{hidden.Panel}", panel, strip, hidden.Box, false, front));
+            }
+        }
+
         _rendered = slots.OfType<PanelSlot>().Select(slot => slot.Panel.Name).ToHashSet();
         var keys = slots.ToDictionary(slot => slot.Key);
         _order.RemoveAll(key => !keys.ContainsKey(key));
@@ -576,15 +630,23 @@
     private async Task CloseFromTabAsync(string panel) => await CloseAsync(panel,
         _handle is not null && await _handle.InvokeAsync<bool>("holdsFocus", TabId(panel)));
 
-    // The focus the closed tab or its panel held goes to a neighbor, or to the dock when no tab is left.
+    // The focus the closed tab or its panel held goes to a neighbor, to a button on its strip or a tab that shows, or
+    // to the dock when none is left.
     private async Task CloseAsync(string panel, bool focused)
     {
         try
         {
-            if (Panel(panel) is { Closable: true } && _layout.GroupOf(panel) is not null)
+            if (Panel(panel) is { Closable: true }
+                && (_layout.GroupOf(panel) is not null || _layout.StripOf(panel) is not null))
             {
-                _focusAfterRender = focused ? TabAfterClosing(panel) : null;
-                _focusDockAfterRender = focused && _focusAfterRender is null;
+                var button = StripAfterClosing(panel);
+                // When the closed panel was on a strip and no other button is left there, a tab that shows takes the
+                // focus.
+                var tab = TabAfterClosing(panel)
+                    ?? (button is null && _layout.StripOf(panel) is not null ? FirstShowingTab() : null);
+                _focusAfterRender = focused ? tab : null;
+                _focusStripAfterRender = focused && tab is null ? button : null;
+                _focusDockAfterRender = focused && tab is null && button is null;
                 await ChangeAsync(_layout.Close(panel), "close");
             }
         }
@@ -592,6 +654,28 @@
         {
             _commits++;
         }
+    }
+
+    // The showing tab of the group that fills the dock, which covers the others, or else of the first group or window.
+    private string? FirstShowingTab()
+    {
+        var shown = Shown();
+        return shown.Maximized is { } filling ? shown.Groups[filling].Active
+            : shown.Groups.Concat(shown.Floats).FirstOrDefault()?.Active;
+    }
+
+    // The button that takes focus from a closed panel that was on a strip: the next one on its strip, or else the
+    // one before it.
+    private string? StripAfterClosing(string panel)
+    {
+        if (_layout.StripOf(panel) is not { } closing)
+        {
+            return null;
+        }
+
+        var strip = Shown().Strips.Where(each => each.Edge == closing.Edge).Select(each => each.Panel).ToList();
+        var at = strip.IndexOf(panel);
+        return strip.ElementAtOrDefault(at + 1) ?? strip.ElementAtOrDefault(at - 1);
     }
 
     // The tab that takes focus from a closed one: the next tab of its group, or else the one before it; with the
@@ -760,8 +844,20 @@
                 }
             </TbSubMenu>
         }
+        <TbSubMenu Label="@(Labels.AutoHide ?? Localizer[TbStrings.DockAutoHide])">
+            @foreach (var (position, label, text) in Sides(edge: true))
+            {
+                @if (position != group.Edge)
+                {
+                    <TbMenuItem @key="position" data-move-hide="@label"
+                                OnClick="() => AutoHideAsync(panel, position)">
+                        @text
+                    </TbMenuItem>
+                }
+            }
+        </TbSubMenu>
         @* A panel alone in its window has a window to itself already. *@
-        @if (group.Layer is null || sibling is not null)
+        @if (group.Layer is null || sibling is not null || group.Edge is not null)
         {
             <TbMenuItem data-move="float" OnClick="() => MoveAsync(panel, _layout.Float(panel), FloatAction)">
                 @(Labels.Float ?? Localizer[TbStrings.DockFloat])
@@ -808,6 +904,95 @@
         (DockPosition.Bottom, "bottom", edge ? Labels.AtBottom ?? Localizer[TbStrings.DockAtBottom]
             : Labels.Below ?? Localizer[TbStrings.DockBelow]),
     ];
+
+    // The strip along one edge of the dock: a button for each panel put away there, which slides its panel out over
+    // the dock and back.
+    private RenderFragment Strip(DockPosition edge) => __builder =>
+    {
+        var hidden = _strips.Where(each => each.Edge == edge).ToList();
+        if (hidden.Count > 0)
+        {
+            var (_, name, side) = Sides(edge: true).First(each => each.Position == edge);
+            <div role="group" data-part="strip" data-edge="@name"
+                 aria-label="@Format(Labels.Strip, TbStrings.DockStrip, side)"
+                 class="@($"tb-dock__strip tb-dock__strip--{name}")">
+                @foreach (var each in hidden)
+                {
+                    var (id, panel) = (each.Panel, Panel(each.Panel)!);
+                    <button @key="id" @ref="_stripButtons[id]" type="button" id="@($"{_id}-strip-{id}")"
+                            data-part="strip-button" data-panel="@id"
+                            aria-expanded="@(_layout.Revealed == id ? "true" : "false")"
+                            aria-controls="@(_rendered.Contains(id) ? PanelId(id) : null)"
+                            class="tb-dock__strip-button" @onclick="() => ToggleRevealAsync(id)">
+                        @if (panel.Icon is { } icon)
+                        {
+                            <TbIcon Icon="icon" Size="Size.Small" data-part="icon" />
+                        }
+                        <span data-part="title" class="tb-dock__title">@panel.Title</span>
+                    </button>
+                }
+            </div>
+        }
+    };
+
+    // Puts a panel away on a strip, with the focus on its button there, and says where it went.
+    private async Task AutoHideAsync(string panel, DockPosition edge)
+    {
+        try
+        {
+            // Read before the app's LayoutChanged runs, since the app may take the panel away in it.
+            var title = Panel(panel)!.Title;
+            _focusStripAfterRender = panel;
+            await ChangeAsync(_layout.AutoHide(panel, edge), AutoHideAction);
+            Announcer.Polite(Format(Labels.AutoHidden, TbStrings.DockAutoHidden, title));
+        }
+        finally
+        {
+            _commits++;
+        }
+    }
+
+    // A strip's button slides its panel out, with the focus on the panel's tab, and slides it back.
+    private async Task ToggleRevealAsync(string panel)
+    {
+        try
+        {
+            if (_layout.Revealed == panel)
+            {
+                await ChangeAsync(_layout.Conceal(), null);
+            }
+            else
+            {
+                _focusAfterRender = panel;
+                await ChangeAsync(_layout.Open(panel), RevealAction);
+            }
+        }
+        finally
+        {
+            _commits++;
+        }
+    }
+
+    // Escape in a slid-out panel slides it back and returns the focus to its button. A press or the focus anywhere
+    // else slides it back too, leaves the focus where it went and, like a window coming forward, isn't counted.
+    private async Task ConcealFromScriptAsync(bool escaped)
+    {
+        if (_layout.Revealed is not { } panel)
+        {
+            return;
+        }
+
+        try
+        {
+            _focusStripAfterRender = escaped ? panel : null;
+            await ChangeAsync(_layout.Conceal(), null);
+        }
+        finally
+        {
+            _commits += escaped ? 1 : 0;
+            StateHasChanged();
+        }
+    }
 
     private async Task ChangeAsync(DockLayout layout, string? action)
     {

@@ -6977,7 +6977,36 @@ Trailblazor.DockLabels.CloseHint.init -> void
 Trailblazor.DockGroup.DockGroup(params System.Collections.Generic.IEnumerable<string!>! panels) -> void
 Trailblazor.DockGroup.Panels.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.DockLabels.CloseHint.get -> string?
-Trailblazor.DockLayout.DockLayout(Trailblazor.DockNode? root = null, System.Collections.Generic.IEnumerable<string!>? closed = null, System.Collections.Generic.IEnumerable<Trailblazor.DockFloat!>? floating = null) -> void
+Trailblazor.DockLayout.DockLayout(Trailblazor.DockNode? root = null, System.Collections.Generic.IEnumerable<string!>? closed = null, System.Collections.Generic.IEnumerable<Trailblazor.DockFloat!>? floating = null, System.Collections.Generic.IEnumerable<Trailblazor.DockAutoHidden!>? autoHidden = null, string? revealed = null) -> void
+const Trailblazor.TbStrings.DockAutoHide = "Dock.AutoHide" -> string!
+Trailblazor.DockLabels.AutoHide.get -> string?
+Trailblazor.DockLabels.AutoHide.init -> void
+const Trailblazor.TbStrings.DockStrip = "Dock.Strip" -> string!
+Trailblazor.DockLabels.Strip.get -> string?
+Trailblazor.DockLabels.Strip.init -> void
+const Trailblazor.TbStrings.DockRevealedGroup = "Dock.RevealedGroup" -> string!
+Trailblazor.DockLabels.RevealedGroup.get -> string?
+Trailblazor.DockLabels.RevealedGroup.init -> void
+const Trailblazor.TbStrings.DockAutoHidden = "Dock.AutoHidden" -> string!
+Trailblazor.DockLabels.AutoHidden.get -> string?
+Trailblazor.DockLabels.AutoHidden.init -> void
+Trailblazor.DockLayout.AutoHidden.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.DockAutoHidden!>!
+Trailblazor.DockLayout.Revealed.get -> string?
+Trailblazor.DockLayout.AutoHide(string! panel, Trailblazor.DockPosition edge) -> Trailblazor.DockLayout!
+Trailblazor.DockLayout.Conceal() -> Trailblazor.DockLayout!
+Trailblazor.DockAutoHidden
+Trailblazor.DockAutoHidden.DockAutoHidden(string! panel, Trailblazor.DockPosition edge) -> void
+Trailblazor.DockAutoHidden.Panel.get -> string!
+Trailblazor.DockAutoHidden.Edge.get -> Trailblazor.DockPosition
+Trailblazor.DockAutoHidden.Size.get -> double
+Trailblazor.DockAutoHidden.Size.init -> void
+Trailblazor.DockAutoHidden.<Clone>$() -> Trailblazor.DockAutoHidden!
+Trailblazor.DockAutoHidden.Equals(Trailblazor.DockAutoHidden? other) -> bool
+override Trailblazor.DockAutoHidden.Equals(object? obj) -> bool
+override Trailblazor.DockAutoHidden.GetHashCode() -> int
+override Trailblazor.DockAutoHidden.ToString() -> string!
+static Trailblazor.DockAutoHidden.operator !=(Trailblazor.DockAutoHidden? left, Trailblazor.DockAutoHidden? right) -> bool
+static Trailblazor.DockAutoHidden.operator ==(Trailblazor.DockAutoHidden? left, Trailblazor.DockAutoHidden? right) -> bool
 Trailblazor.DockNode.Size.get -> double
 Trailblazor.DockLayout.Root.get -> Trailblazor.DockNode?
 Trailblazor.DockLayout.Groups.get -> System.Collections.Generic.IEnumerable<Trailblazor.DockGroup!>!

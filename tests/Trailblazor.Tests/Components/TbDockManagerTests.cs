@@ -159,9 +159,15 @@ public class TbDockManagerTests : BunitContext
             .Add(dock => dock.MinGroupSize, 120));
 
         var root = cut.Find("[data-part=dock]");
-        Assert.Equal(("group", "Hike planner", "tb-dock planner", "height: 30rem", "dock", "120"),
-            (root.GetAttribute("role"), root.GetAttribute("aria-label"), root.ClassName, root.GetAttribute("style"),
-                root.Id, root.GetAttribute("data-min-size")));
+        Assert.Equal(("group", "Hike planner", "tb-dock", "120"),
+            (root.GetAttribute("role"), root.GetAttribute("aria-label"), root.ClassName,
+                root.GetAttribute("data-min-size")));
+        // The frame around the dock's area and its strips is the dock's outermost element.
+        var frame = cut.Find("[data-part=frame]");
+        Assert.Equal(("tb-dock-frame planner", "height: 30rem", "dock"),
+            (frame.ClassName, frame.GetAttribute("style"), frame.Id));
+        Assert.Equal("frame", root.ParentElement!.GetAttribute("data-part"));
+        Assert.Empty(cut.FindAll("[data-part=strip]"));
     }
 
     [Fact]
@@ -2028,6 +2034,344 @@ public class TbDockManagerTests : BunitContext
 
     private sealed record Panel(string Id, string Title, bool Closable = true, bool KeepAlive = true);
 
+    [Fact]
+    public async Task AutoHide_ShouldPutThePanelOnAStripWithTheFocusOnItsButton_WhenChosenInAGroupsMenu()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(Hike, HikePanels, changes.Add);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var button = OnceMade(cut, "[data-part=strip-button][data-panel=trails]");
+
+        // The first group's menu acts on its showing panel, the trails.
+        await cut.Find("[data-part=group-menu] [data-move-hide=start]").ClickAsync();
+
+        Assert.Equal([Hike.AutoHide("trails", DockPosition.Start)], changes);
+        var strip = cut.Find("[data-part=strip]");
+        Assert.Equal(("group", "start", "Auto-hidden panels (At the start)", "tb-dock__strip tb-dock__strip--start"),
+            (strip.GetAttribute("role"), strip.GetAttribute("data-edge"), strip.GetAttribute("aria-label"),
+                strip.ClassName));
+        // The strip comes before the dock's area in the page, as it does on the screen.
+        Assert.Equal("strip", cut.Find("[data-part=frame]").FirstElementChild!.GetAttribute("data-part"));
+        var made = cut.Find("[data-part=strip-button]");
+        Assert.Equal(("Trails", "false"), (made.TextContent.Trim(), made.GetAttribute("aria-expanded")));
+        // The panel keeps its content where it is, hidden and out of reach, and has no tab.
+        var panel = cut.Find("[data-part=panel][data-panel=trails]");
+        Assert.Equal((made.GetAttribute("aria-controls"), true, true),
+            (panel.Id, panel.HasAttribute("inert"), panel.ClassList.Contains("tb-dock__panel--hidden")));
+        Assert.DoesNotContain(_log, line => line.StartsWith("dispose", StringComparison.Ordinal));
+        Assert.Equal(["Map", "Notes", "Weather"], cut.Tb().Dock().Panels);
+        Assert.Equal(button(), ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+        Assert.Equal(["Trails is auto-hidden."], Services.GetRequiredService<FakeAnnouncer>().Polite);
+        Assert.Equal(["auto_hide"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+        Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
+    public async Task Strip_ShouldSlideItsPanelOutOverTheDockAndBack_WhenItsButtonIsClicked()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var layout = Hike.Float("weather").AutoHide("notes", DockPosition.End);
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(layout, HikePanels, changes.Add);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var tab = OnceMade(cut, "[role=tab][data-panel=notes]");
+        // A panel that never showed isn't rendered until it slides out.
+        Assert.Empty(cut.FindAll("[data-panel=notes]:not([data-part=strip-button])"));
+        Assert.Null(cut.Find("[data-part=strip-button]").GetAttribute("aria-controls"));
+
+        await cut.Find("[data-part=strip-button]").ClickAsync();
+
+        // It is drawn as a window with one tab across the edge, in front of the weather's window and numbered after
+        // it, a quarter of the dock deep.
+        Assert.Equal(layout.Open("notes"), changes[^1]);
+        const string box = "--tb-dock-x: 75; --tb-dock-y: 0; --tb-dock-w: 25; --tb-dock-h: 100; --tb-dock-z: 1;";
+        var row = cut.Find("[data-part=group][data-edge]");
+        Assert.Equal(("end", "2", box, true, "Auto-hidden panel"), (row.GetAttribute("data-edge"),
+            row.GetAttribute("data-group"), row.GetAttribute("style"), row.HasAttribute("data-floating"),
+            row.QuerySelector("[role=tablist]")!.GetAttribute("aria-label")));
+        Assert.Contains("tb-dock__group--revealed", row.ClassList);
+        Assert.Equal(["Notes"], Titles(row));
+        var panel = cut.Find("[data-part=panel][data-panel=notes]");
+        Assert.Equal(("end", "2", false), (panel.GetAttribute("data-edge"), panel.GetAttribute("data-dock-group"),
+            panel.HasAttribute("inert")));
+        Assert.StartsWith(box, panel.GetAttribute("style"));
+        // It stays against its edge: it has neither a window's Move button nor its grip.
+        Assert.Empty(row.QuerySelectorAll("[data-part=window-move]"));
+        Assert.Single(cut.FindAll("[data-part=window-grip]"));
+        var button = cut.Find("[data-part=strip-button]");
+        Assert.Equal(("true", panel.Id), (button.GetAttribute("aria-expanded"), button.GetAttribute("aria-controls")));
+        Assert.Equal(tab(), ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+
+        await cut.Find("[data-part=strip-button]").ClickAsync();
+
+        Assert.Equal(layout, changes[^1]);
+        Assert.Empty(cut.FindAll("[data-part=group][data-edge]"));
+        panel = cut.Find("[data-part=panel][data-panel=notes]");
+        Assert.Equal((true, false), (panel.HasAttribute("inert"), panel.HasAttribute("data-edge")));
+        Assert.Equal("false", cut.Find("[data-part=strip-button]").GetAttribute("aria-expanded"));
+        Assert.DoesNotContain(_log, line => line.StartsWith("dispose", StringComparison.Ordinal));
+        // Sliding out is counted as use, sliding back isn't, and each click is a finished action.
+        Assert.Equal(["reveal"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+        Assert.Equal("2", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
+    public async Task Strip_ShouldSlideItsPanelBack_WhenTheScriptReportsEscapeOrAPressElsewhere()
+    {
+        var layout = Hike.AutoHide("notes", DockPosition.Bottom);
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(layout.Open("notes"), HikePanels, changes.Add);
+        var button = cut.Find("[data-part=strip-button]").GetAttribute("blazor:elementreference");
+
+        // Escape gives the focus back to the panel's button and counts as a finished action.
+        await cut.InvokeAsync(() => Report().OnConceal(true));
+
+        Assert.Equal([layout], changes);
+        Assert.Empty(cut.FindAll("[data-edge]:not([data-part=strip])"));
+        Assert.Equal(button, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+        Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+
+        // A press elsewhere leaves the focus where it went and isn't counted, like a window coming forward.
+        await cut.Find("[data-part=strip-button]").ClickAsync();
+        var focused = JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+        await cut.InvokeAsync(() => Report().OnConceal(false));
+
+        Assert.Equal(layout, changes[^1]);
+        Assert.Equal(focused, JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.Equal("2", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+        // With nothing slid out, a report changes nothing.
+        await cut.InvokeAsync(() => Report().OnConceal(true));
+        Assert.Equal(3, changes.Count);
+        Assert.Equal("2", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
+    public async Task AutoHide_ShouldOfferASlidOutPanelWhatItCanDo_WhenItsMenuIsRendered()
+    {
+        var cut = RenderDock(Hike.Float("weather").AutoHide("notes", DockPosition.Top).Open("notes"), HikePanels);
+        var menu = cut.Find("[data-part=group][data-edge] [data-part=group-menu]");
+
+        // It docks, floats, goes to a group, a window, an edge of the dock or another strip, and closes; it has no
+        // group to split or to fill the dock.
+        Assert.Equal(["back", "forward", "float", "dock", "close"],
+            menu.QuerySelectorAll("[data-move]").Select(item => item.GetAttribute("data-move")));
+        Assert.Equal(["start", "end", "bottom"],
+            menu.QuerySelectorAll("[data-move-hide]").Select(item => item.GetAttribute("data-move-hide")));
+        Assert.Equal(["Group 1: Trails", "Group 2: Weather"],
+            menu.QuerySelectorAll("[data-move-group]").Select(item => item.TextContent.Trim()));
+        Assert.Equal(4, menu.QuerySelectorAll("[data-move-edge]").Length);
+        Assert.Empty(menu.QuerySelectorAll("[data-move-beside]"));
+        // A docked group offers the four strips, and can't send a panel to the slid-out one.
+        var docked = cut.FindAll("[data-part=group-menu]")[0];
+        Assert.Equal(4, docked.QuerySelectorAll("[data-move-hide]").Length);
+        Assert.Equal(["Group 2: Weather"],
+            docked.QuerySelectorAll("[data-move-group]").Select(item => item.TextContent.Trim()));
+
+        await menu.QuerySelector("[data-move=dock]")!.ClickAsync();
+
+        // With its last panel gone, the strip goes too.
+        Assert.Empty(cut.FindAll("[data-part=strip], [data-edge]"));
+        Assert.Equal(["Trails", "Map", "Notes", "Weather"], cut.Tb().Dock().Panels);
+        Assert.Equal("Notes moved to panel group 1.", Services.GetRequiredService<FakeAnnouncer>().Polite[^1]);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldPutPanelsAwaySlideThemOutAndBringThemBack_WhenTheStripHelpersAreUsed()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        var dock = cut.Tb().Dock();
+
+        await dock.AutoHideAsync("Notes", DockPosition.End);
+        await dock.AutoHideAsync("Map", DockPosition.Top);
+
+        // The top strip's panels come first. A panel on a strip has no tab, so what it holds can't be reached yet.
+        Assert.Equal(["Map", "Notes"], dock.AutoHidden);
+        Assert.Equal(["Trails", "Weather"], dock.Panels);
+        Assert.Equal("The panel \"Map\" is on a strip; slide it out with RevealAsync first.",
+            Assert.Throws<InvalidOperationException>(() => dock.PanelElement("Map")).Message);
+        Assert.Equal("The panel \"Map\" isn't in a floating window.",
+            Assert.Throws<InvalidOperationException>(() => dock.Window("Map")).Message);
+
+        await dock.RevealAsync("Notes");
+        await dock.RevealAsync("Notes");
+
+        // A slid-out panel is drawn as a window, but it isn't one. It has a tab, which shows.
+        Assert.Equal("end", cut.Find("[data-part=group][data-edge]").GetAttribute("data-edge"));
+        Assert.Empty(dock.Floating);
+        Assert.Equal(["Trails", "Weather", "Notes"], dock.Panels);
+        Assert.Equal(["Trails", "Weather", "Notes"], dock.Showing);
+        Assert.Equal("The panel \"Notes\" isn't in a floating window.",
+            Assert.Throws<InvalidOperationException>(() => dock.Window("Notes")).Message);
+        Assert.Equal("The panel \"Notes\" is on that strip already.", (await Assert.ThrowsAsync<
+            InvalidOperationException>(() => dock.AutoHideAsync("Notes", DockPosition.End))).Message);
+
+        await dock.ConcealAsync();
+
+        Assert.Empty(cut.FindAll("[data-part=group][data-edge]"));
+        Assert.Equal("No auto-hidden panel is slid out.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(dock.ConcealAsync)).Message);
+        Assert.Equal("The panel \"Trails\" isn't on a strip.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => dock.RevealAsync("Trails"))).Message);
+
+        // A helper that needs the panel's tab slides the panel out first, from a group's menu or the tab's own.
+        await dock.FloatAsync("Notes");
+        await dock.ChooseFromTabMenuAsync("Map", "Dock");
+
+        Assert.Equal(["Notes"], dock.Floating);
+        Assert.Empty(dock.AutoHidden);
+        Assert.Equal(["Trails", "Weather", "Map", "Notes"], dock.Panels);
+
+        // Closing one on a strip slides it out and clicks the close mark on its tab.
+        await dock.AutoHideAsync("Weather", DockPosition.Bottom);
+        await dock.CloseAsync("Weather");
+
+        Assert.Empty(dock.AutoHidden);
+        Assert.Equal(["Trails", "Map", "Notes"], dock.Panels);
+    }
+
+    [Fact]
+    public async Task Close_ShouldCloseAPanelOnAStripAndMoveTheFocusOn_WhenItsMenuOrItsKeyClosesIt()
+    {
+        var layout = Hike.AutoHide("notes", DockPosition.End).AutoHide("map", DockPosition.End)
+            .AutoHide("weather", DockPosition.End);
+        var changes = new List<DockLayout>();
+        var cut = RenderDock(layout.Open("map"), HikePanels, changes.Add);
+        var dock = cut.Tb().Dock();
+        string? Made(string selector) => cut.Find(selector).GetAttribute("blazor:elementreference");
+        string Focused() => ((ElementReference)JSInterop.Invocations["Blazor._internal.domWrapper.focus"][^1]
+            .Arguments[0]!).Id;
+        var (trails, notes, weather) = (Made("[role=tab][data-panel=trails]"),
+            Made("[data-part=strip-button][data-panel=notes]"), Made("[data-part=strip-button][data-panel=weather]"));
+
+        // Close in the slid-out panel's menu gives the focus to the next button on its strip.
+        await cut.Find("[data-part=group][data-edge] [data-part=group-menu] [data-move=close]").ClickAsync();
+
+        Assert.Equal(layout.Close("map"), changes[^1]);
+        Assert.Equal(["Notes", "Weather"], dock.AutoHidden);
+        Assert.Empty(cut.FindAll("[data-edge]:not([data-part=strip])"));
+        Assert.Equal(weather, Focused());
+        Assert.Equal("1", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+
+        // Delete on the tab of the strip's last panel gives it to the button before.
+        await dock.RevealAsync("Weather");
+        await cut.InvokeAsync(() => Report().OnClose("weather", true));
+
+        Assert.Equal(["Notes"], dock.AutoHidden);
+        Assert.Equal(notes, Focused());
+
+        // With the strip's only panel gone, the strip goes too, and the first showing tab takes the focus.
+        await dock.RevealAsync("Notes");
+        await cut.InvokeAsync(() => Report().OnClose("notes", true));
+
+        Assert.Empty(cut.FindAll("[data-part=strip], [data-edge]"));
+        Assert.Equal(["map", "weather", "notes"], changes[^1].Closed);
+        Assert.Equal(["Trails"], dock.Panels);
+        Assert.Equal(trails, Focused());
+    }
+
+    [Fact]
+    public async Task Close_ShouldGiveTheDockTheFocus_WhenTheLastPanelItShowsClosesFromAStrip()
+    {
+        var cut = RenderDock(new DockLayout(autoHidden: [new("notes", DockPosition.Start)], revealed: "notes"),
+            HikePanels[2]);
+
+        await cut.InvokeAsync(() => Report().OnClose("notes", true));
+
+        // Nothing is left to show, so the dock's area, which can take the focus when it is empty, takes it.
+        Assert.Equal("-1", cut.Find("[data-part=dock]").GetAttribute("tabindex"));
+        Assert.Single(JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.Empty(cut.FindAll("[role=tab], [data-part=strip-button]"));
+    }
+
+    [Fact]
+    public async Task Close_ShouldGiveTheFocusToTheGroupThatFillsTheDock_WhenAStripsOnlyPanelClosesOverIt()
+    {
+        var cut = RenderDock(Hike.AutoHide("map", DockPosition.Start).Maximize("notes").Open("map"), HikePanels);
+        var notes = cut.Find("[role=tab][data-panel=notes]").GetAttribute("blazor:elementreference");
+
+        await cut.InvokeAsync(() => Report().OnClose("map", true));
+
+        // The first group is covered, so its tab can't take the focus.
+        Assert.Contains("tb-dock__group--covered", cut.Find("[data-part=group]").ClassList);
+        Assert.Equal(notes, ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+    }
+
+    [Fact]
+    public async Task Render_ShouldShowTheEmptyContent_WhenEveryPanelIsOnAStrip()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        var dock = cut.Tb().Dock();
+        Assert.Empty(cut.FindAll("[data-part=empty]"));
+
+        foreach (var title in new[] { "Trails", "Map", "Notes", "Weather" })
+        {
+            await dock.AutoHideAsync(title, DockPosition.Start);
+        }
+
+        // The panels that showed are kept hidden in the dock's area, which is empty all the same and can take focus.
+        Assert.NotEmpty(cut.FindAll("[data-part=panel]"));
+        Assert.Single(cut.FindAll("[data-part=empty]"));
+        Assert.Equal("-1", cut.Find("[data-part=dock]").GetAttribute("tabindex"));
+
+        // A panel slides out over the empty area.
+        await dock.RevealAsync("Notes");
+        Assert.Single(cut.FindAll("[data-part=empty]"));
+        Assert.Equal("-1", cut.Find("[data-part=dock]").GetAttribute("tabindex"));
+    }
+
+    [Fact]
+    public async Task AutoHide_ShouldDisposeThePanelsContent_WhenThePanelIsNotKeptAlive()
+    {
+        var cut = RenderDock(Hike, [.. HikePanels[..2], new("notes", "Notes", KeepAlive: false), HikePanels[3]]);
+
+        await cut.Tb().Dock().AutoHideAsync("Notes", DockPosition.Bottom);
+
+        Assert.Contains("dispose notes", _log);
+        Assert.Empty(cut.FindAll("[data-part=panel][data-panel=notes]"));
+        Assert.Null(cut.Find("[data-part=strip-button]").GetAttribute("aria-controls"));
+    }
+
+    [Fact]
+    public void Render_ShouldDrawTheStripsAndASlidOutPanel_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderDock(Hike.AutoHide("notes", DockPosition.Start).AutoHide("map", DockPosition.Bottom)
+            .AutoHide("weather", DockPosition.Start).Open("map"), HikePanels);
+
+        // The strips before the area in the page are the top and the start ones, and the others come after it.
+        Assert.Equal(["strip", "dock", "strip"],
+            cut.Find("[data-part=frame]").Children.Select(child => child.GetAttribute("data-part")));
+        Assert.Equal([("start", "Notes Weather"), ("bottom", "Map")], cut.FindAll("[data-part=strip]").Select(strip =>
+            (strip.GetAttribute("data-edge"), string.Join(' ', strip.Children.Select(Text)))));
+        Assert.Equal("bottom", cut.Find("[data-part=panel][data-panel=map]").GetAttribute("data-edge"));
+    }
+
+    [Fact]
+    public async Task Labels_ShouldWordTheStripsTheirMenuAndWhatIsSaid_WhenGiven()
+    {
+        var cut = RenderDock(Hike.AutoHide("notes", DockPosition.Start).Open("notes"), HikePanels);
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels
+        {
+            AutoHide = "Put away", Strip = "Put away: {0}", RevealedGroup = "Out for now",
+            AutoHidden = "{0} is put away",
+        }));
+
+        Assert.Equal("Put away: At the start", cut.Find("[data-part=strip]").GetAttribute("aria-label"));
+        Assert.Equal("Out for now", cut.Find("[data-edge] [role=tablist]").GetAttribute("aria-label"));
+        var menu = cut.FindAll("[data-part=group-menu]")[0];
+        Assert.Contains("Put away", menu.TextContent);
+
+        await menu.QuerySelector("[data-move-hide=top]")!.ClickAsync();
+
+        Assert.Equal("Trails is put away", Services.GetRequiredService<FakeAnnouncer>().Polite[^1]);
+    }
+
     private IRenderedComponent<TbDockManager> RenderDock(DockLayout? layout, params Panel[] panels) =>
         RenderDock(layout, panels, null);
 
@@ -2078,6 +2422,17 @@ public class TbDockManagerTests : BunitContext
         cut.OnMarkupUpdated += (_, _) => seen = Reference(cut, title) is { Length: > 0 } made ? made : seen;
         return () => seen;
     }
+
+    // The reference of the element a selector finds, which bUnit shows only in the render that makes the element.
+    private static Func<string?> OnceMade(IRenderedComponent<TbDockManager> cut, string selector)
+    {
+        string? seen = null;
+        cut.OnMarkupUpdated += (_, _) => seen = cut.FindAll(selector).FirstOrDefault()
+            ?.GetAttribute("blazor:elementreference") is { Length: > 0 } made ? made : seen;
+        return () => seen;
+    }
+
+    private static string Text(AngleSharp.Dom.IElement element) => element.TextContent.Trim();
 
     private static IEnumerable<string> Titles(AngleSharp.Dom.IElement group) =>
         group.QuerySelectorAll("[role=tab]").Select(tab => tab.TextContent.Trim());

@@ -520,6 +520,9 @@
                             <code>MoveWindowAsync(panel, right, down)</code> and
                             <code>ResizeWindowAsync(panel, wider, taller)</code> move and resize a panel's window by
                             percents of the dock, and <code>Window(panel)</code> reads its box.
+                            <code>AutoHideAsync(panel, edge)</code> puts a panel away on a strip,
+                            <code>RevealAsync(panel)</code> slides it out, <code>ConcealAsync()</code> slides back
+                            the panel that is out, and <code>AutoHidden</code> reads the strips' panels.
                         </td>
                     </tr>
                     <tr>
@@ -1326,7 +1329,10 @@
             + "`DockAsync(panel)` float and dock a panel from its menu and wait the same way, and `FloatingAsync()` "
             + "reads the panels in windows. `MoveWindowAsync(panel, right, down)` and "
             + "`ResizeWindowAsync(panel, wider, taller)` press the arrow keys on a window's Move button or grip, by "
-            + "percents of the dock, and wait the same way; `WindowAsync(panel)` reads its box."),
+            + "percents of the dock, and wait the same way; `WindowAsync(panel)` reads its box. "
+            + "`AutoHideAsync(panel, edge)` puts a panel away on a strip from its menu, `RevealAsync(panel)` clicks "
+            + "its button on the strip, and `ConcealAsync()` presses Escape in the panel that is out; each waits "
+            + "until the app has the layout. `AutoHiddenAsync()` reads the strips' panels."),
         new("Stepper", "Its name, or none for the only one", "`Stepper(name).GoToAsync(title)` goes to a step and "
             + "waits until it's current and the app's `ActiveKeyChanged` has run, `StepsAsync()` reads the steps' "
             + "titles, and `CurrentAsync()` reads the current step's."),

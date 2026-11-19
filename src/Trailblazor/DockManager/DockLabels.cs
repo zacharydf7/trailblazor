@@ -88,6 +88,22 @@ public sealed record DockLabels
     /// title. Leave it null for the app's text for <see cref="TbStrings.DockFloated"/>.</summary>
     public string? Floated { get; init; }
 
+    /// <summary>The submenu that puts a panel away on a strip along an edge of the dock. Leave it null for the app's
+    /// text for <see cref="TbStrings.DockAutoHide"/>.</summary>
+    public string? AutoHide { get; init; }
+
+    /// <summary>Names a strip of auto-hidden panels, with <c>{0}</c> for the words of its edge, such as
+    /// <see cref="AtStart"/>. Leave it null for the app's text for <see cref="TbStrings.DockStrip"/>.</summary>
+    public string? Strip { get; init; }
+
+    /// <summary>Names the tab list of an auto-hidden panel that is slid out. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockRevealedGroup"/>.</summary>
+    public string? RevealedGroup { get; init; }
+
+    /// <summary>What screen readers hear when a panel is put away on a strip, with <c>{0}</c> for the panel's
+    /// title. Leave it null for the app's text for <see cref="TbStrings.DockAutoHidden"/>.</summary>
+    public string? AutoHidden { get; init; }
+
     /// <summary>Names the button that moves a floating window, with <c>{0}</c> for the title of the window's
     /// showing panel. Leave it null for the app's text for <see cref="TbStrings.DockMoveWindow"/>.</summary>
     public string? MoveWindow { get; init; }

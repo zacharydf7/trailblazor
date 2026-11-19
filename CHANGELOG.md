@@ -85,6 +85,11 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Markup and behavior
 
+#### 2026-11-19
+
+- `TbDockManager` panels can be put away on auto-hide strips: Auto-hide in a panel's menus (`data-move-hide`) puts it on a strip along an edge of the dock (`data-part="strip"`, with a `data-part="strip-button"` for each panel), and its button slides the panel out over the dock and back; Escape, or a press or the focus anywhere but it and the strips, slides it back too. Slid out, it is drawn as a window in front of the others, with `data-edge` and the classes `tb-dock__group--revealed` and `tb-dock__panel--revealed`. `DockLayout.AutoHide(panel, edge)`, `AutoHidden`, `Revealed` and `Conceal()` do it from code, with the new `DockAutoHidden` and the constructor's new `autoHidden` and `revealed` arguments; `Open` slides an auto-hidden panel out, and `ToJson` keeps the strips. `DockLabels.AutoHide`, `Strip`, `RevealedGroup` and `AutoHidden` word it, telemetry counts `auto_hide` and `reveal`, and `page.Tb().Dock()` and `cut.Tb().Dock()` gain `AutoHideAsync`, `RevealAsync`, `ConcealAsync` and `AutoHiddenAsync()` (Playwright) or `AutoHidden` (bUnit); their `Floating` leaves out the panels on strips, and `Panels` leaves out all but the one that is slid out, which `Showing` lists too
+- `TbDockManager`'s outermost element is now a frame (`data-part="frame"`, class `tb-dock-frame`) around its strips and the area its groups share; that area keeps `data-part="dock"` and the class `tb-dock`. `Class`, `Style` and other attributes go on the frame, which is the element they size; a dock without strips is laid out as before, and the dock's border and background stay on `.tb-dock`, so restyle them there
+
 #### 2026-11-18
 
 - New `TbDockManager` and `TbDockPanel`: a dock (`tb-dock`, `role="group"`, `data-part="dock"`) whose children are each group's row of tabs (`data-part="group"` around a `tablist`), each rendered panel (`role="tabpanel"`, `data-part="panel"`, `data-panel` with its id) and a `separator` between groups, placed by `--tb-dock-x`, `--tb-dock-y`, `--tb-dock-w` and `--tb-dock-h` in percent of the dock; a `DockLayout` of `DockSplit`s and `DockGroup`s says where each panel is and saves as JSON; `page.Tb().Dock()` and `cut.Tb().Dock()` drive it in tests

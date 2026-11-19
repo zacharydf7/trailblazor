@@ -234,6 +234,26 @@ public class DockManagerWindowTests(BrowserFixture fixture) : DockManagerPage(fi
         Assert.Equal("weather", await AtGripAsync(page, "Notes"));
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Strip_ShouldKeepItsSlidOutPanelAgainstItsEdge_WhenTheEmptyPartOfItsRowIsDragged(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?layout=strips");
+        await page.Tb().Dock().RevealAsync("Gear");
+        var row = page.Locator(".tb-dock__group--revealed");
+        var before = (await row.BoundingBoxAsync())!;
+        var (x, y) = (before.X + before.Width * 0.6f, before.Y + before.Height / 2);
+
+        // A slid-out panel is drawn as a window, but the empty part of its row doesn't move it as a window's does.
+        await page.Mouse.MoveAsync(x, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(x + 60, y + 40, new() { Steps = 4 });
+
+        var during = (await row.BoundingBoxAsync())!;
+        Assert.Equal((before.X, before.Y), (during.X, during.Y));
+        await page.Mouse.UpAsync();
+        await Expect(row).ToHaveCountAsync(1);
+    }
+
     // Only Chromium can drive touch from Playwright.
     [Fact]
     public async Task Window_ShouldFollowAFinger_WhenItDragsTheEmptyPartOfItsRow()

@@ -601,3 +601,7 @@ Trailblazor.Testing.TbDockDriver.Floating.get -> System.Collections.Generic.IRea
 Trailblazor.Testing.TbDockDriver.MoveWindowAsync(string! panel, int right, int down) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.ResizeWindowAsync(string! panel, int wider, int taller) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbDockDriver.Window(string! panel) -> (double X, double Y, double Width, double Height)
+Trailblazor.Testing.TbDockDriver.AutoHidden.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbDockDriver.AutoHideAsync(string! panel, Trailblazor.DockPosition edge) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.RevealAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.ConcealAsync() -> System.Threading.Tasks.Task!

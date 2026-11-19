@@ -32,6 +32,7 @@ public sealed class TbDockPanel : TbComponentBase, IDisposable
     /// <summary>Whether the content stays rendered, hidden, while another tab of its group shows, so its state
     /// survives. Defaults to true. Set it to false for content that is cheap to build again and costly to keep.
     /// Either way the content first renders when the panel first shows, and a closed panel's content is disposed.
+    /// A panel put away on a strip counts as hidden: its content is kept or disposed the same way.
     /// </summary>
     [Parameter]
     public bool KeepAlive { get; set; } = true;

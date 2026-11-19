@@ -110,6 +110,11 @@
             // The notes are the only panel docked, with Gear in a window.
             _layout = OnlyNotes.FloatAt("gear", 50, 10, 40, 40);
         }
+        else if (Layout == "strips")
+        {
+            // Gear is put away at the start and the weather at the bottom.
+            _layout = Start.AutoHide("gear", DockPosition.Start).AutoHide("weather", DockPosition.Bottom);
+        }
         else if (Layout == "adrift")
         {
             // Gear's window is all the dock holds.

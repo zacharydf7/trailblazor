@@ -7492,6 +7492,87 @@
         }
     }
 
+    /* The frame lays the strips of auto-hidden panels along the edges that have some, around the dock's area. */
+    .tb-dock-frame {
+        display: grid;
+        grid-template:
+            "top top top" auto
+            "start area end" minmax(0, 1fr)
+            "bottom bottom bottom" auto / auto minmax(0, 1fr) auto;
+        box-sizing: border-box;
+        block-size: 100%;
+        min-block-size: 12rem;
+    }
+
+    .tb-dock-frame > .tb-dock {
+        grid-area: area;
+    }
+
+    .tb-dock__strip {
+        display: flex;
+        gap: var(--tb-space-1);
+        overflow: auto;
+        scrollbar-width: none;
+        border: 1px solid var(--tb-border-subtle);
+        background: var(--tb-color-surface-sunken);
+    }
+
+    .tb-dock__strip--top {
+        grid-area: top;
+        border-block-end: none;
+    }
+
+    .tb-dock__strip--bottom {
+        grid-area: bottom;
+        border-block-start: none;
+    }
+
+    .tb-dock__strip--start {
+        grid-area: start;
+        flex-direction: column;
+        border-inline-end: none;
+    }
+
+    .tb-dock__strip--end {
+        grid-area: end;
+        flex-direction: column;
+        border-inline-start: none;
+    }
+
+    .tb-dock__strip-button {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+        flex: none;
+        min-block-size: var(--tb-control-height-sm);
+        max-inline-size: 16rem;
+        padding-block: 0;
+        padding-inline: var(--tb-space-3);
+        border: none;
+        background: transparent;
+        color: var(--tb-color-text-muted);
+        font: inherit;
+        font-size: var(--tb-font-size-sm);
+        line-height: var(--tb-line-height-tight);
+        cursor: pointer;
+    }
+
+    /* Along a side of the dock, a title reads from top to bottom, and the button's sizes turn with it. */
+    :is(.tb-dock__strip--start, .tb-dock__strip--end) > .tb-dock__strip-button {
+        writing-mode: vertical-rl;
+    }
+
+    .tb-dock__strip-button:hover,
+    .tb-dock__strip-button[aria-expanded="true"] {
+        background: var(--tb-color-surface);
+        color: var(--tb-color-text);
+    }
+
+    .tb-dock__strip-button:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: calc(-1 * var(--tb-focus-ring-width));
+    }
+
     /* A dock's groups, panels and separators are siblings, each placed by its box in percent of the dock. A box
        that a separator has moved comes from the script's own properties until the app renders it. */
     .tb-dock {
@@ -7501,7 +7582,6 @@
         isolation: isolate;
         box-sizing: border-box;
         block-size: 100%;
-        min-block-size: 12rem;
         overflow: hidden;
         border: 1px solid var(--tb-border-subtle);
         background: var(--tb-color-surface);
@@ -7559,6 +7639,11 @@
     .tb-dock__window-move > [data-part="trigger"],
     .tb-dock__group--floating .tb-dock__tabs {
         cursor: move;
+    }
+
+    /* A slid-out panel is drawn as a window, but stays against its edge. */
+    .tb-dock__group--revealed .tb-dock__tabs {
+        cursor: auto;
     }
 
     .tb-dock__window-move > [data-part="trigger"],
@@ -7846,6 +7931,13 @@
         /* Forced colors drop shadows, so the showing tab's line is a border. */
         .tb-dock__tab[aria-selected="true"] {
             border-block-start: 2px solid Highlight;
+        }
+
+        /* Forced colors drop the tint of the button whose panel is out, so it takes the highlight colors. */
+        .tb-dock__strip-button[aria-expanded="true"] {
+            background: Highlight;
+            color: HighlightText;
+            forced-color-adjust: none;
         }
 
         .tb-dock__separator::before {

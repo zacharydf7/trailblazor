@@ -16,6 +16,14 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     private ILocator Tab(string panel) =>
         Tabs.And(Root.GetByRole(AriaRole.Tab, new() { Name = panel, Exact = true }));
 
+    // The frame around the dock's area, which holds the strips of auto-hidden panels beside it.
+    private ILocator Frame => Root.Locator("xpath=..");
+
+    private ILocator StripButtons => Frame.Locator(":scope > [data-part=strip] > [data-part=strip-button]");
+
+    private ILocator StripButton(string panel) =>
+        StripButtons.And(Frame.GetByRole(AriaRole.Button, new() { Name = panel, Exact = true }));
+
     // Waits until clicks reach the server, which data-ready marks, and gives the panel's tab. A tab behind the group
     // that fills the dock can't be clicked, so this throws rather than let the click wait until it times out.
     private async Task<ILocator> ReachableAsync(string panel)
@@ -30,15 +38,28 @@ public sealed class TbDockLocator(ILocator scope, string? name)
                 $"The panel \"{panel}\" is behind the group that fills the dock; restore the groups first.");
         }
 
+        // A panel on a strip has no tab until it slides out.
+        if (await StripButton(panel).CountAsync() > 0)
+        {
+            await RevealAsync(panel);
+        }
+
         return Tab(panel);
     }
 
     // The row of the window that holds a panel, once the dock's script has attached.
     private async Task<ILocator> WindowRowAsync(string panel)
     {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        // A panel on a strip is in no window, so it isn't slid out to look for one.
+        if (await StripButton(panel).CountAsync() > 0)
+        {
+            throw new InvalidOperationException($"The panel \"{panel}\" isn't in a floating window.");
+        }
+
         var tab = await ReachableAsync(panel);
         var row = tab.Locator("xpath=ancestor::*[@data-part='group'][1]")
-            .And(Root.Locator(":scope > .tb-dock__group--floating"));
+            .And(Root.Locator(":scope > .tb-dock__group--floating:not(.tb-dock__group--revealed)"));
         return await row.CountAsync() > 0 ? row
             : throw new InvalidOperationException($"The panel \"{panel}\" isn't in a floating window.");
     }
@@ -77,7 +98,8 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     public async Task<IReadOnlyList<string>> PanelsAsync() =>
         await Tabs.Locator("[data-part=title]").AllTextContentsAsync();
 
-    /// <summary>The titles of the panels that show, one for each group and each floating window, in reading order.
+    /// <summary>The titles of the panels that show, one for each group, each floating window and the auto-hidden
+    /// panel that is slid out, in reading order.
     /// While a group fills the dock, its panel shows and each window's.</summary>
     public async Task<IReadOnlyList<string>> ShowingAsync() =>
         await Root.Locator(":scope > .tb-dock__group:not(.tb-dock__group--covered) .tb-dock__tab[aria-selected=true]")
@@ -186,13 +208,69 @@ public sealed class TbDockLocator(ILocator scope, string? name)
 
     private static string Side(DockPosition side, string parameter) =>
         side is DockPosition.Before or DockPosition.After
-            ? throw new ArgumentOutOfRangeException(parameter, side, "A new group goes to the start, end, top or bottom.")
+            ? throw new ArgumentOutOfRangeException(parameter, side, "Use Start, End, Top or Bottom.")
             : side.ToString().ToLowerInvariant();
 
     /// <summary>The titles of the panels in floating windows, window by window, oldest window first.</summary>
-    public async Task<IReadOnlyList<string>> FloatingAsync() =>
-        await Root.Locator(":scope > .tb-dock__group--floating .tb-dock__tab [data-part=title]")
-            .AllTextContentsAsync();
+    public async Task<IReadOnlyList<string>> FloatingAsync() => await Root.Locator(
+        ":scope > .tb-dock__group--floating:not(.tb-dock__group--revealed) .tb-dock__tab [data-part=title]")
+        .AllTextContentsAsync();
+
+    /// <summary>The titles of the panels put away on the strips along the dock's edges: the top strip's, then those
+    /// of the start, the end and the bottom strips.</summary>
+    public async Task<IReadOnlyList<string>> AutoHiddenAsync() =>
+        await StripButtons.Locator("[data-part=title]").AllTextContentsAsync();
+
+    /// <summary>Puts the panel with this title away on the strip along this edge of the dock, with "Auto-hide" in
+    /// its group's menu. Throws for a panel that is on that strip already, and for <c>Before</c> or <c>After</c>.
+    /// </summary>
+    public async Task AutoHideAsync(string panel, DockPosition edge) =>
+        await ChooseAsync(panel, $"[data-move-hide={Side(edge, nameof(edge))}]",
+            $"The panel \"{panel}\" is on that strip already.");
+
+    /// <summary>Slides the auto-hidden panel with this title out over the dock, with its button on its strip, and
+    /// waits until it is out. A panel that is out already stays out. Throws for a panel that isn't on a strip.
+    /// </summary>
+    public async Task RevealAsync(string panel)
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var button = StripButton(panel);
+        if (await button.CountAsync() == 0)
+        {
+            throw new InvalidOperationException($"The panel \"{panel}\" isn't on a strip.");
+        }
+
+        if (await button.GetAttributeAsync("aria-expanded") != "true")
+        {
+            await Commit.CountedAsync(Root, "data-commits", async () =>
+            {
+                await button.ClickAsync();
+                return true;
+            });
+        }
+
+        await Assertions.Expect(button).ToHaveAttributeAsync("aria-expanded", "true");
+    }
+
+    /// <summary>Slides the slid-out panel back to its strip, with Escape on its tab, and waits until it is back.
+    /// Throws when no panel is slid out.</summary>
+    public async Task ConcealAsync()
+    {
+        await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
+        var tab = Root.Locator(":scope > .tb-dock__group--revealed .tb-dock__tab");
+        if (await tab.CountAsync() == 0)
+        {
+            throw new InvalidOperationException("No auto-hidden panel is slid out.");
+        }
+
+        await tab.FocusAsync();
+        await Commit.CountedAsync(Root, "data-commits", async () =>
+        {
+            await tab.PressAsync("Escape");
+            return true;
+        });
+        await Assertions.Expect(tab).ToHaveCountAsync(0);
+    }
 
     /// <summary>Takes the panel with this title out into a floating window of its own, with "Float" in its group's
     /// menu. Throws for a panel that has a window to itself already.</summary>

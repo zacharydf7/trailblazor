@@ -320,7 +320,7 @@ export function attachDock(root, reporter) {
     // The window a press moves or resizes: by a handle, or by the empty part of its row.
     const windowPress = event => {
         const row = ownPart(event.target, 'group');
-        return windowHandle(event.target) ?? (row?.hasAttribute('data-floating')
+        return windowHandle(event.target) ?? (row?.hasAttribute('data-floating') && !row.hasAttribute('data-edge')
             && event.target.matches('.tb-dock__group, .tb-dock__tab-area, .tb-dock__tabs')
             ? { row, resize: false, handle: null } : null);
     };
@@ -687,12 +687,30 @@ export function attachDock(root, reporter) {
     };
     // A press or the focus inside a window that isn't in front brings it forward.
     const onEngage = event => {
-        const floating = [...root.children].filter(child => child.hasAttribute('data-floating'));
+        // A slid-out panel and the panels the strips keep hidden are drawn as windows, in front of them all.
+        const floating = [...root.children].filter(child => child.hasAttribute('data-floating')
+            && !child.hasAttribute('data-edge') && !child.classList.contains('tb-dock__panel--hidden'));
         const part = floating.find(child => child.contains(event.target));
         if (part && layerOf(part) < Math.max(...floating.map(layerOf))) {
             const group = groupsInOrder().find(each =>
                 each.dataset.group === (part.dataset.dockGroup ?? part.dataset.group));
             callDotNet(reporter, 'OnRaise', tabsOf(group)[0].dataset.panel);
+        }
+    };
+    // A slid-out panel slides back on Escape, and when a press or the focus goes anywhere but it and the strips.
+    const slidOut = () => [...root.children].filter(child => child.hasAttribute('data-edge'));
+    const onRevealedKey = event => {
+        if (event.key === 'Escape' && !event.defaultPrevented && !root.hasAttribute('data-moving')
+            && !event.target.closest('[role="menu"]') && slidOut().some(part => part.contains(event.target))) {
+            callDotNet(reporter, 'OnConceal', true);
+        }
+    };
+    const onElsewhere = event => {
+        const parts = slidOut();
+        const strip = event.target.closest?.('[data-part="strip"]');
+        if (parts.length && !parts.some(part => part.contains(event.target))
+            && strip?.parentElement !== root.parentElement) {
+            callDotNet(reporter, 'OnConceal', false);
         }
     };
     const onAuxClick = event => {
@@ -715,6 +733,9 @@ export function attachDock(root, reporter) {
     root.addEventListener('mousedown', onMouseDown);
     root.addEventListener('auxclick', onAuxClick);
     root.addEventListener('click', onClick);
+    root.addEventListener('keydown', onRevealedKey);
+    document.addEventListener('pointerdown', onElsewhere, { capture: true });
+    document.addEventListener('focusin', onElsewhere, { capture: true });
     root.addEventListener('dblclick', onDoubleClick);
     root.addEventListener('pointerdown', onEngage, { capture: true });
     root.addEventListener('focusin', onEngage, { capture: true });
@@ -776,6 +797,9 @@ export function attachDock(root, reporter) {
             root.removeEventListener('mousedown', onMouseDown);
             root.removeEventListener('auxclick', onAuxClick);
             root.removeEventListener('click', onClick);
+            root.removeEventListener('keydown', onRevealedKey);
+            document.removeEventListener('pointerdown', onElsewhere, { capture: true });
+            document.removeEventListener('focusin', onElsewhere, { capture: true });
             root.removeEventListener('dblclick', onDoubleClick);
             root.removeEventListener('pointerdown', onEngage, { capture: true });
             root.removeEventListener('focusin', onEngage, { capture: true });

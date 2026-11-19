@@ -5,10 +5,20 @@ namespace Trailblazor;
 
 // A layout as JSON: {"version":1,"root":…,"closed":[…]}, where a group is {"panels":[…],"active":…,"size":…}, with
 // "maximized":true when it fills the dock, and a split is {"split":"row" or "column","size":…,"children":[…]}. A
-// layout with windows adds "floating":[…], each {"panels":[…],"active":…,"x":…,"y":…,"width":…,"height":…}.
+// layout with windows adds "floating":[…], each {"panels":[…],"active":…,"x":…,"y":…,"width":…,"height":…}, and one
+// with strips "autoHidden":[…], each {"panel":…,"edge":"start", "end", "top" or "bottom","size":…}. Which panel is
+// slid out isn't written.
 internal static class DockLayoutJson
 {
     private const int Version = 1;
+
+    private static readonly Dictionary<string, DockPosition> Edges = new(StringComparer.Ordinal)
+    {
+        ["start"] = DockPosition.Start,
+        ["end"] = DockPosition.End,
+        ["top"] = DockPosition.Top,
+        ["bottom"] = DockPosition.Bottom,
+    };
 
     public static string Write(DockLayout layout)
     {
@@ -47,6 +57,21 @@ internal static class DockLayoutJson
                 writer.WriteEndArray();
             }
 
+            if (layout.AutoHidden.Count > 0)
+            {
+                writer.WriteStartArray("autoHidden");
+                foreach (var hidden in layout.AutoHidden)
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("panel", hidden.Panel);
+                    writer.WriteString("edge", Edges.Single(edge => edge.Value == hidden.Edge).Key);
+                    writer.WriteNumber("size", hidden.Size);
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
+            }
+
             writer.WriteEndObject();
         }
 
@@ -74,7 +99,10 @@ internal static class DockLayoutJson
             var closed = root.TryGetProperty("closed", out var list) ? Strings(list) : [];
             var floating = root.TryGetProperty("floating", out var windows)
                 ? windows.EnumerateArray().Select(ReadWindow).ToList() : [];
-            return new DockLayout(root.TryGetProperty("root", out var node) ? Read(node) : null, closed, floating);
+            var hidden = root.TryGetProperty("autoHidden", out var strips)
+                ? strips.EnumerateArray().Select(ReadHidden).ToList() : [];
+            return new DockLayout(root.TryGetProperty("root", out var node) ? Read(node) : null, closed, floating,
+                hidden);
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException
             or KeyNotFoundException or ArgumentException or FormatException)
@@ -127,6 +155,14 @@ internal static class DockLayoutJson
         new DockGroup(Strings(window.GetProperty("panels"))) { Active = window.GetProperty("active").GetString() },
         window.GetProperty("x").GetDouble(), window.GetProperty("y").GetDouble(),
         window.GetProperty("width").GetDouble(), window.GetProperty("height").GetDouble());
+
+    // An edge that isn't one of the four throws KeyNotFoundException, as a missing property does.
+    private static DockAutoHidden ReadHidden(JsonElement hidden) =>
+        new(hidden.GetProperty("panel").GetString() ?? throw new FormatException(),
+            Edges[hidden.GetProperty("edge").GetString() ?? throw new FormatException()])
+        {
+            Size = hidden.GetProperty("size").GetDouble(),
+        };
 
     // A missing property throws KeyNotFoundException, a value of the wrong kind InvalidOperationException, and a bad
     // size or panel id ArgumentException.

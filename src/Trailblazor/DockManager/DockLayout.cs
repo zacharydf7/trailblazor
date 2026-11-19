@@ -3,9 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace Trailblazor;
 
 /// <summary>Where each panel of a <see cref="TbDockManager"/> is: a tree of <see cref="DockSplit"/>s and
-/// <see cref="DockGroup"/>s, the windows that float above it, and the panels the user closed. A layout never
-/// changes; each method that changes something returns a new layout. <see cref="ToJson"/> and
-/// <see cref="TryParse"/> save and restore one.</summary>
+/// <see cref="DockGroup"/>s, the windows that float above it, the panels put away on the strips along its edges,
+/// and the panels the user closed. A layout never changes; each method that changes something returns a new layout.
+/// <see cref="ToJson"/> and <see cref="TryParse"/> save and restore one.</summary>
 public sealed record DockLayout
 {
     /// <summary>Creates a layout. Its tree is tidied as it's taken: a panel listed twice stays where it's first
@@ -13,15 +13,20 @@ public sealed record DockLayout
     /// inside a split of the same direction joins it, and only the first group marked
     /// <see cref="DockGroup.Maximized"/> stays so, and only while the layout has another group for it to cover.
     /// A panel that is docked isn't also in a window, a window left with no panels is dropped, and each window's
-    /// box is kept inside the dock.</summary>
+    /// box is kept inside the dock. A panel that is docked or in a window isn't also on a strip.</summary>
     /// <param name="root">The docked panels: a group, or a split of groups and other splits. Null docks nothing.
     /// </param>
     /// <param name="closed">The ids of the panels the user closed, which stay hidden until
     /// <see cref="Open"/> shows them again.</param>
     /// <param name="floating">The windows that float above the docked panels, back to front.</param>
-    /// <exception cref="ArgumentException">A window is null.</exception>
+    /// <param name="autoHidden">The panels put away on the strips along the dock's edges, in the order their buttons
+    /// show.</param>
+    /// <param name="revealed">The id of the auto-hidden panel that is slid out over the dock, or null when none is.
+    /// </param>
+    /// <exception cref="ArgumentException">A window or an auto-hidden panel is null.</exception>
     public DockLayout(DockNode? root = null, IEnumerable<string>? closed = null,
-        IEnumerable<DockFloat>? floating = null)
+        IEnumerable<DockFloat>? floating = null, IEnumerable<DockAutoHidden>? autoHidden = null,
+        string? revealed = null)
     {
         var placed = new HashSet<string>(StringComparer.Ordinal);
         Root = root is null ? null : Tidy(root, placed);
@@ -43,6 +48,18 @@ public sealed record DockLayout
         }
 
         Floating = windows;
+        var strips = new List<DockAutoHidden>();
+        foreach (var hidden in autoHidden ?? [])
+        {
+            if (placed.Add((hidden ?? throw new ArgumentException("A layout can't hold a null auto-hidden panel.",
+                nameof(autoHidden))).Panel))
+            {
+                strips.Add(hidden.Tidied());
+            }
+        }
+
+        AutoHidden = strips;
+        Revealed = strips.Any(hidden => hidden.Panel == revealed) ? revealed : null;
         Closed = [.. (closed ?? []).Distinct().Where(panel => !placed.Contains(panel))];
     }
 
@@ -56,22 +73,35 @@ public sealed record DockLayout
     /// <summary>The windows that float above the docked panels, back to front.</summary>
     public IReadOnlyList<DockFloat> Floating { get; }
 
+    /// <summary>The panels put away on the strips along the dock's edges, in the order their buttons show.
+    /// </summary>
+    public IReadOnlyList<DockAutoHidden> AutoHidden { get; }
+
+    /// <summary>The id of the auto-hidden panel that is slid out over the dock, or null when none is.</summary>
+    public string? Revealed { get; }
+
     /// <summary>The docked groups, in reading order.</summary>
     public IEnumerable<DockGroup> Groups => GroupsIn(Root);
 
     /// <summary>The group that fills the dock and covers the others, or null when every group shows.</summary>
     public DockGroup? Maximized => Groups.FirstOrDefault(group => group.Maximized);
 
-    /// <summary>The group that holds the panel with this id, docked or in a window, or null when the layout shows
-    /// that panel nowhere.</summary>
+    /// <summary>The group that holds the panel with this id, docked or in a window, or null when the panel is on
+    /// a strip, closed or not in the layout.</summary>
     public DockGroup? GroupOf(string panel) => Groups.Concat(Floating.Select(window => window.Group))
         .FirstOrDefault(group => group.Panels.Contains(panel));
 
     /// <summary>Shows the panel with this id. A docked one becomes the showing tab of its group, and one in a window
-    /// the showing tab of its window, which comes to the front. A closed one, or one the layout doesn't hold, joins
-    /// the largest group as its showing tab. A group that covers the panel's group is restored.</summary>
+    /// the showing tab of its window, which comes to the front. One on a strip slides out over the dock. A closed
+    /// one, or one the layout doesn't hold, joins the largest group as its showing tab. A group that covers the
+    /// panel's group is restored.</summary>
     public DockLayout Open(string panel)
     {
+        if (StripOf(panel) is not null)
+        {
+            return Revealed == panel ? this : new(Root, Closed, Floating, AutoHidden, panel);
+        }
+
         var placed = Place(panel);
         if (placed.FloatOf(panel) is { } window)
         {
@@ -82,18 +112,19 @@ public sealed record DockLayout
         return (group.Active == panel ? placed : placed.Replace(group, group with { Active = panel })).Uncovered(panel);
     }
 
-    /// <summary>Closes the panel with this id: it leaves its group or its window and joins <see cref="Closed"/>.
-    /// When it was the showing tab, the tab after it shows instead, or the one before it when it was last. A panel
-    /// the layout shows nowhere changes nothing.</summary>
+    /// <summary>Closes the panel with this id: it leaves its group, its window or its strip and joins
+    /// <see cref="Closed"/>. When it was the showing tab, the tab after it shows instead, or the one before it when
+    /// it was last. A panel the layout shows nowhere changes nothing.</summary>
     public DockLayout Close(string panel) =>
-        GroupOf(panel) is null ? this : new DockLayout(Without(panel), Closed.Append(panel), FloatingWithout(panel));
+        GroupOf(panel) is null && StripOf(panel) is null ? this : new(Without(panel), Closed.Append(panel),
+            FloatingWithout(panel), AutoHidden.Where(hidden => hidden.Panel != panel), Revealed);
 
     /// <summary>Moves the panel with this id beside another panel: to a tab before or after the other's tab, as the
     /// group's showing tab, or to a new group on one side of the other's group, which takes half of that group's
-    /// space. A closed panel, a floating one, or one the layout doesn't hold, is docked there. A target in a window
-    /// takes the panel as a tab of that window, which comes to the front; a window has no sides, so a side of one
-    /// puts the tab after the target's. A target the layout shows nowhere changes nothing. A group that covers the
-    /// group the panel ends in is restored.</summary>
+    /// space. A closed panel, a floating one, one on a strip, or one the layout doesn't hold, is docked there. A
+    /// target in a window takes the panel as a tab of that window, which comes to the front; a window has no sides,
+    /// so a side of one puts the tab after the target's. A target the layout shows nowhere changes nothing. A group
+    /// that covers the group the panel ends in is restored.</summary>
     /// <param name="panel">The id of the panel to move.</param>
     /// <param name="target">The id of the panel it goes beside.</param>
     /// <param name="position">Where it goes.</param>
@@ -118,8 +149,8 @@ public sealed record DockLayout
     }
 
     /// <summary>Moves the panel with this id to a new group along an edge of the dock, which takes a quarter of the
-    /// dock, or all of it when nothing else is docked. A closed panel, a floating one, or one the layout doesn't
-    /// hold, is docked there. A group that filled the dock is restored.</summary>
+    /// dock, or all of it when nothing else is docked. A closed panel, a floating one, one on a strip, or one the
+    /// layout doesn't hold, is docked there. A group that filled the dock is restored.</summary>
     /// <param name="panel">The id of the panel to move.</param>
     /// <param name="edge">The edge: Start, End, Top or Bottom.</param>
     /// <exception cref="ArgumentOutOfRangeException">The edge is Before or After, which put a panel beside another
@@ -133,14 +164,15 @@ public sealed record DockLayout
         }
 
         var lifted = Lifted(panel);
-        return new DockLayout(
+        return lifted.With(
             lifted.Root is { } rest ? Beside(rest with { Size = 3 }, panel, edge, 1) : new DockGroup(panel),
-            Closed, lifted.Floating).Uncovered(panel);
+            lifted.Floating).Uncovered(panel);
     }
 
     /// <summary>Takes the panel with this id out of its group into a window of its own that floats in front of the
     /// others: half as wide and as tall as the dock, over its middle, and a little further down and along for each
-    /// window already floating. A closed panel, or one the layout doesn't hold, floats the same way.</summary>
+    /// window already floating. A closed panel, one on a strip, or one the layout doesn't hold, floats the same way.
+    /// </summary>
     public DockLayout Float(string panel)
     {
         // Each new window sits a little down and along from the last, so it doesn't hide the one before it.
@@ -149,7 +181,8 @@ public sealed record DockLayout
     }
 
     /// <summary>Takes the panel with this id out of its group into a window of its own that floats in front of the
-    /// others, in this box. A closed panel, or one the layout doesn't hold, floats the same way.</summary>
+    /// others, in this box. A closed panel, one on a strip, or one the layout doesn't hold, floats the same way.
+    /// </summary>
     /// <param name="panel">The id of the panel to float.</param>
     /// <param name="x">Where the box starts, in percent of the dock's width, from the side where text starts.</param>
     /// <param name="y">Where the box starts, in percent of the dock's height, from the top.</param>
@@ -158,8 +191,7 @@ public sealed record DockLayout
     public DockLayout FloatAt(string panel, double x, double y, double width, double height)
     {
         var lifted = Lifted(panel);
-        return new DockLayout(lifted.Root, Closed,
-            [.. lifted.Floating, new DockFloat(new DockGroup(panel), x, y, width, height)]);
+        return lifted.With(lifted.Root, [.. lifted.Floating, new DockFloat(new DockGroup(panel), x, y, width, height)]);
     }
 
     /// <summary>Gives the window that holds the panel with this id another box, which the layout keeps inside the
@@ -172,8 +204,29 @@ public sealed record DockLayout
     /// <param name="height">The box's height, in percent of the dock's.</param>
     /// <exception cref="ArgumentOutOfRangeException">A number isn't finite.</exception>
     public DockLayout MoveWindow(string panel, double x, double y, double width, double height) =>
-        FloatOf(panel) is not { } window ? this : new(Root, Closed,
+        FloatOf(panel) is not { } window ? this : With(Root,
             Floating.Select(each => ReferenceEquals(each, window) ? each.At(x, y, width, height) : each));
+
+    /// <summary>Puts the panel with this id away on the strip along an edge of the dock, after the panels already
+    /// there: it leaves its group or its window, and only its title shows until <see cref="Open"/> or the user
+    /// slides it out. A closed panel, or one the layout doesn't hold, goes to the strip the same way, and one
+    /// already on a strip moves to this edge's and keeps its <see cref="DockAutoHidden.Size"/>.</summary>
+    /// <param name="panel">The id of the panel to put away.</param>
+    /// <param name="edge">The edge: Start, End, Top or Bottom.</param>
+    /// <exception cref="ArgumentOutOfRangeException">The edge is Before or After, which put a panel beside another
+    /// panel.</exception>
+    public DockLayout AutoHide(string panel, DockPosition edge)
+    {
+        var hidden = StripOf(panel) is { } was ? new DockAutoHidden(panel, edge) { Size = was.Size }
+            : new DockAutoHidden(panel, edge);
+        var lifted = Lifted(panel);
+        return new(lifted.Root, Closed, lifted.Floating,
+            [.. AutoHidden.Where(each => each.Panel != panel), hidden], Revealed == panel ? null : Revealed);
+    }
+
+    /// <summary>Slides the auto-hidden panel that is out over the dock back to its strip, and changes nothing when
+    /// none is out.</summary>
+    public DockLayout Conceal() => Revealed is null ? this : new(Root, Closed, Floating, AutoHidden);
 
     /// <summary>Shows the panel with this id and has its group fill the dock, covering the other groups, which
     /// keep their places. A panel that isn't docked changes nothing, and in a layout with one group the panel only
@@ -203,24 +256,25 @@ public sealed record DockLayout
     public static bool TryParse([NotNullWhen(true)] string? json, [NotNullWhen(true)] out DockLayout? layout) =>
         (layout = DockLayoutJson.Read(json)) is not null;
 
-    /// <summary>Whether the other layout has an equal tree, equal windows in the same order and the same closed
-    /// panels in the same order.</summary>
+    /// <summary>Whether the other layout has an equal tree, equal windows in the same order, the same closed
+    /// panels in the same order, equal strips and the same panel slid out.</summary>
     public bool Equals(DockLayout? other) => other is not null && Equals(Root, other.Root)
-        && Closed.SequenceEqual(other.Closed) && Floating.SequenceEqual(other.Floating);
+        && Closed.SequenceEqual(other.Closed) && Floating.SequenceEqual(other.Floating)
+        && AutoHidden.SequenceEqual(other.AutoHidden) && Revealed == other.Revealed;
 
     /// <summary>A hash that equal layouts share.</summary>
     public override int GetHashCode() => HashCode.Combine(Root, Closed.Count);
 
-    // The layout with the panel docked: where it is, or else at the end of the largest group, without showing it.
+    // The layout with the panel in it: where it is, or else at the end of the largest group, without showing it.
     internal DockLayout Place(string panel)
     {
-        if (GroupOf(panel) is not null)
+        if (GroupOf(panel) is not null || StripOf(panel) is not null)
         {
             return this;
         }
 
         var largest = Arrange(_ => true).Groups.MaxBy(box => box.Box.Width * box.Box.Height)?.Group;
-        return largest is null ? new DockLayout(new DockGroup(panel), Closed, Floating)
+        return largest is null ? With(new DockGroup(panel), Floating)
             : Replace(largest, Holding(largest, [.. largest.Panels, panel], largest.Active));
     }
 
@@ -262,11 +316,22 @@ public sealed record DockLayout
             }
         }
 
-        return new DockArrangement(groups, separators, maximized < 0 ? null : maximized, floats);
+        // The slid-out panel is drawn as a window with one tab, across its edge of the dock.
+        var strips = AutoHidden.Where(hidden => shows(hidden.Panel)).ToList();
+        var revealed = strips.FirstOrDefault(hidden => hidden.Panel == Revealed) is { } slid
+            ? new DockGroupBox(new DockGroup(slid.Panel), slid.Box, [slid.Panel], slid.Panel) : null;
+        return new DockArrangement(groups, separators, maximized < 0 ? null : maximized, floats, strips, revealed);
     }
 
-    private DockLayout Replace(DockNode node, DockNode replacement) =>
-        new(Swap(Root!, node, replacement), Closed, Floating);
+    // The place on a strip of an auto-hidden panel.
+    internal DockAutoHidden? StripOf(string panel) => AutoHidden.FirstOrDefault(hidden => hidden.Panel == panel);
+
+    // The layout with another tree and other windows, and everything else as it is. A panel that the tree or a window
+    // now holds leaves its strip as the layout is tidied.
+    private DockLayout With(DockNode? root, IEnumerable<DockFloat> floating) =>
+        new(root, Closed, floating, AutoHidden, Revealed);
+
+    private DockLayout Replace(DockNode node, DockNode replacement) => With(Swap(Root!, node, replacement), Floating);
 
     // The window that holds a panel.
     internal DockFloat? FloatOf(string panel) => Floating.FirstOrDefault(window => window.Group.Panels.Contains(panel));
@@ -274,10 +339,10 @@ public sealed record DockLayout
     // The layout with a window, as it is or changed, in front of the others.
     private DockLayout InFront(DockFloat window, DockFloat changed) => ReferenceEquals(Floating[^1], window)
         && window.Equals(changed) ? this
-        : new(Root, Closed, [.. Floating.Where(each => !ReferenceEquals(each, window)), changed]);
+        : With(Root, [.. Floating.Where(each => !ReferenceEquals(each, window)), changed]);
 
     // The layout with the panel out of its group or window, for the caller to place again.
-    private DockLayout Lifted(string panel) => new(Without(panel), Closed, FloatingWithout(panel));
+    private DockLayout Lifted(string panel) => With(Without(panel), FloatingWithout(panel));
 
     // The windows with the panel out of the one that holds it. A window left empty goes when the layout is tidied.
     private IEnumerable<DockFloat> FloatingWithout(string panel) => Floating.Select(window =>

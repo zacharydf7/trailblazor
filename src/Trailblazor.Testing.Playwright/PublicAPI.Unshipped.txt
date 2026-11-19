@@ -657,3 +657,7 @@ Trailblazor.Testing.Playwright.TbDockLocator.FloatingAsync() -> System.Threading
 Trailblazor.Testing.Playwright.TbDockLocator.MoveWindowAsync(string! panel, int right, int down) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDockLocator.ResizeWindowAsync(string! panel, int wider, int taller) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbDockLocator.WindowAsync(string! panel) -> System.Threading.Tasks.Task<(double X, double Y, double Width, double Height)>!
+Trailblazor.Testing.Playwright.TbDockLocator.AutoHiddenAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbDockLocator.AutoHideAsync(string! panel, Trailblazor.DockPosition edge) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.RevealAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbDockLocator.ConcealAsync() -> System.Threading.Tasks.Task!

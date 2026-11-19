@@ -803,6 +803,19 @@ public static class TbStrings
     /// </summary>
     public const string DockFloated = "Dock.Floated";
 
+    /// <summary>"Auto-hide": a dock submenu that puts a panel away on a strip along an edge of the dock.</summary>
+    public const string DockAutoHide = "Dock.AutoHide";
+
+    /// <summary>"Auto-hidden panels ({0})": names a strip of a dock's auto-hidden panels; {0} is the words of its
+    /// edge, such as "At the start".</summary>
+    public const string DockStrip = "Dock.Strip";
+
+    /// <summary>"Auto-hidden panel": names the tab list of a dock's auto-hidden panel that is slid out.</summary>
+    public const string DockRevealedGroup = "Dock.RevealedGroup";
+
+    /// <summary>"{0} is auto-hidden.": said when a dock's panel is put away on a strip; {0} is its title.</summary>
+    public const string DockAutoHidden = "Dock.AutoHidden";
+
     /// <summary>"Move the {0} window": names the button that moves a dock's floating window; {0} is the title of
     /// its showing panel.</summary>
     public const string DockMoveWindow = "Dock.MoveWindow";
@@ -1822,6 +1835,10 @@ public static class TbStrings
         [DockFloat] = "Float",
         [DockDock] = "Dock",
         [DockFloated] = "{0} floats in a window.",
+        [DockAutoHide] = "Auto-hide",
+        [DockStrip] = "Auto-hidden panels ({0})",
+        [DockRevealedGroup] = "Auto-hidden panel",
+        [DockAutoHidden] = "{0} is auto-hidden.",
         [DockMoveWindow] = "Move the {0} window",
         [DockMoveWindowHint] = "Arrow keys move the window.",
         [DockResizeWindow] = "Resize the {0} window",

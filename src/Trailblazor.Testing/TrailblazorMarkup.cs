@@ -3031,21 +3031,29 @@ public sealed class TbDockDriver
     /// <summary>The titles of every panel's tab, group by group in reading order.</summary>
     public IReadOnlyList<string> Panels => Tabs().Select(Title).ToList();
 
-    /// <summary>The titles of the panels that show, one for each group and each floating window, in reading order.
+    /// <summary>The titles of the panels that show, one for each group, each floating window and the auto-hidden
+    /// panel that is slid out, in reading order.
     /// While a group fills the dock, its panel shows and each window's.</summary>
     public IReadOnlyList<string> Showing =>
         Tabs().Where(tab => tab.GetAttribute("aria-selected") == "true" && !Covered(tab)).Select(Title).ToList();
 
     /// <summary>Selects the panel with this title, as clicking its tab does. Throws for a panel behind the group
     /// that fills the dock, as every helper that clicks does.</summary>
-    public async Task SelectAsync(string panel) => await Reachable(panel).ClickAsync(new MouseEventArgs { Detail = 1 });
+    public async Task SelectAsync(string panel)
+    {
+        await SlidOutAsync(panel);
+        await Reachable(panel).ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
 
     /// <summary>Closes the panel with this title, as clicking the close mark on its tab does. Throws for a panel that
     /// can't be closed.</summary>
-    public async Task CloseAsync(string panel) =>
+    public async Task CloseAsync(string panel)
+    {
+        await SlidOutAsync(panel);
         await (Reachable(panel).QuerySelector("[data-part=close]")
             ?? throw new InvalidOperationException($"The panel \"{panel}\" can't be closed."))
         .ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
 
     /// <summary>Moves the tab of the panel with this title along its row by this many places, forward when the
     /// number is positive and back when it's negative, as "Move tab forward" and "Move tab back" in its group's menu
@@ -3082,8 +3090,41 @@ public sealed class TbDockDriver
             $"The panel \"{panel}\" is the only one docked, so it has nowhere to move.");
 
     /// <summary>The titles of the panels in floating windows, window by window, oldest window first.</summary>
-    public IReadOnlyList<string> Floating =>
-        Tabs().Where(tab => tab.Closest("[data-part=group]")!.HasAttribute("data-floating")).Select(Title).ToList();
+    public IReadOnlyList<string> Floating => Tabs().Where(tab => IsWindow(tab.Closest("[data-part=group]")!))
+        .Select(Title).ToList();
+
+    /// <summary>The titles of the panels put away on the strips along the dock's edges: the top strip's, then those
+    /// of the start, the end and the bottom strips.</summary>
+    public IReadOnlyList<string> AutoHidden => StripButtons().Select(Title).ToList();
+
+    /// <summary>Puts the panel with this title away on the strip along this edge of the dock, as "Auto-hide" in its
+    /// group's menu does. Throws for a panel that is on that strip already, and for <c>Before</c> or <c>After</c>.
+    /// </summary>
+    public async Task AutoHideAsync(string panel, DockPosition edge) =>
+        await ChooseAsync(panel, $"[data-move-hide={Side(edge, nameof(edge))}]",
+            $"The panel \"{panel}\" is on that strip already.");
+
+    /// <summary>Slides the auto-hidden panel with this title out over the dock, as its button on its strip does. A
+    /// panel that is out already stays out. Throws for a panel that isn't on a strip.</summary>
+    public async Task RevealAsync(string panel)
+    {
+        var button = StripButtons().SingleOrDefault(each => Title(each) == panel)
+            ?? throw new InvalidOperationException($"The panel \"{panel}\" isn't on a strip.");
+        if (button.GetAttribute("aria-expanded") != "true")
+        {
+            await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+        }
+    }
+
+    /// <summary>Slides the slid-out panel back to its strip, as Escape in it does. Throws when no panel is slid out.
+    /// </summary>
+    public async Task ConcealAsync()
+    {
+        var tab = Tabs().FirstOrDefault(each => each.Closest("[data-part=group]")!.HasAttribute("data-edge"))
+            ?? throw new InvalidOperationException("No auto-hidden panel is slid out.");
+        var report = _scripts.Dock(tab.Id!);
+        await _scripts.InvokeAsync(() => report.OnConceal(true));
+    }
 
     /// <summary>Takes the panel with this title out into a floating window of its own, as "Float" in its group's
     /// menu does. Throws for a panel that has a window to itself already.</summary>
@@ -3144,9 +3185,12 @@ public sealed class TbDockDriver
     /// with this name, through the submenus named before it, as in
     /// <c>ChooseFromTabMenuAsync("Notes", "Move to group", "Group 2: Map")</c>. The menu acts on that panel whether or
     /// not it shows. Throws for an item the menu doesn't have.</summary>
-    public async Task ChooseFromTabMenuAsync(string panel, params string[] path) => await new TbContextMenuDriver(
-        () => Tab(panel).Closest(".tb-context-menu")!, _scripts, Reachable(panel).GetAttribute("data-panel")!)
-        .ChooseAsync(path);
+    public async Task ChooseFromTabMenuAsync(string panel, params string[] path)
+    {
+        await SlidOutAsync(panel);
+        await new TbContextMenuDriver(() => Tab(panel).Closest(".tb-context-menu")!, _scripts,
+            Reachable(panel).GetAttribute("data-panel")!).ChooseAsync(path);
+    }
 
     /// <summary>The share, in percent, that the part before the separator with this name has of the space it and
     /// the part after it take together.</summary>
@@ -3179,6 +3223,7 @@ public sealed class TbDockDriver
     // Clicks an item of the menu of the panel's group, which acts on the group's showing panel.
     private async Task ChooseAsync(string panel, string item, string missing)
     {
+        await SlidOutAsync(panel);
         if (Reachable(panel).GetAttribute("aria-selected") != "true")
         {
             await SelectAsync(panel);
@@ -3199,7 +3244,7 @@ public sealed class TbDockDriver
 
     private static string Side(DockPosition side, string parameter) =>
         side is DockPosition.Before or DockPosition.After
-            ? throw new ArgumentOutOfRangeException(parameter, side, "A new group goes to the start, end, top or bottom.")
+            ? throw new ArgumentOutOfRangeException(parameter, side, "Use Start, End, Top or Bottom.")
             : side.ToString().ToLowerInvariant();
 
     // The dock's own tabs, not those of tabs inside a panel, by their groups' numbers: bUnit has the rows as they
@@ -3210,11 +3255,29 @@ public sealed class TbDockDriver
         .SelectMany(group => group.QuerySelectorAll("[role=tab]"));
 
     private IElement Tab(string panel) => Tabs().SingleOrDefault(tab => Title(tab) == panel)
-        ?? throw new InvalidOperationException($"No panel is titled \"{panel}\".");
+        ?? throw new InvalidOperationException(StripButtons().Any(button => Title(button) == panel)
+            ? $"The panel \"{panel}\" is on a strip; slide it out with RevealAsync first."
+            : $"No panel is titled \"{panel}\".");
 
-    private IElement WindowRow(string panel) =>
-        Tab(panel).Closest("[data-part=group]") is { } row && row.HasAttribute("data-floating") ? row
+    private IElement WindowRow(string panel) => !StripButtons().Any(button => Title(button) == panel)
+        && Tab(panel).Closest("[data-part=group]") is { } row && IsWindow(row) ? row
             : throw new InvalidOperationException($"The panel \"{panel}\" isn't in a floating window.");
+
+    // A slid-out panel is drawn as a window, but it isn't one.
+    private static bool IsWindow(IElement row) => row.HasAttribute("data-floating") && !row.HasAttribute("data-edge");
+
+    // The buttons of the strips, which lie beside the dock's area in its frame.
+    private IEnumerable<IElement> StripButtons() => _find().ParentElement!.Children
+        .Where(child => child.GetAttribute("data-part") == "strip").SelectMany(strip => strip.Children);
+
+    // A panel on a strip has no tab until it slides out, so a helper that needs its tab slides it out first.
+    private async Task SlidOutAsync(string panel)
+    {
+        if (StripButtons().Any(each => Title(each) == panel))
+        {
+            await RevealAsync(panel);
+        }
+    }
 
     // Tells the dock what its script would after a move or a resize of a window.
     private async Task ReportWindowAsync(string panel, double x, double y, double width, double height, bool resized)
