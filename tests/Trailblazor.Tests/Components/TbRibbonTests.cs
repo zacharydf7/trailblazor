@@ -340,6 +340,25 @@ public class TbRibbonTests : BunitContext
     }
 
     [Fact]
+    public void Driver_ShouldReadOnlyTheRibbonsOwnTabs_WhenAGroupHoldsTabs()
+    {
+        var cut = RenderRibbon(tabs: builder => AddTab(builder, 0, "Notes", null, group =>
+        {
+            group.OpenComponent<TbTabs>(0);
+            group.AddComponentParameter(1, nameof(TbTabs.AriaLabel), "Note views");
+            group.AddComponentParameter(2, nameof(TbTabs.ChildContent), (RenderFragment)(views =>
+            {
+                views.OpenComponent<TbTab>(0);
+                views.AddComponentParameter(1, nameof(TbTab.Text), "List");
+                views.CloseComponent();
+            }));
+            group.CloseComponent();
+        }));
+
+        Assert.Equal(["Notes"], cut.Tb().Ribbon().Tabs);
+    }
+
+    [Fact]
     public async Task Driver_ShouldRefuseToClick_WhenThePageIsStatic()
     {
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
