@@ -67,6 +67,30 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldGiveFocusToItsTrigger_WhenTheControlItWasOpenedFromIsGoneAsItCloses(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/popover");
+        await Expect(Trigger(page, "Filters")).ToHaveAttributeAsync("data-ready", "");
+        var opener = page.GetByRole(AriaRole.Button, new() { Name = "Show filter options" });
+        // Enter, since a click doesn't give a button focus in every browser.
+        await opener.PressAsync("Enter");
+        var panel = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter the report" });
+        await Expect(panel.GetByLabel("Only open items")).ToBeFocusedAsync();
+        await opener.EvaluateAsync("button => { button.style.display = 'none'; }");
+        await Expect(opener).ToBeHiddenAsync();
+        await HoldBackTheClosedToggleAsync(page, "[data-part=panel]");
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(panel).ToBeHiddenAsync();
+        // The browser has nowhere to put focus back, so focus ends on the body before the popover hears the close.
+        await page.WaitForFunctionAsync(
+            "() => document.activeElement === document.body && typeof window.hearTheClose === 'function'");
+        await page.EvaluateAsync("() => window.hearTheClose()");
+
+        await Expect(Trigger(page, "Filters")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Popover_ShouldTakeFocusAndGiveItBack_WhenOpenedAndClosedWithTheKeyboard(string browser)
     {
         var page = await OpenAsync(browser, "/examples/popover");
