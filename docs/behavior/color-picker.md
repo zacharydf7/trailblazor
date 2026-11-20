@@ -40,6 +40,7 @@ Familiar apps: a browser's color input, the color pickers in design tools and br
 
 ## Focus
 
+- [x] A control outside the picker that takes focus after the picker closes but before its script hears the close keeps the focus, as with a popover. `popover.js`
 - [x] `@bind-Open` opens and closes the color panel from code and reports the user closing it. Only a new value from the parent opens or closes it. `PickersOpenTests.Picker_ShouldOpenFromCodeAndReportAClose_WhenItsOpenIsBound`, `TbColorPickerTests.Open_ShouldFollowOnlyANewValueFromTheParent_WhenTheUserClosesThePanel`
 - [x] Opening puts focus on the chosen swatch, as Tab would, so the arrows move from it. `RadioStopsTests.ColorPicker_ShouldTakeFocusOnTheChosenSwatch_WhenItOpens`
 - [x] The checked swatch is marked inside its edge, so a focus ring on it stays visible. `ColorPickerTests.Swatch_ShouldMarkItsCheckWithoutTheFocusRing_WhenItIsChecked`

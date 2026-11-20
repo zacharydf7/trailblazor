@@ -207,29 +207,11 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Actions" });
         await trigger.ClickAsync();
         await Expect(Item(page, "Duplicate")).ToBeFocusedAsync();
-        // The browser fires the menu's toggle event a task after the menu closes. Holding that event back stands in
-        // for a slow machine, where a test or the app focuses something else in between.
-        await page.EvaluateAsync("""
-            () => {
-                document.addEventListener('toggle', event => {
-                    if (event.isTrusted && event.newState === 'closed' && event.target.matches('[role=menu]')) {
-                        event.stopImmediatePropagation();
-                        window.tellTheMenu = () => event.target.dispatchEvent(
-                            new ToggleEvent('toggle', { oldState: 'open', newState: 'closed' }));
-                    }
-                }, true);
-                const other = document.createElement('button');
-                other.textContent = 'Elsewhere';
-                document.body.append(other);
-            }
-            """);
-        var elsewhere = page.GetByRole(AriaRole.Button, new() { Name = "Elsewhere" });
+        await HoldBackTheClosedToggleAsync(page, "[role=menu]");
 
         await page.Keyboard.PressAsync("Escape");
         await Expect(page.GetByRole(AriaRole.Menu)).ToBeHiddenAsync();
-        await page.WaitForFunctionAsync("() => typeof window.tellTheMenu === 'function'");
-        await elsewhere.FocusAsync();
-        await page.EvaluateAsync("() => window.tellTheMenu()");
+        var elsewhere = await FocusElsewhereBeforeTheCloseIsHeardAsync(page);
 
         await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
         await Expect(elsewhere).ToBeFocusedAsync();

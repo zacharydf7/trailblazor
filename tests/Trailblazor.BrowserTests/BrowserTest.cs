@@ -105,6 +105,34 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         return page;
     }
 
+    // The browser fires a popover's toggle event a task after it closes. Holding that event back stands in for a slow
+    // machine, where a test or the app focuses something else before the component hears the close. This also adds a
+    // button named Elsewhere for the test to focus.
+    protected static Task HoldBackTheClosedToggleAsync(IPage page, string popover) => page.EvaluateAsync("""
+        popover => {
+            document.addEventListener('toggle', event => {
+                if (event.isTrusted && event.newState === 'closed' && event.target.matches(popover)) {
+                    event.stopImmediatePropagation();
+                    window.hearTheClose = () => event.target.dispatchEvent(
+                        new ToggleEvent('toggle', { oldState: 'open', newState: 'closed' }));
+                }
+            }, true);
+            const other = document.createElement('button');
+            other.textContent = 'Elsewhere';
+            document.body.append(other);
+        }
+        """, popover);
+
+    // Focuses the Elsewhere button once the popover has closed, and only then lets the component hear the close.
+    protected static async Task<ILocator> FocusElsewhereBeforeTheCloseIsHeardAsync(IPage page)
+    {
+        var elsewhere = page.GetByRole(AriaRole.Button, new() { Name = "Elsewhere" });
+        await page.WaitForFunctionAsync("() => typeof window.hearTheClose === 'function'");
+        await elsewhere.FocusAsync();
+        await page.EvaluateAsync("() => window.hearTheClose()");
+        return elsewhere;
+    }
+
     // Colors transition when the theme flips, so wait until no CSS transition is still running. A transition another
     // replaces, as when a component re-renders for the new theme, ends canceled, so the wait goes on to its successor.
     protected static Task SetThemeAsync(IPage page, string theme) =>

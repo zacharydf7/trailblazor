@@ -402,6 +402,25 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldLeaveFocusWhereItWent_WhenAnotherControlTakesItBeforeTheSelectHearsItClosed(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Filtered trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+        await trail.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeVisibleAsync();
+        await HoldBackTheClosedToggleAsync(page, "[data-part=popup]");
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
+        var elsewhere = await FocusElsewhereBeforeTheCloseIsHeardAsync(page);
+
+        await Expect(trail).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(elsewhere).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldFilterAllItsOptions_WhenItsLongListIsVirtualized(string browser)
     {
         var page = await OpenAsync(browser, "/select-items");

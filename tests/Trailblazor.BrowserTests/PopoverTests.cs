@@ -31,6 +31,42 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldLeaveFocusWhereItWent_WhenAnotherControlTakesItBeforeThePopoverHearsItClosed(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/popover");
+        var trigger = Trigger(page, "Filters");
+        await Expect(trigger).ToHaveAttributeAsync("data-ready", "");
+        await trigger.ClickAsync();
+        var panel = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter the report" });
+        await Expect(panel.GetByLabel("Only open items")).ToBeFocusedAsync();
+        await HoldBackTheClosedToggleAsync(page, "[data-part=panel]");
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(panel).ToBeHiddenAsync();
+        var elsewhere = await FocusElsewhereBeforeTheCloseIsHeardAsync(page);
+
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(elsewhere).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldGiveFocusToItsTrigger_WhenItWasOpenedFromCodeAndEscapeClosesIt(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/popover");
+        await Expect(Trigger(page, "Filters")).ToHaveAttributeAsync("data-ready", "");
+        // The browser puts focus back on this button, which had it as the panel opened.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Show filter options" }).ClickAsync();
+        var panel = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter the report" });
+        await Expect(panel.GetByLabel("Only open items")).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(panel).ToBeHiddenAsync();
+        await Expect(Trigger(page, "Filters")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Popover_ShouldTakeFocusAndGiveItBack_WhenOpenedAndClosedWithTheKeyboard(string browser)
     {
         var page = await OpenAsync(browser, "/examples/popover");

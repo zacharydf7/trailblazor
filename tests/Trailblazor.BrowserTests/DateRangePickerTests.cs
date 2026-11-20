@@ -395,6 +395,22 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldLeaveFocusWhereItWent_WhenAnotherControlTakesItBeforeTheCalendarHearsItClosed(
+        string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        var trigger = Picker(page).GetByRole(AriaRole.Button, new() { Name = "Choose dates" });
+        await HoldBackTheClosedToggleAsync(page, "[data-part=panel]");
+
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(Calendar(page)).ToBeHiddenAsync();
+        var elsewhere = await FocusElsewhereBeforeTheCloseIsHeardAsync(page);
+
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(elsewhere).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Calendar_ShouldClose_WhenShiftTabMovesFocusBackToItsButton(string browser)
     {
         var page = await OpenWithCalendarAsync(browser);

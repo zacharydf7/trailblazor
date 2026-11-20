@@ -1,6 +1,7 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { browserToday, dayTarget, toDate, toIso } from './date-grid.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { focusWentElsewhere } from '../Trailblazor.Primitives/focus-scope.js';
 
 // The calendar's focus moves here among the days on show; the server is told, and shows another month when needed.
 export function createDateRangePicker(panel, events, firstDayOfWeek) {
@@ -13,6 +14,8 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     const trigger = control.querySelector(`[aria-controls="${panel.id}"]`);
     let position = null;
     let returnFocus = false;
+    // What had focus as the calendar opened.
+    let openedFrom = null;
     // The replay at attach and a toggle still queued from before it can both report one opening.
     let opened = false;
     // Set from a press on the calendar button until the calendar next opens or closes.
@@ -40,6 +43,8 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     const onBeforeToggle = event => {
         if (event.newState === 'closed') {
             returnFocus = panel.contains(document.activeElement);
+        } else {
+            openedFrom = document.activeElement;
         }
     };
     const onToggle = event => {
@@ -60,9 +65,11 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
             position = null;
             intended = null;
             dropPreview();
-            if (returnFocus) {
+            if (returnFocus && !focusWentElsewhere(panel, openedFrom)) {
                 trigger.focus();
             }
+
+            openedFrom = null;
         }
 
         callDotNet(events, 'OnToggle', open);
@@ -178,8 +185,9 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     panel.addEventListener('pointercancel', dropPreview);
     panel.addEventListener('pointerdown', onPointerDown);
     trigger.addEventListener('pointerdown', onTriggerPointerDown);
-    // A calendar clicked open before this script attached missed its toggle, so it is replayed.
+    // A calendar clicked open before this script attached missed its toggles, so they are replayed.
     if (panel.matches(':popover-open')) {
+        onBeforeToggle({ newState: 'open' });
         onToggle({ newState: 'open' });
     }
 

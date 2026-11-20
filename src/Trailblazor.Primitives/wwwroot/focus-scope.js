@@ -140,6 +140,14 @@ export function markedTarget(named) {
     return isTabbable(named) ? named : firstTabbable(named);
 }
 
+// Whether a control outside a popover has taken focus since it closed. Its toggle event comes a task after it closes,
+// so focus goes back to the trigger only when this is false. Focus on the body, anywhere inside the popover, or on what
+// had focus as it opened (where the browser puts focus back by itself) doesn't count.
+export function focusWentElsewhere(popover, openedFrom) {
+    const active = document.activeElement;
+    return active !== null && active !== document.body && !popover.contains(active) && active !== openedFrom;
+}
+
 // The first control Tab would reach in the container, or null.
 export function firstTabbable(container) {
     return getTabbables(container)[0] ?? null;

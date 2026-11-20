@@ -56,6 +56,7 @@ Familiar apps: a native `<select>`, the dropdowns in Windows and macOS settings
 - [x] Clearing or removing a chip moves focus to the combobox. `SelectTests.Select_ShouldClearTheChoice_WhenTheClearButtonIsClicked`
 - [x] A filterable select moves focus to the filter and keeps it there in a multi-select. `SelectExtrasTests.Filter_ShouldStayOpenWithFocusAndText_WhenChoosingInAMultiSelect`
 - [x] Escape in the filter closes the list and returns focus to the combobox. `SelectExtrasTests.Filter_ShouldHideEmptyGroupsSayNoMatchesAndClearOnClose_WhenNothingMatches`
+- [x] When a key or a choice closes a filterable select's list, focus goes back to the combobox as the list closes, not when its script later hears the close, so a control that takes focus right after keeps it. `SelectTests.Select_ShouldLeaveFocusWhereItWent_WhenAnotherControlTakesItBeforeTheSelectHearsItClosed`
 - [x] A disabled select is out of the tab order and offers no clear button. `TbSelectTests.Render_ShouldHideTheClearButtonAndLeaveTheComboboxOutOfTheTabOrder_WhenDisabled`
 - [x] A read-only select keeps its value and doesn't open. `TbSelectTests.Click_ShouldKeepTheValueAndHideClear_WhenReadOnly`
 - [x] Pressing a disabled option or a group heading keeps focus on the combobox or filter, so the keys keep working. `SelectLongTests.Select_ShouldKeepFocusAndItsKeys_WhenADisabledOptionIsPressed`, `SelectLongTests.Select_ShouldKeepFocusInTheFilter_WhenAGroupHeadingIsPressed`

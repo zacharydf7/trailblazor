@@ -1,5 +1,5 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
-import { firstTabbable, markedTarget } from '../Trailblazor.Primitives/focus-scope.js';
+import { firstTabbable, focusWentElsewhere, markedTarget } from '../Trailblazor.Primitives/focus-scope.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 const showDelay = 300;
@@ -22,6 +22,8 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     // A panel opened by hovering closes when the pointer leaves, until the user starts working in it.
     let openedByHover = false;
     let returnFocus = false;
+    // What had focus as the panel opened.
+    let openedFrom = null;
     let timer = 0;
     // The replay at attach and a toggle still queued from before it can both report one opening.
     let shown = false;
@@ -41,6 +43,7 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
             return;
         }
 
+        openedFrom = document.activeElement;
         // toggle fires a task later, possibly after a paint, so the panel is placed in the next frame.
         requestAnimationFrame(() => {
             if (panel.matches(':popover-open') && !position) {
@@ -73,9 +76,11 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
             position?.dispose();
             position = null;
             openedByHover = false;
-            if (returnFocus) {
+            if (returnFocus && !focusWentElsewhere(panel, openedFrom)) {
                 trigger.focus();
             }
+
+            openedFrom = null;
         }
     };
     // A click on the trigger of a panel the pointer opened keeps it open on purpose, instead of toggling it shut.

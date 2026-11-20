@@ -43,6 +43,7 @@ Familiar apps: the folder picker in Google Drive's move dialog, the category pic
 
 ## Focus
 
+- [x] A control outside the tree that takes focus after the tree closes but before its script hears the close keeps the focus, as with a popover. `popover.js`
 - [x] Clicking the label opens the tree, as a click on the field's button does. `TbTreeSelectTests.Render_ShouldNameTheButtonByItsLabelAndChoice_WhenShown`
 - [x] A read-only field stays focusable and shows its choice, but opens nothing; a disabled one can't be focused. `TbTreeSelectTests.Render_ShouldShowAFocusableButtonThatOpensNothing_WhenReadOnly`, `TbTreeSelectTests.Render_ShouldDisableTheButton_WhenDisabled`
 

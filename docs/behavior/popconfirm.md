@@ -25,6 +25,7 @@ beside a button
 
 ## Focus
 
+- [x] A control outside the confirmation that takes focus after the confirmation closes but before its script hears the close keeps the focus, as with a popover. `popover.js`
 - [x] The confirmation is a dialog named by its question and described by its description, and its Cancel button comes first. `TbPopconfirmTests.Render_ShouldDescribeThePanelByItsDescription_WhenItHasOne`, `TbPopconfirmTests.Render_ShouldNameThePanelByItsQuestionAndPutCancelFirst_WhenCalled`
 - [x] Closing the confirmation by any answer gives focus back to the trigger. `PopconfirmTests.Popconfirm_ShouldStayOpenAndBusyUntilASlowConfirmFinishes_WhenConfirmed`, `PopconfirmTests.Popconfirm_ShouldCancelAndGiveFocusBack_WhenEscapeIsPressed`
 

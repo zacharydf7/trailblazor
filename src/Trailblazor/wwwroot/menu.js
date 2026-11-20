@@ -1,5 +1,6 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { focusWentElsewhere } from '../Trailblazor.Primitives/focus-scope.js';
 
 const itemSelector = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]';
 // A pointer passing over an item on its way elsewhere doesn't open or close a submenu.
@@ -371,11 +372,7 @@ function attachLists(menu, events, hooks) {
             forgetPointer();
         }
 
-        // The toggle event comes a task after the list closes, so a control outside the menu that took focus in
-        // between keeps it. Where the browser put focus back itself doesn't count as such a control.
-        const active = document.activeElement;
-        const elsewhere = active !== null && active !== document.body && !menu.contains(active)
-            && active !== openedFrom.get(list);
+        const elsewhere = focusWentElsewhere(menu, openedFrom.get(list));
         openedFrom.delete(list);
         if (returnFocus.delete(list) && !elsewhere) {
             if (list === menu) {
