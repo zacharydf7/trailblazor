@@ -51,6 +51,17 @@
     [Parameter]
     public EventCallback<string?> ActiveKeyChanged { get; set; }
 
+    /// <summary>Content before the tabs, in their row, such as an app button or a File menu. Tab reaches it, and the
+    /// tabs' arrow keys don't.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content after the tabs, in their row, such as Undo, Save or Share buttons. It comes before the
+    /// collapse button of a <see cref="Collapsible"/> ribbon. Tab reaches it, and the tabs' arrow keys don't.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
     /// <summary>Shows a button at the end of the tabs that collapses the ribbon to its tabs and shows its commands
     /// again, and lets Ctrl+F1 in the ribbon and a double-click on a tab do the same.</summary>
     [Parameter]
@@ -102,9 +113,16 @@
         builder.AddComponentParameter(7, nameof(TbTabs.ActiveIndex), ActiveIndex);
         builder.AddComponentParameter(8, nameof(TbTabs.ActiveIndexChanged), ActiveIndexChanged);
         builder.AddComponentParameter(9, nameof(TbTabs.ChildContent), ChildContent);
-        builder.AddComponentParameter(10, nameof(TbTabs.End),
-            Collapsible && RendererInfo.IsInteractive ? CollapseButton : null);
+        builder.AddComponentParameter(10, nameof(TbTabs.Start), Start);
+        builder.AddComponentParameter(11, nameof(TbTabs.End), RowEnd);
         builder.CloseComponent();
+    };
+
+    // The app's content comes first, so the collapse button stays the last thing in the row.
+    private RenderFragment? RowEnd => !(Collapsible && RendererInfo.IsInteractive) ? End : builder =>
+    {
+        builder.AddContent(0, End);
+        builder.AddContent(1, CollapseButton);
     };
 
     private async Task ToggleAsync()

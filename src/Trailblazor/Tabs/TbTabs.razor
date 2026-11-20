@@ -9,7 +9,13 @@
 <div @attributes="AdditionalAttributes" style="@Style"
      class="@ClassNames.Join("tb-tabs", ClassNames.Modifier("tb-tabs", Variant), ClassNames.Modifier("tb-tabs", Size),
                 Vertical ? "tb-tabs--vertical" : null, Fill ? "tb-tabs--fill" : null,
-                HasActions ? "tb-tabs--actions" : null, ShowsScrollButtons ? "tb-tabs--scrolls" : null, Class)">
+                Start is not null ? "tb-tabs--start" : null, HasActions ? "tb-tabs--actions" : null,
+                ShowsScrollButtons ? "tb-tabs--scrolls" : null, Class)">
+    @* A tab list holds only tabs, so the Start content comes before it. *@
+    @if (Start is not null)
+    {
+        <div class="tb-tabs__start">@Start</div>
+    }
     @* Hidden until the script finds the row overflowing. *@
     @if (ShowsScrollButtons)
     {
@@ -199,6 +205,11 @@
     /// later. Rendered statically, it goes to the end of the list.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Content at the start of the row of tabs, before the tab list, such as a menu for the whole set. It
+    /// sits outside the tab list, so Tab reaches it and the arrow keys don't.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
 
     /// <summary>Content at the end of the row of tabs, after the add button, such as a button that acts on every tab.
     /// It sits outside the tab list, so Tab reaches it and the arrow keys don't.</summary>

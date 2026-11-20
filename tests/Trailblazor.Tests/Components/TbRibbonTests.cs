@@ -73,6 +73,30 @@ public class TbRibbonTests : BunitContext
     }
 
     [Fact]
+    public void Start_ShouldComeBeforeTheTabsAndEndBeforeTheCollapseButton_WhenGiven()
+    {
+        var cut = RenderRibbon(parameters => parameters.Add(ribbon => ribbon.Collapsible, true)
+            .Add(ribbon => ribbon.Start, "<button type=\"button\">File</button>")
+            .Add(ribbon => ribbon.End, "<button type=\"button\">Save</button>"));
+
+        var list = cut.Find("[role=tablist]");
+        Assert.Equal("File", list.PreviousElementSibling!.TextContent);
+        var actions = list.NextElementSibling!;
+        Assert.Equal("Save", actions.FirstElementChild!.TextContent);
+        Assert.Equal("collapse", actions.LastElementChild!.GetAttribute("data-part"));
+    }
+
+    [Fact]
+    public void End_ShouldEndTheRowAlone_WhenTheRibbonIsNotCollapsible()
+    {
+        var cut = RenderRibbon(parameters => parameters
+            .Add(ribbon => ribbon.End, "<button type=\"button\">Save</button>"));
+
+        Assert.Equal("Save", cut.Find("[role=tablist]").NextElementSibling!.TextContent);
+        Assert.Empty(cut.FindAll("[data-part=collapse]"));
+    }
+
+    [Fact]
     public void Labels_ShouldNameTheCollapseButton_WhenGiven()
     {
         var cut = RenderRibbon(parameters => parameters.Add(ribbon => ribbon.Collapsible, true)

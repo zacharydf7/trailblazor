@@ -7318,3 +7318,9 @@ Trailblazor.TbRibbon.Labels.set -> void
 Trailblazor.TbTabs.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbTabs.End.set -> void
 const Trailblazor.TbStrings.RibbonCollapse = "Ribbon.Collapse" -> string!
+Trailblazor.TbRibbon.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbRibbon.End.set -> void
+Trailblazor.TbRibbon.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbRibbon.Start.set -> void
+Trailblazor.TbTabs.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTabs.Start.set -> void

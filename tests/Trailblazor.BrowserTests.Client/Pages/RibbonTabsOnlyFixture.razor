@@ -6,6 +6,8 @@
    leaves the dialog open. *@
 <TbButton>Before</TbButton>
 <TbRibbon AriaLabel="Planner" Collapsible @bind-Collapsed="_collapsed">
+    <End><TbButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => _last = "Save")">Save</TbButton></End>
+    <ChildContent>
     <TbRibbonTab Title="Home">
         <TbRibbonGroup Label="Write">
             <TbRibbonButton Label="Add" OnClick="@(() => _last = "Add")" />
@@ -30,6 +32,7 @@
             <TbRibbonButton Label="Spelling" OnClick="@(() => _last = "Spelling")" />
         </TbRibbonGroup>
     </TbRibbonTab>
+    </ChildContent>
 </TbRibbon>
 <p data-testid="under">Under the ribbon.</p>
 <p data-testid="far" style="margin-block-start: 20rem">Far below.</p>

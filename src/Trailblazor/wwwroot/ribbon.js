@@ -264,7 +264,8 @@ export function attachRibbonCollapse(root, events) {
 
         if (tabOf(event.target)) {
             root.setAttribute('data-peek', '');
-        } else if (inCommands(event.target) && isCommand(event.target)) {
+        } else if (isCommand(event.target)) {
+            // A command chosen in the shown commands or beside the tabs hides the shown commands again.
             endPeek();
         }
     };

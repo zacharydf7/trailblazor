@@ -125,6 +125,20 @@ public class RibbonTabsOnlyTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CollapsedRibbon_ShouldRunTheActionAndHideItsCommands_WhenAButtonBesideTheTabsIsChosen(
+        string browser)
+    {
+        var page = await OpenCollapsedAsync(browser);
+        await Tab(page, "Home").ClickAsync();
+        await Expect(Button(page, "Add")).ToBeVisibleAsync();
+
+        await Button(page, "Save").ClickAsync();
+
+        await Expect(page.GetByTestId("last")).ToHaveTextAsync("Save");
+        await Expect(Button(page, "Add")).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task CollapsedRibbon_ShouldKeepItsCommandsShowing_WhenAFieldInThemIsTypedIn(string browser)
     {
         var page = await OpenCollapsedAsync(browser);
@@ -206,7 +220,10 @@ public class RibbonTabsOnlyTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Enter");
         // The commands' one tab stop comes back a frame or two after they show.
         await Expect(Button(page, "Add")).ToHaveAttributeAsync("tabindex", "0");
-        // Tab goes to the collapse button, which ends the tabs' row, and then into the commands.
+        // Tab goes through the End content and the collapse button, which end the tabs' row, and then into the
+        // commands.
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(Button(page, "Save")).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Tab");
         await Expect(Toggle(page)).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Tab");

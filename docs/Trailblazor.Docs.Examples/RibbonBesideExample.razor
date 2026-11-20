@@ -1,0 +1,33 @@
+<TbStack Gap="3">
+    <TbRibbon AriaLabel="Field notes" Collapsible>
+        <Start>
+            <TbMenu Label="Notebook">
+                <TbMenuItem OnClick="@(() => _last = "New notebook")">New notebook</TbMenuItem>
+                <TbMenuItem OnClick="@(() => _last = "Print the notebook")">Print the notebook</TbMenuItem>
+            </TbMenu>
+        </Start>
+        <End>
+            <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => _last = "Undo")">Undo</TbButton>
+            <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => _last = "Save")">Save</TbButton>
+        </End>
+        <ChildContent>
+            <TbRibbonTab Title="Sightings">
+                <TbRibbonGroup Label="Record">
+                    <TbRibbonButton Large Label="New sighting" Icon="ExampleIcons.Plus"
+                                    OnClick="@(() => _last = "New sighting")" />
+                </TbRibbonGroup>
+            </TbRibbonTab>
+            <TbRibbonTab Title="Sketches">
+                <TbRibbonGroup Label="Draw">
+                    <TbRibbonButton Large Label="New sketch" Icon="ExampleIcons.Plus"
+                                    OnClick="@(() => _last = "New sketch")" />
+                </TbRibbonGroup>
+            </TbRibbonTab>
+        </ChildContent>
+    </TbRibbon>
+    <TbText>Last command: @(_last ?? "none").</TbText>
+</TbStack>
+
+@code {
+    private string? _last;
+}

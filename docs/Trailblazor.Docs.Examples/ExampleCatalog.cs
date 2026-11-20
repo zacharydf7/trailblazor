@@ -2355,6 +2355,10 @@ public static class ExampleCatalog
                     + "tab's commands over the page until a command is chosen, Escape is pressed or focus leaves the "
                     + "ribbon. Bind `Collapsed` to set or follow the state from code.",
                     typeof(RibbonTabsOnlyExample)),
+                new("beside", "Beside the tabs", "`Start` puts content before the tabs, in their row, such as an app "
+                    + "button or a File menu, and `End` after them, such as Undo and Save. The collapse button of a "
+                    + "`Collapsible` ribbon comes last. When you set `Start` or `End`, put the tabs inside "
+                    + "`<ChildContent>`.", typeof(RibbonBesideExample)),
             ],
             Api =
             [
@@ -2366,8 +2370,8 @@ public static class ExampleCatalog
                 new(["Left", "Right"], "Moves to the tab before or after and selects it.") { When = "On a tab" },
                 new(["Home", "End"], "Goes to the first or last tab and selects it.") { When = "On a tab" },
                 new(["Tab"], "Moves from the selected tab into its row of commands, which is one tab stop, and "
-                    + "then out of the ribbon. With `Collapsible`, the collapse button comes between the tabs and "
-                    + "the commands."),
+                    + "then out of the ribbon. `Start` content comes before the tabs, and `End` content and the "
+                    + "collapse button come between the tabs and the commands."),
                 new(["Left", "Right"], "Moves between every control of the tab's groups, across the groups, a "
                     + "collapsed group's button included.") { When = "In the commands" },
                 new(["Home", "End"], "Goes to the tab's first or last control.") { When = "In the commands" },
@@ -2425,8 +2429,8 @@ public static class ExampleCatalog
             ],
             AppDuties =
             [
-                "Name every other control you put in a group, such as a select with its `AriaLabel` or a menu with "
-                    + "its `Label`: the ribbon names only its tabs, groups and buttons.",
+                "Name every other control you put in a group, or in `Start` or `End`, such as a select with its "
+                    + "`AriaLabel` or a menu with its `Label`: the ribbon names only its tabs, groups and buttons.",
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
@@ -2440,6 +2444,7 @@ public static class ExampleCatalog
                     + "narrow for its groups scrolls sideways.",
                 "`Collapsed` takes effect, and the collapse button shows, once the page is interactive. Until then, "
                     + "and on a static page, the commands show, since nothing there could bring them back.",
+                "`Start` and `End` content render before the page is interactive, and on a static page too.",
             ],
             Notes =
             [
@@ -2452,9 +2457,9 @@ public static class ExampleCatalog
                     + "even for its groups' buttons scrolls sideways."),
                 new("A collapsed group's popup closes on Escape, on a click outside it, when focus leaves it, and "
                     + "when the ribbon changes width."),
-                new("The commands a collapsed ribbon shows hide again when a command is chosen, on Escape, when "
-                    + "focus leaves the ribbon and on a press outside it. A field, and a button that opens "
-                    + "something, such as a menu's, keep them showing."),
+                new("The commands a collapsed ribbon shows hide again when a command in them or in `Start` or "
+                    + "`End` is chosen, on Escape, when focus leaves the ribbon and on a press outside it. A field, "
+                    + "and a button that opens something, such as a menu's, keep them showing."),
                 new("Ctrl+F1 works while focus is in the ribbon. To collapse the ribbon from anywhere on the page, "
                     + "bind `Collapsed` and set it from a [hotkey](components/hotkeys) of your own."),
                 new("An `id` on a `TbRibbonTab` goes on its tab, the button people click, while `Class`, `Style` and "
@@ -2516,6 +2521,8 @@ public static class ExampleCatalog
                     + "first.",
                 "By hand, wait for `data-ready` on the ribbon itself, `[data-part=ribbon]`, before pressing Ctrl+F1 "
                     + "or a collapsed ribbon's tab.",
+                "`ClickAsync` reaches only the selected tab's commands. Find `Start` and `End` content by role in "
+                    + "the ribbon, such as `GetByRole(AriaRole.Button, new() { Name = \"Save\" })`.",
             ],
             Telemetry =
             [
@@ -10235,10 +10242,10 @@ public static class ExampleCatalog
                 new("overflow", "Many tabs", "A tab list too long for its row scrolls sideways, and moving focus to a "
                     + "tab brings it into view. The selected tab scrolls fully into view, leaving the page where it is.",
                     typeof(TabsOverflowExample)),
-                new("scroll-buttons", "Scroll buttons", "`ScrollButtons` puts a button at each end of the row; a click "
-                    + "scrolls the tabs by most of the row's width. They show only while the row overflows, each turns "
-                    + "off at its own end, and they're for the pointer, since the arrow keys already bring each tab "
-                    + "into view. A `Vertical` list has none. `Labels.ScrollStart` and `Labels.ScrollEnd` name the "
+                new("scroll-buttons", "Scroll buttons", "`ScrollButtons` puts a button at each end of the tab list; a "
+                    + "click scrolls the tabs by most of the row's width. They show only while the row overflows, each "
+                    + "turns off at its own end, and they're for the pointer, since the arrow keys already bring each "
+                    + "tab into view. A `Vertical` list has none. `Labels.ScrollStart` and `Labels.ScrollEnd` name the "
                     + "buttons.",
                     typeof(TabsScrollButtonsExample)),
                 new("forms", "A form across tabs", "`RenderAllPanels` renders every panel from the start, hidden, so a "
@@ -10261,9 +10268,11 @@ public static class ExampleCatalog
                     + "that starts with a control is no tab stop of its own, so focus goes to that control. Any other "
                     + "panel is a tab stop itself, so its text can be reached. `FocusablePanels` set to `Always` makes "
                     + "every panel a tab stop, and `Never` none.", typeof(TabsPanelStopsExample)),
-                new("end", "Content after the tabs", "`End` puts content at the end of the row of tabs, after the "
-                    + "add button, such as a button that acts on every tab. It sits outside the tab list, so Tab "
-                    + "reaches it and the arrow keys don't.", typeof(TabsEndExample)),
+                new("beside", "Content beside the tabs", "`Start` puts content before the tabs in their row, and "
+                    + "`End` after them, following the add button: a menu for the whole set, say, or a button that "
+                    + "acts on every tab. Both sit outside the tab list, so Tab reaches them and the arrow keys "
+                    + "don't. In a `Vertical` list, `Start` sits above the tabs and `End` under them. When you set "
+                    + "`Start` or `End`, put the tabs inside `<ChildContent>`.", typeof(TabsBesideExample)),
             ],
             Api = [typeof(TbTabs), typeof(TbTab), typeof(TabsLabels), typeof(TabsClasses)],
             Keyboard =
@@ -10281,8 +10290,8 @@ public static class ExampleCatalog
                 new(["Home", "End"], "Jumps to the first or last tab and selects it, unless activation is manual."),
                 new(["Enter", "Space"], "Selects the focused tab.") { When = "With manual activation" },
                 new(["Tab"], "Moves from the tab list, which is one tab stop, into the panel, or, by default, to the "
-                    + "panel's first control when the panel starts with one. The add button and any `End` content "
-                    + "come between the tab list and the panel."),
+                    + "panel's first control when the panel starts with one. Any `Start` content comes before the "
+                    + "tab list, and the add button and any `End` content come between the tab list and the panel."),
                 new(["Delete", "Backspace"], "Closes the focused tab.") { When = "On a tab with an `OnClose`" },
             ],
             Labeling =
@@ -10308,6 +10317,8 @@ public static class ExampleCatalog
             AppDuties =
             [
                 "Set `FocusablePanels` to `Never` only when every panel starts with a control.",
+                "Name any control you put in `Start` or `End` that has no visible text, such as an icon button with "
+                    + "its `AriaLabel`.",
                 "When tabs can close, also offer a way to close one from its panel or a menu, since a screen reader "
                     + "on a touch screen can't reach the close mark.",
             ],
@@ -10319,8 +10330,8 @@ public static class ExampleCatalog
                     + "activation. The browser's find selects the tab whose panel holds a match. A tab with no panel "
                     + "does nothing until the page is interactive. On a prerendered page, the selection goes back to "
                     + "`ActiveIndex` once the page is interactive. A tab with an `OnClose` shows its close mark, and tabs with "
-                    + "an `OnAdd` show their add button, once the page is interactive. `End` content renders from "
-                    + "the start, on a static page too.",
+                    + "an `OnAdd` show their add button, once the page is interactive. `Start` and `End` content "
+                    + "render before the page is interactive, and on a static page too.",
                 "The startup script checks how the shown panel starts, as it loads, after an enhanced navigation "
                     + "and as a tab is selected. So before the page is interactive, and on a static page, a panel "
                     + "that starts with a control isn't a tab stop either. Until that script has loaded, every shown "

@@ -1,13 +1,17 @@
 <TbTabs AriaLabel="Trail report">
+    <Start>
+        <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => _refreshed++)">Refresh</TbButton>
+    </Start>
     <End>
         <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => _shared++)">Share the report</TbButton>
     </End>
     <ChildContent>
-        <TbTab Text="Weather">Clear until noon. Times shared: @_shared.</TbTab>
+        <TbTab Text="Weather">Clear until noon. Times refreshed: @_refreshed. Times shared: @_shared.</TbTab>
         <TbTab Text="Hazards">A washout past the second bridge.</TbTab>
     </ChildContent>
 </TbTabs>
 
 @code {
+    private int _refreshed;
     private int _shared;
 }

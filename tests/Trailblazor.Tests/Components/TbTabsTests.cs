@@ -988,6 +988,22 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void Start_ShouldComeBeforeTheTabListInACellOfItsOwn_WhenGiven()
+    {
+        var plain = RenderTabs();
+        var cut = Render<TbTabs>(parameters => parameters
+            .Add(tabs => tabs.Start, "<button type=\"button\">Reports</button>")
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        Assert.Empty(plain.FindAll(".tb-tabs__start"));
+        Assert.DoesNotContain("tb-tabs--start", plain.Find(".tb-tabs").ClassList);
+        var start = cut.Find("[role=tablist]").PreviousElementSibling!;
+        Assert.Contains("tb-tabs__start", start.ClassList);
+        Assert.Equal("Reports", start.TextContent);
+        Assert.Contains("tb-tabs--start", cut.Find(".tb-tabs").ClassList);
+    }
+
+    [Fact]
     public void End_ShouldFollowTheAddButtonAfterTheTabList_WhenGiven()
     {
         var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.OnAdd, () => { })
