@@ -38,6 +38,7 @@ import './date-grid.js';
 import './dialog.js';
 import './field.js';
 import './inert.js';
+import { forwardToo } from './pop-out.js';
 import './ribbon-key-tips.js';
 import './option-filter.js';
 import './overlay.js';
@@ -103,16 +104,22 @@ function registerEvents(blazor) {
     }
 
     registered = true;
+    // Blazor listens for each of these on this page's document, so a panel that shows in a browser window of its own
+    // has to send them on from there.
+    const register = (name, options) => {
+        forwardToo(options.browserEventName);
+        blazor.registerCustomEventType(name, options);
+    };
 
     // A number input reports text it can't parse as an empty value; badInput tells that apart from a cleared field.
     // Going to or from such text in an empty field fires no change event, so leaving the field reports too.
     const numberEventArgs = event => ({ value: event.target.value, badInput: event.target.validity.badInput });
-    blazor.registerCustomEventType('tbnumberchange', { browserEventName: 'change', createEventArgs: numberEventArgs });
-    blazor.registerCustomEventType('tbnumberleave', { browserEventName: 'focusout', createEventArgs: numberEventArgs });
-    blazor.registerCustomEventType('tbnumberinput', { browserEventName: 'input', createEventArgs: numberEventArgs });
+    register('tbnumberchange', { browserEventName: 'change', createEventArgs: numberEventArgs });
+    register('tbnumberleave', { browserEventName: 'focusout', createEventArgs: numberEventArgs });
+    register('tbnumberinput', { browserEventName: 'input', createEventArgs: numberEventArgs });
     // number-field.js sends these for Page Up and Page Down, and for a held step button. The browser event has a name
     // of its own, since one matching the Blazor event's name would reach the handler twice.
-    blazor.registerCustomEventType('tbnumberstep',
+    register('tbnumberstep',
         { browserEventName: 'tb-number-step', createEventArgs: event => event.detail });
 
     // A field's OnFocus and OnBlur count only focus that crosses its root, not moves between its own parts. A data
@@ -125,7 +132,7 @@ function registerEvents(blazor) {
             crossesEdit: crosses(event.target.closest?.('[data-tb-focus-root="edit"]')),
         };
     };
-    blazor.registerCustomEventType('tbfocusenter',
+    register('tbfocusenter',
         { browserEventName: 'focusin', createEventArgs: fieldFocusEventArgs });
     // A text field's OnEnter hears an Enter pressed and released in the same field, after the change it commits; the
     // server hears no other key. An Enter that ends an input method composition doesn't count, and Safari marks it only
@@ -140,8 +147,8 @@ function registerEvents(blazor) {
             event.target.dispatchEvent(new CustomEvent('tb-enter', { bubbles: true }));
         }
     }, true);
-    blazor.registerCustomEventType('tbenter', { browserEventName: 'tb-enter' });
-    blazor.registerCustomEventType('tbfocusleave',
+    register('tbenter', { browserEventName: 'tb-enter' });
+    register('tbfocusleave',
         { browserEventName: 'focusout', createEventArgs: fieldFocusEventArgs });
     // A label can't take focus, so pressing one sends focus to the page, then back when its click focuses the box.
     // In a field that already holds focus, the press leaves focus where it is, so moving between options isn't leaving.
@@ -179,7 +186,7 @@ function registerEvents(blazor) {
     // The second click of a double-click leaves the row alone, so it doesn't toggle the row's selection back or raise
     // its click again. So does a drag that selects the row's text or its cells, and any click in an edit, such as
     // choosing an option.
-    blazor.registerCustomEventType('tbrowclick', {
+    register('tbrowclick', {
         browserEventName: 'click',
         createEventArgs: event => ({
             ignored: !!event.target.closest?.(rowControls) || !!event.target.closest?.('[data-part=editor]')
@@ -189,70 +196,70 @@ function registerEvents(blazor) {
     });
     // The grid's script raises these only for their keys and clicks, so other keys cost no trip to the server.
     // Each browser event's name differs from the registered one, since Blazor would otherwise handle it twice.
-    blazor.registerCustomEventType('tbrowextend', {
+    register('tbrowextend', {
         browserEventName: 'tb-row-extend',
         createEventArgs: event => ({ from: event.detail }),
     });
-    blazor.registerCustomEventType('tbcellrange', {
+    register('tbcellrange', {
         browserEventName: 'tb-cell-range',
         createEventArgs: event => event.detail,
     });
-    blazor.registerCustomEventType('tbcellscopy', { browserEventName: 'tb-cells-copy', createEventArgs: () => ({}) });
-    blazor.registerCustomEventType('tbsignaturestroke', {
+    register('tbcellscopy', { browserEventName: 'tb-cells-copy', createEventArgs: () => ({}) });
+    register('tbsignaturestroke', {
         browserEventName: 'tb-signature-stroke',
         createEventArgs: event => ({ points: event.detail.points }),
     });
-    blazor.registerCustomEventType('tbcolumnwindow', {
+    register('tbcolumnwindow', {
         browserEventName: 'tb-column-window',
         createEventArgs: event => event.detail,
     });
-    blazor.registerCustomEventType('tbtreedrop', {
+    register('tbtreedrop', {
         browserEventName: 'tb-tree-drop',
         createEventArgs: event => event.detail,
     });
-    blazor.registerCustomEventType('tbcontextmenuopen', {
+    register('tbcontextmenuopen', {
         browserEventName: 'tb-context-menu-open',
         createEventArgs: event => ({ key: event.detail.key, request: event.detail.request }),
     });
-    blazor.registerCustomEventType('tbcolumnwidths', {
+    register('tbcolumnwidths', {
         browserEventName: 'tb-column-widths',
         createEventArgs: event => ({ widths: event.detail.widths }),
     });
-    blazor.registerCustomEventType('tbcolumnorder', {
+    register('tbcolumnorder', {
         browserEventName: 'tb-column-order',
         createEventArgs: event => ({ order: event.detail.order }),
     });
-    blazor.registerCustomEventType('tbselectall', { browserEventName: 'tb-select-all', createEventArgs: () => ({}) });
-    blazor.registerCustomEventType('tbhotkey', { browserEventName: 'tb-hotkey', createEventArgs: () => ({}) });
-    blazor.registerCustomEventType('tbcharactersleft',
+    register('tbselectall', { browserEventName: 'tb-select-all', createEventArgs: () => ({}) });
+    register('tbhotkey', { browserEventName: 'tb-hotkey', createEventArgs: () => ({}) });
+    register('tbcharactersleft',
         { browserEventName: 'tb-characters-left', createEventArgs: event => ({ left: event.detail }) });
-    blazor.registerCustomEventType('tbtreefilterdown', {
+    register('tbtreefilterdown', {
         browserEventName: 'tb-tree-filter-down',
         createEventArgs: () => ({}),
     });
-    blazor.registerCustomEventType('tbrichtextchange', {
+    register('tbrichtextchange', {
         browserEventName: 'tb-rich-text-change',
         createEventArgs: event => ({ html: event.detail.html, continues: event.detail.continues }),
     });
-    blazor.registerCustomEventType('tbrichtextpaste', {
+    register('tbrichtextpaste', {
         browserEventName: 'tb-rich-text-paste',
         createEventArgs: event => ({ html: event.detail.html, continues: event.detail.continues }),
     });
-    blazor.registerCustomEventType('tbrichtextlink', {
+    register('tbrichtextlink', {
         browserEventName: 'tb-rich-text-link',
         createEventArgs: event => ({ link: event.detail.link, insert: event.detail.insert }),
     });
-    blazor.registerCustomEventType('tbtagadd', {
+    register('tbtagadd', {
         browserEventName: 'tb-tag-add',
         createEventArgs: event => ({ text: event.detail.text }),
     });
-    blazor.registerCustomEventType('tbtagremove', {
+    register('tbtagremove', {
         browserEventName: 'tb-tag-remove',
         createEventArgs: event => ({ key: event.detail.key, focus: event.detail.focus }),
     });
-    blazor.registerCustomEventType('tbeditstart', { browserEventName: 'tb-edit-start', createEventArgs: () => ({}) });
+    register('tbeditstart', { browserEventName: 'tb-edit-start', createEventArgs: () => ({}) });
 
-    blazor.registerCustomEventType('tbeditkey', {
+    register('tbeditkey', {
         browserEventName: 'tb-edit-key',
         createEventArgs: event => ({
             key: event.detail.key,

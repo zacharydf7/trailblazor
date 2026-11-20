@@ -7703,6 +7703,30 @@
         content-visibility: hidden;
     }
 
+    /* A panel in a browser window of its own fills that window, under the bar that brings it back. On its way there
+       and back it is in the dock for a moment, where it doesn't show. */
+    .tb-dock > .tb-dock__panel--popped {
+        display: none;
+    }
+
+    .tb-dock-window > .tb-dock__panel--popped {
+        position: fixed;
+        inset: 0;
+        inline-size: auto;
+        block-size: auto;
+        background: var(--tb-color-surface);
+    }
+
+    .tb-dock__return-bar {
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 1;
+        display: flex;
+        justify-content: flex-end;
+        border-block-end: 1px solid var(--tb-border-subtle);
+        background: var(--tb-color-surface-sunken);
+    }
+
     /* The dock takes the focus when its last panel closes. */
     .tb-dock:focus-visible,
     .tb-dock__panel:focus-visible {

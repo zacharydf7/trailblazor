@@ -7342,3 +7342,20 @@ Trailblazor.TbRibbonTab.Context.get -> string?
 Trailblazor.TbRibbonTab.Context.set -> void
 override Trailblazor.TbRibbonTab.OnInitialized() -> void
 override Trailblazor.TbRibbonTab.OnAfterRender(bool firstRender) -> void
+Trailblazor.DockLabels.PopOut.get -> string?
+Trailblazor.DockLabels.PopOut.init -> void
+const Trailblazor.TbStrings.DockPopOut = "Dock.PopOut" -> string!
+Trailblazor.DockLabels.Return.get -> string?
+Trailblazor.DockLabels.Return.init -> void
+const Trailblazor.TbStrings.DockReturn = "Dock.Return" -> string!
+Trailblazor.DockLabels.PoppedOut.get -> string?
+Trailblazor.DockLabels.PoppedOut.init -> void
+const Trailblazor.TbStrings.DockPoppedOut = "Dock.PoppedOut" -> string!
+Trailblazor.DockLabels.Returned.get -> string?
+Trailblazor.DockLabels.Returned.init -> void
+const Trailblazor.TbStrings.DockReturned = "Dock.Returned" -> string!
+Trailblazor.DockLabels.PopOutBlocked.get -> string?
+Trailblazor.DockLabels.PopOutBlocked.init -> void
+const Trailblazor.TbStrings.DockPopOutBlocked = "Dock.PopOutBlocked" -> string!
+Trailblazor.TbDockManager.AllowPopOut.get -> bool
+Trailblazor.TbDockManager.AllowPopOut.set -> void

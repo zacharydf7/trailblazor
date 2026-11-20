@@ -1,0 +1,30 @@
+<TbStack Gap="2">
+    <TbText>
+        Choose "Open in new window" in the Journal's menu, write in the window that opens, then close it.
+    </TbText>
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Field desk" AllowPopOut Style="block-size: 20rem">
+        <TbDockPanel Id="route" Title="Route">
+            <TbText class="tb-p-3">Trailhead, creek crossing, saddle and summit.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="journal" Title="Journal">
+            <TbStack Gap="2" class="tb-p-3">
+                <TbTextField Label="Today's entry" @bind-Value="_entry" />
+                <TbStack Row Gap="2" Align="Align.Center">
+                    <TbButton Size="Size.Small" OnClick="() => _saved++">Save the entry</TbButton>
+                    <TbText>Entries saved: @_saved</TbText>
+                </TbStack>
+            </TbStack>
+        </TbDockPanel>
+        <TbDockPanel Id="weather" Title="Weather">
+            <TbText class="tb-p-3">Sunny, with wind on the summit after two.</TbText>
+        </TbDockPanel>
+    </TbDockManager>
+</TbStack>
+
+@code {
+    private DockLayout _layout = new(new DockSplit(
+        new DockGroup("route", "journal") { Active = "journal", Size = 2 }, new DockGroup("weather") { Size = 1 }));
+
+    private string? _entry;
+    private int _saved;
+}

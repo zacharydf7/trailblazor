@@ -3138,6 +3138,18 @@ public static class ExampleCatalog
                     + "single steps of a tenth of the dock from the menu that a click or tap opens. The window stays "
                     + "whole inside the dock and no smaller than a tenth of it, and a drag or a step also keeps it no "
                     + "smaller than `MinGroupSize`.", typeof(DockManagerFloatExample)),
+                new("pop-out", "Browser windows", "`AllowPopOut` adds Open in new window to each panel's menus. It "
+                    + "opens a browser window and shows the panel there with everything it holds: the same components, "
+                    + "with their state, still rendered by this page. The panel leaves the dock, and the layout keeps "
+                    + "a floating window for it, which is where it shows again when its browser window closes or its "
+                    + "Return to the dock button is pressed. Which panels are in windows of their own isn't part of "
+                    + "the layout, since a page can't open windows as it loads, so a saved layout brings them back as "
+                    + "floating windows. The browser windows close when the page goes away, and a panel's window "
+                    + "closes when the app closes the panel or moves it elsewhere in the layout. A window takes the "
+                    + "page's style sheets and what the page sets on its root element, and follows the sheets in the "
+                    + "page's head and the root as they change. When the browser refuses to open the window, the "
+                    + "panel floats in the dock.",
+                    typeof(DockManagerPopOutExample)),
                 new("auto-hide", "Auto-hide strips", "Auto-hide in a panel's menus puts the panel away on a strip "
                     + "along an edge of the dock, where only a button with its title shows. The button slides the "
                     + "panel out over the dock, along that edge and a quarter of the dock deep unless its `Size` says "
@@ -3197,14 +3209,16 @@ public static class ExampleCatalog
                     { When = "On a tab" },
                 new(["Tab"], "Goes to the group's menu button, by way of the Restore button in a group that fills "
                     + "the dock.") { When = "On a tab" },
-                new(["Shift+F10", "Context menu key"], "Opens the tab's menu, which moves, floats, docks, "
-                    + "auto-hides or closes its panel and maximizes or restores its group, on its first item.")
+                new(["Shift+F10", "Context menu key"], "Opens the tab's menu on its first item. The menu moves, "
+                    + "floats, docks, auto-hides or closes its panel and maximizes or restores its group, and with "
+                    + "`AllowPopOut` it opens the panel in a browser window of its own.")
                     { When = "On a tab" },
                 new(["Escape"], "Cancels the drag and leaves the panel where it was.")
                     { When = "While a tab or a strip's button is dragged" },
-                new(["Enter", "Space", "Down"], "Opens the menu that moves, floats, docks, auto-hides or closes the "
-                    + "group's showing panel and maximizes or restores the group, on its first item. Inside it, the "
-                    + "keys are those of a [menu](components/menu).")
+                new(["Enter", "Space", "Down"], "Opens the group's menu on its first item. The menu moves, floats, "
+                    + "docks, auto-hides or closes the group's showing panel and maximizes or restores the group, and "
+                    + "with `AllowPopOut` it opens the panel in a browser window of its own. Inside it, the keys are "
+                    + "those of a [menu](components/menu).")
                     { When = "On a group's menu button" },
                 new(["Up"], "Opens that menu on its last item.") { When = "On a group's menu button" },
                 new(["Left", "Right"], "Moves the separator by 1% of the space its two sides share.")
@@ -3228,6 +3242,9 @@ public static class ExampleCatalog
                 new(["Enter", "Space"], "Opens the menu of single steps: Left, Right, Up and Down on the Move "
                     + "button, and Wider, Narrower, Taller and Shorter on the grip.")
                     { When = "On a window's Move button or grip" },
+                new(["Enter", "Space"], "Brings the panel back to the dock, in the floating window the layout kept "
+                    + "for it, and moves focus to its tab.")
+                    { When = "On the Return button in a panel's own browser window" },
                 new(["Enter", "Space"], "Slides the panel out over the dock and moves focus to its tab, or slides it "
                     + "back when it is out.") { When = "On a strip's button" },
                 new(["Escape"], "Slides the panel back to its strip and moves focus to its button there.")
@@ -3277,6 +3294,10 @@ public static class ExampleCatalog
                     + "\"Auto-hidden panel\". `Labels.Strip` replaces the strip's name, with `{0}` for the edge's "
                     + "words, `RevealedGroup` the tab list's, `AutoHide` the submenu's, and `AutoHidden` what is "
                     + "said when a panel is put away, with `{0}` for its title.",
+                "A panel in a browser window of its own is a `region` named by its title, which is the window's "
+                    + "title too, and the button that brings it back is named \"Return to the dock\". "
+                    + "`Labels.PopOut` and `Return` replace the menu item and the button, and `PoppedOut`, `Returned` "
+                    + "and `PopOutBlocked` what is said, each with `{0}` for the panel's title.",
                 "`Labels.CloseHint` replaces the hint that describes a closable tab.",
             ],
             Announcements =
@@ -3299,6 +3320,10 @@ public static class ExampleCatalog
                     + "panel's title. When it slides out, focus moves to its tab, in a tab list named "
                     + "\"Auto-hidden panel\". A strip's button has `aria-expanded`, so on the button screen readers "
                     + "hear whether its panel is out.",
+                "When a panel opens in a browser window of its own, screen readers hear \"Notes opened in a new "
+                    + "window.\", and \"Notes is back in the dock.\" when it returns. When the browser refuses the "
+                    + "window, they hear \"The browser blocked the new window for Notes.\" All three are said in the "
+                    + "page's window.",
                 "On a separator, `aria-valuenow` gives the share, in percent, that the part before it has of the space "
                     + "its two sides take together, and `aria-valuemin` and `aria-valuemax` give how far the separator "
                     + "can go before a group on either side is down to `MinGroupSize`.",
@@ -3346,6 +3371,11 @@ public static class ExampleCatalog
                     + "can't be focused or read. After Maximize or Restore, focus is in the group's row, on its "
                     + "showing tab or on the group's menu button; when what held the focus is now covered, the "
                     + "showing tab takes it.",
+                "Open in new window is a menu item, so nothing needs a drag. The new window takes the focus, on "
+                    + "the panel, though WebKit sometimes leaves it on the window's body, and the panel's Return "
+                    + "button is the first stop for the Tab key in the panel. Return leaves the focus on the panel's "
+                    + "tab in the dock; closing the window leaves it to the browser. While a panel is away it has no "
+                    + "tab in the dock, so closing the dock's last tab gives the focus to the dock itself.",
                 "Tab and screen readers meet the groups in reading order, and still do after the layout changes.",
                 "A hidden panel is `inert`: nothing in it can be focused or read until its tab shows it.",
                 "A click on a close mark, or a middle click, leaves the focus where it is. Closing a tab that holds "
@@ -3381,6 +3411,8 @@ public static class ExampleCatalog
                 "Offer a way to reopen closed panels, such as a View menu that calls `Open`.",
                 "With a `PersistenceKey`, offer a way back to the starting layout, such as a Reset button that "
                     + "sets `Layout`.",
+                "Before turning on `AllowPopOut`, check that what each panel holds works in a window of its own, "
+                    + "and tell people that the window belongs to the page: it closes when the page does.",
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
@@ -3461,12 +3493,43 @@ public static class ExampleCatalog
                     + "isn't kept where storage is turned off or full."),
                 new("The saved layout is read once the page is interactive, so a prerendered page shows the "
                     + "app's layout first and then the saved one.") { Pitfall = true },
+                new("A panel in a browser window of its own is still rendered by the page. The window closes when "
+                    + "the page goes away, and browsers slow the timers of a page in a background tab or a minimized "
+                    + "window, which can slow the panel with it. Keep the page's window open and in view. On a phone "
+                    + "or a tablet the browser opens a tab in place of a window, which puts the page in the "
+                    + "background.") { Pitfall = true },
+                new("Some things don't follow a panel into its window. A dialog, a toast or a screen reader "
+                    + "announcement that the panel asks for still shows in the page's window, and a component that "
+                    + "watches its own size, such as a ribbon that collapses as it narrows, doesn't hear of the "
+                    + "window's size.") { Pitfall = true },
+                new("A popup anchored to an element, such as a menu opened from its button, a select's list or a "
+                    + "tooltip, opens in the panel's window and is placed by that window's size. A context menu "
+                    + "opened at the pointer is still placed by the page's size. Keyboard focus inside a popup there "
+                    + "can go wrong, such as moving through a menu with the arrow keys or going back to where it was "
+                    + "as the popup closes.") { Pitfall = true },
+                new("A dock inside a panel can't open its own panels in windows while that panel is in a window of "
+                    + "its own.") { Pitfall = true },
+                new("An `<iframe>` in a panel loads again as the panel goes to its window and as it comes back, "
+                    + "and the panel's scroll positions start over."),
+                new("A script of your own inside a panel has to use the panel's own document and window, "
+                    + "`element.ownerDocument` and its `defaultView`. In a window of its own the panel is in neither "
+                    + "the page's `document` nor its `window`. The events Blazor has handlers for, and the library's "
+                    + "own, are sent on from the window to the page's `document`, where Blazor listens, so a listener "
+                    + "there still hears them. `selectionchange` isn't sent on, nor are events Blazor has no handler "
+                    + "for or a custom event of your own.") { Pitfall = true },
+                new("The window opens in the click on the menu's item, since a browser only lets a page open one "
+                    + "while it handles what the user did. A popup blocker that still refuses it leaves the panel "
+                    + "floating in the dock. A window that the dock doesn't fill within ten seconds closes."),
+                new("A theme, a palette, a density, a direction or a language set on an element around the dock, and "
+                    + "not on the page's root, goes on the window's `<body>`, which has the class `tb-dock-window`. "
+                    + "So do custom properties set in a `style` attribute around the dock, the nearest value of "
+                    + "each."),
                 new("A panel inside an `@if` keeps its place in the layout while it isn't rendered, and comes "
                     + "back there."),
             ],
             Ready = new("[data-part=dock]", "the dock"),
             Target = new("tab", "Notes"),
-            Blocks = ["tb-dock", "tb-dock-frame"],
+            Blocks = ["tb-dock", "tb-dock-frame", "tb-dock-window"],
             DataParts =
             [
                 new("frame", "The dock's outermost element, which carries its `Class`, `Style` and other attributes "
@@ -3502,8 +3565,9 @@ public static class ExampleCatalog
                     + "into each group. Each tab carries `data-context-key` with its panel's `Id`, and the tab "
                     + "list carries the showing panel's."),
                 new("group-menu", "The menu after a group's tabs, which moves, floats, docks, auto-hides or closes the "
-                    + "group's showing panel and maximizes or restores the group. Its items carry `data-move` (`back`, "
-                    + "`forward`, `float`, `dock`, `maximize`, `restore` or `close`), `data-move-group` with a group's "
+                    + "group's showing panel, maximizes or restores the group and, with `AllowPopOut`, opens the panel "
+                    + "in a browser window of its own. Its items carry `data-move` (`back`, `forward`, `pop-out`, "
+                    + "`float`, `dock`, `maximize`, `restore` or `close`), `data-move-group` with a group's "
                     + "number, or `data-move-beside`, `data-move-edge` or `data-move-hide` with `start`, `end`, `top` "
                     + "or `bottom`."),
                 new("tab", "One panel's tab, with `data-panel` holding the panel's `Id`, and `data-dragging` while "
@@ -3518,6 +3582,10 @@ public static class ExampleCatalog
                     + "`tb-dock__panel--revealed`. One that a strip keeps hidden has `data-floating`, the floating "
                     + "class and `--tb-dock-z` but neither of those two, and its `data-dock-group` is the number a "
                     + "slid-out panel's row takes."),
+                new("return-bar", "The bar across the top of a panel that shows in a browser window of its own, "
+                    + "with the class `tb-dock__return-bar`. The panel has `data-popped`, the class "
+                    + "`tb-dock__panel--popped`, the role `region` and no `data-dock-group` while it is there."),
+                new("return", "The button in that bar, which brings the panel back to the dock."),
                 new("window-grip", "A floating window's grip menu, a child of the dock after the window's panels. "
                     + "It has `data-group` with the window's number, `data-floating`, and the window's box and "
                     + "`--tb-dock-z`. Its button drags the corner or opens the items that resize the window, which "
@@ -3594,8 +3662,9 @@ public static class ExampleCatalog
                 "Each group's row of tabs is a context menu named \"Tab options\", so on a page with a dock, find "
                     + "your own context menu by its name, as in `ContextMenu(\"Trail actions\")`.",
                 "In Playwright, `SelectAsync`, `CloseAsync`, `ResizeAsync`, `MaximizeAsync`, `RestoreAsync`, "
-                    + "`FloatAsync`, `DockAsync`, `MoveWindowAsync`, `ResizeWindowAsync`, `AutoHideAsync`, "
-                    + "`RevealAsync`, `ConcealAsync` and the move helpers wait until the app's `LayoutChanged` has run "
+                    + "`FloatAsync`, `DockAsync`, `ReturnAsync`, `MoveWindowAsync`, `ResizeWindowAsync`, "
+                    + "`AutoHideAsync`, `RevealAsync`, `ConcealAsync` and the move helpers wait until the app's "
+                    + "`LayoutChanged` has run (for `ReturnAsync`, until the panel is back) "
                     + "and the focus has moved, which the dock counts in `data-commits` for everything but a window "
                     + "coming forward and a panel sliding back because a press or the focus went elsewhere, or because "
                     + "a strip's button was dragged.",
@@ -3624,6 +3693,15 @@ public static class ExampleCatalog
                     + "move in a few steps and release, then wait for `data-commits` to go up by one.",
                 "So does a strip's button, into the dock or onto another strip, and a tab onto a strip: the strip "
                     + "has `data-drop` while the drop would go to it, and the drop counts in `data-commits`.",
+                "`PopOutAsync(\"Notes\")` chooses Open in new window and gives the panel. In Playwright the "
+                    + "panel is in its new window, so its `Page` is that window's page, where the panel's content is "
+                    + "found as on any page; closing that page does what closing the window does.",
+                "bUnit has no windows, so there `PopOutAsync` leaves the panel in the markup, drawn as it is in its "
+                    + "window, and `Panel` and `PanelElement` still find it.",
+                "`PoppedOutAsync()` in Playwright, or `PoppedOut` in bUnit, lists the panels in windows of their "
+                    + "own, which `Panels`, `Showing` and `Floating` leave out, and `ReturnAsync(\"Notes\")` "
+                    + "presses a panel's Return button. `PopOutAsync` throws an `InvalidOperationException` when "
+                    + "`AllowPopOut` is off, and `ReturnAsync` for a panel that isn't in a window of its own.",
                 "A `DockLayout` needs no renderer: test what your app does with `Open`, `Close`, `Move`, `MoveToEdge`, "
                     + "`Float`, `FloatAt`, `MoveWindow`, `AutoHide`, `Conceal`, `ResizeAutoHidden`, `Maximize`, "
                     + "`Restore`, `ToJson` and `TryParse` in plain unit tests.",
@@ -3642,7 +3720,9 @@ public static class ExampleCatalog
                     + "`resize_window` count each time they move or resize a window, once per drag, key press or menu "
                     + "step. `auto_hide` counts each time they put a panel away on a strip, `reveal` each time they "
                     + "slide one out, and `resize_auto_hidden` each time they resize one that is out, once per drag, "
-                    + "key press or menu step; sliding back isn't counted. Panel ids, titles and sizes are never "
+                    + "key press or menu step; sliding back isn't counted. `pop_out` counts each time they choose Open "
+                    + "in new window, whether or not the browser opens it, and `return` each time a panel comes back "
+                    + "from its window. Panel ids, titles and sizes are never "
                     + "recorded.",
             ],
         },

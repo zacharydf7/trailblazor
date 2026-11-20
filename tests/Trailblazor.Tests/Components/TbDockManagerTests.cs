@@ -2566,6 +2566,215 @@ public class TbDockManagerTests : BunitContext
             grip.QuerySelectorAll("[data-step]").Select(item => item.TextContent.Trim()));
     }
 
+    [Fact]
+    public async Task PopOut_ShouldBeOfferedInEachGroupsMenu_WhenAllowPopOutIsOn()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        Assert.Empty(cut.FindAll("[data-move=pop-out]"));
+        Assert.Equal("The dock doesn't open panels in windows of their own. Turn on its AllowPopOut.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Dock().PopOutAsync("Notes"))).Message);
+
+        cut.Render(parameters => parameters.Add(dock => dock.AllowPopOut, true));
+
+        var items = cut.FindAll("[data-part=group-menu] [data-move=pop-out]");
+        Assert.Equal(3, items.Count);
+        Assert.All(items, item => Assert.Equal("Open in new window", item.TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task PopOut_ShouldDrawThePanelAsItIsInItsOwnWindow_WhenOpenInNewWindowIsChosen()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        DockLayout? changed = null;
+        var cut = RenderPoppable(Hike, layout => changed = layout);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var dock = cut.Tb().Dock();
+
+        var popped = await dock.PopOutAsync("Notes");
+
+        // The layout keeps a floating window for the panel, which is where it shows again.
+        Assert.Equal(["notes"], changed!.Floating.Single().Group.Panels);
+        Assert.Equal(["Notes"], dock.PoppedOut);
+        var panel = cut.Find("[data-part=panel][data-panel=notes]");
+        Assert.Equal(panel.Id, popped.Id);
+        Assert.Equal(("region", "Notes", null),
+            (panel.GetAttribute("role"), panel.GetAttribute("aria-label"), panel.GetAttribute("aria-labelledby")));
+        Assert.Contains("tb-dock__panel--popped", panel.ClassName);
+        Assert.Equal("Return to the dock",
+            panel.QuerySelector("[data-part=return-bar] [data-part=return]")!.TextContent.Trim());
+        Assert.Equal(panel.Id, dock.PanelElement("Notes").Id);
+        // Its tab, its window's row and its grip are gone until it comes back, and its content was never disposed.
+        Assert.Equal(["Trails", "Map", "Weather"], dock.Panels);
+        Assert.Empty(cut.FindAll("[data-part=group][data-floating], [data-part=window-grip]"));
+        Assert.DoesNotContain("dispose notes", _log);
+        Assert.Equal(panel.Id, _handle.Invocations["popOut"].Single().Arguments.Single());
+        Assert.Equal([panel.Id], (string[])_handle.Invocations["popped"].Single().Arguments[0]!);
+        Assert.Equal(["Notes opened in a new window."], Services.GetRequiredService<FakeAnnouncer>().Polite);
+        Assert.Equal(["pop_out"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public async Task PopOut_ShouldKeepTheWindowThePanelHasToItself_WhenThePanelFloatsAlone()
+    {
+        var layout = Hike.FloatAt("notes", 10, 20, 30, 40);
+        DockLayout? changed = null;
+        var cut = RenderPoppable(layout, each => changed = each);
+
+        await cut.Tb().Dock().PopOutAsync("Notes");
+
+        Assert.Equal(layout, changed);
+        Assert.Equal(["Notes"], cut.Tb().Dock().PoppedOut);
+    }
+
+    [Fact]
+    public async Task PopOut_ShouldComeBackAsAFloatingWindow_WhenTheLayoutIsSavedAndReadByAnotherDock()
+    {
+        DockLayout? changed = null;
+        var cut = RenderPoppable(Hike, layout => changed = layout);
+        await cut.Tb().Dock().PopOutAsync("Notes");
+
+        // What a dock saves is its layout, which holds a window for the panel and nothing of the browser's.
+        Assert.True(DockLayout.TryParse(changed!.ToJson(), out var saved));
+        var later = RenderPoppable(saved).Tb().Dock();
+
+        Assert.Empty(later.PoppedOut);
+        Assert.Equal(["Notes"], later.Floating);
+    }
+
+    [Fact]
+    public async Task PopOut_ShouldLeaveThePanelFloatingInTheDock_WhenTheBrowserRefusesTheWindow()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        _handle.Setup<string?>("popOut", _ => true).SetResult("blocked");
+        var cut = RenderPoppable(Hike);
+        cut.Render(parameters => parameters.Add(each => each.TelemetryName, "hike-planner"));
+        var dock = cut.Tb().Dock();
+
+        await dock.PopOutAsync("Notes");
+
+        Assert.Empty(dock.PoppedOut);
+        Assert.Equal(["Notes"], dock.Floating);
+        Assert.Equal("tabpanel", cut.Find("[data-part=panel][data-panel=notes]").GetAttribute("role"));
+        Assert.Empty(cut.FindAll("[data-part=return-bar]"));
+        Assert.Equal(["The browser blocked the new window for Notes."],
+            Services.GetRequiredService<FakeAnnouncer>().Polite);
+        // The script was never told of a popped panel, so it has none to bring back.
+        Assert.Empty(_handle.Invocations["popped"]);
+        // The choice is counted whether or not the browser opens the window.
+        Assert.Equal(["pop_out"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public async Task Return_ShouldShowThePanelInItsFloatingWindow_WhenItsButtonIsPressedOrItsBrowserWindowCloses()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var cut = RenderPoppable(Hike);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+        var dock = cut.Tb().Dock();
+        IReadOnlyList<string> Announced() => Services.GetRequiredService<FakeAnnouncer>().Polite;
+        await dock.PopOutAsync("Notes");
+        var tab = OnceMade(cut, "[role=tab][data-panel=notes]");
+
+        await dock.ReturnAsync("Notes");
+
+        Assert.Empty(dock.PoppedOut);
+        Assert.Equal(["Notes"], dock.Floating);
+        Assert.Equal("Notes is back in the dock.", Announced()[^1]);
+        Assert.Empty((string[])_handle.Invocations["popped"][^1].Arguments[0]!);
+        // The button's press leaves the focus on the panel's tab.
+        Assert.Equal(tab(), ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+        Assert.DoesNotContain("dispose notes", _log);
+
+        // The script brings the panel back itself when its window closes, and only tells the dock.
+        await dock.PopOutAsync("Notes");
+        await cut.InvokeAsync(() => Report().OnReturn("notes"));
+
+        Assert.Empty(dock.PoppedOut);
+        Assert.Equal(["Notes"], dock.Floating);
+        Assert.Equal(2, Announced().Count(message => message == "Notes is back in the dock."));
+        // The focus stays where the user put it, so the earlier call is still the only one.
+        JSInterop.VerifyFocusAsyncInvoke();
+        Assert.Equal(["pop_out", "return", "pop_out", "return"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+        Assert.Equal("The panel \"Notes\" isn't in a browser window of its own.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => dock.ReturnAsync("Notes"))).Message);
+    }
+
+    [Fact]
+    public async Task PopOut_ShouldEnd_WhenTheAppTakesThePanelElsewhereOrTurnsAllowPopOutOff()
+    {
+        var cut = RenderPoppable(Hike);
+        var dock = cut.Tb().Dock();
+        await dock.PopOutAsync("Notes");
+
+        // The app docks the panel beside the trails.
+        cut.Render(parameters => parameters.Add(each => each.Layout, Hike.Move("notes", "trails", DockPosition.After)));
+
+        Assert.Empty(dock.PoppedOut);
+        Assert.Equal(["Trails", "Notes", "Map", "Weather"], dock.Panels);
+        Assert.Empty((string[])_handle.Invocations["popped"][^1].Arguments[0]!);
+
+        await dock.PopOutAsync("Notes");
+        cut.Render(parameters => parameters.Add(each => each.AllowPopOut, false));
+
+        Assert.Empty(dock.PoppedOut);
+        Assert.Equal(["Notes"], dock.Floating);
+        Assert.Empty((string[])_handle.Invocations["popped"][^1].Arguments[0]!);
+    }
+
+    [Fact]
+    public async Task Close_ShouldGiveTheFocusToTheDock_WhenTheOnlyOtherPanelIsInABrowserWindowOfItsOwn()
+    {
+        var cut = RenderPoppable(new DockLayout(new DockGroup("trails", "notes")),
+            panels: [new("trails", "Trails"), new("notes", "Notes")]);
+        var dock = cut.Tb().Dock();
+        await dock.PopOutAsync("Notes");
+
+        await cut.InvokeAsync(() => Report().OnClose("trails", true));
+
+        // The popped panel has no tab in the dock, so the dock is empty and can take the focus. Only a browser can
+        // tell that the dock is what took it.
+        Assert.Equal(["Notes"], dock.PoppedOut);
+        JSInterop.VerifyFocusAsyncInvoke();
+        Assert.Equal("-1", cut.Find("[data-part=dock]").GetAttribute("tabindex"));
+    }
+
+    [Fact]
+    public async Task Labels_ShouldWordThePopOutItemTheReturnButtonAndWhatIsSaid_WhenGiven()
+    {
+        _handle.Setup<string?>("popOut", call => ((string)call.Arguments[0]!).EndsWith("-panel-map"))
+            .SetResult("blocked");
+        var cut = RenderPoppable(Hike);
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels
+        {
+            PopOut = "Own window", Return = "Back", PoppedOut = "{0} left", Returned = "{0} came back",
+            PopOutBlocked = "No window for {0}",
+        }));
+        var dock = cut.Tb().Dock();
+        Assert.All(cut.FindAll("[data-move=pop-out]"), item => Assert.Equal("Own window", item.TextContent.Trim()));
+
+        await dock.PopOutAsync("Notes");
+        Assert.Equal("Back", cut.Find("[data-part=return]").TextContent.Trim());
+        await dock.ReturnAsync("Notes");
+        await dock.PopOutAsync("Map");
+
+        Assert.Equal(["Notes left", "Notes came back", "No window for Map"],
+            Services.GetRequiredService<FakeAnnouncer>().Polite);
+    }
+
+    private IRenderedComponent<TbDockManager> RenderPoppable(DockLayout layout, Action<DockLayout>? onChange = null,
+        Panel[]? panels = null)
+    {
+        var cut = RenderDock(layout, panels ?? HikePanels, onChange);
+        cut.Render(parameters => parameters.Add(dock => dock.AllowPopOut, true));
+        return cut;
+    }
+
     private IRenderedComponent<TbDockManager> RenderDock(DockLayout? layout, params Panel[] panels) =>
         RenderDock(layout, panels, null);
 

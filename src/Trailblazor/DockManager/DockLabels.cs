@@ -89,6 +89,26 @@ public sealed record DockLabels
     /// title. Leave it null for the app's text for <see cref="TbStrings.DockFloated"/>.</summary>
     public string? Floated { get; init; }
 
+    /// <summary>The menu item that opens a panel in a browser window of its own. Leave it null for the app's text
+    /// for <see cref="TbStrings.DockPopOut"/>.</summary>
+    public string? PopOut { get; init; }
+
+    /// <summary>The button in a panel's own browser window that brings the panel back to the dock. Leave it null for
+    /// the app's text for <see cref="TbStrings.DockReturn"/>.</summary>
+    public string? Return { get; init; }
+
+    /// <summary>What screen readers hear when a panel opens in a browser window of its own, with <c>{0}</c> for the
+    /// panel's title. Leave it null for the app's text for <see cref="TbStrings.DockPoppedOut"/>.</summary>
+    public string? PoppedOut { get; init; }
+
+    /// <summary>What screen readers hear when a panel comes back from its own browser window, with <c>{0}</c> for
+    /// the panel's title. Leave it null for the app's text for <see cref="TbStrings.DockReturned"/>.</summary>
+    public string? Returned { get; init; }
+
+    /// <summary>What screen readers hear when the browser refuses to open a window for a panel, with <c>{0}</c> for
+    /// the panel's title. Leave it null for the app's text for <see cref="TbStrings.DockPopOutBlocked"/>.</summary>
+    public string? PopOutBlocked { get; init; }
+
     /// <summary>The submenu that puts a panel away on a strip along an edge of the dock. Leave it null for the app's
     /// text for <see cref="TbStrings.DockAutoHide"/>.</summary>
     public string? AutoHide { get; init; }

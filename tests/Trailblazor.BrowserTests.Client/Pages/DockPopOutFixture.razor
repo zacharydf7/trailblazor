@@ -1,0 +1,77 @@
+@page "/dock-pop-out"
+
+@* A dock whose panels can open in browser windows of their own. Notes holds state of three kinds: a component's
+   field, a bound input and a select's choice. Its input counts how often it takes the focus, an event that doesn't
+   bubble, and how often its text is selected; its form's sending is one whose default Blazor prevents; and its Tag
+   field's Enter reaches Blazor as an event of the library's own. Two elements around the dock set a custom property,
+   and the nearer one a density too. Map holds a dock of its own. *@
+<TbButton OnClick="@(() => _layout = _layout.Close("notes"))">Close notes</TbButton>
+<TbButton OnClick="@(() => _layout = _layout.Open("log"))">Open log</TbButton>
+<TbButton OnClick="() => _count++">Count from the page</TbButton>
+<TbButton OnClick="@(() => _title = "Field notes")">Rename notes</TbButton>
+<div style="--probe-gap: 9px">
+<div data-tb-density="compact" style="--probe-gap: 7px; inline-size: 48rem; block-size: 24rem">
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Workbench" AllowPopOut>
+        <TbDockPanel Id="notes" Title="@_title">
+            <p data-testid="count">Count: @_count</p>
+            <TbButton OnClick="() => _count++">Count</TbButton>
+            <input aria-label="Note" @bind="_note" @bind:event="oninput" @onfocus="() => _focused++"
+                   @onselect="() => _selected++" />
+            <p data-testid="note">Note: @_note</p>
+            <p data-testid="focused">Focused: @_focused</p>
+            <p data-testid="selected">Selected: @_selected</p>
+            <form @onsubmit="() => _sent++">
+                <button type="submit">Send</button>
+            </form>
+            <p data-testid="sent">Sent: @_sent</p>
+            <TbTextField Label="Tag" @bind-Value="_tag" OnEnter="() => _entered++" />
+            <p data-testid="entered">Entered: @_entered</p>
+            <a href="dock-pop-out#top">Top</a>
+            <TbSelect Label="Size" @bind-Value="_size" Placeholder="Pick a size">
+                <TbOption Value="@("Small")">Small</TbOption>
+                <TbOption Value="@("Medium")">Medium</TbOption>
+                <TbOption Value="@("Large")">Large</TbOption>
+            </TbSelect>
+            <p data-testid="size">Size: @_size</p>
+        </TbDockPanel>
+        <TbDockPanel Id="map" Title="Map" Closable="false">
+            <button type="button">Zoom in</button>
+            <div style="block-size: 10rem">
+                <TbDockManager AriaLabel="Layers" AllowPopOut>
+                    <TbDockPanel Id="roads" Title="Roads">Road lines</TbDockPanel>
+                    <TbDockPanel Id="terrain" Title="Terrain">Contours</TbDockPanel>
+                </TbDockManager>
+            </div>
+        </TbDockPanel>
+        @* Its select is at the top, with a list taller than a short window, above content that scrolls. *@
+        <TbDockPanel Id="gear" Title="Gear">
+            <TbSelect Label="Pace" @bind-Value="_pace" Placeholder="Pick a pace">
+                @foreach (var pace in new[] { "Stroll", "Walk", "March", "Jog", "Run", "Sprint" })
+                {
+                    <TbOption Value="@pace">@pace</TbOption>
+                }
+            </TbSelect>
+            <button type="button">Add gear</button>
+            <div style="block-size: 60rem">Gear list</div>
+        </TbDockPanel>
+        <TbDockPanel Id="log" Title="Log">Log lines</TbDockPanel>
+    </TbDockManager>
+</div>
+</div>
+<p data-testid="layout">@_layout.ToJson()</p>
+
+@code {
+    private DockLayout _layout = new(new DockSplit(new DockGroup("notes", "map"), new DockGroup("gear")),
+        closed: ["log"]);
+
+    private int _count;
+    private string _note = "";
+    private int _focused;
+    private int _selected;
+    private int _sent;
+    private string? _tag;
+    private string? _pace;
+    private int _entered;
+    private string _title = "Notes";
+    private string? _size;
+}

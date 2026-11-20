@@ -806,6 +806,25 @@ public static class TbStrings
     /// </summary>
     public const string DockFloated = "Dock.Floated";
 
+    /// <summary>"Open in new window": a dock menu item that opens a panel in a browser window of its own.</summary>
+    public const string DockPopOut = "Dock.PopOut";
+
+    /// <summary>"Return to the dock": the button in a dock panel's own browser window that brings the panel back.
+    /// </summary>
+    public const string DockReturn = "Dock.Return";
+
+    /// <summary>"{0} opened in a new window.": said when a dock's panel opens in a browser window of its own; {0} is
+    /// its title.</summary>
+    public const string DockPoppedOut = "Dock.PoppedOut";
+
+    /// <summary>"{0} is back in the dock.": said when a dock's panel comes back from its own browser window; {0} is
+    /// its title.</summary>
+    public const string DockReturned = "Dock.Returned";
+
+    /// <summary>"The browser blocked the new window for {0}.": said when the browser refuses to open a window for a
+    /// dock's panel; {0} is its title.</summary>
+    public const string DockPopOutBlocked = "Dock.PopOutBlocked";
+
     /// <summary>"Auto-hide": a dock submenu that puts a panel away on a strip along an edge of the dock.</summary>
     public const string DockAutoHide = "Dock.AutoHide";
 
@@ -1850,6 +1869,11 @@ public static class TbStrings
         [DockFloat] = "Float",
         [DockDock] = "Dock",
         [DockFloated] = "{0} floats in a window.",
+        [DockPopOut] = "Open in new window",
+        [DockReturn] = "Return to the dock",
+        [DockPoppedOut] = "{0} opened in a new window.",
+        [DockReturned] = "{0} is back in the dock.",
+        [DockPopOutBlocked] = "The browser blocked the new window for {0}.",
         [DockAutoHide] = "Auto-hide",
         [DockStrip] = "Auto-hidden panels ({0})",
         [DockRevealedGroup] = "Auto-hidden panel",

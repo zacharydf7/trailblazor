@@ -616,3 +616,6 @@ Trailblazor.Testing.TbRibbonDriver.CollapseAsync() -> System.Threading.Tasks.Tas
 Trailblazor.Testing.TbRibbonDriver.ExpandAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbRibbonDriver.IsCollapsed.get -> bool
 Trailblazor.Testing.TbRibbonDriver.PressKeyTipsAsync(params string![]! keyTips) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbDockDriver.PopOutAsync(string! panel) -> System.Threading.Tasks.Task<AngleSharp.Dom.IElement!>!
+Trailblazor.Testing.TbDockDriver.PoppedOut.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbDockDriver.ReturnAsync(string! panel) -> System.Threading.Tasks.Task!

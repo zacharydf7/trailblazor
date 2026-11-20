@@ -4,13 +4,13 @@ namespace Trailblazor;
 
 // Hears the browser select a tab with the arrow keys, close one with a key or a middle click, move a separator,
 // drop a dragged tab or strip button or pull a tab out into a window, double-click a tab, press or focus a window
-// behind another, move or resize a window, and resize or leave a slid-out panel, so the public dock needn't expose
-// [JSInvokable] methods.
+// behind another, move or resize a window, resize or leave a slid-out panel, and close a panel's browser window, so
+// the public dock needn't expose [JSInvokable] methods.
 internal sealed class DockReport(Func<string, Task> onSelect, Func<string, bool, Task> onClose,
     Func<int, double, int, Task> onResize, Func<string, string?, string, Task> onMove, Func<string, Task> onMaximize,
     Func<string, Task> onRaise, Func<string, DockBox, bool, int, Task> onFloat, Func<string, DockBox, Task> onPullOut,
     Func<bool, Task> onConceal, Func<string, double, int, Task> onSlide, Func<string, string, Task> onAutoHide,
-    Func<string, bool> holds)
+    Func<string, Task> onReturn, Func<string, bool> holds)
 {
     // Whether the dock holds the tab with this element id, by which the bUnit driver finds a dock's reports. Panel
     // ids won't do, since two docks can use the same ones.
@@ -61,4 +61,8 @@ internal sealed class DockReport(Func<string, Task> onSelect, Func<string, bool,
     // the script's reports, as for a separator.
     [JSInvokable]
     public Task OnSlide(string panel, double size, int report) => onSlide(panel, size, report);
+
+    // The browser window that showed the panel closed, and the panel is back in the dock.
+    [JSInvokable]
+    public Task OnReturn(string panel) => onReturn(panel);
 }

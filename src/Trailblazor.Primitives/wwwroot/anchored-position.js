@@ -25,21 +25,24 @@ export function createAnchoredPosition(floating, anchor, options) {
     };
     update();
 
+    // The anchor's own window, which isn't the page's while the anchor shows in a browser window of its own. A resize
+    // observer made in another window never hears of the anchor.
+    const view = anchor.ownerDocument.defaultView;
     // A new anchor width resizes the popup, which inside the observer's own callback is reported as a loop error.
-    const resizeObserver = new ResizeObserver(() => floating.style.getPropertyValue('--tb-anchor-width')
-        === `${anchor.offsetWidth}px` ? update() : requestAnimationFrame(update));
+    const resizeObserver = new view.ResizeObserver(() => floating.style.getPropertyValue('--tb-anchor-width')
+        === `${anchor.offsetWidth}px` ? update() : view.requestAnimationFrame(update));
     resizeObserver.observe(anchor);
     resizeObserver.observe(floating);
     // A popup that scrolls its own content stays where it is.
     const onScroll = event => floating.contains(event.target) || update();
-    window.addEventListener('scroll', onScroll, { capture: true, passive: true });
-    window.addEventListener('resize', update, { passive: true });
+    view.addEventListener('scroll', onScroll, { capture: true, passive: true });
+    view.addEventListener('resize', update, { passive: true });
 
     return {
         dispose() {
             resizeObserver.disconnect();
-            window.removeEventListener('scroll', onScroll, { capture: true });
-            window.removeEventListener('resize', update);
+            view.removeEventListener('scroll', onScroll, { capture: true });
+            view.removeEventListener('resize', update);
         },
     };
 }
@@ -56,7 +59,8 @@ function position(floating, anchor, options) {
     }
 
     const natural = { width: floating.offsetWidth, height: floating.offsetHeight };
-    const viewport = { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight };
+    const page = anchor.ownerDocument.documentElement;
+    const viewport = { width: page.clientWidth, height: page.clientHeight };
     const rtl = getComputedStyle(anchor).direction === 'rtl';
 
     // The preferred side if the popup fits there, else the opposite one if it fits, else whichever has more room.

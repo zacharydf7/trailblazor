@@ -131,15 +131,29 @@
         }
         else if (slot is PanelSlot host)
         {
-            @* A hidden panel is inert, so nothing in it can be reached, even what its own styles make visible. *@
-            <div @key="host.Key" @attributes="host.Panel.HostAttributes" role="tabpanel" id="@PanelId(host.Panel.Name)"
-                 aria-labelledby="@TabId(host.Panel.Name)" tabindex="@(host.Showing ? 0 : null)" inert="@(!host.Showing)"
-                 data-part="panel" data-panel="@host.Panel.Name" data-dock-group="@host.Group"
+            @* A hidden panel is inert, so nothing in it can be reached, even what its own styles make visible. A
+               panel in a browser window of its own has no tab there to name it, so it names itself, and it gets a bar
+               to come back by. The bar comes and goes inside the panel's element, which Blazor never moves. *@
+            <div @key="host.Key" @attributes="host.Panel.HostAttributes" role="@(host.Popped ? "region" : "tabpanel")"
+                 id="@PanelId(host.Panel.Name)" aria-labelledby="@(host.Popped ? null : TabId(host.Panel.Name))"
+                 aria-label="@(host.Popped ? host.Panel.Title : null)" tabindex="@(host.Showing ? 0 : null)"
+                 inert="@(!host.Showing)" data-part="panel" data-panel="@host.Panel.Name"
+                 data-dock-group="@(host.Popped ? null : host.Group)" data-popped="@host.Popped"
                  data-floating="@(host.Layer is not null)" data-edge="@EdgeName(host.Edge)"
                  style="@($"{BoxStyle(host.Box, host.Layer)} {host.Panel.Style}")"
                  class="@ClassNames.Join("tb-dock__panel", host.Showing ? null : "tb-dock__panel--hidden",
                             host.Layer is null ? null : "tb-dock__panel--floating",
+                            host.Popped ? "tb-dock__panel--popped" : null,
                             host.Edge is null ? null : "tb-dock__panel--revealed", host.Panel.Class)">
+                @if (host.Popped)
+                {
+                    <div data-part="return-bar" class="tb-dock__return-bar">
+                        <TbButton Size="Size.Small" Variant="Variant.Text" data-part="return"
+                                  OnClick="() => ReturnAsync(host.Panel.Name, focus: true)">
+                            @(Labels.Return ?? Localizer[TbStrings.DockReturn])
+                        </TbButton>
+                    </div>
+                }
                 @Content(host.Panel.Version, host.Panel.ChildContent)
             </div>
         }
@@ -224,8 +238,9 @@
     private sealed record GroupSlot(string Key, int Index, DockGroupBox Box, bool Maximized, bool Covered,
         int? Layer = null, DockPosition? Edge = null) : Slot(Key);
 
+    // Popped says the panel shows in a browser window of its own.
     private sealed record PanelSlot(string Key, TbDockPanel Panel, int Group, DockBox Box, bool Showing,
-        int? Layer = null, DockPosition? Edge = null) : Slot(Key);
+        int? Layer = null, DockPosition? Edge = null, bool Popped = false) : Slot(Key);
 
     // The grip in a window's corner, named by the window's showing panel.
     private sealed record WindowGripSlot(string Key, int Index, DockBox Box, int Layer, string Title) : Slot(Key);
@@ -242,6 +257,8 @@
     private const string RevealAction = "reveal";
     private const string ResizeAutoHiddenAction = "resize_auto_hidden";
     private const string DockAction = "dock";
+    private const string PopOutAction = "pop_out";
+    private const string ReturnAction = "return";
 
     private readonly string _id = $"tb-dock-{Guid.NewGuid():N}";
     private readonly string _closeHintId;
@@ -267,6 +284,13 @@
     private DotNetObjectReference<DockReport>? _report;
     private string? _focusAfterRender;
     private string? _focusStripAfterRender;
+    // The panels that show in browser windows of their own, each alone in a floating window of the layout, which is
+    // where it shows again when its browser window closes.
+    private readonly HashSet<string> _popped = [];
+    // The panel to move into the browser window its menu item opened, once it is rendered for one.
+    private string? _popOutAfterRender;
+    // The popped panels the script was last told of.
+    private string[] _poppedInScript = [];
     // The auto-hidden panels the dock shows on its strips, as of the last render.
     private IReadOnlyList<DockAutoHidden> _strips = [];
     private bool _focusDockAfterRender;
@@ -337,6 +361,13 @@
     [Parameter]
     public int MinGroupSize { get; set; } = 96;
 
+    /// <summary>Adds "Open in new window" to the panels' menus, which shows a panel in a browser window of its own,
+    /// with its state, until that window closes or its Return button is pressed. The panel is still part of this
+    /// page: the window closes with it, and a script of the app's own inside the panel has to work with the
+    /// panel's document and not the page's. Off by default.</summary>
+    [Parameter]
+    public bool AllowPopOut { get; set; }
+
     /// <summary>The dock's accessible name, such as "Workbench".</summary>
     [Parameter]
     public string? AriaLabel { get; set; }
@@ -375,6 +406,8 @@
         Telemetry.Rendered(TelemetryName);
         try
         {
+            // First, so a panel that came back is in the dock before its tab takes the focus.
+            await ShowPoppedAsync();
             if (_focusAfterRender is { } focused)
             {
                 _focusAfterRender = null;
@@ -437,6 +470,7 @@
         _report = DotNetObjectReference.Create(new DockReport(SelectFromScriptAsync, CloseFromScriptAsync,
             OnResizeAsync, MoveFromScriptAsync, ToggleMaximizedFromScriptAsync, RaiseFromScriptAsync, OnFloatAsync,
             PullOutFromScriptAsync, ConcealFromScriptAsync, SlideFromScriptAsync, AutoHideFromScriptAsync,
+            panel => ReturnAsync(panel, focus: false),
             tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);
         if (handle is not null && _disposed)
@@ -562,12 +596,23 @@
             }
         }
 
+        // A panel shows in a browser window of its own only while it is alone in a window of the layout.
+        _popped.RemoveWhere(id => !AllowPopOut
+            || !shown.Floats.Any(window => window.Panels is [var only] && only == id));
         var windows = WindowKeys(shown.Floats);
         for (var layer = 0; layer < shown.Floats.Count; layer++)
         {
             // Windows are numbered after the docked groups, oldest first.
             var (window, key) = (shown.Floats[layer], windows[layer]);
             var index = shown.Groups.Count + _windows.FindIndex(each => each.Key == key);
+            if (_popped.Contains(window.Active))
+            {
+                // Its row and its grip aren't drawn until it comes back, and the layout keeps its box.
+                slots.Add(new PanelSlot($"panel-{window.Active}", Panel(window.Active)!, index, window.Box, true,
+                    Popped: true));
+                continue;
+            }
+
             slots.Add(new GroupSlot(key, index, window, false, false, layer));
             foreach (var id in window.Panels)
             {
@@ -678,8 +723,12 @@
     {
         var shown = Shown();
         return shown.Maximized is { } filling ? shown.Groups[filling].Active
-            : shown.Groups.Concat(shown.Floats).FirstOrDefault()?.Active;
+            : shown.Groups.Concat(InDock(shown.Floats)).FirstOrDefault()?.Active;
     }
+
+    // The windows that show in the dock, which a panel in a browser window of its own doesn't: it has no tab there.
+    private IEnumerable<DockGroupBox> InDock(IEnumerable<DockGroupBox> windows) =>
+        windows.Where(window => !_popped.Contains(window.Active));
 
     // The button that takes focus from a closed panel that was on a strip: the next one on its strip, or else the
     // one before it.
@@ -724,7 +773,7 @@
         // The group goes with its last tab, and a group that the maximized one covers can't take the focus.
         var after = _layout.Close(panel).Arrange(id => Panel(id) is not null);
         var reachable = (after.Maximized is { } filling ? after.Groups.Skip(filling).Take(1) : after.Groups)
-            .Concat(after.Floats).Select(group => group.Active).ToList();
+            .Concat(InDock(after.Floats)).Select(group => group.Active).ToList();
         return new[] { groups.ElementAtOrDefault(index + 1)?.Active, groups.ElementAtOrDefault(index - 1)?.Active }
             .FirstOrDefault(tab => tab is not null && reachable.Contains(tab)) ?? reachable.FirstOrDefault();
     }
@@ -910,6 +959,12 @@
                 }
             }
         </TbSubMenu>
+        @if (AllowPopOut)
+        {
+            <TbMenuItem data-move="pop-out" OnClick="() => PopOutAsync(panel)">
+                @(Labels.PopOut ?? Localizer[TbStrings.DockPopOut])
+            </TbMenuItem>
+        }
         @* A panel alone in its window has a window to itself already. *@
         @if (group.Layer is null || sibling is not null || group.Edge is not null)
         {
@@ -988,6 +1043,76 @@
             </div>
         }
     };
+
+    // Shows a panel in the browser window that the script opened as the menu's item was clicked. The panel first
+    // gets a floating window of its own in the layout, which is where it shows again once the browser window closes.
+    private async Task PopOutAsync(string panel)
+    {
+        try
+        {
+            var alone = _layout.FloatOf(panel) is { Group.Panels.Count: 1 };
+            _popped.Add(panel);
+            _popOutAfterRender = panel;
+            await ChangeAsync(alone ? _layout : _layout.Float(panel), PopOutAction);
+        }
+        finally
+        {
+            _commits++;
+        }
+    }
+
+    // Tells the script which panels show in browser windows of their own, after the render that draws them so.
+    private async Task ShowPoppedAsync()
+    {
+        if (_handle is null)
+        {
+            return;
+        }
+
+        if (_popOutAfterRender is { } panel)
+        {
+            _popOutAfterRender = null;
+            if (_popped.Contains(panel) && Panel(panel) is { } opened)
+            {
+                // The script answers with what went wrong, and with nothing when the panel is in its window.
+                if (await _handle.InvokeAsync<string?>("popOut", PanelId(panel)) is null)
+                {
+                    Announcer.Polite(Format(Labels.PoppedOut, TbStrings.DockPoppedOut, opened.Title));
+                }
+                else
+                {
+                    // The browser refused the window, so the panel stays in the floating window it was given.
+                    _popped.Remove(panel);
+                    _focusAfterRender = panel;
+                    Announcer.Polite(Format(Labels.PopOutBlocked, TbStrings.DockPopOutBlocked, opened.Title));
+                    StateHasChanged();
+                }
+            }
+        }
+
+        var popped = _popped.Select(PanelId).Order(StringComparer.Ordinal).ToArray();
+        if (!popped.SequenceEqual(_poppedInScript))
+        {
+            _poppedInScript = popped;
+            await _handle.InvokeVoidAsync("popped", (object)popped);
+        }
+    }
+
+    // A panel comes back from its browser window to the floating window the layout kept for it: its Return button was
+    // pressed, which leaves the focus on its tab, or its browser window closed.
+    private Task ReturnAsync(string panel, bool focus)
+    {
+        if (_popped.Remove(panel) && Panel(panel) is { } back)
+        {
+            _focusAfterRender = focus ? panel : null;
+            Telemetry.Used(TelemetryName, ReturnAction);
+            Announcer.Polite(Format(Labels.Returned, TbStrings.DockReturned, back.Title));
+            _commits++;
+            StateHasChanged();
+        }
+
+        return Task.CompletedTask;
+    }
 
     // Puts a panel away on a strip, with the focus on its button there, and says where it went.
     private async Task AutoHideAsync(string panel, DockPosition edge)

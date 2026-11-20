@@ -283,6 +283,69 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     public async Task DockAsync(string panel) =>
         await ChooseAsync(panel, "[data-move=dock]", $"The panel \"{panel}\" is docked already.");
 
+    /// <summary>Opens the panel with this title in a browser window of its own, with "Open in new window" in its
+    /// group's menu, and gives the panel in that window. Its <c>Page</c> is the new window's page, where the panel's
+    /// content is found as on any page, and closing that page brings the panel back as closing the window does.
+    /// Throws when the dock's <c>AllowPopOut</c> is off.</summary>
+    public async Task<ILocator> PopOutAsync(string panel)
+    {
+        var window = await Root.Page.RunAndWaitForPopupAsync(() => ChooseAsync(panel, "[data-move=pop-out]",
+            "The dock doesn't open panels in windows of their own. Turn on its AllowPopOut."));
+        var popped = window.Locator("[data-part=panel][data-popped]");
+        await popped.WaitForAsync();
+        return popped;
+    }
+
+    /// <summary>The titles of the panels that show in browser windows of their own, in the order their windows
+    /// opened.</summary>
+    public async Task<IReadOnlyList<string>> PoppedOutAsync()
+    {
+        var titles = new List<string>();
+        await foreach (var popped in PoppedPanelsAsync())
+        {
+            titles.Add((await popped.GetAttributeAsync("aria-label"))!);
+        }
+
+        return titles;
+    }
+
+    /// <summary>Brings the panel with this title back to the dock from its own browser window, with that window's
+    /// Return button, and waits until the dock has it again. The window closes. Throws for a panel that isn't in a
+    /// window of its own.</summary>
+    public async Task ReturnAsync(string panel)
+    {
+        await foreach (var popped in PoppedPanelsAsync())
+        {
+            if (await popped.GetAttributeAsync("aria-label") == panel)
+            {
+                await Commit.CountedAsync(Root, "data-commits", async () =>
+                {
+                    await popped.Locator("[data-part=return]").ClickAsync();
+                    return true;
+                });
+                return;
+            }
+        }
+
+        throw new InvalidOperationException($"The panel \"{panel}\" isn't in a browser window of its own.");
+    }
+
+    // This dock's panels in the browser windows that its page opened, each of which holds one. A dock's panel ids
+    // start with the same prefix as the id of its hint for closable tabs, which tells its panels from another dock's.
+    private async IAsyncEnumerable<ILocator> PoppedPanelsAsync()
+    {
+        var hint = (await Root.Locator(":scope > [id$='-close-hint']").GetAttributeAsync("id"))!;
+        var own = $"{hint[..^"close-hint".Length]}panel-";
+        foreach (var window in Root.Page.Context.Pages)
+        {
+            var popped = window.Locator($"[data-part=panel][data-popped][id^='{own}']");
+            if (!window.IsClosed && await window.OpenerAsync() == Root.Page && await popped.CountAsync() == 1)
+            {
+                yield return popped;
+            }
+        }
+    }
+
     /// <summary>The box of the floating window that holds the panel with this title, in percent of the dock: where
     /// it starts, from the side where text starts and from the top, and its width and height. Throws for a panel
     /// that isn't in a window.</summary>

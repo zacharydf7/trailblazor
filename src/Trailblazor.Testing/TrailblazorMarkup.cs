@@ -3168,10 +3168,12 @@ public sealed class TbDockDriver
 
     /// <summary>The panel with this title, to assert on what it shows. Throws when the panel's content isn't in the
     /// markup, as <see cref="Panel"/> does.</summary>
-    public IElement PanelElement(string panel) => Tab(panel).GetAttribute("aria-controls") is { } id
-        ? _find().Children.Single(child => child.Id == id)
-        : throw new InvalidOperationException($"The content of the panel \"{panel}\" isn't in the markup; select the "
-            + "panel first.");
+    public IElement PanelElement(string panel) =>
+        PoppedPanels().SingleOrDefault(each => each.GetAttribute("aria-label") == panel)
+        ?? (Tab(panel).GetAttribute("aria-controls") is { } id
+            ? _find().Children.Single(child => child.Id == id)
+            : throw new InvalidOperationException($"The content of the panel \"{panel}\" isn't in the markup; select "
+                + "the panel first."));
 
     /// <summary>The titles of every panel's tab, group by group in reading order.</summary>
     public IReadOnlyList<string> Panels => Tabs().Select(Title).ToList();
@@ -3280,6 +3282,34 @@ public sealed class TbDockDriver
     /// window's menu does. Throws for a panel that is docked already.</summary>
     public async Task DockAsync(string panel) =>
         await ChooseAsync(panel, "[data-move=dock]", $"The panel \"{panel}\" is docked already.");
+
+    /// <summary>Opens the panel with this title in a browser window of its own, as "Open in new window" in its
+    /// group's menu does, and gives the panel. bUnit has no windows, so the panel stays in the markup, drawn as it is
+    /// in its window: without a tab, and with its Return button. Throws when the dock's <c>AllowPopOut</c> is off.
+    /// </summary>
+    public async Task<IElement> PopOutAsync(string panel)
+    {
+        await ChooseAsync(panel, "[data-move=pop-out]",
+            "The dock doesn't open panels in windows of their own. Turn on its AllowPopOut.");
+        return PanelElement(panel);
+    }
+
+    /// <summary>The titles of the panels that show in browser windows of their own.</summary>
+    public IReadOnlyList<string> PoppedOut => [.. PoppedPanels().Select(panel => panel.GetAttribute("aria-label")!)];
+
+    /// <summary>Brings the panel with this title back to the dock from its own browser window, as that window's
+    /// Return button does. Throws for a panel that isn't in a window of its own.</summary>
+    public async Task ReturnAsync(string panel)
+    {
+        var button = PoppedPanels().SingleOrDefault(each => each.GetAttribute("aria-label") == panel)
+            ?.QuerySelector("[data-part=return]")
+            ?? throw new InvalidOperationException($"The panel \"{panel}\" isn't in a browser window of its own.");
+        await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+
+    // The panels drawn as they are in browser windows of their own, where they have no tab to be found by.
+    private IEnumerable<IElement> PoppedPanels() =>
+        _find().Children.Where(child => child.HasAttribute("data-popped"));
 
     /// <summary>The box of the floating window that holds the panel with this title, in percent of the dock: where
     /// it starts, from the side where text starts and from the top, and its width and height. Throws for a panel

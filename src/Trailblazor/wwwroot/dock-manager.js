@@ -1,6 +1,7 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { createGripDrag } from '../Trailblazor.Primitives/grip-drag.js';
 import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
+import { showInWindow } from './pop-out.js';
 import { nextTab, scrollTabIntoRow } from './tabs.js';
 
 const sides = ['x', 'y', 'width', 'height'];
@@ -943,6 +944,69 @@ export function attachDock(root, reporter) {
     root.addEventListener('beforetoggle', onMenuOpening, { capture: true });
     root.addEventListener('toggle', onMenuToggled, { capture: true });
 
+    // The panels that show in browser windows of their own, by their element ids. A browser lets a page open a
+    // window only while it handles what the user did, so the window opens here, in the click on the menu's item, and
+    // the dock then says which panel goes into it.
+    const windows = new Map();
+    const unclaimedLimit = 10000;
+    const smallestWindow = { width: 320, height: 240 };
+    let opened = null;
+    const onPopOutClick = event => {
+        // The item of a dock nested in one of this dock's panels is that dock's to answer.
+        if (event.target.closest?.('[data-move="pop-out"]')?.closest('.tb-dock') !== root) {
+            return;
+        }
+
+        opened?.close();
+        const box = root.getBoundingClientRect();
+        const [width, height] = [Math.max(smallestWindow.width, Math.round(box.width / 2)),
+            Math.max(smallestWindow.height, Math.round(box.height / 2))];
+        const [left, top] = [Math.round(window.screenX + box.left + box.width / 4),
+            Math.round(window.screenY + box.top + box.height / 4)];
+        opened = window.open('', '', `popup,width=${width},height=${height},left=${left},top=${top}`);
+        // A window the dock never asks for, because the click led nowhere, doesn't stay open and empty.
+        const unclaimed = opened;
+        setTimeout(() => {
+            if (unclaimed && opened === unclaimed) {
+                unclaimed.close();
+                opened = null;
+            }
+        }, unclaimedLimit);
+    };
+    // Puts a panel back in the dock and closes its window. With `report`, the dock hears of it too: the window, or
+    // the page, went without the dock asking.
+    const bringBack = (id, report) => {
+        const shown = windows.get(id);
+        if (!shown) {
+            return;
+        }
+
+        windows.delete(id);
+        shown.stop();
+        // A panel that Blazor removed while it was away is gone, and stays gone.
+        if (shown.panel.isConnected) {
+            root.appendChild(shown.panel);
+            order();
+        }
+
+        shown.other.close();
+        if (report) {
+            callDotNet(reporter, 'OnReturn', shown.panel.dataset.panel);
+        }
+    };
+    // The windows go with the page, and with the dock. Their panels come back first, so a page that the browser
+    // keeps to show again when the user goes back still has them, and only such a page's dock is told.
+    const closeWindows = report => {
+        opened?.close();
+        opened = null;
+        for (const id of [...windows.keys()]) {
+            bringBack(id, report);
+        }
+    };
+    const onPageHide = event => closeWindows(event.persisted);
+    root.addEventListener('click', onPopOutClick, { capture: true });
+    window.addEventListener('pagehide', onPageHide);
+
     stateLimits();
     // Marks that the keys and drags work, which tests wait for.
     root.dataset.ready = '';
@@ -984,7 +1048,43 @@ export function attachDock(root, reporter) {
             const tab = document.getElementById(id);
             return Boolean(tab) && holdsFocus(tab);
         },
+        // Moves the panel with this element id into the window its menu item opened. The answer is what went wrong,
+        // and null when nothing did: a browser can refuse to open the window.
+        popOut(id) {
+            const [other, panel] = [opened, document.getElementById(id)];
+            opened = null;
+            if (!other || other.closed || !panel) {
+                other?.close();
+                return 'blocked';
+            }
+
+            const unstyle = showInWindow(other, panel, panel.getAttribute('aria-label'), 'tb-dock-window');
+            // The window has the panel's title, and keeps it as the title changes. The panel loses its `aria-label`
+            // as it is drawn for the dock again, and the window then keeps the title it had.
+            const titled = new MutationObserver(() => {
+                other.document.title = panel.getAttribute('aria-label') ?? other.document.title;
+            });
+            titled.observe(panel, { attributes: true, attributeFilter: ['aria-label'] });
+            const stop = () => {
+                unstyle();
+                titled.disconnect();
+            };
+            windows.set(id, { other, panel, stop });
+            // Closing the window puts the panel back, while the window still holds it.
+            other.addEventListener('pagehide', () => bringBack(id, true));
+            panel.focus({ preventScroll: true });
+            return null;
+        },
+        // The element ids of the panels that still show in windows of their own. Any other comes back to the dock.
+        popped(ids) {
+            for (const id of [...windows.keys()].filter(each => !ids.includes(each))) {
+                bringBack(id, false);
+            }
+        },
         dispose() {
+            root.removeEventListener('click', onPopOutClick, { capture: true });
+            window.removeEventListener('pagehide', onPageHide);
+            closeWindows(false);
             added.disconnect();
             regrouped.disconnect();
             selected.disconnect();
