@@ -988,6 +988,33 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void End_ShouldFollowTheAddButtonAfterTheTabList_WhenGiven()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.OnAdd, () => { })
+            .Add(tabs => tabs.End, "<button type=\"button\">Share</button>")
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        var actions = cut.Find("[role=tablist]").NextElementSibling!;
+        Assert.Contains("tb-tabs__actions", actions.ClassList);
+        Assert.Equal("add", actions.FirstElementChild!.GetAttribute("data-part"));
+        Assert.Equal("Share", actions.LastElementChild!.TextContent);
+    }
+
+    [Fact]
+    public void End_ShouldEndTheRow_WhenThePageIsStaticAndHasNoAddButton()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.OnAdd, () => { })
+            .Add(tabs => tabs.End, "<button type=\"button\">Share</button>")
+            .Add(tabs => tabs.ChildContent, (RenderFragment)(builder => AddTab(builder, 0, "Overview", "Panel"))));
+
+        Assert.Contains("tb-tabs--actions", cut.Find(".tb-tabs").ClassList);
+        Assert.Equal("Share", cut.Find(".tb-tabs__actions").TextContent.Trim());
+        Assert.Empty(cut.FindAll("[data-part=add]"));
+    }
+
+    [Fact]
     public void Render_ShouldShowNoAddButton_WhenNoOnAddIsGivenOrThePageIsStatic()
     {
         var plain = RenderTabs();

@@ -1,6 +1,7 @@
 using Deque.AxeCore.Commons;
 using Deque.AxeCore.Playwright;
 using Trailblazor.Docs.Examples;
+using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
@@ -236,6 +237,13 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
                     .ToHaveAttributeAsync("data-ready", "");
                 await page.GetByRole(AriaRole.Group, new() { Name = "Shop" }).Locator("> [data-part=group-button]")
                     .ClickAsync();
+            }),
+            // The Trip log ribbon collapses to its tabs, and a tab then shows its commands over the page.
+            new(new("button", "Add a picture"), async page =>
+            {
+                var ribbon = page.Tb().Ribbon("Trip log");
+                await ribbon.CollapseAsync();
+                await ribbon.SelectAsync("Pictures");
             }),
         ],
         ["popover"] =

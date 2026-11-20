@@ -1,4 +1,6 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
+import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { focusWentElsewhere } from '../Trailblazor.Primitives/focus-scope.js';
 import { createRovingFocus } from '../Trailblazor.Primitives/roving-focus.js';
 import { controls } from './toolbar.js';
@@ -218,6 +220,108 @@ export function attachRibbon(toolbar) {
 
             delete toolbar.dataset.ready;
             delete toolbar.dataset.fitting;
+        },
+    };
+}
+
+// A ribbon collapsed to its tabs. Ctrl+F1 in the ribbon and a double-click on a tab ask the server to collapse it or
+// show it again. While it is collapsed, choosing a tab shows that tab's commands over the page, which data-peek marks,
+// until a command is chosen, Escape is pressed or focus leaves the ribbon.
+export function attachRibbonCollapse(root, events) {
+    // Blazor passes null for an element that was removed before this call arrived.
+    if (!root) {
+        return null;
+    }
+
+    const collapsed = () => root.hasAttribute('data-collapsed');
+    const peeking = () => root.hasAttribute('data-peek');
+    const tabs = () => root.querySelector(':scope > .tb-tabs > [role="tablist"]');
+    const selectedTab = () => tabs()?.querySelector(':scope > [aria-selected="true"]');
+    const tabOf = target => tabs()?.contains(target) ? target.closest('[role="tab"]') : null;
+    // Not closest, which a tab panel nested in the commands would answer first.
+    const inCommands = target => target instanceof Node
+        && [...root.querySelectorAll(':scope > .tb-tabs > [role="tabpanel"]')].some(panel => panel.contains(target));
+    // The commands are about to hide, and focus would go with them.
+    const keepFocus = () => {
+        if (inCommands(document.activeElement)) {
+            selectedTab()?.focus();
+        }
+    };
+    const endPeek = () => {
+        if (peeking()) {
+            keepFocus();
+            root.removeAttribute('data-peek');
+        }
+    };
+    // A button that opens something, such as a menu's or a collapsed group's, isn't a command yet.
+    const isCommand = target => target.closest('button')
+        ?.matches(':not([aria-haspopup], [aria-expanded], [popovertarget])') === true;
+
+    const onClick = event => {
+        if (!collapsed()) {
+            return;
+        }
+
+        if (tabOf(event.target)) {
+            root.setAttribute('data-peek', '');
+        } else if (inCommands(event.target) && isCommand(event.target)) {
+            endPeek();
+        }
+    };
+    const onDoubleClick = event => {
+        if (root.hasAttribute('data-collapsible') && tabOf(event.target)) {
+            callDotNet(events, 'OnToggle');
+        }
+    };
+    const onKeyDown = event => {
+        if (event.key === 'F1' && event.ctrlKey && root.hasAttribute('data-collapsible')) {
+            event.preventDefault();
+            callDotNet(events, 'OnToggle');
+        } else if (event.key === 'Escape' && peeking() && !event.defaultPrevented && !isComposing(event)
+            && !root.querySelector(':popover-open')) {
+            // A popup open in the commands, such as a menu, takes the first Escape. This one is marked as used, so a
+            // dialog around the ribbon stays open.
+            event.preventDefault();
+            endPeek();
+        }
+    };
+    const onFocusOut = event => {
+        if (event.relatedTarget && !root.contains(event.relatedTarget)) {
+            root.removeAttribute('data-peek');
+        }
+    };
+    const onPointerDown = event => {
+        if (!root.contains(event.target)) {
+            root.removeAttribute('data-peek');
+        }
+    };
+    // The server collapses the ribbon and shows it again, from the button, the keys or the app's own code.
+    const states = new MutationObserver(() => {
+        if (collapsed()) {
+            keepFocus();
+        } else {
+            root.removeAttribute('data-peek');
+        }
+    });
+
+    root.addEventListener('click', onClick);
+    root.addEventListener('dblclick', onDoubleClick);
+    root.addEventListener('keydown', onKeyDown);
+    root.addEventListener('focusout', onFocusOut);
+    document.addEventListener('pointerdown', onPointerDown, true);
+    states.observe(root, { attributes: true, attributeFilter: ['data-collapsed'] });
+    root.dataset.ready = '';
+
+    return {
+        dispose() {
+            root.removeEventListener('click', onClick);
+            root.removeEventListener('dblclick', onDoubleClick);
+            root.removeEventListener('keydown', onKeyDown);
+            root.removeEventListener('focusout', onFocusOut);
+            document.removeEventListener('pointerdown', onPointerDown, true);
+            states.disconnect();
+            delete root.dataset.ready;
+            delete root.dataset.peek;
         },
     };
 }

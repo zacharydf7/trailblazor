@@ -1,0 +1,30 @@
+<TbStack Gap="3">
+    <TbRibbon AriaLabel="Trip log" Collapsible @bind-Collapsed="_collapsed">
+        <TbRibbonTab Title="Entries">
+            <TbRibbonGroup Label="Log">
+                <TbRibbonButton Large Label="New entry" Icon="ExampleIcons.Plus" OnClick="@(() => _last = "New entry")" />
+                <TbRibbonButton Label="Copy entry" Icon="ExampleIcons.Folder" OnClick="@(() => _last = "Copy entry")" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        <TbRibbonTab Title="Pictures">
+            <TbRibbonGroup Label="Attach">
+                <TbRibbonButton Large Label="Add a picture" Icon="ExampleIcons.ArrowUp"
+                                OnClick="@(() => _last = "Add a picture")" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+    </TbRibbon>
+    <TbText>
+        The ribbon is @(_collapsed ? "collapsed to its tabs" : "showing its commands"). Last command:
+        @(_last ?? "none").
+    </TbText>
+    <div>
+        <TbButton OnClick="@(() => _collapsed = !_collapsed)">
+            @(_collapsed ? "Show the commands" : "Collapse the ribbon")
+        </TbButton>
+    </div>
+</TbStack>
+
+@code {
+    private bool _collapsed;
+    private string? _last;
+}

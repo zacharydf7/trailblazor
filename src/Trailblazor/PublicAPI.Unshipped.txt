@@ -7294,3 +7294,27 @@ override Trailblazor.TbRibbonTab.OnParametersSet() -> void
 ~override Trailblazor.TbRibbonButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbRibbonGroup.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Trailblazor.TbRibbonTab.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.RibbonLabels
+Trailblazor.RibbonLabels.<Clone>$() -> Trailblazor.RibbonLabels!
+Trailblazor.RibbonLabels.Equals(Trailblazor.RibbonLabels? other) -> bool
+Trailblazor.RibbonLabels.RibbonLabels() -> void
+override Trailblazor.RibbonLabels.Equals(object? obj) -> bool
+override Trailblazor.RibbonLabels.GetHashCode() -> int
+override Trailblazor.RibbonLabels.ToString() -> string!
+static Trailblazor.RibbonLabels.operator !=(Trailblazor.RibbonLabels? left, Trailblazor.RibbonLabels? right) -> bool
+static Trailblazor.RibbonLabels.operator ==(Trailblazor.RibbonLabels? left, Trailblazor.RibbonLabels? right) -> bool
+Trailblazor.RibbonLabels.Collapse.get -> string?
+Trailblazor.RibbonLabels.Collapse.init -> void
+Trailblazor.TbRibbon.Collapsed.get -> bool
+Trailblazor.TbRibbon.Collapsed.set -> void
+Trailblazor.TbRibbon.CollapsedChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbRibbon.CollapsedChanged.set -> void
+Trailblazor.TbRibbon.Collapsible.get -> bool
+Trailblazor.TbRibbon.Collapsible.set -> void
+Trailblazor.TbRibbon.DisposeAsync() -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbRibbon.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+Trailblazor.TbRibbon.Labels.get -> Trailblazor.RibbonLabels!
+Trailblazor.TbRibbon.Labels.set -> void
+Trailblazor.TbTabs.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTabs.End.set -> void
+const Trailblazor.TbStrings.RibbonCollapse = "Ribbon.Collapse" -> string!

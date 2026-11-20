@@ -49,11 +49,126 @@ public class TbRibbonTests : BunitContext
     public void Render_ShouldAttachTheRibbonsScriptToTheShownTabsCommands_WhenCalled()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/ribbon.js");
+        module.Mode = JSRuntimeMode.Loose;
         module.SetupModule("attachRibbon", _ => true).Mode = JSRuntimeMode.Loose;
 
         RenderRibbon();
 
         Assert.Single(module.Invocations["attachRibbon"]);
+    }
+
+    [Fact]
+    public void Collapsible_ShouldEndTheTabsWithAButtonThatSaysTheCommandsShow_WhenSet()
+    {
+        var plain = RenderRibbon();
+        var cut = RenderRibbon(parameters => parameters.Add(ribbon => ribbon.Collapsible, true));
+
+        Assert.Empty(plain.FindAll("[data-part=collapse]"));
+        Assert.False(plain.Find("[data-part=ribbon]").HasAttribute("data-collapsible"));
+        Assert.False(plain.Find("[data-part=ribbon]").HasAttribute("data-static"));
+        var button = cut.Find("[role=tablist] ~ .tb-tabs__actions > [data-part=collapse]");
+        Assert.Equal(("Ribbon commands", "true", "Control+F1"), (button.GetAttribute("aria-label"),
+            button.GetAttribute("aria-expanded"), button.GetAttribute("aria-keyshortcuts")));
+        Assert.True(cut.Find("[data-part=ribbon]").HasAttribute("data-collapsible"));
+    }
+
+    [Fact]
+    public void Labels_ShouldNameTheCollapseButton_WhenGiven()
+    {
+        var cut = RenderRibbon(parameters => parameters.Add(ribbon => ribbon.Collapsible, true)
+            .Add(ribbon => ribbon.Labels, new RibbonLabels { Collapse = "Tools" }));
+
+        Assert.Equal("Tools", cut.Find("[data-part=collapse]").GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public void Collapse_ShouldMarkTheRibbonAndTellTheApp_WhenItsButtonIsClicked()
+    {
+        var changes = new List<bool>();
+        var cut = RenderRibbon(parameters => parameters.Add(ribbon => ribbon.Collapsible, true)
+            .Add(ribbon => ribbon.CollapsedChanged, changes.Add));
+
+        cut.Find("[data-part=collapse]").Click();
+
+        Assert.True(cut.Find("[data-part=ribbon]").HasAttribute("data-collapsed"));
+        Assert.Equal("false", cut.Find("[data-part=collapse]").GetAttribute("aria-expanded"));
+        cut.Find("[data-part=collapse]").Click();
+        Assert.False(cut.Find("[data-part=ribbon]").HasAttribute("data-collapsed"));
+        Assert.Equal("true", cut.Find("[data-part=collapse]").GetAttribute("aria-expanded"));
+        Assert.Equal([true, false], changes);
+    }
+
+    [Fact]
+    public async Task Collapse_ShouldToggleTheRibbon_WhenItsScriptReportsCtrlF1OrADoubleClick()
+    {
+        var changes = new List<bool>();
+        var cut = RenderRibbon(parameters => parameters.Add(ribbon => ribbon.Collapsible, true)
+            .Add(ribbon => ribbon.CollapsedChanged, changes.Add));
+        var events = ((DotNetObjectReference<RibbonEvents>)JSInterop.Invocations["attachRibbonCollapse"].Single()
+            .Arguments[1]!).Value;
+
+        await cut.InvokeAsync(events.OnToggle);
+
+        Assert.True(cut.Find("[data-part=ribbon]").HasAttribute("data-collapsed"));
+        Assert.Equal([true], changes);
+    }
+
+    [Fact]
+    public void Collapsed_ShouldCollapseTheRibbonAndShowItAgain_WhenTheAppSetsIt()
+    {
+        var cut = RenderRibbon(parameters => parameters.Add(ribbon => ribbon.Collapsed, true));
+        Assert.True(cut.Find("[data-part=ribbon]").HasAttribute("data-collapsed"));
+        Assert.Empty(cut.FindAll("[data-part=collapse]"));
+
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.Collapsed, false));
+
+        Assert.False(cut.Find("[data-part=ribbon]").HasAttribute("data-collapsed"));
+    }
+
+    [Fact]
+    public void Collapsed_ShouldLeaveTheCommandsShowingWithNoButton_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderRibbon(parameters => parameters.Add(ribbon => ribbon.Collapsed, true)
+            .Add(ribbon => ribbon.Collapsible, true));
+
+        Assert.False(cut.Find("[data-part=ribbon]").HasAttribute("data-collapsed"));
+        Assert.True(cut.Find("[data-part=ribbon]").HasAttribute("data-static"));
+        Assert.Empty(cut.FindAll("[data-part=collapse]"));
+    }
+
+    [Fact]
+    public async Task Driver_ShouldCollapseAndExpandTheRibbon_WhenAsked()
+    {
+        var cut = RenderRibbon(parameters => parameters.Add(ribbon => ribbon.Collapsible, true));
+        var ribbon = cut.Tb().Ribbon();
+
+        await ribbon.CollapseAsync();
+        await ribbon.CollapseAsync();
+        Assert.True(ribbon.IsCollapsed);
+        await ribbon.ExpandAsync();
+
+        Assert.False(ribbon.IsCollapsed);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldRefuseToCollapse_WhenTheRibbonHasNoCollapseButton()
+    {
+        var ribbon = RenderRibbon().Tb().Ribbon();
+
+        Assert.Equal("The ribbon has no collapse button; set Collapsible to give it one.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(ribbon.CollapseAsync)).Message);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldRefuseToCollapse_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var ribbon = RenderRibbon(parameters => parameters.Add(ribbon => ribbon.Collapsible, true)).Tb().Ribbon();
+
+        Assert.Equal("On a static page the ribbon can't collapse; render the page interactively to collapse it.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(ribbon.CollapseAsync)).Message);
     }
 
     [Fact]
@@ -326,7 +441,23 @@ public class TbRibbonTests : BunitContext
     [Fact]
     public async Task Dispose_ShouldDetachTheCommandsScript_WhenTheRibbonGoesAway()
     {
-        var handle = JSInterop.SetupModule("./_content/Trailblazor/ribbon.js").SetupModule("attachRibbon", _ => true);
+        var module = JSInterop.SetupModule("./_content/Trailblazor/ribbon.js");
+        module.Mode = JSRuntimeMode.Loose;
+        var handle = module.SetupModule("attachRibbon", _ => true);
+        handle.SetupVoid("dispose").SetVoidResult();
+        RenderRibbon();
+
+        await DisposeComponentsAsync();
+
+        handle.VerifyInvoke("dispose");
+    }
+
+    [Fact]
+    public async Task Dispose_ShouldDetachTheCollapseScript_WhenTheRibbonGoesAway()
+    {
+        var module = JSInterop.SetupModule("./_content/Trailblazor/ribbon.js");
+        module.Mode = JSRuntimeMode.Loose;
+        var handle = module.SetupModule("attachRibbonCollapse", _ => true);
         handle.SetupVoid("dispose").SetVoidResult();
         RenderRibbon();
 

@@ -1,0 +1,61 @@
+@page "/ribbon-tabs-only"
+
+@* A ribbon that collapses to its tabs, and starts collapsed with ?start=true. The paragraph right under it shows
+   whether a tab's commands open over the page or push it down, and the one far below is somewhere to press that the
+   commands never cover. The dialog holds a ribbon of its own, so a test can check that Escape hides its commands and
+   leaves the dialog open. *@
+<TbButton>Before</TbButton>
+<TbRibbon AriaLabel="Planner" Collapsible @bind-Collapsed="_collapsed">
+    <TbRibbonTab Title="Home">
+        <TbRibbonGroup Label="Write">
+            <TbRibbonButton Label="Add" OnClick="@(() => _last = "Add")" />
+            <TbRibbonButton Label="Pin" @bind-Pressed="_pinned" />
+            <input aria-label="Title" />
+            @* A control that uses Escape itself, as an open list would. *@
+            <input aria-label="Code" onkeydown="if (event.key === 'Escape') { event.preventDefault(); }" />
+        </TbRibbonGroup>
+        <TbRibbonGroup Label="Send">
+            <TbMenu>
+                <Trigger>
+                    <TbRibbonButton Label="Export" @attributes="context.Attributes" />
+                </Trigger>
+                <ChildContent>
+                    <TbMenuItem OnClick="@(() => _last = "As a PDF")">As a PDF</TbMenuItem>
+                </ChildContent>
+            </TbMenu>
+        </TbRibbonGroup>
+    </TbRibbonTab>
+    <TbRibbonTab Title="Review">
+        <TbRibbonGroup Label="Proof">
+            <TbRibbonButton Label="Spelling" OnClick="@(() => _last = "Spelling")" />
+        </TbRibbonGroup>
+    </TbRibbonTab>
+</TbRibbon>
+<p data-testid="under">Under the ribbon.</p>
+<p data-testid="far" style="margin-block-start: 20rem">Far below.</p>
+<output data-testid="last">@_last</output>
+<output data-testid="collapsed">@(_collapsed ? "collapsed" : "showing")</output>
+<output data-testid="dialog">@(_dialog ? "open" : "closed")</output>
+<TbButton OnClick="@(() => _collapsed = !_collapsed)">Set from code</TbButton>
+<TbButton OnClick="@(() => _dialog = true)">Open the dialog</TbButton>
+<TbDialog @bind-Open="_dialog" Title="Quick tools">
+    <TbRibbon AriaLabel="Quick" Collapsible>
+        <TbRibbonTab Title="Tools">
+            <TbRibbonGroup Label="Measure">
+                <TbRibbonButton Label="Ruler" OnClick="@(() => _last = "Ruler")" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+    </TbRibbon>
+</TbDialog>
+
+@code {
+    private string? _last;
+    private bool _pinned;
+    private bool _collapsed;
+    private bool _dialog;
+
+    [SupplyParameterFromQuery]
+    public bool Start { get; set; }
+
+    protected override void OnInitialized() => _collapsed = Start;
+}

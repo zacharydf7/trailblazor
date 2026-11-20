@@ -670,3 +670,6 @@ Trailblazor.Testing.Playwright.TbRibbonLocator.SelectedAsync() -> System.Threadi
 Trailblazor.Testing.Playwright.TbRibbonLocator.TabsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbRibbonLocator.TbRibbonLocator(Microsoft.Playwright.ILocator! scope, string? name) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.Ribbon(string? name = null) -> Trailblazor.Testing.Playwright.TbRibbonLocator!
+Trailblazor.Testing.Playwright.TbRibbonLocator.CollapseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRibbonLocator.ExpandAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbRibbonLocator.IsCollapsedAsync() -> System.Threading.Tasks.Task<bool>!

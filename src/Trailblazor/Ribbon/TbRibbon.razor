@@ -1,12 +1,27 @@
 @namespace Trailblazor
+@using Microsoft.JSInterop
+@using Trailblazor.Primitives
 @inherits TbComponentBase
+@implements IAsyncDisposable
+@inject JsModuleLoader Modules
+@inject ITbLocalizer Localizer
 
-<div @attributes="AdditionalAttributes" data-part="ribbon" style="@Style" class="@ClassNames.Join("tb-ribbon", Class)">
+@* The script sets data-ready here once Ctrl+F1 and a collapsed ribbon's tabs work, which tests wait for. *@
+<div @ref="_root" @attributes="AdditionalAttributes" data-part="ribbon" style="@Style"
+     data-collapsible="@(Collapsible ? "" : null)" data-collapsed="@(IsCollapsed ? "" : null)"
+     data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+     class="@ClassNames.Join("tb-ribbon", Class)">
     <CascadingValue Value="this" IsFixed="true">@Tabs</CascadingValue>
 </div>
 
 @code {
     private bool _givenKey;
+    private bool _collapsed;
+    private bool _givenCollapsed;
+    private ElementReference _root;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<RibbonEvents>? _events;
+    private bool _disposed;
 
     /// <summary>The ribbon's accessible name, which names its row of tabs, such as "Document tools". Required.</summary>
     [Parameter, EditorRequired]
@@ -36,6 +51,39 @@
     [Parameter]
     public EventCallback<string?> ActiveKeyChanged { get; set; }
 
+    /// <summary>Shows a button at the end of the tabs that collapses the ribbon to its tabs and shows its commands
+    /// again, and lets Ctrl+F1 in the ribbon and a double-click on a tab do the same.</summary>
+    [Parameter]
+    public bool Collapsible { get; set; }
+
+    /// <summary>Whether the ribbon shows only its tabs. Choosing a tab then shows its commands over the page until a
+    /// command is chosen, Escape is pressed or focus leaves the ribbon. Bind it with <c>@bind-Collapsed</c> to set
+    /// or follow it; without a binding, the ribbon tracks the state on its own. It takes effect once the page is
+    /// interactive.</summary>
+    [Parameter]
+    public bool Collapsed { get; set; }
+
+    /// <summary>Raised when the user collapses the ribbon or shows its commands again.</summary>
+    [Parameter]
+    public EventCallback<bool> CollapsedChanged { get; set; }
+
+    /// <summary>The words the ribbon says to screen readers: the collapse button's name, which left null uses the
+    /// app's text.</summary>
+    [Parameter]
+    public RibbonLabels Labels { get; set; } = new();
+
+    // Until the page is interactive there's no script to show a collapsed ribbon's commands, so the ribbon stays
+    // expanded.
+    private bool IsCollapsed => _collapsed && RendererInfo.IsInteractive;
+
+    private RenderFragment CollapseButton => __builder =>
+    {
+        <TbIconButton Icon="@(IsCollapsed ? BuiltInIcons.ChevronDown : BuiltInIcons.ChevronUp)" Size="Size.Small"
+                      AriaLabel="@(Labels.Collapse ?? Localizer[TbStrings.RibbonCollapse])" OnClick="ToggleAsync"
+                      aria-expanded="@(IsCollapsed ? "false" : "true")" aria-keyshortcuts="Control+F1"
+                      data-part="collapse" />
+    };
+
     // The tabs select by key once they are given one, even a null one, so a key is passed on only when the ribbon
     // was given it.
     private RenderFragment Tabs => builder =>
@@ -54,8 +102,22 @@
         builder.AddComponentParameter(7, nameof(TbTabs.ActiveIndex), ActiveIndex);
         builder.AddComponentParameter(8, nameof(TbTabs.ActiveIndexChanged), ActiveIndexChanged);
         builder.AddComponentParameter(9, nameof(TbTabs.ChildContent), ChildContent);
+        builder.AddComponentParameter(10, nameof(TbTabs.End),
+            Collapsible && RendererInfo.IsInteractive ? CollapseButton : null);
         builder.CloseComponent();
     };
+
+    private async Task ToggleAsync()
+    {
+        _collapsed = !_collapsed;
+        await CollapsedChanged.InvokeAsync(_collapsed);
+    }
+
+    private async Task ToggleFromScriptAsync()
+    {
+        await ToggleAsync();
+        StateHasChanged();
+    }
 
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
@@ -72,5 +134,54 @@
         {
             throw new InvalidOperationException($"{nameof(TbRibbon)} needs an {nameof(AriaLabel)}.");
         }
+
+        if (Collapsed != _givenCollapsed)
+        {
+            _givenCollapsed = _collapsed = Collapsed;
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var module = await Modules.ImportAsync("./_content/Trailblazor/ribbon.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            _events = DotNetObjectReference.Create(new RibbonEvents(ToggleFromScriptAsync));
+            var handle = await module.InvokeAsync<IJSObjectReference?>("attachRibbonCollapse", _root, _events);
+            if (handle is not null && _disposed)
+            {
+                await handle.DisposeHandleAsync();
+                return;
+            }
+
+            _handle = handle;
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the ribbon went with it.
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_handle is not null)
+        {
+            await _handle.DisposeHandleAsync();
+        }
+
+        _events?.Dispose();
     }
 }

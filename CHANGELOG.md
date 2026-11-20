@@ -87,6 +87,8 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-20
 
+- A `TbRibbon` can collapse to its tabs. `Collapsible` adds a button after the tabs (`data-part="collapse"`, with `aria-expanded`) and turns on Ctrl+F1 in the ribbon and a double-click on a tab; `Collapsed` binds the state, and the ribbon has `data-collapsed` while it is collapsed. Choosing a tab then shows that tab's commands over the page, marked by `data-peek`, until a command is chosen, Escape is pressed or focus leaves the ribbon. `Labels.Collapse` names the button, and `TbStrings.RibbonCollapse` is its text to translate. The ribbon's root sets `data-ready` once Ctrl+F1 and a collapsed ribbon's tabs work, and carries `data-static` on a static page. `page.Tb().Ribbon(name)` and `cut.Tb().Ribbon(name)` gain `CollapseAsync()` and `ExpandAsync()`, and `IsCollapsedAsync()` and `IsCollapsed` read the state.
+- `TbTabs` has an `End` slot for content at the end of the row of tabs, after the add button.
 - On a static page, and before the page is interactive, a `TbTabs` panel that starts with a control is no longer a tab stop, as it already wasn't once the page was interactive. The startup script now makes the interactive script's check as it loads, after an enhanced navigation and as a tab is selected.
 - In a `TbTreeView`, and the tree of a `TbTreeSelect`, Enter and a double-click no longer open or close a disabled row that has children, as a click never did. The row's chevron and the Left and Right arrow keys still open and close it.
 

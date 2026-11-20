@@ -35,6 +35,8 @@ internal static class BuiltInIcons
 
     public static Icon ChevronDown { get; } = new("<path d=\"M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z\" />");
 
+    public static Icon ChevronUp { get; } = new("<path d=\"M7.4 15.4 12 10.8l4.6 4.6L18 14l-6-6-6 6z\" />");
+
     public static Icon ArrowUp { get; } = new("<path d=\"M11 20V7.8l-5.6 5.6L4 12l8-8 8 8-1.4 1.4L13 7.8V20z\" />");
 
     public static Icon Microphone { get; } = new("<path d=\"M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 "

@@ -30,13 +30,75 @@ public sealed class TbRibbonLocator(ILocator scope, string? name)
     public async Task<IReadOnlyList<string>> GroupsAsync() =>
         [.. (await Commands.Locator("[data-part=group-label]").AllTextContentsAsync()).Select(text => text.Trim())];
 
+    /// <summary>Whether the ribbon is collapsed to its tabs, read once the ribbon is interactive. On a static page
+    /// it's always false, since the ribbon there can't collapse.</summary>
+    public async Task<bool> IsCollapsedAsync()
+    {
+        if (await IsStaticAsync())
+        {
+            return false;
+        }
+
+        // A prerendered ribbon shows its commands until the page is interactive, whatever Collapsed says.
+        await Assertions.Expect(Ribbon).ToHaveAttributeAsync("data-ready", "");
+        return await Ribbon.GetAttributeAsync("data-collapsed") is not null;
+    }
+
+    /// <summary>Collapses the ribbon to its tabs with its collapse button, unless it already is, and waits until it
+    /// has. Throws for a ribbon without <c>Collapsible</c>, which has no such button, or on a static page.</summary>
+    public Task CollapseAsync() => SetCollapsedAsync(true);
+
+    /// <summary>Shows a collapsed ribbon's commands again with its collapse button, unless they already show, and
+    /// waits until they do. Throws for a ribbon without <c>Collapsible</c>, which has no such button, or on a static
+    /// page.</summary>
+    public Task ExpandAsync() => SetCollapsedAsync(false);
+
+    private async Task<bool> IsStaticAsync()
+    {
+        await Ribbon.WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        return await Ribbon.GetAttributeAsync("data-static") is not null;
+    }
+
+    private async Task SetCollapsedAsync(bool collapsed)
+    {
+        if (await IsStaticAsync())
+        {
+            throw new InvalidOperationException("On a static page the ribbon can't collapse; render the page "
+                + "interactively to collapse it.");
+        }
+
+        var isCollapsed = await IsCollapsedAsync();
+        var button = Ribbon.Locator("[data-part=collapse]");
+        if (await button.CountAsync() == 0)
+        {
+            throw new InvalidOperationException("The ribbon has no collapse button; set Collapsible to give it one.");
+        }
+
+        if (isCollapsed == collapsed)
+        {
+            return;
+        }
+
+        await button.ClickAsync();
+        var marked = Assertions.Expect(Ribbon);
+        await (collapsed ? marked : marked.Not).ToHaveAttributeAsync("data-collapsed", "");
+    }
+
     /// <summary>Clicks the button with this name in the selected tab, as a user does, once the tab's commands are
     /// ready, and waits until the app's handler has run. A button in a group that has collapsed is reached by
-    /// opening its group first. Throws for a disabled button, a name the selected tab doesn't have, or a static
-    /// page, where the buttons do nothing.</summary>
+    /// opening its group first, and one in a ribbon collapsed to its tabs by choosing the selected tab first. Throws
+    /// for a disabled button, a name the selected tab doesn't have, or a static page, where the buttons do nothing.
+    /// </summary>
     public async Task ClickAsync(string button)
     {
         await Commands.WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        // A ribbon collapsed to its tabs shows the selected tab's commands once that tab is chosen.
+        if (await IsCollapsedAsync() && await Ribbon.GetAttributeAsync("data-peek") is null)
+        {
+            await Ribbon.Locator("> .tb-tabs > [role=tablist] > [aria-selected=true]").ClickAsync();
+            await Assertions.Expect(Ribbon).ToHaveAttributeAsync("data-peek", "");
+        }
+
         // A collapsed group's buttons are hidden until the group is opened, and the button a group collapses into
         // isn't one of its commands.
         var found = Commands.GetByRole(AriaRole.Button, new() { Name = button, Exact = true })

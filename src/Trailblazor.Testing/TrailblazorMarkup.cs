@@ -2616,8 +2616,36 @@ public sealed class TbRibbonDriver
     public IReadOnlyList<string> Groups => Commands?.QuerySelectorAll("[data-part=group-label]")
         .Select(label => label.TextContent.Trim()).ToList() ?? [];
 
+    /// <summary>Whether the ribbon is collapsed to its tabs.</summary>
+    public bool IsCollapsed => _find().HasAttribute("data-collapsed");
+
+    /// <summary>Collapses the ribbon to its tabs with its collapse button, unless it already is. Throws for a ribbon
+    /// without <c>Collapsible</c>, which has no such button, or on a static page.</summary>
+    public Task CollapseAsync() => SetCollapsedAsync(true);
+
+    /// <summary>Shows a collapsed ribbon's commands again with its collapse button, unless they already show. Throws
+    /// for a ribbon without <c>Collapsible</c>, which has no such button, or on a static page.</summary>
+    public Task ExpandAsync() => SetCollapsedAsync(false);
+
+    private async Task SetCollapsedAsync(bool collapsed)
+    {
+        if (_find().HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("On a static page the ribbon can't collapse; render the page "
+                + "interactively to collapse it.");
+        }
+
+        var button = _find().QuerySelector("[data-part=collapse]") ?? throw new InvalidOperationException(
+            "The ribbon has no collapse button; set Collapsible to give it one.");
+        if (IsCollapsed != collapsed)
+        {
+            await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+        }
+    }
+
     /// <summary>Clicks the button with this name in the selected tab, as a user does. Throws for a disabled button,
-    /// a name the selected tab doesn't have, or a static page, where the buttons do nothing.</summary>
+    /// a name the selected tab doesn't have, or a static page, where the buttons do nothing. bUnit runs no script, so
+    /// a collapsed ribbon's button is clicked directly, without showing its commands first.</summary>
     public async Task ClickAsync(string button)
     {
         // Leaves out a menu's items, which are <button> elements with a menu item role, and the buttons that groups

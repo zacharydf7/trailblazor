@@ -612,3 +612,6 @@ Trailblazor.Testing.TbRibbonDriver.SelectAsync(string! tab) -> System.Threading.
 Trailblazor.Testing.TbRibbonDriver.Selected.get -> string?
 Trailblazor.Testing.TbRibbonDriver.Tabs.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TrailblazorMarkup.Ribbon(string? name = null) -> Trailblazor.Testing.TbRibbonDriver!
+Trailblazor.Testing.TbRibbonDriver.CollapseAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbRibbonDriver.ExpandAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbRibbonDriver.IsCollapsed.get -> bool

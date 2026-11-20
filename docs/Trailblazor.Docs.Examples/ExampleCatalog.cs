@@ -2349,14 +2349,25 @@ public static class ExampleCatalog
                     + "controls in a popup. `CollapseOrder` picks the groups that go first, lowest first, and `Icon` "
                     + "gives a group's button an icon. This ribbon sits in a narrow box, so some of its groups have "
                     + "collapsed.", typeof(RibbonCollapseExample)),
+                new("tabs-only", "Collapsing to the tabs", "`Collapsible` adds a button at the end of the tabs that "
+                    + "collapses the ribbon to its tabs and shows its commands again. Ctrl+F1 in the ribbon and a "
+                    + "double-click on a tab do the same. While the ribbon is collapsed, choosing a tab shows that "
+                    + "tab's commands over the page until a command is chosen, Escape is pressed or focus leaves the "
+                    + "ribbon. Bind `Collapsed` to set or follow the state from code.",
+                    typeof(RibbonTabsOnlyExample)),
             ],
-            Api = [typeof(TbRibbon), typeof(TbRibbonTab), typeof(TbRibbonGroup), typeof(TbRibbonButton)],
+            Api =
+            [
+                typeof(TbRibbon), typeof(TbRibbonTab), typeof(TbRibbonGroup), typeof(TbRibbonButton),
+                typeof(RibbonLabels),
+            ],
             Keyboard =
             [
                 new(["Left", "Right"], "Moves to the tab before or after and selects it.") { When = "On a tab" },
                 new(["Home", "End"], "Goes to the first or last tab and selects it.") { When = "On a tab" },
                 new(["Tab"], "Moves from the selected tab into its row of commands, which is one tab stop, and "
-                    + "then out of the ribbon."),
+                    + "then out of the ribbon. With `Collapsible`, the collapse button comes between the tabs and "
+                    + "the commands."),
                 new(["Left", "Right"], "Moves between every control of the tab's groups, across the groups, a "
                     + "collapsed group's button included.") { When = "In the commands" },
                 new(["Home", "End"], "Goes to the tab's first or last control.") { When = "In the commands" },
@@ -2365,6 +2376,12 @@ public static class ExampleCatalog
                     { When = "On a collapsed group's button" },
                 new(["Escape"], "Closes the popup and returns focus to the group's button.")
                     { When = "In a collapsed group's popup" },
+                new(["Ctrl+F1"], "Collapses the ribbon to its tabs, or shows its commands again.")
+                    { When = "In a `Collapsible` ribbon" },
+                new(["Enter", "Space"], "Shows the tab's commands over the page.")
+                    { When = "On a tab of a collapsed ribbon" },
+                new(["Escape"], "Hides the commands again and returns focus to the tab.")
+                    { When = "In a collapsed ribbon's commands" },
             ],
             Labeling =
             [
@@ -2372,6 +2389,7 @@ public static class ExampleCatalog
                     + "`toolbar` named by the tab's `Title`, inside the tab's `tabpanel`.",
                 "Each `TbRibbonGroup` is a `group` named by its `Label`.",
                 "A `TbRibbonButton` is named by its `Label`, which an `IconOnly` button shows in a tooltip.",
+                "The collapse button is named by `Labels.Collapse`, \"Ribbon commands\" unless set.",
                 "The ribbon, its tabs, its groups and its buttons each need a name. A blank name written as "
                     + "text in markup gets build warning TB001, and any blank name throws when it renders.",
             ],
@@ -2382,6 +2400,9 @@ public static class ExampleCatalog
                     + "each `group` by its `Label` as focus enters it.",
                 "A toggle button is read as pressed or not, from its `aria-pressed`.",
                 "A collapsed group's button is read by the group's name, as expanded or collapsed.",
+                "The collapse button is read by its name, as expanded while the ribbon shows its commands in place "
+                    + "and as collapsed while it is collapsed to its tabs, even while a tab's commands show over the "
+                    + "page.",
                 "An `IconOnly` button's tooltip repeats its name, so it isn't read a second time as its description.",
             ],
             Accessibility =
@@ -2393,6 +2414,11 @@ public static class ExampleCatalog
                 "A collapsed group's button says whether its popup is open in `aria-expanded`, and stays inside the "
                     + "group it stands for.",
                 "A control that has focus as its group collapses hands focus to the group's button.",
+                "The collapse button says whether the ribbon is collapsed to its tabs in `aria-expanded`, which "
+                    + "stays `false` while a tab's commands show over the page, and names its shortcut in "
+                    + "`aria-keyshortcuts`.",
+                "A control that has focus as the ribbon collapses, or as a collapsed ribbon's commands hide again, "
+                    + "hands focus to the selected tab.",
                 "In forced-colors mode, such as Windows high contrast, the lines between groups and the line under "
                     + "the ribbon are drawn in the system's text color.",
                 "Every button is a target of at least 24 by 24 pixels.",
@@ -2412,6 +2438,8 @@ public static class ExampleCatalog
                     + "nothing runs its `OnClick`.",
                 "Groups collapse only once the page is interactive. Until then, and on a static page, a row too "
                     + "narrow for its groups scrolls sideways.",
+                "`Collapsed` takes effect, and the collapse button shows, once the page is interactive. Until then, "
+                    + "and on a static page, the commands show, since nothing there could bring them back.",
             ],
             Notes =
             [
@@ -2424,16 +2452,25 @@ public static class ExampleCatalog
                     + "even for its groups' buttons scrolls sideways."),
                 new("A collapsed group's popup closes on Escape, on a click outside it, when focus leaves it, and "
                     + "when the ribbon changes width."),
+                new("The commands a collapsed ribbon shows hide again when a command is chosen, on Escape, when "
+                    + "focus leaves the ribbon and on a press outside it. A field, and a button that opens "
+                    + "something, such as a menu's, keep them showing."),
+                new("Ctrl+F1 works while focus is in the ribbon. To collapse the ribbon from anywhere on the page, "
+                    + "bind `Collapsed` and set it from a [hotkey](components/hotkeys) of your own."),
                 new("An `id` on a `TbRibbonTab` goes on its tab, the button people click, while `Class`, `Style` and "
                     + "other attributes go on its panel, around its commands."),
             ],
             Pattern = new("tabs", "https://www.w3.org/WAI/ARIA/apg/patterns/tabs/"),
-            Ready = new("[data-part=commands]", "the selected tab's row of commands"),
+            Ready = new("[data-part=commands]", "the selected tab's row of commands, and on the ribbon itself "
+                + "once Ctrl+F1 and a collapsed ribbon's tabs work"),
             Target = new("tablist", "Trail planner"),
             Blocks = ["tb-ribbon", "tb-tabs"],
             DataParts =
             [
-                new("ribbon", "The ribbon, around its tabs and their commands."),
+                new("ribbon", "The ribbon, around its tabs and their commands, with `data-collapsed` while it is "
+                    + "collapsed to its tabs, `data-peek` while a tab's commands then show over the page, and "
+                    + "`data-static` on a static page."),
+                new("collapse", "The button that collapses the ribbon to its tabs, with `Collapsible`."),
                 new("commands", "A tab's row of groups, a `toolbar`."),
                 new("group", "One group, a `group` named by its label, with `data-collapsed` while it is collapsed "
                     + "and `data-collapse-order` when it has a `CollapseOrder`."),
@@ -2472,6 +2509,13 @@ public static class ExampleCatalog
                     + "when you find buttons by hand, leave out `[data-part=group-button]`.",
                 "By hand, find a tab's commands with `GetByRole(AriaRole.Toolbar, new() { Name = \"Notes\" })` and "
                     + "wait for their `data-ready`, which is set once the arrow keys work and the first fit is done.",
+                "`CollapseAsync()` and `ExpandAsync()` press a `Collapsible` ribbon's collapse button, and "
+                    + "`IsCollapsedAsync()` or `IsCollapsed` reads whether it is collapsed. In Playwright, "
+                    + "`ClickAsync` chooses the selected tab of a collapsed ribbon first, to show its commands; "
+                    + "bUnit runs no script, so there it clicks the button directly, without showing the commands "
+                    + "first.",
+                "By hand, wait for `data-ready` on the ribbon itself, `[data-part=ribbon]`, before pressing Ctrl+F1 "
+                    + "or a collapsed ribbon's tab.",
             ],
             Telemetry =
             [
@@ -10217,6 +10261,9 @@ public static class ExampleCatalog
                     + "that starts with a control is no tab stop of its own, so focus goes to that control. Any other "
                     + "panel is a tab stop itself, so its text can be reached. `FocusablePanels` set to `Always` makes "
                     + "every panel a tab stop, and `Never` none.", typeof(TabsPanelStopsExample)),
+                new("end", "Content after the tabs", "`End` puts content at the end of the row of tabs, after the "
+                    + "add button, such as a button that acts on every tab. It sits outside the tab list, so Tab "
+                    + "reaches it and the arrow keys don't.", typeof(TabsEndExample)),
             ],
             Api = [typeof(TbTabs), typeof(TbTab), typeof(TabsLabels), typeof(TabsClasses)],
             Keyboard =
@@ -10234,7 +10281,8 @@ public static class ExampleCatalog
                 new(["Home", "End"], "Jumps to the first or last tab and selects it, unless activation is manual."),
                 new(["Enter", "Space"], "Selects the focused tab.") { When = "With manual activation" },
                 new(["Tab"], "Moves from the tab list, which is one tab stop, into the panel, or, by default, to the "
-                    + "panel's first control when the panel starts with one."),
+                    + "panel's first control when the panel starts with one. The add button and any `End` content "
+                    + "come between the tab list and the panel."),
                 new(["Delete", "Backspace"], "Closes the focused tab.") { When = "On a tab with an `OnClose`" },
             ],
             Labeling =
@@ -10271,7 +10319,8 @@ public static class ExampleCatalog
                     + "activation. The browser's find selects the tab whose panel holds a match. A tab with no panel "
                     + "does nothing until the page is interactive. On a prerendered page, the selection goes back to "
                     + "`ActiveIndex` once the page is interactive. A tab with an `OnClose` shows its close mark, and tabs with "
-                    + "an `OnAdd` show their add button, once the page is interactive.",
+                    + "an `OnAdd` show their add button, once the page is interactive. `End` content renders from "
+                    + "the start, on a static page too.",
                 "The startup script checks how the shown panel starts, as it loads, after an enhanced navigation "
                     + "and as a tab is selected. So before the page is interactive, and on a static page, a panel "
                     + "that starts with a control isn't a tab stop either. Until that script has loaded, every shown "

@@ -8104,6 +8104,7 @@
 
     .tb-tabs__actions {
         display: flex;
+        gap: var(--tb-space-1);
         align-items: center;
         padding-inline-start: var(--tb-space-1);
         border-block-end: 1px solid var(--tb-border-subtle);
@@ -10641,6 +10642,28 @@
 
     .tb-ribbon .tb-tabs__panel {
         padding-block: 0;
+    }
+
+    /* Collapsed to its tabs, a ribbon hides its commands. A chosen tab then shows them over the page, just below the
+       ribbon. They're positioned against the ribbon rather than the tabs, since the tabs can be a grid, which would
+       place them at its own start. */
+    .tb-ribbon[data-collapsed] {
+        position: relative;
+    }
+
+    .tb-ribbon[data-collapsed] > .tb-tabs > .tb-tabs__panel {
+        display: none;
+    }
+
+    .tb-ribbon[data-collapsed][data-peek] > .tb-tabs > .tb-tabs__panel:not([hidden]) {
+        display: block;
+        position: absolute;
+        inset-block-start: 100%;
+        inset-inline: 0;
+        z-index: 5;
+        border-block-end: 1px solid var(--tb-border-subtle);
+        background: var(--tb-color-surface-raised);
+        box-shadow: var(--tb-shadow-md);
     }
 
     /* A row too narrow for its groups collapses them into buttons, and scrolls sideways if those don't fit either. */

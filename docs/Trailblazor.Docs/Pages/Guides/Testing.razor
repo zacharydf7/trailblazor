@@ -551,7 +551,9 @@
                             Clicks the button with this name in the ribbon's selected tab, which
                             <code>SelectAsync(tab)</code> changes. <code>Tabs</code>, <code>Selected</code> and
                             <code>Groups</code> read the tabs' titles, the selected one's, and its groups' names.
-                            bUnit lays nothing out, so no group collapses.
+                            bUnit lays nothing out, so no group collapses. <code>CollapseAsync()</code> and
+                            <code>ExpandAsync()</code> press a <code>Collapsible</code> ribbon's collapse button, and
+                            <code>IsCollapsed</code> reads whether the ribbon is collapsed to its tabs.
                         </td>
                     </tr>
                     <tr>
@@ -1604,7 +1606,9 @@
             + "`ClickAsync(button)` clicks a button of the selected tab by its name, opening a collapsed group to "
             + "reach it. It waits until that tab's commands are ready and the row has fitted its groups, after a "
             + "resize too. `TabsAsync()`, `SelectedAsync()` and `GroupsAsync()` read the tabs' titles, the selected "
-            + "one's, and its groups' names."),
+            + "one's, and its groups' names. `CollapseAsync()` and `ExpandAsync()` press a `Collapsible` ribbon's "
+            + "collapse button and wait for the change, `IsCollapsedAsync()` reads whether the ribbon is collapsed "
+            + "to its tabs, and `ClickAsync` chooses a collapsed ribbon's selected tab first, to show its commands."),
         new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows, `DismissAsync(text)` closes "
             + "it, and `ChooseAsync(text, action)` clicks its action and waits until the app has run it."),
         new("Announcements", "Nothing: it reads TbRoot's live regions and any open modal's",

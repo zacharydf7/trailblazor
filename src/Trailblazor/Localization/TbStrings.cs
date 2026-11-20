@@ -905,6 +905,10 @@ public static class TbStrings
     /// <summary>"Cancel": the cancel button of a <see cref="TbPopconfirm"/>.</summary>
     public const string PopconfirmCancel = "Popconfirm.Cancel";
 
+    /// <summary>"Ribbon commands": names the button that collapses a <see cref="TbRibbon"/> to its tabs and shows
+    /// its commands again.</summary>
+    public const string RibbonCollapse = "Ribbon.Collapse";
+
     /// <summary>"On this page": names a table of contents' navigation landmark.</summary>
     public const string TableOfContentsNavigation = "TableOfContents.Navigation";
 
@@ -1869,6 +1873,7 @@ public static class TbStrings
         [StepperOptional] = "Optional",
         [PopconfirmConfirm] = "OK",
         [PopconfirmCancel] = "Cancel",
+        [RibbonCollapse] = "Ribbon commands",
         [TableOfContentsNavigation] = "On this page",
         [TabsAdd] = "Add tab",
         [TabsCloseHint] = "Press Delete to close",

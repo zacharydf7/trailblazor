@@ -9,7 +9,7 @@
 <div @attributes="AdditionalAttributes" style="@Style"
      class="@ClassNames.Join("tb-tabs", ClassNames.Modifier("tb-tabs", Variant), ClassNames.Modifier("tb-tabs", Size),
                 Vertical ? "tb-tabs--vertical" : null, Fill ? "tb-tabs--fill" : null,
-                ShowsAdd ? "tb-tabs--actions" : null, ShowsScrollButtons ? "tb-tabs--scrolls" : null, Class)">
+                HasActions ? "tb-tabs--actions" : null, ShowsScrollButtons ? "tb-tabs--scrolls" : null, Class)">
     @* Hidden until the script finds the row overflowing. *@
     @if (ShowsScrollButtons)
     {
@@ -53,12 +53,16 @@
     {
         <span id="@_closeHintId" hidden>@(Labels.CloseHint ?? Localizer[TbStrings.TabsCloseHint])</span>
     }
-    @* A tab list holds only tabs, so the add button follows it. *@
-    @if (ShowsAdd)
+    @* A tab list holds only tabs, so the add button and the End content follow it. *@
+    @if (HasActions)
     {
         <div class="tb-tabs__actions">
-            <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@(Labels.Add ?? Localizer[TbStrings.TabsAdd])" Size="Size"
-                          OnClick="AddAsync" Class="@Classes?.Add" data-part="add" />
+            @if (ShowsAdd)
+            {
+                <TbIconButton Icon="BuiltInIcons.Plus" AriaLabel="@(Labels.Add ?? Localizer[TbStrings.TabsAdd])"
+                              Size="Size" OnClick="AddAsync" Class="@Classes?.Add" data-part="add" />
+            }
+            @End
         </div>
     }
     @* Not fixed, so every tab re-renders with the list and its panel follows the selection. *@
@@ -196,9 +200,16 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>Content at the end of the row of tabs, after the add button, such as a button that acts on every tab.
+    /// It sits outside the tab list, so Tab reaches it and the arrow keys don't.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
     internal bool SelectsByKey => _selectsByKey;
 
     private bool ShowsAdd => OnAdd.HasDelegate && RendererInfo.IsInteractive;
+
+    private bool HasActions => ShowsAdd || End is not null;
 
     // Tells the script which panels are tab stops; with no mark, it decides by how the shown panel starts.
     private string? PanelStops => FocusablePanels switch
