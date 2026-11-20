@@ -7262,6 +7262,10 @@ Trailblazor.TbRibbonButton.TelemetryName.set -> void
 Trailblazor.TbRibbonGroup
 Trailblazor.TbRibbonGroup.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbRibbonGroup.ChildContent.set -> void
+Trailblazor.TbRibbonGroup.CollapseOrder.get -> int?
+Trailblazor.TbRibbonGroup.CollapseOrder.set -> void
+Trailblazor.TbRibbonGroup.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbRibbonGroup.Icon.set -> void
 Trailblazor.TbRibbonGroup.Label.get -> string!
 Trailblazor.TbRibbonGroup.Label.set -> void
 Trailblazor.TbRibbonGroup.TbRibbonGroup() -> void

@@ -151,21 +151,28 @@ public class RibbonTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Ribbon_ShouldScrollItsCommandsAndBringTheFocusedOneIntoView_WhenItIsTooNarrow(string browser)
+    public async Task CollapseExample_ShouldCollapseShopFirstAndKeepCook_WhenShownInItsNarrowBox(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/ribbon");
+        await Expect(Commands(page, "Meals")).ToHaveAttributeAsync("data-ready", "");
+
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Shop", Exact = true }))
+            .ToHaveAttributeAsync("data-collapsed", "");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Cook", Exact = true }))
+            .Not.ToHaveAttributeAsync("data-collapsed", "");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Ribbon_ShouldCollapseGroupsAndNotScrollSideways_WhenItIsTooNarrowForThem(string browser)
     {
         var page = await OpenReadyAsync(browser, new() { ViewportSize = new() { Width = 390, Height = 800 } });
         var commands = Commands(page, "Notes");
-        Assert.True(await commands.EvaluateAsync<bool>("row => row.scrollWidth > row.clientWidth"));
-        // The page itself doesn't scroll sideways.
+
+        await Expect(commands.Locator("[data-collapsed] > [data-part=group-button]").First).ToBeVisibleAsync();
+        Assert.False(await commands.EvaluateAsync<bool>("row => row.scrollWidth > row.clientWidth"));
+        // The page itself doesn't scroll sideways either.
         Assert.False(await page.EvaluateAsync<bool>(
             "() => document.documentElement.scrollWidth > document.documentElement.clientWidth"));
-
-        await Button(page, "New note").FocusAsync();
-        await page.Keyboard.PressAsync("End");
-
-        var last = Button(page, "File under");
-        await Expect(last).ToBeFocusedAsync();
-        await Expect(last).ToBeInViewportAsync(new() { Ratio = 1 });
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

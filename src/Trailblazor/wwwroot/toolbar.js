@@ -2,7 +2,7 @@ import { createRovingFocus } from '../Trailblazor.Primitives/roving-focus.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 
 // A disabled link stays out unless it was kept focusable, and a select's combobox is its control unless it's turned off.
-const controls = 'button, a[href], a[data-kept-focusable], input:not([type="hidden"]), select, textarea, '
+export const controls = 'button, a[href], a[data-kept-focusable], input:not([type="hidden"]), select, textarea, '
     + '[role="combobox"]:not([aria-disabled="true"])';
 
 // The toolbar is one tab stop whose arrow keys move between its controls. When it is too narrow, its toolbar buttons

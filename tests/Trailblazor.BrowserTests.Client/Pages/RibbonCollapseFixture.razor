@@ -1,0 +1,45 @@
+@page "/ribbon-collapse"
+
+@* A ribbon in a box whose width a test sets. Share collapses first because it says so, View holds a button of its
+   own name, Marked places is narrower than the button it would collapse into, and the plain input keeps its text
+   only if its element stays the same one. The space above leaves room for a popup to open on the wrong side. *@
+<div data-testid="box" style="inline-size: 1100px; margin-block-start: 16rem">
+    <TbRibbon AriaLabel="Planner">
+        <TbRibbonTab Title="Home">
+            <TbRibbonGroup Label="Write">
+                <TbRibbonButton Large Label="New note" OnClick="@(() => _last = "New note")" />
+                <TbRibbonButton Label="Find" OnClick="@(() => _last = "Find")" />
+                <TbRibbonButton Label="Filter" OnClick="@(() => _last = "Filter")" />
+            </TbRibbonGroup>
+            <TbRibbonGroup Label="Share" CollapseOrder="1">
+                <TbRibbonButton Large Label="Send" OnClick="@(() => _last = "Send")" />
+                <TbRibbonButton Label="Print" OnClick="@(() => _last = "Print")" />
+                <TbRibbonButton Label="Export" OnClick="@(() => _last = "Export")" />
+            </TbRibbonGroup>
+            <TbRibbonGroup Label="View">
+                <TbRibbonButton Large Label="Zoom in" OnClick="@(() => _last = "Zoom in")" />
+                <TbRibbonButton Label="Zoom out" OnClick="@(() => _last = "Zoom out")" />
+                <TbRibbonButton Label="View" OnClick="@(() => _last = "View")" />
+            </TbRibbonGroup>
+            <TbRibbonGroup Label="Marked places">
+                <TbRibbonButton IconOnly Label="Mark" Icon="BuiltInIcons.ChevronEnd" OnClick="@(() => _last = "Mark")" />
+            </TbRibbonGroup>
+            <TbRibbonGroup Label="Notes">
+                <TbRibbonButton Large Label="Pin" @bind-Pressed="_pinned" />
+                <input aria-label="Title" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        <TbRibbonTab Title="Review">
+            <TbRibbonGroup Label="Proof">
+                <TbRibbonButton Label="Spelling" OnClick="@(() => _last = "Spelling")" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+    </TbRibbon>
+</div>
+<output data-testid="last">@_last</output>
+<TbButton>After</TbButton>
+
+@code {
+    private string? _last;
+    private bool _pinned;
+}

@@ -44,15 +44,14 @@ internal sealed class RibbonPanel : ComponentBase, IAsyncDisposable
 
         try
         {
-            // The toolbar's script gives the row its one tab stop and its arrow keys. With no menu to move buttons
-            // into, it leaves the row's content where it is.
-            var module = await Modules.ImportAsync("./_content/Trailblazor/toolbar.js");
+            // The script gives the row its one tab stop and its arrow keys, and collapses groups that don't fit.
+            var module = await Modules.ImportAsync("./_content/Trailblazor/ribbon.js");
             if (_disposed)
             {
                 return;
             }
 
-            var handle = await module.InvokeAsync<IJSObjectReference?>("attachToolbar", _toolbar, null, null);
+            var handle = await module.InvokeAsync<IJSObjectReference?>("attachRibbon", _toolbar);
             if (handle is not null && _disposed)
             {
                 await handle.DisposeHandleAsync();

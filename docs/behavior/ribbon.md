@@ -14,6 +14,7 @@ Familiar apps: the ribbon in Word and Excel, the command bar in File Explorer
 - [x] The arrows wrap at the ends and swap in right-to-left text, and a text field, select or editable area keeps its own arrows, Home and End. `roving-focus.js`
 - [x] The commands of a tab shown later get their one tab stop and their keys once it shows. `RibbonTests.Ribbon_ShouldShowAnotherTabsCommands_WhenTheArrowKeysMoveAlongItsTabs`
 - [x] Enter and Space press a button, and turn a toggle button on or off. `TbButtonBase.razor`
+- [x] The arrow keys reach a collapsed group's button. Enter or Space on it opens the group's controls with focus on the first, the arrows move through them, and Escape closes them and returns focus to the button. `RibbonCollapseTests.Ribbon_ShouldReachACollapsedGroupsButtonAndItsOpenControls_WhenTheArrowKeysMoveAlongIt`, `RibbonCollapseTests.Group_ShouldGiveFocusToItsButton_WhenItsControlsWereOpenedFromCodeAndEscapeClosesThem`, `RibbonCollapseTests.Group_ShouldLeaveFocusWhereItWent_WhenAnotherControlTakesItBeforeTheGroupHearsItClosed`
 - [ ] Ctrl+F1 collapses the ribbon to its tabs and shows it again. #566
 - [ ] Alt shows key tips, a letter on each tab and command. #567
 
@@ -27,19 +28,30 @@ Familiar apps: the ribbon in Word and Excel, the command bar in File Explorer
 - [x] An `IconOnly` button toggles, turns off and takes attributes as the other buttons do. `TbRibbonTests.Button_ShouldToggleTurnOffAndTakeAttributes_WhenItIsIconOnly`
 - [x] A `Disabled` tab can't be selected, a tab shows its `Icon`, and a tab's `Class`, `Style` and other attributes go on its panel. `TbRibbonTests.Tab_ShouldPassWhatItIsGivenToItsTabAndPanel_WhenGiven`
 - [x] A `TbRibbonButton` works as a menu's trigger. `TbRibbonTests.Button_ShouldTakeAMenusTriggerAttributes_WhenUsedAsATrigger`
-- [x] A row too narrow for its groups scrolls sideways, and the page doesn't. `RibbonTests.Ribbon_ShouldScrollItsCommandsAndBringTheFocusedOneIntoView_WhenItIsTooNarrow`
+- [x] A row too narrow for its groups collapses them one at a time, each into a button, named by the group, that opens its controls in a popup under it: groups with a `CollapseOrder` first, lowest first, and then the others from the last. A group no wider than its button stays as it is, and the groups come back as the ribbon widens. A tab's row keeps its fit while another tab is shown. `RibbonCollapseTests.Ribbon_ShouldCollapseOrderedGroupsFirstThenFromTheLast_WhenItNarrows`, `RibbonCollapseTests.Ribbon_ShouldBringItsGroupsBack_WhenItWidensAgain`, `RibbonCollapseTests.Ribbon_ShouldKeepItsFit_WhenAnotherTabIsShownAndItComesBack`, `RibbonCollapseTests.Group_ShouldOpenItsControlsUnderItsButtonAndRunThem_WhenItHasCollapsed`, `RibbonTests.Ribbon_ShouldCollapseGroupsAndNotScrollSideways_WhenItIsTooNarrowForThem`, `TbRibbonTests.Group_ShouldHoldAHiddenButtonThatOpensItsItems_WhenRendered`, `TbRibbonTests.Group_ShouldCarryItsCollapseOrderAndIcon_WhenGiven`
+- [x] A change of width fits the row once, so a group's controls opened right after stay open. `RibbonCollapseTests.Ribbon_ShouldFitOnce_WhenItsWidthChanges`
+- [x] A collapsed group's controls stay the same elements, so what they hold survives the group collapsing, opening and coming back. `RibbonCollapseTests.Group_ShouldKeepWhatItsControlsHold_WhenItCollapsesOpensAndComesBack`
+- [x] A row too narrow even for its groups' buttons scrolls sideways, and the page doesn't. `RibbonCollapseTests.Ribbon_ShouldScrollSidewaysAndBringTheFocusedButtonIntoView_WhenEvenTheButtonsDoNotFit`
 - [x] On a static page, a click or an arrow key on a tab shows its commands, the panel still isn't a tab stop, and the testing helpers refuse to click a button, which does nothing there. `RibbonTests.Ribbon_ShouldSwitchTabsAndRefuseAHelpersClick_WhenThePageIsStatic`, `TabsTests.Tabs_ShouldSwitchByClickOrArrowKey_WhenThePageIsStatic`, `TbRibbonTests.Driver_ShouldRefuseToClick_WhenThePageIsStatic`
-- [ ] When the ribbon is too narrow, its groups collapse into buttons that open them. #565
+- [x] The testing helpers click a button in a collapsed group by opening the group first, and don't take a group's button for one of its commands. The Playwright helper waits out a fit that a resize just before the click has yet to start. `RibbonCollapseTests.Helper_ShouldOpenACollapsedGroupToClickItsButton_WhenTheButtonIsOutOfSight`, `RibbonCollapseTests.Helper_ShouldWaitOutTheFit_WhenTheRibbonNarrowedJustBeforeTheClick`, `RibbonCollapseTests.Helper_ShouldClickTheCommand_WhenItsGroupHasTheSameNameCollapsedOrNot`, `TbRibbonTests.Driver_ShouldClickTheCommand_WhenItsGroupHasTheSameName`
 - [ ] A double click on a tab collapses the ribbon to its tabs. #566
+- [ ] Content beside the tabs, and tabs that show only in some contexts. #568
 
 ## Touch
 
-- [x] A tap presses a button or selects a tab through the same click a mouse sends, and a swipe scrolls a row that is too narrow. `TbButtonBase.razor`, `trailblazor.css`
+- [x] A tap presses a button or selects a tab through the same click a mouse sends, and a swipe scrolls a row that is too narrow even for its groups' buttons. `TbButtonBase.razor`, `trailblazor.css`
 - [x] Each button is at least 24px high and wide. `RibbonTests.Group_ShouldStackItsSmallControlsBesideALargeButton_WhenItHoldsBoth`
 
 ## Focus
 
-- [x] A control that takes focus in a row scrolled out of view is brought into view. `RibbonTests.Ribbon_ShouldScrollItsCommandsAndBringTheFocusedOneIntoView_WhenItIsTooNarrow`
+- [x] A control that takes focus in a row scrolled out of view is brought into view. `RibbonCollapseTests.Ribbon_ShouldScrollSidewaysAndBringTheFocusedButtonIntoView_WhenEvenTheButtonsDoNotFit`
+- [x] A collapsed group's button says whether its controls are open in `aria-expanded`. `RibbonCollapseTests.Group_ShouldOpenItsControlsUnderItsButtonAndRunThem_WhenItHasCollapsed`, `RibbonCollapseTests.Ribbon_ShouldReachACollapsedGroupsButtonAndItsOpenControls_WhenTheArrowKeysMoveAlongIt`
+- [x] A collapsed group's open controls close when the ribbon changes width, and the group's button takes the focus they had. A click outside closes them too, as the browser does for a `popover`. `RibbonCollapseTests.Group_ShouldCloseItsControlsAndStayCollapsed_WhenTheRibbonChangesWidthWhileTheyAreOpen`
+- [x] Focus on a collapsed group's button moves to the group's first control as the group comes back. `RibbonCollapseTests.Ribbon_ShouldMoveFocusToTheGroupsFirstControl_WhenTheFocusedButtonsGroupComesBack`
+- [x] Focus on a collapsed group's button stays there when the ribbon changes width and the group stays collapsed. `RibbonCollapseTests.Ribbon_ShouldKeepFocusOnAGroupsButton_WhenItsWidthChangesAndTheGroupStaysCollapsed`
+- [x] A control that has focus as its group collapses hands focus to the group's button. `RibbonCollapseTests.Ribbon_ShouldMoveFocusToTheGroupsButton_WhenTheFocusedControlsGroupCollapses`
+- [x] A collapsed group's open controls close when focus leaves them. `RibbonCollapseTests.Group_ShouldCloseItsControls_WhenFocusLeavesThem`
+- [x] A control outside the group that takes focus after the group's controls close, but before the script hears the close, keeps the focus, as with a popover. `RibbonCollapseTests.Group_ShouldLeaveFocusWhereItWent_WhenAnotherControlTakesItBeforeTheGroupHearsItClosed`
 - [x] In forced colors the line between two groups is drawn in a system color. `RibbonTests.Ribbon_ShouldKeepTheLinesBetweenItsGroups_WhenForcedColorsAreOn`
 - [x] A screen reader hears the tabs as a `tablist` named by `AriaLabel`, a tab's commands as a `toolbar` named by its `Title`, and each group as a `group` named by its `Label`. `TbRibbonTests.Render_ShouldNameItsTabsCommandsAndGroups_WhenCalled`
 - [x] A toggle button says whether it is on in `aria-pressed`. `TbRibbonTests.Button_ShouldToggleAndSayWhetherItIsOn_WhenPressedIsBound`

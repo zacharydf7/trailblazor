@@ -2620,8 +2620,9 @@ public sealed class TbRibbonDriver
     /// a name the selected tab doesn't have, or a static page, where the buttons do nothing.</summary>
     public async Task ClickAsync(string button)
     {
-        // Leaves out a menu's items, which are <button> elements with a menu item role.
-        var buttons = Commands?.QuerySelectorAll("button:not([role]), button[role=button]")
+        // Leaves out a menu's items, which are <button> elements with a menu item role, and the buttons that groups
+        // collapse into, which only a browser shows.
+        var buttons = Commands?.QuerySelectorAll("button:not([role], [data-part=group-button]), button[role=button]")
             .Where(found => Choices.NameOf(found) == button).ToList() ?? [];
         var only = buttons.Count == 1 ? buttons[0] : throw new InvalidOperationException(buttons.Count == 0
             ? $"The ribbon's selected tab has no button named \"{button}\"."

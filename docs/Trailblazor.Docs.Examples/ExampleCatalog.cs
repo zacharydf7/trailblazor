@@ -2343,6 +2343,11 @@ public static class ExampleCatalog
                 new("active-tab", "Selecting a tab from code", "Give each tab a `Key` and bind `ActiveKey` to set or "
                     + "follow the selected tab, or bind `ActiveIndex` to go by position. With neither, the ribbon "
                     + "starts on its first tab and keeps the selection itself.", typeof(RibbonActiveKeyExample)),
+                new("narrow", "Narrow ribbons", "When a ribbon is too narrow for a tab's groups, they collapse one at "
+                    + "a time, from the last, each into a button, named by the group's `Label`, that opens its "
+                    + "controls in a popup. `CollapseOrder` picks the groups that go first, lowest first, and `Icon` "
+                    + "gives a group's button an icon. This ribbon sits in a narrow box, so some of its groups have "
+                    + "collapsed.", typeof(RibbonCollapseExample)),
             ],
             Api = [typeof(TbRibbon), typeof(TbRibbonTab), typeof(TbRibbonGroup), typeof(TbRibbonButton)],
             Keyboard =
@@ -2351,9 +2356,14 @@ public static class ExampleCatalog
                 new(["Home", "End"], "Goes to the first or last tab and selects it.") { When = "On a tab" },
                 new(["Tab"], "Moves from the selected tab into its row of commands, which is one tab stop, and "
                     + "then out of the ribbon."),
-                new(["Left", "Right"], "Moves between every control of the tab's groups, across the groups.")
-                    { When = "In the commands" },
+                new(["Left", "Right"], "Moves between every control of the tab's groups, across the groups, a "
+                    + "collapsed group's button included.") { When = "In the commands" },
                 new(["Home", "End"], "Goes to the tab's first or last control.") { When = "In the commands" },
+                new(["Enter", "Space"], "Opens the group's controls in a popup and moves focus to the first one. "
+                    + "The arrow keys then move through them, and on to the rest of the commands.")
+                    { When = "On a collapsed group's button" },
+                new(["Escape"], "Closes the popup and returns focus to the group's button.")
+                    { When = "In a collapsed group's popup" },
             ],
             Labeling =
             [
@@ -2370,6 +2380,7 @@ public static class ExampleCatalog
                 "As focus moves into a tab's commands, a screen reader reads the `toolbar` by the tab's `Title`, and "
                     + "each `group` by its `Label` as focus enters it.",
                 "A toggle button is read as pressed or not, from its `aria-pressed`.",
+                "A collapsed group's button is read by the group's name, as expanded or collapsed.",
                 "An `IconOnly` button's tooltip repeats its name, so it isn't read a second time as its description.",
             ],
             Accessibility =
@@ -2378,6 +2389,9 @@ public static class ExampleCatalog
                     + "for each tab's commands, as a [toolbar](components/toolbar) does.",
                 "A tab's panel isn't a tab stop of its own, since its commands are the next stop.",
                 "A control that takes focus in a row scrolled out of view is brought into view.",
+                "A collapsed group's button says whether its popup is open in `aria-expanded`, and stays inside the "
+                    + "group it stands for.",
+                "A control that has focus as its group collapses hands focus to the group's button.",
                 "In forced-colors mode, such as Windows high contrast, the lines between groups and the line under "
                     + "the ribbon are drawn in the system's text color.",
                 "Every button is a target of at least 24 by 24 pixels.",
@@ -2395,13 +2409,20 @@ public static class ExampleCatalog
                     + "stop and the arrow keys in the commands start working once the page is interactive; until "
                     + "then each control is a tab stop. On a static page, a `TbRibbonButton` does nothing, since "
                     + "nothing runs its `OnClick`.",
+                "Groups collapse only once the page is interactive. Until then, and on a static page, a row too "
+                    + "narrow for its groups scrolls sideways.",
             ],
             Notes =
             [
                 new("A text field, select or editable area in a group keeps its own arrow, Home and End keys."),
                 new("A tab's commands stay rendered once the tab has been shown, so what a control in them holds "
                     + "survives a switch to another tab and back."),
-                new("A row too narrow for its groups scrolls sideways."),
+                new("A collapsed group's controls stay the same elements, in a popup, so what they hold survives the "
+                    + "group collapsing, opening and coming back."),
+                new("A group no wider than the button it would collapse into stays as it is, and a row too narrow "
+                    + "even for its groups' buttons scrolls sideways."),
+                new("A collapsed group's popup closes on Escape, on a click outside it, when focus leaves it, and "
+                    + "when the ribbon changes width."),
                 new("An `id` on a `TbRibbonTab` goes on its tab, the button people click, while `Class`, `Style` and "
                     + "other attributes go on its panel, around its commands."),
             ],
@@ -2413,9 +2434,13 @@ public static class ExampleCatalog
             [
                 new("ribbon", "The ribbon, around its tabs and their commands."),
                 new("commands", "A tab's row of groups, a `toolbar`."),
-                new("group", "One group, a `group` named by its label."),
-                new("items", "The group's controls, in columns of up to three rows."),
+                new("group", "One group, a `group` named by its label, with `data-collapsed` while it is collapsed "
+                    + "and `data-collapse-order` when it has a `CollapseOrder`."),
+                new("items", "The group's controls, in columns of up to three rows, and a popup (`popover`) while "
+                    + "the group is collapsed."),
                 new("group-label", "The group's name, under its controls."),
+                new("group-button", "The button a group collapses into when the ribbon is too narrow, hidden until "
+                    + "then."),
             ],
             Anatomy = """
                 <TbRibbon AriaLabel="…">
@@ -2437,9 +2462,15 @@ public static class ExampleCatalog
                 "`ClickAsync(\"New note\")` clicks a button of the selected tab by its name. In Playwright it waits "
                     + "for the tab's commands to be ready first, and then until the app's handler has run. It throws "
                     + "for a disabled button, for a static page, or for a name the selected tab doesn't have, so "
-                    + "select the button's tab first.",
+                    + "select the button's tab first. In Playwright, a button in a collapsed group is reached by "
+                    + "opening the group first, so a test needn't know how wide the ribbon is.",
+                "bUnit runs no script, so groups never collapse there; test collapsing in a browser. By hand, after "
+                    + "a resize, wait two frames for the fit to be marked and then until the row has no "
+                    + "`data-fitting`; `ClickAsync` does both.",
+                "Each group's markup holds the button it collapses into, hidden until then. The helpers skip it; "
+                    + "when you find buttons by hand, leave out `[data-part=group-button]`.",
                 "By hand, find a tab's commands with `GetByRole(AriaRole.Toolbar, new() { Name = \"Notes\" })` and "
-                    + "wait for their `data-ready`, which is set once the arrow keys work.",
+                    + "wait for their `data-ready`, which is set once the arrow keys work and the first fit is done.",
             ],
             Telemetry =
             [

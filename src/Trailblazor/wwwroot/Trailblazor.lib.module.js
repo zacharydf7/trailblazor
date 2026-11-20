@@ -41,6 +41,7 @@ import './inert.js';
 import './option-filter.js';
 import './overlay.js';
 import './shortcuts.js';
+import './toolbar.js';
 import './typeahead.js';
 import './unnamed-options.js';
 

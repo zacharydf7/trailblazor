@@ -1,0 +1,29 @@
+<TbStack Gap="3" Style="max-inline-size: 22rem">
+    <TbRibbon AriaLabel="Camp kitchen">
+        <TbRibbonTab Title="Meals">
+            <TbRibbonGroup Label="Cook" Icon="ExampleIcons.Plus">
+                <TbRibbonButton Large Label="Add a meal" Icon="ExampleIcons.Plus"
+                                OnClick="@(() => _last = "Add a meal")" />
+                <TbRibbonButton Label="Copy a day" Icon="ExampleIcons.Folder" OnClick="@(() => _last = "Copy a day")" />
+                <TbRibbonButton Label="Clear a day" Icon="ExampleIcons.Trash" OnClick="@(() => _last = "Clear a day")" />
+            </TbRibbonGroup>
+            <TbRibbonGroup Label="Shop" Icon="ExampleIcons.Check" CollapseOrder="1">
+                <TbRibbonButton Large Label="Shopping list" Icon="ExampleIcons.Check"
+                                OnClick="@(() => _last = "Shopping list")" />
+                <TbRibbonButton Label="Only what's missing" Icon="ExampleIcons.Filter" @bind-Pressed="_missing" />
+            </TbRibbonGroup>
+            <TbRibbonGroup Label="Pack" Icon="ExampleIcons.ArrowUp">
+                <TbRibbonButton Large Label="Pack the cooler" Icon="ExampleIcons.ArrowUp"
+                                OnClick="@(() => _last = "Pack the cooler")" />
+                <TbRibbonButton Label="Pack dry goods" Icon="ExampleIcons.Folder"
+                                OnClick="@(() => _last = "Pack dry goods")" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+    </TbRibbon>
+    <TbText>Last command: @(_last ?? "none"). The list shows @(_missing ? "only what's missing" : "everything").</TbText>
+</TbStack>
+
+@code {
+    private string? _last;
+    private bool _missing;
+}

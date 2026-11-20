@@ -46,16 +46,53 @@ public class TbRibbonTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldAttachTheToolbarsKeysToTheShownTabsCommands_WhenCalled()
+    public void Render_ShouldAttachTheRibbonsScriptToTheShownTabsCommands_WhenCalled()
     {
-        var module = JSInterop.SetupModule("./_content/Trailblazor/toolbar.js");
-        module.SetupModule("attachToolbar", _ => true).Mode = JSRuntimeMode.Loose;
+        var module = JSInterop.SetupModule("./_content/Trailblazor/ribbon.js");
+        module.SetupModule("attachRibbon", _ => true).Mode = JSRuntimeMode.Loose;
 
         RenderRibbon();
 
-        // No menu and no reporter go with it, so the script moves nothing out of the row.
-        var attached = Assert.Single(module.Invocations["attachToolbar"]);
-        Assert.Equal((null, null), (attached.Arguments[1], attached.Arguments[2]));
+        Assert.Single(module.Invocations["attachRibbon"]);
+    }
+
+    [Fact]
+    public void Group_ShouldHoldAHiddenButtonThatOpensItsItems_WhenRendered()
+    {
+        var cut = RenderRibbon();
+
+        var group = cut.Find("[role=tabpanel]:not([hidden]) [data-part=group]");
+        var button = group.QuerySelector(":scope > [data-part=group-button]")!;
+        var items = group.QuerySelector(":scope > [data-part=items]")!;
+        // The script shows the button once the group has collapsed; until then only the items show.
+        Assert.True(button.HasAttribute("hidden"));
+        Assert.Equal("Write", button.QuerySelector("[data-part=label]")!.TextContent.Trim());
+        Assert.Equal(("false", items.Id, items.Id), (button.GetAttribute("aria-expanded"),
+            button.GetAttribute("aria-controls"), button.GetAttribute("popovertarget")));
+        Assert.False(items.HasAttribute("popover"));
+        Assert.False(group.HasAttribute("data-collapse-order"));
+    }
+
+    [Fact]
+    public void Group_ShouldCarryItsCollapseOrderAndIcon_WhenGiven()
+    {
+        var cut = Render<TbRibbonGroup>(parameters => parameters.Add(group => group.Label, "Write")
+            .Add(group => group.CollapseOrder, 2).Add(group => group.Icon, Square));
+
+        Assert.Equal("2", cut.Find("[data-part=group]").GetAttribute("data-collapse-order"));
+        Assert.NotNull(cut.Find("[data-part=group-button] [data-part=start] svg"));
+    }
+
+    [Fact]
+    public async Task Driver_ShouldClickTheCommand_WhenItsGroupHasTheSameName()
+    {
+        var clicked = new List<string>();
+        var cut = RenderRibbon(tabs: builder => AddTab(builder, 0, "Notes", null,
+            group => AddButton(group, 0, "Write", clicked.Add)));
+
+        await cut.Tb().Ribbon().ClickAsync("Write");
+
+        Assert.Equal(["Write"], clicked);
     }
 
     [Fact]
@@ -76,7 +113,7 @@ public class TbRibbonTests : BunitContext
     {
         var cut = RenderRibbon();
 
-        var large = cut.Find("button.tb-ribbon__button--large");
+        var large = cut.Find("button.tb-ribbon__button--large:not([data-part=group-button])");
         Assert.Equal("New note", large.QuerySelector("[data-part=label]")!.TextContent.Trim());
         Assert.NotNull(large.QuerySelector("[data-part=start] svg"));
         var small = cut.FindAll("button.tb-ribbon__button:not(.tb-ribbon__button--large):not(.tb-icon-button)");
@@ -289,7 +326,7 @@ public class TbRibbonTests : BunitContext
     [Fact]
     public async Task Dispose_ShouldDetachTheCommandsScript_WhenTheRibbonGoesAway()
     {
-        var handle = JSInterop.SetupModule("./_content/Trailblazor/toolbar.js").SetupModule("attachToolbar", _ => true);
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/ribbon.js").SetupModule("attachRibbon", _ => true);
         handle.SetupVoid("dispose").SetVoidResult();
         RenderRibbon();
 

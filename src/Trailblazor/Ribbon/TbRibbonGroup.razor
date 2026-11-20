@@ -2,17 +2,35 @@
 @inherits TbComponentBase
 
 <div @attributes="AdditionalAttributes" role="group" aria-labelledby="@_labelId" data-part="group" style="@Style"
-     class="@ClassNames.Join("tb-ribbon__group", Class)">
-    <div data-part="items" class="tb-ribbon__items">@ChildContent</div>
+     data-collapse-order="@CollapseOrder" class="@ClassNames.Join("tb-ribbon__group", Class)">
+    @* The ribbon's script shows this while the group is collapsed, and it opens the group's items as a popup. *@
+    <TbButton hidden aria-expanded="false" aria-controls="@_itemsId" popovertarget="@_itemsId" data-part="group-button"
+              StartIcon="Icon" EndIcon="BuiltInIcons.ChevronDown" Variant="Variant.Text" Tone="Tone.Neutral"
+              Size="Size.Small" Class="tb-ribbon__button tb-ribbon__button--large tb-ribbon__group-button">
+        @Label
+    </TbButton>
+    <div id="@_itemsId" data-part="items" class="tb-ribbon__items">@ChildContent</div>
     <span id="@_labelId" data-part="group-label" class="tb-ribbon__group-label">@Label</span>
 </div>
 
 @code {
     private readonly string _labelId = $"tb-ribbon-group-{Guid.NewGuid():N}";
+    private readonly string _itemsId = $"tb-ribbon-items-{Guid.NewGuid():N}";
 
-    /// <summary>The group's name, such as "Clipboard", shown under its controls. Required.</summary>
+    /// <summary>The group's name, such as "Clipboard", shown under its controls, and on the button the group
+    /// collapses into when the ribbon is too narrow. Required.</summary>
     [Parameter, EditorRequired]
     public string Label { get; set; } = "";
+
+    /// <summary>An icon for the button the group collapses into when the ribbon is too narrow.</summary>
+    [Parameter]
+    public Icon? Icon { get; set; }
+
+    /// <summary>When the group collapses as the ribbon narrows. Groups with an order collapse before those without,
+    /// lowest first, and in the order they appear when two share one; the others then collapse from the last to the
+    /// first.</summary>
+    [Parameter]
+    public int? CollapseOrder { get; set; }
 
     /// <summary>The group's controls: <see cref="TbRibbonButton"/>s, menus, selects, toggle groups or anything
     /// else. They fill columns of up to three rows, and a large <see cref="TbRibbonButton"/> takes a whole
