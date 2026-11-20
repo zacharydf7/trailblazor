@@ -227,6 +227,17 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
             new(new("dialog", "Trail"), page => ClickWhenReadyAsync(Combobox(page, "Trail Choose a trail"))),
             new(new("dialog", "Regions"), page => ClickWhenReadyAsync(Combobox(page, "Regions Choose regions"))),
         ],
+        // The narrow example's Shop group has collapsed into a button, which opens the group's controls.
+        ["ribbon"] =
+        [
+            new(new("button", "Shopping list"), async page =>
+            {
+                await Expect(page.GetByRole(AriaRole.Toolbar, new() { Name = "Meals" }))
+                    .ToHaveAttributeAsync("data-ready", "");
+                await page.GetByRole(AriaRole.Group, new() { Name = "Shop" }).Locator("> [data-part=group-button]")
+                    .ClickAsync();
+            }),
+        ],
         ["popover"] =
         [
             .. new[] { ("Trip details", "Trip details"), ("Notifications", "Notifications"),
