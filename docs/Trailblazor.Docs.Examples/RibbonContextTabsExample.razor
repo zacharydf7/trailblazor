@@ -1,0 +1,48 @@
+<TbStack Gap="3">
+    <TbCheckbox Label="Select the table" @bind-Value="_table" @bind-Value:after="ShowTheTablesTab" />
+    <TbRibbon AriaLabel="Trail journal" @bind-ActiveKey="_tab">
+        <TbRibbonTab Title="Draft" Key="draft">
+            <TbRibbonGroup Label="Text">
+                <TbRibbonButton Large Label="Add a paragraph" Icon="ExampleIcons.Plus"
+                                OnClick="@(() => _last = "Add a paragraph")" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        <TbRibbonTab Title="Proof" Key="proof">
+            <TbRibbonGroup Label="Checks">
+                <TbRibbonButton Large Label="Check spelling" Icon="ExampleIcons.Check"
+                                OnClick="@(() => _last = "Check spelling")" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        @if (_table)
+        {
+            <TbRibbonTab Title="Table design" Key="design" Context="Table tools">
+                <TbRibbonGroup Label="Look">
+                    <TbRibbonButton Large Label="Shade the rows" Icon="ExampleIcons.Filter"
+                                    OnClick="@(() => _last = "Shade the rows")" />
+                </TbRibbonGroup>
+            </TbRibbonTab>
+            <TbRibbonTab Title="Table layout" Key="layout" Context="Table tools">
+                <TbRibbonGroup Label="Columns">
+                    <TbRibbonButton Large Label="Add a column" Icon="ExampleIcons.Plus"
+                                    OnClick="@(() => _last = "Add a column")" />
+                </TbRibbonGroup>
+            </TbRibbonTab>
+        }
+    </TbRibbon>
+    <TbText>Last command: @(_last ?? "none").</TbText>
+</TbStack>
+
+@code {
+    private string? _tab = "draft";
+    private string? _last;
+    private bool _table;
+
+    // The app chooses whether a tab that appears is selected; this one goes to the table's first tab.
+    private void ShowTheTablesTab()
+    {
+        if (_table)
+        {
+            _tab = "design";
+        }
+    }
+}

@@ -1,10 +1,12 @@
 @namespace Trailblazor
+@using System.Globalization
 @using Microsoft.JSInterop
 @using Trailblazor.Primitives
 @inherits TbComponentBase
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
 @inject ITbLocalizer Localizer
+@inject IAnnouncer Announcer
 
 @* The script sets data-ready here once Ctrl+F1 and a collapsed ribbon's tabs work, which tests wait for. *@
 <div @ref="_root" @attributes="AdditionalAttributes" data-part="ribbon" style="@Style"
@@ -22,6 +24,10 @@
     private IJSObjectReference? _handle;
     private DotNetObjectReference<RibbonEvents>? _events;
     private bool _disposed;
+    private readonly List<(string Context, string Title)> _appeared = [];
+
+    // Whether the ribbon has shown its first tabs, after which a tab with a context that appears is announced.
+    internal bool HasRendered { get; private set; }
 
     /// <summary>The ribbon's accessible name, which names its row of tabs, such as "Document tools". Required.</summary>
     [Parameter, EditorRequired]
@@ -37,7 +43,8 @@
     [Parameter]
     public int ActiveIndex { get; set; }
 
-    /// <summary>Raised with the tab's position when the user selects another tab.</summary>
+    /// <summary>Raised with the selected tab's position when the user selects another tab, and when tabs going away
+    /// change the selection or its position, such as the ribbon going back to the tab selected before.</summary>
     [Parameter]
     public EventCallback<int> ActiveIndexChanged { get; set; }
 
@@ -47,7 +54,8 @@
     [Parameter]
     public string? ActiveKey { get; set; }
 
-    /// <summary>Raised with the tab's key when the user selects another tab.</summary>
+    /// <summary>Raised with the tab's key when the user selects another tab, and when the selected tab goes away
+    /// and the ribbon goes back to the tab selected before it.</summary>
     [Parameter]
     public EventCallback<string?> ActiveKeyChanged { get; set; }
 
@@ -78,8 +86,8 @@
     [Parameter]
     public EventCallback<bool> CollapsedChanged { get; set; }
 
-    /// <summary>The words the ribbon says to screen readers: the collapse button's name, which left null uses the
-    /// app's text.</summary>
+    /// <summary>The words the ribbon says to screen readers: the collapse button's name and the announcement that a
+    /// context's tabs have appeared. Each one left null uses the app's text.</summary>
     [Parameter]
     public RibbonLabels Labels { get; set; } = new();
 
@@ -115,6 +123,7 @@
         builder.AddComponentParameter(9, nameof(TbTabs.ChildContent), ChildContent);
         builder.AddComponentParameter(10, nameof(TbTabs.Start), Start);
         builder.AddComponentParameter(11, nameof(TbTabs.End), RowEnd);
+        builder.AddComponentReferenceCapture(12, tabs => ((TbTabs)tabs).ReturnsToEarlierTab = true);
         builder.CloseComponent();
     };
 
@@ -124,6 +133,38 @@
         builder.AddContent(0, End);
         builder.AddContent(1, CollapseButton);
     };
+
+    // The tabs of one context appear in the same render, so they are gathered into one message.
+    internal void ContextTabAppeared(string context, string title)
+    {
+        _appeared.Add((context, title));
+        if (_appeared.Count == 1)
+        {
+            _ = InvokeAsync(AnnounceAppearedAsync);
+        }
+    }
+
+    private async Task AnnounceAppearedAsync()
+    {
+        await Task.Yield();
+        var appeared = _appeared.ToLookup(tab => tab.Context, tab => tab.Title);
+        _appeared.Clear();
+        try
+        {
+            foreach (var tabs in appeared)
+            {
+                var format = tabs.Count() == 1 ? Labels.ContextTab ?? Localizer[TbStrings.RibbonContextTab]
+                    : Labels.ContextTabs ?? Localizer[TbStrings.RibbonContextTabs];
+                Announcer.Polite(string.Format(CultureInfo.CurrentCulture, format, tabs.Key,
+                    string.Join(", ", tabs)));
+            }
+        }
+        catch (Exception exception)
+        {
+            // Nothing awaits this method, so the error from a label with a bad placeholder would be lost without this.
+            await DispatchExceptionAsync(exception);
+        }
+    }
 
     private async Task ToggleAsync()
     {
@@ -162,6 +203,7 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        HasRendered = true;
         if (!firstRender)
         {
             return;

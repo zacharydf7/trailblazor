@@ -4,7 +4,7 @@ import { isTabbable } from '../Trailblazor.Primitives/focus-scope.js';
 // `order` rather than a click, so the tab's OnClick hears only clicks. The headers follow the order in which tabs
 // register, so the tabs' order in the markup is reported to `order` too. Delete or Backspace on a closable tab closes
 // it, as on a chip.
-export function attachTabs(list, order) {
+export function attachTabs(list, order, followsSelection) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!list) {
         return null;
@@ -13,7 +13,7 @@ export function attachTabs(list, order) {
     const onKeyDown = event => {
         const tab = event.target;
         if ((event.key === 'Delete' || event.key === 'Backspace') && !event.altKey && !event.ctrlKey && !event.metaKey
-            && tab.parentElement === list && tab.hasAttribute('aria-keyshortcuts')) {
+            && tab.parentElement === list && tab.querySelector('[data-part="close"]')) {
             event.preventDefault();
             // A held key repeats, and each repeat would ask to close the tab again while the first close runs.
             if (!event.repeat) {
@@ -116,6 +116,9 @@ export function attachTabs(list, order) {
             return;
         }
 
+        // In a ribbon, focus follows the selection instead: back to the tab selected before, or to one the app selects.
+        const selected = followsSelection
+            ? list.querySelector(':scope > [role="tab"][aria-selected="true"]:not(:disabled)') : null;
         focused = null;
         // A neighbor removed in the same render is passed over by continuing from the siblings its removal recorded.
         const enabled = node => node.isConnected && node.matches?.('[role="tab"]:not(:disabled)');
@@ -126,7 +129,8 @@ export function attachTabs(list, order) {
 
             return node;
         };
-        (nearest(removal.nextSibling, 'nextSibling') ?? nearest(removal.previousSibling, 'previousSibling'))?.focus();
+        (selected ?? nearest(removal.nextSibling, 'nextSibling') ?? nearest(removal.previousSibling, 'previousSibling'))
+            ?.focus();
     };
 
     const updatePanelStop = () => {

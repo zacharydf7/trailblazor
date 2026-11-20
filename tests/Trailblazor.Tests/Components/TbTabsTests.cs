@@ -339,6 +339,24 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public async Task Remove_ShouldSelectTheTabBesideItAndNotAnEarlierOne_WhenTheSelectedTabOfPlainTabsGoesAway()
+    {
+        var reported = new List<int>();
+        var cut = RenderTabs(changed: reported.Add);
+        await cut.Tb().Tabs().SelectAsync("Reviews");
+
+        cut.Render(parameters => parameters.Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
+        {
+            AddTab(builder, 0, "Overview", "Overview panel");
+            AddTab(builder, 10, "Specs", "Specs panel");
+        })));
+
+        // Overview was selected before Reviews, but only a ribbon goes back to it.
+        cut.WaitForAssertion(() => Assert.Equal("Specs", cut.Tb().Tabs().Selected));
+        Assert.Equal(1, reported[^1]);
+    }
+
+    [Fact]
     public void Remove_ShouldReportAFailingCallbackToTheRenderer_WhenTheSelectionMoves()
     {
         var cut = RenderTabs(active: 1, changed: _ => throw new InvalidOperationException("Saving failed."));
@@ -813,6 +831,43 @@ public class TbTabsTests : BunitContext
         var hint = cut.Find($"#{tabs[1].GetAttribute("aria-describedby")}");
         Assert.Equal("Press Delete to close", hint.TextContent);
         Assert.Null(hint.Closest("[role=tablist]"));
+    }
+
+    [Fact]
+    public void Render_ShouldKeepAHeadersOwnDescriptionAndShortcuts_WhenItsTabCanCloseOrNot()
+    {
+        RenderFragment Tab(string text, bool closable) => builder =>
+        {
+            builder.OpenComponent<TbTab>(0);
+            builder.SetKey(text);
+            builder.AddAttribute(1, nameof(TbTab.Text), text);
+            builder.AddAttribute(2, nameof(TbTab.HeaderAttributes), new Dictionary<string, object>
+            {
+                ["aria-describedby"] = "note",
+                ["aria-keyshortcuts"] = "Control+W",
+            });
+            if (closable)
+            {
+                builder.AddAttribute(3, nameof(TbTab.OnClose), EventCallback.Factory.Create(this, () => { }));
+            }
+
+            builder.CloseComponent();
+        };
+
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, builder =>
+        {
+            Tab("Kept", false)(builder);
+            Tab("Closable", true)(builder);
+        }));
+
+        var tabs = cut.FindAll("[role=tab]");
+        Assert.Equal(("note", "Control+W"),
+            (tabs[0].GetAttribute("aria-describedby"), tabs[0].GetAttribute("aria-keyshortcuts")));
+        // A closable tab adds its own to both lists.
+        var described = tabs[1].GetAttribute("aria-describedby")!.Split(' ');
+        Assert.Equal("note", described[0]);
+        Assert.Equal("Press Delete to close", cut.Find($"#{described[1]}").TextContent);
+        Assert.Equal("Control+W Delete Backspace", tabs[1].GetAttribute("aria-keyshortcuts"));
     }
 
     [Fact]

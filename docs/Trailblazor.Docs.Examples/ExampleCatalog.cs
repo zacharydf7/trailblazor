@@ -2370,6 +2370,13 @@ public static class ExampleCatalog
                     + "the ribbon, such as one in `End`, and to an element around a field, which the key moves "
                     + "focus into. This ribbon sits in a narrow box, so its Gear group has collapsed.",
                     typeof(RibbonKeyTipsExample)),
+                new("context", "Tabs for what is selected", "`Context` names what a tab belongs to, for a tab that "
+                    + "shows only while something is selected in the app, such as a table. Add and remove the tab "
+                    + "with an `@if`. It is drawn in an accent color with a line above it, both set by "
+                    + "`--tb-ribbon-context-color`, and it is announced when it appears. When it goes away while "
+                    + "selected, the ribbon goes back to the tab selected before it. Here the app also selects the "
+                    + "table's first tab as the table is selected, through `ActiveKey`.",
+                    typeof(RibbonContextTabsExample)),
             ],
             Api =
             [
@@ -2416,6 +2423,8 @@ public static class ExampleCatalog
                 "Each `TbRibbonGroup` is a `group` named by its `Label`.",
                 "A `TbRibbonButton` is named by its `Label`, which an `IconOnly` button shows in a tooltip.",
                 "The collapse button is named by `Labels.Collapse`, \"Ribbon commands\" unless set.",
+                "A tab with a `Context` keeps its `Title` as its name and takes the context, such as \"Table "
+                    + "tools\", as its description.",
                 "The ribbon, its tabs, its groups and its buttons each need a name. A blank name written as "
                     + "text in markup gets build warning TB001, and any blank name throws when it renders.",
             ],
@@ -2430,6 +2439,10 @@ public static class ExampleCatalog
                     + "and as collapsed while it is collapsed to its tabs, even while a tab's commands show over the "
                     + "page.",
                 "An `IconOnly` button's tooltip repeats its name, so it isn't read a second time as its description.",
+                "A tab with a `Context` that appears after the ribbon has rendered is announced politely, such as "
+                    + "\"Table tools: Table design tab available\". Tabs of one context that appear together share "
+                    + "one message, and `Labels.ContextTab` and `Labels.ContextTabs` word them. A tab that is there "
+                    + "from the start isn't announced.",
                 "While key tips show, each control with a badge names its key in `aria-keyshortcuts`, and the "
                     + "badge itself stays out of the control's name. Focus is on the selected tab then, so a "
                     + "screen reader that reads shortcuts announces only that tab with its key; it finds the "
@@ -2452,6 +2465,9 @@ public static class ExampleCatalog
                 "In forced-colors mode, such as Windows high contrast, the lines between groups and the line under "
                     + "the ribbon are drawn in the system's text color.",
                 "Every button is a target of at least 24 by 24 pixels.",
+                "A tab with a `Context` is set apart by a line above it as well as by its color, so color isn't "
+                    + "its only sign (WCAG 1.4.1). In forced-colors mode the line is drawn in the system's "
+                    + "highlight color.",
                 "Showing the key tips moves focus to the selected tab. A screen reader normally passes typed "
                     + "letters on to the page while a tab has focus, which the key tips rely on. The arrow keys, "
                     + "Tab, Enter and Space stay ready: any of them hides the key tips and then works as usual "
@@ -2464,6 +2480,8 @@ public static class ExampleCatalog
             [
                 "Name every other control you put in a group, or in `Start` or `End`, such as a select with its "
                     + "`AriaLabel` or a menu with its `Label`: the ribbon names only its tabs, groups and buttons.",
+                "Decide whether a tab that appears for a context is selected. The ribbon leaves the selection "
+                    + "where it is; to move it, bind `ActiveKey` and set it as you add the tab.",
                 "Give each key tip a key that no other control at its level has. The tabs and the controls beside "
                     + "them are one level, and each tab's commands are a level of their own. Where two controls "
                     + "share a key, the first one takes it. `KeyTip` refuses anything but one letter or digit; a "
@@ -2489,6 +2507,8 @@ public static class ExampleCatalog
                 "`Collapsed` takes effect, and the collapse button shows, once the page is interactive. Until then, "
                     + "and on a static page, the commands show, since nothing there could bring them back.",
                 "`Start` and `End` content render before the page is interactive, and on a static page too.",
+                "A tab with a `Context` shows its color, its line and its description before the page is "
+                    + "interactive too. Nothing is announced on a static page, where no tab can appear.",
                 "Key tips work once the page is interactive. Until then, and on a static page, Alt stays with the "
                     + "browser and no badge shows.",
             ],
@@ -2510,6 +2530,12 @@ public static class ExampleCatalog
                     + "bind `Collapsed` and set it from a [hotkey](components/hotkeys) of your own."),
                 new("An `id` on a `TbRibbonTab` goes on its tab, the button people click, while `Class`, `Style` and "
                     + "other attributes go on its panel, around its commands."),
+                new("When the selected tab goes away, the ribbon selects the tab that was selected before it, and "
+                    + "not the tab beside it as plain tabs do. With `ActiveKey` it reports that tab's key through "
+                    + "`ActiveKeyChanged`, and with `ActiveIndex` its place through `ActiveIndexChanged`. A disabled "
+                    + "tab is passed over. When no other tab has been selected yet, the ribbon selects the tab "
+                    + "beside it, or no tab at all when bound by `ActiveKey`. Focus on the tab that went away moves "
+                    + "to the tab selected in its place, or to the tab beside it when no tab is selected."),
                 new("Key tips go to the ribbon that has focus, or else to the first ribbon on the page that has "
                     + "any. While a modal dialog is open, only a ribbon inside it takes them. On a Mac, Alt is the "
                     + "Option key."),
@@ -2538,7 +2564,8 @@ public static class ExampleCatalog
                     + "collapsed to its tabs, `data-peek` while a tab's commands then show over the page, "
                     + "`data-key-tips` while key tips show, with `tabs` or `commands` for their level, and "
                     + "`data-static` on a static page. A control with a key tip has `data-key-tip`, and "
-                    + "`data-key-tip-shown` while its badge shows."),
+                    + "`data-key-tip-shown` while its badge shows. A tab with a `Context` has the class "
+                    + "`tb-ribbon__context-tab`."),
                 new("collapse", "The button that collapses the ribbon to its tabs, with `Collapsible`."),
                 new("commands", "A tab's row of groups, a `toolbar`."),
                 new("group", "One group, a `group` named by its label, with `data-collapsed` while it is collapsed "
@@ -2587,6 +2614,10 @@ public static class ExampleCatalog
                     + "or a collapsed ribbon's tab.",
                 "`ClickAsync` reaches only the selected tab's commands. Find `Start` and `End` content by role in "
                     + "the ribbon, such as `GetByRole(AriaRole.Button, new() { Name = \"Save\" })`.",
+                "A tab with a `Context` is found by its `Title` like any other. Check its context with "
+                    + "`ToHaveAccessibleDescriptionAsync(\"Table tools\")` in Playwright, and the announcement "
+                    + "with `page.Tb().Announcements.ExpectAnnouncedAsync(\"Table tools\")`. In bUnit, read "
+                    + "`Services.GetRequiredService<FakeAnnouncer>().Polite`.",
                 "`PressKeyTipsAsync(\"R\", \"M\")` follows key tips: a tab's and then a command's, or the one of a "
                     + "button beside the tabs. In Playwright it presses Alt and each key, waiting for the key's "
                     + "badge before it and for the app's handler after it. bUnit runs no script, so there it "
@@ -10294,7 +10325,9 @@ public static class ExampleCatalog
                     + "`Key` and `@bind-ActiveKey` track the selected tab by a key you choose. Once the page is "
                     + "interactive, only the selected panel renders. An `id` on a `TbTab` goes on its tab, the button "
                     + "people click, while `Class`, `Style` and other attributes go on its panel. `HeaderClass` and "
-                    + "`HeaderAttributes` reach the tab itself, for a class or a `data-*` attribute of your own.",
+                    + "`HeaderAttributes` reach the tab itself, for a class or a `data-*` attribute of your own. An "
+                    + "`aria-describedby` or `aria-keyshortcuts` in `HeaderAttributes` is kept, and a closable tab "
+                    + "adds its close hint and its keys after it.",
                     typeof(TabsExample)),
                 new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`, and sets the tabs' height and text "
                     + "size, the same steps as a button's.", typeof(TabsSizeExample)),

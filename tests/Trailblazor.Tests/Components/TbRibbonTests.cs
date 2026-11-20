@@ -14,6 +14,8 @@ public class TbRibbonTests : BunitContext
 {
     private static readonly Icon Square = new("<path d=\"M4 4h16v16H4z\" />");
 
+    private FakeAnnouncer Announcer => Services.GetRequiredService<FakeAnnouncer>();
+
     public TbRibbonTests()
     {
         this.AddTrailblazor();
@@ -574,6 +576,201 @@ public class TbRibbonTests : BunitContext
 
         Assert.Equal("TbRibbonTab must be inside a TbRibbon.", outside.Message);
     }
+
+    [Fact]
+    public void Context_ShouldMarkTheTabAndDescribeItByItsContext_WhenGiven()
+    {
+        var cut = RenderContextTabs(("Home", null), ("Layout", "Table tools"));
+
+        var tabs = cut.FindAll("[role=tab]");
+        Assert.Contains("tb-ribbon__context-tab", tabs[1].ClassList);
+        Assert.Equal("Table tools", cut.Find($"#{tabs[1].GetAttribute("aria-describedby")}").TextContent);
+        Assert.True(cut.Find($"#{tabs[1].GetAttribute("aria-describedby")}").HasAttribute("hidden"));
+        // The context describes the tab, so its name stays its title, and a plain tab has neither mark.
+        Assert.Equal(["Home", "Layout"], cut.Tb().Ribbon().Tabs);
+        Assert.DoesNotContain("tb-ribbon__context-tab", tabs[0].ClassList);
+        Assert.False(tabs[0].HasAttribute("aria-describedby"));
+    }
+
+    [Fact]
+    public void Context_ShouldBeAnnouncedPolitely_WhenItsTabAppearsAfterTheRibbonHasRendered()
+    {
+        var cut = RenderContextTabs(("Home", null), ("Picture", "Picture tools"));
+        Assert.Empty(Announcer.Polite);
+
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.ChildContent,
+            ContextTabs(("Home", null), ("Picture", "Picture tools"), ("Insert", null), ("Layout", "Table tools"))));
+
+        // The tab that was there from the start isn't news, and neither is a plain tab.
+        cut.WaitForAssertion(() => Assert.Equal(["Table tools: Layout tab available"], Announcer.Polite));
+    }
+
+    [Fact]
+    public void Context_ShouldBeAnnouncedWithoutTheTabsAnnouncedBefore_WhenAnotherContextsTabAppearsLater()
+    {
+        var cut = RenderContextTabs(("Home", null));
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.ChildContent,
+            ContextTabs(("Home", null), ("Layout", "Table tools"))));
+        cut.WaitForAssertion(() => Assert.Equal(["Table tools: Layout tab available"], Announcer.Polite));
+        // A tab that only renders again isn't news either.
+        cut.FindComponents<TbRibbonTab>().Single(tab => tab.Instance.Title == "Layout").Render();
+
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.ChildContent,
+            ContextTabs(("Home", null), ("Layout", "Table tools"), ("Format", "Picture tools"))));
+
+        cut.WaitForAssertion(() => Assert.Equal(
+            ["Table tools: Layout tab available", "Picture tools: Format tab available"], Announcer.Polite));
+    }
+
+    [Fact]
+    public async Task Context_ShouldReportABadLabelToTheRenderer_WhenItsTabAppears()
+    {
+        var cut = RenderContextTabs(("Home", null));
+
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.Labels, new RibbonLabels { ContextTab = "{2}" })
+            .Add(ribbon => ribbon.ChildContent, ContextTabs(("Home", null), ("Layout", "Table tools"))));
+
+        // The announcement is made after the render, so the failure reaches the renderer rather than being lost.
+        var failure = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5),
+            Xunit.TestContext.Current.CancellationToken);
+        Assert.IsType<FormatException>(failure);
+    }
+
+    [Fact]
+    public void Context_ShouldBeAnnouncedOnce_WhenSeveralOfItsTabsAppearTogether()
+    {
+        var cut = RenderContextTabs(("Home", null));
+
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.ChildContent, ContextTabs(("Home", null),
+            ("Design", "Table tools"), ("Layout", "Table tools"), ("Format", "Picture tools"))));
+
+        cut.WaitForAssertion(() => Assert.Equal(
+            ["Table tools: Design, Layout tabs available", "Picture tools: Format tab available"], Announcer.Polite));
+    }
+
+    [Fact]
+    public void Context_ShouldBeAnnouncedInTheAppsWords_WhenLabelsGiveThem()
+    {
+        var cut = RenderContextTabs(("Home", null));
+
+        cut.Render(parameters => parameters
+            .Add(ribbon => ribbon.Labels, new RibbonLabels { ContextTab = "{1} ({0})", ContextTabs = "{1} [{0}]" })
+            .Add(ribbon => ribbon.ChildContent, ContextTabs(("Home", null), ("Format", "Picture tools"),
+                ("Design", "Table tools"), ("Layout", "Table tools"))));
+
+        cut.WaitForAssertion(() => Assert.Equal(["Format (Picture tools)", "Design, Layout [Table tools]"],
+            Announcer.Polite));
+    }
+
+    [Fact]
+    public async Task Context_ShouldGoBackToTheTabSelectedBefore_WhenItsSelectedTabsGoAway()
+    {
+        var reported = new List<int>();
+        var cut = Render<TbRibbon>(parameters => parameters.Add(ribbon => ribbon.AriaLabel, "Document tools")
+            .Add(ribbon => ribbon.ActiveIndexChanged, reported.Add)
+            .Add(ribbon => ribbon.ChildContent, ContextTabs(("Home", null), ("Insert", null), ("View", null),
+                ("Design", "Table tools"), ("Layout", "Table tools"))));
+        var ribbon = cut.Tb().Ribbon();
+        await ribbon.SelectAsync("Design");
+        await ribbon.SelectAsync("Layout");
+
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.ChildContent,
+            ContextTabs(("Home", null), ("Insert", null), ("View", null))));
+
+        // Home was selected before the table's tabs, and View is only the tab beside them.
+        cut.WaitForAssertion(() => Assert.Equal("Home", ribbon.Selected));
+        Assert.Equal(0, reported[^1]);
+    }
+
+    [Fact]
+    public async Task Context_ShouldPassOverADisabledTab_WhenItsSelectedTabGoesAway()
+    {
+        RenderFragment Tabs(bool insertOff, bool table) => builder =>
+        {
+            foreach (var (title, context) in new[] { ("Home", null), ("Insert", null), ("View", null),
+                ("Layout", "Table tools") }.Where(tab => table || tab.Item2 is null))
+            {
+                builder.OpenComponent<TbRibbonTab>(0);
+                builder.SetKey(title);
+                builder.AddComponentParameter(1, nameof(TbRibbonTab.Title), title);
+                builder.AddComponentParameter(2, nameof(TbRibbonTab.Context), context);
+                builder.AddComponentParameter(3, nameof(TbRibbonTab.Disabled), insertOff && title == "Insert");
+                builder.CloseComponent();
+            }
+        };
+        var cut = Render<TbRibbon>(parameters => parameters.Add(ribbon => ribbon.AriaLabel, "Document tools")
+            .Add(ribbon => ribbon.ChildContent, Tabs(insertOff: false, table: true)));
+        var ribbon = cut.Tb().Ribbon();
+        await ribbon.SelectAsync("Insert");
+        await ribbon.SelectAsync("Layout");
+
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.ChildContent, Tabs(insertOff: true, table: true)));
+
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.ChildContent, Tabs(insertOff: true, table: false)));
+
+        // Insert was selected last before the table's tab, but it has been turned off since.
+        cut.WaitForAssertion(() => Assert.Equal("Home", ribbon.Selected));
+    }
+
+    [Fact]
+    public void Context_ShouldReportTheKeyOfTheTabSelectedBefore_WhenItsSelectedTabGoesAwayInARibbonSelectedByKey()
+    {
+        var reported = new List<string?>();
+        var cut = Render<TbRibbon>(parameters => parameters.Add(ribbon => ribbon.AriaLabel, "Document tools")
+            .Add(ribbon => ribbon.ActiveKey, "Insert").Add(ribbon => ribbon.ActiveKeyChanged, reported.Add)
+            .Add(ribbon => ribbon.ChildContent, ContextTabs(("Home", null), ("Insert", null), ("View", null),
+                ("Layout", "Table tools"))));
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.ActiveKey, "Layout"));
+        Assert.Equal("Layout", cut.Tb().Ribbon().Selected);
+
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.ChildContent,
+            ContextTabs(("Home", null), ("Insert", null), ("View", null))));
+
+        cut.WaitForAssertion(() => Assert.Equal(["Insert"], reported));
+        Assert.Equal("Insert", cut.Tb().Ribbon().Selected);
+    }
+
+    [Fact]
+    public void Context_ShouldLeaveTheSelectionAlone_WhenATabThatIsNotSelectedGoesAway()
+    {
+        var reported = new List<string?>();
+        var cut = Render<TbRibbon>(parameters => parameters.Add(ribbon => ribbon.AriaLabel, "Document tools")
+            .Add(ribbon => ribbon.ActiveKey, "Home").Add(ribbon => ribbon.ActiveKeyChanged, reported.Add)
+            .Add(ribbon => ribbon.ChildContent, ContextTabs(("Home", null), ("Insert", null),
+                ("Layout", "Table tools"))));
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.ActiveKey, "Insert"));
+
+        cut.Render(parameters => parameters.Add(ribbon => ribbon.ChildContent,
+            ContextTabs(("Home", null), ("Insert", null))));
+
+        Assert.Equal("Insert", cut.Tb().Ribbon().Selected);
+        Assert.Empty(reported);
+    }
+
+    [Fact]
+    public void Context_ShouldBeRefused_WhenBlank()
+    {
+        Assert.Equal("TbRibbonTab's Context can't be blank.", Assert.Throws<InvalidOperationException>(
+            () => RenderContextTabs(("Layout", " "))).Message);
+    }
+
+    private IRenderedComponent<TbRibbon> RenderContextTabs(params (string Title, string? Context)[] tabs) =>
+        Render<TbRibbon>(parameters => parameters.Add(ribbon => ribbon.AriaLabel, "Document tools")
+            .Add(ribbon => ribbon.ChildContent, ContextTabs(tabs)));
+
+    // Each tab's title is its key too, so a ribbon can select them either way.
+    private static RenderFragment ContextTabs(params (string Title, string? Context)[] tabs) => builder =>
+    {
+        foreach (var (title, context) in tabs)
+        {
+            builder.OpenComponent<TbRibbonTab>(0);
+            builder.SetKey(title);
+            builder.AddComponentParameter(1, nameof(TbRibbonTab.Title), title);
+            builder.AddComponentParameter(2, nameof(TbRibbonTab.Key), title);
+            builder.AddComponentParameter(3, nameof(TbRibbonTab.Context), context);
+            builder.CloseComponent();
+        }
+    };
 
     [Fact]
     public void KeyTip_ShouldMarkTheTabTheButtonsAndTheGroupsButton_WhenGiven()

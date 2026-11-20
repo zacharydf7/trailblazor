@@ -7332,3 +7332,13 @@ Trailblazor.TbRibbonTab.KeyTip.get -> string?
 Trailblazor.TbRibbonTab.KeyTip.set -> void
 Trailblazor.TbTab.HeaderAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
 Trailblazor.TbTab.HeaderAttributes.set -> void
+const Trailblazor.TbStrings.RibbonContextTab = "Ribbon.ContextTab" -> string!
+const Trailblazor.TbStrings.RibbonContextTabs = "Ribbon.ContextTabs" -> string!
+Trailblazor.RibbonLabels.ContextTab.get -> string?
+Trailblazor.RibbonLabels.ContextTab.init -> void
+Trailblazor.RibbonLabels.ContextTabs.get -> string?
+Trailblazor.RibbonLabels.ContextTabs.init -> void
+Trailblazor.TbRibbonTab.Context.get -> string?
+Trailblazor.TbRibbonTab.Context.set -> void
+override Trailblazor.TbRibbonTab.OnInitialized() -> void
+override Trailblazor.TbRibbonTab.OnAfterRender(bool firstRender) -> void

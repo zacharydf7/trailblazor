@@ -1,0 +1,73 @@
+@page "/ribbon-context"
+
+@* A ribbon whose Design tab belongs to a context and goes away at "x" or "y", pressed anywhere in the ribbon, so a
+   test can remove it while it has focus; at "y" the app selects Insert as well. The tabs under it hold a tab that
+   can't close but gets an aria-keyshortcuts from HeaderAttributes, and a Clips tab that goes away at "x", pressed in
+   those tabs, as the app selects Pens. *@
+<div @onkeydown="OnKeyDown">
+    <TbRibbon AriaLabel="Sketchbook" @bind-ActiveKey="_tab">
+        <TbRibbonTab Key="home" Title="Home">
+            <TbRibbonGroup Label="Pages">
+                <TbRibbonButton Label="Add a page" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        <TbRibbonTab Key="insert" Title="Insert">
+            <TbRibbonGroup Label="Shapes">
+                <TbRibbonButton Label="Add a shape" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        <TbRibbonTab Key="view" Title="View">
+            <TbRibbonGroup Label="Zoom">
+                <TbRibbonButton Label="Zoom in" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        @if (_table)
+        {
+            <TbRibbonTab Key="design" Title="Design" Context="Table tools">
+                <TbRibbonGroup Label="Look">
+                    <TbRibbonButton Label="Shade rows" />
+                </TbRibbonGroup>
+            </TbRibbonTab>
+        }
+    </TbRibbon>
+</div>
+<div @onkeydown="OnDrawersKeyDown">
+    <TbTabs AriaLabel="Drawers" @bind-ActiveKey="_drawer">
+        <TbTab Key="pens" Text="Pens" HeaderAttributes="Keys">Pens panel</TbTab>
+        <TbTab Key="paper" Text="Paper">Paper panel</TbTab>
+        @if (_clips)
+        {
+            <TbTab Key="clips" Text="Clips">Clips panel</TbTab>
+        }
+    </TbTabs>
+</div>
+
+@code {
+    private static readonly Dictionary<string, object> Keys = new() { ["aria-keyshortcuts"] = "Control+P" };
+    private string? _tab = "home";
+    private bool _table = true;
+    private bool _clips = true;
+    private string? _drawer = "pens";
+
+    private void OnKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key is "x" or "y")
+        {
+            _table = false;
+        }
+
+        if (args.Key == "y")
+        {
+            _tab = "insert";
+        }
+    }
+
+    private void OnDrawersKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "x")
+        {
+            _clips = false;
+            _drawer = "pens";
+        }
+    }
+}

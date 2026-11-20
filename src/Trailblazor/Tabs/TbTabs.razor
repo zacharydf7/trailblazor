@@ -1,4 +1,5 @@
 @namespace Trailblazor
+@using System.Globalization
 @using Microsoft.JSInterop
 @using Trailblazor.Primitives
 @inherits TbComponentBase
@@ -40,8 +41,8 @@
                     aria-selected="@(selected ? "true" : "false")"
                     aria-controls="@(tab.IsPanelRendered ? tab.PanelId : null)"
                     tabindex="@(tab == FocusableTab ? 0 : -1)" disabled="@tab.Disabled" data-part="tab"
-                    aria-keyshortcuts="@(tab.CanClose ? "Delete Backspace" : null)"
-                    aria-describedby="@(tab.CanClose ? _closeHintId : null)"
+                    aria-keyshortcuts="@WithTheirs(tab, "aria-keyshortcuts", tab.CanClose ? "Delete Backspace" : null)"
+                    aria-describedby="@WithTheirs(tab, "aria-describedby", tab.CanClose ? _closeHintId : null)"
                     data-ready="@(RendererInfo.IsInteractive ? "" : null)"
                     class="@ClassNames.Join("tb-tabs__tab", Classes?.Tab, tab.HeaderClass)"
                     @onclick="_click.For(tab)">@tab.HeaderContent</button>
@@ -79,6 +80,8 @@
 @code {
     private readonly string _closeHintId = $"tb-tabs-{Guid.NewGuid():N}-close-hint";
     private readonly List<TbTab> _tabs = [];
+    // The tabs that have been selected, the latest last.
+    private readonly List<TbTab> _recent = [];
     // Counts the tab clicks, adds and closes the app has answered, so a test can wait until its own has run.
     private int _answered;
     private ElementReference _list;
@@ -246,6 +249,16 @@
         return base.SetParametersAsync(parameters);
     }
 
+    // Both attributes are lists, so what a closable tab adds joins what HeaderAttributes gave rather than replacing it.
+    private static string? WithTheirs(TbTab tab, string name, string? own) =>
+        tab.HeaderAttributes?.GetValueOrDefault(name) is not { } theirs ? own
+        : own is null ? Convert.ToString(theirs, CultureInfo.InvariantCulture) : $"{theirs} {own}";
+
+    // Set by a ribbon, whose tabs can come and go with what is selected in the app: when the selected tab goes away,
+    // the tab selected before it is selected again, in place of the tab beside it, and a removed tab's focus follows
+    // the selection.
+    internal bool ReturnsToEarlierTab { get; set; }
+
     // A new index from the parent may count a tab that registers later in the same render, or one whose place only
     // the script's report gives, so until then the tab selected before stays selected. A key needs no such wait.
     internal TbTab? ActiveTab => SelectsByKey ? _tabs.Find(tab => tab.Key == _activeKey)
@@ -283,6 +296,12 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (ActiveTab is { } shown && _recent.LastOrDefault() != shown)
+        {
+            _recent.Remove(shown);
+            _recent.Add(shown);
+        }
+
         if (_focusAfterRender is { } next)
         {
             _focusAfterRender = null;
@@ -322,7 +341,7 @@
             }
 
             _order = DotNetObjectReference.Create(new TabOrder(ReorderAsync, SelectAsync, CloseFromKeyAsync));
-            var attached = await module.InvokeAsync<TabsAttachment?>("attachTabs", _list, _order);
+            var attached = await module.InvokeAsync<TabsAttachment?>("attachTabs", _list, _order, ReturnsToEarlierTab);
             if (attached is null)
             {
                 StopWaitingForOrder();
@@ -364,7 +383,9 @@
     internal void Remove(TbTab tab)
     {
         var index = _tabs.IndexOf(tab);
+        var wasSelected = tab == ActiveTab;
         _tabs.Remove(tab);
+        _recent.Remove(tab);
         _click.KeepOnly(_tabs.Contains);
         if (tab == _closing?.Tab)
         {
@@ -384,8 +405,17 @@
             return;
         }
 
-        // Keep the same tab selected, or its neighbor when the selected one went away.
-        var active = index < _active || _active >= _tabs.Count ? Math.Max(_active - 1, 0) : _active;
+        // Keep the same tab selected, or its neighbor when the selected one went away. A ribbon goes back to the tab
+        // that was selected before it instead.
+        var earlier = ReturnsToEarlierTab && wasSelected ? _recent.FindLast(one => !one.Disabled) : null;
+        if (earlier is not null && SelectsByKey)
+        {
+            _activeKey = earlier.Key;
+            _ = InvokeAsync(ReportMovedKeyAsync);
+        }
+
+        var active = earlier is not null ? _tabs.IndexOf(earlier)
+            : index < _active || _active >= _tabs.Count ? Math.Max(_active - 1, 0) : _active;
         if (active != _active && !SelectsByKey)
         {
             _active = active;
@@ -404,6 +434,18 @@
         try
         {
             await ActiveIndexChanged.InvokeAsync(_active);
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private async Task ReportMovedKeyAsync()
+    {
+        try
+        {
+            await ActiveKeyChanged.InvokeAsync(_activeKey);
         }
         catch (Exception exception)
         {

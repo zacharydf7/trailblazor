@@ -66,7 +66,8 @@
 
     /// <summary>Extra attributes for the tab's header, such as a <c>data-*</c> one that a tour or a script finds it
     /// by. Where one of them names an attribute the tab sets itself, such as its role or its state, the tab's own
-    /// wins.</summary>
+    /// wins. An <c>aria-describedby</c> or <c>aria-keyshortcuts</c> given here is kept, and a tab that can be
+    /// closed adds its close hint and its keys after it.</summary>
     [Parameter]
     public IReadOnlyDictionary<string, object>? HeaderAttributes { get; set; }
 

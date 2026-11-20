@@ -909,6 +909,14 @@ public static class TbStrings
     /// its commands again.</summary>
     public const string RibbonCollapse = "Ribbon.Collapse";
 
+    /// <summary>"{0}: {1} tab available": announces a ribbon tab that appeared for a context; {0} is the context,
+    /// such as "Table tools", and {1} the tab's title.</summary>
+    public const string RibbonContextTab = "Ribbon.ContextTab";
+
+    /// <summary>"{0}: {1} tabs available": announces several ribbon tabs that appeared for one context; {0} is the
+    /// context and {1} the tabs' titles, separated by commas.</summary>
+    public const string RibbonContextTabs = "Ribbon.ContextTabs";
+
     /// <summary>"On this page": names a table of contents' navigation landmark.</summary>
     public const string TableOfContentsNavigation = "TableOfContents.Navigation";
 
@@ -1874,6 +1882,8 @@ public static class TbStrings
         [PopconfirmConfirm] = "OK",
         [PopconfirmCancel] = "Cancel",
         [RibbonCollapse] = "Ribbon commands",
+        [RibbonContextTab] = "{0}: {1} tab available",
+        [RibbonContextTabs] = "{0}: {1} tabs available",
         [TableOfContentsNavigation] = "On this page",
         [TabsAdd] = "Add tab",
         [TabsCloseHint] = "Press Delete to close",

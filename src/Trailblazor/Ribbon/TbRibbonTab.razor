@@ -2,11 +2,20 @@
 @inherits TbComponentBase
 
 <TbTab @attributes="AdditionalAttributes" Text="@Title" Icon="Icon" Key="@Key" Disabled="Disabled"
-       HeaderAttributes="KeyTips.Attributes(KeyTip)" TelemetryName="@TelemetryName" Class="@Class" Style="@Style">
+       HeaderClass="@(Context is null ? null : "tb-ribbon__context-tab")" HeaderAttributes="HeaderAttributes()"
+       TelemetryName="@TelemetryName" Class="@Class" Style="@Style">
     @Panel
 </TbTab>
+@* The tab is described by its context, so its name stays its title. *@
+@if (Context is not null)
+{
+    <span id="@_contextId" hidden>@Context</span>
+}
 
 @code {
+    private readonly string _contextId = $"tb-ribbon-context-{Guid.NewGuid():N}";
+    private bool _appeared;
+
     [CascadingParameter]
     private TbRibbon? Ribbon { get; set; }
 
@@ -32,6 +41,14 @@
     [Parameter]
     public string? KeyTip { get; set; }
 
+    /// <summary>What the tab belongs to, such as "Table tools", for a tab that shows only while something is
+    /// selected in the app. The tab is drawn in an accent color with a line above it, takes the context as its
+    /// description, and is announced when it appears after the ribbon has rendered. Add and remove the tab yourself,
+    /// with an <c>@if</c>; when it goes away while selected, the ribbon goes back to the tab selected before
+    /// it.</summary>
+    [Parameter]
+    public string? Context { get; set; }
+
     /// <summary>The tab's <see cref="TbRibbonGroup"/>s.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -41,6 +58,27 @@
     /// label count together. It names what the tab does, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
+
+    private Dictionary<string, object>? HeaderAttributes()
+    {
+        if (KeyTip is null && Context is null)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>();
+        if (KeyTip is not null)
+        {
+            attributes["data-key-tip"] = KeyTip;
+        }
+
+        if (Context is not null)
+        {
+            attributes["aria-describedby"] = _contextId;
+        }
+
+        return attributes;
+    }
 
     // Razor only finds public components by tag, so the internal panel is added here.
     private RenderFragment Panel => builder =>
@@ -64,6 +102,24 @@
             throw new InvalidOperationException($"{nameof(TbRibbonTab)} needs a {nameof(Title)}.");
         }
 
+        if (Context is not null && string.IsNullOrWhiteSpace(Context))
+        {
+            throw new InvalidOperationException($"{nameof(TbRibbonTab)}'s {nameof(Context)} can't be blank.");
+        }
+
         KeyTips.Check(KeyTip, nameof(TbRibbonTab));
+    }
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => _appeared = Context is not null && Ribbon?.HasRendered == true;
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // A tab that is there as the ribbon first renders isn't news.
+        if (firstRender && _appeared)
+        {
+            Ribbon!.ContextTabAppeared(Context!, Title);
+        }
     }
 }

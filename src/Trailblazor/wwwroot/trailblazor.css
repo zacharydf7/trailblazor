@@ -10765,6 +10765,17 @@
         block-size: 1.75rem;
     }
 
+    /* A tab that belongs to a context, such as Table tools, is set apart by a line above it as well as by its color.
+       The padding gives up the line's height, so the tab's text stays where the other tabs' is. */
+    .tb-ribbon .tb-ribbon__context-tab {
+        padding-block-start: calc(var(--tb-control-padding-block) - 2px);
+        border-block-start: 2px solid var(--tb-ribbon-context-color, var(--tb-color-secondary-text));
+    }
+
+    .tb-ribbon .tb-ribbon__context-tab:not(:disabled) {
+        color: var(--tb-ribbon-context-color, var(--tb-color-secondary-text));
+    }
+
     /* A key tip's badge sits over the lower edge of its control while the ribbon's script shows it. It stays inside
        the control's box, since the tabs and the commands both clip what leaves theirs. */
     .tb-ribbon [data-key-tip-shown] {
@@ -10798,6 +10809,10 @@
         .tb-ribbon,
         .tb-ribbon__group + .tb-ribbon__group {
             border-color: CanvasText;
+        }
+
+        .tb-ribbon .tb-ribbon__context-tab {
+            border-block-start-color: Highlight;
         }
 
         .tb-ribbon [data-key-tip-shown]::after {

@@ -10,7 +10,4 @@ internal static class KeyTips
             throw new InvalidOperationException($"{owner}'s KeyTip must be one letter or digit.");
         }
     }
-
-    public static IReadOnlyDictionary<string, object>? Attributes(string? keyTip) =>
-        keyTip is null ? null : new Dictionary<string, object> { ["data-key-tip"] = keyTip };
 }
