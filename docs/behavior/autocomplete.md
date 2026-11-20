@@ -64,7 +64,7 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - Alt+Up closing an open list: it moves up instead; the pattern lists closing as optional, and few people know it in a text field.
 - A click on the field opening the list without `OpenOnFocus`: it suggests as the user types, and a known list belongs in a select.
 - A tap on the field opening the list without `OpenOnFocus`: the same reason as a click.
-- An arrow on the field that opens the list: a select with `Filterable` has one, and the analyzer suggests that select (TB011) for an autocomplete given `Items` and `OpenOnFocus` with no `Search`, `FreeText`, `OnTextChanged` or `Columns`.
+- An arrow on the field that opens the list: a select with `Filterable` has one, and the analyzer suggests that select (TB011) for an autocomplete given `Items` and `OpenOnFocus` with no `Search`, `FreeText`, `OnTextChanged`, `Columns`, `Start` or `MinCharacters`.
 - Page Up, Page Down, Home and End in the list: they're optional in the pattern, and Home and End stay with the text.
 - Tab choosing the active option: the pattern's example doesn't, and the field settles what was typed.
 - Escape clearing a closed field: it's optional in the pattern.

@@ -6745,7 +6745,8 @@ public static class ExampleCatalog
                     + "pick from a list you already have, use a [select](components/select#filtering) with "
                     + "`Filterable`, which shows an arrow and opens on a click even when it already has focus. "
                     + "Analyzer rule [TB011](guides/analyzers#rules) suggests one for an autocomplete given `Items` "
-                    + "and `OpenOnFocus` with no `Search`, `FreeText`, `OnTextChanged` or `Columns`.",
+                    + "and `OpenOnFocus` with no `Search`, `FreeText`, `OnTextChanged`, `Columns`, `Start` or "
+                    + "`MinCharacters`, none of which a select has.",
                     typeof(AutocompleteOrSelectExample)),
                 new("items", "A fixed list", "`Items` is a list you already have, filtered by what someone types, "
                     + "ignoring case and accents. A long suggestion widens the list.",

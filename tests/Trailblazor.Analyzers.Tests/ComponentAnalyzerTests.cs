@@ -1270,13 +1270,14 @@ public class ComponentAnalyzerTests
         Assert.Empty(ids);
     }
 
-    private const string KnownList = "private string[] _regions = []; private bool _open; "
+    private const string KnownList = "private string[] _regions = []; private bool _open; private int _least; "
         + "private Task<IEnumerable<string>> FindAsync(string text, System.Threading.CancellationToken stop) => "
         + "Task.FromResult<IEnumerable<string>>(_regions);";
 
     [Theory]
     [InlineData("")]
     [InlineData("__builder.AddComponentParameter(4, \"FreeText\", false);")]
+    [InlineData("__builder.AddComponentParameter(4, \"MinCharacters\", 0);")]
     public async Task ComponentAnalyzer_ShouldSuggestAFilterableSelect_WhenAnAutocompleteOpensAKnownListOnFocus(
         string more)
     {
@@ -1328,6 +1329,10 @@ public class ComponentAnalyzerTests
         + "EventCallback.Factory.Create<string>(this, _ => { }));")]
     [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"Columns\", "
         + "new AutocompleteColumn<string>[0]);")]
+    [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"Start\", "
+        + "(Microsoft.AspNetCore.Components.RenderFragment)(_ => { }));")]
+    [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"MinCharacters\", 2);")]
+    [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"MinCharacters\", _least);")]
     [InlineData("_regions", "true", "__builder.AddMultipleAttributes(4, new Dictionary<string, object>());")]
     [InlineData("_regions", "false", "")]
     [InlineData("_regions", "_open", "")]

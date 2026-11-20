@@ -142,8 +142,8 @@
                         <td>
                             A suggestion, not a warning: a <code>TbAutocomplete</code> is given <code>Items</code> and
                             <code>OpenOnFocus</code> with no <code>Search</code>, <code>FreeText</code>,
-                            <code>OnTextChanged</code> or <code>Columns</code>, so people pick from a list the page
-                            already has.
+                            <code>OnTextChanged</code>, <code>Columns</code>, <code>Start</code> or
+                            <code>MinCharacters</code>, so people pick from a list the page already has.
                         </td>
                         <td>
                             Use a <code>TbSelect</code> with <code>Filterable</code>, which shows an arrow and opens on
@@ -243,9 +243,10 @@
                 or <code>OpenOnFocus="true"</code>, so one set from a variable isn't reported. As with TB009,
                 <code>Items</code> passed along from one of your component's own parameters, or chosen with
                 <code>?:</code>, isn't counted. An autocomplete with a <code>Search</code>, an
-                <code>OnTextChanged</code>, <code>Columns</code>, <code>FreeText</code> set to anything but
-                <code>false</code>, or attributes spread with <code>@@attributes</code> isn't reported either, since a
-                select has none of the first four.
+                <code>OnTextChanged</code>, <code>Columns</code>, <code>Start</code> content, <code>FreeText</code>
+                set to anything but <code>false</code>, <code>MinCharacters</code> set to anything but
+                <code>0</code>, or attributes spread with <code>@@attributes</code> isn't reported either, since a
+                select has none of the first six.
             </li>
         </ul>
 
