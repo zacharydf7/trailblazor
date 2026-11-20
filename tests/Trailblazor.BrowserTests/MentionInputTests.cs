@@ -43,6 +43,18 @@ public class MentionInputTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MentionInput_ShouldStopSuggesting_WhenTheCaretLeavesTheMention(string browser)
+    {
+        var (page, _) = await OpenAsync(browser);
+        await page.Keyboard.TypeAsync("Thanks @an");
+        await Expect(Listbox(page)).ToBeVisibleAsync();
+
+        await page.Keyboard.PressAsync("Home");
+
+        await Expect(Listbox(page)).ToBeHiddenAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task MentionInput_ShouldChooseWithTheKeys_WhenSuggestionsShow(string browser)
     {
         var (page, input) = await OpenAsync(browser);

@@ -1,0 +1,80 @@
+@page "/dock-popped-parts"
+@page "/dock-popped-parts/deeper"
+
+@* A dock whose Tools panel holds components that lean on their scripts: a menu with a submenu, a tooltip, a toolbar,
+   tabs that overflow a narrow window, an area with a context menu, and a list to sort. Show more draws a select, a
+   tooltip and a field that asks for the focus, which arrive only after the panel may have left for a window of its
+   own. Tools also holds a dock of its own, and ends with content tall enough to scroll. Its link's address is relative,
+   which on the page's deeper address counts from the app's base and not from that address. *@
+<div style="inline-size: 60rem; block-size: 30rem">
+    <TbDockManager AriaLabel="Bench" AllowPopOut>
+        <TbDockPanel Id="tools" Title="Tools" Closable="false">
+            <button type="button" data-testid="first">First</button>
+            <a href="guides/start">Guide</a>
+            <TbMenu Label="Insert">
+                <TbSubMenu Label="Shape">
+                    <TbMenuItem OnClick="@(() => _chosen = "Circle")">Circle</TbMenuItem>
+                    <TbMenuItem OnClick="@(() => _chosen = "Square")">Square</TbMenuItem>
+                </TbSubMenu>
+                <TbMenuItem OnClick="@(() => _chosen = "Table")">Table</TbMenuItem>
+                <TbMenuItem OnClick="@(() => _chosen = "Image")">Image</TbMenuItem>
+            </TbMenu>
+            <output data-testid="chosen">@_chosen</output>
+            <TbTooltip Text="Saves a copy">
+                <button type="button">Save</button>
+            </TbTooltip>
+            <TbButton OnClick="() => _more = true">Show more</TbButton>
+            <TbToolbar AriaLabel="Format">
+                <TbToolbarButton Label="Bold" />
+                <TbToolbarButton Label="Italic" />
+            </TbToolbar>
+            @if (_more)
+            {
+                <TbTextField Label="Late note" @bind-Value="_note" AutoFocus />
+                <TbSelect Label="Late size" @bind-Value="_size" Placeholder="Pick a size">
+                    <TbOption Value="@("Small")">Small</TbOption>
+                    <TbOption Value="@("Large")">Large</TbOption>
+                </TbSelect>
+                <output data-testid="size">@_size</output>
+                <TbTooltip Text="Sends it on">
+                    <button type="button">Share</button>
+                </TbTooltip>
+            }
+            <TbTabs AriaLabel="Sections" ScrollButtons>
+                @for (var section = 1; section <= 8; section++)
+                {
+                    var number = section;
+                    <TbTab Text="@($"Section {number}")">Panel @number</TbTab>
+                }
+            </TbTabs>
+            <TbContextMenu AriaLabel="Trail actions" style="padding: 1rem; border: 1px solid">
+                <ChildContent><p>Trails</p></ChildContent>
+                <Items>
+                    <TbMenuItem OnClick="@(() => _chosen = "Rename")">Rename the trail</TbMenuItem>
+                    <TbMenuItem OnClick="@(() => _chosen = "Remove")">Remove the trail</TbMenuItem>
+                </Items>
+            </TbContextMenu>
+            <TbSortable TItem="string" Items="_rules" Label="Rules" OnMove="move => move.ApplyTo(_rules)">
+                <ItemTemplate>@context</ItemTemplate>
+            </TbSortable>
+            <output data-testid="rules">@string.Join(", ", _rules)</output>
+            <div style="block-size: 12rem">
+                <TbDockManager AriaLabel="Inner" AllowPopOut>
+                    <TbDockPanel Id="north" Title="North">North notes</TbDockPanel>
+                    <TbDockPanel Id="south" Title="South">South notes</TbDockPanel>
+                </TbDockManager>
+            </div>
+            <div style="block-size: 80rem">Tall</div>
+            <button type="button" data-testid="last">Last</button>
+        </TbDockPanel>
+        <TbDockPanel Id="other" Title="Other">Other notes</TbDockPanel>
+    </TbDockManager>
+</div>
+
+@code {
+    private readonly List<string> _rules = ["Rule 1", "Rule 2", "Rule 3"];
+    private string? _chosen;
+    private bool _more;
+    private string? _note;
+    private string? _size;
+}

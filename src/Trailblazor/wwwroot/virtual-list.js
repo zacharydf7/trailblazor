@@ -15,7 +15,7 @@ export function createVirtualList(feed) {
     // The item focus last rested on, or is heading to; it holds the tab stop, and Page Down and Page Up move from it.
     let current = 0;
     // Whether focus is in the feed, or was until a render removed the item holding it.
-    let inside = feed.contains(document.activeElement);
+    let inside = feed.contains(feed.ownerDocument.activeElement);
     // Only the feed's own children count, so parts of components inside an item, such as a toggle group's items,
     // are left alone.
     const items = () => [...feed.querySelectorAll(':scope > [data-part="item"]')];
@@ -40,7 +40,7 @@ export function createVirtualList(feed) {
             }
         }
 
-        return document.scrollingElement;
+        return feed.ownerDocument.scrollingElement;
     };
     // Resolves at the first render that makes until true, or after the wait, with until's last answer.
     const rendered = (wait, until = () => true) => new Promise(resolve => {
@@ -121,7 +121,7 @@ export function createVirtualList(feed) {
     };
     // Ctrl+End goes to the first control after the feed, and Ctrl+Home to the last one before it.
     const leave = forward => {
-        const outside = getTabbables(document.body).filter(element => !feed.contains(element));
+        const outside = getTabbables(feed.ownerDocument.body).filter(element => !feed.contains(element));
         const following = element => feed.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING;
         const target = forward ? outside.find(following) : outside.filter(element => !following(element)).at(-1);
         target?.focus();
@@ -136,7 +136,8 @@ export function createVirtualList(feed) {
     };
     // An item scrolled out of view leaves the page, so focus on it moves to the feed, where the keys keep working.
     const renders = new MutationObserver(() => {
-        if (inside && document.activeElement === document.body) {
+        const page = feed.ownerDocument;
+        if (inside && page.activeElement === page.body) {
             feed.focus({ preventScroll: true });
         }
 

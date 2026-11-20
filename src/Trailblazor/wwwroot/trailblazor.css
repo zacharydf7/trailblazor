@@ -7715,6 +7715,8 @@
         inline-size: auto;
         block-size: auto;
         background: var(--tb-color-surface);
+        /* What scrolls into view, such as the control that takes the focus, stops below the bar. */
+        scroll-padding-block-start: calc(var(--tb-control-height-sm) + 1px);
     }
 
     .tb-dock__return-bar {

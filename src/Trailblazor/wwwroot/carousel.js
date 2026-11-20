@@ -41,8 +41,9 @@ export function createCarousel(section, events) {
     section.addEventListener('focusin', onFocusIn);
     section.addEventListener('focusout', onFocusOut);
     // Focus can already be inside, such as from a Tab pressed before the page was interactive.
-    if (section.contains(document.activeElement)) {
-        onFocusIn({ target: document.activeElement, relatedTarget: null });
+    const focused = section.ownerDocument.activeElement;
+    if (section.contains(focused)) {
+        onFocusIn({ target: focused, relatedTarget: null });
     }
 
     return {

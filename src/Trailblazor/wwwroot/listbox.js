@@ -27,7 +27,7 @@ export function attachListBox(listbox, events) {
         applyFilter();
     });
     removals.observe(listbox, { childList: true, subtree: true });
-    const label = document.getElementById(listbox.getAttribute('aria-labelledby'));
+    const label = listbox.ownerDocument.getElementById(listbox.getAttribute('aria-labelledby'));
     let active = null;
     // Where a range from a Shift+click starts.
     let rangeFrom = null;

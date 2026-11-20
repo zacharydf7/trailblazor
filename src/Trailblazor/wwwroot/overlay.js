@@ -33,12 +33,13 @@ export function blockBehind(overlay, contained, outsidePopups) {
     // Overlays opened after this one and drawn above it stay usable, as their own block may have run first or not yet.
     // A contained overlay is never above a page overlay.
     const order = Number(overlay.dataset.openOrder);
-    const later = [...document.querySelectorAll(contained ? '[data-open-order]' : '.tb-overlay--fixed[data-open-order]')]
+    const page = overlay.ownerDocument;
+    const later = [...page.querySelectorAll(contained ? '[data-open-order]' : '.tb-overlay--fixed[data-open-order]')]
         .filter(other => Number(other.dataset.openOrder) > order)
         .map(other => `[data-open-order="${other.dataset.openOrder}"]`);
     const usable = [...alwaysUsable, ...ownParts, ...outsidePopups, ...later].join(', ');
-    const top = contained ? overlay.offsetParent ?? overlay.parentElement : document.body;
-    const focused = document.activeElement;
+    const top = contained ? overlay.offsetParent ?? overlay.parentElement : page.body;
+    const focused = page.activeElement;
     const elements = [];
     for (let node = overlay; node && node !== top; node = node.parentElement) {
         for (const sibling of node.parentElement?.children ?? []) {
@@ -52,7 +53,8 @@ export function blockBehind(overlay, contained, outsidePopups) {
     return {
         dispose() {
             release(elements);
-            if (document.activeElement === document.body && focused?.isConnected && !focused.closest('[inert]')) {
+            const now = overlay.ownerDocument;
+            if (now.activeElement === now.body && focused?.isConnected && !focused.closest('[inert]')) {
                 focused.focus({ preventScroll: true });
             }
         },

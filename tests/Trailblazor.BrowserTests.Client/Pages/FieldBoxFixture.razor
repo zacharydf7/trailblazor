@@ -16,6 +16,10 @@
 <fieldset disabled>
     <TbTextField TValue="string" Label="Fenced" />
 </fieldset>
+@* Something around the field can take the focus itself, as a tab's panel or a dock's can. *@
+<div tabindex="0">
+    <TbTextField TValue="string" Label="Held" />
+</div>
 
 @code {
     private static readonly string[] Towns = ["Pine Hollow"];

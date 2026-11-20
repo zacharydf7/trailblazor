@@ -2669,6 +2669,21 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public async Task PopOut_ShouldLeaveThePanelFloatingAndSayNothing_WhenTheWindowClosesBeforeThePanelGetsThere()
+    {
+        _handle.Setup<string?>("popOut", _ => true).SetResult("closed");
+        var cut = RenderPoppable(Hike);
+        var dock = cut.Tb().Dock();
+
+        await dock.PopOutAsync("Notes");
+
+        Assert.Empty(dock.PoppedOut);
+        Assert.Equal(["Notes"], dock.Floating);
+        Assert.Empty(cut.FindAll("[data-part=return-bar]"));
+        Assert.Empty(Services.GetRequiredService<FakeAnnouncer>().Polite);
+    }
+
+    [Fact]
     public async Task Return_ShouldShowThePanelInItsFloatingWindow_WhenItsButtonIsPressedOrItsBrowserWindowCloses()
     {
         using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",

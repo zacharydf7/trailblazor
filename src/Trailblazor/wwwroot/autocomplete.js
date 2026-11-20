@@ -130,7 +130,7 @@ export function createAutocomplete(input, listbox, events) {
     const onDocumentPointerCancel = () => {
         if (pressedOutside) {
             pressedOutside = false;
-            if (!control.contains(document.activeElement)) {
+            if (!control.contains(control.ownerDocument.activeElement)) {
                 close();
             }
         }

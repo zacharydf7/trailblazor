@@ -182,7 +182,8 @@ export function attachSplitter(root, reporter) {
     const collapses = new MutationObserver(records => {
         reported = null;
         for (const { target: pane } of records) {
-            if (panes().includes(pane) && pane.hasAttribute('data-collapsed') && pane.contains(document.activeElement)) {
+            if (panes().includes(pane) && pane.hasAttribute('data-collapsed')
+                && pane.contains(pane.ownerDocument.activeElement)) {
                 const bar = pane.nextElementSibling ?? pane.previousElementSibling;
                 bar?.querySelector(':scope > [data-part="separator"]').focus();
             }

@@ -8,7 +8,7 @@ const openAbove = 'dialog[open]:not([data-leaving]), [popover]:not([popover="man
 
 // A modeless dialog takes Escape only while focus is in it, and a minimized modal counts as modeless.
 const takesEscape = open => open.localName !== 'dialog' || open.matches(':modal, [aria-modal="true"]')
-    || open.contains(document.activeElement);
+    || open.contains(open.ownerDocument.activeElement);
 
 export function createDismissableLayer(element, trigger, dotNetReference) {
     const layer = { element, trigger, dotNetReference, dismissPending: false, dispose };
@@ -52,7 +52,8 @@ function onKeyDown(event) {
 
     // A menu, popover or dialog that doesn't hold the layer is above it, and takes the key first.
     const layer = layers.at(-1);
-    if ([...document.querySelectorAll(openAbove)].some(open => !open.contains(layer.element) && takesEscape(open))) {
+    const open = [...layer.element.ownerDocument.querySelectorAll(openAbove)];
+    if (open.some(each => !each.contains(layer.element) && takesEscape(each))) {
         return;
     }
 

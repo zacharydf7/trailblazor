@@ -1,5 +1,6 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { onEachPage } from '../Trailblazor.Primitives/pages.js';
 
 // Hover, focus and Escape stay in the browser, and one set of listeners serves every tooltip, so a tooltip costs the
 // server nothing, even to set up. The JS initializer imports this at startup; each bubble carries its own settings.
@@ -142,7 +143,8 @@ function describe(tooltip) {
     anchor.dataset.ready = '';
     // A bubble that arrives under focus or the pointer, as when its text appears, shows as if the focus or pointer had
     // just arrived.
-    if (isNew && anchor.contains(document.activeElement) && document.activeElement.matches(':focus-visible')) {
+    const focused = anchor.ownerDocument.activeElement;
+    if (isNew && anchor.contains(focused) && focused.matches(':focus-visible')) {
         show(anchor);
     } else if (isNew && anchor.matches(':hover')) {
         showSoon(anchor);
@@ -174,8 +176,8 @@ function describedBy(element) {
 }
 
 // Bubbles come and go as tooltips are turned on and off, and Blazor rewrites aria-describedby when a trigger
-// re-renders, so the page is watched for both.
-const observer = new MutationObserver(records => {
+// re-renders, so the page is watched for both, and so is each other window that shows a part of it.
+const onChanges = records => {
     const anchors = new Set();
     for (const record of records) {
         for (const node of record.removedNodes) {
@@ -201,6 +203,9 @@ const observer = new MutationObserver(records => {
             describe(tooltip);
         }
     }
+};
+onEachPage(page => {
+    const observer = new MutationObserver(onChanges);
+    observer.observe(page, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-describedby'] });
+    page.querySelectorAll(bubbleSelector).forEach(describe);
 });
-observer.observe(document, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-describedby'] });
-document.querySelectorAll(bubbleSelector).forEach(describe);

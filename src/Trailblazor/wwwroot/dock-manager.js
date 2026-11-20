@@ -1,10 +1,24 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { createGripDrag } from '../Trailblazor.Primitives/grip-drag.js';
+import { viewOf, watchSizes } from '../Trailblazor.Primitives/pages.js';
 import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
 import { showInWindow } from './pop-out.js';
 import { nextTab, scrollTabIntoRow } from './tabs.js';
 
 const sides = ['x', 'y', 'width', 'height'];
+
+// A moved element loses its scroll positions, and those of what it holds. This notes them, and the returned function
+// puts them back. A hidden element has none to note, and can't be given any.
+function keepScrolls(element) {
+    const scrolled = [element, ...element.querySelectorAll('*')].filter(each => each.scrollTop || each.scrollLeft)
+        .map(each => [each, each.scrollTop, each.scrollLeft]);
+    return () => {
+        for (const [each, top, left] of scrolled) {
+            each.scrollTop = top;
+            each.scrollLeft = left;
+        }
+    };
+}
 const names = { x: 'x', y: 'y', width: 'w', height: 'h' };
 
 // The dock renders its groups, panels and separators as siblings, each placed by a box in percent of the dock. This
@@ -31,22 +45,17 @@ export function attachDock(root, reporter) {
     // loaded. A panel that joins another group is moved here, with moveBefore where the browser has it, which keeps
     // the iframes. Scroll positions and focus are put back either way, since not every moveBefore keeps them.
     const place = (panel, before) => {
-        const scrolled = [panel, ...panel.querySelectorAll('*')]
-            .filter(element => element.scrollTop || element.scrollLeft)
-            .map(element => [element, element.scrollTop, element.scrollLeft]);
-        const focused = panel.contains(document.activeElement) ? document.activeElement : null;
+        const putScrollsBack = keepScrolls(panel);
+        const active = root.ownerDocument.activeElement;
+        const focused = panel.contains(active) ? active : null;
         if (root.moveBefore) {
             root.moveBefore(panel, before);
         } else {
             root.insertBefore(panel, before);
         }
 
-        for (const [element, top, left] of scrolled) {
-            element.scrollTop = top;
-            element.scrollLeft = left;
-        }
-
-        if (focused && document.activeElement !== focused) {
+        putScrollsBack();
+        if (focused && root.ownerDocument.activeElement !== focused) {
             focused.focus({ preventScroll: true });
         }
     };
@@ -429,7 +438,7 @@ export function attachDock(root, reporter) {
     });
     limited.observe(root, { subtree: true, attributes: true,
         attributeFilter: ['aria-valuenow', 'data-before', 'data-after', 'data-edge', 'data-min-size'] });
-    const sized = new ResizeObserver(stateLimits);
+    const sized = watchSizes(stateLimits);
     sized.observe(root);
     // The edge a press is on: the separator itself, which drags at once, or the button of its grip's menu.
     const slideHandle = target => {
@@ -870,7 +879,7 @@ export function attachDock(root, reporter) {
 
         markSteps(event.target);
         if (ownTabMenu(event.target)) {
-            beforeMenu = { menu: event.target, holder: document.activeElement };
+            beforeMenu = { menu: event.target, holder: root.ownerDocument.activeElement };
             tabDrag.cancel();
         }
     };
@@ -881,8 +890,9 @@ export function attachDock(root, reporter) {
     };
 
     const holdsFocus = tab => {
-        const holder = beforeMenu?.menu.isConnected ? beforeMenu.holder : document.activeElement;
-        return tab === holder || Boolean(document.getElementById(tab.getAttribute('aria-controls'))?.contains(holder));
+        const page = root.ownerDocument;
+        const holder = beforeMenu?.menu.isConnected ? beforeMenu.holder : page.activeElement;
+        return tab === holder || Boolean(page.getElementById(tab.getAttribute('aria-controls'))?.contains(holder));
     };
     // A press or the focus inside a window that isn't in front brings it forward.
     const onEngage = event => {
@@ -948,22 +958,47 @@ export function attachDock(root, reporter) {
     // window only while it handles what the user did, so the window opens here, in the click on the menu's item, and
     // the dock then says which panel goes into it.
     const windows = new Map();
+    // The windows whose panels are still on their way, waiting for their style sheets, by the same ids as `windows`.
+    const arriving = new Map();
     const unclaimedLimit = 10000;
     const smallestWindow = { width: 320, height: 240 };
     let opened = null;
+    // A panel on its way to a window is hidden first, with no scroll positions left to note, so every panel's are
+    // noted in the click. On its way back the dock draws it as its own before it moves, which loses them too, so
+    // they are noted in the click on its Return button. Each panel's are used once, and only for that panel.
+    const scrollsAtClick = new WeakMap();
+    const notedScrolls = panel => {
+        const putBack = scrollsAtClick.get(panel);
+        scrollsAtClick.delete(panel);
+        return putBack;
+    };
+    const onReturnClick = event => {
+        const panel = event.target.closest?.('[data-part="return"]')?.closest('[data-part="panel"]');
+        if (panel && [...windows.values()].some(shown => shown.panel === panel)) {
+            scrollsAtClick.set(panel, keepScrolls(panel));
+        }
+    };
     const onPopOutClick = event => {
         // The item of a dock nested in one of this dock's panels is that dock's to answer.
         if (event.target.closest?.('[data-move="pop-out"]')?.closest('.tb-dock') !== root) {
             return;
         }
 
+        // A panel already on its way is hidden by now, and keeps what was noted for it.
+        for (const panel of parts('panel').filter(each => !('popped' in each.dataset))) {
+            scrollsAtClick.set(panel, keepScrolls(panel));
+        }
+
         opened?.close();
         const box = root.getBoundingClientRect();
         const [width, height] = [Math.max(smallestWindow.width, Math.round(box.width / 2)),
             Math.max(smallestWindow.height, Math.round(box.height / 2))];
-        const [left, top] = [Math.round(window.screenX + box.left + box.width / 4),
-            Math.round(window.screenY + box.top + box.height / 4)];
-        opened = window.open('', '', `popup,width=${width},height=${height},left=${left},top=${top}`);
+        // The dock's own window opens it: a dock inside a panel that shows in a window is in that window, and the
+        // browser only lets the window the click was in open another.
+        const view = viewOf(root);
+        const [left, top] = [Math.round(view.screenX + box.left + box.width / 4),
+            Math.round(view.screenY + box.top + box.height / 4)];
+        opened = view.open('', '', `popup,width=${width},height=${height},left=${left},top=${top}`);
         // A window the dock never asks for, because the click led nowhere, doesn't stay open and empty.
         const unclaimed = opened;
         setTimeout(() => {
@@ -982,13 +1017,25 @@ export function attachDock(root, reporter) {
         }
 
         windows.delete(id);
-        shown.stop();
         // A panel that Blazor removed while it was away is gone, and stays gone.
         if (shown.panel.isConnected) {
+            const putScrollsBack = notedScrolls(shown.panel) ?? keepScrolls(shown.panel);
             root.appendChild(shown.panel);
             order();
+            // When its window was closed, and not left by its Return button, the panel is hidden until the dock draws
+            // it as its own again.
+            if ('popped' in shown.panel.dataset) {
+                const drawn = new MutationObserver(() => {
+                    drawn.disconnect();
+                    putScrollsBack();
+                });
+                drawn.observe(shown.panel, { attributes: true, attributeFilter: ['data-popped'] });
+            } else {
+                putScrollsBack();
+            }
         }
 
+        shown.stop();
         shown.other.close();
         if (report) {
             callDotNet(reporter, 'OnReturn', shown.panel.dataset.panel);
@@ -999,12 +1046,14 @@ export function attachDock(root, reporter) {
     const closeWindows = report => {
         opened?.close();
         opened = null;
+        arriving.forEach(other => other.close());
         for (const id of [...windows.keys()]) {
             bringBack(id, report);
         }
     };
     const onPageHide = event => closeWindows(event.persisted);
     root.addEventListener('click', onPopOutClick, { capture: true });
+    document.addEventListener('click', onReturnClick, { capture: true });
     window.addEventListener('pagehide', onPageHide);
 
     stateLimits();
@@ -1045,20 +1094,29 @@ export function attachDock(root, reporter) {
         // Whether the tab with this id, or its panel, holds the focus. The dock asks when the tab's close mark is
         // clicked, or Close is chosen in its own menu.
         holdsFocus(id) {
-            const tab = document.getElementById(id);
+            const tab = root.ownerDocument.getElementById(id);
             return Boolean(tab) && holdsFocus(tab);
         },
         // Moves the panel with this element id into the window its menu item opened. The answer is what went wrong,
-        // and null when nothing did: a browser can refuse to open the window.
-        popOut(id) {
-            const [other, panel] = [opened, document.getElementById(id)];
+        // and null when nothing did: a browser can refuse to open the window (`blocked`), and the window can close
+        // before the panel gets there (`closed`).
+        async popOut(id) {
+            const [other, panel] = [opened, root.ownerDocument.getElementById(id)];
             opened = null;
             if (!other || other.closed || !panel) {
                 other?.close();
                 return 'blocked';
             }
 
-            const unstyle = showInWindow(other, panel, panel.getAttribute('aria-label'), 'tb-dock-window');
+            arriving.set(id, other);
+            const unstyle = await showInWindow(other, panel, panel.getAttribute('aria-label'), 'tb-dock-window');
+            arriving.delete(id);
+            if (!unstyle) {
+                return 'closed';
+            }
+
+            notedScrolls(panel)?.();
+
             // The window has the panel's title, and keeps it as the title changes. The panel loses its `aria-label`
             // as it is drawn for the dock again, and the window then keeps the title it had.
             const titled = new MutationObserver(() => {
@@ -1080,9 +1138,16 @@ export function attachDock(root, reporter) {
             for (const id of [...windows.keys()].filter(each => !ids.includes(each))) {
                 bringBack(id, false);
             }
+
+            for (const [id, other] of arriving) {
+                if (!ids.includes(id)) {
+                    other.close();
+                }
+            }
         },
         dispose() {
             root.removeEventListener('click', onPopOutClick, { capture: true });
+            document.removeEventListener('click', onReturnClick, { capture: true });
             window.removeEventListener('pagehide', onPageHide);
             closeWindows(false);
             added.disconnect();

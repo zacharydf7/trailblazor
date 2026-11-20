@@ -1,5 +1,6 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { watchSizes } from '../Trailblazor.Primitives/pages.js';
 
 // How much a pixel of wheel movement zooms, as a power, so each notch zooms by the same ratio.
 const wheelZoom = 0.002;
@@ -203,7 +204,7 @@ export function attachViewport(root, reporter) {
     };
 
     // A fit follows the box and the content as they resize, such as when an image loads.
-    const resizes = new ResizeObserver(() => {
+    const resizes = watchSizes(() => {
         if (fit === 'None') {
             return;
         }

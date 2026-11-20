@@ -1,6 +1,7 @@
 import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
 import { createTypeahead } from './typeahead.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { frames, viewOf, watchSizes } from '../Trailblazor.Primitives/pages.js';
 
 // Alt+Shift with an arrow moves the focused row: past its neighbors, into the row above, or out of its parent.
 const moveKeys = { ArrowUp: 'MoveUp', ArrowDown: 'MoveDown', ArrowRight: 'Indent', ArrowLeft: 'Outdent' };
@@ -59,7 +60,7 @@ export function createTreeView(tree, events) {
     };
     const focusRow = target => {
         makeStop(target);
-        if (document.activeElement !== target) {
+        if (tree.ownerDocument.activeElement !== target) {
             target.focus();
         }
     };
@@ -89,7 +90,8 @@ export function createTreeView(tree, events) {
         const list = stops();
         const after = list[list.indexOf(owner) + 1];
         const target = after && level(after) > level(owner) ? after : owner;
-        if (document.activeElement === document.body || !document.activeElement) {
+        const page = tree.ownerDocument;
+        if (page.activeElement === page.body || !page.activeElement) {
             focusRow(target);
         } else {
             makeStop(target);
@@ -126,7 +128,8 @@ export function createTreeView(tree, events) {
         const list = stops();
         const owner = above.find(row => row.isConnected);
         const target = owner?.getAttribute('aria-expanded') === 'false' ? owner : list[index] ?? list.at(-1);
-        if (target && (document.activeElement === document.body || !document.activeElement)) {
+        const page = tree.ownerDocument;
+        if (target && (page.activeElement === page.body || !page.activeElement)) {
             focusRow(target);
         }
     };
@@ -172,7 +175,7 @@ export function createTreeView(tree, events) {
     };
     // Focus that leaves the tree for good isn't brought back when its row goes later.
     const onFocusOut = event => queueMicrotask(() => {
-        if (event.target.isConnected && !tree.contains(document.activeElement)) {
+        if (event.target.isConnected && !tree.contains(tree.ownerDocument.activeElement)) {
             focusedRow = null;
         }
     });
@@ -400,7 +403,7 @@ export function createTreeView(tree, events) {
             tree.dataset.dragging = '';
         },
         onMove: event => {
-            let row = document.elementFromPoint(event.clientX, event.clientY)
+            let row = tree.ownerDocument.elementFromPoint(event.clientX, event.clientY)
                 ?.closest('[role="treeitem"][data-key]');
             if (!row || !owns(row) || sources.includes(row)) {
                 clearDrop();
@@ -469,13 +472,11 @@ export function createTreeView(tree, events) {
     // page scrolls. It tells it again only once the view leaves what was asked for.
     const spare = 10;
     let view = { start: -1, count: 0 };
-    let frame = 0;
     const reportView = () => {
-        frame = 0;
         const size = Number(tree.dataset.rowSize);
         const box = tree.getBoundingClientRect();
         let top = Math.max(box.top, 0);
-        let bottom = Math.min(box.bottom, innerHeight);
+        let bottom = Math.min(box.bottom, viewOf(tree).innerHeight);
         for (let parent = tree.parentElement; parent; parent = parent.parentElement) {
             if (getComputedStyle(parent).overflowY !== 'visible') {
                 const clip = parent.getBoundingClientRect();
@@ -494,9 +495,10 @@ export function createTreeView(tree, events) {
         view = { start: Math.max(0, first - spare), count: end - first + 2 * spare };
         callDotNet(events, 'OnView', view.start, view.count);
     };
+    const frame = frames(tree, reportView);
     const scheduleView = () => {
-        if (virtual() && !frame) {
-            frame = requestAnimationFrame(reportView);
+        if (virtual()) {
+            frame.request();
         }
     };
 
@@ -508,7 +510,7 @@ export function createTreeView(tree, events) {
     tree.addEventListener('keydown', onKeyDown);
     observer.observe(tree, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex'] });
     // A tree whose box grows, as in a pane being resized, shows more rows without anything scrolling.
-    const resize = new ResizeObserver(scheduleView);
+    const resize = watchSizes(scheduleView);
     resize.observe(tree);
     document.addEventListener('scroll', scheduleView, { capture: true, passive: true });
     addEventListener('resize', scheduleView);
@@ -519,7 +521,7 @@ export function createTreeView(tree, events) {
     tree.dataset.ready = '';
     return {
         dispose() {
-            cancelAnimationFrame(frame);
+            frame.cancel();
             resize.disconnect();
             document.removeEventListener('scroll', scheduleView, { capture: true, passive: true });
             removeEventListener('resize', scheduleView);

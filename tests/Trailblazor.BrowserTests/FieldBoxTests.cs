@@ -9,6 +9,7 @@ public class FieldBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     private static async Task PressPaddingAsync(IPage page, string input)
     {
+        await Box(page, input).ScrollIntoViewIfNeededAsync();
         var box = (await Box(page, input).BoundingBoxAsync())!;
         await page.Mouse.ClickAsync(box.X + 3, box.Y + box.Height / 2);
     }
@@ -23,6 +24,16 @@ public class FieldBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
             await PressPaddingAsync(page, input);
             await Expect(Box(page, input).Locator(".tb-field__input")).ToBeFocusedAsync();
         }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Box_ShouldFocusItsInput_WhenSomethingAroundTheFieldCanTakeTheFocusToo(string browser)
+    {
+        var page = await OpenAsync(browser, "/field-box");
+
+        await PressPaddingAsync(page, "Held");
+
+        await Expect(page.GetByLabel("Held", new() { Exact = true })).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -63,6 +74,7 @@ public class FieldBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Box_ShouldDropFocusToThePage_WhenTheFieldIsDisabled(string browser)
     {
+        Assert.SkipWhen(Popped, TheFocusFallsToThePanel);
         var page = await OpenAsync(browser, "/field-box");
 
         foreach (var input in new[] { "Off", "Fenced" })

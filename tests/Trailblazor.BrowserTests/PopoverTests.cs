@@ -350,6 +350,7 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Popover_ShouldTellTheParentItClosed_WhenItClosesBeforeTheOpeningFromCodeIsReported(string browser)
     {
+        Assert.SkipWhen(Popped, PatchesTheWindow);
         var page = await OpenAsync(browser, "/popover");
         await Expect(Trigger(page, "Notes")).ToHaveAttributeAsync("data-ready", "");
         await page.EvaluateAsync("""

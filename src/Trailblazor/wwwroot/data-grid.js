@@ -1,5 +1,6 @@
 import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { frames, viewOf, watchSizes } from '../Trailblazor.Primitives/pages.js';
 
 // Inputs that act on Enter themselves, as a button does, so the grid leaves their Enter alone.
 const actOnEnter = new Set(['button', 'color', 'file', 'image', 'reset', 'submit']);
@@ -11,7 +12,7 @@ const untyped = new Set(['checkbox', 'radio', 'range']);
 const cancelAndCommit = (event, input) => {
     event.preventDefault();
     event.tbGridGuarded = true;
-    if (input instanceof HTMLTextAreaElement || input instanceof HTMLInputElement && !untyped.has(input.type)) {
+    if (input.localName === 'textarea' || input.localName === 'input' && !untyped.has(input.type)) {
         input.dispatchEvent(new Event('change', { bubbles: true }));
     }
 };
@@ -21,8 +22,8 @@ const focusable = 'a[href], button, input, select, textarea, [tabindex], [conten
 // Controls that Enter or Space operates without the arrow keys; a cell holding just one hands focus to it. A menu's
 // button and a row's move handle use the arrow keys, so their cells keep focus.
 const takesCellFocus = element => !element.hasAttribute('aria-haspopup') && !element.closest('[data-part=handle]')
-    && (element instanceof HTMLButtonElement || element instanceof HTMLAnchorElement
-        || element instanceof HTMLInputElement && ['checkbox', 'radio', 'button'].includes(element.type));
+    && (['button', 'a'].includes(element.localName)
+        || element.localName === 'input' && ['checkbox', 'radio', 'button'].includes(element.type));
 
 // The row height to assume when no rows are drawn to measure.
 const fallbackRowHeight = 40;
@@ -88,7 +89,7 @@ const columnsInView = (table, scroll) => {
 const tsvField = text => /[\t\r\n"]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 const escapeHtml = text => text.replace(/[&<>"]/g, letter =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[letter]);
-const copyRows = rows => {
+const copyRows = (rows, page) => {
     const text = rows.map(row => row.map(tsvField).join('\t')).join('\r\n');
     const html = `<table>${rows.map(row => `<tr>${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`)
         .join('')}</table>`;
@@ -101,12 +102,12 @@ const copyRows = rows => {
     const holder = document.createElement('span');
     holder.className = 'tb-visually-hidden';
     holder.textContent = text || ' ';
-    document.body.append(holder);
-    const selection = document.getSelection();
+    page.body.append(holder);
+    const selection = page.getSelection();
     selection.selectAllChildren(holder);
     document.addEventListener('copy', fill, { capture: true });
     try {
-        document.execCommand('copy');
+        page.execCommand('copy');
     } finally {
         document.removeEventListener('copy', fill, { capture: true });
         selection.removeAllRanges();
@@ -185,7 +186,7 @@ export function createDataGrid(table, waitForReorder) {
             scroll.removeAttribute('aria-label');
         }
     };
-    const resizes = new ResizeObserver(() => {
+    const resizes = watchSizes(() => {
         measurePins();
         syncScrollStop();
     });
@@ -243,7 +244,7 @@ export function createDataGrid(table, waitForReorder) {
 
         const [first, last] = columnsInView(table, scroll);
         const shown = `${first},${last}`;
-        const remPixels = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const remPixels = parseFloat(getComputedStyle(table.ownerDocument.documentElement).fontSize);
         if ((shown !== table.dataset.columnWindow && shown !== sentWindow) || remPixels !== sentRem) {
             sentWindow = shown;
             sentRem = remPixels;
@@ -251,11 +252,8 @@ export function createDataGrid(table, waitForReorder) {
                 detail: { first, last, remPixels } }));
         }
     };
-    let windowFrame = 0;
-    const onHorizontalScroll = () => {
-        cancelAnimationFrame(windowFrame);
-        windowFrame = requestAnimationFrame(reportColumnWindow);
-    };
+    const windowFrame = frames(table, reportColumnWindow);
+    const onHorizontalScroll = () => windowFrame.request();
     // A reveal draws only the columns around its own, so once it ends the box's window is sent again, even when it's
     // the one sent last.
     const reportAfterReveal = () => {
@@ -265,7 +263,7 @@ export function createDataGrid(table, waitForReorder) {
     scroll.addEventListener('scroll', onHorizontalScroll, { passive: true });
     const windowWidths = new MutationObserver(reportColumnWindow);
     windowWidths.observe(table, { attributes: true, attributeFilter: ['data-column-widths', 'data-virtual-columns'] });
-    const windowResizes = new ResizeObserver(onHorizontalScroll);
+    const windowResizes = watchSizes(onHorizontalScroll);
     windowResizes.observe(scroll);
 
     // A resize reports every column's width, so the columns the user didn't touch keep the widths they have.
@@ -431,7 +429,7 @@ export function createDataGrid(table, waitForReorder) {
     const keepPageFormUnsubmitted = event => {
         const input = event.target;
         if (event.key !== 'Enter' || isComposing(event) || event.defaultPrevented
-            || !(input instanceof HTMLInputElement) || actOnEnter.has(input.type)
+            || input.localName !== 'input' || actOnEnter.has(input.type)
             || !input.closest('.tb-data-grid__filters, .tb-data-grid__filter-form, .tb-data-grid__editor')) {
             return;
         }
@@ -565,7 +563,7 @@ export function createDataGrid(table, waitForReorder) {
             names.disconnect();
             columns.disconnect();
             scroll.removeEventListener('scroll', onHorizontalScroll);
-            cancelAnimationFrame(windowFrame);
+            windowFrame.cancel();
             windowWidths.disconnect();
             windowResizes.disconnect();
             navigation.dispose();
@@ -676,7 +674,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         const current = copy?.dataset.from === nameOf(anchor ?? {}) && copy?.dataset.to === nameOf(end ?? {});
         const range = !ranged ? null
             : current ? [...copy.rows].map(row => [...row.cells].map(one => one.textContent)) : drawnRange();
-        copyRows(range ?? [[copyTextOf(cell)]]);
+        copyRows(range ?? [[copyTextOf(cell)]], cell.ownerDocument);
         table.dispatchEvent(new CustomEvent('tb-cells-copy', { bubbles: true }));
     };
 
@@ -694,7 +692,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
 
         extending = false;
         if (event.shiftKey) {
-            const focused = bodyCellOf(document.activeElement);
+            const focused = bodyCellOf(table.ownerDocument.activeElement);
             if (startsAgain()) {
                 anchor = spotOf(focused ?? cell);
             }
@@ -821,7 +819,8 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
             stop = placed ? stopOf(isSpacer(placed) ? [...row.cells].find(one => !isSpacer(one)) : placed) : null;
             // Focus that fell to the page with its row goes to what takes the row's place. A virtualized grid also drops
             // rows as it scrolls, which leaves nothing in that place and mustn't pull focus back.
-            if (document.activeElement === document.body) {
+            const page = table.ownerDocument;
+            if (page.activeElement === page.body) {
                 refocus = holdsFocus && !awaitingColumn() && !columnScrolledAway
                     && (!isVirtual() || !!rowAt(placeIndex(rows), rows));
                 // A window sent before focus moved can be drawn after it and drop the cell just focused; while that
@@ -895,8 +894,9 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         }
 
         // A later key or click, or focus moving out of the grid, wins over a column that was slow to come.
-        const focused = document.activeElement;
-        if (move === moves && (!focused || focused === document.body || table.contains(focused)) && target) {
+        const page = table.ownerDocument;
+        const focused = page.activeElement;
+        if (move === moves && (!focused || focused === page.body || table.contains(focused)) && target) {
             place.column = startOf(target);
             place.columnKey = key;
             focusCell(target);
@@ -938,8 +938,9 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         if (!row && isVirtual()) {
             scroll.scrollTop = (index - table.tHead.rows.length - 1) * rowHeight();
             row = await waitFor(() => rowAt(index, linesOf(table)));
-            const focused = document.activeElement;
-            if (move !== moves || focused && focused !== document.body && !table.contains(focused)) {
+            const page = table.ownerDocument;
+            const focused = page.activeElement;
+            if (move !== moves || focused && focused !== page.body && !table.contains(focused)) {
                 return;
             }
         }
@@ -963,7 +964,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
         if (field.closest('td, th') === cell && field.closest('[data-part=editor]')
             && field.matches('input, textarea') && !field.readOnly) {
             field.select();
-            document.execCommand('insertText', false, text);
+            field.ownerDocument.execCommand('insertText', false, text);
         }
     };
 
@@ -1083,7 +1084,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
             place.columnKey = next.dataset.column ?? null;
             focusCell(next);
         };
-        const page = () => Math.max(1, Math.floor(Math.min(scroll.clientHeight, window.innerHeight)
+        const page = () => Math.max(1, Math.floor(Math.min(scroll.clientHeight, viewOf(scroll).innerHeight)
             / (rowHeight() || fallbackRowHeight)) - 1);
         const control = event.ctrlKey || event.metaKey;
         if (selectsCells() && control && !event.shiftKey && event.key.toLowerCase() === 'c') {
@@ -1275,7 +1276,7 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
 
     // A focused element that is removed may report losing focus too, so what counts is focus that left a live element.
     const onFocusOut = event => queueMicrotask(() => {
-        if (event.target.isConnected && !table.contains(document.activeElement)) {
+        if (event.target.isConnected && !table.contains(table.ownerDocument.activeElement)) {
             holdsFocus = false;
         }
     });

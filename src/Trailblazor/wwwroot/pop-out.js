@@ -1,16 +1,17 @@
 // Shows an element in a browser window of its own while it stays part of the page that made it: Blazor keeps
 // rendering it there, and its components keep their state.
+import { addPage, otherPages } from '../Trailblazor.Primitives/pages.js';
 
 // The events Blazor has handlers for, and those the library's scripts hear on the page's document, as they bubble up
-// to it. The library's own events, such as the one a tag input sends for a new tag, join them as they are registered.
-// `selectionchange` is left out: the scripts that hear it read the page's own selection, not the other window's.
+// to it, or happen on it as `selectionchange` does. The library's own events, such as the one a tag input sends for a
+// new tag, join them as they are registered.
 const bubbling = new Set(['click', 'dblclick', 'auxclick', 'contextmenu', 'mousedown', 'mouseup', 'mousemove',
     'mouseover', 'mouseout', 'pointerdown', 'pointerup', 'pointermove', 'pointerover', 'pointerout', 'pointercancel',
     'gotpointercapture', 'lostpointercapture', 'touchstart', 'touchend', 'touchmove', 'touchcancel', 'keydown',
     'keyup', 'keypress', 'beforeinput', 'input', 'change', 'focusin', 'focusout', 'select', 'selectstart', 'submit',
     'reset', 'wheel', 'mousewheel', 'copy', 'cut', 'paste', 'compositionstart', 'compositionupdate', 'compositionend',
     'dragstart', 'drag', 'dragend', 'dragenter', 'dragleave', 'dragover', 'drop', 'fullscreenchange',
-    'fullscreenerror']);
+    'fullscreenerror', 'selectionchange']);
 export const forwardToo = type => bubbling.add(type);
 // The ones that don't bubble, which are heard on their way down: a control's, a dialog's, and an audio or video
 // element's.
@@ -20,8 +21,11 @@ const captured = ['focus', 'blur', 'scroll', 'mouseenter', 'mouseleave', 'pointe
     'playing', 'progress', 'ratechange', 'seeked', 'seeking', 'stalled', 'suspend', 'timeupdate', 'volumechange',
     'waiting'];
 
-// Blazor listens on the page's document only, so each event in the other window is sent on to that document, with
-// the element it happened on and the path it took.
+// Blazor listens on the page's document only, so each event in the other window is sent on to the page, with the
+// element it happened on and the path it took. An event on an element goes to the page's root element, so it passes
+// the page's document as it would have on the page: a listener that captures there hears it first, and one that
+// stops it at the root keeps it from the document. An event on the other document itself, as `selectionchange` is,
+// goes to the page's document.
 const forward = event => {
     const Type = window[event.constructor.name] ?? Event;
     const copy = new Type(event.type, event);
@@ -29,7 +33,18 @@ const forward = event => {
     Object.defineProperty(copy, 'target', { value: event.target });
     // A copy each time: Blazor takes the path apart as it reads it, and reads it once for each name an event has.
     Object.defineProperty(copy, 'composedPath', { value: () => [...path] });
-    document.dispatchEvent(copy);
+    // A default that a listener in the window prevented stays prevented on the page, where Blazor would otherwise
+    // follow a link the listener kept. Properties that listeners there set on the event go with it, as a data grid
+    // notes which key's default it prevented itself.
+    if (event.defaultPrevented) {
+        copy.preventDefault();
+    }
+
+    for (const [name, value] of Object.entries(event).filter(([name]) => name !== 'isTrusted')) {
+        copy[name] = value;
+    }
+
+    (event.target === event.currentTarget ? document : document.documentElement).dispatchEvent(copy);
     if (copy.defaultPrevented) {
         event.preventDefault();
     }
@@ -116,9 +131,34 @@ const scope = (element, body) => {
     }
 };
 
+// Blazor finds the element behind a reference, to hand it to a script or to focus it, by asking the page's document
+// for the attribute it marked the element with. While a window shows a part of the page, a mark the page doesn't have
+// is looked for in the windows too; without that, a component drawn in a window would never get its script.
+const findMarked = selector => Document.prototype.querySelector.call(document, selector)
+    ?? (selector.startsWith('[_bl_') ? otherPages().map(page => page.querySelector(selector)).find(Boolean) ?? null
+        : null);
+
+// What a window says of itself, that its size changed or that it lost the focus, is sent on to the page's window.
+const ofTheWindow = ['resize', 'blur'];
+
+// How long the window's linked sheets get to load before the element moves in without them, in milliseconds.
+const sheetsLimit = 3000;
+const sheetsLoaded = page => {
+    const loading = [...page.head.querySelectorAll('link[rel~="stylesheet"]:not([disabled])')]
+        .filter(link => !link.sheet);
+    return Promise.race([new Promise(resolve => setTimeout(resolve, sheetsLimit)),
+        Promise.all(loading.map(link => new Promise(resolve => {
+            link.addEventListener('load', resolve, { once: true });
+            link.addEventListener('error', resolve, { once: true });
+        })))]);
+};
+
 // Moves the element into the other window, which the caller opened, names the window and gives its body a class.
-// The returned function stops following the page's styles; the caller moves the element back.
-export function showInWindow(other, element, title, className) {
+// The element moves once the window's linked sheets have loaded, or their time is up, so it seldom shows unstyled
+// there and a script that measures it finds it laid out; the promise gives null when the window was closed
+// meanwhile. The caller moves the element back, and then calls the function the promise gives, which stops following
+// the page's styles.
+export async function showInWindow(other, element, title, className) {
     const page = other.document;
     // A window opens on a blank page in quirks mode, which lays out and measures some things differently from the
     // page that made it, so the blank page is written again with a doctype.
@@ -126,9 +166,17 @@ export function showInWindow(other, element, title, className) {
     page.write('<!DOCTYPE html>');
     page.close();
     page.title = title;
+    // The blank page has the page's address but not its `<base>`, which a Blazor app's relative addresses count on.
+    page.head.appendChild(page.createElement('base')).href = document.baseURI;
     const stop = mirror(other);
     page.body.className = className;
     scope(element, page.body);
+    await sheetsLoaded(page);
+    if (other.closed) {
+        stop();
+        return null;
+    }
+
     page.body.appendChild(element);
     for (const type of bubbling) {
         page.addEventListener(type, forward);
@@ -138,5 +186,17 @@ export function showInWindow(other, element, title, className) {
         page.addEventListener(type, forward, true);
     }
 
-    return stop;
+    for (const type of ofTheWindow) {
+        other.addEventListener(type, () => window.dispatchEvent(new Event(type)));
+    }
+
+    const leave = addPage(page);
+    document.querySelector = findMarked;
+    return () => {
+        stop();
+        leave();
+        if (otherPages().length === 0) {
+            delete document.querySelector;
+        }
+    };
 }

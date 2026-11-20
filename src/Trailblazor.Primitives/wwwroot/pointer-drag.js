@@ -1,3 +1,5 @@
+import { viewOf } from './pages.js';
+
 // Drags items with the pointer, a mouse, pen or finger, without the browser's own drag and drop and its ghost image.
 // A mouse or pen starts a drag by moving a few pixels; a finger holds still for a moment first, so a swipe still
 // scrolls. Escape cancels. The caller decides what the item is dragged over and what a drop does. A drag that drops
@@ -21,6 +23,8 @@ export function createPointerDrag(container,
     // which sends no click.
     let justDragged = false;
     const settle = () => setTimeout(() => { justDragged = false; });
+    // Asked for each time: the container can move to another window, with its own size, scrolling and frames.
+    const view = () => viewOf(container);
 
     const scrollParent = () => {
         for (let element = container; element; element = element.parentElement) {
@@ -30,14 +34,14 @@ export function createPointerDrag(container,
             }
         }
 
-        return document.scrollingElement;
+        return container.ownerDocument.scrollingElement;
     };
 
     // A drag near the top or bottom of what scrolls keeps it scrolling, and rows passing the pointer count as moves.
     const scrollNearEdge = now => {
         const { scroller, pointer } = drag;
-        const box = scroller === document.scrollingElement
-            ? { top: 0, bottom: innerHeight } : scroller.getBoundingClientRect();
+        const box = scroller === container.ownerDocument.scrollingElement
+            ? { top: 0, bottom: view().innerHeight } : scroller.getBoundingClientRect();
         const direction = pointer.clientY < box.top + edge ? -1 : pointer.clientY > box.bottom - edge ? 1 : 0;
         const before = scroller.scrollTop;
         const elapsed = Math.min(Math.max(now - drag.scrolledAt, 0), longestStep);
@@ -49,7 +53,7 @@ export function createPointerDrag(container,
             onMove(pointer);
         }
 
-        drag.frame = requestAnimationFrame(scrollNearEdge);
+        drag.frame = view().requestAnimationFrame(scrollNearEdge);
     };
 
     const begin = () => {
@@ -62,7 +66,7 @@ export function createPointerDrag(container,
         // Items laid out in a row, such as headers, can sit at the top of what scrolls, where scrolling near the edge
         // would start without the user asking.
         if (scrolls) {
-            drag.frame = requestAnimationFrame(scrollNearEdge);
+            drag.frame = view().requestAnimationFrame(scrollNearEdge);
         }
 
         if (drag.touch) {
@@ -78,7 +82,7 @@ export function createPointerDrag(container,
         }
 
         if (drag) {
-            cancelAnimationFrame(drag.frame);
+            view().cancelAnimationFrame(drag.frame);
         }
 
         pending = null;

@@ -1,6 +1,8 @@
 // A select's script attaches some time after the select renders, longer on a slow link. A click that lands first
 // marks the select, and the script opens the list when it attaches, unless the user has since moved on.
-const pending = () => document.querySelectorAll('.tb-select__trigger[data-open-when-ready]');
+// The marked selects in the window an event was in: a part of the page can show in a window of its own.
+const pending = event => (event.target.ownerDocument ?? document)
+    .querySelectorAll('.tb-select__trigger[data-open-when-ready]');
 
 document.addEventListener('click', event => {
     const control = event.target.closest?.('[data-part="control"]');
@@ -10,7 +12,7 @@ document.addEventListener('click', event => {
         && !event.target.closest('button, [popover], [data-part="chip-remove"]') ? combobox : null;
     // A second click on the same select cancels the first, just as it would close an attached select's list.
     const again = wanted && 'openWhenReady' in wanted.dataset;
-    for (const marked of pending()) {
+    for (const marked of pending(event)) {
         delete marked.dataset.openWhenReady;
     }
 
@@ -26,7 +28,8 @@ document.addEventListener('click', event => {
     // A click on the label of a select that waits for its first use focuses it, as the script would.
     const label = event.target.closest?.('label[data-part="label"]');
     if (label?.id) {
-        document.querySelector(`.tb-select__trigger[data-attach-on-use][aria-labelledby="${CSS.escape(label.id)}"]`)
+        label.ownerDocument
+            .querySelector(`.tb-select__trigger[data-attach-on-use][aria-labelledby="${CSS.escape(label.id)}"]`)
             ?.focus();
     }
 }, { capture: true });
@@ -45,7 +48,7 @@ document.addEventListener('keydown', event => {
 
 // Focus moving to anything outside the select, as by Tab, means the user has moved on.
 document.addEventListener('focusin', event => {
-    for (const marked of pending()) {
+    for (const marked of pending(event)) {
         if (!marked.parentElement.contains(event.target)) {
             delete marked.dataset.openWhenReady;
         }

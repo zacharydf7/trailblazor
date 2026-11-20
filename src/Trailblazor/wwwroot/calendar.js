@@ -103,8 +103,9 @@ export function createCalendar(grid, events, firstDayOfWeek) {
             intended = null;
         }
 
-        const focused = document.activeElement;
-        const lost = inGrid && focused === document.body;
+        const page = grid.ownerDocument;
+        const focused = page.activeElement;
+        const lost = inGrid && focused === page.body;
         const onACell = grid.contains(focused) && focused.matches('[data-date]');
         const shown = intended ? cell(intended) : null;
         if (shown && shown !== focused && (onACell || lost)) {

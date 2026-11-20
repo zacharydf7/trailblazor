@@ -1,4 +1,5 @@
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { viewOf } from '../Trailblazor.Primitives/pages.js';
 import { isApple } from '../Trailblazor.Primitives/platform.js';
 // The rich text editor's engine. The browser types, composes and spellchecks natively and the engine reads the result
 // back; every other edit the engine makes on its own model and renders. It never uses document.execCommand.
@@ -51,7 +52,7 @@ const MAX_PART = 5000;
 // allowed, images null where images aren't, and updateDelay in milliseconds.
 export function attachRichTextEditor(root, value, options) {
     const toolbar = root.closest('.tb-rich-text-editor')?.querySelector('[data-part="toolbar"]') ?? null;
-    const label = document.getElementById(root.getAttribute('aria-labelledby') ?? '');
+    const label = root.ownerDocument.getElementById(root.getAttribute('aria-labelledby') ?? '');
     const editor = new Editor(root, toolbar, label, value, options);
     return {
         setValue: html => editor.setValue(html),
@@ -150,7 +151,8 @@ class Editor {
             const anchor = event.target.closest?.('a[href]');
             if (!anchor || !root.contains(anchor)) return;
             event.preventDefault();
-            if (isApple() ? event.metaKey : event.ctrlKey) window.open(anchor.href, '_blank', 'noopener');
+            // The editor's own window opens it: a browser only lets the window the click was in open another.
+            if (isApple() ? event.metaKey : event.ctrlKey) viewOf(root).open(anchor.href, '_blank', 'noopener');
         });
         on(document, 'selectionchange', () => this.onSelectionChange());
         // The label names the editor without a for attribute, so a click on it doesn't focus the editor by itself.
@@ -220,7 +222,7 @@ class Editor {
         this.lastSent = this.value();
         this.selection = null;
         this.render();
-        if (document.activeElement === this.root) {
+        if (this.root.ownerDocument.activeElement === this.root) {
             this.selection = this.endSelection();
             this.writeSelection();
         }
@@ -495,8 +497,9 @@ class Editor {
         const dragged = this.dragged;
         this.dragged = null;
         if (this.readOnly) return;
-        const point = document.caretPositionFromPoint?.(event.clientX, event.clientY);
-        const range = point ? null : document.caretRangeFromPoint?.(event.clientX, event.clientY);
+        const page = this.root.ownerDocument;
+        const point = page.caretPositionFromPoint?.(event.clientX, event.clientY);
+        const range = point ? null : page.caretRangeFromPoint?.(event.clientX, event.clientY);
         const node = point?.offsetNode ?? range?.startContainer;
         if (!node || !this.root.contains(node)) return;
         this.readBack();
@@ -544,7 +547,7 @@ class Editor {
     }
 
     onSelectionChange() {
-        if (this.composing || document.activeElement !== this.root) return;
+        if (this.composing || this.root.ownerDocument.activeElement !== this.root) return;
         const selection = this.readSelection();
         if (!selection) return;
         if (!this.selection || compare(selection.anchor, this.selection.anchor) !== 0
@@ -558,7 +561,7 @@ class Editor {
     }
 
     browserCaretBesideAtom() {
-        const dom = document.getSelection();
+        const dom = this.root.ownerDocument.getSelection();
         return dom.isCollapsed && this.root.contains(dom.focusNode) && this.besideAtom(dom.focusNode, dom.focusOffset);
     }
 
@@ -1193,7 +1196,7 @@ class Editor {
     }
 
     readSelection() {
-        const selection = document.getSelection();
+        const selection = this.root.ownerDocument.getSelection();
         if (!selection.rangeCount || !this.root.contains(selection.anchorNode)) return null;
         const anchor = this.positionOf(selection.anchorNode, selection.anchorOffset);
         const head = this.positionOf(selection.focusNode, selection.focusOffset);
@@ -1211,7 +1214,7 @@ class Editor {
         const block = this.blockOf(node);
         if (block >= 0) return { block, offset: offsetAt(elements[block], node, offset) };
         // A point between paragraphs, in the editor or a list or quote around them, is the start of the next one.
-        const point = document.createRange();
+        const point = this.root.ownerDocument.createRange();
         point.setStart(node, Math.min(offset, node.nodeType === Node.TEXT_NODE ? node.data.length
             : node.childNodes.length));
         const next = elements.findIndex(element => point.comparePoint(element, 0) >= 0);
@@ -1222,12 +1225,13 @@ class Editor {
     }
 
     writeSelection() {
-        if (!this.selection || document.activeElement !== this.root) return;
+        const page = this.root.ownerDocument;
+        if (!this.selection || page.activeElement !== this.root) return;
         const elements = this.blockElements();
         const { anchor, head } = this.selection;
         const [anchorNode, anchorOffset] = pointAt(elements[anchor.block], anchor.offset);
         const [focusNode, focusOffset] = pointAt(elements[head.block], head.offset);
-        document.getSelection().setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset);
+        page.getSelection().setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset);
     }
 
     hasRange() {
@@ -1897,7 +1901,7 @@ const indexOf = node => Array.prototype.indexOf.call(node.parentNode.childNodes,
 
 function offsetAt(block, node, offset) {
     const all = leaves(block);
-    const point = document.createRange();
+    const point = block.ownerDocument.createRange();
     const size = node.nodeType === Node.TEXT_NODE ? node.data.length : node.childNodes.length;
     point.setStart(node, Math.min(offset, size));
     let count = 0;

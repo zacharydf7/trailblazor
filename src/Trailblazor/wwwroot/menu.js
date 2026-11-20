@@ -1,6 +1,7 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { focusWentElsewhere } from '../Trailblazor.Primitives/focus-scope.js';
+import { viewOf } from '../Trailblazor.Primitives/pages.js';
 
 const itemSelector = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]';
 // A pointer passing over an item on its way elsewhere doesn't open or close a submenu.
@@ -106,7 +107,7 @@ export function createContextMenu(target, menu, events) {
             return;
         }
 
-        returnTo = document.activeElement;
+        returnTo = menu.ownerDocument.activeElement;
         const key = keyOf(element);
         // Until the server has answered the last request, that answer could still redraw the items, so a key already
         // drawn is asked for again.
@@ -292,7 +293,7 @@ function attachLists(menu, events, hooks) {
         all[(index + all.length) % all.length]?.focus();
     };
     const submenuOf = item => item?.getAttribute('aria-haspopup') === 'menu'
-        ? document.getElementById(item.getAttribute('aria-controls'))
+        ? item.ownerDocument.getElementById(item.getAttribute('aria-controls'))
         : null;
 
     const onBeforeToggle = event => {
@@ -305,7 +306,7 @@ function attachLists(menu, events, hooks) {
         if (event.newState === 'closed') {
             // A hover still waiting would undo what Escape or a click just closed; this runs as the list closes.
             clearTimeout(hoverTimer);
-            if (list.contains(document.activeElement)) {
+            if (list.contains(list.ownerDocument.activeElement)) {
                 returnFocus.add(list);
             } else {
                 returnFocus.delete(list);
@@ -315,9 +316,9 @@ function attachLists(menu, events, hooks) {
         }
 
         // What has focus as the list opens is where the browser puts focus back as it closes.
-        openedFrom.set(list, document.activeElement);
+        openedFrom.set(list, list.ownerDocument.activeElement);
         // toggle fires a task later, possibly after a paint, so the list is placed in the next frame, before it paints.
-        requestAnimationFrame(() => {
+        viewOf(list).requestAnimationFrame(() => {
             if (list.matches(':popover-open') && !positions.has(list)) {
                 positions.set(list, list === menu ? hooks.place()
                     : createAnchoredPosition(list, opener(list), submenuOptions));
@@ -391,17 +392,17 @@ function attachLists(menu, events, hooks) {
         // Either timer may have been about to close a submenu open from another item, so close it now. Escape closes
         // the topmost list by itself, and closing one here would make it close two.
         if (event.key !== 'Escape') {
-            closeOtherSubmenus(list, document.activeElement);
+            closeOtherSubmenus(list, list.ownerDocument.activeElement);
         }
 
         const all = items(list);
-        const current = all.indexOf(document.activeElement);
+        const current = all.indexOf(list.ownerDocument.activeElement);
         // Submenus open towards the end of the line, which is the left in right-to-left text.
         const inward = getComputedStyle(list).direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
         const outward = inward === 'ArrowRight' ? 'ArrowLeft' : 'ArrowRight';
         const moveTo = index => {
             focusItem(list, index);
-            closeOtherSubmenus(list, document.activeElement);
+            closeOtherSubmenus(list, list.ownerDocument.activeElement);
         };
         switch (event.key) {
             case 'ArrowDown':
@@ -452,7 +453,7 @@ function attachLists(menu, events, hooks) {
             default:
                 if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
                     focusByFirstLetter(all, current, event.key);
-                    closeOtherSubmenus(list, document.activeElement);
+                    closeOtherSubmenus(list, list.ownerDocument.activeElement);
                 }
 
                 return;
@@ -521,7 +522,8 @@ function attachLists(menu, events, hooks) {
         const item = event.target.closest(itemSelector);
         if (item === hovered) {
             // Moving the pointer takes focus back from a key, unless the key went into this item's submenu.
-            if (item && document.activeElement !== item && !submenuOf(item)?.contains(document.activeElement)) {
+            const focused = menu.ownerDocument.activeElement;
+            if (item && focused !== item && !submenuOf(item)?.contains(focused)) {
                 item.focus({ preventScroll: true });
                 hoverOverSoon(item);
             }
@@ -535,7 +537,7 @@ function attachLists(menu, events, hooks) {
             grace = { submenu, points: [from, ...nearCorners(submenu, from)], timer: 0 };
             grace.timer = setTimeout(() => {
                 grace = null;
-                const target = document.elementFromPoint(lastPoint.x, lastPoint.y);
+                const target = menu.ownerDocument.elementFromPoint(lastPoint.x, lastPoint.y);
                 hoverItem(target?.closest(itemSelector));
                 hoverOver(target);
             }, graceTime);
@@ -603,8 +605,7 @@ function placeAtPoint(menu, point) {
     menu.style.position = 'fixed';
     menu.style.inset = 'auto';
     menu.style.margin = '0';
-    const width = document.documentElement.clientWidth;
-    const height = document.documentElement.clientHeight;
+    const { clientWidth: width, clientHeight: height } = menu.ownerDocument.documentElement;
     // A menu taller than the window scrolls, as the CSS caps it at this.
     menu.style.setProperty('--tb-available-block-size', `${Math.max(height - 2 * viewportPadding, 0)}px`);
     const size = { width: menu.offsetWidth, height: menu.offsetHeight };
@@ -624,7 +625,7 @@ function placeAtPoint(menu, point) {
 function keepAtPoint(menu, point) {
     const update = () => placeAtPoint(menu, point);
     update();
-    const resizeObserver = new ResizeObserver(update);
+    const resizeObserver = new (viewOf(menu).ResizeObserver)(update);
     resizeObserver.observe(menu);
     window.addEventListener('resize', update, { passive: true });
     return {

@@ -24,7 +24,7 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 ## Pointer
 
 - [x] Clicking the label focuses the input. `TbTextFieldTests.Render_ShouldLinkTheLabelAndHelperToTheInput_WhenBothAreSet`
-- [x] Clicking anywhere in the box outside its controls, such as its padding or a start icon, focuses the input. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`, `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsStartIconIsPressed`
+- [x] Clicking anywhere in the box outside its controls, such as its padding or a start icon, focuses the input, also when something around the field can take the focus itself, such as a tab's or a dock's panel. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`, `FieldBoxTests.Box_ShouldFocusItsInput_WhenSomethingAroundTheFieldCanTakeTheFocusToo`, `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsStartIconIsPressed`
 - [x] The clear button empties the field and puts focus back in the input. `TextFieldTests.TextField_ShouldEmptyAndKeepFocus_WhenTheClearButtonIsPressed`
 - [x] Typing and pasting stop at `MaxLength`, and the counter follows each keystroke with no round trip, even while `UpdateDelay` holds the text back. `TextFieldTests.TextField_ShouldCountEachKeystrokeAndStopAtTheLimit_WhenItShowsACount`
 - [x] As the text nears the limit, the field announces the characters left at 20 and 0, once each. `TextFieldTests.TextField_ShouldAnnounceTheCharactersLeft_WhenTheTextReachesAThreshold`

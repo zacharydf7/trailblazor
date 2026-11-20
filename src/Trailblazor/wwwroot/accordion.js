@@ -1,16 +1,20 @@
+import { onEachPage } from '../Trailblazor.Primitives/pages.js';
+
 // Focus inside a panel that turns inert would fall to the page, so it moves to the panel's header instead. An item
 // marked opening or closing is marked open or closed once its panel stops moving. The JS initializer imports this at
 // startup, since an item on its own has no accordion to load it.
-new MutationObserver(records => {
+const onChanges = records => {
     for (const { target, attributeName } of records) {
         if (attributeName === 'inert' && target.inert && target.matches('.tb-accordion__panel')
-            && target.contains(document.activeElement)) {
-            document.getElementById(target.getAttribute('aria-labelledby')).focus();
+            && target.contains(target.ownerDocument.activeElement)) {
+            target.ownerDocument.getElementById(target.getAttribute('aria-labelledby')).focus();
         } else if (attributeName === 'data-state' && target.matches('.tb-accordion__item')) {
             settleLater(target);
         }
     }
-}).observe(document.documentElement, { attributeFilter: ['inert', 'data-state'], subtree: true });
+};
+onEachPage(page => new MutationObserver(onChanges)
+    .observe(page.documentElement, { attributeFilter: ['inert', 'data-state'], subtree: true }));
 
 const moving = item => item.dataset.state === 'opening' || item.dataset.state === 'closing';
 const settle = item => {
@@ -49,7 +53,7 @@ document.addEventListener('click', event => {
 });
 document.addEventListener('beforematch', event => {
     if (event.target.matches('.tb-accordion__panel')) {
-        expand(document.getElementById(event.target.getAttribute('aria-labelledby')), true);
+        expand(event.target.ownerDocument.getElementById(event.target.getAttribute('aria-labelledby')), true);
     }
 }, true);
 // The browser may show a match before this script runs, so an item whose panel it showed opens now.
@@ -74,7 +78,7 @@ function expand(trigger, open) {
     item.classList.toggle('tb-accordion__item--expanded', open);
     item.dataset.state = open ? 'opening' : 'closing';
     trigger.setAttribute('aria-expanded', open);
-    const panel = document.getElementById(trigger.getAttribute('aria-controls'));
+    const panel = trigger.ownerDocument.getElementById(trigger.getAttribute('aria-controls'));
     if (open) {
         panel.removeAttribute('hidden');
     } else if (trigger.disabled) {

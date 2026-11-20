@@ -1074,17 +1074,23 @@
             _popOutAfterRender = null;
             if (_popped.Contains(panel) && Panel(panel) is { } opened)
             {
-                // The script answers with what went wrong, and with nothing when the panel is in its window.
-                if (await _handle.InvokeAsync<string?>("popOut", PanelId(panel)) is null)
+                // The script answers with what went wrong, and with nothing when the panel is in its window. The
+                // answer can take a moment: the panel waits for its window's style sheets.
+                var wrong = await _handle.InvokeAsync<string?>("popOut", PanelId(panel));
+                if (wrong is null)
                 {
                     Announcer.Polite(Format(Labels.PoppedOut, TbStrings.DockPoppedOut, opened.Title));
                 }
-                else
+                else if (_popped.Remove(panel))
                 {
-                    // The browser refused the window, so the panel stays in the floating window it was given.
-                    _popped.Remove(panel);
+                    // The browser refused the window, or the window closed before the panel got there, so the panel
+                    // stays in the floating window it was given. Only a refusal is said: closing was the user's doing.
                     _focusAfterRender = panel;
-                    Announcer.Polite(Format(Labels.PopOutBlocked, TbStrings.DockPopOutBlocked, opened.Title));
+                    if (wrong == "blocked")
+                    {
+                        Announcer.Polite(Format(Labels.PopOutBlocked, TbStrings.DockPopOutBlocked, opened.Title));
+                    }
+
                     StateHasChanged();
                 }
             }

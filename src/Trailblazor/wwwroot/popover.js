@@ -1,6 +1,7 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { firstTabbable, focusWentElsewhere, markedTarget } from '../Trailblazor.Primitives/focus-scope.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { viewOf } from '../Trailblazor.Primitives/pages.js';
 
 const showDelay = 300;
 // The pointer crosses the gap between the trigger and the panel; this keeps the panel open on the way (WCAG 1.4.13).
@@ -39,13 +40,13 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
         clearTimeout(timer);
         // The browser gives focus back to what had it when the panel opened, which after a hover isn't the trigger.
         if (event.newState === 'closed') {
-            returnFocus = panel.contains(document.activeElement);
+            returnFocus = panel.contains(panel.ownerDocument.activeElement);
             return;
         }
 
-        openedFrom = document.activeElement;
+        openedFrom = panel.ownerDocument.activeElement;
         // toggle fires a task later, possibly after a paint, so the panel is placed in the next frame.
-        requestAnimationFrame(() => {
+        viewOf(panel).requestAnimationFrame(() => {
             if (panel.matches(':popover-open') && !position) {
                 position = createAnchoredPosition(panel, trigger, options);
             }
@@ -112,7 +113,7 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
         clearTimeout(timer);
         // Opening an auto popover closes the others, except ones it sits in, so a hover mustn't close what the user
         // opened elsewhere.
-        const elsewhere = [...document.querySelectorAll('[popover="auto"]:popover-open')]
+        const elsewhere = [...panel.ownerDocument.querySelectorAll('[popover="auto"]:popover-open')]
             .some(open => !open.contains(panel));
         // A trigger that's off can still get pointer events (a disabled one in some browsers, a focusable one always), but
         // opens nothing.

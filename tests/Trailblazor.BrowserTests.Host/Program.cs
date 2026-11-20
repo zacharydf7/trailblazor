@@ -20,6 +20,12 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 });
 app.UseAntiforgery();
 app.MapStaticAssets();
+// An empty style sheet that takes `wait` milliseconds to arrive, for a test of what waits for a page's sheets.
+app.MapGet("/slow.css", async (int wait, CancellationToken gone) =>
+{
+    await Task.Delay(wait, gone);
+    return Results.Text("", "text/css");
+});
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode().AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Routes).Assembly);
 

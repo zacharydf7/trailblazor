@@ -10,7 +10,7 @@ export function createMenubar(root) {
     }
 
     const focus = createRovingFocus(root, { items: ':scope > .tb-menu > [data-part="trigger"]' });
-    const menuOf = item => document.getElementById(item.getAttribute('aria-controls'));
+    const menuOf = item => item.ownerDocument.getElementById(item.getAttribute('aria-controls'));
     const isOpen = item => menuOf(item)?.matches(':popover-open') ?? false;
     const opens = item => !item.matches('[aria-disabled="true"]');
     // Focus moves first, so the closing menu doesn't send it back to its own trigger.

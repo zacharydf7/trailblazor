@@ -601,6 +601,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Menu_ShouldHaveNoAccessibilityViolations_WhenItHoldsGroupsCheckboxesAndRadios(string browser)
     {
+        Assert.SkipWhen(Popped, ScansAnElement);
         var page = await OpenAsync(browser, "/examples/menu");
         await page.GetByRole(AriaRole.Button, new() { Name = "View" }).ClickAsync();
         await Expect(page.GetByRole(AriaRole.Menu, new() { Name = "View" })).ToBeVisibleAsync();
@@ -613,6 +614,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task LinkItem_ShouldFollowItsAddress_WhenChosenWithEnterOrSpace(string browser)
     {
+        Assert.SkipWhen(Popped, LeavesThePage);
         var page = await OpenAsync(browser, "/menu");
         var go = page.GetByRole(AriaRole.Button, new() { Name = "Go" });
 
@@ -1245,6 +1247,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Menu_ShouldTellTheParentItClosed_WhenItClosesBeforeTheOpeningFromCodeIsReported(string browser)
     {
+        Assert.SkipWhen(Popped, PatchesTheWindow);
         var page = await OpenAsync(browser, "/menu-open");
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Report" })).ToHaveAttributeAsync("data-ready", "");
         await page.EvaluateAsync("""
@@ -1286,6 +1289,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Menu_ShouldRingItsTriggerOnlyForTheKeyboard_WhenAnItemIsChosenWhileAFieldHadFocus(string browser,
         bool keyboard)
     {
+        Assert.SkipWhen(Popped, ChangesThePagesMain);
         var page = await OpenAsync(browser, "/examples/menu");
         // A text field with focus first, whose ring Safari would carry along, since a click there doesn't move focus.
         await page.EvaluateAsync("() => document.querySelector('main').prepend(document.createElement('input'))");
@@ -1311,6 +1315,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Menu_ShouldSayWhatIsMissing_WhenACustomTriggerLeavesOutItsAttributes(string browser)
     {
+        Assert.SkipWhen(Popped, ThePageFailsToRender);
         var from = Fixture.ServerLogs.GetSnapshot().Count;
 
         await OpenAsync(browser, "/menu-bare-trigger");
@@ -1333,6 +1338,7 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldFollowALink_WhenTheMenuIsInteractive(string browser)
     {
+        Assert.SkipWhen(Popped, LeavesThePage);
         var page = await OpenAsync(browser, "/menu");
 
         await page.Tb().Menu("Go").ChooseAsync("Follow");

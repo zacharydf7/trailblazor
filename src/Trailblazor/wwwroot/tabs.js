@@ -1,5 +1,6 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { isTabbable } from '../Trailblazor.Primitives/focus-scope.js';
+import { watchSizes } from '../Trailblazor.Primitives/pages.js';
 // The arrow keys, Home and End move focus between enabled tabs; with automatic activation they also select it, through
 // `order` rather than a click, so the tab's OnClick hears only clicks. The headers follow the order in which tabs
 // register, so the tabs' order in the markup is reported to `order` too. Delete or Backspace on a closable tab closes
@@ -105,14 +106,15 @@ export function attachTabs(list, order, followsSelection) {
     // Chromium sends focusout while it removes the focused tab, and a window losing focus sends it too while the tab
     // keeps focus, so wait a microtask to see whether focus really went elsewhere.
     const onFocusOut = event => queueMicrotask(() => {
-        if (event.target === focused && event.target.isConnected && document.activeElement !== event.target) {
+        if (event.target === focused && event.target.isConnected && list.ownerDocument.activeElement !== event.target) {
             focused = null;
         }
     });
     const refocus = records => {
         const removedBy = new Map(records.flatMap(record => [...record.removedNodes].map(node => [node, record])));
         const removal = focused && !focused.isConnected && removedBy.get(focused);
-        if (!removal || (document.activeElement && document.activeElement !== document.body)) {
+        const active = list.ownerDocument.activeElement;
+        if (!removal || (active && active !== list.ownerDocument.body)) {
             return;
         }
 
@@ -135,7 +137,7 @@ export function attachTabs(list, order, followsSelection) {
 
     const updatePanelStop = () => {
         const id = list.querySelector(':scope > [aria-selected="true"]')?.getAttribute('aria-controls');
-        const panel = id && document.getElementById(id);
+        const panel = id && list.ownerDocument.getElementById(id);
         if (panel) {
             settlePanelStop(list, panel);
         }
@@ -158,7 +160,7 @@ export function attachTabs(list, order, followsSelection) {
     selection.observe(list, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-selected'] });
     // This covers what no selection change does: the first render and a hidden row being shown, which is also when a
     // panel's content can first be seen to start with a control.
-    const sizes = new ResizeObserver(() => {
+    const sizes = watchSizes(() => {
         revealSelected();
         updateScrollers();
         updatePanelStop();
@@ -321,7 +323,7 @@ function settlePanelStop(list, panel) {
     const stop = stops === 'always' || stops !== 'never' && !startsWithControl(panel);
     if (stop && !panel.hasAttribute('tabindex')) {
         panel.tabIndex = 0;
-    } else if (!stop && panel.hasAttribute('tabindex') && panel !== document.activeElement) {
+    } else if (!stop && panel.hasAttribute('tabindex') && panel !== panel.ownerDocument.activeElement) {
         panel.removeAttribute('tabindex');
     }
 }
@@ -348,7 +350,7 @@ document.addEventListener('keydown', event => {
 });
 document.addEventListener('beforematch', event => {
     if (event.target.matches('.tb-tabs__panel')) {
-        select(document.getElementById(event.target.getAttribute('aria-labelledby')));
+        select(event.target.ownerDocument.getElementById(event.target.getAttribute('aria-labelledby')));
     }
 }, true);
 // The browser may show a match before this script runs, so the tab whose panel it showed is selected now.
@@ -381,7 +383,7 @@ function select(tab) {
         const selected = other === tab;
         other.setAttribute('aria-selected', selected);
         other.tabIndex = selected ? 0 : -1;
-        const panel = document.getElementById(other.getAttribute('aria-controls'));
+        const panel = tab.ownerDocument.getElementById(other.getAttribute('aria-controls'));
         if (panel && selected) {
             // Shown first, since a hidden panel's controls don't count.
             panel.removeAttribute('hidden');

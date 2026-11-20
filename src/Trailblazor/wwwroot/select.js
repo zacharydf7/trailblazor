@@ -4,6 +4,7 @@ import { watchForUnnamedOptions } from './unnamed-options.js';
 import { filterOptions } from './option-filter.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { viewOf } from '../Trailblazor.Primitives/pages.js';
 
 // Keys, typing and the open list stay in the browser; choosing clicks the option, which reaches the server.
 export function createSelect(combobox, listbox, toggle) {
@@ -17,7 +18,7 @@ export function createSelect(combobox, listbox, toggle) {
     const popup = listbox.closest('[popover]');
     const filter = popup.querySelector('[data-part="filter"]');
     const status = popup.querySelector('[data-part="no-results"]');
-    const label = document.getElementById(combobox.getAttribute('aria-labelledby'));
+    const label = combobox.ownerDocument.getElementById(combobox.getAttribute('aria-labelledby'));
     // Marks that the keys work, which tests wait for.
     combobox.dataset.ready = '';
     const unnamed = watchForUnnamedOptions(listbox);
@@ -140,7 +141,7 @@ export function createSelect(combobox, listbox, toggle) {
     };
     const close = () => {
         if (isOpen()) {
-            if (popup.contains(document.activeElement)) {
+            if (popup.contains(popup.ownerDocument.activeElement)) {
                 combobox.focus();
             }
 
@@ -203,7 +204,7 @@ export function createSelect(combobox, listbox, toggle) {
 
                 // A closed list renders no options, so it opens first, unless focus has moved on.
                 if (!isOpen()) {
-                    if (document.activeElement !== combobox) {
+                    if (combobox.ownerDocument.activeElement !== combobox) {
                         return;
                     }
 
@@ -241,7 +242,7 @@ export function createSelect(combobox, listbox, toggle) {
         }
 
         // toggle fires a task later, possibly after a paint, so the list is placed in the next frame, before it paints.
-        requestAnimationFrame(() => {
+        viewOf(popup).requestAnimationFrame(() => {
             if (isOpen() && !position) {
                 position = createAnchoredPosition(popup, control, { side: 'Bottom', align: 'Start', offset: 4 });
             }
@@ -392,7 +393,7 @@ export function createSelect(combobox, listbox, toggle) {
     observer?.observe(listbox, { childList: true, subtree: true });
     // A virtualized list draws its options again as it measures and scrolls, so the active one is found by its id.
     const redrawn = new MutationObserver(() => {
-        const again = active && !active.isConnected ? document.getElementById(active.id) : null;
+        const again = active && !active.isConnected ? listbox.ownerDocument.getElementById(active.id) : null;
         if (again) {
             active = again;
             again.setAttribute('data-active', '');

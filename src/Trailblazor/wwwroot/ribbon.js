@@ -2,6 +2,7 @@ import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-posit
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { focusWentElsewhere } from '../Trailblazor.Primitives/focus-scope.js';
+import { frames, viewOf, watchSizes } from '../Trailblazor.Primitives/pages.js';
 import { createRovingFocus } from '../Trailblazor.Primitives/roving-focus.js';
 import { attachKeyTips } from './ribbon-key-tips.js';
 import { controls } from './toolbar.js';
@@ -82,7 +83,7 @@ export function attachRibbon(toolbar) {
             return;
         }
 
-        const focused = document.activeElement;
+        const focused = toolbar.ownerDocument.activeElement;
         const all = groups();
         // A popup takes no room in the row, open or closed, so every group is measured as part of the row again.
         all.forEach(restore);
@@ -113,7 +114,7 @@ export function attachRibbon(toolbar) {
             const target = focused.checkVisibility() ? focused
                 : group?.hasAttribute('data-collapsed') ? buttonOf(group)
                 : focus.focusable().find(control => group?.contains(control));
-            if (target && target !== document.activeElement) {
+            if (target && target !== toolbar.ownerDocument.activeElement) {
                 target.focus();
             }
         }
@@ -128,7 +129,7 @@ export function attachRibbon(toolbar) {
         }
 
         if (event.newState === 'closed') {
-            if (popup.contains(document.activeElement)) {
+            if (popup.contains(popup.ownerDocument.activeElement)) {
                 returnFocus.add(popup);
             } else {
                 returnFocus.delete(popup);
@@ -137,9 +138,9 @@ export function attachRibbon(toolbar) {
             return;
         }
 
-        openedFrom.set(popup, document.activeElement);
+        openedFrom.set(popup, popup.ownerDocument.activeElement);
         // toggle fires a task later, possibly after a paint, so the popup is placed in the next frame, before it paints.
-        requestAnimationFrame(() => place(popup));
+        viewOf(popup).requestAnimationFrame(() => place(popup));
     };
     const onToggle = event => {
         const popup = event.target;
@@ -173,15 +174,14 @@ export function attachRibbon(toolbar) {
         }
     };
 
-    let frame = 0;
+    const frame = frames(toolbar, fit);
     // Marks a fit that is still to come, which a test waits out before using a control that may move.
     const fitSoon = () => {
         toolbar.dataset.fitting = '';
-        cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(fit);
+        frame.request();
     };
     // Groups change size as fonts load or their content changes, so each one is watched along with the row.
-    const resizes = new ResizeObserver(() => {
+    const resizes = watchSizes(() => {
         if (sizes() !== fitted) {
             fitSoon();
         }
@@ -210,7 +210,7 @@ export function attachRibbon(toolbar) {
     return {
         // Collapsed groups come back, so a script attached in its place starts from the row as rendered.
         dispose() {
-            cancelAnimationFrame(frame);
+            frame.cancel();
             resizes.disconnect();
             changes.disconnect();
             focus.dispose();
@@ -241,11 +241,11 @@ export function attachRibbonRoot(root, events) {
     const selectedTab = () => tabs()?.querySelector(':scope > [aria-selected="true"]');
     const tabOf = target => tabs()?.contains(target) ? target.closest('[role="tab"]') : null;
     // Not closest, which a tab panel nested in the commands would answer first.
-    const inCommands = target => target instanceof Node
+    const inCommands = target => Boolean(target?.nodeType)
         && [...root.querySelectorAll(':scope > .tb-tabs > [role="tabpanel"]')].some(panel => panel.contains(target));
     // The commands are about to hide, and focus would go with them.
     const keepFocus = () => {
-        if (inCommands(document.activeElement)) {
+        if (inCommands(root.ownerDocument.activeElement)) {
             selectedTab()?.focus();
         }
     };

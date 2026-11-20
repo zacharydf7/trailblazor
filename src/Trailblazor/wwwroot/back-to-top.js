@@ -1,4 +1,5 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { viewOf } from '../Trailblazor.Primitives/pages.js';
 
 // Shows the button once the page, or the element that scrolls, is past the threshold, and takes it back to the top.
 // It tells .NET the first time the button shows, which is when people can first see it.
@@ -11,10 +12,11 @@ export function attachBackToTop(root, events, scrollContainer, threshold) {
     let settings = { scrollContainer, threshold };
     let reported = false;
     // Looked up each time, so a container that renders after the button is still found.
-    const container = () => settings.scrollContainer ? document.querySelector(settings.scrollContainer) : null;
+    const container = () => settings.scrollContainer
+        ? root.ownerDocument.querySelector(settings.scrollContainer) : null;
     const update = () => {
         const element = container();
-        const shown = (element ? element.scrollTop : window.scrollY) > settings.threshold;
+        const shown = (element ? element.scrollTop : viewOf(root).scrollY) > settings.threshold;
         root.toggleAttribute('data-shown', shown);
         if (shown && !reported) {
             reported = true;
@@ -38,8 +40,9 @@ export function attachBackToTop(root, events, scrollContainer, threshold) {
         top(focusTarget) {
             const element = container();
             const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-            (element ?? window).scrollTo({ top: 0, behavior: still ? 'auto' : 'smooth' });
-            const target = document.querySelector(focusTarget) ?? element ?? document.body;
+            (element ?? viewOf(root)).scrollTo({ top: 0, behavior: still ? 'auto' : 'smooth' });
+            const page = root.ownerDocument;
+            const target = page.querySelector(focusTarget) ?? element ?? page.body;
             if (!target.hasAttribute('tabindex') && target.tabIndex < 0) {
                 target.setAttribute('tabindex', '-1');
                 target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });

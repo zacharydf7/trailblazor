@@ -180,6 +180,7 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldWarnOncePerListInTheConsole_WhenAnOptionHasNoTextOrName(string browser)
     {
+        Assert.SkipWhen(Popped, WarnsInThePagesConsole);
         var page = await OpenAsync(browser, "/unnamed-option");
 
         await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Badge" })).ToHaveAttributeAsync("data-ready", "");
@@ -191,6 +192,7 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldWarnOnlyOnceAnOptionWithNoName_WhenItArrivesAfterNamedOnes(string browser)
     {
+        Assert.SkipWhen(Popped, WarnsInThePagesConsole);
         var page = await OpenAsync(browser, "/named-options");
         await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Badge" })).ToHaveAttributeAsync("data-ready", "");
         Assert.Equal(0, await UnnamedWarningsAsync(page));

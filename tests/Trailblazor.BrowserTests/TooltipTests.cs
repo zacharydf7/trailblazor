@@ -95,6 +95,7 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tooltip_ShouldGoBackAboveTheTrigger_WhenThereIsRoomAgainAfterFlippingBelow(string browser)
     {
+        Assert.SkipWhen(Popped, AtThePagesTopEdge);
         var page = await OpenAsync(browser, "/tooltip");
         var edge = page.GetByRole(AriaRole.Button, new() { Name = "Flipping" });
         var tooltip = page.GetByRole(AriaRole.Tooltip, new() { Name = "Flips when it must" });

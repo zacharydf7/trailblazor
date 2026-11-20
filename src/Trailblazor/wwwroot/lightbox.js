@@ -1,7 +1,9 @@
+import { onEachPage } from '../Trailblazor.Primitives/pages.js';
+
 // A lightbox's keys, dragging and swiping, and the sizes its images fit at. It acts on every lightbox through the
 // document, so it needs no setup when a lightbox opens. The keys and gestures press the lightbox's own buttons, so the
 // server keeps one way to change the image, zoom or rotation.
-const lightboxOf = target => target instanceof Element ? target.closest('dialog.tb-lightbox') : null;
+const lightboxOf = target => target.nodeType === Node.ELEMENT_NODE ? target.closest('dialog.tb-lightbox') : null;
 const press = (lightbox, part) => {
     const button = lightbox.querySelector(`[data-part="${part}"]`);
     if (!button || button.matches(':disabled, [aria-disabled="true"]')) {
@@ -42,7 +44,8 @@ document.addEventListener('keydown', event => {
 // A mouse drags a zoomed image around; a finger scrolls it natively, and swipes between images when it isn't zoomed.
 const swipe = 48;
 document.addEventListener('pointerdown', event => {
-    const stage = event.target instanceof Element ? event.target.closest('.tb-lightbox [data-part="stage"]') : null;
+    const stage = event.target.nodeType === Node.ELEMENT_NODE
+        ? event.target.closest('.tb-lightbox [data-part="stage"]') : null;
     if (!stage || event.button !== 0) {
         return;
     }
@@ -92,7 +95,7 @@ document.addEventListener('pointerdown', event => {
 // The image's own shape and size, which the styles fit to the window and zoom from. Each image gets a new frame.
 document.addEventListener('load', event => {
     const image = event.target;
-    if (!(image instanceof HTMLImageElement) || !image.matches('.tb-lightbox [data-part="image"]')
+    if (image.localName !== 'img' || !image.matches('.tb-lightbox [data-part="image"]')
         || image.naturalWidth === 0 || image.naturalHeight === 0) {
         return;
     }
@@ -104,7 +107,7 @@ document.addEventListener('load', event => {
 }, true);
 
 // Zooming keeps the middle of the view where it was, and a rotation starts the view from the middle.
-new MutationObserver(records => {
+const onChanges = records => {
     for (const { target: stage, attributeName, oldValue } of records) {
         if (!stage.matches('.tb-lightbox [data-part="stage"]')) {
             continue;
@@ -117,5 +120,6 @@ new MutationObserver(records => {
         const y = ratio ? (stage.scrollTop + height / 2) * ratio - height / 2 : (stage.scrollHeight - height) / 2;
         stage.scrollTo((rtl(stage) ? -1 : 1) * Math.max(0, x), Math.max(0, y));
     }
-}).observe(document.documentElement,
-    { subtree: true, attributes: true, attributeFilter: ['data-zoom', 'data-turns'], attributeOldValue: true });
+};
+onEachPage(page => new MutationObserver(onChanges).observe(page.documentElement,
+    { subtree: true, attributes: true, attributeFilter: ['data-zoom', 'data-turns'], attributeOldValue: true }));

@@ -15,7 +15,18 @@ An issue is done when all of these hold:
   `TRAILBLAZOR_BROWSERS=chromium` narrows a local run the same way. If five minutes pass with no test finishing, the run
   stops and writes a hang dump and a `TestResults/*_hang.log` that lists the tests still running.
   `TRAILBLAZOR_RENDER_MODE=webassembly` (or `auto`) runs the test host's pages in that render mode instead of on the
-  server; the circuit tests still need the server.
+  server; the circuit tests still need the server. `TRAILBLAZOR_POPPED=1` runs each test that opens an interactive page
+  against that page inside a dock panel that shows in a browser window of its own. CI runs the suites listed in
+  `ci.yml` that way, in chromium, and a test in them that can't run there skips itself with
+  `Assert.SkipWhen(Popped, ...)` and one of the reasons in `BrowserTest`.
+- A script works on an element that may be in another browser window, so it asks that element for its window:
+  `element.ownerDocument` for the focused element and for finding others, and `viewOf`, `watchSizes` and `frames` from
+  `pages.js` for sizes, size changes and animation frames. A script with only an id uses `findById`, and one that
+  watches the whole page uses `onEachPage`. It opens a window with `viewOf(element).open`, since only the window a
+  click was in may open one, and checks an element's kind by `localName` or `nodeType`, not `instanceof`, since an
+  element made in another window isn't an instance of the page's classes. `ScriptWindowsTests` fails when a script
+  asks the page's own `document` or `window` instead; a script or a line whose subject is the page goes in its lists,
+  with the reason.
 - An interactive component has a driver in both `Trailblazor.Testing` (bUnit) and `Trailblazor.Testing.Playwright`,
   with the same names: a bUnit read such as `Text` is `TextAsync()` in Playwright. `DriverParityTests` fails when
   either package lacks one or their names differ; a component without a driver goes in its exemption list, with the

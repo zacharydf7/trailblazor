@@ -9,6 +9,7 @@ Familiar apps: mentioning someone with @ in GitHub, Slack or Google Docs comment
 - [x] A trigger at the start of a word opens suggestions under it as the text after it is typed; a trigger inside a word doesn't. `MentionInputTests.MentionInput_ShouldSuggestUnderTheTrigger_WhenItStartsAWord`
 - [x] Down and Up move through the suggestions and wrap, with `aria-activedescendant` on the field. `MentionInputTests.MentionInput_ShouldChooseWithTheKeys_WhenSuggestionsShow`
 - [x] Enter or Tab puts the active suggestion in, with a space after it. `MentionInputTests.MentionInput_ShouldChooseWithTheKeys_WhenSuggestionsShow`
+- [x] Moving the caret out of the mention closes the suggestions. `MentionInputTests.MentionInput_ShouldStopSuggesting_WhenTheCaretLeavesTheMention`
 - [x] Escape closes the suggestions until the text changes. `MentionInputTests.MentionInput_ShouldStayClosedUntilTheTextChanges_WhenEscapeIsPressed`
 - [x] A choice from suggestions that newer typing replaced isn't counted. `TbMentionInputTests.OnChosen_ShouldNotCountTheChoice_WhenItComesFromSuggestionsALaterQueryReplaced`
 - [x] Enter or Tab pressed while suggestions show and newer ones are on their way puts the first of the newer ones in once they arrive. `MentionInputTests.MentionInput_ShouldChooseTheFirstOfTheLatestSuggestions_WhenEnterOrTabIsPressedBeforeTheyArrive`

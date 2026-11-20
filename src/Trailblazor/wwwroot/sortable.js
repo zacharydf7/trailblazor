@@ -15,8 +15,8 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
     const items = (of = list) => [...of.children].filter(item => item.matches(itemSelector));
     // The lists of this list's group, which an item can move between, in the order they appear.
     const group = list.dataset.group;
-    const groupLists = () => group
-        ? [...document.querySelectorAll('[data-sortable]')].filter(other => other.dataset.group === group) : [];
+    const groupLists = () => group ? [...list.ownerDocument.querySelectorAll('[data-sortable]')]
+        .filter(other => other.dataset.group === group) : [];
     // A list or grid inside an item has handles and items of its own, which are its business.
     const ownItem = element => {
         const item = element?.closest('[data-sortable]') === list ? element.closest(itemSelector) : null;
@@ -145,7 +145,7 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
         // The item goes before the one under the pointer when it is over that item's first half, else after it.
         onMove: event => {
             // Anywhere over one of this list's items counts, a list inside the item included.
-            const element = document.elementFromPoint(event.clientX, event.clientY);
+            const element = list.ownerDocument.elementFromPoint(event.clientX, event.clientY);
             const other = element?.closest('[data-sortable]');
             if (source && group && other && other !== list && other.dataset.group === group) {
                 dragOverList(other, element, event);

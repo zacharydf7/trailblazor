@@ -17,12 +17,14 @@ const trappedScopes = [];
 
 export function createFocusScope(container, options) {
     // Safari leaves focus on the page when a button opens the scope, so the button pressed is where focus goes back.
-    const previouslyFocused = focusOrigin();
+    const previouslyFocused = focusOrigin(container.ownerDocument);
     let lastFocusedInside = null;
     // A temporary stop beside a player whose own controls took the Tab; reaching it wraps to the scope's other end.
     let guard = null;
     let guardWrapsForward = true;
     const scope = { dispose, focusMarkedIfUnmoved };
+    // Asked for each time: the container can move to another window, which has a focused element of its own.
+    const focusedNow = () => container.ownerDocument.activeElement;
 
     if (options.trapped) {
         trappedScopes.push(scope);
@@ -31,16 +33,16 @@ export function createFocusScope(container, options) {
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('focusin', onFocusIn);
 
-    if (options.autoFocus && !container.contains(document.activeElement)) {
+    if (options.autoFocus && !container.contains(focusedNow())) {
         (autofocusTarget(container) ?? getTabbables(container)[0] ?? container).focus();
     }
 
-    const settled = document.activeElement;
+    const settled = focusedNow();
     return scope;
 
     // A field marked to take focus asked before the scope started; it takes focus unless the user has moved it.
     function focusMarkedIfUnmoved() {
-        if (document.activeElement === settled) {
+        if (focusedNow() === settled) {
             autofocusTarget(container)?.focus();
         }
     }
@@ -63,7 +65,7 @@ export function createFocusScope(container, options) {
 
         const first = tabbables[0];
         const last = tabbables.at(-1);
-        const focused = document.activeElement;
+        const focused = focusedNow();
         const focusIsOutside = !container.contains(focused);
         // Focus stays on a player while Tab moves through its own controls, so the browser takes the key.
         if (!focusIsOutside && focused.matches(players) && focused === (event.shiftKey ? first : last)) {
@@ -120,8 +122,8 @@ export function createFocusScope(container, options) {
         }
 
         // Don't take focus back if the user has already moved it somewhere else on purpose.
-        const focused = document.activeElement;
-        const focusIsInsideOrLost = container.contains(focused) || focused === document.body;
+        const focused = focusedNow();
+        const focusIsInsideOrLost = container.contains(focused) || focused === container.ownerDocument.body;
         if (options.restoreFocus && focusIsInsideOrLost && previouslyFocused?.isConnected) {
             previouslyFocused.focus();
         }
@@ -135,17 +137,19 @@ export function autofocusTarget(container) {
     return named && markedTarget(named);
 }
 
-// A marked group sends focus where Tab would.
+// A marked group sends focus where Tab would. A marked control takes it itself, even after a data grid has taken it
+// out of the tab order (`data-tb-tab`), which the grid may do before the mark is seen.
 export function markedTarget(named) {
-    return isTabbable(named) ? named : firstTabbable(named);
+    return isTabbable(named) || 'tbTab' in named.dataset ? named : firstTabbable(named);
 }
 
 // Whether a control outside a popover has taken focus since it closed. Its toggle event comes a task after it closes,
 // so focus goes back to the trigger only when this is false. Focus on the body, anywhere inside the popover, or on what
 // had focus as it opened (where the browser puts focus back by itself) doesn't count.
 export function focusWentElsewhere(popover, openedFrom) {
-    const active = document.activeElement;
-    return active !== null && active !== document.body && !popover.contains(active) && active !== openedFrom;
+    const page = popover.ownerDocument;
+    const active = page.activeElement;
+    return active !== null && active !== page.body && !popover.contains(active) && active !== openedFrom;
 }
 
 // The first control Tab would reach in the container, or null.

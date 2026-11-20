@@ -85,7 +85,7 @@ export function createChat(root) {
     // A key can come before the scroll event of the move it follows, so the newest-messages button is settled first.
     const leave = forward => {
         onScroll();
-        const outside = getTabbables(document.body).filter(element => !feed.contains(element));
+        const outside = getTabbables(feed.ownerDocument.body).filter(element => !feed.contains(element));
         const following = element => feed.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING;
         const target = forward ? outside.find(following) : outside.filter(element => !following(element)).at(-1);
         target?.focus();

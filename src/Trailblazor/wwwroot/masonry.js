@@ -1,3 +1,5 @@
+import { frames, watchSizes } from '../Trailblazor.Primitives/pages.js';
+
 // Places each card, in the order given, under the shortest column, so cards of different heights leave no gaps. The
 // stylesheet's grid works out the columns; the script then positions each card absolutely in one of them and gives the
 // masonry the height of its tallest column. The cards keep their order in the page, so reading and Tab follow it.
@@ -7,9 +9,7 @@ export function attachMasonry(root) {
         return null;
     }
 
-    let frame = 0;
     const layout = () => {
-        frame = 0;
         // A hidden masonry, such as in a tab that isn't shown, keeps its last placement until it shows again.
         if (root.clientWidth === 0) {
             return;
@@ -57,10 +57,11 @@ export function attachMasonry(root) {
         root.style.blockSize = `${height}px`;
         root.dataset.ready = '';
     };
-    const schedule = () => frame ||= requestAnimationFrame(layout);
+    const frame = frames(root, layout);
+    const schedule = () => frame.request();
 
     // Place the cards again when one changes size, such as when its image loads, or when the masonry's width changes.
-    const sizes = new ResizeObserver(schedule);
+    const sizes = watchSizes(schedule);
     const observe = () => {
         sizes.disconnect();
         sizes.observe(root);
@@ -78,7 +79,7 @@ export function attachMasonry(root) {
 
     return {
         dispose() {
-            cancelAnimationFrame(frame);
+            frame.cancel();
             sizes.disconnect();
             cards.disconnect();
         },

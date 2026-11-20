@@ -41,6 +41,21 @@ jobs:
           $TRAILBLAZOR_BROWSERS
       # One test project at a time, so the browser tests don't slow the timing tests in the others past their limit.
       - run: dotnet test --configuration Release --no-build --max-parallel-test-modules 1
+      # The suites for the components a dock panel often holds run again with each page inside a panel that shows in a
+      # browser window of its own, where a script that asks the page's window for something gives itself away. Run
+      # this way, the suites have no hang dump of their own, so the step has a time limit.
+      - timeout-minutes: 15
+        run: >-
+          dotnet tests/Trailblazor.BrowserTests/bin/Release/net10.0/Trailblazor.BrowserTests.dll
+          -class "*.TooltipTests" -class "*.PopoverTests" -class "*.MenuTests" -class "*.SelectTests"
+          -class "*.TabsTests" -class "*.TabsOverflowTests" -class "*.ToolbarTests" -class "*.ContextMenuTests"
+          -class "*.AccordionTests" -class "*.GridEditKeysTests" -class "*.TextFieldTests" -class "*.FieldBoxTests"
+          -class "*.MentionInputTests" -class "*.RibbonKeyTipsTests" -class "*.TreeSelectTests"
+          -class "*.ListBoxKeysTests" -class "*.NumberFieldTests" -class "*.AutocompleteTests"
+          -class "*.TagInputTests" -class "*.GridBatchTests" -class "*.RichTextEditorTests"
+        env:
+          TRAILBLAZOR_POPPED: 1
+          TRAILBLAZOR_BROWSERS: chromium
 
   # The testing packages promise the lowest versions in Directory.Packages.props, so the bUnit tests run against them.
   minimums:

@@ -42,9 +42,9 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
 
     const onBeforeToggle = event => {
         if (event.newState === 'closed') {
-            returnFocus = panel.contains(document.activeElement);
+            returnFocus = panel.contains(panel.ownerDocument.activeElement);
         } else {
-            openedFrom = document.activeElement;
+            openedFrom = panel.ownerDocument.activeElement;
         }
     };
     const onToggle = event => {
@@ -131,10 +131,11 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     };
     // A render can remove or reuse the focused button, or set the range's start, so focus and the preview are fixed.
     const renders = new MutationObserver(() => {
-        const focused = document.activeElement;
+        const page = panel.ownerDocument;
+        const focused = page.activeElement;
         const shown = intended && day(intended);
         const onADay = panel.contains(focused) && focused.matches('[data-part="day"]');
-        const lost = intended && focused === document.body && panel.matches(':popover-open');
+        const lost = intended && focused === page.body && panel.matches(':popover-open');
         if (shown && shown !== focused && (onADay || lost)) {
             focusDay(shown);
         } else if (!shown && lost) {

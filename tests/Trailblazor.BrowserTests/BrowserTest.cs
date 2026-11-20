@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.WebUtilities;
+using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
 
@@ -11,11 +12,43 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
     // Runs before a page opens anything, for a test class that sets up every page the same way.
     protected virtual Task PreparePageAsync(IPage page) => Task.CompletedTask;
 
+    // TRAILBLAZOR_POPPED=1 runs a page's tests against the page inside a dock panel that shows in a browser window of
+    // its own, which is where a script that assumes one window gives itself away. A test that can't run there says
+    // why with Assert.SkipWhen(Popped, ...).
+    protected static bool Popped { get; } = Environment.GetEnvironmentVariable("TRAILBLAZOR_POPPED") == "1";
+
+    // Why a test skips itself there.
+    protected const string LeavesThePage = "It follows a link or reloads, which takes the panel's window away.";
+    protected const string AtThePagesTopEdge =
+        "What it looks at sits at the page's top edge, where the panel's window has its Return bar.";
+    protected const string TheFocusFallsToThePanel =
+        "It waits for the focus to fall to the page, and in the panel's window it falls to the panel.";
+    protected const string ScrollsThePage = "It scrolls the page, and in the panel's window the panel is what scrolls.";
+    protected const string PatchesTheWindow =
+        "It changes a built-in of the window it is given, and the panel's elements keep the page's.";
+    protected const string ChangesThePagesMain =
+        "It changes the page's main element, which the panel's window doesn't have.";
+    protected const string ScansAnElement =
+        "axe narrows a scan to an element only from the window it runs in, and the page made the panel's elements.";
+    protected const string ThePageFailsToRender = "The page fails to render on purpose, so it has no panel to open.";
+    protected const string WarnsInThePagesConsole =
+        "The library's scripts warn in the page's console, not the panel's window's.";
+    protected const string ShowsInThePagesWindow =
+        "Dialogs, toasts and announcements still show in the page's window (#584).";
+
     protected async Task<IPage> OpenAsync(string browser, string path, BrowserNewContextOptions? options = null)
     {
-        var page = await OpenStaticAsync(browser, path, options);
+        var page = await OpenStaticAsync(browser, Popped ? $"/popped{path}" : path, options);
         await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
-        return page;
+        if (!Popped)
+        {
+            return page;
+        }
+
+        var window = (await page.Tb().Dock("Popped host").PopOutAsync("Qz")).Page;
+        var size = options?.ViewportSize ?? new() { Width = 1280, Height = 720 };
+        await window.SetViewportSizeAsync(size.Width, size.Height);
+        return window;
     }
 
     // Opens an interactive page with the script matching the glob, such as "**/menu.*js", held back until the returned

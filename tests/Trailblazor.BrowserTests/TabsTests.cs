@@ -8,6 +8,7 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldTakeTheIndicatorSizeFromAroundThem_WhenThePageSetsIt(string browser)
     {
+        Assert.SkipWhen(Popped, ChangesThePagesMain);
         var page = await OpenAsync(browser, "/examples/tabs");
         var selected = page.GetByRole(AriaRole.Tab, new() { Name = "Summary" });
 

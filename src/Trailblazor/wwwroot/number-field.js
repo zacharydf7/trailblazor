@@ -1,4 +1,5 @@
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { watchSizes } from '../Trailblazor.Primitives/pages.js';
 // A formatted number field is a text box acting as a spin button, so Up and Down step it rather than move the caret.
 // Text the user edited commits first, so the step starts from it; unedited text matches the rendered aria-valuetext,
 // and committing that would round the value to what the format shows. The JS initializer imports this at startup.
@@ -18,7 +19,8 @@ document.addEventListener('keydown', event => {
 // past. It leaves a read-only box alone and still scrolls the page, so the box is read-only for that one event.
 document.addEventListener('wheel', event => {
     const input = event.target;
-    if (input === document.activeElement && input.matches?.('input[type=number][data-part=input]') && !input.readOnly) {
+    if (input === input.ownerDocument?.activeElement && input.matches?.('input[type=number][data-part=input]')
+        && !input.readOnly) {
         input.readOnly = true;
         setTimeout(() => input.readOnly = false);
     }
@@ -159,7 +161,7 @@ document.addEventListener('contextmenu', event => {
 // squeezing the value out of sight. The input's own width decides, so Start and End content, size and density count.
 // While they're hidden, the buttons come back once the input has room for them and the digits.
 const buttonRoom = new WeakMap();
-const fits = new ResizeObserver(entries => entries.forEach(({ target }) => fitStepButtons(target)));
+const fits = watchSizes(entries => entries.forEach(({ target }) => fitStepButtons(target)));
 
 function fitStepButtons(control) {
     const input = control.querySelector(':scope > [data-part="input"]');

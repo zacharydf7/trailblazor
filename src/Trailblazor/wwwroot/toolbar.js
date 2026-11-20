@@ -1,5 +1,6 @@
 import { createRovingFocus } from '../Trailblazor.Primitives/roving-focus.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { frames, watchSizes } from '../Trailblazor.Primitives/pages.js';
 
 // A disabled link stays out unless it was kept focusable, and a select's combobox is its control unless it's turned off.
 export const controls = 'button, a[href], a[data-kept-focusable], input:not([type="hidden"]), select, textarea, '
@@ -34,7 +35,7 @@ export function attachToolbar(toolbar, more, overflow) {
             return;
         }
 
-        const focused = document.activeElement;
+        const focused = toolbar.ownerDocument.activeElement;
         const items = [...toolbar.querySelectorAll('[data-toolbar-item]')].filter(item => !inPopup(item));
         for (const item of items) {
             item.removeAttribute('data-overflowed');
@@ -64,15 +65,14 @@ export function attachToolbar(toolbar, more, overflow) {
         }
     };
 
-    let frame = 0;
+    const frame = frames(toolbar, fit);
     // Marks a fit that is still to come, which a test waits out before choosing a button that may move.
     const fitSoon = () => {
         toolbar.dataset.fitting = '';
-        cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(fit);
+        frame.request();
     };
     // Items change size as fonts load or text changes, so each one is watched along with the toolbar.
-    const resizes = new ResizeObserver(fitSoon);
+    const resizes = watchSizes(fitSoon);
     const watch = () => {
         resizes.disconnect();
         resizes.observe(toolbar);
@@ -93,7 +93,7 @@ export function attachToolbar(toolbar, more, overflow) {
     return {
         // Moved buttons come back, so a script attached in its place starts from the toolbar as rendered.
         dispose() {
-            cancelAnimationFrame(frame);
+            frame.cancel();
             resizes.disconnect();
             changes.disconnect();
             focus.dispose();

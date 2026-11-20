@@ -26,8 +26,8 @@ export function focusForLastInput(element) {
 }
 
 // The control the pointer last pressed when focus fell to something around it (the page, or a dialog that took
-// the focus instead); otherwise the focused element.
-export function focusOrigin() {
-    const active = document.activeElement;
+// the focus instead); otherwise the focused element. The page is the document of whatever is asking.
+export function focusOrigin(page = document) {
+    const active = page.activeElement;
     return lastPressed?.isConnected && (!active || active.contains(lastPressed)) ? lastPressed : active;
 }

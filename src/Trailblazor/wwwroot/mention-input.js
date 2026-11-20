@@ -141,7 +141,7 @@ export function createMentionInput(input, listbox, events) {
         close();
         input.focus();
         input.setSelectionRange(start, end);
-        if (!document.execCommand('insertText', false, text)) {
+        if (!input.ownerDocument.execCommand('insertText', false, text)) {
             input.setRangeText(text, start, end, 'end');
             input.dispatchEvent(new Event('input', { bubbles: true }));
         }
@@ -152,7 +152,7 @@ export function createMentionInput(input, listbox, events) {
         update();
     };
     const onSelectionChange = () => {
-        if (document.activeElement === input) {
+        if (input.ownerDocument.activeElement === input) {
             update();
         }
     };
@@ -218,7 +218,7 @@ export function createMentionInput(input, listbox, events) {
         }
 
         waiting = false;
-        if (query && options().length > 0 && document.activeElement === input) {
+        if (query && options().length > 0 && input.ownerDocument.activeElement === input) {
             open();
             if (chooseOnArrival) {
                 choose(active);
@@ -274,7 +274,7 @@ function caretPoint(field, index) {
     const mark = document.createElement('span');
     mark.textContent = field.value.slice(index) || '.';
     copy.append(mark);
-    document.body.append(copy);
+    field.ownerDocument.body.append(copy);
     const point = {
         x: mark.offsetLeft - field.scrollLeft,
         y: mark.offsetTop - field.scrollTop,

@@ -25,18 +25,20 @@ const beside = root => [...root.querySelectorAll('[data-key-tip]')]
     .filter(control => !inPanel(root, control) && usable(control));
 // A tab's commands count only once its panel shows, which the server answers a moment after the tab's key.
 const commandsOf = tab => {
-    const panel = document.getElementById(tab.getAttribute('aria-controls') ?? '');
+    const panel = tab.ownerDocument.getElementById(tab.getAttribute('aria-controls') ?? '');
     return panel && !panel.hidden ? [...panel.querySelectorAll('[data-key-tip]')].filter(usable) : null;
 };
 const showing = state => state.tab ? commandsOf(state.tab) : beside(state.root);
 
 // A ribbon behind a modal dialog is out of reach: a dialog on the page layer makes it inert, and the browser does for
 // one in the top layer. Of the others, the ribbon with focus comes first, and then the first one on the page.
-const target = () => {
-    const top = [...document.querySelectorAll('dialog:modal')].at(-1);
-    const candidates = [...ribbons].filter(root => !root.closest('[inert]') && (!top || top.contains(root))
-        && root.checkVisibility() && beside(root).length > 0);
-    return candidates.find(root => root.contains(document.activeElement)) ?? candidates
+const target = event => {
+    // Alt is for the window it was pressed in, which can be one that shows a part of the page.
+    const page = event.target.ownerDocument ?? document;
+    const top = [...page.querySelectorAll('dialog:modal')].at(-1);
+    const candidates = [...ribbons].filter(root => root.ownerDocument === page && !root.closest('[inert]')
+        && (!top || top.contains(root)) && root.checkVisibility() && beside(root).length > 0);
+    return candidates.find(root => root.contains(page.activeElement)) ?? candidates
         .sort((one, other) => one.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)[0];
 };
 
@@ -73,7 +75,7 @@ const stop = restoreFocus => {
     state.changes.disconnect();
     clear(state);
     delete state.root.dataset.keyTips;
-    if (restoreFocus && state.returnTo?.isConnected && state.returnTo !== document.body) {
+    if (restoreFocus && state.returnTo?.isConnected && state.returnTo !== state.returnTo.ownerDocument.body) {
         state.returnTo.focus();
     }
 };
@@ -129,7 +131,7 @@ const refresh = () => {
 };
 const start = root => {
     const state = {
-        root, tab: null, pending: null, returnTo: document.activeElement, kept: new Map(),
+        root, tab: null, pending: null, returnTo: root.ownerDocument.activeElement, kept: new Map(),
         changes: new MutationObserver(refresh),
     };
     active = state;
@@ -161,7 +163,8 @@ const back = state => {
 const onKeyDown = event => {
     if (event.key === 'Alt') {
         if (!event.repeat) {
-            armed = !event.ctrlKey && !event.shiftKey && !event.metaKey && (active !== null || target() !== undefined);
+            armed = !event.ctrlKey && !event.shiftKey && !event.metaKey
+                && (active !== null || target(event) !== undefined);
         }
 
         // Left alone, Alt on its own would go to the browser's menu on Windows and Linux.
@@ -206,7 +209,7 @@ const onKeyUp = event => {
         return;
     }
 
-    const root = target();
+    const root = target(event);
     if (root) {
         start(root);
     }

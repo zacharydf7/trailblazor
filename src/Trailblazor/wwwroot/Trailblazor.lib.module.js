@@ -31,6 +31,7 @@ import '../Trailblazor.Primitives/composing.js';
 import '../Trailblazor.Primitives/dotnet-call.js';
 import '../Trailblazor.Primitives/focus-scope.js';
 import '../Trailblazor.Primitives/grip-drag.js';
+import '../Trailblazor.Primitives/pages.js';
 import '../Trailblazor.Primitives/pointer-drag.js';
 import '../Trailblazor.Primitives/roving-focus.js';
 import './browser.js';
@@ -157,7 +158,7 @@ function registerEvents(blazor) {
     document.addEventListener('mousedown', event => {
         const root = event.target.closest?.('[data-tb-focus-root]');
         const label = event.target.closest?.('label');
-        if (event.button === 0 && root?.contains(document.activeElement) && label
+        if (event.button === 0 && root?.contains(root.ownerDocument.activeElement) && label
             && !label.contains(event.target.closest(ownPress))) {
             event.preventDefault();
         }
@@ -165,8 +166,8 @@ function registerEvents(blazor) {
 
     // A press on a field's show-password button leaves focus, and the caret, in the field.
     document.addEventListener('mousedown', event => {
-        if (event.button === 0 && event.target.closest?.('.tb-field [data-part="reveal"]')?.closest('.tb-field')
-            ?.contains(document.activeElement)) {
+        const field = event.target.closest?.('.tb-field [data-part="reveal"]')?.closest('.tb-field');
+        if (event.button === 0 && field?.contains(field.ownerDocument.activeElement)) {
             event.preventDefault();
         }
     }, true);
@@ -179,7 +180,7 @@ function registerEvents(blazor) {
     const dragThreshold = 4;
     let pressedAt = null;
     document.addEventListener('pointerdown', event => pressedAt = { x: event.clientX, y: event.clientY }, true);
-    const endsTextDrag = event => event.detail === 1 && !document.getSelection().isCollapsed
+    const endsTextDrag = event => event.detail === 1 && !event.target.ownerDocument.getSelection().isCollapsed
         && pressedAt !== null && Math.hypot(event.clientX - pressedAt.x, event.clientY - pressedAt.y) >= dragThreshold;
     // A press that selected cells, by dragging across them or with Shift, ends in a click the row ignores.
     const cellGesture = event => !!event.target.closest?.('table[data-cell-gesture]');

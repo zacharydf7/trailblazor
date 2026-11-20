@@ -104,7 +104,7 @@ export function createTagInput(input) {
     // Leaving the field adds what was typed. With nothing typed, the event still goes, to take back an old message.
     // Switching to another window blurs the input too, but leaves it the active element, and isn't leaving.
     const onLeave = event => {
-        if (!field.contains(event.relatedTarget) && document.activeElement !== input) {
+        if (!field.contains(event.relatedTarget) && input.ownerDocument.activeElement !== input) {
             commit();
         }
     };
@@ -133,7 +133,8 @@ export function createTagInput(input) {
         },
         // A tag's remove button by its position, or the input for -1 or a position past the last tag.
         focusTag(index) {
-            if (!keyAfterRemoval || document.activeElement === document.body) {
+            const page = field.ownerDocument;
+            if (!keyAfterRemoval || page.activeElement === page.body) {
                 (buttons()[index] ?? input).focus();
             }
         },

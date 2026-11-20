@@ -1,0 +1,68 @@
+@page "/popped/{*Path}"
+@using System.Reflection
+
+@* Shows another of this app's pages inside a dock panel, so that with TRAILBLAZOR_POPPED=1 the browser tests run a
+   page's tests against the panel once it shows in a browser window of its own. *@
+<div style="block-size: 100vh">
+    @* The panel's title is its window's name for a screen reader, so it is one no test looks for by label. *@
+    <TbDockManager AriaLabel="Popped host" AllowPopOut>
+        <TbDockPanel Id="page" Title="Qz" Closable="false">
+            @* The page's own body keeps its content off the window's edges, and so does this. *@
+            <div style="padding: 8px">
+                <DynamicComponent Type="_page" Parameters="_parameters" />
+            </div>
+        </TbDockPanel>
+    </TbDockManager>
+</div>
+
+@code {
+    private Type _page = default!;
+    private Dictionary<string, object> _parameters = [];
+
+    [Parameter]
+    public string Path { get; set; } = "";
+
+    protected override void OnParametersSet()
+    {
+        var segments = Path.Split('/');
+        var routes = typeof(PoppedHost).Assembly.GetTypes().Where(type => type != typeof(PoppedHost))
+            .SelectMany(type => type.GetCustomAttributes<RouteAttribute>().Select(route => (type, route.Template)));
+        foreach (var (type, template) in routes)
+        {
+            if (Match(template.Trim('/').Split('/'), segments) is { } parameters)
+            {
+                (_page, _parameters) = (type, parameters);
+                return;
+            }
+        }
+
+        throw new InvalidOperationException($"No page of this app has the route /{Path}.");
+    }
+
+    // The values of a route's parameters when the address fits it: {Name} takes one part and {*Rest} takes the rest.
+    private static Dictionary<string, object>? Match(string[] template, string[] segments)
+    {
+        var parameters = new Dictionary<string, object>();
+        for (var index = 0; index < template.Length; index++)
+        {
+            var part = template[index];
+            if (part.StartsWith("{*"))
+            {
+                parameters[part[2..^1]] = string.Join('/', segments.Skip(index));
+                return parameters;
+            }
+
+            if (index >= segments.Length || (!part.StartsWith('{') && part != segments[index]))
+            {
+                return null;
+            }
+
+            if (part.StartsWith('{'))
+            {
+                parameters[part[1..^1]] = segments[index];
+            }
+        }
+
+        return template.Length == segments.Length ? parameters : null;
+    }
+}

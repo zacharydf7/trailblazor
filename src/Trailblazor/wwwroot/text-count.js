@@ -25,7 +25,7 @@ document.addEventListener('input', event => {
 }, true);
 
 function update(field) {
-    const counter = document.getElementById(field.dataset.count);
+    const counter = field.ownerDocument.getElementById(field.dataset.count);
     if (!counter) {
         return;
     }

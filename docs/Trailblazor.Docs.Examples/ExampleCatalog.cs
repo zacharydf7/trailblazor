@@ -3321,9 +3321,9 @@ public static class ExampleCatalog
                     + "\"Auto-hidden panel\". A strip's button has `aria-expanded`, so on the button screen readers "
                     + "hear whether its panel is out.",
                 "When a panel opens in a browser window of its own, screen readers hear \"Notes opened in a new "
-                    + "window.\", and \"Notes is back in the dock.\" when it returns. When the browser refuses the "
-                    + "window, they hear \"The browser blocked the new window for Notes.\" All three are said in the "
-                    + "page's window.",
+                    + "window.\" once the panel is there, and \"Notes is back in the dock.\" when it returns. When the "
+                    + "browser refuses the window, they hear \"The browser blocked the new window for Notes.\" All "
+                    + "three are said in the page's window.",
                 "On a separator, `aria-valuenow` gives the share, in percent, that the part before it has of the space "
                     + "its two sides take together, and `aria-valuemin` and `aria-valuemax` give how far the separator "
                     + "can go before a group on either side is down to `MinGroupSize`.",
@@ -3372,10 +3372,10 @@ public static class ExampleCatalog
                     + "showing tab or on the group's menu button; when what held the focus is now covered, the "
                     + "showing tab takes it.",
                 "Open in new window is a menu item, so nothing needs a drag. The new window takes the focus, on "
-                    + "the panel, though WebKit sometimes leaves it on the window's body, and the panel's Return "
-                    + "button is the first stop for the Tab key in the panel. Return leaves the focus on the panel's "
-                    + "tab in the dock; closing the window leaves it to the browser. While a panel is away it has no "
-                    + "tab in the dock, so closing the dock's last tab gives the focus to the dock itself.",
+                    + "the panel, and the panel's Return button is the first stop for the Tab key in the panel. "
+                    + "Return leaves the focus on the panel's tab in the dock; closing the window leaves it to the "
+                    + "browser. While a panel is away it has no tab in the dock, so closing the dock's last tab gives "
+                    + "the focus to the dock itself.",
                 "Tab and screen readers meet the groups in reading order, and still do after the layout changes.",
                 "A hidden panel is `inert`: nothing in it can be focused or read until its tab shows it.",
                 "A click on a close mark, or a middle click, leaves the focus where it is. Closing a tab that holds "
@@ -3498,28 +3498,46 @@ public static class ExampleCatalog
                     + "window, which can slow the panel with it. Keep the page's window open and in view. On a phone "
                     + "or a tablet the browser opens a tab in place of a window, which puts the page in the "
                     + "background.") { Pitfall = true },
-                new("Some things don't follow a panel into its window. A dialog, a toast or a screen reader "
-                    + "announcement that the panel asks for still shows in the page's window, and a component that "
-                    + "watches its own size, such as a ribbon that collapses as it narrows, doesn't hear of the "
-                    + "window's size.") { Pitfall = true },
-                new("A popup anchored to an element, such as a menu opened from its button, a select's list or a "
-                    + "tooltip, opens in the panel's window and is placed by that window's size. A context menu "
-                    + "opened at the pointer is still placed by the page's size. Keyboard focus inside a popup there "
-                    + "can go wrong, such as moving through a menu with the arrow keys or going back to where it was "
-                    + "as the popup closes.") { Pitfall = true },
-                new("A dock inside a panel can't open its own panels in windows while that panel is in a window of "
-                    + "its own.") { Pitfall = true },
-                new("An `<iframe>` in a panel loads again as the panel goes to its window and as it comes back, "
-                    + "and the panel's scroll positions start over."),
+                new("The library's components work in a panel's window as they do on the page, including ones "
+                    + "first drawn there: each reads the focus, its size and where its popups go from the window its "
+                    + "element is in. A dock inside the panel opens its own panels in windows from there."),
+                new("A dialog, a toast or a screen reader announcement that the panel asks for still shows, or is "
+                    + "said, in the page's window.") { Pitfall = true },
+                new("The panel moves into its window once the window has loaded the page's style sheets, and waits "
+                    + "on the page, hidden, until then. After three seconds it moves anyway, and a sheet that fails "
+                    + "to load or is turned off isn't waited for."),
+                new("A panel keeps its scroll positions on the way to its window and back, but an `<iframe>` in it "
+                    + "loads again each way. A relative address in the panel counts from the app's `<base>` in the "
+                    + "window too."),
+                new("The window follows the style sheets in the page's head as their elements and attributes "
+                    + "change. A sheet switched on or off by script alone, as through `document.styleSheets`, isn't "
+                    + "followed.") { Pitfall = true },
                 new("A script of your own inside a panel has to use the panel's own document and window, "
                     + "`element.ownerDocument` and its `defaultView`. In a window of its own the panel is in neither "
-                    + "the page's `document` nor its `window`. The events Blazor has handlers for, and the library's "
-                    + "own, are sent on from the window to the page's `document`, where Blazor listens, so a listener "
-                    + "there still hears them. `selectionchange` isn't sent on, nor are events Blazor has no handler "
-                    + "for or a custom event of your own.") { Pitfall = true },
+                    + "the page's `document` nor its `window`, so `document.activeElement`, `document.getElementById` "
+                    + "and `requestAnimationFrame` answer for the page, and a `ResizeObserver` the page made hears "
+                    + "nothing of the panel. An `ElementReference` still reaches your script as its element.")
+                    { Pitfall = true },
+                new("In a panel's window, open a window from a click with `element.ownerDocument.defaultView.open`, "
+                    + "since a browser lets only the window the click was in open one. Check an element's kind by "
+                    + "`localName` or `nodeType`: an element made in the panel's window, as by `innerHTML` there, "
+                    + "isn't an instance of the page's `HTMLElement`, so `instanceof` checks against it fail.")
+                    { Pitfall = true },
+                new("The events Blazor has handlers for, the library's own and `selectionchange` are sent on from the "
+                    + "window to the page; others, and custom events of your own, aren't. An event on an element "
+                    + "reaches the page's root element and then its `document`, as on the page, so a listener on the "
+                    + "page's `<body>` doesn't hear it. If a listener in the window called `preventDefault` on it, "
+                    + "it arrives with its default prevented, and any properties listeners there set on an event go "
+                    + "with it.") { Pitfall = true },
+                new("`selectionchange` from the window reaches the page's `document` with the window's document as "
+                    + "its `target`. Read the selection from there, since the page's `document.getSelection()` gives "
+                    + "the page's.") { Pitfall = true },
+                new("The window's `resize` and `blur` are sent on to the page's `window`, so a listener there also "
+                    + "hears the panel's window change size or lose the focus."),
                 new("The window opens in the click on the menu's item, since a browser only lets a page open one "
                     + "while it handles what the user did. A popup blocker that still refuses it leaves the panel "
-                    + "floating in the dock. A window that the dock doesn't fill within ten seconds closes."),
+                    + "floating in the dock. So does closing the window before the panel gets there, and then nothing "
+                    + "is said. A window that the dock doesn't fill within ten seconds closes."),
                 new("A theme, a palette, a density, a direction or a language set on an element around the dock, and "
                     + "not on the page's root, goes on the window's `<body>`, which has the class `tb-dock-window`. "
                     + "So do custom properties set in a `style` attribute around the dock, the nearest value of "
@@ -3584,7 +3602,9 @@ public static class ExampleCatalog
                     + "slid-out panel's row takes."),
                 new("return-bar", "The bar across the top of a panel that shows in a browser window of its own, "
                     + "with the class `tb-dock__return-bar`. The panel has `data-popped`, the class "
-                    + "`tb-dock__panel--popped`, the role `region` and no `data-dock-group` while it is there."),
+                    + "`tb-dock__panel--popped`, the role `region` and no `data-dock-group` from the moment Open in "
+                    + "new window is chosen, also while it waits on the page, hidden, for its window's style "
+                    + "sheets."),
                 new("return", "The button in that bar, which brings the panel back to the dock."),
                 new("window-grip", "A floating window's grip menu, a child of the dock after the window's panels. "
                     + "It has `data-group` with the window's number, `data-floating`, and the window's box and "
@@ -3693,15 +3713,19 @@ public static class ExampleCatalog
                     + "move in a few steps and release, then wait for `data-commits` to go up by one.",
                 "So does a strip's button, into the dock or onto another strip, and a tab onto a strip: the strip "
                     + "has `data-drop` while the drop would go to it, and the drop counts in `data-commits`.",
-                "`PopOutAsync(\"Notes\")` chooses Open in new window and gives the panel. In Playwright the "
-                    + "panel is in its new window, so its `Page` is that window's page, where the panel's content is "
-                    + "found as on any page; closing that page does what closing the window does.",
+                "`PopOutAsync(\"Notes\")` chooses Open in new window and gives the panel. In Playwright it waits "
+                    + "until the panel is in its new window (`data-popped` alone doesn't say it has arrived), and its "
+                    + "`Page` is that window's page, where the panel's content is found and its components' helpers "
+                    + "work as on any page; closing that page does what closing the window does.",
                 "bUnit has no windows, so there `PopOutAsync` leaves the panel in the markup, drawn as it is in its "
                     + "window, and `Panel` and `PanelElement` still find it.",
                 "`PoppedOutAsync()` in Playwright, or `PoppedOut` in bUnit, lists the panels in windows of their "
                     + "own, which `Panels`, `Showing` and `Floating` leave out, and `ReturnAsync(\"Notes\")` "
                     + "presses a panel's Return button. `PopOutAsync` throws an `InvalidOperationException` when "
                     + "`AllowPopOut` is off, and `ReturnAsync` for a panel that isn't in a window of its own.",
+                "Scan a panel's window for accessibility as a whole, not one element in it: the page's window made "
+                    + "the panel's elements, so axe running in the panel's window won't take one of them as what to "
+                    + "scan.",
                 "A `DockLayout` needs no renderer: test what your app does with `Open`, `Close`, `Move`, `MoveToEdge`, "
                     + "`Float`, `FloatAt`, `MoveWindow`, `AutoHide`, `Conceal`, `ResizeAutoHidden`, `Maximize`, "
                     + "`Restore`, `ToJson` and `TryParse` in plain unit tests.",

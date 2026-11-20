@@ -180,6 +180,7 @@ public class ContextMenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Scroll_ShouldKeepTheMenuClosed_WhenThePageScrollsBeforeTheServerAnswers(string browser)
     {
+        Assert.SkipWhen(Popped, ScrollsThePage);
         var page = await OpenReadyAsync(browser);
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Ridge loop" }).ClickAsync(
@@ -193,6 +194,7 @@ public class ContextMenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Scroll_ShouldCloseTheMenu_WhenThePageScrolls(string browser)
     {
+        Assert.SkipWhen(Popped, ScrollsThePage);
         var page = await OpenReadyAsync(browser);
         await page.GetByText("Trails", new() { Exact = true }).ClickAsync(new() { Button = MouseButton.Right });
         await Expect(Menu(page, "Trail actions")).ToBeVisibleAsync();

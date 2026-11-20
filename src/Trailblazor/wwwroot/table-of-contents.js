@@ -1,5 +1,6 @@
 import { scrollIntoView } from './browser.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { frames, viewOf as windowOf } from '../Trailblazor.Primitives/pages.js';
 
 const settleDelay = 150;
 
@@ -15,17 +16,18 @@ export function attachTableOfContents(root, events) {
 
     // The nearest ancestor that scrolls the sections, or the page.
     const scrollerOf = element => {
-        for (let parent = element.parentElement; parent && parent !== document.body; parent = parent.parentElement) {
+        const page = element.ownerDocument;
+        for (let parent = element.parentElement; parent && parent !== page.body; parent = parent.parentElement) {
             const overflow = getComputedStyle(parent).overflowY;
             if ((overflow === 'auto' || overflow === 'scroll') && parent.scrollHeight > parent.clientHeight) {
                 return parent;
             }
         }
 
-        return document.scrollingElement;
+        return page.scrollingElement;
     };
-    const viewOf = scroller => scroller === document.scrollingElement
-        ? { top: 0, bottom: window.innerHeight }
+    const viewOf = scroller => scroller === scroller.ownerDocument.scrollingElement
+        ? { top: 0, bottom: windowOf(scroller).innerHeight }
         : scroller.getBoundingClientRect();
 
     // A section is in view once its start passes the top quarter of what scrolls it. At the top of the scroll, and
@@ -33,7 +35,7 @@ export function attachTableOfContents(root, events) {
     // sections can't reach the line, the last section that shows is in view, or, when none shows, the last one past
     // the line.
     const inView = () => {
-        const sections = links().map(link => document.getElementById(link.dataset.target)).filter(Boolean);
+        const sections = links().map(link => link.ownerDocument.getElementById(link.dataset.target)).filter(Boolean);
         if (sections.length === 0) {
             return null;
         }
@@ -77,20 +79,17 @@ export function attachTableOfContents(root, events) {
         }, settleDelay);
     };
     let reported;
-    let frame = 0;
     const update = () => {
-        frame = 0;
         const id = (followed?.isConnected ? followed : inView())?.id ?? null;
         if (id !== reported) {
             reported = id;
             callDotNet(events, 'OnActive', id);
         }
     };
-    const schedule = () => {
-        frame ||= requestAnimationFrame(update);
-    };
+    const frame = frames(root, update);
+    const schedule = () => frame.request();
     const onScroll = event => {
-        const scroller = event.target === document ? document.scrollingElement : event.target;
+        const scroller = event.target.nodeType === Node.DOCUMENT_NODE ? event.target.scrollingElement : event.target;
         if (followed && scroller === scrollerOf(followed)) {
             if (settling) {
                 settle();
@@ -105,7 +104,7 @@ export function attachTableOfContents(root, events) {
     // Focus moves to the section, so Tab goes on from there as it would after the browser's own jump.
     const onClick = event => {
         const link = event.target.closest('a[data-target]');
-        const section = link ? document.getElementById(link.dataset.target) : null;
+        const section = link ? link.ownerDocument.getElementById(link.dataset.target) : null;
         if (!section || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
             return;
         }
@@ -134,7 +133,7 @@ export function attachTableOfContents(root, events) {
     root.dataset.ready = '';
     return {
         dispose() {
-            cancelAnimationFrame(frame);
+            frame.cancel();
             clearTimeout(settling);
             document.removeEventListener('scroll', onScroll, { capture: true });
             window.removeEventListener('resize', schedule);

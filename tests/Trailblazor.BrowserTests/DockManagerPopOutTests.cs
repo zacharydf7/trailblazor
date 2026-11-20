@@ -1,3 +1,4 @@
+using Deque.AxeCore.Playwright;
 using Trailblazor.Testing.Playwright;
 
 namespace Trailblazor.BrowserTests;
@@ -395,7 +396,6 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     public async Task Window_ShouldTakeTheFocusOnItsPanelBeforeTheReturnButton_WhenItOpensFromTheKeyboard(
         string browser)
     {
-        Assert.SkipWhen(browser == "webkit", "WebKit often leaves the focus on the new window's body (#586).");
         var page = await OpenDockAsync(browser);
         await page.GetByRole(AriaRole.Tab, new() { Name = "Notes" }).FocusAsync();
 
@@ -476,5 +476,410 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         Assert.Equal("The dock doesn't open panels in windows of their own. Turn on its AllowPopOut.",
             (await Assert.ThrowsAsync<InvalidOperationException>(() => plain.Tb().Dock("Hike planner")
                 .PopOutAsync("Notes"))).Message);
+    }
+
+    // Opens the page whose Tools panel holds components that lean on their scripts, with that panel in a window of
+    // its own, narrower than the page's.
+    private async Task<(IPage Page, IPage Window)> OpenToolsInAWindowAsync(string browser,
+        string path = "/dock-popped-parts")
+    {
+        var page = await OpenAsync(browser, path);
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        var window = (await page.Tb().Dock("Bench").PopOutAsync("Tools")).Page;
+        await window.SetViewportSizeAsync(900, 600);
+        return (page, window);
+    }
+
+    private static async Task<(float Top, float Bottom, float Left, float Right)> EdgesAsync(ILocator element)
+    {
+        var box = (await element.BoundingBoxAsync())!;
+        return (box.Y, box.Y + box.Height, box.X, box.X + box.Width);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldOpenBelowItsTriggerAndKeepTheFocus_WhenFirstUsedInAPanelsWindow(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+        // A window that is covered or minimized draws no frames, and the page's own may be.
+        await page.EvaluateAsync("() => window.requestAnimationFrame = () => 0");
+        var trigger = window.GetByRole(AriaRole.Button, new() { Name = "Insert" });
+
+        await trigger.ClickAsync();
+
+        var menu = window.GetByRole(AriaRole.Menu, new() { Name = "Insert" });
+        await Expect(menu).ToBeVisibleAsync();
+        await FocusedAsync(window.GetByRole(AriaRole.Menuitem, new() { Name = "Shape" }));
+        Assert.InRange((await EdgesAsync(menu)).Top - (await EdgesAsync(trigger)).Bottom, 0, 12);
+
+        // The keys work on the focus in the panel's window: into the submenu, back out, and back to the trigger.
+        await window.Keyboard.PressAsync("ArrowRight");
+        await FocusedAsync(window.GetByRole(AriaRole.Menuitem, new() { Name = "Circle" }));
+        await window.Keyboard.PressAsync("Escape");
+        await FocusedAsync(window.GetByRole(AriaRole.Menuitem, new() { Name = "Shape" }));
+        await window.Keyboard.PressAsync("ArrowDown");
+        await window.Keyboard.PressAsync("Enter");
+        await Expect(window.GetByTestId("chosen")).ToHaveTextAsync("Table");
+        await Expect(menu).ToBeHiddenAsync();
+        await FocusedAsync(trigger);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldHaveNoAccessibilityViolations_WhenItShowsAPanel(string browser)
+    {
+        var (_, window) = await OpenToolsInAWindowAsync(browser);
+
+        var result = await window.RunAxe(AxeTests.WcagAA);
+
+        Assert.Empty(result.Violations.Select(violation =>
+            $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Components_ShouldGetTheirScripts_WhenFirstDrawnInAPanelsWindow(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+
+        await window.GetByRole(AriaRole.Button, new() { Name = "Show more" }).ClickAsync();
+
+        // The field that asks for the focus gets it, the select's script opens its list, and the tooltip describes
+        // its trigger and shows.
+        await FocusedAsync(window.GetByLabel("Late note"));
+        await window.GetByRole(AriaRole.Combobox, new() { Name = "Late size" }).ClickAsync();
+        await window.GetByRole(AriaRole.Option, new() { Name = "Large" }).ClickAsync();
+        await Expect(window.GetByTestId("size")).ToHaveTextAsync("Large");
+        var share = window.GetByRole(AriaRole.Button, new() { Name = "Share" });
+        await Expect(share).ToHaveAccessibleDescriptionAsync("Sends it on");
+        await share.HoverAsync();
+        await Expect(window.GetByRole(AriaRole.Tooltip)).ToHaveTextAsync("Sends it on");
+
+        // Blazor finds those elements through the page's own `querySelector`, which looks in a window only for
+        // Blazor's marks, and is the browser's again once no panel is away.
+        const string own = "() => Object.hasOwn(document, 'querySelector')";
+        Assert.True(await page.EvaluateAsync<bool>(own));
+        Assert.False(await page.EvaluateAsync<bool>("() => document.querySelector('[data-part=return-bar]') !== null"));
+        await page.Tb().Dock("Bench").ReturnAsync("Tools");
+        Assert.False(await page.EvaluateAsync<bool>(own));
+    }
+
+    // Gives the page a linked sheet that takes this long to load. The browser hands a window the sheets the page has
+    // already loaded right away, so only one that is still loading keeps a window waiting. It is a sheet for print,
+    // since a page that waits for one of its screen's sheets draws no frames, which Playwright's waits count on.
+    private static Task AddASlowSheetAsync(IPage page, int milliseconds) => page.EvaluateAsync("""
+        wait => document.head.append(Object.assign(document.createElement('link'),
+            { rel: 'stylesheet', href: `slow.css?wait=${wait}`, media: 'print' }))
+        """, milliseconds);
+
+    // Chooses Open in new window for the panel and gives the window as soon as it opens. The dock's helper would wait
+    // for the panel to arrive.
+    private static Task<IPage> StartOpeningAsync(IPage page, string title) => page.RunAndWaitForPopupAsync(async () =>
+    {
+        await page.GetByRole(AriaRole.Button, new() { Name = $"Options for {title}" }).ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Open in new window" }).ClickAsync();
+    });
+
+    private static Task<IPage> StartOpeningToolsAsync(IPage page) => StartOpeningAsync(page, "Tools");
+
+    // Waits until the dock has hidden the panel that is to leave, and then long enough for a panel that didn't wait
+    // for its window's sheets to have left.
+    private static async Task<ILocator> AboutToLeaveAsync(IPage page, string name)
+    {
+        var panel = page.Locator($"[data-part=panel][data-panel={name}]");
+        await Expect(panel).ToHaveAttributeAsync("data-popped", "");
+        await page.WaitForTimeoutAsync(300);
+        return panel;
+    }
+
+    private static Task<ILocator> ToolsAboutToLeaveAsync(IPage page) => AboutToLeaveAsync(page, "tools");
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldArriveInItsWindowStyled_WhenTheWindowsSheetsLoadSlowly(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        await AddASlowSheetAsync(page, 1500);
+
+        var window = await StartOpeningToolsAsync(page);
+
+        // The panel waits on the page, out of sight, and moves in once its window can lay it out.
+        var tools = await ToolsAboutToLeaveAsync(page);
+        Assert.Equal(1, await tools.CountAsync());
+        await Expect(tools).ToBeHiddenAsync();
+        await Expect(window.Locator("[data-part=return-bar]")).ToHaveCSSAsync("position", "sticky");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldArriveInItsWindowAnyway_WhenTheWindowsSheetsNeverLoad(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        await AddASlowSheetAsync(page, 60_000);
+
+        var window = await StartOpeningToolsAsync(page);
+
+        await Expect(window.GetByRole(AriaRole.Region, new() { Name = "Tools" })).ToBeAttachedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldArriveInItsWindowWithoutWaiting_WhenASheetFailsToLoadOrIsTurnedOff(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        await page.EvaluateAsync("""
+            () => document.head.append(
+                Object.assign(document.createElement('link'), { rel: 'stylesheet', href: 'no-such-sheet.css' }),
+                Object.assign(document.createElement('link'),
+                    { rel: 'stylesheet', href: 'slow.css?wait=60000', disabled: true }))
+            """);
+
+        var window = await StartOpeningToolsAsync(page);
+
+        // Well inside the three seconds a sheet that never answers is given.
+        await Expect(window.GetByRole(AriaRole.Region, new() { Name = "Tools" }))
+            .ToBeAttachedAsync(new() { Timeout = 1500 });
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldStayInTheDock_WhenItsWindowIsClosedBeforeItArrives(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        await AddASlowSheetAsync(page, 2000);
+        var window = await StartOpeningToolsAsync(page);
+        var tools = await ToolsAboutToLeaveAsync(page);
+
+        await window.CloseAsync();
+
+        // The slow sheet arrives, and the dock learns that the window went: the panel shows where it was put, and
+        // nothing is said of a refused window: that would be said in the same render, so checking now is enough.
+        await Expect(tools).ToBeVisibleAsync();
+        Assert.Equal(["Tools"], await page.Tb().Dock("Bench").FloatingAsync());
+        await Expect(page.Locator("[data-part=announcer]")).Not.ToContainTextAsync("blocked");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldClose_WhenTheAppClosesThePanelBeforeItArrives(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        await AddASlowSheetAsync(page, 60_000);
+        var window = await StartOpeningAsync(page, "Notes");
+        await AboutToLeaveAsync(page, "notes");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Close notes" }).ClickAsync();
+
+        await ClosedAsync(window);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldClose_WhenThePageGoesAwayBeforeThePanelArrives(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        await AddASlowSheetAsync(page, 60_000);
+        var window = await StartOpeningToolsAsync(page);
+        await ToolsAboutToLeaveAsync(page);
+
+        await page.GotoAsync("about:blank");
+
+        await ClosedAsync(window);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldKeepItsScrollPosition_WhenItGoesToAWindowAndComesBack(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        var dock = page.Tb().Dock("Bench");
+        await dock.PanelElement("Tools").EvaluateAsync("panel => panel.scrollTop = 240");
+
+        var popped = await dock.PopOutAsync("Tools");
+
+        Assert.Equal(240, await popped.EvaluateAsync<int>("panel => panel.scrollTop"));
+
+        await popped.EvaluateAsync("panel => panel.scrollTop = 120");
+        // Clicked from script: Playwright's own click would first scroll the panel back to its top, where the bar
+        // sits in the layout, and lose the position under test.
+        await popped.Locator("[data-part=return]").EvaluateAsync("button => button.click()");
+
+        var tools = page.Locator("[data-part=panel][data-panel=tools]");
+        await Expect(tools).ToBeVisibleAsync();
+        Assert.Equal(120, await tools.EvaluateAsync<int>("panel => panel.scrollTop"));
+
+        // A window that is closed brings its panel back hidden, until the dock has drawn it as its own again.
+        popped = await dock.PopOutAsync("Tools");
+        await popped.EvaluateAsync("panel => panel.scrollTop = 60");
+        await popped.Page.CloseAsync();
+
+        await Expect(tools).ToBeVisibleAsync();
+        await page.WaitForFunctionAsync("panel => panel.scrollTop === 60", await tools.ElementHandleAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldKeepItsScrollPosition_WhenAnotherPanelComesBackWhileItIsOnItsWay(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        var dock = page.Tb().Dock("Bench");
+        var other = await dock.PopOutAsync("Other");
+        await dock.PanelElement("Tools").EvaluateAsync("panel => panel.scrollTop = 240");
+        await AddASlowSheetAsync(page, 1500);
+        var window = await StartOpeningToolsAsync(page);
+        await ToolsAboutToLeaveAsync(page);
+
+        await other.Page.CloseAsync();
+
+        var tools = window.GetByRole(AriaRole.Region, new() { Name = "Tools" });
+        await Expect(tools).ToBeAttachedAsync();
+        Assert.Equal(240, await tools.EvaluateAsync<int>("panel => panel.scrollTop"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldKeepItsScrollPosition_WhenAnotherPanelLeavesWhileItIsOnItsWay(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        await page.Tb().Dock("Bench").PanelElement("Tools").EvaluateAsync("panel => panel.scrollTop = 240");
+        await AddASlowSheetAsync(page, 1500);
+        var window = await StartOpeningToolsAsync(page);
+        await ToolsAboutToLeaveAsync(page);
+
+        await StartOpeningAsync(page, "Other");
+
+        var tools = window.GetByRole(AriaRole.Region, new() { Name = "Tools" });
+        await Expect(tools).ToBeAttachedAsync();
+        Assert.Equal(240, await tools.EvaluateAsync<int>("panel => panel.scrollTop"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task RelativeAddress_ShouldCountFromTheAppsBase_WhenThePanelsWindowOpensFromADeeperPage(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser, "/dock-popped-parts/deeper");
+
+        var address = await window.GetByRole(AriaRole.Link, new() { Name = "Guide" })
+            .EvaluateAsync<string>("link => link.href");
+
+        Assert.Equal(new Uri(new Uri(page.Url), "/guides/start").ToString(), address);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldGoOnDescribingItsTrigger_WhenItsPanelGoesToAWindowAndComesBack(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+        var save = window.GetByRole(AriaRole.Button, new() { Name = "Save" });
+
+        await Expect(save).ToHaveAccessibleDescriptionAsync("Saves a copy");
+        await save.HoverAsync();
+        await Expect(window.GetByRole(AriaRole.Tooltip)).ToHaveTextAsync("Saves a copy");
+
+        await page.Tb().Dock("Bench").ReturnAsync("Tools");
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Save" }))
+            .ToHaveAccessibleDescriptionAsync("Saves a copy");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldShowTheirScrollButtons_WhenThePanelsWindowGetsTooNarrowForThem(string browser)
+    {
+        var (_, window) = await OpenToolsInAWindowAsync(browser);
+        var later = window.GetByRole(AriaRole.Button, new() { Name = "Scroll to later tabs" });
+        await Expect(window.GetByRole(AriaRole.Tab, new() { Name = "Section 8" })).ToBeVisibleAsync();
+        await Expect(later).ToBeHiddenAsync();
+
+        await window.SetViewportSizeAsync(360, 600);
+
+        await Expect(later).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldDoTheFitItOwed_WhenItsPanelComesBackBeforeItsWindowDrewTheFrame(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+        var toolbar = window.GetByRole(AriaRole.Toolbar, new() { Name = "Format" });
+        await Expect(toolbar).ToHaveAttributeAsync("data-ready", "");
+        await Expect(toolbar).Not.ToHaveAttributeAsync("data-fitting", "");
+        // A window that closes, or is covered, never draws the frame it owes.
+        await window.EvaluateAsync("() => window.requestAnimationFrame = () => 0");
+        await window.SetViewportSizeAsync(500, 600);
+        await Expect(toolbar).ToHaveAttributeAsync("data-fitting", "");
+
+        await page.Tb().Dock("Bench").ReturnAsync("Tools");
+
+        await Expect(page.GetByRole(AriaRole.Toolbar, new() { Name = "Format" }))
+            .Not.ToHaveAttributeAsync("data-fitting", "");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ContextMenu_ShouldStayInsideThePanelsWindow_WhenOpenedNearItsEdge(string browser)
+    {
+        var (_, window) = await OpenToolsInAWindowAsync(browser);
+        var area = window.GetByText("Trails", new() { Exact = true }).Locator("xpath=..");
+        await Expect(area).ToHaveAttributeAsync("data-ready", "");
+        var edges = await EdgesAsync(area);
+
+        // The page's window is wider than the panel's, so a menu placed by the page's width would run off this one.
+        await window.Mouse.ClickAsync(edges.Right - 6, edges.Top + 6, new() { Button = MouseButton.Right });
+
+        var menu = window.GetByRole(AriaRole.Menu, new() { Name = "Trail actions" });
+        await Expect(menu).ToBeVisibleAsync();
+        Assert.InRange((await EdgesAsync(menu)).Right, 0, 900 - 8);
+
+        // The menu hears of its own window's size changing, and stays inside it.
+        await window.SetViewportSizeAsync(500, 600);
+        await window.WaitForFunctionAsync("menu => menu.getBoundingClientRect().right <= 500 - 8",
+            await menu.ElementHandleAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Drag_ShouldBeCalledOff_WhenThePanelsWindowLosesTheFocus(string browser)
+    {
+        var (_, window) = await OpenToolsInAWindowAsync(browser);
+        var item = window.Locator("[data-part=item]").Filter(new() { HasText = "Rule 1" });
+        var from = (await window.GetByRole(AriaRole.Button, new() { Name = "Move Rule 1", Exact = true })
+            .BoundingBoxAsync())!;
+        var to = (await window.Locator("[data-part=item]").Filter(new() { HasText = "Rule 3" }).BoundingBoxAsync())!;
+        await window.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2);
+        await window.Mouse.DownAsync();
+        await window.Mouse.MoveAsync(from.X + from.Width / 2, from.Y + from.Height / 2 + 12, new() { Steps = 3 });
+        await Expect(item).ToHaveAttributeAsync("data-dragging", "");
+
+        // The release may then happen in another window, where this one never hears of it.
+        await window.EvaluateAsync("() => window.dispatchEvent(new Event('blur'))");
+
+        await Expect(item).Not.ToHaveAttributeAsync("data-dragging", "");
+        await window.Mouse.MoveAsync(to.X + to.Width / 2, to.Y + to.Height * 0.75f, new() { Steps = 5 });
+        await window.Mouse.UpAsync();
+        await Expect(window.GetByTestId("rules")).ToHaveTextAsync("Rule 1, Rule 2, Rule 3");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task NestedDock_ShouldOpenItsPanelInAWindow_WhenItsOwnPanelShowsInOne(string browser)
+    {
+        var (_, window) = await OpenToolsInAWindowAsync(browser);
+        var inner = window.Tb().Dock("Inner");
+        await Expect(window.GetByRole(AriaRole.Group, new() { Name = "Inner" })).ToHaveAttributeAsync("data-ready", "");
+
+        // The window the click was in opens the new one: a browser lets no other window do it.
+        var north = await inner.PopOutAsync("North");
+
+        await Expect(north).ToContainTextAsync("North notes");
+        Assert.Equal(["North"], await inner.PoppedOutAsync());
+        Assert.Equal(["South"], await inner.PanelsAsync());
+
+        await inner.ReturnAsync("North");
+
+        Assert.Equal(["North"], await inner.FloatingAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ReturnBar_ShouldNotCoverTheControl_WhenTheControlIsScrolledToThePanelsTop(string browser)
+    {
+        var (_, window) = await OpenToolsInAWindowAsync(browser);
+        await window.GetByTestId("last").ScrollIntoViewIfNeededAsync();
+        var tab = window.GetByRole(AriaRole.Tab, new() { Name = "Section 1" });
+
+        // Scrolled to the top, as the browser does when a control above what shows takes the focus.
+        await tab.EvaluateAsync("tab => tab.scrollIntoView({ block: 'start' })");
+
+        var bar = window.Locator("[data-part=return-bar]");
+        Assert.True((await EdgesAsync(tab)).Top >= (await EdgesAsync(bar)).Bottom, "The tab is under the bar.");
     }
 }

@@ -22,7 +22,7 @@ export function createMarkdownEditor(editor) {
         const { from, to, text, select } = edits[command](input.value, input.selectionStart, input.selectionEnd);
         input.focus();
         input.setSelectionRange(from, to);
-        if (!document.execCommand('insertText', false, text)) {
+        if (!input.ownerDocument.execCommand('insertText', false, text)) {
             input.setRangeText(text, from, to);
             input.dispatchEvent(new Event('input', { bubbles: true }));
         }
