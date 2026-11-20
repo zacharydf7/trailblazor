@@ -122,10 +122,10 @@ public class GridColumnsTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenReadyAsync(browser);
         var table = page.GetByRole(AriaRole.Grid, new() { Name = "Readings" });
         await Expect(table).Not.ToHaveAttributeAsync("data-column-window", "0,9");
-        var drawn = await table.GetAttributeAsync("data-column-window");
 
-        await page.EvaluateAsync("""
+        await page.EvaluateAsync($$"""
             () => {
+                {{RecordColumnWindows}}
                 const last = [...document.querySelectorAll("tr[data-key='1'] td[data-column^=s]")].at(-1);
                 last.focus();
                 last.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
@@ -134,7 +134,7 @@ public class GridColumnsTests(BrowserFixture fixture) : BrowserTest(fixture)
             }
             """);
 
-        await Expect(table).Not.ToHaveAttributeAsync("data-column-window", drawn!);
+        await WaitForTheColumnToComeAndGoAsync(page);
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Remove the readings" })).ToBeFocusedAsync();
     }
 
@@ -144,10 +144,10 @@ public class GridColumnsTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenReadyAsync(browser);
         var table = page.GetByRole(AriaRole.Grid, new() { Name = "Readings" });
         await Expect(table).Not.ToHaveAttributeAsync("data-column-window", "0,9");
-        var drawn = await table.GetAttributeAsync("data-column-window");
 
-        await page.EvaluateAsync("""
+        await page.EvaluateAsync($$"""
             () => {
+                {{RecordColumnWindows}}
                 const last = [...document.querySelectorAll("tr[data-key='1'] td[data-column^=s]")].at(-1);
                 last.focus();
                 last.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
@@ -155,7 +155,7 @@ public class GridColumnsTests(BrowserFixture fixture) : BrowserTest(fixture)
             }
             """);
 
-        await Expect(table).Not.ToHaveAttributeAsync("data-column-window", drawn!);
+        await WaitForTheColumnToComeAndGoAsync(page);
         await Expect(page.Locator("tr[data-key='2'] td[data-column=s0]")).ToBeFocusedAsync();
     }
 
@@ -223,6 +223,22 @@ public class GridColumnsTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(table.Locator("tr[aria-rowindex='501'] td[data-column=total]")).ToBeFocusedAsync();
     }
+
+    // The window narrows to the column the keys ask for, and then goes back to the columns the box shows, within a few
+    // milliseconds: too briefly for a check that polls, so the page records each window the table is given.
+    private const string RecordColumnWindows = """
+        const table = document.querySelector("[role=grid][aria-label=Readings]");
+        window.columnWindows = [];
+        new MutationObserver(() => window.columnWindows.push(table.dataset.columnWindow))
+            .observe(table, { attributes: true, attributeFilter: ['data-column-window'] });
+        """;
+
+    private static Task WaitForTheColumnToComeAndGoAsync(IPage page) => page.WaitForFunctionAsync("""
+        () => {
+            const alone = shown => shown.split(',')[0] === shown.split(',')[1];
+            return window.columnWindows.some(alone) && !alone(window.columnWindows.at(-1));
+        }
+        """);
 
     private async Task<IPage> OpenReadyAsync(string browser, string path = "/grid-columns")
     {
