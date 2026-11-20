@@ -10765,10 +10765,45 @@
         block-size: 1.75rem;
     }
 
+    /* A key tip's badge sits over the lower edge of its control while the ribbon's script shows it. It stays inside
+       the control's box, since the tabs and the commands both clip what leaves theirs. */
+    .tb-ribbon [data-key-tip-shown] {
+        position: relative;
+    }
+
+    .tb-ribbon [data-key-tip-shown]::after {
+        /* The second form, in a browser that supports it, keeps the key out of the control's name. */
+        content: attr(data-key-tip);
+        content: attr(data-key-tip) / "";
+        position: absolute;
+        inset-block-end: 0;
+        left: 50%;
+        z-index: 1;
+        box-sizing: border-box;
+        min-inline-size: 1.5em;
+        padding: 0 var(--tb-space-1);
+        border-radius: var(--tb-radius-sm);
+        background: var(--tb-color-text);
+        color: var(--tb-color-surface);
+        font-size: var(--tb-font-size-xs);
+        font-weight: var(--tb-font-weight-semibold);
+        line-height: 1.4;
+        text-align: center;
+        text-transform: uppercase;
+        translate: -50% 0;
+        pointer-events: none;
+    }
+
     @media (forced-colors: active) {
         .tb-ribbon,
         .tb-ribbon__group + .tb-ribbon__group {
             border-color: CanvasText;
+        }
+
+        .tb-ribbon [data-key-tip-shown]::after {
+            background: Highlight;
+            color: HighlightText;
+            forced-color-adjust: none;
         }
     }
 }

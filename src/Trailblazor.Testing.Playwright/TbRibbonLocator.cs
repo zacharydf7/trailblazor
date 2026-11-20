@@ -14,7 +14,9 @@ public sealed class TbRibbonLocator(ILocator scope, string? name)
     private TbTabsLocator TabList => new(Ribbon, Ribbon.GetByRole(AriaRole.Tablist));
 
     // The selected tab's row of commands: the other tabs' rows stay on the page, hidden, once they have been shown.
-    private ILocator Commands => Ribbon.Locator("[role=tabpanel]:not([hidden]) [data-part=commands]");
+    // The path starts at the ribbon, so a tab panel around the ribbon isn't taken for one of its own.
+    private ILocator Commands =>
+        Ribbon.Locator(":scope > .tb-tabs > [role=tabpanel]:not([hidden]) > [data-part=commands]");
 
     /// <summary>The tabs' titles, in order.</summary>
     public Task<IReadOnlyList<string>> TabsAsync() => TabList.TabsAsync();
@@ -82,6 +84,80 @@ public sealed class TbRibbonLocator(ILocator scope, string? name)
         await button.ClickAsync();
         var marked = Assertions.Expect(Ribbon);
         await (collapsed ? marked : marked.Not).ToHaveAttributeAsync("data-collapsed", "");
+    }
+
+    /// <summary>Presses Alt and then each of these key tips in turn, as a user does: a tab's, then one of its
+    /// commands', or the one of a control beside the tabs. Each call starts from Alt, after putting away any key
+    /// tips left showing. Where Alt goes to another ribbon on the page, focus moves to this ribbon's selected tab
+    /// first, and a command's key then gives focus back to that tab. It waits for each key tip's badge to show before
+    /// pressing its key, and for the app's handler to finish after it. Throws for anything but one letter or digit,
+    /// for a key after the one that chose a command, and on a static page, where key tips don't work.</summary>
+    public async Task PressKeyTipsAsync(params string[] keyTips)
+    {
+        if (await IsStaticAsync())
+        {
+            throw new InvalidOperationException("On a static page the ribbon has no key tips; render the page "
+                + "interactively to use them.");
+        }
+
+        if (keyTips.FirstOrDefault(keyTip => keyTip.Length != 1 || !char.IsLetterOrDigit(keyTip[0])) is string wrong)
+        {
+            throw new ArgumentException($"A key tip is one letter or digit, and \"{wrong}\" isn't.", nameof(keyTips));
+        }
+
+        await Assertions.Expect(Ribbon).ToHaveAttributeAsync("data-ready", "");
+        var keyboard = Ribbon.Page.Keyboard;
+        var showing = Ribbon.Page.Locator("[data-part=ribbon][data-key-tips]");
+        // Alt would only hide key tips that a tab's key left showing in an earlier call, so they're put away first.
+        if (await showing.CountAsync() > 0)
+        {
+            await keyboard.PressAsync("Alt");
+            await Assertions.Expect(showing).ToHaveCountAsync(0);
+        }
+
+        await keyboard.PressAsync("Alt");
+        // Alt goes to the ribbon with focus, or else to the first one on the page. When that is another ribbon, its
+        // key tips are put away and focus moves into this one, as a user's would.
+        if (await Ribbon.GetAttributeAsync("data-key-tips") is null && await showing.CountAsync() > 0)
+        {
+            await keyboard.PressAsync("Alt");
+            await Ribbon.Locator(":scope > .tb-tabs > [role=tablist] > [role=tab][tabindex='0']").FocusAsync();
+            await keyboard.PressAsync("Alt");
+        }
+
+        var ended = false;
+        foreach (var keyTip in keyTips)
+        {
+            if (ended)
+            {
+                throw new InvalidOperationException(
+                    $"Key tips end once a command is chosen, so \"{keyTip}\" has nothing to reach.");
+            }
+
+            var control = Ribbon.Locator($"[data-key-tip-shown][data-key-tip='{keyTip}' i]");
+            await Assertions.Expect(control).ToBeVisibleAsync();
+            // A tab's key and a collapsed group's leave the key tips showing, and any other key ends them.
+            var isTab = await control.GetAttributeAsync("role") == "tab";
+            ended = !isTab && await control.GetAttributeAsync("data-part") != "group-button";
+            Func<Task<bool>> press = async () =>
+            {
+                await keyboard.PressAsync(keyTip);
+                return true;
+            };
+            // A tab's key is answered by the tabs, a button's by the button, and a field's key only moves focus.
+            if (isTab)
+            {
+                await Commit.WaitAsync(control, press);
+            }
+            else if (await control.GetAttributeAsync("data-clicks") is not null)
+            {
+                await Commit.CountedAsync(control, "data-clicks", press);
+            }
+            else
+            {
+                await press();
+            }
+        }
     }
 
     /// <summary>Clicks the button with this name in the selected tab, as a user does, once the tab's commands are

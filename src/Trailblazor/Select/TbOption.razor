@@ -130,12 +130,6 @@ else
     protected override bool ShouldRender() => ChildContent is not null || !Shows.Equals(_drawn)
         || !SameAttributes(AdditionalAttributes, _drawnAttributes);
 
-    // Blazor hands over a new dictionary on each render, so its entries are compared rather than the dictionary.
-    private static bool SameAttributes(IReadOnlyDictionary<string, object>? now,
-        IReadOnlyDictionary<string, object>? then) => ReferenceEquals(now, then)
-        || (now is not null && then is not null && now.Count == then.Count
-            && now.All(pair => then.TryGetValue(pair.Key, out var value) && Equals(pair.Value, value)));
-
     private readonly record struct Drawn(string? Value, string? Text, bool Plain, bool Disabled, bool Selected,
         string? Class, string? Style);
 

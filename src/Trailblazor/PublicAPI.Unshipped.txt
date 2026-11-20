@@ -7324,3 +7324,11 @@ Trailblazor.TbRibbon.Start.get -> Microsoft.AspNetCore.Components.RenderFragment
 Trailblazor.TbRibbon.Start.set -> void
 Trailblazor.TbTabs.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbTabs.Start.set -> void
+Trailblazor.TbRibbonButton.KeyTip.get -> string?
+Trailblazor.TbRibbonButton.KeyTip.set -> void
+Trailblazor.TbRibbonGroup.KeyTip.get -> string?
+Trailblazor.TbRibbonGroup.KeyTip.set -> void
+Trailblazor.TbRibbonTab.KeyTip.get -> string?
+Trailblazor.TbRibbonTab.KeyTip.set -> void
+Trailblazor.TbTab.HeaderAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Trailblazor.TbTab.HeaderAttributes.set -> void

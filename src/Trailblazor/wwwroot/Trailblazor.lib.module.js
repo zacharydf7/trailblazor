@@ -38,6 +38,7 @@ import './date-grid.js';
 import './dialog.js';
 import './field.js';
 import './inert.js';
+import './ribbon-key-tips.js';
 import './option-filter.js';
 import './overlay.js';
 import './shortcuts.js';

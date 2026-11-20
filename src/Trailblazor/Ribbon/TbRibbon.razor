@@ -176,7 +176,7 @@
             }
 
             _events = DotNetObjectReference.Create(new RibbonEvents(ToggleFromScriptAsync));
-            var handle = await module.InvokeAsync<IJSObjectReference?>("attachRibbonCollapse", _root, _events);
+            var handle = await module.InvokeAsync<IJSObjectReference?>("attachRibbonRoot", _root, _events);
             if (handle is not null && _disposed)
             {
                 await handle.DisposeHandleAsync();

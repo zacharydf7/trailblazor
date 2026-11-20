@@ -6,13 +6,13 @@
     <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@Label" ShowTooltip Variant="Variant.Text"
                   Tone="Tone.Neutral" Size="Size.Small" Disabled="Disabled" Pressed="Pressed"
                   PressedChanged="PressedChanged" OnClick="OnClick" TelemetryName="@TelemetryName"
-                  Class="@ClassNames.Join("tb-ribbon__button", Class)" Style="@Style" />
+                  Class="@ClassNames.Join("tb-ribbon__button", Class)" Style="@Style" data-key-tip="@ShownKeyTip" />
 }
 else
 {
     <TbButton @attributes="AdditionalAttributes" StartIcon="Icon" Variant="Variant.Text" Tone="Tone.Neutral"
               Size="Size.Small" Disabled="Disabled" Pressed="Pressed" PressedChanged="PressedChanged"
-              OnClick="OnClick" TelemetryName="@TelemetryName" Style="@Style"
+              OnClick="OnClick" TelemetryName="@TelemetryName" Style="@Style" data-key-tip="@ShownKeyTip"
               Class="@ClassNames.Join("tb-ribbon__button", Large ? "tb-ribbon__button--large" : null, Class)">
         @Label
     </TbButton>
@@ -54,6 +54,15 @@ else
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+    /// <summary>The button's key tip: one letter or digit, such as "B", that chooses the button after Alt and its
+    /// tab's key tip. Give it a different one from the other controls of its tab.</summary>
+    [Parameter]
+    public string? KeyTip { get; set; }
+
+    // Written from KeyTip alone, the attribute would replace a data-key-tip given on the button itself, which
+    // counts when there's no KeyTip.
+    private object? ShownKeyTip => KeyTip ?? AdditionalAttributes?.GetValueOrDefault("data-key-tip");
+
     /// <summary>A label this button's use is counted under, such as <c>"ribbon-paste"</c>, through the
     /// <c>Trailblazor</c> meter: shown as the button renders, and used each time it is chosen. Controls that share
     /// a label count together. It names what the button does, never the user.</summary>
@@ -73,5 +82,7 @@ else
             throw new InvalidOperationException($"{nameof(TbRibbonButton)} with {nameof(IconOnly)} needs an "
                 + $"{nameof(Icon)} and can't be {nameof(Large)}.");
         }
+
+        KeyTips.Check(KeyTip, nameof(TbRibbonButton));
     }
 }

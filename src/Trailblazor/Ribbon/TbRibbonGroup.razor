@@ -5,7 +5,8 @@
      data-collapse-order="@CollapseOrder" class="@ClassNames.Join("tb-ribbon__group", Class)">
     @* The ribbon's script shows this while the group is collapsed, and it opens the group's items as a popup. *@
     <TbButton hidden aria-expanded="false" aria-controls="@_itemsId" popovertarget="@_itemsId" data-part="group-button"
-              StartIcon="Icon" EndIcon="BuiltInIcons.ChevronDown" Variant="Variant.Text" Tone="Tone.Neutral"
+              data-key-tip="@KeyTip" StartIcon="Icon" EndIcon="BuiltInIcons.ChevronDown" Variant="Variant.Text"
+              Tone="Tone.Neutral"
               Size="Size.Small" Class="tb-ribbon__button tb-ribbon__button--large tb-ribbon__group-button">
         @Label
     </TbButton>
@@ -32,6 +33,12 @@
     [Parameter]
     public int? CollapseOrder { get; set; }
 
+    /// <summary>The key tip of the button the group collapses into when the ribbon is too narrow: one letter or
+    /// digit that opens the group after Alt and its tab's key tip, so the key tips of its controls show. Without
+    /// it, a collapsed group's controls can't be reached by their key tips.</summary>
+    [Parameter]
+    public string? KeyTip { get; set; }
+
     /// <summary>The group's controls: <see cref="TbRibbonButton"/>s, menus, selects, toggle groups or anything
     /// else. They fill columns of up to three rows, and a large <see cref="TbRibbonButton"/> takes a whole
     /// column.</summary>
@@ -45,5 +52,7 @@
         {
             throw new InvalidOperationException($"{nameof(TbRibbonGroup)} needs a {nameof(Label)}.");
         }
+
+        KeyTips.Check(KeyTip, nameof(TbRibbonGroup));
     }
 }

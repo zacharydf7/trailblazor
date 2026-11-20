@@ -31,4 +31,10 @@ public abstract class TbComponentBase : ComponentBase
         : AdditionalAttributes!
             .Where(attribute => !string.Equals(attribute.Key, "id", StringComparison.OrdinalIgnoreCase))
             .ToDictionary();
+
+    // Compared by what they hold: attributes written in markup arrive in a new dictionary on every render.
+    private protected static bool SameAttributes(IReadOnlyDictionary<string, object>? one,
+        IReadOnlyDictionary<string, object>? other) =>
+        ReferenceEquals(one, other) || (one is not null && other is not null && one.Count == other.Count
+            && one.All(pair => other.TryGetValue(pair.Key, out var value) && Equals(pair.Value, value)));
 }

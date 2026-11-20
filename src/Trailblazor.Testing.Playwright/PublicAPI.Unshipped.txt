@@ -673,3 +673,4 @@ Trailblazor.Testing.Playwright.TrailblazorPage.Ribbon(string? name = null) -> Tr
 Trailblazor.Testing.Playwright.TbRibbonLocator.CollapseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbRibbonLocator.ExpandAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbRibbonLocator.IsCollapsedAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbRibbonLocator.PressKeyTipsAsync(params string![]! keyTips) -> System.Threading.Tasks.Task!

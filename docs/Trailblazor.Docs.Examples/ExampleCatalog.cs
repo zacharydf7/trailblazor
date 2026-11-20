@@ -2359,6 +2359,16 @@ public static class ExampleCatalog
                     + "button or a File menu, and `End` after them, such as Undo and Save. The collapse button of a "
                     + "`Collapsible` ribbon comes last. When you set `Start` or `End`, put the tabs inside "
                     + "`<ChildContent>`.", typeof(RibbonBesideExample)),
+                new("key-tips", "Key tips", "`KeyTip` gives a tab or a `TbRibbonButton` one letter or digit that "
+                    + "reaches it from the keyboard, as in a desktop ribbon. Alt, pressed and let go on its own, "
+                    + "shows a badge with the key on each tab and on each control beside the tabs that has one. A "
+                    + "tab's key selects it and shows the badges of its commands, and a command's key chooses it. "
+                    + "Escape steps back a level, and Alt again hides the badges. A `TbRibbonGroup`'s `KeyTip` is for "
+                    + "the button the group collapses into, and opens the group so that its controls' badges show. "
+                    + "A `data-key-tip` attribute, also one letter or digit, gives a key tip to any other button in "
+                    + "the ribbon, such as one in `End`, and to an element around a field, which the key moves "
+                    + "focus into. This ribbon sits in a narrow box, so its Gear group has collapsed.",
+                    typeof(RibbonKeyTipsExample)),
             ],
             Api =
             [
@@ -2386,6 +2396,17 @@ public static class ExampleCatalog
                     { When = "On a tab of a collapsed ribbon" },
                 new(["Escape"], "Hides the commands again and returns focus to the tab.")
                     { When = "In a collapsed ribbon's commands" },
+                new(["Alt"], "Shows the key tips of the tabs and of the controls beside them, and moves focus to "
+                    + "the selected tab. Pressed again, it hides the key tips and returns focus to where it was.")
+                    { When = "Anywhere on the page, when the ribbon has key tips" },
+                new(["A letter", "A digit"], "Selects the tab with that key tip and shows the key tips of its "
+                    + "commands, or chooses the command with it and returns focus to where it was before Alt. A "
+                    + "collapsed group's key opens the group, and the key of a menu's button or of a field moves "
+                    + "focus there.") { When = "While key tips show" },
+                new(["Arrow keys", "Tab", "Enter", "Space"], "Hides the key tips and then works as usual, from the "
+                    + "control that has focus.") { When = "While key tips show" },
+                new(["Escape"], "Steps back from a tab's commands to the tabs, and from the tabs out, returning "
+                    + "focus to where it was.") { When = "While key tips show" },
             ],
             Labeling =
             [
@@ -2408,6 +2429,10 @@ public static class ExampleCatalog
                     + "and as collapsed while it is collapsed to its tabs, even while a tab's commands show over the "
                     + "page.",
                 "An `IconOnly` button's tooltip repeats its name, so it isn't read a second time as its description.",
+                "While key tips show, each control with a badge names its key in `aria-keyshortcuts`, and the "
+                    + "badge itself stays out of the control's name. Focus is on the selected tab then, so a "
+                    + "screen reader that reads shortcuts announces only that tab with its key; it finds the "
+                    + "other keys when it explores without moving focus.",
             ],
             Accessibility =
             [
@@ -2426,11 +2451,29 @@ public static class ExampleCatalog
                 "In forced-colors mode, such as Windows high contrast, the lines between groups and the line under "
                     + "the ribbon are drawn in the system's text color.",
                 "Every button is a target of at least 24 by 24 pixels.",
+                "Showing the key tips moves focus to the selected tab. A screen reader normally passes typed "
+                    + "letters on to the page while a tab has focus, which the key tips rely on. The arrow keys, "
+                    + "Tab, Enter and Space stay ready: any of them hides the key tips and then works as usual "
+                    + "from that tab.",
+                "A key tip is one key pressed after Alt, never a letter on its own while the page is in use, so a "
+                    + "key typed by accident or by speech input chooses nothing (WCAG 2.1.4). In forced-colors "
+                    + "mode the badges use the system's highlight colors.",
             ],
             AppDuties =
             [
                 "Name every other control you put in a group, or in `Start` or `End`, such as a select with its "
                     + "`AriaLabel` or a menu with its `Label`: the ribbon names only its tabs, groups and buttons.",
+                "Give each key tip a key that no other control at its level has. The tabs and the controls beside "
+                    + "them are one level, and each tab's commands are a level of their own. Where two controls "
+                    + "share a key, the first one takes it. `KeyTip` refuses anything but one letter or digit; a "
+                    + "`data-key-tip` you write yourself isn't checked, and one with more than one character "
+                    + "shows a badge no key reaches.",
+                "Give every tab a `KeyTip` once any of its commands has one: a command's key works only after "
+                    + "its tab's.",
+                "While a ribbon on the page has key tips, Alt pressed on its own goes to them. On Windows and Linux "
+                    + "a browser otherwise uses that key for its own menu, so say in your app's keyboard help what "
+                    + "Alt does, and list the key tips there: someone who can't see the badges has no easy way "
+                    + "to learn them otherwise.",
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
@@ -2445,6 +2488,8 @@ public static class ExampleCatalog
                 "`Collapsed` takes effect, and the collapse button shows, once the page is interactive. Until then, "
                     + "and on a static page, the commands show, since nothing there could bring them back.",
                 "`Start` and `End` content render before the page is interactive, and on a static page too.",
+                "Key tips work once the page is interactive. Until then, and on a static page, Alt stays with the "
+                    + "browser and no badge shows.",
             ],
             Notes =
             [
@@ -2464,17 +2509,35 @@ public static class ExampleCatalog
                     + "bind `Collapsed` and set it from a [hotkey](components/hotkeys) of your own."),
                 new("An `id` on a `TbRibbonTab` goes on its tab, the button people click, while `Class`, `Style` and "
                     + "other attributes go on its panel, around its commands."),
+                new("Key tips go to the ribbon that has focus, or else to the first ribbon on the page that has "
+                    + "any. While a modal dialog is open, only a ribbon inside it takes them. On a Mac, Alt is the "
+                    + "Option key."),
+                new("A key typed before the tab has switched waits for the tab's commands, so Alt, a tab's key and "
+                    + "a command's key can be typed without a pause. A key no badge shows does nothing."),
+                new("A command's key returns focus to where it was before Alt and then chooses the command, so a "
+                    + "command that acts on the focused control finds it focused. A button that opens something, "
+                    + "such as a menu's, takes focus instead, so the menu's own keys work."),
+                new("Key tips also end at a click or tap anywhere, when focus leaves the ribbon, when the window loses "
+                    + "focus, and at a key pressed with Ctrl, Alt or Cmd, which then does what it always does. A "
+                    + "disabled control shows no badge, and neither does one that is hidden, such as a control in "
+                    + "a collapsed group until the group's own key opens it."),
+                new("In a collapsed ribbon, a tab's key shows its commands over the page with their badges, and "
+                    + "Escape hides them again."),
+                new("Whether NVDA, JAWS and Narrator pass a key tip's letter on to the page while a tab has focus "
+                    + "is unconfirmed."),
             ],
             Pattern = new("tabs", "https://www.w3.org/WAI/ARIA/apg/patterns/tabs/"),
             Ready = new("[data-part=commands]", "the selected tab's row of commands, and on the ribbon itself "
-                + "once Ctrl+F1 and a collapsed ribbon's tabs work"),
+                + "once Ctrl+F1, a collapsed ribbon's tabs and key tips work"),
             Target = new("tablist", "Trail planner"),
             Blocks = ["tb-ribbon", "tb-tabs"],
             DataParts =
             [
                 new("ribbon", "The ribbon, around its tabs and their commands, with `data-collapsed` while it is "
-                    + "collapsed to its tabs, `data-peek` while a tab's commands then show over the page, and "
-                    + "`data-static` on a static page."),
+                    + "collapsed to its tabs, `data-peek` while a tab's commands then show over the page, "
+                    + "`data-key-tips` while key tips show, with `tabs` or `commands` for their level, and "
+                    + "`data-static` on a static page. A control with a key tip has `data-key-tip`, and "
+                    + "`data-key-tip-shown` while its badge shows."),
                 new("collapse", "The button that collapses the ribbon to its tabs, with `Collapsible`."),
                 new("commands", "A tab's row of groups, a `toolbar`."),
                 new("group", "One group, a `group` named by its label, with `data-collapsed` while it is collapsed "
@@ -2523,6 +2586,15 @@ public static class ExampleCatalog
                     + "or a collapsed ribbon's tab.",
                 "`ClickAsync` reaches only the selected tab's commands. Find `Start` and `End` content by role in "
                     + "the ribbon, such as `GetByRole(AriaRole.Button, new() { Name = \"Save\" })`.",
+                "`PressKeyTipsAsync(\"R\", \"M\")` follows key tips: a tab's and then a command's, or the one of a "
+                    + "button beside the tabs. In Playwright it presses Alt and each key, waiting for the key's "
+                    + "badge before it and for the app's handler after it. bUnit runs no script, so there it "
+                    + "selects the tab and clicks the button the keys reach, and throws for a key tip the ribbon "
+                    + "doesn't have at that point or for a disabled control.",
+                "Each `PressKeyTipsAsync` call starts over from Alt, so pass a tab's key and its command's in one "
+                    + "call; a key after the one that chose a command throws.",
+                "By hand, press Alt once the ribbon has `data-ready`, and wait for `[data-key-tip-shown]` on a "
+                    + "control before pressing its key. The ribbon's `data-key-tips` says which level shows.",
             ],
             Telemetry =
             [
@@ -10215,7 +10287,8 @@ public static class ExampleCatalog
                     + "tab's name, so a count inside it is read as part of the name, and `Disabled` turns a tab off. "
                     + "`Key` and `@bind-ActiveKey` track the selected tab by a key you choose. Once the page is "
                     + "interactive, only the selected panel renders. An `id` on a `TbTab` goes on its tab, the button "
-                    + "people click, while `Class`, `Style` and other attributes go on its panel.",
+                    + "people click, while `Class`, `Style` and other attributes go on its panel. `HeaderClass` and "
+                    + "`HeaderAttributes` reach the tab itself, for a class or a `data-*` attribute of your own.",
                     typeof(TabsExample)),
                 new("sizes", "Sizes", "`Size` is `Small`, `Medium` or `Large`, and sets the tabs' height and text "
                     + "size, the same steps as a button's.", typeof(TabsSizeExample)),

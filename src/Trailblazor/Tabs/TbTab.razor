@@ -22,6 +22,7 @@
     private string? _givenId;
     private string? _key;
     private string? _headerClass;
+    private IReadOnlyDictionary<string, object>? _headerAttributes;
     private Icon? _icon;
     private RenderFragment? _header;
     private ControlTelemetry? _telemetry;
@@ -62,6 +63,12 @@
     /// </summary>
     [Parameter]
     public string? HeaderClass { get; set; }
+
+    /// <summary>Extra attributes for the tab's header, such as a <c>data-*</c> one that a tour or a script finds it
+    /// by. Where one of them names an attribute the tab sets itself, such as its role or its state, the tab's own
+    /// wins.</summary>
+    [Parameter]
+    public IReadOnlyDictionary<string, object>? HeaderAttributes { get; set; }
 
     /// <summary>Raised each time the user clicks the tab's header, or presses Enter or Space on it, whether or not it
     /// was already selected. It is raised after the tab is selected. The arrow keys select tabs without raising
@@ -145,6 +152,7 @@
         _closable = OnClose.HasDelegate;
         _key = Key;
         _headerClass = HeaderClass;
+        _headerAttributes = HeaderAttributes;
         _icon = Icon;
         _givenId = GivenId;
         Tabs.Add(this);
@@ -166,7 +174,8 @@
 
         _shown |= IsSelected;
         if (Text != _text || Disabled != _disabled || Key != _key || HeaderClass != _headerClass || Icon != _icon
-            || GivenId != _givenId || OnClose.HasDelegate != _closable)
+            || GivenId != _givenId || OnClose.HasDelegate != _closable
+            || !SameAttributes(HeaderAttributes, _headerAttributes))
         {
             _text = Text;
             _disabled = Disabled;
@@ -174,6 +183,7 @@
             _givenId = GivenId;
             _key = Key;
             _headerClass = HeaderClass;
+            _headerAttributes = HeaderAttributes;
             _icon = Icon;
             Tabs!.Refresh();
         }

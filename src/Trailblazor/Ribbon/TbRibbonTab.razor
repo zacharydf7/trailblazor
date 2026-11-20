@@ -2,7 +2,7 @@
 @inherits TbComponentBase
 
 <TbTab @attributes="AdditionalAttributes" Text="@Title" Icon="Icon" Key="@Key" Disabled="Disabled"
-       TelemetryName="@TelemetryName" Class="@Class" Style="@Style">
+       HeaderAttributes="KeyTips.Attributes(KeyTip)" TelemetryName="@TelemetryName" Class="@Class" Style="@Style">
     @Panel
 </TbTab>
 
@@ -25,6 +25,12 @@
     /// <summary>Turns the tab off, so it can't be selected.</summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>The tab's key tip: one letter or digit, such as "H", that selects the tab after Alt and then shows
+    /// the key tips of its commands. Its commands' key tips work only once the tab has one. Make it different from
+    /// the other tabs' key tips and from those beside the tabs.</summary>
+    [Parameter]
+    public string? KeyTip { get; set; }
 
     /// <summary>The tab's <see cref="TbRibbonGroup"/>s.</summary>
     [Parameter]
@@ -57,5 +63,7 @@
         {
             throw new InvalidOperationException($"{nameof(TbRibbonTab)} needs a {nameof(Title)}.");
         }
+
+        KeyTips.Check(KeyTip, nameof(TbRibbonTab));
     }
 }

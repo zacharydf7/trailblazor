@@ -128,7 +128,7 @@ public class TbRibbonTests : BunitContext
         var changes = new List<bool>();
         var cut = RenderRibbon(parameters => parameters.Add(ribbon => ribbon.Collapsible, true)
             .Add(ribbon => ribbon.CollapsedChanged, changes.Add));
-        var events = ((DotNetObjectReference<RibbonEvents>)JSInterop.Invocations["attachRibbonCollapse"].Single()
+        var events = ((DotNetObjectReference<RibbonEvents>)JSInterop.Invocations["attachRibbonRoot"].Single()
             .Arguments[1]!).Value;
 
         await cut.InvokeAsync(events.OnToggle);
@@ -481,7 +481,7 @@ public class TbRibbonTests : BunitContext
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/ribbon.js");
         module.Mode = JSRuntimeMode.Loose;
-        var handle = module.SetupModule("attachRibbonCollapse", _ => true);
+        var handle = module.SetupModule("attachRibbonRoot", _ => true);
         handle.SetupVoid("dispose").SetVoidResult();
         RenderRibbon();
 
@@ -573,6 +573,219 @@ public class TbRibbonTests : BunitContext
             .Add(tabs => tabs.ChildContent, builder => AddTab(builder, 0, "Notes", null, _ => { }))));
 
         Assert.Equal("TbRibbonTab must be inside a TbRibbon.", outside.Message);
+    }
+
+    [Fact]
+    public void KeyTip_ShouldMarkTheTabTheButtonsAndTheGroupsButton_WhenGiven()
+    {
+        var cut = RenderRibbon(tabs: builder => AddKeyTipTab(builder, "N", "W", "B"));
+
+        Assert.Equal("N", cut.Find("[role=tab]").GetAttribute("data-key-tip"));
+        Assert.Equal("W", cut.Find("[data-part=group-button]").GetAttribute("data-key-tip"));
+        Assert.Equal(["B", "B"], cut.FindAll("[data-part=items] button").Select(b => b.GetAttribute("data-key-tip")));
+        // The key reaches the tab's header alone, not its panel.
+        Assert.False(cut.Find("[role=tabpanel]").HasAttribute("data-key-tip"));
+    }
+
+    [Fact]
+    public void KeyTip_ShouldLeaveEveryControlUnmarked_WhenNotGiven()
+    {
+        var cut = RenderRibbon(tabs: builder => AddKeyTipTab(builder, null, null, null));
+
+        Assert.Empty(cut.FindAll("[data-key-tip]"));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("-")]
+    [InlineData("AB")]
+    public void KeyTip_ShouldBeRefused_WhenGivenAnythingButOneLetterOrDigit(string keyTip)
+    {
+        Assert.Equal("TbRibbonTab's KeyTip must be one letter or digit.", Assert.Throws<InvalidOperationException>(
+            () => RenderRibbon(tabs: builder => AddKeyTipTab(builder, keyTip, null, null))).Message);
+        Assert.Equal("TbRibbonGroup's KeyTip must be one letter or digit.", Assert.Throws<InvalidOperationException>(
+            () => RenderRibbon(tabs: builder => AddKeyTipTab(builder, null, keyTip, null))).Message);
+        Assert.Equal("TbRibbonButton's KeyTip must be one letter or digit.", Assert.Throws<InvalidOperationException>(
+            () => RenderRibbon(tabs: builder => AddKeyTipTab(builder, null, null, keyTip))).Message);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldSelectTheTabAndClickItsButton_WhenGivenTheirKeyTips()
+    {
+        var clicked = new List<string>();
+        var ribbon = RenderKeyTips(clicked).Tb().Ribbon();
+
+        await ribbon.PressKeyTipsAsync("T", "b");
+
+        Assert.Equal("Trails", ribbon.Selected);
+        Assert.Equal(["Add a trail"], clicked);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldStartOverOnEachCallAndStopAfterACommand_WhenGivenMoreKeyTips()
+    {
+        var clicked = new List<string>();
+        var ribbon = RenderKeyTips(clicked).Tb().Ribbon();
+        await ribbon.PressKeyTipsAsync("T", "B");
+
+        await ribbon.PressKeyTipsAsync("N", "B");
+
+        Assert.Equal(["Add a trail", "Bold"], clicked);
+        Assert.Equal("Key tips end once a command is chosen, so \"B\" has nothing to reach.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => ribbon.PressKeyTipsAsync("T", "B", "B")))
+            .Message);
+        Assert.Equal(["Add a trail", "Bold", "Add a trail"], clicked);
+    }
+
+    [Fact]
+    public void KeyTip_ShouldComeFromTheButtonsOwnAttribute_WhenARibbonButtonHasNoKeyTip()
+    {
+        var cut = Render<TbRibbonButton>(parameters => parameters.Add(button => button.Label, "Bold")
+            .AddUnmatched("data-key-tip", "X"));
+        Assert.Equal("X", cut.Find("button").GetAttribute("data-key-tip"));
+
+        cut.Render(parameters => parameters.Add(button => button.KeyTip, "B"));
+
+        Assert.Equal("B", cut.Find("button").GetAttribute("data-key-tip"));
+    }
+
+    [Fact]
+    public async Task Driver_ShouldClickAButtonBesideTheTabs_WhenGivenItsKeyTip()
+    {
+        var clicked = new List<string>();
+        var ribbon = RenderKeyTips(clicked).Tb().Ribbon();
+
+        await ribbon.PressKeyTipsAsync("Q");
+        // The element around a field has nothing to click.
+        await ribbon.PressKeyTipsAsync("F");
+
+        Assert.Equal(["Quick save"], clicked);
+        Assert.Equal("Notes", ribbon.Selected);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldFollowKeyTips_WhenTheRibbonIsInsideATabsPanel()
+    {
+        var clicked = new List<string>();
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.AriaLabel, "Sheets")
+            .AddChildContent<TbTab>(tab => tab.Add(sheet => sheet.Text, "First sheet")
+                .Add(sheet => sheet.ChildContent, KeyTipsRibbon(clicked))));
+
+        await cut.Tb().Ribbon("Trail planner").PressKeyTipsAsync("T", "B");
+
+        Assert.Equal(["Add a trail"], clicked);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldRefuseAKeyTip_WhenNothingHasItThereOrItsControlIsDisabled()
+    {
+        var clicked = new List<string>();
+        var ribbon = RenderKeyTips(clicked).Tb().Ribbon();
+
+        // B is a command's key, which counts only after its tab's.
+        Assert.Equal("The ribbon has no key tip \"B\" on its tabs or beside them.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => ribbon.PressKeyTipsAsync("B"))).Message);
+        Assert.Equal("The ribbon's selected tab has no key tip \"Q\".",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => ribbon.PressKeyTipsAsync("N", "Q"))).Message);
+        Assert.Equal("The ribbon control with the key tip \"L\" is disabled.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => ribbon.PressKeyTipsAsync("N", "L"))).Message);
+        Assert.Empty(clicked);
+    }
+
+    [Fact]
+    public async Task Driver_ShouldRefuseKeyTips_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+        var ribbon = RenderKeyTips([]).Tb().Ribbon();
+
+        Assert.Equal("On a static page the ribbon has no key tips; render the page interactively to use them.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => ribbon.PressKeyTipsAsync("N"))).Message);
+    }
+
+    private IRenderedComponent<Bunit.Rendering.ContainerFragment> RenderKeyTips(List<string> clicked) =>
+        Render(KeyTipsRibbon(clicked));
+
+    // Quick save sits before the tabs with the key Q, beside a field in an element with the key F. Notes (N) has
+    // Bold (B) and a disabled Lock (L), and Trails (T) has Add a trail, with B again.
+    private RenderFragment KeyTipsRibbon(List<string> clicked) => builder =>
+    {
+        void AddTab(RenderTreeBuilder tabs, string title, string keyTip, params (string Label, string Key)[] buttons)
+        {
+            tabs.OpenComponent<TbRibbonTab>(0);
+            tabs.SetKey(title);
+            tabs.AddComponentParameter(1, nameof(TbRibbonTab.Title), title);
+            tabs.AddComponentParameter(2, nameof(TbRibbonTab.KeyTip), keyTip);
+            tabs.AddComponentParameter(3, nameof(TbRibbonTab.ChildContent), (RenderFragment)(groups =>
+            {
+                groups.OpenComponent<TbRibbonGroup>(0);
+                groups.AddComponentParameter(1, nameof(TbRibbonGroup.Label), "Write");
+                groups.AddComponentParameter(2, nameof(TbRibbonGroup.ChildContent), (RenderFragment)(items =>
+                {
+                    foreach (var (label, key) in buttons)
+                    {
+                        items.OpenComponent<TbRibbonButton>(0);
+                        items.SetKey(label);
+                        items.AddComponentParameter(1, nameof(TbRibbonButton.Label), label);
+                        items.AddComponentParameter(2, nameof(TbRibbonButton.KeyTip), key);
+                        items.AddComponentParameter(3, nameof(TbRibbonButton.Disabled), label == "Lock");
+                        items.AddComponentParameter(4, nameof(TbRibbonButton.OnClick),
+                            EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked.Add(label)));
+                        items.CloseComponent();
+                    }
+                }));
+                groups.CloseComponent();
+            }));
+            tabs.CloseComponent();
+        }
+
+        builder.OpenComponent<TbRibbon>(0);
+        builder.AddComponentParameter(1, nameof(TbRibbon.AriaLabel), "Trail planner");
+        builder.AddComponentParameter(2, nameof(TbRibbon.Start), (RenderFragment)(start =>
+        {
+            start.OpenElement(0, "button");
+            start.AddAttribute(1, "type", "button");
+            start.AddAttribute(2, "data-key-tip", "q");
+            start.AddAttribute(3, "onclick",
+                EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked.Add("Quick save")));
+            start.AddContent(4, "Quick save");
+            start.CloseElement();
+            start.AddMarkupContent(5, "<span data-key-tip=\"F\"><input aria-label=\"Find\" /></span>");
+        }));
+        builder.AddComponentParameter(3, nameof(TbRibbon.ChildContent), (RenderFragment)(tabs =>
+        {
+            AddTab(tabs, "Notes", "N", ("Bold", "B"), ("Lock", "L"));
+            AddTab(tabs, "Trails", "T", ("Add a trail", "B"));
+        }));
+        builder.CloseComponent();
+    };
+
+    // One tab whose group holds a button with text and one with an icon alone, which share the button's key tip.
+    private static void AddKeyTipTab(RenderTreeBuilder builder, string? tab, string? group, string? button)
+    {
+        builder.OpenComponent<TbRibbonTab>(0);
+        builder.AddComponentParameter(1, nameof(TbRibbonTab.Title), "Notes");
+        builder.AddComponentParameter(2, nameof(TbRibbonTab.KeyTip), tab);
+        builder.AddComponentParameter(3, nameof(TbRibbonTab.ChildContent), (RenderFragment)(groups =>
+        {
+            groups.OpenComponent<TbRibbonGroup>(0);
+            groups.AddComponentParameter(1, nameof(TbRibbonGroup.Label), "Write");
+            groups.AddComponentParameter(2, nameof(TbRibbonGroup.KeyTip), group);
+            groups.AddComponentParameter(3, nameof(TbRibbonGroup.ChildContent), (RenderFragment)(items =>
+            {
+                foreach (var iconOnly in new[] { false, true })
+                {
+                    items.OpenComponent<TbRibbonButton>(0);
+                    items.AddComponentParameter(1, nameof(TbRibbonButton.Label), "Bold");
+                    items.AddComponentParameter(2, nameof(TbRibbonButton.Icon), Square);
+                    items.AddComponentParameter(3, nameof(TbRibbonButton.IconOnly), iconOnly);
+                    items.AddComponentParameter(4, nameof(TbRibbonButton.KeyTip), button);
+                    items.CloseComponent();
+                }
+            }));
+            groups.CloseComponent();
+        }));
+        builder.CloseComponent();
     }
 
     private IRenderedComponent<TbRibbon> RenderRibbon(

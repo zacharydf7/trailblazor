@@ -3,6 +3,7 @@ import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { focusWentElsewhere } from '../Trailblazor.Primitives/focus-scope.js';
 import { createRovingFocus } from '../Trailblazor.Primitives/roving-focus.js';
+import { attachKeyTips } from './ribbon-key-tips.js';
 import { controls } from './toolbar.js';
 
 // A ribbon tab's row of commands is one tab stop whose arrow keys move between its controls, across its groups. When
@@ -226,8 +227,9 @@ export function attachRibbon(toolbar) {
 
 // A ribbon collapsed to its tabs. Ctrl+F1 in the ribbon and a double-click on a tab ask the server to collapse it or
 // show it again. While it is collapsed, choosing a tab shows that tab's commands over the page, which data-peek marks,
-// until a command is chosen, Escape is pressed or focus leaves the ribbon.
-export function attachRibbonCollapse(root, events) {
+// until a command is chosen, Escape is pressed or focus leaves the ribbon. The ribbon's key tips are turned on here
+// too.
+export function attachRibbonRoot(root, events) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!root) {
         return null;
@@ -311,6 +313,7 @@ export function attachRibbonCollapse(root, events) {
     root.addEventListener('focusout', onFocusOut);
     document.addEventListener('pointerdown', onPointerDown, true);
     states.observe(root, { attributes: true, attributeFilter: ['data-collapsed'] });
+    const detachKeyTips = attachKeyTips(root);
     root.dataset.ready = '';
 
     return {
@@ -321,6 +324,7 @@ export function attachRibbonCollapse(root, events) {
             root.removeEventListener('focusout', onFocusOut);
             document.removeEventListener('pointerdown', onPointerDown, true);
             states.disconnect();
+            detachKeyTips();
             delete root.dataset.ready;
             delete root.dataset.peek;
         },

@@ -1,0 +1,103 @@
+@page "/ribbon-key-tips"
+
+@* A ribbon with key tips on two of its three tabs, on a button beside them and on its commands. Both tabs have a
+   command with the key B, and ?narrow=true makes the ribbon narrow enough that the Entry group collapses into its
+   button. The Atlas ribbon comes after it on the page, and the Early ribbon is added before it only when asked for.
+   The dialog holds a ribbon of its own, inside the panel of a set of tabs, whose key tips take over while it is
+   open. *@
+<input aria-label="Notes" />
+<TbButton OnClick="@(() => _early = true)">Add a ribbon first</TbButton>
+@if (_early)
+{
+    <TbRibbon AriaLabel="Early">
+        <TbRibbonTab Title="Dawn" KeyTip="D">
+            <TbRibbonGroup Label="Start">
+                <TbRibbonButton Label="Wake" KeyTip="W" OnClick="@(() => _last = "Wake")" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+    </TbRibbon>
+}
+<div data-testid="journal" style="@(Narrow ? "inline-size: 10rem" : null)">
+    <TbRibbon AriaLabel="Journal" Collapsible>
+        <Start>
+            <TbButton Variant="Variant.Text" Size="Size.Small" data-key-tip="q" aria-keyshortcuts="Control+S"
+                      OnClick="@(() => _last = "Quick save")">Quick save</TbButton>
+        </Start>
+        <ChildContent>
+            <TbRibbonTab Title="Home" KeyTip="H">
+                <TbRibbonGroup Label="Entry" KeyTip="G">
+                    <TbRibbonButton Label="Bold" KeyTip="B" @bind-Pressed="_bold" />
+                    <TbRibbonButton Label="New entry" KeyTip="N" OnClick="@(() => _last = "New entry")" />
+                    <TbRibbonButton Label="Lock" KeyTip="L" Disabled OnClick="@(() => _last = "Lock")" />
+                    <TbMenu>
+                        <Trigger>
+                            <TbRibbonButton Label="Export" KeyTip="E" @attributes="context.Attributes" />
+                        </Trigger>
+                        <ChildContent>
+                            <TbMenuItem OnClick="@(() => _last = "As a PDF")">As a PDF</TbMenuItem>
+                        </ChildContent>
+                    </TbMenu>
+                    <span data-key-tip="T"><input aria-label="Title" size="6" /></span>
+                </TbRibbonGroup>
+                <TbRibbonGroup Label="Share">
+                    <TbRibbonButton Label="Mail" KeyTip="M" OnClick="@(() => _last = "Mail")" />
+                    <TbRibbonButton Label="Print" KeyTip="P" OnClick="@(() => _last = "Print")" />
+                    @* A button that opens something and leaves focus where it is, as a disclosure does. *@
+                    <TbButton Variant="Variant.Text" Size="Size.Small" data-key-tip="D"
+                              aria-expanded="@(_details ? "true" : "false")"
+                              OnClick="@(() => _details = !_details)">Details</TbButton>
+                </TbRibbonGroup>
+            </TbRibbonTab>
+            <TbRibbonTab Title="View" KeyTip="V">
+                <TbRibbonGroup Label="Zoom">
+                    <TbRibbonButton Label="Zoom in" KeyTip="B" OnClick="@(() => _last = "Zoom in")" />
+                </TbRibbonGroup>
+            </TbRibbonTab>
+            <TbRibbonTab Title="Help">
+                <TbRibbonGroup Label="Guides">
+                    <TbRibbonButton Label="Tour" KeyTip="U" OnClick="@(() => _last = "Tour")" />
+                </TbRibbonGroup>
+            </TbRibbonTab>
+        </ChildContent>
+    </TbRibbon>
+</div>
+<TbRibbon AriaLabel="Atlas">
+    <TbRibbonTab Title="Maps" KeyTip="A">
+        <TbRibbonGroup Label="Layers">
+            <TbRibbonButton Label="Legend" KeyTip="L" OnClick="@(() => _last = "Legend")" />
+        </TbRibbonGroup>
+    </TbRibbonTab>
+</TbRibbon>
+<output data-testid="last">@_last</output>
+<output data-testid="bold">@(_bold ? "bold" : "plain")</output>
+<output data-testid="dialog">@(_dialog ? "open" : "closed")</output>
+<TbButton OnClick="@(() => _dialog = true)">Open the dialog</TbButton>
+<TbDialog @bind-Open="_dialog" Title="Stamps">
+    <TbTabs AriaLabel="Sheets">
+        <TbTab Text="First sheet">
+            <TbRibbon AriaLabel="Stamps">
+                <TbRibbonTab Title="Ink" KeyTip="I">
+                    <TbRibbonGroup Label="Colors">
+                        <TbRibbonButton Label="Red" KeyTip="R" OnClick="@(() => _last = "Red")" />
+                    </TbRibbonGroup>
+                </TbRibbonTab>
+                <TbRibbonTab Title="Paper" KeyTip="P">
+                    <TbRibbonGroup Label="Shape">
+                        <TbRibbonButton Label="Fold" KeyTip="F" OnClick="@(() => _last = "Fold")" />
+                    </TbRibbonGroup>
+                </TbRibbonTab>
+            </TbRibbon>
+        </TbTab>
+    </TbTabs>
+</TbDialog>
+
+@code {
+    private string? _last;
+    private bool _bold;
+    private bool _dialog;
+    private bool _early;
+    private bool _details;
+
+    [SupplyParameterFromQuery]
+    public bool Narrow { get; set; }
+}

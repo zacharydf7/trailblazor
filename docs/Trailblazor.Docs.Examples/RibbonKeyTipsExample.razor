@@ -1,0 +1,43 @@
+<TbStack Gap="3" Style="max-inline-size: 24rem">
+    <TbText>
+        Press Alt, then R or C for a tab, then the key of one of its commands. Alt and then S saves. The Gear group has
+        collapsed in this narrow box, so its key, G, opens it.
+    </TbText>
+    <TbRibbon AriaLabel="River guide">
+        <End>
+            <TbButton Variant="Variant.Text" Size="Size.Small" data-key-tip="S"
+                      OnClick="@(() => _last = "Save the guide")">Save the guide</TbButton>
+        </End>
+        <ChildContent>
+            <TbRibbonTab Title="Rapids" KeyTip="R">
+                <TbRibbonGroup Label="Scout">
+                    <TbRibbonButton Large Label="Mark a rapid" KeyTip="M" Icon="ExampleIcons.Plus"
+                                    OnClick="@(() => _last = "Mark a rapid")" />
+                    <TbRibbonButton Label="Portage" KeyTip="P" @bind-Pressed="_portage" />
+                    <span data-key-tip="N">
+                        <TbTextField @bind-Value="_name" AriaLabel="Name of the rapid" Size="Size.Small" />
+                    </span>
+                </TbRibbonGroup>
+                <TbRibbonGroup Label="Gear" KeyTip="G" CollapseOrder="1" Icon="ExampleIcons.Folder">
+                    <TbRibbonButton Large Label="Throw rope" KeyTip="T" Icon="ExampleIcons.ArrowUp"
+                                    OnClick="@(() => _last = "Throw rope")" />
+                    <TbRibbonButton Label="Dry bags" KeyTip="D" OnClick="@(() => _last = "Dry bags")" />
+                    <TbRibbonButton Label="Spare paddle" KeyTip="A" OnClick="@(() => _last = "Spare paddle")" />
+                </TbRibbonGroup>
+            </TbRibbonTab>
+            <TbRibbonTab Title="Camps" KeyTip="C">
+                <TbRibbonGroup Label="Stay">
+                    <TbRibbonButton Large Label="Book a camp" KeyTip="B" Icon="ExampleIcons.Plus"
+                                    OnClick="@(() => _last = "Book a camp")" />
+                </TbRibbonGroup>
+            </TbRibbonTab>
+        </ChildContent>
+    </TbRibbon>
+    <TbText>Last command: @(_last ?? "none"). Portage is @(_portage ? "on" : "off").</TbText>
+</TbStack>
+
+@code {
+    private string? _last;
+    private bool _portage;
+    private string? _name;
+}

@@ -615,3 +615,4 @@ Trailblazor.Testing.TrailblazorMarkup.Ribbon(string? name = null) -> Trailblazor
 Trailblazor.Testing.TbRibbonDriver.CollapseAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbRibbonDriver.ExpandAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbRibbonDriver.IsCollapsed.get -> bool
+Trailblazor.Testing.TbRibbonDriver.PressKeyTipsAsync(params string![]! keyTips) -> System.Threading.Tasks.Task!

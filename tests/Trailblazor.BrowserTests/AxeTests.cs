@@ -245,6 +245,14 @@ public class AxeTests(BrowserFixture fixture) : BrowserTest(fixture)
                 await ribbon.CollapseAsync();
                 await ribbon.SelectAsync("Pictures");
             }),
+            // The River guide ribbon shows its key tips, each naming its key in aria-keyshortcuts.
+            new(new("tab", "Rapids"), async page =>
+            {
+                await Expect(page.Tb().Ribbon("River guide").Ribbon).ToHaveAttributeAsync("data-ready", "");
+                await page.Keyboard.PressAsync("Alt");
+                await Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Rapids" }))
+                    .ToHaveAttributeAsync("data-key-tip-shown", "");
+            }),
         ],
         ["popover"] =
         [

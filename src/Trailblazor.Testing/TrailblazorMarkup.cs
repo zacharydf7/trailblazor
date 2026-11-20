@@ -2669,8 +2669,65 @@ public sealed class TbRibbonDriver
         await only.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 
+    /// <summary>Follows these key tips in turn, as pressing Alt and then each key does: a tab's selects the tab, and
+    /// a button's clicks it, in the selected tab or beside the tabs. Each call starts from Alt. bUnit runs no
+    /// script, so no badge shows, a group's key tip opens nothing, and a field's moves no focus. Throws for a key
+    /// tip the ribbon doesn't have at that point, for a key after the one that chose a command, for a disabled
+    /// control, and on a static page, where key tips don't work.</summary>
+    public async Task PressKeyTipsAsync(params string[] keyTips)
+    {
+        var root = _find();
+        if (root.HasAttribute("data-static"))
+        {
+            throw new InvalidOperationException("On a static page the ribbon has no key tips; render the page "
+                + "interactively to use them.");
+        }
+
+        var inTab = false;
+        var ended = false;
+        foreach (var keyTip in keyTips)
+        {
+            if (ended)
+            {
+                throw new InvalidOperationException(
+                    $"Key tips end once a command is chosen, so \"{keyTip}\" has nothing to reach.");
+            }
+
+            var showing = inTab ? Commands?.QuerySelectorAll("[data-key-tip]").AsEnumerable() : BesideTheCommands();
+            var control = (showing ?? []).FirstOrDefault(found => string.Equals(found.GetAttribute("data-key-tip"),
+                    keyTip, StringComparison.OrdinalIgnoreCase))
+                ?? throw new InvalidOperationException(inTab
+                    ? $"The ribbon's selected tab has no key tip \"{keyTip}\"."
+                    : $"The ribbon has no key tip \"{keyTip}\" on its tabs or beside them.");
+            if (Choices.IsDisabled(control))
+            {
+                throw new InvalidOperationException($"The ribbon control with the key tip \"{keyTip}\" is disabled.");
+            }
+
+            // A tab's key and a collapsed group's leave the key tips showing, and any other key ends them.
+            var isTab = control.GetAttribute("role") == "tab";
+            inTab |= isTab;
+            ended = !isTab && control.GetAttribute("data-part") != "group-button";
+            // An element around a field has nothing to click.
+            if (control.LocalName == "button")
+            {
+                await control.ClickAsync(new MouseEventArgs { Detail = 1 });
+            }
+        }
+    }
+
+    // The controls with key tips in the tabs' row: the tabs, and what sits before and after them.
+    private IEnumerable<IElement> BesideTheCommands()
+    {
+        var root = _find();
+        return root.QuerySelectorAll("[data-key-tip]")
+            .Where(control => control.Closest("[role=tabpanel]") is not { } panel || !root.Contains(panel));
+    }
+
     // The selected tab's row of commands: the other tabs' rows stay in the markup, hidden, once they have been shown.
-    private IElement? Commands => _find().QuerySelector("[role=tabpanel]:not([hidden]) [data-part=commands]");
+    // The path starts at the ribbon, so a tab panel around the ribbon isn't taken for one of its own.
+    private IElement? Commands => _find()
+        .QuerySelector(":scope > .tb-tabs > [role=tabpanel]:not([hidden]) > [data-part=commands]");
 }
 
 /// <summary>A <c>TbTooltip</c>, found by its trigger's name.</summary>

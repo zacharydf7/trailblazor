@@ -35,7 +35,8 @@
         {
             var selected = tab == ActiveTab;
             @* Keyed, so a reordered header keeps its focus. *@
-            <button @key="tab" @ref="tab.Header" type="button" role="tab" id="@tab.TabId"
+            <button @key="tab" @ref="tab.Header" @attributes="tab.HeaderAttributes" type="button" role="tab"
+                    id="@tab.TabId"
                     aria-selected="@(selected ? "true" : "false")"
                     aria-controls="@(tab.IsPanelRendered ? tab.PanelId : null)"
                     tabindex="@(tab == FocusableTab ? 0 : -1)" disabled="@tab.Disabled" data-part="tab"

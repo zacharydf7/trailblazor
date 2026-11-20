@@ -122,6 +122,18 @@ public class TbTabsTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldPutTheHeaderAttributesOnTheTabUnderItsOwnAndFollowThem_WhenATabHasSome()
+    {
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, HeaderAttributesTab("first")));
+        Assert.Equal("first", cut.Find("[role=tab]").GetAttribute("data-tour"));
+        Assert.False(cut.Find("[role=tabpanel]").HasAttribute("data-tour"));
+
+        cut.Render(parameters => parameters.Add(tabs => tabs.ChildContent, HeaderAttributesTab("second")));
+
+        Assert.Equal("second", cut.Find("[role=tab]").GetAttribute("data-tour"));
+    }
+
+    [Fact]
     public void Render_ShouldPutTheHeaderClassOnTheTabAndFollowIt_WhenATabHasOne()
     {
         var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.ChildContent, HeaderClassTab("attention")));
@@ -733,6 +745,17 @@ public class TbTabsTests : BunitContext
         Assert.Equal("details", cut.Find("[role=tab]").Id);
         Assert.Equal("details", cut.Find("[role=tabpanel]").GetAttribute("aria-labelledby"));
     }
+
+    // The dictionary is a new one each time the tabs render, as one written in the markup is.
+    private static RenderFragment HeaderAttributesTab(string tour) => builder =>
+    {
+        builder.OpenComponent<TbTab>(0);
+        builder.AddAttribute(1, nameof(TbTab.Text), "Leader");
+        builder.AddAttribute(2, nameof(TbTab.HeaderAttributes),
+            new Dictionary<string, object> { ["data-tour"] = tour, ["role"] = "button" });
+        builder.AddAttribute(3, nameof(TbTab.ChildContent), (RenderFragment)(panel => panel.AddContent(0, "Name")));
+        builder.CloseComponent();
+    };
 
     private static RenderFragment HeaderClassTab(string? headerClass) => builder =>
     {
