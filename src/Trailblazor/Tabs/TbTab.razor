@@ -7,9 +7,8 @@
 @if (IsPanelRendered)
 {
     <div @attributes="AttributesWithoutId" role="tabpanel" id="@PanelId" aria-labelledby="@TabId"
-         tabindex="@(IsSelected && Tabs!.FocusablePanels ? 0 : null)" hidden="@PanelHidden" data-part="panel"
-         class="@ClassNames.Join("tb-tabs__panel", TabsClasses?.Panel, Class)"
-         style="@Style">
+         tabindex="@(IsSelected && Tabs!.FocusablePanels != TabPanelFocus.Never ? 0 : null)" hidden="@PanelHidden"
+         data-part="panel" class="@ClassNames.Join("tb-tabs__panel", TabsClasses?.Panel, Class)" style="@Style">
         @ChildContent
     </div>
 }

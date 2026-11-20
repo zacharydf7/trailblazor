@@ -10163,6 +10163,10 @@ public static class ExampleCatalog
                 new("add", "Adding tabs", "`OnAdd` ends the row of tabs with an add button, named by `Labels.Add`, or "
                     + "\"Add tab\" in English. Add a tab there, and select it to show it. The button stays at the row's "
                     + "end while the tabs scroll, and sits under them in a `Vertical` list.", typeof(TabsAddExample)),
+                new("panel-stops", "Panels and the Tab key", "Tab moves from the selected tab into its panel. A panel "
+                    + "that starts with a control is no tab stop of its own, so focus goes to that control. Any other "
+                    + "panel is a tab stop itself, so its text can be reached. `FocusablePanels` set to `Always` makes "
+                    + "every panel a tab stop, and `Never` none.", typeof(TabsPanelStopsExample)),
             ],
             Api = [typeof(TbTabs), typeof(TbTab), typeof(TabsLabels), typeof(TabsClasses)],
             Keyboard =
@@ -10179,8 +10183,8 @@ public static class ExampleCatalog
                 },
                 new(["Home", "End"], "Jumps to the first or last tab and selects it, unless activation is manual."),
                 new(["Enter", "Space"], "Selects the focused tab.") { When = "With manual activation" },
-                new(["Tab"], "Moves from the tab list, which is one tab stop, into the panel, or to the panel's first "
-                    + "control when `FocusablePanels` is off."),
+                new(["Tab"], "Moves from the tab list, which is one tab stop, into the panel, or, by default, to the "
+                    + "panel's first control when the panel starts with one."),
                 new(["Delete", "Backspace"], "Closes the focused tab.") { When = "On a tab with an `OnClose`" },
             ],
             Labeling =
@@ -10197,12 +10201,17 @@ public static class ExampleCatalog
             ],
             Accessibility =
             [
-                "Each panel is a tab stop, so keyboard users can reach content that has no controls. Turn "
-                    + "`FocusablePanels` off only when every panel starts with a control.",
-                "A screen reader on a touch screen can't reach a tab's close mark, and a double tap selects the tab, so "
-                    + "when tabs can close, also offer a way to close one from its panel or a menu.",
+                "A panel that starts with a control is no tab stop, since Tab reaches that control anyway. Any other "
+                    + "panel is one, so keyboard users can reach content that has no controls.",
+                "A screen reader on a touch screen can't reach a tab's close mark, and a double tap selects the tab.",
                 "In forced-colors mode, such as Windows high contrast, the selected tab keeps its underline in the "
                     + "system's highlight color, and a selected pill keeps an outline in it.",
+            ],
+            AppDuties =
+            [
+                "Set `FocusablePanels` to `Never` only when every panel starts with a control.",
+                "When tabs can close, also offer a way to close one from its panel or a menu, since a screen reader "
+                    + "on a touch screen can't reach the close mark.",
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
@@ -10213,6 +10222,8 @@ public static class ExampleCatalog
                     + "does nothing until the page is interactive. On a prerendered page, the selection goes back to "
                     + "`ActiveIndex` once the page is interactive. A tab with an `OnClose` shows its close mark, and tabs with "
                     + "an `OnAdd` show their add button, once the page is interactive.",
+                "Every shown panel is a tab stop unless `FocusablePanels` is `Never`, since only the interactive "
+                    + "script checks how a panel starts.",
             ],
             Ready = new("[role=tablist]", "the tab list"),
             Target = new("tablist", "Report sections"),
@@ -10251,6 +10262,12 @@ public static class ExampleCatalog
                 + "isn't in the markup unless `RenderAllPanels` is set. With no name, `Tabs()` ignores nested tab "
                 + "lists: in bUnit, any inside a panel; in Playwright, only those inside a hidden panel. So in a "
                 + "browser, name the outer list when a shown panel holds another.",
+            TestingTips =
+            [
+                "Where Tab goes from a tab depends on how the panel starts, which only the browser checks. In bUnit "
+                    + "the shown panel keeps `tabindex=\"0\"` unless `FocusablePanels` is `Never`, so test the tab "
+                    + "order in a browser, once the list has `data-ready`.",
+            ],
             Telemetry =
             [
                 "A tab with a `TelemetryName`, such as `\"billing-tab\"`, counts `trailblazor.control.shown` as its "

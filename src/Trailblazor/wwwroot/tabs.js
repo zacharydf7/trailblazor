@@ -1,4 +1,5 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { isTabbable } from '../Trailblazor.Primitives/focus-scope.js';
 // The arrow keys, Home and End move focus between enabled tabs; with automatic activation they also select it, through
 // `order` rather than a click, so the tab's OnClick hears only clicks. The headers follow the order in which tabs
 // register, so the tabs' order in the markup is reported to `order` too. Delete or Backspace on a closable tab closes
@@ -128,6 +129,32 @@ export function attachTabs(list, order) {
         (nearest(removal.nextSibling, 'nextSibling') ?? nearest(removal.previousSibling, 'previousSibling'))?.focus();
     };
 
+    // The server makes every shown panel a tab stop unless FocusablePanels is Never. With Auto, this takes the stop
+    // away from a panel that starts with a control, and gives it back when the panel no longer does. A panel that has
+    // focus keeps its stop, or focus would be lost.
+    const updatePanelStop = () => {
+        const id = list.querySelector(':scope > [aria-selected="true"]')?.getAttribute('aria-controls');
+        const panel = id && document.getElementById(id);
+        if (!panel) {
+            return;
+        }
+
+        const stops = list.dataset.focusablePanels;
+        const stop = stops === 'always' || stops !== 'never' && !startsWithControl(panel);
+        if (stop && !panel.hasAttribute('tabindex')) {
+            panel.tabIndex = 0;
+        } else if (!stop && panel.hasAttribute('tabindex') && panel !== document.activeElement) {
+            panel.removeAttribute('tabindex');
+        }
+    };
+
+    // A panel that kept its stop because it had focus is decided again once focus has left it.
+    const onPanelFocusOut = event => {
+        if (event.target.parentElement === root) {
+            updatePanelStop();
+        }
+    };
+
     // Tabs arriving already selected change no attribute, and may not change the row's size.
     const selection = new MutationObserver(records => {
         refocus(records);
@@ -136,10 +163,12 @@ export function attachTabs(list, order) {
         updateScrollers();
     });
     selection.observe(list, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-selected'] });
-    // This covers what no selection change does: the first render and a hidden row being shown.
+    // This covers what no selection change does: the first render and a hidden row being shown, which is also when a
+    // panel's content can first be seen to start with a control.
     const sizes = new ResizeObserver(() => {
         revealSelected();
         updateScrollers();
+        updatePanelStop();
     });
     // A tab whose label grows changes how far the row overflows without resizing the list.
     const watched = new Set();
@@ -179,7 +208,7 @@ export function attachTabs(list, order) {
 
     const holdsAnchor = node => node.nodeType === Node.ELEMENT_NODE
         && (node.matches('[data-part="tab-anchor"]') || node.querySelector('[data-part="tab-anchor"]'));
-    // Only a changed header or a moved anchor can change the order, so panel content updates are skipped.
+    // Only a changed header or a moved anchor can change the order, so it isn't reported for other updates.
     const observer = new MutationObserver(records => {
         if (records.some(record => record.target === list
             || [...record.addedNodes, ...record.removedNodes].some(holdsAnchor))) {
@@ -190,13 +219,22 @@ export function attachTabs(list, order) {
         if (records.some(record => record.target === root)) {
             updateScrollers();
         }
+
+        updatePanelStop();
     });
-    observer.observe(list.parentElement, { childList: true, subtree: true });
+    // A panel shown again, a control turned off or hidden, and a new choice of which panels are stops add no node.
+    observer.observe(list.parentElement, {
+        childList: true, subtree: true, attributes: true,
+        attributeFilter: ['disabled', 'hidden', 'data-focusable-panels'],
+    });
     // A tab may have rendered between the first render and this call.
     reportOrder();
+    // Decided before data-ready is set, so whoever waits for that mark finds the stop settled.
+    updatePanelStop();
     list.addEventListener('keydown', onKeyDown);
     list.addEventListener('focusin', onFocusIn);
     list.addEventListener('focusout', onFocusOut);
+    root.addEventListener('focusout', onPanelFocusOut);
     list.dataset.ready = '';
     const handle = DotNet.createJSObjectReference({
         dispose() {
@@ -206,6 +244,7 @@ export function attachTabs(list, order) {
             list.removeEventListener('keydown', onKeyDown);
             list.removeEventListener('focusin', onFocusIn);
             list.removeEventListener('focusout', onFocusOut);
+            root.removeEventListener('focusout', onPanelFocusOut);
             list.removeEventListener('scroll', updateScrollers);
             root.removeEventListener('click', onScrollerClick);
             root.removeEventListener('mousedown', onScrollerPress);
@@ -244,6 +283,41 @@ export function nextTab(list, event) {
         Home: tabs[0],
         End: tabs.at(-1),
     }[event.key];
+}
+
+const pictures = 'img:not([alt=""]), svg, canvas, video';
+// Controls that share one tab stop: the arrow keys reach the ones Tab skips. Anything else that only script can focus,
+// such as a list that scrolls, holds content people read.
+const skippedByTab = ':is(a, button, input, select, textarea, [role=tab], [role=option], [role=treeitem], [role=row], '
+    + '[role=gridcell], [role=columnheader], [role=rowheader], [role=radio], [role^=menuitem], [role=button], '
+    + '[role=link], [role=checkbox], [role=switch])[tabindex="-1"]';
+
+// Whether Tab reaches a control in the panel before anything else people read or look at there. Text that names
+// something, in a label, a legend or an element an aria-labelledby points at, doesn't count. Neither does a control Tab
+// skips because it shares one tab stop with others, such as the tabs before a nested list's selected one.
+function startsWithControl(panel) {
+    const names = element => element.id !== ''
+        && panel.querySelector(`[aria-labelledby~="${CSS.escape(element.id)}"]`) !== null;
+    // An element with display: contents has no box of its own, but what it holds still shows.
+    const shows = element => element.checkVisibility() || getComputedStyle(element).display === 'contents';
+    // A control Tab reaches is never passed over, though it may name what it opens, as a menu's button does.
+    const skipped = element => !isTabbable(element) && (!shows(element)
+        || element.matches(`legend, [aria-hidden="true"], ${skippedByTab}`) || names(element));
+    const walker = document.createTreeWalker(panel, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, node =>
+        node.nodeType === Node.ELEMENT_NODE && skipped(node) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            if (node.data.trim() !== '' && !node.parentElement.closest('label')) {
+                return false;
+            }
+        } else if (isTabbable(node)) {
+            return true;
+        } else if (node.matches(pictures)) {
+            return false;
+        }
+    }
+
+    return false;
 }
 
 // Until the page is interactive, clicks and keys select tabs here, and find-in-page selects the tab whose panel holds a
@@ -291,7 +365,7 @@ function select(tab) {
         const panel = document.getElementById(other.getAttribute('aria-controls'));
         if (panel && selected) {
             panel.removeAttribute('hidden');
-            if (tab.parentElement.dataset.focusablePanels !== 'false') {
+            if (tab.parentElement.dataset.focusablePanels !== 'never') {
                 panel.tabIndex = 0;
             }
         } else if (panel) {

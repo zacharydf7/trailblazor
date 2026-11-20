@@ -1,0 +1,12 @@
+<TbTabs AriaLabel="Day hike">
+    <TbTab Text="Packing list">
+        <TbText>Water, a map and a headlamp.</TbText>
+    </TbTab>
+    <TbTab Text="Start">
+        <TbTextField Label="Starting point" @bind-Value="_start" />
+    </TbTab>
+</TbTabs>
+
+@code {
+    private string? _start;
+}

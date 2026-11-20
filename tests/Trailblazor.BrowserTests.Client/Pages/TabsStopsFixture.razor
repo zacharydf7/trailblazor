@@ -1,0 +1,115 @@
+@page "/tabs-stops"
+
+@* Each panel starts another way: with a field, with text, with a tab list whose second tab is selected, and with text
+   that a field takes the place of. *@
+<TbTabs AriaLabel="Trip" KeepAlive FocusablePanels="_stops">
+    <TbTab Text="Gear">
+        <TbTextField Label="Pack" @bind-Value="_pack" Disabled="_off" />
+    </TbTab>
+    <TbTab Text="Notes">
+        <p>Bring water.</p>
+        <TbTextField Label="More" @bind-Value="_more" />
+    </TbTab>
+    <TbTab Text="Legs">
+        <TbTabs AriaLabel="Legs" ActiveIndex="1">
+            <TbTab Text="North">North panel</TbTab>
+            <TbTab Text="South">
+                <p>South notes</p>
+                <TbTextField Label="Camp" @bind-Value="_camp" />
+            </TbTab>
+        </TbTabs>
+    </TbTab>
+    <TbTab Text="Weather">
+        @if (_loaded)
+        {
+            <TbTextField Label="Forecast" @bind-Value="_forecast" />
+        }
+        else
+        {
+            <p>Loading</p>
+        }
+    </TbTab>
+</TbTabs>
+@* The second panel's tabs are set up while their panel is still hidden. *@
+<TbTabs AriaLabel="Days" RenderAllPanels>
+    <TbTab Text="Today">Today panel</TbTab>
+    <TbTab Text="Tomorrow">
+        <TbTabs AriaLabel="Hours">
+            <TbTab Text="Morning">
+                <TbTextField Label="Plan" @bind-Value="_plan" />
+            </TbTab>
+        </TbTabs>
+    </TbTab>
+</TbTabs>
+@* What comes first in each panel decides whether it is a stop. *@
+<TbTabs AriaLabel="Starts">
+    <TbTab Text="Legend">
+        <fieldset>
+            <legend>Size</legend>
+            <input type="radio" name="size" aria-label="Small" />
+        </fieldset>
+    </TbTab>
+    <TbTab Text="Named">
+        <span id="tabs-stops-dates">Dates</span>
+        <div role="group" aria-labelledby="tabs-stops-dates">
+            <input aria-label="From" />
+        </div>
+    </TbTab>
+    <TbTab Text="Decoration">
+        <span aria-hidden="true">*</span>
+        <input aria-label="Rating" />
+    </TbTab>
+    <TbTab Text="Hidden">
+        <p hidden>Not shown</p>
+        <input aria-label="Shown" />
+    </TbTab>
+    <TbTab Text="Spacer">
+        <img alt="" src="@Pixel" width="8" height="8" />
+        <input aria-label="After the spacer" />
+    </TbTab>
+    <TbTab Text="Picture">
+        <img alt="A map of the trail" src="@Pixel" width="8" height="8" />
+        <input aria-label="After the map" />
+    </TbTab>
+    <TbTab Text="Menu">
+        <TbMenu Label="Actions">
+            <TbMenuItem>Rename</TbMenuItem>
+        </TbMenu>
+        <p>Recent trips</p>
+    </TbTab>
+    <TbTab Text="List">
+        <div role="list" tabindex="-1">
+            <div role="listitem">Packed</div>
+        </div>
+        <input aria-label="After the list" />
+    </TbTab>
+    <TbTab Text="Options">
+        <div role="listbox" aria-label="Sizes">
+            <div role="option" tabindex="-1">Small</div>
+            <div role="option" tabindex="0" aria-selected="true">Large</div>
+        </div>
+    </TbTab>
+    <TbTab Text="Wrapper">
+        <div style="display: contents">
+            <p>Your trips</p>
+        </div>
+        <input aria-label="After the wrapped text" />
+    </TbTab>
+</TbTabs>
+<TbButton OnClick="() => _off = !_off">Turn the pack field off or on</TbButton>
+<TbButton OnClick="() => _loaded = !_loaded" data-testid="load">Load or unload the weather</TbButton>
+<TbButton OnClick="() => _stops = TabPanelFocus.Always">Make every panel a stop</TbButton>
+<TbButton OnClick="() => _stops = TabPanelFocus.Never">Make no panel a stop</TbButton>
+
+@code {
+    private const string Pixel = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
+    private TabPanelFocus _stops;
+    private bool _off;
+    private bool _loaded;
+    private string? _pack;
+    private string? _more;
+    private string? _camp;
+    private string? _forecast;
+    private string? _plan;
+}

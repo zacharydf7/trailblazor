@@ -44,7 +44,7 @@
         builder.AddComponentParameter(1, nameof(TbTabs.AriaLabel), AriaLabel);
         builder.AddComponentParameter(2, nameof(TbTabs.Size), Size.Small);
         builder.AddComponentParameter(3, nameof(TbTabs.KeepAlive), true);
-        builder.AddComponentParameter(4, nameof(TbTabs.FocusablePanels), false);
+        builder.AddComponentParameter(4, nameof(TbTabs.FocusablePanels), TabPanelFocus.Never);
         if (_givenKey)
         {
             builder.AddComponentParameter(5, nameof(TbTabs.ActiveKey), ActiveKey);

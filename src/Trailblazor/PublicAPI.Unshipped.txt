@@ -1579,6 +1579,10 @@ Trailblazor.SortDirection.Descending = 1 -> Trailblazor.SortDirection
 Trailblazor.TabActivation
 Trailblazor.TabActivation.Automatic = 0 -> Trailblazor.TabActivation
 Trailblazor.TabActivation.Manual = 1 -> Trailblazor.TabActivation
+Trailblazor.TabPanelFocus
+Trailblazor.TabPanelFocus.Always = 1 -> Trailblazor.TabPanelFocus
+Trailblazor.TabPanelFocus.Auto = 0 -> Trailblazor.TabPanelFocus
+Trailblazor.TabPanelFocus.Never = 2 -> Trailblazor.TabPanelFocus
 Trailblazor.TbAccordion
 Trailblazor.TbAccordion.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbAccordion.ChildContent.set -> void
@@ -7275,7 +7279,7 @@ Trailblazor.TbRibbonTab.TelemetryName.get -> string?
 Trailblazor.TbRibbonTab.TelemetryName.set -> void
 Trailblazor.TbRibbonTab.Title.get -> string!
 Trailblazor.TbRibbonTab.Title.set -> void
-Trailblazor.TbTabs.FocusablePanels.get -> bool
+Trailblazor.TbTabs.FocusablePanels.get -> Trailblazor.TabPanelFocus
 Trailblazor.TbTabs.FocusablePanels.set -> void
 override Trailblazor.TbRibbon.OnParametersSet() -> void
 override Trailblazor.TbRibbon.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!

@@ -648,19 +648,24 @@ public class TbTabsTests : BunitContext
         Assert.Contains(modifier, cut.Find(".tb-tabs").ClassList);
     }
 
-    [Fact]
-    public void FocusablePanels_ShouldLeaveThePanelsOutOfTheTabOrder_WhenTurnedOff()
+    [Theory]
+    [InlineData(TabPanelFocus.Auto, "0", null)]
+    [InlineData(TabPanelFocus.Always, "0", "always")]
+    [InlineData(TabPanelFocus.Never, null, "never")]
+    public void FocusablePanels_ShouldSetTheShownPanelsStopAndMarkTheList_WhenGivenEachChoice(TabPanelFocus stops,
+        string? tabIndex, string? mark)
     {
-        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.FocusablePanels, false)
+        var cut = Render<TbTabs>(parameters => parameters.Add(tabs => tabs.FocusablePanels, stops)
+            .Add(tabs => tabs.RenderAllPanels, true)
             .Add(tabs => tabs.ChildContent, (RenderFragment)(builder =>
             {
                 AddTab(builder, 0, "Overview", "Overview panel");
                 AddTab(builder, 10, "Specs", "Specs panel");
             })));
 
-        Assert.All(cut.FindAll("[role=tabpanel]"), panel => Assert.False(panel.HasAttribute("tabindex")));
-        // The mark tells the script that shows a static page's panels to leave them out too.
-        Assert.Equal("false", cut.Find("[role=tablist]").GetAttribute("data-focusable-panels"));
+        Assert.Equal([tabIndex, null], cut.FindAll("[role=tabpanel]").Select(panel => panel.GetAttribute("tabindex")));
+        // The mark tells the script whether the stops are its to decide, on a static page too.
+        Assert.Equal(mark, cut.Find("[role=tablist]").GetAttribute("data-focusable-panels"));
     }
 
     private IRenderedComponent<TbTabs> RenderKeyedTabs(string active, bool includeIntro,

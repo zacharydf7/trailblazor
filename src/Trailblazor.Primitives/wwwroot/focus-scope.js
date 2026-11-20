@@ -165,7 +165,7 @@ function sameStop(one, other) {
         && one.name === other.name && one.form === other.form;
 }
 
-function isTabbable(element) {
+export function isTabbable(element) {
     return element.matches(focusableSelector) && (element.tabIndex >= 0 || isStopWithoutTabIndex(element))
         && !element.matches(':disabled')
         && !element.closest('[inert]') && element.checkVisibility({ visibilityProperty: true, checkVisibilityCSS: true });

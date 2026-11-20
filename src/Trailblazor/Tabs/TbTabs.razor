@@ -23,7 +23,7 @@
     <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list" data-commits="@_answered"
          aria-orientation="@(Vertical ? "vertical" : "horizontal")"
          data-activation="@(Activation == TabActivation.Automatic ? "automatic" : "manual")"
-         data-focusable-panels="@(FocusablePanels ? null : "false")"
+         data-focusable-panels="@PanelStops"
          class="@ClassNames.Join("tb-tabs__list", Centered ? "tb-tabs__list--centered" : null, Classes?.List)">
         @foreach (var tab in _tabs)
         {
@@ -115,11 +115,11 @@
     [Parameter]
     public EventCallback<string?> ActiveKeyChanged { get; set; }
 
-    /// <summary>Whether the selected tab's panel is a tab stop of its own, so the Tab key reaches a panel that holds
-    /// no control. Turn it off when every panel starts with a control, as a panel that is a toolbar does. Defaults to
-    /// true.</summary>
+    /// <summary>Decides when the selected tab's panel is a tab stop of its own, which lets the Tab key reach a panel
+    /// that holds no control. Defaults to <see cref="TabPanelFocus.Auto"/>: a panel that starts with a control is no
+    /// tab stop, since Tab reaches that control, and any other panel is one.</summary>
     [Parameter]
-    public bool FocusablePanels { get; set; } = true;
+    public TabPanelFocus FocusablePanels { get; set; }
 
     /// <summary>Stacks the tabs in a column beside their panels, moved between with Up and Down.</summary>
     [Parameter]
@@ -199,6 +199,14 @@
     internal bool SelectsByKey => _selectsByKey;
 
     private bool ShowsAdd => OnAdd.HasDelegate && RendererInfo.IsInteractive;
+
+    // Tells the script which panels are tab stops; with no mark, it decides by how the shown panel starts.
+    private string? PanelStops => FocusablePanels switch
+    {
+        TabPanelFocus.Always => "always",
+        TabPanelFocus.Never => "never",
+        _ => null,
+    };
 
     private bool ShowsScrollButtons => ScrollButtons && !Vertical && RendererInfo.IsInteractive;
 
