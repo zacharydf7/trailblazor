@@ -10272,8 +10272,10 @@ public static class ExampleCatalog
                     + "does nothing until the page is interactive. On a prerendered page, the selection goes back to "
                     + "`ActiveIndex` once the page is interactive. A tab with an `OnClose` shows its close mark, and tabs with "
                     + "an `OnAdd` show their add button, once the page is interactive.",
-                "Every shown panel is a tab stop unless `FocusablePanels` is `Never`, since only the interactive "
-                    + "script checks how a panel starts.",
+                "The startup script checks how the shown panel starts, as it loads, after an enhanced navigation "
+                    + "and as a tab is selected. So before the page is interactive, and on a static page, a panel "
+                    + "that starts with a control isn't a tab stop either. Until that script has loaded, every shown "
+                    + "panel is a tab stop unless `FocusablePanels` is `Never`.",
             ],
             Ready = new("[role=tablist]", "the tab list"),
             Target = new("tablist", "Report sections"),
@@ -10316,7 +10318,8 @@ public static class ExampleCatalog
             [
                 "Where Tab goes from a tab depends on how the panel starts, which only the browser checks. In bUnit "
                     + "the shown panel keeps `tabindex=\"0\"` unless `FocusablePanels` is `Never`, so test the tab "
-                    + "order in a browser, once the list has `data-ready`.",
+                    + "order in a browser, once the list has `data-ready`. On a static page, wait for "
+                    + "`data-tb-script` on the `<html>` element instead.",
             ],
             Telemetry =
             [

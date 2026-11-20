@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-20
 
+- On a static page, and before the page is interactive, a `TbTabs` panel that starts with a control is no longer a tab stop, as it already wasn't once the page was interactive. The startup script now makes the interactive script's check as it loads, after an enhanced navigation and as a tab is selected.
 - In a `TbTreeView`, and the tree of a `TbTreeSelect`, Enter and a double-click no longer open or close a disabled row that has children, as a click never did. The row's chevron and the Left and Right arrow keys still open and close it.
 
 #### 2026-11-19

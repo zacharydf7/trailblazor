@@ -184,6 +184,83 @@ public class TabsStopsTests(BrowserFixture fixture) : BrowserTest(fixture)
         }
     }
 
+    private async Task<IPage> OpenStaticStopsAsync(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-tabs-stops");
+        await Expect(page.Locator("html")).ToHaveAttributeAsync("data-tb-script", "");
+        return page;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldGoFromTheTabToThePanelsFirstControl_WhenThePageIsStaticAndThePanelStartsWithOne(
+        string browser)
+    {
+        var page = await OpenStaticStopsAsync(browser);
+        await page.GetByRole(AriaRole.Tab, new() { Name = "Gear" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Add gear" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldGoFromTheTabToThePanelsFirstControl_WhenEnhancedNavigationBringsAStaticPagesTabs(
+        string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-disclosure");
+        await Expect(page.Locator("html")).ToHaveAttributeAsync("data-tb-script", "");
+
+        await page.GetByRole(AriaRole.Link, new() { Name = "Trip tabs" }).ClickAsync();
+        // The startup script marks the root once it has handled the navigation.
+        await Expect(page.Locator("html")).ToHaveAttributeAsync("data-tb-navigated", "");
+        await page.GetByRole(AriaRole.Tab, new() { Name = "Gear" }).FocusAsync();
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Add gear" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldStopOnlyOnAPanelThatStartsWithText_WhenAStaticPagesTabsAreSwitched(string browser)
+    {
+        var page = await OpenStaticStopsAsync(browser);
+        var gear = page.GetByRole(AriaRole.Tab, new() { Name = "Gear" });
+        var route = page.GetByRole(AriaRole.Tab, new() { Name = "Route" });
+
+        await route.ClickAsync();
+        await route.FocusAsync();
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Route" })).ToBeFocusedAsync();
+
+        await gear.ClickAsync();
+        await gear.FocusAsync();
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Add gear" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldStopOnAPanelThatStartsWithAControl_WhenThePageIsStaticAndFocusablePanelsIsAlways(
+        string browser)
+    {
+        var page = await OpenStaticStopsAsync(browser);
+        await page.GetByRole(AriaRole.Tab, new() { Name = "Meals" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Meals" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldPassOverAPanelThatStartsWithText_WhenThePageIsStaticAndFocusablePanelsIsNever(
+        string browser)
+    {
+        var page = await OpenStaticStopsAsync(browser);
+        await page.GetByRole(AriaRole.Tab, new() { Name = "Notes" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Tab");
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Past the tabs" })).ToBeFocusedAsync();
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldHaveDecidedThePanelsStop_WhenTheListIsMarkedReady(string browser)
     {

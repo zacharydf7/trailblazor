@@ -11,7 +11,7 @@ import { focusMarkedForms, forgetMarks } from './static-form.js';
 import './file-upload.js';
 import './accordion.js';
 import './pagination.js';
-import './tabs.js';
+import { settleStaticPanelStops } from './tabs.js';
 import './lightbox.js';
 import './tree-select.js';
 import './field-box.js';
@@ -82,6 +82,7 @@ export function afterWebStarted(blazor) {
         measurePageScrollbar();
         markRoot();
         watchPageWidths();
+        settleStaticPanelStops();
         forgetMarks();
         // AutoFocus first, so a failed post's first error takes focus last.
         focusMarksOnPage();

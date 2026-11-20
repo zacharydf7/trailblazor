@@ -129,22 +129,11 @@ export function attachTabs(list, order) {
         (nearest(removal.nextSibling, 'nextSibling') ?? nearest(removal.previousSibling, 'previousSibling'))?.focus();
     };
 
-    // The server makes every shown panel a tab stop unless FocusablePanels is Never. With Auto, this takes the stop
-    // away from a panel that starts with a control, and gives it back when the panel no longer does. A panel that has
-    // focus keeps its stop, or focus would be lost.
     const updatePanelStop = () => {
         const id = list.querySelector(':scope > [aria-selected="true"]')?.getAttribute('aria-controls');
         const panel = id && document.getElementById(id);
-        if (!panel) {
-            return;
-        }
-
-        const stops = list.dataset.focusablePanels;
-        const stop = stops === 'always' || stops !== 'never' && !startsWithControl(panel);
-        if (stop && !panel.hasAttribute('tabindex')) {
-            panel.tabIndex = 0;
-        } else if (!stop && panel.hasAttribute('tabindex') && panel !== document.activeElement) {
-            panel.removeAttribute('tabindex');
+        if (panel) {
+            settlePanelStop(list, panel);
         }
     };
 
@@ -320,6 +309,19 @@ function startsWithControl(panel) {
     return false;
 }
 
+// The server makes every shown panel a tab stop unless FocusablePanels is Never. With Auto, this takes the stop away
+// from a panel that starts with a control, and gives it back when the panel no longer does. A panel that has focus
+// keeps its stop, or focus would be lost.
+function settlePanelStop(list, panel) {
+    const stops = list.dataset.focusablePanels;
+    const stop = stops === 'always' || stops !== 'never' && !startsWithControl(panel);
+    if (stop && !panel.hasAttribute('tabindex')) {
+        panel.tabIndex = 0;
+    } else if (!stop && panel.hasAttribute('tabindex') && panel !== document.activeElement) {
+        panel.removeAttribute('tabindex');
+    }
+}
+
 // Until the page is interactive, clicks and keys select tabs here, and find-in-page selects the tab whose panel holds a
 // match. Blazor renders an interactive tab with data-ready and selects it from then on.
 const staticTab = event => event.target.closest?.('.tb-tabs__list > [role="tab"]:not([data-ready], :disabled)');
@@ -352,6 +354,19 @@ for (const tab of document.querySelectorAll('.tb-tabs__list > [role="tab"]:not([
     }
 }
 
+// A static page's panels don't change by themselves, so this decides the shown panels' stops as the script starts and
+// after an enhanced navigation brings new ones. Once a list is interactive, it decides its own.
+export function settleStaticPanelStops() {
+    const shown = '.tb-tabs__list > [role="tab"]:not([data-ready])[aria-selected="true"]';
+    for (const tab of document.querySelectorAll(shown)) {
+        const panel = document.getElementById(tab.getAttribute('aria-controls'));
+        if (panel) {
+            settlePanelStop(tab.parentElement, panel);
+        }
+    }
+}
+settleStaticPanelStops();
+
 // A tab with no panel switches a view rendered elsewhere, which only Blazor can do.
 function select(tab) {
     if (!tab.hasAttribute('aria-controls')) {
@@ -364,10 +379,9 @@ function select(tab) {
         other.tabIndex = selected ? 0 : -1;
         const panel = document.getElementById(other.getAttribute('aria-controls'));
         if (panel && selected) {
+            // Shown first, since a hidden panel's controls don't count.
             panel.removeAttribute('hidden');
-            if (tab.parentElement.dataset.focusablePanels !== 'never') {
-                panel.tabIndex = 0;
-            }
+            settlePanelStop(tab.parentElement, panel);
         } else if (panel) {
             // Like the server's markup, a disabled tab's panel is plain hidden, so find skips it.
             panel.setAttribute('hidden', other.disabled ? '' : 'until-found');

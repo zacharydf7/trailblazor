@@ -1,0 +1,15 @@
+@page "/static-tabs-stops"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR, where the startup script decides whether a shown panel is a tab stop. *@
+<TbTabs AriaLabel="Trip">
+    <TbTab Text="Gear"><button type="button">Add gear</button> Tent and stove.</TbTab>
+    <TbTab Text="Route">Up the north ridge. <button type="button">Edit route</button></TbTab>
+</TbTabs>
+<TbTabs AriaLabel="Food" FocusablePanels="TabPanelFocus.Always">
+    <TbTab Text="Meals"><button type="button">Add a meal</button></TbTab>
+</TbTabs>
+<TbTabs AriaLabel="Reminders" FocusablePanels="TabPanelFocus.Never">
+    <TbTab Text="Notes">Bring a map.</TbTab>
+</TbTabs>
+<button type="button">Past the tabs</button>
