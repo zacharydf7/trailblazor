@@ -1,0 +1,35 @@
+<TbStack Gap="3" Style="max-inline-size: 26rem">
+    <TbTreeView TItem="Folder" TKey="int" AriaLabel="Shared folders" Items="_folders" KeySelector="folder => folder.Id"
+                ChildrenSelector="folder => folder.Children" ItemText="folder => folder.Name"
+                @bind-SelectedKeys="_selected" />
+    <TbButton OnClick="Load">Reload</TbButton>
+    <output aria-label="Loads">Loaded @_loads @(_loads == 1 ? "time" : "times").</output>
+</TbStack>
+
+@code {
+    private Folder[] _folders = [];
+    private IReadOnlyCollection<int> _selected = [];
+    private int _loads;
+
+    protected override void OnInitialized() => Load();
+
+    // Every load makes new objects, as a fresh answer from a server does.
+    private void Load()
+    {
+        _loads++;
+        _folders =
+        [
+            new(1, "Guides", [new(2, "Trail guide", []), new(3, "Bird guide", [])]),
+            new(4, "Permits", [new(5, "Camping permit", [])]),
+        ];
+    }
+
+    private sealed class Folder(int id, string name, Folder[] children)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; } = name;
+
+        public Folder[] Children { get; } = children;
+    }
+}

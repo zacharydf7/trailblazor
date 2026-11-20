@@ -10435,6 +10435,10 @@ public static class ExampleCatalog
                 new("flat-data", "Flat data", "`ParentKeySelector` builds the tree from one list of every item, each "
                     + "naming its parent's key, with null for a root. Children keep the list's order.",
                     typeof(TreeViewFlatExample)),
+                new("reloading", "Data that loads again", "The tree tracks which rows are open, selected, checked "
+                    + "and focused by each row's key. A `KeySelector` that gives an id keeps all of that in place when "
+                    + "`Items` is replaced with newly loaded objects, as Reload does here.",
+                    typeof(TreeViewReloadExample)),
                 new("type-ahead", "Type-ahead", "Typing finds a row by its text. `TypeAhead=\"false\"` leaves letter "
                     + "keys to the page, for single-letter shortcuts that should work while the tree has focus.",
                     typeof(TreeViewTypeAheadExample)),
@@ -10570,6 +10574,13 @@ public static class ExampleCatalog
             [
                 new("After changing `Items` in place, call `RefreshAsync`. A new collection, or an `OnMove`, builds the "
                     + "rows again by itself.") { Pitfall = true },
+                new("Without a `KeySelector`, each item is its own key. That suits strings, and records whose members "
+                    + "all compare by value. A record that holds a list or an array of its children doesn't, and "
+                    + "neither do instances of other classes, which compare by reference unless the class overrides "
+                    + "`Equals`. For those, newly loaded instances make every row new: no row shows as open, selected "
+                    + "or checked anymore, the tab stop goes back to the first row, the bound keys still hold the old "
+                    + "instances, and a click made as the rows change does nothing. Give such items a `KeySelector`.")
+                    { Pitfall = true },
                 new("With an `OnActivate`, Enter and a double-click run it and leave a row that can be selected as it "
                     + "is, so the handler can wait for the user, such as in a dialog. The chevron and the arrow keys "
                     + "still open and close the row. A parent row that can't be selected still opens or closes on "

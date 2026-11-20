@@ -121,8 +121,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     /// <summary>Gives each item a key that stays the same across renders, such as its id. Expansion, selection,
     /// checks and focus follow keys, so they survive when <see cref="Items"/> is replaced with new instances.
-    /// Defaults to the item itself, which suits items compared by value, such as strings and records, when
-    /// <typeparamref name="TKey"/> is the item's type. A row's
+    /// Defaults to the item itself when <typeparamref name="TKey"/> is the item's type, which suits strings and
+    /// records whose members all compare by value. A row's
     /// <c>data-key</c> is the key's text when it is a string, number, date or other formattable value, and a made-up id
     /// such as <c>key-3</c> otherwise, or when that text is empty or another key already has it.</summary>
     [Parameter]

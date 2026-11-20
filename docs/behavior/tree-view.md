@@ -68,6 +68,7 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 
 ## Not applicable
 
+- Keeping the selection, the open rows or a click on its way when `Items` is replaced with new class instances that are their own keys: every row is new then, so give a `KeySelector`. With keys that stay the same, all of them stay. `TbTreeViewTests.Render_ShouldKeepTheOpenAndSelectedRows_WhenTheItemsAreReplacedWithNewInstances`, `TbTreeViewTests.Click_ShouldSelectItsRow_WhenTheItemsWereReplacedWithNewInstancesAfterTheRowWasFound`, `TreeViewExampleTests.ReloadExample_ShouldKeepTheOpenAndSelectedRows_WhenTheFoldersAreLoadedAgain`
 - Context menus: the tree has no menu of its own, and an app can attach one through a row's template, a `TbTreeItem`'s attributes or `ItemAttributes`.
 - Page Up and Page Down: they scroll as the browser does, and the pattern doesn't ask for more.
 - Plain arrows moving a multiple selection, as in File Explorer: in a multiple-selection tree the arrows only move focus, as in the pattern's recommended model.

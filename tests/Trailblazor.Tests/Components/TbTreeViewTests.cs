@@ -161,6 +161,20 @@ public class TbTreeViewTests : BunitContext
     }
 
     [Fact]
+    public void Click_ShouldSelectItsRow_WhenTheItemsWereReplacedWithNewInstancesAfterTheRowWasFound()
+    {
+        var cut = RenderPlaces(Nested);
+        // FindAll keeps the row as it was rendered before the new items arrive, which is the row a click already on
+        // its way targets. Find would look the row up again when it's clicked.
+        var row = cut.FindAll("[role=treeitem][data-key='4']").Single();
+
+        cut.Render(parameters => parameters.Add(tree => tree.Items, Nested));
+        row.Click();
+
+        Assert.Equal("true", Row(cut, "4").GetAttribute("aria-selected"));
+    }
+
+    [Fact]
     public void Click_ShouldSelectOneRow_WhenTheModeIsSingle()
     {
         var cut = RenderPlaces(Nested);

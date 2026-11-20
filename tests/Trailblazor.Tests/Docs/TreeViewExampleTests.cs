@@ -75,6 +75,21 @@ public class TreeViewExampleTests : DocsTest
     }
 
     [Fact]
+    public void ReloadExample_ShouldKeepTheOpenAndSelectedRows_WhenTheFoldersAreLoadedAgain()
+    {
+        var cut = Render<TreeViewReloadExample>();
+        var tree = cut.Tb().Tree("Shared folders");
+        tree.Item("Guides").QuerySelector("[data-part=toggle]")!.Click();
+        tree.Item("Guides", "Trail guide").Click();
+
+        Button(cut, "Reload").Click();
+
+        Assert.Equal("Loaded 2 times.", cut.Find("output").TextContent.Trim());
+        Assert.Equal(["Guides", "Trail guide", "Bird guide", "Permits"], tree.Texts);
+        Assert.Equal("true", tree.Item("Guides", "Trail guide").GetAttribute("aria-selected"));
+    }
+
+    [Fact]
     public void FlatExample_ShouldNestEachPlaceUnderItsParent_WhenRendered()
     {
         var cut = Render<TreeViewFlatExample>();
