@@ -1425,7 +1425,7 @@ public sealed class TbTreeLocator(ILocator scope, ILocator tree)
 
     /// <summary>Opens the rows above the one at this path and activates it, as double-clicking it does, and waits
     /// until the app has run the tree's <c>OnActivate</c>. It also opens or closes a row with children, unless the
-    /// row can be selected and the tree has an <c>OnActivate</c>.</summary>
+    /// row is disabled, or can be selected and the tree has an <c>OnActivate</c>.</summary>
     public async Task ActivateAsync(params string[] path)
     {
         await ExpandAsync(path[..^1]);

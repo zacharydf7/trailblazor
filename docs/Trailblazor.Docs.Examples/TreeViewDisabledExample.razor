@@ -1,12 +1,17 @@
 <TbStack Gap="4">
     <TbTreeView TItem="Place" TKey="int" AriaLabel="Open and closed regions" Items="Regions"
-                KeySelector="place => place.Id" ItemText="place => place.Name" ItemDisabled="place => place.Closed" />
+                KeySelector="place => place.Id" ItemText="place => place.Name" ChildrenSelector="place => place.Trails"
+                ItemDisabled="place => place.Closed" />
     <TbTreeView TItem="Place" TKey="int" AriaLabel="Archived regions" Items="Regions" KeySelector="place => place.Id"
                 ItemText="place => place.Name" Disabled />
 </TbStack>
 
 @code {
-    private static readonly Place[] Regions = [new(1, "North ridge", false), new(2, "River valley", true)];
+    private static readonly Place[] Regions =
+    [
+        new(1, "North ridge", false, [new(3, "Summit trail", false)]),
+        new(2, "River valley", true, [new(4, "Ford crossing", true), new(5, "Mill path", false)]),
+    ];
 
-    private sealed record Place(int Id, string Name, bool Closed);
+    private sealed record Place(int Id, string Name, bool Closed, Place[]? Trails = null);
 }

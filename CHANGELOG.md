@@ -85,6 +85,10 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Markup and behavior
 
+#### 2026-11-20
+
+- In a `TbTreeView`, and the tree of a `TbTreeSelect`, Enter and a double-click no longer open or close a disabled row that has children, as a click never did. The row's chevron and the Left and Right arrow keys still open and close it.
+
 #### 2026-11-19
 
 - A `TbRibbon` too narrow for a tab's groups now collapses them one at a time, from the last, each into a button (`data-part="group-button"`, with `aria-expanded`) that opens the group's controls in a popup. While a group is collapsed, it has `data-collapsed` and its `items` part carries the `popover` attribute. The row has `data-fitting` while a fit is still to come. Every group renders its button from the start, `hidden` until the group collapses, with the group's name as its text, so a test that finds a group's name by its text, or counts a group's buttons, now finds one more. `TbRibbonGroup.CollapseOrder`, which renders as `data-collapse-order` on the group, picks the groups that go first, and `TbRibbonGroup.Icon` gives the button an icon. The controls stay the same elements, so they keep what they hold. A row too narrow even for the buttons scrolls sideways, as does any row before the page is interactive. The Playwright helper's `ClickAsync` opens a collapsed group to reach a button in it

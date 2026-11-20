@@ -10453,7 +10453,9 @@ public static class ExampleCatalog
                     + "so a parent and its children each keep their own check.",
                     typeof(TreeViewIndependentChecksExample)),
                 new("disabled", "Disabled rows", "`ItemDisabled` turns off single rows, and `Disabled` turns off the "
-                    + "whole tree.", typeof(TreeViewDisabledExample)),
+                    + "whole tree. A click, a double-click and Enter leave a disabled row as it is. Its chevron and "
+                    + "the Left and Right arrow keys still open and close it, so its children, which can still be "
+                    + "enabled, can be reached.", typeof(TreeViewDisabledExample)),
                 new("item-template", "Item template", "`ItemTemplate` draws a row's content. Keep `ItemText` so typing "
                     + "still finds the row, and put the text in an element with `data-part=\"text\"` to keep the "
                     + "row's ellipsis and the heavier weight of a filter's match. The template can put that element "
@@ -10535,8 +10537,8 @@ public static class ExampleCatalog
                 new(["A letter"], "Finds a row by its text. Pressed again quickly, it moves to the next row that "
                     + "starts with that letter.") { When = "Moving around" },
                 new(["Enter"], "Selects the row and, like a double-click, activates it. It also opens or closes a "
-                    + "row with children when the tree has no `OnActivate` or the row can't be selected. On a failed "
-                    + "row, tries again.") { When = "Selecting" },
+                    + "row with children when the tree has no `OnActivate` or the row can't be selected. A disabled "
+                    + "row stays as it is. On a failed row, tries again.") { When = "Selecting" },
                 new(["Space"], "Selects the row, or checks it in a `Checkable` tree. In a `Multiple` tree, selects or "
                     + "unselects it.") { When = "Selecting" },
                 new(["Shift+Up", "Shift+Down", "Shift+Home", "Shift+End", "Shift+Space"], "Extends a `Multiple` "
@@ -10615,8 +10617,8 @@ public static class ExampleCatalog
                     { Pitfall = true },
                 new("With an `OnActivate`, Enter and a double-click run it and leave a row that can be selected as it "
                     + "is, so the handler can wait for the user, such as in a dialog. The chevron and the arrow keys "
-                    + "still open and close the row. A parent row that can't be selected still opens or closes on "
-                    + "Enter."),
+                    + "still open and close the row. A parent row that can't be selected, and isn't disabled, still "
+                    + "opens or closes on Enter."),
                 new("With `Items`, choosing, opening or checking a row draws again only the rows that change, even "
                     + "when the page binds `SelectedKeys`, so a long tree stays quick without `Virtualize`. Every row "
                     + "draws again when `RefreshAsync` runs, when the items or a tree-wide setting such as `Classes` "
@@ -10642,8 +10644,8 @@ public static class ExampleCatalog
                 new("`ExpandAllAsync` opens rows with `HasChildren` too, and the rows that appear in them."),
                 new("Put a row's buttons and menus in `ItemEndTemplate`, a `TbTreeItem`'s `End` or a "
                     + "`TbTreeItemEnd`, not directly in `ItemTemplate`. `ItemTemplate` renders in the row's content "
-                    + "(`data-part=\"content\"`), where a click selects the row, or opens it when it can't be selected. "
-                    + "The end (`data-part=\"end\"`) keeps clicks and keys to itself."),
+                    + "(`data-part=\"content\"`), where a click selects the row, or opens it when it can't be selected "
+                    + "and isn't disabled. The end (`data-part=\"end\"`) keeps clicks and keys to itself."),
                 new("A row's `data-key` is its key's text for a string, number or date key. Any other key gets a "
                     + "made-up id such as `key-3`, and so does a key whose text is empty or that another key already "
                     + "has."),

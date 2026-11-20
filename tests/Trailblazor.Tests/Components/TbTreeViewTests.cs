@@ -623,6 +623,50 @@ public class TbTreeViewTests : BunitContext
         Assert.Equal("false", Row(cut, "1").GetAttribute("aria-expanded"));
     }
 
+    [Theory]
+    [InlineData("Enter", true), InlineData("Enter", false)]
+    [InlineData("DoubleClick", true), InlineData("DoubleClick", false)]
+    [InlineData("Click", true)]
+    public async Task DisabledParentRow_ShouldStayAsItIs_WhenEnterADoubleClickOrAClickReachesIt(string gesture,
+        bool activates)
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.ItemDisabled, place => place.Id == 1),
+            activates: activates);
+
+        switch (gesture)
+        {
+            case "Enter":
+                await cut.InvokeAsync(() => Events().OnKey("1", "Enter", false, false));
+                break;
+            case "DoubleClick":
+                Row(cut, "1").DoubleClick();
+                break;
+            default:
+                Row(cut, "1").Click(new() { Detail = 1 });
+                break;
+        }
+
+        Assert.Equal("false", Row(cut, "1").GetAttribute("aria-expanded"));
+        Assert.Empty(_expandedChanges);
+        Assert.Empty(_activated);
+    }
+
+    [Fact]
+    public async Task DisabledParentRow_ShouldOpenAndClose_WhenItsChevronOrTheArrowKeysAreUsed()
+    {
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.ItemDisabled, place => place.Id == 1));
+
+        Toggle(cut, "1");
+        Assert.Equal("true", Row(cut, "1").GetAttribute("aria-expanded"));
+        Toggle(cut, "1");
+        Assert.Equal("false", Row(cut, "1").GetAttribute("aria-expanded"));
+        await cut.InvokeAsync(() => Events().OnKey("1", "ArrowRight", false, false));
+        Assert.Equal("true", Row(cut, "1").GetAttribute("aria-expanded"));
+        await cut.InvokeAsync(() => Events().OnKey("1", "ArrowLeft", false, false));
+
+        Assert.Equal("false", Row(cut, "1").GetAttribute("aria-expanded"));
+    }
+
     [Fact]
     public void DoubleClick_ShouldOpenAParentRowThatCantBeSelectedOnce_WhenItsClicksComeFirst()
     {

@@ -226,7 +226,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     /// <summary>Raised when a row is activated with Enter or a double-click. With a handler, neither one opens or
     /// closes a row that can be selected, so the handler can wait for the user, such as in a dialog. Without one,
-    /// either opens or closes a row with children.</summary>
+    /// either opens or closes a row with children, unless the row is turned off.</summary>
     [Parameter]
     public EventCallback<TItem> OnActivate { get; set; }
 
@@ -234,7 +234,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public Func<TItem, bool>? IsSelectable { get; set; }
 
-    /// <summary>Whether a row is turned off: it can be focused but not selected, checked or activated.</summary>
+    /// <summary>Whether a row is turned off: it can be focused but not selected, checked or activated. A click, a
+    /// double-click and Enter leave such a row as it is, and its chevron and the Left and Right arrow keys still open
+    /// and close it, so its children can be reached.</summary>
     [Parameter]
     public Func<TItem, bool>? ItemDisabled { get; set; }
 
@@ -1477,10 +1479,12 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     // With an OnActivate, a row that can be selected is left as it is. Any toggle starts before the handler, which
     // may wait on a dialog: a toggle after it would go by whether the row was open once the dialog closed. The
-    // handler doesn't wait for the row's children to load.
+    // handler doesn't wait for the row's children to load. A row that is turned off is left as it is too, as a
+    // click leaves it; its chevron and the arrow keys still open it, since its children might not be turned off.
     private Task ToggleAndActivateAsync(TreeNode<TItem> node, bool mayToggle)
     {
-        var toggles = mayToggle && node.HasChildren && !(OnActivate.HasDelegate && CanSelect(node));
+        var toggles = mayToggle && node.HasChildren && !IsItemDisabled(node)
+            && !(OnActivate.HasDelegate && CanSelect(node));
         return Task.WhenAll(toggles ? ToggleAsync(node) : Task.CompletedTask, ActivateAsync(node));
     }
 
