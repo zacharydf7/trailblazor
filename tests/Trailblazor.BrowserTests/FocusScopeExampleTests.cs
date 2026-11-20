@@ -54,13 +54,18 @@ public class FocusScopeExampleTests(BrowserFixture fixture) : BrowserTest(fixtur
         var start = Button(page, "Start the checklist");
         var done = page.GetByRole(AriaRole.Group, new() { Name = "Checklist" })
             .GetByRole(AriaRole.Button, new() { Name = "Done" });
+        var first = page.GetByLabel("Packed the tent");
 
+        // The scope notes what had focus as its script attaches; waiting for the focus it takes shows the script
+        // has attached.
         await start.ClickAsync();
+        await Expect(first).ToBeFocusedAsync();
         await done.ClickAsync();
         await Expect(start).ToBeFocusedAsync();
 
         await page.GetByRole(AriaRole.Switch, new() { Name = "Give focus back" }).ClickAsync();
         await start.ClickAsync();
+        await Expect(first).ToBeFocusedAsync();
         await done.ClickAsync();
         await Expect(done).ToHaveCountAsync(0);
 
