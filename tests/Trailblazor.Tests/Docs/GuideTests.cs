@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Bunit;
@@ -299,6 +300,32 @@ public class GuideTests : DocsTest
             .Where(line => line.StartsWith("#### ", StringComparison.Ordinal)
                 || line.StartsWith("- ", StringComparison.Ordinal))
             .Select(line => line.Replace(@"\<", "<"));
+
+    // The last argument lists the helpers a table covers in another helper's row, such as a switch beside a checkbox.
+    [Theory]
+    [InlineData("bUnit helpers", typeof(Trailblazor.Testing.TrailblazorMarkup),
+        new[] { "Banner", "ChipGroup", "DateRangePicker", "DateTimePicker", "Switch" })]
+    [InlineData("Playwright helpers", typeof(Trailblazor.Testing.Playwright.TrailblazorPage),
+        new[] { "ChipGroup", "Switch" })]
+    public void TestingGuide_ShouldGiveEachDriverAndLocatorARow_WhenOpened(string table, Type entry,
+        string[] sharedRows)
+    {
+        const BindingFlags Declared = BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
+        var cells = PageAt("guides/testing").FindAll($"[aria-label='{table}'] :is(th, td)")
+            .Select(cell => cell.TextContent.Trim()).ToList();
+        // A row starts with its helper's call, as in Tour() or Toasts.WaitForAsync(text).
+        bool HasRow(string helper) => sharedRows.Contains(helper)
+            ? cells.Any(cell => Regex.IsMatch(cell, $@"\b{helper}\b"))
+            : cells.Any(cell => cell.StartsWith($"{helper}(", StringComparison.Ordinal)
+                || cell.StartsWith($"{helper}.", StringComparison.Ordinal));
+
+        // A driver or a locator comes from a method or a property whose type starts with Tb.
+        var helpers = entry.GetMethods(Declared)
+            .Where(method => method.ReturnType.Name.StartsWith("Tb", StringComparison.Ordinal))
+            .Select(method => method.IsSpecialName ? method.Name["get_".Length..] : method.Name).Distinct();
+
+        Assert.DoesNotContain(helpers, helper => !HasRow(helper));
+    }
 
     [Fact]
     public void TestingGuide_ShouldNameEachTestingPackagesLowestVersion_WhenOpened()

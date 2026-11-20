@@ -1020,7 +1020,8 @@ public static class ExampleCatalog
                 + "`cut.Tb().AiPrompt(...)` in bUnit, finds the prompt by its `Label`: `PromptAsync(text)` writes a "
                 + "prompt and generates, and in Playwright waits until the response is done, stopped or failed; `ResponsesAsync()` or `Responses` "
                 + "reads each response's text, newest first, and `StatusesAsync()` or `Statuses` their statuses; "
-                + "`StopAsync()`, `CopyAsync()`, `RetryAsync()` and `InsertAsync()` act on a response, the newest by "
+                + "`StopAsync()` stops the response that's generating, and `CopyAsync()`, `RetryAsync()` and "
+                + "`InsertAsync()` act on a response, the newest by "
                 + "default. In bUnit, pass `Generate` a stub that yields fixed chunks.",
         },
         new("image", "Image", ExampleCategory.Content,
@@ -2557,6 +2558,16 @@ public static class ExampleCatalog
             Notes =
             [
                 new("A text field, select or editable area in the toolbar keeps its own arrow, Home and End keys."),
+            ],
+            Telemetry =
+            [
+                "A `TbToolbarButton` with a `TelemetryName`, such as `\"notes-bold\"`, counts "
+                    + "`trailblazor.control.shown` as it first renders and `trailblazor.control.used` each time it "
+                    + "is chosen, in the row or in the overflow menu. Uses in the row are tagged "
+                    + "`trailblazor.component` `TbButton`, or `TbIconButton` for an icon-only button. Uses from the "
+                    + "overflow menu are tagged `TbMenuItem`.",
+                "The toolbar itself counts nothing, and neither do the other controls in it unless they have a "
+                    + "`TelemetryName` of their own.",
             ],
             Ready = new("[role=toolbar]", "the toolbar"),
             Target = new("toolbar", "Trail notes"),
@@ -8876,6 +8887,13 @@ public static class ExampleCatalog
             [
                 "Each menu opens natively from its trigger, and each trigger is in the tab order. The bar becomes one "
                     + "tab stop with arrow keys once the page is interactive.",
+            ],
+            Telemetry =
+            [
+                "The bar itself counts nothing. A `TbMenu` in it with a `TelemetryName`, such as `\"menu-edit\"`, "
+                    + "counts `trailblazor.control.shown` as it first renders and `trailblazor.control.used` each "
+                    + "time it opens, as a [menu](components/menu) on its own does. An item with its own "
+                    + "`TelemetryName` counts `trailblazor.control.used` each time it is chosen.",
             ],
             Ready = new("[role=menubar]", "the bar"),
             Target = new("menubar", "Trail editor"),

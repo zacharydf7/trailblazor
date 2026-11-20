@@ -428,6 +428,117 @@
                         <td>Presses the insert button with this label, which raises <code>OnInsert</code>.</td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Cascader(label).ChooseAsync(path)</code></th>
+                        <td>
+                            Clicks through the lists along a path's texts. <code>SearchAsync(text)</code> types in the
+                            field, <code>Results</code> reads the paths the search finds, and
+                            <code>ChooseResultAsync(text, result)</code> searches and chooses one. <code>Text</code>
+                            reads the path the field shows.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>MentionInput(label).TypeAsync(text)</code></th>
+                        <td>
+                            Types into the field and waits for the suggestions, which <code>Suggestions</code> reads.
+                            <code>ChooseAsync(suggestion)</code> puts one in, as clicking it does, and <code>Text</code>
+                            reads the field.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>MarkdownEditor(label).EnterAsync(markdown)</code></th>
+                        <td>
+                            Sets the editor's text, which <code>Text</code> reads. <code>ShowPreviewAsync()</code> and
+                            <code>HidePreviewAsync()</code> press Preview, and <code>PreviewHtml</code> reads what the
+                            preview shows.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>InPlaceEditor(label).EditAsync()</code></th>
+                        <td>
+                            Starts editing. <code>SaveAsync()</code> and <code>CancelAsync()</code> press its buttons,
+                            and <code>Text</code> and <code>IsEditing</code> read it. Change the draft through the
+                            field's own helper, such as <code>TextField(label).EnterAsync(text)</code>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Chat(name).SendAsync(text)</code></th>
+                        <td>
+                            Writes and sends a message. <code>AttachAsync(files)</code> chooses files for the next
+                            message, <code>Messages</code> reads each message as "Author: text", and <code>Typing</code>
+                            reads who is typing.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>AiPrompt(label).PromptAsync(prompt)</code></th>
+                        <td>
+                            Writes a prompt and generates; pass <code>Generate</code> a stub that yields fixed chunks.
+                            <code>ChooseSuggestionAsync(suggestion)</code> clicks a suggestion, <code>Responses</code>
+                            reads each response's text, newest first, and <code>Statuses</code> their statuses.
+                            <code>StopAsync()</code> stops the response that's generating, and <code>CopyAsync()</code>,
+                            <code>RetryAsync()</code> and <code>InsertAsync()</code> act on a response, the newest by
+                            default.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>SmartPaste(label).PasteAsync(text)</code></th>
+                        <td>
+                            Presses the button, enters this text in the box that opens, and fills the form from it.
+                            bUnit has no clipboard, so the box stands in for it. <code>Status</code> reads the result.
+                            Pass <code>Extract</code> a fake that returns fixed values.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>SpeechToText(label).StartAsync()</code></th>
+                        <td>
+                            Presses the button to listen, and <code>StopAsync()</code> presses it to stop.
+                            <code>SayAsync(text)</code> hands the app a phrase as the browser would on hearing it, and
+                            <code>IsListening</code> and <code>IsAvailable</code> read the button.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>BackToTop().ClickAsync()</code></th>
+                        <td>
+                            Presses the button, which is there whether or not the page has scrolled, since only a
+                            browser scrolls.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Lightbox(title)</code></th>
+                        <td>
+                            Finds the open lightbox by its title, or the only open one. <code>NextAsync()</code>,
+                            <code>PreviousAsync()</code>, <code>ZoomInAsync()</code>, <code>ZoomOutAsync()</code>,
+                            <code>RotateLeftAsync()</code>, <code>RotateRightAsync()</code> and <code>FitAsync()</code>
+                            press its buttons. <code>Index</code>, <code>Alt</code>, <code>Caption</code>,
+                            <code>Zoom</code> and <code>Rotation</code> read what it shows, and
+                            <code>CloseAsync()</code> closes it.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Kanban(name).MoveToColumnAsync(card, column)</code></th>
+                        <td>
+                            Moves a card to the end of another column through its handle's menu. <code>Columns</code>
+                            reads the columns' titles and <code>Cards(column)</code> a column's cards.
+                            <code>Column(title)</code> gives that column's sortable list, for <code>MoveAsync</code>
+                            within it.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Menubar(name).Menu(menu)</code></th>
+                        <td>
+                            Gives the bar's menu with this name, to open it or choose its items as
+                            <code>Menu(trigger)</code> does, such as <code>Menu("Edit").ChooseAsync("Undo")</code>.
+                            <code>Menus</code> reads the menus' names.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Tour()</code></th>
+                        <td>
+                            Finds the tour. <code>NextAsync()</code>, <code>BackAsync()</code> and
+                            <code>SkipAsync()</code> press its buttons, and <code>Step</code>, <code>Title</code> and
+                            <code>IsOpen</code> read it.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>Toolbar(name).ClickAsync(button)</code></th>
                         <td>
                             Clicks the toolbar's button with this name. bUnit lays nothing out, so no button moves into
@@ -1433,6 +1544,59 @@
             + "one is open."),
         new("Insert divider", "Its Label", "`InsertDivider(label).InsertAsync()` presses its insert button once the "
             + "page is interactive."),
+        new("Cascader", "Its label", "`Cascader(label).ChooseAsync(path)` clicks through the lists along a path's "
+            + "texts, and `ChooseResultAsync(text, result)` searches and chooses a path, each waiting until the "
+            + "app has the choice. `SearchAsync(text)` types in the field, `ResultsAsync()` reads the "
+            + "paths the search finds, and `TextAsync()` reads the path the field shows."),
+        new("Mention input", "Its label, or a locator", "`MentionInput(label).TypeAsync(text)` types and waits "
+            + "for the suggestions, `SuggestionsAsync()` reads them, `ChooseAsync(suggestion)` puts one in and "
+            + "waits until the field shows it, and `TextAsync()` reads the field."),
+        new("Markdown editor", "Its label, or a locator", "`MarkdownEditor(label).EnterAsync(markdown)` sets its "
+            + "text and waits until the app has it, and `TextAsync()` reads it. `PressAsync(button)` presses a "
+            + "toolbar button by its name, such as Bold, and waits until the app has the new markdown. "
+            + "`ShowPreviewAsync()` and `HidePreviewAsync()` press Preview, and `PreviewHtmlAsync()` reads what "
+            + "the preview shows."),
+        new("In-place editor", "Its Label", "`InPlaceEditor(label).EditAsync()` starts editing once the page is "
+            + "interactive and waits until the editor has focus. `SaveAsync()` and `CancelAsync()` press its "
+            + "buttons and wait until the value shows again, and `TextAsync()` and `IsEditingAsync()` read it. "
+            + "Change the draft through the field's own helper."),
+        new("Chat", "Its AriaLabel, or none for the only one", "`Chat(name).SendAsync(text)` writes and sends a "
+            + "message and waits until `OnSend` has run. `AttachAsync(paths)` chooses files for the next "
+            + "message, `MessagesAsync()` reads each message as \"Author: text\", and `TypingAsync()` reads who "
+            + "is typing."),
+        new("AI prompt", "Its Label, or none for the only one", "`AiPrompt(label).PromptAsync(prompt)` writes a "
+            + "prompt, generates, and waits until the response is done, stopped or failed. "
+            + "`ChooseSuggestionAsync(suggestion)` clicks a suggestion, `ResponsesAsync()` reads each "
+            + "response's text, newest first, and `StatusesAsync()` their statuses. `StopAsync()` stops the "
+            + "response that's generating, and `CopyAsync()`, `RetryAsync()` and `InsertAsync()` act on a "
+            + "response, the newest by default."),
+        new("Smart paste", "Its button's Label, or none for the only one", "`SmartPaste(label).PasteAsync(text)` "
+            + "presses the button, enters the text in the box that opens, and waits until the fields are "
+            + "filled. It first makes the page's clipboard refuse, so the box opens in every browser. "
+            + "`StatusAsync()` reads what it last showed beside the button."),
+        new("Speech to text", "Its button's Label", "`SpeechToText(label).StartAsync()` and `StopAsync()` press "
+            + "the button and wait for it to change. `IsListeningAsync()` reads whether it's listening, and "
+            + "`IsAvailableAsync()` whether the button shows, which it does where the browser recognizes "
+            + "speech. A test browser has no microphone, so replace `window.SpeechRecognition` with a fake in "
+            + "an init script."),
+        new("Back to top", "Nothing: a page has one", "`BackToTop().ClickAsync()` presses the button once it "
+            + "shows and waits until the app has handled the press. `IsShownAsync()` reads whether it shows, "
+            + "which it does once the page has scrolled past its threshold."),
+        new("Lightbox", "Its title, or none for the only open one", "`Lightbox(title).NextAsync()`, "
+            + "`PreviousAsync()`, `ZoomInAsync()`, `ZoomOutAsync()`, `RotateLeftAsync()`, `RotateRightAsync()` "
+            + "and `FitAsync()` press its buttons and wait for the change. `IndexAsync()`, `AltAsync()`, "
+            + "`CaptionAsync()`, `ZoomAsync()` and `RotationAsync()` read what it shows, and `CloseAsync()` "
+            + "closes it with Escape."),
+        new("Kanban board", "Its AriaLabel, or none for the only one", "`Kanban(name).MoveToColumnAsync(card, "
+            + "column)` moves a card to the end of another column through its handle's menu. `ColumnsAsync()` "
+            + "reads the columns' titles and `CardsAsync(column)` a column's cards. `Column(title)` gives that "
+            + "column's sortable list, for `MoveAsync` within it or a drag."),
+        new("Menubar", "Its AriaLabel, or none for the only one", "`Menubar(name).Menu(menu)` gives the bar's "
+            + "menu with this name, to open it or choose its items as `Menu(trigger)` does, such as "
+            + "`Menu(\"Edit\").ChooseAsync(\"Undo\")`. `MenusAsync()` reads the menus' names."),
+        new("Tour", "Nothing: a page shows one", "`Tour().NextAsync()`, `BackAsync()` and `SkipAsync()` press its "
+            + "buttons and wait for the step to change or the tour to close. `StepAsync()`, `TitleAsync()` and "
+            + "`IsOpenAsync()` read it."),
         new("Toolbar", "Its AriaLabel, or none for the only one", "`Toolbar(name).ClickAsync(button)` clicks a "
             + "button by its name once the toolbar has fitted its buttons, after a resize too, choosing it from the "
             + "overflow menu when it has moved there."),
@@ -1443,6 +1607,10 @@
             + "one's, and its groups' names."),
         new("Toast", "Its text", "`Toasts.WaitForAsync(text)` finds it once it shows, `DismissAsync(text)` closes "
             + "it, and `ChooseAsync(text, action)` clicks its action and waits until the app has run it."),
+        new("Announcements", "Nothing: it reads TbRoot's live regions and any open modal's",
+            "`Announcements.ExpectAnnouncedAsync(text)` "
+            + "waits until a message containing this text is announced, politely or assertively. `Messages`, "
+            + "`Polite` and `Assertive` are locators for the messages showing."),
     ];
 
     private const string Scoped = """
