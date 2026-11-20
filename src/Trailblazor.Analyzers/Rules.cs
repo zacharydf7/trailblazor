@@ -70,4 +70,14 @@ internal static class Rules
         "Columns, Start or MinCharacters, it's used to pick from a list the page already has. A TbSelect with " +
         "Filterable does that with an arrow and a click that opens it, and narrows the list as someone types, just " +
         "as the autocomplete does.");
+
+    public static readonly DiagnosticDescriptor ReferenceKeys = new("TB012",
+        "A tree's items are their own keys and compare by reference", "{0}'s items are their own keys and compare " +
+        "by reference, so what is open and selected is lost when Items is loaded again. Give it a KeySelector.",
+        Usage, DiagnosticSeverity.Info, isEnabledByDefault: true, "A tree keeps what is open, selected and checked " +
+        "by key. When a class is its own key and doesn't override both Equals and GetHashCode, data that is " +
+        "loaded again brings new instances, which are new keys: no row shows as open, selected or checked anymore, " +
+        "and the tab stop goes back to the first row. A tree whose objects live as long as the page is fine as it " +
+        "is, so this is a suggestion. A record, a string, and a class that overrides both Equals and GetHashCode " +
+        "aren't reported.");
 }

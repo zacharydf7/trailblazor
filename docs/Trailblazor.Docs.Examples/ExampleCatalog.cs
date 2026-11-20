@@ -6784,6 +6784,11 @@ public static class ExampleCatalog
             [
                 new("After changing `Items`, or the children it holds, in place, call `RefreshAsync`. A new collection, "
                     + "or a branch that loads, is read again by itself.") { Pitfall = true },
+                new("Without a `KeySelector`, each item is its own key, which suits strings and records whose "
+                    + "members all compare by value. Instances of other classes compare by reference unless the "
+                    + "class overrides `Equals` and `GetHashCode`, so when `Items` is loaded again what was chosen "
+                    + "no longer matches any row. Give such items a `KeySelector`; analyzer rule "
+                    + "[TB012](guides/analyzers#rules) suggests one.") { Pitfall = true },
             ],
             Labeling =
             [
@@ -10765,10 +10770,12 @@ public static class ExampleCatalog
                 new("Without a `KeySelector`, each item is its own key. That suits strings, and records whose members "
                     + "all compare by value. A record that holds a list or an array of its children doesn't, and "
                     + "neither do instances of other classes, which compare by reference unless the class overrides "
-                    + "`Equals`. For those, newly loaded instances make every row new: no row shows as open, selected "
-                    + "or checked anymore, the tab stop goes back to the first row, the bound keys still hold the old "
-                    + "instances, and a click made as the rows change does nothing. Give such items a `KeySelector`.")
-                    { Pitfall = true },
+                    + "`Equals` and `GetHashCode`. For those, newly loaded instances make every row new: no row shows "
+                    + "as open, selected or checked anymore, the tab stop goes back to the first row, the bound keys "
+                    + "still hold the old instances, and a click made as the rows change does nothing. Give such "
+                    + "items a `KeySelector`. "
+                    + "Analyzer rule [TB012](guides/analyzers#rules) suggests one for a class that compares by "
+                    + "reference.") { Pitfall = true },
                 new("With an `OnActivate`, Enter and a double-click run it and leave a row that can be selected as it "
                     + "is, so the handler can wait for the user, such as in a dialog. The chevron and the arrow keys "
                     + "still open and close the row. A parent row that can't be selected, and isn't disabled, still "

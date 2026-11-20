@@ -14,9 +14,7 @@ public sealed class TbRibbonLocator(ILocator scope, string? name)
     private TbTabsLocator TabList => new(Ribbon, Ribbon.GetByRole(AriaRole.Tablist));
 
     // The selected tab's row of commands: the other tabs' rows stay on the page, hidden, once they have been shown.
-    // The path starts at the ribbon, so a tab panel around the ribbon isn't taken for one of its own.
-    private ILocator Commands =>
-        Ribbon.Locator(":scope > .tb-tabs > [role=tabpanel]:not([hidden]) > [data-part=commands]");
+    private ILocator Commands => Ribbon.Locator("[role=tabpanel]:not([hidden]) [data-part=commands]");
 
     /// <summary>The tabs' titles, in order.</summary>
     public Task<IReadOnlyList<string>> TabsAsync() => TabList.TabsAsync();

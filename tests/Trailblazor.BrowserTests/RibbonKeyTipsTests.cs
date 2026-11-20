@@ -458,14 +458,16 @@ public class RibbonKeyTipsTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("Control+b");
 
         await Expect(Ribbon(page)).Not.ToHaveAttributeAsync("data-key-tips", "commands");
-        await Expect(page.GetByTestId("bold")).ToHaveTextAsync("plain");
         await Notes(page).FocusAsync();
         await page.Keyboard.PressAsync("Alt");
         await page.Keyboard.PressAsync("h");
         await Expect(page.Locator("[data-key-tip-shown][data-key-tip=B]")).ToBeVisibleAsync();
         await page.Keyboard.PressAsync("Alt+b");
         await Expect(Ribbon(page)).Not.ToHaveAttributeAsync("data-key-tips", "commands");
-        await Expect(page.GetByTestId("bold")).ToHaveTextAsync("plain");
+        // A command chosen now lands after anything those keys set off, and Bold is still off.
+        await page.Tb().Ribbon("Journal").PressKeyTipsAsync("H", "N");
+        Assert.Equal("New entry", await page.GetByTestId("last").TextContentAsync());
+        Assert.Equal("plain", await page.GetByTestId("bold").TextContentAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

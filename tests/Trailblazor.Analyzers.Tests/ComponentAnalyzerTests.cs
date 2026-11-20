@@ -1182,6 +1182,132 @@ public class ComponentAnalyzerTests
         Assert.Equal(["TB009"], ids);
     }
 
+    // Trail compares by reference. So do Camp and Ridge as a tree sees them, since each keeps object's GetHashCode,
+    // and Shore, which keeps object's Equals. The others override both Equals and GetHashCode, or aren't classes.
+    private const string KeyTypes = """
+        public class Trail { }
+        public class Camp : System.IEquatable<Camp>
+        {
+            public bool Equals(Camp? other) => other is not null;
+        }
+        #pragma warning disable CS0659
+        public class Ridge
+        {
+            public override bool Equals(object? other) => other is Ridge;
+        }
+        #pragma warning restore CS0659
+        public class Shore : System.IEquatable<Shore>
+        {
+            public bool Equals(Shore? other) => other is not null;
+            public override int GetHashCode() => 0;
+        }
+        public record Route(string Name);
+        public class Peak
+        {
+            public override bool Equals(object? other) => other is Peak;
+            public override int GetHashCode() => 0;
+        }
+        public class Hut : Peak { }
+        public struct Mark { }
+        public interface ISpot { }
+        """;
+
+    [Theory]
+    [InlineData("TbTreeView", "AriaLabel")]
+    [InlineData("TbTreeSelect", "Label")]
+    [InlineData("TbMultiTreeSelect", "Label")]
+    public async Task ComponentAnalyzer_ShouldSuggestAKeySelector_WhenATreesItemsAreClassInstancesUsedAsTheirOwnKeys(
+        string tree, string name)
+    {
+        var diagnostics = await RunAsync($$"""
+            __builder.OpenComponent<{{tree}}<Trail, Trail>>(0);
+            __builder.AddComponentParameter(1, "{{name}}", "Trails");
+            __builder.AddComponentParameter(2, "Items", new Trail[0]);
+            __builder.CloseComponent();
+            """, attributes: KeyTypes);
+
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal(("TB012", DiagnosticSeverity.Info), (diagnostic.Id, diagnostic.Severity));
+        Assert.Equal($"{tree}'s items are their own keys and compare by reference, so what is open and selected is "
+            + "lost when Items is loaded again. Give it a KeySelector.", diagnostic.GetMessage());
+    }
+
+    [Theory]
+    [InlineData("Route, Route")]
+    [InlineData("string, string")]
+    [InlineData("Peak, Peak")]
+    [InlineData("Hut, Hut")]
+    [InlineData("Mark, Mark")]
+    [InlineData("ISpot, ISpot")]
+    [InlineData("object, object")]
+    [InlineData("Trail, object")]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenATreesKeysHaveAnEqualityOfTheirOwnOrArentTheItemsType(
+        string types)
+    {
+        var ids = await IdsAsync(Tree(types, ""), attributes: KeyTypes);
+
+        Assert.Empty(ids);
+    }
+
+    [Theory]
+    [InlineData("Camp")]
+    [InlineData("Ridge")]
+    [InlineData("Shore")]
+    public async Task ComponentAnalyzer_ShouldSuggestAKeySelector_WhenAClassOverridesOnlyHalfOfItsEquality(
+        string type)
+    {
+        var ids = await IdsAsync(Tree($"{type}, {type}", ""), attributes: KeyTypes);
+
+        Assert.Equal(["TB012"], ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenTheAppsOwnTreeSelectHasNoTypeParameter()
+    {
+        var diagnostics = await RunAsync("""
+            __builder.OpenComponent<TrailPicker>(0);
+            __builder.AddComponentParameter(1, "Label", "Trail");
+            __builder.CloseComponent();
+            """, "private sealed class TrailPicker : TbTreeSelect<Trail, Trail>;", KeyTypes);
+
+        Assert.Empty(diagnostics);
+    }
+
+    [Theory]
+    [InlineData("__builder.AddComponentParameter(5, \"KeySelector\", (System.Func<Trail, Trail>)(trail => trail));")]
+    [InlineData("__builder.AddMultipleAttributes(5, new Dictionary<string, object>());")]
+    [InlineData("__builder.AddAttribute(5, \"ChildContent\", (RenderFragment)((__builder2) => { }));")]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenATreeOfClassInstancesMayHaveItsKeysAnotherWay(
+        string parameter)
+    {
+        var ids = await IdsAsync(Tree("Trail, Trail", parameter), attributes: KeyTypes);
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldSuggestAKeySelector_WhenRazorInfersAClassAsItsOwnKey()
+    {
+        var ids = await IdsAsync("""
+            TypeInference.CreateTbTreeView_0(__builder, 0, 1, new Trail[0], 2, new List<Trail>());
+            """, """
+            internal static class TypeInference
+            {
+                public static void CreateTbTreeView_0<TItem, TKey>(RenderTreeBuilder __builder, int seq, int __seq0,
+                    IEnumerable<TItem> __arg0, int __seq1, IReadOnlyCollection<TKey> __arg1) where TKey : notnull
+                {
+                    __builder.OpenComponent<TbTreeView<TItem, TKey>>(seq);
+                    __builder.AddComponentParameter(__seq0, "AriaLabel", "Trails");
+                    __builder.AddComponentParameter(__seq0, "Items", __arg0);
+                    __builder.AddComponentParameter(__seq1, "SelectedKeys", __arg1);
+                    __builder.CloseComponent();
+                }
+            }
+            """, KeyTypes);
+
+        Assert.Equal(["TB012"], ids);
+    }
+
     [Fact]
     public void ComponentAnalyzer_ShouldNameOnlyComponentsThatExist_WhenItsListTableIsRead()
     {

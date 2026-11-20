@@ -107,11 +107,15 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         ("Trailblazor.TbMenuRadioItem`1", "Trailblazor.TbMenuRadioGroup`1"),
     ];
 
+    // The trees that keep what is open, selected and checked by each item's key.
+    private static readonly string[] KeyedTrees =
+        ["Trailblazor.TbTreeView`2", "Trailblazor.TbTreeSelect`2", "Trailblazor.TbMultiTreeSelect`2"];
+
     /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         Rules.NoAccessibleName, Rules.NoDialogTitle, Rules.ValueWithoutValueChanged, Rules.NoFieldLabel,
         Rules.TypeParameterAsAttribute, Rules.OutsideItsParent, Rules.ItemTypeMismatch, Rules.SliderNotANumber,
-        Rules.TreeSetup, Rules.CodeAsText, Rules.KnownListAutocomplete);
+        Rules.TreeSetup, Rules.CodeAsText, Rules.KnownListAutocomplete, Rules.ReferenceKeys);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -136,7 +140,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                     .Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()],
                 compilation.GetTypeByMetadataName("Trailblazor.TbTreeView`2"),
                 [.. Labeled.Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()],
-                compilation.GetTypeByMetadataName("Trailblazor.TbAutocomplete`1"));
+                compilation.GetTypeByMetadataName("Trailblazor.TbAutocomplete`1"),
+                [.. KeyedTrees.Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()]);
             // Razor passes each .razor file to analyzers too, which is where a component's tag is found.
             var razorFiles = start.Options.AdditionalFiles
                 .Where(file => file.Path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
@@ -199,6 +204,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         CheckTreeSetup(context, invocation, usage, types.TreeView);
         CheckCodeAsText(context, invocation, usage);
         CheckKnownList(context, usage, types.Autocomplete);
+        CheckReferenceKeys(context, invocation, usage, types);
 
         if (component.ContainingNamespace.ToDisplayString() == "Trailblazor" && Property(component, "Value") is not null
             && Property(component, "ValueChanged") is not null && usage.Has("Value") && !usage.Has("ValueChanged")
@@ -425,6 +431,46 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    // A tree view or a tree select whose items are their own keys, of a class that compares by reference. A tree
+    // written with TbTreeItems is left out, since its values are written in the markup, and so is one with splatted
+    // attributes, which may hold the KeySelector. An app's own tree may take other type parameters, so only the
+    // library's trees are checked.
+    private static void CheckReferenceKeys(OperationAnalysisContext context, IInvocationOperation open,
+        ComponentUsage usage, KnownTypes types)
+    {
+        if (!types.KeyedTrees.Contains(usage.Component.OriginalDefinition, SymbolEqualityComparer.Default)
+            || usage.Has("KeySelector") || usage.Has("ChildContent") || usage.HasSplattedAttributes)
+        {
+            return;
+        }
+
+        var tree = ComponentNesting.Resolved(usage.Component, open);
+        if (SymbolEqualityComparer.Default.Equals(tree.TypeArguments[0], tree.TypeArguments[1])
+            && ComparesByReference(tree.TypeArguments[0]))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Rules.ReferenceKeys, usage.Location, usage.Component.Name));
+        }
+    }
+
+    // A class that keeps object's Equals or its GetHashCode, both of which a record and a string override: a tree
+    // finds a key by its hash and then by Equals. What an object holds isn't known, so object isn't counted.
+    private static bool ComparesByReference(ITypeSymbol type) =>
+        type is INamedTypeSymbol { TypeKind: TypeKind.Class, SpecialType: not SpecialType.System_Object }
+        && !(Overrides(type, "Equals") && Overrides(type, "GetHashCode"));
+
+    private static bool Overrides(ITypeSymbol type, string method)
+    {
+        for (var current = type; current is { SpecialType: not SpecialType.System_Object }; current = current.BaseType)
+        {
+            if (current.GetMembers(method).OfType<IMethodSymbol>().Any(found => found.IsOverride))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static bool WaitsForCharacters(ComponentUsage usage) =>
         usage.Parameters.TryGetValue("MinCharacters", out var least)
         && !(Unwrap(least.Value)?.ConstantValue is { HasValue: true, Value: 0 });
@@ -611,7 +657,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         (INamedTypeSymbol Type, string[] Names)[] otherFields, INamedTypeSymbol? dialog,
         INamedTypeSymbol? dialogService, (INamedTypeSymbol Child, INamedTypeSymbol Host)[] hosted,
         (INamedTypeSymbol Item, INamedTypeSymbol List)[] listed, INamedTypeSymbol[] sliders,
-        INamedTypeSymbol? treeView, INamedTypeSymbol[] labeled, INamedTypeSymbol? autocomplete)
+        INamedTypeSymbol? treeView, INamedTypeSymbol[] labeled, INamedTypeSymbol? autocomplete,
+        INamedTypeSymbol[] keyedTrees)
     {
         public (INamedTypeSymbol Type, string[] Names)[] Named { get; } = named;
 
@@ -634,5 +681,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         public INamedTypeSymbol[] Labeled { get; } = labeled;
 
         public INamedTypeSymbol? Autocomplete { get; } = autocomplete;
+
+        public INamedTypeSymbol[] KeyedTrees { get; } = keyedTrees;
     }
 }

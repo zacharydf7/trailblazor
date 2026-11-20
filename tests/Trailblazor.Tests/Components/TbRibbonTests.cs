@@ -629,7 +629,8 @@ public class TbRibbonTests : BunitContext
         var ribbon = RenderKeyTips(clicked).Tb().Ribbon();
         await ribbon.PressKeyTipsAsync("T", "B");
 
-        await ribbon.PressKeyTipsAsync("N", "B");
+        // A group's key, for the button the group collapses into, leaves the key tips going.
+        await ribbon.PressKeyTipsAsync("N", "W", "B");
 
         Assert.Equal(["Add a trail", "Bold"], clicked);
         Assert.Equal("Key tips end once a command is chosen, so \"B\" has nothing to reach.",
@@ -707,7 +708,7 @@ public class TbRibbonTests : BunitContext
         Render(KeyTipsRibbon(clicked));
 
     // Quick save sits before the tabs with the key Q, beside a field in an element with the key F. Notes (N) has
-    // Bold (B) and a disabled Lock (L), and Trails (T) has Add a trail, with B again.
+    // Bold (B) and a disabled Lock (L), and Trails (T) has Add a trail, with B again. Each tab's group has the key W.
     private RenderFragment KeyTipsRibbon(List<string> clicked) => builder =>
     {
         void AddTab(RenderTreeBuilder tabs, string title, string keyTip, params (string Label, string Key)[] buttons)
@@ -720,6 +721,7 @@ public class TbRibbonTests : BunitContext
             {
                 groups.OpenComponent<TbRibbonGroup>(0);
                 groups.AddComponentParameter(1, nameof(TbRibbonGroup.Label), "Write");
+                groups.AddComponentParameter(4, nameof(TbRibbonGroup.KeyTip), "W");
                 groups.AddComponentParameter(2, nameof(TbRibbonGroup.ChildContent), (RenderFragment)(items =>
                 {
                     foreach (var (label, key) in buttons)

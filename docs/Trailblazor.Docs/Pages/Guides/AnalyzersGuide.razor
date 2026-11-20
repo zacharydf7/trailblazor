@@ -18,7 +18,7 @@
             component written outside the one it belongs in, an option whose value isn't its list's type, a slider of
             something other than a number, a tree view whose parameters don't go together, and code written as plain
             text without its <code>@@</code>. It also suggests a filterable select where an autocomplete opens a known
-            list.
+            list, and a <code>KeySelector</code> for a tree whose items are their own keys and compare by reference.
         </TbText>
     </Header>
     <ChildContent>
@@ -151,6 +151,21 @@
                             their answer.
                         </td>
                     </tr>
+                    <tr>
+                        <th scope="row">TB012</th>
+                        <td>
+                            A suggestion, not a warning: a <code>TbTreeView</code>, <code>TbTreeSelect</code> or
+                            <code>TbMultiTreeSelect</code> has no <code>KeySelector</code>, and its items are
+                            instances of a class, used as their own keys, that doesn't override both
+                            <code>Equals</code> and <code>GetHashCode</code>. Such instances compare by reference,
+                            so when <code>Items</code> is loaded again every row is new, and what was open and
+                            selected is lost.
+                        </td>
+                        <td>
+                            Give the tree a <code>KeySelector</code> that returns an id. Leave it as it is when the
+                            objects live as long as the page.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -248,6 +263,16 @@
                 <code>0</code>, or attributes spread with <code>@@attributes</code> isn't reported either, since a
                 select has none of the first six.
             </li>
+            <li>
+                TB012 reports only a class that a tree compares by reference. A record, a string, a class that
+                overrides both <code>Equals</code> and <code>GetHashCode</code>, a struct, an interface and
+                <code>object</code> aren't reported, and neither is a tree whose key type differs from its item
+                type. Nor is a tree written with <code>TbTreeItem</code>s, or one given attributes spread with
+                <code>@@attributes</code>, since those attributes may hold the <code>KeySelector</code>. A class
+                that implements <code>IEquatable</code> without overriding <code>GetHashCode</code> is reported,
+                since a tree finds a key by its hash. The rule looks only at the library's own trees, not at a
+                component of yours that inherits one.
+            </li>
         </ul>
 
         <DocsHeading Id="turning-a-rule-off" Text="Turning a rule off" Class="docs-section" />
@@ -255,8 +280,8 @@
             The rules are warnings, or errors in a project that treats warnings as errors. To turn one off for a whole
             project, list it in <code>NoWarn</code>. A <code>#pragma warning disable</code> in a page doesn't silence a
             warning on a component with no parameters set in its markup, because that warning is reported at the
-            component's tag. TB011 is a suggestion: it shows in the editor and doesn't fail a build, even one that
-            treats warnings as errors. It is turned off the same way.
+            component's tag. TB011 and TB012 are suggestions: they show in the editor and don't fail a build, even
+            one that treats warnings as errors. They are turned off the same way.
         </TbText>
         <CodeBlock Label="MyApp.csproj" Code="@NoWarn" />
         <TbText>
