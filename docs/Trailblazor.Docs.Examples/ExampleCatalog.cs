@@ -803,7 +803,8 @@ public static class ExampleCatalog
             ],
             Announcements =
             [
-                "The feed is `aria-busy` while `ItemsProvider` loads, so screen readers wait for the new items.",
+                "The feed is `aria-busy` while `ItemsProvider` loads and until the items are drawn, so screen readers "
+                    + "wait for them.",
             ],
             Accessibility =
             [

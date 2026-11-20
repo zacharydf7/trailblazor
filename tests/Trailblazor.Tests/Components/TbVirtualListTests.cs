@@ -70,6 +70,31 @@ public class TbVirtualListTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldShowEveryItemWithoutBeingBusy_WhenThePageIsStatic()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderList(parameters => parameters.Add(list => list.Items, Trails));
+
+        // Nothing is on its way on a static page, where every item is drawn at once.
+        Assert.Equal("false", cut.Find("[role=feed]").GetAttribute("aria-busy"));
+        Assert.Equal(3, cut.FindAll("article[data-part=item]").Count);
+        // And the list draws them once, not a second time to stop being busy.
+        Assert.Equal(1, cut.RenderCount);
+    }
+
+    [Fact]
+    public void Render_ShouldStopBeingBusy_WhenAProviderLoadGivesNoItems()
+    {
+        var cut = RenderList(parameters => parameters.Add(list => list.ItemsProvider,
+            (ItemsProviderDelegate<string>)(_ => ValueTask.FromResult(new ItemsProviderResult<string>([], 120)))));
+
+        // No item will be drawn to end the wait, so the load ends it.
+        cut.WaitForAssertion(() => Assert.Equal(("120", "false"),
+            (cut.Find("[role=feed]").GetAttribute("data-count"), cut.Find("[role=feed]").GetAttribute("aria-busy"))));
+    }
+
+    [Fact]
     public void Render_ShouldShowTheEmptyContent_WhenThereAreNoItems()
     {
         var cut = RenderList(parameters => parameters.Add(list => list.Items, Array.Empty<string>())

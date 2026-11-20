@@ -18,6 +18,7 @@ public partial class TbVirtualList<TItem>
     private IJSObjectReference? _handle;
     private int _total;
     private int _loads;
+    private bool _drawn;
     private bool _disposed;
 
     /// <summary>Names the list for screen readers, such as "Trail reports". Required.</summary>
@@ -81,7 +82,9 @@ public partial class TbVirtualList<TItem>
 
     private ControlTelemetry Telemetry => field ??= new(Services, GetType());
 
-    private bool Loading => _loads > 0;
+    // Virtualize draws nothing until the browser has reported the view, and draws a provider's items only in the render
+    // after it returns, so items are still on their way until one of them is drawn.
+    private bool Loading => _loads > 0 || (RendererInfo.IsInteractive && Total > 0 && !_drawn);
 
     // A feed holds only articles, so a list with nothing to show, not even items on their way, is a group holding its
     // empty content.
@@ -184,17 +187,39 @@ public partial class TbVirtualList<TItem>
         }
 
         _loads++;
+        _drawn = false;
         StateHasChanged();
+        var drawsNothing = true;
         try
         {
             var result = await ItemsProvider!(request);
             SetTotal(result.TotalItemCount);
-            return new(result.Items.Select((item, at) => new VirtualItem<TItem>(request.StartIndex + at, item)),
-                result.TotalItemCount);
+            var loaded = result.Items.Select((item, at) => new VirtualItem<TItem>(request.StartIndex + at, item))
+                .ToList();
+            drawsNothing = loaded.Count == 0;
+            return new(loaded, result.TotalItemCount);
         }
         finally
         {
             _loads--;
+            // A load that failed or gave no items has nothing to draw, so it ends the wait here. One that Virtualize
+            // canceled is left to the load that replaced it.
+            if (drawsNothing && !request.CancellationToken.IsCancellationRequested)
+            {
+                _drawn = true;
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    // Called as Virtualize draws an item, so the list stops being busy in the render that shows the items it
+    // waited for.
+    private void MarkDrawn()
+    {
+        if (!_drawn && RendererInfo.IsInteractive)
+        {
+            _drawn = true;
             StateHasChanged();
         }
     }

@@ -40,11 +40,14 @@
 @code {
     // Keyed, so an item scrolled out leaves the page instead of its element showing another item.
     private RenderFragment<VirtualItem<TItem>> Item => entry =>
-        @<article @key="entry.Index" data-part="item" data-index="@entry.Index" tabindex="-1"
-                  aria-posinset="@(entry.Index + 1)" aria-setsize="@Total" aria-label="@ItemLabel?.Invoke(entry.Item)"
-                  class="tb-virtual-list__item">
+    {
+        MarkDrawn();
+        return @<article @key="entry.Index" data-part="item" data-index="@entry.Index" tabindex="-1"
+                         aria-posinset="@(entry.Index + 1)" aria-setsize="@Total"
+                         aria-label="@ItemLabel?.Invoke(entry.Item)" class="tb-virtual-list__item">
             @ChildContent?.Invoke(entry.Item)
         </article>;
+    };
 
     private RenderFragment Empty =>
         @<div data-part="empty" class="tb-virtual-list__empty">@EmptyContent</div>;

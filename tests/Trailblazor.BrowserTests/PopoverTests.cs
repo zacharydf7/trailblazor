@@ -104,6 +104,8 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(panel).ToBeVisibleAsync();
         await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(panel.GetByLabel("Only open items")).ToBeFocusedAsync();
+        // The panel is placed in the frame after it opens, and gets data-side once it is.
+        await Expect(panel).ToHaveAttributeAsync("data-side", "bottom");
         var (button, box) = ((await trigger.BoundingBoxAsync())!, (await panel.BoundingBoxAsync())!);
         Assert.True(box.Y >= button.Y + button.Height, "The panel should open below its trigger.");
 

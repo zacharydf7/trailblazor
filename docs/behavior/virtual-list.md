@@ -25,6 +25,8 @@ Familiar apps: a social feed or news reader that scrolls on and on, a chat histo
 
 - [x] Screen readers hear a feed named by its label, and each item as an article with its place and the total, named by `ItemLabel`. `TbVirtualListTests.Render_ShouldBeANamedFeedOfArticlesWithTheirPlaces_WhenGivenItems`
 - [x] The feed is busy while `ItemsProvider` loads, and the total comes from the provider. `TbVirtualListTests.Render_ShouldBeBusyWhileItLoadsAndThenShowTheTotal_WhenGivenAProvider`
+- [x] Once the page is interactive, the feed stays busy until its first items are drawn, so it's never empty without being busy. `VirtualListTests.Feed_ShouldBeBusyUntilItsFirstItemsAreDrawn_WhenThePageTurnsInteractive`
+- [x] After each `ItemsProvider` load, such as a jump to a far item, the feed stays busy until the loaded items replace the placeholders. A load that gives no items ends the wait itself. `VirtualListTests.Feed_ShouldBeBusyUntilTheItemsItJumpedToAreDrawn_WhenAProviderLoadsThem`, `TbVirtualListTests.Render_ShouldStopBeingBusy_WhenAProviderLoadGivesNoItems`
 - [x] Items changed in place show again on the next render. `TbVirtualListTests.Render_ShouldShowTheItemsAgain_WhenTheListChangesInPlace`
 - [x] With no items, the empty content shows, in a group named like the list, since a feed holds only articles. `TbVirtualListTests.Render_ShouldShowTheEmptyContent_WhenThereAreNoItems`
 - [x] Before the page is interactive, every item in `Items` shows. `VirtualListTests.VirtualList_ShouldShowEveryItem_WhenThePageIsStatic`

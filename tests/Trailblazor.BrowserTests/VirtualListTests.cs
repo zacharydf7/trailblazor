@@ -6,6 +6,20 @@ public class VirtualListTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     private static ILocator Reports(IPage page) => page.GetByRole(AriaRole.Feed, new() { Name = "Trail reports" });
 
+    // Records each moment a feed holds no article without being busy, which isn't valid for a feed.
+    private const string WatchForEmptyFeeds = """
+        () => {
+            window.emptyFeeds = [];
+            new MutationObserver(() => {
+                for (const feed of document.querySelectorAll('[role=feed]:not([aria-busy=true])')) {
+                    if (!feed.querySelector('article')) {
+                        window.emptyFeeds.push(feed.getAttribute('aria-label'));
+                    }
+                }
+            }).observe(document.body, { childList: true, subtree: true, attributes: true });
+        }
+        """;
+
     private static ILocator Report(IPage page, int number) =>
         Reports(page).GetByRole(AriaRole.Article, new() { Name = $"Report {number}: Trail {number % 40 + 1}" });
 
@@ -15,6 +29,43 @@ public class VirtualListTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/examples/virtual-list");
         await Expect(page.Locator("[role=feed]:not([data-ready])")).ToHaveCountAsync(0);
         return page;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Feed_ShouldBeBusyUntilItsFirstItemsAreDrawn_WhenThePageTurnsInteractive(string browser)
+    {
+        var (page, held) = await OpenHeldAsync(browser, "/examples/virtual-list");
+        await Expect(Report(page, 1)).ToBeVisibleAsync();
+        await page.EvaluateAsync(WatchForEmptyFeeds);
+
+        held.SetResult();
+
+        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        await Expect(page.Locator("[role=feed]:not([data-ready])")).ToHaveCountAsync(0);
+        await Expect(Report(page, 1)).ToBeVisibleAsync();
+        await Expect(Reports(page)).ToHaveAttributeAsync("aria-busy", "false");
+        // The sightings come from a provider, whose first load ends a moment later.
+        var sightings = page.GetByRole(AriaRole.Feed, new() { Name = "Wildlife sightings" });
+        await Expect(sightings.GetByRole(AriaRole.Article).First).ToBeVisibleAsync();
+        await Expect(sightings).ToHaveAttributeAsync("aria-busy", "false");
+        Assert.Empty(await page.EvaluateAsync<string[]>("() => window.emptyFeeds"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Feed_ShouldBeBusyUntilTheItemsItJumpedToAreDrawn_WhenAProviderLoadsThem(string browser)
+    {
+        var page = await OpenListsAsync(browser);
+        var sightings = page.GetByRole(AriaRole.Feed, new() { Name = "Wildlife sightings" });
+        await Expect(sightings.GetByRole(AriaRole.Article).First).ToBeVisibleAsync();
+        await Expect(sightings).ToHaveAttributeAsync("aria-busy", "false");
+        await page.EvaluateAsync(WatchForEmptyFeeds);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Go to sighting 751" }).ClickAsync();
+
+        await Expect(sightings.GetByRole(AriaRole.Article).Filter(new() { HasText = "Sighting 751:" }))
+            .ToBeFocusedAsync();
+        await Expect(sightings).ToHaveAttributeAsync("aria-busy", "false");
+        Assert.Empty(await page.EvaluateAsync<string[]>("() => window.emptyFeeds"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -105,9 +156,8 @@ public class VirtualListTests(BrowserFixture fixture) : BrowserTest(fixture)
         await posts.GetByRole(AriaRole.Checkbox, new() { Name = "Mark Post 3 read" }).FocusAsync();
         await page.Keyboard.PressAsync("PageDown");
         await Expect(posts.GetByRole(AriaRole.Article, new() { Name = "Post 4" })).ToBeFocusedAsync();
-        var likeStops = await posts.GetByRole(AriaRole.Group, new() { Name = "Reaction to Post 1", Exact = true })
-            .Locator("[tabindex='0']").CountAsync();
-        Assert.Equal(1, likeStops);
+        await Expect(posts.GetByRole(AriaRole.Group, new() { Name = "Reaction to Post 1", Exact = true })
+            .Locator("[tabindex='0']")).ToHaveCountAsync(1);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
