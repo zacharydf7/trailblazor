@@ -47,9 +47,9 @@
             case "u":
                 Remove("Second", byKey);
                 break;
-            case "n" when byKey:
-                _byKey.Remove(_key!);
-                _key = "none";
+            case "n":
+                (byKey ? _byKey : _byIndex).Remove(byKey ? _key! : _byIndex[_index]);
+                (_key, _index) = byKey ? ("none", _index) : (_key, -1);
                 break;
             case "d":
                 (byKey ? _byKey : _byIndex).Remove(byKey ? _key! : _byIndex[_index]);

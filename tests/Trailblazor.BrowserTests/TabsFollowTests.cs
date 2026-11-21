@@ -95,16 +95,18 @@ public class TabsFollowTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Tab(list, $"Third {bound}")).ToBeFocusedAsync();
     }
 
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Tabs_ShouldFocusTheTabBesideIt_WhenTheSelectedTabGoesAwayAndTheAppSelectsNone(string browser)
+    // With an index, the list stops settling with no tab newly selected, which is all the script hears of it.
+    [Theory, MemberData(nameof(Bindings))]
+    public async Task Tabs_ShouldFocusTheTabBesideIt_WhenTheSelectedTabGoesAwayAndTheAppSelectsNone(string browser,
+        string bound)
     {
-        var list = await OpenTabsAsync(browser, "key");
-        await SelectAsync(Tab(list, "Second key"));
+        var list = await OpenTabsAsync(browser, bound);
+        await SelectAsync(Tab(list, $"Second {bound}"));
 
         await list.Page.Keyboard.PressAsync("n");
 
-        await Expect(Tab(list, "Second key")).ToHaveCountAsync(0);
+        await Expect(Tab(list, $"Second {bound}")).ToHaveCountAsync(0);
         await Expect(list.Locator("[aria-selected=true]")).ToHaveCountAsync(0);
-        await Expect(Tab(list, "Third key")).ToBeFocusedAsync();
+        await Expect(Tab(list, $"Third {bound}")).ToBeFocusedAsync();
     }
 }
