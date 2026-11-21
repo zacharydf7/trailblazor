@@ -392,6 +392,231 @@ public class TbSmartPasteTests : BunitContext
         Assert.Equal(["fri", "sun"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Days"]));
     }
 
+    private sealed record Place(string Key, string Name, params Place[] Inside)
+    {
+        public bool Heading { get; init; }
+
+        public bool Closed { get; init; }
+    }
+
+    private static readonly Place[] Places =
+    [
+        new("north", "North", new Place("ridge", "Ridge"), new Place("tarn", "Tarn") { Closed = true })
+        {
+            Heading = true,
+        },
+        new("south", "South", new Place("dunes", "Dunes"), new Place("cove", "Cove", new Place("cave", "Cave"))),
+    ];
+
+    private static readonly CascaderItem<string>[] Routes =
+    [
+        new("Coast", "coast") { Children = [new("Cliff walk", "cliff"), new("Beach", "beach") { Disabled = true }] },
+        new("Hills", "hills") { Children = [new("Cliff walk", "hill-cliff")] },
+        new("Town loop", "town"),
+    ];
+
+    private static readonly (string Name, object? Value)[] TreeOfPlaces =
+    [
+        ("Items", Places), ("KeySelector", (Func<Place, string>)(place => place.Key)),
+        ("ItemText", (Func<Place, string>)(place => place.Name)),
+        ("ItemDisabled", (Func<Place, bool>)(place => place.Closed)),
+    ];
+
+    private static (string Name, object? Value)[] Tree(params (string Name, object? Value)[] more) =>
+        [.. TreeOfPlaces, ("ChildrenSelector", (Func<Place, IEnumerable<Place>?>)(place => place.Inside)), .. more];
+
+    // The same places, with each one's stops loaded as it opens.
+    private static readonly (string Name, object? Value)[] LoadingTree =
+    [
+        .. TreeOfPlaces, ("HasChildren", (Func<Place, bool>)(place => place.Inside.Length > 0)),
+        ("LoadChildren", (Func<Place, CancellationToken, Task<IEnumerable<Place>>>)((place, _) =>
+            Task.FromResult<IEnumerable<Place>>(place.Inside))),
+    ];
+
+    private static List<AngleSharp.Dom.IElement> Rows(IRenderedComponent<TbForm> cut, string name) =>
+        [.. cut.FindAll("[role=treeitem]").Where(row =>
+            row.QuerySelector("[data-part=content]")!.TextContent.Trim() == name)];
+
+    private static readonly (string Name, object? Value)[] Hikers =
+        [("Items", new[] { "Ana", "Bo", "Cy", "Di" }), ("ItemText", (Func<string, string>)(hiker => $"{hiker} V."))];
+
+    private static Task<IEnumerable<string>> FindNothing(string text, CancellationToken token) =>
+        Task.FromResult<IEnumerable<string>>([]);
+
+    // The other fields that choose from a list the page holds, and a tag input, which takes several texts.
+    private void Outing(RenderTreeBuilder builder)
+    {
+        Field<TbAutocomplete<string>, string>(builder, "Ranger", ("Items", new[] { "Ana", "Bo" }));
+        Field<TbAutocomplete<string>, string>(builder, "Station", ("Items", new[] { "East", "West" }),
+            ("Search", (Func<string, CancellationToken, Task<IEnumerable<string>>>)FindNothing));
+        Field<TbAutocomplete<string>, string>(builder, "Trailhead", ("Items", new[] { "Gate" }), ("FreeText", true));
+        Field<TbTransferList<string>, IReadOnlyList<string>>(builder, "Hikers", Hikers);
+        Field<TbTreeSelect<Place, string>, string>(builder, "Camp",
+            Tree(("IsSelectable", (Func<Place, bool>)(place => !place.Heading))));
+        Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Stops", Tree());
+        Field<TbCascader<string>, string>(builder, "Route", ("Items", Routes));
+        Field<TbTagInput, IReadOnlyList<string>>(builder, "Tags");
+    }
+
+    [Fact]
+    public async Task Extract_ShouldGetTheChoicesOfEachFieldThatHoldsItsList_WhenCalled()
+    {
+        var cut = RenderForm(Outing);
+
+        await cut.Tb().SmartPaste().PasteAsync(Signature);
+
+        // An autocomplete with a search is left out, one with free text takes any text, a heading and a disabled
+        // item aren't offered, and a cascader offers whole paths.
+        Assert.Equal(
+        [
+            ("Ranger", false, "Ana|Bo"), ("Trailhead", false, ""), ("Hikers", true, "Ana V.|Bo V.|Cy V.|Di V."),
+            ("Camp", false, "Ridge|South|Dunes|Cove|Cave"), ("Stops", true, "North|Ridge|South|Dunes|Cove|Cave"),
+            ("Route", false, "Coast / Cliff walk|Hills / Cliff walk|Town loop"), ("Tags", true, ""),
+        ], Offered());
+        Assert.Null(_requests.Single().Fields[^1].Choices);
+    }
+
+    [Fact]
+    public async Task PasteAsync_ShouldChooseFromEachFieldsList_WhenTheModelAnswersWithItsTexts()
+    {
+        Finds(new()
+        {
+            ["Ranger"] = "bo", ["Hikers"] = "di v.\nAna V.", ["Camp"] = "dunes", ["Stops"] = "South\nNorth",
+            ["Route"] = "hills / cliff walk", ["Tags"] = "steep, loop\nSteep\nshaded",
+        });
+        var cut = RenderForm(Outing);
+
+        await cut.Tb().SmartPaste().PasteAsync(Signature);
+
+        // A transfer list keeps its items' order. With cascading checks, a stop brings the stops inside it that
+        // aren't disabled, and North, with a stop left unchecked, isn't in the value, as after a check in the tree.
+        // The stops come in tree order. A tag given twice is added once.
+        Assert.Equal("Bo", _values["Ranger"]);
+        Assert.Equal(["Ana", "Di"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Hikers"]));
+        Assert.Equal("dunes", _values["Camp"]);
+        Assert.Equal(["ridge", "south", "dunes", "cove", "cave"],
+            Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Stops"]));
+        Assert.Equal("hill-cliff", _values["Route"]);
+        Assert.Equal(["steep", "loop", "shaded"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Tags"]));
+        Assert.Equal("Filled 6 fields", cut.Tb().SmartPaste().Status);
+    }
+
+    [Fact]
+    public async Task PasteAsync_ShouldSkipAnAnswer_WhenAFieldsListHasNoSuchItem()
+    {
+        // A heading, a disabled item, a path that ends at a disabled choice, a step of a path, and tags all refused.
+        Finds(new()
+        {
+            ["Ranger"] = "Cy", ["Camp"] = "North", ["Stops"] = "Tarn", ["Route"] = "Coast / Beach", ["Way"] = "Coast",
+            ["Codes"] = "a, b", ["Hikers"] = "Bo V.",
+        });
+        var cut = RenderForm(builder =>
+        {
+            Outing(builder);
+            Field<TbCascader<string>, string>(builder, "Way", ("Items", Routes));
+            Field<TbTagInput, IReadOnlyList<string>>(builder, "Codes",
+                ("TagValidation", (Func<string, string?>)(_ => "Codes are closed.")));
+        });
+
+        await cut.Tb().SmartPaste().PasteAsync(Signature);
+
+        Assert.Equal("Hikers", Assert.Single(_values).Key);
+        Assert.Equal("Filled 1 field", cut.Tb().SmartPaste().Status);
+        // The refused tags leave no message behind, unlike a typed tag that is refused.
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+    }
+
+    [Fact]
+    public async Task PasteAsync_ShouldKeepToEachListFieldsOwnRules_WhenItHoldsAValueAlready()
+    {
+        Finds(new()
+        {
+            ["Hikers"] = "Cy V.", ["Stops"] = "South", ["Camps"] = "South", ["Way"] = "coast", ["Tags"] = "a\nb\nc",
+            ["Rests"] = "Dunes\nCove", ["Naps"] = "Dunes\nCove", ["Nooks"] = "Cave",
+        });
+        var cut = RenderForm(builder =>
+        {
+            Field<TbTransferList<string>, IReadOnlyList<string>>(builder, "Hikers",
+                [.. Hikers, ("Value", new[] { "Zed", "Bo" })]);
+            Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Stops",
+                Tree(("Value", new[] { "tarn", "elsewhere", "ridge" })));
+            Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Camps",
+                Tree(("CascadeChecks", false)));
+            Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Rests", Tree());
+            Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Nooks", Tree());
+            Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Naps",
+                Tree(("IsSelectable", (Func<Place, bool>)(place => place.Key != "south"))));
+            Field<TbCascader<string>, string>(builder, "Way", ("Items", Routes), ("AllowParents", true));
+            Field<TbTagInput, IReadOnlyList<string>>(builder, "Tags", ("Value", new[] { "old" }), ("MaxTags", 2));
+        });
+
+        await cut.Tb().SmartPaste().PasteAsync(Signature);
+
+        // A chosen value with no item stays, last. A disabled stop stays checked, and one that was offered and isn't
+        // named goes. Without cascading checks, South comes alone. The new tags replace the old, up to the limit.
+        Assert.Equal(["Cy", "Zed"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Hikers"]));
+        Assert.Equal(["tarn", "south", "dunes", "cove", "cave", "elsewhere"],
+            Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Stops"]));
+        Assert.Equal(["south"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Camps"]));
+        // Every stop inside South is named, so South is checked too, unless it can't be chosen.
+        Assert.Equal(["south", "dunes", "cove", "cave"],
+            Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Rests"]));
+        Assert.Equal(["dunes", "cove", "cave"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Naps"]));
+        // Cave is all there is inside Cove, so Cove is checked, though Dunes, beside it, isn't.
+        Assert.Equal(["cove", "cave"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Nooks"]));
+        Assert.Equal("coast", _values["Way"]);
+        Assert.Equal(["a", "b"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Tags"]));
+    }
+
+    [Fact]
+    public async Task PasteAsync_ShouldCheckLoadedItemsAsTheTreeDoes_WhenAMultipleTreeSelectLoadsItsItems()
+    {
+        Finds(new() { ["Trips"] = "North", ["Walks"] = "Dunes\nCove", ["Hikes"] = "South" });
+        var cut = RenderForm(builder =>
+        {
+            Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Trips", LoadingTree);
+            Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Walks", LoadingTree);
+            Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Hikes", LoadingTree);
+        });
+        // North opens in Trips and South in Walks, so the stops inside them load. Nothing loads in Hikes.
+        Rows(cut, "North")[0].QuerySelector("[data-part=toggle]")!.Click();
+        Rows(cut, "South")[1].QuerySelector("[data-part=toggle]")!.Click();
+        cut.WaitForAssertion(() => Assert.Equal((1, 1), (Rows(cut, "Ridge").Count, Rows(cut, "Dunes").Count)));
+
+        await cut.Tb().SmartPaste().PasteAsync(Signature);
+
+        // North brings Ridge and stays out, since Tarn, disabled, isn't checked. Dunes and Cove put South in; what
+        // is inside Cove hasn't loaded.
+        Assert.Equal(["ridge"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Trips"]));
+        Assert.Equal(["south", "dunes", "cove"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Walks"]));
+        Assert.Equal(["south"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Hikes"]));
+    }
+
+    [Fact]
+    public async Task PasteAsync_ShouldLeaveAHeadingChecked_WhenItWasCheckedBeforeItsItemsLoaded()
+    {
+        Finds(new() { ["Tours"] = "Dunes" });
+        // The field is bound: each render gives it the value it last raised.
+        var cut = RenderForm(builder => Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Tours",
+            [.. LoadingTree, ("IsSelectable", (Func<Place, bool>)(place => !place.Heading)),
+                ("Value", _values.GetValueOrDefault("Tours"))]));
+        Rows(cut, "South")[0].QuerySelector("[data-part=toggle]")!.Click();
+        cut.WaitForAssertion(() => Assert.Single(Rows(cut, "Dunes")));
+        // North can't be chosen and nothing inside it has loaded, so checking it changes no value.
+        Rows(cut, "North")[0].QuerySelector("[data-part=check]")!.Click();
+        Assert.Empty(_values);
+
+        await cut.Tb().SmartPaste().PasteAsync(Signature);
+        cut.Render();
+
+        Assert.Equal(["dunes"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Tours"]));
+        Assert.Equal("true", Rows(cut, "North")[0].GetAttribute("aria-checked"));
+        // The stops inside North come checked as they load, apart from the disabled one.
+        Rows(cut, "North")[0].QuerySelector("[data-part=toggle]")!.Click();
+        cut.WaitForAssertion(() => Assert.Equal(["dunes", "ridge"],
+            Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Tours"])));
+    }
+
     [Fact]
     public async Task PasteAsync_ShouldAskTheLocalizerToWordTheCount_WhenFieldsAreFilled()
     {

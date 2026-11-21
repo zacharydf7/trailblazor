@@ -1990,32 +1990,53 @@ public static class ExampleCatalog
                 "Have `Extract` write numbers and dates in the invariant format, such as `1234.5`, `2026-11-17` and "
                     + "`2026-11-17T14:30`, whatever the user's culture. A date-time keeps the time as written, "
                     + "whatever offset follows it, and a value a field can't take is skipped.",
-                "For a field with `Choices`, have `Extract` answer with one of them, or with one on each line when "
-                    + "the field is `Multiple`.",
+                "For a field with `Choices`, have `Extract` answer with one of them. A field that is `Multiple` "
+                    + "takes one value on each line: several of its choices, or a tag input's tags.",
             ],
             Notes =
             [
-                new("It fills text fields, number fields, date, time and date-time pickers, checkboxes, "
+                new("It fills text fields, number fields, date, time and date-time pickers, checkboxes, tag inputs, "
                     + "autocompletes with `FreeText`, and the fields that pick from options: selects and list boxes "
-                    + "(single or multiple), radio groups, including segmented ones, and checkbox groups. It leaves "
-                    + "out password fields, disabled and read-only ones, fields without a label, and every other kind "
-                    + "of field, such as a slider, a rating or an autocomplete without `FreeText`."),
+                    + "(single or multiple), radio groups, including segmented ones, and checkbox groups."),
+                new("It also fills the fields that pick from a list of items they hold: transfer lists, tree selects "
+                    + "(single or multiple), cascaders, and autocompletes that have `Items` and neither `FreeText` nor "
+                    + "a `Search`. They come with their items' texts as `Choices` and are filled as the fields that "
+                    + "pick from options are."),
+                new("It leaves out password fields, disabled and read-only ones, fields without a label, and every "
+                    + "other kind of field, such as a slider, a rating or an autocomplete with a `Search` and no "
+                    + "`FreeText`, whose suggestions aren't known until someone types."),
                 new("A field that picks from options is described with `Choices`, the text of each option it can "
                     + "choose, and with `Multiple` when it takes several. `Extract` answers with one of the texts, in "
                     + "any letter case, or with one on each line for a field that takes several. A text that is none "
                     + "of them is skipped."),
                 new("In a field that takes several, the options named replace the offered ones chosen before. A "
                     + "chosen value that wasn't offered, such as a disabled option's or one that no option has, stays "
-                    + "chosen, ahead of those named."),
+                    + "chosen, ahead of those named. A transfer list and a multiple tree select instead keep their "
+                    + "items' order, with a chosen value that has no item last. In a multiple tree select, the tree's "
+                    + "own rules for what its value holds take precedence over these."),
                 new("Smart paste names an option by its plain text: a `TbOption`'s `Text`, or the text it shows when "
                     + "it has no content of its own; an item's `ItemText`, or its value's text; and the `Text` of a "
                     + "`TbRadio` or a `TbCheckboxItem`."),
+                new("A cascader's choice is named by its whole path, as the field shows it, such as "
+                    + "`Coast / Cliff walk`. Only a path the field could choose is offered: one that ends at a choice "
+                    + "with nothing under it, or at any choice with `AllowParents`. A path through a disabled choice "
+                    + "isn't offered."),
+                new("A tree select offers the items it knows of, which are those held in memory and the children "
+                    + "loaded so far, apart from disabled items and those `IsSelectable` leaves out."),
+                new("With `CascadeChecks`, a multiple tree select checks an item named as its tree does: the enabled "
+                    + "items inside it come with it, whether held in memory or loaded so far, and a parent is in the "
+                    + "value only while every item inside it is checked. A heading that `IsSelectable` leaves out, "
+                    + "checked before its items loaded, stays checked."),
+                new("A tag input is `Multiple` and has no `Choices`. It takes one tag on each line, or between its "
+                    + "`Separators`, and replaces its tags with those that pass the checks a typed tag gets, for a "
+                    + "duplicate, `MaxTags` and `TagValidation`. A tag that fails is left out, with no message. If "
+                    + "none pass, its tags stay as they were."),
                 new("An option that has content and no `Text` isn't offered, since its text isn't known until the "
                     + "browser draws it. Neither is a disabled option, nor a second option with the same text. A "
                     + "field with no option to offer is left out."),
-                new("A select with a long `Items` list offers every enabled item, including those not yet drawn, so "
-                    + "the request to the model grows with the list. To keep the request small, `Extract` can leave "
-                    + "such a field out of what it sends to the model."),
+                new("A field with a long list, such as a select with many `Items`, offers every enabled item, "
+                    + "including those not yet drawn, so the request to the model grows with the list. To keep the "
+                    + "request small, `Extract` can leave such a field out of what it sends to the model."),
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =

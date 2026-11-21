@@ -60,6 +60,7 @@
     private const int FilterDelay = 200;
 
     private readonly Dictionary<TKey, TItem> _loaded = [];
+    private readonly Dictionary<TKey, List<TItem>> _loadedInside = [];
     private OrderedDictionary<TKey, TItem>? _byKey;
     private object? _byKeyFor;
     private ElementReference _trigger;
@@ -207,6 +208,7 @@
     {
         List<TItem> children = [.. await LoadChildren!(item, cancel)];
         children.ForEach(child => _loaded[KeyOf(child)] = child);
+        _loadedInside[KeyOf(item)] = children;
         return children;
     }
 
@@ -330,9 +332,20 @@
         }
     }
 
+    // Smart paste offers the items known so far that can be chosen, each by its text.
+    private protected override IEnumerable<(string? Text, object? Value)> PasteChoices =>
+        Known().Where(CanBeChosen).Select(item => ((string?)ItemText(item), (object?)KeyOf(item)));
+
+    private bool CanBeChosen(TItem item) =>
+        IsSelectable?.Invoke(item) != false && ItemDisabled?.Invoke(item) != true;
+
     private string Name => GetType().Name.Split('`')[0];
 
-    private TKey KeyOf(TItem item) => KeySelector is null ? (TKey)(object)item! : KeySelector(item);
+    private protected TKey KeyOf(TItem item) => KeySelector is null ? (TKey)(object)item! : KeySelector(item);
+
+    // The items inside an item as the tree finds them: those held in memory, or else those loaded so far.
+    private protected IEnumerable<TItem> Inside(TItem item) =>
+        ChildrenSelector?.Invoke(item) ?? _loadedInside.GetValueOrDefault(KeyOf(item)) ?? [];
 
     // The items held in memory, in tree order, then the children loaded so far.
     private protected IEnumerable<TItem> Known() => Walk(Items).Concat(_loaded.Values);

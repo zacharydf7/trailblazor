@@ -181,6 +181,10 @@ public partial class TbCascader<[DynamicallyAccessedMembers(DynamicallyAccessedM
 
     private bool IsChosen(CascaderItem<TValue> item) => OptionValues.Same(Comparer, item.Value, Value);
 
+    // Smart paste offers each path that can be chosen, by the text the field shows for it.
+    private protected override IEnumerable<(string? Text, object? Value)> PasteChoices =>
+        Paths(Items, []).Where(ChoosablePath).Select(path => ((string?)PathText(path), (object?)path[^1].Value));
+
     private string ItemLabel(CascaderItem<TValue> item) => Ends(item) ? item.Text
         : string.Format(CultureInfo.CurrentCulture, Labels.More ?? Localizer[TbStrings.CascaderMore], item.Text);
 

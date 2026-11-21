@@ -70,19 +70,76 @@ public class TbMultiTreeSelect<TItem, [DynamicallyAccessedMembers(DynamicallyAcc
         return base.OnResetAsync();
     }
 
+    private protected override bool PastesSeveral => true;
+
+    // Smart paste starts from the tree's checked keys and leaves them for the tree, as a check does, so a heading
+    // checked before its items loaded stays checked. With cascading checks, it checks an item as the tree does: the
+    // item brings the enabled items inside it, and a parent is checked only while every item inside it is.
+    private protected override IReadOnlyList<TKey> ChoosePasted(IReadOnlyList<object?> named,
+        IReadOnlyList<object?> offered)
+    {
+        var items = ByKey();
+        var keys = OptionValues.Pasted<TKey>(null, [.. CheckedKeys], named, offered).ToHashSet();
+        if (CascadeChecks)
+        {
+            foreach (var key in named)
+            {
+                keys.UnionWith(Under(items[(TKey)key!]).Where(item => ItemDisabled?.Invoke(item) != true)
+                    .Select(KeyOf));
+            }
+
+            foreach (var item in Items)
+            {
+                InStep(item);
+            }
+
+            IEnumerable<TItem> Under(TItem item) => Inside(item).SelectMany(inside => Under(inside).Prepend(inside));
+
+            bool InStep(TItem item)
+            {
+                List<TItem> inside = [.. Inside(item)];
+                if (inside.Count == 0)
+                {
+                    return keys.Contains(KeyOf(item));
+                }
+
+                // ToList visits every item inside, even past an unchecked one, so parents deeper down are in step too.
+                var all = inside.Select(InStep).ToList().All(isChecked => isChecked);
+                if (all)
+                {
+                    keys.Add(KeyOf(item));
+                }
+                else
+                {
+                    keys.Remove(KeyOf(item));
+                }
+
+                return all;
+            }
+        }
+
+        var value = ValueOf(keys, items);
+        (_treeKeys, _treeValue) = (keys, value);
+        return value;
+    }
+
+    // The value for the tree's checked keys: the items held in memory in tree order, then loaded children, then keys
+    // whose items haven't loaded. When IsSelectable leaves out a heading, its key isn't part of the value.
+    private IReadOnlyList<TKey> ValueOf(IReadOnlyCollection<TKey> keys, OrderedDictionary<TKey, TItem> items)
+    {
+        var chosen = keys.ToHashSet();
+        var known = items.Where(pair => chosen.Contains(pair.Key) && IsSelectable?.Invoke(pair.Value) != false);
+        return [.. known.Select(pair => pair.Key), .. keys.Where(key => !items.ContainsKey(key))];
+    }
+
     // Checked in any order, the same keys are the same value.
     private protected override bool SameValue(IReadOnlyList<TKey>? value, IReadOnlyList<TKey>? other) =>
         SameItems(value, other, null);
 
-    // The value lists the items held in memory in tree order, then loaded children, then keys whose items haven't
-    // loaded. When IsSelectable leaves out a heading, its checkbox still checks the rows inside it, but its key isn't
-    // part of the value.
+    // When IsSelectable leaves out a heading, its checkbox still checks the rows inside it.
     private protected override async Task CheckedAsync(IReadOnlyCollection<TKey> keys)
     {
-        var items = ByKey();
-        var chosen = keys.ToHashSet();
-        var known = items.Where(pair => chosen.Contains(pair.Key) && IsSelectable?.Invoke(pair.Value) != false);
-        IReadOnlyList<TKey> value = [.. known.Select(pair => pair.Key), .. keys.Where(key => !items.ContainsKey(key))];
+        var value = ValueOf(keys, ByKey());
         // Checking a heading whose items haven't loaded changes the tree's keys but not the value.
         if (SameValue(value, Value ?? []))
         {

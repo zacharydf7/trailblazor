@@ -15,13 +15,14 @@ public sealed record SmartPasteField(string Name, string? Description, Type Type
         typeof(Guid),
     ];
 
-    /// <summary>The texts of the options to choose from, for a field that picks from options, such as a select or a
-    /// radio group; null for any other field. The model answers with one of them, in any letter case, and an answer
-    /// that is none of them is skipped.</summary>
+    /// <summary>The texts of the options to choose from, for a field that picks from options, such as a select, a
+    /// radio group or a cascader, whose choices are whole paths; null for any other field. The model answers with one
+    /// of them, in any letter case, and an answer that is none of them is skipped.</summary>
     public IReadOnlyList<string>? Choices { get; init; }
 
-    /// <summary>Whether the field takes any number of its <see cref="Choices"/>, as a multiple select or a checkbox
-    /// group does. The model then answers with each one on a line of its own.</summary>
+    /// <summary>Whether the field takes several values: any number of its <see cref="Choices"/>, as a multiple select
+    /// or a checkbox group does, or any number of texts, as a tag input does. The model then answers with each one on
+    /// a line of its own.</summary>
     public bool Multiple { get; init; }
 
     /// <summary>Whether the other field has the same name, description, type, choices and <see cref="Multiple"/>,

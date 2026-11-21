@@ -39,7 +39,8 @@ public partial class TbTagInput : IAsyncDisposable
     [Parameter]
     public string Separators { get; set; } = ",";
 
-    /// <summary>The most tags the field takes. A tag typed past it stays in the input with a message.</summary>
+    /// <summary>The most tags the field takes. A tag typed past it stays in the input with a message, and one from a
+    /// <see cref="TbSmartPaste"/> is left out.</summary>
     [Parameter]
     public int? MaxTags { get; set; }
 
@@ -53,7 +54,8 @@ public partial class TbTagInput : IAsyncDisposable
         SameItems(value, other, comparer: null);
 
     /// <summary>Checks a typed tag before it's added, returning a message to show, or null to add it. A tag with a
-    /// message stays in the input for the user to fix.</summary>
+    /// message stays in the input for the user to fix. A tag from a <see cref="TbSmartPaste"/> is checked too, and
+    /// left out, with no message shown, when it gets one.</summary>
     [Parameter]
     public Func<string, string?>? TagValidation { get; set; }
 
@@ -135,8 +137,7 @@ public partial class TbTagInput : IAsyncDisposable
         var added = new List<string>();
         var refused = new List<string>();
         string? error = null;
-        var parts = e.Text.Split([.. Separators, '\r', '\n']).Select(text => text.Trim());
-        foreach (var text in parts.Where(text => text.Length > 0))
+        foreach (var text in Parts(e.Text))
         {
             if (Refusal(tags, text) is { } problem)
             {
@@ -171,6 +172,29 @@ public partial class TbTagInput : IAsyncDisposable
         {
             await _handle.InvokeVoidAsync("restore", refused);
         }
+    }
+
+    private IEnumerable<string> Parts(string text) =>
+        text.Split([.. Separators, '\r', '\n']).Select(part => part.Trim()).Where(part => part.Length > 0);
+
+    private protected override bool Pastable => true;
+
+    private protected override bool PastesSeveral => true;
+
+    // Smart paste's tags replace the field's. Each is checked as a typed tag is, and one that is refused is left out.
+    private protected override bool TryTakePasted(string text, out IReadOnlyList<string>? taken)
+    {
+        var tags = new List<string>();
+        foreach (var tag in Parts(text))
+        {
+            if (Refusal(tags, tag) is null)
+            {
+                tags.Add(tag);
+            }
+        }
+
+        taken = tags;
+        return tags.Count > 0;
     }
 
     private string? Refusal(List<string> tags, string text)

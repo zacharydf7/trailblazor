@@ -105,6 +105,20 @@ public partial class TbTransferList<[DynamicallyAccessedMembers(DynamicallyAcces
     private IReadOnlyList<TItem> Shown(IReadOnlyList<TItem> marked, IEnumerable<TItem> shown) =>
         [.. marked.Where(item => shown.Any(other => Same(other, item)))];
 
+    private protected override IEnumerable<(string? Text, object? Value)> PasteChoices =>
+        Items.Select(item => ((string?)TextOf(item), (object?)item));
+
+    private protected override bool PastesSeveral => true;
+
+    // As after a move, the chosen items keep the order of Items, and a chosen value that matches no item comes last.
+    private protected override IReadOnlyList<TItem> ChoosePasted(IReadOnlyList<object?> named,
+        IReadOnlyList<object?> offered)
+    {
+        var chosen = OptionValues.Pasted(Comparer, Value, named, offered);
+        return [.. Items.Where(item => chosen.Any(other => Same(other, item))),
+            .. chosen.Where(value => !Items.Any(item => Same(item, value)))];
+    }
+
     private Task MoveToChosenAsync(IEnumerable<TItem> moving) => MoveAsync(moving, toChosen: true);
 
     private Task MoveToAvailableAsync(IEnumerable<TItem> moving) => MoveAsync(moving, toChosen: false);

@@ -277,15 +277,16 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // RootAttributes.
     private protected virtual bool IdNamesControl => true;
 
-    // Whether smart paste can fill the field from text alone: yes for one value written as text, such as words, a
-    // number, a date or a yes or no; no for a field that picks from a range, which the model can't see.
+    // Whether smart paste can fill the field from text alone: yes for a value written as text, such as words, a
+    // number, a date, a yes or no, or a tag input's tags; no for a field that picks from a range, which the model
+    // can't see.
     private protected virtual bool Pastable => false;
 
     // The options smart paste can choose, each with the text the model names it by, for a field that picks from
     // options; null for any other field. Disabled options stay out, and an option whose text isn't known has none.
     private protected virtual IEnumerable<(string? Text, object? Value)>? PasteChoices => null;
 
-    // Whether smart paste can choose several of the PasteChoices at once.
+    // Whether smart paste gives the field several values at once: several of the PasteChoices, or several texts.
     private protected virtual bool PastesSeveral => false;
 
     // The value once smart paste has chosen the options with these values, out of all those it offered.
@@ -1017,15 +1018,14 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
             return null;
         }
 
-        var field = new SmartPasteField(label, HelperText, typeof(TValue));
+        var field = new SmartPasteField(label, HelperText, typeof(TValue)) { Multiple = PastesSeveral };
         if (OfferedChoices() is not { } choices)
         {
             return Pastable ? field : null;
         }
 
         // A field that picks from options is left out while it has none to offer.
-        return choices.Count == 0 ? null
-            : field with { Choices = [.. choices.Select(choice => choice.Text)], Multiple = PastesSeveral };
+        return choices.Count == 0 ? null : field with { Choices = [.. choices.Select(choice => choice.Text)] };
     }
 
     // The PasteChoices that have a text, and the first of those that share one, since the model answers with the text.
