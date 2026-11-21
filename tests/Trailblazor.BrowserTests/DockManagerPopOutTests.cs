@@ -761,6 +761,34 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Announcement_ShouldBeSaidInThePanelsWindowToo_WhenMadeWhileThePanelIsThere(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Move Rule 1", Exact = true }).FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Tb().Announcements.ExpectAnnouncedAsync("Rule 1 moved to position 2 of 3.");
+        await AddASlowSheetAsync(page, 1500);
+
+        var window = await StartOpeningToolsAsync(page);
+        await ToolsAboutToLeaveAsync(page);
+
+        // The window's live regions are there before its panel and before any message, and empty, without what the
+        // page was told earlier: a region that arrives holding text isn't spoken.
+        var regions = window.Locator("[data-part=announcer] > [aria-live]");
+        Assert.Equal(["status:", "alert:"], await regions.EvaluateAllAsync<string[]>(
+            "regions => regions.map(region => `${region.getAttribute('role')}:${region.textContent}`)"));
+
+        // The dock's own message, made as the panel arrives, and then a component's.
+        await window.Tb().Announcements.ExpectAnnouncedAsync("Tools opened in a new window.");
+        await window.GetByRole(AriaRole.Button, new() { Name = "Move Rule 1", Exact = true }).FocusAsync();
+        await window.Keyboard.PressAsync("ArrowUp");
+
+        await window.Tb().Announcements.ExpectAnnouncedAsync("Rule 1 moved to position 1 of 3.");
+        await page.Tb().Announcements.ExpectAnnouncedAsync("Rule 1 moved to position 1 of 3.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tooltip_ShouldGoOnDescribingItsTrigger_WhenItsPanelGoesToAWindowAndComesBack(string browser)
     {
         var (page, window) = await OpenToolsInAWindowAsync(browser);

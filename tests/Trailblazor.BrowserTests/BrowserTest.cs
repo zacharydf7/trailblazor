@@ -33,8 +33,7 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
     protected const string ThePageFailsToRender = "The page fails to render on purpose, so it has no panel to open.";
     protected const string WarnsInThePagesConsole =
         "The library's scripts warn in the page's console, not the panel's window's.";
-    protected const string ShowsInThePagesWindow =
-        "Dialogs, toasts and announcements still show in the page's window (#584).";
+    protected const string ShowsInThePagesWindow = "Dialogs and toasts still show in the page's window (#584).";
 
     protected async Task<IPage> OpenAsync(string browser, string path, BrowserNewContextOptions? options = null)
     {

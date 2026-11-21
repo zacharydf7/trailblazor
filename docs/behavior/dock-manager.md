@@ -248,10 +248,11 @@ Familiar apps: VS Code's editor groups and panel, Visual Studio's tool windows, 
 - [x] The panel's window passes an accessibility scan. `DockManagerPopOutTests.Window_ShouldHaveNoAccessibilityViolations_WhenItShowsAPanel`
 - [x] A control scrolled to the top of the panel's window stops below the Return bar. `DockManagerPopOutTests.ReturnBar_ShouldNotCoverTheControl_WhenTheControlIsScrolledToThePanelsTop`
 - [x] No library script asks the page's own document or window for the focus, an element, a size, a frame, the selection, a new window or an element's kind, apart from the listed ones whose subject is the page. `ScriptWindowsTests.Scripts_ShouldAskTheirElementForItsWindow_WhenCalled`
-- [ ] A dialog, a toast or a screen reader announcement asked for from a panel in a window of its own shows, or is spoken, in that window. #584
+- [x] What is announced while a panel is in a window of its own is said in that window as well as on the page: the dock's own messages and a component's. The window has a `status` and an `alert` region of its own before its panel arrives and before the first message, and they start empty, without what the page was told earlier. `DockManagerPopOutTests.Announcement_ShouldBeSaidInThePanelsWindowToo_WhenMadeWhileThePanelIsThere`
+- [ ] A dialog or a toast asked for from a panel in a window of its own shows in that window. #584
 - [ ] The window follows a sheet that is switched on or off without an attribute changing: an alternate sheet switched on by script, or a sheet turned off through `document.styleSheets`. #585
 - [ ] The suites that CI runs inside a panel's window in Chromium pass there in Firefox and WebKit too. Three tests fail in only one of those browsers, for reasons not yet known. #587
-- [ ] UNCONFIRMED: Chrome, Edge, Firefox and Safari open the window from the menu's item with their popup blockers at their defaults, and the new window keeps the focus. A panel in its own window keeps working while the page's window is minimized or its tab is in the background. On a phone or a tablet, where the browser opens a tab in place of a window, the panel is still usable. #332
+- [ ] UNCONFIRMED: Chrome, Edge, Firefox and Safari open the window from the menu's item with their popup blockers at their defaults, and the new window keeps the focus. A panel in its own window keeps working while the page's window is minimized or its tab is in the background. On a phone or a tablet, where the browser opens a tab in place of a window, the panel is still usable. A screen reader says a message once, in the window that has the focus, and not a second time from the page's regions: NVDA and JAWS with a second window open, and VoiceOver with Safari. #332
 
 ## Not applicable
 

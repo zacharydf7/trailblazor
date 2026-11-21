@@ -1109,9 +1109,9 @@ export function attachDock(root, reporter) {
             }
 
             arriving.set(id, other);
-            const unstyle = await showInWindow(other, panel, panel.getAttribute('aria-label'), 'tb-dock-window');
+            const unfollow = await showInWindow(other, panel, panel.getAttribute('aria-label'), 'tb-dock-window');
             arriving.delete(id);
-            if (!unstyle) {
+            if (!unfollow) {
                 return 'closed';
             }
 
@@ -1124,7 +1124,7 @@ export function attachDock(root, reporter) {
             });
             titled.observe(panel, { attributes: true, attributeFilter: ['aria-label'] });
             const stop = () => {
-                unstyle();
+                unfollow();
                 titled.disconnect();
             };
             windows.set(id, { other, panel, stop });

@@ -276,7 +276,6 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldAnnounceTheCharactersLeft_WhenTheTextReachesAThreshold(string browser)
     {
-        Assert.SkipWhen(Popped, ShowsInThePagesWindow);
         var page = await OpenAsync(browser, "/examples/text-field");
         var summary = page.GetByLabel("Trail summary");
         await Expect(summary).ToHaveAttributeAsync("data-ready", "");
@@ -374,7 +373,6 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TextField_ShouldShowTheParentsErrorUntilItClears_WhenTheParentSetsOne(string browser)
     {
-        Assert.SkipWhen(Popped, ShowsInThePagesWindow);
         var page = await OpenAsync(browser, "/examples/text-field");
         var handle = page.GetByLabel("Handle");
 

@@ -138,6 +138,40 @@ const findMarked = selector => Document.prototype.querySelector.call(document, s
     ?? (selector.startsWith('[_bl_') ? otherPages().map(page => page.querySelector(selector)).find(Boolean) ?? null
         : null);
 
+// A screen reader follows the window that has the focus, and the app's live regions are on the page. So the other
+// window gets regions of its own, empty at first since text a live region arrives with isn't spoken, and every
+// message added to the page's regions after that is added to them too. A modal dialog's own regions stay with the
+// dialog.
+const repeatAnnouncements = page => {
+    const source = document.querySelector('[data-part="announcer"]:not(dialog *)');
+    if (!source) {
+        return () => { };
+    }
+
+    // Each copy has its element's attributes and none of what it holds.
+    const host = page.body.appendChild(page.importNode(source));
+    const regions = new Map([...source.children].map(region => [region, host.appendChild(page.importNode(region))]));
+    const said = new Map();
+    const follow = new MutationObserver(records => {
+        for (const record of records) {
+            for (const message of record.addedNodes) {
+                said.set(message, regions.get(record.target).appendChild(page.createElement('p')));
+                said.get(message).textContent = message.textContent;
+            }
+
+            for (const message of record.removedNodes) {
+                said.get(message)?.remove();
+                said.delete(message);
+            }
+        }
+    });
+    for (const region of regions.keys()) {
+        follow.observe(region, { childList: true });
+    }
+
+    return () => follow.disconnect();
+};
+
 // What a window says of itself, that its size changed or that it lost the focus, is sent on to the page's window.
 const ofTheWindow = ['resize', 'blur'];
 
@@ -157,7 +191,7 @@ const sheetsLoaded = page => {
 // The element moves once the window's linked sheets have loaded, or their time is up, so it seldom shows unstyled
 // there and a script that measures it finds it laid out; the promise gives null when the window was closed
 // meanwhile. The caller moves the element back, and then calls the function the promise gives, which stops following
-// the page's styles.
+// the page's styles and repeating its announcements.
 export async function showInWindow(other, element, title, className) {
     const page = other.document;
     // A window opens on a blank page in quirks mode, which lays out and measures some things differently from the
@@ -168,9 +202,14 @@ export async function showInWindow(other, element, title, className) {
     page.title = title;
     // The blank page has the page's address but not its `<base>`, which a Blazor app's relative addresses count on.
     page.head.appendChild(page.createElement('base')).href = document.baseURI;
-    const stop = mirror(other);
+    const unstyle = mirror(other);
     page.body.className = className;
     scope(element, page.body);
+    const unsay = repeatAnnouncements(page);
+    const stop = () => {
+        unstyle();
+        unsay();
+    };
     await sheetsLoaded(page);
     if (other.closed) {
         stop();

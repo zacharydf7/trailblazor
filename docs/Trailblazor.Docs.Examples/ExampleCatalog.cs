@@ -3322,8 +3322,10 @@ public static class ExampleCatalog
                     + "hear whether its panel is out.",
                 "When a panel opens in a browser window of its own, screen readers hear \"Notes opened in a new "
                     + "window.\" once the panel is there, and \"Notes is back in the dock.\" when it returns. When the "
-                    + "browser refuses the window, they hear \"The browser blocked the new window for Notes.\" All "
-                    + "three are said in the page's window.",
+                    + "browser refuses the window, they hear \"The browser blocked the new window for Notes.\"",
+                "A screen reader follows the window that has the focus, so whatever is announced while a panel is in "
+                    + "a window of its own is said in that window as well as on the page. While a modal dialog is "
+                    + "open, messages go to its own live regions and are said there only.",
                 "On a separator, `aria-valuenow` gives the share, in percent, that the part before it has of the space "
                     + "its two sides take together, and `aria-valuemin` and `aria-valuemax` give how far the separator "
                     + "can go before a group on either side is down to `MinGroupSize`.",
@@ -3501,8 +3503,8 @@ public static class ExampleCatalog
                 new("The library's components work in a panel's window as they do on the page, including ones "
                     + "first drawn there: each reads the focus, its size and where its popups go from the window its "
                     + "element is in. A dock inside the panel opens its own panels in windows from there."),
-                new("A dialog, a toast or a screen reader announcement that the panel asks for still shows, or is "
-                    + "said, in the page's window.") { Pitfall = true },
+                new("A dialog or a toast that the panel asks for still shows in the page's window.")
+                    { Pitfall = true },
                 new("The panel moves into its window once the window has loaded the page's style sheets, and waits "
                     + "on the page, hidden, until then. After three seconds it moves anyway, and a sheet that fails "
                     + "to load or is turned off isn't waited for."),
@@ -3723,6 +3725,9 @@ public static class ExampleCatalog
                     + "own, which `Panels`, `Showing` and `Floating` leave out, and `ReturnAsync(\"Notes\")` "
                     + "presses a panel's Return button. `PopOutAsync` throws an `InvalidOperationException` when "
                     + "`AllowPopOut` is off, and `ReturnAsync` for a panel that isn't in a window of its own.",
+                "In Playwright, announcements made while a panel is in its window can be checked on its `Page` or "
+                    + "on the page's, with `Tb().Announcements.ExpectAnnouncedAsync(text)` on either. A dialog or a "
+                    + "toast the panel opens is found only on the page's `Page`.",
                 "Scan a panel's window for accessibility as a whole, not one element in it: the page's window made "
                     + "the panel's elements, so axe running in the panel's window won't take one of them as what to "
                     + "scan.",

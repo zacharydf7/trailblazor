@@ -1222,7 +1222,9 @@
         <TbText>
             Announcements go into <code>TbRoot</code>'s <code>[data-part=announcer]</code>, or a modal dialog's own, as
             a <code>p</code> in <code>[data-part=polite]</code> or <code>[data-part=assertive]</code>. Several can be
-            there at once, so find the one with your text.
+            there at once, so find the one with your text. While a dock panel is in a browser window of its own, that
+            window has a copy of <code>TbRoot</code>'s regions, which gets each message made from the time the window
+            opens.
         </TbText>
 
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">By id</TbText>

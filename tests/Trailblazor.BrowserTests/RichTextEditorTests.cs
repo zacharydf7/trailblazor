@@ -10,7 +10,6 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Count_ShouldFollowTypingAndAnnounceTheCharactersLeft_WhenTheEditorShowsACount(string browser)
     {
-        Assert.SkipWhen(Popped, ShowsInThePagesWindow);
         var page = await OpenAsync(browser, "/rich-text-count");
         var report = page.GetByRole(AriaRole.Textbox, new() { Name = "Trail report" });
         await Expect(report).ToHaveAttributeAsync("data-ready", "");
@@ -35,7 +34,6 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Count_ShouldFollowAPasteAndAnnounceTheCharactersLeft_WhenTheEditorShowsACount(string browser)
     {
-        Assert.SkipWhen(Popped, ShowsInThePagesWindow);
         var page = await OpenAsync(browser, "/rich-text-count");
         var report = page.GetByRole(AriaRole.Textbox, new() { Name = "Trail report" });
         await Expect(report).ToHaveAttributeAsync("data-ready", "");
