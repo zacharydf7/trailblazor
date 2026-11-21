@@ -537,29 +537,24 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         string browser)
     {
         var page = await OpenDockAsync(browser);
-        // The page's own request for the sheet waits until the window has opened; the window's is not held.
-        var opened = new TaskCompletionSource();
-        await page.RouteAsync("**/slow.css*", async route =>
-        {
-            await opened.Task;
-            await route.ContinueAsync();
-        });
+        // The test host holds the sheet back until its gate is opened, which is after the window has opened.
+        var gate = Guid.NewGuid().ToString("N");
         await page.EvaluateAsync("""
-            () => {
+            gate => {
                 const css = encodeURIComponent('html{text-transform:uppercase}');
-                const link = Object.assign(document.createElement('link'),
-                    { id: 'slow', rel: 'alternate stylesheet', title: 'slow', href: `slow.css?wait=0&css=${css}` });
+                const link = Object.assign(document.createElement('link'), { id: 'slow', rel: 'alternate stylesheet',
+                    title: 'slow', href: `slow.css?wait=0&gate=${gate}&css=${css}` });
                 document.head.append(link);
                 link.disabled = true;
                 link.disabled = false;
             }
-            """);
+            """, gate);
 
         var window = await page.RunAndWaitForPopupAsync(() =>
             page.Tb().Dock("Workbench").ChooseFromTabMenuAsync("Notes", "Open in new window"));
 
         Assert.True(await page.EvaluateAsync<bool>("document.getElementById('slow').sheet === null"));
-        opened.SetResult();
+        await page.Context.APIRequest.GetAsync(new Uri(Fixture.BaseAddress, $"/open-gate?gate={gate}").ToString());
         await Expect(window.Locator("html")).ToHaveCSSAsync("text-transform", "uppercase");
     }
 
