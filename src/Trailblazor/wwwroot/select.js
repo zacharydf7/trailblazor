@@ -5,6 +5,7 @@ import { filterOptions } from './option-filter.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { viewOf } from '../Trailblazor.Primitives/pages.js';
+import { pointerMoved } from '../Trailblazor.Primitives/resting-pointer.js';
 
 // Keys, typing and the open list stay in the browser; choosing clicks the option, which reaches the server.
 export function createSelect(combobox, listbox, toggle) {
@@ -443,7 +444,7 @@ export function createSelect(combobox, listbox, toggle) {
     };
     const onListboxPointerMove = event => {
         const option = event.target.closest('[role="option"]:not([aria-disabled="true"])');
-        if (option && option !== active) {
+        if (option && option !== active && pointerMoved(event)) {
             setActive(option);
         }
     };

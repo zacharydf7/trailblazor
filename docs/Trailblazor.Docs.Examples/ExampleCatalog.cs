@@ -9419,7 +9419,7 @@ public static class ExampleCatalog
             [
                 "Focus stays in the search box while the arrow keys move the active command, so typing never stops.",
                 "The matched letters are bold, so they show without relying on color.",
-                "A pointer resting on a command makes it the active one, as the arrow keys would.",
+                "Moving the pointer onto a command makes it the active one, as the arrow keys would.",
             ],
             AppDuties =
             [

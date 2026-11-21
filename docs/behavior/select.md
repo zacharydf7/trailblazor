@@ -41,7 +41,8 @@ Familiar apps: a native `<select>`, the dropdowns in Windows and macOS settings
 - [x] Clicking options in a multi-select toggles them and leaves the list open. `SelectTests.MultiSelect_ShouldToggleOptionsAndStayOpen_WhenOptionsAreClicked`
 - [x] Clicking a disabled option leaves the value alone and the list open. `SelectTests.Select_ShouldStayOpenAndUnchanged_WhenADisabledOptionIsClicked`
 - [x] Hovering an option makes it the active one. `SelectTests.Select_ShouldFocusTheComboboxAndFollowThePointer_WhenTheLabelIsClickedAndAnOptionHovered`
-- [ ] A pointer that rests over the list leaves the active option to the keyboard when the list scrolls under it. WebKit sends a pointer move for such a scroll, and the option under the pointer becomes the active one. #593
+- [x] A pointer that rests over the list leaves the active option to the keys when the list scrolls under it: a move that the browser sends for the scroll, with the pointer where it was, is left alone, such as the one WebKit sends a moment after a scroll. A move that a script sends counts as the user's, and a pointer that then moves takes the active option again. `SelectTests.Select_ShouldLeaveTheActiveOptionToTheKeys_WhenItsListScrollsUnderARestingPointer`
+- [ ] The same holds where the pointer's place isn't known. The library knows it only from the last real move, so the first move in a window that had none, or after a real move in another window, counts as the user's, whoever sent it. #594
 - [x] Clicking elsewhere closes the list without choosing, since it's a native `popover="auto"`. `TbSelectBase.razor`
 - [x] Clicking a chip's remove button removes that choice without opening the list. `SelectExtrasTests.Chips_ShouldRemoveAChoiceWithoutOpeningTheList_WhenItsButtonIsClicked`
 

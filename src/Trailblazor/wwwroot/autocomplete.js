@@ -2,6 +2,7 @@ import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-posit
 import { discard, flush } from './debounced-input.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { pointerMoved } from '../Trailblazor.Primitives/resting-pointer.js';
 
 // The list opens as the user types and the server fills it; the keys move an active option in the browser, and
 // choosing clicks it, which reaches the server. Focus never leaves the input.
@@ -188,7 +189,7 @@ export function createAutocomplete(input, listbox, events) {
     };
     const onListboxPointerMove = event => {
         const option = event.target.closest(choosable);
-        if (option && option !== active) {
+        if (option && option !== active && pointerMoved(event)) {
             setActive(option);
         }
     };

@@ -1,5 +1,6 @@
 // Blazor runs this initializer itself, so consumers add no script tags.
 import '../Trailblazor.Primitives/pointer-origin.js';
+import '../Trailblazor.Primitives/resting-pointer.js';
 import './read-only.js';
 import './select-early-click.js';
 import { watchPageWidths } from './number-field.js';

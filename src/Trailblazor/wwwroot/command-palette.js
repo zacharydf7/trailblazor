@@ -1,4 +1,5 @@
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { pointerMoved } from '../Trailblazor.Primitives/resting-pointer.js';
 
 // Focus stays in the search box while the arrow keys move an active option, which Enter clicks, as in a combobox. The
 // first option turns active whenever the results change, so Enter right after typing runs the best match.
@@ -66,7 +67,7 @@ export function attachPalette(scope) {
     const onPointerDown = event => event.preventDefault();
     const onPointerMove = event => {
         const option = event.target.closest(choosable);
-        if (option && option !== active) {
+        if (option && option !== active && pointerMoved(event)) {
             setActive(option);
         }
     };

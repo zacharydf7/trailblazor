@@ -1,0 +1,31 @@
+@page "/resting-pointer"
+
+@* A list long enough to scroll for each of these components, whose lists follow the pointer, so that keys can scroll
+   each one under a pointer that stands still. Gate 2 has its own lots, A to C, which open in a list beside the gates,
+   level with them. *@
+<TbAutocomplete TValue="string" Label="Camp" Items="Camps" />
+<TbCascader TValue="string" @bind-Value="_gate" Label="Gate" Items="Gates" />
+<TbMentionInput Label="Note" @bind-Value="_note" Search="FindAsync" MaxItems="40" />
+<button type="button" @onclick="() => _open = true">Open tasks</button>
+<TbCommandPalette TItem="string" Items="Tasks" @bind-Open="_open" Shortcut="@null" Label="Tasks" />
+
+@code {
+    private static readonly string[] Camps = [.. Enumerable.Range(1, 40).Select(number => $"Camp {number}")];
+    private static readonly string[] Tasks = [.. Enumerable.Range(1, 40).Select(number => $"Task {number}")];
+
+    private static readonly CascaderItem<string>[] Gates =
+        [.. Enumerable.Range(1, 40).Select(number => new CascaderItem<string>($"Gate {number}", $"gate-{number}")
+        {
+            Children = number == 2 ? [new("Lot A", "lot-a"), new("Lot B", "lot-b"), new("Lot C", "lot-c")] : [],
+        })];
+
+    private static readonly MentionItem[] Guides =
+        [.. Enumerable.Range(1, 40).Select(number => new MentionItem($"Guide {number}") { Id = $"guide-{number}" })];
+
+    private string? _gate;
+    private string? _note;
+    private bool _open;
+
+    private static Task<IEnumerable<MentionItem>> FindAsync(MentionQuery query, CancellationToken cancellation) =>
+        Task.FromResult(Guides.Where(guide => guide.Text.Contains(query.Text, StringComparison.OrdinalIgnoreCase)));
+}

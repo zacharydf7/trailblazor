@@ -20,6 +20,8 @@ Familiar apps: VS Code's command palette, GitHub's and Linear's Ctrl+K search, S
 ## Pointer
 
 - [x] Hovering a command makes it the active one, and focus stays in the search box. `CommandPaletteTests.Click_ShouldRunTheCommandAndKeepFocusInTheSearchUntilThen_WhenAnOptionIsPressed`
+- [x] A pointer that rests over the list leaves the active command to the keys when the list scrolls under it: a move that the browser sends for the scroll, with the pointer where it was, is left alone, such as the one WebKit sends a moment after a scroll. `RestingPointerTests.CommandPalette_ShouldLeaveTheActiveOptionToTheKeys_WhenItsListScrollsUnderARestingPointer`
+- [ ] The same holds where the pointer's place isn't known. The library knows it only from the last real move, so the first move in a window that had none, or after a real move in another window, counts as the user's, whoever sent it. #594
 - [x] Clicking a command runs it and closes the palette. `CommandPaletteTests.Click_ShouldRunTheCommandAndKeepFocusInTheSearchUntilThen_WhenAnOptionIsPressed`
 - [x] Clicking a disabled command, or the message shown when nothing matches, does nothing. `TbCommandPaletteTests.Click_ShouldDoNothing_WhenTheCommandIsDisabled`
 - [x] Clicking the backdrop closes the palette, as for any dialog. `dialog.js`

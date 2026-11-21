@@ -1,6 +1,7 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { pointerMoved } from '../Trailblazor.Primitives/resting-pointer.js';
 
 // The longest mention text the field looks back over for a trigger.
 const longest = 50;
@@ -206,7 +207,7 @@ export function createMentionInput(input, listbox, events) {
     };
     const onListboxPointerMove = event => {
         const option = event.target.closest('[role="option"]');
-        if (option && option !== active) {
+        if (option && option !== active && pointerMoved(event)) {
             setActive(option);
         }
     };

@@ -1,6 +1,7 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { pointerMoved } from '../Trailblazor.Primitives/resting-pointer.js';
 
 // The lists open under the field, one for each level. Focus never leaves the input: the keys move an active option
 // across the lists in the browser, and opening or choosing clicks it, which reaches the server.
@@ -213,7 +214,7 @@ export function createCascader(input, popup, events) {
     };
     const onPopupPointerMove = event => {
         const option = event.target.closest(choosable);
-        if (option && option !== active) {
+        if (option && option !== active && pointerMoved(event)) {
             setActive(option);
         }
     };

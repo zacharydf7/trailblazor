@@ -19,6 +19,8 @@ Familiar apps: mentioning someone with @ in GitHub, Slack or Google Docs comment
 ## Pointer
 
 - [x] A click on a suggestion puts it in, and focus stays in the field. `MentionInputTests.Helper_ShouldTypeAndChooseAMention_WhenFoundByLabel`
+- [x] Moving the pointer over a suggestion makes it the active one, and a pointer that rests over the list leaves the active suggestion to the keys when the list scrolls under it: a move that the browser sends for the scroll, with the pointer where it was, is left alone, such as the one WebKit sends a moment after a scroll. `RestingPointerTests.MentionInput_ShouldLeaveTheActiveOptionToTheKeys_WhenItsListScrollsUnderARestingPointer`
+- [ ] The same holds where the pointer's place isn't known. The library knows it only from the last real move, so the first move in a window that had none, or after a real move in another window, counts as the user's, whoever sent it. #594
 
 ## Touch
 

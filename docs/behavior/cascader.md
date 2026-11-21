@@ -18,6 +18,8 @@ Familiar apps: the country, region and city pickers on shipping forms, Ant Desig
 
 - [x] A click on the field opens the lists, and a click on a choice opens its list or chooses it. `CascaderTests.Cascader_ShouldChooseAPathByClicking_WhenEachLevelIsClicked`
 - [x] A disabled choice can't be opened or chosen. `TbCascaderTests.Pick_ShouldDoNothing_WhenTheChoiceIsDisabled`
+- [x] Moving the pointer over a choice makes it the active one, and a pointer that rests over a list leaves the active choice to the keys when the list scrolls under it: a move that the browser sends for the scroll, with the pointer where it was, is left alone, such as the one WebKit sends a moment after a scroll. A move straight across to the next list is the pointer's own. `RestingPointerTests.Cascader_ShouldLeaveTheActiveOptionToTheKeys_WhenItsListScrollsUnderARestingPointer`, `RestingPointerTests.Cascader_ShouldFollowThePointer_WhenItMovesStraightAcrossToTheNextList`
+- [ ] The same holds where the pointer's place isn't known. The library knows it only from the last real move, so the first move in a window that had none, or after a real move in another window, counts as the user's, whoever sent it. #594
 
 ## Touch
 

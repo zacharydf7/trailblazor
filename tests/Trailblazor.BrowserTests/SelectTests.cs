@@ -495,6 +495,54 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
         await ExpectActiveAsync(page, trails, "Trail 1000");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldLeaveTheActiveOptionToTheKeys_WhenItsListScrollsUnderARestingPointer(string browser)
+    {
+        var page = await OpenAsync(browser, "/select-items");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Long trail", Exact = true });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+        await trail.FocusAsync();
+        await trail.PressAsync("ArrowDown");
+        await ExpectActiveAsync(page, trail, "Trail 1");
+        // The pointer comes to rest on an option, which becomes the active one, as the option under a moving pointer
+        // does.
+        var fourth = page.Locator("[role=option][data-text='Trail 4']");
+        await fourth.HoverAsync();
+        await ExpectActiveAsync(page, trail, "Trail 4");
+        var rest = (await fourth.BoundingBoxAsync())!;
+
+        await page.Keyboard.PressAsync("End");
+
+        // WebKit sends a move for the scroll a moment later, with the pointer where it was, and the keys' option stays.
+        await ExpectActiveAsync(page, trail, "Trail 1000");
+        await page.WaitForTimeoutAsync(400);
+        await ExpectActiveAsync(page, trail, "Trail 1000");
+        // A move that a script sends counts as the user's, at the place where the pointer rests and one option below.
+        Task<string> SendAMoveAsync(double down) => page.EvaluateAsync<string>("""
+            ([x, y]) => {
+                const option = document.elementFromPoint(x, y).closest('[role=option]');
+                option.dispatchEvent(new PointerEvent('pointermove',
+                    { bubbles: true, clientX: x, clientY: y, view: window }));
+                return option.dataset.text;
+            }
+            """, new double[] { rest.X + rest.Width / 2, rest.Y + rest.Height * down });
+        var under = await SendAMoveAsync(0.5);
+        Assert.NotEqual("Trail 1000", under);
+        await ExpectActiveAsync(page, trail, under);
+        var below = await SendAMoveAsync(1.5);
+        Assert.NotEqual(under, below);
+        await ExpectActiveAsync(page, trail, below);
+        // It doesn't change where the pointer is taken to be, though: the next scroll's move is still recognized as
+        // the browser's own.
+        await page.Keyboard.PressAsync("Home");
+        await ExpectActiveAsync(page, trail, "Trail 1");
+        await page.WaitForTimeoutAsync(400);
+        await ExpectActiveAsync(page, trail, "Trail 1");
+        // A pointer that does move makes its option the active one again.
+        await page.Locator("[role=option][data-text='Trail 6']").HoverAsync();
+        await ExpectActiveAsync(page, trail, "Trail 6");
+    }
+
     // The option marked active, which the combobox names to screen readers.
     internal static async Task ExpectActiveAsync(IPage page, ILocator combobox, string text)
     {
