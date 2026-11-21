@@ -3,6 +3,11 @@ using System.Text.RegularExpressions;
 
 namespace Trailblazor.Tests.Components;
 
+// The speed tests time the parsing of a megabyte of input, so this class runs with no other test alongside.
+[CollectionDefinition(nameof(Timed), DisableParallelization = true)]
+public class Timed;
+
+[Collection(nameof(Timed))]
 public class RichTextDocumentTests
 {
     private static readonly string Corpus = Path.Combine(AppContext.BaseDirectory, "RichTextCorpus");
