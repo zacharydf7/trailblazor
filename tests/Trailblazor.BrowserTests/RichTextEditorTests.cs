@@ -833,8 +833,10 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         var url = page.Url;
 
         await notes.GetByText("site").ClickAsync();
-        var popup = await page.RunAndWaitForPopupAsync(() =>
-            notes.GetByText("site").ClickAsync(new() { Modifiers = [KeyboardModifier.ControlOrMeta] }));
+        Task CtrlClick() => notes.GetByText("site").ClickAsync(new() { Modifiers = [KeyboardModifier.ControlOrMeta] });
+        // Waiting on the page checks which window opened the tab, which Firefox doesn't say for a dock panel's window.
+        var popup = Popped && browser == "firefox" ? await page.Context.RunAndWaitForPageAsync(CtrlClick)
+            : await page.RunAndWaitForPopupAsync(CtrlClick);
 
         await popup.WaitForURLAsync("**/rich-text-editor?opened");
         Assert.Equal(url, page.Url);

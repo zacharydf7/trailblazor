@@ -33,6 +33,9 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
     protected const string ThePageFailsToRender = "The page fails to render on purpose, so it has no panel to open.";
     protected const string WarnsInThePagesConsole =
         "The library's scripts warn in the page's console, not the panel's window's.";
+    protected const string VirtualizeWaitsForThePagesWindow =
+        "Blazor's Virtualize watches its list with an observer from the page's window, and Firefox runs it only as "
+        + "the page's window draws.";
     protected const string AddsToThePagesBody =
         "The page's own script adds its popup to the page's body, which the panel's window doesn't show.";
 
