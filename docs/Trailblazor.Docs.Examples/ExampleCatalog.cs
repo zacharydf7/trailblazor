@@ -3527,8 +3527,13 @@ public static class ExampleCatalog
                     + "loads again each way. A relative address in the panel counts from the app's `<base>` in the "
                     + "window too."),
                 new("The window follows the style sheets in the page's head as their elements and attributes "
-                    + "change. A sheet switched on or off by script alone, as through `document.styleSheets`, isn't "
-                    + "followed.") { Pitfall = true },
+                    + "change. It also follows a sheet turned off or on through its `CSSStyleSheet`'s `disabled`, "
+                    + "as with `link.sheet.disabled` or an entry of `document.styleSheets`. An alternate sheet "
+                    + "that a script turns on while the window is open is followed too."),
+                new("An alternate style sheet that a script turned on before the panel's window opened isn't on "
+                    + "in that window in Chromium-based browsers or Safari, which don't tell a script whether an "
+                    + "alternate sheet applies. A sheet switched by its link's `rel` or `href` is followed, "
+                    + "before or after the window opened.") { Pitfall = true },
                 new("A script of your own inside a panel has to use the panel's own document and window, "
                     + "`element.ownerDocument` and its `defaultView`. In a window of its own the panel is in neither "
                     + "the page's `document` nor its `window`, so `document.activeElement`, `document.getElementById` "

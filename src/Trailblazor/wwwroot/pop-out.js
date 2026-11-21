@@ -50,6 +50,25 @@ const forward = event => {
     }
 };
 
+// A script can turn a sheet off or on through `document.styleSheets` with no attribute changing, and no event tells of
+// it, so while a window follows the page's sheets each sheet gets a `disabled` of its own that tells the followers.
+const sheetFollowers = new Set();
+const watchedSheets = new WeakSet();
+const disabledProperty = Object.getOwnPropertyDescriptor(StyleSheet.prototype, 'disabled');
+const watchDisabled = sheet => {
+    if (!Object.hasOwn(sheet, 'disabled')) {
+        watchedSheets.add(sheet);
+        Object.defineProperty(sheet, 'disabled', {
+            configurable: true,
+            get: () => disabledProperty.get.call(sheet),
+            set: value => {
+                disabledProperty.set.call(sheet, value);
+                sheetFollowers.forEach(follow => follow());
+            },
+        });
+    }
+};
+
 // The other window's styles follow the page's: its style sheets, as its head gains, loses and changes them, and
 // whatever the page sets on its root element.
 const mirror = other => {
@@ -86,6 +105,19 @@ const mirror = other => {
             for (const name of followed.filter(each => copy[each] !== sheet[each])) {
                 copy[name] = sheet[name];
             }
+
+            // A link's `sheet` is null until it has loaded, on the page and in the window.
+            if (sheet.sheet) {
+                watchDisabled(sheet.sheet);
+                if (copy.sheet && copy.sheet.disabled !== sheet.sheet.disabled) {
+                    copy.sheet.disabled = sheet.sheet.disabled;
+                }
+            }
+        }
+    };
+    const onLoad = event => {
+        if (event.target.localName === 'link') {
+            copySheets();
         }
     };
     const copyRoot = () => {
@@ -100,14 +132,37 @@ const mirror = other => {
     };
     copySheets();
     copyRoot();
-    const sheets = new MutationObserver(copySheets);
+    const sheets = new MutationObserver(records => {
+        copySheets();
+        // A script turns on a sheet the page only offers as an alternate by setting its link's `disabled` and
+        // clearing it again. Done in one go, that leaves the attributes as they were, so the copy does the same.
+        const toggled = records.filter(record => record.attributeName === 'disabled').map(record => record.target);
+        for (const link of new Set(toggled)) {
+            const copy = copies.get(link);
+            if (copy && !link.disabled) {
+                copy.disabled = true;
+                copy.disabled = false;
+            }
+        }
+    });
     sheets.observe(document.head, { subtree: true, childList: true, characterData: true, attributes: true,
         attributeFilter: ['href', 'media', 'rel', 'title', 'disabled'] });
     const root = new MutationObserver(copyRoot);
     root.observe(document.documentElement, { attributes: true });
+    sheetFollowers.add(copySheets);
+    document.addEventListener('load', onLoad, true);
+    other.document.addEventListener('load', onLoad, true);
     return () => {
         sheets.disconnect();
         root.disconnect();
+        document.removeEventListener('load', onLoad, true);
+        other.document.removeEventListener('load', onLoad, true);
+        sheetFollowers.delete(copySheets);
+        if (sheetFollowers.size === 0) {
+            for (const sheet of [...document.styleSheets].filter(each => watchedSheets.delete(each))) {
+                delete sheet.disabled;
+            }
+        }
     };
 };
 

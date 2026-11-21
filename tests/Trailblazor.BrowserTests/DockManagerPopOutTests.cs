@@ -362,6 +362,100 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         await Expect(window.GetByRole(AriaRole.Region, new() { Name = "Field notes" })).ToBeVisibleAsync();
     }
 
+    // Adds a linked sheet to the page and waits until it has loaded.
+    private static Task AddASheetAsync(IPage page, string id, string css) => page.EvaluateAsync("""
+        ([id, css]) => new Promise(loaded => {
+            const link = Object.assign(document.createElement('link'),
+                { id, rel: 'stylesheet', href: `data:text/css,${css}`, onload: loaded });
+            document.head.append(link);
+        })
+        """, new[] { id, css });
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldApplyTheSheetsThePageApplies_WhenASheetIsSwitchedWithoutAnAttribute(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        // A linked sheet is turned off, through the sheet itself, before the window opens.
+        await AddASheetAsync(page, "early", "html{text-indent:9px}");
+        await page.EvaluateAsync("document.getElementById('early').sheet.disabled = true");
+        await page.EvaluateAsync(
+            "document.head.insertAdjacentHTML('beforeend', '<style id=inline>html { letter-spacing: 3px }</style>')");
+        // A sheet with a `disabled` property of the app's own keeps it.
+        await page.EvaluateAsync("""
+            () => {
+                document.head.insertAdjacentHTML('beforeend', '<style id=own></style>');
+                Object.defineProperty(document.getElementById('own').sheet, 'disabled',
+                    { configurable: true, value: false, writable: true });
+            }
+            """);
+        var window = await PopOutAsync(page, "Notes");
+        var (pageRoot, windowRoot) = (page.Locator("html"), window.Locator("html"));
+        await Expect(windowRoot).ToHaveCSSAsync("letter-spacing", "3px");
+        await Expect(windowRoot).ToHaveCSSAsync("text-indent", "0px");
+        await page.EvaluateAsync("document.getElementById('early').sheet.disabled = false");
+        await Expect(windowRoot).ToHaveCSSAsync("text-indent", "9px");
+
+        // Turned off and on as from `document.styleSheets`.
+        await page.EvaluateAsync(
+            "[...document.styleSheets].find(sheet => sheet.ownerNode.id === 'inline').disabled = true");
+        await Expect(pageRoot).ToHaveCSSAsync("letter-spacing", "normal");
+        await Expect(windowRoot).ToHaveCSSAsync("letter-spacing", "normal");
+        await page.EvaluateAsync("document.getElementById('inline').sheet.disabled = false");
+        await Expect(windowRoot).ToHaveCSSAsync("letter-spacing", "3px");
+
+        // A sheet that loads after the window opened is followed too.
+        await AddASheetAsync(page, "late", "html{word-spacing:4px}");
+        await Expect(windowRoot).ToHaveCSSAsync("word-spacing", "4px");
+        await page.EvaluateAsync("document.getElementById('late').sheet.disabled = true");
+        await Expect(windowRoot).ToHaveCSSAsync("word-spacing", "0px");
+
+        // The usual way to turn on an alternate sheet: off and on again, which leaves its attributes as they were.
+        await page.EvaluateAsync("""
+            () => {
+                document.head.insertAdjacentHTML('beforeend', '<link id=other rel="alternate stylesheet" '
+                    + 'title="Other" href="data:text/css,html{text-transform:uppercase}">');
+                return new Promise(loaded => document.getElementById('other').onload = loaded);
+            }
+            """);
+        await Expect(windowRoot).ToHaveCSSAsync("text-transform", "none");
+        await page.EvaluateAsync("""
+            () => {
+                const other = document.getElementById('other');
+                other.disabled = true;
+                other.disabled = false;
+            }
+            """);
+        await Expect(pageRoot).ToHaveCSSAsync("text-transform", "uppercase");
+        await Expect(windowRoot).ToHaveCSSAsync("text-transform", "uppercase");
+        // So is one that is added and turned on in the same go, before the window has a copy of it.
+        await page.EvaluateAsync("""
+            () => {
+                document.head.insertAdjacentHTML('beforeend', '<link id=another rel="alternate stylesheet" '
+                    + 'title="Another" href="data:text/css,html{font-style:italic}">');
+                const another = document.getElementById('another');
+                another.disabled = true;
+                another.disabled = false;
+            }
+            """);
+        await Expect(pageRoot).ToHaveCSSAsync("font-style", "italic");
+        await Expect(windowRoot).ToHaveCSSAsync("font-style", "italic");
+
+        // A second window goes on following after the first one closes.
+        var second = await PopOutAsync(page, "Gear");
+        await window.CloseAsync();
+        await ClosedAsync(window);
+        await page.EvaluateAsync("document.getElementById('late').sheet.disabled = false");
+        await Expect(second.Locator("html")).ToHaveCSSAsync("word-spacing", "4px");
+
+        // With the last window gone, the page's sheets are as they were before the first one opened.
+        await second.CloseAsync();
+        await ClosedAsync(second);
+        Assert.Equal(["own"], await page.EvaluateAsync<string[]>("""
+            () => [...document.styleSheets].filter(sheet => Object.hasOwn(sheet, 'disabled'))
+                .map(sheet => sheet.ownerNode.id)
+            """));
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dock_ShouldOpenOneWindowForItsOwnPanel_WhenItIsNestedInAnotherDocksPanel(string browser)
     {
