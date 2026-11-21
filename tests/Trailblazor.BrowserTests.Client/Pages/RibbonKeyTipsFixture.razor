@@ -4,12 +4,14 @@
    command with the key B, and ?narrow=true makes the ribbon narrow enough that the Entry group collapses into its
    button. The Atlas ribbon comes after it on the page, and the Early ribbon is added before it only when asked for.
    The dialog holds a ribbon of its own, inside the panel of a set of tabs, whose key tips take over while it is
-   open. *@
+   open. Print has a description of the app's own, the Atlas ribbon words its key tips' descriptions itself, and the
+   Early ribbon leaves them out. The Survey ribbon's tab and field are described already, the tab by its context and
+   the field by a hint that Drop the hint takes away, and its Pins dialog holds a ribbon inside the Survey ribbon. *@
 <input aria-label="Notes" />
 <TbButton OnClick="@(() => _early = true)">Add a ribbon first</TbButton>
 @if (_early)
 {
-    <TbRibbon AriaLabel="Early">
+    <TbRibbon AriaLabel="Early" Labels="@(new() { KeyTip = "" })">
         <TbRibbonTab Title="Dawn" KeyTip="D">
             <TbRibbonGroup Label="Start">
                 <TbRibbonButton Label="Wake" KeyTip="W" OnClick="@(() => _last = "Wake")" />
@@ -41,7 +43,8 @@
                 </TbRibbonGroup>
                 <TbRibbonGroup Label="Share">
                     <TbRibbonButton Label="Mail" KeyTip="M" OnClick="@(() => _last = "Mail")" />
-                    <TbRibbonButton Label="Print" KeyTip="P" OnClick="@(() => _last = "Print")" />
+                    <TbRibbonButton Label="Print" KeyTip="P" aria-description="Sends the entry to paper"
+                                    OnClick="@(() => _last = "Print")" />
                     @* A button that opens something and leaves focus where it is, as a disclosure does. *@
                     <TbButton Variant="Variant.Text" Size="Size.Small" data-key-tip="D"
                               aria-expanded="@(_details ? "true" : "false")"
@@ -61,13 +64,34 @@
         </ChildContent>
     </TbRibbon>
 </div>
-<TbRibbon AriaLabel="Atlas">
+<TbRibbon AriaLabel="Atlas" Labels="@(new() { KeyTip = "Press {0}" })">
     <TbRibbonTab Title="Maps" KeyTip="A">
         <TbRibbonGroup Label="Layers">
             <TbRibbonButton Label="Legend" KeyTip="L" OnClick="@(() => _last = "Legend")" />
         </TbRibbonGroup>
     </TbRibbonTab>
 </TbRibbon>
+<TbRibbon AriaLabel="Survey">
+    <TbRibbonTab Title="Plots" Context="Field tools" KeyTip="P">
+        <TbRibbonGroup Label="Marks">
+            <span data-key-tip="S">
+                <TbTextField Label="Stake" HelperText="@(_hint ? "A number from the map" : null)"
+                             @bind-Value="_stake" />
+            </span>
+            <TbRibbonButton Label="Pins" OnClick="@(() => _pins = true)" />
+            <TbDialog @bind-Open="_pins" Title="Pins">
+                <TbRibbon AriaLabel="Pins">
+                    <TbRibbonTab Title="Sizes" KeyTip="Z">
+                        <TbRibbonGroup Label="Kinds">
+                            <TbRibbonButton Label="Small pin" KeyTip="M" OnClick="@(() => _last = "Small pin")" />
+                        </TbRibbonGroup>
+                    </TbRibbonTab>
+                </TbRibbon>
+            </TbDialog>
+        </TbRibbonGroup>
+    </TbRibbonTab>
+</TbRibbon>
+<TbButton OnClick="@(() => _hint = false)">Drop the hint</TbButton>
 <output data-testid="last">@_last</output>
 <output data-testid="bold">@(_bold ? "bold" : "plain")</output>
 <output data-testid="dialog">@(_dialog ? "open" : "closed")</output>
@@ -97,6 +121,9 @@
     private bool _dialog;
     private bool _early;
     private bool _details;
+    private bool _hint = true;
+    private bool _pins;
+    private string? _stake;
 
     [SupplyParameterFromQuery]
     public bool Narrow { get; set; }

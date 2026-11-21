@@ -12,6 +12,7 @@
 <div @ref="_root" @attributes="AdditionalAttributes" data-part="ribbon" style="@Style"
      data-collapsible="@(Collapsible ? "" : null)" data-collapsed="@(IsCollapsed ? "" : null)"
      data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
+     data-key-tip-label="@KeyTipLabel"
      class="@ClassNames.Join("tb-ribbon", Class)">
     <CascadingValue Value="this" IsFixed="true">@Tabs</CascadingValue>
 </div>
@@ -86,14 +87,20 @@
     [Parameter]
     public EventCallback<bool> CollapsedChanged { get; set; }
 
-    /// <summary>The words the ribbon says to screen readers: the collapse button's name and the announcement that a
-    /// context's tabs have appeared. Each one left null uses the app's text.</summary>
+    /// <summary>The words the ribbon says to screen readers: the collapse button's name, the announcement that a
+    /// context's tabs have appeared, and the description of a control that a key tip reaches. Each one left null
+    /// uses the app's text.</summary>
     [Parameter]
     public RibbonLabels Labels { get; set; } = new();
 
     // Until the page is interactive there's no script to show a collapsed ribbon's commands, so the ribbon stays
     // expanded.
     private bool IsCollapsed => _collapsed && RendererInfo.IsInteractive;
+
+    // Formatted here with {0} standing for itself, so its braces follow the other labels' rules; the script puts the
+    // keys in.
+    private string KeyTipLabel => string.Format(CultureInfo.CurrentCulture,
+        Labels.KeyTip ?? Localizer[TbStrings.RibbonKeyTip], "{0}");
 
     private RenderFragment CollapseButton => __builder =>
     {

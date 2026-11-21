@@ -2424,7 +2424,7 @@ public static class ExampleCatalog
                 "A `TbRibbonButton` is named by its `Label`, which an `IconOnly` button shows in a tooltip.",
                 "The collapse button is named by `Labels.Collapse`, \"Ribbon commands\" unless set.",
                 "A tab with a `Context` keeps its `Title` as its name and takes the context, such as \"Table "
-                    + "tools\", as its description.",
+                    + "tools\", as its description, followed by its keys when it has a `KeyTip`.",
                 "The ribbon, its tabs, its groups and its buttons each need a name. A blank name written as "
                     + "text in markup gets build warning TB001, and any blank name throws when it renders.",
             ],
@@ -2443,10 +2443,18 @@ public static class ExampleCatalog
                     + "\"Table tools: Table design tab available\". Tabs of one context that appear together share "
                     + "one message, and `Labels.ContextTab` and `Labels.ContextTabs` word them. A tab that is there "
                     + "from the start isn't announced.",
-                "While key tips show, each control with a badge names its key in `aria-keyshortcuts`, and the "
-                    + "badge itself stays out of the control's name. Focus is on the selected tab then, so a "
-                    + "screen reader that reads shortcuts announces only that tab with its key; it finds the "
-                    + "other keys when it explores without moving focus.",
+                "A control that a key tip reaches says its keys in its description, such as \"Key tip: Alt, H, "
+                    + "B\" on a command of the tab with H. A screen reader reads them as focus reaches the control, "
+                    + "whether the badges show or not. A command in a collapsed group also names the key of the "
+                    + "group's button, between its tab's key and its own.",
+                "The keys come after whatever describes the control already, such as a tab's `Context`, a field's "
+                    + "helper text or a tooltip: the control's `aria-describedby` also names a hidden element with "
+                    + "them. `Labels.KeyTip` words the text, and an empty one leaves it out.",
+                "A control that no key reaches says none: a disabled one, a command of a disabled tab or of a tab "
+                    + "without a key tip, and a command in a collapsed group whose button has none. A key tip on an "
+                    + "element around a field is described on the field.",
+                "While key tips show, each control with a badge also names its key in `aria-keyshortcuts`, and the "
+                    + "badge itself stays out of the control's name.",
             ],
             Accessibility =
             [
@@ -2491,8 +2499,10 @@ public static class ExampleCatalog
                     + "its tab's.",
                 "While a ribbon on the page has key tips, Alt pressed on its own goes to them. On Windows and Linux "
                     + "a browser otherwise uses that key for its own menu, so say in your app's keyboard help what "
-                    + "Alt does, and list the key tips there: someone who can't see the badges has no easy way "
-                    + "to learn them otherwise.",
+                    + "Alt does.",
+                "A control with an `aria-description` of your own keeps it and says no keys, since a described-by "
+                    + "element would take its place. Name the keys in your description instead. A control you "
+                    + "describe with `aria-describedby` says both.",
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
@@ -2510,7 +2520,7 @@ public static class ExampleCatalog
                 "A tab with a `Context` shows its color, its line and its description before the page is "
                     + "interactive too. Nothing is announced on a static page, where no tab can appear.",
                 "Key tips work once the page is interactive. Until then, and on a static page, Alt stays with the "
-                    + "browser and no badge shows.",
+                    + "browser, no badge shows and no control says its keys.",
             ],
             Notes =
             [
@@ -2551,7 +2561,8 @@ public static class ExampleCatalog
                 new("In a collapsed ribbon, a tab's key shows its commands over the page with their badges, and "
                     + "Escape hides them again."),
                 new("Whether NVDA, JAWS and Narrator pass a key tip's letter on to the page while a tab has focus "
-                    + "is unconfirmed."),
+                    + "is unconfirmed, and so is how each of them and VoiceOver reads a control's keys from its "
+                    + "description."),
             ],
             Pattern = new("tabs", "https://www.w3.org/WAI/ARIA/apg/patterns/tabs/"),
             Ready = new("[data-part=commands]", "the selected tab's row of commands, and on the ribbon itself "
@@ -2563,7 +2574,9 @@ public static class ExampleCatalog
                 new("ribbon", "The ribbon, around its tabs and their commands, with `data-collapsed` while it is "
                     + "collapsed to its tabs, `data-peek` while a tab's commands then show over the page, "
                     + "`data-key-tips` while key tips show, with `tabs` or `commands` for their level, and "
-                    + "`data-static` on a static page. A control with a key tip has `data-key-tip`, and "
+                    + "`data-static` on a static page. Its `data-key-tip-label` holds the words for the key tips' "
+                    + "descriptions, and its script adds a hidden `<div>` with their texts as the ribbon's last "
+                    + "child. A control with a key tip has `data-key-tip`, and "
                     + "`data-key-tip-shown` while its badge shows. A tab with a `Context` has the class "
                     + "`tb-ribbon__context-tab`."),
                 new("collapse", "The button that collapses the ribbon to its tabs, with `Collapsible`."),
@@ -2590,6 +2603,9 @@ public static class ExampleCatalog
             [
                 "`page.Tb().Ribbon(\"Trail planner\")` in Playwright, or `cut.Tb().Ribbon(...)` in bUnit, finds the "
                     + "ribbon by its `AriaLabel`.",
+                "A control's keys are added to its description by the ribbon's script, so bUnit markup has none of "
+                    + "them. In Playwright, `ToHaveAccessibleDescriptionAsync(\"Key tip: Alt, H, B\")` checks them, "
+                    + "and a test that reads the description of a ribbon control with a key tip finds them at its end.",
                 "`SelectAsync(\"Trails\")` selects a tab, and in Playwright waits until it is selected and the app's "
                     + "callbacks have run. `TabsAsync()` or `Tabs` reads the tabs' titles, `SelectedAsync()` or "
                     + "`Selected` the selected tab's, and `GroupsAsync()` or `Groups` the selected tab's group names.",
@@ -2615,7 +2631,8 @@ public static class ExampleCatalog
                 "`ClickAsync` reaches only the selected tab's commands. Find `Start` and `End` content by role in "
                     + "the ribbon, such as `GetByRole(AriaRole.Button, new() { Name = \"Save\" })`.",
                 "A tab with a `Context` is found by its `Title` like any other. Check its context with "
-                    + "`ToHaveAccessibleDescriptionAsync(\"Table tools\")` in Playwright, and the announcement "
+                    + "`ToHaveAccessibleDescriptionAsync(\"Table tools\")` in Playwright, or with \"Table tools Key "
+                    + "tip: Alt, J\" when the tab has the key tip J, and the announcement "
                     + "with `page.Tb().Announcements.ExpectAnnouncedAsync(\"Table tools\")`. In bUnit, read "
                     + "`Services.GetRequiredService<FakeAnnouncer>().Polite`.",
                 "`PressKeyTipsAsync(\"R\", \"M\")` follows key tips: a tab's and then a command's, or the one of a "

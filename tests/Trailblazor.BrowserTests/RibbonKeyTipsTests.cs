@@ -42,6 +42,169 @@ public class RibbonKeyTipsTests(BrowserFixture fixture) : BrowserTest(fixture)
         return page;
     }
 
+    // A control that isn't showing, found by its text, since a hidden one has no role to find it by.
+    private static ILocator Hidden(IPage page, string text) => page.Locator("button", new() { HasText = text });
+
+    private static Task<bool> IsDescribedAsync(ILocator control) =>
+        control.EvaluateAsync<bool>("control => control.hasAttribute('aria-describedby')");
+
+    // What a control's description says, for a control that isn't showing and so has no description to ask for.
+    private static Task<string> DescriptionAsync(ILocator control) => control.EvaluateAsync<string>("""
+        control => (control.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean)
+            .map(id => control.ownerDocument.getElementById(id).textContent).join(' ')
+        """);
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Description_ShouldSpellOutTheKeys_WhenAKeyTipReachesTheControl(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+
+        await Expect(Tab(page, "Home")).ToHaveAccessibleDescriptionAsync("Key tip: Alt, H");
+        await Expect(Button(page, "Quick save")).ToHaveAccessibleDescriptionAsync("Key tip: Alt, Q");
+        await Expect(Button(page, "Bold")).ToHaveAccessibleDescriptionAsync("Key tip: Alt, H, B");
+        await Expect(page.GetByText("Key tip: Alt, H, B")).ToBeHiddenAsync();
+        // The key tip is on the element around the field, and the field is what a screen reader reads.
+        await Expect(page.GetByRole(AriaRole.Textbox, new() { Name = "Title" }))
+            .ToHaveAccessibleDescriptionAsync("Key tip: Alt, H, T");
+        await Expect(Tab(page, "Maps")).ToHaveAccessibleDescriptionAsync("Press Alt, A");
+        // The app's own description stays, and no key reaches a disabled control.
+        await Expect(Button(page, "Print")).ToHaveAccessibleDescriptionAsync("Sends the entry to paper");
+        Assert.False(await IsDescribedAsync(Button(page, "Lock")));
+        Assert.False(await IsDescribedAsync(page.Locator("span[data-key-tip=T]")));
+
+        // A tab's commands are drawn when it is first selected, and have their keys from then on.
+        await Tab(page, "View").ClickAsync();
+        await Expect(Button(page, "Zoom in")).ToHaveAccessibleDescriptionAsync("Key tip: Alt, V, B");
+        // Help has no key tip, so no key reaches its commands.
+        await Tab(page, "Help").ClickAsync();
+        await Expect(Button(page, "Tour")).ToBeVisibleAsync();
+        Assert.False(await IsDescribedAsync(Button(page, "Tour")));
+        Assert.Equal("Key tip: Alt, V, B", await DescriptionAsync(Hidden(page, "Zoom in")));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Description_ShouldAddTheKeysToWhatDescribesTheControl_WhenItIsDescribedAlready(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await Expect(Ribbon(page, "Survey")).ToHaveAttributeAsync("data-ready", "");
+        var stake = page.GetByRole(AriaRole.Textbox, new() { Name = "Stake" });
+
+        await Expect(Tab(page, "Plots")).ToHaveAccessibleDescriptionAsync("Field tools Key tip: Alt, P");
+        await Expect(stake).ToHaveAccessibleDescriptionAsync("A number from the map Key tip: Alt, P, S");
+
+        // The attribute written again with nothing else changing, as Blazor does when the tab re-renders.
+        await Tab(page, "Plots").EvaluateAsync(
+            "tab => tab.setAttribute('aria-describedby', tab.getAttribute('aria-describedby').split(' ')[0])");
+        await Expect(Tab(page, "Plots")).ToHaveAccessibleDescriptionAsync("Field tools Key tip: Alt, P");
+
+        // Something that describes the tab later, as a tooltip that arrives does, comes before the keys too.
+        await Tab(page, "Plots").EvaluateAsync("""
+            tab => {
+                const later = tab.ownerDocument.body.appendChild(tab.ownerDocument.createElement('span'));
+                later.id = 'later';
+                later.textContent = 'Later';
+                later.hidden = true;
+                tab.setAttribute('aria-describedby', `${tab.getAttribute('aria-describedby')} later`);
+            }
+            """);
+        await Expect(Tab(page, "Plots")).ToHaveAccessibleDescriptionAsync("Field tools Later Key tip: Alt, P");
+
+        // Blazor writes the field's description again without its hint, and the keys are named again after that.
+        await Button(page, "Drop the hint").ClickAsync();
+        await Expect(stake).ToHaveAccessibleDescriptionAsync("Key tip: Alt, P, S");
+
+        // A field that is turned off inside the element with the key tip says no keys.
+        await stake.EvaluateAsync("field => field.disabled = true");
+        await Expect(stake).ToHaveAccessibleDescriptionAsync("");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Description_ShouldComeFromTheControlsOwnRibbon_WhenThatRibbonIsInsideAnotherOne(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await Expect(Ribbon(page, "Survey")).ToHaveAttributeAsync("data-ready", "");
+
+        await Button(page, "Pins").ClickAsync();
+
+        // The Pins ribbon is in a dialog written in a group of the Survey ribbon, but its keys leave out that tab's P.
+        await Expect(Tab(page, "Sizes")).ToHaveAccessibleDescriptionAsync("Key tip: Alt, Z");
+        await Expect(Button(page, "Small pin")).ToHaveAccessibleDescriptionAsync("Key tip: Alt, Z, M");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Description_ShouldNameTheGroupsKeyOnTheWay_WhenTheControlsGroupIsCollapsed(string browser)
+    {
+        var page = await OpenReadyAsync(browser, "?narrow=true");
+
+        await Expect(Button(page, "Entry")).ToHaveAccessibleDescriptionAsync("Key tip: Alt, H, G");
+        Assert.Equal("Key tip: Alt, H, G, B", await DescriptionAsync(Hidden(page, "Bold")));
+        // Share's button has no key tip, so no key reaches its commands while it is collapsed.
+        await Expect(Button(page, "Share")).ToBeVisibleAsync();
+        Assert.False(await IsDescribedAsync(Hidden(page, "Mail")));
+
+        await page.GetByTestId("journal").EvaluateAsync("journal => journal.style.inlineSize = '60rem'");
+
+        await Expect(Button(page, "Bold")).ToHaveAccessibleDescriptionAsync("Key tip: Alt, H, B");
+        await Expect(Button(page, "Mail")).ToHaveAccessibleDescriptionAsync("Key tip: Alt, H, M");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Description_ShouldFollowTheControl_WhenItsKeyTipChangesOrItIsTurnedOff(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        var save = Button(page, "Quick save");
+        // A description that still holds isn't written again, which a screen reader could take for news.
+        await Button(page, "Bold").EvaluateAsync("""
+            button => new MutationObserver(() => { button.dataset.rewritten = ''; })
+                .observe(button, { attributes: true, attributeFilter: ['aria-describedby'] })
+            """);
+
+        await save.EvaluateAsync("button => button.dataset.keyTip = 'w'");
+        await Expect(save).ToHaveAccessibleDescriptionAsync("Key tip: Alt, W");
+        await Expect(Button(page, "Bold")).Not.ToHaveAttributeAsync("data-rewritten", "");
+
+        // A control that arrives later gets its keys too.
+        await save.EvaluateAsync("""
+            button => {
+                const late = button.ownerDocument.createElement('button');
+                late.dataset.keyTip = 'z';
+                late.textContent = 'Late';
+                button.after(late);
+            }
+            """);
+        await Expect(Button(page, "Late")).ToHaveAccessibleDescriptionAsync("Key tip: Alt, Z");
+
+        await Ribbon(page).EvaluateAsync("ribbon => ribbon.dataset.keyTipLabel = 'Keys: {0}'");
+        await Expect(save).ToHaveAccessibleDescriptionAsync("Keys: Alt, W");
+
+        await save.EvaluateAsync("button => button.disabled = true");
+        await Expect(save).ToHaveAccessibleDescriptionAsync("");
+        Assert.False(await IsDescribedAsync(save));
+
+        // A description the app writes later takes the keys' place, and an element with a key tip that is marked as
+        // turned off takes the keys from the field inside it.
+        await Button(page, "Bold").EvaluateAsync("button => button.setAttribute('aria-description', 'Mine')");
+        await Expect(Button(page, "Bold")).ToHaveAccessibleDescriptionAsync("Mine");
+        await page.Locator("span[data-key-tip=T]").EvaluateAsync("span => span.setAttribute('aria-disabled', 'true')");
+        await Expect(page.GetByRole(AriaRole.Textbox, new() { Name = "Title" })).ToHaveAccessibleDescriptionAsync("");
+
+        // A tab that is turned off takes its commands' keys with it.
+        await Tab(page, "Home").EvaluateAsync("tab => tab.setAttribute('aria-disabled', 'true')");
+        await Expect(Button(page, "New entry")).ToHaveAccessibleDescriptionAsync("");
+        await Expect(Tab(page, "Home")).ToHaveAccessibleDescriptionAsync("");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Description_ShouldBeLeftOut_WhenTheRibbonsLabelForItIsEmpty(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await Button(page, "Add a ribbon first").ClickAsync();
+        await Expect(Ribbon(page, "Early")).ToHaveAttributeAsync("data-ready", "");
+
+        Assert.False(await IsDescribedAsync(Tab(page, "Dawn")));
+        Assert.False(await IsDescribedAsync(Button(page, "Wake")));
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task KeyTips_ShouldShowOnTheTabsAndBesideThemAndFocusTheSelectedTab_WhenAltIsPressedAlone(
         string browser)

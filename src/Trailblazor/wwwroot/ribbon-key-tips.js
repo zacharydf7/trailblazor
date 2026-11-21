@@ -4,7 +4,8 @@ import { controls } from './toolbar.js';
 // Key tips. Alt, pressed and let go on its own, shows a badge on each control in the tabs' row that has data-key-tip:
 // the tabs and what sits beside them. A tab's key selects it and shows the badges of its commands, a command's key
 // chooses it, and Escape steps back a level. While its badge shows, a control has data-key-tip-shown and names its key
-// in aria-keyshortcuts, and the ribbon's data-key-tips names the level.
+// in aria-keyshortcuts, and the ribbon's data-key-tips names the level. A control that a key tip reaches says all its
+// keys in its description, whether the badges show or not.
 
 const ribbons = new Set();
 // Alt went down alone, and nothing has happened since.
@@ -14,8 +15,8 @@ let active = null;
 
 const keyOf = control => control.dataset.keyTip.toUpperCase();
 const opens = control => control.matches('[aria-haspopup], [aria-expanded], [popovertarget]');
-const usable = control => !control.disabled && control.getAttribute('aria-disabled') !== 'true'
-    && control.checkVisibility();
+const enabled = control => !control.disabled && control.getAttribute('aria-disabled') !== 'true';
+const usable = control => enabled(control) && control.checkVisibility();
 const tabList = root => root.querySelector(':scope > .tb-tabs > [role="tablist"]');
 const inPanel = (root, control) => {
     const panel = control.closest('[role="tabpanel"]');
@@ -225,6 +226,97 @@ const onFocusIn = event => {
     }
 };
 
+// The badges are for the eye, so each control that a key tip reaches also says its keys in its description: Alt, its
+// tab's key, the key of the collapsed group it is in, and its own. The text is in a hidden element at the end of the
+// ribbon, which the control's aria-describedby names after whatever it names already. The ribbon's data-key-tip-label
+// words it, with {0} for the keys. The returned function stops following the ribbon.
+let notesMade = 0;
+const describedBy = control => (control.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean);
+const setDescribedBy = (control, ids) => {
+    if (ids.length > 0) {
+        control.setAttribute('aria-describedby', ids.join(' '));
+    } else {
+        control.removeAttribute('aria-describedby');
+    }
+};
+const describeKeys = root => {
+    const holder = root.appendChild(root.ownerDocument.createElement('div'));
+    holder.hidden = true;
+    // The element with each control's keys.
+    const notes = new Map();
+    const wanted = () => {
+        const texts = new Map();
+        const format = root.dataset.keyTipLabel;
+        if (!format) {
+            return texts;
+        }
+
+        const add = (control, ...before) => {
+            // A key tip on an element around a field is read from the field. The element named by aria-describedby
+            // would take the place of an aria-description the app wrote, so that control keeps its own.
+            // A ribbon inside this one, as in a dialog written in a group, describes its own controls.
+            const reader = control.matches(controls) ? control : control.querySelector(controls);
+            if (reader && control.closest('[data-part="ribbon"]') === root && enabled(control) && enabled(reader)
+                && !reader.hasAttribute('aria-description')) {
+                texts.set(reader, format.replaceAll('{0}', ['Alt', ...before, keyOf(control)].join(', ')));
+            }
+        };
+        const all = [...root.querySelectorAll('[data-key-tip]')];
+        all.filter(control => !inPanel(root, control)).forEach(control => add(control));
+        for (const tab of all.filter(control => control.matches('[role="tab"]') && enabled(control))) {
+            const panel = root.ownerDocument.getElementById(tab.getAttribute('aria-controls') ?? '');
+            for (const control of panel?.querySelectorAll('[data-key-tip]') ?? []) {
+                const button = control.closest('[data-part="group"][data-collapsed]')
+                    ?.querySelector(':scope > [data-part="group-button"]');
+                if (!button || button === control) {
+                    add(control, keyOf(tab));
+                } else if (button.dataset.keyTip) {
+                    add(control, keyOf(tab), keyOf(button));
+                }
+            }
+        }
+
+        return texts;
+    };
+    // Blazor writes aria-describedby again when a control that has one re-renders, and a tooltip names itself there
+    // when it arrives. So each pass names the element last again where it isn't, and changes nothing where it is.
+    const update = () => {
+        const texts = wanted();
+        for (const [control, note] of notes) {
+            if (!texts.has(control)) {
+                setDescribedBy(control, describedBy(control).filter(id => id !== note.id));
+                note.remove();
+                notes.delete(control);
+            }
+        }
+
+        for (const [control, text] of texts) {
+            let note = notes.get(control);
+            if (!note) {
+                note = holder.appendChild(root.ownerDocument.createElement('span'));
+                note.id = `tb-key-tip-${++notesMade}`;
+                notes.set(control, note);
+            }
+
+            if (note.textContent !== text) {
+                note.textContent = text;
+            }
+
+            if (describedBy(control).at(-1) !== note.id) {
+                setDescribedBy(control, [...describedBy(control).filter(id => id !== note.id), note.id]);
+            }
+        }
+    };
+    const changes = new MutationObserver(update);
+    changes.observe(root, {
+        subtree: true, childList: true, attributes: true,
+        attributeFilter: ['data-key-tip', 'data-key-tip-label', 'data-collapsed', 'disabled', 'aria-disabled',
+            'aria-describedby', 'aria-description'],
+    });
+    update();
+    return () => changes.disconnect();
+};
+
 // Turns key tips on for a ribbon; the returned function turns them off again.
 export function attachKeyTips(root) {
     if (ribbons.size === 0) {
@@ -236,11 +328,13 @@ export function attachKeyTips(root) {
     }
 
     ribbons.add(root);
+    const forgetKeys = describeKeys(root);
     return () => {
         if (active?.root === root) {
             stop(false);
         }
 
+        forgetKeys();
         ribbons.delete(root);
         if (ribbons.size === 0) {
             document.removeEventListener('keydown', onKeyDown, true);

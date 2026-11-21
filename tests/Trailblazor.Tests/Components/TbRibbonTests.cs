@@ -108,6 +108,26 @@ public class TbRibbonTests : BunitContext
     }
 
     [Fact]
+    public void Labels_ShouldWordTheKeyTipsDescriptions_WhenGivenOrLeftToTheAppsText()
+    {
+        var cut = RenderRibbon();
+        Assert.Equal("Key tip: {0}", cut.Find("[data-part=ribbon]").GetAttribute("data-key-tip-label"));
+
+        // Doubled braces come out single, as in the ribbon's other labels.
+        cut.Render(parameters => parameters
+            .Add(ribbon => ribbon.Labels, new RibbonLabels { KeyTip = "Keys {{in order}}: {0}" }));
+
+        Assert.Equal("Keys {in order}: {0}", cut.Find("[data-part=ribbon]").GetAttribute("data-key-tip-label"));
+    }
+
+    [Fact]
+    public void Labels_ShouldBeRefused_WhenTheKeyTipTextHasAPlaceholderOtherThanTheKeys()
+    {
+        Assert.Throws<FormatException>(() => RenderRibbon(parameters => parameters
+            .Add(ribbon => ribbon.Labels, new RibbonLabels { KeyTip = "Keys: {1}" })));
+    }
+
+    [Fact]
     public void Collapse_ShouldMarkTheRibbonAndTellTheApp_WhenItsButtonIsClicked()
     {
         var changes = new List<bool>();

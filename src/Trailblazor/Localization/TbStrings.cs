@@ -936,6 +936,10 @@ public static class TbStrings
     /// context and {1} the tabs' titles, separated by commas.</summary>
     public const string RibbonContextTabs = "Ribbon.ContextTabs";
 
+    /// <summary>"Key tip: {0}": describes a ribbon control that a key tip reaches; {0} is the keys to press in
+    /// order, separated by commas, such as "Alt, H, B".</summary>
+    public const string RibbonKeyTip = "Ribbon.KeyTip";
+
     /// <summary>"On this page": names a table of contents' navigation landmark.</summary>
     public const string TableOfContentsNavigation = "TableOfContents.Navigation";
 
@@ -1908,6 +1912,7 @@ public static class TbStrings
         [RibbonCollapse] = "Ribbon commands",
         [RibbonContextTab] = "{0}: {1} tab available",
         [RibbonContextTabs] = "{0}: {1} tabs available",
+        [RibbonKeyTip] = "Key tip: {0}",
         [TableOfContentsNavigation] = "On this page",
         [TabsAdd] = "Add tab",
         [TabsCloseHint] = "Press Delete to close",

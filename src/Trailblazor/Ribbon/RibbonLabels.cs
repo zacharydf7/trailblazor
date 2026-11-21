@@ -15,4 +15,10 @@ public sealed record RibbonLabels
     /// titles, separated by commas. Leave it null for the app's text for
     /// <see cref="TbStrings.RibbonContextTabs"/>.</summary>
     public string? ContextTabs { get; init; }
+
+    /// <summary>Describes a control that a key tip reaches, so a screen reader reads its keys; {0} is the keys to
+    /// press in order, separated by commas, such as "Alt, H, B". An empty text leaves the descriptions out, and one
+    /// with any other placeholder is refused. Leave it null for the app's text for
+    /// <see cref="TbStrings.RibbonKeyTip"/>.</summary>
+    public string? KeyTip { get; init; }
 }
