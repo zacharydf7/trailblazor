@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class SortableBoardTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Handle_ShouldMoveTheItemIntoAnotherListBeforeTheItemDroppedOn_WhenDraggedThere(string browser)
     {

@@ -19,6 +19,16 @@ An issue is done when all of these hold:
   against that page inside a dock panel that shows in a browser window of its own. CI runs the suites listed in
   `ci.yml` that way, in the browsers of the run, and a test in them that can't run there skips itself with
   `Assert.SkipWhen(Popped, ...)` and one of the reasons in `BrowserTest`.
+- CI's browsers run on Linux, where a few things differ. The system's font is wider there (DejaVu Sans), so a test or
+  an example must not count on how wide its text runs: a box that has to hold some text gets a width in `ch`, or room
+  to spare. While one page of Firefox holds a mouse button down, clicks and moves meant for the browser's other pages
+  go astray. So a test class that holds one down, itself or through one of the testing library's drags, either
+  overrides `HoldsTheMouse`, which gives each of its tests a Firefox of its own, or is in the `PointerDrags`
+  collection, which runs with no other test. `MouseHoldTests` fails for a class that does neither. In WebKit on
+  Linux, Shift+Tab moves nothing after a click, a download's suggested name has an underscore for each space, and a
+  click focuses a button, which it doesn't in Safari. To run tests as CI does, use an Ubuntu 24.04 container (the
+  release `ci.yml` names) with the .NET SDK, the browsers from Playwright's `install --with-deps`, and the
+  `fonts-dejavu-core` package.
 - A script works on an element that may be in another browser window, so it asks that element for its window:
   `element.ownerDocument` for the focused element and for finding others, and `viewOf`, `watchSizes` and `frames` from
   `pages.js` for sizes, size changes and animation frames. A script with only an id uses `findById`, and one that

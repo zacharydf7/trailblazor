@@ -900,6 +900,9 @@ function createCellNavigation(table, scroll, rowHeight, waitFor, revealed) {
             place.column = startOf(target);
             place.columnKey = key;
             focusCell(target);
+            // WebKit can scroll the focused cell into view a frame late, and columns sent for the box's scroll
+            // position before then would leave the cell out.
+            target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
         }
 
         revealed();

@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class GridCellsTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Keys_ShouldGrowAndClearTheRange_WhenShiftAndTheArrowsArePressed(string browser)
     {

@@ -5,6 +5,8 @@ namespace Trailblazor.BrowserTests;
 
 public class AutocompleteTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Autocomplete_ShouldSearchOnceForTheTextTypedBeforeAPause_WhenGivenASearch(string browser)
     {

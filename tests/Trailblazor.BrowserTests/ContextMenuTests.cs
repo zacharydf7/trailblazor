@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class ContextMenuTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task RightClick_ShouldOpenTheMenuAtThePointerWithTheFirstItemFocused_WhenOnTheTarget(string browser)
     {

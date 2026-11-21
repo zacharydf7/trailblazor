@@ -5,6 +5,8 @@ namespace Trailblazor.BrowserTests;
 // A field whose message clears as a press blurs it keeps its height until the press ends.
 public class MessageHoldTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Press_ShouldSubmitTheFormAndThenGiveTheSpaceBack_WhenTheBlurItCausesClearsAMessage(string browser)
     {

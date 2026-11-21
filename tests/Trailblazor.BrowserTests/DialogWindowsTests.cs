@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class DialogWindowsTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     private async Task<IPage> OpenBothAsync(string browser, string path = "/dialog-windows")
     {
         var page = await OpenAsync(browser, path);

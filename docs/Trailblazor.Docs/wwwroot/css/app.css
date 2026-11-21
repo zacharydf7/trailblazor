@@ -124,8 +124,8 @@ a:focus-visible {
     display: none;
 }
 
-/* Only the search box shrinks to keep the header on one row, since how wide the header's text runs depends on the
-   system's fonts. */
+/* On a wide screen only the search box shrinks to keep the header on one row, since how wide the header's text runs
+   depends on the system's fonts. */
 .docs-brand,
 .docs-site-nav,
 .docs-look {
@@ -1230,8 +1230,15 @@ code {
         padding-block: var(--tb-space-3);
     }
 
+    /* The brand takes the room the buttons leave, up to its own width. How wide its name runs depends on the system's
+       fonts, so a name that doesn't fit there wraps below the mark, out of sight; screen readers still hear it. */
     .docs-brand {
+        flex: 1 1 2.25rem;
+        flex-wrap: wrap;
+        max-width: max-content;
+        max-height: 2.25rem;
         margin-inline-end: auto;
+        overflow: hidden;
     }
 
     .docs-header__toggle {
@@ -1252,18 +1259,6 @@ code {
     /* A block, not a flex row, so the field fills the row. */
     .docs-header__inner--search .docs-search {
         display: block;
-    }
-}
-
-/* The narrowest phones have no room for the name beside the buttons; screen readers still hear it. */
-@media (max-width: 22rem) {
-    .docs-brand__name {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
     }
 }
 

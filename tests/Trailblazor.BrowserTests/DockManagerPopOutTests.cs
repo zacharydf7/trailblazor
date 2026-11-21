@@ -5,6 +5,8 @@ namespace Trailblazor.BrowserTests;
 
 public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     // The page's outer dock. Its Map panel holds another one, which shows once the Map does.
     private static ILocator Workbench(IPage page) => page.GetByRole(AriaRole.Group, new() { Name = "Workbench" });
 
@@ -535,11 +537,18 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         string browser)
     {
         var page = await OpenDockAsync(browser);
+        // The page's own request for the sheet waits until the window has opened; the window's is not held.
+        var opened = new TaskCompletionSource();
+        await page.RouteAsync("**/slow.css*", async route =>
+        {
+            await opened.Task;
+            await route.ContinueAsync();
+        });
         await page.EvaluateAsync("""
             () => {
                 const css = encodeURIComponent('html{text-transform:uppercase}');
                 const link = Object.assign(document.createElement('link'),
-                    { id: 'slow', rel: 'alternate stylesheet', title: 'slow', href: `slow.css?wait=2000&css=${css}` });
+                    { id: 'slow', rel: 'alternate stylesheet', title: 'slow', href: `slow.css?wait=0&css=${css}` });
                 document.head.append(link);
                 link.disabled = true;
                 link.disabled = false;
@@ -550,6 +559,7 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
             page.Tb().Dock("Workbench").ChooseFromTabMenuAsync("Notes", "Open in new window"));
 
         Assert.True(await page.EvaluateAsync<bool>("document.getElementById('slow').sheet === null"));
+        opened.SetResult();
         await Expect(window.Locator("html")).ToHaveCSSAsync("text-transform", "uppercase");
     }
 

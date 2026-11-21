@@ -62,6 +62,34 @@ public class GridColumnsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ArrowLeft_ShouldShowTheColumnItReachesAsSoonAsFocusLands_WhenTheColumnWasNotDrawn(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        // WebKit scrolls a cell focused from script into view on a later frame. Columns sent for the box's scroll
+        // position before then leave the cell out, and it loses the focus as it goes. So the cell has to show by the
+        // time the script that focused it is done, which is when this microtask runs.
+        await page.EvaluateAsync("""
+            () => document.querySelector('[role=grid]').addEventListener('focusin', event => {
+                if (event.target.dataset.column === 's39') {
+                    queueMicrotask(() => {
+                        const box = event.target.getBoundingClientRect();
+                        window.shown = event.target.contains(
+                            document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2));
+                    });
+                }
+            })
+            """);
+        await page.Locator("tr[data-key='1'] td[data-column=s0]").FocusAsync();
+        await page.Keyboard.PressAsync("End");
+        await Expect(page.Locator("tr[data-key='1'] td[data-column=total]")).ToBeFocusedAsync();
+
+        await page.Keyboard.PressAsync("ArrowLeft");
+
+        await Expect(page.Locator("tr[data-key='1'] td[data-column=s39]")).ToBeFocusedAsync();
+        Assert.True(await page.EvaluateAsync<bool>("window.shown"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Scroll_ShouldDrawTheColumnsComingIntoView_WhenTheGridRunsRightToLeft(string browser)
     {
         var page = await OpenReadyAsync(browser);

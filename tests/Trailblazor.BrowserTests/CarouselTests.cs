@@ -163,7 +163,8 @@ public class CarouselTests(BrowserFixture fixture) : BrowserTest(fixture)
         // Safari doesn't focus a button when it's clicked, so focus it here as the other browsers' clicks do.
         await next.FocusAsync();
 
-        await page.Keyboard.PressAsync("Shift+Tab");
+        // Tab and not Shift+Tab, which moves nothing after a click in WebKit on Linux.
+        await page.Keyboard.PressAsync("Tab");
         await page.Mouse.MoveAsync(0, 0);
 
         await Expect(photos.GetByRole(AriaRole.Button, new() { Name = "Start slide rotation" })).ToBeVisibleAsync();

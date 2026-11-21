@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -25,6 +26,7 @@ public sealed class BrowserFixture : IAsyncLifetime
             .ConfigureServices(services => services.AddFakeLogging().AddLogging(logging =>
                 logging.AddFilter("Microsoft.AspNetCore.Components.Server.Circuits", LogLevel.Debug))));
     private readonly Dictionary<string, Lazy<Task<IBrowser>>> _browsers = [];
+    private readonly ConcurrentBag<IBrowser> _spareFirefoxes = [];
     private IPlaywright? _playwright;
     private readonly List<WebApplication> _sites = [];
 
@@ -80,12 +82,26 @@ public sealed class BrowserFixture : IAsyncLifetime
 
     public async Task<IBrowserContext> NewContextAsync(string browser, BrowserNewContextOptions? options = null)
     {
-        // A case for a browser TRAILBLAZOR_BROWSERS leaves out is skipped; an unknown browser name still fails.
+        SkipWhenLeftOut(browser);
+        var launched = await _browsers[browser].Value;
+        return await launched.NewContextAsync(options);
+    }
+
+    // A Firefox that no other test has a page in, until the caller hands it back with its pages closed.
+    public async Task<IBrowser> TakeAFirefoxAsync()
+    {
+        SkipWhenLeftOut("firefox");
+        return _spareFirefoxes.TryTake(out var spare) ? spare : await _playwright!.Firefox.LaunchAsync();
+    }
+
+    public void HandBack(IBrowser firefox) => _spareFirefoxes.Add(firefox);
+
+    // A case for a browser TRAILBLAZOR_BROWSERS leaves out is skipped; an unknown browser name still fails.
+    private void SkipWhenLeftOut(string browser)
+    {
         var engine = browser == ChromiumWithScrollbars ? "chromium" : browser;
         Assert.SkipWhen(AllBrowsers.Supported.Contains(engine) && !_browsers.ContainsKey(engine),
             $"TRAILBLAZOR_BROWSERS leaves out {engine}.");
-        var launched = await _browsers[browser].Value;
-        return await launched.NewContextAsync(options);
     }
 
     public async ValueTask DisposeAsync()
@@ -97,6 +113,11 @@ public sealed class BrowserFixture : IAsyncLifetime
         foreach (var browser in _browsers.Values.Where(b => b.IsValueCreated))
         {
             await (await browser.Value).CloseAsync();
+        }
+
+        foreach (var firefox in _spareFirefoxes)
+        {
+            await firefox.CloseAsync();
         }
 
         _playwright?.Dispose();

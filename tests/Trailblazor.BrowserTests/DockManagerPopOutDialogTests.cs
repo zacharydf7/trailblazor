@@ -467,28 +467,6 @@ public class DockManagerPopOutDialogTests(BrowserFixture fixture) : BrowserTest(
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Dialog_ShouldComeInsideItsNewWindow_WhenItWasMovedFurtherOverThanTheWindowIsWide(string browser)
-    {
-        var page = await OpenDeskAsync(browser);
-        await Button(page, "Notes").ClickAsync();
-        var notes = page.GetByRole(AriaRole.Dialog, new() { Name = "File notes" });
-        var title = (await notes.GetByRole(AriaRole.Heading).BoundingBoxAsync())!;
-        var (x, y) = (title.X + title.Width / 2, title.Y + title.Height / 2);
-        await page.Mouse.MoveAsync(x, y);
-        await page.Mouse.DownAsync();
-        await page.Mouse.MoveAsync(x + 400, y, new() { Steps = 5 });
-        await page.Mouse.UpAsync();
-        var moved = (await notes.BoundingBoxAsync())!;
-
-        var window = (await page.Tb().Dock("Desk").PopOutAsync("Files")).Page;
-
-        // The panel's window opens narrower than the page, and the dialog was past its edge.
-        notes = window.GetByRole(AriaRole.Dialog, new() { Name = "File notes" });
-        await Expect(notes).ToBeVisibleAsync();
-        Assert.True((await notes.BoundingBoxAsync())!.X < moved.X);
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldStayOpenWithItsPanel_WhenThePanelGoesToAWindowAndComesBack(string browser)
     {
         var page = await OpenDeskAsync(browser);
@@ -510,5 +488,34 @@ public class DockManagerPopOutDialogTests(BrowserFixture fixture) : BrowserTest(
         Assert.False(await notes.EvaluateAsync<bool>("dialog => dialog.contains(document.activeElement)"));
         await notes.GetByRole(AriaRole.Button, new() { Name = "Close" }).ClickAsync();
         await Expect(notes).ToHaveCountAsync(0);
+    }
+}
+
+// While this test holds the mouse down, clicks and moves meant for Firefox's other pages go astray, as the docs
+// site's walk through its pages showed, so it runs with the other drags.
+[Collection(nameof(PointerDrags))]
+public class DockManagerPopOutDialogDragTests(BrowserFixture fixture) : BrowserTest(fixture)
+{
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dialog_ShouldComeInsideItsNewWindow_WhenItWasMovedFurtherOverThanTheWindowIsWide(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-dialogs");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Desk" })).ToHaveAttributeAsync("data-ready", "");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Notes", Exact = true }).ClickAsync();
+        var notes = page.GetByRole(AriaRole.Dialog, new() { Name = "File notes" });
+        var title = (await notes.GetByRole(AriaRole.Heading).BoundingBoxAsync())!;
+        var (x, y) = (title.X + title.Width / 2, title.Y + title.Height / 2);
+        await page.Mouse.MoveAsync(x, y);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync(x + 400, y, new() { Steps = 5 });
+        await page.Mouse.UpAsync();
+        var moved = (await notes.BoundingBoxAsync())!;
+
+        var window = (await page.Tb().Dock("Desk").PopOutAsync("Files")).Page;
+
+        // The panel's window opens narrower than the page, and the dialog was past its edge.
+        notes = window.GetByRole(AriaRole.Dialog, new() { Name = "File notes" });
+        await Expect(notes).ToBeVisibleAsync();
+        Assert.True((await notes.BoundingBoxAsync())!.X < moved.X);
     }
 }

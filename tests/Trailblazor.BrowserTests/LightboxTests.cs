@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class LightboxTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     // Reduced motion opens the dialog at once, so it is measured where it rests.
     private static readonly BrowserNewContextOptions Still = new() { ReducedMotion = ReducedMotion.Reduce };
 

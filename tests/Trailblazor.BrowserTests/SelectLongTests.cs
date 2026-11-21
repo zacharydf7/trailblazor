@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class SelectLongTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     private static ILocator Combobox(IPage page, string name) =>
         page.GetByRole(AriaRole.Combobox, new() { Name = name, Exact = true });
 

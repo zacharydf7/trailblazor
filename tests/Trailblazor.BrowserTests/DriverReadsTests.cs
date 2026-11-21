@@ -5,6 +5,8 @@ namespace Trailblazor.BrowserTests;
 // The Playwright reads and no-name lookups that match bUnit's helpers of the same names.
 public class DriverReadsTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Pressed_ShouldReadAToggleButton_WhenItsPressedOrNot(string browser)
     {

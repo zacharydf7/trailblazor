@@ -814,6 +814,33 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.InRange((await page.Locator("#docs-search > .tb-field").BoundingBoxAsync())!.Width, 357, 359);
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Header_ShouldShowItsBrandsNameOnlyWhereItFits_WhenTheWindowIsNarrow(string browser)
+    {
+        var page = await OpenDocsAsync(browser, "components/button",
+            new() { ViewportSize = new() { Width = 320, Height = 800 } });
+        var brand = page.GetByRole(AriaRole.Link, new() { Name = "Trailblazor", Exact = true });
+        await Expect(brand).ToBeVisibleAsync();
+        // Whether the middle of the name can be seen. A name with no room beside the buttons wraps below the mark,
+        // where the link cuts it off.
+        const string ShowsItsName = """
+            brand => {
+                const name = brand.querySelector('.docs-brand__name').getBoundingClientRect();
+                const [across, down] = [name.left + name.width / 2, name.top + name.height / 2];
+                return brand.contains(document.elementFromPoint(across, down));
+            }
+            """;
+
+        Assert.False(await brand.EvaluateAsync<bool>(ShowsItsName));
+        await page.SetViewportSizeAsync(480, 800);
+        Assert.True(await brand.EvaluateAsync<bool>(ShowsItsName));
+        // With room to spare the link ends where its name does, and doesn't take clicks meant for the bare header.
+        Assert.True(await brand.EvaluateAsync<bool>("""
+            brand => brand.getBoundingClientRect().right
+                - brand.querySelector('.docs-brand__name').getBoundingClientRect().right < 1
+            """));
+    }
+
     public static TheoryData<string, string, int> HeaderWidths => new(
         from browser in AllBrowsers.Names
         from screen in new[] { (Path: "components/button", Width: 320), (Path: "components/button", Width: 360),

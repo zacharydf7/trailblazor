@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class ListBoxKeysTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     private static ILocator ListBox(IPage page, string name) =>
         page.GetByRole(AriaRole.Listbox, new() { Name = name, Exact = true });
 

@@ -3,6 +3,8 @@ namespace Trailblazor.BrowserTests;
 // Hover, pressed and disabled states follow the shared rules; a list box filter leaves its focus ring to the field.
 public class SharedStateStyleTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     // An example and a row in it that hovers.
     private static readonly (string Example, string Selector)[] HoverRows =
     [

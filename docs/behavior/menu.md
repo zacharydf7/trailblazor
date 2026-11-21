@@ -66,6 +66,8 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 - [x] A click outside leaves focus where the click put it. `menu.js`
 - [x] A menu that closes gives focus back only if nothing else has taken it: a control outside the menu that took focus between the menu closing and its script hearing of it keeps it. A menu opened from code still gives focus to its trigger, though the browser first puts it back on what had it as the menu opened; so that one control, if it takes focus again before the script hears of the closing, loses it to the trigger. `MenuTests.Menu_ShouldLeaveFocusWhereItWent_WhenAnotherControlTakesItBeforeTheMenuHearsItClosed`, `MenuTests.Menu_ShouldGiveFocusToItsTrigger_WhenItWasOpenedFromCodeAndEscapeClosesIt`
 - [x] An item that opens a dialog leaves the trigger as the place focus returns to. `pointer-origin.js`
+- [x] After an item is chosen the trigger has the focus again, with a focus ring only if the keyboard chose, except in WebKit on Linux, below. `MenuTests.Menu_ShouldRingItsTriggerOnlyForTheKeyboard_WhenAnItemIsChosenWhileAFieldHadFocus`
+- [ ] In WebKit on Linux the trigger has no ring after an item is chosen with the mouse. That browser gives the focus back to the trigger itself as the menu's popover closes, and rings it. #596
 
 ## Not applicable
 

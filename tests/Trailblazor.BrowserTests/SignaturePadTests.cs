@@ -5,6 +5,8 @@ namespace Trailblazor.BrowserTests;
 
 public class SignaturePadTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     private static ILocator Output(IPage page, string name) =>
         page.GetByRole(AriaRole.Status, new() { Name = name, Exact = true });
 

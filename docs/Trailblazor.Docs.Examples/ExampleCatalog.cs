@@ -11594,7 +11594,9 @@ public static class ExampleCatalog
                 "In bUnit, `await cut.Tb().Menu(\"Export\").ChooseAsync(\"CSV\")` downloads the file into "
                     + "`FakeBrowserService.Downloads`, where `Text` reads a CSV back, starting with its byte order "
                     + "mark. In Playwright, wrap the choice in "
-                    + "`page.RunAndWaitForDownloadAsync`. `ExportCsvAsync` returns the text itself.",
+                    + "`page.RunAndWaitForDownloadAsync`. `ExportCsvAsync` returns the text itself. The download's "
+                    + "`SuggestedFilename` is the export's name (`ExportFileName`, or else the grid's label) with "
+                    + "its extension, but in WebKit on Linux it has an underscore for each space.",
                 "`Total(\"Length (km)\")` reads the totals row's cell under a column, such as \"Sum 49.9\", or null "
                     + "when it shows no total; in Playwright, use `await TotalAsync(\"Length (km)\")`. "
                     + "`GroupTotals(\"Length (km)\")` reads each open group's totals cell under that column, in "

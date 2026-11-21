@@ -20,7 +20,9 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Pinned, since the browsers' fonts and WebKit's build come from the release, and CONTRIBUTING says which to use
+    # to run the tests as this job does.
+    runs-on: ubuntu-24.04
     env:
       TRAILBLAZOR_BROWSERS: >-
         ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && 'chromium' || '' }}
@@ -40,12 +42,14 @@ jobs:
           pwsh tests/Trailblazor.BrowserTests/bin/Release/net10.0/playwright.ps1 install --with-deps
           $TRAILBLAZOR_BROWSERS
       # One test project at a time, so the browser tests don't slow the timing tests in the others past their limit.
-      - run: dotnet test --configuration Release --no-build --max-parallel-test-modules 1
+      - id: tests
+        run: dotnet test --configuration Release --no-build --max-parallel-test-modules 1
       # The suites for the components a dock panel often holds run again with each page inside a panel that shows in a
       # browser window of its own, where a script that asks the page's window for something gives itself away. Run
       # this way, the suites have no hang dump of their own, so the step has a time limit: 15 minutes for each browser
-      # of the run.
-      - timeout-minutes: ${{ env.TRAILBLAZOR_BROWSERS == 'chromium' && 15 || 45 }}
+      # of the run. A failed test in the step before doesn't keep this one from running, so neither hides the other.
+      - if: ${{ !cancelled() && steps.tests.conclusion != 'skipped' }}
+        timeout-minutes: ${{ env.TRAILBLAZOR_BROWSERS == 'chromium' && 15 || 45 }}
         run: >-
           dotnet tests/Trailblazor.BrowserTests/bin/Release/net10.0/Trailblazor.BrowserTests.dll
           -class "*.TooltipTests" -class "*.PopoverTests" -class "*.MenuTests" -class "*.SelectTests"

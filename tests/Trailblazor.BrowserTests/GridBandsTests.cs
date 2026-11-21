@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class GridBandsTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     private static ILocator Grid(IPage page) => page.GetByRole(AriaRole.Grid, new() { Name = "Trail effort" });
 
     private static ILocator Header(IPage page, string title) => Grid(page).Locator($"thead th[data-title='{title}']");

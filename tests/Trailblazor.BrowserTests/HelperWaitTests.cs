@@ -6,6 +6,8 @@ namespace Trailblazor.BrowserTests;
 // page as it was. Each test reads the page once, without retrying, right after the helper returns.
 public class HelperWaitTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     protected override Task PreparePageAsync(IPage page) => page.UseSlowLinkAsync(TimeSpan.FromMilliseconds(400));
 
     [Theory, ClassData(typeof(AllBrowsers))]

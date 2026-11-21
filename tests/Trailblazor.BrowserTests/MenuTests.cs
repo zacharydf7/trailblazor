@@ -1285,12 +1285,17 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Draft" })).ToHaveCountAsync(0);
     }
 
+    private const string RingsWhatAPopoverGivesFocusBackTo =
+        "WebKit on Linux gives focus back to the trigger itself as the menu closes, and rings it after a click too.";
+
     [Theory]
     [MemberData(nameof(ChosenBy))]
     public async Task Menu_ShouldRingItsTriggerOnlyForTheKeyboard_WhenAnItemIsChosenWhileAFieldHadFocus(string browser,
         bool keyboard)
     {
         Assert.SkipWhen(Popped, ChangesThePagesMain);
+        Assert.SkipWhen(browser == "webkit" && !keyboard && OperatingSystem.IsLinux(),
+            RingsWhatAPopoverGivesFocusBackTo);
         var page = await OpenAsync(browser, "/examples/menu");
         // A text field with focus first, whose ring Safari would carry along, since a click there doesn't move focus.
         await page.EvaluateAsync("() => document.querySelector('main').prepend(document.createElement('input'))");

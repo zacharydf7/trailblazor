@@ -6,8 +6,15 @@ namespace Trailblazor.BrowserTests;
 public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
 {
     private readonly List<IBrowserContext> _contexts = [];
+    private IBrowser? _alone;
 
     protected BrowserFixture Fixture { get; } = fixture;
+
+    // While one of Firefox's pages holds a mouse button down, clicks and moves meant for its other pages go astray, and
+    // theirs reach it. A class with a test that holds one, itself or through one of the testing library's drags, says
+    // so here, and each of its tests has a Firefox to itself while it runs. MouseHoldTests fails for a class that
+    // should and doesn't.
+    protected virtual bool HoldsTheMouse => false;
 
     // Runs before a page opens anything, for a test class that sets up every page the same way.
     protected virtual Task PreparePageAsync(IPage page) => Task.CompletedTask;
@@ -134,9 +141,20 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         return new Uri(QueryHelpers.AddQueryString(address.ToString(), "mode", mode));
     }
 
+    private async Task<IBrowserContext> NewContextAsync(string browser, BrowserNewContextOptions? options)
+    {
+        if (!HoldsTheMouse || browser != "firefox")
+        {
+            return await Fixture.NewContextAsync(browser, options);
+        }
+
+        _alone ??= await Fixture.TakeAFirefoxAsync();
+        return await _alone.NewContextAsync(options);
+    }
+
     private async Task<IPage> OpenAtAsync(string browser, Uri address, BrowserNewContextOptions? options)
     {
-        var context = await Fixture.NewContextAsync(browser, options);
+        var context = await NewContextAsync(browser, options);
         _contexts.Add(context);
         var page = await context.NewPageAsync();
         await PreparePageAsync(page);
@@ -251,6 +269,11 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         foreach (var context in _contexts)
         {
             await context.CloseAsync();
+        }
+
+        if (_alone is not null)
+        {
+            Fixture.HandBack(_alone);
         }
     }
 }

@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class ScopedHelpersTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tb_ShouldFindTheFieldInTheDialog_WhenTheDialogIsTheScope(string browser)
     {

@@ -6,6 +6,8 @@ namespace Trailblazor.BrowserTests;
 
 public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Links_ShouldSortAndPageTheGrid_WhenThePageIsStatic(string browser)
     {

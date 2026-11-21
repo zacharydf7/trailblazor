@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class DragScrollTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     private async Task<IPage> OpenReadyAsync(string browser)
     {
         var page = await OpenAsync(browser, "/drag-scroll");

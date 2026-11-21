@@ -7,6 +7,10 @@ public class GridExportTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static async Task<IDownload> ExportAsync(IPage page, string item) =>
         await page.RunAndWaitForDownloadAsync(() => page.Tb().Menu("Export").ChooseAsync(item));
 
+    // WebKit on Linux suggests a file's name with each space turned into an underscore.
+    private static string Named(string name, string browser) =>
+        browser == "webkit" && OperatingSystem.IsLinux() ? name.Replace(' ', '_') : name;
+
     private static async Task<byte[]> ContentOf(IDownload download)
     {
         await using var stream = await download.CreateReadStreamAsync();
@@ -23,7 +27,7 @@ public class GridExportTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         var download = await ExportAsync(page, "CSV");
 
-        Assert.Equal("Trail list.csv", download.SuggestedFilename);
+        Assert.Equal(Named("Trail list.csv", browser), download.SuggestedFilename);
         var lines = System.Text.Encoding.UTF8.GetString(await ContentOf(download)).TrimStart('\uFEFF').Split("\r\n");
         Assert.Equal("Name,Region,Length (km),Last hiked", lines[0]);
         Assert.Equal(["Cedar Flats", "Fern Gully"], lines[1..^1].Select(line => line.Split(',')[0]));
@@ -36,7 +40,7 @@ public class GridExportTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         var download = await ExportAsync(page, "Excel");
 
-        Assert.Equal("Trail list.xlsx", download.SuggestedFilename);
+        Assert.Equal(Named("Trail list.xlsx", browser), download.SuggestedFilename);
         Assert.Equal("PK"u8.ToArray(), (await ContentOf(download))[..2]);
     }
 
@@ -47,7 +51,7 @@ public class GridExportTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         var download = await ExportAsync(page, "PDF");
 
-        Assert.Equal("Trail list.pdf", download.SuggestedFilename);
+        Assert.Equal(Named("Trail list.pdf", browser), download.SuggestedFilename);
         Assert.Equal("%PDF-1.4"u8.ToArray(), (await ContentOf(download))[..8]);
     }
 }

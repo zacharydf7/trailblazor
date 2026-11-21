@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class KanbanTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     private static ILocator Column(IPage page, string title) =>
         page.GetByRole(AriaRole.List, new() { Name = title, Exact = true });
 

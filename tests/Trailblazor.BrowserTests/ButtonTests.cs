@@ -5,6 +5,8 @@ namespace Trailblazor.BrowserTests;
 
 public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldReturnOnceTheAppHasHandledTheClick_WhenItsOnClickTakesAWhile(string browser)
     {

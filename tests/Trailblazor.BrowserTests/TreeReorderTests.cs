@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class TreeReorderTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     private const string Plan = "Trip plan";
 
     [Theory, ClassData(typeof(AllBrowsers))]

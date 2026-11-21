@@ -2,6 +2,8 @@ namespace Trailblazor.BrowserTests;
 
 public class ReadOnlyTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     // Each field and the boxes in it that take text.
     private static readonly (string Field, string Input)[] Boxes =
     [

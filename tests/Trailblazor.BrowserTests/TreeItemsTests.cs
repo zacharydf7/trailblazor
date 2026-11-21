@@ -5,6 +5,8 @@ namespace Trailblazor.BrowserTests;
 
 public class TreeItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     private static ILocator Tree(IPage page) => page.GetByRole(AriaRole.Tree, new() { Name = "Files" });
 
     private static ILocator Row(IPage page, string text) => Tree(page).Locator($"[role=treeitem][data-text='{text}']");

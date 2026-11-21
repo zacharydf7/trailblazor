@@ -6,6 +6,8 @@ namespace Trailblazor.BrowserTests;
 
 public class NumberFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldFindTheField_WhenItIsRequiredAndItsLabelShowsAnAsterisk(string browser)
     {

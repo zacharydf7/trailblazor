@@ -4,6 +4,8 @@ namespace Trailblazor.BrowserTests;
 
 public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    protected override bool HoldsTheMouse => true;
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldAnswerAConfirmAndFillOrCancelADialog_WhenGivenItsTitle(string browser)
     {
