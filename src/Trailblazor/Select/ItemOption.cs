@@ -18,4 +18,6 @@ internal sealed class ItemOption(string id, object? value, string text, bool dis
     public RenderFragment Content => content;
 
     public string? Name => name;
+
+    public string? PlainText => text;
 }

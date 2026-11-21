@@ -23,8 +23,9 @@ public partial class TbSmartPaste
     /// and the fields it can fill, and returns each value it finds as text under its field's
     /// <see cref="SmartPasteField.Name"/>. Write numbers and dates in the invariant format, such as <c>1234.5</c>,
     /// <c>2026-11-17</c> and <c>2026-11-17T14:30</c>, whatever the user's culture; a date-time keeps the time as
-    /// written, whatever offset follows it. A field it leaves out, or gives a value the field can't take, stays as it
-    /// was. Required.</summary>
+    /// written, whatever offset follows it. For a field with <see cref="SmartPasteField.Choices"/>, answer with one
+    /// of them, or with one on each line when the field is <see cref="SmartPasteField.Multiple"/>. A field it leaves
+    /// out, or gives a value the field can't take, stays as it was. Required.</summary>
     [Parameter, EditorRequired]
     public Func<SmartPasteRequest, CancellationToken, Task<IReadOnlyDictionary<string, string>>>? Extract { get; set; }
 

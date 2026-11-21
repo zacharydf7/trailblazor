@@ -2,7 +2,7 @@
     <TbCheckboxGroup Label="Trail days" @bind-Value="_days" HelperText="Pick the days you can walk.">
         @foreach (var day in Days)
         {
-            <TbCheckboxItem Value="day">@day</TbCheckboxItem>
+            <TbCheckboxItem Value="day" Text="@day.ToString()" />
         }
     </TbCheckboxGroup>
     <output>Trail days value: @string.Join(", ", _days)</output>

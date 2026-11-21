@@ -743,6 +743,7 @@ override Trailblazor.TbCheckbox<TValue>.FocusAsync(bool preventScroll = false) -
 override Trailblazor.TbCheckbox<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbCheckbox<TValue>.OnParametersSet() -> void
 override Trailblazor.TbCheckboxGroup<TItem>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
+override Trailblazor.TbCheckboxItem<TValue>.OnInitialized() -> void
 override Trailblazor.TbCheckboxItem<TValue>.OnParametersSet() -> void
 override Trailblazor.TbChip.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbChipGroup.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
@@ -787,6 +788,7 @@ Trailblazor.TbPopover.AttachOnFirstUse.set -> void
 override Trailblazor.TbPopover.OnParametersSet() -> void
 override Trailblazor.TbPopover.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 override Trailblazor.TbProgress.OnParametersSet() -> void
+override Trailblazor.TbRadio<TValue>.OnInitialized() -> void
 override Trailblazor.TbRadio<TValue>.OnParametersSet() -> void
 override Trailblazor.TbRadioGroup<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbRangeSlider<TValue>.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask
@@ -1782,7 +1784,10 @@ Trailblazor.TbCheckboxItem<TValue>.ChildContent.get -> Microsoft.AspNetCore.Comp
 Trailblazor.TbCheckboxItem<TValue>.ChildContent.set -> void
 Trailblazor.TbCheckboxItem<TValue>.Disabled.get -> bool
 Trailblazor.TbCheckboxItem<TValue>.Disabled.set -> void
+Trailblazor.TbCheckboxItem<TValue>.Dispose() -> void
 Trailblazor.TbCheckboxItem<TValue>.TbCheckboxItem() -> void
+Trailblazor.TbCheckboxItem<TValue>.Text.get -> string?
+Trailblazor.TbCheckboxItem<TValue>.Text.set -> void
 Trailblazor.TbCheckboxItem<TValue>.Value.get -> TValue
 Trailblazor.TbCheckboxItem<TValue>.Value.set -> void
 Trailblazor.TbChip
@@ -2566,7 +2571,10 @@ Trailblazor.TbRadio<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.
 Trailblazor.TbRadio<TValue>.ChildContent.set -> void
 Trailblazor.TbRadio<TValue>.Disabled.get -> bool
 Trailblazor.TbRadio<TValue>.Disabled.set -> void
+Trailblazor.TbRadio<TValue>.Dispose() -> void
 Trailblazor.TbRadio<TValue>.TbRadio() -> void
+Trailblazor.TbRadio<TValue>.Text.get -> string?
+Trailblazor.TbRadio<TValue>.Text.set -> void
 Trailblazor.TbRadio<TValue>.Value.get -> TValue
 Trailblazor.TbRadio<TValue>.Value.set -> void
 Trailblazor.TbRadioGroup<TValue>
@@ -6764,8 +6772,12 @@ Trailblazor.SmartPasteField
 Trailblazor.SmartPasteField.<Clone>$() -> Trailblazor.SmartPasteField!
 Trailblazor.SmartPasteField.Deconstruct(out string! Name, out string? Description, out System.Type! Type) -> void
 Trailblazor.SmartPasteField.Description.get -> string?
+Trailblazor.SmartPasteField.Choices.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Trailblazor.SmartPasteField.Choices.init -> void
 Trailblazor.SmartPasteField.Description.init -> void
 Trailblazor.SmartPasteField.Equals(Trailblazor.SmartPasteField? other) -> bool
+Trailblazor.SmartPasteField.Multiple.get -> bool
+Trailblazor.SmartPasteField.Multiple.init -> void
 Trailblazor.SmartPasteField.Name.get -> string!
 Trailblazor.SmartPasteField.Name.init -> void
 Trailblazor.SmartPasteField.SmartPasteField(string! Name, string? Description, System.Type! Type) -> void

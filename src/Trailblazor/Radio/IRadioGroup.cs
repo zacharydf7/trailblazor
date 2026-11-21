@@ -19,4 +19,8 @@ internal interface IRadioGroup
     bool IsSelected(object? value);
 
     Task SelectAsync(object? value);
+
+    void Add(IGroupOption option);
+
+    void Remove(IGroupOption option);
 }

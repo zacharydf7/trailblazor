@@ -24,8 +24,8 @@ public class TbSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes
     [Parameter]
     public IEnumerable<TValue>? Items { get; set; }
 
-    /// <summary>An item's text, which the list shows, type-ahead matches and screen readers read. Defaults to the
-    /// value's text.</summary>
+    /// <summary>An item's text, which the list shows, type-ahead matches, screen readers read and a
+    /// <see cref="TbSmartPaste"/> names the item by. Defaults to the value's text.</summary>
     [Parameter]
     public Func<TValue, string>? ItemText { get; set; }
 

@@ -59,6 +59,11 @@ public abstract partial class TbListBoxBase<[DynamicallyAccessedMembers(Dynamica
     // The type every option's value must have.
     private protected abstract Type ItemType { get; }
 
+    private protected override IEnumerable<(string? Text, object? Value)> PasteChoices =>
+        _options.Where(option => !option.Disabled).Select(option => (option.PlainText, option.Value));
+
+    private protected override bool PastesSeveral => Multiple;
+
     // A label's for attribute can't point at the interactive listbox, which names itself with aria-labelledby.
     private protected override bool LabelTargetsInput => !RendererInfo.IsInteractive;
 

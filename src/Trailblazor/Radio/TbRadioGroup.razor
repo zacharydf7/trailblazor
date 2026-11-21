@@ -34,6 +34,7 @@
 </fieldset>
 
 @code {
+    private readonly List<IGroupOption> _options = [];
     private ElementReference _group;
 
     /// <summary>The group's <see cref="TbRadio{TValue}"/> options.</summary>
@@ -84,6 +85,13 @@
     string? IRadioGroup.FormatOption(object? value) => FormatValue(GroupValues.Fit<TValue>(value));
 
     bool IRadioGroup.IsSelected(object? value) => OptionValues.Same(Comparer, GroupValues.Fit<TValue>(value), Value);
+
+    void IRadioGroup.Add(IGroupOption option) => _options.Add(option);
+
+    void IRadioGroup.Remove(IGroupOption option) => _options.Remove(option);
+
+    private protected override IEnumerable<(string? Text, object? Value)> PasteChoices =>
+        _options.Where(option => !option.Disabled).Select(option => (option.Text, option.Value));
 
     // The change event belongs to the chosen TbRadio, so the group re-renders itself for its messages.
     async Task IRadioGroup.SelectAsync(object? value)

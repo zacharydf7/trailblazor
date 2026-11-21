@@ -17,6 +17,7 @@ public class TbSmartPasteTests : BunitContext
 
     private readonly Dictionary<string, object?> _values = [];
     private readonly List<SmartPasteRequest> _requests = [];
+    private bool _fewerOptions;
     private Func<SmartPasteRequest, CancellationToken, Task<IReadOnlyDictionary<string, string>>> _model =
         (_, _) => Task.FromResult<IReadOnlyDictionary<string, string>>(new Dictionary<string, string>());
     private bool _dirty;
@@ -221,6 +222,174 @@ public class TbSmartPasteTests : BunitContext
 
         Assert.Equal(new Dictionary<string, object?> { ["Name"] = "Robin Vale" }, _values);
         Assert.Equal("Filled 1 field", cut.Tb().SmartPaste().Status);
+    }
+
+    private readonly record struct Choice(object? Value, string? Text = null, string? Content = null,
+        bool Disabled = false);
+
+    // A field's options: TbOption in a select or a list box, TbRadio or TbCheckboxItem in a group.
+    private static (string Name, object? Value) Options<TOption>(params Choice[] choices) where TOption : IComponent =>
+        ("ChildContent", (RenderFragment)(builder =>
+        {
+            foreach (var choice in choices)
+            {
+                builder.OpenComponent<TOption>(0);
+                builder.AddComponentParameter(1, "Value", choice.Value);
+                builder.AddComponentParameter(2, "Text", choice.Text);
+                builder.AddComponentParameter(3, "Disabled", choice.Disabled);
+                if (choice.Content is not null)
+                {
+                    builder.AddComponentParameter(4, "ChildContent",
+                        (RenderFragment)(content => content.AddContent(0, choice.Content)));
+                }
+
+                builder.CloseComponent();
+            }
+        }));
+
+    // One field of each kind that picks from options, with options smart paste can't offer among them.
+    private void Trip(RenderTreeBuilder builder)
+    {
+        Field<TbSelect<string>, string>(builder, "Trail", Options<TbOption<string>>(new("ridge", "Ridge loop"),
+            new("creek"), new("spur", "Summit spur", Content: "Summit spur, 4 km up"), new("bog", Content: "Bog walk"),
+            new("closed", "Closed trail", Disabled: true), new("ridge-2", " ridge LOOP ")));
+        Field<TbSelect<int?>, int?>(builder, "Guide", ("Items", new int?[] { 0, 1, 2, 3 }),
+            ("ItemText", (Func<int?, string>)(guide => guide switch { 0 => " ", 1 => "Ana", 2 => "Bo", _ => "Cy" })),
+            ("ItemDisabled", (Func<int?, bool>)(guide => guide == 3)));
+        Field<TbListBox<string>, string>(builder, "Campsite", Options<TbOption<string>>(new("lake", "Lake shore"),
+            new("pines", "Under the pines")));
+        Field<TbMultiSelect<string>, IReadOnlyList<string>>(builder, "Gear", ("HelperText", "What you carry"),
+            Options<TbOption<string>>(new("tent", "Tent"), new("stove", "Stove"), new("map", "Map")));
+        Field<TbMultiListBox<int>, IReadOnlyList<int>>(builder, "Meals", Options<TbOption<int>>(new(1, "Breakfast"),
+            new(2, "Lunch"), new(3, "Dinner")));
+        Field<TbRadioGroup<int?>, int?>(builder, "Pace", Options<TbRadio<int>>(new(1, "Easy"), new(2, "Steady"),
+            new(3, Content: "Fast"), new(4, "Closed", Disabled: true)));
+        Field<TbCheckboxGroup<string>, IReadOnlyList<string>>(builder, "Days", _fewerOptions
+            ? Options<TbCheckboxItem<string>>(new Choice("sat", "Saturday"))
+            : Options<TbCheckboxItem<string>>(new("sat", "Saturday"), new("sun", "Sunday", Content: "Sunday, if dry")));
+        Field<TbRadioGroup<string>, string>(builder, "Mood", _fewerOptions
+            ? Options<TbRadio<string>>(new Choice("calm", "Calm"))
+            : Options<TbRadio<string>>(new("calm", "Calm"), new("keen", "Keen")));
+        Field<TbRadioGroup<string>, string>(builder, "Weather", Options<TbRadio<string>>(new("dry", Content: "Dry"),
+            new("wet", Content: "Wet")));
+    }
+
+    private IEnumerable<(string Name, bool Multiple, string Choices)> Offered() =>
+        _requests[^1].Fields.Select(field => (field.Name, field.Multiple, string.Join('|', field.Choices ?? [])));
+
+    [Fact]
+    public async Task Extract_ShouldGetEachOptionsTextAsAChoice_WhenAFieldPicksFromOptions()
+    {
+        var cut = RenderForm(Trip);
+
+        await cut.Tb().SmartPaste().PasteAsync(Signature);
+
+        // An option with content alone, a disabled one, one with blank text and a second with the same text aren't
+        // offered, and Weather, with nothing to offer, is left out.
+        Assert.Equal(
+        [
+            ("Trail", false, "Ridge loop|creek|Summit spur"), ("Guide", false, "Ana|Bo"),
+            ("Campsite", false, "Lake shore|Under the pines"), ("Gear", true, "Tent|Stove|Map"),
+            ("Meals", true, "Breakfast|Lunch|Dinner"), ("Pace", false, "Easy|Steady"),
+            ("Days", true, "Saturday|Sunday"), ("Mood", false, "Calm|Keen"),
+        ], Offered());
+        var gear = _requests.Single().Fields[3];
+        Assert.Equal(("What you carry", typeof(IReadOnlyList<string>)), (gear.Description, gear.Type));
+    }
+
+    [Fact]
+    public void Equals_ShouldCompareTheChoicesOneByOne_WhenTwoFieldsHaveChoices()
+    {
+        var pace = new SmartPasteField("Pace", null, typeof(int?)) { Choices = ["Easy", "Steady"] };
+
+        Assert.Equal(pace, new SmartPasteField("Pace", null, typeof(int?)) { Choices = ["Easy", "Steady"] });
+        Assert.Equal(pace.GetHashCode(), (pace with { Choices = ["Easy", "Steady"] }).GetHashCode());
+        Assert.NotEqual(pace, pace with { Choices = ["Steady", "Easy"] });
+        Assert.NotEqual(pace, pace with { Choices = null });
+        Assert.NotEqual(pace with { Choices = null }, pace);
+        Assert.NotEqual(pace, pace with { Multiple = true });
+        Assert.NotEqual(pace, pace with { Name = "Speed" });
+        Assert.NotEqual(pace, pace with { Description = "How fast" });
+        Assert.NotEqual(pace, pace with { Type = typeof(int) });
+    }
+
+    [Fact]
+    public async Task Extract_ShouldGetTheOptionsThereNow_WhenAGroupsOptionWasRemoved()
+    {
+        var cut = RenderForm(Trip);
+        _fewerOptions = true;
+        cut.Render();
+
+        await cut.Tb().SmartPaste().PasteAsync(Signature);
+
+        Assert.Equal([("Days", true, "Saturday"), ("Mood", false, "Calm")], Offered().Skip(6));
+    }
+
+    [Fact]
+    public async Task PasteAsync_ShouldChooseTheOptionsNamed_WhenTheModelAnswersWithTheirTexts()
+    {
+        Finds(new()
+        {
+            ["Trail"] = "RIDGE LOOP", ["Guide"] = "bo", ["Campsite"] = "under the pines",
+            ["Gear"] = "Map\nSnorkel\ntent\nMAP", ["Meals"] = "Dinner\r\n\r\nBreakfast", ["Pace"] = "steady",
+            ["Days"] = " sunday ", ["Mood"] = "Keen",
+        });
+        var cut = RenderForm(Trip);
+
+        await cut.Tb().SmartPaste().PasteAsync(Signature);
+
+        // Several choices come one to a line, and are chosen in the order named, each once.
+        Assert.Equal("ridge", _values["Trail"]);
+        Assert.Equal(2, _values["Guide"]);
+        Assert.Equal("pines", _values["Campsite"]);
+        Assert.Equal(["map", "tent"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Gear"]));
+        Assert.Equal([3, 1], Assert.IsAssignableFrom<IReadOnlyList<int>>(_values["Meals"]));
+        Assert.Equal(2, _values["Pace"]);
+        Assert.Equal(["sun"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Days"]));
+        Assert.Equal("keen", _values["Mood"]);
+        Assert.Equal("Filled 8 fields", cut.Tb().SmartPaste().Status);
+        Assert.True(_dirty);
+    }
+
+    [Fact]
+    public async Task PasteAsync_ShouldSkipAnAnswer_WhenItNamesNoOptionTheFieldOffered()
+    {
+        // Content alone, a disabled option, two options for a field that takes one, and texts no option has.
+        Finds(new()
+        {
+            ["Trail"] = "Bog walk", ["Guide"] = "Cy", ["Campsite"] = "Lake shore\nUnder the pines",
+            ["Gear"] = "Snorkel\nKayak", ["Pace"] = "Closed", ["Days"] = "Saturday",
+        });
+        var cut = RenderForm(Trip);
+
+        await cut.Tb().SmartPaste().PasteAsync(Signature);
+
+        Assert.Equal("Days", Assert.Single(_values).Key);
+        Assert.Equal("Filled 1 field", cut.Tb().SmartPaste().Status);
+    }
+
+    [Fact]
+    public async Task PasteAsync_ShouldLeaveWhatItDidNotOfferAsItWas_WhenAFieldTakesSeveral()
+    {
+        Finds(new() { ["Gear"] = "Map", ["Meals"] = "Lunch", ["Days"] = "Sunday" });
+        var cut = RenderForm(builder =>
+        {
+            Field<TbMultiSelect<string>, IReadOnlyList<string>>(builder, "Gear",
+                ("Value", new[] { "permit", "stove", "whistle" }), Options<TbOption<string>>(
+                    new("permit", "Permit", Disabled: true), new("stove", "Stove"), new("map", "Map")));
+            Field<TbMultiListBox<int>, IReadOnlyList<int>>(builder, "Meals", ("Value", new[] { 1, 3 }),
+                Options<TbOption<int>>(new(1, "Breakfast", Disabled: true), new(2, "Lunch"), new(3, "Dinner")));
+            Field<TbCheckboxGroup<string>, IReadOnlyList<string>>(builder, "Days", ("Value", new[] { "fri", "sat" }),
+                Options<TbCheckboxItem<string>>(new("fri", "Friday", Disabled: true), new("sat", "Saturday"),
+                    new("sun", "Sunday")));
+        });
+
+        await cut.Tb().SmartPaste().PasteAsync(Signature);
+
+        // A disabled option keeps its state, and so does a value no option has; the rest give way to those named.
+        Assert.Equal(["permit", "whistle", "map"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Gear"]));
+        Assert.Equal([1, 2], Assert.IsAssignableFrom<IReadOnlyList<int>>(_values["Meals"]));
+        Assert.Equal(["fri", "sun"], Assert.IsAssignableFrom<IReadOnlyList<string>>(_values["Days"]));
     }
 
     [Fact]

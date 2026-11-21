@@ -34,8 +34,8 @@ public class TbMultiSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMember
     [Parameter]
     public IEnumerable<TItem>? Items { get; set; }
 
-    /// <summary>An item's text, which the list shows, type-ahead matches and screen readers read. Defaults to the
-    /// value's text.</summary>
+    /// <summary>An item's text, which the list shows, type-ahead matches, screen readers read and a
+    /// <see cref="TbSmartPaste"/> names the item by. Defaults to the value's text.</summary>
     [Parameter]
     public Func<TItem, string>? ItemText { get; set; }
 
@@ -73,6 +73,9 @@ public class TbMultiSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMember
     private protected override IReadOnlyList<TItem> ChooseAll(IEnumerable<object?> items, bool choose) => choose
         ? [.. Value ?? [], .. items.Where(item => !IsChosen(item)).Cast<TItem>()]
         : (Value ?? []).Where(chosen => !items.Any(item => OptionValues.Same(Comparer, chosen, item))).ToList();
+
+    private protected override IReadOnlyList<TItem> ChoosePasted(IReadOnlyList<object?> named,
+        IReadOnlyList<object?> offered) => OptionValues.Pasted(Comparer, Value, named, offered);
 
     private protected override string? FormatItem(object? item) =>
         BindConverter.FormatValue((TItem?)item, CultureFor(typeof(TItem)))?.ToString();

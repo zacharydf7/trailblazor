@@ -1,7 +1,7 @@
 <TbStack Gap="4">
     <TbRadioGroup Label="Paper size" @bind-Value="_paper" HelperText="Used for the next print run.">
-        <TbRadio Value="@("Letter")">Letter</TbRadio>
-        <TbRadio Value="@("A4")">A4</TbRadio>
+        <TbRadio Value="@("Letter")" Text="Letter" />
+        <TbRadio Value="@("A4")" Text="A4" />
         <TbRadio Value="@("Legal")" Disabled>Legal (out of stock)</TbRadio>
     </TbRadioGroup>
     <output>Paper size value: @_paper</output>

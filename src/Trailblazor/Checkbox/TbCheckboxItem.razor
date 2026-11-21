@@ -1,6 +1,8 @@
 @namespace Trailblazor
 @typeparam TValue
 @inherits TbComponentBase
+@implements IGroupOption
+@implements IDisposable
 
 @* Each option is drawn as a checkbox, so it shares the checkbox's label and input classes; an id names its input. *@
 <label @attributes="AttributesWithoutId" style="@Style"
@@ -10,7 +12,7 @@
            checked="@Group.IsChecked(Value)" disabled="@Disabled" aria-readonly="@(Group.ReadOnly ? "true" : null)"
            aria-invalid="@(Group.Invalid ? "true" : null)"
            @onchange="e => Group.SetCheckedAsync(Value, e.Value is true)" />
-    <span data-part="label">@ChildContent</span>
+    <span data-part="label">@Label</span>
 </label>
 
 @code {
@@ -19,7 +21,14 @@
     [Parameter, EditorRequired]
     public TValue Value { get; set; } = default!;
 
-    /// <summary>The option's visible label, which can hold rich content such as a link.</summary>
+    /// <summary>The option's label as plain text, and the text a <see cref="TbSmartPaste"/> names the option by. When
+    /// the option has <see cref="ChildContent"/> too, the content is the label. Smart paste can't read content, so it
+    /// leaves out an option that has content and no text.</summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>The option's visible label, which can hold rich content such as a link. It takes the place of
+    /// <see cref="Text"/> as the label.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -29,6 +38,16 @@
 
     [CascadingParameter]
     private ICheckboxGroup? Group { get; set; }
+
+    private RenderFragment? Label => ChildContent ?? (Text is null ? null : builder => builder.AddContent(0, Text));
+
+    object? IGroupOption.Value => Value;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Group?.Add(this);
+
+    /// <inheritdoc />
+    public void Dispose() => Group?.Remove(this);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

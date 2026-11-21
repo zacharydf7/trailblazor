@@ -1956,9 +1956,11 @@ public static class ExampleCatalog
                     + "`Extract` with the text and the fields it can fill, each named by its label, with its helper "
                     + "text as a description. `Extract` returns each value it finds as text under its field's name, "
                     + "and each one is set as if the user had typed it, so the field's own limits, binding, validation "
-                    + "and the form's dirty state follow. In a real app, `Extract` asks a language model, "
-                    + "such as through an `IChatClient`, for JSON keyed by the field names; this example matches "
-                    + "patterns instead. Where the browser won't share the clipboard, a box asks for the text.",
+                    + "and the form's dirty state follow. A field that picks from options, such as the radio group "
+                    + "here, comes with its options' texts as `Choices`, and `Extract` answers with one of them. In a "
+                    + "real app, `Extract` asks a language model, such as through an `IChatClient`, for JSON keyed by "
+                    + "the field names; this example matches patterns instead. Where the browser won't share the "
+                    + "clipboard, a box asks for the text.",
                     typeof(SmartPasteExample)),
             ],
             Api = [typeof(TbSmartPaste), typeof(SmartPasteRequest), typeof(SmartPasteField), typeof(SmartPasteLabels)],
@@ -1988,13 +1990,32 @@ public static class ExampleCatalog
                 "Have `Extract` write numbers and dates in the invariant format, such as `1234.5`, `2026-11-17` and "
                     + "`2026-11-17T14:30`, whatever the user's culture. A date-time keeps the time as written, "
                     + "whatever offset follows it, and a value a field can't take is skipped.",
+                "For a field with `Choices`, have `Extract` answer with one of them, or with one on each line when "
+                    + "the field is `Multiple`.",
             ],
             Notes =
             [
-                new("It fills text fields, number fields, date, time and date-time pickers, checkboxes, and "
-                    + "autocompletes with `FreeText`. It leaves out password fields, disabled and read-only ones, "
-                    + "fields without a label, and fields that pick from options or a range, such as a select, radio "
-                    + "group, slider or rating."),
+                new("It fills text fields, number fields, date, time and date-time pickers, checkboxes, "
+                    + "autocompletes with `FreeText`, and the fields that pick from options: selects and list boxes "
+                    + "(single or multiple), radio groups, including segmented ones, and checkbox groups. It leaves "
+                    + "out password fields, disabled and read-only ones, fields without a label, and every other kind "
+                    + "of field, such as a slider, a rating or an autocomplete without `FreeText`."),
+                new("A field that picks from options is described with `Choices`, the text of each option it can "
+                    + "choose, and with `Multiple` when it takes several. `Extract` answers with one of the texts, in "
+                    + "any letter case, or with one on each line for a field that takes several. A text that is none "
+                    + "of them is skipped."),
+                new("In a field that takes several, the options named replace the offered ones chosen before. A "
+                    + "chosen value that wasn't offered, such as a disabled option's or one that no option has, stays "
+                    + "chosen, ahead of those named."),
+                new("Smart paste names an option by its plain text: a `TbOption`'s `Text`, or the text it shows when "
+                    + "it has no content of its own; an item's `ItemText`, or its value's text; and the `Text` of a "
+                    + "`TbRadio` or a `TbCheckboxItem`."),
+                new("An option that has content and no `Text` isn't offered, since its text isn't known until the "
+                    + "browser draws it. Neither is a disabled option, nor a second option with the same text. A "
+                    + "field with no option to offer is left out."),
+                new("A select with a long `Items` list offers every enabled item, including those not yet drawn, so "
+                    + "the request to the model grows with the list. To keep the request small, `Extract` can leave "
+                    + "such a field out of what it sends to the model."),
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
@@ -6077,8 +6098,9 @@ public static class ExampleCatalog
             Pattern = new("checkbox", "https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/"),
             Sections =
             [
-                new("options-and-value", "Options and value", "Each `TbCheckboxItem` is an option. The group's `Value` "
-                    + "holds the checked options' values, in the order they were checked.",
+                new("options-and-value", "Options and value", "Each `TbCheckboxItem` is an option, labeled by its "
+                    + "`Text` or by its content. The group's `Value` holds the checked options' values, in the order "
+                    + "they were checked.",
                     typeof(CheckboxGroupExample)),
                 new("required", "Required", "`Required` shows a marker, and the group is described as \"required\" to "
                     + "screen readers, since a group can't carry `aria-required`. Once the group is changed or its "
@@ -6086,7 +6108,9 @@ public static class ExampleCatalog
                     + "default, which uses the label. Say what's needed in `HelperText` too.",
                     typeof(CheckboxGroupRequiredExample)),
                 new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
-                    + "as a chip. All of it names the checkbox, so keep it short.",
+                    + "as a chip, and is its label in place of `Text`. All of it names the checkbox, so keep it short. "
+                    + "Give the option a `Text` as well where a [smart paste](components/smart-paste) should be "
+                    + "able to check it.",
                     typeof(CheckboxGroupContentExample)),
                 new("row", "Row", "`Row` lays the options out in a row, wrapping when they don't fit. A long "
                     + "option wraps beside its box.",
@@ -6110,7 +6134,7 @@ public static class ExampleCatalog
             Labeling =
             [
                 "The `Label` is the `fieldset`'s legend and names the group. Each option is a native checkbox, named "
-                    + "by its content.",
+                    + "by its label: its content, or else its `Text`.",
             ],
             Announcements =
             [
@@ -6405,9 +6429,9 @@ public static class ExampleCatalog
                 + "doesn't swap them.",
             Sections =
             [
-                new("options-and-value", "Options and value", "Each `TbRadio` is an option, and the group's `Value` "
-                    + "holds the chosen option's value, which can be any type, such as an enum. `Disabled` on an option "
-                    + "turns off that option alone.",
+                new("options-and-value", "Options and value", "Each `TbRadio` is an option, labeled by its `Text` or "
+                    + "by its content, and the group's `Value` holds the chosen option's value, which can be any type, "
+                    + "such as an enum. `Disabled` on an option turns off that option alone.",
                     typeof(RadioGroupExample)),
                 new("row", "Row", "`Row` lays the options out in a row, wrapping when they don't fit. A long option "
                     + "wraps beside its radio.", typeof(RadioGroupRowExample)),
@@ -6421,7 +6445,9 @@ public static class ExampleCatalog
                     + "Until your app clears it, the form won't submit, so clear it when the choice changes.",
                     typeof(RadioGroupErrorExample)),
                 new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
-                    + "as a chip. All of it names the radio, so keep it short.", typeof(RadioGroupContentExample)),
+                    + "as a chip, and is its label in place of `Text`. All of it names the radio, so keep it short. "
+                    + "Give the option a `Text` as well where a [smart paste](components/smart-paste) should be "
+                    + "able to choose it.", typeof(RadioGroupContentExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` turns off every option but the "
                     + "chosen one, which stays a tab stop and still posts; with nothing chosen, every option is off. "
                     + "`Disabled` on the group turns off every option.", typeof(RadioGroupStatesExample)),
@@ -6442,7 +6468,7 @@ public static class ExampleCatalog
             Labeling =
             [
                 "The `Label` is the `fieldset`'s legend and names the group. Each option is a native radio, named by "
-                    + "its content.",
+                    + "its label: its content, or else its `Text`.",
             ],
             Announcements =
             [
@@ -6691,7 +6717,8 @@ public static class ExampleCatalog
                 new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
                     + "as a chip, and the field shows that content once it's chosen. Its words name the option. `Text` "
                     + "is for content without words, such as an image, and replaces that name, so include any words "
-                    + "the option shows.", typeof(SelectContentExample)),
+                    + "the option shows. A [smart paste](components/smart-paste) chooses an option by its `Text`, so "
+                    + "an option with content needs one for that too.", typeof(SelectContentExample)),
                 new("filtering", "Filtering", "`Filterable` adds a box above the list. Matching ignores case and "
                     + "accents, and groups with no matches hide.", typeof(SelectFilterExample)),
                 new("options-that-load-late", "Options that load late", "In a single select, a value no option has "
@@ -8239,8 +8266,9 @@ public static class ExampleCatalog
                     + "through every group.", typeof(ListBoxGroupsExample)),
                 new("rich-options", "Options with more than text", "An option's content can hold more than text, such "
                     + "as a chip, and its words name the option. `Text` is for content without words, such as an "
-                    + "image, and replaces that name, so include any words the option shows.",
-                    typeof(ListBoxContentExample)),
+                    + "image, and replaces that name, so include any words the option shows. A "
+                    + "[smart paste](components/smart-paste) chooses an option by its `Text`, so an option with "
+                    + "content needs one for that too.", typeof(ListBoxContentExample)),
                 new("empty-list", "Empty list", "A list box with no options says so, in text as readable as the "
                     + "options. Set `Labels.Empty` to say why.", typeof(ListBoxEmptyExample)),
                 new("many-options", "Many options", "A long list scrolls, and a long option wraps. When people would "

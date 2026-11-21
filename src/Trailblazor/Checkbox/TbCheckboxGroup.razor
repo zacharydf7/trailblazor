@@ -35,6 +35,7 @@
 </fieldset>
 
 @code {
+    private readonly List<IGroupOption> _options = [];
     private ElementReference _group;
 
     /// <summary>The group's <see cref="TbCheckboxItem{TItem}"/> options.</summary>
@@ -83,6 +84,18 @@
 
     bool ICheckboxGroup.IsChecked(object? item) =>
         Value?.Any(chosen => OptionValues.Same(Comparer, chosen, GroupValues.Fit<TItem>(item))) ?? false;
+
+    void ICheckboxGroup.Add(IGroupOption option) => _options.Add(option);
+
+    void ICheckboxGroup.Remove(IGroupOption option) => _options.Remove(option);
+
+    private protected override IEnumerable<(string? Text, object? Value)> PasteChoices =>
+        _options.Where(option => !option.Disabled).Select(option => (option.Text, option.Value));
+
+    private protected override bool PastesSeveral => true;
+
+    private protected override IReadOnlyList<TItem> ChoosePasted(IReadOnlyList<object?> named,
+        IReadOnlyList<object?> offered) => OptionValues.Pasted(Comparer, Value, named, offered);
 
     // The change event belongs to the checked TbCheckboxItem, so the group re-renders itself for its messages. Checked
     // values keep the order they were checked in.

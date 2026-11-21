@@ -39,4 +39,7 @@ internal interface ISelectOption
 
     // The option's Text when it shows content of its own, which then names it in place of that content.
     string? Name { get; }
+
+    // The text the option shows, or its Text when it shows content of its own; null when only that content says it.
+    string? PlainText { get; }
 }

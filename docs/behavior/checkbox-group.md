@@ -14,6 +14,7 @@ Familiar apps: the filter lists on shopping sites, notification settings pages
 ## Pointer
 
 - [x] Clicking a box or its label toggles it. `CheckboxGroupTests.CheckboxGroup_ShouldBindTheCheckedOptionsInTheOrderChecked_WhenClickedOrToggledWithSpace`
+- [x] An option's `Text` is its label when it has no content; when it has both, its content is the label. `TbCheckboxGroupTests.Render_ShouldLabelAnOptionWithItsText_WhenItHasNoContent`
 - [x] A disabled option ignores clicks while the others stay usable. `TbCheckboxGroupTests.Render_ShouldDisableTheGroupOrOneOption_WhenEitherIsDisabled`
 - [x] A disabled group turns off every box. `TbCheckboxGroupTests.Render_ShouldDisableTheGroupOrOneOption_WhenEitherIsDisabled`
 - [x] A click on a box in a read-only group changes nothing. `read-only.js`

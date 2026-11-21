@@ -23,6 +23,19 @@ public class TbCheckboxGroupTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldLabelAnOptionWithItsText_WhenItHasNoContent()
+    {
+        var cut = Render<TbCheckboxGroup<string>>(parameters => parameters.Add(group => group.Label, "Days")
+            .AddChildContent<TbCheckboxItem<string>>(item => item.Add(option => option.Value, "sat")
+                .Add(option => option.Text, "Saturday"))
+            .AddChildContent<TbCheckboxItem<string>>(item => item.Add(option => option.Value, "sun")
+                .Add(option => option.Text, "Sunday").AddChildContent("<b>Sunday</b>, if dry")));
+
+        Assert.Equal(["Saturday", "<b>Sunday</b>, if dry"],
+            cut.FindAll("[data-part=options] [data-part=label]").Select(label => label.InnerHtml));
+    }
+
+    [Fact]
     public void Change_ShouldAddAndRemoveValuesInTheOrderTheyWereChecked_WhenOptionsAreToggled()
     {
         IReadOnlyList<string>? value = null;

@@ -21,4 +21,8 @@ internal interface ICheckboxGroup
     bool IsChecked(object? item);
 
     Task SetCheckedAsync(object? item, bool isChecked);
+
+    void Add(IGroupOption option);
+
+    void Remove(IGroupOption option);
 }

@@ -62,6 +62,19 @@ public class TbRadioGroupTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldLabelAnOptionWithItsText_WhenItHasNoContent()
+    {
+        var cut = Render<TbRadioGroup<string>>(parameters => parameters.Add(group => group.Label, "Paper size")
+            .AddChildContent<TbRadio<string>>(radio => radio.Add(option => option.Value, "a4")
+                .Add(option => option.Text, "A4 paper"))
+            .AddChildContent<TbRadio<string>>(radio => radio.Add(option => option.Value, "letter")
+                .Add(option => option.Text, "Letter paper").AddChildContent("<b>Letter</b>")));
+
+        Assert.Equal(["A4 paper", "<b>Letter</b>"],
+            cut.FindAll("label.tb-radio [data-part=label]").Select(label => label.InnerHtml));
+    }
+
+    [Fact]
     public void Render_ShouldCheckTheOptionMatchingTheValue_WhenAValueIsSet()
     {
         var cut = RenderGroup("A4");

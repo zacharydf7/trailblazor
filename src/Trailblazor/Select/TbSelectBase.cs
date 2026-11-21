@@ -98,6 +98,11 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     // The type every option's value must have.
     private protected abstract Type ItemType { get; }
 
+    private protected override IEnumerable<(string? Text, object? Value)> PasteChoices =>
+        _options.Where(option => !option.Disabled).Select(option => (option.PlainText, option.Value));
+
+    private protected override bool PastesSeveral => Multiple;
+
     private protected abstract bool HasChoice { get; }
 
     // Whether the chosen options show as removable chips, and what is said when one is removed, with {0} for it.

@@ -277,9 +277,20 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // RootAttributes.
     private protected virtual bool IdNamesControl => true;
 
-    // Whether smart paste can fill the field: yes for one value written as text, such as words, a number, a date or a
-    // yes or no; no for a field that picks from options or a range, which the model can't see.
+    // Whether smart paste can fill the field from text alone: yes for one value written as text, such as words, a
+    // number, a date or a yes or no; no for a field that picks from a range, which the model can't see.
     private protected virtual bool Pastable => false;
+
+    // The options smart paste can choose, each with the text the model names it by, for a field that picks from
+    // options; null for any other field. Disabled options stay out, and an option whose text isn't known has none.
+    private protected virtual IEnumerable<(string? Text, object? Value)>? PasteChoices => null;
+
+    // Whether smart paste can choose several of the PasteChoices at once.
+    private protected virtual bool PastesSeveral => false;
+
+    // The value once smart paste has chosen the options with these values, out of all those it offered.
+    private protected virtual TValue? ChoosePasted(IReadOnlyList<object?> named, IReadOnlyList<object?> offered) =>
+        (TValue?)named[0];
 
     // Takes the model's text, written in the invariant culture (such as 2026-11-17 and 1234.5), the way the field
     // takes typed text, so its limits, such as a date picker's Min, apply. False when the field refuses it.
@@ -999,16 +1010,51 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 
     bool IFormField.IsDirty() => _parseError is not null || !SameValue(Value, _valueToResetTo);
 
-    SmartPasteField? IFormField.DescribeForPaste() => Pastable && !Disabled && !ReadOnly && ShownLabel is { } label
-        ? new(label, HelperText, typeof(TValue))
-        : null;
+    SmartPasteField? IFormField.DescribeForPaste()
+    {
+        if (Disabled || ReadOnly || ShownLabel is not { } label)
+        {
+            return null;
+        }
+
+        var field = new SmartPasteField(label, HelperText, typeof(TValue));
+        if (OfferedChoices() is not { } choices)
+        {
+            return Pastable ? field : null;
+        }
+
+        // A field that picks from options is left out while it has none to offer.
+        return choices.Count == 0 ? null
+            : field with { Choices = [.. choices.Select(choice => choice.Text)], Multiple = PastesSeveral };
+    }
+
+    // The PasteChoices that have a text, and the first of those that share one, since the model answers with the text.
+    private List<(string Text, object? Value)>? OfferedChoices() => PasteChoices?
+        .Where(choice => !string.IsNullOrWhiteSpace(choice.Text))
+        .Select(choice => (Text: choice.Text!.Trim(), choice.Value))
+        .DistinctBy(choice => choice.Text, StringComparer.OrdinalIgnoreCase).ToList();
 
     async Task<bool> IFormField.PasteAsync(string text)
     {
         text = text.Trim();
         TValue? value;
+        if (OfferedChoices() is { } choices)
+        {
+            // Several choices come one to a line.
+            var names = PastesSeveral
+                ? text.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) : [text];
+            var named = names.Select(name => choices.FindIndex(choice =>
+                    choice.Text.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                .Where(index => index >= 0).Distinct().Select(index => choices[index].Value).ToList();
+            if (named.Count == 0)
+            {
+                return false;
+            }
+
+            value = ChoosePasted(named, [.. choices.Select(choice => choice.Value)]);
+        }
         // A yes or no skips TryTakePasted, since it has no limits.
-        if ((Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue)) == typeof(bool))
+        else if ((Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue)) == typeof(bool))
         {
             if (!bool.TryParse(text, out var flag))
             {

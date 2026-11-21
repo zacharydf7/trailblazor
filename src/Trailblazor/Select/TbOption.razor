@@ -53,7 +53,8 @@ else
 
     /// <summary>The option's text, when it has no <see cref="ChildContent"/>, or the text that type-ahead matches and
     /// screen readers read when the content isn't plain text, such as an image and a caption. Until the page is
-    /// interactive, it shows in place of the content. Defaults to the value's text.</summary>
+    /// interactive, it shows in place of the content. A <see cref="TbSmartPaste"/> names the option by it too.
+    /// Defaults to the value's text.</summary>
     [Parameter]
     public string? Text { get; set; }
 
@@ -97,6 +98,8 @@ else
     RenderFragment ISelectOption.Content => Content;
 
     string? ISelectOption.Name => ChildContent is null ? null : Text;
+
+    string? ISelectOption.PlainText => Text ?? (ChildContent is null ? Select!.Format(Value) : null);
 
     /// <inheritdoc />
     protected override void OnInitialized()

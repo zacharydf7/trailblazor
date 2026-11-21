@@ -5,7 +5,7 @@ namespace Trailblazor.BrowserTests;
 
 public class SmartPasteTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
-    private const string Signature = "Robin Vale, robin@ridge.example, 555-0100, a party of 4";
+    private const string Signature = "Robin Vale, robin@ridge.example, 555-0100, a party of 4, steady pace";
 
     private const string Refused =
         "navigator.clipboard.readText = () => Promise.reject(new DOMException('Refused', 'NotAllowedError'));";
@@ -31,7 +31,8 @@ public class SmartPasteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByRole(AriaRole.Textbox, new() { Name = "Email" })).ToHaveValueAsync("robin@ridge.example");
         await Expect(page.GetByRole(AriaRole.Textbox, new() { Name = "Phone" })).ToHaveValueAsync("555-0100");
         await Expect(page.GetByRole(AriaRole.Spinbutton, new() { Name = "Party size" })).ToHaveValueAsync("4");
-        await Expect(page.Locator(".tb-smart-paste [data-part=status]")).ToHaveTextAsync("Filled 4 fields");
+        await Expect(page.GetByRole(AriaRole.Radio, new() { Name = "Steady" })).ToBeCheckedAsync();
+        await Expect(page.Locator(".tb-smart-paste [data-part=status]")).ToHaveTextAsync("Filled 5 fields");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -75,7 +76,7 @@ public class SmartPasteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Tb().SmartPaste().PasteAsync(Signature);
 
         await ExpectFilledAsync(page);
-        Assert.Equal("Filled 4 fields", await page.Tb().SmartPaste().StatusAsync());
+        Assert.Equal("Filled 5 fields", await page.Tb().SmartPaste().StatusAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

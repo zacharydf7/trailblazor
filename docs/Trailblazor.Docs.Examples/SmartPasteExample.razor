@@ -6,14 +6,22 @@
     <TbTextField Label="Email" Type="TextFieldType.Email" @bind-Value="_email" />
     <TbTextField Label="Phone" Type="TextFieldType.Tel" @bind-Value="_phone" />
     <TbNumberField Label="Party size" @bind-Value="_partySize" HelperText="How many are going." />
+    <TbRadioGroup Label="Pace" @bind-Value="_pace" Row>
+        <TbRadio Value="Pace.Easy" Text="Easy" />
+        <TbRadio Value="Pace.Steady" Text="Steady" />
+        <TbRadio Value="Pace.Fast" Text="Fast" />
+    </TbRadioGroup>
 </TbForm>
-<TbText class="tb-mt-3">Try: Robin Vale, robin@ridge.example, 555-0100, a party of 4</TbText>
+<TbText class="tb-mt-3">Try: Robin Vale, robin@ridge.example, 555-0100, a party of 4, steady pace</TbText>
 
 @code {
     private string? _leader;
     private string? _email;
     private string? _phone;
     private int? _partySize;
+    private Pace? _pace;
+
+    private enum Pace { Easy, Steady, Fast }
 
     // A stand-in for a language model, which a real app would ask for each field's value.
     private static Task<IReadOnlyDictionary<string, string>> ExtractAsync(SmartPasteRequest request,
@@ -38,6 +46,17 @@
             else if (!found.ContainsKey("Leader's name"))
             {
                 found["Leader's name"] = part;
+            }
+        }
+
+        // A field that picks from options comes with their texts, and is answered with one of them.
+        foreach (var field in request.Fields)
+        {
+            var choice = field.Choices?.FirstOrDefault(choice =>
+                request.Text.Contains(choice, StringComparison.OrdinalIgnoreCase));
+            if (choice is not null)
+            {
+                found[field.Name] = choice;
             }
         }
 
