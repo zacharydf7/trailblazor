@@ -3559,6 +3559,15 @@ public static class ExampleCatalog
                     + "and `requestAnimationFrame` answer for the page, and a `ResizeObserver` the page made hears "
                     + "nothing of the panel. An `ElementReference` still reaches your script as its element.")
                     { Pitfall = true },
+                new("An `IntersectionObserver` made on the page follows what it watches into a panel's window and "
+                    + "back. From before Blazor starts, the page's `IntersectionObserver` is the library's, which "
+                    + "keeps a browser's observer in each window that holds one of its targets. Blazor's "
+                    + "`Virtualize` relies on one, so a virtualized list in a panel's window goes on drawing its "
+                    + "rows in Firefox, which runs an observer only as the window that made it draws."),
+                new("An observer hears of a target again when the target changes windows, as it would from a new "
+                    + "observer, with an entry that belongs to the window the target is in now. A script that "
+                    + "kept the browser's own `IntersectionObserver` from before the library loaded still has it.")
+                    { Pitfall = true },
                 new("In a panel's window, open a window from a click with `element.ownerDocument.defaultView.open`, "
                     + "since a browser lets only the window the click was in open one. Check an element's kind by "
                     + "`localName` or `nodeType`: an element made in the panel's window, as by `innerHTML` there, "

@@ -372,7 +372,6 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldReachOptionsOutOfThePageByKey_WhenItsLongListIsVirtualized(string browser)
     {
-        Assert.SkipWhen(Popped && browser == "firefox", VirtualizeWaitsForThePagesWindow);
         var page = await OpenAsync(browser, "/select-items");
         var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Long trail", Exact = true });
         await Expect(trail).ToHaveAttributeAsync("data-ready", "");
@@ -450,7 +449,6 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldStartOnTheChosenOption_WhenItsVirtualizedListFirstOpensOrIsTypedIn(string browser)
     {
-        Assert.SkipWhen(Popped && browser == "firefox", VirtualizeWaitsForThePagesWindow);
         var page = await OpenAsync(browser, "/select-items");
         var saved = page.GetByRole(AriaRole.Combobox, new() { Name = "Saved trail" });
         var typed = page.GetByRole(AriaRole.Combobox, new() { Name = "Typed trail" });
@@ -469,7 +467,6 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldReachTheEndsOfItsWholeList_WhenHomeOrEndOpensItsVirtualizedList(string browser)
     {
-        Assert.SkipWhen(Popped && browser == "firefox", VirtualizeWaitsForThePagesWindow);
         var page = await OpenAsync(browser, "/select-items");
         var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Long trail", Exact = true });
         await Expect(trail).ToHaveAttributeAsync("data-ready", "");
@@ -485,7 +482,6 @@ public class SelectTests(BrowserFixture fixture) : SelectKeysTests(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task MultiSelect_ShouldStayOnTheLastOption_WhenArrowDownIsPressedOnItInAVirtualizedList(string browser)
     {
-        Assert.SkipWhen(Popped && browser == "firefox", VirtualizeWaitsForThePagesWindow);
         var page = await OpenAsync(browser, "/select-items");
         var trails = page.GetByRole(AriaRole.Combobox, new() { Name = "Long trails" });
         await Expect(trails).ToHaveAttributeAsync("data-ready", "");

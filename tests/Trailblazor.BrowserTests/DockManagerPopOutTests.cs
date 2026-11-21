@@ -965,6 +965,152 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         await Expect(page.Locator("body")).ToHaveAttributeAsync("data-told", "w true false, v false true, ");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldDrawTheOptionsItScrollsTo_WhenItsLongListIsFirstDrawnInAPanelsWindow(
+        string browser)
+    {
+        var (_, window) = await OpenToolsInAWindowAsync(browser);
+        await window.GetByRole(AriaRole.Button, new() { Name = "Show more" }).ClickAsync();
+        var late = window.GetByRole(AriaRole.Combobox, new() { Name = "Late trail", Exact = true });
+        await Expect(late).ToHaveAttributeAsync("data-ready", "");
+        await late.FocusAsync();
+
+        // Blazor's Virtualize hears of the scroll from an observer, which Firefox runs only in a window that draws.
+        await late.PressAsync("End");
+
+        await Expect(window.Locator("[role=option][data-text='Trail 1000']")).ToBeAttachedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task IntersectionObserver_ShouldWatchEachTargetInItsOwnWindow_WhenItsTargetsAreInTwoWindows(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        // One observer of the button at the end of the panel's content and of a mark below the page's own fold. It
+        // notes what it is told of each, and each time the button came into view.
+        await page.GetByTestId("last").EvaluateAsync("""
+            last => {
+                const root = document.documentElement;
+                const mark = document.body.appendChild(document.createElement('p'));
+                mark.dataset.testid = 'mark';
+                mark.style.marginBlockStart = '200vh';
+                mark.textContent = 'Mark';
+                window.watcher = new IntersectionObserver(entries => {
+                    for (const entry of entries) {
+                        root.dataset[entry.target.dataset.testid] = entry.isIntersecting;
+                        if (entry.target === last && entry.isIntersecting) {
+                            root.dataset.shown = `${root.dataset.shown ?? ''}+`;
+                        }
+                    }
+                });
+                watcher.observe(last);
+                watcher.observe(mark);
+            }
+            """);
+        var seen = page.Locator("html");
+        await Expect(seen).ToHaveAttributeAsync("data-mark", "false");
+        var window = (await page.Tb().Dock("Bench").PopOutAsync("Tools")).Page;
+
+        await page.BringToFrontAsync();
+        await page.GetByTestId("mark").ScrollIntoViewIfNeededAsync();
+        await Expect(seen).ToHaveAttributeAsync("data-mark", "true");
+
+        await window.BringToFrontAsync();
+        await window.GetByTestId("last").ScrollIntoViewIfNeededAsync();
+        await Expect(seen).ToHaveAttributeAsync("data-last", "true");
+        // The page's window, which still watches the mark, no longer watches the button that left it.
+        await page.BringToFrontAsync();
+        Assert.Equal("+", await page.EvaluateAsync<string>("""
+            () => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(
+                () => done(document.documentElement.dataset.shown))))
+            """));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task IntersectionObserver_ShouldFollowWhatItWatches_WhenItsPanelGoesToAWindowAndComesBack(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        // An observer of the app's own, made on the page, of the buttons at the two ends of the panel's tall content.
+        // It notes what it is told of each, whether it was handed itself, and each time the last one came into view.
+        await page.GetByTestId("last").EvaluateAsync("""
+            last => {
+                const root = document.documentElement;
+                window.watcher = new IntersectionObserver(function (entries, observer) {
+                    for (const entry of entries) {
+                        root.dataset[entry.target.dataset.testid] =
+                            `${entry.isIntersecting} ${observer === watcher && this === watcher}`;
+                        if (entry.target === last && entry.isIntersecting) {
+                            root.dataset.shown = `${root.dataset.shown ?? ''}+`;
+                        }
+
+                        root.dataset.told = `${root.dataset.told ?? ''}${entry.target.dataset.testid[0]}`;
+                    }
+                });
+                watcher.observe(document.querySelector('[data-testid=first]'));
+                watcher.observe(last);
+            }
+            """);
+        var seen = page.Locator("html");
+        await Expect(seen).ToHaveAttributeAsync("data-first", "true true");
+        await Expect(seen).ToHaveAttributeAsync("data-last", "false true");
+        // Watching the first one again tells nothing new.
+        Assert.Equal(2, await page.GetByTestId("first").EvaluateAsync<int>("""
+            first => {
+                watcher.observe(first);
+                return new Promise(done => requestAnimationFrame(() => requestAnimationFrame(
+                    () => done(document.documentElement.dataset.told.length))));
+            }
+            """));
+        // It answers for its options and its records as the browser's does, has the newer members only where the
+        // browser has them, and refuses what the browser refuses: no callback, options it can't read, and a target
+        // that is no element, of which it then keeps nothing.
+        Assert.Equal("null, 0px 0px 0px 0px, 0, true, true, true, true, true", await page.EvaluateAsync<string>("""
+            () => {
+                const refuses = action => {
+                    try {
+                        action();
+                        return false;
+                    } catch {
+                        return true;
+                    }
+                };
+                return [`${watcher.root}`, watcher.rootMargin, watcher.thresholds, Array.isArray(watcher.takeRecords()),
+                    'trackVisibility' in watcher === 'isVisible' in IntersectionObserverEntry.prototype,
+                    refuses(() => new IntersectionObserver(null)),
+                    refuses(() => new IntersectionObserver(() => { }, { rootMargin: 'wide' })),
+                    refuses(() => watcher.observe(document.createTextNode('text')))].join(', ');
+            }
+            """));
+        // It lets the first one go, and still follows the other.
+        await page.GetByTestId("first").EvaluateAsync("""
+            first => {
+                watcher.unobserve(first);
+                delete document.documentElement.dataset.first;
+            }
+            """);
+
+        var window = (await page.Tb().Dock("Bench").PopOutAsync("Tools")).Page;
+        // The last one is told of again as it arrives in the panel's window, as by a new observer.
+        await Expect(seen).ToHaveAttributeAsync("data-told", "fll");
+        await window.GetByTestId("last").ScrollIntoViewIfNeededAsync();
+        await Expect(seen).ToHaveAttributeAsync("data-last", "true true");
+        await window.GetByTestId("first").ScrollIntoViewIfNeededAsync();
+        await Expect(seen).ToHaveAttributeAsync("data-last", "false true");
+
+        await page.Tb().Dock("Bench").ReturnAsync("Tools");
+        await page.GetByTestId("last").ScrollIntoViewIfNeededAsync();
+        await Expect(seen).ToHaveAttributeAsync("data-last", "true true");
+        // The last one came into view once in the panel's window and once back on the page, each told once, and the
+        // observer heard nothing more of the first one.
+        Assert.Equal("++ none", await page.EvaluateAsync<string>("""
+            () => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(() => done(
+                `${document.documentElement.dataset.shown} ${document.documentElement.dataset.first ?? 'none'}`))))
+            """));
+    }
+
     private static ILocator Toast(IPage page, string text = "Tools saved") =>
         page.Locator("[data-part=toast]").Filter(new() { HasText = text });
 

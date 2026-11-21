@@ -41,6 +41,7 @@ Familiar apps: a native `<select>`, the dropdowns in Windows and macOS settings
 - [x] Clicking options in a multi-select toggles them and leaves the list open. `SelectTests.MultiSelect_ShouldToggleOptionsAndStayOpen_WhenOptionsAreClicked`
 - [x] Clicking a disabled option leaves the value alone and the list open. `SelectTests.Select_ShouldStayOpenAndUnchanged_WhenADisabledOptionIsClicked`
 - [x] Hovering an option makes it the active one. `SelectTests.Select_ShouldFocusTheComboboxAndFollowThePointer_WhenTheLabelIsClickedAndAnOptionHovered`
+- [ ] A pointer that rests over the list leaves the active option to the keyboard when the list scrolls under it. WebKit sends a pointer move for such a scroll, and the option under the pointer becomes the active one. #593
 - [x] Clicking elsewhere closes the list without choosing, since it's a native `popover="auto"`. `TbSelectBase.razor`
 - [x] Clicking a chip's remove button removes that choice without opening the list. `SelectExtrasTests.Chips_ShouldRemoveAChoiceWithoutOpeningTheList_WhenItsButtonIsClicked`
 

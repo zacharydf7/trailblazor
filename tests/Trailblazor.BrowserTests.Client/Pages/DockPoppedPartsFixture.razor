@@ -3,12 +3,13 @@
 @inject IToastService Toasts
 
 @* A dock whose Tools panel holds components that lean on their scripts: a menu with a submenu, a tooltip, a toolbar,
-   tabs that overflow a narrow window, an area with a context menu, and a list to sort. Show more draws a select, a
+   tabs that overflow a narrow window, an area with a context menu, and a list to sort. Show more draws two selects, a
    tooltip and a field that asks for the focus, which arrive only after the panel may have left for a window of its
-   own. Tools also holds a dock of its own, and ends with content tall enough to scroll. Its link's address is
-   relative, which on the page's deeper address counts from the app's base and not from that address. Code is a field
-   with a Clear button inside it, and the output after it counts the times the focus leaves the field. Show a toast
-   shows a toast that stays for a minute, and Show a brief toast one that stays for two seconds. *@
+   own; Late trail, one of the selects, has enough options to draw only those in view. Tools also holds a dock of its
+   own, and ends with content tall enough to scroll. Its link's address is relative, which on the page's deeper
+   address counts from the app's base and not from that address. Code is a field with a Clear button inside it, and
+   the output after it counts the times the focus leaves the field. Show a toast shows a toast that stays for a
+   minute, and Show a brief toast one that stays for two seconds. *@
 <div style="inline-size: 60rem; block-size: 30rem">
     <TbDockManager AriaLabel="Bench" AllowPopOut>
         <TbDockPanel Id="tools" Title="Tools" Closable="false">
@@ -43,6 +44,7 @@
                     <TbOption Value="@("Large")">Large</TbOption>
                 </TbSelect>
                 <output data-testid="size">@_size</output>
+                <TbSelect TValue="string" Label="Late trail" Items="LongTrails" @bind-Value="_lateTrail" />
                 <TbTooltip Text="Sends it on">
                     <button type="button">Share</button>
                 </TbTooltip>
@@ -79,7 +81,9 @@
 </div>
 
 @code {
+    private static readonly string[] LongTrails = Enumerable.Range(1, 1000).Select(id => $"Trail {id}").ToArray();
     private readonly List<string> _rules = ["Rule 1", "Rule 2", "Rule 3"];
+    private string? _lateTrail;
     private string? _chosen;
     private bool _more;
     private string? _note;

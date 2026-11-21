@@ -76,7 +76,7 @@ public partial class ScriptWindowsTests
             |window\.open\(
             |instanceof\ (Node|Element|HTML\w+|SVG\w+)\b
             |(window\.)?(innerWidth|innerHeight|scrollX|scrollY|visualViewport)\b
-            |new\ (ResizeObserver|IntersectionObserver)\(
+            |new\ ResizeObserver\(
         )
         """, RegexOptions.IgnorePatternWhitespace)]
     private static partial Regex OfThePage();
