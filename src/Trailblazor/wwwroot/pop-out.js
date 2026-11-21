@@ -31,6 +31,11 @@ const forward = event => {
     const copy = new Type(event.type, event);
     const path = event.composedPath();
     Object.defineProperty(copy, 'target', { value: event.target });
+    // WebKit drops a related element that is in another document than the copy, such as the one the focus went to.
+    if (event.relatedTarget) {
+        Object.defineProperty(copy, 'relatedTarget', { value: event.relatedTarget });
+    }
+
     // A copy each time: Blazor takes the path apart as it reads it, and reads it once for each name an event has.
     Object.defineProperty(copy, 'composedPath', { value: () => [...path] });
     // A default that a listener in the window prevented stays prevented on the page, where Blazor would otherwise
@@ -38,6 +43,18 @@ const forward = event => {
     // notes which key's default it prevented itself.
     if (event.defaultPrevented) {
         copy.preventDefault();
+    }
+
+    // WebKit acts on a key's copy as if the key were pressed on the page: it scrolls the page, and goes back a page
+    // where Backspace does that. So the copy arrives prevented, and what its listeners prevent is tracked separately.
+    if (copy instanceof KeyboardEvent) {
+        let prevented = event.defaultPrevented;
+        copy.preventDefault();
+        Object.defineProperties(copy, {
+            preventDefault: { value: () => { prevented = true; } },
+            defaultPrevented: { get: () => prevented },
+            returnValue: { get: () => !prevented, set: value => { prevented ||= !value; } },
+        });
     }
 
     for (const [name, value] of Object.entries(event).filter(([name]) => name !== 'isTrusted')) {

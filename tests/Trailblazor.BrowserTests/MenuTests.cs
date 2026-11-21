@@ -639,9 +639,10 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(again).ToHaveAttributeAsync("target", "_blank");
         Assert.False(await Item(page, "Nowhere").EvaluateAsync<bool>("item => item.hasAttribute('href')"));
 
-        var popup = await page.RunAndWaitForPopupAsync(() => again.ClickAsync());
+        // Firefox doesn't say which window a tab opened from when the link is in a dock panel's window.
+        var tab = await page.Context.RunAndWaitForPageAsync(() => again.ClickAsync());
 
-        await Expect(popup).ToHaveURLAsync(new Regex("/menu$"));
+        await Expect(tab).ToHaveURLAsync(new Regex("/menu$"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

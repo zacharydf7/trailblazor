@@ -3553,6 +3553,14 @@ public static class ExampleCatalog
                     + "a listener on the page's `<body>` doesn't hear it. If a listener in the window called "
                     + "`preventDefault` on it, it arrives with its default prevented, and any properties listeners "
                     + "there set on an event go with it.") { Pitfall = true },
+                new("A listener on the page that calls `preventDefault` on an event from the window prevents it in "
+                    + "the window too, except `wheel`, `mousewheel`, `touchstart` and `touchmove`, which the window "
+                    + "hears passively, as a page's document does.") { Pitfall = true },
+                new("A key from the window arrives with its default already prevented as far as the browser goes, so "
+                    + "that the page doesn't scroll or go back a page for a key pressed in another window. Its "
+                    + "`defaultPrevented` still tells only what listeners prevented. To prevent such a key from the "
+                    + "page, call `preventDefault` or set `returnValue` to `false`: a handler that returns `false`, "
+                    + "as one assigned to `document.onkeydown`, doesn't prevent it.") { Pitfall = true },
                 new("`selectionchange` and `visibilitychange` from the window reach the page's `document` with the "
                     + "window's document as their `target`. Read the selection or `hidden` from there, since the "
                     + "page's `document.getSelection()` and `document.hidden` give the page's.") { Pitfall = true },

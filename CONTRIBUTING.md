@@ -17,7 +17,7 @@ An issue is done when all of these hold:
   `TRAILBLAZOR_RENDER_MODE=webassembly` (or `auto`) runs the test host's pages in that render mode instead of on the
   server; the circuit tests still need the server. `TRAILBLAZOR_POPPED=1` runs each test that opens an interactive page
   against that page inside a dock panel that shows in a browser window of its own. CI runs the suites listed in
-  `ci.yml` that way, in chromium, and a test in them that can't run there skips itself with
+  `ci.yml` that way, in the browsers of the run, and a test in them that can't run there skips itself with
   `Assert.SkipWhen(Popped, ...)` and one of the reasons in `BrowserTest`.
 - A script works on an element that may be in another browser window, so it asks that element for its window:
   `element.ownerDocument` for the focused element and for finding others, and `viewOf`, `watchSizes` and `frames` from

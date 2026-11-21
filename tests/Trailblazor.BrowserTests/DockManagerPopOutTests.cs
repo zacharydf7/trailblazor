@@ -876,6 +876,95 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         await page.Tb().Announcements.ExpectAnnouncedAsync("Rule 1 moved to position 1 of 3.");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Field_ShouldSayTheFocusLeftOnlyWhenItLeavesTheField_WhenItIsInAPanelsWindow(string browser)
+    {
+        var (_, window) = await OpenToolsInAWindowAsync(browser);
+        await window.GetByLabel("Code", new() { Exact = true }).FocusAsync();
+
+        // The focus goes to the field's own Clear button, which isn't leaving the field, and then out of it.
+        await window.GetByRole(AriaRole.Button, new() { Name = "Clear", Exact = true }).FocusAsync();
+        await window.GetByTestId("first").FocusAsync();
+
+        await Expect(window.GetByTestId("code-blurs")).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Page_ShouldNeitherScrollNorGoBack_WhenKeysThatDoSoArePressedInAPanelsWindow(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+        await page.EvaluateAsync("""
+            () => {
+                const tall = document.createElement('div');
+                tall.style.blockSize = '300vh';
+                document.body.append(tall);
+                history.pushState(null, '', '#keys');
+            }
+            """);
+        var code = window.GetByLabel("Code", new() { Exact = true });
+        await code.FocusAsync();
+
+        foreach (var key in new[] { "End", "Space", "PageDown", "ArrowDown", "Backspace", "Backspace" })
+        {
+            await window.Keyboard.PressAsync(key);
+        }
+
+        // The keys did their work in the field, and the page is where it was: not scrolled, and not a page back.
+        await Expect(code).ToHaveValueAsync("A");
+        Assert.Equal("#keys 0", await page.EvaluateAsync<string>("""
+            () => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(
+                () => done(`${location.hash} ${scrollY}`))))
+            """));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Key_ShouldDoNothing_WhenAListenerOnThePagePreventsItFromAPanelsWindow(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+        // The two ways a listener has to prevent a key: the method, and the older property.
+        await page.EvaluateAsync("""
+            () => document.addEventListener('keydown', event => {
+                if (event.key === 'x') {
+                    event.preventDefault();
+                } else if (event.key === 'y') {
+                    event.returnValue = false;
+                }
+            })
+            """);
+        var code = window.GetByLabel("Code", new() { Exact = true });
+        await code.FocusAsync();
+        await window.Keyboard.PressAsync("End");
+
+        await window.Keyboard.TypeAsync("xyz");
+
+        await Expect(code).ToHaveValueAsync("A1z");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Key_ShouldTellThePageWhetherItWasPrevented_WhenAListenerInThePanelsWindowPreventsIt(
+        string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+        var code = window.GetByLabel("Code", new() { Exact = true });
+        await code.EvaluateAsync(
+            "input => input.addEventListener('keydown', event => event.key === 'w' && event.preventDefault())");
+        await page.EvaluateAsync("""
+            () => document.addEventListener('keydown', event => {
+                if (event.key.length === 1) {
+                    document.body.dataset.told = `${document.body.dataset.told ?? ''}${event.key} ` +
+                        `${event.defaultPrevented} ${event.returnValue}, `;
+                }
+            })
+            """);
+        await code.FocusAsync();
+        await window.Keyboard.PressAsync("End");
+
+        await window.Keyboard.TypeAsync("wv");
+
+        await Expect(code).ToHaveValueAsync("A1v");
+        await Expect(page.Locator("body")).ToHaveAttributeAsync("data-told", "w true false, v false true, ");
+    }
+
     private static ILocator Toast(IPage page, string text = "Tools saved") =>
         page.Locator("[data-part=toast]").Filter(new() { HasText = text });
 

@@ -5,14 +5,17 @@
 @* A dock whose Tools panel holds components that lean on their scripts: a menu with a submenu, a tooltip, a toolbar,
    tabs that overflow a narrow window, an area with a context menu, and a list to sort. Show more draws a select, a
    tooltip and a field that asks for the focus, which arrive only after the panel may have left for a window of its
-   own. Tools also holds a dock of its own, and ends with content tall enough to scroll. Its link's address is relative,
-   which on the page's deeper address counts from the app's base and not from that address. Show a toast shows a toast
-   that stays for a minute, and Show a brief toast one that stays for two seconds. *@
+   own. Tools also holds a dock of its own, and ends with content tall enough to scroll. Its link's address is
+   relative, which on the page's deeper address counts from the app's base and not from that address. Code is a field
+   with a Clear button inside it, and the output after it counts the times the focus leaves the field. Show a toast
+   shows a toast that stays for a minute, and Show a brief toast one that stays for two seconds. *@
 <div style="inline-size: 60rem; block-size: 30rem">
     <TbDockManager AriaLabel="Bench" AllowPopOut>
         <TbDockPanel Id="tools" Title="Tools" Closable="false">
             <button type="button" data-testid="first">First</button>
             <a href="guides/start">Guide</a>
+            <TbTextField Label="Code" @bind-Value="_code" Clearable OnBlur="() => _codeBlurs++" />
+            <output data-testid="code-blurs">@_codeBlurs</output>
             <TbButton OnClick="ShowAToast">Show a toast</TbButton>
             <TbButton OnClick="ShowABriefToast">Show a brief toast</TbButton>
             <TbMenu Label="Insert">
@@ -81,6 +84,8 @@
     private bool _more;
     private string? _note;
     private string? _size;
+    private string? _code = "A1";
+    private int _codeBlurs;
 
     private void ShowAToast() => Toasts.Show("Tools saved", options: new() { Duration = TimeSpan.FromMinutes(1) });
 
