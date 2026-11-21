@@ -26,8 +26,10 @@
                           Class="@Classes?.ScrollButton" tabindex="-1" data-part="scroll-start" />
         </div>
     }
-    @* The script sets data-ready here once the arrow keys work, which tests wait for. *@
+    @* The script sets data-ready here once the arrow keys work, which tests wait for. data-settling is here until the
+       parent's new index is applied, so the script waits for the final selection before it moves focus. *@
     <div @ref="_list" role="tablist" aria-label="@AriaLabel" data-part="list" data-commits="@_answered"
+         data-settling="@(Settling ? "" : null)"
          aria-orientation="@(Vertical ? "vertical" : "horizontal")"
          data-activation="@(Activation == TabActivation.Automatic ? "automatic" : "manual")"
          data-focusable-panels="@PanelStops"
@@ -92,7 +94,11 @@
     private (TbTab Tab, TbTab? Neighbor)? _closing;
     private bool _closeEnded;
     private readonly HashSet<TbTab> _closingTabs = [];
-    private TbTab? _focusAfterRender;
+    // Where a closed tab's focus goes once the tab is gone: to the tab selected in its place if the closed tab was
+    // the selected one, or else to the tab beside it.
+    private (TbTab? Neighbor, bool WasSelected)? _focusAfterRender;
+    // The tab the last render showed as selected, or none.
+    private TbTab? _shown;
     private int _active;
     private int? _lastActiveIndex;
     private bool _indexFromParent;
@@ -109,7 +115,8 @@
     /// <summary>The selected tab's position, counting from 0. Bind it with <c>@bind-ActiveIndex</c>. A new index
     /// from the parent applies a render later, once the tabs rendered along with it have registered, and one set along
     /// with a tab that renders after the others waits for the browser to report the tabs' order. Until then the tab
-    /// selected before stays selected, so no other tab's panel renders in between.</summary>
+    /// selected before stays selected, so no other tab's panel renders in between, and the tab list has
+    /// <c>data-settling</c>.</summary>
     [Parameter]
     public int ActiveIndex { get; set; }
 
@@ -262,8 +269,11 @@
     // A new index from the parent may count a tab that registers later in the same render, or one whose place only
     // the script's report gives, so until then the tab selected before stays selected. A key needs no such wait.
     internal TbTab? ActiveTab => SelectsByKey ? _tabs.Find(tab => tab.Key == _activeKey)
-        : _indexFromParent || _keepIndexOnReorder && _reportsOrder ? _settled
+        : Settling ? _settled
         : _active >= 0 && _active < _tabs.Count ? _tabs[_active] : null;
+
+    // Whether the parent's new index is still to be applied.
+    private bool Settling => _indexFromParent || _keepIndexOnReorder && _reportsOrder;
 
     // The tab that Tab reaches: the selected one, or the first enabled one when none is selected.
     private TbTab? FocusableTab => ActiveTab is { Disabled: false } active ? active : _tabs.Find(tab => !tab.Disabled);
@@ -296,16 +306,19 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        _shown = ActiveTab;
         if (ActiveTab is { } shown && _recent.LastOrDefault() != shown)
         {
             _recent.Remove(shown);
             _recent.Add(shown);
         }
 
-        if (_focusAfterRender is { } next)
+        // While the parent's index is still to be applied, the selection isn't the final one.
+        if (_focusAfterRender is { } closed && !Settling)
         {
             _focusAfterRender = null;
-            if (_tabs.Contains(next))
+            var next = closed.WasSelected && ActiveTab is { Disabled: false } selected ? selected : closed.Neighbor;
+            if (next is not null && _tabs.Contains(next))
             {
                 await next.Header.FocusAsync();
             }
@@ -384,12 +397,14 @@
     {
         var index = _tabs.IndexOf(tab);
         var wasSelected = tab == ActiveTab;
+        // Go by what the last render showed as selected, as the script does, whatever the parent has selected since.
+        var wasShown = tab == _shown;
         _tabs.Remove(tab);
         _recent.Remove(tab);
         _click.KeepOnly(_tabs.Contains);
         if (tab == _closing?.Tab)
         {
-            _focusAfterRender = _closing.Value.Neighbor;
+            _focusAfterRender = (_closing.Value.Neighbor, wasShown);
         }
 
         // A removed tab can't stay selected while the parent's index settles.
@@ -525,7 +540,8 @@
         }
     }
 
-    // Focus goes to the next enabled tab, or the one before it, if the parent removes the tab while closing it.
+    // If the parent removes the tab while closing it, focus goes to the tab selected in its place when the tab was the
+    // selected one, and otherwise to the next enabled tab, or the one before it.
     internal async Task CloseAsync(TbTab tab)
     {
         // A second click on the close mark while an async OnClose runs mustn't ask again.

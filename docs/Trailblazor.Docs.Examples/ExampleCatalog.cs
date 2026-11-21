@@ -10571,7 +10571,9 @@ public static class ExampleCatalog
                 new("closable", "Closing tabs", "A tab with an `OnClose` shows a close mark, and Delete or Backspace "
                     + "closes it while it has focus. Closing raises `OnClose` without selecting the tab. Remove the tab "
                     + "there, and focus moves to the next enabled tab, or to the one before it when none follows; keep "
-                    + "rendering it to leave it open, such as after asking about unsaved work.",
+                    + "rendering it to leave it open, such as after asking about unsaved work. When the closed tab was "
+                    + "the selected one, focus goes to the enabled tab selected in its place, such as one you select "
+                    + "as you remove it.",
                     typeof(TabsClosableExample)),
                 new("add", "Adding tabs", "`OnAdd` ends the row of tabs with an add button, named by `Labels.Add`, or "
                     + "\"Add tab\" in English. Add a tab there, and select it to show it. The button stays at the row's "

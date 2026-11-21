@@ -1146,16 +1146,86 @@ public class TbTabsTests : BunitContext
         Assert.Equal(Header(cut, "Reviews").Id, FocusedReference().Id);
     }
 
+    [Theory, InlineData("key"), InlineData("index")]
+    public void Close_ShouldFocusTheTabTheAppSelects_WhenTheClosedTabWasTheSelectedOne(string bound)
+    {
+        var cut = Render<ClosingHost>(parameters => parameters.Add(host => host.Selects, bound));
+        cut.FindAll("[role=tab]")[1].Click();
+
+        cut.FindAll("[data-part=close]")[1].Click();
+
+        // Reviews is the tab beside Specs, and Overview the one the host selects as it removes Specs.
+        Assert.Equal(["Overview", "Reviews"], cut.FindAll("[role=tab]").Select(tab => tab.TextContent));
+        Assert.Equal("true", cut.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
+        Assert.Equal(Header(cut, "Overview").Id, FocusedReference().Id);
+    }
+
+    [Fact]
+    public void Close_ShouldFocusTheTabBesideIt_WhenTheClosedTabWasSelectedAndTheAppSelectsNone()
+    {
+        var cut = Render<ClosingHost>(parameters => parameters.Add(host => host.Selects, "no key"));
+        cut.FindAll("[role=tab]")[1].Click();
+
+        cut.FindAll("[data-part=close]")[1].Click();
+
+        Assert.DoesNotContain(cut.FindAll("[role=tab]"), tab => tab.GetAttribute("aria-selected") == "true");
+        Assert.Equal(Header(cut, "Reviews").Id, FocusedReference().Id);
+    }
+
+    [Fact]
+    public void Close_ShouldFocusTheTabBesideIt_WhenTheClosedTabWasSelectedAndTheAppSelectsADisabledTab()
+    {
+        var cut = Render<ClosingHost>(parameters => parameters.Add(host => host.Selects, "key")
+            .Add(host => host.DisabledText, "Overview"));
+        cut.FindAll("[role=tab]")[1].Click();
+
+        cut.FindAll("[data-part=close]")[0].Click();
+
+        // Overview, which the host selects, is disabled, so focus goes to Reviews, beside Specs.
+        Assert.Equal("true", cut.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
+        Assert.Equal(Header(cut, "Reviews").Id, FocusedReference().Id);
+    }
+
+    [Fact]
+    public async Task Close_ShouldFocusTheTabBesideIt_WhenTheAppHadSelectedNoneSinceTheClosedTabWasSelected()
+    {
+        var cut = Render<ClosingHost>(parameters => parameters.Add(host => host.Selects, "key"));
+        cut.FindAll("[role=tab]")[1].Click();
+        await cut.InvokeAsync(() => cut.Instance.Select("none"));
+
+        cut.FindAll("[data-part=close]")[1].Click();
+
+        // Specs was the last tab to be selected, but no tab was selected when it was closed.
+        Assert.Equal("true", cut.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
+        Assert.Equal(Header(cut, "Reviews").Id, FocusedReference().Id);
+    }
+
+    [Fact]
+    public void Close_ShouldFocusTheTabBesideIt_WhenTheClosedTabWasNotSelectedAndTheAppSelectsAnother()
+    {
+        var cut = Render<ClosingHost>(parameters => parameters.Add(host => host.Selects, "key"));
+        cut.FindAll("[role=tab]")[2].Click();
+
+        cut.FindAll("[data-part=close]")[1].Click();
+
+        Assert.Equal("true", cut.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
+        Assert.Equal(Header(cut, "Reviews").Id, FocusedReference().Id);
+    }
+
     // bUnit's markup loses a re-rendered header's reference id, so the tab's own reference is compared instead.
     private static ElementReference Header(IRenderedComponent<ClosingHost> cut, string text) =>
         cut.FindComponents<TbTab>().Single(tab => tab.Instance.Text == text).Instance.Header;
 
     private ElementReference FocusedReference() => (ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!;
 
-    // Every tab can be closed, and is removed once Answer completes, when one is given.
+    // Every tab can be closed, and is removed once Answer completes, when one is given. With Selects, the host binds
+    // the selection by "key" or by "index", and selects Overview as it removes a tab; with "no key" it binds by key
+    // and selects a key no tab has.
     private sealed class ClosingHost : ComponentBase
     {
         private readonly List<string> _tabs = ["Overview", "Specs", "Reviews"];
+        private string? _key = "Overview";
+        private int _index;
 
         [Parameter]
         public string? DisabledText { get; set; }
@@ -1163,9 +1233,31 @@ public class TbTabsTests : BunitContext
         [Parameter]
         public Task? Answer { get; set; }
 
+        [Parameter]
+        public string? Selects { get; set; }
+
+        public void Select(string? key)
+        {
+            _key = key;
+            StateHasChanged();
+        }
+
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<TbTabs>(0);
+            if (Selects is "key" or "no key")
+            {
+                builder.AddAttribute(7, nameof(TbTabs.ActiveKey), _key);
+                builder.AddAttribute(8, nameof(TbTabs.ActiveKeyChanged),
+                    EventCallback.Factory.Create<string?>(this, key => _key = key));
+            }
+            else if (Selects == "index")
+            {
+                builder.AddAttribute(9, nameof(TbTabs.ActiveIndex), _index);
+                builder.AddAttribute(10, nameof(TbTabs.ActiveIndexChanged),
+                    EventCallback.Factory.Create<int>(this, index => _index = index));
+            }
+
             builder.AddAttribute(1, nameof(TbTabs.ChildContent), (RenderFragment)(content =>
             {
                 foreach (var text in _tabs)
@@ -1173,11 +1265,13 @@ public class TbTabsTests : BunitContext
                     content.OpenComponent<TbTab>(2);
                     content.SetKey(text);
                     content.AddAttribute(3, nameof(TbTab.Text), text);
+                    content.AddAttribute(11, nameof(TbTab.Key), Selects is "key" or "no key" ? text : null);
                     content.AddAttribute(4, nameof(TbTab.Disabled), text == DisabledText);
                     content.AddAttribute(5, nameof(TbTab.OnClose), EventCallback.Factory.Create(this, async () =>
                     {
                         await (Answer ?? Task.CompletedTask);
                         _tabs.Remove(text);
+                        (_key, _index) = (Selects == "no key" ? "none" : "Overview", 0);
                     }));
                     content.AddAttribute(6, nameof(TbTab.ChildContent),
                         (RenderFragment)(panel => panel.AddContent(0, $"{text} panel")));

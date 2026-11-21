@@ -2,8 +2,8 @@
 
 @* A ribbon whose Design tab belongs to a context and goes away at "x" or "y", pressed anywhere in the ribbon, so a
    test can remove it while it has focus; at "y" the app selects Insert as well. The tabs under it hold a tab that
-   can't close but gets an aria-keyshortcuts from HeaderAttributes, and a Clips tab that goes away at "x", pressed in
-   those tabs, as the app selects Pens. *@
+   can't close but gets an aria-keyshortcuts from HeaderAttributes. The Ledger ribbon is bound by index, and its
+   Totals tab goes away at "z" as the app selects Rows. *@
 <div @onkeydown="OnKeyDown">
     <TbRibbon AriaLabel="Sketchbook" @bind-ActiveKey="_tab">
         <TbRibbonTab Key="home" Title="Home">
@@ -31,23 +31,54 @@
         }
     </TbRibbon>
 </div>
-<div @onkeydown="OnDrawersKeyDown">
-    <TbTabs AriaLabel="Drawers" @bind-ActiveKey="_drawer">
-        <TbTab Key="pens" Text="Pens" HeaderAttributes="Keys">Pens panel</TbTab>
-        <TbTab Key="paper" Text="Paper">Paper panel</TbTab>
-        @if (_clips)
+<div @onkeydown="OnLedgerKeyDown">
+    <TbRibbon AriaLabel="Ledger" @bind-ActiveIndex="_ledger">
+        <TbRibbonTab Title="Sheet">
+            <TbRibbonGroup Label="Files">
+                <TbRibbonButton Label="Add a sheet" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        <TbRibbonTab Title="Rows">
+            <TbRibbonGroup Label="Order">
+                <TbRibbonButton Label="Sort rows" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        <TbRibbonTab Title="Columns">
+            <TbRibbonGroup Label="Widths">
+                <TbRibbonButton Label="Fit columns" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        @if (_totals)
         {
-            <TbTab Key="clips" Text="Clips">Clips panel</TbTab>
+            <TbRibbonTab Title="Totals" Context="Sum tools">
+                <TbRibbonGroup Label="Sums">
+                    <TbRibbonButton Label="Add a total" />
+                </TbRibbonGroup>
+            </TbRibbonTab>
         }
-    </TbTabs>
+    </TbRibbon>
 </div>
+<TbTabs AriaLabel="Drawers" @bind-ActiveKey="_drawer">
+    <TbTab Key="pens" Text="Pens" HeaderAttributes="Keys">Pens panel</TbTab>
+    <TbTab Key="paper" Text="Paper">Paper panel</TbTab>
+</TbTabs>
 
 @code {
     private static readonly Dictionary<string, object> Keys = new() { ["aria-keyshortcuts"] = "Control+P" };
     private string? _tab = "home";
     private bool _table = true;
-    private bool _clips = true;
     private string? _drawer = "pens";
+    private int _ledger;
+    private bool _totals = true;
+
+    private void OnLedgerKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "z")
+        {
+            _totals = false;
+            _ledger = 1;
+        }
+    }
 
     private void OnKeyDown(KeyboardEventArgs args)
     {
@@ -59,15 +90,6 @@
         if (args.Key == "y")
         {
             _tab = "insert";
-        }
-    }
-
-    private void OnDrawersKeyDown(KeyboardEventArgs args)
-    {
-        if (args.Key == "x")
-        {
-            _clips = false;
-            _drawer = "pens";
         }
     }
 }

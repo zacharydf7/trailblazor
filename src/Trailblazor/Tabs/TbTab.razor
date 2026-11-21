@@ -51,9 +51,11 @@
 
     /// <summary>Raised when the user closes the tab, by its close mark or by Delete or Backspace while it has focus.
     /// With it, the tab shows a close mark; a disabled tab, or one on a static page, can't be closed. Remove the tab
-    /// here to close it, and focus moves to the next enabled tab, or to the one before it when none follows. Keep
-    /// rendering it to leave it open, such as after asking about unsaved work. With <see cref="TbTabs.ActiveKey"/>,
-    /// closing the selected tab leaves none selected until you set another key.</summary>
+    /// here to close it, and focus moves to the next enabled tab, or to the one before it when none follows; when the
+    /// closed tab was the selected one, focus moves to the enabled tab selected in its place instead, such as one you
+    /// select here. Keep rendering it to leave it open, such as after asking about unsaved work. With
+    /// <see cref="TbTabs.ActiveKey"/>, closing the selected tab leaves none selected until you set another
+    /// key.</summary>
     [Parameter]
     public EventCallback OnClose { get; set; }
 

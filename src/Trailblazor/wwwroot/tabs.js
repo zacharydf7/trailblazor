@@ -99,9 +99,16 @@ export function attachTabs(list, order, followsSelection) {
     root.addEventListener('mousedown', onScrollerPress);
     list.addEventListener('scroll', updateScrollers, { passive: true });
 
-    // A focused tab the parent removes, by any route, hands focus to the next enabled tab or else the one before, as a
-    // closed tab does. Removing a tab after focus has left it moves nothing.
+    // A focused tab the parent removes, by any route, hands focus on as a closed tab does: to the tab selected in its
+    // place if it was the selected one, or else to the next enabled tab or the one before. Removing a tab after focus
+    // has left it moves nothing.
     let focused = null;
+    // A removal whose focus waits for the parent's new index to be applied.
+    let waiting = null;
+    // The tab that was selected when the last changes ended. A tab that goes away as the app selects another has
+    // already lost aria-selected by the time it is removed.
+    const selectedTab = () => list.querySelector(':scope > [role="tab"][aria-selected="true"]');
+    let shown = selectedTab();
     const onFocusIn = event => focused = event.target.parentElement === list ? event.target : null;
     // Chromium sends focusout while it removes the focused tab, and a window losing focus sends it too while the tab
     // keeps focus, so wait a microtask to see whether focus really went elsewhere.
@@ -113,25 +120,36 @@ export function attachTabs(list, order, followsSelection) {
     const refocus = records => {
         const removedBy = new Map(records.flatMap(record => [...record.removedNodes].map(node => [node, record])));
         const removal = focused && !focused.isConnected && removedBy.get(focused);
-        const active = list.ownerDocument.activeElement;
-        if (!removal || (active && active !== list.ownerDocument.body)) {
+        if (removal) {
+            // Focus follows the selection if the tab that went away was selected, and always in a ribbon.
+            const follows = followsSelection || focused === shown;
+            waiting = { removal, removedBy, follows };
+            focused = null;
+        }
+
+        if (!waiting || (waiting.follows && list.hasAttribute('data-settling'))) {
             return;
         }
 
-        // In a ribbon, focus follows the selection instead: back to the tab selected before, or to one the app selects.
-        const selected = followsSelection
+        const { removal: gone, removedBy: removals, follows } = waiting;
+        waiting = null;
+        const active = list.ownerDocument.activeElement;
+        if (active && active !== list.ownerDocument.body) {
+            return;
+        }
+
+        const selected = follows
             ? list.querySelector(':scope > [role="tab"][aria-selected="true"]:not(:disabled)') : null;
-        focused = null;
         // A neighbor removed in the same render is passed over by continuing from the siblings its removal recorded.
         const enabled = node => node.isConnected && node.matches?.('[role="tab"]:not(:disabled)');
         const nearest = (node, side) => {
             while (node && !enabled(node)) {
-                node = node.isConnected ? node[side] : removedBy.get(node)?.[side];
+                node = node.isConnected ? node[side] : removals.get(node)?.[side];
             }
 
             return node;
         };
-        (selected ?? nearest(removal.nextSibling, 'nextSibling') ?? nearest(removal.previousSibling, 'previousSibling'))
+        (selected ?? nearest(gone.nextSibling, 'nextSibling') ?? nearest(gone.previousSibling, 'previousSibling'))
             ?.focus();
     };
 
@@ -153,11 +171,13 @@ export function attachTabs(list, order, followsSelection) {
     // Tabs arriving already selected change no attribute, and may not change the row's size.
     const selection = new MutationObserver(records => {
         refocus(records);
+        shown = selectedTab();
         revealSelected();
         watchTabs();
         updateScrollers();
     });
-    selection.observe(list, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-selected'] });
+    selection.observe(list, { childList: true, subtree: true, attributes: true,
+        attributeFilter: ['aria-selected', 'data-settling'] });
     // This covers what no selection change does: the first render and a hidden row being shown, which is also when a
     // panel's content can first be seen to start with a control.
     const sizes = watchSizes(() => {

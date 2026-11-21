@@ -1,0 +1,73 @@
+@page "/tabs-follow"
+
+@* Each set of tabs loses a tab while the app selects Last, which isn't beside Second, the tab the tests remove: "x"
+   removes the selected tab from a key of the page's own, and a tab's close mark or Delete removes that tab through
+   OnClose. With ?add=true the app adds a tab named New as it removes one, and selects that. "u" removes Second,
+   selected or not, "n" removes the selected tab and selects none, and "d" removes it and selects Shut, which is
+   disabled. One set is bound by key and the other by index. *@
+<div @onkeydown="@(args => OnKeyDown(args, byKey: true))">
+    <TbTabs AriaLabel="By key" @bind-ActiveKey="_key">
+        @foreach (var name in _byKey)
+        {
+            <TbTab @key="name" Key="@name" Text="@($"{name} key")" Disabled="@(name == "Shut")"
+                   OnClose="@(() => Remove(name, byKey: true))">
+                @name
+            </TbTab>
+        }
+    </TbTabs>
+</div>
+<div @onkeydown="@(args => OnKeyDown(args, byKey: false))">
+    <TbTabs AriaLabel="By index" @bind-ActiveIndex="_index">
+        @foreach (var name in _byIndex)
+        {
+            <TbTab @key="name" Text="@($"{name} index")" Disabled="@(name == "Shut")"
+                   OnClose="@(() => Remove(name, byKey: false))">
+                @name
+            </TbTab>
+        }
+    </TbTabs>
+</div>
+
+@code {
+    private readonly List<string> _byKey = ["Shut", "First", "Second", "Third", "Last"];
+    private readonly List<string> _byIndex = ["Shut", "First", "Second", "Third", "Last"];
+    private string? _key = "First";
+    private int _index = 1;
+
+    [SupplyParameterFromQuery]
+    public bool Add { get; set; }
+
+    private void OnKeyDown(KeyboardEventArgs args, bool byKey)
+    {
+        switch (args.Key)
+        {
+            case "x":
+                Remove(byKey ? _key! : _byIndex[_index], byKey);
+                break;
+            case "u":
+                Remove("Second", byKey);
+                break;
+            case "n" when byKey:
+                _byKey.Remove(_key!);
+                _key = "none";
+                break;
+            case "d":
+                (byKey ? _byKey : _byIndex).Remove(byKey ? _key! : _byIndex[_index]);
+                (_key, _index) = byKey ? ("Shut", _index) : (_key, 0);
+                break;
+        }
+    }
+
+    private void Remove(string name, bool byKey)
+    {
+        var tabs = byKey ? _byKey : _byIndex;
+        tabs.Remove(name);
+        if (Add)
+        {
+            tabs.Add("New");
+        }
+
+        // Last, or the tab just added after it.
+        (_key, _index) = byKey ? (tabs[^1], _index) : (_key, tabs.Count - 1);
+    }
+}

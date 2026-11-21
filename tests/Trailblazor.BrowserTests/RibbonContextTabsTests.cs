@@ -134,21 +134,22 @@ public class RibbonContextTabsTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Tab_ShouldHandItsFocusToTheTabBesideIt_WhenItLeavesPlainTabsAsTheAppSelectsAnother(string browser)
+    public async Task ContextTab_ShouldHandFocusToTheTabTheAppSelects_WhenTheRibbonIsBoundByIndex(string browser)
     {
         var page = await OpenAsync(browser, "/ribbon-context");
-        await Expect(page.GetByRole(AriaRole.Tablist, new() { Name = "Drawers" }))
+        await Expect(page.Tb().Ribbon("Ledger").Ribbon).ToHaveAttributeAsync("data-ready", "");
+        await Expect(page.GetByRole(AriaRole.Tablist, new() { Name = "Ledger" }))
             .ToHaveAttributeAsync("data-ready", "");
-        await Tab(page, "Clips").ClickAsync();
-        await Expect(Tab(page, "Clips")).ToHaveAttributeAsync("aria-selected", "true");
-        await Tab(page, "Clips").FocusAsync();
+        await Tab(page, "Totals").ClickAsync();
+        await Expect(Tab(page, "Totals")).ToHaveAttributeAsync("aria-selected", "true");
+        await Tab(page, "Totals").FocusAsync();
 
-        await page.Keyboard.PressAsync("x");
+        await page.Keyboard.PressAsync("z");
 
-        // Only a ribbon's focus follows the selection: here the app selects Pens, and Paper, beside Clips, has focus.
-        await Expect(Tab(page, "Clips")).ToHaveCountAsync(0);
-        await Expect(Tab(page, "Pens")).ToHaveAttributeAsync("aria-selected", "true");
-        await Expect(Tab(page, "Paper")).ToBeFocusedAsync();
+        // Rows is neither Sheet, the tab selected before, nor Columns, the tab beside the one that went away.
+        await Expect(Tab(page, "Totals")).ToHaveCountAsync(0);
+        await Expect(Tab(page, "Rows")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(Tab(page, "Rows")).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
