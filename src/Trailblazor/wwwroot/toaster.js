@@ -1,4 +1,5 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { currentPage, onPagesChange } from '../Trailblazor.Primitives/pages.js';
 // Toasts never take focus themselves, so F8 brings focus to the newest one and Escape sends it back.
 export function attachToaster(toaster, events) {
     // Blazor passes null for an element that was removed before this call arrived.
@@ -16,16 +17,16 @@ export function attachToaster(toaster, events) {
     const onKeyDown = event => {
         if (event.key === 'F8' && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
             const button = newestButton();
-            const from = document.activeElement;
+            const from = toaster.ownerDocument.activeElement;
             button?.focus();
             // A modal dialog makes the toaster inert, and then focus stays where it was.
-            if (button && document.activeElement === button) {
+            if (button && toaster.ownerDocument.activeElement === button) {
                 event.preventDefault();
                 if (!toaster.contains(from)) {
                     returnFocus = from;
                 }
             }
-        } else if (event.key === 'Escape' && toaster.contains(document.activeElement)) {
+        } else if (event.key === 'Escape' && toaster.contains(toaster.ownerDocument.activeElement)) {
             // Reached by Tab or a click instead of F8, a toast inside a dialog hands focus to the dialog.
             const back = returnFocus?.isConnected ? returnFocus : toaster.closest('dialog');
             if (back) {
@@ -50,7 +51,7 @@ export function attachToaster(toaster, events) {
     let pointerOn = false;
     let paused = false;
     const updatePause = () => {
-        if ((pointerOn || document.hidden) !== paused) {
+        if ((pointerOn || toaster.ownerDocument.hidden) !== paused) {
             paused = !paused;
             callDotNet(events, 'OnPause', paused);
         }
@@ -71,6 +72,44 @@ export function attachToaster(toaster, events) {
     toaster.addEventListener('pointerleave', onPointerLeave);
     document.addEventListener('visibilitychange', updatePause);
     updatePause();
+
+    const show = () => {
+        if (toaster.querySelector('[data-part="toast"]') && !toaster.matches(':popover-open')) {
+            toaster.showPopover();
+        }
+    };
+    // The app's toaster follows the user into a dock panel's window and back; a modal dialog's toaster stays put.
+    const home = document.createComment('');
+    const follow = () => {
+        const page = currentPage();
+        if (page === toaster.ownerDocument || toaster.closest('dialog')) {
+            return;
+        }
+
+        // A move to another window may fire no focusout or pointerleave, so forget the focus and pointer noted here.
+        const active = toaster.ownerDocument.activeElement;
+        if (toaster.contains(active)) {
+            active.blur();
+        }
+
+        pointerOn = false;
+        returnFocus = null;
+        focused = null;
+        if (page === document) {
+            home.replaceWith(toaster);
+        } else {
+            if (!home.isConnected) {
+                toaster.before(home);
+            }
+
+            page.body.append(toaster);
+        }
+
+        // A popover closes as it leaves its document, and whether its page is hidden can differ too.
+        show();
+        updatePause();
+    };
+    const unfollow = onPagesChange(follow);
     // Marks that F8 and the pause on hover or focus work, which tests wait for.
     toaster.dataset.ready = '';
 
@@ -78,9 +117,9 @@ export function attachToaster(toaster, events) {
         // Runs after every render: shows or hides the toaster and keeps focus when the toast holding it closes.
         sync() {
             // A closing toast stays inert while it fades, so focus inside it is as lost as in a removed one.
-            const active = document.activeElement;
+            const active = toaster.ownerDocument.activeElement;
             if (focused && (!focused.isConnected || focused.closest('[data-leaving]'))
-                && (!active || active === document.body || active.closest('[data-leaving]'))) {
+                && (!active || active === toaster.ownerDocument.body || active.closest('[data-leaving]'))) {
                 const next = newestButton() ?? (returnFocus?.isConnected ? returnFocus : null);
                 focused = null;
                 next?.focus();
@@ -96,13 +135,12 @@ export function attachToaster(toaster, events) {
             }
 
             // Showing it again moves it above a non-modal dialog opened since; a toaster holding focus stays put.
-            if (open && document.querySelector('dialog[open]') && !toaster.contains(document.activeElement)) {
+            const page = toaster.ownerDocument;
+            if (open && page.querySelector('dialog[open]') && !toaster.contains(page.activeElement)) {
                 toaster.hidePopover();
             }
 
-            if (!toaster.matches(':popover-open')) {
-                toaster.showPopover();
-            }
+            show();
         },
         dispose() {
             document.removeEventListener('keydown', onKeyDown);
@@ -111,6 +149,8 @@ export function attachToaster(toaster, events) {
             toaster.removeEventListener('pointerenter', onPointerEnter);
             toaster.removeEventListener('pointerleave', onPointerLeave);
             document.removeEventListener('visibilitychange', updatePause);
+            unfollow();
+            home.remove();
             if (toaster.matches(':popover-open')) {
                 toaster.hidePopover();
             }

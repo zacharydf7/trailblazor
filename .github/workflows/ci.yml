@@ -53,6 +53,7 @@ jobs:
           -class "*.MentionInputTests" -class "*.RibbonKeyTipsTests" -class "*.TreeSelectTests"
           -class "*.ListBoxKeysTests" -class "*.NumberFieldTests" -class "*.AutocompleteTests"
           -class "*.TagInputTests" -class "*.GridBatchTests" -class "*.RichTextEditorTests"
+          -class "*.ToastTests"
         env:
           TRAILBLAZOR_POPPED: 1
           TRAILBLAZOR_BROWSERS: chromium

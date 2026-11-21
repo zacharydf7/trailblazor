@@ -788,6 +788,141 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         await page.Tb().Announcements.ExpectAnnouncedAsync("Rule 1 moved to position 1 of 3.");
     }
 
+    private static ILocator Toast(IPage page, string text = "Tools saved") =>
+        page.Locator("[data-part=toast]").Filter(new() { HasText = text });
+
+    // A press on the page beside the dock, on nothing that takes the focus.
+    private static Task PressBesideTheDockAsync(IPage page) => page.Mouse.ClickAsync(1100, 600);
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toast_ShouldShowInTheWindowTheUserIsWorkingIn_WhenAPanelIsInAWindowOfItsOwn(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+        var save = window.GetByRole(AriaRole.Button, new() { Name = "Show a toast" });
+
+        // WebKit doesn't focus a button that is clicked, so the keyboard presses it.
+        await save.FocusAsync();
+        await window.Keyboard.PressAsync("Enter");
+
+        await Expect(Toast(window)).ToBeVisibleAsync();
+        await Expect(Toast(page)).ToHaveCountAsync(0);
+        // F8 reaches the toast there, and Escape sends the focus back to the button.
+        await window.Keyboard.PressAsync("F8");
+        await FocusedAsync(Toast(window).GetByRole(AriaRole.Button));
+        await window.Keyboard.PressAsync("Escape");
+        await FocusedAsync(save);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toast_ShouldGoWhereTheUserWorks_WhenAPressAKeyOrTheFocusIsInAnotherWindow(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+        await window.GetByRole(AriaRole.Button, new() { Name = "Show a toast" }).FocusAsync();
+        await window.Keyboard.PressAsync("Enter");
+        await Expect(Toast(window)).ToBeVisibleAsync();
+
+        await PressBesideTheDockAsync(page);
+        await Expect(Toast(page)).ToBeVisibleAsync();
+        await Expect(Toast(window)).ToHaveCountAsync(0);
+
+        // The focus in the window has stayed where it was, so only the key says where the user is.
+        await window.Keyboard.PressAsync("F8");
+        await FocusedAsync(Toast(window).GetByRole(AriaRole.Button));
+        await Expect(Toast(page)).ToHaveCountAsync(0);
+
+        await page.GetByRole(AriaRole.Tab, new() { Name = "Other" }).FocusAsync();
+        await Expect(Toast(page)).ToBeVisibleAsync();
+        await Expect(Toast(window)).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toast_ShouldComeBackToItsPlaceOnThePage_WhenTheWindowItShowsInCloses(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        await page.EvaluateAsync("""
+            () => {
+                const toaster = document.querySelector('[data-part=toaster]');
+                window.toasterPlace = [toaster.parentNode, toaster.nextSibling];
+            }
+            """);
+        var window = (await page.Tb().Dock("Bench").PopOutAsync("Tools")).Page;
+        await window.GetByRole(AriaRole.Button, new() { Name = "Show a toast" }).ClickAsync();
+        await Expect(Toast(window)).ToBeVisibleAsync();
+
+        await window.CloseAsync();
+
+        await Expect(Toast(page)).ToBeVisibleAsync();
+        Assert.True(await page.EvaluateAsync<bool>("""
+            () => {
+                const toaster = document.querySelector('[data-part=toaster]');
+                return toaster.parentNode === window.toasterPlace[0] && toaster.nextSibling === window.toasterPlace[1];
+            }
+            """));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toast_ShouldRunItsTime_WhenThePageIsHiddenAndTheUserWorksInAPanelsWindow(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+        // The toaster is on the page when the page is hidden, which pauses it until it moves to the panel's window.
+        await PressBesideTheDockAsync(page);
+        await Expect(page.Locator("[data-part=toaster]")).ToHaveCountAsync(1);
+        await page.EvaluateAsync("""
+            () => {
+                Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+                document.dispatchEvent(new Event('visibilitychange'));
+            }
+            """);
+
+        await window.GetByRole(AriaRole.Button, new() { Name = "Show a brief toast" }).ClickAsync();
+
+        await Expect(Toast(window, "Tools tidied")).ToBeVisibleAsync();
+        await Expect(Toast(window, "Tools tidied")).ToHaveCountAsync(0, new() { Timeout = 10_000 });
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toast_ShouldRunItsTime_WhenItLeavesTheWindowWhereThePointerAndTheFocusWereOnIt(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+        await window.GetByRole(AriaRole.Button, new() { Name = "Show a toast" }).ClickAsync();
+        await window.GetByRole(AriaRole.Button, new() { Name = "Show a brief toast" }).FocusAsync();
+        // The pointer on the toaster pauses every toast, so the brief one waits for the rest of the test.
+        await Toast(window).HoverAsync();
+        await window.Keyboard.PressAsync("Enter");
+        await Expect(Toast(window, "Tools tidied")).ToBeVisibleAsync();
+        await window.Keyboard.PressAsync("F8");
+        await FocusedAsync(Toast(window, "Tools tidied").GetByRole(AriaRole.Button));
+
+        await PressBesideTheDockAsync(page);
+
+        await Expect(Toast(page, "Tools tidied")).ToBeVisibleAsync();
+        await Expect(Toast(page, "Tools tidied")).ToHaveCountAsync(0, new() { Timeout = 10_000 });
+        // The toast that is left doesn't take the focus the brief one had in the other window.
+        await Expect(Toast(page)).ToBeVisibleAsync();
+        Assert.True(await page.EvaluateAsync<bool>("() => document.activeElement === document.body"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toaster_ShouldLeaveTheFocusWhereItIs_WhenEscapeIsPressedAfterItChangedWindows(string browser)
+    {
+        var (page, window) = await OpenToolsInAWindowAsync(browser);
+        await window.GetByRole(AriaRole.Button, new() { Name = "Show a toast" }).ClickAsync();
+        await page.GetByRole(AriaRole.Tab, new() { Name = "Other" }).FocusAsync();
+        await Expect(Toast(page)).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("F8");
+        await FocusedAsync(Toast(page).GetByRole(AriaRole.Button));
+        await window.GetByTestId("first").ClickAsync();
+        var dismiss = Toast(window).GetByRole(AriaRole.Button);
+        await dismiss.FocusAsync();
+
+        await window.Keyboard.PressAsync("Escape");
+
+        // F8 was pressed on the page, and the tab that had the focus there doesn't take it from this window.
+        await FocusedAsync(dismiss);
+        await Expect(Toast(page)).ToHaveCountAsync(0);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tooltip_ShouldGoOnDescribingItsTrigger_WhenItsPanelGoesToAWindowAndComesBack(string browser)
     {

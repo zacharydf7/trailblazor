@@ -28,6 +28,27 @@ export function addPage(page) {
     };
 }
 
+// Calls `changed` whenever an element may have to change windows: a window's document joined or left, or the user
+// went to work in another window. The returned function stops the calls.
+export function onPagesChange(changed) {
+    movers.add(changed);
+    return () => movers.delete(changed);
+}
+
+// The document the user is working in: the one their last key, press or focus was in.
+let current = document;
+for (const type of ['keydown', 'pointerdown', 'focusin']) {
+    document.addEventListener(type, event => {
+        const page = event.target.ownerDocument ?? current;
+        if (page !== current) {
+            current = page;
+            moved();
+        }
+    }, true);
+}
+
+export const currentPage = () => pages.has(current) ? current : document;
+
 // The documents of the other windows.
 export const otherPages = () => [...pages].filter(page => page !== document);
 

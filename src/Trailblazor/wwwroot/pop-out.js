@@ -11,7 +11,7 @@ const bubbling = new Set(['click', 'dblclick', 'auxclick', 'contextmenu', 'mouse
     'keyup', 'keypress', 'beforeinput', 'input', 'change', 'focusin', 'focusout', 'select', 'selectstart', 'submit',
     'reset', 'wheel', 'mousewheel', 'copy', 'cut', 'paste', 'compositionstart', 'compositionupdate', 'compositionend',
     'dragstart', 'drag', 'dragend', 'dragenter', 'dragleave', 'dragover', 'drop', 'fullscreenchange',
-    'fullscreenerror', 'selectionchange']);
+    'fullscreenerror', 'selectionchange', 'visibilitychange']);
 export const forwardToo = type => bubbling.add(type);
 // The ones that don't bubble, which are heard on their way down: a control's, a dialog's, and an audio or video
 // element's.

@@ -3503,8 +3503,10 @@ public static class ExampleCatalog
                 new("The library's components work in a panel's window as they do on the page, including ones "
                     + "first drawn there: each reads the focus, its size and where its popups go from the window its "
                     + "element is in. A dock inside the panel opens its own panels in windows from there."),
-                new("A dialog or a toast that the panel asks for still shows in the page's window.")
-                    { Pitfall = true },
+                new("The app's toasts show in the window the user is working in, the one their last key, press or "
+                    + "focus was in, so a toast that follows a click or a key in a panel's window shows there. The "
+                    + "toasts go back to the page when that window closes or the user works on the page again."),
+                new("A dialog that the panel asks for still shows in the page's window.") { Pitfall = true },
                 new("The panel moves into its window once the window has loaded the page's style sheets, and waits "
                     + "on the page, hidden, until then. After three seconds it moves anyway, and a sheet that fails "
                     + "to load or is turned off isn't waited for."),
@@ -3525,15 +3527,15 @@ public static class ExampleCatalog
                     + "`localName` or `nodeType`: an element made in the panel's window, as by `innerHTML` there, "
                     + "isn't an instance of the page's `HTMLElement`, so `instanceof` checks against it fail.")
                     { Pitfall = true },
-                new("The events Blazor has handlers for, the library's own and `selectionchange` are sent on from the "
-                    + "window to the page; others, and custom events of your own, aren't. An event on an element "
-                    + "reaches the page's root element and then its `document`, as on the page, so a listener on the "
-                    + "page's `<body>` doesn't hear it. If a listener in the window called `preventDefault` on it, "
-                    + "it arrives with its default prevented, and any properties listeners there set on an event go "
-                    + "with it.") { Pitfall = true },
-                new("`selectionchange` from the window reaches the page's `document` with the window's document as "
-                    + "its `target`. Read the selection from there, since the page's `document.getSelection()` gives "
-                    + "the page's.") { Pitfall = true },
+                new("The events Blazor has handlers for, the library's own, `selectionchange` and `visibilitychange` "
+                    + "are sent on from the window to the page; others, and custom events of your own, aren't. An "
+                    + "event on an element reaches the page's root element and then its `document`, as on the page, so "
+                    + "a listener on the page's `<body>` doesn't hear it. If a listener in the window called "
+                    + "`preventDefault` on it, it arrives with its default prevented, and any properties listeners "
+                    + "there set on an event go with it.") { Pitfall = true },
+                new("`selectionchange` and `visibilitychange` from the window reach the page's `document` with the "
+                    + "window's document as their `target`. Read the selection or `hidden` from there, since the "
+                    + "page's `document.getSelection()` and `document.hidden` give the page's.") { Pitfall = true },
                 new("The window's `resize` and `blur` are sent on to the page's `window`, so a listener there also "
                     + "hears the panel's window change size or lose the focus."),
                 new("The window opens in the click on the menu's item, since a browser only lets a page open one "
@@ -3726,8 +3728,10 @@ public static class ExampleCatalog
                     + "presses a panel's Return button. `PopOutAsync` throws an `InvalidOperationException` when "
                     + "`AllowPopOut` is off, and `ReturnAsync` for a panel that isn't in a window of its own.",
                 "In Playwright, announcements made while a panel is in its window can be checked on its `Page` or "
-                    + "on the page's, with `Tb().Announcements.ExpectAnnouncedAsync(text)` on either. A dialog or a "
-                    + "toast the panel opens is found only on the page's `Page`.",
+                    + "on the page's, with `Tb().Announcements.ExpectAnnouncedAsync(text)` on either. Toasts are "
+                    + "on the `Page` the last key, press or focus was in, so right after `PopOutAsync` they are on the "
+                    + "panel's, since the panel takes the focus. A dialog the panel opens is found only on the page's "
+                    + "`Page`.",
                 "Scan a panel's window for accessibility as a whole, not one element in it: the page's window made "
                     + "the panel's elements, so axe running in the panel's window won't take one of them as what to "
                     + "scan.",
@@ -12316,6 +12320,11 @@ public static class ExampleCatalog
                 new("`options.Toasts` in `AddTrailblazor` sets, for the whole app, where toasts appear (`Position`, "
                     + "top end unless set), how many show at once (`MaxVisible`, 3 unless set) and how long they stay "
                     + "(`Duration`, 5 seconds unless set)."),
+                new("While a [dock](components/dock-manager) panel is in a browser window of its own, the toasts "
+                    + "show in the window the user is working in, the one their last key, press or focus was in. "
+                    + "A toast keeps the time it has left as it moves, and F8 and Escape work in that window. The "
+                    + "timers pause while the window the toasts show in is hidden, not while the page is. Toasts in "
+                    + "a modal dialog stay in the dialog."),
             ],
             Modes = new(ModeSupport.None, ModeSupport.None),
             BeforeInteractive =
