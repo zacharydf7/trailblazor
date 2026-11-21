@@ -3,12 +3,13 @@
 @inject IDialogService Dialogs
 @inject IToastService Toasts
 
-@* A dock whose Files panel asks for dialogs five ways: Ask and Name through the service, the second modeless, Notes a
-   modeless dialog written
-   inside the panel, Settings a modal one written there, with a Save settings button that shows a toast for a
-   minute, and Rules a modal one kept on the page layer. Ask on the page, beside the dock, asks through the service
-   too, and Alt+K is a hotkey of the page's that counts its presses. Log opens a modeless dialog written on the page;
-   it and Notes can be minimized and moved. *@
+@* A dock whose Files panel asks for dialogs: Ask and Name through the service, the second modeless; Notes, a modeless
+   dialog written inside the panel, with a toolbar and a modal written inside it that the page's Alt+J opens;
+   Settings, a modal written there; and Rules, a modal kept on the page layer. In Settings, Save settings shows a
+   toast for a minute, Ask again asks through the service, and Check opens a modal written inside Settings. Its
+   toolbar, like the one in Notes, moves its buttons into its menu when it narrows. Beside the dock, Ask on the page
+   asks through the service, Log opens a modeless dialog written on the page, and Alt+K is a hotkey that counts its
+   presses. Notes and Log can be minimized and moved, and Settings minimized. *@
 <TbButton OnClick="AskAsync">Ask on the page</TbButton>
 <TbButton OnClick="() => _log = true">Log</TbButton>
 <TbDialog @bind-Open="_log" Title="Page log" Options="Modeless">
@@ -16,6 +17,7 @@
 </TbDialog>
 <output data-testid="answer">@_answer</output>
 <TbHotkey Keys="Alt+K" OnPress="() => _marked++" />
+<TbHotkey Keys="Alt+J" OnPress="() => _discard = true" />
 <output data-testid="marked">@_marked</output>
 <div style="inline-size: 60rem; block-size: 30rem">
     <TbDockManager AriaLabel="Desk" AllowPopOut>
@@ -27,9 +29,27 @@
             <TbButton OnClick="() => _rules = true">Rules</TbButton>
             <TbDialog @bind-Open="_notes" Title="File notes" Options="Modeless">
                 <TbTextField Label="Note" @bind-Value="_note" />
+                <TbToolbar AriaLabel="Pins">
+                    <TbToolbarButton Label="Star" />
+                    <TbToolbarButton Label="Flag" />
+                    <TbToolbarButton Label="Pin" />
+                </TbToolbar>
+                <TbDialog @bind-Open="_discard" Title="Discard?">
+                    <p>The note goes.</p>
+                </TbDialog>
             </TbDialog>
-            <TbDialog @bind-Open="_settings" Title="File settings">
+            <TbDialog @bind-Open="_settings" Title="File settings" Options="Minimizable">
                 <TbButton OnClick="SaveSettings">Save settings</TbButton>
+                <TbToolbar AriaLabel="Marks">
+                    <TbToolbarButton Label="Bold" />
+                    <TbToolbarButton Label="Italic" />
+                    <TbToolbarButton Label="Underline" />
+                </TbToolbar>
+                <TbButton OnClick="AskAsync">Ask again</TbButton>
+                <TbButton OnClick="() => _sure = true">Check</TbButton>
+                <TbDialog @bind-Open="_sure" Title="Sure?">
+                    <p>Checked.</p>
+                </TbDialog>
             </TbDialog>
             <TbDialog @bind-Open="_rules" Title="File rules" Options="OnThePageLayer">
                 <p>No rules yet.</p>
@@ -42,11 +62,14 @@
 @code {
     private static readonly DialogOptions Modeless = new() { Modal = false, Minimizable = true, Draggable = true };
     private static readonly DialogOptions OnThePageLayer = new() { TopLayer = false };
+    private static readonly DialogOptions Minimizable = new() { Minimizable = true };
 
     private string? _answer;
     private bool _log;
     private bool _notes;
     private bool _settings;
+    private bool _sure;
+    private bool _discard;
     private bool _rules;
     private int _marked;
     private string? _note;

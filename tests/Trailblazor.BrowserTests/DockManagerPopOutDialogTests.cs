@@ -13,6 +13,15 @@ public class DockManagerPopOutDialogTests(BrowserFixture fixture) : BrowserTest(
     private static Task<bool> IsInertAsync(ILocator element) =>
         element.EvaluateAsync<bool>("element => element.closest('[inert]') !== null");
 
+    // Waits until the focus is in the dialog, on it or on something it holds.
+    private static async Task FocusInsideAsync(ILocator dialog) => await dialog.Page.WaitForFunctionAsync(
+        "dialog => dialog.contains(document.activeElement)", await dialog.ElementHandleAsync());
+
+    // What covers a window while a modal is open in another of the app's windows.
+    private static ILocator Scrim(IPage page) => page.Locator("[data-part=scrim]");
+
+    private static ILocator Settings(IPage page) => page.GetByRole(AriaRole.Dialog, new() { Name = "File settings" });
+
     // How far along its window's row of minimized dialogs a dialog sits, and how many rows up.
     private static Task<string> PlaceInTheRowAsync(ILocator dialog) => dialog.EvaluateAsync<string>("""
         dialog => ['--tb-dialog-tray-inline', '--tb-dialog-tray-block']
@@ -90,20 +99,194 @@ public class DockManagerPopOutDialogTests(BrowserFixture fixture) : BrowserTest(
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Toaster_ShouldStayInItsDialog_WhenTheUserGoesToWorkInAnotherWindow(string browser)
+    public async Task Toaster_ShouldStayInItsDialog_WhenTheModalComesToAnotherWindow(string browser)
     {
         var page = await OpenDeskAsync(browser);
         var window = (await page.Tb().Dock("Desk").PopOutAsync("Other")).Page;
         await Button(page, "Settings").ClickAsync();
-        var settings = page.GetByRole(AriaRole.Dialog, new() { Name = "File settings" });
-        await settings.GetByRole(AriaRole.Button, new() { Name = "Save settings" }).ClickAsync();
-        await Expect(settings.Locator("[data-part=toast]")).ToHaveTextAsync("Settings saved");
+        await Settings(page).GetByRole(AriaRole.Button, new() { Name = "Save settings" }).ClickAsync();
+        await Expect(Settings(page).Locator("[data-part=toast]")).ToHaveTextAsync("Settings saved");
 
-        // The page's modal doesn't block the other panel's window.
-        await window.GetByText("Other notes").ClickAsync();
+        await window.Mouse.ClickAsync(100, 100);
 
-        await Expect(settings.Locator("[data-part=toast]")).ToHaveCountAsync(1);
-        await Expect(window.Locator("[data-part=toast]")).ToHaveCountAsync(0);
+        await Expect(Settings(window).Locator("[data-part=toast]")).ToHaveTextAsync("Settings saved");
+        await Expect(window.Locator("[data-part=toast]")).ToHaveCountAsync(1);
+        await Expect(page.Locator("[data-part=toast]")).ToHaveCountAsync(0);
+        // F8 on the page brings the modal back with the focus where it starts, not on its toast.
+        await page.Keyboard.PressAsync("F8");
+        await FocusedAsync(Settings(page).GetByRole(AriaRole.Button, new() { Name = "Save settings" }));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Modal_ShouldBlockTheAppsOtherWindows_WhenItIsOpenInOne(string browser)
+    {
+        var (page, window) = await OpenFilesInAWindowAsync(browser);
+        await page.EvaluateAsync(
+            "document.body.insertAdjacentHTML('beforeend', '<div id=blazor-error-ui hidden></div>')");
+
+        await Button(window, "Ask").ClickAsync();
+
+        await Expect(Asking(window)).ToBeVisibleAsync();
+        await Expect(Scrim(page)).ToBeVisibleAsync();
+        Assert.True(await IsInertAsync(Button(page, "Ask on the page")));
+        Assert.False(await IsInertAsync(page.Locator("#blazor-error-ui")));
+        await Expect(Scrim(window)).ToHaveCountAsync(0);
+        await window.Keyboard.PressAsync("Escape");
+        await Expect(Asking(window)).ToHaveCountAsync(0);
+        await Expect(Scrim(page)).ToHaveCountAsync(0);
+        Assert.False(await IsInertAsync(Button(page, "Ask on the page")));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Modal_ShouldComeToTheWindowTheUserWorksIn_WhenAPressOrAKeyIsInAnotherOne(string browser)
+    {
+        var (page, window) = await OpenFilesInAWindowAsync(browser);
+        var ask = Button(window, "Ask");
+        var marks = await MarksAsync(page);
+        await ask.FocusAsync();
+        await window.Keyboard.PressAsync("Enter");
+        await Expect(Asking(window)).ToBeVisibleAsync();
+
+        // A press on the blocked page brings the dialog back to its mark there, and does nothing else there. The
+        // toaster's mark goes too, since the toasts come with the user.
+        await page.Mouse.ClickAsync(400, 300);
+
+        await Expect(Asking(page)).ToBeVisibleAsync();
+        Assert.Equal(marks - 1, await MarksAsync(page));
+        Assert.True(await Asking(page).EvaluateAsync<bool>("dialog => dialog.matches(':modal')"));
+        await FocusInsideAsync(Asking(page));
+        await Expect(Asking(window)).ToHaveCountAsync(0);
+        await Expect(Scrim(window)).ToBeVisibleAsync();
+        await Expect(Scrim(page)).ToHaveCountAsync(0);
+        await Expect(page.GetByTestId("answer")).ToHaveTextAsync("");
+
+        // A key in the window brings it back with the focus where it starts, and its opener gets the focus when it
+        // is answered there.
+        await window.Keyboard.PressAsync("Shift");
+        await Expect(Asking(window)).ToBeVisibleAsync();
+        await FocusedAsync(Asking(window).GetByRole(AriaRole.Button, new() { Name = "Cancel" }));
+        await Expect(Asking(page)).ToHaveCountAsync(0);
+        Assert.Equal(marks + 1, await MarksAsync(page));
+        await Asking(window).GetByRole(AriaRole.Button, new() { Name = "Remove" }).ClickAsync();
+        await Expect(page.GetByTestId("answer")).ToHaveTextAsync("Removed");
+        await FocusedAsync(ask);
+        await Expect(Scrim(window)).ToHaveCountAsync(0);
+        await Expect(Scrim(page)).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Key_ShouldOnlyBringTheModal_WhenItIsPressedInABlockedWindow(string browser)
+    {
+        var (page, window) = await OpenFilesInAWindowAsync(browser);
+        await Button(window, "Ask").ClickAsync();
+        await Expect(Asking(window)).ToBeVisibleAsync();
+
+        // Escape doesn't dismiss the dialog it brings, and Enter doesn't press the button the focus lands on.
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(Asking(page)).ToBeVisibleAsync();
+        await FocusedAsync(Asking(page).GetByRole(AriaRole.Button, new() { Name = "Cancel" }));
+        await window.Keyboard.PressAsync("Enter");
+        await Expect(Asking(window)).ToBeVisibleAsync();
+        await FocusedAsync(Asking(window).GetByRole(AriaRole.Button, new() { Name = "Cancel" }));
+
+        // It is still there to answer; either key would have answered it with Kept.
+        await Asking(window).GetByRole(AriaRole.Button, new() { Name = "Remove" }).ClickAsync();
+        await Expect(page.GetByTestId("answer")).ToHaveTextAsync("Removed");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Modal_ShouldComeToTheUserWithTheDialogItIsWrittenIn_WhenItOpensWhileTheyWorkElsewhere(
+        string browser)
+    {
+        var (page, window) = await OpenFilesInAWindowAsync(browser);
+        await Button(window, "Notes").ClickAsync();
+        await Expect(window.GetByRole(AriaRole.Dialog, new() { Name = "File notes" })).ToBeVisibleAsync();
+        await page.Mouse.ClickAsync(400, 300);
+
+        // The page's hotkey opens a modal written inside the modeless dialog in the panel's window.
+        await page.Keyboard.PressAsync("Alt+J");
+
+        var discard = page.GetByRole(AriaRole.Dialog, new() { Name = "File notes" })
+            .GetByRole(AriaRole.Dialog, new() { Name = "Discard?" });
+        await Expect(discard).ToBeVisibleAsync();
+        Assert.True(await discard.EvaluateAsync<bool>("dialog => dialog.matches(':modal')"));
+        await FocusInsideAsync(discard);
+        await Expect(Scrim(page)).ToHaveCountAsync(0);
+        await Expect(Scrim(window)).ToBeVisibleAsync();
+        // What the dialog it came with holds watches its size on the page now.
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(discard).ToHaveCountAsync(0);
+        var notes = page.GetByRole(AriaRole.Dialog, new() { Name = "File notes" });
+        var more = notes.GetByRole(AriaRole.Button, new() { Name = "More" });
+        await Expect(more).ToBeHiddenAsync();
+        await notes.GetByRole(AriaRole.Toolbar).EvaluateAsync("toolbar => toolbar.style.inlineSize = '4rem'");
+        await Expect(more).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Modal_ShouldLetTheOtherWindowsBeUsed_WhenItIsMinimized(string browser)
+    {
+        var (page, window) = await OpenFilesInAWindowAsync(browser);
+        await Button(window, "Settings").ClickAsync();
+        await Expect(Scrim(page)).ToBeVisibleAsync();
+
+        await Settings(window).GetByRole(AriaRole.Button, new() { Name = "Minimize" }).ClickAsync();
+
+        await Expect(Settings(window)).ToHaveAttributeAsync("data-window-state", "minimized");
+        await Expect(Scrim(page)).ToHaveCountAsync(0);
+        Assert.False(await IsInertAsync(Button(page, "Ask on the page")));
+        await Settings(window).GetByRole(AriaRole.Button, new() { Name = "Restore" }).ClickAsync();
+        await Expect(Scrim(page)).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Modal_ShouldComeToTheUser_WhenTheModalInFrontOfItClosesInAnotherWindow(string browser)
+    {
+        var (page, window) = await OpenFilesInAWindowAsync(browser);
+        await Button(window, "Settings").ClickAsync();
+        await Settings(window).GetByRole(AriaRole.Button, new() { Name = "Ask again" }).ClickAsync();
+        await Expect(Asking(window)).ToBeVisibleAsync();
+        // The one in front comes to the page, and the one behind it stays where it is.
+        await page.Mouse.ClickAsync(400, 300);
+        await Expect(Asking(page)).ToBeVisibleAsync();
+        await Expect(Settings(window)).ToHaveCountAsync(1);
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(Asking(page)).ToHaveCountAsync(0);
+        await Expect(Settings(page)).ToBeVisibleAsync();
+        await Expect(Settings(window)).ToHaveCountAsync(0);
+        await Expect(Scrim(window)).ToBeVisibleAsync();
+        // What it holds goes on watching its size there: a toolbar that narrows puts its buttons in its menu.
+        var more = Settings(page).GetByRole(AriaRole.Button, new() { Name = "More" });
+        await Expect(more).ToBeHiddenAsync();
+        await Settings(page).GetByRole(AriaRole.Toolbar).EvaluateAsync("toolbar => toolbar.style.inlineSize = '4rem'");
+        await Expect(more).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(Settings(page)).ToHaveCountAsync(0);
+        await Expect(Scrim(window)).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Modal_ShouldBringTheDialogItIsWrittenIn_WhenItComesToAnotherWindow(string browser)
+    {
+        var (page, window) = await OpenFilesInAWindowAsync(browser);
+        await Button(window, "Settings").ClickAsync();
+        await Settings(window).GetByRole(AriaRole.Button, new() { Name = "Check" }).ClickAsync();
+        await Expect(window.GetByRole(AriaRole.Dialog, new() { Name = "Sure?" })).ToBeVisibleAsync();
+
+        await page.Mouse.ClickAsync(400, 300);
+
+        var sure = Settings(page).GetByRole(AriaRole.Dialog, new() { Name = "Sure?" });
+        await Expect(sure).ToBeVisibleAsync();
+        Assert.True(await sure.EvaluateAsync<bool>("dialog => dialog.matches(':modal')"));
+        await FocusInsideAsync(sure);
+        await Expect(window.GetByRole(AriaRole.Dialog)).ToHaveCountAsync(0);
+        // The dialog it came with is usable there once the modal inside it closes.
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(sure).ToHaveCountAsync(0);
+        await Settings(page).GetByRole(AriaRole.Button, new() { Name = "Save settings" }).ClickAsync();
+        await Expect(Settings(page).Locator("[data-part=toast]")).ToHaveTextAsync("Settings saved");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -115,41 +298,27 @@ public class DockManagerPopOutDialogTests(BrowserFixture fixture) : BrowserTest(
 
         await Expect(Asking(page)).ToBeVisibleAsync();
         await Expect(Asking(window)).ToHaveCountAsync(0);
+        await Expect(Scrim(window)).ToBeVisibleAsync();
+        Assert.True(await IsInertAsync(Button(window, "Ask")));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Escape_ShouldCloseOnlyTheDialogInItsWindow_WhenDialogsAreOpenInTwoWindows(string browser)
+    public async Task Escape_ShouldCloseOnlyTheDialogInItsWindow_WhenModelessDialogsAreOpenInTwoWindows(string browser)
     {
         var (page, window) = await OpenFilesInAWindowAsync(browser);
-        await Button(page, "Ask on the page").ClickAsync();
-        await Expect(Asking(page)).ToBeVisibleAsync();
-        await Button(window, "Rules").ClickAsync();
-        var rules = window.GetByRole(AriaRole.Dialog, new() { Name = "File rules" });
-        await Expect(rules).ToBeVisibleAsync();
+        await Button(page, "Log").ClickAsync();
+        var log = page.GetByRole(AriaRole.Dialog, new() { Name = "Page log" });
+        await FocusInsideAsync(log);
+        await Button(window, "Notes").ClickAsync();
+        var notes = window.GetByRole(AriaRole.Dialog, new() { Name = "File notes" });
+        await FocusedAsync(notes.GetByLabel("Note"));
 
         await window.Keyboard.PressAsync("Escape");
 
-        await Expect(rules).ToHaveCountAsync(0);
-        // The page's dialog is still there to answer; Escape would have answered it with Kept.
-        await Asking(page).GetByRole(AriaRole.Button, new() { Name = "Remove" }).ClickAsync();
-        await Expect(page.GetByTestId("answer")).ToHaveTextAsync("Removed");
-    }
-
-    [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Escape_ShouldCloseTheDialogInItsWindow_WhenADialogOpenedLaterInAnotherWindow(string browser)
-    {
-        var (page, window) = await OpenFilesInAWindowAsync(browser);
-        await Button(window, "Rules").ClickAsync();
-        var rules = window.GetByRole(AriaRole.Dialog, new() { Name = "File rules" });
-        await Expect(rules).ToBeVisibleAsync();
-        await Button(page, "Ask on the page").ClickAsync();
-        await Expect(Asking(page)).ToBeVisibleAsync();
-
-        await window.Keyboard.PressAsync("Escape");
-
-        await Expect(rules).ToHaveCountAsync(0);
-        await Asking(page).GetByRole(AriaRole.Button, new() { Name = "Remove" }).ClickAsync();
-        await Expect(page.GetByTestId("answer")).ToHaveTextAsync("Removed");
+        await Expect(notes).ToHaveCountAsync(0);
+        // The page's dialog, which opened first and holds the page's focus, is still there to close.
+        await log.GetByRole(AriaRole.Button, new() { Name = "Close" }).ClickAsync();
+        await Expect(log).ToHaveCountAsync(0);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -173,21 +342,17 @@ public class DockManagerPopOutDialogTests(BrowserFixture fixture) : BrowserTest(
     public async Task Dialog_ShouldMakeThePageInert_WhenItComesBackFromAClosedWindowOnThePageLayer(string browser)
     {
         var (page, window) = await OpenFilesInAWindowAsync(browser);
-        // A modal in the page's top layer doesn't pull a dialog in another window into the top layer with it.
-        await Button(page, "Ask on the page").ClickAsync();
-        await Expect(Asking(page)).ToBeVisibleAsync();
         await Button(window, "Rules").ClickAsync();
         var rules = window.GetByRole(AriaRole.Dialog, new() { Name = "File rules" });
         await Expect(rules).ToHaveAttributeAsync("aria-modal", "true");
         Assert.True(await IsInertAsync(Button(window, "Ask")));
-        await page.Keyboard.PressAsync("Escape");
-        await Expect(Asking(page)).ToHaveCountAsync(0);
-        Assert.False(await IsInertAsync(Button(page, "Ask on the page")));
+        await Expect(Scrim(page)).ToBeVisibleAsync();
 
         await window.CloseAsync();
 
         rules = page.GetByRole(AriaRole.Dialog, new() { Name = "File rules" });
         await Expect(rules).ToBeVisibleAsync();
+        await Expect(Scrim(page)).ToHaveCountAsync(0);
         Assert.True(await IsInertAsync(Button(page, "Ask")));
         Assert.True(await IsInertAsync(Button(page, "Ask on the page")));
         await page.Keyboard.PressAsync("Escape");
@@ -197,19 +362,22 @@ public class DockManagerPopOutDialogTests(BrowserFixture fixture) : BrowserTest(
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Hotkey_ShouldStopFiringOnlyInTheWindowTheModalIsIn_WhenAModalIsOpenInAPanelsWindow(string browser)
+    public async Task Hotkey_ShouldNotFire_WhenItIsPressedInAnotherWindowThanTheOneAModalIsIn(string browser)
     {
         var (page, window) = await OpenFilesInAWindowAsync(browser);
         await Button(window, "Settings").ClickAsync();
-        await Expect(window.GetByRole(AriaRole.Dialog, new() { Name = "File settings" })).ToBeVisibleAsync();
+        await Expect(Settings(window)).ToBeVisibleAsync();
 
+        // The key only brings the modal to the page, where it stops the page's hotkey from then on.
+        await page.Keyboard.PressAsync("Alt+K");
+
+        await Expect(Settings(page)).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(Settings(page)).ToHaveCountAsync(0);
         await page.Keyboard.PressAsync("Alt+K");
         await Expect(page.GetByTestId("marked")).ToHaveTextAsync("1");
-        await window.Keyboard.PressAsync("Alt+K");
-        await page.Keyboard.PressAsync("Alt+K");
-
-        // The press in the modal's window didn't count.
-        await Expect(page.GetByTestId("marked")).ToHaveTextAsync("2");
+        // Closed on the page, the modal didn't send the focus back to its opener in the other window.
+        Assert.Equal("body", await window.EvaluateAsync<string>("document.activeElement.localName"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

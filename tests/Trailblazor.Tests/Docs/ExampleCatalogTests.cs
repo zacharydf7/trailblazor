@@ -182,6 +182,12 @@ public class ExampleCatalogTests
         ["Slider"] = ["start-thumb", "end-thumb"],
     };
 
+    // Parts a folder's script makes, which its markup doesn't hold: the script, and the parts it sets by name.
+    private static readonly Dictionary<string, (string Script, string[] Parts)> ScriptParts = new()
+    {
+        ["Dialog"] = ("dialog.js", ["scrim"]),
+    };
+
     // Folders whose bases and children other components render, and the components whose pages may list their parts.
     private static readonly Dictionary<string, string[]> SharedFolders = new()
     {
@@ -336,6 +342,10 @@ public class ExampleCatalogTests
                 .Select(match => match.Groups.Values.Skip(1).First(group => group.Success).Value)
                 .Concat(NamedParts.GetValueOrDefault(folder.Key, [])
                     .Where(name => folder.Any(text => text.Contains($"\"{name}\""))))
+                .Concat(ScriptParts.TryGetValue(folder.Key, out var made)
+                    ? made.Parts.Where(name => File.ReadAllText(Path.Combine(library, "wwwroot", made.Script))
+                        .Contains($"dataset.part = '{name}'"))
+                    : [])
                 .ToHashSet());
     }
 }

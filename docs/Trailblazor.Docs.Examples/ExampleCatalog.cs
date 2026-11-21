@@ -3511,10 +3511,12 @@ public static class ExampleCatalog
                     + "and gives the focus back there when it closes. A dialog written inside the panel goes with it "
                     + "to its window and back and stays open. If a window closes while a dialog is open in it, the "
                     + "dialog comes back to the page, still open."),
-                new("A modal dialog blocks only the window it is in. The page and the other panels' windows can "
-                    + "still be used while it is open, and their hotkeys still fire, so don't count on a modal to "
-                    + "stop everything else. While it is open, toasts and announcements go to it, in its window, "
-                    + "even when they come from work in another window.") { Pitfall = true },
+                new("A modal dialog blocks every window of the app. While it is open the other windows dim and take "
+                    + "no input, and a press or a key in one of them brings the modal there, along with the dialog "
+                    + "it is written inside, if any, and does nothing else. A modal behind it stays where it is "
+                    + "until it is the one in front, and a minimized modal blocks nothing."),
+                new("A modal answered in another window than its opener's leaves the focus where the user is, and "
+                    + "doesn't send it back to the opener's window."),
                 new("A dialog written in the page's markup that opens in a panel's window moves to the end of that "
                     + "window's `<body>`, and one written inside a panel that opens on the page moves to the page's. "
                     + "A theme, direction or style set around it doesn't reach it there, the elements that were "
@@ -3749,8 +3751,13 @@ public static class ExampleCatalog
                     + "on the page's, with `Tb().Announcements.ExpectAnnouncedAsync(text)` on either. Toasts are "
                     + "on the `Page` the last key, press or focus was in, so right after `PopOutAsync` they are on the "
                     + "panel's, since the panel takes the focus; while a modal dialog is open they are in that "
-                    + "dialog. A dialog opens on the `Page` the last key, press or focus was in, and moves to the "
-                    + "page's `Page` if that window closes while it is open.",
+                    + "dialog.",
+                "A dialog opens on the `Page` the last key, press or focus was in. A modal one then moves to "
+                    + "whichever `Page` the next key or press is on, so send keys and presses to the `Page` the "
+                    + "dialog is on. While it is open, the other `Page`s have a `[data-part=scrim]` over them, and "
+                    + "a locator's click there waits on the scrim: press a key or use `Mouse.ClickAsync` to bring "
+                    + "the modal over. A modeless dialog stays where it opened unless it holds the frontmost "
+                    + "modal, goes with its panel, or its window closes.",
                 "Scan a panel's window for accessibility as a whole, not one element in it: the page's window made "
                     + "the panel's elements, so axe running in the panel's window won't take one of them as what to "
                     + "scan.",
@@ -9444,9 +9451,9 @@ public static class ExampleCatalog
                     + "so does `@bind-Open`, such as from a button. While a modal dialog is open, whether in the "
                     + "browser's top layer or kept on the page with `TopLayer = false`, only the hotkeys inside it "
                     + "fire. With one modal over another, only the front one's hotkeys fire, and once a modal starts "
-                    + "to close, the hotkeys behind it work again. A modal stops only the hotkeys pressed in its own "
-                    + "window, which matters while a [dock](components/dock-manager) panel is in a browser window "
-                    + "of its own.",
+                    + "to close, the hotkeys behind it work again. With a [dock](components/dock-manager) panel in a "
+                    + "browser window of its own, a key pressed in another window only brings the modal there, "
+                    + "where it stops the hotkeys from then on.",
                     typeof(HotkeysExample)),
                 new("scope", "Keys for one part of the page", "`Scope=\"HotkeyScope.Parent\"` makes a hotkey fire only "
                     + "while focus is inside the element it sits in, such as an editor. There it wins over a page "
@@ -9705,9 +9712,9 @@ public static class ExampleCatalog
                     + "had already left the dialog.",
                 "A dialog that turns non-modal while open keeps focus where it was. One that turns modal moves focus "
                     + "into itself, unless focus is already there, and makes the page inert again.",
-                "A `Minimizable` modal leaves the page usable while it is minimized, with its toasts and announcements "
-                    + "back on the page, and blocks it again once restored; focus stays on the button that restored "
-                    + "it.",
+                "A `Minimizable` modal leaves the page, and the app's other windows, usable while it is minimized, "
+                    + "and blocks them again once restored. Its toasts and announcements aren't held in it "
+                    + "meanwhile, and focus stays on the button that restored it.",
             ],
             Notes =
             [
@@ -9725,9 +9732,11 @@ public static class ExampleCatalog
                     + "window closes while the dialog is open, the dialog comes back to the page, still open. "
                     + "Escape, the backdrop, moving, resizing and the row of minimized dialogs go by the window the "
                     + "dialog is in. A dialog written inside another dialog stays with it."),
-                new("With a dock panel in a window of its own, a modal dialog blocks only the window it is in: the "
-                    + "other windows can still be used, and toasts and announcements made from them go to the "
-                    + "modal, in its window.") { Pitfall = true },
+                new("With a dock panel in a browser window of its own, a modal dialog blocks every window of the "
+                    + "app: the windows it isn't in dim, under a `[data-part=scrim]`, and take no input; screen "
+                    + "readers skip them too. A press or a key in one of them brings the frontmost modal there, "
+                    + "with the focus inside, and does nothing else."),
+                new("A modal answered in another window than its opener's leaves the focus where the user is."),
                 new("A dialog that opens in another window than the one it is written in moves to the end of that "
                     + "window's `<body>`. A theme, direction or style set around it doesn't reach it there, the "
                     + "elements that were around it don't hear its events, and its controls are no longer part of "
@@ -9762,6 +9771,8 @@ public static class ExampleCatalog
                 new("actions", "The buttons at the bottom of the dialog."),
                 new("resize",
                     "The Size menu: its button, which also drags to resize the dialog, and its list of sizes."),
+                new("scrim", "The shade over each of the app's other windows while a modal dialog is open, with a "
+                    + "dock panel in a browser window of its own."),
             ],
             Anatomy = """
                 @* A dialog as its own component, opened with IDialogService.ShowAsync *@
@@ -12359,7 +12370,7 @@ public static class ExampleCatalog
                     + "show in the window the user is working in, the one their last key, press or focus was in. "
                     + "A toast keeps the time it has left as it moves, and F8 and Escape work in that window. The "
                     + "timers pause while the window the toasts show in is hidden, not while the page is. While a "
-                    + "modal dialog is open, in any window, toasts show in that dialog and stay there."),
+                    + "modal dialog is open, toasts show in that dialog and go with it from window to window."),
             ],
             Modes = new(ModeSupport.None, ModeSupport.None),
             BeforeInteractive =

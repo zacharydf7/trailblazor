@@ -5109,6 +5109,18 @@
         transition: opacity var(--tb-motion-duration-normal) var(--tb-motion-easing-standard);
     }
 
+    /* While a modal is open in one of the app's windows, each of the others is under this, in its top layer. */
+    .tb-dialog__scrim {
+        position: fixed;
+        inset: 0;
+        inline-size: auto;
+        block-size: auto;
+        margin: 0;
+        border: 0;
+        padding: 0;
+        background: var(--tb-color-scrim);
+    }
+
     /* A color picker's eyedropper samples the screen, so open dialogs' scrims clear while the eyedropper is open. */
     .tb-dialog[data-picking]::backdrop {
         background: transparent;

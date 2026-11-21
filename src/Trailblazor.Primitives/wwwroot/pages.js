@@ -7,7 +7,7 @@
 const pages = new Set([document]);
 const starts = [];
 const movers = new Set();
-const moved = () => [...movers].forEach(mover => mover());
+const moved = cause => [...movers].forEach(mover => mover(cause));
 
 // Runs `start` with the page's document, and with each other document as it joins, for a script that watches the
 // whole page and has no element of its own. What it sets up on a window's document goes with that window.
@@ -29,11 +29,15 @@ export function addPage(page) {
 }
 
 // Calls `changed` whenever an element may have to change windows: a window's document joined or left, or the user
-// went to work in another window. The returned function stops the calls.
+// went to work in another window, and then with the key, press or focus event that showed it. The returned function
+// stops the calls.
 export function onPagesChange(changed) {
     movers.add(changed);
     return () => movers.delete(changed);
 }
+
+// Makes those calls for a script that moved an element to another window itself, as a dialog that goes to the user.
+export const pagesChanged = () => moved();
 
 // The document the user is working in: the one their last key, press or focus was in.
 let current = document;
@@ -42,7 +46,7 @@ for (const type of ['keydown', 'pointerdown', 'focusin']) {
         const page = event.target.ownerDocument ?? current;
         if (page !== current) {
             current = page;
-            moved();
+            moved(event);
         }
     }, true);
 }
