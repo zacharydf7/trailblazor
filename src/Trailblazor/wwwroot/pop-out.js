@@ -86,10 +86,32 @@ const watchDisabled = sheet => {
     }
 };
 
+// Chromium and WebKit report a sheet that the page only offers as an alternate as on whether it applies or not. To
+// find out, a rule for the page's head goes into the sheet for a moment, which changes nothing a user can see. A
+// sheet whose rules a script can't read, as most from another origin, is taken as not applying.
+const applies = sheet => {
+    try {
+        const at = sheet.insertRule('head { --tb-sheet-applies: 1 }', sheet.cssRules.length);
+        const found = getComputedStyle(document.head).getPropertyValue('--tb-sheet-applies') !== '';
+        sheet.deleteRule(at);
+        return found;
+    } catch {
+        return false;
+    }
+};
+
+// A script turns on a sheet the page only offers as an alternate by setting its link's `disabled` and clearing it
+// again. Done in one go, that leaves the attributes as they were, so the copy does the same.
+const turnOn = copy => {
+    copy.disabled = true;
+    copy.disabled = false;
+};
+
 // The other window's styles follow the page's: its style sheets, as its head gains, loses and changes them, and
 // whatever the page sets on its root element.
 const mirror = other => {
     const copies = new Map();
+    const asked = new WeakSet();
     const copySheets = () => {
         const sheets = [...document.querySelectorAll('link[rel~="stylesheet"], style')];
         for (const [sheet, copy] of copies) {
@@ -129,6 +151,15 @@ const mirror = other => {
                 if (copy.sheet && copy.sheet.disabled !== sheet.sheet.disabled) {
                     copy.sheet.disabled = sheet.sheet.disabled;
                 }
+
+                // An alternate that a script turned on before this window saw it left no trace in its attributes,
+                // so each is asked once for its copy, when its sheet is first there.
+                if (sheet.matches('link[rel~="alternate"]') && !asked.has(copy)) {
+                    asked.add(copy);
+                    if (applies(sheet.sheet)) {
+                        turnOn(copy);
+                    }
+                }
             }
         }
     };
@@ -151,14 +182,11 @@ const mirror = other => {
     copyRoot();
     const sheets = new MutationObserver(records => {
         copySheets();
-        // A script turns on a sheet the page only offers as an alternate by setting its link's `disabled` and
-        // clearing it again. Done in one go, that leaves the attributes as they were, so the copy does the same.
         const toggled = records.filter(record => record.attributeName === 'disabled').map(record => record.target);
         for (const link of new Set(toggled)) {
             const copy = copies.get(link);
             if (copy && !link.disabled) {
-                copy.disabled = true;
-                copy.disabled = false;
+                turnOn(copy);
             }
         }
     });

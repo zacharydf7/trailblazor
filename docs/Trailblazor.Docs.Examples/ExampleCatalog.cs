@@ -3548,11 +3548,16 @@ public static class ExampleCatalog
                 new("The window follows the style sheets in the page's head as their elements and attributes "
                     + "change. It also follows a sheet turned off or on through its `CSSStyleSheet`'s `disabled`, "
                     + "as with `link.sheet.disabled` or an entry of `document.styleSheets`. An alternate sheet "
-                    + "that a script turns on while the window is open is followed too."),
-                new("An alternate style sheet that a script turned on before the panel's window opened isn't on "
-                    + "in that window in Chromium-based browsers or Safari, which don't tell a script whether an "
-                    + "alternate sheet applies. A sheet switched by its link's `rel` or `href` is followed, "
-                    + "before or after the window opened.") { Pitfall = true },
+                    + "that a script turns on while the window is open is followed too, and so is one turned on "
+                    + "before the window opened, except in two cases in Chromium-based browsers and Safari."),
+                new("Chromium-based browsers and Safari don't tell a script whether an alternate style sheet "
+                    + "applies. As a panel's window opens, the library finds out by adding a rule for `<head>` to "
+                    + "the end of each alternate sheet and deleting it again. That doesn't work for a sheet whose "
+                    + "rules a script can't read, which is any sheet from another origin unless its link has "
+                    + "`crossorigin` and its server sends CORS headers, or for one whose `media` doesn't match when "
+                    + "it is checked. In those browsers such a sheet isn't on in the window even if a script turned "
+                    + "it on before the window opened. A sheet switched by its link's `rel` or `href`, as from "
+                    + "`alternate stylesheet` to `stylesheet`, is always followed.") { Pitfall = true },
                 new("A script of your own inside a panel has to use the panel's own document and window, "
                     + "`element.ownerDocument` and its `defaultView`. In a window of its own the panel is in neither "
                     + "the page's `document` nor its `window`, so `document.activeElement`, `document.getElementById` "

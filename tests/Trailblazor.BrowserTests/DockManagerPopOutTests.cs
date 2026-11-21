@@ -456,6 +456,119 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
             """));
     }
 
+    // Adds a sheet that the page only offers as an alternate, and waits until it has loaded.
+    private static Task AddAnAlternateAsync(IPage page, string id, string address,
+        string rel = "alternate stylesheet") => page.EvaluateAsync("""
+        ([id, href, rel]) => new Promise(loaded => {
+            const link = Object.assign(document.createElement('link'), { id, rel, title: id, href, onload: loaded });
+            document.head.append(link);
+        })
+        """, new[] { id, address, rel });
+
+    private const string TurnOn = """
+        id => {
+            const link = document.getElementById(id);
+            link.disabled = true;
+            link.disabled = false;
+        }
+        """;
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldApplyAnAlternateSheet_WhenAScriptTurnedItOnBeforeTheWindowOpened(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        await AddAnAlternateAsync(page, "chosen", "data:text/css,html{text-transform:uppercase}");
+        await AddAnAlternateAsync(page, "offered", "data:text/css,html{font-style:italic}");
+        // A link's types count whatever case they are written in.
+        await AddAnAlternateAsync(page, "shouted", "data:text/css,html{text-indent:9px}", "Alternate StyleSheet");
+        await page.EvaluateAsync(TurnOn, "chosen");
+        await page.EvaluateAsync(TurnOn, "shouted");
+        await Expect(page.Locator("html")).ToHaveCSSAsync("text-transform", "uppercase");
+        await Expect(page.Locator("html")).ToHaveCSSAsync("text-indent", "9px");
+        await page.EvaluateAsync("""
+            () => {
+                window.asked = [];
+                const insert = CSSStyleSheet.prototype.insertRule;
+                CSSStyleSheet.prototype.insertRule = function (...rule) {
+                    asked.push(this.ownerNode.id || this.ownerNode.localName);
+                    return insert.apply(this, rule);
+                };
+            }
+            """);
+
+        var window = await PopOutAsync(page, "Notes");
+
+        var windowRoot = window.Locator("html");
+        await Expect(windowRoot).ToHaveCSSAsync("text-transform", "uppercase");
+        await Expect(windowRoot).ToHaveCSSAsync("text-indent", "9px");
+        await Expect(windowRoot).ToHaveCSSAsync("font-style", "normal");
+        // Only the alternates were asked, each once, and asking left the page's sheets as they were.
+        Assert.Equal(["chosen", "offered", "shouted"], await page.EvaluateAsync<string[]>("asked"));
+        var left = await page.EvaluateAsync<int[]>("""
+            () => [...asked.map(id => document.getElementById(id).sheet.cssRules.length),
+                getComputedStyle(document.head).getPropertyValue('--tb-sheet-applies').length]
+            """);
+        Assert.Equal([1, 1, 1, 0], left);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldApplyAnAlternateSheet_WhenItsLinkLeavesTheHeadAndComesBack(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        await AddAnAlternateAsync(page, "chosen", "data:text/css,html{text-transform:uppercase}");
+        await page.EvaluateAsync(TurnOn, "chosen");
+        var window = await PopOutAsync(page, "Notes");
+        var (pageRoot, windowRoot) = (page.Locator("html"), window.Locator("html"));
+        await Expect(windowRoot).ToHaveCSSAsync("text-transform", "uppercase");
+        await page.EvaluateAsync("() => { window.gone = document.getElementById('chosen'); gone.remove(); }");
+        await Expect(windowRoot).ToHaveCSSAsync("text-transform", "none");
+
+        await page.EvaluateAsync("document.head.append(gone)");
+
+        // The link is still on when it is back, and so is the new copy the window makes of it.
+        await Expect(pageRoot).ToHaveCSSAsync("text-transform", "uppercase");
+        await Expect(windowRoot).ToHaveCSSAsync("text-transform", "uppercase");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldApplyAnAlternateSheet_WhenItWasTurnedOnAndIsStillLoadingAsTheWindowOpens(
+        string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        await page.EvaluateAsync("""
+            () => {
+                const css = encodeURIComponent('html{text-transform:uppercase}');
+                const link = Object.assign(document.createElement('link'),
+                    { id: 'slow', rel: 'alternate stylesheet', title: 'slow', href: `slow.css?wait=2000&css=${css}` });
+                document.head.append(link);
+                link.disabled = true;
+                link.disabled = false;
+            }
+            """);
+
+        var window = await page.RunAndWaitForPopupAsync(() =>
+            page.Tb().Dock("Workbench").ChooseFromTabMenuAsync("Notes", "Open in new window"));
+
+        Assert.True(await page.EvaluateAsync<bool>("document.getElementById('slow').sheet === null"));
+        await Expect(window.Locator("html")).ToHaveCSSAsync("text-transform", "uppercase");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldLeaveAnAlternateSheetOff_WhenItComesFromAnotherOriginAndWasNeverTurnedOn(
+        string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        // The test host under another name is another origin, so the page's scripts can't read its sheet's rules.
+        var address = new UriBuilder(page.Url)
+            { Host = "localhost", Path = "/slow.css", Query = "wait=0&css=html%7Btext-transform:uppercase%7D" };
+        await AddAnAlternateAsync(page, "other", address.Uri.ToString());
+
+        var window = await PopOutAsync(page, "Notes");
+
+        await window.WaitForFunctionAsync("document.querySelector('link[title=other]')?.sheet");
+        await Expect(window.Locator("html")).ToHaveCSSAsync("text-transform", "none");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dock_ShouldOpenOneWindowForItsOwnPanel_WhenItIsNestedInAnotherDocksPanel(string browser)
     {
