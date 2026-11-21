@@ -3506,7 +3506,20 @@ public static class ExampleCatalog
                 new("The app's toasts show in the window the user is working in, the one their last key, press or "
                     + "focus was in, so a toast that follows a click or a key in a panel's window shows there. The "
                     + "toasts go back to the page when that window closes or the user works on the page again."),
-                new("A dialog that the panel asks for still shows in the page's window.") { Pitfall = true },
+                new("A dialog, and what is built on one, such as a drawer, opens in the window the user is working "
+                    + "in, so one asked for from a panel in a window of its own opens there, with the focus inside, "
+                    + "and gives the focus back there when it closes. A dialog written inside the panel goes with it "
+                    + "to its window and back and stays open. If a window closes while a dialog is open in it, the "
+                    + "dialog comes back to the page, still open."),
+                new("A modal dialog blocks only the window it is in. The page and the other panels' windows can "
+                    + "still be used while it is open, and their hotkeys still fire, so don't count on a modal to "
+                    + "stop everything else. While it is open, toasts and announcements go to it, in its window, "
+                    + "even when they come from work in another window.") { Pitfall = true },
+                new("A dialog written in the page's markup that opens in a panel's window moves to the end of that "
+                    + "window's `<body>`, and one written inside a panel that opens on the page moves to the page's. "
+                    + "A theme, direction or style set around it doesn't reach it there, the elements that were "
+                    + "around it don't hear its events, and its controls are no longer part of a `<form>` it was "
+                    + "written in.") { Pitfall = true },
                 new("The panel moves into its window once the window has loaded the page's style sheets, and waits "
                     + "on the page, hidden, until then. After three seconds it moves anyway, and a sheet that fails "
                     + "to load or is turned off isn't waited for."),
@@ -3730,8 +3743,9 @@ public static class ExampleCatalog
                 "In Playwright, announcements made while a panel is in its window can be checked on its `Page` or "
                     + "on the page's, with `Tb().Announcements.ExpectAnnouncedAsync(text)` on either. Toasts are "
                     + "on the `Page` the last key, press or focus was in, so right after `PopOutAsync` they are on the "
-                    + "panel's, since the panel takes the focus. A dialog the panel opens is found only on the page's "
-                    + "`Page`.",
+                    + "panel's, since the panel takes the focus; while a modal dialog is open they are in that "
+                    + "dialog. A dialog opens on the `Page` the last key, press or focus was in, and moves to the "
+                    + "page's `Page` if that window closes while it is open.",
                 "Scan a panel's window for accessibility as a whole, not one element in it: the page's window made "
                     + "the panel's elements, so axe running in the panel's window won't take one of them as what to "
                     + "scan.",
@@ -9425,7 +9439,9 @@ public static class ExampleCatalog
                     + "so does `@bind-Open`, such as from a button. While a modal dialog is open, whether in the "
                     + "browser's top layer or kept on the page with `TopLayer = false`, only the hotkeys inside it "
                     + "fire. With one modal over another, only the front one's hotkeys fire, and once a modal starts "
-                    + "to close, the hotkeys behind it work again.",
+                    + "to close, the hotkeys behind it work again. A modal stops only the hotkeys pressed in its own "
+                    + "window, which matters while a [dock](components/dock-manager) panel is in a browser window "
+                    + "of its own.",
                     typeof(HotkeysExample)),
                 new("scope", "Keys for one part of the page", "`Scope=\"HotkeyScope.Parent\"` makes a hotkey fire only "
                     + "while focus is inside the element it sits in, such as an editor. There it wins over a page "
@@ -9699,6 +9715,20 @@ public static class ExampleCatalog
                 new("With `TopLayer = false`, a popup with a lower z-index still opens beneath the dialog, and a "
                     + "parent with a transform or a stacking context of its own can hold the dialog beneath the "
                     + "page.") { Pitfall = true },
+                new("While a [dock](components/dock-manager) panel is in a browser window of its own, a dialog opens "
+                    + "in the window the user is working in, the one their last key, press or focus was in. If that "
+                    + "window closes while the dialog is open, the dialog comes back to the page, still open. "
+                    + "Escape, the backdrop, moving, resizing and the row of minimized dialogs go by the window the "
+                    + "dialog is in. A dialog written inside another dialog stays with it."),
+                new("With a dock panel in a window of its own, a modal dialog blocks only the window it is in: the "
+                    + "other windows can still be used, and toasts and announcements made from them go to the "
+                    + "modal, in its window.") { Pitfall = true },
+                new("A dialog that opens in another window than the one it is written in moves to the end of that "
+                    + "window's `<body>`. A theme, direction or style set around it doesn't reach it there, the "
+                    + "elements that were around it don't hear its events, and its controls are no longer part of "
+                    + "a `<form>` it was written in. In a panel's window, a popup that another library adds to the "
+                    + "page's `document.body` shows on the page, not beside a dialog open in that window.")
+                    { Pitfall = true },
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
@@ -12323,8 +12353,8 @@ public static class ExampleCatalog
                 new("While a [dock](components/dock-manager) panel is in a browser window of its own, the toasts "
                     + "show in the window the user is working in, the one their last key, press or focus was in. "
                     + "A toast keeps the time it has left as it moves, and F8 and Escape work in that window. The "
-                    + "timers pause while the window the toasts show in is hidden, not while the page is. Toasts in "
-                    + "a modal dialog stay in the dialog."),
+                    + "timers pause while the window the toasts show in is hidden, not while the page is. While a "
+                    + "modal dialog is open, in any window, toasts show in that dialog and stay there."),
             ],
             Modes = new(ModeSupport.None, ModeSupport.None),
             BeforeInteractive =

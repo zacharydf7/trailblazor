@@ -22,10 +22,11 @@ An issue is done when all of these hold:
 - A script works on an element that may be in another browser window, so it asks that element for its window:
   `element.ownerDocument` for the focused element and for finding others, and `viewOf`, `watchSizes` and `frames` from
   `pages.js` for sizes, size changes and animation frames. A script with only an id uses `findById`, and one that
-  watches the whole page uses `onEachPage`. One that shows something for the whole app, as the toaster does, passes
-  `onPagesChange` a function that moves it to `currentPage()`, the window the user is working in. A script opens a
-  window with `viewOf(element).open`, since only the window a click was in may open one, and checks an element's kind
-  by `localName` or `nodeType`, not `instanceof`, since an element made in another window isn't an instance of the
+  watches the whole page uses `onEachPage`. One that shows something for the whole app, as the toaster and a dialog do,
+  moves it to `currentPage()`, the window the user is working in, and passes `onPagesChange` a function that
+  checks again whenever a window opens or closes or the user moves to another one. A script opens a window with
+  `viewOf(element).open`, since only the window a click was in may open one, and checks an element's kind by
+  `localName` or `nodeType`, not `instanceof`, since an element made in another window isn't an instance of the
   page's classes. `ScriptWindowsTests` fails when a script asks the page's own `document` or `window` instead; a
   script or a line whose subject is the page goes in its lists, with the reason.
 - An interactive component has a driver in both `Trailblazor.Testing` (bUnit) and `Trailblazor.Testing.Playwright`,

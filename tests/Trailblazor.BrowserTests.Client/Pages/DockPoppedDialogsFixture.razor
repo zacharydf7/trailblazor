@@ -1,0 +1,63 @@
+@page "/dock-popped-dialogs"
+@using Trailblazor.BrowserTests.Host.Dialogs
+@inject IDialogService Dialogs
+@inject IToastService Toasts
+
+@* A dock whose Files panel asks for dialogs five ways: Ask and Name through the service, the second modeless, Notes a
+   modeless dialog written
+   inside the panel, Settings a modal one written there, with a Save settings button that shows a toast for a
+   minute, and Rules a modal one kept on the page layer. Ask on the page, beside the dock, asks through the service
+   too, and Alt+K is a hotkey of the page's that counts its presses. Log opens a modeless dialog written on the page;
+   it and Notes can be minimized and moved. *@
+<TbButton OnClick="AskAsync">Ask on the page</TbButton>
+<TbButton OnClick="() => _log = true">Log</TbButton>
+<TbDialog @bind-Open="_log" Title="Page log" Options="Modeless">
+    <p>Nothing logged.</p>
+</TbDialog>
+<output data-testid="answer">@_answer</output>
+<TbHotkey Keys="Alt+K" OnPress="() => _marked++" />
+<output data-testid="marked">@_marked</output>
+<div style="inline-size: 60rem; block-size: 30rem">
+    <TbDockManager AriaLabel="Desk" AllowPopOut>
+        <TbDockPanel Id="files" Title="Files" Closable="false">
+            <TbButton OnClick="AskAsync">Ask</TbButton>
+            <TbButton OnClick="NameAsync">Name</TbButton>
+            <TbButton OnClick="() => _notes = true">Notes</TbButton>
+            <TbButton OnClick="() => _settings = true">Settings</TbButton>
+            <TbButton OnClick="() => _rules = true">Rules</TbButton>
+            <TbDialog @bind-Open="_notes" Title="File notes" Options="Modeless">
+                <TbTextField Label="Note" @bind-Value="_note" />
+            </TbDialog>
+            <TbDialog @bind-Open="_settings" Title="File settings">
+                <TbButton OnClick="SaveSettings">Save settings</TbButton>
+            </TbDialog>
+            <TbDialog @bind-Open="_rules" Title="File rules" Options="OnThePageLayer">
+                <p>No rules yet.</p>
+            </TbDialog>
+        </TbDockPanel>
+        <TbDockPanel Id="other" Title="Other">Other notes</TbDockPanel>
+    </TbDockManager>
+</div>
+
+@code {
+    private static readonly DialogOptions Modeless = new() { Modal = false, Minimizable = true, Draggable = true };
+    private static readonly DialogOptions OnThePageLayer = new() { TopLayer = false };
+
+    private string? _answer;
+    private bool _log;
+    private bool _notes;
+    private bool _settings;
+    private bool _rules;
+    private int _marked;
+    private string? _note;
+
+    private async Task AskAsync()
+    {
+        var remove = await Dialogs.ConfirmAsync("Remove the file?", "It can't be brought back.", "Remove");
+        _answer = remove ? "Removed" : "Kept";
+    }
+
+    private Task NameAsync() => Dialogs.ShowAsync<NameDialog, string>("File name", options: new() { Modal = false });
+
+    private void SaveSettings() => Toasts.Show("Settings saved", options: new() { Duration = TimeSpan.FromMinutes(1) });
+}

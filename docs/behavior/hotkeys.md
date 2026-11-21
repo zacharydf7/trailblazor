@@ -13,6 +13,7 @@ Familiar apps: Gmail's and GitHub's shortcuts with their "?" list, VS Code's key
 - [x] A `Parent` hotkey fires only with focus inside its element, and there it wins over a page hotkey with the same keys, even one deeper in the page. `HotkeysTests.ParentHotkey_ShouldWinInsideItsElementAndNotFireOutside_WhenItsKeysArePressed`
 - [x] While a modal dialog is open, in the top layer or on the page layer, only the hotkeys inside it fire; with one modal over another, only the front one's hotkeys fire, whichever comes first in the document. `HotkeysTests.Hotkey_ShouldFireOnlyInsideTheDialog_WhenAModalDialogIsOpen`, `HotkeysTests.Hotkey_ShouldFireOnlyInTheTopLayerModal_WhenItOpensOverAPageLayerOne`, `HotkeysTests.Hotkey_ShouldFireOnlyInTheFrontModal_WhenOneOpensOverAnotherOnThePageLayer`
 - [x] A modal that has started to close stops counting, so the page's hotkeys work while it fades out. `HotkeysTests.Hotkey_ShouldFireOnThePage_WhenAPageLayerModalIsFadingOut`
+- [x] A modal dialog in a dock panel's own browser window stops the hotkeys outside it in that window only. `DockManagerPopOutDialogTests.Hotkey_ShouldStopFiringOnlyInTheWindowTheModalIsIn_WhenAModalIsOpenInAPanelsWindow`
 - [x] The help's keys open the list of hotkeys, and the same keys close it from inside. Mod shows as ⌘ on Apple devices and Ctrl elsewhere. `HotkeysTests.Help_ShouldListTheHotkeysByGroupAndClose_WhenItsKeyIsPressedTwice`
 - [x] Keys held down fire a hotkey once, and keys pressed while composing text in an input method fire nothing. `shortcuts.js`
 

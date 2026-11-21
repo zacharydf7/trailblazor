@@ -36,7 +36,8 @@ const onKeyDown = event => {
     const focus = event.target.nodeType === Node.ELEMENT_NODE ? event.target : null;
     // dialog.js knows which of its dialogs is in front; when none is open, a dialog the page opened itself counts while
     // the browser shows it as modal.
-    const modal = frontModal() ?? [...(focus?.ownerDocument ?? document).querySelectorAll('dialog:modal')].at(-1);
+    const page = focus?.ownerDocument ?? document;
+    const modal = frontModal(page) ?? [...page.querySelectorAll('dialog:modal')].at(-1);
     const found = [...hotkeys]
         .filter(hotkey => matchesShortcut(event, hotkey.shortcut) && applies(hotkey, focus, modal));
     if (found.length === 0) {

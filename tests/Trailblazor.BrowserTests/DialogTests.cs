@@ -724,6 +724,7 @@ public class DialogTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldReturn_WhenTheDialogsButtonReloadsThePage(string browser)
     {
+        Assert.SkipWhen(Popped, LeavesThePage);
         var page = await OpenAsync(browser, "/dialog-reload");
         await page.GetByRole(AriaRole.Button, new() { Name = "Open sign out" }).ClickAsync();
 

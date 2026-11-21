@@ -24,12 +24,6 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         return window;
     }
 
-    // Waits until the element is its own page's focused one. With more than one window open, which of them a test
-    // browser counts as the active one varies, and Playwright's own focus check also needs the element's window to be
-    // the active one.
-    private static async Task FocusedAsync(ILocator element) => await element.Page.WaitForFunctionAsync(
-        "element => document.activeElement === element", await element.ElementHandleAsync());
-
     // Waits until the window has closed, which it may have done already.
     private static async Task ClosedAsync(IPage window)
     {

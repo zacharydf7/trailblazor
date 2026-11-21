@@ -167,7 +167,7 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
             if (_announcer is not null)
             {
                 // A hidden tab draws no frames, so this waits as long as it takes rather than timing out.
-                await module.InvokeVoidAsync("nextFrame", Timeout.InfiniteTimeSpan);
+                await module.InvokeVoidAsync("nextFrame", Timeout.InfiniteTimeSpan, _element);
                 _announcer.Show();
             }
         }

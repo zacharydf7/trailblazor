@@ -580,7 +580,7 @@ public class DialogServiceTests : BunitContext
     public async Task Minimizable_ShouldBlockThePageAgain_WhenTurnedOffWhileAModalIsMinimized()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
-        module.SetupVoid("nextFrame").SetVoidResult();
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
         var handle = module.SetupModule("openDialog", _ => true);
         handle.SetupVoid("setState", _ => true).SetVoidResult();
         var host = Render<DialogHost>();
@@ -683,7 +683,7 @@ public class DialogServiceTests : BunitContext
     public async Task HasOpenDialogs_ShouldLeaveOutAClosingDialogAndShowTheCountOnThePage_WhenOneOpensAndCloses()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
-        module.SetupVoid("nextFrame").SetVoidResult();
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
         var fade = module.SetupModule("openDialog", _ => true).SetupVoid("close");
         var host = Render<DialogHost>();
         string? Count() => host.Find("[data-tb-open-dialogs]").GetAttribute("data-tb-open-dialogs");
@@ -778,7 +778,7 @@ public class DialogServiceTests : BunitContext
     public void ShowAsync_ShouldOpenTheDialogAtItsOwnSize_WhenItsContentHidesTheHeaderAsItStartsMinimized()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
-        module.SetupVoid("nextFrame").SetVoidResult();
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
         var handle = module.SetupModule("openDialog", _ => true);
         var host = Render<DialogHost>();
 
@@ -794,7 +794,7 @@ public class DialogServiceTests : BunitContext
     public void ShowAsync_ShouldOpenTheDialogMaximizedAndStillModal_WhenItStartsMaximized()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
-        module.SetupVoid("nextFrame").SetVoidResult();
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
         var handle = module.SetupModule("openDialog", _ => true);
         var host = Render<DialogHost>();
 
@@ -1123,7 +1123,7 @@ public class DialogServiceTests : BunitContext
     public async Task Dispose_ShouldCleanUpTheBrowserDialog_WhenTheHostGoesAwayWithADialogOpen()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
-        module.SetupVoid("nextFrame").SetVoidResult();
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
         var handle = module.SetupModule("openDialog", _ => true);
         handle.SetupVoid("dispose").SetVoidResult();
         var host = Render<DialogHost>();
@@ -1139,7 +1139,7 @@ public class DialogServiceTests : BunitContext
     public async Task CloseAsync_ShouldStopCountingTheDialogAsTheTopmostModal_WhenItStartsToFadeOut()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
-        module.SetupVoid("nextFrame").SetVoidResult();
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
         var close = module.SetupModule("openDialog", _ => true).SetupVoid("close");
         var host = Render<DialogHost>();
         var changes = 0;
@@ -1161,7 +1161,7 @@ public class DialogServiceTests : BunitContext
     public async Task CloseAsync_ShouldListTheDialogAsClosingUntilItHasFadedOut_WhenItStartsToFadeOut()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
-        module.SetupVoid("nextFrame").SetVoidResult();
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
         var close = module.SetupModule("openDialog", _ => true).SetupVoid("close");
         var host = Render<DialogHost>();
         _ = Dialogs.ShowAsync<GreetingDialog, string>("Greeting", p => p.Set(d => d.Name, "Ada"));
@@ -1180,7 +1180,7 @@ public class DialogServiceTests : BunitContext
     public async Task CloseAsync_ShouldStillCompleteAndRemoveTheDialog_WhenTheBrowserCloseFails()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
-        module.SetupVoid("nextFrame").SetVoidResult();
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
         var handle = module.SetupModule("openDialog", _ => true);
         handle.SetupVoid("close").SetException(new Microsoft.JSInterop.JSException("The browser refused."));
         var host = Render<DialogHost>();
@@ -1353,7 +1353,7 @@ public class DialogServiceTests : BunitContext
     public async Task CloseAsync_ShouldLeaveTheDialogCanceled_WhenItComesWhileTheCancelFadesOut()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
-        module.SetupVoid("nextFrame").SetVoidResult();
+        module.SetupVoid("nextFrame", _ => true).SetVoidResult();
         var close = module.SetupModule("openDialog", _ => true).SetupVoid("close");
         var host = Render<DialogHost>();
         var dialog = Dialogs.Show<GuardedDialog, bool>("Edit");

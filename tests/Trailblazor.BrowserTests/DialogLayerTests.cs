@@ -15,6 +15,7 @@ public class DialogLayerTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dialog_ShouldLetAnotherLibrarysPopupAboveItBeUsed_WhenItIsOnThePageLayer(string browser)
     {
+        Assert.SkipWhen(Popped, AddsToThePagesBody);
         var page = await OpenAsync(browser, "/foreign-popups");
         await Button(page, "Note").ClickAsync();
         var note = page.GetByRole(AriaRole.Dialog, new() { Name = "Note" });
@@ -63,6 +64,7 @@ public class DialogLayerTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Dialog_ShouldLeaveAPopupMadeBeforeItAndBlazorsErrorBarUsable_WhenItIsOnThePageLayer(
         string browser)
     {
+        Assert.SkipWhen(Popped, AddsToThePagesBody);
         var page = await OpenAsync(browser, "/foreign-popups");
         await Expect(page.Locator(".reused-popup")).ToHaveCountAsync(1);
         await Button(page, "Note").ClickAsync();

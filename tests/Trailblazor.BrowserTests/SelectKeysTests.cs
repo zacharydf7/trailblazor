@@ -164,7 +164,6 @@ public abstract class SelectKeysTests(BrowserFixture fixture) : BrowserTest(fixt
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldCloseOnlyItsList_WhenEscapeIsPressedInsideADialog(string browser)
     {
-        Assert.SkipWhen(Popped, ShowsInThePagesWindow);
         var page = await OpenSelectAsync(browser);
         await page.GetByRole(AriaRole.Button, new() { Name = "Next" }).ClickAsync();
         var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Choose a color" });

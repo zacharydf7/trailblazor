@@ -693,7 +693,6 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Links_ShouldAddUndoEditAndRemoveALink_WhenTheLinkDialogIsUsed(string browser)
     {
-        Assert.SkipWhen(Popped, ShowsInThePagesWindow);
         var page = await OpenAsync(browser, "/rich-text-editor");
         var notes = await SetAsync(page, "<p>see the map</p>", "see the map");
         var dialog = page.GetByRole(AriaRole.Dialog);
@@ -729,7 +728,6 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Links_ShouldInsertLinkedTextThatTypingJoinsOnlyInside_WhenNothingIsSelected(string browser)
     {
-        Assert.SkipWhen(Popped, ShowsInThePagesWindow);
         var page = await OpenAsync(browser, "/rich-text-editor");
         var notes = await SetAsync(page, "<p>Go to now</p>", "Go to now");
         var dialog = page.GetByRole(AriaRole.Dialog);
@@ -753,7 +751,6 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Links_ShouldPutTheCaretBack_WhenTheLinkDialogIsCanceled(string browser)
     {
-        Assert.SkipWhen(Popped, ShowsInThePagesWindow);
         var page = await OpenAsync(browser, "/rich-text-editor");
         var notes = await SetAsync(page, "<p>see the map</p>", "see the map");
 
@@ -1101,7 +1098,6 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Escape_ShouldLetTabLeaveAndPassTheNextEscapeToTheDialog_WhenPressedInAListItemInADialog(string browser)
     {
-        Assert.SkipWhen(Popped, ShowsInThePagesWindow);
         var page = await OpenAsync(browser, "/rich-text-editor");
         await page.GetByRole(AriaRole.Button, new() { Name = "Open draft" }).ClickAsync();
         var draft = Editor(page, "Draft");
@@ -1255,7 +1251,6 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Tables_ShouldGoInFromTheTableButton_WhenPressedInAParagraphOrAfterTheTableTheCaretIsIn(
         string browser)
     {
-        Assert.SkipWhen(Popped, ShowsInThePagesWindow);
         var page = await OpenAsync(browser, "/rich-text-editor");
         var table = await SetTableAsync(page, "<p>ab</p>", 0);
         await Expect(table).ToHaveTextAsync("ab");
@@ -1688,7 +1683,6 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Images_ShouldGoInAtTheCaret_WhenChosenWithTheImageButton(string browser)
     {
-        Assert.SkipWhen(Popped, ShowsInThePagesWindow);
         var page = await OpenAsync(browser, "/rich-text-editor");
         var gallery = await GalleryAsync(page, "<p>ab</p>");
 

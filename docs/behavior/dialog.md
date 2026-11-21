@@ -92,6 +92,9 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] Focus moved to the page while a modal fades out stays there. `DialogTests.Dialog_ShouldLetThePageTakeInputAndKeepItsFocus_WhenAModalFadesOut`
 - [x] Minimizing and restoring keep focus on the button pressed. `DialogStateTests.Dialog_ShouldLetThePageBeUsedUntilRestored_WhenAModalIsMinimized`
 - [x] Switching between modal and non-modal keeps focus. `DialogStateTests.Dialog_ShouldSwitchBetweenModalAndModelessAndKeepFocus_WhenItsContentAsks`
+- [x] While a dock panel is in a browser window of its own, a dialog opens in the window the user is working in, with the focus inside, and gives the focus back there when it closes. `DockManagerPopOutDialogTests.Dialog_ShouldOpenInThePanelsWindowAndGiveTheFocusBackThere_WhenAskedForFromThePanel`, `DockManagerPopOutDialogTests.Dialog_ShouldOpenOnThePage_WhenAskedForFromThePageWhileAPanelIsInAWindow`
+- [x] A dialog whose window closes comes back to the page still open, with the focus where it starts if it is modal, and one written inside a dock panel stays open as the panel changes windows. `DockManagerPopOutDialogTests.Dialog_ShouldComeBackToThePageStillOpen_WhenTheWindowItShowsInCloses`, `DockManagerPopOutDialogTests.Dialog_ShouldTakeTheFocusAgain_WhenItComesBackToThePageWithItsPanel`, `DockManagerPopOutDialogTests.Dialog_ShouldStayOpenWithItsPanel_WhenThePanelGoesToAWindowAndComesBack`
+- [ ] A modal dialog blocks every window of the app, not only the one it is in. #588
 
 ## Not applicable
 

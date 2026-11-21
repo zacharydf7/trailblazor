@@ -33,7 +33,14 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
     protected const string ThePageFailsToRender = "The page fails to render on purpose, so it has no panel to open.";
     protected const string WarnsInThePagesConsole =
         "The library's scripts warn in the page's console, not the panel's window's.";
-    protected const string ShowsInThePagesWindow = "Dialogs still show in the page's window (#584).";
+    protected const string AddsToThePagesBody =
+        "The page's own script adds its popup to the page's body, which the panel's window doesn't show.";
+
+    // Waits until the element is its own page's focused one. With more than one window open, which of them a test
+    // browser counts as the active one varies, and Playwright's own focus check also needs the element's window to be
+    // the active one.
+    protected static async Task FocusedAsync(ILocator element) => await element.Page.WaitForFunctionAsync(
+        "element => document.activeElement === element", await element.ElementHandleAsync());
 
     protected async Task<IPage> OpenAsync(string browser, string path, BrowserNewContextOptions? options = null)
     {

@@ -18,7 +18,6 @@ public partial class ScriptWindowsTests
         ["browser.js"] = "It reports the page's own window.",
         ["static-form.js"] = "It serves static pages, which show in no other window.",
         ["speech-to-text.js"] = "It reads the page's language.",
-        ["dialog.js"] = "Dialogs show in the page's window.",
     };
 
     // Single lines that are about the page itself, in scripts that otherwise follow their element.

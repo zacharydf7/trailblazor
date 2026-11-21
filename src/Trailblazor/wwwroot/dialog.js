@@ -3,6 +3,7 @@ import { focusForLastInput, focusOrigin } from '../Trailblazor.Primitives/pointe
 import { alwaysUsable, hold, release } from './inert.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { currentPage, frames, onPagesChange, otherPages, watchSizes } from '../Trailblazor.Primitives/pages.js';
 
 // Open dialogs, back to front; keys go to the frontmost, or to a modeless one that has focus, so a nested dialog closes
 // before the one beneath it.
@@ -11,23 +12,25 @@ const stack = [];
 // A popup that closes itself on a click outside it, and that a dialog coming forward would cover.
 const lightDismissPopup = '[popover]:not([popover="manual"]):popover-open';
 
-// Minimized dialogs, in the order they were minimized, set out in rows from the bottom-end corner.
+// Minimized dialogs, in the order they were minimized, set out in rows from the bottom-end corner of their window.
 const tray = [];
 
-// A row that runs out of room wraps upward, so every minimized dialog stays on screen to be restored.
 function layOutTray() {
-    if (tray.length === 0) {
-        return;
+    for (const page of new Set(tray.map(dialog => dialog.ownerDocument))) {
+        layOutRows(page, tray.filter(dialog => dialog.ownerDocument === page));
     }
+}
 
+// A row that runs out of room wraps upward, so every minimized dialog stays on screen to be restored.
+function layOutRows(page, dialogs) {
     // The CSS registers these as lengths, so they come back in px whatever the theme and font size.
-    const style = getComputedStyle(tray[0]);
+    const style = getComputedStyle(dialogs[0]);
     const trayGap = parseFloat(style.getPropertyValue('--tb-dialog-tray-gap'));
-    const room = document.documentElement.clientWidth - 2 * parseFloat(style.getPropertyValue('--tb-dialog-tray-edge'));
+    const room = page.documentElement.clientWidth - 2 * parseFloat(style.getPropertyValue('--tb-dialog-tray-edge'));
     let inline = 0;
     let block = 0;
     let rowHeight = 0;
-    for (const dialog of tray) {
+    for (const dialog of dialogs) {
         if (inline > 0 && inline + dialog.offsetWidth > room) {
             inline = 0;
             block += rowHeight + trayGap;
@@ -70,20 +73,25 @@ function dialogFocusTarget(dialog, options) {
         ?? (options.initialFocus === 'Dialog' ? dialog : firstTabbable(body) ?? dialog);
 }
 
-// The elements the topmost modal on the page layer made inert, with that dialog.
-let pageBlock = { dialog: null, elements: [] };
+// The open dialogs in one window, back to front.
+const stackIn = page => stack.filter(entry => entry.dialog.ownerDocument === page);
+
+// For each window, the elements the topmost modal on its page layer made inert, with that dialog.
+const pageBlocks = new WeakMap();
 
 // The top layer would make the page inert, popups other scripts add to it included, so a modal on the page layer
-// makes everything beside it and its ancestors inert itself. Only the topmost one counts, however they close.
-function blockPage() {
-    const topEntry = stack.findLast(entry => entry.modal && !entry.topLayer);
+// makes everything beside it and its ancestors inert itself. Only the topmost one in its window counts, however they
+// close.
+function blockPage(page) {
+    const topEntry = stackIn(page).findLast(entry => entry.modal && !entry.topLayer);
     const top = topEntry?.dialog ?? null;
+    const pageBlock = pageBlocks.get(page) ?? { dialog: null, elements: [] };
     if (top === pageBlock.dialog) {
         return;
     }
 
     const elements = [];
-    for (let node = top; node && node !== document.body; node = node.parentElement) {
+    for (let node = top; node && node !== page.body; node = node.parentElement) {
         for (const sibling of node.parentElement?.children ?? []) {
             if (sibling !== node && !sibling.matches(topEntry.usable)) {
                 elements.push(sibling);
@@ -94,7 +102,7 @@ function blockPage() {
     // Hold the new block before releasing the previous one, so what both cover never takes input in between.
     hold(elements);
     release(pageBlock.elements);
-    pageBlock = { dialog: top, elements };
+    pageBlocks.set(page, { dialog: top, elements });
 }
 
 function show(dialog, modal, topLayer) {
@@ -147,7 +155,7 @@ function raise(entry) {
     }
 
     entry.dialog.querySelectorAll('[popover="manual"]:popover-open:not(dialog)').forEach(moveToTopOfLayer);
-    document.querySelectorAll('[data-part="toaster"]').forEach(moveToTopOfLayer);
+    entry.dialog.ownerDocument.querySelectorAll('[data-part="toaster"]').forEach(moveToTopOfLayer);
     numberLevels();
 }
 
@@ -175,14 +183,23 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
         return null;
     }
 
-    const opener = focusOrigin();
-    // A modal in the top layer makes the page inert, so a dialog it opens joins it there.
-    const topLayer = options.topLayer || stack.some(entry => entry.modal && entry.topLayer);
+    // A dialog opens in the window the user is working in, which can be a dock panel's window, and leaves a mark where
+    // it was. One written inside another dialog stays with it.
+    const home = document.createComment('');
+    if (currentPage() !== dialog.ownerDocument && !dialog.parentElement?.closest('dialog')) {
+        dialog.before(home);
+        currentPage().body.append(dialog);
+    }
+
+    let page = dialog.ownerDocument;
+    const opener = focusOrigin(page);
+    // A modal in the top layer makes its window's page inert, so a dialog it opens joins it there.
+    const topLayer = options.topLayer || stackIn(page).some(entry => entry.modal && entry.topLayer);
     let usable = null;
     if (!topLayer) {
         // A selector the app got wrong throws here, quoted in the error, before the dialog is half set up.
         usable = [...alwaysUsable, ...outsidePopups].join(', ');
-        document.querySelector(usable);
+        page.querySelector(usable);
         dialog.dataset.layer = 'page';
     }
 
@@ -192,7 +209,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
     const entry = { dialog, options, modal, topLayer, usable };
     stack.push(entry);
     numberLevels();
-    blockPage();
+    blockPage(page);
     if (windowState === 'minimized') {
         tray.push(dialog);
         layOutTray();
@@ -210,7 +227,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
     // to the page lands on that popup.
     const onBackdrop = event => {
         if (!entry.topLayer) {
-            return stack.at(-1) === entry && event.target !== dialog && event.target.contains?.(dialog);
+            return stackIn(page).at(-1) === entry && event.target !== dialog && event.target.contains?.(dialog);
         }
 
         if (event.target !== dialog) {
@@ -228,21 +245,23 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
     // The frontmost dialog takes it, and so does a modeless one with focus, since that is the window the user is
     // working in; focus in a dialog nested inside it belongs to the nested one.
     const onKeyDown = event => {
-        const frontmost = stack.at(-1) === entry;
+        // A key pressed in another window is for the dialogs there.
+        const frontmost = stackIn(page).at(-1) === entry;
         if (event.key !== 'Escape' || event.defaultPrevented || isComposing(event)
-            || !(frontmost || !entry.modal && document.activeElement?.closest('dialog') === dialog)
+            || event.target.ownerDocument !== page
+            || !(frontmost || !entry.modal && page.activeElement?.closest('dialog') === dialog)
             || dialog.querySelector(`${lightDismissPopup}, [role="tooltip"]:popover-open, [data-dismissable-layer]`)
             || event.target.closest?.('[data-part="toaster"]')) {
             return;
         }
 
-        const outside = !dialog.contains(document.activeElement);
+        const outside = !dialog.contains(page.activeElement);
         if (!entry.modal && outside) {
             return;
         }
 
         // A page-layer modal leaves keys pressed in a popup added to the page above it to that popup.
-        if (!entry.topLayer && outside && document.activeElement !== document.body) {
+        if (!entry.topLayer && outside && page.activeElement !== page.body) {
             return;
         }
 
@@ -310,14 +329,14 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
     // Arrow keys and pointers move in screen directions, whichever way the page's text runs. The dialog stays whole
     // inside the window, so its header can always be reached.
     function moveBy(start, dx, dy) {
-        const room = document.documentElement;
+        const room = page.documentElement;
         place(clamp(start.left + dx, 0, room.clientWidth - start.width),
             clamp(start.top + dy, 0, room.clientHeight - start.height));
     }
 
     // The grip sits in the bottom-end corner, so on a right-to-left page the left edge follows it.
     function resizeBy(start, dx, dy) {
-        const room = document.documentElement;
+        const room = page.documentElement;
         const rightToLeft = getComputedStyle(dialog).direction === 'rtl';
         const width = rightToLeft
             ? clamp(start.width - dx, minimumSize.width, start.left + start.width)
@@ -424,6 +443,75 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
         }
     }
 
+    function hide() {
+        if (dialog.matches(':popover-open')) {
+            dialog.hidePopover();
+        }
+
+        if (dialog.open) {
+            dialog.close();
+        }
+    }
+
+    // What holds a dialog can be hidden as it changes windows, as a dock panel is until its dock draws it again. Then
+    // nothing in the dialog can take the focus yet, so it is given once the dialog is drawn.
+    let drawn = null;
+    const focusWhenDrawn = () => {
+        drawn?.disconnect();
+        drawn = null;
+        if (dialog.getClientRects().length > 0) {
+            focusForLastInput(dialogFocusTarget(dialog, options));
+            return;
+        }
+
+        drawn = watchSizes(() => {
+            if (dialog.getClientRects().length > 0) {
+                focusWhenDrawn();
+            }
+        });
+        drawn.observe(dialog);
+    };
+
+    // A dialog whose window has closed goes back to its mark. One that changed windows, by itself or with what holds
+    // it, isn't shown as open after the move, so it opens again in its new window.
+    const settle = () => {
+        if (page !== document && !otherPages().includes(page)) {
+            home.replaceWith(dialog);
+        }
+
+        if (dialog.ownerDocument === page) {
+            return;
+        }
+
+        const left = page;
+        page = dialog.ownerDocument;
+        // A modal takes the focus again where it starts. A modeless dialog takes none by changing windows: shown
+        // again while inert, it has nothing to give the focus to, and what had the focus gets it back, since
+        // Chromium drops it all the same.
+        const focused = entry.modal ? null : page.activeElement;
+        const ring = focused?.matches(':focus-visible');
+        if (!entry.modal) {
+            hold([dialog]);
+        }
+
+        hide();
+        show(dialog, entry.modal, entry.topLayer);
+        if (entry.modal) {
+            focusWhenDrawn();
+        } else {
+            release([dialog]);
+            if (focused && page.activeElement !== focused) {
+                focused.focus({ focusVisible: ring });
+            }
+        }
+
+        blockPage(left);
+        blockPage(page);
+        layOutTray();
+        keepInside();
+    };
+    const unsettle = onPagesChange(settle);
+
     document.addEventListener('keydown', onKeyDown);
     dialog.addEventListener('pointerdown', bringToFront, { capture: true });
     dialog.addEventListener('focusin', bringToFront, { capture: true });
@@ -461,8 +549,11 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
         dialog.removeEventListener('click', onClickAfterDrag, { capture: true });
         dialog.removeEventListener('keydown', onArrowKey, { capture: true });
         window.removeEventListener('resize', keepInside);
+        unsettle();
+        drawn?.disconnect();
+        home.remove();
         stack.splice(stack.indexOf(entry), 1);
-        blockPage();
+        blockPage(page);
         leaveTray(dialog);
         return true;
     }
@@ -481,16 +572,6 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
         const longest = Math.max(...transitions.map(transition => transition.effect.getComputedTiming().endTime));
         return Promise.race([Promise.allSettled(transitions.map(transition => transition.finished)),
             new Promise(resolve => setTimeout(resolve, longest + 100))]);
-    }
-
-    function hide() {
-        if (dialog.matches(':popover-open')) {
-            dialog.hidePopover();
-        }
-
-        if (dialog.open) {
-            dialog.close();
-        }
     }
 
     return {
@@ -539,7 +620,7 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
 
             // An open dialog can't change between modal and modeless, so it closes and opens again the other way.
             // Focus stays where it was, or moves into the dialog as it turns modal.
-            const focused = dialog.contains(document.activeElement) ? document.activeElement : null;
+            const focused = dialog.contains(page.activeElement) ? page.activeElement : null;
             entry.modal = modal;
             hide();
             show(dialog, modal, entry.topLayer);
@@ -547,16 +628,16 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
             stack.splice(stack.indexOf(entry), 1);
             stack.push(entry);
             numberLevels();
-            blockPage();
+            blockPage(page);
             focusForLastInput(focused ?? dialogFocusTarget(dialog, options));
             // A modal's own live regions join the accessibility tree with the next frame, as when it opens.
             if (modal) {
-                await nextFrame();
+                await nextFrame(dialog);
             }
         },
         // Closes the dialog and gives focus back to whatever opened it, unless focus has already moved on.
         async close() {
-            const giveBack = dialog.contains(document.activeElement) || document.activeElement === document.body;
+            const giveBack = dialog.contains(page.activeElement) || page.activeElement === page.body;
             finish();
             // A modal keeps the page inert, so it fades out as a popover and the page takes input at once. Its content
             // goes inert first, so showing it again doesn't move focus into it.
@@ -600,10 +681,21 @@ export function openDialog(dialog, dotNet, options, outsidePopups, modal, window
     };
 }
 
-// The frontmost open modal, on either layer; one that has started to close has already left the stack.
-export const frontModal = () => stack.findLast(entry => entry.modal)?.dialog;
+// The frontmost open modal in a window, on either layer; one that has started to close has already left the stack.
+export const frontModal = page => stackIn(page).findLast(entry => entry.modal)?.dialog;
 
-// Resolves once the browser has drawn a frame, by which time a dialog it just opened is in the accessibility tree.
-export function nextFrame() {
-    return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+// Resolves once the dialog's window has drawn two frames, by which time a dialog that just opened is in the
+// accessibility tree. A dialog that changes windows meanwhile is waited for in its new one, and one that is gone
+// already isn't waited for.
+export function nextFrame(dialog) {
+    return new Promise(resolve => {
+        if (!dialog) {
+            resolve();
+            return;
+        }
+
+        let left = 2;
+        const frame = frames(dialog, () => --left > 0 ? frame.request() : resolve());
+        frame.request();
+    });
 }

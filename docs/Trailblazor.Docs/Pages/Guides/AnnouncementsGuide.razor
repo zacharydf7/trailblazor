@@ -50,7 +50,8 @@
             The same message said twice is announced twice. While a modal dialog is open, messages go to its own live
             regions, since a modal hides the rest of the page from screen readers. While a dock panel is in a browser
             window of its own, messages outside a modal are said in that window too, since a screen reader follows the
-            window that has the focus.
+            window that has the focus. A modal open in any window takes the messages, which are then said in its
+            window only.
         </TbText>
         <CodeBlock Label="Announcing" Code="@Announce" />
 

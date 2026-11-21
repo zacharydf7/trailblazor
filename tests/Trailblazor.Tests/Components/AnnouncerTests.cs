@@ -169,7 +169,7 @@ public class AnnouncerTests : BunitContext
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/dialog.js");
         module.SetupModule("openDialog", _ => true);
-        var frame = module.SetupVoid("nextFrame");
+        var frame = module.SetupVoid("nextFrame", _ => true);
         var dialogs = Render<DialogHost>();
 
         _ = Services.GetRequiredService<IDialogService>().ShowAsync<EmptyDialog, bool>("Edit");
