@@ -22,25 +22,34 @@ const inPanel = (root, control) => {
     const panel = control.closest('[role="tabpanel"]');
     return panel !== null && root.contains(panel);
 };
+// A ribbon inside this one, as in a dialog written in a group, has key tips of its own.
+const own = (root, control) => control.closest('[data-part="ribbon"]') === root;
 const beside = root => [...root.querySelectorAll('[data-key-tip]')]
-    .filter(control => !inPanel(root, control) && usable(control));
+    .filter(control => own(root, control) && !inPanel(root, control) && usable(control));
 // A tab's commands count only once its panel shows, which the server answers a moment after the tab's key.
-const commandsOf = tab => {
+const commandsOf = (root, tab) => {
     const panel = tab.ownerDocument.getElementById(tab.getAttribute('aria-controls') ?? '');
-    return panel && !panel.hidden ? [...panel.querySelectorAll('[data-key-tip]')].filter(usable) : null;
+    return panel && !panel.hidden
+        ? [...panel.querySelectorAll('[data-key-tip]')].filter(control => own(root, control) && usable(control)) : null;
 };
-const showing = state => state.tab ? commandsOf(state.tab) : beside(state.root);
+const showing = state => state.tab ? commandsOf(state.root, state.tab) : beside(state.root);
+// A popup of the ribbon's own that is open, such as a collapsed group's or a menu's. A dialog written in the ribbon
+// shows as a popup while it isn't modal, and neither it nor a popup inside it or inside another ribbon counts.
+const ownPopupOpen = root => [...root.querySelectorAll(':popover-open')].some(popup => popup.localName !== 'dialog'
+    && popup.parentElement.closest('[data-part="ribbon"], dialog') === root);
 
 // A ribbon behind a modal dialog is out of reach: a dialog on the page layer makes it inert, and the browser does for
-// one in the top layer. Of the others, the ribbon with focus comes first, and then the first one on the page.
+// one in the top layer. Of the others, the ribbon with focus comes first, the innermost if one is inside another, and
+// then the first one on the page.
 const target = event => {
     // Alt is for the window it was pressed in, which can be one that shows a part of the page.
     const page = event.target.ownerDocument ?? document;
     const top = [...page.querySelectorAll('dialog:modal')].at(-1);
     const candidates = [...ribbons].filter(root => root.ownerDocument === page && !root.closest('[inert]')
         && (!top || top.contains(root)) && root.checkVisibility() && beside(root).length > 0);
-    return candidates.find(root => root.contains(page.activeElement)) ?? candidates
-        .sort((one, other) => one.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)[0];
+    candidates.sort((one, other) => one.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
+    // A ribbon comes before the ones inside it, so the last with focus is the innermost.
+    return candidates.findLast(root => root.contains(page.activeElement)) ?? candidates[0];
 };
 
 const clear = state => {
@@ -186,7 +195,7 @@ const onKeyDown = event => {
         stop(false);
     } else if (event.key === 'Escape') {
         // A collapsed group's open popup takes Escape first.
-        if (!active.root.querySelector(':popover-open')) {
+        if (!ownPopupOpen(active.root)) {
             event.preventDefault();
             back(active);
         }
@@ -254,9 +263,8 @@ const describeKeys = root => {
         const add = (control, ...before) => {
             // A key tip on an element around a field is read from the field. The element named by aria-describedby
             // would take the place of an aria-description the app wrote, so that control keeps its own.
-            // A ribbon inside this one, as in a dialog written in a group, describes its own controls.
             const reader = control.matches(controls) ? control : control.querySelector(controls);
-            if (reader && control.closest('[data-part="ribbon"]') === root && enabled(control) && enabled(reader)
+            if (reader && own(root, control) && enabled(control) && enabled(reader)
                 && !reader.hasAttribute('aria-description')) {
                 texts.set(reader, format.replaceAll('{0}', ['Alt', ...before, keyOf(control)].join(', ')));
             }

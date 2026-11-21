@@ -6,7 +6,8 @@
    The dialog holds a ribbon of its own, inside the panel of a set of tabs, whose key tips take over while it is
    open. Print has a description of the app's own, the Atlas ribbon words its key tips' descriptions itself, and the
    Early ribbon leaves them out. The Survey ribbon's tab and field are described already, the tab by its context and
-   the field by a hint that Drop the hint takes away, and its Pins dialog holds a ribbon inside the Survey ribbon. *@
+   the field by a hint that Drop the hint takes away. Two dialogs that aren't modal each hold a ribbon inside the
+   Survey ribbon: Pins, written in a group, and Flags, written beside the tabs, whose ribbon can collapse. *@
 <input aria-label="Notes" />
 <TbButton OnClick="@(() => _early = true)">Add a ribbon first</TbButton>
 @if (_early)
@@ -72,6 +73,19 @@
     </TbRibbonTab>
 </TbRibbon>
 <TbRibbon AriaLabel="Survey">
+    <End>
+        <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => _flags = true)">Flags</TbButton>
+        <TbDialog @bind-Open="_flags" Title="Flags" Options="Modeless">
+            <TbRibbon AriaLabel="Flags" Collapsible>
+                <TbRibbonTab Title="Colors" KeyTip="C">
+                    <TbRibbonGroup Label="Kinds">
+                        <TbRibbonButton Label="Red flag" KeyTip="R" OnClick="@(() => _last = "Red flag")" />
+                    </TbRibbonGroup>
+                </TbRibbonTab>
+            </TbRibbon>
+        </TbDialog>
+    </End>
+    <ChildContent>
     <TbRibbonTab Title="Plots" Context="Field tools" KeyTip="P">
         <TbRibbonGroup Label="Marks">
             <span data-key-tip="S">
@@ -79,7 +93,9 @@
                              @bind-Value="_stake" />
             </span>
             <TbRibbonButton Label="Pins" OnClick="@(() => _pins = true)" />
-            <TbDialog @bind-Open="_pins" Title="Pins">
+            <TbDialog @bind-Open="_pins" Title="Pins" Options="Modeless">
+                @* A popup of the dialog's own, which a test shows. *@
+                <div popover="manual" id="pin-note">Pins come in two sizes.</div>
                 <TbRibbon AriaLabel="Pins">
                     <TbRibbonTab Title="Sizes" KeyTip="Z">
                         <TbRibbonGroup Label="Kinds">
@@ -90,6 +106,7 @@
             </TbDialog>
         </TbRibbonGroup>
     </TbRibbonTab>
+    </ChildContent>
 </TbRibbon>
 <TbButton OnClick="@(() => _hint = false)">Drop the hint</TbButton>
 <output data-testid="last">@_last</output>
@@ -116,6 +133,8 @@
 </TbDialog>
 
 @code {
+    private static readonly DialogOptions Modeless = new() { Modal = false };
+
     private string? _last;
     private bool _bold;
     private bool _dialog;
@@ -123,6 +142,7 @@
     private bool _details;
     private bool _hint = true;
     private bool _pins;
+    private bool _flags;
     private string? _stake;
 
     [SupplyParameterFromQuery]

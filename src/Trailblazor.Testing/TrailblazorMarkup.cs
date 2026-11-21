@@ -668,7 +668,8 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbRibbon</c> with this <c>AriaLabel</c>, or the only one in the markup when no name is
     /// given.</summary>
     public TbRibbonDriver Ribbon(string? name = null) => new(() => Only(_findAll(".tb-ribbon")
-        .Where(ribbon => name is null || ribbon.QuerySelector("[role=tablist]")?.GetAttribute("aria-label") == name)
+        .Where(ribbon => name is null
+            || ribbon.QuerySelector(":scope > .tb-tabs > [role=tablist]")?.GetAttribute("aria-label") == name)
         .ToList(), "ribbon", name), _findAll, _scripts);
 
     private static IElement Only(List<IElement> found, string kind, string? name) => found.Count switch
@@ -2613,8 +2614,8 @@ public sealed class TbRibbonDriver
     public Task SelectAsync(string tab) => _tabs.SelectAsync(tab);
 
     /// <summary>The names of the selected tab's groups, in order.</summary>
-    public IReadOnlyList<string> Groups => Commands?.QuerySelectorAll("[data-part=group-label]")
-        .Select(label => label.TextContent.Trim()).ToList() ?? [];
+    public IReadOnlyList<string> Groups => Own(Commands?.QuerySelectorAll("[data-part=group-label]"))
+        .Select(label => label.TextContent.Trim()).ToList();
 
     /// <summary>Whether the ribbon is collapsed to its tabs.</summary>
     public bool IsCollapsed => _find().HasAttribute("data-collapsed");
@@ -2635,8 +2636,9 @@ public sealed class TbRibbonDriver
                 + "interactively to collapse it.");
         }
 
-        var button = _find().QuerySelector("[data-part=collapse]") ?? throw new InvalidOperationException(
-            "The ribbon has no collapse button; set Collapsible to give it one.");
+        var button = Own(_find().QuerySelectorAll("[data-part=collapse]")).FirstOrDefault()
+            ?? throw new InvalidOperationException(
+                "The ribbon has no collapse button; set Collapsible to give it one.");
         if (IsCollapsed != collapsed)
         {
             await button.ClickAsync(new MouseEventArgs { Detail = 1 });
@@ -2650,8 +2652,8 @@ public sealed class TbRibbonDriver
     {
         // Leaves out a menu's items, which are <button> elements with a menu item role, and the buttons that groups
         // collapse into, which only a browser shows.
-        var buttons = Commands?.QuerySelectorAll("button:not([role], [data-part=group-button]), button[role=button]")
-            .Where(found => Choices.NameOf(found) == button).ToList() ?? [];
+        var all = Commands?.QuerySelectorAll("button:not([role], [data-part=group-button]), button[role=button]");
+        var buttons = Own(all).Where(found => Choices.NameOf(found) == button).ToList();
         var only = buttons.Count == 1 ? buttons[0] : throw new InvalidOperationException(buttons.Count == 0
             ? $"The ribbon's selected tab has no button named \"{button}\"."
             : $"The ribbon's selected tab has {buttons.Count} buttons named \"{button}\".");
@@ -2693,8 +2695,8 @@ public sealed class TbRibbonDriver
                     $"Key tips end once a command is chosen, so \"{keyTip}\" has nothing to reach.");
             }
 
-            var showing = inTab ? Commands?.QuerySelectorAll("[data-key-tip]").AsEnumerable() : BesideTheCommands();
-            var control = (showing ?? []).FirstOrDefault(found => string.Equals(found.GetAttribute("data-key-tip"),
+            var showing = inTab ? Own(Commands?.QuerySelectorAll("[data-key-tip]")) : BesideTheCommands();
+            var control = showing.FirstOrDefault(found => string.Equals(found.GetAttribute("data-key-tip"),
                     keyTip, StringComparison.OrdinalIgnoreCase))
                 ?? throw new InvalidOperationException(inTab
                     ? $"The ribbon's selected tab has no key tip \"{keyTip}\"."
@@ -2720,8 +2722,15 @@ public sealed class TbRibbonDriver
     private IEnumerable<IElement> BesideTheCommands()
     {
         var root = _find();
-        return root.QuerySelectorAll("[data-key-tip]")
+        return Own(root.QuerySelectorAll("[data-key-tip]"))
             .Where(control => control.Closest("[role=tabpanel]") is not { } panel || !root.Contains(panel));
+    }
+
+    // What is inside a ribbon that is itself inside this one, as in a dialog written in a group, isn't this ribbon's.
+    private IEnumerable<IElement> Own(IEnumerable<IElement>? found)
+    {
+        var root = _find();
+        return (found ?? []).Where(element => element.Closest(".tb-ribbon") == root);
     }
 
     // The selected tab's row of commands: the other tabs' rows stay in the markup, hidden, once they have been shown.

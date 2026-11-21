@@ -4,8 +4,9 @@ namespace Trailblazor.BrowserTests;
 
 public class RibbonKeyTipsTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    // Matches the ribbon's own tab list by name, since a ribbon that holds another also contains that one's tab list.
     private static ILocator Ribbon(IPage page, string name = "Journal") =>
-        page.Locator($"[data-part=ribbon]:has([role=tablist]:is([aria-label={name}]))");
+        page.Locator($"[data-part=ribbon]:has(> .tb-tabs > [role=tablist]:is([aria-label={name}]))");
 
     private static ILocator Tab(IPage page, string name) => page.GetByRole(AriaRole.Tab, new() { Name = name });
 
@@ -550,6 +551,80 @@ public class RibbonKeyTipsTests(BrowserFixture fixture) : BrowserTest(fixture)
         // The dialog would tell the app it closed only once its closing had played.
         await page.WaitForTimeoutAsync(500);
         await Expect(page.GetByTestId("dialog")).ToHaveTextAsync("open");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task KeyTips_ShouldReachOnlyTheirOwnRibbonsControls_WhenAnotherRibbonIsInsideIt(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await Expect(Ribbon(page, "Survey")).ToHaveAttributeAsync("data-ready", "");
+        // The Pins ribbon, with its Sizes tab (Z) and Small pin (M), is in a dialog written in a group of the Survey
+        // ribbon, and the Flags ribbon, with its Colors tab (C), in one written beside the Survey ribbon's tabs.
+        await Button(page, "Pins").ClickAsync();
+        await Expect(Ribbon(page, "Pins")).ToHaveAttributeAsync("data-ready", "");
+        await Button(page, "Flags").ClickAsync();
+        await Expect(Ribbon(page, "Flags")).ToHaveAttributeAsync("data-ready", "");
+        await page.GetByRole(AriaRole.Textbox, new() { Name = "Stake" }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Alt");
+        await Expect(Ribbon(page, "Survey")).ToHaveAttributeAsync("data-key-tips", "tabs");
+        Assert.Equal(["P"], await ShownAsync(page));
+        await page.Keyboard.PressAsync("P");
+
+        await Expect(Ribbon(page, "Survey")).ToHaveAttributeAsync("data-key-tips", "commands");
+        Assert.Equal(["S"], await ShownAsync(page));
+        await page.Keyboard.PressAsync("M");
+        await Expect(Ribbon(page, "Survey")).ToHaveAttributeAsync("data-key-tips", "commands");
+        await Expect(page.GetByTestId("last")).ToHaveTextAsync("");
+        // The open dialogs show as popups, and one of them has a popup of its own open, but Escape isn't theirs to
+        // take: it steps back, and then out.
+        await page.EvaluateAsync("document.getElementById('pin-note').showPopover()");
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(Ribbon(page, "Survey")).ToHaveAttributeAsync("data-key-tips", "tabs");
+        await page.Keyboard.PressAsync("C");
+        await Expect(Ribbon(page, "Survey")).ToHaveAttributeAsync("data-key-tips", "tabs");
+        await Expect(Tab(page, "Colors")).Not.ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(Ribbon(page, "Survey")).Not.ToHaveAttributeAsync("data-key-tips", "tabs");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldKeepToItsOwnRibbon_WhenAnotherRibbonIsInsideIt(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await Expect(Ribbon(page, "Survey")).ToHaveAttributeAsync("data-ready", "");
+        await Button(page, "Pins").ClickAsync();
+        await Expect(Ribbon(page, "Pins")).ToHaveAttributeAsync("data-ready", "");
+        await Button(page, "Flags").ClickAsync();
+        await Expect(Ribbon(page, "Flags")).ToHaveAttributeAsync("data-ready", "");
+        var (survey, pins) = (page.Tb().Ribbon("Survey"), page.Tb().Ribbon("Pins"));
+
+        Assert.Equal(["Plots"], await survey.TabsAsync());
+        Assert.Equal(["Marks"], await survey.GroupsAsync());
+        var missing = await Assert.ThrowsAsync<InvalidOperationException>(() => survey.ClickAsync("Small pin"));
+        Assert.Equal("The ribbon's selected tab has no button named \"Small pin\".", missing.Message);
+        // The Flags ribbon has a collapse button, and the Survey ribbon has none.
+        var fixedOpen = await Assert.ThrowsAsync<InvalidOperationException>(survey.CollapseAsync);
+        Assert.Equal("The ribbon has no collapse button; set Collapsible to give it one.", fixedOpen.Message);
+        Assert.Equal(["Sizes"], await pins.TabsAsync());
+        await pins.PressKeyTipsAsync("Z", "M");
+        Assert.Equal("Small pin", await page.GetByTestId("last").TextContentAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task KeyTips_ShouldGoToTheInnerRibbon_WhenFocusIsInARibbonInsideAnother(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await Expect(Ribbon(page, "Survey")).ToHaveAttributeAsync("data-ready", "");
+        await Button(page, "Pins").ClickAsync();
+        await Expect(Ribbon(page, "Pins")).ToHaveAttributeAsync("data-ready", "");
+        await Button(page, "Small pin").FocusAsync();
+
+        await page.Keyboard.PressAsync("Alt");
+
+        await Expect(Ribbon(page, "Pins")).ToHaveAttributeAsync("data-key-tips", "tabs");
+        Assert.Equal(["Z"], await ShownAsync(page));
+        await Expect(Ribbon(page, "Survey")).Not.ToHaveAttributeAsync("data-key-tips", "tabs");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

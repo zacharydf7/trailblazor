@@ -5,16 +5,21 @@ namespace Trailblazor.Testing.Playwright;
 /// <summary>A <c>TbRibbon</c>, found by its <c>AriaLabel</c>, or the only one in the scope.</summary>
 public sealed class TbRibbonLocator(ILocator scope, string? name)
 {
+    // What is inside a ribbon that is itself inside this one, as in a dialog written in a group, isn't this ribbon's.
+    private const string Own = ":not(:scope .tb-ribbon *)";
+
     /// <summary>The ribbon.</summary>
     public ILocator Ribbon => name is null ? scope.Locator(".tb-ribbon") : scope.Locator(".tb-ribbon").Filter(new()
     {
-        Has = scope.Page.GetByRole(AriaRole.Tablist, new() { Name = name, Exact = true }),
+        // By its own tabs, since a ribbon that holds another one has that one's tabs inside it too.
+        Has = scope.Page.Locator(":scope > .tb-tabs > [role=tablist]")
+            .And(scope.Page.GetByRole(AriaRole.Tablist, new() { Name = name, Exact = true })),
     });
 
-    private TbTabsLocator TabList => new(Ribbon, Ribbon.GetByRole(AriaRole.Tablist));
+    private TbTabsLocator TabList => new(Ribbon, Ribbon.Locator("> .tb-tabs > [role=tablist]"));
 
     // The selected tab's row of commands: the other tabs' rows stay on the page, hidden, once they have been shown.
-    private ILocator Commands => Ribbon.Locator("[role=tabpanel]:not([hidden]) [data-part=commands]");
+    private ILocator Commands => Ribbon.Locator("> .tb-tabs > [role=tabpanel]:not([hidden]) > [data-part=commands]");
 
     /// <summary>The tabs' titles, in order.</summary>
     public Task<IReadOnlyList<string>> TabsAsync() => TabList.TabsAsync();
@@ -28,7 +33,8 @@ public sealed class TbRibbonLocator(ILocator scope, string? name)
 
     /// <summary>The names of the selected tab's groups, in order.</summary>
     public async Task<IReadOnlyList<string>> GroupsAsync() =>
-        [.. (await Commands.Locator("[data-part=group-label]").AllTextContentsAsync()).Select(text => text.Trim())];
+        [.. (await Commands.Locator($"[data-part=group-label]{Own}").AllTextContentsAsync())
+            .Select(text => text.Trim())];
 
     /// <summary>Whether the ribbon is collapsed to its tabs, read once the ribbon is interactive. On a static page
     /// it's always false, since the ribbon there can't collapse.</summary>
@@ -68,7 +74,7 @@ public sealed class TbRibbonLocator(ILocator scope, string? name)
         }
 
         var isCollapsed = await IsCollapsedAsync();
-        var button = Ribbon.Locator("[data-part=collapse]");
+        var button = Ribbon.Locator($"[data-part=collapse]{Own}");
         if (await button.CountAsync() == 0)
         {
             throw new InvalidOperationException("The ribbon has no collapse button; set Collapsible to give it one.");
@@ -178,7 +184,7 @@ public sealed class TbRibbonLocator(ILocator scope, string? name)
         var found = Commands.GetByRole(AriaRole.Button, new() { Name = button, Exact = true })
             .Or(Commands.Locator("[data-collapsed] > [data-part=items]")
                 .GetByRole(AriaRole.Button, new() { Name = button, Exact = true, IncludeHidden = true }))
-            .And(Commands.Locator(":not([data-part=group-button])"));
+            .And(Commands.Locator($":not([data-part=group-button]){Own}"));
         if (await found.CountAsync() == 0)
         {
             throw new InvalidOperationException($"The ribbon's selected tab has no button named \"{button}\".");

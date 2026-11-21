@@ -896,6 +896,83 @@ public class TbRibbonTests : BunitContext
     }
 
     [Fact]
+    public async Task Driver_ShouldKeepToItsOwnRibbon_WhenAnotherRibbonIsInsideIt()
+    {
+        var clicked = new List<string>();
+        var cut = Render(RibbonsInsideARibbon(clicked));
+        var plan = cut.Tb().Ribbon("Plan");
+
+        Assert.Equal(["Route"], plan.Tabs);
+        Assert.Equal(["Route tools"], plan.Groups);
+        Assert.Equal("The ribbon has no key tip \"M\" on its tabs or beside them.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => plan.PressKeyTipsAsync("M"))).Message);
+        Assert.Equal("The ribbon's selected tab has no key tip \"B\".",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => plan.PressKeyTipsAsync("R", "B"))).Message);
+        Assert.Equal("The ribbon's selected tab has no button named \"Bold\".",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => plan.ClickAsync("Bold"))).Message);
+        // The Marks ribbon has a collapse button, and the Plan ribbon has none.
+        Assert.Equal("The ribbon has no collapse button; set Collapsible to give it one.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(plan.CollapseAsync)).Message);
+        Assert.Empty(clicked);
+        await cut.Tb().Ribbon("Notes").PressKeyTipsAsync("T", "B");
+        await cut.Tb().Ribbon("Marks").PressKeyTipsAsync("M", "K");
+        Assert.Equal(["Bold", "Pink"], clicked);
+    }
+
+    // The Plan ribbon's Route tab (R) has Add a stop (A). A dialog written in that tab's group holds the Notes ribbon,
+    // whose Text tab (T) has Bold (B), and one written before the tabs holds the Marks ribbon, which can collapse and
+    // whose Ink tab (M) has Pink (K).
+    private RenderFragment RibbonsInsideARibbon(List<string> clicked)
+    {
+        RenderFragment Ribbon(string name, string tab, string tabKey, string button, string buttonKey,
+            RenderFragment? inTheGroup = null, RenderFragment? beforeTheTabs = null, bool collapsible = false) =>
+            builder =>
+        {
+            builder.OpenComponent<TbRibbon>(0);
+            builder.AddComponentParameter(1, nameof(TbRibbon.AriaLabel), name);
+            builder.AddComponentParameter(2, nameof(TbRibbon.Start), beforeTheTabs);
+            builder.AddComponentParameter(3, nameof(TbRibbon.Collapsible), collapsible);
+            builder.AddComponentParameter(4, nameof(TbRibbon.ChildContent), (RenderFragment)(tabs =>
+            {
+                tabs.OpenComponent<TbRibbonTab>(0);
+                tabs.AddComponentParameter(1, nameof(TbRibbonTab.Title), tab);
+                tabs.AddComponentParameter(2, nameof(TbRibbonTab.KeyTip), tabKey);
+                tabs.AddComponentParameter(3, nameof(TbRibbonTab.ChildContent), (RenderFragment)(groups =>
+                {
+                    groups.OpenComponent<TbRibbonGroup>(0);
+                    groups.AddComponentParameter(1, nameof(TbRibbonGroup.Label), $"{tab} tools");
+                    groups.AddComponentParameter(2, nameof(TbRibbonGroup.ChildContent), (RenderFragment)(items =>
+                    {
+                        items.OpenComponent<TbRibbonButton>(0);
+                        items.AddComponentParameter(1, nameof(TbRibbonButton.Label), button);
+                        items.AddComponentParameter(2, nameof(TbRibbonButton.KeyTip), buttonKey);
+                        items.AddComponentParameter(3, nameof(TbRibbonButton.OnClick),
+                            EventCallback.Factory.Create<MouseEventArgs>(this, () => clicked.Add(button)));
+                        items.CloseComponent();
+                        items.AddContent(4, inTheGroup);
+                    }));
+                    groups.CloseComponent();
+                }));
+                tabs.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+        RenderFragment Dialog(string title, RenderFragment ribbon) => builder =>
+        {
+            builder.OpenComponent<TbDialog>(0);
+            builder.AddComponentParameter(1, nameof(TbDialog.Open), true);
+            builder.AddComponentParameter(2, nameof(TbDialog.Title), title);
+            builder.AddComponentParameter(3, nameof(TbDialog.Options), new DialogOptions { Modal = false });
+            builder.AddComponentParameter(4, nameof(TbDialog.ChildContent), ribbon);
+            builder.CloseComponent();
+        };
+
+        return Ribbon("Plan", "Route", "R", "Add a stop", "A",
+            Dialog("Notes", Ribbon("Notes", "Text", "T", "Bold", "B")),
+            Dialog("Marks", Ribbon("Marks", "Ink", "M", "Pink", "K", collapsible: true)));
+    }
+
+    [Fact]
     public async Task Driver_ShouldRefuseAKeyTip_WhenNothingHasItThereOrItsControlIsDisabled()
     {
         var clicked = new List<string>();

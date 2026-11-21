@@ -2546,9 +2546,11 @@ public static class ExampleCatalog
                     + "tab is passed over. When no other tab has been selected yet, the ribbon selects the tab "
                     + "beside it, or no tab at all when bound by `ActiveKey`. Focus on the tab that went away moves "
                     + "to the tab selected in its place, or to the tab beside it when no tab is selected."),
-                new("Key tips go to the ribbon that has focus, or else to the first ribbon on the page that has "
-                    + "any. While a modal dialog is open, only a ribbon inside it takes them. On a Mac, Alt is the "
-                    + "Option key."),
+                new("Key tips go to the ribbon that has focus, the innermost when one ribbon is inside another, or "
+                    + "else to the first ribbon on the page that has any. A ribbon inside another, as in a dialog "
+                    + "written in one of its groups, has key tips of its own, so its keys can't clash with the outer "
+                    + "ribbon's. While a modal dialog is open, only a ribbon inside it takes them. On a Mac, Alt is "
+                    + "the Option key."),
                 new("A key typed before the tab has switched waits for the tab's commands, so Alt, a tab's key and "
                     + "a command's key can be typed without a pause. A key no badge shows does nothing."),
                 new("A command's key returns focus to where it was before Alt and then chooses the command, so a "

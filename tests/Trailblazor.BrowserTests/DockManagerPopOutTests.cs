@@ -554,7 +554,8 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
             page.Tb().Dock("Workbench").ChooseFromTabMenuAsync("Notes", "Open in new window"));
 
         Assert.True(await page.EvaluateAsync<bool>("document.getElementById('slow').sheet === null"));
-        await page.Context.APIRequest.GetAsync(new Uri(Fixture.BaseAddress, $"/open-gate?gate={gate}").ToString());
+        var open = new Uri(Fixture.BaseAddress, $"/open-gate?gate={gate}").ToString();
+        Assert.True((await page.Context.APIRequest.GetAsync(open)).Ok, "The gate didn't open.");
         await Expect(window.Locator("html")).ToHaveCSSAsync("text-transform", "uppercase");
     }
 
