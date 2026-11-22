@@ -1,0 +1,43 @@
+@inject IDialogService Dialogs
+
+<TbStack Gap="2">
+    @if (_layout.Closed.Contains("entry"))
+    {
+        <TbButton Size="Size.Small" Variant="Variant.Outlined" OnClick="@(() => _layout = _layout.Open("entry"))">
+            Open Entry
+        </TbButton>
+    }
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Trip journal" Style="block-size: 14rem">
+        <ChildContent>
+            <TbDockPanel Id="entry" Title="Entry" Modified="@(_text != _saved)" CanClose="MayCloseEntryAsync">
+                <TbStack Gap="2" Class="tb-p-3">
+                    <TbTextField Label="Today's entry" @bind-Value="_text" UpdateOnInput />
+                    <TbButton Size="Size.Small" OnClick="() => _saved = _text">Save</TbButton>
+                </TbStack>
+            </TbDockPanel>
+            <TbDockPanel Id="photos" Title="Photos">
+                <TbText class="tb-p-3">Sunrise from the ridge.</TbText>
+            </TbDockPanel>
+        </ChildContent>
+        <EmptyContent>Every panel is closed.</EmptyContent>
+    </TbDockManager>
+</TbStack>
+
+@code {
+    private DockLayout _layout = new(new DockGroup("entry", "photos"));
+    private string? _saved = "Camp made by the lake at four.";
+    private string? _text = "Camp made by the lake at four.";
+
+    // Asked on every way of closing the panel. With nothing to lose, it closes at once.
+    private async Task<bool> MayCloseEntryAsync()
+    {
+        if (_text != _saved && !await Dialogs.ConfirmAsync("Discard the changes?", "The entry hasn't been saved.",
+            "Discard"))
+        {
+            return false;
+        }
+
+        _text = _saved;
+        return true;
+    }
+}

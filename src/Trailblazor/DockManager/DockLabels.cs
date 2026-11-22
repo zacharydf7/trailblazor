@@ -17,6 +17,10 @@ public sealed record DockLabels
     /// <see cref="TbStrings.DockCloseHint"/>.</summary>
     public string? CloseHint { get; init; }
 
+    /// <summary>Tells screen readers that a panel with <see cref="TbDockPanel.Modified"/> holds unsaved changes.
+    /// Leave it null for the app's text for <see cref="TbStrings.DockModified"/>.</summary>
+    public string? Modified { get; init; }
+
     /// <summary>Names a group's menu button, with <c>{0}</c> for the title of the group's showing panel, which the
     /// menu acts on. Leave it null for the app's text for <see cref="TbStrings.DockMenu"/>.</summary>
     public string? Menu { get; init; }

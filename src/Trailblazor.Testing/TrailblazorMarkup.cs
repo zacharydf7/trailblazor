@@ -3219,8 +3219,8 @@ public sealed class TbDockDriver
         await Reachable(panel).ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 
-    /// <summary>Closes the panel with this title, as clicking the close mark on its tab does. Throws for a panel that
-    /// can't be closed.</summary>
+    /// <summary>Closes the panel with this title, as clicking the close mark on its tab does, so the panel's
+    /// <c>CanClose</c> is asked and can keep it open. Throws for a panel that can't be closed.</summary>
     public async Task CloseAsync(string panel)
     {
         await SlidOutAsync(panel);

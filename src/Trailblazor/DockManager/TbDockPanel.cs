@@ -29,6 +29,20 @@ public sealed class TbDockPanel : TbComponentBase, IDisposable
     [Parameter]
     public bool Closable { get; set; } = true;
 
+    /// <summary>Asked before the user closes the panel, by any route: the mark on its tab, Delete or Backspace, a
+    /// middle click, or Close in a menu. Return false to keep the panel open, with its content and the focus as
+    /// they are, such as after asking whether to discard unsaved changes. While it is being answered, another
+    /// request to close the panel is dropped. It isn't asked when the app closes the panel itself, with
+    /// <see cref="DockLayout.Close"/>.</summary>
+    [Parameter]
+    public Func<Task<bool>>? CanClose { get; set; }
+
+    /// <summary>Marks the panel as holding unsaved changes. Its tab shows a dot, which gives way to the close mark
+    /// while the pointer or the keyboard focus is on the tab, and screen readers hear "Unsaved changes" with the tab's
+    /// name. The button of a panel put away on a strip shows and says the same.</summary>
+    [Parameter]
+    public bool Modified { get; set; }
+
     /// <summary>Whether the panel's menus offer "Open in new window" when the dock's
     /// <see cref="TbDockManager.AllowPopOut"/> is on. Defaults to true. Set it to false for a panel that has to stay
     /// on the page, such as one that holds a script that finds its elements through the page's document, or an

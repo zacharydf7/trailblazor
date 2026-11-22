@@ -1,0 +1,31 @@
+@page "/dock-unsaved"
+
+@* A panel with unsaved changes that refuses to close until Allow is pressed, beside one that can't close. *@
+<TbButton OnClick="() => _allowed = true">Allow</TbButton>
+<p>Asked: <span data-testid="asked">@_asked</span></p>
+<div style="inline-size: 40rem; block-size: 12rem">
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Trip">
+        <TbDockPanel Id="draft" Title="Draft" Modified CanClose="AskAsync">
+            <p>Day one: the ridge.</p>
+        </TbDockPanel>
+        <TbDockPanel Id="map" Title="Map">
+            <p>The map.</p>
+        </TbDockPanel>
+        <TbDockPanel Id="pinned" Title="Pinned" Modified Closable="false">
+            <p>Always here.</p>
+        </TbDockPanel>
+    </TbDockManager>
+</div>
+
+@code {
+    private DockLayout _layout = new(new DockSplit(new DockGroup("draft", "map"), new DockGroup("pinned")));
+    private bool _allowed;
+    private int _asked;
+
+    private Task<bool> AskAsync()
+    {
+        _asked++;
+        StateHasChanged();
+        return Task.FromResult(_allowed);
+    }
+}

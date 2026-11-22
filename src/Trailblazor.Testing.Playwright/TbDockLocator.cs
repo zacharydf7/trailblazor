@@ -119,8 +119,10 @@ public sealed class TbDockLocator(ILocator scope, string? name)
         await Assertions.Expect(tab).ToHaveAttributeAsync("aria-selected", "true");
     }
 
-    /// <summary>Clicks the close mark on the tab of the panel with this title and waits until the tab is gone. Throws
-    /// for a panel that can't be closed.</summary>
+    /// <summary>Clicks the close mark on the tab of the panel with this title and waits until the dock has handled
+    /// it: the tab is gone, or the panel's <c>CanClose</c> kept it. The wait also ends when a dialog opens, as when
+    /// <c>CanClose</c> asks a question, which the test then answers. Throws for a panel that can't be closed.
+    /// </summary>
     public async Task CloseAsync(string panel)
     {
         var tab = await ReachableAsync(panel);
@@ -131,10 +133,11 @@ public sealed class TbDockLocator(ILocator scope, string? name)
 
         await Commit.CountedAsync(Root, "data-commits", async () =>
         {
+            // A modified panel's tab shows its dot in the mark's place until the pointer is on the tab.
+            await tab.HoverAsync();
             await tab.Locator("[data-part=close]").ClickAsync();
             return true;
         });
-        await Assertions.Expect(tab).ToHaveCountAsync(0);
     }
 
     /// <summary>Moves the tab of the panel with this title along its row by this many places, forward when the

@@ -6947,6 +6947,13 @@ Trailblazor.RichTextEditorLabels.HeaderRow.get -> string?
 Trailblazor.RichTextEditorLabels.HeaderRow.init -> void
 const Trailblazor.TbStrings.DockGroup = "Dock.Group" -> string!
 const Trailblazor.TbStrings.DockCloseHint = "Dock.CloseHint" -> string!
+const Trailblazor.TbStrings.DockModified = "Dock.Modified" -> string!
+Trailblazor.DockLabels.Modified.get -> string?
+Trailblazor.DockLabels.Modified.init -> void
+Trailblazor.TbDockPanel.CanClose.get -> System.Func<System.Threading.Tasks.Task<bool>!>?
+Trailblazor.TbDockPanel.CanClose.set -> void
+Trailblazor.TbDockPanel.Modified.get -> bool
+Trailblazor.TbDockPanel.Modified.set -> void
 const Trailblazor.TbStrings.DockResize = "Dock.Resize" -> string!
 Trailblazor.DockGroup
 override Trailblazor.DockGroup.ToString() -> string!

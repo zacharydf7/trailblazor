@@ -714,6 +714,9 @@ public static class TbStrings
     /// <summary>"Press Delete to close": tells screen readers how to close a dock's closable tab.</summary>
     public const string DockCloseHint = "Dock.CloseHint";
 
+    /// <summary>"Unsaved changes": tells screen readers that a dock panel holds unsaved changes.</summary>
+    public const string DockModified = "Dock.Modified";
+
     /// <summary>"Options for {0}": names a dock group's menu button; {0} is the title of its showing panel.</summary>
     public const string DockMenu = "Dock.Menu";
 
@@ -1858,6 +1861,7 @@ public static class TbStrings
         [DockGroup] = "Panel group {0}",
         [DockResize] = "Resize {0}",
         [DockCloseHint] = "Press Delete to close",
+        [DockModified] = "Unsaved changes",
         [DockMenu] = "Options for {0}",
         [DockTabMenu] = "Tab options",
         [DockMoveTabBack] = "Move tab back",

@@ -3263,6 +3263,12 @@ public static class ExampleCatalog
                     + "showing tab of the largest group. `EmptyContent` shows when every panel is closed. A panel "
                     + "with `Closable=\"false\"` has no mark and stays open, as the Map panel does under Panels and "
                     + "their layout.", typeof(DockManagerCloseExample)),
+                new("unsaved", "Unsaved changes", "`Modified` marks a panel that holds unsaved changes: its tab "
+                    + "shows a dot, which gives way to the close mark while the pointer or the keyboard focus is "
+                    + "on the tab. `CanClose` is asked before the user closes the panel, by any route, and returning "
+                    + "false keeps it open, with its content and the focus as they were. Change the entry and "
+                    + "close its tab to be asked. The app's own `Layout.Close` isn't asked.",
+                    typeof(DockManagerUnsavedExample)),
                 new("keep-alive", "Keeping content alive", "A panel's content renders when the panel first shows "
                     + "and then stays, hidden, while another tab shows, so what the user typed, opened or scrolled "
                     + "to is still there. `KeepAlive=\"false\"` drops the content while it's hidden, for content "
@@ -3388,12 +3394,15 @@ public static class ExampleCatalog
                     + "their own windows\". Each is named by its panel's title and described as \"In its own "
                     + "browser window\", and its menu has Show its window and Return to the dock. `Labels.Away`, "
                     + "`AwayHint` and `ShowWindow` replace the three texts.",
-                "`Labels.CloseHint` replaces the hint that describes a closable tab.",
+                "`Labels.CloseHint` replaces the hint that describes a closable tab, and `Labels.Modified` the "
+                    + "one that describes a panel with unsaved changes.",
             ],
             Announcements =
             [
                 "On a tab, screen readers say its title, that it's a tab, whether it's selected and its place "
-                    + "among the group's tabs. A closable tab adds \"Press Delete to close\".",
+                    + "among the group's tabs. A closable tab adds \"Press Delete to close\". A panel with "
+                    + "`Modified` adds \"Unsaved changes\", on its tab before that hint, and on its strip "
+                    + "button.",
                 "After a panel moves, from a menu or a dropped tab or strip button, screen readers hear where it went, "
                     + "as in \"Trails moved to panel group 2.\"",
                 "As a tab's menu opens, screen readers hear its name, \"Tab options\".",
@@ -3475,6 +3484,9 @@ public static class ExampleCatalog
                     + "the focus to the dock itself.",
                 "Tab and screen readers meet the groups in reading order, and still do after the layout changes.",
                 "A hidden panel is `inert`: nothing in it can be focused or read until its tab shows it.",
+                "A modified panel's dot is drawn in the tab's text color, so it stays in forced colors. On a "
+                    + "touch screen, where nothing can hover, a modified tab that can close shows both its dot "
+                    + "and its close mark.",
                 "A click on a close mark, or a middle click, leaves the focus where it is. Closing a tab that holds "
                     + "the focus, or whose panel does, moves focus to the next tab of its group, or else the one "
                     + "before; a closed tab that wasn't showing gives it to the group's showing tab. When its last tab "
@@ -3506,6 +3518,8 @@ public static class ExampleCatalog
                 "Give the dock an `AriaLabel` when the page has more than one, and give each panel a short "
                     + "`Title`, since an icon alone doesn't name a tab.",
                 "Offer a way to reopen closed panels, such as a View menu that calls `Open`.",
+                "When `CanClose` asks a question, ask it in a dialog, which gives the focus back to where it "
+                    + "was when the answer keeps the panel.",
                 "Set `FocusablePanels` to `Never` only when every panel starts with a control; otherwise a "
                     + "panel's text can't be reached or scrolled from the keyboard.",
                 "With a `PersistenceKey`, offer a way back to the starting layout, such as a Reset button that "
@@ -3748,6 +3762,8 @@ public static class ExampleCatalog
                 new("icon", "A tab's or a strip button's icon."),
                 new("title", "A tab's or a strip button's title."),
                 new("close", "The close mark on a closable tab."),
+                new("modified", "The dot on the tab or strip button of a panel with `Modified`. That tab or "
+                    + "button also gets `data-modified`."),
                 new("panel", "One panel's content, with `data-panel` holding its `Id`. A hidden one is `inert`. "
                     + "`data-dock-group` holds the number of its group's row. One in a floating window has "
                     + "`data-floating`, the class `tb-dock__panel--floating` and its window's `--tb-dock-z`. One "
@@ -3799,6 +3815,11 @@ public static class ExampleCatalog
                 "`SelectAsync(\"Notes\")` and `CloseAsync(\"Notes\")` click a panel's tab or its close mark, by "
                     + "the panel's title. `PanelsAsync()` or `Panels` lists every tab in reading order, and "
                     + "`ShowingAsync()` or `Showing` the panels that show.",
+                "`CloseAsync(\"Notes\")` asks the panel's `CanClose`, as a user's close does, and returns "
+                    + "once the panel has gone or been kept. When `CanClose` opens a dialog, the Playwright helper "
+                    + "returns once the dialog is open, for the test to answer. In bUnit, the call finishes once "
+                    + "the dialog is answered: set `FakeDialogService.Answer` before the call, or start the "
+                    + "call, answer the dialog, and then await it.",
                 "`Panel(\"Notes\")` gives the helpers for what a panel holds, such as "
                     + "`Panel(\"Notes\").TextField(\"Packing note\")`, and `PanelElement(\"Notes\")` the panel "
                     + "itself.",
