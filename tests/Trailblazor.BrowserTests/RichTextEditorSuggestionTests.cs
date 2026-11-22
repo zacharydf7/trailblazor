@@ -192,6 +192,8 @@ public class RichTextEditorSuggestionTests(BrowserFixture fixture) : BrowserTest
         // So does the caret leaving the paragraph: the list closes when " x" is typed, so the second Enter isn't the
         // list's and starts a new paragraph.
         await page.Keyboard.PressAsync("ArrowRight");
+        // The editor hears of the caret's move a moment after the key, and only then searches for "adam".
+        await Expect(list).ToHaveAttributeAsync("aria-busy", "true");
         await page.Keyboard.PressAsync("Enter");
         await page.Keyboard.TypeAsync(" x");
         await page.Keyboard.PressAsync("Enter");
