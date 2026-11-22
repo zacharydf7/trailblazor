@@ -39,15 +39,27 @@ export function createMentionInput(input, listbox, events) {
         caret.style.top = `${input.offsetTop + point.y}px`;
         caret.style.height = `${point.height}px`;
     };
-    // The suggestion's text goes in as typing does, in place of the trigger and what was typed after it.
+    const endOf = found => found.place + found.trigger.length + found.text.length;
+    const holds = found => input.selectionStart === input.selectionEnd && input.selectionStart >= endOf(found)
+        && input.value.slice(found.place, endOf(found)) === found.trigger + found.text;
+    // The suggestion's text goes in as typing does, in place of the trigger and what was typed after it. Text typed
+    // since Enter or Tab was pressed stays after it, with the caret still after that text; the space that follows the
+    // suggestion stands in for a space typed first.
     const insert = (found, option) => {
-        const end = input.selectionStart;
+        const typed = input.value.slice(endOf(found), input.selectionStart);
+        const kept = typed.replace(/^ /, '');
+        const end = endOf(found) + typed.length - kept.length;
         const text = `${option.dataset.insert} `;
         input.focus();
         input.setSelectionRange(found.place, end);
         if (!input.ownerDocument.execCommand('insertText', false, text)) {
             input.setRangeText(text, found.place, end, 'end');
             input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        if (kept) {
+            const caret = found.place + text.length + kept.length;
+            input.setSelectionRange(caret, caret);
         }
     };
     // A one-line field is a combobox, which says whether its list is open; a text area has no such state.
@@ -57,7 +69,8 @@ export function createMentionInput(input, listbox, events) {
         }
     };
 
-    const suggestions = createMentionSuggestions(input, listbox, caret, events, { find, placeCaret, insert, onToggle });
+    const suggestions = createMentionSuggestions(input, listbox, caret, events,
+        { find, placeCaret, insert, holds, onToggle });
     const onInput = () => suggestions.update(true);
     const onSelectionChange = () => {
         if (input.ownerDocument.activeElement === input) {

@@ -133,6 +133,7 @@ class Editor {
         // How many values the editor has sent, which .NET answers in data-sends-answered once the app has them all.
         this.sends = 0;
         this.mentions = null;
+        this.commandPlace = null;
         this.abort = new AbortController();
         this.setOptions(options);
         this.observer = new MutationObserver(records => {
@@ -316,6 +317,7 @@ class Editor {
         const caret = listbox.parentElement.querySelector('[data-part="mention-caret"]');
         this.mentions = createMentionSuggestions(this.root, listbox, caret, events, {
             find: () => this.mentionQuery(),
+            holds: query => this.typedPast(query) !== null,
             placeCaret: query => this.placeMentionCaret(caret, query),
             // The option carries what the mention shows, after its trigger, and its item's id.
             insert: (query, option) => this.slash && query.trigger === '/'
@@ -353,6 +355,16 @@ class Editor {
         return null;
     }
 
+    // How much was typed after a query since it was found, with its trigger and text still in place and the caret
+    // after them in their paragraph. Null when they aren't, or the caret is elsewhere.
+    typedPast(query) {
+        if (!this.selection || this.hasRange()) return null;
+        const { block, offset } = this.selection.head;
+        return block === query.block && offset >= query.end
+            && textOf(this.doc[block].runs).slice(query.start, query.end) === query.trigger + query.text
+            ? offset - query.end : null;
+    }
+
     // Moves the mark the suggestions open under to where the query's trigger is drawn.
     placeMentionCaret(caret, query) {
         const element = this.blockElements()[query.block];
@@ -370,14 +382,19 @@ class Editor {
     // Puts a chosen mention in place of the trigger and the text typed after it, with a space after it to type on.
     // Its text is cleaned as RichTextRun cleans a mention's.
     insertMention(query, id, text) {
+        // Text typed since Enter or Tab was pressed stays after the mention, with the caret still after that text;
+        // the space that follows the mention stands in for a space typed first.
+        const past = this.typedPast(query) ?? 0;
         this.edit(() => {
             const target = this.doc[query.block];
+            const space = past > 0 && /[ \xa0]/.test(textOf(target.runs)[query.end]) ? 1 : 0;
             const marks = slice(target.runs, query.start, query.start + 1)[0]?.marks ?? [];
             const mention = { text: query.trigger + text.replace(/[\t\n\r\f\xa0]/g, ' '), marks, link: null,
                 mention: { id: id || null, trigger: query.trigger } };
             this.doc[query.block] = { ...target,
-                runs: replace(target.runs, query.start, query.end, [mention, { text: ' ', marks, link: null }]) };
-            const caret = { block: query.block, offset: query.start + mention.text.length + 1 };
+                runs: replace(target.runs, query.start, query.end + space,
+                    [mention, { text: ' ', marks, link: null }]) };
+            const caret = { block: query.block, offset: query.start + mention.text.length + 1 + past - space };
             this.selection = { anchor: caret, head: caret };
         });
     }
@@ -386,20 +403,45 @@ class Editor {
     // own: a kind of block, a plain paragraph, a rule or a table. One of the app's own runs in .NET, which is told
     // only now, so what it puts in lands where the slash was.
     runSlashCommand(query, command, events) {
+        // Text typed since Enter or Tab was pressed counts as typed after the command, since keys count in the order
+        // pressed: it stays, with the caret after it.
+        const past = this.typedPast(query) ?? 0;
+        const place = { block: query.block, offset: query.start };
+        let typed = [];
         this.edit(() => {
             const target = this.doc[query.block];
             this.doc[query.block] = { ...target, runs: replace(target.runs, query.start, query.end, []) };
-            const caret = { block: query.block, offset: query.start };
+            const caret = { block: query.block, offset: query.start + past };
             this.selection = { anchor: caret, head: caret };
+            // A rule or a table goes in at the caret, so that text comes out first and goes back in after it.
+            if (command === 'rule' || command === 'table') typed = this.takeTypedSince(place);
         });
         if (command === 'rule') this.insertRule();
         else if (command === 'table') this.insertTable();
         else if (command === 'paragraph' || this.schema.blocks.has(command)) this.setBlock(command);
         else {
+            // What the app's command puts in goes where the slash was, before what is typed until .NET answers.
+            this.commandPlace = place;
             // The mark is there until .NET has run the command, for tests to wait on before they leave the editor.
             this.root.dataset.runningCommand = '';
-            callDotNet(events, 'OnCommand', command).finally(() => delete this.root.dataset.runningCommand);
+            callDotNet(events, 'OnCommand', command).finally(() => {
+                if (this.commandPlace === place) this.commandPlace = null;
+                delete this.root.dataset.runningCommand;
+            });
         }
+        if (typed.length) this.edit(() => this.insertParagraphs([paragraph(typed)]));
+    }
+
+    // Takes out the text between a place and the caret after it in the same paragraph, which was typed since a
+    // command was chosen there, and leaves the caret at the place. Takes nothing when the caret is elsewhere.
+    takeTypedSince(place) {
+        const head = this.selection?.head;
+        if (!place || !head || this.hasRange() || head.block !== place.block || head.offset <= place.offset) return [];
+        const target = this.doc[place.block];
+        const typed = slice(target.runs, place.offset, head.offset);
+        this.doc[place.block] = { ...target, runs: replace(target.runs, place.offset, head.offset, []) };
+        this.selection = { anchor: place, head: place };
+        return typed;
     }
 
     // Does what a button of the toolbar, or of the toolbar over a selection, stands for. The editor takes the focus
@@ -930,6 +972,9 @@ class Editor {
         if (this.readOnly || !blocks.length) return;
         this.readBack();
         this.edit(() => {
+            // What was typed since the command was chosen comes out first, and goes back in after what it puts in.
+            const typed = this.takeTypedSince(this.commandPlace);
+            this.commandPlace = null;
             const { block, offset } = this.range().from;
             const target = this.doc[block];
             if (offset > 0 && !this.hasRange() && holdsText(target) && holdsText(blocks[0])
@@ -940,6 +985,7 @@ class Editor {
                 this.selection = { anchor: caret, head: caret };
             }
             this.insertParagraphs(blocks);
+            if (typed.length) this.insertParagraphs([paragraph(typed)]);
         });
     }
 

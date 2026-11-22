@@ -18,6 +18,20 @@ public class RichTextEditorSlashTests(BrowserFixture fixture) : BrowserTest(fixt
         return (page, notes);
     }
 
+    // Types the rest of a command, presses the key and types on, all in one task of the page, so the list for the
+    // command hasn't arrived when the key is pressed or the text typed. The editor reads typed text back in a
+    // microtask, which each await lets run.
+    private static Task TypeAheadAsync(ILocator notes, string command, string key, string text) =>
+        notes.EvaluateAsync("""
+            async (notes, { command, key, text }) => {
+                document.execCommand('insertText', false, command);
+                await null;
+                notes.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+                document.execCommand('insertText', false, text);
+                await null;
+            }
+            """, new { command, key, text });
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Slash_ShouldListTheCommandsAndTurnTheParagraphIntoTheOneChosen_WhenTypedAndEnterIsPressed(
         string browser)
@@ -81,6 +95,52 @@ public class RichTextEditorSlashTests(BrowserFixture fixture) : BrowserTest(fixt
         await page.Keyboard.TypeAsync(" /");
         await Expect(List(page).GetByRole(AriaRole.Option)).ToHaveTextAsync(
             ["Horizontal line", "Table", "SignatureYour name and role", "Stamp", "Checklist"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Slash_ShouldRunTheCommandBeforeWhatIsTypedNext_WhenTextFollowsEnterBeforeTheListArrives(
+        string browser)
+    {
+        var (page, notes) = await StartAsync(browser);
+        await page.Keyboard.TypeAsync(" /");
+        await Expect(List(page)).ToBeVisibleAsync();
+
+        await TypeAheadAsync(notes, "bul", "Enter", "pack");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<ul><li>Plan pack</li></ul>");
+
+        // The caret is still after what was typed.
+        await page.Keyboard.TypeAsync("!");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<ul><li>Plan pack!</li></ul>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Slash_ShouldPutInARuleHtmlOrATableBeforeWhatIsTypedNext_WhenTextFollowsTheKeyBeforeTheListLands(
+        string browser)
+    {
+        var (page, notes) = await StartAsync(browser);
+        var output = page.GetByTestId("notes");
+
+        // A rule goes in where the slash was, and what was typed after Enter follows it, with the caret after that.
+        await page.Keyboard.TypeAsync(" /");
+        await Expect(List(page)).ToBeVisibleAsync();
+        await TypeAheadAsync(notes, "hor", "Enter", "abc");
+        await Expect(output).ToHaveTextAsync("<p>Plan&nbsp;</p><hr><p>abc</p>");
+        await page.Keyboard.TypeAsync("!");
+        await Expect(output).ToHaveTextAsync("<p>Plan&nbsp;</p><hr><p>abc!</p>");
+
+        // The app's HTML goes in where the slash was too, once .NET has answered.
+        await page.Keyboard.TypeAsync(" /");
+        await Expect(List(page)).ToBeVisibleAsync();
+        await TypeAheadAsync(notes, "sig", "Enter", "xyz");
+        await Expect(output).ToContainTextAsync("<p>abc! <strong>Ana Lopez</strong>, trail crewxyz</p>");
+        await page.Keyboard.TypeAsync("!");
+        await Expect(output).ToContainTextAsync("trail crewxyz!</p>");
+
+        // What is typed after a table's command goes into its first cell, where the command puts the caret.
+        await page.Keyboard.TypeAsync(" /");
+        await Expect(List(page)).ToBeVisibleAsync();
+        await TypeAheadAsync(notes, "tab", "Tab", "Name");
+        await Expect(output).ToContainTextAsync("<table><thead><tr><th scope=\"col\">Name</th>");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

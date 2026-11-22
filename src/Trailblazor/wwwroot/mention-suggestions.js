@@ -12,7 +12,8 @@ export const longestMention = 50;
 // The host gives find(), which returns the mention being typed as { trigger, text, place } or null, where place is
 // the host's own mark for where the trigger is, which this code only compares, and may add kind, the kind of block
 // the trigger is in, which goes to the server with the search; placeCaret(found), which moves the
-// caret mark to the trigger; insert(found, option), which puts the chosen suggestion in; and onToggle(open), if it
+// caret mark to the trigger; insert(found, option), which puts the chosen suggestion in; holds(found), which is true
+// while the trigger and text of found are still in place with the caret after them; and onToggle(open), if it
 // has a state to keep. It calls update(textChanged) when its text or caret changes, and onKeyDown(event) for each
 // key.
 export function createMentionSuggestions(owner, listbox, caret, events, host) {
@@ -23,7 +24,9 @@ export function createMentionSuggestions(owner, listbox, caret, events, host) {
     let asked = Number(listbox.dataset.resultsFor) || 0;
     let askedQuery = false;
     let waiting = false;
-    // Enter or Tab pressed before the latest suggestions land chooses the first, unless the query or the focus changes.
+    // Enter or Tab pressed before the latest suggestions land chooses the first once they do. Keys count in the order
+    // pressed, so text typed in the meantime comes after what is chosen. A change to the query's text, the caret
+    // moving back into it, the focus leaving or an empty list drops the choice.
     let chooseOnArrival = false;
     let dismissed = null;
     let active = null;
@@ -83,6 +86,16 @@ export function createMentionSuggestions(owner, listbox, caret, events, host) {
     const update = textChanged => {
         if (textChanged) {
             dismissed = null;
+        }
+
+        // What is typed after the query while a choice waits isn't part of the query, so nothing new is asked. The
+        // list that still shows closes, so the keys pressed next aren't taken for its own.
+        if (chooseOnArrival && query && host.holds(query)) {
+            if (textChanged) {
+                close();
+            }
+
+            return;
         }
 
         const next = host.find();
@@ -186,13 +199,19 @@ export function createMentionSuggestions(owner, listbox, caret, events, host) {
         }
 
         setWaiting(false);
+        const choosing = chooseOnArrival;
+        chooseOnArrival = false;
         if (query && options().length > 0 && owner.ownerDocument.activeElement === owner) {
             open();
-            if (chooseOnArrival) {
+            if (choosing) {
                 choose(active);
             }
         } else {
             close();
+            // Nothing was chosen, so what was typed while the choice waited is looked at as text typed now.
+            if (choosing) {
+                update(false);
+            }
         }
     });
 

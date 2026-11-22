@@ -5816,7 +5816,8 @@ public static class ExampleCatalog
                 new(["Down", "Up"], "Moves to the next or previous suggestion, wrapping around.")
                     { When = "While mention suggestions show" },
                 new(["Enter", "Tab"], "Puts the active suggestion in as a mention, with a space after it. Pressed "
-                    + "while newer suggestions are on their way, it puts the first of those in once they arrive.")
+                    + "while newer suggestions are on their way, it puts the first of those in once they arrive, "
+                    + "before anything typed in the meantime.")
                     { When = "While mention suggestions show" },
                 new(["Escape"], "Closes the suggestions until the text changes.")
                     { When = "While mention suggestions show" },
@@ -5825,7 +5826,8 @@ public static class ExampleCatalog
                 new(["Down", "Up"], "Moves to the next or previous command, wrapping around.")
                     { When = "While slash commands show" },
                 new(["Enter", "Tab"], "Runs the active command and takes the slash and the typed text out. Pressed "
-                    + "while the list is still narrowing, it runs the first command of the new list once it arrives.")
+                    + "while the list is still narrowing, it runs the first command of the new list once it "
+                    + "arrives, before anything typed in the meantime.")
                     { When = "While slash commands show" },
                 new(["Escape"], "Closes the commands until the text changes, and the slash stays as text.")
                     { When = "While slash commands show" },
@@ -6219,7 +6221,8 @@ public static class ExampleCatalog
                     When = "While suggestions show",
                 },
                 new(["Enter", "Tab"], "Puts the active suggestion in. Pressed while newer suggestions are on their "
-                    + "way, it puts the first of those in once they arrive.") { When = "While suggestions show" },
+                    + "way, it puts the first of those in once they arrive, before anything typed in the meantime.")
+                    { When = "While suggestions show" },
                 new(["Escape"], "Closes the suggestions until the text changes.") { When = "While suggestions show" },
             ],
             Labeling =

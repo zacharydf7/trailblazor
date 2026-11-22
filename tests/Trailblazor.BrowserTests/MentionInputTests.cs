@@ -99,7 +99,7 @@ public class MentionInputTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task MentionInput_ShouldDropTheWaitingChoice_WhenNothingMatchesMoreIsTypedOrTheFocusLeaves(
+    public async Task MentionInput_ShouldDropTheWaitingChoice_WhenNothingMatchesTextIsDeletedOrTheFocusLeaves(
         string browser)
     {
         var (page, input) = await OpenAsync(browser);
@@ -115,12 +115,12 @@ public class MentionInputTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(options).ToHaveCountAsync(2);
         await Expect(input).ToHaveValueAsync("#");
 
-        // Text typed after the key drops the waiting choice, so the suggestions for "#ea" just show.
+        // Deleting some of what was typed drops the waiting choice, so the suggestions for "#ea" just show.
         await input.EvaluateAsync("""
             input => {
-                document.execCommand('insertText', false, 'e');
+                document.execCommand('insertText', false, 'eag');
                 input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
-                document.execCommand('insertText', false, 'a');
+                document.execCommand('delete');
             }
             """);
         await Expect(options).ToHaveCountAsync(1);
@@ -138,6 +138,59 @@ public class MentionInputTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(Listbox(page)).ToBeVisibleAsync();
         await Expect(options).ToHaveCountAsync(1);
         await Expect(input).ToHaveValueAsync("#eag");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MentionInput_ShouldPutTheChoiceInBeforeWhatIsTypedNext_WhenTextFollowsTheKeyBeforeTheyArrive(
+        string browser)
+    {
+        var (page, input) = await OpenAsync(browser);
+        var options = Listbox(page).GetByRole(AriaRole.Option);
+        await page.Keyboard.TypeAsync("#");
+        await Expect(options).ToHaveCountAsync(2);
+
+        // Keys count in the order pressed: Tab chooses the first suggestion for "#ea" once it arrives, and the x
+        // typed in the meantime comes after it, with the caret after that. The list closes when the x is typed, so
+        // a second Tab isn't taken for its own.
+        Assert.True(await input.EvaluateAsync<bool>("""
+            input => {
+                const tab = () => new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+                document.execCommand('insertText', false, 'ea');
+                input.dispatchEvent(tab());
+                document.execCommand('insertText', false, 'x');
+                return input.dispatchEvent(tab());
+            }
+            """));
+        await Expect(input).ToHaveValueAsync("#eagle-ridge x");
+        await page.Keyboard.TypeAsync("y");
+        await Expect(input).ToHaveValueAsync("#eagle-ridge xy");
+
+        // The space after the suggestion stands in for a space typed first.
+        await page.Keyboard.TypeAsync(" @");
+        await Expect(options).ToHaveCountAsync(3);
+        await input.EvaluateAsync("""
+            input => {
+                document.execCommand('insertText', false, 'pr');
+                input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+                document.execCommand('insertText', false, ' said');
+            }
+            """);
+        await Expect(input).ToHaveValueAsync("#eagle-ridge xy @Priya Shah said");
+        await Expect(page.GetByText("Mentioned: #eagle-ridge (t2), @Priya Shah (u3)")).ToBeVisibleAsync();
+
+        // When nothing matches, nothing is chosen, and what was typed in the meantime is looked at afresh: here it
+        // ends with a trigger, whose suggestions show.
+        await page.Keyboard.TypeAsync(" #");
+        await Expect(options).ToHaveCountAsync(2);
+        await input.EvaluateAsync("""
+            input => {
+                document.execCommand('insertText', false, 'zz');
+                input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+                document.execCommand('insertText', false, ' @');
+            }
+            """);
+        await Expect(options).ToHaveCountAsync(3);
+        await Expect(input).ToHaveValueAsync("#eagle-ridge xy @Priya Shah said #zz @");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

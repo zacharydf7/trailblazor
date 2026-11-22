@@ -141,6 +141,66 @@ public class RichTextEditorSuggestionTests(BrowserFixture fixture) : BrowserTest
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Suggestions_ShouldPutTheChoiceInBeforeWhatIsTypedNext_WhenTextFollowsEnterBeforeTheyLand(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-mentions");
+        await StartAsync(page);
+        var list = page.GetByRole(AriaRole.Listbox, new() { Name = "Notes" });
+        await page.Keyboard.TypeAsync(" @a");
+        await Expect(list.GetByRole(AriaRole.Option, new() { Name = "Ada Lovelace" }))
+            .ToHaveAttributeAsync("data-active", "");
+
+        // The search for "adam" is slow. Keys count in the order pressed, so what is typed after Enter comes after
+        // the mention, and the mention's own space stands in for the space typed first.
+        await page.Keyboard.TypeAsync("dam");
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.TypeAsync(" said");
+        await Expect(page.GetByTestId("mentions")).ToHaveTextAsync("@Adam Ant=7");
+        await page.Keyboard.TypeAsync("!");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync(
+            "<p>Hi <span data-mention=\"7\" data-trigger=\"@\">@Adam Ant</span> said!</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Suggestions_ShouldDropTheWaitingChoice_WhenTheQueryIsEditedTheCaretMovesBackOrAParagraphIsStarted(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-mentions");
+        await StartAsync(page);
+        var list = page.GetByRole(AriaRole.Listbox, new() { Name = "Notes" });
+        await page.Keyboard.TypeAsync(" @a");
+        await Expect(list.GetByRole(AriaRole.Option, new() { Name = "Ada Lovelace" }))
+            .ToHaveAttributeAsync("data-active", "");
+
+        // The search for "adam" is slow. A letter of the query deleted while Enter waits drops the choice, and the
+        // suggestions for "ada" just show.
+        await page.Keyboard.TypeAsync("dam");
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.PressAsync("Backspace");
+        await Expect(list.GetByRole(AriaRole.Option)).ToHaveCountAsync(2);
+
+        // The caret moved back into the query drops it too.
+        await page.Keyboard.TypeAsync("m");
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(list.GetByRole(AriaRole.Option)).ToHaveCountAsync(2);
+        await page.WaitForTimeoutAsync(700);
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>Hi @adam</p>");
+
+        // So does the caret leaving the paragraph: the list closes when " x" is typed, so the second Enter isn't the
+        // list's and starts a new paragraph.
+        await page.Keyboard.PressAsync("ArrowRight");
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.TypeAsync(" x");
+        await page.Keyboard.PressAsync("Enter");
+        await page.WaitForTimeoutAsync(700);
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>Hi @adam x</p><p><br></p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Suggestions_ShouldNotOpen_WhenTextIsTypedRightAfterAMention(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-mentions");
