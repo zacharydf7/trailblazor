@@ -286,11 +286,12 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     /// <summary>Opens the panel with this title in a browser window of its own, with "Open in new window" in its
     /// group's menu, and gives the panel in that window. Its <c>Page</c> is the new window's page, where the panel's
     /// content is found as on any page, and closing that page brings the panel back as closing the window does.
-    /// Throws when the dock's <c>AllowPopOut</c> is off.</summary>
+    /// Throws when the dock's <c>AllowPopOut</c> is off, or the panel's.</summary>
     public async Task<ILocator> PopOutAsync(string panel)
     {
         var window = await Root.Page.RunAndWaitForPopupAsync(() => ChooseAsync(panel, "[data-move=pop-out]",
-            "The dock doesn't open panels in windows of their own. Turn on its AllowPopOut."));
+            $"The panel \"{panel}\" can't open in a window of its own: the dock's AllowPopOut is off, or the "
+            + "panel's is."));
         var popped = window.Locator("[data-part=panel][data-popped]");
         await popped.WaitForAsync();
         return popped;

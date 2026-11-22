@@ -3311,12 +3311,12 @@ public sealed class TbDockDriver
 
     /// <summary>Opens the panel with this title in a browser window of its own, as "Open in new window" in its
     /// group's menu does, and gives the panel. bUnit has no windows, so the panel stays in the markup, drawn as it is
-    /// in its window: without a tab, and with its Return button. Throws when the dock's <c>AllowPopOut</c> is off.
-    /// </summary>
+    /// in its window: without a tab, and with its Return button. Throws when the dock's <c>AllowPopOut</c> is off,
+    /// or the panel's.</summary>
     public async Task<IElement> PopOutAsync(string panel)
     {
-        await ChooseAsync(panel, "[data-move=pop-out]",
-            "The dock doesn't open panels in windows of their own. Turn on its AllowPopOut.");
+        await ChooseAsync(panel, "[data-move=pop-out]", $"The panel \"{panel}\" can't open in a window of its "
+            + "own: the dock's AllowPopOut is off, or the panel's is.");
         return PanelElement(panel);
     }
 

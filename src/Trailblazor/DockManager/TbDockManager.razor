@@ -364,7 +364,8 @@
     /// <summary>Adds "Open in new window" to the panels' menus, which shows a panel in a browser window of its own,
     /// with its state, until that window closes or its Return button is pressed. The panel is still part of this
     /// page: the window closes with it, and a script of the app's own inside the panel has to work with the
-    /// panel's document and not the page's. Off by default.</summary>
+    /// panel's document and not the page's. A panel whose own <see cref="TbDockPanel.AllowPopOut"/> is false stays
+    /// on the page. Off by default.</summary>
     [Parameter]
     public bool AllowPopOut { get; set; }
 
@@ -534,6 +535,8 @@
 
     private TbDockPanel? Panel(string id) => _panels.Find(panel => panel.Name == id);
 
+    private bool CanPopOut(string panel) => AllowPopOut && Panel(panel) is { AllowPopOut: true };
+
     // DockContent is internal, so Razor can't name it.
     private static RenderFragment Content(int version, RenderFragment? content) => builder =>
     {
@@ -598,7 +601,7 @@
         }
 
         // A panel shows in a browser window of its own only while it is alone in a window of the layout.
-        _popped.RemoveWhere(id => !AllowPopOut
+        _popped.RemoveWhere(id => !CanPopOut(id)
             || !shown.Floats.Any(window => window.Panels is [var only] && only == id));
         var windows = WindowKeys(shown.Floats);
         for (var layer = 0; layer < shown.Floats.Count; layer++)
@@ -960,7 +963,7 @@
                 }
             }
         </TbSubMenu>
-        @if (AllowPopOut)
+        @if (CanPopOut(panel))
         {
             <TbMenuItem data-move="pop-out" OnClick="() => PopOutAsync(panel)">
                 @(Labels.PopOut ?? Localizer[TbStrings.DockPopOut])

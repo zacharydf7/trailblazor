@@ -7052,6 +7052,8 @@ Trailblazor.TbDockPanel.Title.get -> string!
 Trailblazor.TbDockPanel.Title.set -> void
 Trailblazor.TbDockPanel.Icon.set -> void
 Trailblazor.TbDockPanel.Icon.get -> Trailblazor.Icon?
+Trailblazor.TbDockPanel.AllowPopOut.get -> bool
+Trailblazor.TbDockPanel.AllowPopOut.set -> void
 Trailblazor.TbDockPanel.Closable.set -> void
 Trailblazor.TbDockPanel.Closable.get -> bool
 Trailblazor.TbDockPanel.KeepAlive.get -> bool

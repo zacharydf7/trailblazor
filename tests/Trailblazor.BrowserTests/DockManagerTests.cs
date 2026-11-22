@@ -216,6 +216,22 @@ public class DockManagerTests(BrowserFixture fixture) : DockManagerPage(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldKeepDeleteAndBackspaceFromThePagesOwnShortcuts_WhenTheTabCannotClose(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        // An app's shortcut listens on the window and skips a key a control has used.
+        await page.EvaluateAsync("() => { window.heard = []; addEventListener('keydown', "
+            + "event => window.heard.push(`${event.key} ${event.defaultPrevented}`)); }");
+        await Tab(page, "Map").ClickAsync();
+
+        await page.Keyboard.PressAsync("Delete");
+        await page.Keyboard.PressAsync("Backspace");
+
+        Assert.Equal(["Delete true", "Backspace true"], await page.EvaluateAsync<string[]>("() => window.heard"));
+        await Expect(Tab(page, "Map")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dock_ShouldKeepATabOpen_WhenItIsNotClosable(string browser)
     {
         var page = await OpenDockAsync(browser);

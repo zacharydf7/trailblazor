@@ -583,10 +583,11 @@ export function attachDock(root, reporter) {
             return;
         }
 
-        if ((event.key === 'Delete' || event.key === 'Backspace') && tab.hasAttribute('aria-keyshortcuts')) {
+        // Prevented on every tab, closable or not, so an app's shortcut that skips prevented keys leaves these alone.
+        if (event.key === 'Delete' || event.key === 'Backspace') {
             event.preventDefault();
             // A held key repeats, and each repeat would ask to close the tab again while the first close runs.
-            if (!event.repeat) {
+            if (tab.hasAttribute('aria-keyshortcuts') && !event.repeat) {
                 callDotNet(reporter, 'OnClose', tab.dataset.panel, true);
             }
 

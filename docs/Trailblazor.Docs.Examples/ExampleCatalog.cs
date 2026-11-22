@@ -3200,7 +3200,8 @@ public static class ExampleCatalog
                     + "single steps of a tenth of the dock from the menu that a click or tap opens. The window stays "
                     + "whole inside the dock and no smaller than a tenth of it, and a drag or a step also keeps it no "
                     + "smaller than `MinGroupSize`.", typeof(DockManagerFloatExample)),
-                new("pop-out", "Browser windows", "`AllowPopOut` adds Open in new window to each panel's menus. It "
+                new("pop-out", "Browser windows", "`AllowPopOut` adds Open in new window to each panel's menus, "
+                    + "except those of a panel whose own `AllowPopOut` is false, which stays on the page. The item "
                     + "opens a browser window and shows the panel there with everything it holds: the same components, "
                     + "with their state, still rendered by this page. The panel leaves the dock, and the layout keeps "
                     + "a floating window for it, which is where it shows again when its browser window closes or its "
@@ -3267,7 +3268,9 @@ public static class ExampleCatalog
                     + "and shows its panel.") { When = "On a tab" },
                 new(["Home", "End"], "Moves to the group's first or last tab and shows its panel.")
                     { When = "On a tab" },
-                new(["Delete", "Backspace"], "Closes the panel, unless its `Closable` is false.")
+                new(["Delete", "Backspace"], "Closes the panel, unless its `Closable` is false. Either way the "
+                    + "key's default is prevented, so a key listener of your own can skip it by checking "
+                    + "`event.defaultPrevented`.")
                     { When = "On a tab" },
                 new(["Tab"], "Goes to the group's menu button, by way of the Restore button in a group that fills "
                     + "the dock.") { When = "On a tab" },
@@ -3603,6 +3606,15 @@ public static class ExampleCatalog
                     + "it is checked. In those browsers such a sheet isn't on in the window even if a script turned "
                     + "it on before the window opened. A sheet switched by its link's `rel` or `href`, as from "
                     + "`alternate stylesheet` to `stylesheet`, is always followed.") { Pitfall = true },
+                new("Before you allow pop-out, check what each panel holds. An `<iframe>` loads again as its panel "
+                    + "goes to a window and as it comes back, and a component whose script finds its own elements "
+                    + "through the page's `document` no longer finds them there. Keep such a panel on the "
+                    + "page with `AllowPopOut=\"false\"` on the `TbDockPanel`.") { Pitfall = true },
+                new("A listener of your own on the page's `window` or `document`, such as one for keyboard "
+                    + "shortcuts, also hears the keys typed in a panel's window, with the element there as the "
+                    + "event's `target`. One that looks for the focused field with `document.activeElement` or "
+                    + "`document.getElementById` finds nothing, and may take typing for a shortcut. Ask "
+                    + "`event.target` and its `ownerDocument` instead.") { Pitfall = true },
                 new("A script of your own inside a panel has to use the panel's own document and window, "
                     + "`element.ownerDocument` and its `defaultView`. In a window of its own the panel is in neither "
                     + "the page's `document` nor its `window`, so `document.activeElement`, `document.getElementById` "
@@ -9585,6 +9597,12 @@ public static class ExampleCatalog
             BeforeInteractive =
             [
                 "Until the page is interactive, hotkeys don't fire, and the browser handles their keys as usual.",
+            ],
+            Notes =
+            [
+                new("A hotkey doesn't fire for a key whose default a control has prevented, such as Delete on a "
+                    + "dock's tab or an arrow key in a menu. Give a key listener of your own the same check: "
+                    + "`if (event.defaultPrevented) return;`."),
             ],
             Ready = new("[data-part=hotkey]", "the hotkey's hidden marker"),
             Target = new("button", "Keyboard shortcuts"),

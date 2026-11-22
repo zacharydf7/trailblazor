@@ -2082,7 +2082,8 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal("A TbDockPanel's Id can't change.", thrown.Message);
     }
 
-    private sealed record Panel(string Id, string Title, bool Closable = true, bool KeepAlive = true);
+    private sealed record Panel(string Id, string Title, bool Closable = true, bool KeepAlive = true,
+        bool AllowPopOut = true);
 
     [Fact]
     public async Task AutoHide_ShouldPutThePanelOnAStripWithTheFocusOnItsButton_WhenChosenInAGroupsMenu()
@@ -2571,7 +2572,8 @@ public class TbDockManagerTests : BunitContext
     {
         var cut = RenderDock(Hike, HikePanels);
         Assert.Empty(cut.FindAll("[data-move=pop-out]"));
-        Assert.Equal("The dock doesn't open panels in windows of their own. Turn on its AllowPopOut.",
+        Assert.Equal("The panel \"Notes\" can't open in a window of its own: the dock's AllowPopOut is off, or the "
+            + "panel's is.",
             (await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Dock().PopOutAsync("Notes"))).Message);
 
         cut.Render(parameters => parameters.Add(dock => dock.AllowPopOut, true));
@@ -2580,6 +2582,35 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal(3, items.Count);
         Assert.All(items, item => Assert.Equal("Open in new window", item.TextContent.Trim()));
     }
+
+    [Fact]
+    public async Task PopOut_ShouldBeOfferedForEveryPanelButOne_WhenThatPanelsAllowPopOutIsOff()
+    {
+        var cut = RenderPoppable(Hike, panels: [.. HikePanels.Select(Staying)]);
+
+        // The notes have a group to themselves, and the other two groups still offer it.
+        Assert.Equal(2, cut.FindAll("[data-part=group-menu] [data-move=pop-out]").Count);
+        Assert.Equal("The panel \"Notes\" can't open in a window of its own: the dock's AllowPopOut is off, or the "
+            + "panel's is.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Dock().PopOutAsync("Notes"))).Message);
+    }
+
+    [Fact]
+    public async Task PopOut_ShouldEnd_WhenThePanelsAllowPopOutTurnsOff()
+    {
+        var cut = RenderPoppable(Hike);
+        var dock = cut.Tb().Dock();
+        await dock.PopOutAsync("Notes");
+
+        cut.Render(parameters => parameters.Add(each => each.ChildContent, Panels([.. HikePanels.Select(Staying)])));
+
+        Assert.Empty(dock.PoppedOut);
+        Assert.Equal(["Notes"], dock.Floating);
+        Assert.Empty((string[])_handle.Invocations["popped"][^1].Arguments[0]!);
+    }
+
+    // The hike's panels with the notes kept on the page.
+    private static Panel Staying(Panel panel) => panel with { AllowPopOut = panel.Id != "notes" };
 
     [Fact]
     public async Task PopOut_ShouldDrawThePanelAsItIsInItsOwnWindow_WhenOpenInNewWindowIsChosen()
@@ -2886,7 +2917,8 @@ public class TbDockManagerTests : BunitContext
             builder.AddAttribute(2, nameof(TbDockPanel.Title), panel.Title);
             builder.AddAttribute(3, nameof(TbDockPanel.Closable), panel.Closable);
             builder.AddAttribute(4, nameof(TbDockPanel.KeepAlive), panel.KeepAlive);
-            builder.AddAttribute(5, nameof(TbDockPanel.ChildContent), (RenderFragment)(content =>
+            builder.AddAttribute(5, nameof(TbDockPanel.AllowPopOut), panel.AllowPopOut);
+            builder.AddAttribute(6, nameof(TbDockPanel.ChildContent), (RenderFragment)(content =>
             {
                 content.OpenComponent<Probe>(0);
                 content.AddAttribute(1, nameof(Probe.Name), panel.Id);

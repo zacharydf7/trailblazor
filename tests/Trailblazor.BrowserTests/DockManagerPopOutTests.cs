@@ -680,7 +680,8 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         // A dock that doesn't allow it has no such item, and the helper says so.
         var plain = await OpenAsync(browser, "/dock-manager");
         await Expect(plain.Locator(".tb-dock")).ToHaveAttributeAsync("data-ready", "");
-        Assert.Equal("The dock doesn't open panels in windows of their own. Turn on its AllowPopOut.",
+        Assert.Equal("The panel \"Notes\" can't open in a window of its own: the dock's AllowPopOut is off, or the "
+            + "panel's is.",
             (await Assert.ThrowsAsync<InvalidOperationException>(() => plain.Tb().Dock("Hike planner")
                 .PopOutAsync("Notes"))).Message);
     }

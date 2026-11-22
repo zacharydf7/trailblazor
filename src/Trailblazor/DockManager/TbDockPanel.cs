@@ -29,6 +29,14 @@ public sealed class TbDockPanel : TbComponentBase, IDisposable
     [Parameter]
     public bool Closable { get; set; } = true;
 
+    /// <summary>Whether the panel's menus offer "Open in new window" when the dock's
+    /// <see cref="TbDockManager.AllowPopOut"/> is on. Defaults to true. Set it to false for a panel that has to stay
+    /// on the page, such as one that holds a script that finds its elements through the page's document, or an
+    /// iframe, which loads again when it moves. A panel that is in a window of its own comes back when this turns
+    /// false.</summary>
+    [Parameter]
+    public bool AllowPopOut { get; set; } = true;
+
     /// <summary>Whether the content stays rendered, hidden, while another tab of its group shows, so its state
     /// survives. Defaults to true. Set it to false for content that is cheap to build again and costly to keep.
     /// Either way the content first renders when the panel first shows, and a closed panel's content is disposed.
