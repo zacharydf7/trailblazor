@@ -1,0 +1,10 @@
+@* Find and replace: the toolbar's button, or Ctrl+F in the text, opens the bar. *@
+<TbStack Gap="3" Style="max-inline-size: 36rem">
+    <TbRichTextEditor Label="Bridge report" @bind-Value="_report" ShowFind
+                      HelperText="Press Ctrl+F in the text (Cmd+F on macOS), or the Find and replace button." />
+</TbStack>
+
+@code {
+    private string? _report = "<p>The lower bridge is out, so cross at the upper bridge.</p>"
+        + "<p>Past the bridge, the trail climbs to <strong>Bridge Camp</strong>.</p>";
+}

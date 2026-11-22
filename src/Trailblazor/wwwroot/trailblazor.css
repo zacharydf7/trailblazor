@@ -3915,6 +3915,81 @@
         border-block-end: 1px solid var(--tb-border-subtle);
     }
 
+    /* The find bar: a row to find with and a row to replace with, each wrapping in a narrow box. */
+    .tb-rich-text-editor__find {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        padding: var(--tb-space-2) var(--tb-control-padding-inline);
+        border-block-end: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-rich-text-editor__find[hidden] {
+        display: none;
+    }
+
+    .tb-rich-text-editor__find-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--tb-space-1);
+    }
+
+    .tb-rich-text-editor__find-input {
+        flex: 1 1 8rem;
+        box-sizing: border-box;
+        min-inline-size: 0;
+        min-block-size: var(--tb-control-height-sm);
+        padding-inline: var(--tb-space-2);
+        border: 1px solid var(--tb-border-strong);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-surface);
+        color: inherit;
+        font: inherit;
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-rich-text-editor__find-input:focus-visible {
+        outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);
+        outline-offset: var(--tb-focus-ring-offset);
+    }
+
+    .tb-rich-text-editor__find-input:disabled {
+        color: var(--tb-color-text-disabled);
+        cursor: not-allowed;
+    }
+
+    /* Wide enough for "12 of 345", so the buttons after it don't shift as the count changes. */
+    .tb-rich-text-editor__find-count {
+        min-inline-size: 5.5rem;
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* The matches the find bar marks, which are highlights and not elements, so the value never holds them. */
+    ::highlight(tb-find) {
+        background-color: var(--tb-color-warning-subtle);
+        color: var(--tb-color-text);
+    }
+
+    ::highlight(tb-find-current) {
+        background-color: var(--tb-color-warning-hover);
+        color: var(--tb-color-on-warning);
+    }
+
+    @media (forced-colors: active) {
+        ::highlight(tb-find) {
+            background-color: Mark;
+            color: MarkText;
+        }
+
+        ::highlight(tb-find-current) {
+            background-color: Highlight;
+            color: HighlightText;
+        }
+    }
+
     .tb-rich-text-editor__content {
         position: relative;
         box-sizing: border-box;

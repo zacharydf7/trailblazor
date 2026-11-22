@@ -10,7 +10,7 @@
 
 @Layout(Classes, @<text>
     <div data-part="editor" class="tb-rich-text-editor">
-        @if (ShowToolbar && (Tools.Count > 0 || ShowsImageButton || ShowSource))
+        @if (ShowToolbar && (Tools.Count > 0 || ShowsImageButton || ShowSource || ShowFind))
         {
             <TbToolbar AriaLabel="@(Labels.Toolbar ?? Localizer[TbStrings.RichTextEditorToolbar])" data-part="toolbar"
                        aria-controls="@InputId" Class="tb-rich-text-editor__toolbar">
@@ -91,6 +91,15 @@
                                   AriaLabel="@(Labels.Image ?? Localizer[TbStrings.RichTextEditorImage])"
                                   OnClick="InsertImageAsync" data-part="image" />
                 }
+                @if (ShowFind)
+                {
+                    @* The script opens and closes the find bar, and keeps aria-pressed up to date. *@
+                    <TbIconButton Icon="RichTextEditorIcons.Find" ShowTooltip Size="Size.Small"
+                                  Disabled="@(Disabled || _source)" AriaLabel="@Word(Labels.FindAndReplace,
+                                      TbStrings.RichTextEditorFindAndReplace)" data-command="find"
+                                  data-part="find-toggle" aria-pressed="false"
+                                  aria-keyshortcuts="Control+F Meta+F" />
+                }
                 @if (ShowSource)
                 {
                     <TbIconButton Icon="RichTextEditorIcons.Source" ShowTooltip Size="Size.Small" Disabled="Disabled"
@@ -98,6 +107,50 @@
                                   Pressed="_source" PressedChanged="ShowSourceAsync" data-part="source-toggle" />
                 }
             </TbToolbar>
+        }
+        @if (ShowFind && !_source && !Disabled)
+        {
+            @* The script shows the bar and runs it, so finding makes no round trip. It takes the words it says
+               from the bar's data. *@
+            <div data-part="find" class="tb-rich-text-editor__find" role="group" hidden
+                 aria-label="@Word(Labels.FindAndReplace, TbStrings.RichTextEditorFindAndReplace)"
+                 data-count="@Word(Labels.FindCount, TbStrings.RichTextEditorFindCount)"
+                 data-none="@Word(Labels.FindNoResults, TbStrings.RichTextEditorFindNoResults)"
+                 data-replaced="@Word(Labels.Replaced, TbStrings.RichTextEditorReplaced)">
+                <div class="tb-rich-text-editor__find-row">
+                    <input data-find="text" class="tb-rich-text-editor__find-input" type="text" autocomplete="off"
+                           spellcheck="false" enterkeyhint="search"
+                           aria-label="@Word(Labels.Find, TbStrings.RichTextEditorFind)"
+                           placeholder="@Word(Labels.Find, TbStrings.RichTextEditorFind)" />
+                    <span data-find="count" role="status" class="tb-rich-text-editor__find-count"></span>
+                    <TbIconButton Icon="BuiltInIcons.ChevronUp" ShowTooltip Size="Size.Small" data-find="previous"
+                                  AriaLabel="@Word(Labels.FindPrevious, TbStrings.RichTextEditorFindPrevious)" />
+                    <TbIconButton Icon="BuiltInIcons.ChevronDown" ShowTooltip Size="Size.Small" data-find="next"
+                                  AriaLabel="@Word(Labels.FindNext, TbStrings.RichTextEditorFindNext)" />
+                    <TbIconButton Icon="RichTextEditorIcons.MatchCase" ShowTooltip Size="Size.Small" data-find="case"
+                                  aria-pressed="false"
+                                  AriaLabel="@Word(Labels.MatchCase, TbStrings.RichTextEditorMatchCase)" />
+                    <TbIconButton Icon="RichTextEditorIcons.WholeWord" ShowTooltip Size="Size.Small" data-find="word"
+                                  aria-pressed="false"
+                                  AriaLabel="@Word(Labels.WholeWord, TbStrings.RichTextEditorWholeWord)" />
+                    <TbIconButton Icon="BuiltInIcons.Close" ShowTooltip Size="Size.Small" data-find="close"
+                                  AriaLabel="@Word(Labels.CloseFind, TbStrings.RichTextEditorCloseFind)" />
+                </div>
+                <div class="tb-rich-text-editor__find-row">
+                    <input data-find="with" class="tb-rich-text-editor__find-input" type="text" autocomplete="off"
+                           spellcheck="false"
+                           aria-label="@Word(Labels.ReplaceWith, TbStrings.RichTextEditorReplaceWith)"
+                           placeholder="@Word(Labels.ReplaceWith, TbStrings.RichTextEditorReplaceWith)" />
+                    <TbButton Size="Size.Small" Variant="Trailblazor.Variant.Outlined" Tone="Tone.Neutral"
+                              data-find="replace">
+                        @Word(Labels.Replace, TbStrings.RichTextEditorReplace)
+                    </TbButton>
+                    <TbButton Size="Size.Small" Variant="Trailblazor.Variant.Outlined" Tone="Tone.Neutral"
+                              data-find="all">
+                        @Word(Labels.ReplaceAll, TbStrings.RichTextEditorReplaceAll)
+                    </TbButton>
+                </div>
+            </div>
         }
         @* The script owns everything inside the editing area once the page is interactive. Text typed before it
            attaches would be lost, so the area becomes editable only then, together with data-ready, which tests
@@ -336,6 +389,13 @@
     [Parameter]
     public bool ShowSource { get; set; }
 
+    /// <summary>Adds find and replace. A toolbar button, or Ctrl+F (Cmd+F on macOS) while the editor has the focus,
+    /// opens a bar that finds text in the editor, marks the matches without changing the value, steps through them,
+    /// and replaces one or all. Off by default, since it takes Ctrl+F from the browser's own find while the editor
+    /// has the focus. In a read-only editor it finds and doesn't replace.</summary>
+    [Parameter]
+    public bool ShowFind { get; set; }
+
     /// <summary>Updates the value on every change instead of when focus leaves the editor.</summary>
     [Parameter]
     public bool UpdateOnInput { get; set; }
@@ -498,6 +558,9 @@
     }
 
     private string MentionListId => $"{FieldId}-mentions";
+
+    // The app's own word for a label, or the localized one.
+    private string Word(string? label, string key) => label ?? Localizer[key];
 
     private RichTextSchema Schema => new()
     {

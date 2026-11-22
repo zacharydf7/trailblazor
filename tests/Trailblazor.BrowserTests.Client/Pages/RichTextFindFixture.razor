@@ -1,0 +1,19 @@
+@page "/rich-text-find"
+
+@* An editor with find and replace, whose value shows and can be set from .NET; a read-only one, which finds and
+   doesn't replace; and one that updates only as focus leaves it, keeps mentions and has an HTML source. *@
+<TbRichTextEditor Label="Notes" @bind-Value="_notes" UpdateOnInput ShowFind />
+<output data-testid="notes">@_notes</output>
+<TbTextField TValue="string" Label="Source" @bind-Value="_source" UpdateOnInput />
+<TbButton OnClick="() => _notes = _source">Set notes</TbButton>
+<TbRichTextEditor Label="Approved" Value="@Approved" ReadOnly ShowFind />
+<TbRichTextEditor Label="Summary" @bind-Value="_summary" ShowFind ShowSource MentionTriggers="@("@")" />
+<output data-testid="summary">@_summary</output>
+
+@code {
+    private const string Approved = "<p>The bridge is open. The ford is closed.</p>";
+
+    private string? _notes;
+    private string? _source;
+    private string? _summary = "<p>Ask <span data-mention=\"7\" data-trigger=\"@\">@Ada</span> about Ada's map</p>";
+}

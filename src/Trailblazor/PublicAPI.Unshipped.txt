@@ -3893,6 +3893,34 @@ Trailblazor.RichTextEditorLabels.Highlight.get -> string?
 Trailblazor.RichTextEditorLabels.Highlight.init -> void
 Trailblazor.RichTextEditorLabels.Paragraph.get -> string?
 Trailblazor.RichTextEditorLabels.Paragraph.init -> void
+Trailblazor.RichTextEditorLabels.FindAndReplace.get -> string?
+Trailblazor.RichTextEditorLabels.FindAndReplace.init -> void
+Trailblazor.RichTextEditorLabels.Find.get -> string?
+Trailblazor.RichTextEditorLabels.Find.init -> void
+Trailblazor.RichTextEditorLabels.FindCount.get -> string?
+Trailblazor.RichTextEditorLabels.FindCount.init -> void
+Trailblazor.RichTextEditorLabels.FindNoResults.get -> string?
+Trailblazor.RichTextEditorLabels.FindNoResults.init -> void
+Trailblazor.RichTextEditorLabels.FindPrevious.get -> string?
+Trailblazor.RichTextEditorLabels.FindPrevious.init -> void
+Trailblazor.RichTextEditorLabels.FindNext.get -> string?
+Trailblazor.RichTextEditorLabels.FindNext.init -> void
+Trailblazor.RichTextEditorLabels.MatchCase.get -> string?
+Trailblazor.RichTextEditorLabels.MatchCase.init -> void
+Trailblazor.RichTextEditorLabels.WholeWord.get -> string?
+Trailblazor.RichTextEditorLabels.WholeWord.init -> void
+Trailblazor.RichTextEditorLabels.CloseFind.get -> string?
+Trailblazor.RichTextEditorLabels.CloseFind.init -> void
+Trailblazor.RichTextEditorLabels.ReplaceWith.get -> string?
+Trailblazor.RichTextEditorLabels.ReplaceWith.init -> void
+Trailblazor.RichTextEditorLabels.Replace.get -> string?
+Trailblazor.RichTextEditorLabels.Replace.init -> void
+Trailblazor.RichTextEditorLabels.ReplaceAll.get -> string?
+Trailblazor.RichTextEditorLabels.ReplaceAll.init -> void
+Trailblazor.RichTextEditorLabels.Replaced.get -> string?
+Trailblazor.RichTextEditorLabels.Replaced.init -> void
+Trailblazor.TbRichTextEditor.ShowFind.get -> bool
+Trailblazor.TbRichTextEditor.ShowFind.set -> void
 const Trailblazor.TbStrings.RichTextEditorTextColor = "RichTextEditor.TextColor" -> string!
 Trailblazor.RichTextEditorLabels.TextColor.get -> string?
 Trailblazor.RichTextEditorLabels.TextColor.init -> void
@@ -5828,6 +5856,19 @@ Trailblazor.RichTextEditorLabels.Source.init -> void
 Trailblazor.TbRichTextEditor.ShowSource.get -> bool
 Trailblazor.TbRichTextEditor.ShowSource.set -> void
 const Trailblazor.TbStrings.RichTextEditorSource = "RichTextEditor.Source" -> string!
+const Trailblazor.TbStrings.RichTextEditorFindAndReplace = "RichTextEditor.FindAndReplace" -> string!
+const Trailblazor.TbStrings.RichTextEditorFind = "RichTextEditor.Find" -> string!
+const Trailblazor.TbStrings.RichTextEditorFindCount = "RichTextEditor.FindCount" -> string!
+const Trailblazor.TbStrings.RichTextEditorFindNoResults = "RichTextEditor.FindNoResults" -> string!
+const Trailblazor.TbStrings.RichTextEditorFindPrevious = "RichTextEditor.FindPrevious" -> string!
+const Trailblazor.TbStrings.RichTextEditorFindNext = "RichTextEditor.FindNext" -> string!
+const Trailblazor.TbStrings.RichTextEditorMatchCase = "RichTextEditor.MatchCase" -> string!
+const Trailblazor.TbStrings.RichTextEditorWholeWord = "RichTextEditor.WholeWord" -> string!
+const Trailblazor.TbStrings.RichTextEditorCloseFind = "RichTextEditor.CloseFind" -> string!
+const Trailblazor.TbStrings.RichTextEditorReplaceWith = "RichTextEditor.ReplaceWith" -> string!
+const Trailblazor.TbStrings.RichTextEditorReplace = "RichTextEditor.Replace" -> string!
+const Trailblazor.TbStrings.RichTextEditorReplaceAll = "RichTextEditor.ReplaceAll" -> string!
+const Trailblazor.TbStrings.RichTextEditorReplaced = "RichTextEditor.Replaced" -> string!
 Trailblazor.RichTextBlocks.Images = 32 -> Trailblazor.RichTextBlocks
 Trailblazor.RichTextParagraphKind.Image = 8 -> Trailblazor.RichTextParagraphKind
 Trailblazor.RichTextParagraph.RichTextParagraph(Trailblazor.RichTextImage! image) -> void

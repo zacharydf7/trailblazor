@@ -81,6 +81,18 @@ internal static class RichTextEditorIcons
     public static Icon Table { get; } =
         new($"<path {Lines} stroke-width=\"2\" d=\"M4 5h16v14H4zM4 9.5h16M9.3 5v14M14.7 5v14\" />");
 
+    // A magnifying glass.
+    public static Icon Find { get; } = new($"<circle {Lines} stroke-width=\"2\" cx=\"10.5\" cy=\"10.5\" r=\"5.5\" />"
+        + $"<path {Lines} stroke-width=\"2\" d=\"m15 15 5 5\" />");
+
+    // A capital A and a small a, drawn as lines.
+    public static Icon MatchCase { get; } = new($"<path {Lines} stroke-width=\"2\" d=\"M3 18 7.5 6 12 18M4.9 14h5.2"
+        + "M20 11v7M20 14.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0\" />");
+
+    // A small a and b over a line with turned-up ends, which marks off one word.
+    public static Icon WholeWord { get; } = new($"<path {Lines} stroke-width=\"2\" d=\"M10 8v6M10 11a2.5 2.5 0 1 1-5 0 "
+        + "2.5 2.5 0 0 1 5 0M14 5v9M14 11.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0M3 17v2.5h18V17\" />");
+
     // A small table with three dots beside it, for its options.
     public static Icon TableMenu { get; } =
         new($"<path {Lines} stroke-width=\"2\" d=\"M4 5h11v11H4zM4 9.5h11M9.5 5v11\" />"

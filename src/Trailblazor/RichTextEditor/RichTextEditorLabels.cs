@@ -193,6 +193,58 @@ public sealed record RichTextEditorLabels
     /// cref="TbStrings.RichTextEditorSource"/>.</summary>
     public string? Source { get; init; }
 
+    /// <summary>Names the find and replace button and its bar. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorFindAndReplace"/>.</summary>
+    public string? FindAndReplace { get; init; }
+
+    /// <summary>Names the field for the text to find, and is its placeholder. Leave it null for the app's text for
+    /// <see cref="TbStrings.RichTextEditorFind"/>.</summary>
+    public string? Find { get; init; }
+
+    /// <summary>Says which match is the current one, with <c>{0}</c> for its number and <c>{1}</c> for how many there
+    /// are. Leave it null for the app's text for <see cref="TbStrings.RichTextEditorFindCount"/>.</summary>
+    public string? FindCount { get; init; }
+
+    /// <summary>Says that the text to find isn't in the editor. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorFindNoResults"/>.</summary>
+    public string? FindNoResults { get; init; }
+
+    /// <summary>Names the button that goes to the previous match. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorFindPrevious"/>.</summary>
+    public string? FindPrevious { get; init; }
+
+    /// <summary>Names the button that goes to the next match. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorFindNext"/>.</summary>
+    public string? FindNext { get; init; }
+
+    /// <summary>Names the button that makes the search tell capital letters from small ones. Leave it null for the
+    /// app's text for <see cref="TbStrings.RichTextEditorMatchCase"/>.</summary>
+    public string? MatchCase { get; init; }
+
+    /// <summary>Names the button that makes the search find whole words only. Leave it null for the app's text for
+    /// <see cref="TbStrings.RichTextEditorWholeWord"/>.</summary>
+    public string? WholeWord { get; init; }
+
+    /// <summary>Names the button that closes the find bar. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorCloseFind"/>.</summary>
+    public string? CloseFind { get; init; }
+
+    /// <summary>Names the field for the text that replaces a match, and is its placeholder. Leave it null for the
+    /// app's text for <see cref="TbStrings.RichTextEditorReplaceWith"/>.</summary>
+    public string? ReplaceWith { get; init; }
+
+    /// <summary>Names the button that replaces the current match. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorReplace"/>.</summary>
+    public string? Replace { get; init; }
+
+    /// <summary>Names the button that replaces every match. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorReplaceAll"/>.</summary>
+    public string? ReplaceAll { get; init; }
+
+    /// <summary>Says how many matches were replaced, with <c>{0}</c> for the number. Leave it null for the app's text
+    /// for <see cref="TbStrings.RichTextEditorReplaced"/>.</summary>
+    public string? Replaced { get; init; }
+
     /// <summary>Names the Image button. Leave it null for the app's text for <see
     /// cref="TbStrings.RichTextEditorImage"/>.</summary>
     public string? Image { get; init; }

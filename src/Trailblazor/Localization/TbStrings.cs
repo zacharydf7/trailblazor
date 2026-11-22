@@ -1143,6 +1143,46 @@ public static class TbStrings
     /// <summary>"HTML source": names a rich text editor's button that shows its value's HTML to edit.</summary>
     public const string RichTextEditorSource = "RichTextEditor.Source";
 
+    /// <summary>"Find and replace": names a rich text editor's find and replace button and its bar.</summary>
+    public const string RichTextEditorFindAndReplace = "RichTextEditor.FindAndReplace";
+
+    /// <summary>"Find": names the field for the text to find in a rich text editor.</summary>
+    public const string RichTextEditorFind = "RichTextEditor.Find";
+
+    /// <summary>"{0} of {1}": says which match a rich text editor's find bar is on, of how many.</summary>
+    public const string RichTextEditorFindCount = "RichTextEditor.FindCount";
+
+    /// <summary>"No results": says that the text to find isn't in a rich text editor.</summary>
+    public const string RichTextEditorFindNoResults = "RichTextEditor.FindNoResults";
+
+    /// <summary>"Previous match": names the button that goes to the previous match in a rich text editor.</summary>
+    public const string RichTextEditorFindPrevious = "RichTextEditor.FindPrevious";
+
+    /// <summary>"Next match": names the button that goes to the next match in a rich text editor.</summary>
+    public const string RichTextEditorFindNext = "RichTextEditor.FindNext";
+
+    /// <summary>"Match case": names the button that makes a rich text editor's search tell capital letters from
+    /// small ones.</summary>
+    public const string RichTextEditorMatchCase = "RichTextEditor.MatchCase";
+
+    /// <summary>"Whole word": names the button that makes a rich text editor's search find whole words only.</summary>
+    public const string RichTextEditorWholeWord = "RichTextEditor.WholeWord";
+
+    /// <summary>"Close": names the button that closes a rich text editor's find bar.</summary>
+    public const string RichTextEditorCloseFind = "RichTextEditor.CloseFind";
+
+    /// <summary>"Replace with": names the field for the text that replaces a match in a rich text editor.</summary>
+    public const string RichTextEditorReplaceWith = "RichTextEditor.ReplaceWith";
+
+    /// <summary>"Replace": names the button that replaces the current match in a rich text editor.</summary>
+    public const string RichTextEditorReplace = "RichTextEditor.Replace";
+
+    /// <summary>"Replace all": names the button that replaces every match in a rich text editor.</summary>
+    public const string RichTextEditorReplaceAll = "RichTextEditor.ReplaceAll";
+
+    /// <summary>"Replaced {0}": says how many matches a rich text editor replaced.</summary>
+    public const string RichTextEditorReplaced = "RichTextEditor.Replaced";
+
     /// <summary>"Link": names a rich text editor's link button.</summary>
     public const string RichTextEditorLink = "RichTextEditor.Link";
 
@@ -2034,6 +2074,19 @@ public static class TbStrings
         [RichTextEditorHorizontalRule] = "Horizontal line",
         [RichTextEditorClearFormatting] = "Clear formatting",
         [RichTextEditorSource] = "HTML source",
+        [RichTextEditorFindAndReplace] = "Find and replace",
+        [RichTextEditorFind] = "Find",
+        [RichTextEditorFindCount] = "{0} of {1}",
+        [RichTextEditorFindNoResults] = "No results",
+        [RichTextEditorFindPrevious] = "Previous match",
+        [RichTextEditorFindNext] = "Next match",
+        [RichTextEditorMatchCase] = "Match case",
+        [RichTextEditorWholeWord] = "Whole word",
+        [RichTextEditorCloseFind] = "Close",
+        [RichTextEditorReplaceWith] = "Replace with",
+        [RichTextEditorReplace] = "Replace",
+        [RichTextEditorReplaceAll] = "Replace all",
+        [RichTextEditorReplaced] = "Replaced {0}",
         [RichTextEditorLink] = "Link",
         [RichTextEditorAddLink] = "Add link",
         [RichTextEditorEditLink] = "Edit link",

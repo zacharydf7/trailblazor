@@ -525,6 +525,52 @@ public class TbRichTextEditorTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=mention-list] [role=option]"));
     }
 
+    [Fact]
+    public void ShowFind_ShouldRenderAHiddenFindBarAndItsButton_WhenSet()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.ShowFind, true).Add(editor => editor.Labels,
+                new RichTextEditorLabels { FindCount = "{0} / {1}", ReplaceAll = "Swap all" }));
+
+        var button = cut.Find("[data-part=toolbar] [data-part=find-toggle][data-command=find]");
+        Assert.Equal(("Find and replace", "false", "Control+F Meta+F"), (button.GetAttribute("aria-label"),
+            button.GetAttribute("aria-pressed"), button.GetAttribute("aria-keyshortcuts")));
+        // The script shows the bar and runs it; until then it is hidden, with the words the script says in its data.
+        var bar = cut.Find("[data-part=find]");
+        Assert.True(bar.HasAttribute("hidden"));
+        Assert.Equal(("group", "Find and replace", "{0} / {1}", "No results", "Replaced {0}"),
+            (bar.GetAttribute("role"), bar.GetAttribute("aria-label"), bar.GetAttribute("data-count"),
+                bar.GetAttribute("data-none"), bar.GetAttribute("data-replaced")));
+        Assert.Equal([("text", "Find"), ("previous", "Previous match"), ("next", "Next match"),
+            ("case", "Match case"), ("word", "Whole word"), ("close", "Close"), ("with", "Replace with"),
+            ("replace", "Replace"), ("all", "Swap all")],
+            bar.QuerySelectorAll("input[data-find], button[data-find]").Select(control =>
+                (control.GetAttribute("data-find"), control.GetAttribute("aria-label") ?? control.TextContent.Trim())));
+        Assert.Equal("status", bar.QuerySelector("[data-find=count]")!.GetAttribute("role"));
+    }
+
+    [Fact]
+    public async Task ShowFind_ShouldLeaveTheFindBarOut_WhenItIsOffTheEditorIsDisabledOrTheSourceShows()
+    {
+        _handle.SetupVoid("flush", _ => true).SetVoidResult();
+        var plain = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Plain"));
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.ShowFind, true).Add(editor => editor.ShowSource, true));
+
+        var disabled = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Archived")
+            .Add(editor => editor.ShowFind, true).Add(editor => editor.Disabled, true));
+
+        Assert.Empty(plain.FindAll("[data-part=find], [data-command=find]"));
+        // A bar left open as the editor is disabled could still replace, so a disabled editor has none.
+        Assert.Empty(disabled.FindAll("[data-part=find]"));
+        Assert.True(disabled.Find("[data-command=find]").HasAttribute("disabled"));
+        await cut.Find("[data-part=source-toggle]").ClickAsync(new());
+
+        // The source isn't the text the bar searches, so the bar goes and its button can't be pressed.
+        Assert.Empty(cut.FindAll("[data-part=find]"));
+        Assert.True(cut.Find("[data-command=find]").HasAttribute("disabled"));
+    }
+
     private static readonly RichTextCommand Signature = new("Signature")
     {
         Description = "Your name", Keywords = "sign off", Html = "<p><b>Ana</b> <i>Lopez</i><script>x</script></p>",

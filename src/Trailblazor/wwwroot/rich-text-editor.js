@@ -3,6 +3,7 @@ import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { viewOf } from '../Trailblazor.Primitives/pages.js';
 import { isApple } from '../Trailblazor.Primitives/platform.js';
 import { createMentionSuggestions, longestMention } from './mention-suggestions.js';
+import { createFind } from './rich-text-find.js';
 // The rich text editor's engine. The browser types, composes and spellchecks natively and the engine reads the result
 // back; every other edit the engine makes on its own model and renders. It never uses document.execCommand.
 // A paragraph is { kind, level, runs }, never changed in place; a run is { text, marks in MARKS order, link or null };
@@ -200,6 +201,10 @@ class Editor {
         on(toolbar, 'click', event => {
             const button = event.target.closest('[data-format], [data-block], [data-command]');
             if (!button || button.disabled) return;
+            if (button.dataset.command === 'find') {
+                this.find.toggle();
+                return;
+            }
             // The editor takes focus first, so the link dialog hands it back to the editor when it closes.
             root.focus();
             if (button.dataset.format) this.toggleMark(button.dataset.format);
@@ -212,6 +217,16 @@ class Editor {
             this.writeSelection();
         });
 
+        this.find = createFind(root.closest('.tb-rich-text-editor'), {
+            area: () => root,
+            texts: () => this.searchTexts(),
+            ranges: matches => this.rangesOf(matches),
+            caret: () => this.range().from,
+            selectedText: () => this.selectedText(),
+            focus: match => this.focusFrom(match),
+            replace: (matches, text) => this.replaceMatches(matches, text),
+            readOnly: () => this.readOnly,
+        }, this.abort.signal);
         this.load(value);
         this.observer.observe(root, { childList: true, characterData: true, subtree: true });
     }
@@ -255,6 +270,7 @@ class Editor {
             this.writeSelection();
         }
         this.updateToolbar();
+        this.find.refresh();
     }
 
     // The suggestions that mention-suggestions.js runs: the editor finds the mention being typed, places the mark the
@@ -352,7 +368,62 @@ class Editor {
         }
     }
 
+    // What rich-text-find.js asks of the editor.
+
+    // Each block's text to search, or null for a rule or an image. A mention is one unit, so its text is left
+    // out, with a character that is never typed in place of each of its own, which keeps the offsets.
+    searchTexts() {
+        return this.doc.map(target => isAtom(target) ? null
+            : target.runs.map(run => run.mention ? '\ufffc'.repeat(run.text.length) : run.text).join(''));
+    }
+
+    rangesOf(matches) {
+        const elements = this.blockElements();
+        return matches.map(match => {
+            const range = this.root.ownerDocument.createRange();
+            range.setStart(...pointAt(elements[match.block], match.start));
+            range.setEnd(...pointAt(elements[match.block], match.end));
+            return range;
+        });
+    }
+
+    // The text selected within one block, which the find bar opens with.
+    selectedText() {
+        const { from, to } = this.range();
+        return from.block === to.block ? textOf(slice(this.doc[from.block].runs, from.offset, to.offset)) : '';
+    }
+
+    // The find bar hands the focus back as it closes: with its current match selected, or else with the selection
+    // the editor had, which the browser wouldn't put back by itself.
+    focusFrom(match) {
+        if (match) {
+            this.selection = { anchor: { block: match.block, offset: match.start },
+                head: { block: match.block, offset: match.end } };
+        }
+        this.root.focus();
+        this.writeSelection();
+    }
+
+    // Replaces each match with the text, in the style of the match's first character, as one step to undo. Later
+    // matches go first, so the offsets of earlier ones in the same paragraph still hold.
+    replaceMatches(matches, text) {
+        if (this.readOnly) return;
+        this.edit(() => {
+            for (const match of [...matches].reverse()) {
+                const target = this.doc[match.block];
+                const first = slice(target.runs, match.start, match.start + 1)[0];
+                const inserted = text ? [{ text, marks: first.marks, link: first.link }] : [];
+                this.doc[match.block] = { ...target, runs: replace(target.runs, match.start, match.end, inserted) };
+            }
+            const caret = { block: matches[0].block, offset: matches[0].start + text.length };
+            this.selection = { anchor: caret, head: caret };
+        });
+        // The find bar has the focus, so nothing sends the value when the editor is left.
+        this.send();
+    }
+
     dispose() {
+        this.find.dispose();
         this.mentions?.dispose();
         this.abort.abort();
         this.observer.disconnect();
@@ -582,6 +653,10 @@ class Editor {
         } else if (key === 'k' && !event.shiftKey && !this.readOnly && this.schema.links !== null) {
             event.preventDefault();
             this.requestLink();
+        } else if (key === 'f' && !event.shiftKey && this.find.available()) {
+            event.preventDefault();
+            this.selection = this.readSelection() ?? this.selection;
+            this.find.open();
         } else if (key === 'v' && event.shiftKey) {
             this.plainPaste = true;
         }
@@ -1472,6 +1547,7 @@ class Editor {
         if (edited) this.closeStep();
         this.updateToolbar();
         this.mentions?.update(true);
+        this.find.refresh();
         clearTimeout(this.sendTimer);
         if (this.updateOnInput) this.sendTimer = setTimeout(() => this.send(), this.updateDelay);
     }

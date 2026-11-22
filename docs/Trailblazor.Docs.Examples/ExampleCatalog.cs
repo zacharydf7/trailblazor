@@ -5698,8 +5698,22 @@ public static class ExampleCatalog
                     + "the editing area for a text area of the value's HTML. When focus leaves the text area, its HTML "
                     + "is cleaned up the way a paste is, so it keeps only the formats and blocks the editor allows.",
                     typeof(RichTextEditorSourceExample)),
+                new("find-and-replace", "Find and replace", "`ShowFind` adds a Find and replace button to the "
+                    + "toolbar and takes Ctrl+F (Cmd+F on macOS) while the editor has the focus. Either opens a "
+                    + "bar above the text, with any selected text already in its Find field. It finds the text "
+                    + "literally, not as a pattern, ignoring capitals unless Match case is on, and only as a word "
+                    + "of its own with Whole word. The matches are marked without changing the value, a count "
+                    + "says which one is current, and Enter and the arrow buttons step through them. Replace "
+                    + "changes the current match and Replace all every match, each as one step to undo, and the "
+                    + "new text takes the format of what it replaces. A match can cross formats but not "
+                    + "paragraphs, and a mention's text isn't searched, since a mention is one unit. A read-only "
+                    + "editor finds and doesn't replace. A browser without the CSS Custom Highlight API marks "
+                    + "nothing, and still counts, steps and replaces. It is off by default, since it takes "
+                    + "Ctrl+F from the browser's own find while the editor has the focus.",
+                    typeof(RichTextEditorFindExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the text focusable, "
-                    + "selectable and copyable. `Disabled` takes it out of the tab order. Both disable the toolbar.",
+                    + "selectable and copyable. `Disabled` takes it out of the tab order. Both disable the "
+                    + "toolbar's buttons that change the text.",
                     typeof(RichTextEditorStatesExample)),
                 new("updating-while-typing", "Updating while typing", "The value updates when focus leaves the "
                     + "editor. `UpdateOnInput` updates it on every change, and `UpdateDelay` waits for a pause.",
@@ -5776,6 +5790,14 @@ public static class ExampleCatalog
                     { When = "While slash commands show" },
                 new(["Escape"], "Closes the commands until the text changes, and the slash stays as text.")
                     { When = "While slash commands show" },
+                new(["Ctrl+F"], "Opens the find bar, with any selected text already in its Find field. Cmd on macOS.")
+                    { When = "In the text or the find bar, with `ShowFind`" },
+                new(["Enter", "Shift+Enter"], "Goes to the next or previous match, wrapping around.")
+                    { When = "In the find bar's Find field" },
+                new(["Enter"], "Replaces the current match and goes to the next.")
+                    { When = "In the find bar's Replace with field" },
+                new(["Escape"], "Closes the bar and selects the current match in the text.")
+                    { When = "In the find bar" },
             ],
             RightToLeftKeys = "In the toolbar, Left moves to the next button and Right to the previous one.",
             Labeling =
@@ -5798,6 +5820,11 @@ public static class ExampleCatalog
                 "Slash commands show in the same `listbox`. The editor's own are named Paragraph or after their "
                     + "toolbar buttons, all of which `Labels` changes, and each of the app's is named by its `Text`, "
                     + "with its `Description` as its accessible description.",
+                "The find bar is a `group` named \"Find and replace\", which is also its toolbar button's name. Its "
+                    + "fields are named \"Find\" and \"Replace with\", and its buttons \"Previous match\", \"Next "
+                    + "match\", \"Match case\", \"Whole word\", \"Close\", \"Replace\" and \"Replace all\". Match case "
+                    + "and Whole word say whether they are pressed, and so does the toolbar's button while the bar "
+                    + "shows. `Labels` changes these.",
             ],
             Announcements =
             [
@@ -5810,6 +5837,9 @@ public static class ExampleCatalog
                     + "3\". When `MentionSearch` fails, \"Couldn't load suggestions.\" is read out. `Labels` changes "
                     + "these words.",
                 "As slash commands are narrowed, their count is read out in the same words when it changes.",
+                "The find bar's count is a `status`, so it is read out as it changes: which match is current and "
+                    + "how many there are, such as \"2 of 5\", \"No results\" when there are none, or \"Replaced 3\" "
+                    + "after Replace all. It is empty while the Find field is. `Labels` changes these words.",
             ],
             Accessibility =
             [
@@ -5840,6 +5870,9 @@ public static class ExampleCatalog
                     + "item, Tab indents instead, as in word processors, and Escape lets the next Tab leave.",
                 "An image is an `<img>` that keeps the alt text it came with, if any. The caret steps over it, and "
                     + "Backspace or Delete next to it removes it.",
+                "The matches the find bar marks are painted as highlights, not elements, so the value and screen "
+                    + "readers never get them; the count says what a sighted user sees. In forced colors they "
+                    + "take the system's mark and highlight colors.",
                 "With `MentionTriggers`, a mention in the value is one unit: the caret steps over it, and Backspace "
                     + "or Delete next to it removes it whole. While suggestions or slash commands show, focus stays "
                     + "in the text: the "
@@ -5907,6 +5940,9 @@ public static class ExampleCatalog
                 new("mention-caret", "The mark at the trigger being typed, which the list opens under."),
                 new("source-toggle", "The HTML source button, with `ShowSource`."),
                 new("source", "The text area of the value's HTML, while the source shows."),
+                new("find-toggle", "The Find and replace button, with `ShowFind`."),
+                new("find", "The find bar, with `ShowFind`, hidden until it opens. Its controls have `data-find`: "
+                    + "`text`, `count`, `previous`, `next`, `case`, `word`, `close`, `with`, `replace` and `all`."),
             ],
             TestingTips =
             [
@@ -5933,6 +5969,12 @@ public static class ExampleCatalog
                     + "has the value. In bUnit, `MentionAsync` replaces the editor's text with the typed text and the "
                     + "mention, and runs the app's `MentionSearch` or filters `MentionItems` as in a browser.",
                 "`TransformPaste` is a plain function, so test it on a `RichTextDocument` without the editor.",
+                "To find and replace in Playwright, press `ControlOrMeta+f` in `RichTextEditor(label).Input`, then "
+                    + "work in the `group` named \"Find and replace\": fill its \"Find\" and \"Replace with\" "
+                    + "textboxes and click \"Replace all\", or \"Replace\" by its exact name. Its `status` has the "
+                    + "count, and the app has the value without the editor being left.",
+                "bUnit runs no script, so the find bar stays hidden there; to test what a replacement does to the "
+                    + "value, give `EnterAsync` the HTML it makes.",
                 "With `ShowSource`, press the \"HTML source\" button, fill the `source` part and press the button "
                     + "again; the value updates when focus leaves the text area.",
                 "With `ShowCount`, read the count from the `count-shown` part, as `\"12 / 200\"` with a "
