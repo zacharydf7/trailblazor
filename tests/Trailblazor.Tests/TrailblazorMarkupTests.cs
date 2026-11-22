@@ -3440,13 +3440,140 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
-    public void Field_ShouldSayNoFieldHasTheLabel_WhenNoneDoes()
+    public void Field_ShouldSayNoFieldHasTheLabelAndListTheLabelsThere_WhenNoneDoes()
     {
         var cut = RenderForm();
 
         var error = Assert.Throws<InvalidOperationException>(() => cut.Tb().Select("Color").Options);
 
+        Assert.StartsWith("No field is labeled \"Color\". The fields are labeled: \"Size\", ", error.Message);
+        Assert.EndsWith(".", error.Message);
+    }
+
+    [Fact]
+    public void Field_ShouldSayOnlyThatNoFieldHasTheLabel_WhenTheMarkupHasNoFields()
+    {
+        var cut = Render<TbButton>(parameters => parameters.AddChildContent("Save"));
+
+        var error = Assert.Throws<InvalidOperationException>(() => cut.Tb().TextField("Color").Text);
+
         Assert.Equal("No field is labeled \"Color\".", error.Message);
+    }
+
+    [Fact]
+    public void Field_ShouldCountAndListTheFieldsNamedWithoutALabel_WhenALookupFails()
+    {
+        var cut = Render(builder =>
+        {
+            builder.AddMarkupContent(0, "<span id=\"o'brien\">Guide</span>");
+            foreach (var (sequence, name, value) in new[]
+            {
+                (1, "aria-label", "Count"), (2, "aria-label", "Count"), (3, "aria-labelledby", "o'brien"),
+            })
+            {
+                builder.OpenComponent<TbTextField<string>>(sequence);
+                builder.AddAttribute(0, nameof(TbTextField<string>.InputAttributes),
+                    new Dictionary<string, object> { [name] = value });
+                builder.CloseComponent();
+            }
+        });
+
+        // Two fields share an aria-label, and the third is named by an element whose id a selector couldn't hold.
+        Assert.Equal("2 fields are labeled \"Count\".",
+            Assert.Throws<InvalidOperationException>(() => cut.Tb().TextField("Count").Text).Message);
+        Assert.Equal("No field is labeled \"Cnt\". The fields are labeled: \"Count\", \"Guide\".",
+            Assert.Throws<InvalidOperationException>(() => cut.Tb().TextField("Cnt").Text).Message);
+        Assert.Equal("", cut.Tb().TextField("Guide").Text ?? "");
+    }
+
+    [Fact]
+    public async Task Button_ShouldBeFoundByItsOwnText_WhenItsAriaLabelledByNamesNothingThere()
+    {
+        var clicks = 0;
+        var cut = Render<TbButton>(parameters => parameters.AddUnmatched("aria-labelledby", "gone")
+            .Add(button => button.OnClick, () => clicks++).AddChildContent("Save"));
+
+        await cut.Tb().Button("Save").ClickAsync();
+
+        Assert.Equal(1, clicks);
+    }
+
+    [Fact]
+    public async Task Field_ShouldBeFoundByAnElementItsAriaLabelledByNames_WhenItHasNoLabel()
+    {
+        string? note = null;
+        var cut = Render(builder =>
+        {
+            builder.AddMarkupContent(0, "<h2 id=\"trip\">Trip</h2><span id=\"note\">note</span>");
+            builder.OpenComponent<TbTextField<string>>(1);
+            builder.AddAttribute(2, nameof(TbTextField<string>.InputAttributes),
+                new Dictionary<string, object> { ["aria-labelledby"] = "trip note" });
+            builder.AddAttribute(3, nameof(TbTextField<string>.ValueChanged),
+                EventCallback.Factory.Create<string>(this, value => note = value));
+            builder.CloseComponent();
+        });
+
+        // Either element that labels it finds it, as Playwright's GetByLabel does; their joined text doesn't.
+        await cut.Tb().TextField("Trip").EnterAsync("Bring water");
+
+        Assert.Equal("Bring water", note);
+        Assert.Equal("Bring water", cut.Tb().TextField("note").Text);
+        Assert.Throws<InvalidOperationException>(() => cut.Tb().TextField("Trip note").Text);
+    }
+
+    [Fact]
+    public async Task Button_ShouldBeFoundByTheElementsItsAriaLabelledByNames_WhenItHasThatAttribute()
+    {
+        var clicks = 0;
+        var cut = Render(builder =>
+        {
+            builder.AddMarkupContent(0, "<span id=\"verb\">Delete</span><span id=\"what\">Ridge loop</span>");
+            builder.OpenComponent<TbButton>(1);
+            builder.AddAttribute(2, "aria-labelledby", "verb what");
+            builder.AddAttribute(3, nameof(TbButton.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this,
+                () => clicks++));
+            builder.AddAttribute(4, nameof(TbButton.ChildContent), (RenderFragment)(text => text.AddContent(0, "X")));
+            builder.CloseComponent();
+        });
+
+        // The named elements win over the button's own text, in the order the attribute lists them, as in a browser.
+        await cut.Tb().Button("Delete Ridge loop").ClickAsync();
+
+        Assert.Equal(1, clicks);
+        Assert.StartsWith("No button is named \"X\". The buttons are named: \"Delete Ridge loop\".",
+            Assert.Throws<InvalidOperationException>(() => cut.Tb().Button("X").Busy).Message);
+    }
+
+    [Fact]
+    public void Button_ShouldListADozenNamesAndCountTheRest_WhenNoneOfManyMatches()
+    {
+        var cut = Render(builder =>
+        {
+            for (var number = 1; number <= 14; number++)
+            {
+                var name = $"Stop {number}";
+                builder.OpenComponent<TbButton>(number);
+                builder.AddAttribute(0, nameof(TbButton.ChildContent), (RenderFragment)(text => text.AddContent(0, name)));
+                builder.CloseComponent();
+            }
+        });
+
+        var error = Assert.Throws<InvalidOperationException>(() => cut.Tb().Button("Start").Busy);
+
+        Assert.Equal("No button is named \"Start\". The buttons are named: "
+            + string.Join(", ", Enumerable.Range(1, 12).Select(number => $"\"Stop {number}\"")) + " and 2 more.",
+            error.Message);
+    }
+
+    [Fact]
+    public async Task Link_ShouldListTheLinksThere_WhenNoneHasTheName()
+    {
+        var cut = Render<TbLink>(parameters => parameters.Add(link => link.Href, "trails")
+            .AddChildContent("All trails"));
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Link("Trails").ClickAsync());
+
+        Assert.Equal("No link is named \"Trails\". The links are named: \"All trails\".", error.Message);
     }
 
     [Fact]

@@ -601,18 +601,21 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbButton</c> or <c>TbIconButton</c> with this accessible name, a button or a link.</summary>
     public TbButtonDriver Button(string name) => new(() =>
     {
-        var buttons = _findAll("button.tb-button, a.tb-button").Where(button => Choices.NameOf(button) == name)
-            .ToList();
+        var all = _findAll("button.tb-button, a.tb-button");
+        var buttons = all.Where(button => Choices.NameOf(button) == name).ToList();
         return buttons.Count == 1 ? buttons[0] : throw new InvalidOperationException(buttons.Count == 0
-            ? $"No button is named \"{name}\"." : $"{buttons.Count} buttons are named \"{name}\".");
+            ? $"No button is named \"{name}\".{Choices.Present("buttons", "named", all.Select(Choices.NameOf))}"
+            : $"{buttons.Count} buttons are named \"{name}\".");
     }, _scripts);
 
     /// <summary>The <c>TbLink</c> with this accessible name, a link or, without an address, a button.</summary>
     public TbLinkDriver Link(string name) => new(() =>
     {
-        var links = _findAll("a.tb-link, button.tb-link").Where(link => Choices.NameOf(link) == name).ToList();
+        var all = _findAll("a.tb-link, button.tb-link");
+        var links = all.Where(link => Choices.NameOf(link) == name).ToList();
         return links.Count == 1 ? links[0] : throw new InvalidOperationException(links.Count == 0
-            ? $"No link is named \"{name}\"." : $"{links.Count} links are named \"{name}\".");
+            ? $"No link is named \"{name}\".{Choices.Present("links", "named", all.Select(Choices.NameOf))}"
+            : $"{links.Count} links are named \"{name}\".");
     }, _scripts);
 
     /// <summary>The <c>TbNavMenu</c> in the navigation landmark with this name, or the only one in the markup when no
@@ -822,19 +825,27 @@ public sealed class TrailblazorMarkup
     }, _findAll, _scripts);
 
     // A field's label names its control by for or aria-labelledby; a required field's label ends with an asterisk. A
-    // field with no label, such as one editing a grid's cell, is named by its aria-label, as Playwright finds it too.
+    // field with no label, such as one editing a grid's cell, is named by its aria-label, or by any one of the
+    // elements its own aria-labelledby names, as Playwright's GetByLabel finds it too.
     private IElement Field(string label, params string[] controls)
     {
-        var labels = _findAll("label[data-part=label]").Where(element => LabelText(element) == label).ToList();
-        if (labels.Count == 0 && _findAll(string.Join(", ", controls)).Where(control =>
-                control.GetAttribute("aria-label") == label).ToList() is [var unlabeled])
+        var all = _findAll("label[data-part=label]");
+        var labels = all.Where(element => LabelText(element) == label).ToList();
+        var candidates = _findAll(string.Join(", ", controls));
+        var unlabeled = labels.Count > 0 ? [] : candidates.Where(control =>
+            control.GetAttribute("aria-label") == label || Choices.Labels(control).Contains(label)).ToList();
+        if (unlabeled is [var found])
         {
-            return unlabeled;
+            return found;
         }
 
         if (labels.Count == 0)
         {
-            throw new InvalidOperationException($"No field is labeled \"{label}\".");
+            throw new InvalidOperationException(unlabeled.Count > 1
+                ? $"{unlabeled.Count} fields are labeled \"{label}\"."
+                : $"No field is labeled \"{label}\"." + Choices.Present("fields", "labeled", all.Select(LabelText)
+                    .Concat(candidates.SelectMany(control =>
+                        Choices.Labels(control).Prepend(control.GetAttribute("aria-label") ?? "")))));
         }
 
         // A slider or checkbox can share the label, so only the fields of the kind asked for count.
@@ -1255,12 +1266,44 @@ internal static class Choices
                 $"{several.Count} options read \"{text}\"; give each option a name of its own."),
         };
 
-    // What a screen reader reads, as the Playwright helpers find it: an aria-label, else the text outside hidden parts.
-    internal static string NameOf(IElement element) => element.GetAttribute("aria-label")
+    // What a screen reader reads, as the Playwright helpers find it: the elements aria-labelledby names, else an
+    // aria-label, else the text outside hidden parts.
+    internal static string NameOf(IElement element) =>
+        Labels(element) is { Count: > 0 } labels ? string.Join(' ', labels) : OwnName(element);
+
+    // The names of the elements an aria-labelledby lists that are there, in its order. A control's name joins
+    // them; a field is found by any one of them, as Playwright's GetByLabel finds it.
+    internal static List<string> Labels(IElement element)
+    {
+        if (element.GetAttribute("aria-labelledby") is not { } ids)
+        {
+            return [];
+        }
+
+        // bUnit's markup isn't a document that knows its ids, so the named elements are looked for from its root,
+        // and by comparing ids, since an id needn't be safe to put in a selector.
+        var withIds = (element.GetRoot() as IParentNode)?.QuerySelectorAll("[id]").ToList() ?? [];
+        return ids.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+            .Select(id => withIds.FirstOrDefault(named => named.Id == id)).OfType<IElement>().Select(OwnName)
+            .Where(name => name != "").ToList();
+    }
+
+    private static string OwnName(IElement element) => element.GetAttribute("aria-label")
         ?? string.Concat(element.Descendants<IText>()
             .Where(text => text.ParentElement?.Closest("[aria-hidden=true]") is not { } hidden
                 || !element.Contains(hidden))
             .Select(text => text.Data)).Trim();
+
+    // What a failed lookup adds to its message: the names that are there, up to a dozen, so the test's author
+    // needn't print the markup to see them.
+    internal static string Present(string kind, string verb, IEnumerable<string> names)
+    {
+        const int Most = 12;
+        var present = names.Where(name => name != "").Distinct().ToList();
+        return present.Count == 0 ? ""
+            : $" The {kind} are {verb}: {string.Join(", ", present.Take(Most).Select(name => $"\"{name}\""))}"
+                + (present.Count > Most ? $" and {present.Count - Most} more." : ".");
+    }
 
     // An input a user can't change, or one on a static page, which posts with its form.
     internal static void ThrowIfLocked(IElement input)

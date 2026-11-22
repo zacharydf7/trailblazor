@@ -6,6 +6,20 @@ public class ScopedHelpersTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     protected override bool HoldsTheMouse => true;
 
+    // TrailblazorMarkupTests finds the same two controls by the same names in bUnit, which keeps the kits' naming
+    // rules together.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tb_ShouldFindAFieldAndAButtonByTheElementsThatNameThem_WhenTheyUseAriaLabelledBy(string browser)
+    {
+        var page = await OpenAsync(browser, "/named-by");
+
+        // A field is found by any one of the elements that label it, and a button by all of them joined.
+        await page.Tb().TextField("Trip").EnterAsync("Bring water");
+        await page.Tb().Button("Delete Ridge loop").ClickAsync();
+
+        await Expect(page.GetByTestId("state")).ToHaveTextAsync("Bring water / 1");
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tb_ShouldFindTheFieldInTheDialog_WhenTheDialogIsTheScope(string browser)
     {

@@ -1,0 +1,17 @@
+@page "/named-by"
+
+@* A field and a button with no name of their own, each named by other elements through aria-labelledby. *@
+<h2 id="trip">Trip</h2>
+<span id="note">note</span>
+<TbTextField TValue="string" @bind-Value="_note" InputAttributes="NamedByTheTrip" />
+<span id="verb">Delete</span>
+<span id="what">Ridge loop</span>
+<TbButton aria-labelledby="verb what" OnClick="() => _deleted++">X</TbButton>
+<p data-testid="state">@_note / @_deleted</p>
+
+@code {
+    private static readonly Dictionary<string, object> NamedByTheTrip = new() { ["aria-labelledby"] = "trip note" };
+
+    private string? _note;
+    private int _deleted;
+}

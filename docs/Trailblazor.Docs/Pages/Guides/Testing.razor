@@ -1175,6 +1175,13 @@
             to Pause, can't be found by its old label once it's pressed. Give it a fixed name and let
             <code>aria-pressed</code> carry the state.
         </TbText>
+        <TbText>
+            Both packages work out a button's or a link's name as a browser does: the text of the elements its
+            <code>aria-labelledby</code> names, joined in that order, or else its <code>aria-label</code>, or else
+            its own text. A field is found by its label, by its <code>aria-label</code>, or by the text of any one
+            element its input's <code>aria-labelledby</code> names. When no button, link or field has the name a
+            bUnit test asked for, the helper's message lists the names that are there, up to a dozen.
+        </TbText>
         <TbText TextStyle="TextStyle.Subtitle" As="TextElement.H3">By role</TbText>
         <div class="docs-api" tabindex="0" role="region" aria-label="Roles">
             <table>
