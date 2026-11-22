@@ -7,7 +7,8 @@
     private string? _comment;
 
     // WithRuns keeps each paragraph's kind, whatever it is: a heading, a list item, a table's cell, an image.
+    // A mention has no link and goes through as it is, and the other runs keep their color and the app's own marks.
     private static RichTextDocument WithoutLinks(RichTextDocument pasted) => new(pasted.Paragraphs.Select(paragraph =>
-        paragraph.WithRuns(paragraph.Runs.Select(run =>
-            new RichTextRun(run.Text, run.Formats & ~RichTextFormats.Link, color: run.Color)))));
+        paragraph.WithRuns(paragraph.Runs.Select(run => run.Mention is not null ? run
+            : new RichTextRun(run.Text, run.Formats & ~RichTextFormats.Link, color: run.Color, marks: run.Marks)))));
 }
