@@ -111,7 +111,8 @@
         </ul>
         <TbText>
             Pass a <code>RichTextSchema</code> to say what to keep: its <code>Formats</code>, its <code>Blocks</code>,
-            and the <code>LinkSchemes</code> and <code>ImageSchemes</code> that links and images may use. A format it
+            the names of the app's own <code>Marks</code>, and the <code>LinkSchemes</code> and
+            <code>ImageSchemes</code> that links and images may use. A format or a mark it
             doesn't allow is dropped while its text stays, a block it doesn't allow gives way to an allowed block
             around it or a plain paragraph, and a rule or image it doesn't allow is dropped. Images are kept only when
             <code>Blocks</code> includes <code>RichTextBlocks.Images</code>, which it doesn't by default. For example,
@@ -123,8 +124,9 @@
         <TbText>
             Everything other than text, blocks, line breaks, formats, links and allowed images is dropped while
             reading: scripts, styles, event handlers, and every attribute but a link's <code>href</code>, an
-            image's <code>src</code> and <code>alt</code>, and a text color's <code>data-tb-color</code>, which is
-            kept only when it names a tone. A link keeps its target only when it's relative or its
+            image's <code>src</code> and <code>alt</code>, a text color's <code>data-tb-color</code>, which is
+            kept only when it names a tone, and a mark's <code>data-tb-mark</code>, which is kept only when it names
+            a mark the schema has. A link keeps its target only when it's relative or its
             scheme is one the schema allows: <code>http</code>, <code>https</code>, <code>mailto</code> and
             <code>tel</code> by default. Any other link becomes plain text, and so does one to
             <code>javascript:</code> or <code>vbscript:</code> even when a schema lists it; a run built in code refuses
@@ -143,7 +145,7 @@
         <DocsHeading Id="paragraphs-and-runs" Text="Paragraphs and runs" Class="docs-section" />
         <TbText>
             A document is a flat list of paragraphs, and a paragraph is a list of runs: stretches of text that share one
-            set of formats, link and color. A paragraph's <code>Kind</code> says what block it is, such as
+            set of formats, link, color and marks. A paragraph's <code>Kind</code> says what block it is, such as
             <code>Heading2</code> or <code>BulletedItem</code>, and a list item's <code>Level</code> how far it is
             nested. An image paragraph has no runs; its <code>Image</code> gives the source and alt text. A table cell
             is a paragraph of kind <code>TableCell</code>; its <code>Cell</code> gives its row, its column and whether
@@ -151,7 +153,8 @@
             <code>'\n'</code> in a run's text is a line break. A run's <code>Formats</code> is a
             <code>RichTextFormats</code> flags value, such as <code>Bold | Italic</code>, its <code>Link</code> is
             the URL it links to, if any, and its <code>Color</code> is the <code>Tone</code> it's colored with, if
-            any. Read the paragraphs and runs to turn the content into another format, or build
+            any. Its <code>Marks</code> are the names of the app's own marks it has, sorted by name. Read the
+            paragraphs and runs to turn the content into another format, or build
             them in code.
         </TbText>
         <CodeBlock Label="Reading runs" Code="@ReadingRuns" />
@@ -211,6 +214,7 @@
         <ApiTable Type="typeof(RichTextImage)" />
         <ApiTable Type="typeof(RichTextTableCell)" />
         <ApiTable Type="typeof(RichTextSchema)" />
+        <ApiTable Type="typeof(RichTextMark)" />
 
         <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>

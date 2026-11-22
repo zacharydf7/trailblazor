@@ -34,17 +34,29 @@ public sealed record RichTextSchema
     /// attribute too, with ids of their own.</summary>
     public bool Mentions { get; init; }
 
-    /// <summary>Whether this schema keeps the same formats, blocks, link schemes, image schemes and mentions as
-    /// another, with the schemes listed in the same order; schemes compare without regard to case.</summary>
+    /// <summary>The names of the app's own marks to keep, each a <see cref="RichTextMark"/>'s name. A mark's element,
+    /// or a <c>span</c> with its name in <c>data-tb-mark</c>, reads as text with that mark when the name is listed
+    /// here, and as its text alone otherwise. Defaults to none.</summary>
+    /// <exception cref="ArgumentException">A name isn't one a <see cref="RichTextMark"/> can have.</exception>
+    public IReadOnlyList<string> Marks
+    {
+        get;
+        init => field = value.All(RichTextMark.IsName) ? value
+            : throw new ArgumentException("Each mark must be a name a RichTextMark can have.", nameof(value));
+    } = [];
+
+    /// <summary>Whether this schema keeps the same formats, blocks, link schemes, image schemes, mentions and marks
+    /// as another, with the schemes and the marks listed in the same order; schemes compare without regard to
+    /// case.</summary>
     /// <param name="other">The schema to compare with.</param>
     public bool Equals(RichTextSchema? other) => other is not null && Formats == other.Formats
         && Blocks == other.Blocks && LinkSchemes.SequenceEqual(other.LinkSchemes, StringComparer.OrdinalIgnoreCase)
         && ImageSchemes.SequenceEqual(other.ImageSchemes, StringComparer.OrdinalIgnoreCase)
-        && Mentions == other.Mentions;
+        && Mentions == other.Mentions && Marks.SequenceEqual(other.Marks, StringComparer.Ordinal);
 
     /// <inheritdoc />
     public override int GetHashCode() =>
-        HashCode.Combine(Formats, Blocks, LinkSchemes.Count, ImageSchemes.Count, Mentions);
+        HashCode.Combine(Formats, Blocks, LinkSchemes.Count, ImageSchemes.Count, Mentions, Marks.Count);
 
     internal bool AllowsLink(string url) => Allows(LinkSchemes, url);
 

@@ -276,6 +276,81 @@ public class RichTextDocumentTests
         Assert.Equal("ok", RichTextDocument.Parse(html).ToPlainText());
     }
 
+    private static readonly RichTextSchema WithMarks = new() { Marks = ["kbd", "spoiler"] };
+
+    [Theory]
+    [InlineData("<p>Press <kbd>Esc</kbd></p>", "<p>Press <kbd>Esc</kbd></p>")]
+    [InlineData("<p><span data-tb-mark=\"spoiler\">x <b>y</b></span> z</p>",
+        "<p><span data-tb-mark=\"spoiler\">x </span><strong><span data-tb-mark=\"spoiler\">y</span></strong> z</p>")]
+    [InlineData("<p><span data-tb-mark=spoiler><KBD>a</KBD></span></p>",
+        "<p><kbd><span data-tb-mark=\"spoiler\">a</span></kbd></p>")]
+    // A span can't be a mark that is an element, an element isn't a mark by its attribute, and a name the schema
+    // hasn't got is no mark.
+    [InlineData("<p><span data-tb-mark=\"kbd\">a</span><i data-tb-mark=\"spoiler\">b</i>"
+        + "<span data-tb-mark=\"other\">c</span></p>", "<p>a<em>b</em>c</p>")]
+    public void Parse_ShouldKeepTheAppsMarksAndWriteThemInOneOrder_WhenTheSchemaHasThem(string html, string expected) =>
+        Assert.Equal(expected, RichTextDocument.Parse(html, WithMarks).ToHtml());
+
+    [Fact]
+    public void Parse_ShouldReadAMarksElementAsItDidBefore_WhenTheSchemaHasNoSuchMark() =>
+        // Without the mark, kbd stands for code, and a span that names a mark is its text.
+        Assert.Equal("<p><code>Esc</code> x</p>", RichTextDocument
+            .Parse("<p><kbd>Esc</kbd> <span data-tb-mark=\"spoiler\">x</span></p>").ToHtml());
+
+    [Fact]
+    public void Parse_ShouldKeepAMarkAroundAMention_WhenTheSchemaKeepsBoth()
+    {
+        const string Html = "<p><kbd><span data-mention=\"7\" data-trigger=\"@\">@Ada</span></kbd></p>";
+
+        var document = RichTextDocument.Parse(Html, WithMarks with { Mentions = true });
+
+        Assert.Equal(Html, document.ToHtml());
+        Assert.Equal(["kbd"], document.Paragraphs[0].Runs[0].Marks);
+    }
+
+    [Fact]
+    public void Run_ShouldKeepItsMarksInOneOrderAndCompareByThem_WhenGivenMarks()
+    {
+        var run = new RichTextRun("a", marks: ["spoiler", "kbd", "spoiler"]);
+
+        Assert.Equal(["kbd", "spoiler"], run.Marks);
+        Assert.Equal(new RichTextRun("a", marks: ["kbd", "spoiler"]), run);
+        Assert.NotEqual(new RichTextRun("a"), run);
+        // Runs that differ only in their marks stay apart, and those with the same marks join.
+        var paragraph = new RichTextParagraph([new("a", marks: ["kbd"]), new("b", marks: ["kbd"]), new("c")]);
+        Assert.Equal(["ab", "c"], paragraph.Runs.Select(each => each.Text));
+        Assert.Throws<ArgumentException>(() => new RichTextRun("a", marks: ["Not A Name"]));
+    }
+
+    [Theory]
+    [InlineData("bold")]
+    [InlineData("Kbd")]
+    [InlineData("1st")]
+    [InlineData("two words")]
+    [InlineData("")]
+    public void Mark_ShouldThrow_WhenGivenANameItCannotBeWrittenBy(string name) =>
+        Assert.Throws<ArgumentException>(() => new RichTextMark(name));
+
+    [Theory]
+    [InlineData("Spoiler")]
+    [InlineData("bold")]
+    public void Schema_ShouldThrow_WhenGivenAMarkNameNoMarkCanHave(string name) =>
+        Assert.Throws<ArgumentException>(() => new RichTextSchema { Marks = [name] });
+
+    [Fact]
+    public void Parse_ShouldNotReadAnAppsMarkAsCodeToo_WhenAFormatEndsAroundIt()
+    {
+        // As the <b> ends with a paragraph open inside it, the formats of what stays open are worked out again.
+        var html = RichTextDocument.Parse("<b><kbd>a<p>b</b>c</kbd>", WithMarks).ToHtml();
+
+        Assert.DoesNotContain("<code>", html);
+        Assert.Contains("<kbd>c</kbd>", html);
+    }
+
+    [Fact]
+    public void ToMarkdown_ShouldWriteAnAppsMarkAsItsTextAlone_WhenCalled() =>
+        Assert.Equal("Press Esc", RichTextDocument.Parse("<p>Press <kbd>Esc</kbd></p>", WithMarks).ToMarkdown());
+
     [Fact]
     public void ToHtml_ShouldNestEachRunsTagsInOneOrder_WhenARunHasSeveralFormats()
     {

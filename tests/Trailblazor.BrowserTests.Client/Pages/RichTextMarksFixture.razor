@@ -1,0 +1,20 @@
+@page "/rich-text-marks"
+
+@* An editor with three marks of the app's own: a keyboard key, written as kbd, with two ways to press it; a spoiler,
+   written as a span that names it; and one whose name every script object has a member of. Its value shows and
+   can be set from .NET. *@
+<TbRichTextEditor Label="Notes" @bind-Value="_notes" UpdateOnInput Marks="Marks" />
+<output data-testid="notes">@_notes</output>
+<TbTextField TValue="string" Label="Source" @bind-Value="_source" UpdateOnInput />
+<TbButton OnClick="() => _notes = _source">Set notes</TbButton>
+
+@code {
+    private static readonly RichTextMark[] Marks =
+    [
+        new("kbd") { Label = "Keyboard key", Shortcut = "Alt+Shift+K Control+;" },
+        new("spoiler") { Label = "Spoiler" }, new("constructor") { Label = "Builder" },
+    ];
+
+    private string? _notes;
+    private string? _source;
+}

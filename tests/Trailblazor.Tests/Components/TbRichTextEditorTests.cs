@@ -208,6 +208,7 @@ public class TbRichTextEditorTests : BunitContext
         Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
             .Add(editor => editor.Value, "<b>Hi</b> <i>there</i><script>alert(1)</script>")
             .Add(editor => editor.Formats, RichTextFormats.Bold)
+            .Add(editor => editor.Marks, [new("kbd") { Shortcut = "Control+Shift+K Meta+Shift+K" }, new("spoiler")])
             .Add(editor => editor.Blocks, RichTextBlocks.BulletedLists | RichTextBlocks.Quotes)
             .Add(editor => editor.UpdateOnInput, true)
             .Add(editor => editor.UpdateDelay, TimeSpan.FromMilliseconds(250)));
@@ -215,7 +216,8 @@ public class TbRichTextEditorTests : BunitContext
         var arguments = _module.Invocations["attachRichTextEditor"].Single().Arguments;
 
         Assert.Equal("<p><strong>Hi</strong> there</p>", arguments[1]);
-        Assert.Equal("""{"formats":"bold","blocks":"quote bullet","links":null,"images":null,"""
+        Assert.Equal("""{"formats":"bold","marks":"kbd spoiler","shortcuts":"kbd Control\u002BShift\u002BK """
+            + """Meta\u002BShift\u002BK","blocks":"quote bullet","links":null,"images":null,"""
             + "\"mentions\":null,\"slash\":false,\"transformsPaste\":false,"
             + "\"readOnly\":false,\"updateOnInput\":true,\"updateDelay\":250}", JsonSerializer.Serialize(arguments[2]));
     }
@@ -524,6 +526,49 @@ public class TbRichTextEditorTests : BunitContext
         // A choice empties the list, which the script closed as it put the mention in.
         Assert.Empty(cut.FindAll("[data-part=mention-list] [role=option]"));
     }
+
+    [Fact]
+    public void Marks_ShouldAddAButtonForEachAfterTheFormats_WhenTheAppDeclaresThem()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Formats, RichTextFormats.Bold | RichTextFormats.Link)
+            .Add(editor => editor.ShowFloatingToolbar, true)
+            .Add(editor => editor.Value, "<p><kbd>Esc</kbd> <span data-tb-mark=\"spoiler\">x</span> <var>y</var></p>")
+            .Add(editor => editor.Marks,
+            [
+                new("kbd") { Label = "Keyboard key", Shortcut = "Control+Shift+K Meta+Shift+K" },
+                new("spoiler"),
+            ]));
+
+        // A mark's button toggles it as a format's does, named by its label, or by its name without one.
+        var buttons = cut.FindAll("[data-part=toolbar] [data-format]");
+        Assert.Equal([("bold", "Bold"), ("kbd", "Keyboard key"), ("spoiler", "spoiler")],
+            buttons.Select(button => (button.GetAttribute("data-format"), button.GetAttribute("aria-label"))));
+        Assert.Equal(("false", "Control+Shift+K Meta+Shift+K"),
+            (buttons[1].GetAttribute("aria-pressed"), buttons[1].GetAttribute("aria-keyshortcuts")));
+        Assert.Equal(["Bold", "Keyboard key", "spoiler", "Link"], FloatingButtons(cut));
+        // The value keeps the declared marks, and var, which isn't one of them, is its text alone.
+        Assert.Equal("<p><kbd>Esc</kbd> <span data-tb-mark=\"spoiler\">x</span> y</p>",
+            _module.Invocations["attachRichTextEditor"].Single().Arguments[1]);
+    }
+
+    [Fact]
+    public void Marks_ShouldStayOnTheFloatingToolbarUnlessToldNotTo_WhenFloatingFormatsNarrowsIt()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.ShowFloatingToolbar, true)
+            .Add(editor => editor.FloatingFormats, RichTextFormats.Italic)
+            .Add(editor => editor.Marks,
+                [new("kbd") { Label = "Keyboard key" }, new("spoiler") { Floating = false }]));
+
+        // FloatingFormats narrows the editor's own formats, and each mark answers for itself.
+        Assert.Equal(["Italic", "Keyboard key"], FloatingButtons(cut));
+    }
+
+    [Fact]
+    public void Marks_ShouldThrow_WhenTwoHaveTheSameName() =>
+        Assert.Throws<InvalidOperationException>(() => Render<TbRichTextEditor>(parameters => parameters
+            .Add(editor => editor.Label, "Notes").Add(editor => editor.Marks, [new("kbd"), new("kbd")])));
 
     private static IEnumerable<string?> FloatingButtons(IRenderedComponent<TbRichTextEditor> cut) =>
         cut.FindAll("[data-part=floating-toolbar] button").Select(button => button.GetAttribute("aria-label"));

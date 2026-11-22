@@ -324,8 +324,9 @@ public sealed class RichTextDocument
 
     /// <summary>Writes the document as markdown that <see cref="FromMarkdown(string?)"/> reads back the same, apart
     /// from what markdown can't hold: underline, subscript, superscript, highlighted and colored text is written
-    /// plain; a mention is written as its text; empty paragraphs, line breaks at a paragraph's end and spaces at a
-    /// line's start or end are left out; line breaks in a heading or in code that shares its paragraph become spaces; a
+    /// plain, and so is text with a mark of the app's own; a mention is written as its text; empty paragraphs, line
+    /// breaks at a paragraph's end and spaces at a line's start or end are left out; line breaks in a heading or in
+    /// code that shares its paragraph become spaces; a
     /// space or line break at a format's edge moves outside it; and
     /// in a table, line breaks in a cell become spaces, header cells outside a first row of header cells become plain
     /// cells, a first row of empty header cells is left out, and code with an odd number of backslashes right before
@@ -345,7 +346,9 @@ public sealed class RichTextDocument
         Tone? openColor = null;
         foreach (var run in paragraph.Runs)
         {
-            var tags = Tags.Where(tag => run.Formats.HasFlag(tag.Format)).Select(tag => tag.Tag).ToList();
+            // The app's own marks go inside the formats' tags, sorted by name.
+            var tags = Tags.Where(tag => run.Formats.HasFlag(tag.Format)).Select(tag => (Open: tag.Tag, Close: tag.Tag))
+                .Concat(run.Marks.Select(RichTextMark.TagOf)).ToList();
             // One link stays one <a> across its differently formatted runs, so it's one stop for the keyboard.
             if (run.Link != openLink)
             {
@@ -374,7 +377,7 @@ public sealed class RichTextDocument
 
             foreach (var tag in tags)
             {
-                html.Append('<').Append(tag).Append('>');
+                html.Append('<').Append(tag.Open).Append('>');
             }
 
             if (run.Mention is { } mention)
@@ -395,7 +398,7 @@ public sealed class RichTextDocument
 
             for (var i = tags.Count - 1; i >= 0; i--)
             {
-                html.Append("</").Append(tags[i]).Append('>');
+                html.Append("</").Append(tags[i].Close).Append('>');
             }
 
             offset += run.Text.Length;

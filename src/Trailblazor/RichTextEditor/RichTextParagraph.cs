@@ -53,7 +53,8 @@ public sealed class RichTextParagraph
                 continue;
             }
 
-            if (run.Formats != style?.Formats || run.Link != style?.Link || run.Color != style?.Color)
+            if (run.Formats != style?.Formats || run.Link != style?.Link || run.Color != style?.Color
+                || run.MarkNames != style?.MarkNames)
             {
                 Flush();
                 style = run;
@@ -77,7 +78,8 @@ public sealed class RichTextParagraph
         {
             if (style is not null)
             {
-                joined.Add(new RichTextRun(text.ToString(), style.Formats, style.Link, style.Color, vetted: true));
+                joined.Add(new RichTextRun(text.ToString(), style.Formats, style.Link, style.Color, vetted: true,
+                style.MarkNames));
                 text.Clear();
             }
         }

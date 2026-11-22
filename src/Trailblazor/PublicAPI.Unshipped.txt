@@ -3851,7 +3851,22 @@ Trailblazor.RichTextParagraphKind.NumberedItem = 6 -> Trailblazor.RichTextParagr
 Trailblazor.RichTextParagraphKind.Rule = 7 -> Trailblazor.RichTextParagraphKind
 Trailblazor.RichTextParagraphKind
 Trailblazor.RichTextParagraphKind.Paragraph = 0 -> Trailblazor.RichTextParagraphKind
-Trailblazor.RichTextRun.RichTextRun(string! text, Trailblazor.RichTextFormats formats = Trailblazor.RichTextFormats.None, string? link = null, Trailblazor.Tone? color = null) -> void
+Trailblazor.RichTextRun.RichTextRun(string! text, Trailblazor.RichTextFormats formats = Trailblazor.RichTextFormats.None, string? link = null, Trailblazor.Tone? color = null, System.Collections.Generic.IEnumerable<string!>? marks = null) -> void
+Trailblazor.RichTextRun.RichTextRun(Trailblazor.Mention! mention, Trailblazor.RichTextFormats formats, Trailblazor.Tone? color, System.Collections.Generic.IEnumerable<string!>! marks) -> void
+Trailblazor.RichTextRun.Marks.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.RichTextSchema.Marks.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.RichTextSchema.Marks.init -> void
+Trailblazor.RichTextMark
+Trailblazor.RichTextMark.RichTextMark(string! name) -> void
+Trailblazor.RichTextMark.Name.get -> string!
+Trailblazor.RichTextMark.Label.get -> string?
+Trailblazor.RichTextMark.Label.init -> void
+Trailblazor.RichTextMark.Icon.get -> Trailblazor.Icon?
+Trailblazor.RichTextMark.Icon.init -> void
+Trailblazor.RichTextMark.Shortcut.get -> string?
+Trailblazor.RichTextMark.Shortcut.init -> void
+Trailblazor.RichTextMark.Floating.get -> bool
+Trailblazor.RichTextMark.Floating.init -> void
 Trailblazor.RichTextRun.Color.get -> Trailblazor.Tone?
 Trailblazor.RichTextRun.RichTextRun(Trailblazor.Mention! mention, Trailblazor.RichTextFormats formats, Trailblazor.Tone? color) -> void
 Trailblazor.RichTextRun.Link.get -> string?
@@ -3927,6 +3942,8 @@ Trailblazor.TbRichTextEditor.ShowFloatingToolbar.get -> bool
 Trailblazor.TbRichTextEditor.ShowFloatingToolbar.set -> void
 Trailblazor.TbRichTextEditor.FloatingFormats.get -> Trailblazor.RichTextFormats?
 Trailblazor.TbRichTextEditor.FloatingFormats.set -> void
+Trailblazor.TbRichTextEditor.Marks.get -> System.Collections.Generic.IEnumerable<Trailblazor.RichTextMark!>?
+Trailblazor.TbRichTextEditor.Marks.set -> void
 const Trailblazor.TbStrings.RichTextEditorTextColor = "RichTextEditor.TextColor" -> string!
 Trailblazor.RichTextEditorLabels.TextColor.get -> string?
 Trailblazor.RichTextEditorLabels.TextColor.init -> void

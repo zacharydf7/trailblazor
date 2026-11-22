@@ -423,9 +423,17 @@
 
     /// <summary>The formats the floating toolbar has buttons for, among those <see cref="Formats"/> allows. Null,
     /// the default, is every character format and <see cref="RichTextFormats.Link"/>. It has no text color
-    /// menu.</summary>
+    /// menu. The app's own <see cref="Marks"/> aren't among these: each is on the floating toolbar unless its
+    /// <see cref="RichTextMark.Floating"/> is false.</summary>
     [Parameter]
     public RichTextFormats? FloatingFormats { get; set; }
+
+    /// <summary>Marks of the app's own, such as a keyboard key or a spoiler. The toolbar has a button for each, after
+    /// the editor's formats, and text pasted in keeps them. A <see cref="RichTextMark"/>'s name says how it is
+    /// written in the value. To read the value in code, give <see cref="RichTextSchema.Marks"/> the same
+    /// names.</summary>
+    [Parameter]
+    public IEnumerable<RichTextMark>? Marks { get; set; }
 
     /// <summary>Updates the value on every change instead of when focus leaves the editor.</summary>
     [Parameter]
@@ -477,12 +485,18 @@
             Labels.ClearFormatting ?? Localizer[TbStrings.RichTextEditorClearFormatting], "Control+\\ Meta+\\")]
         : [];
 
-    private IEnumerable<Tool> MarkTools => MarkToolsFor(Formats);
+    private IEnumerable<Tool> MarkTools => [.. MarkToolsFor(Formats), .. OwnMarkTools(floating: false)];
 
-    // The buttons of the toolbar over a selection: the character formats, then the link.
+    // The buttons of the app's own marks: all of them, or those that are also on the toolbar over a selection.
+    private IEnumerable<Tool> OwnMarkTools(bool floating) => (Marks ?? []).Where(mark => !floating || mark.Floating)
+        .Select(mark => new Tool(mark.Name, null, null, mark.Icon ?? RichTextEditorIcons.Mark,
+            mark.Label ?? mark.Name, mark.Shortcut));
+
+    // The buttons of the toolbar over a selection: the character formats, the app's marks, then the link.
     private IReadOnlyList<Tool> FloatingTools =>
     [
         .. MarkToolsFor(Formats & (FloatingFormats ?? Formats)),
+        .. OwnMarkTools(floating: true),
         .. LinkTools.Where(_ => FloatingFormats?.HasFlag(RichTextFormats.Link) != false),
     ];
 
@@ -605,7 +619,7 @@
     private RichTextSchema Schema => new()
     {
         Formats = Formats, Blocks = Blocks, LinkSchemes = LinkSchemes, ImageSchemes = ImageSchemes,
-        Mentions = KeepsMentions,
+        Mentions = KeepsMentions, Marks = [.. (Marks ?? []).Select(mark => mark.Name)],
     };
 
     // The value as the editor holds it: parsed, so only the allowed formats and safe markup reach the page.
@@ -670,8 +684,12 @@
     // An anonymous object compares by value, so the script hears of options only when they change.
     private object Options => new
     {
-        formats = string.Join(' ', MarkTools.Select(tool => tool.Format)
+        formats = string.Join(' ', MarkToolsFor(Formats).Select(tool => tool.Format)
             .Concat(Formats.HasFlag(RichTextFormats.Color) ? ["color"] : [])),
+        marks = string.Join(' ', (Marks ?? []).Select(mark => mark.Name)),
+        // One mark to a line: its name, then its keys.
+        shortcuts = string.Join('\n', (Marks ?? []).Where(mark => mark.Shortcut is not null)
+            .Select(mark => $"{mark.Name} {mark.Shortcut!.ReplaceLineEndings(" ")}")),
         blocks = string.Join(' ', BlockTools.Select(tool => tool.Block).OfType<string>()
             .Concat(Blocks.HasFlag(RichTextBlocks.Rules) ? ["rule"] : [])
             .Concat(Blocks.HasFlag(RichTextBlocks.Tables) ? ["table"] : [])),
@@ -702,6 +720,12 @@
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
+        if (Marks?.GroupBy(mark => mark.Name).FirstOrDefault(named => named.Count() > 1) is { } twice)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbRichTextEditor)}'s {nameof(Marks)} has more than one mark named \"{twice.Key}\".");
+        }
+
         if (SlashCommands && MentionTriggers?.Contains('/') == true)
         {
             throw new InvalidOperationException(

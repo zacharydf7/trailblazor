@@ -28,6 +28,26 @@ const TAG_MARKS = {
     s: 'strikethrough', strike: 'strikethrough', del: 'strikethrough', sub: 'subscript', sup: 'superscript',
     code: 'code', kbd: 'code', samp: 'code', tt: 'code', mark: 'highlight',
 };
+// An app's own marks, which the editor learns of by name. One of these names is written as its own element, and
+// any other as a span that names it, as RichTextMark writes them.
+const MARK_ELEMENTS = ['cite', 'dfn', 'kbd', 'q', 'samp', 'var'];
+// The tag a mark's text goes in: what follows '<' to open it, and the name that closes it.
+// Only the editor's own names are looked up in MARK_TAGS, where a name such as 'constructor' would find something.
+const markOpen = mark => MARKS.includes(mark) ? MARK_TAGS[mark]
+    : MARK_ELEMENTS.includes(mark) ? mark : `span data-tb-mark="${mark}"`;
+const markClose = mark => MARKS.includes(mark) ? MARK_TAGS[mark] : MARK_ELEMENTS.includes(mark) ? mark : 'span';
+// The keys for each of an app's marks, one mark to a line: its name, then each way to press it, written as
+// aria-keyshortcuts are, such as 'kbd Control+Shift+K Meta+Shift+K'.
+const MODIFIERS = ['Control', 'Meta', 'Alt', 'Shift'];
+const parseShortcuts = text => text.split('\n').flatMap(entry => {
+    const [mark, ...ways] = entry.split(' ').filter(Boolean);
+    return ways.map(way => {
+        const parts = way.split('+');
+        // The plus key comes after the plus that joins it on, as in 'Control++'.
+        const key = way.endsWith('++') ? '+' : parts.at(-1).toLowerCase();
+        return { mark, key, held: MODIFIERS.map(name => parts.includes(name)) };
+    });
+});
 const FORMAT_INPUTS = {
     formatBold: 'bold', formatItalic: 'italic', formatUnderline: 'underline', formatStrikeThrough: 'strikethrough',
     formatSubscript: 'subscript', formatSuperscript: 'superscript',
@@ -230,8 +250,14 @@ class Editor {
     }
 
     setOptions(options) {
+        // The name of an app's mark goes into the editor's HTML as a tag or an attribute, so only a plain name counts.
+        const own = (options.marks ?? '').split(' ')
+            .filter(mark => /^[a-z][a-z0-9-]*$/.test(mark) && !MARKS.includes(mark) && mark !== 'color');
+        this.markShortcuts = parseShortcuts(options.shortcuts ?? '').filter(each => own.includes(each.mark));
         this.schema = {
-            formats: new Set(options.formats.split(' ').filter(mark => MARKS.includes(mark) || mark === 'color')),
+            formats: new Set([
+                ...options.formats.split(' ').filter(mark => MARKS.includes(mark) || mark === 'color'), ...own]),
+            marks: new Set(own),
             blocks: new Set(options.blocks.split(' ').filter(kind => KINDS.includes(kind))),
             links: options.links === null ? null : options.links.toLowerCase().split(' ').filter(Boolean),
             images: options.images === null ? null : options.images.toLowerCase().split(' ').filter(Boolean),
@@ -621,6 +647,23 @@ class Editor {
                 && getComputedStyle(this.root).direction === 'rtl';
             this.caretMove = flips ? -move : move;
         }
+        // A mark's keys are matched by the character typed, whatever the keyboard's layout. Alt on a Mac and Shift
+        // with a digit type another character, so there the key's place on the keyboard stands in. AltGr, which
+        // reads as Control with Alt, types a letter and is never a mark's keys.
+        const held = [event.ctrlKey, event.metaKey, event.altKey, event.shiftKey];
+        const byPlace = (event.altKey && isApple()) || (event.shiftKey && /^Digit\d$/.test(event.code));
+        const typed = (byPlace ? event.code.replace(/^(Key|Digit)/, '') : event.key).toLowerCase();
+        const shortcut = isApple() || !event.getModifierState('AltGraph')
+            ? this.markShortcuts.find(each => each.key === typed
+                && each.held.every((modifier, at) => modifier === held[at]))
+            : undefined;
+        if (shortcut) {
+            event.preventDefault();
+            this.selection = this.readSelection() ?? this.selection;
+            this.toggleMark(shortcut.mark);
+            return;
+        }
+
         // Alt+F10 moves to the toolbar over the selection, whose buttons are out of the tab order.
         if (event.key === 'F10' && event.altKey && this.floating.focus()) {
             event.preventDefault();
@@ -1775,7 +1818,9 @@ function withMark(marks, mark) {
     set.add(mark);
     if (mark === 'subscript') set.delete('superscript');
     if (mark === 'superscript') set.delete('subscript');
-    return [...[...set].filter(isColor), ...MARKS.filter(m => set.has(m))];
+    // The editor's formats keep their order, and an app's marks follow sorted by name, as .NET writes them.
+    return [...[...set].filter(isColor), ...MARKS.filter(m => set.has(m)),
+        ...[...set].filter(m => !isColor(m) && !MARKS.includes(m)).sort()];
 }
 
 // Repeated text makes a change ambiguous ("a" typed into "aa"), so the change slides back toward the caret.
@@ -1923,7 +1968,7 @@ function paragraphHtml(runs, forValue) {
                 + `${attribute(run.mention.trigger)}"${forValue ? '' : ' contenteditable="false"'}>${inner}</span>`;
         }
         html += run.marks.filter(mark => !isColor(mark))
-            .reduceRight((content, mark) => `<${MARK_TAGS[mark]}>${content}</${MARK_TAGS[mark]}>`, inner);
+            .reduceRight((content, mark) => `<${markOpen(mark)}>${content}</${markClose(mark)}>`, inner);
     }
     if (color !== null) html += '</span>';
     if (link !== null) html += '</a>';
@@ -2004,7 +2049,7 @@ function withRoomBetweenTables(doc) {
 // A block context is what an element puts its text in: its own allowed heading, quote, list item or Word list
 // paragraph, else its parent's, with the lists around it counted. Where tables are allowed, a table's cells wait until
 // it ends, so whatever else it holds, such as its caption, goes before it, as RichTextDocument reads it.
-function readBlocks(container, collapse, { formats, blocks, links, images, mentions }) {
+function readBlocks(container, collapse, { formats, blocks, links, images, mentions, marks: own }) {
     const paragraphs = [];
     let runs = null;
     let block = null;
@@ -2102,7 +2147,7 @@ function readBlocks(container, collapse, { formats, blocks, links, images, menti
                     continue;
                 }
                 const childLink = child.localName === 'a' ? linkStateOf(child, links) : link;
-                const childMarks = marksOf(child, marks, childLink.target !== null);
+                const childMarks = marksOf(child, marks, childLink.target !== null, own);
                 const childPre = pre || PREFORMATTED.has(child.localName);
                 const childContext = contextOf(child, context);
                 // A mention span inside another is part of the outer one, and where mentions aren't kept it is text.
@@ -2242,11 +2287,15 @@ const isMonospace = families => families.split(',')
     .some(family => ['monospace', 'courier new', 'courier', 'consolas', 'menlo', 'monaco'].includes(family));
 
 // Inside a link, an underline from a style is the link's own look, as Google Docs writes it, not a format.
-function marksOf(element, inherited, inLink) {
+function marksOf(element, inherited, inLink, own) {
     let marks = inherited;
     const add = mark => marks = withMark(marks, mark);
     const remove = (...names) => marks = marks.filter(mark => !names.includes(mark));
-    if (TAG_MARKS[element.localName]) add(TAG_MARKS[element.localName]);
+    // One of the app's marks is its own element, or a span that names it. Such an element isn't also the format
+    // it would otherwise stand for, as kbd stands for code.
+    const named = element.localName === 'span' ? element.getAttribute('data-tb-mark') : element.localName;
+    if (own.has(named) && MARK_ELEMENTS.includes(named) === (element.localName !== 'span')) add(named);
+    else if (Object.hasOwn(TAG_MARKS, element.localName)) add(TAG_MARKS[element.localName]);
     // Only a tone's own name, as the editor writes it, is a color; a color from a style is another page's.
     const color = element.localName === 'span' ? element.getAttribute('data-tb-color') : null;
     if (COLORS.includes(color)) add(COLOR + color);

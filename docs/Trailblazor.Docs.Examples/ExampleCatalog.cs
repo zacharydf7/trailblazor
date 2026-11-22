@@ -5698,11 +5698,22 @@ public static class ExampleCatalog
                     + "the editing area for a text area of the value's HTML. When focus leaves the text area, its HTML "
                     + "is cleaned up the way a paste is, so it keeps only the formats and blocks the editor allows.",
                     typeof(RichTextEditorSourceExample)),
+                new("your-own-marks", "Your own marks", "`Marks` gives the editor character formats of the "
+                    + "app's own, each a `RichTextMark`. The toolbar gets a button for each after the editor's "
+                    + "formats, with the mark's `Label` and `Icon`, and its `Shortcut` turns it on and off. A "
+                    + "mark's "
+                    + "name says how it is written in the value: `cite`, `dfn`, `kbd`, `q`, `samp` and `var` are "
+                    + "those elements, and any other name is a `<span data-tb-mark=\"name\">`, which your style "
+                    + "sheet gives a look. Text pasted in keeps the editor's marks, and code that reads the value "
+                    + "keeps them when `RichTextSchema.Marks` has their names. A mark is on or off and carries "
+                    + "no value, and Markdown has no syntax for one, so `ToMarkdown` writes its text alone.",
+                    typeof(RichTextEditorMarksExample)),
                 new("floating-toolbar", "A toolbar over the selection", "`ShowFloatingToolbar` shows a small "
-                    + "toolbar over selected text, with a button for each character format the editor allows "
-                    + "and the link button, but no text color menu, so formatting needs no trip to the main "
-                    + "toolbar. It suits a long text whose toolbar has scrolled away. `FloatingFormats` narrows "
-                    + "its buttons, here to bold, italic and the link. It sits above the selection, or below it "
+                    + "toolbar over selected text, with a button for each character format the editor allows, "
+                    + "each of your own marks and the link, but no text color menu, so formatting needs no trip "
+                    + "to the main toolbar. It suits a long text whose toolbar has scrolled away. "
+                    + "`FloatingFormats` narrows the editor's formats, here to bold, italic and the link, and a "
+                    + "`RichTextMark` with `Floating` off stays off it. It sits above the selection, or below it "
                     + "when there is no room above, and goes when the selection collapses, is scrolled out of "
                     + "view, or the focus leaves the editor. Alt+F10 in the text moves the focus to it. It "
                     + "doesn't show in a read-only editor, or for a selection made by touch, where the system's "
@@ -5733,7 +5744,8 @@ public static class ExampleCatalog
             ],
             Api =
             [
-                typeof(TbRichTextEditor), typeof(RichTextCommand), typeof(RichTextEditorLabels), typeof(FieldClasses),
+                typeof(TbRichTextEditor), typeof(RichTextCommand), typeof(RichTextMark), typeof(RichTextEditorLabels),
+                typeof(FieldClasses),
             ],
             Keyboard =
             [
@@ -5808,6 +5820,9 @@ public static class ExampleCatalog
                     { When = "In the find bar's Replace with field" },
                 new(["Escape"], "Closes the bar and selects the current match in the text.")
                     { When = "In the find bar" },
+                new(["A mark's keys"], "Turns one of your own marks on or off. The keys are the ones its "
+                    + "`Shortcut` lists, exactly as written: list `Meta` beside `Control` for macOS.")
+                    { When = "With `Marks`" },
                 new(["Alt+F10"], "Moves the focus to the toolbar over the selection.")
                     { When = "In the text, while the floating toolbar shows" },
                 new(["Left", "Right", "Home", "End"], "Moves between the floating toolbar's buttons.")
@@ -5847,6 +5862,8 @@ public static class ExampleCatalog
                     + "match\", \"Match case\", \"Whole word\", \"Close\", \"Replace\" and \"Replace all\". Match case "
                     + "and Whole word say whether they are pressed, and so does the toolbar's button while the bar "
                     + "shows. `Labels` changes these.",
+                "The button of one of your own marks is named by its `Label`, or by the mark's name without one, "
+                    + "and says whether the mark is on, as a format's button does.",
                 "The floating toolbar is a `toolbar` named \"Selection formatting\", and its buttons have the "
                     + "main toolbar's names. `Labels` changes its name.",
             ],
@@ -5912,6 +5929,9 @@ public static class ExampleCatalog
             [
                 "Give the editor a `Label`, or an `AriaLabel` where its purpose is plain from what surrounds it.",
                 "Put a `TbRoot` in the layout, which hosts the link dialog.",
+                "Give each of your own marks a `Label`, and don't let a mark's look be the only sign of what it "
+                    + "means: a screen reader says nothing for a `span`, and little for most of the elements a "
+                    + "mark can be, such as `kbd`.",
                 "Keep the main toolbar where people may format by touch: the floating toolbar doesn't show for a "
                     + "selection made by touch, so an editor with `ShowToolbar=\"false\"` gives them no buttons.",
                 "Don't let a highlight or a text color be the only sign of something, such as text that needs "
@@ -6007,6 +6027,8 @@ public static class ExampleCatalog
                     + "count, and the app has the value without the editor being left.",
                 "bUnit runs no script, so the find bar stays hidden there; to test what a replacement does to the "
                     + "value, give `EnterAsync` the HTML it makes.",
+                "To test your own marks, give `EnterAsync` HTML that has them, such as "
+                    + "`<p>Press <kbd>Esc</kbd></p>`, and in Playwright click a mark's button by its label.",
                 "The floating toolbar is the `toolbar` named \"Selection formatting\". In Playwright it shows a "
                     + "frame after text is selected with the keyboard or the mouse, so wait for it to be visible "
                     + "before reading where it is, and click its buttons by name. bUnit runs no script, so "

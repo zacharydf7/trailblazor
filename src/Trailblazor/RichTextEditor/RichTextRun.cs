@@ -14,14 +14,17 @@ public sealed record RichTextRun
     /// <param name="color">The text's color, one of the design system's tones, or null for the color of the text
     /// around it. <see cref="RichTextFormats.Color"/> comes from it, so it can't be given in
     /// <paramref name="formats"/> without one.</param>
+    /// <param name="marks">The names of the app's own marks the text has, each a <see cref="RichTextMark"/>'s
+    /// name, or null for none.</param>
     /// <exception cref="ArgumentException">The formats are both subscript and superscript, or they have
     /// <see cref="RichTextFormats.Link"/> without a link or <see cref="RichTextFormats.Color"/> without a color,
-    /// or the link is to <c>javascript:</c> or <c>vbscript:</c>, which would run script when followed.</exception>
+    /// or the link is to <c>javascript:</c> or <c>vbscript:</c>, which would run script when followed, or a
+    /// mark's name isn't one a <see cref="RichTextMark"/> can have.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The color isn't one of the <see cref="Tone"/> values.
     /// </exception>
     public RichTextRun(string text, RichTextFormats formats = RichTextFormats.None, string? link = null,
-        Tone? color = null)
-        : this(text, formats, link, color, vetted: false)
+        Tone? color = null, IEnumerable<string>? marks = null)
+        : this(text, formats, link, color, vetted: false, RichTextMark.Join(marks))
     {
     }
 
@@ -51,14 +54,32 @@ public sealed record RichTextRun
     /// <see cref="RichTextFormats.Link"/>, or <see cref="RichTextFormats.Color"/> without a color.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The color isn't one of the <see cref="Tone"/> values.
     /// </exception>
-    public RichTextRun(Mention mention, RichTextFormats formats, Tone? color)
-        : this(Cleaned(mention).Trigger + Cleaned(mention).Item.Text, formats, link: null, color, vetted: true)
+    public RichTextRun(Mention mention, RichTextFormats formats, Tone? color) : this(mention, formats, color, [])
+    {
+    }
+
+    /// <summary>Creates a run that is a mention with formats, a text color and marks of the app's own.</summary>
+    /// <param name="mention">The mention, as in <see cref="RichTextRun(Mention)"/>.</param>
+    /// <param name="formats">The formats the text has. A mention can't be a link.</param>
+    /// <param name="color">The text's color, or null for the color of the text around it.</param>
+    /// <param name="marks">The names of the app's own marks the text has, each a <see cref="RichTextMark"/>'s
+    /// name.</param>
+    /// <exception cref="ArgumentException">The formats are both subscript and superscript, or they have
+    /// <see cref="RichTextFormats.Link"/>, or <see cref="RichTextFormats.Color"/> without a color, or a mark's
+    /// name isn't one a <see cref="RichTextMark"/> can have.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The color isn't one of the <see cref="Tone"/> values.
+    /// </exception>
+    public RichTextRun(Mention mention, RichTextFormats formats, Tone? color, IEnumerable<string> marks)
+        : this(Cleaned(mention).Trigger + Cleaned(mention).Item.Text, formats, link: null, color, vetted: true,
+            RichTextMark.Join(marks))
     {
         Mention = Cleaned(mention);
     }
 
-    // The reader and paragraphs pass links already cleaned and checked, so a long link isn't scanned again per run.
-    internal RichTextRun(string text, RichTextFormats formats, string? link, Tone? color, bool vetted)
+    // The reader and paragraphs pass links already cleaned and checked, and marks already joined, so a long link
+    // isn't scanned again per run.
+    internal RichTextRun(string text, RichTextFormats formats, string? link, Tone? color, bool vetted,
+        string marks = "")
     {
         ArgumentNullException.ThrowIfNull(text);
         if (formats.HasFlag(RichTextFormats.Subscript | RichTextFormats.Superscript))
@@ -95,6 +116,7 @@ public sealed record RichTextRun
         Formats = formats | (link is null ? 0 : RichTextFormats.Link) | (color is null ? 0 : RichTextFormats.Color);
         Link = link;
         Color = color;
+        MarkNames = marks;
     }
 
     /// <summary>The text, with <c>'\n'</c> for each line break. Tabs, form feeds, carriage returns and no-break
@@ -116,6 +138,13 @@ public sealed record RichTextRun
     /// <summary>The mention the run is, or null for ordinary text. A mention's <see cref="Text"/> is its trigger
     /// followed by its item's text.</summary>
     public Mention? Mention { get; }
+
+    /// <summary>The names of the app's own marks the text has, each a <see cref="RichTextMark"/>'s name, sorted by
+    /// name.</summary>
+    public IReadOnlyList<string> Marks => MarkNames.Length == 0 ? [] : MarkNames.Split(' ');
+
+    // The marks as one string, so that two runs with the same marks are equal.
+    internal string MarkNames { get; }
 
     private static readonly Dictionary<string, Tone> Colors =
         Enum.GetValues<Tone>().ToDictionary(ColorName, StringComparer.Ordinal);
