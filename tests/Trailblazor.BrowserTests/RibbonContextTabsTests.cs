@@ -153,7 +153,7 @@ public class RibbonContextTabsTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Tab_ShouldLeaveDeleteToThePage_WhenItCannotCloseButNamesKeysOfItsOwn(string browser)
+    public async Task Tab_ShouldKeepDeleteFromThePageAndStay_WhenItCannotCloseButNamesKeysOfItsOwn(string browser)
     {
         var page = await OpenAsync(browser, "/ribbon-context");
         await Expect(page.GetByRole(AriaRole.Tablist, new() { Name = "Drawers" }))
@@ -164,6 +164,8 @@ public class RibbonContextTabsTests(BrowserFixture fixture) : BrowserTest(fixtur
             tab => !tab.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true, cancelable: true }))
             """);
 
-        Assert.False(taken);
+        // Every tab prevents Delete, so a shortcut of the app's doesn't run for it, but only a closable one closes.
+        Assert.True(taken);
+        await Expect(Tab(page, "Pens")).ToBeVisibleAsync();
     }
 }
