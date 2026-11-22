@@ -19,6 +19,28 @@
    strip comes before or after the area in the page as it does on the screen. *@
 <div @attributes="AdditionalAttributes" data-part="frame" style="@Style"
      class="@ClassNames.Join("tb-dock-frame", Class)">
+@* A panel in a browser window of its own has no tab here, so each one keeps a button here that brings its window to
+   the front or the panel back. That window can be behind this one, or on another screen. *@
+@if (PoppedOut is { Count: > 0 } away && RendererInfo.IsInteractive)
+{
+    <div role="group" data-part="away" aria-label="@(Labels.Away ?? Localizer[TbStrings.DockAway])"
+         class="tb-dock__away">
+        @foreach (var id in away)
+        {
+            <TbMenu @key="id" Label="@Panel(id)!.Title" Size="Size.Small" Variant="Variant.Text" AttachOnFirstUse
+                    data-part="away-menu" data-panel="@id"
+                    Description="@(Labels.AwayHint ?? Localizer[TbStrings.DockAwayHint])">
+                @* The script brings the window forward in the click itself, while the browser still allows it. *@
+                <TbMenuItem data-away="show" data-window="@PanelId(id)">
+                    @(Labels.ShowWindow ?? Localizer[TbStrings.DockShowWindow])
+                </TbMenuItem>
+                <TbMenuItem data-away="return" OnClick="() => ReturnFromPageAsync(id, focus: true)">
+                    @(Labels.Return ?? Localizer[TbStrings.DockReturn])
+                </TbMenuItem>
+            </TbMenu>
+        }
+    </div>
+}
 @Strip(DockPosition.Top)
 @Strip(DockPosition.Start)
 <div @ref="_root" role="group" aria-label="@AriaLabel" data-part="dock"
@@ -289,8 +311,12 @@
     private readonly HashSet<string> _popped = [];
     // The panel to move into the browser window its menu item opened, once it is rendered for one.
     private string? _popOutAfterRender;
+    // The popped panels whose windows have them, which a window still waiting for its style sheets doesn't yet.
+    private readonly HashSet<string> _landed = [];
     // The popped panels the script was last told of.
     private string[] _poppedInScript = [];
+    // The popped panels the app was last told of.
+    private string[] _poppedReported = [];
     // The auto-hidden panels the dock shows on its strips, as of the last render.
     private IReadOnlyList<DockAutoHidden> _strips = [];
     private bool _focusDockAfterRender;
@@ -368,6 +394,21 @@
     /// on the page. Off by default.</summary>
     [Parameter]
     public bool AllowPopOut { get; set; }
+
+    /// <summary>Raised with <see cref="PoppedOut"/> when a panel goes to a browser window of its own or comes back
+    /// from one.</summary>
+    [Parameter]
+    public EventCallback<IReadOnlyList<string>> PoppedOutChanged { get; set; }
+
+    /// <summary>The ids of the panels that show in browser windows of their own, in the order of their floating
+    /// windows in the <see cref="Layout"/>. It isn't part of the layout, since a page can't open windows as it loads.
+    /// </summary>
+    public IReadOnlyList<string> PoppedOut =>
+        [.. Shown().Floats.Select(window => window.Active).Where(_landed.Contains)];
+
+    /// <summary>Brings a panel back to the dock from its own browser window, which closes. The panel shows in the
+    /// floating window the layout kept for it. Does nothing for a panel that isn't in a window of its own.</summary>
+    public Task ReturnAsync(string panel) => InvokeAsync(() => ReturnFromPageAsync(panel, focus: false));
 
     /// <summary>The dock's accessible name, such as "Workbench".</summary>
     [Parameter]
@@ -603,6 +644,7 @@
         // A panel shows in a browser window of its own only while it is alone in a window of the layout.
         _popped.RemoveWhere(id => !CanPopOut(id)
             || !shown.Floats.Any(window => window.Panels is [var only] && only == id));
+        _landed.IntersectWith(_popped);
         var windows = WindowKeys(shown.Floats);
         for (var layer = 0; layer < shown.Floats.Count; layer++)
         {
@@ -1084,6 +1126,12 @@
                 if (wrong is null)
                 {
                     Announcer.Polite(Format(Labels.PoppedOut, TbStrings.DockPoppedOut, opened.Title));
+                    // The panel may have come back while its window loaded.
+                    if (_popped.Contains(panel))
+                    {
+                        _landed.Add(panel);
+                        StateHasChanged();
+                    }
                 }
                 else if (_popped.Remove(panel))
                 {
@@ -1106,6 +1154,25 @@
             _poppedInScript = popped;
             await _handle.InvokeVoidAsync("popped", (object)popped);
         }
+
+        // The app is told here, after the window has opened or been refused, however the panel came back.
+        if (PoppedOut is var away && !away.SequenceEqual(_poppedReported))
+        {
+            _poppedReported = [.. away];
+            await PoppedOutChanged.InvokeAsync(away);
+        }
+    }
+
+    // A return that starts on the page, from the panel's button there or from the app's code. The dock draws the
+    // panel as its own before the script moves it, which loses its scroll positions, so the script notes them first.
+    private async Task ReturnFromPageAsync(string panel, bool focus)
+    {
+        if (_landed.Contains(panel) && _handle is not null)
+        {
+            await _handle.InvokeVoidAsync("noteScrolls", PanelId(panel));
+        }
+
+        await ReturnAsync(panel, focus);
     }
 
     // A panel comes back from its browser window to the floating window the layout kept for it: its Return button was

@@ -3205,7 +3205,11 @@ public static class ExampleCatalog
                     + "opens a browser window and shows the panel there with everything it holds: the same components, "
                     + "with their state, still rendered by this page. The panel leaves the dock, and the layout keeps "
                     + "a floating window for it, which is where it shows again when its browser window closes or its "
-                    + "Return to the dock button is pressed. Which panels are in windows of their own isn't part of "
+                    + "Return to the dock button is pressed. While a panel is away, the dock keeps a button for it in "
+                    + "a row above its groups: the button's menu brings the panel's window to the front, where the "
+                    + "browser allows it, or returns the panel. `PoppedOut` lists the panels that are away, "
+                    + "`PoppedOutChanged` reports each change, and `ReturnAsync` brings one back from code. "
+                    + "Which panels are in windows of their own isn't part of "
                     + "the layout, since a page can't open windows as it loads, so a saved layout brings them back as "
                     + "floating windows. The browser windows close when the page goes away, and a panel's window "
                     + "closes when the app closes the panel or moves it elsewhere in the layout. A window takes the "
@@ -3363,6 +3367,10 @@ public static class ExampleCatalog
                     + "title too, and the button that brings it back is named \"Return to the dock\". "
                     + "`Labels.PopOut` and `Return` replace the menu item and the button, and `PoppedOut`, `Returned` "
                     + "and `PopOutBlocked` what is said, each with `{0}` for the panel's title.",
+                "The buttons for the panels that are in windows of their own sit in a `group` named \"Panels in "
+                    + "their own windows\". Each is named by its panel's title and described as \"In its own "
+                    + "browser window\", and its menu has Show its window and Return to the dock. `Labels.Away`, "
+                    + "`AwayHint` and `ShowWindow` replace the three texts.",
                 "`Labels.CloseHint` replaces the hint that describes a closable tab.",
             ],
             Announcements =
@@ -3726,6 +3734,11 @@ public static class ExampleCatalog
                     + "new window is chosen, also while it waits on the page, hidden, for its window's style "
                     + "sheets."),
                 new("return", "The button in that bar, which brings the panel back to the dock."),
+                new("away", "The row of buttons for the panels that show in browser windows of their own, above "
+                    + "the strips and the groups, with the class `tb-dock__away`. It is there only while a panel "
+                    + "is away."),
+                new("away-menu", "One panel's button and its menu in that row, with `data-panel` holding the "
+                    + "panel's id. Its items have `data-away`: `show` and `return`."),
                 new("window-grip", "A floating window's grip menu, a child of the dock after the window's panels. "
                     + "It has `data-group` with the window's number, `data-floating`, and the window's box and "
                     + "`--tb-dock-z`. Its button drags the corner or opens the items that resize the window, which "

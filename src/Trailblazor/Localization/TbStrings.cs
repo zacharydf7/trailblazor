@@ -825,6 +825,18 @@ public static class TbStrings
     /// dock's panel; {0} is its title.</summary>
     public const string DockPopOutBlocked = "Dock.PopOutBlocked";
 
+    /// <summary>"Panels in their own windows": names the row of buttons a dock keeps for the panels that show in
+    /// browser windows of their own.</summary>
+    public const string DockAway = "Dock.Away";
+
+    /// <summary>"In its own browser window": describes the button a dock keeps for a panel that shows in a browser
+    /// window of its own.</summary>
+    public const string DockAwayHint = "Dock.AwayHint";
+
+    /// <summary>"Show its window": a dock menu item that brings a panel's own browser window to the front.
+    /// </summary>
+    public const string DockShowWindow = "Dock.ShowWindow";
+
     /// <summary>"Auto-hide": a dock submenu that puts a panel away on a strip along an edge of the dock.</summary>
     public const string DockAutoHide = "Dock.AutoHide";
 
@@ -1878,6 +1890,9 @@ public static class TbStrings
         [DockPoppedOut] = "{0} opened in a new window.",
         [DockReturned] = "{0} is back in the dock.",
         [DockPopOutBlocked] = "The browser blocked the new window for {0}.",
+        [DockAway] = "Panels in their own windows",
+        [DockAwayHint] = "In its own browser window",
+        [DockShowWindow] = "Show its window",
         [DockAutoHide] = "Auto-hide",
         [DockStrip] = "Auto-hidden panels ({0})",
         [DockRevealedGroup] = "Auto-hidden panel",

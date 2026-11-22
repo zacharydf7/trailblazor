@@ -115,6 +115,35 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Page_ShouldKeepAWayBackToThePanel_WhenThePanelShowsInAWindowOfItsOwn(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        var window = await PopOutAsync(page, "Notes");
+        // Counts the times the page brings the panel's window to the front.
+        await window.EvaluateAsync("() => { window.shown = 0; const focus = window.focus.bind(window); "
+            + "window.focus = () => { window.shown++; focus(); }; }");
+        var away = page.GetByRole(AriaRole.Group, new() { Name = "Panels in their own windows" });
+        var notes = away.GetByRole(AriaRole.Button, new() { Name = "Notes" });
+        await Expect(notes).ToHaveAccessibleDescriptionAsync("In its own browser window");
+        var result = await away.RunAxe(AxeTests.WcagAA);
+        Assert.Empty(result.Violations.Select(violation =>
+            $"{violation.Id}: {string.Join(", ", violation.Nodes.Select(node => node.Target))}"));
+
+        await notes.ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Show its window" }).ClickAsync();
+
+        Assert.Equal(1, await window.EvaluateAsync<int>("() => window.shown"));
+        Assert.False(window.IsClosed);
+
+        await notes.ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Return to the dock" }).ClickAsync();
+
+        await FocusedAsync(page.GetByRole(AriaRole.Tab, new() { Name = "Notes" }));
+        await Expect(away).ToHaveCountAsync(0);
+        await ClosedAsync(window);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Windows_ShouldFollowTheDock_WhenAPanelIsAddedOrClosedOrThePageGoesAway(string browser)
     {
         var page = await OpenDockAsync(browser);
@@ -919,6 +948,23 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
 
         await Expect(tools).ToBeVisibleAsync();
         await page.WaitForFunctionAsync("panel => panel.scrollTop === 60", await tools.ElementHandleAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldKeepItsScrollPosition_WhenThePageBringsItBack(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-parts");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        var popped = await page.Tb().Dock("Bench").PopOutAsync("Tools");
+        await popped.EvaluateAsync("panel => panel.scrollTop = 120");
+        var away = page.GetByRole(AriaRole.Group, new() { Name = "Panels in their own windows" });
+
+        await away.GetByRole(AriaRole.Button, new() { Name = "Tools" }).ClickAsync();
+        await page.GetByRole(AriaRole.Menuitem, new() { Name = "Return to the dock" }).ClickAsync();
+
+        var tools = page.Locator("[data-part=panel][data-panel=tools]");
+        await Expect(tools).ToBeVisibleAsync();
+        await page.WaitForFunctionAsync("panel => panel.scrollTop === 120", await tools.ElementHandleAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

@@ -2715,6 +2715,84 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public async Task Away_ShouldKeepANamedButtonForThePanel_WhenItShowsInAWindowOfItsOwn()
+    {
+        var cut = RenderPoppable(Hike);
+        Assert.Empty(cut.FindAll("[data-part=away]"));
+
+        await cut.Tb().Dock().PopOutAsync("Notes");
+
+        var away = cut.Find("[data-part=away]");
+        Assert.Equal(("group", "Panels in their own windows"),
+            (away.GetAttribute("role"), away.GetAttribute("aria-label")));
+        var button = Assert.Single(away.QuerySelectorAll("[data-part=away-menu] [data-part=trigger]"));
+        Assert.Equal("Notes", button.TextContent.Trim());
+        Assert.Equal("In its own browser window",
+            cut.Find($"[id='{button.GetAttribute("aria-describedby")}']").TextContent);
+        // The script brings the window forward from the first item, by the panel's element id.
+        Assert.Equal(cut.Find("[data-part=panel][data-panel=notes]").Id,
+            away.QuerySelector("[data-away=show]")!.GetAttribute("data-window"));
+        Assert.Equal(["Show its window", "Return to the dock"],
+            away.QuerySelectorAll("[role=menuitem]").Select(item => item.TextContent.Trim()));
+    }
+
+    [Fact]
+    public async Task Away_ShouldBringThePanelBackWithTheFocusOnItsTab_WhenReturnIsChosenInItsMenu()
+    {
+        var cut = RenderPoppable(Hike);
+        var dock = cut.Tb().Dock();
+        await dock.PopOutAsync("Notes");
+        var tab = OnceMade(cut, "[role=tab][data-panel=notes]");
+
+        await cut.Find("[data-part=away] [data-away=return]").ClickAsync(new());
+
+        Assert.Empty(dock.PoppedOut);
+        Assert.Equal(["Notes"], dock.Floating);
+        Assert.Empty(cut.FindAll("[data-part=away]"));
+        Assert.Equal(tab(), ((ElementReference)JSInterop.VerifyFocusAsyncInvoke().Arguments[0]!).Id);
+    }
+
+    [Fact]
+    public async Task PoppedOut_ShouldTellTheAppWhichPanelsAreAway_WhenOneGoesAndTheAppBringsItBack()
+    {
+        var changes = new List<IReadOnlyList<string>>();
+        var cut = RenderPoppable(Hike);
+        cut.Render(parameters => parameters.Add(each => each.PoppedOutChanged, changes.Add));
+        Assert.Empty(cut.Instance.PoppedOut);
+
+        await cut.Tb().Dock().PopOutAsync("Notes");
+
+        Assert.Equal(["notes"], cut.Instance.PoppedOut);
+        Assert.Equal([["notes"]], changes);
+
+        // A panel that isn't away changes nothing.
+        await cut.Instance.ReturnAsync("map");
+        Assert.Equal(["notes"], cut.Instance.PoppedOut);
+        Assert.Equal([["notes"]], changes);
+
+        await cut.Instance.ReturnAsync("notes");
+
+        cut.WaitForAssertion(() => Assert.Equal([["notes"], []], changes));
+        Assert.Empty(cut.Instance.PoppedOut);
+        Assert.Equal(["Notes"], cut.Tb().Dock().Floating);
+    }
+
+    [Fact]
+    public async Task PoppedOut_ShouldStayEmptyAndTellTheAppNothing_WhenTheBrowserRefusesTheWindow()
+    {
+        _handle.Setup<string?>("popOut", _ => true).SetResult("blocked");
+        var changes = new List<IReadOnlyList<string>>();
+        var cut = RenderPoppable(Hike);
+        cut.Render(parameters => parameters.Add(each => each.PoppedOutChanged, changes.Add));
+
+        await cut.Tb().Dock().PopOutAsync("Notes");
+
+        Assert.Empty(cut.Instance.PoppedOut);
+        Assert.Empty(changes);
+        Assert.Empty(cut.FindAll("[data-part=away]"));
+    }
+
+    [Fact]
     public async Task Return_ShouldShowThePanelInItsFloatingWindow_WhenItsButtonIsPressedOrItsBrowserWindowCloses()
     {
         using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",

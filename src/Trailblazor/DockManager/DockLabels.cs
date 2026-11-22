@@ -109,6 +109,18 @@ public sealed record DockLabels
     /// the panel's title. Leave it null for the app's text for <see cref="TbStrings.DockPopOutBlocked"/>.</summary>
     public string? PopOutBlocked { get; init; }
 
+    /// <summary>Names the row of buttons the dock keeps for the panels that show in browser windows of their own.
+    /// Leave it null for the app's text for <see cref="TbStrings.DockAway"/>.</summary>
+    public string? Away { get; init; }
+
+    /// <summary>Describes the button the dock keeps for a panel that shows in a browser window of its own. Leave
+    /// it null for the app's text for <see cref="TbStrings.DockAwayHint"/>.</summary>
+    public string? AwayHint { get; init; }
+
+    /// <summary>The menu item that brings a panel's own browser window to the front. Leave it null for the app's
+    /// text for <see cref="TbStrings.DockShowWindow"/>.</summary>
+    public string? ShowWindow { get; init; }
+
     /// <summary>The submenu that puts a panel away on a strip along an edge of the dock. Leave it null for the app's
     /// text for <see cref="TbStrings.DockAutoHide"/>.</summary>
     public string? AutoHide { get; init; }

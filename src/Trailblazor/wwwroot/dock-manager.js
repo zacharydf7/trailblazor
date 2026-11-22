@@ -1052,8 +1052,17 @@ export function attachDock(root, reporter) {
             bringBack(id, report);
         }
     };
+    // A panel's window comes to the front in the click on its menu's item, while the browser still lets the page
+    // that opened a window focus it.
+    const onShowWindowClick = event => {
+        const item = event.target.closest?.('[data-away="show"]');
+        if (item?.closest('[data-part="away"]')?.parentElement === root.parentElement) {
+            windows.get(item.dataset.window)?.other.focus();
+        }
+    };
     const onPageHide = event => closeWindows(event.persisted);
     root.addEventListener('click', onPopOutClick, { capture: true });
+    root.parentElement.addEventListener('click', onShowWindowClick, { capture: true });
     document.addEventListener('click', onReturnClick, { capture: true });
     window.addEventListener('pagehide', onPageHide);
 
@@ -1134,6 +1143,14 @@ export function attachDock(root, reporter) {
             panel.focus({ preventScroll: true });
             return null;
         },
+        // Notes a panel's scroll positions in its window, before the dock draws it as its own for a return that
+        // the page asked for.
+        noteScrolls(id) {
+            const shown = windows.get(id);
+            if (shown) {
+                scrollsAtClick.set(shown.panel, keepScrolls(shown.panel));
+            }
+        },
         // The element ids of the panels that still show in windows of their own. Any other comes back to the dock.
         popped(ids) {
             for (const id of [...windows.keys()].filter(each => !ids.includes(each))) {
@@ -1148,6 +1165,7 @@ export function attachDock(root, reporter) {
         },
         dispose() {
             root.removeEventListener('click', onPopOutClick, { capture: true });
+            root.parentElement.removeEventListener('click', onShowWindowClick, { capture: true });
             document.removeEventListener('click', onReturnClick, { capture: true });
             window.removeEventListener('pagehide', onPageHide);
             closeWindows(false);

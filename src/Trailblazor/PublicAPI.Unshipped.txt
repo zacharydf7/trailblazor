@@ -7052,6 +7052,19 @@ Trailblazor.TbDockPanel.Title.get -> string!
 Trailblazor.TbDockPanel.Title.set -> void
 Trailblazor.TbDockPanel.Icon.set -> void
 Trailblazor.TbDockPanel.Icon.get -> Trailblazor.Icon?
+Trailblazor.DockLabels.Away.get -> string?
+Trailblazor.DockLabels.Away.init -> void
+Trailblazor.DockLabels.AwayHint.get -> string?
+Trailblazor.DockLabels.AwayHint.init -> void
+Trailblazor.DockLabels.ShowWindow.get -> string?
+Trailblazor.DockLabels.ShowWindow.init -> void
+Trailblazor.TbDockManager.PoppedOut.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.TbDockManager.PoppedOutChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyList<string!>!>
+Trailblazor.TbDockManager.PoppedOutChanged.set -> void
+Trailblazor.TbDockManager.ReturnAsync(string! panel) -> System.Threading.Tasks.Task!
+const Trailblazor.TbStrings.DockAway = "Dock.Away" -> string!
+const Trailblazor.TbStrings.DockAwayHint = "Dock.AwayHint" -> string!
+const Trailblazor.TbStrings.DockShowWindow = "Dock.ShowWindow" -> string!
 Trailblazor.TbDockPanel.AllowPopOut.get -> bool
 Trailblazor.TbDockPanel.AllowPopOut.set -> void
 Trailblazor.TbDockPanel.Closable.set -> void
