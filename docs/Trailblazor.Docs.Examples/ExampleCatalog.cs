@@ -3655,15 +3655,16 @@ public static class ExampleCatalog
                     + "change. It also follows a sheet turned off or on through its `CSSStyleSheet`'s `disabled`, "
                     + "as with `link.sheet.disabled` or an entry of `document.styleSheets`. An alternate sheet "
                     + "that a script turns on while the window is open is followed too, and so is one turned on "
-                    + "before the window opened, except in two cases in Chromium-based browsers and Safari."),
+                    + "before the window opened, except in the cases below in Chromium-based browsers and Safari."),
                 new("Chromium-based browsers and Safari don't tell a script whether an alternate style sheet "
                     + "applies. As a panel's window opens, the library finds out by adding a rule for `<head>` to "
                     + "the end of each alternate sheet and deleting it again. That doesn't work for a sheet whose "
                     + "rules a script can't read, which is any sheet from another origin unless its link has "
-                    + "`crossorigin` and its server sends CORS headers, or for one whose `media` doesn't match when "
-                    + "it is checked. In those browsers such a sheet isn't on in the window even if a script turned "
-                    + "it on before the window opened. A sheet switched by its link's `rel` or `href`, as from "
-                    + "`alternate stylesheet` to `stylesheet`, is always followed.") { Pitfall = true },
+                    + "`crossorigin` and its server sends CORS headers. In those browsers such a sheet isn't on in "
+                    + "the window even if a script turned it on before the window opened. A sheet whose `media` "
+                    + "doesn't match on the page is checked once it does, so until then it isn't on in the window "
+                    + "either, even where it matches in the window. A sheet switched by its link's `rel` or `href`, "
+                    + "as from `alternate stylesheet` to `stylesheet`, is always followed.") { Pitfall = true },
                 new("Before you allow pop-out, check what each panel holds. An `<iframe>` loads again as its panel "
                     + "goes to a window and as it comes back, and a component whose script finds its own elements "
                     + "through the page's `document` no longer finds them there. Keep such a panel on the "

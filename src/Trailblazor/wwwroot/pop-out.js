@@ -88,7 +88,8 @@ const watchDisabled = sheet => {
 
 // Chromium and WebKit report a sheet that the page only offers as an alternate as on whether it applies or not. To
 // find out, a rule for the page's head goes into the sheet for a moment, which changes nothing a user can see. A
-// sheet whose rules a script can't read, as most from another origin, is taken as not applying.
+// sheet whose rules a script can't read, as most from another origin, is taken as not applying. The rule takes no
+// effect while the sheet's media doesn't match, so the answer only counts while it does.
 const applies = sheet => {
     try {
         const at = sheet.insertRule('head { --tb-sheet-applies: 1 }', sheet.cssRules.length);
@@ -112,6 +113,30 @@ const turnOn = copy => {
 const mirror = other => {
     const copies = new Map();
     const asked = new WeakSet();
+    // Media queries, keyed by their text, that alternates are waiting on before they're asked.
+    const awaited = new Map();
+    // An alternate that a script turned on before this window saw it left no trace in its attributes, so each is
+    // asked once for its copy, when its sheet is first there and its media matches.
+    const askAlternate = (sheet, copy) => {
+        if (asked.has(copy)) {
+            return;
+        }
+
+        const query = sheet.media && (awaited.get(sheet.media) ?? matchMedia(sheet.media));
+        if (query && !query.matches) {
+            if (!awaited.has(sheet.media)) {
+                awaited.set(sheet.media, query);
+                query.addEventListener('change', copySheets);
+            }
+
+            return;
+        }
+
+        asked.add(copy);
+        if (applies(sheet.sheet)) {
+            turnOn(copy);
+        }
+    };
     const copySheets = () => {
         const sheets = [...document.querySelectorAll('link[rel~="stylesheet"], style')];
         for (const [sheet, copy] of copies) {
@@ -152,13 +177,8 @@ const mirror = other => {
                     copy.sheet.disabled = sheet.sheet.disabled;
                 }
 
-                // An alternate that a script turned on before this window saw it left no trace in its attributes,
-                // so each is asked once for its copy, when its sheet is first there.
-                if (sheet.matches('link[rel~="alternate"]') && !asked.has(copy)) {
-                    asked.add(copy);
-                    if (applies(sheet.sheet)) {
-                        turnOn(copy);
-                    }
+                if (sheet.matches('link[rel~="alternate"]')) {
+                    askAlternate(sheet, copy);
                 }
             }
         }
@@ -203,6 +223,7 @@ const mirror = other => {
         document.removeEventListener('load', onLoad, true);
         other.document.removeEventListener('load', onLoad, true);
         sheetFollowers.delete(copySheets);
+        awaited.forEach(media => media.removeEventListener('change', copySheets));
         if (sheetFollowers.size === 0) {
             for (const sheet of [...document.styleSheets].filter(each => watchedSheets.delete(each))) {
                 delete sheet.disabled;

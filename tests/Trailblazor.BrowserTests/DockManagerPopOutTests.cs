@@ -615,6 +615,26 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldApplyAnAlternateSheet_WhenItsMediaFirstMatchesAfterTheWindowOpened(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        await AddAnAlternateAsync(page, "narrow", "data:text/css,html{text-transform:uppercase}");
+        await page.EvaluateAsync("document.getElementById('narrow').media = '(max-width: 900px)'");
+        await page.EvaluateAsync(TurnOn, "narrow");
+        var window = await PopOutAsync(page, "Notes");
+        await window.SetViewportSizeAsync(800, 600);
+        await window.WaitForFunctionAsync("document.querySelector('link[title=narrow]')?.sheet");
+        // The page is too wide for the sheet's media as the window opens, so the sheet can't be asked yet whether it
+        // is on.
+        await Expect(page.Locator("html")).ToHaveCSSAsync("text-transform", "none");
+
+        await page.SetViewportSizeAsync(800, 720);
+
+        await Expect(page.Locator("html")).ToHaveCSSAsync("text-transform", "uppercase");
+        await Expect(window.Locator("html")).ToHaveCSSAsync("text-transform", "uppercase");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Window_ShouldLeaveAnAlternateSheetOff_WhenItComesFromAnotherOriginAndWasNeverTurnedOn(
         string browser)
     {
