@@ -246,6 +246,10 @@
                 A data grid column's annotations are kept with the property it shows, but an annotation that reads other
                 properties of the row, such as <code>[Compare]</code>, needs those kept too.
             </li>
+            <li>
+                A data grid with a <code>PrerenderKey</code> writes its rows to JSON and reads them back by
+                reflection, so keep the row type's public constructors and properties.
+            </li>
             <li>The telemetry catalog lists only the controls that survive trimming.</li>
         </ul>
 

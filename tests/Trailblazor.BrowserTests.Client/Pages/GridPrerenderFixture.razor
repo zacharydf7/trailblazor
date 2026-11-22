@@ -1,0 +1,43 @@
+@page "/grid-prerender"
+@using System.Collections.Concurrent
+
+@* A grid that loads a page of rows from a provider, on a page that prerenders. The provider counts its calls for the
+   run named in the address, across the prerendered pass and the interactive one, and takes long enough for the grid's
+   loading row to show. With persist in the address, the grid keeps its prerendered rows; with totals, a column asks
+   for a total. The Count button draws the count again and says how often it has. *@
+<TbDataGrid TItem="Trail" AriaLabel="Trails" DataProvider="LoadAsync" PageSize="5"
+            PrerenderKey="@(Persist is null ? null : "trails")">
+    <TbColumn Field="trail => trail.Name" Title="Name" Id="name" />
+    <TbColumn Field="trail => trail.Miles" Title="Miles" Id="miles"
+              Aggregate="@(Totals is null ? ColumnAggregate.None : ColumnAggregate.Sum)" />
+</TbDataGrid>
+<TbButton OnClick="() => _counted++">Count</TbButton>
+<p data-testid="counted">@_counted</p>
+<p data-testid="calls">@Calls.GetValueOrDefault(Run ?? "")</p>
+
+@code {
+    private static readonly ConcurrentDictionary<string, int> Calls = new();
+    private int _counted;
+
+    [SupplyParameterFromQuery]
+    private string? Run { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? Persist { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? Totals { get; set; }
+
+    private async Task<GridResult<Trail>> LoadAsync(GridRequest request, CancellationToken token)
+    {
+        Calls.AddOrUpdate(Run ?? "", 1, (_, count) => count + 1);
+        await Task.Delay(300, token);
+        var all = Enumerable.Range(1, 12).Select(number => new Trail($"Trail {number}", number * 1.5m)).ToList();
+        return new([.. all.Skip(request.StartIndex).Take(request.Count ?? all.Count)], all.Count)
+        {
+            Totals = request.Aggregates.ToDictionary(asked => asked.Column, _ => (object?)all.Sum(trail => trail.Miles)),
+        };
+    }
+
+    public sealed record Trail(string Name, decimal Miles);
+}

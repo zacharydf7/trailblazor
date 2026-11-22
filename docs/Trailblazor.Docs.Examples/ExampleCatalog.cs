@@ -11497,6 +11497,14 @@ public static class ExampleCatalog
                     + "filters the grid asks for, and a new request cancels the last one. The [data grid from a "
                     + "database](recipes/grid-from-database) recipe does this with an EF Core query.",
                     typeof(DataGridServerExample)),
+                new("prerendered-rows", "Rows from a prerendered page", "On a prerendered page, a grid with a "
+                    + "`DataProvider` and no `Virtualize` asks it twice: once while the page prerenders and again "
+                    + "when it turns interactive, and the prerendered rows give way to the loading row in between. "
+                    + "With a `PrerenderKey`, the grid keeps the prerendered rows with the page and shows them as it "
+                    + "turns interactive, so the provider is asked once. Give each grid on a page its own key. The "
+                    + "rows must write to JSON and read back, as a record with public properties does. Totals aren't "
+                    + "kept, so a grid with an `Aggregate` column asks once more for them, with the rows in view. "
+                    + "This site doesn't prerender, so here the grid just loads.", typeof(DataGridPrerenderedExample)),
                 new("reorder-rows", "Reorder rows", "With `OnRowMove`, rows held in `Items` can be put in order while "
                     + "the grid isn't sorted or filtered. Each row gets a handle in an \"Order\" column: drag it, press "
                     + "the arrow keys on it, or choose from its menu. Moves can cross pages, and the app applies each "
@@ -11670,6 +11678,10 @@ public static class ExampleCatalog
                     + "read at once. Sorting, filtering, paging and selecting start working once the page is "
                     + "interactive. With a `StateHref`, sorting and paging work before that, as links; the page size "
                     + "picker still waits.",
+                "With a `DataProvider` and no `Virtualize`, it asks for its first page while prerendering and shows "
+                    + "those rows, without totals. It asks again once the page is interactive, and shows the loading "
+                    + "row meanwhile, unless a `PrerenderKey` [keeps the prerendered rows]"
+                    + "(components/data-grid#prerendered-rows).",
             ],
             Notes =
             [

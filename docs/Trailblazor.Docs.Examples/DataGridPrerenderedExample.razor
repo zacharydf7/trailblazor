@@ -1,0 +1,26 @@
+@* A provider's first page, kept from the prerendered pass for the interactive one. *@
+<TbDataGrid TItem="Report" DataProvider="LoadReportsAsync" PrerenderKey="trail-reports" AriaLabel="Trail reports"
+            KeySelector="report => report.Id" PageSize="4" Size="Size.Small">
+    <TbColumn Field="report => report.Date" Format="d" />
+    <TbColumn Field="report => report.Trail" />
+    <TbColumn Field="report => report.Condition" />
+</TbDataGrid>
+
+@code {
+    private static readonly string[] Trails = ["Pine Hollow loop", "Eagle Ridge traverse", "Cedar Flats", "Fern Gully"];
+
+    private static readonly string[] Conditions = ["Clear", "Muddy", "Snow above the saddle"];
+
+    private static readonly Report[] Reports = [.. Enumerable.Range(1, 10).Select(day => new Report(day,
+        new DateOnly(2026, 6, day), Trails[day % Trails.Length], Conditions[day % Conditions.Length]))];
+
+    // Stands in for a server that counts and pages the reports.
+    private static async Task<GridResult<Report>> LoadReportsAsync(GridRequest request, CancellationToken cancel)
+    {
+        await Task.Delay(800, cancel);
+        return new([.. Reports.Skip(request.StartIndex).Take(request.Count ?? Reports.Length)], Reports.Length);
+    }
+
+    // A record's public properties write to JSON and read back through its constructor.
+    private sealed record Report(int Id, DateOnly Date, string Trail, string Condition);
+}

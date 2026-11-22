@@ -1886,11 +1886,13 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
             return;
         }
 
+        KeepPrerenderedRows();
         // Wait for the columns' JSON filter types and totals; with no next render, static renders load without totals.
         if (_columns.Count == 0 && (RendererInfo.IsInteractive || _filters.Any(FilterJson.IsUntyped)))
         {
             _showForColumns = true;
-            _loading = true;
+            var shown = RendererInfo.IsInteractive && TryShowPrerenderedRows();
+            _loading = !shown;
             return;
         }
 
@@ -2860,6 +2862,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         _disposed = true;
+        _keepsPrerendered?.Dispose();
         _load?.Cancel();
         _exporting.Cancel();
         _scrollAfterRender?.Done.TrySetResult();
