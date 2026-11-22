@@ -3205,8 +3205,14 @@ public static class ExampleCatalog
                     + "except those of a panel whose own `AllowPopOut` is false, which stays on the page. The item "
                     + "opens a browser window and shows the panel there with everything it holds: the same components, "
                     + "with their state, still rendered by this page. The panel leaves the dock, and the layout keeps "
-                    + "a floating window for it, which is where it shows again when its browser window closes or its "
-                    + "Return to the dock button is pressed. While a panel is away, the dock keeps a button for it in "
+                    + "a floating window for it while it is away. When its browser window closes or its Return to "
+                    + "the dock button is pressed, the panel goes back where it was docked: to the layout it left, "
+                    + "sizes and all, when nothing else has changed, and otherwise to its strip, beside the nearest "
+                    + "tab that was next to it, or in a group of its own on its side of what was next to it. A "
+                    + "panel that already floated alone goes back to that window. The same holds for a panel the "
+                    + "app takes away while it is in its window, such as a form that is there only while a task "
+                    + "runs: when the app shows it again, it is where it was docked, not in a new window, which a "
+                    + "page can't open unless the user has just acted. While a panel is away, the dock keeps a button for it in "
                     + "a row above its groups: the button's menu brings the panel's window to the front, where the "
                     + "browser allows it, or returns the panel. `PoppedOut` lists the panels that are away, "
                     + "`PoppedOutChanged` reports each change, and `ReturnAsync` brings one back from code. "
@@ -3216,7 +3222,7 @@ public static class ExampleCatalog
                     + "closes when the app closes the panel or moves it elsewhere in the layout. A window takes the "
                     + "page's style sheets and what the page sets on its root element, and follows the sheets in the "
                     + "page's head and the root as they change. When the browser refuses to open the window, the "
-                    + "panel floats in the dock.",
+                    + "panel stays where it was.",
                     typeof(DockManagerPopOutExample)),
                 new("auto-hide", "Auto-hide strips", "Auto-hide in a panel's menus puts the panel away on a strip "
                     + "along an edge of the dock, where only a button with its title shows. The button slides the "
@@ -3334,8 +3340,8 @@ public static class ExampleCatalog
                 new(["Enter", "Space"], "Opens the menu of single steps: Left, Right, Up and Down on the Move "
                     + "button, and Wider, Narrower, Taller and Shorter on the grip.")
                     { When = "On a window's Move button or grip" },
-                new(["Enter", "Space"], "Brings the panel back to the dock, in the floating window the layout kept "
-                    + "for it, and moves focus to its tab.")
+                new(["Enter", "Space"], "Brings the panel back where it was in the dock and moves focus to its "
+                    + "tab, or to its button on a strip.")
                     { When = "On the Return button in a panel's own browser window" },
                 new(["Enter", "Space"], "Slides the panel out over the dock and moves focus to its tab, or slides it "
                     + "back when it is out.") { When = "On a strip's button" },

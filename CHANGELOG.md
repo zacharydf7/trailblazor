@@ -85,6 +85,10 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Markup and behavior
 
+#### 2026-11-22
+
+- A `TbDockManager` panel that comes back from a browser window of its own now goes back where it was docked, instead of staying in the floating window the layout kept for it. When nothing else in the layout has changed, the layout is the one the panel left, sizes and all. Otherwise a panel from a strip goes back to its strip, a panel that shared a group goes beside the nearest tab that was next to it, and one that had a group to itself gets that group back, at its size, on its side of what was next to it; with no neighbor left it stays floating. This holds for the Return button, a closed window, `ReturnAsync`, a window the browser refused, a panel whose `AllowPopOut`, or the dock's, turns off, and a panel the app takes away while it is in its window: a panel that is there only while a task runs now shows where it was docked when the app makes it again. A panel that floated alone before it went still comes back to that window. `LayoutChanged` is raised as the panel goes back. A test that expected the panel to float after it returned should now expect it where it was docked.
+
 #### 2026-11-21
 
 - A `TbDockPanel` can ask before it closes and mark unsaved changes. `CanClose` (`Func<Task<bool>>`) is asked before the user closes the panel, by the tab's mark, Delete or Backspace, a middle click, Close in a menu or a test helper; returning false keeps the panel, its content and the focus. The app's own `Layout.Close` isn't asked. `Modified` shows a dot on the panel's tab or strip button (`data-part="modified"`, class `tb-dock__modified`, and `data-modified` on the tab or button), on a tab in the close mark's place until the pointer or the keyboard focus is on it, and describes it as "Unsaved changes" (`DockLabels.Modified`, `TbStrings.DockModified`). The Playwright helper's `CloseAsync` now waits until the dock has handled the close, where it waited for the tab to go.

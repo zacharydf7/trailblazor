@@ -1,0 +1,25 @@
+@page "/dock-short-lived"
+
+@* A panel that is there only while a task runs: Edit makes it, and its own Done button takes it away. *@
+<TbButton OnClick="() => _editing = true">Edit</TbButton>
+<div style="inline-size: 40rem; block-size: 16rem">
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Trips" AllowPopOut>
+        <TbDockPanel Id="list" Title="List">
+            <p>Three trips.</p>
+        </TbDockPanel>
+        @if (_editing)
+        {
+            <TbDockPanel Id="editor" Title="Editor">
+                <TbButton OnClick="() => _editing = false">Done</TbButton>
+            </TbDockPanel>
+        }
+        <TbDockPanel Id="map" Title="Map">
+            <p>The map.</p>
+        </TbDockPanel>
+    </TbDockManager>
+</div>
+
+@code {
+    private DockLayout _layout = new(new DockSplit(new DockGroup("list"), new DockGroup("editor"), new DockGroup("map")));
+    private bool _editing = true;
+}

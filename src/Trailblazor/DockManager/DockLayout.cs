@@ -257,6 +257,103 @@ public sealed record DockLayout
     /// <summary>Shows every group again when one fills the dock, and changes nothing otherwise.</summary>
     public DockLayout Restore() => Maximized is { } group ? Replace(group, group with { Maximized = false }) : this;
 
+    // This layout with a panel back where an earlier layout had it, for a panel that floated only while it showed
+    // in a browser window of its own. When nothing else has changed since the panel floated, that is the earlier
+    // layout itself. Otherwise the panel goes to its strip, or beside the nearest tab of its old group that is still
+    // docked, or, when it had a group to itself, the group goes back at its size on its side of what was next to it.
+    // With none of its neighbors left it stays where it is.
+    internal DockLayout Redocked(string panel, DockLayout before, DockLayout floated)
+    {
+        if (Equals(floated))
+        {
+            return before;
+        }
+
+        if (before.StripOf(panel) is { } strip)
+        {
+            return AutoHide(panel, strip.Edge).ResizeAutoHidden(panel, strip.Size);
+        }
+
+        if (before.GroupOf(panel) is not { } group)
+        {
+            return this;
+        }
+
+        // A neighbor that has floated since isn't where it was, and may be waiting to go back there itself.
+        bool Stays(string other) => GroupOf(other) is not null
+            && FloatOf(other) is null == before.FloatOf(other) is null;
+        var tabs = group.Panels.ToList();
+        var at = tabs.IndexOf(panel);
+        foreach (var (tab, side) in tabs.Take(at).Reverse().Select(tab => (tab, DockPosition.After))
+            .Concat(tabs.Skip(at + 1).Select(tab => (tab, DockPosition.Before))))
+        {
+            if (Stays(tab))
+            {
+                return Move(panel, tab, side);
+            }
+        }
+
+        foreach (var (part, side) in before.PartsBeside(panel))
+        {
+            var nearestFirst = side is DockPosition.End or DockPosition.Bottom ? GroupsIn(part).Reverse()
+                : GroupsIn(part);
+            var left = nearestFirst.SelectMany(each => each.Panels).Where(Stays).ToList();
+            if (left.Count == 0)
+            {
+                continue;
+            }
+
+            // The part as it is now, when the tree still has one that holds just what is left of it. The group
+            // then shares that part's space with it as the two shared it before.
+            var lifted = Lifted(panel);
+            if (NodesIn(lifted.Root).FirstOrDefault(node =>
+                left.ToHashSet().SetEquals(GroupsIn(node).SelectMany(each => each.Panels))) is not { } now)
+            {
+                return Move(panel, left[0], side);
+            }
+
+            var (own, kept) = (new DockGroup(panel) { Size = group.Size }, now with { Size = part.Size });
+            var vertical = side is DockPosition.Top or DockPosition.Bottom;
+            // A split of the same direction as the one around the part joins it, its parts sharing its size, so it
+            // is sized for the part to keep the space it has now.
+            var joins = NodesIn(lifted.Root).OfType<DockSplit>().Any(split => split.Vertical == vertical
+                && split.Children.Any(child => ReferenceEquals(child, now)));
+            return lifted.Replace(now,
+                new DockSplit(side is DockPosition.Start or DockPosition.Top ? [own, kept] : [kept, own])
+                {
+                    Vertical = vertical,
+                    Size = joins ? now.Size * (part.Size + group.Size) / part.Size : now.Size,
+                }).Uncovered(panel);
+        }
+
+        return this;
+    }
+
+    // The parts of the tree on either side of this panel's group, each with the side of it that the group is on:
+    // first those next to it in its own split, then those next to that split in the one around it, and so on
+    // outward.
+    private IEnumerable<(DockNode Part, DockPosition Side)> PartsBeside(string panel)
+    {
+        foreach (var split in NodesIn(Root).OfType<DockSplit>().Reverse())
+        {
+            var at = split.Children.ToList()
+                .FindIndex(child => GroupsIn(child).Any(group => group.Panels.Contains(panel)));
+            if (at > 0)
+            {
+                yield return (split.Children[at - 1], split.Vertical ? DockPosition.Bottom : DockPosition.End);
+            }
+
+            if (at >= 0 && at + 1 < split.Children.Count)
+            {
+                yield return (split.Children[at + 1], split.Vertical ? DockPosition.Top : DockPosition.Start);
+            }
+        }
+    }
+
+    // Every node of a tree, each before what it holds.
+    private static IEnumerable<DockNode> NodesIn(DockNode? node) => node is null ? []
+        : node is DockSplit split ? split.Children.SelectMany(NodesIn).Prepend(node) : [node];
+
     /// <summary>The layout with only these panels: any other id leaves its group, its window or its strip as
     /// <see cref="Close"/> would take it out, and leaves <see cref="Closed"/> too, so the layout doesn't remember
     /// it. Use it on a saved layout to drop the panels a newer version of the app no longer has, since a layout

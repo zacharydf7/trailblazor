@@ -864,6 +864,118 @@ public class DockLayoutTests
         Assert.Equal(new DockGroup("map"), layout.Root);
     }
 
+    // Trails and Map share a group beside the notes, which sit above the weather.
+    private static readonly DockLayout Hike = new(new DockSplit(
+        new DockGroup("trails", "map") { Size = 1 },
+        new DockSplit(new DockGroup("notes") { Size = 3 }, new DockGroup("weather")) { Vertical = true, Size = 3 }));
+
+    [Fact]
+    public void Redocked_ShouldGiveTheLayoutThePanelLeft_WhenNothingElseHasChanged()
+    {
+        var floated = Hike.Float("notes");
+
+        Assert.Equal(Hike, floated.Redocked("notes", Hike, floated));
+    }
+
+    [Theory]
+    [InlineData("map", "trails map")]
+    [InlineData("trails", "trails map")]
+    public void Redocked_ShouldPutThePanelBesideTheTabThatWasNextToIt_WhenTheLayoutHasChanged(string panel,
+        string tabs)
+    {
+        var floated = Hike.Float(panel);
+
+        var docked = floated.Close("weather").Redocked(panel, Hike, floated);
+
+        Assert.Empty(docked.Floating);
+        Assert.Equal(tabs.Split(' '), docked.GroupOf(panel)!.Panels);
+        Assert.Equal(panel, docked.GroupOf(panel)!.Active);
+    }
+
+    [Theory]
+    [InlineData("notes", "trails", "weather", true, 0)]
+    [InlineData("weather", "trails", "notes", true, 1)]
+    [InlineData("notes", "weather", "trails", false, 1)]
+    public void Redocked_ShouldPutThePanelOnItsOldSideOfTheGroupThatWasNextToIt_WhenItHadAGroupToItself(
+        string panel, string closed, string beside, bool vertical, int place)
+    {
+        var floated = Hike.Float(panel);
+
+        var docked = floated.Close(closed).Redocked(panel, Hike, floated);
+
+        Assert.Empty(docked.Floating);
+        var split = SplitOf(docked.Root, panel)!;
+        Assert.Equal(vertical, split.Vertical);
+        Assert.Equal(new DockGroup(panel), split.Children[place] with { Size = 1 });
+        Assert.Contains(beside, ((DockGroup)split.Children[1 - place]).Panels);
+    }
+
+    [Fact]
+    public void Redocked_ShouldGiveTheGroupItsPlaceAndSizeBack_WhenOnlyAnotherGroupsTabWasSelectedMeanwhile()
+    {
+        var floated = Hike.Float("notes");
+
+        var docked = floated.Open("map").Redocked("notes", Hike, floated);
+
+        // The layout is the one the notes left but for the tab that shows, which the earlier layout can't supply.
+        Assert.Equal(Hike.Open("map"), docked);
+    }
+
+    [Fact]
+    public void Redocked_ShouldGiveEveryGroupItsSizeBack_WhenThePanelsSplitHadThreeParts()
+    {
+        var columns = new DockLayout(new DockSplit(new DockGroup("trails", "map") { Size = 1 },
+            new DockGroup("notes") { Size = 3 }, new DockGroup("weather") { Size = 1 }));
+        var floated = columns.Float("notes");
+
+        var docked = floated.Open("map").Redocked("notes", columns, floated);
+
+        Assert.Equal(columns.Open("map"), docked);
+    }
+
+    [Fact]
+    public void Redocked_ShouldPassOverANeighborThatFloatsNow_WhenItWasDockedBefore()
+    {
+        var floated = Hike.Float("map");
+
+        // The trails, the map's only tab neighbor, have floated since, so the map goes beside the notes instead.
+        var docked = floated.Float("trails").Redocked("map", Hike, floated);
+
+        Assert.Equal(["trails"], docked.Floating.Single().Group.Panels);
+        var split = SplitOf(docked.Root, "map")!;
+        Assert.Equal(new DockGroup("map"), split.Children[0] with { Size = 1 });
+        Assert.Contains("notes", GroupsUnder(split.Children[1]));
+    }
+
+    [Fact]
+    public void Redocked_ShouldPutThePanelBackOnItsStripAtItsSize_WhenItWasAutoHidden()
+    {
+        var hidden = Hike.AutoHide("notes", DockPosition.End).ResizeAutoHidden("notes", 40);
+        var floated = hidden.Float("notes");
+
+        var docked = floated.Close("weather").Redocked("notes", hidden, floated);
+
+        Assert.Empty(docked.Floating);
+        Assert.Equal((DockPosition.End, 40), (docked.StripOf("notes")!.Edge, docked.StripOf("notes")!.Size));
+    }
+
+    [Fact]
+    public void Redocked_ShouldLeaveThePanelFloating_WhenNoneOfItsOldNeighborsIsShown()
+    {
+        var floated = Hike.Float("notes");
+        var alone = floated.Close("trails").Close("map").Close("weather");
+
+        Assert.Equal(alone, alone.Redocked("notes", Hike, floated));
+    }
+
+    private static IEnumerable<string> GroupsUnder(DockNode node) => node is DockGroup group ? group.Panels
+        : ((DockSplit)node).Children.SelectMany(GroupsUnder);
+
+    // The split that holds the panel's group as one of its children.
+    private static DockSplit? SplitOf(DockNode? node, string panel) => node is not DockSplit split ? null
+        : split.Children.Any(child => child is DockGroup group && group.Panels.Contains(panel)) ? split
+        : split.Children.Select(child => SplitOf(child, panel)).FirstOrDefault(found => found is not null);
+
     private static (double X, double Y, double Width, double Height) Box(DockFloat window) =>
         (window.X, window.Y, window.Width, window.Height);
 }

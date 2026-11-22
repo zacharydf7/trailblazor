@@ -314,9 +314,15 @@
     private DotNetObjectReference<DockReport>? _report;
     private string? _focusAfterRender;
     private string? _focusStripAfterRender;
-    // The panels that show in browser windows of their own, each alone in a floating window of the layout, which is
-    // where it shows again when its browser window closes.
+    // The panels that show in browser windows of their own, each alone in a floating window of the layout, which
+    // keeps a place for it while it is away.
     private readonly HashSet<string> _popped = [];
+    // Where each of them was before it floated for its window: the layout it left, that layout with it floated, and
+    // its turn among those that went. A panel that floated alone already has no entry, and stays floating.
+    private readonly Dictionary<string, (DockLayout Before, DockLayout Floated, int Turn)> _homes = [];
+    private int _turns;
+    // The panels that stopped showing in a window of their own in the last render, which go back where they were.
+    private readonly HashSet<string> _goingHome = [];
     // The panel to move into the browser window its menu item opened, once it is rendered for one.
     private string? _popOutAfterRender;
     // The popped panels whose windows have them, which a window still waiting for its style sheets doesn't yet.
@@ -423,8 +429,9 @@
     public IReadOnlyList<string> PoppedOut =>
         [.. Shown().Floats.Select(window => window.Active).Where(_landed.Contains)];
 
-    /// <summary>Brings a panel back to the dock from its own browser window, which closes. The panel shows in the
-    /// floating window the layout kept for it. Does nothing for a panel that isn't in a window of its own.</summary>
+    /// <summary>Brings a panel back to the dock from its own browser window, which closes. The panel shows where it
+    /// was docked before it went, or in the floating window it had to itself. Does nothing for a panel that isn't
+    /// in a window of its own.</summary>
     public Task ReturnAsync(string panel) => InvokeAsync(() => ReturnFromPageAsync(panel, focus: false));
 
     /// <summary>The dock's accessible name, such as "Workbench".</summary>
@@ -670,9 +677,21 @@
             }
         }
 
-        // A panel shows in a browser window of its own only while it is alone in a window of the layout.
-        _popped.RemoveWhere(id => !CanPopOut(id)
-            || !shown.Floats.Any(window => window.Panels is [var only] && only == id));
+        // A panel shows in a browser window of its own only while it is alone in a window of the layout. One the
+        // app took away, or that may no longer be in a window, goes back where it was; one the layout has moved is
+        // where the app or the user put it.
+        foreach (var id in _popped.Where(id => _layout.FloatOf(id) is not { Group.Panels.Count: 1 }).ToList())
+        {
+            _popped.Remove(id);
+            _homes.Remove(id);
+        }
+
+        foreach (var id in _popped.Where(id => !CanPopOut(id)).ToList())
+        {
+            _popped.Remove(id);
+            _goingHome.Add(id);
+        }
+
         _landed.IntersectWith(_popped);
         var windows = WindowKeys(shown.Floats);
         for (var layer = 0; layer < shown.Floats.Count; layer++)
@@ -1161,15 +1180,21 @@
     };
 
     // Shows a panel in the browser window that the script opened as the menu's item was clicked. The panel first
-    // gets a floating window of its own in the layout, which is where it shows again once the browser window closes.
+    // gets a floating window of its own in the layout, which keeps a place for it until it goes back where it was.
     private async Task PopOutAsync(string panel)
     {
         try
         {
             var alone = _layout.FloatOf(panel) is { Group.Panels.Count: 1 };
+            var floated = alone ? _layout : _layout.Float(panel);
+            if (!alone)
+            {
+                _homes[panel] = (_layout, floated, _turns++);
+            }
+
             _popped.Add(panel);
             _popOutAfterRender = panel;
-            await ChangeAsync(alone ? _layout : _layout.Float(panel), PopOutAction);
+            await ChangeAsync(floated, PopOutAction);
         }
         finally
         {
@@ -1180,6 +1205,13 @@
     // Tells the script which panels show in browser windows of their own, after the render that draws them so.
     private async Task ShowPoppedAsync()
     {
+        // The last to go is the first back: its layout is the one the dock has, so each finds the layout it left.
+        foreach (var gone in _goingHome.OrderByDescending(id => _homes.GetValueOrDefault(id).Turn).ToList())
+        {
+            _goingHome.Remove(gone);
+            await GoHomeAsync(gone);
+        }
+
         if (_handle is null)
         {
             return;
@@ -1206,13 +1238,15 @@
                 else if (_popped.Remove(panel))
                 {
                     // The browser refused the window, or the window closed before the panel got there, so the panel
-                    // stays in the floating window it was given. Only a refusal is said: closing was the user's doing.
+                    // goes back where it was. Only a refusal is said: closing was the user's doing.
                     _focusAfterRender = panel;
                     if (wrong == "blocked")
                     {
                         Announcer.Polite(Format(Labels.PopOutBlocked, TbStrings.DockPopOutBlocked, opened.Title));
                     }
 
+                    await GoHomeAsync(panel);
+                    FocusStripIfStowed(panel);
                     StateHasChanged();
                 }
             }
@@ -1245,9 +1279,9 @@
         await ReturnAsync(panel, focus);
     }
 
-    // A panel comes back from its browser window to the floating window the layout kept for it: its Return button was
-    // pressed, which leaves the focus on its tab, or its browser window closed.
-    private Task ReturnAsync(string panel, bool focus)
+    // A panel comes back from its browser window to where it was docked, or to the floating window it had to
+    // itself: its Return button was pressed, which leaves the focus on its tab, or its browser window closed.
+    private async Task ReturnAsync(string panel, bool focus)
     {
         if (_popped.Remove(panel) && Panel(panel) is { } back)
         {
@@ -1255,10 +1289,43 @@
             Telemetry.Used(TelemetryName, ReturnAction);
             Announcer.Polite(Format(Labels.Returned, TbStrings.DockReturned, back.Title));
             _commits++;
+            await GoHomeAsync(panel);
+            FocusStripIfStowed(panel);
             StateHasChanged();
         }
+    }
 
-        return Task.CompletedTask;
+    // A panel that went back to a strip has no tab to take the focus, so its button on the strip takes it.
+    private void FocusStripIfStowed(string panel)
+    {
+        if (_focusAfterRender == panel && _layout.StripOf(panel) is not null && _layout.Revealed != panel)
+        {
+            (_focusAfterRender, _focusStripAfterRender) = (null, panel);
+        }
+    }
+
+    // Puts a panel that no longer shows in a browser window of its own back where it was before it floated for
+    // that window, as near as the layout still allows, and tells the app.
+    private async Task GoHomeAsync(string panel)
+    {
+        if (!_homes.Remove(panel, out var home))
+        {
+            return;
+        }
+
+        // A panel that went after this one left a layout in which this one floated, which isn't where this one
+        // is now, so the layout it goes back to is one with this panel docked again.
+        foreach (var (other, later) in _homes.Where(each => each.Value.Turn > home.Turn).ToList())
+        {
+            _homes[other] = (later.Before.Redocked(panel, home.Before, home.Floated), later.Floated, later.Turn);
+        }
+
+        if (_layout.FloatOf(panel) is { Group.Panels.Count: 1 }
+            && _layout.Redocked(panel, home.Before, home.Floated) is var docked && !docked.Equals(_layout))
+        {
+            await ChangeAsync(docked, null);
+            StateHasChanged();
+        }
     }
 
     // Puts a panel away on a strip, with the focus on its button there, and says where it went.

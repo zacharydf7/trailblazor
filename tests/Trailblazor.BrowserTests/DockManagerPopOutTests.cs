@@ -89,7 +89,7 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Panel_ShouldComeBackToAFloatingWindowWithItsState_WhenItsWindowClosesOrReturnIsPressed(
+    public async Task Panel_ShouldComeBackWhereItWasDockedWithItsState_WhenItsWindowClosesOrReturnIsPressed(
         string browser)
     {
         var page = await OpenDockAsync(browser);
@@ -100,7 +100,8 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
 
         await Expect(page.GetByLabel("Note", new() { Exact = true })).ToHaveValueAsync("Fuel");
         await FocusedAsync(page.GetByRole(AriaRole.Tab, new() { Name = "Notes" }));
-        Assert.Equal(["Notes"], await page.Tb().Dock("Workbench").FloatingAsync());
+        Assert.Empty(await page.Tb().Dock("Workbench").FloatingAsync());
+        Assert.Equal(["Notes", "Map", "Gear"], await page.Tb().Dock("Workbench").PanelsAsync());
         await page.Tb().Announcements.ExpectAnnouncedAsync("Notes is back in the dock.");
         Assert.True(window.IsClosed);
 
@@ -111,7 +112,8 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
 
         await Expect(page.GetByLabel("Note", new() { Exact = true })).ToHaveValueAsync("Fuel and matches");
         await Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Notes" })).ToBeVisibleAsync();
-        Assert.Equal(["Notes"], await page.Tb().Dock("Workbench").FloatingAsync());
+        Assert.Empty(await page.Tb().Dock("Workbench").FloatingAsync());
+        Assert.Equal(["Notes", "Map", "Gear"], await page.Tb().Dock("Workbench").PanelsAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -269,7 +271,30 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task PopOut_ShouldLeaveThePanelFloatingAndSaySo_WhenTheBrowserRefusesTheWindow(string browser)
+    public async Task Panel_ShouldShowWhereItWasDocked_WhenTheAppTakesItAwayInItsWindowAndMakesItAgain(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-short-lived");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Trips" })).ToHaveAttributeAsync("data-ready", "");
+        var dock = page.Tb().Dock("Trips");
+        var editor = await dock.PopOutAsync("Editor");
+
+        // The task ends in the panel's window: the app takes the panel away, and its window closes.
+        await editor.GetByRole(AriaRole.Button, new() { Name = "Done" }).ClickAsync();
+        await ClosedAsync(editor.Page);
+        Assert.Equal(["List", "Map"], await dock.PanelsAsync());
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Edit", Exact = true }).ClickAsync();
+
+        // The panel is between the list and the map again, not in a window over them, and no new window opens.
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Editor" })).ToBeVisibleAsync();
+        Assert.Equal(["List", "Editor", "Map"], await dock.PanelsAsync());
+        Assert.Empty(await dock.FloatingAsync());
+        Assert.Empty(await dock.PoppedOutAsync());
+        Assert.Single(page.Context.Pages);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PopOut_ShouldPutThePanelBackAndSaySo_WhenTheBrowserRefusesTheWindow(string browser)
     {
         var page = await OpenDockAsync(browser);
         await page.EvaluateAsync("window.open = () => null");
@@ -277,7 +302,8 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         await page.Tb().Dock("Workbench").ChooseFromTabMenuAsync("Notes", "Open in new window");
 
         await page.Tb().Announcements.ExpectAnnouncedAsync("The browser blocked the new window for Notes.");
-        Assert.Equal(["Notes"], await page.Tb().Dock("Workbench").FloatingAsync());
+        Assert.Empty(await page.Tb().Dock("Workbench").FloatingAsync());
+        Assert.Equal(["Notes", "Map", "Gear"], await page.Tb().Dock("Workbench").PanelsAsync());
         await Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Notes" })).ToBeFocusedAsync();
         await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Notes" })).ToBeVisibleAsync();
     }
@@ -625,7 +651,7 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         await inner.ReturnAsync("Roads");
         Assert.Equal(["Notes"], await outer.PoppedOutAsync());
         Assert.Empty(await inner.PoppedOutAsync());
-        Assert.Equal(["Roads"], await inner.FloatingAsync());
+        Assert.Empty(await inner.FloatingAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -703,7 +729,9 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
 
         await dock.ReturnAsync("Gear");
 
-        Assert.Equal(["Gear"], await dock.FloatingAsync());
+        // The notes have gone to a window of their own since, so the gear goes beside the map, which was next to it.
+        Assert.Empty(await dock.FloatingAsync());
+        Assert.Equal(["Map", "Gear"], await dock.PanelsAsync());
         Assert.Equal(["Notes"], await dock.PoppedOutAsync());
         await ClosedAsync(gear.Page);
         Assert.Equal("The panel \"Gear\" isn't in a browser window of its own.",
@@ -889,10 +917,10 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
 
         await window.CloseAsync();
 
-        // The slow sheet arrives, and the dock learns that the window went: the panel shows where it was put, and
-        // nothing is said of a refused window: that would be said in the same render, so checking now is enough.
+        // The slow sheet arrives, and the dock learns that the window went: the panel is back where it was docked,
+        // and nothing is said of a refused window: that would be said in the same render, so checking now is enough.
         await Expect(tools).ToBeVisibleAsync();
-        Assert.Equal(["Tools"], await page.Tb().Dock("Bench").FloatingAsync());
+        Assert.Empty(await page.Tb().Dock("Bench").FloatingAsync());
         await Expect(page.Locator("[data-part=announcer]")).Not.ToContainTextAsync("blocked");
     }
 
@@ -1521,7 +1549,8 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
 
         await inner.ReturnAsync("North");
 
-        Assert.Equal(["North"], await inner.FloatingAsync());
+        Assert.Empty(await inner.FloatingAsync());
+        Assert.Equal(["North", "South"], await inner.PanelsAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
