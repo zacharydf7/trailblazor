@@ -238,9 +238,10 @@ export function attachTabs(list, order, followsSelection) {
 
         updatePanelStop();
     });
-    // A panel shown again, a control turned off or hidden, and a new choice of which panels are stops add no node.
+    // A panel shown again, a control turned off or hidden, a new choice of which panels are stops, and text that
+    // fills in before a panel's first control add no node.
     observer.observe(list.parentElement, {
-        childList: true, subtree: true, attributes: true,
+        childList: true, subtree: true, characterData: true, attributes: true,
         attributeFilter: ['disabled', 'hidden', 'data-focusable-panels'],
     });
     // A tab may have rendered between the first render and this call.

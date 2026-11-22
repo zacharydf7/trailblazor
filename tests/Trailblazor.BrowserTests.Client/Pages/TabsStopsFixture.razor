@@ -1,9 +1,11 @@
 @page "/tabs-stops"
 
 @* Each panel starts another way: with a field, with text, with a tab list whose second tab is selected, and with text
-   that a field takes the place of. *@
+   that a field takes the place of. The first has an element before its field whose text fills in later, which adds
+   no node. *@
 <TbTabs AriaLabel="Trip" KeepAlive FocusablePanels="_stops">
     <TbTab Text="Gear">
+        <p>@_heading</p>
         <TbTextField Label="Pack" @bind-Value="_pack" Disabled="_off" />
     </TbTab>
     <TbTab Text="Notes">
@@ -98,6 +100,9 @@
 </TbTabs>
 <TbButton OnClick="() => _off = !_off">Turn the pack field off or on</TbButton>
 <TbButton OnClick="() => _loaded = !_loaded" data-testid="load">Load or unload the weather</TbButton>
+<TbButton OnClick="@(() => _heading = _heading == "" ? "What to pack" : "")" data-testid="heading">
+    Name the gear or not
+</TbButton>
 <TbButton OnClick="() => _stops = TabPanelFocus.Always">Make every panel a stop</TbButton>
 <TbButton OnClick="() => _stops = TabPanelFocus.Never">Make no panel a stop</TbButton>
 
@@ -107,6 +112,7 @@
     private TabPanelFocus _stops;
     private bool _off;
     private bool _loaded;
+    private string _heading = "";
     private string? _pack;
     private string? _more;
     private string? _camp;

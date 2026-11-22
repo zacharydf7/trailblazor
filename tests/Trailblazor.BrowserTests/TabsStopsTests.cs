@@ -45,6 +45,21 @@ public class TabsStopsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldGiveThePanelItsStopAndTakeItAgain_WhenTextFillsInBeforeItsFirstControlAndEmpties(
+        string browser)
+    {
+        var page = await OpenStopsAsync(browser);
+        await Expect(Panel(page, "Gear")).Not.ToHaveAttributeAsync("tabindex", "0");
+
+        // The text changes in a node that is already there, which adds none.
+        await page.GetByTestId("heading").ClickAsync();
+        await Expect(Panel(page, "Gear")).ToHaveAttributeAsync("tabindex", "0");
+        await page.GetByTestId("heading").ClickAsync();
+
+        await Expect(Panel(page, "Gear")).Not.ToHaveAttributeAsync("tabindex", "0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldTakeThePanelsStopAwayAndGiveItBack_WhenAControlTakesTheTextsPlaceAndGoesAgain(
         string browser)
     {

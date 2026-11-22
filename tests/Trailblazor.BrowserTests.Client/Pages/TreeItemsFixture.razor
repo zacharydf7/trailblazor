@@ -82,7 +82,7 @@
         </TbTreeView>
     </div>
     @* Long names in a narrow tree with a button at each row's end. The region's is wrapped in an element of the
-       template's own, the loop's in one that lays a mark out beside it, the spur's is a TbText straight in the
+       template's own, the loop's two deep in one that lays a mark out beside it, the spur's is a TbText straight in the
        template, and the hut's row holds a label, whose text part isn't the row's. The filter matches the loop and the
        spur, and shows the region and the hut they sit in. *@
     <div style="inline-size: 13rem">
@@ -101,9 +101,11 @@
                 }
                 else if (context.Item.Name.Contains("loop"))
                 {
-                    <div style="display: flex; align-items: center; gap: 0.25rem">
-                        <span data-testid="mark" aria-hidden="true">◆</span>
-                        <span data-part="text">@context.Item.Name</span>
+                    <div data-testid="outer">
+                        <div style="display: flex; align-items: center; gap: 0.25rem">
+                            <span data-testid="mark" aria-hidden="true">◆</span>
+                            <span data-part="text">@context.Item.Name</span>
+                        </div>
                     </div>
                 }
                 else
@@ -118,6 +120,24 @@
             </ItemEndTemplate>
         </TbTreeView>
     </div>
+    @* A row that matches its tree's filter and holds a tree of its own, whose row marks its text two wrappers deep.
+       The outer tree's rules for wrapped text end at the inner tree. *@
+    <TbTreeView TItem="Named" TKey="string" AriaLabel="Shelves" Items="Shelves" KeySelector="named => named.Name"
+                ChildrenSelector="named => named.Children" ItemText="named => named.Name"
+                Filter="@(named => named.Name.Contains("Maps"))">
+        <ItemTemplate>
+            <div>
+                <span data-part="text">@context.Item.Name</span>
+                <TbTreeView TItem="string" TKey="string" AriaLabel="Sheets">
+                    <TbTreeItem Value="@("north")" Text="North sheet">
+                        <TextContent>
+                            <div><div><span data-part="text" data-testid="sheet">North sheet</span></div></div>
+                        </TextContent>
+                    </TbTreeItem>
+                </TbTreeView>
+            </div>
+        </ItemTemplate>
+    </TbTreeView>
     @* Rows deeper than a narrow box is wide. *@
     <div data-testid="deep" style="inline-size: 9rem; overflow-x: auto">
         <TbTreeView TItem="string" TKey="string" AriaLabel="Deep" InitialExpandDepth="9">@Deep(1)</TbTreeView>
@@ -140,6 +160,8 @@
             new("Stone hut above the falls, open in summer", [new("Waterfall spur off the Pine Hollow trail", null)]),
         ]),
     ];
+
+    private static readonly Named[] Shelves = [new("Maps", null)];
 
     private sealed record Named(string Name, Named[]? Children);
 

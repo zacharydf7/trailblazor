@@ -110,8 +110,9 @@ public class TreeItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
         var spur = tree.Locator("[role=treeitem][data-text^='Waterfall']");
         await Expect(spur).ToBeVisibleAsync();
 
-        // Each name is cut off and ends before the row's button: the two in a wrapper, and the spur's, a TbText
-        // marked straight in the template. The loop's wrapper lays a mark out beside its name, on the same line.
+        // Each name is cut off and ends before the row's button: the region's in one wrapper, the loop's in two, and
+        // the spur's, a TbText marked straight in the template. The loop's inner wrapper lays a mark out beside its
+        // name, on the same line.
         foreach (var row in new[] { region, trail, spur })
         {
             var layout = await row.EvaluateAsync<string>("""
@@ -144,6 +145,34 @@ public class TreeItemsTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.True(weights[1] > weights[0] && weights[2] > weights[0],
             $"The matches' weights are {weights[1]} and {weights[2]}, their region's {weights[0]}.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Text_ShouldLeaveATreeInsideTheRowToItsOwnRules_WhenThatTreesTemplateWrapsItsMarkedText(
+        string browser)
+    {
+        var page = await OpenItemsAsync(browser);
+        var shelf = page.GetByRole(AriaRole.Tree, new() { Name = "Shelves" })
+            .Locator("[role=treeitem][data-text='Maps']").First;
+        var sheet = page.GetByTestId("sheet");
+        await Expect(sheet).ToBeVisibleAsync();
+
+        // The shelf matches its tree's filter, and its own name is heavier for it. The sheet is a row of the tree
+        // inside, which has no filter, and its content keeps the least width that tree gives a row's content.
+        var styles = await shelf.EvaluateAsync<string[]>("""
+            row => {
+                const sheet = row.querySelector('[data-testid=sheet]');
+                const weight = element => Number(getComputedStyle(element).fontWeight);
+                return [String(weight(row.querySelector('[data-part=text]')) > weight(sheet)),
+                    getComputedStyle(sheet.closest('.tb-tree__content')).minWidth,
+                    getComputedStyle(sheet).textOverflow];
+            }
+            """);
+
+        Assert.Equal("True", styles[0], ignoreCase: true);
+        Assert.NotEqual("0px", styles[1]);
+        // The inner tree's own rules still cut its wrapped text short.
+        Assert.Equal("ellipsis", styles[2]);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

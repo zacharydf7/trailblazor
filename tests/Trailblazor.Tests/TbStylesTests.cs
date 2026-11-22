@@ -43,12 +43,14 @@ public class TbStylesTests : BunitContext
             .Where(name => name != "tb-tree__text").Distinct().Order().ToList();
         var css = File.ReadAllText(Path.Combine(source, "wwwroot", "trailblazor.css"));
 
-        var lists = Regex.Matches(css, @"\.tb-tree__content > \* > \[data-part=""text""\]:not\(([^)]*)\)")
+        // The tree's are the stylesheet's only rules with such a list: two for text in one wrapper, and three in
+        // the scopes for text in deeper ones.
+        var lists = Regex.Matches(css, @"\[data-part=""text""\]:not\(([^)]*)\)")
             .Select(rule => rule.Groups[1].Value.Split(',').Select(name => name.Trim().TrimStart('.')).Order())
             .ToList();
 
         Assert.DoesNotContain("", others);
-        Assert.Equal(2, lists.Count);
+        Assert.Equal(5, lists.Count);
         Assert.All(lists, list => Assert.Equal(others, list));
     }
 }

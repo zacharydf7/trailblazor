@@ -9635,6 +9635,14 @@
         font-weight: var(--tb-font-weight-medium);
     }
 
+    /* Text in deeper wrappers, down to a tree inside the row, whose rows are its own. */
+    @scope (.tb-tree__item--match > .tb-tree__content) to (.tb-tree) {
+        :scope > * > * [data-part="text"]:not(.tb-label__text, .tb-barcode__text,
+            .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text) {
+            font-weight: var(--tb-font-weight-medium);
+        }
+    }
+
     /* Every row keeps the toggle's room, so labels line up whether or not a row has children. */
     .tb-tree__toggle {
         display: flex;
@@ -9686,15 +9694,34 @@
     }
 
     /* The wrapped text is cut off within its wrapper. Other components' text parts are left alone, so add a new
-       component's text part to this list and to the match rule's. */
-    .tb-tree__content > * > [data-part="text"]:not(.tb-label__text, .tb-barcode__text, .tb-breadcrumbs__text,
-        .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text) {
+       component's text part to this list, to the match rule's and to the deeper rules' below. */
+    .tb-tree__content > * > [data-part="text"]:not(.tb-label__text, .tb-barcode__text,
+        .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text) {
         display: inline-block;
         max-inline-size: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         vertical-align: bottom;
+    }
+
+    /* The same for text in deeper wrappers, where the browser has @scope. The scope ends at a tree inside the
+       row, whose rows are that tree's own, with their own least width and their own matches. */
+    @scope (.tb-tree__content) to (.tb-tree) {
+        :scope :has([data-part="text"]:not(.tb-label__text, .tb-barcode__text,
+            .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text)) {
+            min-width: 0;
+        }
+
+        :scope > * > * [data-part="text"]:not(.tb-label__text, .tb-barcode__text,
+            .tb-breadcrumbs__text, .tb-list__primary, .tb-ai-prompt__text, .tb-smart-paste__text) {
+            display: inline-block;
+            max-inline-size: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: bottom;
+        }
     }
 
     .tb-tree__end {
