@@ -109,9 +109,19 @@ function blockPage(page) {
 // A modal blocks the whole app, so while one is open the app's other windows take no input and dim. For each of
 // those windows, what was made inert and the scrim that covers it.
 const blockedWindows = new Map();
+// Gives the document of the region that blocks the app without being a dialog, when there is one. A modal dialog
+// is in front of any region, so it decides first.
+let regionWindow = null;
+
+// Holds the app's other windows for a blocking region, whose document `pageOf` gives each time it is asked, or
+// frees them when given null.
+export function setRegionWindow(pageOf) {
+    regionWindow = pageOf;
+    blockWindows();
+}
 
 function blockWindows() {
-    const front = stack.findLast(entry => entry.modal)?.dialog.ownerDocument;
+    const front = stack.findLast(entry => entry.modal)?.dialog.ownerDocument ?? regionWindow?.();
     const open = [document, ...otherPages()];
     for (const page of new Set([...open, ...blockedWindows.keys()])) {
         const block = front !== undefined && page !== front && open.includes(page);

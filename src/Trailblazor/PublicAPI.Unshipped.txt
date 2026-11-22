@@ -2096,6 +2096,8 @@ Trailblazor.TbFileUpload.ZoneContent.get -> Microsoft.AspNetCore.Components.Rend
 Trailblazor.TbFileUpload.ZoneContent.set -> void
 Trailblazor.TbFocusScope
 Trailblazor.TbFocusScope.AutoFocus.get -> bool
+Trailblazor.TbFocusScope.Blocking.get -> bool
+Trailblazor.TbFocusScope.Blocking.set -> void
 Trailblazor.TbFocusScope.AutoFocus.set -> void
 Trailblazor.TbFocusScope.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbFocusScope.ChildContent.set -> void

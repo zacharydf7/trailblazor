@@ -1,10 +1,14 @@
 @namespace Trailblazor
+@using Microsoft.Extensions.Options
 @using Microsoft.JSInterop
 @using Trailblazor.Primitives
 @inherits TbComponentBase
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
+@inject IOptions<TrailblazorOptions> Settings
 
+@* A script sets data-ready here, which tests wait for: the scope's own once it manages the focus, or for a blocking
+   scope the block's, once it counts the scope, whether or not the scope can be reached yet. *@
 <div @attributes="AdditionalAttributes" @ref="_element" tabindex="-1" data-part="focus-scope"
      class="@ClassNames.Join("tb-focus-scope", Class)" style="@Style">
     <CascadingValue Value="this" IsFixed>@ChildContent</CascadingValue>
@@ -13,6 +17,7 @@
 @code {
     private ElementReference _element;
     private FocusScope? _scope;
+    private IJSObjectReference? _block;
     private bool _focusOnceActive;
     private bool _disposed;
 
@@ -31,6 +36,19 @@
     [Parameter]
     public bool RestoreFocus { get; set; } = true;
 
+    /// <summary>Makes everything outside the scope inert while the scope is there, as a modal dialog does: the
+    /// pointer, the keyboard and screen readers can't reach it, on the page or in the app's other windows, such as a
+    /// dock panel's own browser window. Use it for content that must be finished or dropped before anything else,
+    /// where a dialog doesn't fit, such as an editor in a dock panel. Blazor's reconnect and error UI, toasts, the
+    /// announcer, dialogs and the popups <see cref="DialogSettings.OutsidePopups"/> names stay usable, so content
+    /// in the scope can open a dialog. With several such scopes, the newest is in force; when it goes, the one
+    /// before it takes over. A scope the user can't get to, because it doesn't show or sits inside something inert
+    /// such as a dock panel behind another tab, holds nothing until it can be reached. In the scope's own window,
+    /// what it holds is marked <c>data-tb-blocked</c> and dimmed. The hold starts once the page is interactive.
+    /// </summary>
+    [Parameter]
+    public bool Blocking { get; set; }
+
     /// <summary>The overlay or region whose focus the scope manages.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -46,12 +64,43 @@
 
         try
         {
+            // The scope starts first, while what has the focus can still be noted: the block makes it inert, and an
+            // inert element loses the focus.
             var scope = await FocusScope.CreateAsync(Modules, _element,
-                new() { Trapped = Trapped, AutoFocus = AutoFocus, RestoreFocus = RestoreFocus });
+                new() { Trapped = Trapped, AutoFocus = AutoFocus, RestoreFocus = RestoreFocus, MarksReady = !Blocking });
             if (_disposed)
             {
                 await scope.DisposeAsync();
                 return;
+            }
+
+            if (Blocking)
+            {
+                // A scope that an older blocking scope held, or that was out of reach, couldn't take the focus as it
+                // started, so the block moves the focus in once it holds.
+                IJSObjectReference? block;
+                try
+                {
+                    var module = await Modules.ImportAsync("./_content/Trailblazor/blocking-region.js");
+                    block = await module.InvokeAsync<IJSObjectReference?>("blockOutside", _element,
+                        Settings.Value.Dialogs.OutsidePopups, AutoFocus);
+                }
+                catch (JSException)
+                {
+                    // A selector in OutsidePopups that isn't one: the scope that started is ended before the error
+                    // goes on, or a trapped one would go on trapping.
+                    await scope.DisposeAsync();
+                    throw;
+                }
+
+                if (_disposed)
+                {
+                    await EndBlockAsync(block);
+                    await scope.DisposeAsync();
+                    return;
+                }
+
+                _block = block;
             }
 
             _scope = scope;
@@ -88,6 +137,8 @@
         _disposed = true;
         try
         {
+            // The block ends first, so what had the focus can take it back.
+            await EndBlockAsync(_block);
             if (_scope is not null)
             {
                 await _scope.DisposeAsync();
@@ -96,6 +147,15 @@
         catch (JSDisconnectedException)
         {
             // The circuit is gone, and the scope went with it.
+        }
+    }
+
+    // The script gives no block for an element that was gone before it was asked.
+    private static async Task EndBlockAsync(IJSObjectReference? block)
+    {
+        if (block is not null)
+        {
+            await block.DisposeHandleAsync();
         }
     }
 }

@@ -2,10 +2,10 @@ import { alwaysUsable, hold, release } from './inert.js';
 
 // Besides Blazor's own parts and the popups the app names, the live regions, toasts and dialogs stay usable whatever
 // an overlay covers. An inert live region says nothing.
-const ownParts = ['[data-part="announcer"]', '[data-part="toaster"]', 'dialog'];
+export const ownParts = ['[data-part="announcer"]', '[data-part="toaster"]', 'dialog'];
 
 // An element that holds something usable stays usable itself, with each of its other children made inert.
-function collect(element, usable, elements) {
+export function collect(element, usable, elements) {
     if (element.matches(usable)) {
         return;
     }

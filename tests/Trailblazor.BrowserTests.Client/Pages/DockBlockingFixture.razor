@@ -1,0 +1,42 @@
+@page "/dock-blocking"
+
+@* A dock whose editor panel holds a focus scope that blocks the rest of the app while it is there, beside a panel
+   that can be in a browser window of its own, as the editor's can. The draft panel, a tab behind the notes, gets
+   such a scope from a button on the page. *@
+<TbButton OnClick="() => _drafting = true">Draft</TbButton>
+<div style="inline-size: 40rem; block-size: 16rem">
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Workspace" AllowPopOut>
+        <TbDockPanel Id="editor" Title="Editor">
+            @if (_editing)
+            {
+                <TbFocusScope Blocking role="region" aria-label="Trip editor">
+                    <TbButton OnClick="() => _editing = false">Finish</TbButton>
+                </TbFocusScope>
+            }
+            else
+            {
+                <TbButton OnClick="() => _editing = true">Start</TbButton>
+            }
+        </TbDockPanel>
+        <TbDockPanel Id="draft" Title="Draft">
+            <p>A draft.</p>
+            @if (_drafting)
+            {
+                <TbFocusScope Blocking role="region" aria-label="Draft editor">
+                    <TbButton OnClick="() => _drafting = false">Close draft</TbButton>
+                </TbFocusScope>
+            }
+        </TbDockPanel>
+        <TbDockPanel Id="notes" Title="Notes">
+            <TbButton OnClick="() => _notes++">Note</TbButton>
+            <p data-testid="notes">@_notes</p>
+        </TbDockPanel>
+    </TbDockManager>
+</div>
+
+@code {
+    private DockLayout _layout = new(new DockSplit(new DockGroup("editor"), new DockGroup("notes", "draft")));
+    private bool _editing;
+    private bool _drafting;
+    private int _notes;
+}

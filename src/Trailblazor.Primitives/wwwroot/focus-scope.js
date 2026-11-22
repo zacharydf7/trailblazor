@@ -22,7 +22,7 @@ export function createFocusScope(container, options) {
     // A temporary stop beside a player whose own controls took the Tab; reaching it wraps to the scope's other end.
     let guard = null;
     let guardWrapsForward = true;
-    const scope = { dispose, focusMarkedIfUnmoved };
+    const scope = { dispose, focusMarkedIfUnmoved, container };
     // Asked for each time: the container can move to another window, which has a focused element of its own.
     const focusedNow = () => container.ownerDocument.activeElement;
 
@@ -37,6 +37,10 @@ export function createFocusScope(container, options) {
         (autofocusTarget(container) ?? getTabbables(container)[0] ?? container).focus();
     }
 
+    if (options.marksReady) {
+        container.dataset.ready = '';
+    }
+
     const settled = focusedNow();
     return scope;
 
@@ -47,8 +51,13 @@ export function createFocusScope(container, options) {
         }
     }
 
+    // The newest trap that can be used is the one at work. A trap stands down while its container is inside
+    // something inert, or behind a modal dialog that doesn't hold it: it has nothing Tab could go to, and would
+    // only keep the key from what is in front of it.
     function isActiveTrap() {
-        return trappedScopes.at(-1) === scope;
+        return trappedScopes.findLast(each => !each.container.closest('[inert]')
+            && ![...each.container.ownerDocument.querySelectorAll('dialog:modal')]
+                .some(modal => !modal.contains(each.container))) === scope;
     }
 
     function onKeyDown(event) {

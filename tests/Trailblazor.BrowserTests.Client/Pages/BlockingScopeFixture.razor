@@ -1,0 +1,71 @@
+@page "/blocking-scope"
+@inject IDialogService Dialogs
+
+@* Two focus scopes that each block everything outside them while they are there. The editor holds a field, a button
+   that asks a question in a dialog, one that starts the second scope, and one that adds a button beside the editor's
+   section after the block has started. A third scope starts inside an element that doesn't show until Show is
+   pressed. *@
+<TbButton OnClick="() => _outside++">Outside</TbButton>
+<p data-testid="outside">@_outside</p>
+<TbButton OnClick="() => _editing = true">Edit</TbButton>
+<TbButton OnClick="() => _stowed = true">Start stowed</TbButton>
+<TbButton OnClick="() => _shown = true">Show</TbButton>
+<TbButton OnClick="() => _boxless = true">Start boxless</TbButton>
+@if (_boxless)
+{
+    <TbFocusScope Blocking role="region" aria-label="Boxless" Style="display: contents">
+        <TbButton OnClick="() => _boxless = false">End boxless</TbButton>
+    </TbFocusScope>
+}
+<div hidden="@(!_shown)">
+    @if (_stowed)
+    {
+        <TbFocusScope Blocking role="region" aria-label="Stowed">
+            <TbButton OnClick="() => _stowed = false">Put away</TbButton>
+        </TbFocusScope>
+    }
+</div>
+<div data-testid="shell">
+    <aside>
+        <TbButton OnClick="() => _outside++">Sidebar</TbButton>
+    </aside>
+    <section>
+        @if (_editing)
+        {
+            <TbFocusScope Blocking Trapped role="region" aria-label="Editor">
+                <TbTextField Label="Name" @bind-Value="_name" />
+                <TbButton OnClick="AskAsync">Ask</TbButton>
+                <TbButton OnClick="() => _details = true">More</TbButton>
+                <TbButton OnClick="() => _late = true">Add</TbButton>
+                <TbButton OnClick="() => _editing = false">Done</TbButton>
+                <p data-testid="answer">@_answer</p>
+            </TbFocusScope>
+        }
+    </section>
+    @if (_late)
+    {
+        <TbButton OnClick="() => _outside++">Late</TbButton>
+    }
+    @if (_details)
+    {
+        <TbFocusScope Blocking role="region" aria-label="Details">
+            <TbButton OnClick="() => _details = false">Close details</TbButton>
+            <TbButton>Second detail</TbButton>
+        </TbFocusScope>
+    }
+</div>
+
+@code {
+    private int _outside;
+    private bool _editing;
+    private bool _details;
+    private bool _late;
+    private bool _stowed;
+    private bool _boxless;
+    private bool _shown;
+    private string? _name;
+    private string? _answer;
+
+    private async Task AskAsync() => _answer = await Dialogs.ConfirmAsync("Keep the name?", "It can't be changed.")
+        ? "Kept" : "Dropped";
+}

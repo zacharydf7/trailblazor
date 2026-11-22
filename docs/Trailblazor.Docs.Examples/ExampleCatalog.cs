@@ -10257,18 +10257,20 @@ public static class ExampleCatalog
             ],
         },
         new("focus-scope", "Focus scope", ExampleCategory.Overlays,
-            "Manages focus for a custom overlay or panel: it moves focus in, can keep Tab inside, and gives focus "
-                + "back when it goes.")
+            "Manages focus for a custom overlay or panel: it moves focus in, can keep Tab inside, can hold the rest "
+                + "of the app until it's done, and gives focus back when it goes.")
         {
             FullWidth = true,
             WhenToUse =
             [
                 "Use it when you build your own panel or overlay and need it to handle focus correctly.",
+                "Use `Blocking` when a panel that isn't a dialog has to be finished or dropped before anything "
+                    + "else can be used.",
             ],
             WhenNotToUse =
             [
-                "For a modal window, use a [dialog](components/dialog), since a focus scope doesn't make the page "
-                    + "behind inert or close on Escape.",
+                "For a modal window, use a [dialog](components/dialog): it holds and dims the page as `Blocking` "
+                    + "does, and also closes on Escape and is announced as a dialog.",
                 "For a panel beside a button, use a [popover](components/popover).",
             ],
             Related = ["dialog", "popover", "overlay"],
@@ -10287,8 +10289,22 @@ public static class ExampleCatalog
                 new("giving-focus-back", "Giving focus back", "When a focus scope is removed, focus returns to where "
                     + "it was, unless the user has moved it elsewhere. `RestoreFocus=\"false\"` leaves that to you, "
                     + "for a panel whose closing moves focus on by itself.", typeof(FocusScopeRestoreExample)),
+                new("blocking", "Holding the rest of the app", "`Blocking` makes everything outside the scope "
+                    + "inert while the scope is there, as under a modal dialog: the pointer, the keyboard and "
+                    + "screen readers can't reach it, and it dims. Use it for content that has to be finished or "
+                    + "dropped before anything else, where a dialog doesn't fit, such as an editor in a "
+                    + "[dock](components/dock-manager) panel, where people still want to see the other panels. It "
+                    + "holds the app's other windows too, such as a dock panel's own browser window, and a scope "
+                    + "inside such a window holds the page. Toasts, dialogs and the popups "
+                    + "`DialogSettings.OutsidePopups` names stay usable, so the content can ask a question in a "
+                    + "dialog. With two blocking scopes, the newer one is in force until it goes. A scope nobody can "
+                    + "get to, such as one in a dock panel behind another tab, holds nothing until it shows, so "
+                    + "the app is never left with nothing usable.",
+                    typeof(FocusScopeBlockingExample)),
             ],
             Api = [typeof(TbFocusScope)],
+            Ready = new("[data-part=focus-scope]", "the scope, once it manages the focus and, with `Blocking`, "
+                + "holds what is outside it") { OpenedBy = new("button", "Find a trail") },
             Keyboard =
             [
                 new(["Tab", "Shift+Tab"], "Keeps focus inside the scope.") { When = "With `Trapped`" },
@@ -10299,17 +10315,29 @@ public static class ExampleCatalog
                     + "examples do.",
                 "Like the browser's own Tab, it counts an editable region and a media player with controls as tab "
                     + "stops.",
+                "With `Blocking`, what is outside the scope is `inert`: it can't be focused, pressed or read by a "
+                    + "screen reader.",
+            ],
+            AppDuties =
+            [
+                "Give a blocking scope a way out that is always there, such as Save and Cancel buttons, since "
+                    + "nothing outside it can be used and Escape does nothing by itself.",
+                "Say in the scope what it is for, with a `role` and a name, so a screen reader user who can "
+                    + "reach nothing else knows where they are.",
             ],
             Notes =
             [
                 new("A focus scope's options apply when it first renders, so render it conditionally, as these "
                     + "examples do, to start it again."),
+                new("In a blocking scope's own window, each element it holds is marked `data-tb-blocked` and drawn "
+                    + "at half opacity, so it doesn't look usable. Set `--tb-blocked-opacity` to change that, or "
+                    + "to `1` to leave it as it is. The app's other windows dim under a scrim, as for a dialog."),
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "Its content renders in full. Focus doesn't move or stay inside until the page is interactive, because "
-                    + "a script does both.",
+                    + "a script does both. `Blocking` holds nothing until then either.",
             ],
             Target = new("group", "Find a trail") { OpenedBy = new("button", "Find a trail") },
             Blocks = ["tb-focus-scope"],
@@ -10318,7 +10346,9 @@ public static class ExampleCatalog
                 new("focus-scope", "The element that keeps focus inside it."),
             ],
             TestingTip = "bUnit can't move focus, so test the trap in Playwright: press Tab from the last control in "
-                + "the scope and expect the first to be focused with `ToBeFocusedAsync()`.",
+                + "the scope and expect the first to be focused with `ToBeFocusedAsync()`. A script applies a "
+                + "blocking scope's hold too, so test it in Playwright: expect a control outside the scope to be "
+                + "inside an `[inert]` element, which `Locator(\"[inert]\").GetByRole(...)` finds.",
         },
         new("popover", "Popover", ExampleCategory.Overlays,
             "A panel of content that opens beside a trigger, such as filters or a share form, and closes on Escape or "

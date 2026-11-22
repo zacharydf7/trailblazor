@@ -11,6 +11,7 @@ Familiar apps: how focus moves in OS dialogs and app side panels
 - [x] Without `Trapped`, Tab moves on to the rest of the page. `FocusScopeTests.Tab_ShouldLeaveScope_WhenNotTrapped`
 - [x] When trapped scopes nest, Tab stays in the newest. `FocusScopeTests.Tab_ShouldWrapInsideInnerScope_WhenTrappedScopesAreNested`
 - [x] The outer scope traps again once the inner one goes. `FocusScopeTests.Tab_ShouldWrapInsideOuterScope_WhenNestedInnerScopeIsDisposed`
+- [x] A trap stands down while its scope can't be used: inside something inert, as when a newer blocking scope holds it, or behind a modal dialog. Tab then moves in what is in front of it. `BlockingScopeTests.Scope_ShouldHoldAnOlderScopeToo_WhenASecondOneBlocksAfterIt`, `BlockingScopeTests.Scope_ShouldLeaveADialogItsContentOpensUsable_WhenItBlocks`
 - [x] Tab stays inside after the focused control is removed. `FocusScopeTests.Tab_ShouldStayInsideScope_WhenTrappedAndFocusedElementIsRemoved`
 - [x] Tab goes nowhere in a trapped scope with no controls. `focus-scope.js`
 - [x] Tab wraps when the scope's first or last stop is a radio group, whichever radio is checked or focused. `RadioStopsTests.FocusScope_ShouldWrapBothWays_WhenTheCheckedRadioIsNotTheLastInTheGroupThatEndsIt`, `RadioStopsTests.FocusScope_ShouldWrapBothWays_WhenTheCheckedRadioIsNotTheFirstInTheGroupThatStartsIt`, `RadioStopsTests.FocusScope_ShouldWrap_WhenFocusIsAnywhereInAnUncheckedGroupThatEndsIt`, `RadioStopsTests.FocusScope_ShouldWrapBackward_WhenFocusIsAnywhereInAnUncheckedGroupThatStartsIt`
@@ -29,7 +30,7 @@ Familiar apps: how focus moves in OS dialogs and app side panels
 
 ## Touch
 
-Nothing of its own. It listens only to keyboard and focus events.
+Nothing of its own beyond the keyboard and focus events it listens to. With `Blocking`, a tap outside does nothing, because what is outside is inert.
 
 ## Focus
 
@@ -43,8 +44,19 @@ Nothing of its own. It listens only to keyboard and focus events.
 - [x] `RestoreFocus="false"` doesn't give it back. `FocusScopeTests.DisposeAsync_ShouldLeaveFocusAlone_WhenRestoreFocusIsOff`
 - [x] Focus that leaves after its control was removed returns to the first control. `FocusScopeTests.Focus_ShouldReturnToFirstTabbable_WhenTrappedAndLastFocusedElementWasRemoved`
 
+## Blocking
+
+- [x] With `Blocking`, everything beside the scope and beside each of its ancestors is inert while the scope is there: a press outside does nothing, Tab never lands outside, and what is held is marked `data-tb-blocked` and dims. When the scope goes, nothing is left inert and the focus is back where it was. `BlockingScopeTests.Scope_ShouldHoldEverythingOutsideItAndGiveItBack_WhenItBlocksAndThenGoes`, `TbFocusScopeTests.Blocking_ShouldHoldWhatIsOutsideOnceTheScopeHasStartedAndFreeItFirst_WhenSet`, `TbFocusScopeTests.Blocking_ShouldLeaveThePageAsItIs_WhenNotSet`
+- [x] A dialog that the scope's content opens is usable, and the scope goes on holding the page once it has gone. `BlockingScopeTests.Scope_ShouldLeaveADialogItsContentOpensUsable_WhenItBlocks`
+- [x] Toasts, the announcer, Blazor's own reconnect and error UI and the popups `DialogSettings.OutsidePopups` names stay usable too, through the list overlays use. `TbFocusScopeTests.Blocking_ShouldHoldWhatIsOutsideOnceTheScopeHasStartedAndFreeItFirst_WhenSet`, `blocking-region.js`
+- [x] With two blocking scopes, the newer one is in force and holds the older one; the older one is in force again, with the focus back in it, when the newer one goes. `BlockingScopeTests.Scope_ShouldHoldAnOlderScopeToo_WhenASecondOneBlocksAfterIt`
+- [x] An element added beside the scope, or beside one of its ancestors, after the hold has started is held too. `BlockingScopeTests.Scope_ShouldHoldWhatIsAddedBesideItLater_WhenItIsBlockingAlready`
+- [x] A scope the user can't reach holds nothing, so the app is never left with nothing usable: one that doesn't show, or one inside something inert, such as a dock panel behind another tab. It holds the app, and takes the focus, once it can be reached. A scope with `display: contents` is judged by the element around it. `BlockingScopeTests.Scope_ShouldHoldThePage_WhenItHasNoBoxOfItsOwn`, `BlockingScopeTests.Scope_ShouldHoldNothingUntilItShows_WhenItStartsInsideSomethingHidden`, `BlockingScopeTests.Scope_ShouldHoldNothingUntilItsTabShows_WhenItStartsInADockPanelBehindAnotherTab`
+- [x] The focus goes back to what opened the scope when it was opened and ended from the keyboard, with no press to tell the opener by. `BlockingScopeTests.Scope_ShouldGiveTheFocusBackToWhatOpenedIt_WhenItIsOpenedAndEndedFromTheKeyboard`
+- [x] The app's other windows are held and dim, as under a modal dialog: a dock panel's own browser window while the scope is on the page, and the page and every other window while the scope is in a panel's window. `BlockingScopeTests.Scope_ShouldHoldTheAppsOtherWindows_WhenItBlocksOnThePageOrInAPanelsWindow`
+
 ## Not applicable
 
 - Closing on Escape: a scope doesn't close itself, which is the panel's job.
-- Blocking clicks or screen readers on the page: a scope only handles focus, and a dialog makes the page inert.
+- Closing a blocking scope from outside it: nothing outside can be used, so the scope's own content ends it.
 - A role and a name: a scope adds none, so the panel gives its own.

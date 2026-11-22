@@ -5035,6 +5035,11 @@
         font-family: inherit;
     }
 
+    /* What a blocking focus scope holds inert looks held. Set the property to 1 to leave it as it is. */
+    [data-tb-blocked] {
+        opacity: var(--tb-blocked-opacity, 0.5);
+    }
+
     /* A focus scope with no controls takes focus itself, so it shows where focus went. */
     .tb-focus-scope:focus-visible {
         outline: var(--tb-focus-ring-width) solid var(--tb-focus-ring-color);

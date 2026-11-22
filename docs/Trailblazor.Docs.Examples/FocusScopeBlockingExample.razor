@@ -1,0 +1,48 @@
+<TbDockManager @bind-Layout="_layout" AriaLabel="Trips" Style="block-size: 16rem">
+    <TbDockPanel Id="list" Title="Trips" Closable="false">
+        <TbStack Gap="2" Class="tb-p-3">
+            <TbText>@_name, 3 days</TbText>
+            <TbButton Size="Size.Small" OnClick="Edit">Edit trip</TbButton>
+        </TbStack>
+    </TbDockPanel>
+    <TbDockPanel Id="map" Title="Map" Closable="false">
+        <TbStack Gap="2" Class="tb-p-3">
+            <TbText>The route shows here, beside the editor.</TbText>
+            <TbButton Size="Size.Small" Variant="Variant.Outlined">Zoom in</TbButton>
+        </TbStack>
+    </TbDockPanel>
+    <TbDockPanel Id="editor" Title="Editor" Closable="false">
+        @if (_editing)
+        {
+            @* While the editor is open, the list, the map and the dock's own tabs and menus can't be used. *@
+            <TbFocusScope Blocking role="region" aria-label="Edit trip" class="tb-p-3">
+                <TbStack Gap="2">
+                    <TbTextField Label="Trip name" @bind-Value="_draft" />
+                    <TbStack Row Gap="2">
+                        <TbButton Size="Size.Small" OnClick="Save">Save</TbButton>
+                        <TbButton Size="Size.Small" Variant="Variant.Outlined" Tone="Tone.Neutral"
+                                  OnClick="() => _editing = false">
+                            Cancel
+                        </TbButton>
+                    </TbStack>
+                </TbStack>
+            </TbFocusScope>
+        }
+        else
+        {
+            <TbText class="tb-p-3">Choose Edit trip to change the trip's name.</TbText>
+        }
+    </TbDockPanel>
+</TbDockManager>
+
+@code {
+    private DockLayout _layout = new(new DockSplit(new DockGroup("list"), new DockGroup("map"),
+        new DockGroup("editor")));
+    private string _name = "Ridge loop";
+    private string? _draft;
+    private bool _editing;
+
+    private void Edit() => (_draft, _editing) = (_name, true);
+
+    private void Save() => (_name, _editing) = (string.IsNullOrWhiteSpace(_draft) ? _name : _draft, false);
+}
