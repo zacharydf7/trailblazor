@@ -5680,8 +5680,10 @@ public static class ExampleCatalog
                     typeof(RichTextEditorSlashExample)),
                 new("changing-what-is-pasted", "Changing what's pasted", "`TransformPaste` changes what is pasted "
                     + "or dropped in, after the built-in cleanup: it gets the pasted text as a `RichTextDocument` and "
-                    + "returns the document to put in. This example keeps the formats but drops the links. It's a "
-                    + "plain function, so test it on a `RichTextDocument` without rendering the editor.",
+                    + "returns the document to put in. This example keeps the formats but drops the links. A "
+                    + "paragraph's `WithRuns` gives the same kind of paragraph with other runs, so the function "
+                    + "needn't know how each kind is made. It's a plain function, so test it on a "
+                    + "`RichTextDocument` without rendering the editor.",
                     typeof(RichTextEditorPasteExample)),
                 new("without-a-toolbar", "Without a toolbar", "`ShowToolbar=\"false\"` hides the toolbar for a small "
                     + "field. The shortcuts and paste still apply the formats it allows.",

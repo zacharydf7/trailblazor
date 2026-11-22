@@ -125,6 +125,23 @@ public sealed class RichTextParagraph
         Kind = RichTextParagraphKind.Block;
     }
 
+    /// <summary>Creates a paragraph like this one with other runs: the same kind, level, cell and block. Use it to
+    /// change a paragraph's text or formats without knowing each kind's constructor, as in a
+    /// <see cref="TbRichTextEditor.TransformPaste"/>. An image, which has no runs, is returned as it is.</summary>
+    /// <param name="runs">The new runs, in order.</param>
+    /// <exception cref="ArgumentException">The paragraph is a rule or an image and the runs have text.</exception>
+    public RichTextParagraph WithRuns(IEnumerable<RichTextRun> runs)
+    {
+        ArgumentNullException.ThrowIfNull(runs);
+        if (Image is not null)
+        {
+            return runs.All(run => run.Text.Length == 0) ? this
+                : throw new ArgumentException("An image has no text.", nameof(runs));
+        }
+
+        return Cell is not null ? new(runs, Cell) : Block is not null ? new(runs, Block) : new(runs, Kind, Level);
+    }
+
     /// <summary>The runs, in order. An empty paragraph has none.</summary>
     public IReadOnlyList<RichTextRun> Runs { get; }
 

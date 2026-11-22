@@ -374,6 +374,37 @@ public class RichTextDocumentTests
             RichTextDocument.Parse("<p data-tb-block=\"callout\">Mind the gap</p>").ToHtml());
 
     [Fact]
+    public void WithRuns_ShouldKeepTheKindLevelCellAndBlock_WhenGivenOtherRuns()
+    {
+        RichTextRun[] runs = [new("New", RichTextFormats.Bold)];
+        var place = new RichTextTableCell(1, 2, header: true);
+        var image = new RichTextParagraph(new RichTextImage("https://example.com/a.png", "A"));
+
+        var item = new RichTextParagraph([new("Old")], RichTextParagraphKind.NumberedItem, 2).WithRuns(runs);
+        var cell = new RichTextParagraph([new("Old")], place).WithRuns(runs);
+        var block = new RichTextParagraph([new("Old")], "callout").WithRuns(runs);
+        var rule = new RichTextParagraph([], RichTextParagraphKind.Rule).WithRuns([]);
+
+        Assert.Equal((RichTextParagraphKind.NumberedItem, 2, "New"), (item.Kind, item.Level, item.Text));
+        Assert.Equal((RichTextParagraphKind.TableCell, place, "New"), (cell.Kind, cell.Cell, cell.Text));
+        Assert.Equal((RichTextParagraphKind.Block, "callout", "New"), (block.Kind, block.Block, block.Text));
+        Assert.Equal(RichTextFormats.Bold, Assert.Single(block.Runs).Formats);
+        Assert.Equal(RichTextParagraphKind.Rule, rule.Kind);
+        // An image has no runs to change, so it goes through as it is.
+        Assert.Same(image, image.WithRuns([]));
+    }
+
+    [Fact]
+    public void WithRuns_ShouldThrow_WhenARuleOrAnImageIsGivenText()
+    {
+        var image = new RichTextParagraph(new RichTextImage("https://example.com/a.png", "A"));
+        var rule = new RichTextParagraph([], RichTextParagraphKind.Rule);
+
+        Assert.Throws<ArgumentException>(() => image.WithRuns([new("x")]));
+        Assert.Throws<ArgumentException>(() => rule.WithRuns([new("x")]));
+    }
+
+    [Fact]
     public void Paragraph_ShouldBeABlockOfTheAppsOwn_WhenGivenItsName()
     {
         var paragraph = new RichTextParagraph([new("Mind the gap")], "callout");

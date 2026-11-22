@@ -3879,6 +3879,7 @@ Trailblazor.RichTextBlock.Shortcut.init -> void
 Trailblazor.RichTextParagraphKind.Block = 10 -> Trailblazor.RichTextParagraphKind
 Trailblazor.RichTextParagraph.RichTextParagraph(System.Collections.Generic.IEnumerable<Trailblazor.RichTextRun!>! runs, string! block) -> void
 Trailblazor.RichTextParagraph.Block.get -> string?
+Trailblazor.RichTextParagraph.WithRuns(System.Collections.Generic.IEnumerable<Trailblazor.RichTextRun!>! runs) -> Trailblazor.RichTextParagraph!
 Trailblazor.RichTextSchema.CustomBlocks.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.RichTextSchema.CustomBlocks.init -> void
 Trailblazor.RichTextRun.Color.get -> Trailblazor.Tone?
