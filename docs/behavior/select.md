@@ -13,6 +13,7 @@ Familiar apps: a native `<select>`, the dropdowns in Windows and macOS settings
 - [x] Typing letters opens the list on the option that starts with them. `SelectTests.Select_ShouldOpenOnTheMatchingOption_WhenALetterIsTypedWhileClosed`
 - [x] Pressing the same letter quickly cycles through the options that start with it, and "aa" still finds an option that starts with that letter doubled, unless the first press landed on it. Typing on, as in "aar", always finds it. `TypeAheadTests.Select_ShouldStepThroughTheOptionsStartingWithALetter_WhenItIsPressedQuickly`, `TypeAheadTests.Select_ShouldFindTheOptionWithADoubledLetter_WhenOneStartsWithIt`
 - [x] A Space typed mid-word is part of the search and doesn't choose. `SelectTests.Select_ShouldTreatSpaceAsPartOfTheText_WhenTypedMidWord`
+- [x] Letters typed to jump to an option, and a Space typed mid-word, have their default prevented, so a single-letter shortcut of the app's doesn't also run and the Space doesn't scroll the page. `SelectKeysTests.Select_ShouldKeepTypedLettersFromThePagesOwnShortcuts_WhenTheyJumpToAnOption`
 - [x] Enter or Space chooses the active option, closes a single select and keeps focus. `SelectTests.Select_ShouldMoveSkippingDisabledOptionsAndChooseWithEnter_WhenUsingTheKeyboard`
 - [x] Alt+Up chooses the active option and closes a single select. `SelectTests.Select_ShouldJumpToTheEndsAndChooseWithAltUp_WhenHomeOrEndIsPressed`
 - [x] Escape closes without choosing. `SelectTests.Select_ShouldCloseWithoutChoosing_WhenEscapeIsPressedOrTheComboboxIsClickedAgain`

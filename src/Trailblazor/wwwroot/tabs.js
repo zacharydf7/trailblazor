@@ -13,11 +13,12 @@ export function attachTabs(list, order, followsSelection) {
 
     const onKeyDown = event => {
         const tab = event.target;
+        // Prevented on every tab, closable or not, so an app's shortcut that skips prevented keys leaves these alone.
         if ((event.key === 'Delete' || event.key === 'Backspace') && !event.altKey && !event.ctrlKey && !event.metaKey
-            && tab.parentElement === list && tab.querySelector('[data-part="close"]')) {
+            && tab.parentElement === list) {
             event.preventDefault();
             // A held key repeats, and each repeat would ask to close the tab again while the first close runs.
-            if (!event.repeat) {
+            if (tab.querySelector('[data-part="close"]') && !event.repeat) {
                 callDotNet(order, 'OnClose', tab.id);
             }
 

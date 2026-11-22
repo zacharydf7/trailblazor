@@ -88,6 +88,23 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldKeepDeleteAndBackspaceFromThePagesOwnShortcuts_WhenTheTabCannotClose(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+        await WaitForKeysAsync(page, "Open trails");
+        await page.EvaluateAsync("() => { window.heard = []; addEventListener('keydown', "
+            + "event => window.heard.push(`${event.key} ${event.defaultPrevented}`)); }");
+        var list = page.GetByRole(AriaRole.Tablist, new() { Name = "Open trails" });
+        await list.GetByRole(AriaRole.Tab, new() { Name = "All trails", Exact = true }).FocusAsync();
+
+        await page.Keyboard.PressAsync("Delete");
+        await page.Keyboard.PressAsync("Backspace");
+
+        Assert.Equal(["Delete true", "Backspace true"], await page.EvaluateAsync<string[]>("() => window.heard"));
+        await Expect(list.GetByRole(AriaRole.Tab)).ToHaveCountAsync(4);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tabs_ShouldCloseOneTab_WhenDeleteIsHeld(string browser)
     {
         var page = await OpenAsync(browser, "/examples/tabs");

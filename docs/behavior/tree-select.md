@@ -57,6 +57,7 @@ Familiar apps: the folder picker in Google Drive's move dialog, the category pic
 - [x] Past `MaxShown` items (three unless set), the field counts the rest, so its accessible name stays short. `TbMultiTreeSelectTests.Render_ShouldNameUpToMaxShownItemsAndCountTheRest_WhenGivenMaxShown`, `TbMultiTreeSelectTests.Render_ShouldNameThreeItemsAndCountTheRest_WhenMaxShownIsLeftAlone`
 - [x] A required field with nothing chosen leaves the form invalid. `TbTreeSelectTests.Form_ShouldBeInvalid_WhenARequiredTreeSelectIsEmpty`
 - [x] The field is a `combobox`, so screen readers hear a required one as required, and the label names its popup. `TbTreeSelectTests.Render_ShouldBeARequiredComboboxWhoseLabelNamesThePopup_WhenRequired`, `TreeSelectTests.TreeSelect_ShouldChooseFromTheKeyboardAndReturnToTheField_WhenOpened`
+- [x] Down Arrow in the filter box has its default prevented as it moves into the tree. `TreeSelectTests.Filter_ShouldMoveToTheFirstMatch_WhenDownArrowIsPressed`
 
 ## Not applicable
 

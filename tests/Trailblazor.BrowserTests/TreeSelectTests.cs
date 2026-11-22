@@ -139,9 +139,13 @@ public class TreeSelectTests(BrowserFixture fixture) : BrowserTest(fixture)
         await field.ClickAsync();
         await page.GetByRole(AriaRole.Searchbox, new() { Name = "Filter" }).FillAsync("cedar");
         await Expect(page.GetByRole(AriaRole.Treeitem)).ToHaveCountAsync(2);
+        await page.EvaluateAsync(
+            "() => addEventListener('keydown', event => window.downUsed = event.defaultPrevented)");
         await page.Keyboard.PressAsync("ArrowDown");
 
         await Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Cedar Flats" })).ToBeFocusedAsync();
+        // The filter box used the key, so a shortcut of the app's that skips prevented keys leaves it alone.
+        Assert.True(await page.EvaluateAsync<bool>("() => window.downUsed"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

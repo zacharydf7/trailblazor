@@ -6,6 +6,8 @@ import { flush } from './debounced-input.js';
 // initializer imports this at startup.
 document.addEventListener('keydown', event => {
     if (event.key === 'ArrowDown' && !isComposing(event) && event.target.matches?.('.tb-tree-select__filter')) {
+        // The key is used here, so it is prevented, as every key a control uses is.
+        event.preventDefault();
         flush(event.target);
         event.target.dispatchEvent(new CustomEvent('tb-tree-filter-down', { bubbles: true }));
     }

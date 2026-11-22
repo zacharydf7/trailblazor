@@ -443,12 +443,17 @@ function attachLists(menu, events, hooks) {
                 setTimeout(() => menu.matches(':popover-open') && menu.hidePopover());
                 return;
             default:
-                if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
-                    focusByFirstLetter(all, current, event.key);
-                    closeOtherSubmenus(list, list.ownerDocument.activeElement);
+                if (event.key.length !== 1 || event.ctrlKey || event.metaKey || event.altKey) {
+                    return;
                 }
 
-                return;
+                focusByFirstLetter(all, current, event.key);
+                closeOtherSubmenus(list, list.ownerDocument.activeElement);
+                // A letter typed on an item is the menu's, and is prevented as its other keys are. With focus
+                // elsewhere in the menu, the key keeps its default.
+                if (current < 0) {
+                    return;
+                }
         }
 
         event.preventDefault();

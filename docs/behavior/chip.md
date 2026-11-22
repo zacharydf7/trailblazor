@@ -32,6 +32,7 @@ Familiar apps: a mail app's recipient chips, the filter chips on a shopping or s
 - [x] Removing the group's last chip moves focus to the group. `ChipTests.Chip_ShouldPassFocusToTheChipInItsPlace_WhenRemovedWithTheKeyboard`
 - [x] A chip in a group is a list item, and the group is a named list. `TbChipTests.Render_ShouldBeAListOfItems_WhenChipsAreInAGroup`
 - [x] The remove button is named for its chip, and a filter chip says whether it's on. `TbChipTests.Click_ShouldAskToBeRemovedWithANamedButton_WhenOnRemoveIsSet`
+- [x] Delete and Backspace on a chip that can be removed have their default prevented, so a shortcut of the app's that skips prevented keys doesn't also run. `ChipTests.Chip_ShouldKeepDeleteFromThePagesOwnShortcuts_WhenItCanBeRemoved`, `ChipTests.Chip_ShouldKeepBackspaceFromGoingBack_WhenItCanBeRemoved`
 
 ## Not applicable
 

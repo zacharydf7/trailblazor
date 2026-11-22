@@ -170,6 +170,79 @@ public class DockLayoutTests
     }
 
     [Fact]
+    public void Retain_ShouldForgetEveryOtherPanel_WhenTheyAreDockedFloatingOnAStripOrClosed()
+    {
+        var layout = Workbench.Float("search").AutoHide("problems", DockPosition.Bottom).Close("output");
+
+        var kept = layout.Retain(["explorer", "editor"]);
+
+        Assert.Equal([["explorer"], ["editor"]], kept.Groups.Select(group => group.Panels));
+        Assert.Empty(kept.Floating);
+        Assert.Empty(kept.AutoHidden);
+        Assert.Empty(kept.Closed);
+    }
+
+    [Fact]
+    public void Retain_ShouldKeepEachKeptPanelWhereItIs_WhenOthersGo()
+    {
+        var layout = Workbench.Float("search").AutoHide("problems", DockPosition.Bottom).Open("problems")
+            .Close("output");
+
+        var kept = layout.Retain(["search", "problems", "output", "editor"]);
+
+        // The explorer's group went with it, and the editor's neighbors are floating, on a strip or closed, so the
+        // editor has the dock to itself.
+        Assert.Equal([["editor"]], kept.Groups.Select(group => group.Panels));
+        Assert.Equal(["search"], Assert.Single(kept.Floating).Group.Panels);
+        Assert.Equal("problems", Assert.Single(kept.AutoHidden).Panel);
+        Assert.Equal("problems", kept.Revealed);
+        Assert.Equal(["output"], kept.Closed);
+    }
+
+    [Fact]
+    public void Retain_ShouldGiveAnEqualLayout_WhenEveryPanelIsKept()
+    {
+        var layout = Workbench.Maximize("editor").Close("search");
+
+        Assert.Equal(layout, layout.Retain(["explorer", "search", "editor", "output", "problems", "extra"]));
+    }
+
+    [Fact]
+    public void Retain_ShouldShowTheNextTabAndLetAPanelComeBackAfresh_WhenTheShowingTabGoes()
+    {
+        var kept = Workbench.Retain(["search", "editor", "output", "problems"]);
+
+        Assert.Equal("search", kept.GroupOf("search")!.Active);
+        Assert.DoesNotContain("explorer", kept.Closed);
+
+        // The layout treats the explorer as a panel it has never held: opened, it joins the largest group.
+        var back = kept.Open("explorer").GroupOf("explorer")!;
+        Assert.Equal(["editor", "explorer"], back.Panels);
+        Assert.Equal("explorer", back.Active);
+    }
+
+    [Fact]
+    public void Retain_ShouldEndTheMaximize_WhenTheGroupThatFillsTheDockGoesOrIsAllThatIsLeft()
+    {
+        var maximized = Workbench.Maximize("editor");
+
+        Assert.Null(maximized.Retain(["editor"]).Maximized);
+        Assert.Null(maximized.Retain(["explorer", "output"]).Maximized);
+        Assert.NotNull(maximized.Retain(["explorer", "editor"]).Maximized);
+    }
+
+    [Fact]
+    public void Retain_ShouldSlideNothingOut_WhenTheSlidOutPanelGoes()
+    {
+        var revealed = Workbench.AutoHide("problems", DockPosition.Bottom).Open("problems");
+
+        var kept = revealed.Retain(["explorer", "search", "editor", "output"]);
+
+        Assert.Null(kept.Revealed);
+        Assert.Empty(kept.AutoHidden);
+    }
+
+    [Fact]
     public void Close_ShouldMoveThePanelToClosed_WhenItIsDocked()
     {
         var layout = Workbench.Close("problems");

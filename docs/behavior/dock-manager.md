@@ -116,6 +116,7 @@ Familiar apps: VS Code's editor groups and panel, Visual Studio's tool windows, 
 
 - [x] With a `PersistenceKey`, the layout is saved in the browser after each change and comes back after a reload, and the app hears it through `LayoutChanged`. `DockManagerMoveTests.Dock_ShouldKeepItsLayout_WhenThePageIsReloadedWithAPersistenceKey`, `TbDockManagerTests.PersistenceKey_ShouldShowTheSavedLayoutAndHandItToTheApp_WhenTheBrowserHoldsOne`
 - [x] A layout the app sets later replaces the saved one, so a Reset button works. `DockManagerMoveTests.Dock_ShouldKeepItsLayout_WhenThePageIsReloadedWithAPersistenceKey`, `TbDockManagerTests.PersistenceKey_ShouldSaveTheLayout_WhenTheUserOrTheAppChangesIt`
+- [x] `Retain` drops every panel id it isn't given from a layout's groups, windows, strips and closed list, and leaves the kept ones where they are, so a saved layout can shed the panels an app no longer has. `DockLayoutTests.Retain_ShouldForgetEveryOtherPanel_WhenTheyAreDockedFloatingOnAStripOrClosed`, `DockLayoutTests.Retain_ShouldKeepEachKeptPanelWhereItIs_WhenOthersGo`, `DockLayoutTests.Retain_ShouldGiveAnEqualLayout_WhenEveryPanelIsKept`, `DockLayoutTests.Retain_ShouldShowTheNextTabAndLetAPanelComeBackAfresh_WhenTheShowingTabGoes`, `DockLayoutTests.Retain_ShouldEndTheMaximize_WhenTheGroupThatFillsTheDockGoesOrIsAllThatIsLeft`, `DockLayoutTests.Retain_ShouldSlideNothingOut_WhenTheSlidOutPanelGoes`
 - [x] Each change is saved once, also when the app binds the layout and hands it back. `TbDockManagerTests.PersistenceKey_ShouldSaveEachChangeOnce_WhenTheLayoutIsBound`
 - [x] When the key arrives or changes after the dock first shows, the dock reads and saves the layout under the new key from then on. `TbDockManagerTests.PersistenceKey_ShouldReadAndSaveUnderTheNewKey_WhenTheKeyArrivesOrChangesLater`
 - [x] The menus, the grips and the Restore button appear once the page is interactive, and a static page shows the tabs, panels and separators without them, with a maximized group filling the dock. `TbDockManagerTests.Render_ShouldLeaveOutTheMenusAndGrips_WhenThePageIsStatic`, `TbDockManagerTests.Render_ShouldLeaveOutTheRestoreButton_WhenThePageIsStaticAndAGroupFillsTheDock`
@@ -287,7 +288,7 @@ Familiar apps: VS Code's editor groups and panel, Visual Studio's tool windows, 
 
 ## Not applicable
 
-- A prerendered page showing the saved layout from the start: the layout is kept in the browser's storage, which the server can't read while it prerenders, so the app's layout shows until the page is interactive.
+- A prerendered page showing the saved layout from the start: the layout is kept in the browser's storage, which the server can't read while it prerenders, so the app's layout shows until the page is interactive. To show a saved layout from the first render, keep it with the app: load it on the server, pass it as `Layout`, and leave `PersistenceKey` off, as the dock's page describes.
 - F6 between groups: the pattern makes it optional, and Tab already goes from group to group.
 - Ctrl+Tab between tabs: browsers keep it for their own tabs.
 - Enter on a separator: no part of a dock collapses; a panel closes from its tab.

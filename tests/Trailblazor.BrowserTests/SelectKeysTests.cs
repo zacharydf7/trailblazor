@@ -130,6 +130,25 @@ public abstract class SelectKeysTests(BrowserFixture fixture) : BrowserTest(fixt
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Select_ShouldKeepTypedLettersFromThePagesOwnShortcuts_WhenTheyJumpToAnOption(string browser)
+    {
+        var page = await OpenSelectAsync(browser);
+        await Combobox(page).FocusAsync();
+        // A stopped clock keeps a slow machine's keys within the pause that ends a word.
+        await page.Clock.SetFixedTimeAsync(DateTime.Now);
+        await page.EvaluateAsync("() => { window.heard = []; addEventListener('keydown', "
+            + "event => window.heard.push(`${event.key} ${event.defaultPrevented}`)); }");
+
+        // The first letter is typed on the closed select, and the rest, with the space, on its open list.
+        await page.Keyboard.PressAsync("e");
+        await Expect(page.GetByRole(AriaRole.Listbox)).ToBeVisibleAsync();
+        await page.Keyboard.TypeAsync("x s");
+
+        Assert.Equal(["e true", "x true", "  true", "s true"],
+            await page.EvaluateAsync<string[]>("() => window.heard"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Select_ShouldCloseWithoutChoosing_WhenEscapeIsPressedOrTheComboboxIsClickedAgain(string browser)
     {
         var page = await OpenSelectAsync(browser);

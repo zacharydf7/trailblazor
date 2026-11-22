@@ -299,6 +299,7 @@ export function createSelect(combobox, listbox, toggle) {
                         onFilterInput();
                     }
                 } else {
+                    event.preventDefault();
                     typeahead(key);
                 }
             }
@@ -342,6 +343,7 @@ export function createSelect(combobox, listbox, toggle) {
                 break;
             case ' ':
                 if (typing.typing()) {
+                    event.preventDefault();
                     typeahead(key);
                     return;
                 }
@@ -364,6 +366,7 @@ export function createSelect(combobox, listbox, toggle) {
                 return;
             default:
                 if (key.length === 1 && !event.altKey) {
+                    event.preventDefault();
                     typeahead(key);
                 }
 

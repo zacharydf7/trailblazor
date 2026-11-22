@@ -7036,6 +7036,7 @@ Trailblazor.DockLayout.Open(string! panel) -> Trailblazor.DockLayout!
 Trailblazor.DockLayout.GroupOf(string! panel) -> Trailblazor.DockGroup?
 override Trailblazor.DockGroup.GetHashCode() -> int
 Trailblazor.DockLayout.Close(string! panel) -> Trailblazor.DockLayout!
+Trailblazor.DockLayout.Retain(System.Collections.Generic.IEnumerable<string!>! panels) -> Trailblazor.DockLayout!
 Trailblazor.DockLayout.ToJson() -> string!
 static Trailblazor.DockLayout.TryParse(string? json, out Trailblazor.DockLayout? layout) -> bool
 Trailblazor.DockLayout.Equals(Trailblazor.DockLayout? other) -> bool

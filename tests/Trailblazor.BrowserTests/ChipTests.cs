@@ -72,6 +72,19 @@ public class ChipTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Chip_ShouldKeepDeleteFromThePagesOwnShortcuts_WhenItCanBeRemoved(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/chip");
+        await page.EvaluateAsync("() => { window.heard = []; addEventListener('keydown', "
+            + "event => window.heard.push(`${event.key} ${event.defaultPrevented}`)); }");
+
+        await Remove(page, "Archive").FocusAsync();
+        await page.Keyboard.PressAsync("Delete");
+
+        Assert.Equal(["Delete true"], await page.EvaluateAsync<string[]>("() => window.heard"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Chip_ShouldBeFilledWithReadableText_WhenAnOutlinedFilterIsSelected(string browser)
     {
         var page = await OpenAsync(browser, "/examples/chip");

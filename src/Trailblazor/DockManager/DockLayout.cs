@@ -257,6 +257,21 @@ public sealed record DockLayout
     /// <summary>Shows every group again when one fills the dock, and changes nothing otherwise.</summary>
     public DockLayout Restore() => Maximized is { } group ? Replace(group, group with { Maximized = false }) : this;
 
+    /// <summary>The layout with only these panels: any other id leaves its group, its window or its strip as
+    /// <see cref="Close"/> would take it out, and leaves <see cref="Closed"/> too, so the layout doesn't remember
+    /// it. Use it on a saved layout to drop the panels a newer version of the app no longer has, since a layout
+    /// otherwise keeps a place for every id it ever held.</summary>
+    /// <param name="panels">The ids to keep, which are usually all the panels the app has now.</param>
+    public DockLayout Retain(IEnumerable<string> panels)
+    {
+        var kept = panels.ToHashSet(StringComparer.Ordinal);
+        var gone = Groups.Concat(Floating.Select(window => window.Group)).SelectMany(group => group.Panels)
+            .Concat(AutoHidden.Select(hidden => hidden.Panel)).Where(panel => !kept.Contains(panel)).ToList();
+        var layout = gone.Aggregate(this, (current, panel) => current.Close(panel));
+        return new(layout.Root, layout.Closed.Where(kept.Contains), layout.Floating, layout.AutoHidden,
+            layout.Revealed);
+    }
+
     /// <summary>Writes the layout as JSON, which <see cref="TryParse"/> reads back.</summary>
     public string ToJson() => DockLayoutJson.Write(this);
 

@@ -975,6 +975,22 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldKeepALetterFromThePagesOwnShortcuts_WhenItJumpsToAnItem(string browser)
+    {
+        var page = await OpenAsync(browser, "/menu");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Insert" }).FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(Item(page, "Shape")).ToBeFocusedAsync();
+        await page.EvaluateAsync("() => { window.heard = []; addEventListener('keydown', "
+            + "event => window.heard.push(`${event.key} ${event.defaultPrevented}`)); }");
+
+        await page.Keyboard.PressAsync("t");
+
+        await Expect(Item(page, "Table")).ToBeFocusedAsync();
+        Assert.Equal(["t true"], await page.EvaluateAsync<string[]>("() => window.heard"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task SubMenu_ShouldClose_WhenALetterMovesFocusOffItsItem(string browser)
     {
         var page = await OpenAsync(browser, "/menu");

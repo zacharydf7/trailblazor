@@ -3241,13 +3241,20 @@ public static class ExampleCatalog
                     + "the browser's local storage after each change and reads it back once the page is "
                     + "interactive, so a reload keeps the arrangement. The saved layout replaces `Layout` and "
                     + "raises `LayoutChanged`. "
-                    + "Setting another `Layout` later replaces what is saved, which is how the Reset button works.",
+                    + "Setting another `Layout` later replaces what is saved, which is how the Reset button works. "
+                    + "A prerendered page shows the app's own layout until it is interactive, since the server "
+                    + "can't read the browser's storage. To show a saved layout from the first render, keep it "
+                    + "with the app instead: load it in `OnInitializedAsync`, pass it as `Layout`, save "
+                    + "`ToJson()` in `LayoutChanged`, and leave `PersistenceKey` off.",
                     typeof(DockManagerRememberExample)),
                 new("saving", "Saving the layout yourself", "To keep layouts with the app's own settings, such as "
                     + "on a server, `ToJson` writes a layout as text and `DockLayout.TryParse` reads it back, "
                     + "giving false for text that isn't a layout. A panel the saved layout doesn't know joins the "
                     + "largest group, and a saved panel the app no longer has isn't shown, though the layout keeps "
-                    + "its place.", typeof(DockManagerSaveExample)),
+                    + "its place. A layout saved by one version of the app can outlive the panels a later version "
+                    + "removes or renames. After `TryParse`, call `Retain` with the ids the app has now, which "
+                    + "forgets every other one, then `Open` the panels this version needs shown.",
+                    typeof(DockManagerSaveExample)),
                 new("closing", "Closing and reopening", "A panel closes from the mark on its tab, with Delete or "
                     + "Backspace on the tab, with a middle click, or from Close in its group's menu. Closing "
                     + "disposes the panel's content. The "
@@ -9613,9 +9620,12 @@ public static class ExampleCatalog
             ],
             Notes =
             [
-                new("A hotkey doesn't fire for a key whose default a control has prevented, such as Delete on a "
-                    + "dock's tab or an arrow key in a menu. Give a key listener of your own the same check: "
-                    + "`if (event.defaultPrevented) return;`."),
+                new("Trailblazor's controls prevent the default of the keys they act on, apart from Tab, and a "
+                    + "hotkey doesn't fire for a key whose default is prevented. So Delete on a tab, a letter typed "
+                    + "to jump to an item in a menu or a select, or an arrow key in a list never also runs a "
+                    + "hotkey. Give a key listener of your own the same check, `if (event.defaultPrevented) "
+                    + "return;`, and it needs no list of the controls to skip. Add it to `window`, or once the "
+                    + "app has started, so that it runs after the controls' own listeners."),
             ],
             Ready = new("[data-part=hotkey]", "the hotkey's hidden marker"),
             Target = new("button", "Keyboard shortcuts"),
