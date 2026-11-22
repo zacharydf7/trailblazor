@@ -3,7 +3,7 @@ import { createGripDrag } from '../Trailblazor.Primitives/grip-drag.js';
 import { viewOf, watchSizes } from '../Trailblazor.Primitives/pages.js';
 import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
 import { showInWindow } from './pop-out.js';
-import { nextTab, scrollTabIntoRow } from './tabs.js';
+import { nextTab, scrollTabIntoRow, startsWithControl } from './tabs.js';
 
 const sides = ['x', 'y', 'width', 'height'];
 
@@ -1066,6 +1066,29 @@ export function attachDock(root, reporter) {
     document.addEventListener('click', onReturnClick, { capture: true });
     window.addEventListener('pagehide', onPageHide);
 
+    // The server makes every showing panel a tab stop unless FocusablePanels is Never. With Auto, a panel that
+    // starts with a control gives its stop up, since Tab reaches that control, and gets it back when it no longer
+    // does. A panel in a window of its own starts with its Return button. The stop goes to -1 and not away, so the
+    // panel keeps the focus it has and script can still focus it.
+    const settleStops = () => {
+        const stops = root.dataset.focusablePanels;
+        for (const panel of [...parts('panel'), ...[...windows.values()].map(shown => shown.panel)]) {
+            if (panel.hasAttribute('tabindex')) {
+                const stop = stops === 'always' || stops !== 'never' && !('popped' in panel.dataset)
+                    && !startsWithControl(panel);
+                panel.tabIndex = stop ? 0 : -1;
+            }
+        }
+    };
+    // Attributes and text too: showing a panel again, disabling or hiding a control, changing FocusablePanels, or text
+    // that fills in before a panel's first control adds no node.
+    const stopsWatch = new MutationObserver(settleStops);
+    stopsWatch.observe(root, {
+        childList: true, subtree: true, characterData: true, attributes: true,
+        attributeFilter: ['disabled', 'hidden', 'inert', 'data-popped', 'data-focusable-panels'],
+    });
+    settleStops();
+
     stateLimits();
     // Marks that the keys and drags work, which tests wait for.
     root.dataset.ready = '';
@@ -1138,6 +1161,7 @@ export function attachDock(root, reporter) {
                 titled.disconnect();
             };
             windows.set(id, { other, panel, stop });
+            settleStops();
             // Closing the window puts the panel back, while the window still holds it.
             other.addEventListener('pagehide', () => bringBack(id, true));
             panel.focus({ preventScroll: true });
@@ -1175,6 +1199,7 @@ export function attachDock(root, reporter) {
             rendered.disconnect();
             limited.disconnect();
             sized.disconnect();
+            stopsWatch.disconnect();
             root.removeEventListener('pointerdown', onPointerDown);
             root.removeEventListener('pointermove', onPointerMove);
             root.removeEventListener('pointerup', onPointerUp);

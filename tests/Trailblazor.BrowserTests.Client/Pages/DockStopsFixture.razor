@@ -1,0 +1,35 @@
+@page "/dock-stops"
+
+@* A panel that starts with text beside one that starts with a control, which Swap trades for text and back. Note
+   fills the text of an element before that control, which adds no node. *@
+<TbButton OnClick="() => _plain = !_plain">Swap</TbButton>
+<TbButton OnClick="@(() => _note = "Two trails match.")">Note</TbButton>
+<TbButton OnClick="() => _stops = TabPanelFocus.Always">Always</TbButton>
+<TbButton OnClick="() => _stops = TabPanelFocus.Never">Never</TbButton>
+<div style="inline-size: 40rem; block-size: 16rem">
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Trip" FocusablePanels="_stops">
+        <TbDockPanel Id="notes" Title="Notes">
+            <p>Pack light.</p>
+            <button type="button">Edit notes</button>
+        </TbDockPanel>
+        <TbDockPanel Id="search" Title="Search">
+            <p>@_note</p>
+            @if (_plain)
+            {
+                <p>No trails yet.</p>
+            }
+            else
+            {
+                <input aria-label="Trail" />
+            }
+            <button type="button">Find</button>
+        </TbDockPanel>
+    </TbDockManager>
+</div>
+
+@code {
+    private DockLayout _layout = new(new DockSplit(new DockGroup("notes"), new DockGroup("search")));
+    private TabPanelFocus _stops;
+    private bool _plain;
+    private string _note = "";
+}

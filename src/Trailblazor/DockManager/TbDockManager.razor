@@ -46,7 +46,7 @@
 <div @ref="_root" role="group" aria-label="@AriaLabel" data-part="dock"
      tabindex="@(empty ? "-1" : null)"
      data-report="@_reported" data-commits="@(RendererInfo.IsInteractive ? _counted : null)"
-     data-min-size="@MinGroupSize" class="tb-dock">
+     data-min-size="@MinGroupSize" data-focusable-panels="@PanelStops" class="tb-dock">
     @Content(_declared, panels)
     @* A tab list holds only tabs, so the hint that describes a closable tab sits outside it. *@
     <span id="@_closeHintId" hidden>@(Labels.CloseHint ?? Localizer[TbStrings.DockCloseHint])</span>
@@ -158,7 +158,7 @@
                to come back by. The bar comes and goes inside the panel's element, which Blazor never moves. *@
             <div @key="host.Key" @attributes="host.Panel.HostAttributes" role="@(host.Popped ? "region" : "tabpanel")"
                  id="@PanelId(host.Panel.Name)" aria-labelledby="@(host.Popped ? null : TabId(host.Panel.Name))"
-                 aria-label="@(host.Popped ? host.Panel.Title : null)" tabindex="@(host.Showing ? 0 : null)"
+                 aria-label="@(host.Popped ? host.Panel.Title : null)" tabindex="@(host.Showing ? PanelStop : null)"
                  inert="@(!host.Showing)" data-part="panel" data-panel="@host.Panel.Name"
                  data-dock-group="@(host.Popped ? null : host.Group)" data-popped="@host.Popped"
                  data-floating="@(host.Layer is not null)" data-edge="@EdgeName(host.Edge)"
@@ -387,6 +387,14 @@
     [Parameter]
     public int MinGroupSize { get; set; } = 96;
 
+    /// <summary>Decides when a showing panel is a tab stop of its own, which lets the Tab key reach a panel that
+    /// holds no control. Defaults to <see cref="TabPanelFocus.Auto"/>: a panel that starts with a control is no tab
+    /// stop, since Tab reaches that control, and any other panel is one. With <see cref="TabPanelFocus.Auto"/>,
+    /// the dock's script makes that check, so until the page is interactive every showing panel is a tab stop.
+    /// </summary>
+    [Parameter]
+    public TabPanelFocus FocusablePanels { get; set; }
+
     /// <summary>Adds "Open in new window" to the panels' menus, which shows a panel in a browser window of its own,
     /// with its state, until that window closes or its Return button is pressed. The panel is still part of this
     /// page: the window closes with it, and a script of the app's own inside the panel has to work with the
@@ -575,6 +583,18 @@
     internal int Stamp() => ++_stamps;
 
     private TbDockPanel? Panel(string id) => _panels.Find(panel => panel.Name == id);
+
+    // Tells the script which panels are tab stops; with no mark, it decides by how each showing panel starts.
+    private string? PanelStops => FocusablePanels switch
+    {
+        TabPanelFocus.Always => "always",
+        TabPanelFocus.Never => "never",
+        _ => null,
+    };
+
+    // With Never a showing panel still gets -1, not no tabindex, since the script focuses a panel as it arrives in
+    // a window of its own.
+    private int PanelStop => FocusablePanels == TabPanelFocus.Never ? -1 : 0;
 
     private bool CanPopOut(string panel) => AllowPopOut && Panel(panel) is { AllowPopOut: true };
 

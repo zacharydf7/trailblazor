@@ -3267,6 +3267,11 @@ public static class ExampleCatalog
                     + "and then stays, hidden, while another tab shows, so what the user typed, opened or scrolled "
                     + "to is still there. `KeepAlive=\"false\"` drops the content while it's hidden, for content "
                     + "that is cheap to build again.", typeof(DockManagerKeepAliveExample)),
+                new("panel-stops", "Panels and the Tab key", "Tab moves from a group's menu button into its "
+                    + "showing panel. A panel that starts with a control is no tab stop of its own, so focus "
+                    + "goes to that control, as in Start here. Any other panel is a tab stop itself, so its text "
+                    + "can be reached, as Packing list is. `FocusablePanels` set to `Always` makes every showing "
+                    + "panel a tab stop, and `Never` none.", typeof(DockManagerPanelStopsExample)),
                 new("many", "Many panels and long titles", "A row with more tabs than fit scrolls sideways, and "
                     + "the showing tab is brought into view. A long title is cut short. `Icon` puts an icon "
                     + "before a tab's title.", typeof(DockManagerManyExample)),
@@ -3286,6 +3291,10 @@ public static class ExampleCatalog
                     { When = "On a tab" },
                 new(["Tab"], "Goes to the group's menu button, by way of the Restore button in a group that fills "
                     + "the dock.") { When = "On a tab" },
+                new(["Tab"], "Goes into the showing panel: by default to its first control when the panel "
+                    + "starts with one, and otherwise to the panel itself, so its text can be reached. "
+                    + "`FocusablePanels` changes this.")
+                    { When = "On a group's menu button" },
                 new(["Shift+F10", "Context menu key"], "Opens the tab's menu on its first item. The menu moves, "
                     + "floats, docks, auto-hides or closes its panel and maximizes or restores its group, and with "
                     + "`AllowPopOut` it opens the panel in a browser window of its own.")
@@ -3420,8 +3429,13 @@ public static class ExampleCatalog
             [
                 "Each group's tabs are a `tablist`, and each panel is a `tabpanel`. A group's tabs are one stop for "
                     + "the Tab key, on the showing tab. Tab then goes to the Restore button when the group fills "
-                    + "the dock, then to the group's menu button, to the panel, to what the panel holds, and to "
-                    + "the separator after the group.",
+                    + "the dock, then to the group's menu button, to the panel when it is a tab stop, to what the "
+                    + "panel holds, and to the separator after the group.",
+                "A showing panel that starts with a control is no tab stop of its own, since Tab reaches that "
+                    + "control anyway, which saves a key press for every panel in a workspace. Any other panel is "
+                    + "a tab stop, so its text can be reached and scrolled. `FocusablePanels` set to `Always` makes "
+                    + "every showing panel a tab stop, and `Never` none. With `Auto`, a panel that is no tab stop "
+                    + "scrolls as Tab moves through the controls it holds.",
                 "A group's menu moves and closes panels with single clicks, taps or key presses, so nothing needs "
                     + "a drag (WCAG 2.5.7). After a move, focus is on the moved panel's tab.",
                 "A tab's own menu holds the same items for that tab. It opens on its first item, and Escape gives "
@@ -3492,6 +3506,8 @@ public static class ExampleCatalog
                 "Give the dock an `AriaLabel` when the page has more than one, and give each panel a short "
                     + "`Title`, since an icon alone doesn't name a tab.",
                 "Offer a way to reopen closed panels, such as a View menu that calls `Open`.",
+                "Set `FocusablePanels` to `Never` only when every panel starts with a control; otherwise a "
+                    + "panel's text can't be reached or scrolled from the keyboard.",
                 "With a `PersistenceKey`, offer a way back to the starting layout, such as a Reset button that "
                     + "sets `Layout`.",
                 "Before turning on `AllowPopOut`, check that what each panel holds works in a window of its own, "
@@ -3500,6 +3516,9 @@ public static class ExampleCatalog
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
+                "Every showing panel is a tab stop, unless `FocusablePanels` is `Never`, until the page is "
+                    + "interactive: the dock's script is what takes the stop from a panel that starts with a "
+                    + "control.",
                 "The groups render where the layout puts them, each showing its panel, and the windows over "
                     + "them. Selecting tabs, dragging them, closing panels, resizing groups, and moving and "
                     + "resizing windows start working once the page is interactive, which is also when the groups' "
@@ -3773,6 +3792,10 @@ public static class ExampleCatalog
             [
                 "`page.Tb().Dock(\"Hike planner\")` in Playwright, or `cut.Tb().Dock(\"Hike planner\")` in bUnit, "
                     + "finds the dock by its `AriaLabel`; with no name it finds the only one.",
+                "Where Tab goes from a group's menu button depends on how the showing panel starts, which only "
+                    + "the browser checks. In bUnit every showing panel keeps `tabindex=\"0\"`, or `-1` when "
+                    + "`FocusablePanels` is `Never`, so test the tab order in a browser, once the dock has "
+                    + "`data-ready`.",
                 "`SelectAsync(\"Notes\")` and `CloseAsync(\"Notes\")` click a panel's tab or its close mark, by "
                     + "the panel's title. `PanelsAsync()` or `Panels` lists every tab in reading order, and "
                     + "`ShowingAsync()` or `Showing` the panels that show.",

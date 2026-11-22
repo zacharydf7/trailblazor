@@ -132,12 +132,10 @@ public class DockManagerTests(BrowserFixture fixture) : DockManagerPage(fixture)
 
         await Tab(page, "Gear").ClickAsync();
         await Expect(page.GetByLabel("Note", new() { Exact = true })).ToBeHiddenAsync();
-        // Tab goes from the tabs to the group's menu, the showing panel and its button, and then to the separator,
-        // never into the notes.
+        // Tab goes from the tabs to the group's menu and the showing panel's button, and then to the separator, never
+        // into the notes. The panel starts with its button, so it is no stop of its own.
         await page.Keyboard.PressAsync("Tab");
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Options for Gear" })).ToBeFocusedAsync();
-        await page.Keyboard.PressAsync("Tab");
-        await Expect(Panel(page, "Gear")).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Tab");
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Add gear" })).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Tab");

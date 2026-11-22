@@ -7409,4 +7409,6 @@ Trailblazor.DockLabels.PopOutBlocked.get -> string?
 Trailblazor.DockLabels.PopOutBlocked.init -> void
 const Trailblazor.TbStrings.DockPopOutBlocked = "Dock.PopOutBlocked" -> string!
 Trailblazor.TbDockManager.AllowPopOut.get -> bool
+Trailblazor.TbDockManager.FocusablePanels.get -> Trailblazor.TabPanelFocus
+Trailblazor.TbDockManager.FocusablePanels.set -> void
 Trailblazor.TbDockManager.AllowPopOut.set -> void

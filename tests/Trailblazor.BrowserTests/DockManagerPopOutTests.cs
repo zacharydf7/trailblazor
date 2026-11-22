@@ -643,7 +643,10 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
             await page.Keyboard.PressAsync("Enter");
         });
 
-        await FocusedAsync(window.GetByRole(AriaRole.Region, new() { Name = "Notes" }));
+        var notes = window.GetByRole(AriaRole.Region, new() { Name = "Notes" });
+        await FocusedAsync(notes);
+        // The panel starts with its Return button there, so it is no tab stop, though it has the focus.
+        await Expect(notes).ToHaveAttributeAsync("tabindex", "-1");
         await window.BringToFrontAsync();
         await window.Keyboard.PressAsync("Tab");
         await FocusedAsync(window.GetByRole(AriaRole.Button, new() { Name = "Return to the dock" }));

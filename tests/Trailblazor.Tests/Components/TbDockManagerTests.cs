@@ -2975,6 +2975,22 @@ public class TbDockManagerTests : BunitContext
         return cut;
     }
 
+    [Theory]
+    [InlineData(TabPanelFocus.Auto, "0", null)]
+    [InlineData(TabPanelFocus.Always, "0", "always")]
+    [InlineData(TabPanelFocus.Never, "-1", "never")]
+    public void Render_ShouldSetEachShowingPanelsStopAndMarkTheDock_WhenGivenEachFocusablePanelsChoice(
+        TabPanelFocus stops, string tabindex, string? mark)
+    {
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.FocusablePanels, stops).Add(dock => dock.ChildContent, Panels(HikePanels)));
+
+        // The script decides which panels keep the stop, so a test here sees the one the server renders.
+        Assert.All(cut.FindAll("[role=tabpanel]:not([inert])"),
+            panel => Assert.Equal(tabindex, panel.GetAttribute("tabindex")));
+        Assert.Equal(mark, cut.Find("[data-part=dock]").GetAttribute("data-focusable-panels"));
+    }
+
     private IRenderedComponent<TbDockManager> RenderDock(DockLayout? layout, params Panel[] panels) =>
         RenderDock(layout, panels, null);
 

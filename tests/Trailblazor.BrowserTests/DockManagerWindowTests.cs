@@ -140,12 +140,12 @@ public class DockManagerWindowTests(BrowserFixture fixture) : DockManagerPage(fi
             (await Assert.ThrowsAsync<InvalidOperationException>(() => dock.MoveWindowAsync("Trails", 1, 1))).Message);
 
         // The notes join the window. Their panel was on the page before the window was, and the grip still comes
-        // after it: the Move button starts the window's row, then come the showing tab, the menu button, the panel
-        // and the field it holds, and the grip ends the window.
+        // after it: the Move button starts the window's row, then come the showing tab, the menu button and the
+        // field the panel starts with, and the grip ends the window.
         await dock.MoveToGroupAsync("Notes", 4);
         move = page.GetByRole(AriaRole.Button, new() { Name = "Move the Notes window" });
         await move.FocusAsync();
-        for (var stop = 0; stop < 5; stop++)
+        for (var stop = 0; stop < 4; stop++)
         {
             await page.Keyboard.PressAsync("Tab");
         }

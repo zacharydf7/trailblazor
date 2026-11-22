@@ -1,0 +1,15 @@
+<TbDockManager @bind-Layout="_layout" AriaLabel="Day hike" Style="block-size: 12rem">
+    <TbDockPanel Id="packing" Title="Packing list" Closable="false">
+        <TbText class="tb-p-3">Water, a map and a headlamp.</TbText>
+    </TbDockPanel>
+    <TbDockPanel Id="start" Title="Start" Closable="false">
+        <div class="tb-p-3">
+            <TbTextField Label="Starting point" @bind-Value="_start" />
+        </div>
+    </TbDockPanel>
+</TbDockManager>
+
+@code {
+    private DockLayout _layout = new(new DockSplit(new DockGroup("packing"), new DockGroup("start")));
+    private string? _start;
+}

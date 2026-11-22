@@ -311,7 +311,7 @@ const skippedByTab = ':is(a, button, input, select, textarea, [role=tab], [role=
 // Whether Tab reaches a control in the panel before anything else people read or look at there. Text that names
 // something, in a label, a legend or an element an aria-labelledby points at, doesn't count. Neither does a control Tab
 // skips because it shares one tab stop with others, such as the tabs before a nested list's selected one.
-function startsWithControl(panel) {
+export function startsWithControl(panel) {
     const names = element => element.id !== ''
         && panel.querySelector(`[aria-labelledby~="${CSS.escape(element.id)}"]`) !== null;
     // An element with display: contents has no box of its own, but what it holds still shows.
