@@ -29,6 +29,7 @@ Familiar apps: mentioning someone with @ in GitHub, Slack or Google Docs comment
 ## Focus
 
 - [x] With `Lines="1"`, the input is a combobox whose `aria-expanded` follows the list; a text area stays a text box. `TbMentionInputTests.Render_ShouldMakeAOneLineFieldACombobox_WhenLinesIsOne`
+- [x] A search that fails is logged as a warning with its exception, and counted in `trailblazor.control.failed` when the field has a `TelemetryName`. `LoadFailureTests.MentionInput_ShouldLogAWarningAndCountTheFailure_WhenItsSearchThrows`
 - [x] When the search fails, the list closes, screen readers hear "Couldn't load suggestions.", and the app hears the exception. `TbMentionInputTests.TypeAsync_ShouldCloseTheListAndReportTheFailure_WhenTheSearchFails`
 - [x] The field is named by its label, and so is the list of suggestions. `TbMentionInputTests.Render_ShouldBeALabeledFieldThatControlsAListOfSuggestions_WhenCalled`
 - [x] Each suggestion is named by its text and described by its description. `TbMentionInputTests.TypeAsync_ShouldSuggestTheItemsMatchingTheTextAfterTheTrigger_WhenATriggerStartsAWord`

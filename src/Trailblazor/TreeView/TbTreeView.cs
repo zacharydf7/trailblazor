@@ -2,6 +2,8 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Trailblazor.Internal.Events;
 using Trailblazor.Primitives;
@@ -277,7 +279,9 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     [Parameter]
     public bool ShowEmpty { get; set; } = true;
 
-    /// <summary>Raised when <see cref="LoadChildren"/> fails; the row offers to try again.</summary>
+    /// <summary>Raised when <see cref="LoadChildren"/> fails; the row offers to try again. The failure is also
+    /// logged as a warning, and counted in <c>trailblazor.control.failed</c> when the tree has a
+    /// <see cref="TelemetryName"/>.</summary>
     [Parameter]
     public EventCallback<Exception> OnLoadFailed { get; set; }
 
@@ -344,8 +348,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// <summary>A label the tree's use is counted under, such as <c>"folders"</c>, so the app can see how people use it
     /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>expand</c>,
     /// <c>collapse</c>, <c>select</c>, <c>check</c>, <c>activate</c> or <c>move</c> each time the user does one.
-    /// Opening rows from code isn't counted, and which rows is never recorded. It names the tree, never the
-    /// user.</summary>
+    /// A <see cref="LoadChildren"/> that fails is counted in <c>trailblazor.control.failed</c>. Opening rows from
+    /// code isn't counted, and which rows is never recorded. It names the tree, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
@@ -1440,9 +1444,20 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
     }
 
-    // A row's handlers find its node as they run, since a rebuild, such as after a lazy load, makes new nodes.
-    private Task OnNodeAsync(object key, Func<TreeNode<TItem>, Task> handle) =>
-        _nodes.TryGetValue(key, out var node) ? handle(node) : Task.CompletedTask;
+    // A row's handlers find its node as they run, since a rebuild, such as after a lazy load, makes new nodes. A
+    // key that finds none usually belongs to a row that was just removed, or else its equality or hash code changed.
+    private Task OnNodeAsync(object key, Func<TreeNode<TItem>, Task> handle)
+    {
+        if (_nodes.TryGetValue(key, out var node))
+        {
+            return handle(node);
+        }
+
+        Services.GetService<ILoggerFactory>()?.CreateLogger(GetType()).LogDebug(
+            "The tree {Tree} dropped an event for the key {Key}, which no row has anymore.",
+            TelemetryName ?? AriaLabel ?? "(unnamed)", key);
+        return Task.CompletedTask;
+    }
 
     private async Task OnRowClickAsync(TreeNode<TItem> node, MouseEventArgs args)
     {
@@ -1803,6 +1818,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         {
             _failed.Add(node.Key);
             Announcer.Polite(LoadFailedLabel);
+            Telemetry.Failed(TelemetryName, AriaLabel, "load", exception);
             await OnLoadFailed.InvokeAsync(exception);
         }
         finally

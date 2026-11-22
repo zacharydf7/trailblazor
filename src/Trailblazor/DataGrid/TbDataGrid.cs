@@ -449,7 +449,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public RenderFragment? EmptyContent { get; set; }
 
-    /// <summary>Raised when the <see cref="DataProvider"/> fails; the grid offers to try again.</summary>
+    /// <summary>Raised when the <see cref="DataProvider"/> fails; the grid offers to try again. The failure is also
+    /// logged as a warning, and counted in <c>trailblazor.control.failed</c> when the grid has a
+    /// <see cref="TelemetryName"/>.</summary>
     [Parameter]
     public EventCallback<Exception> OnLoadFailed { get; set; }
 
@@ -473,8 +475,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>sort</c>,
     /// <c>filter</c>, <c>page</c>, <c>page_size</c>, <c>select</c>, <c>move</c>, <c>group</c>, <c>expand</c>,
     /// <c>collapse</c>, <c>edit</c>, <c>open_detail</c>, <c>close_detail</c>, <c>export_csv</c>,
-    /// <c>export_excel</c> or <c>export_pdf</c> each time the user does one. Which
-    /// column, filter value, page, group, rows or value is never recorded. It names the grid, never the user.</summary>
+    /// <c>export_excel</c> or <c>export_pdf</c> each time the user does one. A <see cref="DataProvider"/> that fails
+    /// is counted in <c>trailblazor.control.failed</c>. Which column, filter value, page, group, rows or value is
+    /// never recorded. It names the grid, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
@@ -1957,6 +1960,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         ShowRows([]);
         _totals = [];
         Announcer.Polite(LoadFailedLabel);
+        Telemetry.Failed(TelemetryName, AriaLabel, "load", exception);
         await OnLoadFailed.InvokeAsync(exception);
     }
 

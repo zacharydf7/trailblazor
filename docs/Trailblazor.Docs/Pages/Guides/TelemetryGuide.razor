@@ -165,7 +165,9 @@
                 <strong>Fields:</strong> every field takes a <code>TelemetryName</code>, shown as it renders and counted
                 in <code>trailblazor.field.invalid</code> each time its <code>TbForm</code> is submitted while it has an
                 error, so the fields people trip over stand out. A <code>Revealable</code> text field also counts as
-                used, with the action <code>reveal</code>, each time its password is shown. No value is ever recorded.
+                used, with the action <code>reveal</code>, each time its password is shown. An autocomplete or a
+                mention input counts a <code>Search</code> that fails in <code>trailblazor.control.failed</code>.
+                No value is ever recorded.
             </li>
             <li>
                 <strong>Forms:</strong> a labeled form counts each submit it validates in
@@ -216,13 +218,16 @@
                 <code>resize</code>, <code>reorder</code>, <code>hide</code>, <code>show</code>,
                 <code>save_changes</code>, <code>discard_changes</code> and <code>copy</code>; opening and
                 closing a tree grid's row counts as <code>expand</code> and <code>collapse</code> too.
-                Which rows or columns were involved, or what value an edit saved, is never recorded.
+                A <code>DataProvider</code> that fails, for the rows or for an export, counts in
+                <code>trailblazor.control.failed</code>. Which rows or columns were involved, or what value an edit
+                saved, is never recorded.
             </li>
             <li>
                 <strong>Tree views:</strong> shown as they render, and used with an action: <code>expand</code>,
                 <code>collapse</code>, <code>select</code>, <code>check</code>, <code>activate</code> or
-                <code>move</code>. For grids and trees alike, what code does, such as opening rows or scrolling to one,
-                isn't counted.
+                <code>move</code>. A <code>LoadChildren</code> that fails counts in
+                <code>trailblazor.control.failed</code>. For grids and trees alike, what code does, such as opening
+                rows or scrolling to one, isn't counted.
             </li>
         </ul>
 
@@ -278,6 +283,9 @@
             <li>
                 Values, text people type, dialog and page titles, labels' text and anything about the user. Only the
                 names you give and the components' types are recorded; that's by design and can't be configured.
+                This is about the meter. The warning a failed load or search writes to the app's log is separate:
+                it carries the app's own exception, and names a control that has no <code>TelemetryName</code> by
+                its label.
             </li>
             <li>
                 Nothing is recorded until something listens to the meter, and nothing leaves the app unless the app
@@ -427,6 +435,10 @@
         new("Data-heavy screens", "How do people work through big lists?", "Data grids and tree views.",
             "`trailblazor.control.used` by `trailblazor.action`: sorts and page sizes to set better defaults, "
             + "expands and moves to see how a tree is used."),
+        new("Failing data", "Which lists and searches fail, and how often?",
+            "Data grids, tree views, autocompletes and mention inputs.",
+            "`trailblazor.control.failed` by name and `trailblazor.action` (`load` or `search`). Each failure is "
+            + "also a warning in the app's log, with the exception."),
         new("Accessibility", "How many people choose by keyboard, and close dialogs with Escape?",
             "Selects, list boxes, their options, and dialogs.",
             "`trailblazor.control.used` by `trailblazor.input`, and dialogs closed with `escape`: real keyboard use "

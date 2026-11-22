@@ -32,6 +32,10 @@ internal sealed class Telemetry(TelemetryInstruments instruments, IOptions<Trail
     public void ControlUsed(string telemetryName, Type component, string? action = null, string? input = null) =>
         Add(instruments.ControlsUsed, 1, telemetryName, NameOf(component), (ActionTag, action), (InputTag, input));
 
+    // The action says what failed: a load or a search.
+    public void ControlFailed(string telemetryName, Type component, string action) =>
+        Add(instruments.ControlsFailed, 1, telemetryName, NameOf(component), (ActionTag, action));
+
     public void DialogClosed(string telemetryName, Type component, string outcome, TimeSpan open)
     {
         Add(instruments.DialogsClosed, 1, telemetryName, NameOf(component), (OutcomeTag, outcome));
@@ -86,5 +90,5 @@ internal sealed class Telemetry(TelemetryInstruments instruments, IOptions<Trail
     }
 
     // A generic component's type name ends in its arity, as TbSelect`1 does.
-    private static string NameOf(Type component) => component.Name.Split('`')[0];
+    internal static string NameOf(Type component) => component.Name.Split('`')[0];
 }

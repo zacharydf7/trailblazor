@@ -126,7 +126,8 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
     public EventCallback<string> OnTextChanged { get; set; }
 
     /// <summary>Raised when <see cref="Search"/> fails. The field stays usable, and typing again searches again.
-    /// </summary>
+    /// The failure is also logged as a warning, and counted in <c>trailblazor.control.failed</c> when the field has a
+    /// <c>TelemetryName</c>.</summary>
     [Parameter]
     public EventCallback<Exception> OnSearchFailed { get; set; }
 
@@ -396,6 +397,7 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
             _resultsFor = _text;
             _announcedCount = null;
             Announcer.Polite(SearchFailedLabel);
+            Telemetry.Failed(TelemetryName, Label ?? AriaLabel, "search", exception);
             await OnSearchFailed.InvokeAsync(exception);
         }
     }

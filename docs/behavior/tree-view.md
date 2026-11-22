@@ -57,6 +57,8 @@ Familiar apps: File Explorer, VS Code's file tree, Finder's list view
 
 ## Focus
 
+- [x] A lazy load that fails is logged as a warning with its exception, and counted in `trailblazor.control.failed` when the tree has a `TelemetryName`. `LoadFailureTests.Tree_ShouldLogAWarningAndCountTheFailure_WhenLoadingChildrenThrows`
+- [x] A click or a toggle whose key no row has anymore is dropped, and logged at Debug. `LoadFailureTests.Tree_ShouldLogAtDebug_WhenAClickedRowsKeyFindsNoRowNow`
 - [x] The tree is one tab stop that remembers the last row focused or clicked. `TreeViewTests.Tree_ShouldBeOneTabStopThatRemembersTheRow_WhenTabbedThrough`, `TreeViewTests.Tree_ShouldMakeAClickedRowTheTabStop_WhenTheArrowsMovedFocusFirst`
 - [x] Before any row has focus, the first selected row is the tab stop. `TbTreeViewTests.Render_ShouldGiveTheFirstSelectedRowTheTabStop_WhenNoRowHasBeenFocused`
 - [x] Tab from a row reaches its end slot's controls, and only that row's. `tree-view.js`

@@ -48,6 +48,7 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 
 ## Focus
 
+- [x] A search that fails is logged as a warning with its exception, and counted in `trailblazor.control.failed` when the field has a `TelemetryName`. One that fails after the user typed again is neither logged nor counted. `LoadFailureTests.Autocomplete_ShouldLogAWarningAndCountTheFailure_WhenItsSearchThrows`, `LoadFailureTests.Autocomplete_ShouldLogAndCountNothing_WhenAnEarlierSearchFailsAfterTheUserTypedAgain`
 - [x] Focus stays in the field while the list is open, and `aria-activedescendant` names the active option. `AutocompleteTests.Autocomplete_ShouldSearchAndChooseWithTheKeys_WhenTheUserTypes`
 - [x] Typing again clears the active option. `autocomplete.js`
 - [x] Leaving the field puts back the chosen value's text, unless it's `FreeText`. `AutocompleteTests.Autocomplete_ShouldCloseAndPutBackTheChosenText_WhenEscapeIsPressedAndTheFieldIsLeft`

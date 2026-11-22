@@ -132,7 +132,8 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
 
     private const string FieldTelemetry = "With a `TelemetryName`, such as `\"trail-name\"`, it counts "
         + "`trailblazor.control.shown` as it first renders, and `trailblazor.field.invalid` each time its `TbForm` is "
-        + "submitted while it has an error. Its value is never recorded.";
+        + "submitted while it has an error. An autocomplete or a mention input also counts a `Search` that fails "
+        + "in `trailblazor.control.failed`. Its value is never recorded.";
 
     private static bool IsField(Type type)
     {
@@ -11164,6 +11165,8 @@ public static class ExampleCatalog
                     + "`select`, `check`, `activate` or `move` for each of those the user does, by pointer or key.",
                 "Rows opened, selected or scrolled to from code aren't counted, and which rows were used is never "
                     + "recorded.",
+                "A `LoadChildren` that fails is counted in `trailblazor.control.failed`, with the action `load`, "
+                    + "and logged as a warning whether or not the tree has a `TelemetryName`.",
             ],
         },
         new("data-grid", "Data grid", ExampleCategory.Content,
@@ -11683,6 +11686,9 @@ public static class ExampleCatalog
                     + "`keyboard` made it.",
                 "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "
                     + "value, page, group, rows or width were used, or what value an edit saved, is never recorded.",
+                "A `DataProvider` that fails, for the rows or for an export, is counted in "
+                    + "`trailblazor.control.failed`, with the action `load`, and logged as a warning whether or not "
+                    + "the grid has a `TelemetryName`.",
             ],
         },
         new("tree-grid", "Tree grid", ExampleCategory.Content,

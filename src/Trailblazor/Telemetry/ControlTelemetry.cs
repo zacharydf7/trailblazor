@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Trailblazor;
 
@@ -25,6 +26,19 @@ internal sealed class ControlTelemetry(IServiceProvider services, Type component
         if (telemetryName is not null)
         {
             Service?.ControlUsed(telemetryName, component, action, input);
+        }
+    }
+
+    // A failed load or search is logged for every control, since an app that binds no failure callback would never
+    // hear of it otherwise, and counted for a control with a TelemetryName. The label names an unnamed control.
+    public void Failed(string? telemetryName, string? label, string action, Exception exception)
+    {
+        services.GetService<ILoggerFactory>()?.CreateLogger(component).LogWarning(exception,
+            "{Component} {Name} failed to {Action}.", Telemetry.NameOf(component),
+            telemetryName ?? label ?? "(unnamed)", action);
+        if (telemetryName is not null)
+        {
+            Service?.ControlFailed(telemetryName, component, action);
         }
     }
 

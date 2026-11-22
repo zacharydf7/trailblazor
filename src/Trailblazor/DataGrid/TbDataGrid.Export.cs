@@ -171,6 +171,7 @@ public partial class TbDataGrid<TItem>
         catch (Exception exception)
         {
             Announcer.Polite(LoadFailedLabel);
+            Telemetry.Failed(TelemetryName, AriaLabel, "load", exception);
             await OnLoadFailed.InvokeAsync(exception);
             return;
         }

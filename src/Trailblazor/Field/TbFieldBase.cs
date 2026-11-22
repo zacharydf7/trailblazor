@@ -229,8 +229,9 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     /// <summary>A label this field's use is counted under, such as <c>"email"</c>, so the app can see how people use
     /// it through the <c>Trailblazor</c> meter: counted in <c>trailblazor.control.shown</c> when it first renders, and
     /// in <c>trailblazor.field.invalid</c> each time its <see cref="TbForm"/> is submitted while it has an error. A
-    /// checkbox, switch, select or list box also counts each change or choice. Its value is never recorded. It names
-    /// what the field holds, never the user.</summary>
+    /// checkbox, switch, select or list box also counts each change or choice, and an autocomplete or a mention
+    /// input a search that fails, in <c>trailblazor.control.failed</c>. Its value is never recorded. It names what
+    /// the field holds, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
