@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Trailblazor;
 
@@ -9,10 +10,14 @@ internal sealed class DialogHost : ComponentBase, IDisposable
     [Inject]
     private DialogService Dialogs { get; set; } = default!;
 
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
     protected override void OnInitialized()
     {
         Dialogs.Hosts.Attach();
         Dialogs.Changed += OnChanged;
+        Navigation.LocationChanged += OnLocationChanged;
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -33,9 +38,22 @@ internal sealed class DialogHost : ComponentBase, IDisposable
 
     private void OnChanged() => InvokeAsync(StateHasChanged);
 
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => InvokeAsync(async () =>
+    {
+        try
+        {
+            await Dialogs.CloseForNavigationAsync(e.Location);
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    });
+
     public void Dispose()
     {
         Dialogs.Hosts.Detach();
         Dialogs.Changed -= OnChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }

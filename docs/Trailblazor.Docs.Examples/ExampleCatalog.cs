@@ -10235,6 +10235,16 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("A dialog opened through `IDialogService` is canceled when the app goes to another page, by a "
+                    + "link, from code or with the browser's Back button. That closes it as from code, so nothing "
+                    + "is asked first. A new query string or fragment is the same page and leaves it open, and so "
+                    + "does a dialog the new page opens as it renders. Its opener has usually left with the old "
+                    + "page, so focus isn't given back to it."),
+                new("`CloseOnNavigation = false` keeps one dialog across pages, as for a tool window, and "
+                    + "`DialogSettings.CloseOnNavigation` sets it for the app. A `TbDialog` in markup isn't "
+                    + "closed this way: it leaves with its page, or stays with its layout. To ask before unsaved "
+                    + "work is lost, put Blazor's `NavigationLock` in the dialog's content: a navigation it stops "
+                    + "doesn't close the dialog."),
                 new("With `TopLayer = false`, a dialog draws its own backdrop, stops the page from scrolling, is "
                     + "marked `aria-modal` and makes the rest of the page inert itself, and keys pressed in popups "
                     + "added later stay there. A library that makes its popup's element before the dialog opens, such "
@@ -10320,7 +10330,10 @@ public static class ExampleCatalog
                 + "which have `IsClosing` set, and `HasOpenDialogs` says whether any is open and not closing. On the "
                 + "page, `TbRoot` renders the number of those as `data-tb-open-dialogs` on a hidden element, for a script "
                 + "that checks without knowing the dialogs' markup. `CloseAllAsync()` "
-                + "cancels them all, which resets a page between tests. `Show` returns a reference whose `Result` "
+                + "cancels them all, which resets a page between tests. With a rendered `TbRoot`, as "
+                + "`ShowDialogAsync` gives, navigating with the test's `NavigationManager` in bUnit cancels the "
+                + "open dialogs from `IDialogService` as the app does, unless their options set "
+                + "`CloseOnNavigation = false`. `Show` returns a reference whose `Result` "
                 + "finishes when the dialog closes, and whose `ContentType` and `Parameters` say what it shows. In "
                 + "bUnit, `FakeDialogService` records the dialogs opened through it, finds one with `Last<TDialog, "
                 + "TResult>()`, `Last<TDialog>()` or `LastConfirm()`, "
@@ -10351,7 +10364,8 @@ public static class ExampleCatalog
                 "With `DialogOptions.TelemetryName`, such as `\"delete-trail\"`, or the `telemetryName` of "
                     + "`ConfirmAsync` and `AlertAsync`, it counts `trailblazor.control.shown` each time it opens, and "
                     + "`trailblazor.dialog.closed` and `trailblazor.dialog.duration` with `trailblazor.outcome`: "
-                    + "`confirmed`, `canceled`, `escape`, `backdrop` or `close_button`.",
+                    + "`confirmed`, `canceled`, `escape`, `backdrop` or `close_button`. A dialog that a navigation "
+                    + "closes counts as `canceled`.",
                 "Its `trailblazor.component` is the content's type, such as `EditTrailDialog`, `ConfirmDialog` for "
                     + "`ConfirmAsync` and `AlertAsync`, or `TbDialog` for one in markup. Its title and result are "
                     + "never recorded.",
@@ -12946,6 +12960,9 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("A toast stays when the app goes to another page, so \"Saved\" still shows after the page "
+                    + "that follows a save. Dialogs opened through `IDialogService` close on navigation; toasts "
+                    + "don't."),
                 new("`options.Toasts` in `AddTrailblazor` sets, for the whole app, where toasts appear (`Position`, "
                     + "top end unless set), how many show at once (`MaxVisible`, 3 unless set) and how long they stay "
                     + "(`Duration`, 5 seconds unless set)."),

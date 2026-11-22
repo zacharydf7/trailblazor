@@ -48,6 +48,105 @@ public class DialogServiceTests : BunitContext
         Assert.Equal(warnings, logs.GetSnapshot().Count(log => log.Level == LogLevel.Warning));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Dialog_ShouldBeCanceled_WhenTheAppGoesToAnotherPage(bool modal)
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<GreetingDialog, string>("Greeting", options: new() { Modal = modal });
+        host.WaitForElement("dialog");
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/elsewhere");
+
+        var result = await dialog.Result.WaitAsync(TimeSpan.FromSeconds(5),
+            Xunit.TestContext.Current.CancellationToken);
+        Assert.False(result.Confirmed);
+        host.WaitForAssertion(() => Assert.Empty(host.FindAll("dialog")));
+    }
+
+    [Fact]
+    public void Dialog_ShouldStayOpen_WhenOnlyTheQueryStringOrTheFragmentChanges()
+    {
+        var navigation = Services.GetRequiredService<NavigationManager>();
+        var host = Render<DialogHost>();
+        // The page the query string is compared with is the one the app is at now, not the one the host started on.
+        navigation.NavigateTo("/trails");
+        var dialog = Dialogs.Show<GreetingDialog, string>("Greeting");
+        host.WaitForElement("dialog");
+
+        // Nor do a trailing slash or other capitals make another page, as for a nav link.
+        navigation.NavigateTo("/trails?tab=maps");
+        navigation.NavigateTo("/trails?tab=maps#north");
+        navigation.NavigateTo("/Trails/");
+
+        Assert.False(dialog.Result.IsCompleted);
+        Assert.Single(Dialogs.OpenDialogs);
+    }
+
+    [Theory]
+    [InlineData(false, null)]
+    [InlineData(true, false)]
+    public void Dialog_ShouldStayOpen_WhenTheAppOrItsOptionsKeepItAcrossPages(bool appWide, bool? own)
+    {
+        Services.Configure<TrailblazorOptions>(options => options.Dialogs.CloseOnNavigation = appWide);
+        var host = Render<DialogHost>();
+        var kept = Dialogs.Show<GreetingDialog, string>("Greeting", options: new() { CloseOnNavigation = own });
+        // The other way round, a dialog's own option closes it where the app keeps its dialogs.
+        var closed = Dialogs.Show<GreetingDialog, string>("Other", options: new() { CloseOnNavigation = true });
+        host.WaitForAssertion(() => Assert.Equal(2, host.FindAll("dialog").Count));
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/elsewhere");
+
+        host.WaitForAssertion(() => Assert.True(closed.Result.IsCompleted));
+        Assert.False(kept.Result.IsCompleted);
+        Assert.Equal([kept], Dialogs.OpenDialogs);
+    }
+
+    [Fact]
+    public void Dialog_ShouldStayOpen_WhenThePageTheAppGoesToOpensItAsItRenders()
+    {
+        var navigation = Services.GetRequiredService<NavigationManager>();
+        DialogReference<string>? opened = null;
+        // As the router does: it hears of the navigation before the host, and renders the new page at once.
+        navigation.LocationChanged += (_, _) => opened = Dialogs.Show<GreetingDialog, string>("Welcome");
+        var host = Render<DialogHost>();
+        var old = Dialogs.Show<GreetingDialog, string>("Greeting");
+        host.WaitForElement("dialog");
+
+        navigation.NavigateTo("/elsewhere");
+
+        host.WaitForAssertion(() => Assert.True(old.Result.IsCompleted));
+        Assert.False(opened!.Result.IsCompleted);
+        Assert.Equal([opened], Dialogs.OpenDialogs);
+    }
+
+    [Fact]
+    public void Dialog_ShouldStayOpen_WhenANavigationLockInItsContentStopsTheNavigation()
+    {
+        var host = Render<DialogHost>();
+        var dialog = Dialogs.Show<UnsavedDialog, string>("Edit trail");
+        host.WaitForElement("dialog");
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/elsewhere");
+
+        Assert.False(dialog.Result.IsCompleted);
+        Assert.Single(host.FindAll("dialog"));
+    }
+
+    [Fact]
+    public void TbDialog_ShouldStayOpen_WhenTheAppGoesToAnotherPageUnderIt()
+    {
+        Render<DialogHost>();
+        var cut = Render<TbDialog>(parameters => parameters.Add(dialog => dialog.Open, true)
+            .Add(dialog => dialog.Title, "Notes").AddChildContent("Notes"));
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/elsewhere");
+
+        Assert.Single(Dialogs.OpenDialogs);
+        Assert.NotNull(cut.Find("dialog"));
+    }
+
     [Fact]
     public void ShowAsync_ShouldRenderATitledDialogWithItsParameters_WhenCalled()
     {
@@ -1723,6 +1822,19 @@ public class DialogServiceTests : BunitContext
             builder.AddAttribute(4, "data-testid", "cancel");
             builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, Dialog.CancelAsync));
             builder.CloseElement();
+        }
+    }
+
+    // Content with unsaved work, which keeps the app on its page as Blazor's NavigationLock lets it.
+    private sealed class UnsavedDialog : TbDialogContent<string>
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<Microsoft.AspNetCore.Components.Routing.NavigationLock>(0);
+            builder.AddComponentParameter(1, "OnBeforeInternalNavigation", EventCallback.Factory.Create(this,
+                (Microsoft.AspNetCore.Components.Routing.LocationChangingContext context) =>
+                    context.PreventNavigation()));
+            builder.CloseComponent();
         }
     }
 

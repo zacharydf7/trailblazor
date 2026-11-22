@@ -1,0 +1,27 @@
+@page "/dialog-navigation"
+@page "/dialog-navigation/{Step}"
+@using Trailblazor.BrowserTests.Host.Dialogs
+@inject IDialogService Dialogs
+
+@* Ask opens a dialog with two links: one to this page under another path, and one that only changes the query
+   string. Ask and keep opens one that stays across pages. The page shows which path it is at and how the dialog
+   ended. *@
+<TbButton OnClick="() => AskAsync(null)">Ask</TbButton>
+<TbButton OnClick="() => AskAsync(false)">Ask and keep</TbButton>
+<output data-testid="where">@(Step ?? "one")</output>
+<output data-testid="answer">@_answer</output>
+
+@code {
+    private string _answer = "";
+
+    [Parameter]
+    public string? Step { get; set; }
+
+    private async Task AskAsync(bool? closeOnNavigation)
+    {
+        _answer = "asking";
+        var result = await Dialogs.ShowAsync<LinksDialog, bool>("Leave?",
+            options: new() { CloseOnNavigation = closeOnNavigation });
+        _answer = result.Confirmed ? "confirmed" : "canceled";
+    }
+}

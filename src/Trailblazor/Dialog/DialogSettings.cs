@@ -11,6 +11,11 @@ public sealed class DialogSettings
     /// </summary>
     public bool DismissOnBackdrop { get; set; } = true;
 
+    /// <summary>Whether a dialog opened through <see cref="IDialogService"/> is canceled when the app goes to another
+    /// page, when its options don't say. Defaults to true. See <see cref="DialogOptions.CloseOnNavigation"/>.
+    /// </summary>
+    public bool CloseOnNavigation { get; set; } = true;
+
     /// <summary>How wide a dialog grows when its options don't set a size. Defaults to <see cref="DialogSize.Medium"/>.
     /// </summary>
     public DialogSize Size { get; set; } = DialogSize.Medium;

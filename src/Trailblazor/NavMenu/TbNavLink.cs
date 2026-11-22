@@ -20,5 +20,5 @@ public partial class TbNavLink
             && current[target.Length] == '/';
     }
 
-    private static string PathOf(string uri) => uri.Split('?', '#')[0].TrimEnd('/');
+    internal static string PathOf(string uri) => uri.Split('?', '#')[0].TrimEnd('/');
 }

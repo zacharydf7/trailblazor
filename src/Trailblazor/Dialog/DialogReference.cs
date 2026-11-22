@@ -399,6 +399,9 @@ public abstract class DialogReference
     internal DialogDismissReason? DismissedBy { get; private set; }
 
     internal long OpenedAt { get; init; }
+
+    // The address the app was at when the dialog opened, which says whether a navigation left its page.
+    internal string? OpenedOn { get; init; }
 }
 
 /// <summary>A dialog that is open and closes with a <typeparamref name="TResult"/>, as

@@ -802,6 +802,11 @@
                 once a rendered <code>TbRoot</code> shows the dialog.
             </li>
             <li>
+                With a rendered <code>TbRoot</code>, a test that navigates to another page with its
+                <code>NavigationManager</code> cancels the open dialogs, as the app does, unless their options set
+                <code>CloseOnNavigation = false</code>.
+            </li>
+            <li>
                 <code>LastConfirm()</code> finds the last confirm or alert; its <code>Message</code> is the text it
                 shows. Answer a confirm with <code>ConfirmAsync()</code> for yes or <code>CancelAsync()</code> for no;
                 <code>CloseAsync(true)</code> and <code>CloseAsync(false)</code> give the app the same answers.

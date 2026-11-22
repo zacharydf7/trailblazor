@@ -165,6 +165,20 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         }
     }
 
+    // Skips TbDialogs in markup (no ContentType): they leave with their page or stay with their layout.
+    internal async Task CloseForNavigationAsync(string location)
+    {
+        foreach (var dialog in Enumerable.Reverse(_open).Where(dialog => dialog.ContentType is not null
+            && dialog.Options.CloseOnNavigation == true && LeftItsPage(dialog, location)))
+        {
+            await dialog.CancelAsync();
+        }
+    }
+
+    // The new page renders, and may open a dialog of its own, before the host hears of the navigation.
+    private static bool LeftItsPage(DialogReference dialog, string location) => dialog.OpenedOn is { } openedOn
+        && !string.Equals(TbNavLink.PathOf(openedOn), TbNavLink.PathOf(location), StringComparison.OrdinalIgnoreCase);
+
     // A TbDialog in markup renders its own frame where it is, so the host leaves it out.
     internal DialogReference<bool> OpenInPlace(string title, DialogOptions options) =>
         Open<bool>(title, null, new Dictionary<string, object?>(), options, isAlert: false);
@@ -178,6 +192,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         {
             DismissOnEscape = options.DismissOnEscape ?? settings.DismissOnEscape,
             DismissOnBackdrop = options.DismissOnBackdrop ?? settings.DismissOnBackdrop,
+            CloseOnNavigation = options.CloseOnNavigation ?? settings.CloseOnNavigation,
             TopLayer = options.TopLayer ?? settings.TopLayer,
             Size = options.Size ?? settings.Size,
             Width = sized ? options.Width : settings.Width,
@@ -209,6 +224,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         var dialog = new DialogReference<TResult>(title, Settled(options), component, parameters, isAlert, CloseAsync)
         {
             OpenedAt = time.GetTimestamp(),
+            OpenedOn = navigation?.Uri,
         };
         dialog.BlockingChanged += () => Changed?.Invoke();
         lock (_lock)

@@ -6,7 +6,8 @@ namespace Trailblazor.Testing;
 /// <summary>Records the dialogs a component opens, and answers its confirms and alerts when told to, for bUnit.
 /// <c>AddTrailblazor()</c> registers it as the <see cref="IDialogService"/>; get it from <c>Services</c>. Dialogs open
 /// as they otherwise would, so a rendered <see cref="TbRoot"/> shows them, and each stays open until the test, the
-/// component or a click in it closes it.</summary>
+/// component or a click in it closes it, or, with a rendered <see cref="TbRoot"/>, the test navigates to another
+/// page.</summary>
 public sealed class FakeDialogService : IDialogService
 {
     private readonly DialogService _dialogs;

@@ -1223,6 +1223,10 @@ Trailblazor.DialogSettings
 Trailblazor.DialogSettings.DialogSettings() -> void
 Trailblazor.DialogSettings.DismissOnBackdrop.get -> bool
 Trailblazor.DialogSettings.DismissOnBackdrop.set -> void
+Trailblazor.DialogSettings.CloseOnNavigation.get -> bool
+Trailblazor.DialogSettings.CloseOnNavigation.set -> void
+Trailblazor.DialogOptions.CloseOnNavigation.get -> bool?
+Trailblazor.DialogOptions.CloseOnNavigation.init -> void
 Trailblazor.DialogSettings.DismissOnEscape.get -> bool
 Trailblazor.DialogSettings.DismissOnEscape.set -> void
 Trailblazor.DialogSize

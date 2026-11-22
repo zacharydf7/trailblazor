@@ -15,6 +15,15 @@ public sealed record DialogOptions
     /// <see cref="DialogSettings.DismissOnBackdrop"/>.</summary>
     public bool? DismissOnBackdrop { get; init; }
 
+    /// <summary>Cancels the dialog when the app goes to another page without reloading, by a link, from code or
+    /// with the browser's Back button, since the dialog's host is in the layout and would keep it open over the new
+    /// page. The dialog is canceled as from code, without asking whether it may be dismissed. Only a change of the
+    /// address's path counts: a new query string or fragment is the same page. False keeps the dialog open, as for a
+    /// tool window. Left unset, it follows <see cref="DialogSettings.CloseOnNavigation"/>.
+    /// A <see cref="TbDialog"/> in a page's markup isn't closed this way: it leaves with its page, or stays with
+    /// its layout.</summary>
+    public bool? CloseOnNavigation { get; init; }
+
     /// <summary>Opens the dialog in the browser's top layer, above everything on the page. False keeps it on the page,
     /// below popups that other libraries add to the page's body, such as an editor's menus or a date picker, so they
     /// can be used from inside it. Left unset, it follows <see cref="DialogSettings.TopLayer"/>.</summary>
