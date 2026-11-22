@@ -9707,6 +9707,16 @@ public static class ExampleCatalog
                     + "`Update` a dialog's parameters through it, and close the dialog when the work is done. This "
                     + "export dialog overrides `DefaultTitle`, so the page opens it without a title.",
                     typeof(DialogUpdateExample), typeof(ExportDialog)),
+                new("hosting", "Outside a dialog", "`TbDialogContentHost` shows a dialog's content somewhere "
+                    + "else, such as in a dock panel, a drawer or on the page, so one piece of content serves "
+                    + "both. The content closes as it does in a dialog, with `Dialog.CloseAsync(value)` or "
+                    + "`Dialog.CancelAsync()`, and the host gives the result through `OnClosed` and `Result`. "
+                    + "`Parameters` sets the content's parameters as `Show` does, and `DismissAsync` asks the "
+                    + "content to close as Escape would, for whatever stands in for Escape there. The host has "
+                    + "no window: a size, a position or a header the content sets does nothing, and its title "
+                    + "comes through `@bind-Title`. Once the content closes the host renders nothing. Here the "
+                    + "panel renames the report with the content the first example opens in a dialog.",
+                    typeof(DialogHostExample), typeof(RenameDialog)),
                 new("run-time", "Choosing at run time", "`ShowDynamicAsync` opens a dialog by its type, with its "
                     + "parameters by name, for a form chosen while the app "
                     + "runs.", typeof(DialogDynamicExample), typeof(RenameDialog), typeof(NotesDialog)),
@@ -9781,7 +9791,8 @@ public static class ExampleCatalog
             Api =
             [
                 typeof(IDialogService), typeof(DialogReference<>), typeof(DialogOptions), typeof(DialogSettings),
-                typeof(TbDialog), typeof(TbDialogActions), typeof(TbDialogTitle), typeof(TbDialogHeaderActions),
+                typeof(TbDialog), typeof(TbDialogContentHost<,>), typeof(TbDialogActions), typeof(TbDialogTitle),
+                typeof(TbDialogHeaderActions),
                 typeof(TbDialogHeader), typeof(TbDialogDescription), typeof(DialogClasses),
                 typeof(DialogWindowButtonAttributes), typeof(DialogLabels),
             ],
@@ -9891,6 +9902,8 @@ public static class ExampleCatalog
                 new("description", "The dialog's description, under its title."),
                 new("body", "The dialog's content."),
                 new("actions", "The buttons at the bottom of the dialog."),
+                new("dialog-content", "The element a `TbDialogContentHost` puts around content it shows outside a "
+                    + "dialog, with the class `tb-dialog-content`."),
                 new("resize",
                     "The Size menu: its button, which also drags to resize the dialog, and its list of sizes."),
                 new("scrim", "The shade over each of the app's other windows while a modal dialog is open, with a "

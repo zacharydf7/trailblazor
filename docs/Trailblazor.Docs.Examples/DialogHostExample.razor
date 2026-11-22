@@ -1,0 +1,37 @@
+@* The layout keeps a place for the rename panel, which is there only while the report is being renamed. *@
+<TbDockManager Layout="Layout" AriaLabel="Reports" Style="block-size: 16rem">
+    <TbDockPanel Id="report" Title="Report" Closable="false">
+        <TbStack Gap="2" class="tb-p-3">
+            <TbText>@_name</TbText>
+            <div>
+                <TbButton Disabled="_renaming" OnClick="() => _renaming = true">Rename in a panel</TbButton>
+            </div>
+            <TbText>@_status</TbText>
+        </TbStack>
+    </TbDockPanel>
+    @if (_renaming)
+    {
+        <TbDockPanel Id="rename" Title="Rename report" Closable="false">
+            <div class="tb-p-3">
+                <TbDialogContentHost TDialog="RenameDialog" TResult="string" OnClosed="Renamed"
+                                     Parameters="p => p.Set(d => d.Name, _name)" />
+            </div>
+        </TbDockPanel>
+    }
+</TbDockManager>
+
+@code {
+    private static readonly DockLayout Layout = new(new DockSplit(new DockGroup("report"), new DockGroup("rename")));
+
+    private string _name = "Quarterly report";
+    private string _status = "";
+    private bool _renaming;
+
+    // The same content the Rename dialog shows, closing with the same result.
+    private void Renamed(DialogResult<string> result)
+    {
+        _renaming = false;
+        _name = result.Confirmed ? result.Value! : _name;
+        _status = result.Confirmed ? $"Renamed to {_name}" : "Not renamed";
+    }
+}

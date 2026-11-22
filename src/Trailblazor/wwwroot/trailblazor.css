@@ -5353,9 +5353,16 @@
         flex-wrap: wrap;
         justify-content: flex-end;
         gap: var(--tb-space-2);
+        margin-block-start: var(--tb-space-5);
+        padding-block: var(--tb-space-3);
+        border-block-start: 1px solid var(--tb-border-subtle);
+    }
+
+    /* In a dialog the bar reaches the dialog's edges, through its body's padding. Content hosted outside a dialog has
+       no such padding around it, and the bar stays within its container. */
+    .tb-dialog__body .tb-dialog__actions {
         margin: var(--tb-space-5) calc(-1 * var(--tb-space-5)) calc(-1 * var(--tb-space-5));
         padding: var(--tb-space-3) var(--tb-space-5);
-        border-block-start: 1px solid var(--tb-border-subtle);
     }
 
     /* A drawer is a dialog docked to one edge, sliding in from it. It comes after the dialog's rules so it wins.

@@ -82,10 +82,19 @@ public class ComponentContractTests : BunitContext
     public static TheoryData<Type> Components => new(typeof(TbComponentBase).Assembly.GetExportedTypes()
         .Where(type => !type.IsAbstract && typeof(IComponent).IsAssignableFrom(type))
         .Except(NotRenderedAlone)
-        .Select(type => type.IsGenericTypeDefinition
-            ? type.MakeGenericType([.. type.GetGenericArguments()
-                .Select(_ => TypeArguments.GetValueOrDefault(type, typeof(string)))])
-            : type));
+        .Select(type => Closed.TryGetValue(type, out var closed) ? closed
+            : type.IsGenericTypeDefinition
+                ? type.MakeGenericType([.. type.GetGenericArguments()
+                    .Select(_ => TypeArguments.GetValueOrDefault(type, typeof(string)))])
+                : type));
+
+    // A component whose type arguments depend on each other, so one type can't stand in for all of them.
+    private static readonly Dictionary<Type, Type> Closed = new()
+    {
+        [typeof(TbDialogContentHost<,>)] = typeof(TbDialogContentHost<SampleContent, string>),
+    };
+
+    internal sealed class SampleContent : TbDialogContent<string>;
 
     [Theory, MemberData(nameof(Components))]
     public void Render_ShouldPutClassStyleAndAttributesOnTheRootElement_WhenTheyArePassed(Type component)

@@ -7065,6 +7065,20 @@ Trailblazor.TbDockManager.ReturnAsync(string! panel) -> System.Threading.Tasks.T
 const Trailblazor.TbStrings.DockAway = "Dock.Away" -> string!
 const Trailblazor.TbStrings.DockAwayHint = "Dock.AwayHint" -> string!
 const Trailblazor.TbStrings.DockShowWindow = "Dock.ShowWindow" -> string!
+Trailblazor.TbDialogContentHost<TDialog, TResult>
+Trailblazor.TbDialogContentHost<TDialog, TResult>.DismissAsync(Trailblazor.DialogDismissReason reason = Trailblazor.DialogDismissReason.CloseButton) -> System.Threading.Tasks.Task!
+Trailblazor.TbDialogContentHost<TDialog, TResult>.Dispose() -> void
+Trailblazor.TbDialogContentHost<TDialog, TResult>.OnClosed.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.DialogResult<TResult>!>
+Trailblazor.TbDialogContentHost<TDialog, TResult>.OnClosed.set -> void
+Trailblazor.TbDialogContentHost<TDialog, TResult>.Parameters.get -> System.Action<Trailblazor.DialogParameters<TDialog!>!>?
+Trailblazor.TbDialogContentHost<TDialog, TResult>.Parameters.set -> void
+Trailblazor.TbDialogContentHost<TDialog, TResult>.Result.get -> System.Threading.Tasks.Task<Trailblazor.DialogResult<TResult>!>!
+Trailblazor.TbDialogContentHost<TDialog, TResult>.TbDialogContentHost() -> void
+Trailblazor.TbDialogContentHost<TDialog, TResult>.Title.get -> string?
+Trailblazor.TbDialogContentHost<TDialog, TResult>.Title.set -> void
+Trailblazor.TbDialogContentHost<TDialog, TResult>.TitleChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
+Trailblazor.TbDialogContentHost<TDialog, TResult>.TitleChanged.set -> void
+Trailblazor.TbDialogContentHost<TDialog, TResult>.Update(System.Action<Trailblazor.DialogParameters<TDialog!>!>! parameters) -> void
 Trailblazor.TbDockPanel.AllowPopOut.get -> bool
 Trailblazor.TbDockPanel.AllowPopOut.set -> void
 Trailblazor.TbDockPanel.Closable.set -> void

@@ -57,6 +57,7 @@ public class DriverParityTests
         ["TbCarouselSlide"] = "part of TbCarousel", ["TbCheckboxItem"] = "part of TbCheckboxGroup",
         ["TbColumn"] = "part of TbDataGrid", ["TbColumnGroup"] = "part of TbDataGrid",
         ["TbDialogActions"] = "part of TbDialog", ["TbDialogDescription"] = "part of TbDialog",
+        ["TbDialogContentHost"] = "it draws only the app's content, which a test finds as on any page",
         ["TbDockPanel"] = "part of TbDockManager",
         ["TbDialogHeader"] = "part of TbDialog", ["TbDialogHeaderActions"] = "part of TbDialog",
         ["TbDialogTitle"] = "part of TbDialog", ["TbGridItem"] = "part of TbGrid", ["TbListItem"] = "part of TbList",
