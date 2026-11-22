@@ -142,7 +142,7 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         foreach (var (name, tag) in new[]
         {
             ("Bold", "strong"), ("Italic", "em"), ("Underline", "u"), ("Strikethrough", "s"), ("Subscript", "sub"),
-            ("Superscript", "sup"),
+            ("Superscript", "sup"), ("Highlight", "mark"),
         })
         {
             await SelectAsync(notes, 0, 4, 0, 7);
@@ -688,6 +688,46 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("ControlOrMeta+e");
 
         await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>run it</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Highlight_ShouldToggleAndNestInsideTheOtherFormats_WhenItsShortcutIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>mark <strong>this</strong></p>", "mark this");
+
+        await SelectAsync(notes, 0, 0, 0, 9);
+        await page.Keyboard.PressAsync("ControlOrMeta+Shift+H");
+
+        await Expect(page.GetByTestId("notes"))
+            .ToHaveTextAsync("<p><mark>mark </mark><strong><mark>this</mark></strong></p>");
+        await Expect(Tool(notes, "Highlight")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(notes.Locator("mark")).ToHaveCountAsync(2);
+
+        // Typed text keeps the highlight, and the shortcut takes it off the next text typed.
+        await CaretAsync(notes, 0, 9);
+        await page.Keyboard.TypeAsync("!");
+        await page.Keyboard.PressAsync("ControlOrMeta+Shift+H");
+        await page.Keyboard.TypeAsync("?");
+
+        await Expect(page.GetByTestId("notes"))
+            .ToHaveTextAsync("<p><mark>mark </mark><strong><mark>this!</mark></strong><strong>?</strong></p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Highlight_ShouldStandOutFromTheTextAroundIt_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor", new() { ForcedColors = ForcedColors.Active });
+        var notes = await SetAsync(page, "<p>plain <mark>marked</mark></p>", "plain marked");
+
+        var colors = await notes.Locator("mark").EvaluateAsync<string[]>("""
+            mark => [getComputedStyle(mark).backgroundColor, getComputedStyle(mark).color,
+                getComputedStyle(mark.parentElement).backgroundColor]
+            """);
+
+        // The browser's marker colors are system colors, which forced colors leave in place.
+        Assert.NotEqual(colors[2], colors[0]);
+        Assert.NotEqual(colors[1], colors[0]);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

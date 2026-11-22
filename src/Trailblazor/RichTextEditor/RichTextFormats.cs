@@ -29,6 +29,9 @@ public enum RichTextFormats
     /// <summary>Inline code, written as <c>&lt;code&gt;</c>.</summary>
     Code = 64,
 
+    /// <summary>Highlight, written as <c>&lt;mark&gt;</c>.</summary>
+    Highlight = 256,
+
     /// <summary>A link, written as <c>&lt;a href&gt;</c>. A run has it exactly when it has a
     /// <see cref="RichTextRun.Link"/>.</summary>
     Link = 128,

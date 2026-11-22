@@ -9,7 +9,7 @@ internal sealed partial class RichTextHtmlReader
 {
     public const RichTextFormats AllFormats = RichTextFormats.Bold | RichTextFormats.Italic | RichTextFormats.Underline
         | RichTextFormats.Strikethrough | RichTextFormats.Subscript | RichTextFormats.Superscript | RichTextFormats.Code
-        | RichTextFormats.Link;
+        | RichTextFormats.Highlight | RichTextFormats.Link;
 
     public const RichTextBlocks AllBlocks = RichTextBlocks.Headings | RichTextBlocks.Quotes
         | RichTextBlocks.BulletedLists | RichTextBlocks.NumberedLists | RichTextBlocks.Rules;
@@ -27,7 +27,7 @@ internal sealed partial class RichTextHtmlReader
         ["s"] = RichTextFormats.Strikethrough, ["strike"] = RichTextFormats.Strikethrough,
         ["del"] = RichTextFormats.Strikethrough, ["sub"] = RichTextFormats.Subscript,
         ["sup"] = RichTextFormats.Superscript, ["code"] = RichTextFormats.Code, ["kbd"] = RichTextFormats.Code,
-        ["samp"] = RichTextFormats.Code, ["tt"] = RichTextFormats.Code,
+        ["samp"] = RichTextFormats.Code, ["tt"] = RichTextFormats.Code, ["mark"] = RichTextFormats.Highlight,
     };
 
     private static readonly HashSet<string> Blocks =

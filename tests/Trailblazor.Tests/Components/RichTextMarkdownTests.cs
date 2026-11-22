@@ -114,6 +114,10 @@ public class RichTextMarkdownTests
     }
 
     [Fact]
+    public void ToMarkdown_ShouldWriteHighlightedTextPlain_WhenWritten() =>
+        Assert.Equal("a **b** c", RichTextDocument.Parse("<p><mark>a <b>b</b></mark> c</p>").ToMarkdown());
+
+    [Fact]
     public void ToMarkdown_ShouldWriteTheFewestMarks_WhenFormatsOverlap()
     {
         var document = RichTextDocument.Parse(

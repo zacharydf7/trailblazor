@@ -1076,6 +1076,9 @@ public static class TbStrings
     /// <summary>"Code": names a rich text editor's inline code button.</summary>
     public const string RichTextEditorCode = "RichTextEditor.Code";
 
+    /// <summary>"Highlight": names a rich text editor's highlight button.</summary>
+    public const string RichTextEditorHighlight = "RichTextEditor.Highlight";
+
     /// <summary>"Heading 1": names a rich text editor's top-level heading button.</summary>
     public const string RichTextEditorHeading1 = "RichTextEditor.Heading1";
 
@@ -1979,6 +1982,7 @@ public static class TbStrings
         [RichTextEditorSubscript] = "Subscript",
         [RichTextEditorSuperscript] = "Superscript",
         [RichTextEditorCode] = "Code",
+        [RichTextEditorHighlight] = "Highlight",
         [RichTextEditorHeading1] = "Heading 1",
         [RichTextEditorHeading2] = "Heading 2",
         [RichTextEditorHeading3] = "Heading 3",

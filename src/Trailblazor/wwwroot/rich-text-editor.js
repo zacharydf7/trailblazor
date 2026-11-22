@@ -8,22 +8,24 @@ import { createMentionSuggestions, longestMention } from './mention-suggestions.
 // '\n' is a line break, and offsets count UTF-16 code units. A table cell is a paragraph of kind 'cell' with a
 // cell: { row, column, header }; neighboring cells make one table, and a cell at row 0, column 0 starts the next.
 
-const MARKS = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'code'];
+const MARKS = ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'code', 'highlight'];
 const MARK_TAGS = {
     bold: 'strong', italic: 'em', underline: 'u', strikethrough: 's', subscript: 'sub', superscript: 'sup',
-    code: 'code',
+    code: 'code', highlight: 'mark',
 };
 const TAG_MARKS = {
     b: 'bold', strong: 'bold', i: 'italic', em: 'italic', u: 'underline', ins: 'underline',
     s: 'strikethrough', strike: 'strikethrough', del: 'strikethrough', sub: 'subscript', sup: 'superscript',
-    code: 'code', kbd: 'code', samp: 'code', tt: 'code',
+    code: 'code', kbd: 'code', samp: 'code', tt: 'code', mark: 'highlight',
 };
 const FORMAT_INPUTS = {
     formatBold: 'bold', formatItalic: 'italic', formatUnderline: 'underline', formatStrikeThrough: 'strikethrough',
     formatSubscript: 'subscript', formatSuperscript: 'superscript',
 };
-// Ctrl or Cmd with these keys, as in word processors; strikethrough is Ctrl+Shift+X, as in most web editors.
+// Ctrl or Cmd with these keys, as in word processors. With Shift too, X is strikethrough, as in most web editors,
+// and H is highlight.
 const SHORTCUTS = { b: 'bold', i: 'italic', u: 'underline', ',': 'subscript', '.': 'superscript', e: 'code' };
+const SHIFT_SHORTCUTS = { x: 'strikethrough', h: 'highlight' };
 // Ctrl+Alt with a digit and Ctrl+Shift with 7, 8 or 9, by key position, as in Google Docs; Cmd on a Mac.
 const ALT_BLOCK_KEYS = { Digit0: 'paragraph', Digit1: 'heading1', Digit2: 'heading2', Digit3: 'heading3' };
 const SHIFT_BLOCK_KEYS = { Digit7: 'number', Digit8: 'bullet', Digit9: 'quote' };
@@ -520,7 +522,7 @@ class Editor {
 
         if (!mod) return;
         const key = event.key.toLowerCase();
-        const mark = event.shiftKey ? (key === 'x' ? 'strikethrough' : null) : SHORTCUTS[key];
+        const mark = (event.shiftKey ? SHIFT_SHORTCUTS : SHORTCUTS)[key];
         if (mark) {
             event.preventDefault();
             // WebKit can report a selection made just before the key only after the key.

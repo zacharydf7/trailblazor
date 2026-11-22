@@ -39,6 +39,20 @@ public class TbRichTextEditorTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldShowAHighlightButtonWithItsShortcutAndTheAppsName_WhenHighlightIsAllowed()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Formats, RichTextFormats.Highlight)
+            .Add(editor => editor.Labels, new RichTextEditorLabels { Highlight = "Marker" }));
+
+        var button = Assert.Single(cut.FindAll("[role=toolbar] button[data-format]"));
+
+        Assert.Equal("highlight", button.GetAttribute("data-format"));
+        Assert.Equal("Marker", button.GetAttribute("aria-label"));
+        Assert.Equal("Control+Shift+H Meta+Shift+H", button.GetAttribute("aria-keyshortcuts"));
+    }
+
+    [Fact]
     public void Render_ShouldShowAButtonForEachAllowedFormat_WhenGivenFormats()
     {
         var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Formula")

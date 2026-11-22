@@ -55,9 +55,10 @@
             </li>
             <li>
                 <code>&lt;strong&gt;</code>, <code>&lt;em&gt;</code>, <code>&lt;u&gt;</code>, <code>&lt;s&gt;</code>,
-                <code>&lt;sub&gt;</code>, <code>&lt;sup&gt;</code> and <code>&lt;code&gt;</code> for bold, italic,
-                underline, strikethrough, subscript, superscript and inline code, always nested in that order, outermost
-                first, with a link's <code>&lt;a href&gt;</code> around them all
+                <code>&lt;sub&gt;</code>, <code>&lt;sup&gt;</code>, <code>&lt;code&gt;</code> and
+                <code>&lt;mark&gt;</code> for bold, italic, underline, strikethrough, subscript, superscript, inline
+                code and highlight, always nested in that order, outermost first, with a link's
+                <code>&lt;a href&gt;</code> around them all
             </li>
             <li><code>&amp;nbsp;</code> for each space HTML would otherwise collapse, so spaces show as typed</li>
             <li><code>""</code> for an empty document</li>
@@ -90,6 +91,8 @@
                 Formats come from tags such as <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code> and
                 <code>&lt;code&gt;</code>, and from inline styles: a font weight of 600 or more, italic, underline,
                 line-through, <code>vertical-align</code> for subscript and superscript, and a monospace font for code.
+                A background color isn't read as a highlight, so a highlight pasted from Word or Google Docs arrives
+                as plain text; only <code>&lt;mark&gt;</code> is one.
             </li>
             <li>
                 Word's and Google Docs' quirks are handled: Word's list paragraphs read as lists at their level,
@@ -184,9 +187,9 @@
             </li>
             <li>
                 <code>ToMarkdown</code> writes markdown that reads back the same, apart from what markdown can't hold:
-                underline, subscript and superscript text is written plain; empty paragraphs, line breaks at a
-                paragraph's end and spaces at a line's start or end are left out; line breaks in a heading or in code
-                that shares its paragraph become spaces; a space or line break at a format's edge moves outside it;
+                underline, subscript, superscript and highlighted text is written plain; empty paragraphs, line breaks
+                at a paragraph's end and spaces at a line's start or end are left out; line breaks in a heading or in
+                code that shares its paragraph become spaces; a space or line break at a format's edge moves outside it;
                 and in a table, line breaks in a cell become spaces, header cells outside a first row of header cells
                 become plain cells, a first row of empty header cells is left out, and code with an odd number of
                 backslashes right before a pipe reads back with one more.

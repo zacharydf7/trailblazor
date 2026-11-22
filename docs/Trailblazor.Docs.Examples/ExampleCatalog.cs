@@ -5602,8 +5602,11 @@ public static class ExampleCatalog
                     + "when the editor is empty. Paste from Word or a web page, and only the formats and blocks the "
                     + "editor allows survive. [Rich text](guides/rich-text) covers reading it in C#.",
                     typeof(RichTextEditorExample)),
-                new("formats", "Formats", "`Formats` lists the formats the editor allows. The toolbar shows a button "
-                    + "for each, and pasted text keeps only those. `RichTextFormats.None` with "
+                new("formats", "Formats", "`Formats` lists the formats the editor allows: bold, italic, "
+                    + "underline, strikethrough, subscript, superscript, inline code, highlight and links. The "
+                    + "toolbar shows a button for each, and pasted text keeps only those. Highlighted text is a "
+                    + "`<mark>` in the value, in the browser's marker color, which a `mark` rule under "
+                    + "`.tb-rich-text-editor` changes. `RichTextFormats.None` with "
                     + "`Blocks=\"RichTextBlocks.None\"` makes a field of plain paragraphs.",
                     typeof(RichTextEditorFormatsExample)),
                 new("blocks", "Blocks", "`Blocks` lists the kinds of block the editor allows: headings, quotes, and "
@@ -5681,6 +5684,7 @@ public static class ExampleCatalog
                 new(["Ctrl+Shift+X"], "Turns strikethrough on or off."),
                 new(["Ctrl+,", "Ctrl+."], "Turns subscript or superscript on or off."),
                 new(["Ctrl+E"], "Turns inline code on or off."),
+                new(["Ctrl+Shift+H"], "Turns highlight on or off."),
                 new(["Ctrl+\\"], "Takes every format off the selection, or off the next text typed. Links and "
                     + "blocks stay."),
                 new(["Ctrl+K"], "Opens the link dialog for the selected text, or for the link the caret is in or "
@@ -5768,9 +5772,10 @@ public static class ExampleCatalog
                     + "shortcuts with `aria-keyshortcuts`. The Link button has `aria-haspopup=\"dialog\"`.",
                 "The link dialog is a modal [dialog](components/dialog) with labeled fields, and focus returns to the "
                     + "editor, with the selection it had, when it closes.",
-                "Formats are real `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>`, `<sup>`, `<code>` and `<a>` elements, "
-                    + "and blocks are real headings, block quotes, lists and `<hr>` rules, which screen readers can "
-                    + "report and move between.",
+                "Formats are real `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>`, `<sup>`, `<code>`, `<mark>` and `<a>` "
+                    + "elements, and blocks are real headings, block quotes, lists and `<hr>` rules, which screen "
+                    + "readers can report and move between. In forced colors, highlighted text keeps the "
+                    + "browser's marker background.",
                 "Tables are real `<table>` elements, with the header row's cells as `<th scope=\"col\">` in the "
                     + "value, so screen readers announce rows, columns and the header of each cell. The table menu is "
                     + "a [menu](components/menu) button; a command that doesn't fit where the caret is, such as adding "
@@ -5789,6 +5794,8 @@ public static class ExampleCatalog
             [
                 "Give the editor a `Label`, or an `AriaLabel` where its purpose is plain from what surrounds it.",
                 "Put a `TbRoot` in the layout, which hosts the link dialog.",
+                "Don't let a highlight be the only sign of something, such as text that needs a change: not "
+                    + "every screen reader says that text is highlighted.",
                 "Parse the value with `RichTextDocument` on the server before storing it; the editor does, but a "
                     + "value posted some other way may not have gone through it.",
                 "With `RichTextBlocks.Images`, an image loads from wherever its source points, since `ImageSchemes` "

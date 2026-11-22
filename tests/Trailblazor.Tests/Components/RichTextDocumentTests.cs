@@ -63,6 +63,7 @@ public class RichTextDocumentTests
     [InlineData("<sub><span style=\"vertical-align: super\">a</span></sub>", "<p><sup>a</sup></p>")]
     [InlineData("<sup style=\"vertical-align: baseline\">a</sup>", "<p>a</p>")]
     [InlineData("<ins>a</ins><del>b</del><strike>c</strike>", "<p><u>a</u><s>bc</s></p>")]
+    [InlineData("<mark>a</mark> <MARK><b>b</b></MARK>", "<p><mark>a</mark> <strong><mark>b</mark></strong></p>")]
     public void Parse_ShouldReadFormats_WhenGivenTagsAndInlineStyles(string html, string expected) =>
         Assert.Equal(expected, RichTextDocument.Parse(html).ToHtml());
 
@@ -281,6 +282,16 @@ public class RichTextDocumentTests
         var run = new RichTextRun("a", RichTextFormats.Superscript | RichTextFormats.Underline | RichTextFormats.Bold);
 
         Assert.Equal("<p><strong><u><sup>a</sup></u></strong></p>",
+            new RichTextDocument([new RichTextParagraph([run])]).ToHtml());
+    }
+
+    [Fact]
+    public void ToHtml_ShouldWriteAHighlightInsideTheOtherFormats_WhenARunHasSeveral()
+    {
+        var run = new RichTextRun("a", RichTextFormats.Highlight | RichTextFormats.Code | RichTextFormats.Bold,
+            "https://a.example");
+
+        Assert.Equal("<p><a href=\"https://a.example\"><strong><code><mark>a</mark></code></strong></a></p>",
             new RichTextDocument([new RichTextParagraph([run])]).ToHtml());
     }
 

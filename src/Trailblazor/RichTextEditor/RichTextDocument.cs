@@ -12,7 +12,7 @@ public sealed class RichTextDocument
     [
         (RichTextFormats.Bold, "strong"), (RichTextFormats.Italic, "em"), (RichTextFormats.Underline, "u"),
         (RichTextFormats.Strikethrough, "s"), (RichTextFormats.Subscript, "sub"), (RichTextFormats.Superscript, "sup"),
-        (RichTextFormats.Code, "code"),
+        (RichTextFormats.Code, "code"), (RichTextFormats.Highlight, "mark"),
     ];
 
     /// <summary>Creates a document from its paragraphs. With no paragraphs, it has one empty paragraph. A list item
@@ -323,10 +323,10 @@ public sealed class RichTextDocument
     }
 
     /// <summary>Writes the document as markdown that <see cref="FromMarkdown(string?)"/> reads back the same, apart
-    /// from what markdown can't hold: underline, subscript and superscript text is written plain; a mention is
-    /// written as its text; empty paragraphs, line breaks at a paragraph's end and spaces at a line's start or end
-    /// are left out; line breaks in a heading or in code that shares its paragraph become spaces; a space or line
-    /// break at a format's edge moves outside it; and
+    /// from what markdown can't hold: underline, subscript, superscript and highlighted text is written plain; a
+    /// mention is written as its text; empty paragraphs, line breaks at a paragraph's end and spaces at a line's
+    /// start or end are left out; line breaks in a heading or in code that shares its paragraph become spaces; a
+    /// space or line break at a format's edge moves outside it; and
     /// in a table, line breaks in a cell become spaces, header cells outside a first row of header cells become plain
     /// cells, a first row of empty header cells is left out, and code with an odd number of backslashes right before
     /// a pipe reads back with one more.

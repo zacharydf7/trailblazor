@@ -35,6 +35,10 @@ public sealed record RichTextEditorLabels
     /// cref="TbStrings.RichTextEditorCode"/>.</summary>
     public string? Code { get; init; }
 
+    /// <summary>Names the highlight button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorHighlight"/>.</summary>
+    public string? Highlight { get; init; }
+
     /// <summary>Names the heading 1 button. Leave it null for the app's text for <see
     /// cref="TbStrings.RichTextEditorHeading1"/>.</summary>
     public string? Heading1 { get; init; }
