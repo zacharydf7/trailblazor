@@ -41,7 +41,8 @@ Familiar apps: Windows and macOS context menus, VS Code's editor and explorer, G
 ## Focus
 
 - [x] Opening by pointer or key focuses the first item, and closing returns focus to what had it before. `ContextMenuTests.Key_ShouldOpenTheMenuBelowTheFocusedElementAndEscapeReturnFocus_WhenPressed`
-- [x] A control outside the menu that took focus between the menu closing and its script hearing of it keeps the focus, as with a menu. `menu.js`
+- [x] A control outside the menu that takes focus after the menu starts to close keeps it, as with a menu. `menu.js`
+- [x] A menu that closes and opens again before the browser has reported either, as Escape and the menu key pressed in quick succession can do, takes focus on its first item again. `ContextMenuTests.Menu_ShouldFocusItsFirstItemAgain_WhenItClosesAndOpensBeforeTheBrowserReportsEither`
 
 ## Not applicable
 

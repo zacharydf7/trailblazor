@@ -51,11 +51,28 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Popover_ShouldTakeFocusAgain_WhenItClosesAndOpensBeforeTheBrowserReportsEither(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/popover");
+        var trigger = Trigger(page, "Filters");
+        await Expect(trigger).ToHaveAttributeAsync("data-ready", "");
+        await trigger.ClickAsync();
+        var panel = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter the report" });
+        await Expect(panel.GetByLabel("Only open items")).ToBeFocusedAsync();
+
+        // Both in one task, so the browser reports one toggle, from open to open.
+        await panel.EvaluateAsync("panel => { panel.hidePopover(); panel.showPopover(); }");
+
+        await Expect(panel.GetByLabel("Only open items")).ToBeFocusedAsync();
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Popover_ShouldGiveFocusToItsTrigger_WhenItWasOpenedFromCodeAndEscapeClosesIt(string browser)
     {
         var page = await OpenAsync(browser, "/examples/popover");
         await Expect(Trigger(page, "Filters")).ToHaveAttributeAsync("data-ready", "");
-        // The browser puts focus back on this button, which had it as the panel opened.
+        // This button has the focus as the panel opens, where the browser would put it back. The trigger gets it.
         await page.GetByRole(AriaRole.Button, new() { Name = "Show filter options" }).ClickAsync();
         var panel = page.GetByRole(AriaRole.Dialog, new() { Name = "Filter the report" });
         await Expect(panel.GetByLabel("Only open items")).ToBeFocusedAsync();
@@ -78,15 +95,11 @@ public class PopoverTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(panel.GetByLabel("Only open items")).ToBeFocusedAsync();
         await opener.EvaluateAsync("button => { button.style.display = 'none'; }");
         await Expect(opener).ToBeHiddenAsync();
-        await HoldBackTheClosedToggleAsync(page, "[data-part=panel]");
 
         await page.Keyboard.PressAsync("Escape");
-        await Expect(panel).ToBeHiddenAsync();
-        // The browser has nowhere to put focus back, so focus ends on the body before the popover hears the close.
-        await page.WaitForFunctionAsync(
-            "() => document.activeElement === document.body && typeof window.hearTheClose === 'function'");
-        await page.EvaluateAsync("() => window.hearTheClose()");
 
+        // The browser would have nowhere to put focus back, and the trigger has it before the panel hides.
+        await Expect(panel).ToBeHiddenAsync();
         await Expect(Trigger(page, "Filters")).ToBeFocusedAsync();
     }
 

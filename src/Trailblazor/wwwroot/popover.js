@@ -1,5 +1,5 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
-import { firstTabbable, focusWentElsewhere, markedTarget } from '../Trailblazor.Primitives/focus-scope.js';
+import { firstTabbable, markedTarget } from '../Trailblazor.Primitives/focus-scope.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { viewOf } from '../Trailblazor.Primitives/pages.js';
 
@@ -22,9 +22,6 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     let position = null;
     // A panel opened by hovering closes when the pointer leaves, until the user starts working in it.
     let openedByHover = false;
-    let returnFocus = false;
-    // What had focus as the panel opened.
-    let openedFrom = null;
     let timer = 0;
     // The replay at attach and a toggle still queued from before it can both report one opening.
     let shown = false;
@@ -38,13 +35,17 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
     const onBeforeToggle = event => {
         // Not on toggle, which runs a task later: a hover timer firing in between would reopen what Escape closed.
         clearTimeout(timer);
-        // The browser gives focus back to what had it when the panel opened, which after a hover isn't the trigger.
         if (event.newState === 'closed') {
-            returnFocus = panel.contains(panel.ownerDocument.activeElement);
+            // Focus inside the panel goes back to the trigger before the panel hides: the browser would return it to
+            // what had it at opening, which after a hover isn't the trigger, and WebKit on Linux rings that even after
+            // a click. Focus that has left the panel stays put.
+            if (panel.contains(panel.ownerDocument.activeElement)) {
+                trigger.focus();
+            }
+
             return;
         }
 
-        openedFrom = panel.ownerDocument.activeElement;
         // toggle fires a task later, possibly after a paint, so the panel is placed in the next frame.
         viewOf(panel).requestAnimationFrame(() => {
             if (panel.matches(':popover-open') && !position) {
@@ -63,7 +64,10 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
             }
         }
 
-        if (open === shown) {
+        // A panel that closed and opened again before the browser reported either gets one toggle, from open to open,
+        // and takes focus as any opening does.
+        const reopened = open && event.oldState === 'open' && shown;
+        if (open === shown && !reopened) {
             return;
         }
 
@@ -77,11 +81,6 @@ export function createPopover(root, panel, options, hover, dotNetReference) {
             position?.dispose();
             position = null;
             openedByHover = false;
-            if (returnFocus && !focusWentElsewhere(panel, openedFrom)) {
-                trigger.focus();
-            }
-
-            openedFrom = null;
         }
     };
     // A click on the trigger of a panel the pointer opened keeps it open on purpose, instead of toggling it shut.

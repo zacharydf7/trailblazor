@@ -28,6 +28,37 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         return page;
     }
 
+    public static TheoryData<string, bool> PickedBy => new(
+        from browser in AllBrowsers.Names from keyboard in new[] { true, false } select (browser, keyboard));
+
+    [Theory, MemberData(nameof(PickedBy))]
+    public async Task Calendar_ShouldRingItsButtonOnlyForTheKeyboard_WhenARangeIsPicked(string browser, bool keyboard)
+    {
+        var page = await OpenAsync(browser, "/date-range");
+        var trigger = Picker(page).GetByRole(AriaRole.Button, new() { Name = "Choose dates" });
+        await Expect(trigger).ToHaveAttributeAsync("data-ready", "");
+
+        if (keyboard)
+        {
+            await trigger.FocusAsync();
+            await page.Keyboard.PressAsync("Enter");
+            await Expect(Day(page, "Wednesday, June 3, 2026, Start date")).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Enter");
+            await page.Keyboard.PressAsync("ArrowRight");
+            await page.Keyboard.PressAsync("Enter");
+        }
+        else
+        {
+            await trigger.ClickAsync();
+            await Day(page, "Friday, June 12, 2026").ClickAsync();
+            await Day(page, "Monday, June 15, 2026").ClickAsync();
+        }
+
+        await Expect(Calendar(page)).ToBeHiddenAsync();
+        await Expect(trigger).ToBeFocusedAsync();
+        Assert.Equal(keyboard, await trigger.EvaluateAsync<bool>("button => button.matches(':focus-visible')"));
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Calendar_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeld(string browser)
     {
@@ -408,6 +439,19 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
         await Expect(elsewhere).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Calendar_ShouldTakeFocusAgain_WhenItClosesAndOpensBeforeTheBrowserReportsEither(string browser)
+    {
+        var page = await OpenWithCalendarAsync(browser);
+        var trigger = Picker(page).GetByRole(AriaRole.Button, new() { Name = "Choose dates" });
+
+        // Both in one task, so the browser reports one toggle, from open to open.
+        await Calendar(page).EvaluateAsync("panel => { panel.hidePopover(); panel.showPopover(); }");
+
+        await Expect(Day(page, "Wednesday, June 3, 2026, Start date")).ToBeFocusedAsync();
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

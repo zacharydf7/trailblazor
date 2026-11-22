@@ -25,6 +25,23 @@ public class ContextMenuTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Menu_ShouldFocusItsFirstItemAgain_WhenItClosesAndOpensBeforeTheBrowserReportsEither(
+        string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await page.GetByText("Trails", new() { Exact = true }).ClickAsync(new() { Button = MouseButton.Right });
+        var items = Menu(page, "Trail actions").GetByRole(AriaRole.Menuitem);
+        await Expect(items.First).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await Expect(items.Nth(1)).ToBeFocusedAsync();
+
+        // Both in one task, so the browser reports one toggle, from open to open.
+        await Menu(page, "Trail actions").EvaluateAsync("menu => { menu.hidePopover(); menu.showPopover(); }");
+
+        await Expect(items.First).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task RightClick_ShouldShowOnlyTheKeysItems_WhenOnAnElementWithAKey(string browser)
     {
         var page = await OpenReadyAsync(browser);

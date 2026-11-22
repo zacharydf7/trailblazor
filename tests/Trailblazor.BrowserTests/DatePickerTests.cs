@@ -27,6 +27,34 @@ public class DatePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(OpenButton(page)).ToHaveAttributeAsync("aria-expanded", "false");
     }
 
+    public static TheoryData<string, bool> PickedBy => new(
+        from browser in AllBrowsers.Names from keyboard in new[] { true, false } select (browser, keyboard));
+
+    [Theory, MemberData(nameof(PickedBy))]
+    public async Task Picker_ShouldRingItsButtonOnlyForTheKeyboard_WhenADayIsPicked(string browser, bool keyboard)
+    {
+        var page = await OpenAsync(browser, "/date-picker");
+        await Expect(OpenButton(page)).ToHaveAttributeAsync("data-ready", "");
+
+        if (keyboard)
+        {
+            await OpenButton(page).FocusAsync();
+            await page.Keyboard.PressAsync("Enter");
+            await Expect(Day(page, "Wednesday, June 3, 2026")).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Enter");
+        }
+        else
+        {
+            await OpenButton(page).ClickAsync();
+            await Day(page, "Wednesday, June 10, 2026").ClickAsync();
+        }
+
+        var button = OpenButton(page);
+        await Expect(button).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(button).ToBeFocusedAsync();
+        Assert.Equal(keyboard, await button.EvaluateAsync<bool>("button => button.matches(':focus-visible')"));
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Picker_ShouldCloseKeepingTheDateAndReopenOnIt_WhenEscapeIsPressed(string browser)
     {

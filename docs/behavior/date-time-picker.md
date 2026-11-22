@@ -30,7 +30,7 @@ Familiar apps: the start of a calendar event, a ride or shuttle booking
 
 ## Focus
 
-- [x] A control outside the picker that takes focus after the picker closes but before its script hears the close keeps the focus, as with a popover. `popover.js`
+- [x] A control outside the picker that takes focus after the picker starts to close keeps it, as with a popover. `popover.js`
 - [x] `@bind-Open` opens and closes the calendar from code and reports the user closing it. Only a new value from the parent opens or closes it. `PickersOpenTests.Picker_ShouldOpenFromCodeAndReportAClose_WhenItsOpenIsBound`, `TbDateTimePickerTests.Open_ShouldFollowOnlyANewValueFromTheParent_WhenTheUserClosesTheCalendar`
 - [x] The label names the group, and each box adds "Date" or "Time". `TbDateTimePickerTests.Render_ShouldNameEachBoxAfterTheLabel_WhenInteractive`
 - [x] A step that isn't a whole number of minutes adds seconds to the time box. `TbDateTimePickerTests.Render_ShouldShowSeconds_WhenTheStepIsUnderAMinute`

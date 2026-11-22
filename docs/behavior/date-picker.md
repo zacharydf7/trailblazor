@@ -23,7 +23,8 @@ Familiar apps: the date field of a booking or travel form, a due-date field in a
 
 ## Focus
 
-- [x] A control outside the calendar that takes focus after the calendar closes but before its script hears the close keeps the focus, as with a popover. `popover.js`
+- [x] A control outside the calendar that takes focus after the calendar starts to close keeps it, as with a popover. `popover.js`
+- [x] After a day is picked the calendar button has the focus again, with a focus ring only if the keyboard picked, in WebKit on Linux too. `DatePickerTests.Picker_ShouldRingItsButtonOnlyForTheKeyboard_WhenADayIsPicked`
 - [x] `@bind-Open` opens and closes the calendar from code, and reports when it closes, whether the user dismisses it or picks a day. Only a new value from the parent opens or closes it. `PickersOpenTests.Picker_ShouldOpenFromCodeAndReportAClose_WhenItsOpenIsBound`, `TbDatePickerTests.Open_ShouldFollowOnlyANewValueFromTheParent_WhenTheUserClosesTheCalendar`, `TbDatePickerTests.Pick_ShouldCloseTheCalendarAndReportIt_WhenADayIsPicked`
 - [x] A read-only picker can't be changed: the box can't be edited and the calendar button turns off. `TbDatePickerTests.Render_ShouldTurnOffTheBoxAndButton_WhenReadOnly`
 - [x] The calendar's grid, not an autofocus mark, tells the popover where focus goes, so a field marked AutoFocus after the picker still takes focus as a dialog opens. `TbDatePickerTests.Render_ShouldMarkTheGridForThePopoverToFocus_WhenInteractive`

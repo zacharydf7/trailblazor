@@ -1,7 +1,6 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { browserToday, dayTarget, toDate, toIso } from './date-grid.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
-import { focusWentElsewhere } from '../Trailblazor.Primitives/focus-scope.js';
 
 // The calendar's focus moves here among the days on show; the server is told, and shows another month when needed.
 export function createDateRangePicker(panel, events, firstDayOfWeek) {
@@ -13,9 +12,8 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     const control = panel.closest('[data-part="control"]');
     const trigger = control.querySelector(`[aria-controls="${panel.id}"]`);
     let position = null;
-    let returnFocus = false;
-    // What had focus as the calendar opened.
-    let openedFrom = null;
+    // Set while focus goes back to the calendar button as the calendar closes, which isn't a Tab out of the calendar.
+    let givingFocusBack = false;
     // The replay at attach and a toggle still queued from before it can both report one opening.
     let opened = false;
     // Set from a press on the calendar button until the calendar next opens or closes.
@@ -40,16 +38,22 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
         clearPreview();
     };
 
+    // Focus inside the calendar goes back to its button before the calendar hides: the browser would return it to
+    // what had it at opening, and WebKit on Linux rings that even after a click. Focus that has left the calendar
+    // stays put.
     const onBeforeToggle = event => {
-        if (event.newState === 'closed') {
-            returnFocus = panel.contains(panel.ownerDocument.activeElement);
-        } else {
-            openedFrom = panel.ownerDocument.activeElement;
+        if (event.newState === 'closed' && panel.contains(panel.ownerDocument.activeElement)) {
+            givingFocusBack = true;
+            trigger.focus();
+            givingFocusBack = false;
         }
     };
     const onToggle = event => {
         const open = event.newState === 'open';
-        if (open === opened) {
+        // A calendar that closed and opened again before the browser reported either gets one toggle, from open to
+        // open. It is still placed, and takes focus as any opening does.
+        const reopened = open && event.oldState === 'open' && opened;
+        if (open === opened && !reopened) {
             return;
         }
 
@@ -57,7 +61,7 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
         pressedTrigger = false;
         trigger.setAttribute('aria-expanded', String(open));
         if (open) {
-            position = createAnchoredPosition(panel, control, { side: 'Bottom', align: 'Start', offset: 4 });
+            position ??= createAnchoredPosition(panel, control, { side: 'Bottom', align: 'Start', offset: 4 });
             const current = panel.querySelector('[data-part="day"][tabindex="0"]');
             current?.focus();
         } else {
@@ -65,11 +69,6 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
             position = null;
             intended = null;
             dropPreview();
-            if (returnFocus && !focusWentElsewhere(panel, openedFrom)) {
-                trigger.focus();
-            }
-
-            openedFrom = null;
         }
 
         callDotNet(events, 'OnToggle', open);
@@ -109,7 +108,7 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     // Tabbing out of the calendar closes it, so it doesn't cover what focus moves to (WCAG 2.4.11). A press on the
     // calendar button doesn't close it here, since the button's click would then open it again.
     const onFocusOut = event => {
-        if (event.relatedTarget && !panel.contains(event.relatedTarget) && !pressedTrigger
+        if (event.relatedTarget && !panel.contains(event.relatedTarget) && !pressedTrigger && !givingFocusBack
             && panel.matches(':popover-open')) {
             panel.hidePopover();
         }
@@ -186,9 +185,8 @@ export function createDateRangePicker(panel, events, firstDayOfWeek) {
     panel.addEventListener('pointercancel', dropPreview);
     panel.addEventListener('pointerdown', onPointerDown);
     trigger.addEventListener('pointerdown', onTriggerPointerDown);
-    // A calendar clicked open before this script attached missed its toggles, so they are replayed.
+    // A calendar clicked open before this script attached missed its toggle, so it is replayed.
     if (panel.matches(':popover-open')) {
-        onBeforeToggle({ newState: 'open' });
         onToggle({ newState: 'open' });
     }
 

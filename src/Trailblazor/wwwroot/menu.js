@@ -1,6 +1,5 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
-import { focusWentElsewhere } from '../Trailblazor.Primitives/focus-scope.js';
 import { viewOf } from '../Trailblazor.Primitives/pages.js';
 
 const itemSelector = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]';
@@ -272,8 +271,6 @@ export function createContextMenu(target, menu, events) {
 function attachLists(menu, events, hooks) {
     const submenuOptions = { side: 'End', align: 'Start', offset: 0 };
     const positions = new Map();
-    const returnFocus = new Set();
-    const openedFrom = new Map();
     const openedByHover = new Set();
     const shown = new Set();
     // Whether the server last knew the menu as open, from its own setOpen or from a toggle reported to it.
@@ -302,21 +299,23 @@ function attachLists(menu, events, hooks) {
             return;
         }
 
-        // Escape or choosing an item closes from inside the list, and focus then goes back to what opened it.
         if (event.newState === 'closed') {
             // A hover still waiting would undo what Escape or a click just closed; this runs as the list closes.
             clearTimeout(hoverTimer);
+            // Escape or choosing an item closes from inside the list, and focus goes back to what opened it before
+            // the list hides: the browser would return it to what had it at opening, and WebKit on Linux rings that
+            // even after a click. Focus that has left the list stays put.
             if (list.contains(list.ownerDocument.activeElement)) {
-                returnFocus.add(list);
-            } else {
-                returnFocus.delete(list);
+                if (list === menu) {
+                    hooks.returnFocus();
+                } else {
+                    opener(list).focus();
+                }
             }
 
             return;
         }
 
-        // What has focus as the list opens is where the browser puts focus back as it closes.
-        openedFrom.set(list, list.ownerDocument.activeElement);
         // toggle fires a task later, possibly after a paint, so the list is placed in the next frame, before it paints.
         viewOf(list).requestAnimationFrame(() => {
             if (list.matches(':popover-open') && !positions.has(list)) {
@@ -341,8 +340,11 @@ function attachLists(menu, events, hooks) {
             }
         }
 
+        // A list that closed and opened again before the browser reported either gets one toggle, from open to open.
+        // It is still placed, and takes focus as any opening does.
+        const reopened = open && event.oldState === 'open' && shown.has(list);
         // The replay at attach and a toggle still queued from before it can both report one opening.
-        if (open === shown.has(list)) {
+        if (open === shown.has(list) && !reopened) {
             return;
         }
 
@@ -371,16 +373,6 @@ function attachLists(menu, events, hooks) {
         positions.delete(list);
         if (list === menu) {
             forgetPointer();
-        }
-
-        const elsewhere = focusWentElsewhere(menu, openedFrom.get(list));
-        openedFrom.delete(list);
-        if (returnFocus.delete(list) && !elsewhere) {
-            if (list === menu) {
-                hooks.returnFocus();
-            } else {
-                opener(list).focus();
-            }
         }
     };
     const onMenuKeyDown = event => {
