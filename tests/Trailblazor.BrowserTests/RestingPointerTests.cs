@@ -18,6 +18,21 @@ public class RestingPointerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Autocomplete_ShouldLeaveTheActiveOptionToTheKeys_WhenAnotherPointerMovedInAnotherWindowSince(
+        string browser)
+    {
+        var (host, window) = await OpenPoppedAsync(browser, "/resting-pointer");
+        var camp = window.GetByRole(AriaRole.Combobox, new() { Name = "Camp" });
+        await Expect(camp).ToHaveAttributeAsync("data-ready", "");
+        await camp.FocusAsync();
+        await camp.PressAsync("ArrowDown");
+
+        // Each window's pointer is its own here, as a mouse and a finger are, so a move in the page says nothing
+        // of the pointer that rests in the panel's window.
+        await ScrollUnderTheRestingPointerAsync(window, "Camp", () => host.Mouse.MoveAsync(40, 40));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Cascader_ShouldLeaveTheActiveOptionToTheKeys_WhenItsListScrollsUnderARestingPointer(
         string browser)
     {
@@ -87,11 +102,12 @@ public class RestingPointerTests(BrowserFixture fixture) : BrowserTest(fixture)
     // The pointer comes to rest on the second option, which becomes the active one, as the option under a moving
     // pointer does. Arrow Down then moves on from it far enough to scroll the list, and the option the keys reached
     // has to outlast the move the browser sends for that scroll.
-    private static async Task ScrollUnderTheRestingPointerAsync(IPage page, string name)
+    private static async Task ScrollUnderTheRestingPointerAsync(IPage page, string name, Func<Task>? onceResting = null)
     {
         var active = page.Locator("[role=option][data-active]");
         await Option(page, $"{name} 2").HoverAsync();
         await Expect(active).ToHaveTextAsync($"{name} 2");
+        await (onceResting?.Invoke() ?? Task.CompletedTask);
 
         for (var press = 0; press < 20; press++)
         {

@@ -45,7 +45,6 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 - [x] Only one item is highlighted, whether the pointer or a key moved last, besides any item whose submenu is open. `MenuTests.Menu_ShouldHighlightOnlyTheFocusedItem_WhenAKeyMovesFocusOffTheItemUnderThePointer`
 - [x] The item Enter would choose stays highlighted after the pointer leaves the menu. `MenuTests.Menu_ShouldKeepTheItemEnterWouldChooseHighlighted_WhenThePointerLeaves`, `MenuTests.Menu_ShouldOutlineTheItemEnterWouldChoose_WhenColorsAreForced`
 - [x] Before the script attaches, or on a static page, the item under the pointer is highlighted. `MenuTests.Menu_ShouldHighlightTheItemUnderThePointer_WhenThePageIsStatic`
-- [ ] Scrolling a long menu under a resting pointer leaves the active item to the keys. WebKit's move for such a scroll was seen to land on the menu itself, not on an item, so it took nothing from the keys, but no test checks that. #594
 - [x] A key that moves focus off an item closes the submenu open from it. `MenuTests.SubMenu_ShouldCloseAndLoseItsItemsHighlight_WhenAKeyMovesFocusOffItsItem`, `MenuTests.SubMenu_ShouldClose_WhenALetterMovesFocusOffItsItem`
 - [x] A key press stops the pointer's timers, so no submenu opens or closes late. `MenuTests.SubMenu_ShouldKeepFocusInside_WhenEnterGoesInBeforeTheGraceTimeRunsOut`, `MenuTests.SubMenu_ShouldNotOpen_WhenAKeyMovesFocusBeforeTheHoverDelayEnds`
 - [x] A key that doesn't move focus still closes a submenu open from another item, and Escape closes only that submenu. `MenuTests.SubMenu_ShouldClose_WhenAKeyThatMovesNothingIsPressedBeforeTheHoverDelayEnds`, `MenuTests.SubMenu_ShouldCloseOneLevel_WhenEscapeIsPressedBeforeTheHoverDelayEnds`
@@ -72,6 +71,7 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 
 ## Not applicable
 
+- Guarding a long menu against the move a browser sends after the menu scrolls under a resting pointer, as the lists are guarded: WebKit's move for such a scroll was seen to land on the menu's own element, not on an item, so it takes nothing from the keys, and no test could be written that fails without such a guard.
 - A menu bar, and hover switching between open menus: a menu opens from one button.
 - A context menu: `TbContextMenu` covers it.
 - Press, drag and release: a menu opens with a click, and an item is chosen with a second one.

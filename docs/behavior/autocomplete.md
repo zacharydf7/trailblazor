@@ -31,7 +31,7 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - [x] Clicking a suggestion chooses it and keeps focus in the field. `AutocompleteTests.Autocomplete_ShouldKeepFocusInTheInput_WhenAnOptionIsClicked`
 - [x] Hovering a suggestion makes it the active one. `autocomplete.js`
 - [x] A pointer that rests over the list leaves the active suggestion to the keys when the list scrolls under it: a move that the browser sends for the scroll, with the pointer where it was, is left alone, such as the one WebKit sends a moment after a scroll. `RestingPointerTests.Autocomplete_ShouldLeaveTheActiveOptionToTheKeys_WhenItsListScrollsUnderARestingPointer`
-- [ ] The same holds where the pointer's place isn't known. The library knows it only from the last real move, so the first move in a window that had none, or after a real move in another window, counts as the user's, whoever sent it. #594
+- [x] The pointer's place is kept for each window and each kind of pointer, so a pointer that rests over the list is still known to rest after a move elsewhere: by a finger while the mouse rests, or in another of the app's windows where each window has a pointer of its own, as in a test browser. The lists share the script that keeps it. `resting-pointer.js`, `RestingPointerTests.Autocomplete_ShouldLeaveTheActiveOptionToTheKeys_WhenAnotherPointerMovedInAnotherWindowSince`
 - [x] Clicking the status message does nothing and leaves the list open. `AutocompleteTests.Listbox_ShouldStayOpenWithNothingActive_WhenItsMessageIsClickedOrArrowedTo`
 - [x] Clicking elsewhere closes the list once the click's own handlers have run. A right-click, a middle-click or a press on a disabled control elsewhere fires no click event, so the list closes when focus leaves the field instead, and a press that turns into a drag or a scroll closes it as soon as the press is canceled, if focus has left. `autocomplete.js`, `AutocompleteTests.Listbox_ShouldStillCloseOnTab_WhenAMiddleClickElsewhereCameFirst`, `AutocompleteTests.Listbox_ShouldStillCloseOnTab_WhenADisabledButtonElsewhereWasPressed`, `AutocompleteTests.Listbox_ShouldClose_WhenAPressElsewhereTurnsIntoADrag`
 - [x] A list opened from code closes on a click elsewhere or Escape, even if focus never reached the field. `AutocompleteTests.Listbox_ShouldClose_WhenOpenedFromCodeAndClickedElsewhere`, `AutocompleteTests.Listbox_ShouldClose_WhenOpenedFromCodeAndEscapeIsPressed`
@@ -63,6 +63,7 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 
 ## Not applicable
 
+- Telling a browser's own move from the user's before the pointer has really moved in the window: the library learns the pointer's place from its real moves, so the first move a kind of pointer makes in a window counts as the user's, whoever sent it. The move's own `movementX` and `movementY` don't help: the test browsers report zero for real moves too.
 - Down moving to an option on a list not yet loaded: it only opens the list, as the docs say, since the suggestions aren't there yet.
 - Alt+Up closing an open list: it moves up instead; the pattern lists closing as optional, and few people know it in a text field.
 - A click on the field opening the list without `OpenOnFocus`: it suggests as the user types, and a known list belongs in a select.

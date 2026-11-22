@@ -51,17 +51,26 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
 
     protected async Task<IPage> OpenAsync(string browser, string path, BrowserNewContextOptions? options = null)
     {
-        var page = await OpenStaticAsync(browser, Popped ? $"/popped{path}" : path, options);
-        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
-        if (!Popped)
+        if (Popped)
         {
-            return page;
+            return (await OpenPoppedAsync(browser, path, options)).Window;
         }
 
-        var window = (await page.Tb().Dock("Popped host").PopOutAsync("Qz")).Page;
+        var page = await OpenStaticAsync(browser, path, options);
+        await page.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        return page;
+    }
+
+    // Opens the page in a dock panel's own browser window, and gives the page that holds the dock too.
+    protected async Task<(IPage Host, IPage Window)> OpenPoppedAsync(string browser, string path,
+        BrowserNewContextOptions? options = null)
+    {
+        var host = await OpenStaticAsync(browser, $"/popped{path}", options);
+        await host.Locator("main[data-interactive]").WaitForAsync(new() { State = WaitForSelectorState.Attached });
+        var window = (await host.Tb().Dock("Popped host").PopOutAsync("Qz")).Page;
         var size = options?.ViewportSize ?? new() { Width = 1280, Height = 720 };
         await window.SetViewportSizeAsync(size.Width, size.Height);
-        return window;
+        return (host, window);
     }
 
     // Opens an interactive page with the script matching the glob, such as "**/menu.*js", held back until the returned

@@ -20,7 +20,7 @@ Familiar apps: mentioning someone with @ in GitHub, Slack or Google Docs comment
 
 - [x] A click on a suggestion puts it in, and focus stays in the field. `MentionInputTests.Helper_ShouldTypeAndChooseAMention_WhenFoundByLabel`
 - [x] Moving the pointer over a suggestion makes it the active one, and a pointer that rests over the list leaves the active suggestion to the keys when the list scrolls under it: a move that the browser sends for the scroll, with the pointer where it was, is left alone, such as the one WebKit sends a moment after a scroll. `RestingPointerTests.MentionInput_ShouldLeaveTheActiveOptionToTheKeys_WhenItsListScrollsUnderARestingPointer`
-- [ ] The same holds where the pointer's place isn't known. The library knows it only from the last real move, so the first move in a window that had none, or after a real move in another window, counts as the user's, whoever sent it. #594
+- [x] The pointer's place is kept for each window and each kind of pointer, so a pointer that rests over the list is still known to rest after a move elsewhere: by a finger while the mouse rests, or in another of the app's windows where each window has a pointer of its own, as in a test browser. The lists share the script that keeps it. `resting-pointer.js`, `RestingPointerTests.Autocomplete_ShouldLeaveTheActiveOptionToTheKeys_WhenAnotherPointerMovedInAnotherWindowSince`
 
 ## Touch
 
@@ -37,4 +37,5 @@ Familiar apps: mentioning someone with @ in GitHub, Slack or Google Docs comment
 
 ## Not applicable
 
+- Telling a browser's own move from the user's before the pointer has really moved in the window: the library learns the pointer's place from its real moves, so the first move a kind of pointer makes in a window counts as the user's, whoever sent it. The move's own `movementX` and `movementY` don't help: the test browsers report zero for real moves too.
 - Mentions in a rich text editor: a separate issue, since they need the editor's own selection.

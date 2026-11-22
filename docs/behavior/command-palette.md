@@ -21,7 +21,7 @@ Familiar apps: VS Code's command palette, GitHub's and Linear's Ctrl+K search, S
 
 - [x] Hovering a command makes it the active one, and focus stays in the search box. `CommandPaletteTests.Click_ShouldRunTheCommandAndKeepFocusInTheSearchUntilThen_WhenAnOptionIsPressed`
 - [x] A pointer that rests over the list leaves the active command to the keys when the list scrolls under it: a move that the browser sends for the scroll, with the pointer where it was, is left alone, such as the one WebKit sends a moment after a scroll. `RestingPointerTests.CommandPalette_ShouldLeaveTheActiveOptionToTheKeys_WhenItsListScrollsUnderARestingPointer`
-- [ ] The same holds where the pointer's place isn't known. The library knows it only from the last real move, so the first move in a window that had none, or after a real move in another window, counts as the user's, whoever sent it. #594
+- [x] The pointer's place is kept for each window and each kind of pointer, so a pointer that rests over the list is still known to rest after a move elsewhere: by a finger while the mouse rests, or in another of the app's windows where each window has a pointer of its own, as in a test browser. The lists share the script that keeps it. `resting-pointer.js`, `RestingPointerTests.Autocomplete_ShouldLeaveTheActiveOptionToTheKeys_WhenAnotherPointerMovedInAnotherWindowSince`
 - [x] Clicking a command runs it and closes the palette. `CommandPaletteTests.Click_ShouldRunTheCommandAndKeepFocusInTheSearchUntilThen_WhenAnOptionIsPressed`
 - [x] Clicking a disabled command, or the message shown when nothing matches, does nothing. `TbCommandPaletteTests.Click_ShouldDoNothing_WhenTheCommandIsDisabled`
 - [x] Clicking the backdrop closes the palette, as for any dialog. `dialog.js`
@@ -38,5 +38,6 @@ Familiar apps: VS Code's command palette, GitHub's and Linear's Ctrl+K search, S
 
 ## Not applicable
 
+- Telling a browser's own move from the user's before the pointer has really moved in the window: the library learns the pointer's place from its real moves, so the first move a kind of pointer makes in a window counts as the user's, whoever sent it. The move's own `movementX` and `movementY` don't help: the test browsers report zero for real moves too.
 - Opening the list with Down or Alt+Down: the results always show while the palette is open.
 - A value kept in the box after choosing: a palette runs a command, so it closes instead.

@@ -19,7 +19,7 @@ Familiar apps: the country, region and city pickers on shipping forms, Ant Desig
 - [x] A click on the field opens the lists, and a click on a choice opens its list or chooses it. `CascaderTests.Cascader_ShouldChooseAPathByClicking_WhenEachLevelIsClicked`
 - [x] A disabled choice can't be opened or chosen. `TbCascaderTests.Pick_ShouldDoNothing_WhenTheChoiceIsDisabled`
 - [x] Moving the pointer over a choice makes it the active one, and a pointer that rests over a list leaves the active choice to the keys when the list scrolls under it: a move that the browser sends for the scroll, with the pointer where it was, is left alone, such as the one WebKit sends a moment after a scroll. A move straight across to the next list is the pointer's own. `RestingPointerTests.Cascader_ShouldLeaveTheActiveOptionToTheKeys_WhenItsListScrollsUnderARestingPointer`, `RestingPointerTests.Cascader_ShouldFollowThePointer_WhenItMovesStraightAcrossToTheNextList`
-- [ ] The same holds where the pointer's place isn't known. The library knows it only from the last real move, so the first move in a window that had none, or after a real move in another window, counts as the user's, whoever sent it. #594
+- [x] The pointer's place is kept for each window and each kind of pointer, so a pointer that rests over the list is still known to rest after a move elsewhere: by a finger while the mouse rests, or in another of the app's windows where each window has a pointer of its own, as in a test browser. The lists share the script that keeps it. `resting-pointer.js`, `RestingPointerTests.Autocomplete_ShouldLeaveTheActiveOptionToTheKeys_WhenAnotherPointerMovedInAnotherWindowSince`
 
 ## Touch
 
@@ -33,5 +33,6 @@ Familiar apps: the country, region and city pickers on shipping forms, Ant Desig
 
 ## Not applicable
 
+- Telling a browser's own move from the user's before the pointer has really moved in the window: the library learns the pointer's place from its real moves, so the first move a kind of pointer makes in a window counts as the user's, whoever sent it. The move's own `movementX` and `movementY` don't help: the test browsers report zero for real moves too.
 - Loading a level's choices on demand: `Items` holds the whole tree; an app with a very large tree can use a tree select.
 - Choosing several paths: a cascader holds one value.
