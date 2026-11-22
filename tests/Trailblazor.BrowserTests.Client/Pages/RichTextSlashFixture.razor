@@ -1,0 +1,56 @@
+@page "/rich-text-slash"
+
+@* An editor with slash commands: headings, a bulleted list, a rule and a table from its blocks, and two commands of
+   the app's own, one that puts in HTML and one that only calls back. Its value shows, and can be set from .NET. Two
+   editors without slash commands follow: one suggests places for an @ and shows the triggers it was asked about, and
+   the other has the slash itself as its mention trigger. *@
+<TbRichTextEditor Label="Notes" @bind-Value="_notes" UpdateOnInput SlashCommands Commands="_commands"
+                  Blocks="@(RichTextBlocks.Headings | RichTextBlocks.BulletedLists | RichTextBlocks.Rules
+                      | RichTextBlocks.Tables)" />
+<output data-testid="notes">@_notes</output>
+<output data-testid="stamped">Stamped: @_stamped</output>
+<TbTextField TValue="string" Label="Source" @bind-Value="_source" UpdateOnInput />
+<TbButton OnClick="() => _notes = _source">Set notes</TbButton>
+<TbRichTextEditor Label="Places" @bind-Value="_places" UpdateOnInput MentionTriggers="@("@")"
+                  MentionSearch="FindPlacesAsync" />
+<output data-testid="places">@_places</output>
+<output data-testid="asked">Asked: @string.Join(" ", _asked)</output>
+<TbRichTextEditor Label="Paths" @bind-Value="_paths" UpdateOnInput MentionTriggers="/" MentionItems="Places" />
+<output data-testid="paths">@_paths</output>
+
+@code {
+    private static readonly MentionItem[] Places = [new("Hearth Lake") { Id = "9" }];
+
+    private readonly SortedSet<string> _asked = [];
+    private string? _notes;
+    private string? _source;
+    private string? _places;
+    private string? _paths;
+    private int _stamped;
+    private RichTextCommand[] _commands = [];
+
+    protected override void OnInitialized() => _commands =
+    [
+        new("Signature")
+        {
+            Description = "Your name and role", Keywords = "sign off",
+            Html = "<p><strong>Ana Lopez</strong>, trail crew</p>",
+        },
+        new("Stamp") { OnChosen = StampAsync },
+    ];
+
+    private Task StampAsync()
+    {
+        _stamped++;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task<IEnumerable<MentionItem>> FindPlacesAsync(MentionQuery query, CancellationToken cancel)
+    {
+        _asked.Add(query.Trigger);
+        StateHasChanged();
+        return Task.FromResult(Places.Where(place =>
+            place.Text.Contains(query.Text, StringComparison.OrdinalIgnoreCase)));
+    }
+}

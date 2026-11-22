@@ -1,4 +1,5 @@
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { viewOf } from '../Trailblazor.Primitives/pages.js';
 import { isApple } from '../Trailblazor.Primitives/platform.js';
 import { createMentionSuggestions, longestMention } from './mention-suggestions.js';
@@ -57,10 +58,10 @@ const TYPING_PAUSE = 1000;
 // Keeps each part under Blazor Server's default 32 KB message limit, even at 6 bytes of JSON per control character.
 const MAX_PART = 5000;
 
-// options: { formats, blocks, links, images, mentions, transformsPaste, readOnly, updateOnInput, updateDelay }, with
-// formats as mark names, blocks as kinds, and links and images as URL schemes split by spaces, links null where links
-// aren't allowed, images null where images aren't, mentions as the characters that start a mention, null where
-// mentions aren't kept, and updateDelay in milliseconds.
+// options: { formats, blocks, links, images, mentions, slash, transformsPaste, readOnly, updateOnInput, updateDelay },
+// with formats as mark names, blocks as kinds, and links and images as URL schemes split by spaces, links null where
+// links aren't allowed, images null where images aren't, mentions as the characters that start a mention, null where
+// mentions aren't kept, slash true where a typed slash opens commands, and updateDelay in milliseconds.
 export function attachRichTextEditor(root, value, options) {
     const toolbar = root.closest('.tb-rich-text-editor')?.querySelector('[data-part="toolbar"]') ?? null;
     const label = root.ownerDocument.getElementById(root.getAttribute('aria-labelledby') ?? '');
@@ -223,6 +224,7 @@ class Editor {
             mentions: !!options.mentions,
         };
         this.mentionTriggers = options.mentions ?? '';
+        this.slash = options.slash === true;
         this.transformsPaste = !!options.transformsPaste;
         this.readOnly = !!options.readOnly;
         this.updateOnInput = !!options.updateOnInput;
@@ -265,8 +267,10 @@ class Editor {
             find: () => this.mentionQuery(),
             placeCaret: query => this.placeMentionCaret(caret, query),
             // The option carries what the mention shows, after its trigger, and its item's id.
-            insert: (query, option) => this.insertMention(query, option.dataset.mentionId ?? null,
-                option.dataset.insert.slice(query.trigger.length)),
+            insert: (query, option) => this.slash && query.trigger === '/'
+                ? this.runSlashCommand(query, option.dataset.mentionId, events)
+                : this.insertMention(query, option.dataset.mentionId ?? null,
+                    option.dataset.insert.slice(query.trigger.length)),
         });
         // Marks that the suggestions work, which tests wait for.
         listbox.dataset.ready = '';
@@ -286,9 +290,11 @@ class Editor {
             end += run.text.length;
             if (run.mention && end <= offset) floor = end;
         }
+        // With slash commands, a slash starts a query as a mention's trigger does.
+        const triggers = this.slash ? `${this.mentionTriggers}/` : this.mentionTriggers;
         for (let start = offset - 1; start >= floor && offset - start <= longestMention; start--) {
             if (/\s/.test(text[start])) return null;
-            if (this.mentionTriggers.includes(text[start]) && (start === 0 || /[\s([{"']/.test(text[start - 1]))) {
+            if (triggers.includes(text[start]) && (start === 0 || /[\s([{"']/.test(text[start - 1]))) {
                 return { trigger: text[start], place: `${block}:${start}`, block, start, end: offset,
                     text: text.slice(start + 1, offset) };
             }
@@ -323,6 +329,22 @@ class Editor {
             const caret = { block: query.block, offset: query.start + mention.text.length + 1 };
             this.selection = { anchor: caret, head: caret };
         });
+    }
+
+    // Takes out the slash and the text typed after it, then runs the command chosen when it is one of the editor's
+    // own: a kind of block, a rule or a table. One of the app's own runs in .NET, which is told only now, so what
+    // it puts in lands where the slash was.
+    runSlashCommand(query, command, events) {
+        this.edit(() => {
+            const target = this.doc[query.block];
+            this.doc[query.block] = { ...target, runs: replace(target.runs, query.start, query.end, []) };
+            const caret = { block: query.block, offset: query.start };
+            this.selection = { anchor: caret, head: caret };
+        });
+        if (command === 'rule') this.insertRule();
+        else if (command === 'table') this.insertTable();
+        else if (this.schema.blocks.has(command)) this.setBlock(command, false);
+        else callDotNet(events, 'OnCommand', command);
     }
 
     dispose() {
@@ -930,12 +952,13 @@ class Editor {
         return some ? (all ? 'on' : 'mixed') : 'off';
     }
 
-    // Turns the selected paragraphs into this kind of block, or back into plain paragraphs when all of them are.
-    setBlock(kind) {
+    // Turns the selected paragraphs into this kind of block, or back into plain paragraphs when all of them are and
+    // the caller toggles, as a button does.
+    setBlock(kind, toggle = true) {
         if (this.readOnly || (kind !== 'paragraph' && !this.schema.blocks.has(kind))) return;
         this.readBack();
         const { from, to } = this.range();
-        const next = this.blockState(kind) === 'on' ? 'paragraph' : kind;
+        const next = toggle && this.blockState(kind) === 'on' ? 'paragraph' : kind;
         if (this.doc.slice(from.block, to.block + 1).every(target => target.kind === next || !holdsText(target))) {
             return;
         }

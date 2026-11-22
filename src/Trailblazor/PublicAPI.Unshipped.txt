@@ -3767,6 +3767,21 @@ Trailblazor.TbRichTextEditor.Lines.get -> int
 Trailblazor.TbRichTextEditor.Lines.set -> void
 Trailblazor.TbRichTextEditor.MaxLines.get -> int?
 Trailblazor.TbRichTextEditor.MaxLines.set -> void
+Trailblazor.RichTextCommand
+Trailblazor.RichTextCommand.RichTextCommand(string! text) -> void
+Trailblazor.RichTextCommand.Text.get -> string!
+Trailblazor.RichTextCommand.Description.get -> string?
+Trailblazor.RichTextCommand.Description.init -> void
+Trailblazor.RichTextCommand.Keywords.get -> string?
+Trailblazor.RichTextCommand.Keywords.init -> void
+Trailblazor.RichTextCommand.Html.get -> string?
+Trailblazor.RichTextCommand.Html.init -> void
+Trailblazor.RichTextCommand.OnChosen.get -> System.Func<System.Threading.Tasks.Task!>?
+Trailblazor.RichTextCommand.OnChosen.init -> void
+Trailblazor.TbRichTextEditor.SlashCommands.get -> bool
+Trailblazor.TbRichTextEditor.SlashCommands.set -> void
+Trailblazor.TbRichTextEditor.Commands.get -> System.Collections.Generic.IEnumerable<Trailblazor.RichTextCommand!>?
+Trailblazor.TbRichTextEditor.Commands.set -> void
 Trailblazor.TbRichTextEditor.MaxMentionItems.get -> int
 Trailblazor.TbRichTextEditor.MaxMentionItems.set -> void
 Trailblazor.TbRichTextEditor.MentionItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.MentionItem!>?

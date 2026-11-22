@@ -1,0 +1,31 @@
+@* A typed slash lists the blocks the editor allows and two commands of the app's own: one puts in HTML, and one
+   only calls the app. *@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Trip notes" @bind-Value="_notes" SlashCommands Commands="_commands"
+                      HelperText="Type / at the start of a word, then a few letters, and press Enter." />
+    <output>Reminders set: @_reminders</output>
+</TbStack>
+
+@code {
+    private RichTextCommand[] _commands = [];
+    private string? _notes = "<p>Meet at the trailhead at eight.</p>";
+    private int _reminders;
+
+    protected override void OnInitialized() => _commands =
+    [
+        new("Packing list")
+        {
+            Description = "The four things every trip needs", Keywords = "gear checklist",
+            Html = "<ul><li>Water</li><li>Map</li><li>Headlamp</li><li>First aid kit</li></ul>",
+        },
+        new("Remind me") { Description = "Sets a reminder for the morning of the trip", OnChosen = RemindAsync },
+    ];
+
+    // The editor calls this outside the page's own events, so the page is told to draw the new count.
+    private Task RemindAsync()
+    {
+        _reminders++;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+}

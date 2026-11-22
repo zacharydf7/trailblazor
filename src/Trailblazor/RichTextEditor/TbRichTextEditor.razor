@@ -104,8 +104,8 @@
            wait for. *@
         <div @attributes="ControlAttributes" @ref="_content" @ontbrichtextchange="OnChangedAsync"
              @ontbrichtextlink="OnLinkAsync" @ontbrichtextpaste="OnPasteAsync" data-part="input"
-             id="@InputId" role="textbox" aria-autocomplete="@(SuggestsMentions ? "list" : null)"
-             aria-controls="@(SuggestsMentions ? MentionListId : null)"
+             id="@InputId" role="textbox" aria-autocomplete="@(Suggests ? "list" : null)"
+             aria-controls="@(Suggests ? MentionListId : null)"
              data-triggers="@(SuggestsMentions ? MentionTriggers : null)"
              aria-multiline="true" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-describedby="@(ShowCount ? ClassNames.Join(InputDescribedBy, CountId) : InputDescribedBy)"
@@ -125,14 +125,14 @@
                 @((MarkupString)Canonical)
             }
         </div>
-        @if (SuggestsMentions)
+        @if (Suggests)
         {
             @* The script moves this mark to the trigger being typed, and the list of suggestions opens under it. *@
             <span data-part="mention-caret" class="tb-mention-input__caret" aria-hidden="true"></span>
             <div @ref="_mentionList" id="@MentionListId" popover="manual" role="listbox" data-part="mention-list"
                  aria-labelledby="@(ShownLabel is null ? null : LabelId)"
                  data-results-for="@_suggestions.ResultsFor" class="tb-select__listbox tb-mention-input__listbox">
-                @_suggestions.Options(MentionListId, MentionItemTemplate, withIds: true)
+                @_suggestions.Options(MentionListId, ListsCommands ? null : MentionItemTemplate, withIds: true)
             </div>
         }
         @if (_source)
@@ -157,6 +157,7 @@
     private DotNetObjectReference<MentionInputEvents>? _mentionEvents;
     // Whether the script has the list of suggestions, so it hears when the editor starts or stops suggesting.
     private bool _suggesting;
+    private IReadOnlyList<(string Id, RichTextCommand Command)> _listedCommands = [];
     private int? _announcedSuggestions;
     // The mentions in the value the app last had, so it hears only of changes the user makes. The value the parent
     // last passed in is kept too, since a parent that doesn't store the value passes the same old one with every
@@ -252,6 +253,21 @@
     /// <see cref="RichTextDocument.Mentions"/> gives the same list for a saved value.</summary>
     [Parameter]
     public EventCallback<IReadOnlyList<Mention>> OnMentionsChanged { get; set; }
+
+    /// <summary>Opens a list of commands when a slash is typed at the start of a word: the kinds of block that
+    /// <see cref="Blocks"/> allows and the toolbar has a button for, such as Heading 1, Bulleted list or Table,
+    /// under their buttons' names, and then the app's own <see cref="Commands"/>. What is typed after the slash
+    /// narrows the list. Enter, Tab or a click runs a command and takes the slash and the typed text out; Escape
+    /// closes the list and leaves them as text. Off by default, since it changes what a typed slash does. While it
+    /// is on, the slash can't be one of the <see cref="MentionTriggers"/>.</summary>
+    [Parameter]
+    public bool SlashCommands { get; set; }
+
+    /// <summary>The app's own commands, listed after the editor's when <see cref="SlashCommands"/> is on. Every
+    /// command that matches is listed: <see cref="MaxMentionItems"/> and <see cref="MentionItemTemplate"/> are
+    /// for mentions only.</summary>
+    [Parameter]
+    public IEnumerable<RichTextCommand>? Commands { get; set; }
 
     /// <summary>Raised when <see cref="MentionSearch"/> fails. The list closes, screen readers hear that
     /// suggestions couldn't load, and typing again searches again. The failure is also logged as a warning, and
@@ -449,6 +465,20 @@
     private bool SuggestsMentions => KeepsMentions && RendererInfo.IsInteractive
         && (MentionSearch is not null || MentionItems is not null);
 
+    // The list serves mention suggestions and slash commands alike.
+    private bool Suggests => SuggestsMentions || (SlashCommands && RendererInfo.IsInteractive);
+
+    private bool ListsCommands => SlashCommands && _suggestions.Trigger == "/";
+
+    // What a slash offers: each kind of block the toolbar has a button for, under the button's name, then the
+    // app's own commands, each under an id the script hands back when it is chosen.
+    private IReadOnlyList<(string Id, RichTextCommand Command)> SlashChoices =>
+    [
+        .. Tools.Where(tool => tool.Block is not null || tool.Command is "rule" or "table")
+            .Select(tool => (tool.Block ?? tool.Command!, new RichTextCommand(tool.Label))),
+        .. (Commands ?? []).Select((command, index) => ($"app:{index}", command)),
+    ];
+
     private string MentionListId => $"{FieldId}-mentions";
 
     private RichTextSchema Schema => new()
@@ -527,6 +557,7 @@
         links = Formats.HasFlag(RichTextFormats.Link) ? string.Join(' ', LinkSchemes) : null,
         images = Blocks.HasFlag(RichTextBlocks.Images) ? string.Join(' ', ImageSchemes) : null,
         mentions = KeepsMentions ? MentionTriggers : null,
+        slash = SlashCommands,
         transformsPaste = TransformPaste is not null,
         readOnly = ReadOnly,
         updateOnInput = UpdateOnInput,
@@ -550,6 +581,13 @@
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
+        if (SlashCommands && MentionTriggers?.Contains('/') == true)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbRichTextEditor)}'s {nameof(MentionTriggers)} can't have a slash while "
+                + $"{nameof(SlashCommands)} is on.");
+        }
+
         if (MentionTriggers?.Any(char.IsWhiteSpace) == true)
         {
             throw new InvalidOperationException(
@@ -637,14 +675,14 @@
     // The script gets the list of suggestions once it is rendered, and loses it when the editor stops suggesting.
     private async Task SetMentionsAsync()
     {
-        if (_handle is null || _disposed || _suggesting == SuggestsMentions)
+        if (_handle is null || _disposed || _suggesting == Suggests)
         {
             return;
         }
 
-        _suggesting = SuggestsMentions;
-        _mentionEvents ??= DotNetObjectReference.Create(
-            new MentionInputEvents(DispatchExceptionAsync, InputId, OnMentionQueryAsync, OnMentionChosenAsync));
+        _suggesting = Suggests;
+        _mentionEvents ??= DotNetObjectReference.Create(new MentionInputEvents(
+            DispatchExceptionAsync, InputId, OnMentionQueryAsync, OnMentionChosenAsync, OnCommandAsync));
         try
         {
             await _handle.InvokeVoidAsync("setMentions", _suggesting ? _mentionList : null, _mentionEvents);
@@ -657,10 +695,14 @@
 
     private async Task OnMentionQueryAsync(string? trigger, string text, int number)
     {
-        var query = trigger is null || ReadOnly || Disabled ? null : new MentionQuery(trigger, text);
+        var commands = SlashCommands && trigger == "/";
+        // With slash commands, the script asks at a mention trigger even when the editor has no mentions to suggest.
+        var query = trigger is null || ReadOnly || Disabled || !(commands || SuggestsMentions) ? null
+            : new MentionQuery(trigger, text);
         try
         {
-            if (!await _suggestions.FindAsync(query, number, MentionSearch, MentionItems, MaxMentionItems))
+            if (!await _suggestions.FindAsync(query, number, commands ? FindCommandsAsync : MentionSearch,
+                commands ? null : MentionItems, commands ? int.MaxValue : MaxMentionItems))
             {
                 return;
             }
@@ -686,6 +728,16 @@
         }
     }
 
+    private Task<IEnumerable<MentionItem>> FindCommandsAsync(MentionQuery query, CancellationToken cancel)
+    {
+        _listedCommands = [.. SlashChoices.Where(choice => TextFold.Contains(choice.Command.Text, query.Text)
+            || TextFold.Contains(choice.Command.Keywords ?? "", query.Text))];
+        return Task.FromResult(_listedCommands.Select(choice => new MentionItem(choice.Command.Text)
+        {
+            Id = choice.Id, Description = choice.Command.Description,
+        }));
+    }
+
     // The script has the chosen item's id and text from its option, so the list only needs emptying.
     private Task OnMentionChosenAsync(int index, int resultsFor)
     {
@@ -693,6 +745,23 @@
         _suggestions.Clear(_suggestions.ResultsFor);
         StateHasChanged();
         return Task.CompletedTask;
+    }
+
+    // The script names one of the app's commands only once it has taken the slash and the typed text out, so the
+    // HTML lands where they were on a server and on WebAssembly alike. The command run is the one that was listed,
+    // even if the app's commands have changed since.
+    private async Task OnCommandAsync(string id)
+    {
+        var command = _listedCommands.FirstOrDefault(choice => choice.Id == id).Command;
+        if (command?.Html is not null && _handle is not null)
+        {
+            await _handle.InvokeVoidAsync("insertPasted", RichTextDocument.Parse(command.Html, Schema).ToHtml());
+        }
+
+        if (command?.OnChosen is not null)
+        {
+            await command.OnChosen();
+        }
     }
 
     // What the script sends is read again here, so the value holds only what the editor allows, whatever the

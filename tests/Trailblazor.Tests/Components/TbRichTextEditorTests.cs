@@ -216,7 +216,7 @@ public class TbRichTextEditorTests : BunitContext
 
         Assert.Equal("<p><strong>Hi</strong> there</p>", arguments[1]);
         Assert.Equal("""{"formats":"bold","blocks":"quote bullet","links":null,"images":null,"""
-            + "\"mentions\":null,\"transformsPaste\":false,"
+            + "\"mentions\":null,\"slash\":false,\"transformsPaste\":false,"
             + "\"readOnly\":false,\"updateOnInput\":true,\"updateDelay\":250}", JsonSerializer.Serialize(arguments[2]));
     }
 
@@ -524,6 +524,103 @@ public class TbRichTextEditorTests : BunitContext
         // A choice empties the list, which the script closed as it put the mention in.
         Assert.Empty(cut.FindAll("[data-part=mention-list] [role=option]"));
     }
+
+    private static readonly RichTextCommand Signature = new("Signature")
+    {
+        Description = "Your name", Keywords = "sign off", Html = "<p><b>Ana</b> <i>Lopez</i><script>x</script></p>",
+    };
+
+    private static IEnumerable<(string? Id, string? Name)> Commands(IRenderedComponent<TbRichTextEditor> cut) =>
+        cut.FindAll("[data-part=mention-list] [role=option]")
+            .Select(option => (option.GetAttribute("data-mention-id"), option.GetAttribute("aria-label")));
+
+    [Fact]
+    public async Task SlashCommands_ShouldListTheBlocksAllowedThenTheAppsCommands_WhenTheScriptAsksForASlash()
+    {
+        _handle.SetupVoid("setMentions", _ => true).SetVoidResult();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.SlashCommands, true)
+            .Add(editor => editor.Blocks, RichTextBlocks.Headings | RichTextBlocks.Rules)
+            .Add(editor => editor.Commands, [Signature]));
+
+        Assert.Contains("\"slash\":true",
+            JsonSerializer.Serialize(_module.Invocations["attachRichTextEditor"].Single().Arguments[2]));
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 1));
+
+        Assert.Equal([("heading1", "Heading 1"), ("heading2", "Heading 2"), ("heading3", "Heading 3"),
+            ("rule", "Horizontal line"), ("app:0", "Signature")], Commands(cut));
+        // What is typed narrows them by name, or by the keywords of one of the app's commands.
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "3", 2));
+        Assert.Equal([("heading3", "Heading 3")], Commands(cut));
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "off", 3));
+        Assert.Equal([("app:0", "Signature")], Commands(cut));
+    }
+
+    [Fact]
+    public async Task SlashCommands_ShouldPutInTheAppsHtmlAsTheEditorAllowsAndCallItBack_WhenItsCommandIsChosen()
+    {
+        var called = 0;
+        var stamp = new RichTextCommand("Stamp") { OnChosen = () => Task.FromResult(called++) };
+        _handle.SetupVoid("setMentions", _ => true).SetVoidResult();
+        _handle.SetupVoid("insertPasted", _ => true).SetVoidResult();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.SlashCommands, true).Add(editor => editor.Formats, RichTextFormats.Bold)
+            .Add(editor => editor.Commands, [Signature, stamp]));
+
+        // The script names one of the app's commands once the slash is out. Choosing any command only empties the
+        // list, and one of the editor's own the script runs itself.
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 1));
+        await cut.InvokeAsync(() => MentionEvents().OnChosen(1, 1));
+        await cut.InvokeAsync(() => MentionEvents().OnCommand("heading1"));
+        Assert.Empty(_handle.Invocations["insertPasted"]);
+        await cut.InvokeAsync(() => MentionEvents().OnCommand("app:0"));
+
+        Assert.Equal("<p><strong>Ana</strong> Lopez</p>", _handle.Invocations["insertPasted"].Single().Arguments[0]);
+        Assert.Equal(0, called);
+        await cut.InvokeAsync(() => MentionEvents().OnCommand("app:1"));
+
+        Assert.Equal(1, called);
+        Assert.Single(_handle.Invocations["insertPasted"]);
+    }
+
+    [Fact]
+    public async Task SlashCommands_ShouldRunTheCommandThatWasListed_WhenTheAppsCommandsChangeBeforeTheChoice()
+    {
+        var called = 0;
+        _handle.SetupVoid("setMentions", _ => true).SetVoidResult();
+        _handle.SetupVoid("insertPasted", _ => true).SetVoidResult();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.SlashCommands, true).Add(editor => editor.Commands, [Signature]));
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 1));
+
+        cut.Render(parameters => parameters.Add(editor => editor.Commands,
+            [new RichTextCommand("Stamp") { OnChosen = () => Task.FromResult(called++) }]));
+        await cut.InvokeAsync(() => MentionEvents().OnCommand("app:0"));
+
+        Assert.Single(_handle.Invocations["insertPasted"]);
+        Assert.Equal(0, called);
+    }
+
+    [Fact]
+    public async Task SlashCommands_ShouldSayNothingAtAMentionTrigger_WhenTheEditorHasNoMentionsToSuggest()
+    {
+        var announcer = Render<AnnouncerHost>();
+        _handle.SetupVoid("setMentions", _ => true).SetVoidResult();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.SlashCommands, true).Add(editor => editor.MentionTriggers, "@"));
+
+        // The script asks, since the list is there for the commands, but the editor has no mentions to look for.
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("@", "ad", 1));
+
+        Assert.Empty(Spoken(announcer));
+        Assert.Equal("1", cut.Find("[data-part=mention-list]").GetAttribute("data-results-for"));
+    }
+
+    [Fact]
+    public void SlashCommands_ShouldRejectASlashAmongTheMentionTriggers_WhenBothAreSet() =>
+        Assert.Throws<InvalidOperationException>(() => Render<TbRichTextEditor>(parameters => parameters
+            .Add(editor => editor.Label, "Notes").Add(editor => editor.SlashCommands, true)
+            .Add(editor => editor.MentionTriggers, "@/")));
 
     [Fact]
     public async Task Query_ShouldEmptyTheListAndTellTheApp_WhenTheSearchFails()

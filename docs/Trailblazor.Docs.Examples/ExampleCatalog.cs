@@ -5659,6 +5659,20 @@ public static class ExampleCatalog
                     + "comes from the page, so check each id before acting on it. Without `MentionTriggers` the "
                     + "editor keeps no mentions, and one pasted in is plain text.",
                     typeof(RichTextEditorMentionsExample)),
+                new("slash-commands", "Slash commands", "With `SlashCommands`, typing `/` at the start of a "
+                    + "word opens a list of commands. First come the kinds of block that `Blocks` allows and the "
+                    + "toolbar has a button for, under their buttons' names: headings, a quote and lists to turn "
+                    + "the paragraph into, and a horizontal line and a table to put in. The app's own `Commands` "
+                    + "come after them. What is typed after the slash narrows the list, by a command's name or by "
+                    + "a `RichTextCommand`'s `Keywords`, and every command that matches is listed: "
+                    + "`MaxMentionItems` and `MentionItemTemplate` are for mentions only. Enter, Tab or a click "
+                    + "runs the command and takes the slash and the typed text out. Escape closes the list until "
+                    + "the text changes, and a space after the slash leaves it as plain text. A command of the "
+                    + "app's own puts its `Html` in where the slash was, keeping only what the editor's formats "
+                    + "and blocks allow, without running `TransformPaste`, and then calls its `OnChosen`; here, "
+                    + "Remind me only calls back. It is off by default, since it changes what a typed slash does. "
+                    + "While it is on, the slash can't also be a mention trigger.",
+                    typeof(RichTextEditorSlashExample)),
                 new("changing-what-is-pasted", "Changing what's pasted", "`TransformPaste` changes what is pasted "
                     + "or dropped in, after the built-in cleanup: it gets the pasted text as a `RichTextDocument` and "
                     + "returns the document to put in. This example keeps the formats but drops the links. It's a "
@@ -5689,7 +5703,10 @@ public static class ExampleCatalog
                 new("height", "Height", "`Lines` sets the starting height, and the editor grows with its text. "
                     + "`MaxLines` caps it, after which it scrolls.", typeof(RichTextEditorHeightExample)),
             ],
-            Api = [typeof(TbRichTextEditor), typeof(RichTextEditorLabels), typeof(FieldClasses)],
+            Api =
+            [
+                typeof(TbRichTextEditor), typeof(RichTextCommand), typeof(RichTextEditorLabels), typeof(FieldClasses),
+            ],
             Keyboard =
             [
                 new(["Ctrl+B", "Ctrl+I", "Ctrl+U"], "Turns bold, italic or underline on or off, for the selection or "
@@ -5746,6 +5763,15 @@ public static class ExampleCatalog
                     { When = "While mention suggestions show" },
                 new(["Escape"], "Closes the suggestions until the text changes.")
                     { When = "While mention suggestions show" },
+                new(["/"], "Opens the list of commands, which the next letters narrow.")
+                    { When = "At the start of a word, with `SlashCommands`" },
+                new(["Down", "Up"], "Moves to the next or previous command, wrapping around.")
+                    { When = "While slash commands show" },
+                new(["Enter", "Tab"], "Runs the active command and takes the slash and the typed text out. Pressed "
+                    + "while the list is still narrowing, it runs the first command of the new list once it arrives.")
+                    { When = "While slash commands show" },
+                new(["Escape"], "Closes the commands until the text changes, and the slash stays as text.")
+                    { When = "While slash commands show" },
             ],
             RightToLeftKeys = "In the toolbar, Left moves to the next button and Right to the previous one.",
             Labeling =
@@ -5765,6 +5791,9 @@ public static class ExampleCatalog
                     + "changes these.",
                 "The list of mention suggestions is a `listbox` named by the editor's label. Each suggestion is "
                     + "named by its text, with its description as its accessible description.",
+                "Slash commands show in the same `listbox`. The editor's own have their toolbar buttons' names, "
+                    + "which `Labels` changes, and each of the app's is named by its `Text`, with its `Description` "
+                    + "as its accessible description.",
             ],
             Announcements =
             [
@@ -5776,6 +5805,7 @@ public static class ExampleCatalog
                 "As mention suggestions come in, their count is read out when it changes, such as \"Suggestions: "
                     + "3\". When `MentionSearch` fails, \"Couldn't load suggestions.\" is read out. `Labels` changes "
                     + "these words.",
+                "As slash commands are narrowed, their count is read out in the same words when it changes.",
             ],
             Accessibility =
             [
@@ -5807,7 +5837,8 @@ public static class ExampleCatalog
                 "An image is an `<img>` that keeps the alt text it came with, if any. The caret steps over it, and "
                     + "Backspace or Delete next to it removes it.",
                 "With `MentionTriggers`, a mention in the value is one unit: the caret steps over it, and Backspace "
-                    + "or Delete next to it removes it whole. While suggestions show, focus stays in the text: the "
+                    + "or Delete next to it removes it whole. While suggestions or slash commands show, focus stays "
+                    + "in the text: the "
                     + "editing area has `aria-autocomplete=\"list\"`, `aria-controls` for the list and "
                     + "`aria-activedescendant` for the active suggestion, and the list has `aria-busy` while a "
                     + "search is on its way.",
@@ -5865,9 +5896,10 @@ public static class ExampleCatalog
                 new("table-menu", "The table menu, with `RichTextBlocks.Tables`."),
                 new("color-menu", "The Text color menu, with `RichTextFormats.Color`. Each of its items has its "
                     + "tone's name in `data-color-command`, empty for Default."),
-                new("mention-list", "The list of mention suggestions. Each suggestion is an `option` part, with the "
-                    + "text it puts in as `data-insert` and its item's `Id` as `data-mention-id`, and a `description` "
-                    + "part when it has one."),
+                new("mention-list", "The list of mention suggestions, and of slash commands. Each suggestion is an "
+                    + "`option` part, with the text it puts in as `data-insert` and its item's `Id` as "
+                    + "`data-mention-id`, and a `description` part when it has one. A slash command is an `option` "
+                    + "part too, to be found by its name."),
                 new("mention-caret", "The mark at the trigger being typed, which the list opens under."),
                 new("source-toggle", "The HTML source button, with `ShowSource`."),
                 new("source", "The text area of the value's HTML, while the source shows."),
@@ -5880,6 +5912,10 @@ public static class ExampleCatalog
                     + "editor and waits until the app has the value.",
                 "To type instead, wait for `Input` to have its `data-ready` attribute, then type into it. The value "
                     + "reaches .NET when focus leaves, or as it's typed with `UpdateOnInput`.",
+                "To run a slash command in Playwright, type the slash and a few letters into `Input`, wait for the "
+                    + "`option` named by the command in the editor's `listbox`, and press Enter. bUnit runs no "
+                    + "script, so there a command can't be run; test an app command's `OnChosen` as the plain "
+                    + "function it is.",
                 "To add a link in Playwright, select the text and press `ControlOrMeta+k`, then fill the dialog's "
                     + "\"Link\" field and press Enter.",
                 "To color text in Playwright, select it, click the \"Text color\" button and then the "
