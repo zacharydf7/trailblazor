@@ -1,0 +1,10 @@
+@* Selected text gets a small toolbar of its own, here with three of the editor's formats. *@
+<TbStack Gap="3" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Summit note" @bind-Value="_note" ShowFloatingToolbar
+                      FloatingFormats="@(RichTextFormats.Bold | RichTextFormats.Italic | RichTextFormats.Link)"
+                      HelperText="Select some text with the mouse or the keyboard to format it." />
+</TbStack>
+
+@code {
+    private string? _note = "<p>Clear skies at the summit, and the ridge trail is dry.</p>";
+}

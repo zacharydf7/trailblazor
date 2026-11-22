@@ -4,6 +4,7 @@ import { viewOf } from '../Trailblazor.Primitives/pages.js';
 import { isApple } from '../Trailblazor.Primitives/platform.js';
 import { createMentionSuggestions, longestMention } from './mention-suggestions.js';
 import { createFind } from './rich-text-find.js';
+import { createFloatingToolbar } from './rich-text-floating-toolbar.js';
 // The rich text editor's engine. The browser types, composes and spellchecks natively and the engine reads the result
 // back; every other edit the engine makes on its own model and renders. It never uses document.execCommand.
 // A paragraph is { kind, level, runs }, never changed in place; a run is { text, marks in MARKS order, link or null };
@@ -147,7 +148,10 @@ class Editor {
         });
         on(root, 'focusout', event => {
             this.tabLeaves = false;
-            if (!root.contains(event.relatedTarget) && !toolbar?.contains(event.relatedTarget)) this.send();
+            // Moving to either toolbar isn't leaving the editor.
+            const next = event.relatedTarget;
+            if (!root.contains(next) && !toolbar?.contains(next)
+                && !next?.closest('[data-part="floating-toolbar"]')) this.send();
         });
         // Focus coming back from the link dialog brings back the selection it was opened on.
         on(root, 'focus', () => {
@@ -201,23 +205,17 @@ class Editor {
         on(toolbar, 'click', event => {
             const button = event.target.closest('[data-format], [data-block], [data-command]');
             if (!button || button.disabled) return;
-            if (button.dataset.command === 'find') {
-                this.find.toggle();
-                return;
-            }
-            // The editor takes focus first, so the link dialog hands it back to the editor when it closes.
-            root.focus();
-            if (button.dataset.format) this.toggleMark(button.dataset.format);
-            else if (button.dataset.block) this.setBlock(button.dataset.block);
-            else if (button.dataset.command === 'link') this.requestLink();
-            else if (button.dataset.command === 'rule') this.insertRule();
-            else if (button.dataset.command === 'table') this.insertTable();
-            else if (button.dataset.command === 'clear') this.clearFormatting();
-            else this.indent(button.dataset.command === 'indent' ? 1 : -1);
-            this.writeSelection();
+            if (button.dataset.command === 'find') this.find.toggle();
+            else this.runTool(button);
         });
 
-        this.find = createFind(root.closest('.tb-rich-text-editor'), {
+        this.scope = root.closest('.tb-rich-text-editor');
+        this.floating = createFloatingToolbar(this.scope, {
+            selectionBox: () => this.selectionBox(),
+            run: button => this.runTool(button),
+            focus: () => this.focusFrom(),
+        }, this.abort.signal);
+        this.find = createFind(this.scope, {
             area: () => root,
             texts: () => this.searchTexts(),
             ranges: matches => this.rangesOf(matches),
@@ -366,6 +364,45 @@ class Editor {
             this.root.dataset.runningCommand = '';
             callDotNet(events, 'OnCommand', command).finally(() => delete this.root.dataset.runningCommand);
         }
+    }
+
+    // Does what a button of the toolbar, or of the toolbar over a selection, stands for. The editor takes the focus
+    // first, so the link dialog hands it back to the editor when it closes.
+    runTool(button) {
+        this.root.focus();
+        if (button.dataset.format) this.toggleMark(button.dataset.format);
+        else if (button.dataset.block) this.setBlock(button.dataset.block);
+        else if (button.dataset.command === 'link') this.requestLink();
+        else if (button.dataset.command === 'rule') this.insertRule();
+        else if (button.dataset.command === 'table') this.insertTable();
+        else if (button.dataset.command === 'clear') this.clearFormatting();
+        else this.indent(button.dataset.command === 'indent' ? 1 : -1);
+        this.writeSelection();
+    }
+
+    // The selected text's box in the window, which the toolbar over a selection is placed by. Null when it
+    // shouldn't show: nothing is selected, the selection is scrolled out of view, the editor is read-only, text is
+    // being composed, or the focus is neither in the text nor in that toolbar.
+    selectionBox() {
+        const page = this.root.ownerDocument;
+        const inToolbar = this.scope.contains(page.activeElement)
+            && !!page.activeElement.closest('[data-part="floating-toolbar"]');
+        if ((page.activeElement !== this.root && !inToolbar) || this.readOnly || this.composing
+            || !this.hasRange()) return null;
+        const { from, to } = this.range();
+        const elements = this.blockElements();
+        const range = page.createRange();
+        range.setStart(...pointAt(elements[from.block], from.offset));
+        range.setEnd(...pointAt(elements[to.block], to.offset));
+        const box = range.getBoundingClientRect();
+        // The toolbar is drawn over everything, so it goes when the selection is scrolled out of the editing area,
+        // or out of anything that scrolls the editor, such as a dialog.
+        for (let frame = this.root; frame; frame = frame.parentElement) {
+            if (frame !== this.root && viewOf(frame).getComputedStyle(frame).overflow === 'visible') continue;
+            const edges = frame.getBoundingClientRect();
+            if (box.bottom < edges.top || box.top > edges.bottom) return null;
+        }
+        return box;
     }
 
     // What rich-text-find.js asks of the editor.
@@ -584,9 +621,20 @@ class Editor {
                 && getComputedStyle(this.root).direction === 'rtl';
             this.caretMove = flips ? -move : move;
         }
+        // Alt+F10 moves to the toolbar over the selection, whose buttons are out of the tab order.
+        if (event.key === 'F10' && event.altKey && this.floating.focus()) {
+            event.preventDefault();
+            return;
+        }
+
         // In a list item or a table, Escape lets the next Tab leave the editor, so a keyboard user is never held in it.
         // The first Escape is marked defaultPrevented so a surrounding dialog stays open; a second one closes it.
         if (event.key === 'Escape') {
+            // The toolbar over the selection goes first, until the selection changes.
+            if (this.floating.dismiss()) {
+                event.preventDefault();
+                return;
+            }
             if (!this.tabLeaves && this.caretIn(target => isListItem(target.kind) || isCell(target))) {
                 event.preventDefault();
                 this.tabLeaves = true;
@@ -766,6 +814,7 @@ class Editor {
         if (this.browserCaretBesideAtom() || this.browserSelectionInMention()) this.writeSelection();
         this.updateToolbar();
         this.mentions?.update(false);
+        this.floating.selectionChanged();
     }
 
     // Whether either end of the browser's selection is inside a mention, where no key would reach the editor.
@@ -1532,7 +1581,10 @@ class Editor {
     }
 
     updateToolbar() {
-        for (const button of this.toolbar?.querySelectorAll('[data-format], [data-block]') ?? []) {
+        const floating = this.scope.querySelector(':scope > [data-part="floating-toolbar"]');
+        const buttons = [this.toolbar, floating]
+            .flatMap(bar => [...bar?.querySelectorAll('[data-format], [data-block]') ?? []]);
+        for (const button of buttons) {
             const state = button.dataset.format ? this.markState(button.dataset.format)
                 : this.blockState(button.dataset.block);
             button.setAttribute('aria-pressed', state === 'mixed' ? 'mixed' : String(state === 'on'));
@@ -1548,6 +1600,7 @@ class Editor {
         this.updateToolbar();
         this.mentions?.update(true);
         this.find.refresh();
+        this.floating.update();
         clearTimeout(this.sendTimer);
         if (this.updateOnInput) this.sendTimer = setTimeout(() => this.send(), this.updateDelay);
     }

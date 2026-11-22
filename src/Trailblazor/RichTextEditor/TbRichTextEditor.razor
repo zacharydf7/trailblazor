@@ -108,6 +108,23 @@
                 }
             </TbToolbar>
         }
+        @if (ShowFloatingToolbar && !_source && !Disabled && !ReadOnly && FloatingTools.Count > 0)
+        {
+            @* The script shows it over a selection and keeps aria-pressed up to date, as for the toolbar. Its
+               buttons are out of the tab order: Alt+F10 in the text moves to it. *@
+            <div data-part="floating-toolbar" class="tb-rich-text-editor__floating" role="toolbar"
+                 popover="manual" aria-controls="@InputId"
+                 aria-label="@Word(Labels.FloatingToolbar, TbStrings.RichTextEditorFloatingToolbar)">
+                @foreach (var tool in FloatingTools)
+                {
+                    <TbIconButton Icon="tool.Icon" AriaLabel="@tool.Label" ShowTooltip Size="Size.Small"
+                                  tabindex="-1" data-format="@tool.Format" data-command="@tool.Command"
+                                  aria-pressed="@(tool.Command is null ? "false" : null)"
+                                  aria-haspopup="@(tool.Command == "link" ? "dialog" : null)"
+                                  aria-keyshortcuts="@tool.Shortcuts" />
+                }
+            </div>
+        }
         @if (ShowFind && !_source && !Disabled)
         {
             @* The script shows the bar and runs it, so finding makes no round trip. It takes the words it says
@@ -396,6 +413,20 @@
     [Parameter]
     public bool ShowFind { get; set; }
 
+    /// <summary>Shows a small toolbar over selected text, with a button for each character format the editor allows
+    /// and the link button, so formatting needs no trip to the main toolbar. <see cref="FloatingFormats"/> narrows
+    /// them. It shows for a selection made with the mouse or the keyboard, and not for one made by touch, where the
+    /// system's own menu sits. Alt+F10 in the text moves the focus to it, and Escape hides it until the selection
+    /// changes. Off by default.</summary>
+    [Parameter]
+    public bool ShowFloatingToolbar { get; set; }
+
+    /// <summary>The formats the floating toolbar has buttons for, among those <see cref="Formats"/> allows. Null,
+    /// the default, is every character format and <see cref="RichTextFormats.Link"/>. It has no text color
+    /// menu.</summary>
+    [Parameter]
+    public RichTextFormats? FloatingFormats { get; set; }
+
     /// <summary>Updates the value on every change instead of when focus leaves the editor.</summary>
     [Parameter]
     public bool UpdateOnInput { get; set; }
@@ -446,7 +477,16 @@
             Labels.ClearFormatting ?? Localizer[TbStrings.RichTextEditorClearFormatting], "Control+\\ Meta+\\")]
         : [];
 
-    private IEnumerable<Tool> MarkTools =>
+    private IEnumerable<Tool> MarkTools => MarkToolsFor(Formats);
+
+    // The buttons of the toolbar over a selection: the character formats, then the link.
+    private IReadOnlyList<Tool> FloatingTools =>
+    [
+        .. MarkToolsFor(Formats & (FloatingFormats ?? Formats)),
+        .. LinkTools.Where(_ => FloatingFormats?.HasFlag(RichTextFormats.Link) != false),
+    ];
+
+    private IEnumerable<Tool> MarkToolsFor(RichTextFormats formats) =>
         new (RichTextFormats Format, string Mark, Icon Icon, string? Label, string Key, string Shortcuts)[]
         {
             (RichTextFormats.Bold, "bold", RichTextEditorIcons.Bold, Labels.Bold, TbStrings.RichTextEditorBold,
@@ -466,7 +506,7 @@
             (RichTextFormats.Highlight, "highlight", RichTextEditorIcons.Highlight, Labels.Highlight,
                 TbStrings.RichTextEditorHighlight, "Control+Shift+H Meta+Shift+H"),
         }
-        .Where(tool => Formats.HasFlag(tool.Format))
+        .Where(tool => formats.HasFlag(tool.Format))
         .Select(tool => new Tool(tool.Mark, null, null, tool.Icon, tool.Label ?? Localizer[tool.Key], tool.Shortcuts));
 
     private IEnumerable<Tool> LinkTools => Formats.HasFlag(RichTextFormats.Link)

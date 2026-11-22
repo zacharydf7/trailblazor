@@ -1183,6 +1183,10 @@ public static class TbStrings
     /// <summary>"Replaced {0}": says how many matches a rich text editor replaced.</summary>
     public const string RichTextEditorReplaced = "RichTextEditor.Replaced";
 
+    /// <summary>"Selection formatting": names the toolbar that shows over selected text in a rich text
+    /// editor.</summary>
+    public const string RichTextEditorFloatingToolbar = "RichTextEditor.FloatingToolbar";
+
     /// <summary>"Link": names a rich text editor's link button.</summary>
     public const string RichTextEditorLink = "RichTextEditor.Link";
 
@@ -2087,6 +2091,7 @@ public static class TbStrings
         [RichTextEditorReplace] = "Replace",
         [RichTextEditorReplaceAll] = "Replace all",
         [RichTextEditorReplaced] = "Replaced {0}",
+        [RichTextEditorFloatingToolbar] = "Selection formatting",
         [RichTextEditorLink] = "Link",
         [RichTextEditorAddLink] = "Add link",
         [RichTextEditorEditLink] = "Edit link",

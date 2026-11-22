@@ -3915,6 +3915,24 @@
         border-block-end: 1px solid var(--tb-border-subtle);
     }
 
+    /* The toolbar over a selection is a popover, so nothing clips it, and the script places it in the window. */
+    .tb-rich-text-editor__floating {
+        position: fixed;
+        inset: auto;
+        margin: 0;
+        padding: var(--tb-space-1);
+        border: 1px solid var(--tb-border-subtle);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-surface-raised);
+        color: var(--tb-color-text);
+        box-shadow: var(--tb-shadow-md);
+    }
+
+    .tb-rich-text-editor__floating:popover-open {
+        display: flex;
+        gap: var(--tb-space-1);
+    }
+
     /* The find bar: a row to find with and a row to replace with, each wrapping in a narrow box. */
     .tb-rich-text-editor__find {
         display: flex;

@@ -44,6 +44,7 @@ import './mention-suggestions.js';
 import { forwardToo } from './pop-out.js';
 import './ribbon-key-tips.js';
 import './rich-text-find.js';
+import './rich-text-floating-toolbar.js';
 import './option-filter.js';
 import './overlay.js';
 import './shortcuts.js';

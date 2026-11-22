@@ -3921,6 +3921,12 @@ Trailblazor.RichTextEditorLabels.Replaced.get -> string?
 Trailblazor.RichTextEditorLabels.Replaced.init -> void
 Trailblazor.TbRichTextEditor.ShowFind.get -> bool
 Trailblazor.TbRichTextEditor.ShowFind.set -> void
+Trailblazor.RichTextEditorLabels.FloatingToolbar.get -> string?
+Trailblazor.RichTextEditorLabels.FloatingToolbar.init -> void
+Trailblazor.TbRichTextEditor.ShowFloatingToolbar.get -> bool
+Trailblazor.TbRichTextEditor.ShowFloatingToolbar.set -> void
+Trailblazor.TbRichTextEditor.FloatingFormats.get -> Trailblazor.RichTextFormats?
+Trailblazor.TbRichTextEditor.FloatingFormats.set -> void
 const Trailblazor.TbStrings.RichTextEditorTextColor = "RichTextEditor.TextColor" -> string!
 Trailblazor.RichTextEditorLabels.TextColor.get -> string?
 Trailblazor.RichTextEditorLabels.TextColor.init -> void
@@ -5869,6 +5875,7 @@ const Trailblazor.TbStrings.RichTextEditorReplaceWith = "RichTextEditor.ReplaceW
 const Trailblazor.TbStrings.RichTextEditorReplace = "RichTextEditor.Replace" -> string!
 const Trailblazor.TbStrings.RichTextEditorReplaceAll = "RichTextEditor.ReplaceAll" -> string!
 const Trailblazor.TbStrings.RichTextEditorReplaced = "RichTextEditor.Replaced" -> string!
+const Trailblazor.TbStrings.RichTextEditorFloatingToolbar = "RichTextEditor.FloatingToolbar" -> string!
 Trailblazor.RichTextBlocks.Images = 32 -> Trailblazor.RichTextBlocks
 Trailblazor.RichTextParagraphKind.Image = 8 -> Trailblazor.RichTextParagraphKind
 Trailblazor.RichTextParagraph.RichTextParagraph(Trailblazor.RichTextImage! image) -> void

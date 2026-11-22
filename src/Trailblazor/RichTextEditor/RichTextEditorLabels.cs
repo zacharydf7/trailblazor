@@ -245,6 +245,10 @@ public sealed record RichTextEditorLabels
     /// for <see cref="TbStrings.RichTextEditorReplaced"/>.</summary>
     public string? Replaced { get; init; }
 
+    /// <summary>Names the toolbar that shows over selected text. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorFloatingToolbar"/>.</summary>
+    public string? FloatingToolbar { get; init; }
+
     /// <summary>Names the Image button. Leave it null for the app's text for <see
     /// cref="TbStrings.RichTextEditorImage"/>.</summary>
     public string? Image { get; init; }

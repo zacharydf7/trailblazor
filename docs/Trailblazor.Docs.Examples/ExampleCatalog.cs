@@ -5698,6 +5698,16 @@ public static class ExampleCatalog
                     + "the editing area for a text area of the value's HTML. When focus leaves the text area, its HTML "
                     + "is cleaned up the way a paste is, so it keeps only the formats and blocks the editor allows.",
                     typeof(RichTextEditorSourceExample)),
+                new("floating-toolbar", "A toolbar over the selection", "`ShowFloatingToolbar` shows a small "
+                    + "toolbar over selected text, with a button for each character format the editor allows "
+                    + "and the link button, but no text color menu, so formatting needs no trip to the main "
+                    + "toolbar. It suits a long text whose toolbar has scrolled away. `FloatingFormats` narrows "
+                    + "its buttons, here to bold, italic and the link. It sits above the selection, or below it "
+                    + "when there is no room above, and goes when the selection collapses, is scrolled out of "
+                    + "view, or the focus leaves the editor. Alt+F10 in the text moves the focus to it. It "
+                    + "doesn't show in a read-only editor, or for a selection made by touch, where the system's "
+                    + "own menu sits. It is off by default.",
+                    typeof(RichTextEditorFloatingExample)),
                 new("find-and-replace", "Find and replace", "`ShowFind` adds a Find and replace button to the "
                     + "toolbar and takes Ctrl+F (Cmd+F on macOS) while the editor has the focus. Either opens a "
                     + "bar above the text, with any selected text already in its Find field. It finds the text "
@@ -5798,8 +5808,20 @@ public static class ExampleCatalog
                     { When = "In the find bar's Replace with field" },
                 new(["Escape"], "Closes the bar and selects the current match in the text.")
                     { When = "In the find bar" },
+                new(["Alt+F10"], "Moves the focus to the toolbar over the selection.")
+                    { When = "In the text, while the floating toolbar shows" },
+                new(["Left", "Right", "Home", "End"], "Moves between the floating toolbar's buttons.")
+                    { When = "In the floating toolbar" },
+                new(["Enter", "Space"], "Applies the button's format and goes back to the text, or opens the link "
+                    + "dialog for Link.")
+                    { When = "In the floating toolbar" },
+                new(["Escape"], "Goes back to the text, with the selection as it was.")
+                    { When = "In the floating toolbar" },
+                new(["Escape"], "Hides the floating toolbar until the selection changes.")
+                    { When = "In the text, while the floating toolbar shows" },
             ],
-            RightToLeftKeys = "In the toolbar, Left moves to the next button and Right to the previous one.",
+            RightToLeftKeys = "In the toolbar and the floating toolbar, Left moves to the next button and Right "
+                + "to the previous one.",
             Labeling =
             [
                 "The `Label` names the editing area with `aria-labelledby`, since it isn't a form control a `<label>` "
@@ -5825,6 +5847,8 @@ public static class ExampleCatalog
                     + "match\", \"Match case\", \"Whole word\", \"Close\", \"Replace\" and \"Replace all\". Match case "
                     + "and Whole word say whether they are pressed, and so does the toolbar's button while the bar "
                     + "shows. `Labels` changes these.",
+                "The floating toolbar is a `toolbar` named \"Selection formatting\", and its buttons have the "
+                    + "main toolbar's names. `Labels` changes its name.",
             ],
             Announcements =
             [
@@ -5840,6 +5864,7 @@ public static class ExampleCatalog
                 "The find bar's count is a `status`, so it is read out as it changes: which match is current and "
                     + "how many there are, such as \"2 of 5\", \"No results\" when there are none, or \"Replaced 3\" "
                     + "after Replace all. It is empty while the Find field is. `Labels` changes these words.",
+                "Nothing is read out as the floating toolbar shows or goes, so selecting text stays quiet.",
             ],
             Accessibility =
             [
@@ -5870,6 +5895,9 @@ public static class ExampleCatalog
                     + "item, Tab indents instead, as in word processors, and Escape lets the next Tab leave.",
                 "An image is an `<img>` that keeps the alt text it came with, if any. The caret steps over it, and "
                     + "Backspace or Delete next to it removes it.",
+                "The floating toolbar's buttons are out of the tab order, so Tab still leaves the editor in one "
+                    + "step. Alt+F10 reaches them, every format they apply also has its keyboard shortcut, and "
+                    + "each format's button says whether the format is on, as the main toolbar's do.",
                 "The matches the find bar marks are painted as highlights, not elements, so the value and screen "
                     + "readers never get them; the count says what a sighted user sees. In forced colors they "
                     + "take the system's mark and highlight colors.",
@@ -5884,6 +5912,8 @@ public static class ExampleCatalog
             [
                 "Give the editor a `Label`, or an `AriaLabel` where its purpose is plain from what surrounds it.",
                 "Put a `TbRoot` in the layout, which hosts the link dialog.",
+                "Keep the main toolbar where people may format by touch: the floating toolbar doesn't show for a "
+                    + "selection made by touch, so an editor with `ShowToolbar=\"false\"` gives them no buttons.",
                 "Don't let a highlight or a text color be the only sign of something, such as text that needs "
                     + "a change: not every screen reader says that text is highlighted, and none says its color "
                     + "unless asked.",
@@ -5943,6 +5973,8 @@ public static class ExampleCatalog
                 new("find-toggle", "The Find and replace button, with `ShowFind`."),
                 new("find", "The find bar, with `ShowFind`, hidden until it opens. Its controls have `data-find`: "
                     + "`text`, `count`, `previous`, `next`, `case`, `word`, `close`, `with`, `replace` and `all`."),
+                new("floating-toolbar", "The toolbar over the selection, with `ShowFloatingToolbar`: a popover "
+                    + "that is open while it shows."),
             ],
             TestingTips =
             [
@@ -5975,6 +6007,10 @@ public static class ExampleCatalog
                     + "count, and the app has the value without the editor being left.",
                 "bUnit runs no script, so the find bar stays hidden there; to test what a replacement does to the "
                     + "value, give `EnterAsync` the HTML it makes.",
+                "The floating toolbar is the `toolbar` named \"Selection formatting\". In Playwright it shows a "
+                    + "frame after text is selected with the keyboard or the mouse, so wait for it to be visible "
+                    + "before reading where it is, and click its buttons by name. bUnit runs no script, so "
+                    + "there it stays closed, with its buttons in the markup.",
                 "With `ShowSource`, press the \"HTML source\" button, fill the `source` part and press the button "
                     + "again; the value updates when focus leaves the text area.",
                 "With `ShowCount`, read the count from the `count-shown` part, as `\"12 / 200\"` with a "

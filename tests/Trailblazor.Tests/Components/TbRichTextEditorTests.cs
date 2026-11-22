@@ -525,6 +525,58 @@ public class TbRichTextEditorTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=mention-list] [role=option]"));
     }
 
+    private static IEnumerable<string?> FloatingButtons(IRenderedComponent<TbRichTextEditor> cut) =>
+        cut.FindAll("[data-part=floating-toolbar] button").Select(button => button.GetAttribute("aria-label"));
+
+    [Fact]
+    public void ShowFloatingToolbar_ShouldRenderAClosedToolbarOfTheFormatsAndTheLink_WhenSet()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.ShowFloatingToolbar, true));
+
+        // The script opens the popover over a selection. Its buttons are the main toolbar's format buttons and its
+        // link button, out of the tab order.
+        var floating = cut.Find("[data-part=floating-toolbar]");
+        Assert.Equal(("toolbar", "manual", "Selection formatting", cut.Find("[data-part=input]").Id),
+            (floating.GetAttribute("role"), floating.GetAttribute("popover"), floating.GetAttribute("aria-label"),
+                floating.GetAttribute("aria-controls")));
+        Assert.Equal(cut.FindAll("[data-part=toolbar] :is([data-format], [data-command=link])")
+            .Select(button => button.GetAttribute("aria-label")), FloatingButtons(cut));
+        Assert.All(floating.QuerySelectorAll("button"), button => Assert.Equal("-1", button.GetAttribute("tabindex")));
+        Assert.Equal("false", floating.QuerySelector("[data-format=bold]")!.GetAttribute("aria-pressed"));
+        Assert.Equal("dialog", floating.QuerySelector("[data-command=link]")!.GetAttribute("aria-haspopup"));
+    }
+
+    [Fact]
+    public void FloatingFormats_ShouldNarrowTheButtonsToThoseTheEditorAllows_WhenSet()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.ShowFloatingToolbar, true)
+            .Add(editor => editor.Formats, RichTextFormats.Bold | RichTextFormats.Italic | RichTextFormats.Link)
+            .Add(editor => editor.FloatingFormats,
+                RichTextFormats.Bold | RichTextFormats.Underline | RichTextFormats.Link));
+
+        // Underline isn't a format this editor allows, so it gets no button.
+        Assert.Equal(["Bold", "Link"], FloatingButtons(cut));
+        cut.Render(parameters => parameters.Add(editor => editor.FloatingFormats, RichTextFormats.Italic));
+        Assert.Equal(["Italic"], FloatingButtons(cut));
+    }
+
+    [Theory]
+    [InlineData(false, false, false, RichTextFormats.Bold)]
+    [InlineData(true, true, false, RichTextFormats.Bold)]
+    [InlineData(true, false, true, RichTextFormats.Bold)]
+    [InlineData(true, false, false, RichTextFormats.None)]
+    public void ShowFloatingToolbar_ShouldLeaveTheToolbarOut_WhenItIsOffOrTheTextCannotBeFormatted(bool shown,
+        bool readOnly, bool disabled, RichTextFormats formats)
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.ShowFloatingToolbar, shown).Add(editor => editor.ReadOnly, readOnly)
+            .Add(editor => editor.Disabled, disabled).Add(editor => editor.Formats, formats));
+
+        Assert.Empty(cut.FindAll("[data-part=floating-toolbar]"));
+    }
+
     [Fact]
     public void ShowFind_ShouldRenderAHiddenFindBarAndItsButton_WhenSet()
     {

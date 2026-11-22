@@ -1,0 +1,27 @@
+@page "/rich-text-floating"
+
+@* An editor with a toolbar over its selection, whose value shows and can be set from .NET; one without a main
+   toolbar, which sends its value as focus leaves it, and whose floating toolbar has only bold and the link; one
+   that scrolls its own text; and one in a box that scrolls. Empty space follows, so the page can scroll. *@
+<TbRichTextEditor Label="Notes" @bind-Value="_notes" UpdateOnInput ShowFloatingToolbar />
+<output data-testid="notes">@_notes</output>
+<TbTextField TValue="string" Label="Source" @bind-Value="_source" UpdateOnInput />
+<TbButton OnClick="() => _notes = _source">Set notes</TbButton>
+<TbRichTextEditor Label="Brief" @bind-Value="_brief" ShowToolbar="false" ShowFloatingToolbar
+                  FloatingFormats="@(RichTextFormats.Bold | RichTextFormats.Link)" />
+<output data-testid="brief">@_brief</output>
+<TbRichTextEditor Label="Log" @bind-Value="_log" Lines="2" MaxLines="3" ShowFloatingToolbar />
+<div data-testid="box" style="block-size: 8rem; overflow: auto">
+    <TbRichTextEditor Label="Boxed" @bind-Value="_boxed" ShowFloatingToolbar />
+</div>
+<div style="block-size: 150vh"></div>
+
+@code {
+    private static readonly string Lines = string.Concat(Enumerable.Range(1, 12).Select(line => $"<p>Line {line}</p>"));
+
+    private string? _log = Lines;
+    private string? _boxed = Lines;
+    private string? _notes;
+    private string? _source;
+    private string? _brief = "<p>Short and plain</p>";
+}
