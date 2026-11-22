@@ -1350,7 +1350,9 @@ export function attachDock(root, reporter) {
             const keep = () => keepBox(panel.dataset.panel, other);
             keep();
             other.addEventListener('resize', keep);
-            const noting = other.setInterval(keep, boxEvery);
+            // A dock can leave the page without being told to: after a lost connection, a new circuit can draw the page
+            // again with a new dock. Nothing draws this one's panels then, so its windows close.
+            const noting = other.setInterval(() => root.isConnected ? keep() : closeWindows(false), boxEvery);
             const stop = () => {
                 unfollow();
                 titled.disconnect();

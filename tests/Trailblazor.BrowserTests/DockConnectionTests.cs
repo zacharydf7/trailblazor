@@ -186,6 +186,21 @@ public class DockConnectionTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldClose_WhenThePageComesBackOnANewCircuit(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        var window = await PopOutNotesAsync(page);
+
+        // Pausing ends the circuit and keeps its state; resuming starts a new one, which draws the page again.
+        Assert.True(await page.EvaluateAsync<bool>("Blazor.pauseCircuit()"));
+        Assert.True(await page.EvaluateAsync<bool>("Blazor.resumeCircuit()"));
+
+        // The dock that had the panel's window is gone, and the window with it; the new dock has the panel.
+        await ClosedAsync(window);
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Notes" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Panel_ShouldComeBackTakingInput_WhenItsWindowClosesWhileTheConnectionIsLost(string browser)
     {
         var page = await OpenDockAsync(browser);

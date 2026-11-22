@@ -5,7 +5,16 @@ using Trailblazor.BrowserTests.Host;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorComponents().AddInteractiveServerComponents().AddInteractiveWebAssemblyComponents();
+// A test that cuts a page's connection counts on finding its circuit again a few seconds later. A full run ends
+// thousands of circuits a minute, so the hundred disconnected ones a server keeps by default go at once; they are
+// kept for less time instead, so no more of them pile up.
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents(options =>
+    {
+        options.DisconnectedCircuitMaxRetained = 100_000;
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(30);
+    })
+    .AddInteractiveWebAssemblyComponents();
 builder.Services.AddTrailblazor(TestAppOptions.Configure);
 
 var app = builder.Build();
