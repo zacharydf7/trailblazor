@@ -257,8 +257,8 @@
                 return;
             }
 
-            _events ??= DotNetObjectReference.Create(
-                new MentionInputEvents(DispatchExceptionAsync, InputId, OnQueryAsync, OnChosenAsync));
+            _events ??= DotNetObjectReference.Create(new MentionInputEvents(DispatchExceptionAsync, InputId,
+                (trigger, text, number, _) => OnQueryAsync(trigger, text, number), OnChosenAsync));
             _attachedToTextArea = Lines > 1;
             var handle = await module.InvokeAsync<IJSObjectReference?>("createMentionInput", _input, _listbox,
                 _events);

@@ -5660,16 +5660,20 @@ public static class ExampleCatalog
                     + "editor keeps no mentions, and one pasted in is plain text.",
                     typeof(RichTextEditorMentionsExample)),
                 new("slash-commands", "Slash commands", "With `SlashCommands`, typing `/` at the start of a "
-                    + "word opens a list of commands. First come the kinds of block that `Blocks` allows and the "
+                    + "word opens a list of commands. It has the kinds of block that `Blocks` allows and the "
                     + "toolbar has a button for, under their buttons' names: headings, a quote and lists to turn "
                     + "the paragraph into, and a horizontal line and a table to put in. The app's own `Commands` "
-                    + "come after them. What is typed after the slash narrows the list, by a command's name or by "
+                    + "come after them. The list leaves out what can't apply where the slash is: the kind the "
+                    + "block already is, and every kind of block in a table's cell. In a heading, quote or list "
+                    + "item it starts with Paragraph, which turns the block back into a plain paragraph. "
+                    + "What is typed after the slash narrows the list, by a command's name or by "
                     + "a `RichTextCommand`'s `Keywords`, and every command that matches is listed: "
                     + "`MaxMentionItems` and `MentionItemTemplate` are for mentions only. Enter, Tab or a click "
                     + "runs the command and takes the slash and the typed text out. Escape closes the list until "
                     + "the text changes, and a space after the slash leaves it as plain text. A command of the "
                     + "app's own puts its `Html` in where the slash was, keeping only what the editor's formats "
-                    + "and blocks allow, without running `TransformPaste`, and then calls its `OnChosen`; here, "
+                    + "and blocks allow, without running `TransformPaste`: text joins the line, and a heading, "
+                    + "quote or list starts under it. Then the command's `OnChosen` is called; here, "
                     + "Remind me only calls back. It is off by default, since it changes what a typed slash does. "
                     + "While it is on, the slash can't also be a mention trigger.",
                     typeof(RichTextEditorSlashExample)),
@@ -5791,9 +5795,9 @@ public static class ExampleCatalog
                     + "changes these.",
                 "The list of mention suggestions is a `listbox` named by the editor's label. Each suggestion is "
                     + "named by its text, with its description as its accessible description.",
-                "Slash commands show in the same `listbox`. The editor's own have their toolbar buttons' names, "
-                    + "which `Labels` changes, and each of the app's is named by its `Text`, with its `Description` "
-                    + "as its accessible description.",
+                "Slash commands show in the same `listbox`. The editor's own are named Paragraph or after their "
+                    + "toolbar buttons, all of which `Labels` changes, and each of the app's is named by its `Text`, "
+                    + "with its `Description` as its accessible description.",
             ],
             Announcements =
             [
@@ -5912,10 +5916,13 @@ public static class ExampleCatalog
                     + "editor and waits until the app has the value.",
                 "To type instead, wait for `Input` to have its `data-ready` attribute, then type into it. The value "
                     + "reaches .NET when focus leaves, or as it's typed with `UpdateOnInput`.",
-                "To run a slash command in Playwright, type the slash and a few letters into `Input`, wait for the "
-                    + "`option` named by the command in the editor's `listbox`, and press Enter. bUnit runs no "
-                    + "script, so there a command can't be run; test an app command's `OnChosen` as the plain "
-                    + "function it is.",
+                "In Playwright, `page.Tb().RichTextEditor(label).SlashCommandAsync(\" /pack\", \"Packing list\")` "
+                    + "types the start of a slash command at the end of the text, chooses the command, and waits "
+                    + "until it has run and the app has the value.",
+                "In bUnit, `SlashCommandAsync` runs one of the app's commands: it replaces the editor's text with "
+                    + "the typed text before the slash and the command's HTML, and calls its `OnChosen`. bUnit runs "
+                    + "no script, so there `SlashCommandAsync` throws for one of the editor's own commands; give "
+                    + "`EnterAsync` the HTML it would make instead.",
                 "To add a link in Playwright, select the text and press `ControlOrMeta+k`, then fill the dialog's "
                     + "\"Link\" field and press Enter.",
                 "To color text in Playwright, select it, click the \"Text color\" button and then the "

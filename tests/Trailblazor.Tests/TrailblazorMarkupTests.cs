@@ -1121,6 +1121,68 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task RichTextEditor_ShouldRunTheAppsCommandAndPutItsHtmlIn_WhenSlashCommandAsyncChoosesIt()
+    {
+        string? notes = null;
+        var reminded = 0;
+        var cut = RenderRichTextEditor(parameters => parameters.Add(editor => editor.SlashCommands, true)
+            .Add(editor => editor.Formats, RichTextFormats.Bold)
+            .Add(editor => editor.Commands,
+            [
+                new("Signature") { Keywords = "sign off", Html = "<p><b>Ana</b> <i>Lopez</i></p>" },
+                new("Packing list") { Html = "<ul><li>Water</li><li>Map</li></ul>" },
+                new("Divider") { Html = "<hr>" },
+                new("Remind me") { OnChosen = () => Task.FromResult(reminded++) },
+            ])
+            .Add(editor => editor.ValueChanged, (string html) => notes = html));
+        var editor = cut.Tb().RichTextEditor("Notes");
+
+        // Text joins the line being typed. The command is found here by a keyword.
+        await editor.SlashCommandAsync("Thanks, /off", "Signature");
+        Assert.Equal("<p>Thanks, <strong>Ana</strong> Lopez</p>", notes);
+        // A list starts under the line, or in its place when nothing was typed before the slash.
+        await editor.SlashCommandAsync("Bring /pack", "Packing list");
+        Assert.Equal("<p>Bring&nbsp;</p><ul><li>Water</li><li>Map</li></ul>", notes);
+        await editor.SlashCommandAsync("/pack", "Packing list");
+        Assert.Equal("<ul><li>Water</li><li>Map</li></ul>", notes);
+        // A rule stands apart from the line, with a paragraph after it to type in.
+        await editor.SlashCommandAsync("Above /div", "Divider");
+        Assert.Equal("<p>Above&nbsp;</p><hr><p><br></p>", notes);
+        Assert.Equal(0, reminded);
+        // A command with no HTML leaves the text before the slash, and the app hears of it.
+        await editor.SlashCommandAsync("Later /rem", "Remind me");
+        Assert.Equal((1, "<p>Later&nbsp;</p>"), (reminded, notes));
+    }
+
+    [Fact]
+    public async Task RichTextEditor_ShouldSayWhatIsWrong_WhenSlashCommandAsyncCannotRunTheCommand()
+    {
+        var plain = RenderRichTextEditor(_ => { }).Tb().RichTextEditor("Notes");
+        var mentions = RenderRichTextEditor(parameters => parameters.Add(editor => editor.MentionTriggers, "/")
+            .Add(editor => editor.MentionItems, [new("Signature")])).Tb().RichTextEditor("Notes");
+        var slash = RenderRichTextEditor(parameters => parameters.Add(editor => editor.SlashCommands, true)
+            .Add(editor => editor.Commands, [new("Signature")])).Tb().RichTextEditor("Notes");
+
+        var none = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            plain.SlashCommandAsync("/sig", "Signature"));
+        // A slash that lists mentions is not a slash command, even when a mention has the command's name.
+        var mention = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            mentions.SlashCommandAsync("/sig", "Signature"));
+        var untyped = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            slash.SlashCommandAsync("and/or", "Signature"));
+        var own = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            slash.SlashCommandAsync("/hea", "Heading 1"));
+        var unknown = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            slash.SlashCommandAsync("/zzz", "Signature"));
+
+        Assert.Contains("needs SlashCommands", none.Message);
+        Assert.Equal(none.Message, mention.Message);
+        Assert.Contains("doesn't end with a slash command", untyped.Message);
+        Assert.Contains("one of the editor's own commands", own.Message);
+        Assert.Contains("lists no command for \"/zzz\"", unknown.Message);
+    }
+
+    [Fact]
     public async Task Menu_ShouldClickTheItemThroughItsSubmenus_WhenChosenByPath()
     {
         var clicked = new List<string>();
@@ -4041,6 +4103,7 @@ public class TrailblazorMarkupTests : BunitContext
             .SetupModule("attachRichTextEditor", _ => true);
         handle.SetupVoid("setValue", _ => true).SetVoidResult();
         handle.SetupVoid("setMentions", _ => true).SetVoidResult();
+        handle.SetupVoid("insertCommand", _ => true).SetVoidResult();
         return Render<TbRichTextEditor>(builder => parameters(builder.Add(editor => editor.Label, "Notes")));
     }
 

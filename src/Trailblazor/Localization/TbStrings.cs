@@ -1106,6 +1106,9 @@ public static class TbStrings
     /// <summary>"Highlight": names a rich text editor's highlight button.</summary>
     public const string RichTextEditorHighlight = "RichTextEditor.Highlight";
 
+    /// <summary>"Paragraph": names a rich text editor's slash command for a plain paragraph.</summary>
+    public const string RichTextEditorParagraph = "RichTextEditor.Paragraph";
+
     /// <summary>"Heading 1": names a rich text editor's top-level heading button.</summary>
     public const string RichTextEditorHeading1 = "RichTextEditor.Heading1";
 
@@ -2010,6 +2013,7 @@ public static class TbStrings
         [RichTextEditorSuperscript] = "Superscript",
         [RichTextEditorCode] = "Code",
         [RichTextEditorHighlight] = "Highlight",
+        [RichTextEditorParagraph] = "Paragraph",
         [RichTextEditorTextColor] = "Text color",
         [RichTextEditorDefaultColor] = "Default",
         [RichTextEditorColorPrimary] = "Primary",

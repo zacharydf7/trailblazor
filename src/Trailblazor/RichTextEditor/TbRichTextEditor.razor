@@ -106,6 +106,7 @@
              @ontbrichtextlink="OnLinkAsync" @ontbrichtextpaste="OnPasteAsync" data-part="input"
              id="@InputId" role="textbox" aria-autocomplete="@(Suggests ? "list" : null)"
              aria-controls="@(Suggests ? MentionListId : null)"
+             data-slash-commands="@(SlashCommands && RendererInfo.IsInteractive ? string.Empty : null)"
              data-triggers="@(SuggestsMentions ? MentionTriggers : null)"
              aria-multiline="true" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-describedby="@(ShowCount ? ClassNames.Join(InputDescribedBy, CountId) : InputDescribedBy)"
@@ -256,10 +257,12 @@
 
     /// <summary>Opens a list of commands when a slash is typed at the start of a word: the kinds of block that
     /// <see cref="Blocks"/> allows and the toolbar has a button for, such as Heading 1, Bulleted list or Table,
-    /// under their buttons' names, and then the app's own <see cref="Commands"/>. What is typed after the slash
-    /// narrows the list. Enter, Tab or a click runs a command and takes the slash and the typed text out; Escape
-    /// closes the list and leaves them as text. Off by default, since it changes what a typed slash does. While it
-    /// is on, the slash can't be one of the <see cref="MentionTriggers"/>.</summary>
+    /// under their buttons' names, and then the app's own <see cref="Commands"/>. The list leaves out the kind
+    /// the block already is, offers Paragraph in a heading, quote or list item, and in a table's cell offers no
+    /// kinds of block. What is typed after the slash narrows the list. Enter, Tab or a click runs a command and
+    /// takes the slash and the typed text out; Escape closes the list and leaves them as text. Off by default,
+    /// since it changes what a typed slash does. While it is on, the slash can't be one of the
+    /// <see cref="MentionTriggers"/>.</summary>
     [Parameter]
     public bool SlashCommands { get; set; }
 
@@ -470,14 +473,29 @@
 
     private bool ListsCommands => SlashCommands && _suggestions.Trigger == "/";
 
-    // What a slash offers: each kind of block the toolbar has a button for, under the button's name, then the
-    // app's own commands, each under an id the script hands back when it is chosen.
-    private IReadOnlyList<(string Id, RichTextCommand Command)> SlashChoices =>
-    [
-        .. Tools.Where(tool => tool.Block is not null || tool.Command is "rule" or "table")
-            .Select(tool => (tool.Block ?? tool.Command!, new RichTextCommand(tool.Label))),
-        .. (Commands ?? []).Select((command, index) => ($"app:{index}", command)),
-    ];
+    // What a slash offers in a block of this kind, each under the id the script hands back when it is chosen:
+    // Paragraph in a heading, quote or list item; each kind of block the toolbar has a button for, under the
+    // button's name, except the kind the block already is, and none of them in a table's cell, which can't be one;
+    // a rule and a table; then the app's own commands.
+    private IEnumerable<(string Id, RichTextCommand Command)> SlashChoices(string? kind)
+    {
+        var inCell = kind == "cell";
+        if (!inCell && kind != "paragraph")
+        {
+            yield return ("paragraph", new(Labels.Paragraph ?? Localizer[TbStrings.RichTextEditorParagraph]));
+        }
+
+        foreach (var tool in Tools.Where(tool => tool.Block is null ? tool.Command is "rule" or "table"
+            : !inCell && tool.Block != kind))
+        {
+            yield return (tool.Block ?? tool.Command!, new(tool.Label));
+        }
+
+        foreach (var (command, index) in (Commands ?? []).Select((command, index) => (command, index)))
+        {
+            yield return ($"{RichTextCommand.IdPrefix}{index}", command);
+        }
+    }
 
     private string MentionListId => $"{FieldId}-mentions";
 
@@ -693,7 +711,7 @@
         }
     }
 
-    private async Task OnMentionQueryAsync(string? trigger, string text, int number)
+    private async Task OnMentionQueryAsync(string? trigger, string text, int number, string? kind)
     {
         var commands = SlashCommands && trigger == "/";
         // With slash commands, the script asks at a mention trigger even when the editor has no mentions to suggest.
@@ -701,7 +719,8 @@
             : new MentionQuery(trigger, text);
         try
         {
-            if (!await _suggestions.FindAsync(query, number, commands ? FindCommandsAsync : MentionSearch,
+            if (!await _suggestions.FindAsync(query, number,
+                commands ? (found, _) => FindCommandsAsync(found, kind) : MentionSearch,
                 commands ? null : MentionItems, commands ? int.MaxValue : MaxMentionItems))
             {
                 return;
@@ -728,9 +747,9 @@
         }
     }
 
-    private Task<IEnumerable<MentionItem>> FindCommandsAsync(MentionQuery query, CancellationToken cancel)
+    private Task<IEnumerable<MentionItem>> FindCommandsAsync(MentionQuery query, string? kind)
     {
-        _listedCommands = [.. SlashChoices.Where(choice => TextFold.Contains(choice.Command.Text, query.Text)
+        _listedCommands = [.. SlashChoices(kind).Where(choice => TextFold.Contains(choice.Command.Text, query.Text)
             || TextFold.Contains(choice.Command.Keywords ?? "", query.Text))];
         return Task.FromResult(_listedCommands.Select(choice => new MentionItem(choice.Command.Text)
         {
@@ -755,7 +774,7 @@
         var command = _listedCommands.FirstOrDefault(choice => choice.Id == id).Command;
         if (command?.Html is not null && _handle is not null)
         {
-            await _handle.InvokeVoidAsync("insertPasted", RichTextDocument.Parse(command.Html, Schema).ToHtml());
+            await _handle.InvokeVoidAsync("insertCommand", RichTextDocument.Parse(command.Html, Schema).ToHtml());
         }
 
         if (command?.OnChosen is not null)

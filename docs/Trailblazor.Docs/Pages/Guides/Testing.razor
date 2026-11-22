@@ -209,7 +209,9 @@
                         <th scope="row"><code>RichTextEditor(label).EnterAsync(html)</code></th>
                         <td>
                             Replaces the editor's text with this HTML, keeping only the formats it allows, and waits
-                            until the app has it.
+                            until the app has it. <code>MentionAsync(typed, suggestion)</code> mentions an item the
+                            app suggests, and <code>SlashCommandAsync(typed, command)</code> runs one of the app's
+                            slash commands.
                         </td>
                     </tr>
                     <tr>
@@ -1412,7 +1414,8 @@
             + "the tags' text, and `Tags` is the tag elements, for assertions."),
         new("Rich text editor", "Its label", "`RichTextEditor(label).EnterAsync(html)` pastes the HTML over the text, "
             + "leaves the editor and waits until the app has it; `Input` is the editing area, for typing and reading "
-            + "its text."),
+            + "its text. `MentionAsync(typed, suggestion)` types the start of a mention and chooses the suggestion, "
+            + "and `SlashCommandAsync(typed, command)` does the same for a slash command."),
         new("Transfer list", "Its label", "`TransferList(label).MoveAsync(items)` moves items to the chosen list, "
             + "`MoveBackAsync(items)` moves them back, and `ChosenAsync()` reads the chosen ones."),
         new("Calendar", "Its label", "`Calendar(label).ChooseAsync(date)` picks a date as a user would, through the "

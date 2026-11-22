@@ -545,15 +545,34 @@ public class TbRichTextEditorTests : BunitContext
 
         Assert.Contains("\"slash\":true",
             JsonSerializer.Serialize(_module.Invocations["attachRichTextEditor"].Single().Arguments[2]));
-        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 1));
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 1, "paragraph"));
 
         Assert.Equal([("heading1", "Heading 1"), ("heading2", "Heading 2"), ("heading3", "Heading 3"),
             ("rule", "Horizontal line"), ("app:0", "Signature")], Commands(cut));
         // What is typed narrows them by name, or by the keywords of one of the app's commands.
-        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "3", 2));
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "3", 2, "paragraph"));
         Assert.Equal([("heading3", "Heading 3")], Commands(cut));
-        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "off", 3));
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "off", 3, "paragraph"));
         Assert.Equal([("app:0", "Signature")], Commands(cut));
+    }
+
+    [Fact]
+    public async Task SlashCommands_ShouldLeaveOutWhatCannotApply_WhenTheSlashIsInAHeadingOrATablesCell()
+    {
+        _handle.SetupVoid("setMentions", _ => true).SetVoidResult();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.SlashCommands, true)
+            .Add(editor => editor.Blocks, RichTextBlocks.Headings | RichTextBlocks.Rules)
+            .Add(editor => editor.Labels, new RichTextEditorLabels { Paragraph = "Body text" })
+            .Add(editor => editor.Commands, [Signature]));
+
+        // A heading can go back to a paragraph, under the app's name for it, and its own kind would change nothing.
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 1, "heading2"));
+        Assert.Equal([("paragraph", "Body text"), ("heading1", "Heading 1"), ("heading3", "Heading 3"),
+            ("rule", "Horizontal line"), ("app:0", "Signature")], Commands(cut));
+        // A table's cell can't be another kind of block.
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 2, "cell"));
+        Assert.Equal([("rule", "Horizontal line"), ("app:0", "Signature")], Commands(cut));
     }
 
     [Fact]
@@ -562,25 +581,25 @@ public class TbRichTextEditorTests : BunitContext
         var called = 0;
         var stamp = new RichTextCommand("Stamp") { OnChosen = () => Task.FromResult(called++) };
         _handle.SetupVoid("setMentions", _ => true).SetVoidResult();
-        _handle.SetupVoid("insertPasted", _ => true).SetVoidResult();
+        _handle.SetupVoid("insertCommand", _ => true).SetVoidResult();
         var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
             .Add(editor => editor.SlashCommands, true).Add(editor => editor.Formats, RichTextFormats.Bold)
             .Add(editor => editor.Commands, [Signature, stamp]));
 
         // The script names one of the app's commands once the slash is out. Choosing any command only empties the
         // list, and one of the editor's own the script runs itself.
-        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 1));
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 1, "paragraph"));
         await cut.InvokeAsync(() => MentionEvents().OnChosen(1, 1));
         await cut.InvokeAsync(() => MentionEvents().OnCommand("heading1"));
-        Assert.Empty(_handle.Invocations["insertPasted"]);
+        Assert.Empty(_handle.Invocations["insertCommand"]);
         await cut.InvokeAsync(() => MentionEvents().OnCommand("app:0"));
 
-        Assert.Equal("<p><strong>Ana</strong> Lopez</p>", _handle.Invocations["insertPasted"].Single().Arguments[0]);
+        Assert.Equal("<p><strong>Ana</strong> Lopez</p>", _handle.Invocations["insertCommand"].Single().Arguments[0]);
         Assert.Equal(0, called);
         await cut.InvokeAsync(() => MentionEvents().OnCommand("app:1"));
 
         Assert.Equal(1, called);
-        Assert.Single(_handle.Invocations["insertPasted"]);
+        Assert.Single(_handle.Invocations["insertCommand"]);
     }
 
     [Fact]
@@ -588,16 +607,16 @@ public class TbRichTextEditorTests : BunitContext
     {
         var called = 0;
         _handle.SetupVoid("setMentions", _ => true).SetVoidResult();
-        _handle.SetupVoid("insertPasted", _ => true).SetVoidResult();
+        _handle.SetupVoid("insertCommand", _ => true).SetVoidResult();
         var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
             .Add(editor => editor.SlashCommands, true).Add(editor => editor.Commands, [Signature]));
-        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 1));
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 1, "paragraph"));
 
         cut.Render(parameters => parameters.Add(editor => editor.Commands,
             [new RichTextCommand("Stamp") { OnChosen = () => Task.FromResult(called++) }]));
         await cut.InvokeAsync(() => MentionEvents().OnCommand("app:0"));
 
-        Assert.Single(_handle.Invocations["insertPasted"]);
+        Assert.Single(_handle.Invocations["insertCommand"]);
         Assert.Equal(0, called);
     }
 

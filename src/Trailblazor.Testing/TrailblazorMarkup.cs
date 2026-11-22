@@ -113,6 +113,14 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             ?? throw new InvalidOperationException("The editor suggests no mentions: it needs MentionTriggers and "
                 + "a MentionSearch or MentionItems, and its script attaches once it renders interactively.");
 
+    // The HTML a rich text editor handed its script to put in while this call ran, or null when it handed none.
+    public async Task<string?> RichTextInsertAsync(Func<Task> call)
+    {
+        var before = Js.Invocations["insertCommand"].Count;
+        await InvokeAsync(call);
+        return Js.Invocations["insertCommand"].Skip(before).Select(put => put.Arguments[0] as string).LastOrDefault();
+    }
+
     // The events the speech recognition script calls back for this dictation button, matched by its id.
     public SpeechToTextEvents SpeechToText(IElement button) => Js.Invocations["attachSpeechToText"]
         .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<SpeechToTextEvents>)
@@ -4454,6 +4462,63 @@ public sealed class TbRichTextEditorDriver : TbFieldDriver
         await EnterAsync(new RichTextDocument(
             [new([new(before), new(new Mention(query.Trigger, item)), new(" ")])]).ToHtml());
     }
+
+    /// <summary>Runs one of the app's slash commands, as typing this text into an empty editor and choosing the
+    /// command with this name does. The text must end with a slash and the start of the command's name or of one
+    /// of its keywords, such as <c>"Bring /pack"</c>. The command's <c>OnChosen</c> is called, and the editor's
+    /// text becomes the text before the slash and then the command's HTML. Naming one of the editor's own commands,
+    /// such as Heading 1, throws: only the editor's script changes a block, so give <see cref="EnterAsync"/> the HTML
+    /// instead. A disabled or read-only editor throws.</summary>
+    public async Task SlashCommandAsync(string typed, string command)
+    {
+        var editor = Unlocked();
+        var query = Typing.MentionAt(typed, "/")
+            ?? throw new InvalidOperationException($"\"{typed}\" doesn't end with a slash command being typed: a "
+                + "slash at the start of a word, with no space after it.");
+        if (!editor.HasAttribute("data-slash-commands"))
+        {
+            throw new InvalidOperationException("The editor has no slash commands: it needs SlashCommands, and its "
+                + "script attaches once it renders interactively.");
+        }
+
+        var events = _scripts.RichTextMentions(editor);
+        var list = $"[id='{editor.GetAttribute("aria-controls")}']";
+        var number = int.Parse(_findAll(list)[0].GetAttribute("data-results-for")!, CultureInfo.InvariantCulture) + 1;
+        await _scripts.InvokeAsync(() => events.OnQuery(query.Trigger, query.Text, number, "paragraph"));
+        var options = _findAll($"{list} [role=option][data-part=option]").ToList();
+        if (options.Count == 0)
+        {
+            throw new InvalidOperationException($"The editor lists no command for \"/{query.Text}\": it needs "
+                + "SlashCommands, and a command with that text in its name or keywords.");
+        }
+
+        var option = Choices.Named(options, command);
+        var id = option.GetAttribute("data-mention-id") ?? "";
+        if (!id.StartsWith(RichTextCommand.IdPrefix, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"\"{command}\" is one of the editor's own commands, which only its "
+                + "script runs. Give EnterAsync the HTML it would make instead.");
+        }
+
+        await _scripts.InvokeAsync(() => events.OnChosen(options.IndexOf(option), number));
+        var put = RichTextDocument.Parse(await _scripts.RichTextInsertAsync(() => events.OnCommand(id))).Paragraphs;
+        var before = typed[..^(query.Trigger.Length + query.Text.Length)];
+        var line = new RichTextParagraph([new(before)]);
+        // As the script puts the HTML in: text joins the line being typed; a heading, quote or list starts under
+        // it, or in its place when nothing was typed; and a rule, image or table stands apart, with a paragraph
+        // after it when it comes last.
+        IEnumerable<RichTextParagraph> text = put switch
+        {
+            [{ Kind: RichTextParagraphKind.Paragraph } first, ..] =>
+                [new([.. line.Runs, .. first.Runs]), .. put.Skip(1)],
+            [var first, ..] when before.Length == 0 && HoldsText(first) => put,
+            _ => [line, .. put],
+        };
+        await EnterAsync(new RichTextDocument(HoldsText(put[^1]) ? text : [.. text, new([])]).ToHtml());
+    }
+
+    private static bool HoldsText(RichTextParagraph paragraph) => paragraph.Kind is not (RichTextParagraphKind.Rule
+        or RichTextParagraphKind.Image or RichTextParagraphKind.TableCell);
 }
 
 /// <summary>The <c>TbTour</c> on the page.</summary>

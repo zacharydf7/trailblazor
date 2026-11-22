@@ -74,6 +74,7 @@ export function attachRichTextEditor(root, value, options) {
         tableState: () => editor.tableState(),
         colorState: () => editor.colorState(),
         insertPasted: html => editor.insertPasted(html),
+        insertCommand: html => editor.insertCommand(html),
         // Hands over the list that shows mention suggestions and the .NET object that searches for them; a null list
         // stops suggesting.
         setMentions: (listbox, events) => editor.setMentions(listbox, events),
@@ -296,7 +297,7 @@ class Editor {
             if (/\s/.test(text[start])) return null;
             if (triggers.includes(text[start]) && (start === 0 || /[\s([{"']/.test(text[start - 1]))) {
                 return { trigger: text[start], place: `${block}:${start}`, block, start, end: offset,
-                    text: text.slice(start + 1, offset) };
+                    text: text.slice(start + 1, offset), kind: this.doc[block].kind };
             }
         }
         return null;
@@ -332,8 +333,8 @@ class Editor {
     }
 
     // Takes out the slash and the text typed after it, then runs the command chosen when it is one of the editor's
-    // own: a kind of block, a rule or a table. One of the app's own runs in .NET, which is told only now, so what
-    // it puts in lands where the slash was.
+    // own: a kind of block, a plain paragraph, a rule or a table. One of the app's own runs in .NET, which is told
+    // only now, so what it puts in lands where the slash was.
     runSlashCommand(query, command, events) {
         this.edit(() => {
             const target = this.doc[query.block];
@@ -343,8 +344,12 @@ class Editor {
         });
         if (command === 'rule') this.insertRule();
         else if (command === 'table') this.insertTable();
-        else if (this.schema.blocks.has(command)) this.setBlock(command, false);
-        else callDotNet(events, 'OnCommand', command);
+        else if (command === 'paragraph' || this.schema.blocks.has(command)) this.setBlock(command);
+        else {
+            // The mark is there until .NET has run the command, for tests to wait on before they leave the editor.
+            this.root.dataset.runningCommand = '';
+            callDotNet(events, 'OnCommand', command).finally(() => delete this.root.dataset.runningCommand);
+        }
     }
 
     dispose() {
@@ -739,6 +744,27 @@ class Editor {
         this.edit(() => this.insertParagraphs(pasted));
     }
 
+    // Puts in the HTML of one of the app's slash commands. Text joins the line the slash was in, as pasted text
+    // does, but a heading, quote or list starts under what is before the caret, where a paste would make its
+    // first block part of that line.
+    insertCommand(html) {
+        const blocks = readBlocks(parseDocument(html), true, this.schema);
+        if (this.readOnly || !blocks.length) return;
+        this.readBack();
+        this.edit(() => {
+            const { block, offset } = this.range().from;
+            const target = this.doc[block];
+            if (offset > 0 && !this.hasRange() && holdsText(target) && holdsText(blocks[0])
+                && blocks[0].kind !== 'paragraph') {
+                this.doc.splice(block, 1, { ...target, runs: slice(target.runs, 0, offset) },
+                    paragraph(slice(target.runs, offset)));
+                const caret = { block: block + 1, offset: 0 };
+                this.selection = { anchor: caret, head: caret };
+            }
+            this.insertParagraphs(blocks);
+        });
+    }
+
     // Model edits.
 
     edit(change) {
@@ -952,13 +978,12 @@ class Editor {
         return some ? (all ? 'on' : 'mixed') : 'off';
     }
 
-    // Turns the selected paragraphs into this kind of block, or back into plain paragraphs when all of them are and
-    // the caller toggles, as a button does.
-    setBlock(kind, toggle = true) {
+    // Turns the selected paragraphs into this kind of block, or back into plain paragraphs when all of them are.
+    setBlock(kind) {
         if (this.readOnly || (kind !== 'paragraph' && !this.schema.blocks.has(kind))) return;
         this.readBack();
         const { from, to } = this.range();
-        const next = toggle && this.blockState(kind) === 'on' ? 'paragraph' : kind;
+        const next = this.blockState(kind) === 'on' ? 'paragraph' : kind;
         if (this.doc.slice(from.block, to.block + 1).every(target => target.kind === next || !holdsText(target))) {
             return;
         }

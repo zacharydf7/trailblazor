@@ -23,9 +23,17 @@ public sealed class TbRichTextEditorLocator(ILocator scope, ILocator input) : Tb
     /// <summary>Mentions an item: types this text at the end of the editor's text, chooses the suggestion with this
     /// name, and leaves the editor, which commits it, then waits until the app has it. The text must end with a
     /// trigger and the start of the mention, such as <c>"Thanks @ad"</c>.</summary>
-    public async Task MentionAsync(string typed, string suggestion)
+    public Task MentionAsync(string typed, string suggestion) => ChooseAsync(typed, suggestion);
+
+    /// <summary>Runs a slash command, one of the editor's own or of the app's: types this text at the end of the
+    /// editor's text, chooses the command with this name, waits until it has run, and leaves the editor, which
+    /// commits the text, then waits until the app has it. The text must end with a slash and the start of the
+    /// command's name or of one of its keywords, such as <c>" /pack"</c>.</summary>
+    public Task SlashCommandAsync(string typed, string command) => ChooseAsync(typed, command);
+
+    private async Task ChooseAsync(string typed, string option)
     {
-        // The list is there once the editor suggests mentions and its script has attached.
+        // The list is there once the editor suggests mentions or has slash commands, and its script has attached.
         var list = scope.Page.Locator("[data-part=mention-list][data-ready]")
             .And(scope.Page.Locator($"[id='{await Input.GetAttributeAsync("aria-controls")}']"));
         await Assertions.Expect(list).ToBeAttachedAsync();
@@ -47,8 +55,10 @@ public sealed class TbRichTextEditorLocator(ILocator scope, ILocator input) : Tb
         await Input.PressSequentiallyAsync(typed);
         // The list may still show the suggestions for less of the text, and a click on one of those is ignored.
         await Assertions.Expect(list).Not.ToHaveAttributeAsync("aria-busy", "true");
-        await list.GetByRole(AriaRole.Option, new() { Name = suggestion, Exact = true }).ClickAsync();
+        await list.GetByRole(AriaRole.Option, new() { Name = option, Exact = true }).ClickAsync();
         await Assertions.Expect(list).ToBeHiddenAsync();
+        // One of the app's commands puts its HTML in and calls back only once .NET has heard of the choice.
+        await Assertions.Expect(Input).Not.ToHaveAttributeAsync("data-running-command", "");
         await Input.BlurAsync();
         // An editor that updates as it is typed in sends its value several times on the way, so one commit isn't
         // the end. The editor counts the values it sent, and .NET the ones the app has finished with.

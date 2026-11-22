@@ -3878,6 +3878,7 @@ static Trailblazor.RichTextSchema.operator ==(Trailblazor.RichTextSchema? left, 
 static Trailblazor.RichTextSchema.Default.get -> Trailblazor.RichTextSchema!
 const Trailblazor.TbStrings.RichTextEditorCode = "RichTextEditor.Code" -> string!
 const Trailblazor.TbStrings.RichTextEditorHighlight = "RichTextEditor.Highlight" -> string!
+const Trailblazor.TbStrings.RichTextEditorParagraph = "RichTextEditor.Paragraph" -> string!
 const Trailblazor.TbStrings.RichTextEditorHeading1 = "RichTextEditor.Heading1" -> string!
 const Trailblazor.TbStrings.RichTextEditorHeading2 = "RichTextEditor.Heading2" -> string!
 const Trailblazor.TbStrings.RichTextEditorHeading3 = "RichTextEditor.Heading3" -> string!
@@ -3890,6 +3891,8 @@ Trailblazor.RichTextEditorLabels.Code.get -> string?
 Trailblazor.RichTextEditorLabels.Code.init -> void
 Trailblazor.RichTextEditorLabels.Highlight.get -> string?
 Trailblazor.RichTextEditorLabels.Highlight.init -> void
+Trailblazor.RichTextEditorLabels.Paragraph.get -> string?
+Trailblazor.RichTextEditorLabels.Paragraph.init -> void
 const Trailblazor.TbStrings.RichTextEditorTextColor = "RichTextEditor.TextColor" -> string!
 Trailblazor.RichTextEditorLabels.TextColor.get -> string?
 Trailblazor.RichTextEditorLabels.TextColor.init -> void

@@ -75,6 +75,10 @@ public sealed record RichTextEditorLabels
     /// cref="TbStrings.RichTextEditorHighlight"/>.</summary>
     public string? Highlight { get; init; }
 
+    /// <summary>Names the slash command that turns a heading, quote or list item back into a plain paragraph. Leave
+    /// it null for the app's text for <see cref="TbStrings.RichTextEditorParagraph"/>.</summary>
+    public string? Paragraph { get; init; }
+
     /// <summary>Names the heading 1 button. Leave it null for the app's text for <see
     /// cref="TbStrings.RichTextEditorHeading1"/>.</summary>
     public string? Heading1 { get; init; }

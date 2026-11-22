@@ -1,9 +1,10 @@
 @page "/rich-text-slash"
 
-@* An editor with slash commands: headings, a bulleted list, a rule and a table from its blocks, and two commands of
-   the app's own, one that puts in HTML and one that only calls back. Its value shows, and can be set from .NET. Two
-   editors without slash commands follow: one suggests places for an @ and shows the triggers it was asked about, and
-   the other has the slash itself as its mention trigger. *@
+@* An editor with slash commands: headings, a bulleted list, a rule and a table from its blocks, and three commands
+   of the app's own: one puts in a line of text, one only calls back, which takes a while with slow in the address,
+   and one puts in a list.
+   Its value shows, and can be set from .NET. Two editors without slash commands follow: one suggests places for an
+   @ and shows the triggers it was asked about, and the other has the slash itself as its mention trigger. *@
 <TbRichTextEditor Label="Notes" @bind-Value="_notes" UpdateOnInput SlashCommands Commands="_commands"
                   Blocks="@(RichTextBlocks.Headings | RichTextBlocks.BulletedLists | RichTextBlocks.Rules
                       | RichTextBlocks.Tables)" />
@@ -29,6 +30,9 @@
     private int _stamped;
     private RichTextCommand[] _commands = [];
 
+    [SupplyParameterFromQuery]
+    private string? Slow { get; set; }
+
     protected override void OnInitialized() => _commands =
     [
         new("Signature")
@@ -37,13 +41,14 @@
             Html = "<p><strong>Ana Lopez</strong>, trail crew</p>",
         },
         new("Stamp") { OnChosen = StampAsync },
+        new("Checklist") { Html = "<ul><li>Water</li><li>Map</li></ul>" },
     ];
 
-    private Task StampAsync()
+    private async Task StampAsync()
     {
+        await Task.Delay(Slow is null ? 0 : 300);
         _stamped++;
         StateHasChanged();
-        return Task.CompletedTask;
     }
 
     private Task<IEnumerable<MentionItem>> FindPlacesAsync(MentionQuery query, CancellationToken cancel)

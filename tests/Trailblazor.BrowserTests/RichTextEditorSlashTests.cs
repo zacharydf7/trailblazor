@@ -1,3 +1,4 @@
+using Trailblazor.Testing.Playwright;
 using static Trailblazor.BrowserTests.RichTextEditorTests;
 
 namespace Trailblazor.BrowserTests;
@@ -8,9 +9,9 @@ public class RichTextEditorSlashTests(BrowserFixture fixture) : BrowserTest(fixt
 
     // Opens the page with the notes holding this text and the caret at its end, once slash commands work.
     private async Task<(IPage Page, ILocator Notes)> StartAsync(string browser, string text = "Plan",
-        string mode = "")
+        string query = "")
     {
-        var page = await OpenAsync(browser, $"/rich-text-slash{mode}");
+        var page = await OpenAsync(browser, $"/rich-text-slash{query}");
         var notes = await SetAsync(page, $"<p>{text}</p>", text);
         await Expect(page.Locator("[data-part=mention-list][data-ready]")).ToHaveCountAsync(3);
         await CaretAsync(notes, 0, text.Length);
@@ -27,7 +28,7 @@ public class RichTextEditorSlashTests(BrowserFixture fixture) : BrowserTest(fixt
 
         // The editor's own commands follow its blocks, under their buttons' names, and the app's come after.
         await Expect(List(page).GetByRole(AriaRole.Option)).ToHaveTextAsync(["Heading 1", "Heading 2", "Heading 3",
-            "Bulleted list", "Horizontal line", "Table", "SignatureYour name and role", "Stamp"]);
+            "Bulleted list", "Horizontal line", "Table", "SignatureYour name and role", "Stamp", "Checklist"]);
         await page.Keyboard.TypeAsync("hea");
         await Expect(List(page).GetByRole(AriaRole.Option)).ToHaveTextAsync(["Heading 1", "Heading 2", "Heading 3"]);
         // The list is busy until the answer for the last key is in, and starts again from its first item then.
@@ -44,11 +45,14 @@ public class RichTextEditorSlashTests(BrowserFixture fixture) : BrowserTest(fixt
         await page.Keyboard.TypeAsync("B");
         await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<h2>Plan B</h2>");
 
-        // The command for the kind the block already is leaves it so, where that kind's button would turn it back.
-        await page.Keyboard.TypeAsync(" /2");
-        await Expect(List(page).GetByRole(AriaRole.Option)).ToHaveTextAsync(["Heading 2"]);
+        // In the heading, the list offers Paragraph and not the heading's own kind, which would change nothing.
+        await page.Keyboard.TypeAsync(" /");
+        await Expect(List(page).GetByRole(AriaRole.Option)).ToHaveTextAsync(["Paragraph", "Heading 1", "Heading 3",
+            "Bulleted list", "Horizontal line", "Table", "SignatureYour name and role", "Stamp", "Checklist"]);
+        await page.Keyboard.TypeAsync("par");
+        await Expect(List(page).GetByRole(AriaRole.Option)).ToHaveTextAsync(["Paragraph"]);
         await page.Keyboard.PressAsync("Enter");
-        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<h2>Plan B&nbsp;</h2>");
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>Plan B&nbsp;</p>");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -72,6 +76,68 @@ public class RichTextEditorSlashTests(BrowserFixture fixture) : BrowserTest(fixt
         await page.Keyboard.PressAsync("Tab");
         await page.Keyboard.TypeAsync("x");
         await Expect(page.GetByTestId("notes")).ToContainTextAsync("</ul><table><thead><tr><th scope=\"col\">x</th>");
+
+        // A table's cell can't be another kind of block, so there the list offers none.
+        await page.Keyboard.TypeAsync(" /");
+        await Expect(List(page).GetByRole(AriaRole.Option)).ToHaveTextAsync(
+            ["Horizontal line", "Table", "SignatureYour name and role", "Stamp", "Checklist"]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Slash_ShouldStartTheAppsListUnderTheLine_WhenItsCommandIsChosenAfterText(string browser)
+    {
+        var (page, _) = await StartAsync(browser);
+
+        await page.Keyboard.TypeAsync(" /che");
+        await Expect(List(page).GetByRole(AriaRole.Option)).ToHaveTextAsync(["Checklist"]);
+        await page.Keyboard.PressAsync("Enter");
+
+        // A paste would make the first item part of the line; a command's list starts under it, caret at its end.
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>Plan&nbsp;</p><ul><li>Water</li><li>Map</li></ul>");
+        await page.Keyboard.TypeAsync("s");
+        await Expect(page.GetByTestId("notes"))
+            .ToHaveTextAsync("<p>Plan&nbsp;</p><ul><li>Water</li><li>Maps</li></ul>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Slash_ShouldPutTheAppsListInPlaceOfTheLine_WhenNothingIsTypedBeforeTheSlash(string browser)
+    {
+        var (page, _) = await StartAsync(browser);
+
+        await page.Keyboard.PressAsync("Enter");
+        await page.Keyboard.TypeAsync("/che");
+        await Expect(List(page).GetByRole(AriaRole.Option)).ToHaveTextAsync(["Checklist"]);
+        await page.Keyboard.PressAsync("Enter");
+
+        // No empty paragraph is left where the slash was.
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>Plan</p><ul><li>Water</li><li>Map</li></ul>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Slash_ShouldListAgain_WhenTheBlocksKindChangesWhileTheListShows(string browser)
+    {
+        var (page, _) = await StartAsync(browser);
+
+        await page.Keyboard.TypeAsync(" /hea");
+        await Expect(List(page).GetByRole(AriaRole.Option)).ToHaveTextAsync(["Heading 1", "Heading 2", "Heading 3"]);
+        await page.Keyboard.PressAsync("ControlOrMeta+Alt+Digit2");
+
+        // The heading's own kind would now change nothing, so it leaves the list.
+        await Expect(List(page).GetByRole(AriaRole.Option)).ToHaveTextAsync(["Heading 1", "Heading 3"]);
+    }
+
+    // With slow in the address the app takes a while over a command, and the helper returns only once it has run.
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Helper_ShouldRunTheCommandAndWaitForTheApp_WhenSlashCommandAsyncIsCalled(string browser)
+    {
+        var (page, _) = await StartAsync(browser, query: "?slow=1");
+        var editor = page.Tb().RichTextEditor("Notes");
+
+        await editor.SlashCommandAsync(" /off", "Signature");
+        Assert.Equal("<p>Plan <strong>Ana Lopez</strong>, trail crew</p>",
+            await page.GetByTestId("notes").TextContentAsync());
+        await editor.SlashCommandAsync(" /sta", "Stamp");
+        Assert.Equal("Stamped: 1", await page.GetByTestId("stamped").TextContentAsync());
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -85,7 +151,7 @@ public class RichTextEditorSlashTests(BrowserFixture fixture) : BrowserTest(fixt
 
     private async Task RunTheAppsCommandsAsync(string browser, string mode)
     {
-        var (page, _) = await StartAsync(browser, mode: mode);
+        var (page, _) = await StartAsync(browser, query: mode);
 
         // A command is found by a keyword too, and its HTML goes in at the caret, read as pasted text is.
         await page.Keyboard.TypeAsync(" /off");

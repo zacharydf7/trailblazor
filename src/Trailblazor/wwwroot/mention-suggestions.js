@@ -10,7 +10,8 @@ export const longestMention = 50;
 // before the caret asks the server to search, the list opens under the trigger once suggestions land, and the keys
 // move an active one and choose it. Focus never leaves the owner, which carries aria-activedescendant.
 // The host gives find(), which returns the mention being typed as { trigger, text, place } or null, where place is
-// the host's own mark for where the trigger is, which this code only compares; placeCaret(found), which moves the
+// the host's own mark for where the trigger is, which this code only compares, and may add kind, the kind of block
+// the trigger is in, which goes to the server with the search; placeCaret(found), which moves the
 // caret mark to the trigger; insert(found, option), which puts the chosen suggestion in; and onToggle(open), if it
 // has a state to keep. It calls update(textChanged) when its text or caret changes, and onKeyDown(event) for each
 // key.
@@ -39,7 +40,8 @@ export function createMentionSuggestions(owner, listbox, caret, events, host) {
     };
     const isOpen = () => listbox.matches(':popover-open');
     const options = () => [...listbox.querySelectorAll('[role="option"]')];
-    const same = (a, b) => a?.place === b?.place && a?.text === b?.text && a?.trigger === b?.trigger;
+    const same = (a, b) => a?.place === b?.place && a?.text === b?.text && a?.trigger === b?.trigger
+        && a?.kind === b?.kind;
 
     const setActive = option => {
         active?.removeAttribute('data-active');
@@ -95,12 +97,12 @@ export function createMentionSuggestions(owner, listbox, caret, events, host) {
             host.placeCaret(query);
             askedQuery = true;
             setWaiting(true);
-            callDotNet(events, 'OnQuery', query.trigger, query.text, ++asked);
+            callDotNet(events, 'OnQuery', query.trigger, query.text, ++asked, query.kind ?? null);
         } else {
             close();
             if (askedQuery) {
                 askedQuery = false;
-                callDotNet(events, 'OnQuery', null, '', ++asked);
+                callDotNet(events, 'OnQuery', null, '', ++asked, null);
             }
         }
     };
