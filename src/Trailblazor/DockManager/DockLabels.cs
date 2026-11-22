@@ -118,6 +118,10 @@ public sealed record DockLabels
     /// <see cref="TbStrings.DockPopOutLapsed"/>.</summary>
     public string? PopOutLapsed { get; init; }
 
+    /// <summary>What a panel's own browser window shows, over the panel, while the page has lost its connection to
+    /// the server. Leave it null for the app's text for <see cref="TbStrings.DockConnectionLost"/>.</summary>
+    public string? ConnectionLost { get; init; }
+
     /// <summary>Names the row of buttons the dock keeps for the panels that show in browser windows of their own.
     /// Leave it null for the app's text for <see cref="TbStrings.DockAway"/>.</summary>
     public string? Away { get; init; }

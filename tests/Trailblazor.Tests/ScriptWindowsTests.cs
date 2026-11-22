@@ -44,6 +44,9 @@ public partial class ScriptWindowsTests
         // A tour's step names its target with a selector, which is looked up on the page and watched from there.
         "tour.js: return document.querySelector(selector);",
         "tour.js: watch = new ResizeObserver(highlight);",
+        // Blazor's reconnect UI, which says that the connection is lost, is on the page only.
+        "dock-manager.js: const ui = document.getElementById('components-reconnect-modal');",
+        "dock-manager.js: frameworkUi.observe(document.body, { childList: true });",
         // Another window's events are sent on to the page's root, so a listener there hears every window's.
         "debounced-input.js: document.documentElement.addEventListener('input', event => {",
     ];

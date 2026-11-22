@@ -7775,6 +7775,30 @@
         background: var(--tb-color-surface-sunken);
     }
 
+    /* Covers a panel's own browser window while the page has lost its connection. */
+    .tb-dock__connection-lost {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        inline-size: auto;
+        block-size: auto;
+        margin: 0;
+        border: 0;
+        padding: var(--tb-space-4);
+        background: var(--tb-color-scrim);
+    }
+
+    .tb-dock__connection-lost > p {
+        max-inline-size: 28rem;
+        margin: 0;
+        border: 1px solid var(--tb-border-subtle);
+        border-radius: var(--tb-radius-md);
+        padding: var(--tb-space-4);
+        background: var(--tb-color-surface);
+        color: var(--tb-color-text);
+    }
+
     /* The dock takes the focus when its last panel closes. */
     .tb-dock:focus-visible,
     .tb-dock__panel:focus-visible {

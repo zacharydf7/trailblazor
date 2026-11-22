@@ -7448,6 +7448,9 @@ const Trailblazor.TbStrings.DockPopOutBlocked = "Dock.PopOutBlocked" -> string!
 const Trailblazor.TbStrings.DockPopOutLapsed = "Dock.PopOutLapsed" -> string!
 Trailblazor.DockLabels.PopOutLapsed.get -> string?
 Trailblazor.DockLabels.PopOutLapsed.init -> void
+const Trailblazor.TbStrings.DockConnectionLost = "Dock.ConnectionLost" -> string!
+Trailblazor.DockLabels.ConnectionLost.get -> string?
+Trailblazor.DockLabels.ConnectionLost.init -> void
 Trailblazor.TbDockManager.AllowPopOut.get -> bool
 Trailblazor.TbDockManager.FocusablePanels.get -> Trailblazor.TabPanelFocus
 Trailblazor.TbDockManager.FocusablePanels.set -> void

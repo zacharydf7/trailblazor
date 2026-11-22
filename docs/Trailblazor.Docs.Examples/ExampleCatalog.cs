@@ -3224,7 +3224,14 @@ public static class ExampleCatalog
                     + "beside the saved layout when the dock has a `PersistenceKey`. A panel that has had no window "
                     + "opens over the middle of the dock, at half the dock's size. The browser has the last word on "
                     + "where a window goes, so a window last seen on a screen that is no longer connected opens on "
-                    + "one that is. The browser windows close when the page goes away, and a panel's window "
+                    + "one that is. On an interactive server page, Blazor shows a lost connection on the page only. "
+                    + "So while the connection is lost, each panel's window shows a notice over the panel, and "
+                    + "nothing in the window takes input until the page reconnects. When reconnecting gives up and "
+                    + "the page offers to retry, the notice stays until the page reconnects; the retry is on the "
+                    + "page. A panel whose window is closed meanwhile shows in the dock again once the page has "
+                    + "reconnected. An app with a `reconnectionHandler` of its own has to tell the dock (see What "
+                    + "your app must do). The browser windows close when the page goes away, as it does when it "
+                    + "reloads after failing to reconnect, and a panel's window "
                     + "closes when the app closes the panel or moves it elsewhere in the layout. A window takes the "
                     + "page's style sheets and what the page sets on its root element, and follows the sheets in the "
                     + "page's head and the root as they change. When the browser refuses to open the window, the "
@@ -3400,8 +3407,9 @@ public static class ExampleCatalog
                     + "said when a panel is put away, with `{0}` for its title.",
                 "A panel in a browser window of its own is a `region` named by its title, which is the window's "
                     + "title too, and the button that brings it back is named \"Return to the dock\". "
-                    + "`Labels.PopOut` and `Return` replace the menu item and the button, and `PoppedOut`, `Returned`, "
-                    + "`PopOutBlocked` and `PopOutLapsed` what is said, each with `{0}` for the panel's title.",
+                    + "`Labels.PopOut` and `Return` replace the menu item and the button, `PoppedOut`, `Returned`, "
+                    + "`PopOutBlocked` and `PopOutLapsed` what is said, each with `{0}` for the panel's title, and "
+                    + "`ConnectionLost` the notice a window shows while the page has lost its connection.",
                 "The buttons for the panels that are in windows of their own sit in a `group` named \"Panels in "
                     + "their own windows\". Each is named by its panel's title and described as \"In its own "
                     + "browser window\", and its menu has Show its window and Return to the dock. `Labels.Away`, "
@@ -3437,6 +3445,9 @@ public static class ExampleCatalog
                     + "the window opened and then closed because the page took more than ten seconds to answer the "
                     + "click, as on a slow connection, they hear \"The new window for Notes closed before the panel was ready. "
                     + "Try again.\"",
+                "While the page has lost its connection to the server, screen readers in a panel's own browser "
+                    + "window hear \"The page lost its connection to the server. This panel works again when the "
+                    + "page reconnects.\" It is said in that window only.",
                 "A screen reader follows the window that has the focus, so whatever is announced while a panel is in "
                     + "a window of its own is said in that window as well as on the page. While a modal dialog is "
                     + "open, messages go to its own live regions and are said there only.",
@@ -3496,7 +3507,9 @@ public static class ExampleCatalog
                     + "the panel, and the panel's Return button is the first stop for the Tab key in the panel. "
                     + "Return leaves the focus on the panel's tab in the dock; closing the window leaves it to the "
                     + "browser. While a panel is away it has no tab in the dock, so closing the dock's last tab gives "
-                    + "the focus to the dock itself.",
+                    + "the focus to the dock itself. While the page has lost its connection, everything in a panel's "
+                    + "window but the notice is `inert`, and when the connection is back the focus returns to where "
+                    + "it was.",
                 "Tab and screen readers meet the groups in reading order, and still do after the layout changes.",
                 "A hidden panel is `inert`: nothing in it can be focused or read until its tab shows it.",
                 "A modified panel's dot is drawn in the tab's text color, so it stays in forced colors. On a "
@@ -3541,6 +3554,10 @@ public static class ExampleCatalog
                     + "sets `Layout`.",
                 "Before turning on `AllowPopOut`, check that what each panel holds works in a window of its own, "
                     + "and tell people that the window belongs to the page: it closes when the page does.",
+                "If your app handles reconnecting with a `reconnectionHandler` of its own, tell the dock when "
+                    + "the connection drops, so a panel's own window can say so: `document.dispatchEvent(new "
+                    + "CustomEvent('components-reconnect-state-changed', { detail: { state: 'show' } }))`. Send "
+                    + "the same with `'hide'` when the connection is back.",
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
@@ -3787,6 +3804,10 @@ public static class ExampleCatalog
                     + "`tb-dock__panel--revealed`. One that a strip keeps hidden has `data-floating`, the floating "
                     + "class and `--tb-dock-z` but neither of those two, and its `data-dock-group` is the number a "
                     + "slid-out panel's row takes."),
+                new("connection-lost", "The notice that covers a panel's own browser window while the page has "
+                    + "lost its connection to the server, with the class `tb-dock__connection-lost` and the role "
+                    + "`alert`. The dock's script adds it to that window's body and removes it. Its text is in a "
+                    + "`p`, which draws the box."),
                 new("return-bar", "The bar across the top of a panel that shows in a browser window of its own, "
                     + "with the class `tb-dock__return-bar`. The panel has `data-popped`, the class "
                     + "`tb-dock__panel--popped`, the role `region` and no `data-dock-group` from the moment Open in "
@@ -3926,6 +3947,11 @@ public static class ExampleCatalog
                     + "own, which `Panels`, `Showing` and `Floating` leave out, and `ReturnAsync(\"Notes\")` "
                     + "presses a panel's Return button. `PopOutAsync` throws an `InvalidOperationException` when "
                     + "`AllowPopOut` is off, and `ReturnAsync` for a panel that isn't in a window of its own.",
+                "While the page has lost its connection, the `Page` of a panel's window has an `alert` with the "
+                    + "`connection-lost` part. To test it without dropping the circuit, send "
+                    + "`components-reconnect-state-changed` on the page's `document` with `detail.state` `show`, "
+                    + "then `hide`. bUnit runs no script, so there the dock's `data-connection-lost` holds the "
+                    + "notice's text.",
                 "In Playwright, announcements made while a panel is in its window can be checked on its `Page` or "
                     + "on the page's, with `Tb().Announcements.ExpectAnnouncedAsync(text)` on either. Toasts are "
                     + "on the `Page` the last key, press or focus was in, so right after `PopOutAsync` they are on the "

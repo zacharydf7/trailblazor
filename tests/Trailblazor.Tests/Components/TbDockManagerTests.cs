@@ -2742,6 +2742,31 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public void ConnectionLost_ShouldGiveTheScriptItsText_WhenPanelsCanOpenInWindowsAndTheDockRunsOnTheServer()
+    {
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+        var cut = RenderPoppable(Hike);
+
+        Assert.Equal("The page lost its connection to the server. This panel works again when the page reconnects.",
+            cut.Find("[data-part=dock]").GetAttribute("data-connection-lost"));
+
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels { ConnectionLost = "Offline." }));
+
+        Assert.Equal("Offline.", cut.Find("[data-part=dock]").GetAttribute("data-connection-lost"));
+
+        // A dock that runs in the browser goes on working when the page's connection to the server is lost.
+        SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels { ConnectionLost = "Gone." }));
+
+        Assert.False(cut.Find("[data-part=dock]").HasAttribute("data-connection-lost"));
+
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+        cut.Render(parameters => parameters.Add(dock => dock.AllowPopOut, false));
+
+        Assert.False(cut.Find("[data-part=dock]").HasAttribute("data-connection-lost"));
+    }
+
+    [Fact]
     public void PopOut_ShouldGiveEachGroupsItemItsShowingPanelsId_WhenAllowPopOutIsOn()
     {
         var cut = RenderPoppable(Hike);

@@ -2,6 +2,7 @@ import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { createGripDrag } from '../Trailblazor.Primitives/grip-drag.js';
 import { viewOf, watchSizes } from '../Trailblazor.Primitives/pages.js';
 import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
+import { hold, release } from './inert.js';
 import { showInWindow } from './pop-out.js';
 import { nextTab, scrollTabIntoRow, startsWithControl } from './tabs.js';
 
@@ -20,6 +21,32 @@ function keepScrolls(element) {
     };
 }
 const names = { x: 'x', y: 'y', width: 'w', height: 'h' };
+
+// Whether the page has lost its connection to the server, and the docks that hear when that changes. Blazor shows
+// a lost connection on the page only. Its own reconnect UI is an element it adds to the body when first needed, and
+// shows and hides by its style. An app's own reconnect UI is told each state in an event that doesn't bubble, so
+// the document listens for it in the capture phase; an app that handles reconnecting itself can send that event on
+// the document.
+const connection = { lost: false, heard: new Set() };
+const setLost = lost => {
+    if (lost !== connection.lost) {
+        connection.lost = lost;
+        connection.heard.forEach(hear => hear(lost));
+    }
+};
+document.addEventListener('components-reconnect-state-changed',
+    event => setLost(event.detail?.state !== 'hide'), { capture: true });
+const watchFrameworkUi = () => {
+    const ui = document.getElementById('components-reconnect-modal');
+    if (ui?.shadowRoot) {
+        frameworkUi.observe(ui, { attributes: true, attributeFilter: ['style'] });
+        setLost(ui.style.display !== 'none');
+    }
+};
+const frameworkUi = new MutationObserver(watchFrameworkUi);
+frameworkUi.observe(document.body, { childList: true });
+// Blazor leaves the element in the body once it was needed, so it can be there before this script is.
+watchFrameworkUi();
 
 // The dock renders its groups, panels and separators as siblings, each placed by a box in percent of the dock. This
 // script keeps each panel after its group's tabs, so Tab and screen readers meet them in reading order; moves
@@ -1004,6 +1031,51 @@ export function attachDock(root, reporter) {
     // answers the screen's corner), so a window's box is noted as it is resized and this often while it is open,
     // in milliseconds, and not as it closes.
     const boxEvery = 500;
+    // While the connection is lost nothing in a panel's own window works, and Blazor says why on the page only. So
+    // the window says it too, over everything it holds, which takes no input until the connection is back.
+    const sayLost = (shown, lost) => {
+        if (lost === Boolean(shown.lost)) {
+            return;
+        }
+
+        const page = shown.other.document;
+        if (lost) {
+            const [elements, focused] = [[...page.body.children], page.activeElement];
+            hold(elements);
+            const notice = page.body.appendChild(page.createElement('div'));
+            notice.className = 'tb-dock__connection-lost';
+            notice.dataset.part = 'connection-lost';
+            notice.setAttribute('role', 'alert');
+            notice.popover = 'manual';
+            notice.showPopover();
+            // Screen readers announce an alert's text when it's added, not text the alert already had.
+            notice.appendChild(page.createElement('p')).textContent = root.dataset.connectionLost;
+            shown.lost = { elements, focused, notice };
+        } else {
+            release(shown.lost.elements);
+            shown.lost.notice.remove();
+            // The focused element lost the focus when it became inert.
+            if (shown.lost.focused?.isConnected) {
+                shown.lost.focused.focus({ preventScroll: true });
+            }
+
+            shown.lost = null;
+        }
+    };
+    // Only a dock that runs on the server has the notice's text, and stops working with the connection.
+    const lostHere = () => connection.lost && 'connectionLost' in root.dataset;
+    // The panels whose windows closed while the connection was lost. The dock can't hear of a return then, so it is
+    // told once the connection is back, and draws those panels as its own again.
+    const unheardReturns = new Set();
+    const showConnection = () => {
+        const lost = lostHere();
+        windows.forEach(shown => sayLost(shown, lost));
+        if (!lost) {
+            unheardReturns.forEach(panel => callDotNet(reporter, 'OnReturn', panel));
+            unheardReturns.clear();
+        }
+    };
+    connection.heard.add(showConnection);
     // A panel on its way to a window is hidden first, with no scroll positions left to note, so every panel's are
     // noted in the click. On its way back the dock draws it as its own before it moves, which loses them too, so
     // they are noted in the click on its Return button. Each panel's are used once, and only for that panel.
@@ -1087,9 +1159,12 @@ export function attachDock(root, reporter) {
             }
         }
 
+        sayLost(shown, false);
         shown.stop();
         shown.other.close();
-        if (report) {
+        if (report && lostHere()) {
+            unheardReturns.add(shown.panel.dataset.panel);
+        } else if (report) {
             callDotNet(reporter, 'OnReturn', shown.panel.dataset.panel);
         }
     };
@@ -1234,6 +1309,9 @@ export function attachDock(root, reporter) {
             // Closing the window puts the panel back, while the window still holds it.
             other.addEventListener('pagehide', () => bringBack(id, true));
             panel.focus({ preventScroll: true });
+            // The connection may have been lost while the panel was on its way. The notice comes after the focus, which
+            // it gives back to the panel later.
+            showConnection();
             return null;
         },
         // Notes a panel's scroll positions in its window, before the dock draws it as its own for a return that
@@ -1262,6 +1340,7 @@ export function attachDock(root, reporter) {
             document.removeEventListener('click', onReturnClick, { capture: true });
             window.removeEventListener('pagehide', onPageHide);
             closeWindows(false);
+            connection.heard.delete(showConnection);
             added.disconnect();
             regrouped.disconnect();
             selected.disconnect();

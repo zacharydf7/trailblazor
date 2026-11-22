@@ -47,6 +47,7 @@
      tabindex="@(empty ? "-1" : null)"
      data-report="@_reported" data-commits="@(RendererInfo.IsInteractive ? _counted : null)"
      data-min-size="@MinGroupSize" data-focusable-panels="@PanelStops" data-persistence-key="@PersistenceKey"
+     data-connection-lost="@ConnectionLostText"
      class="tb-dock">
     @Content(_declared, panels)
     @* A tab list holds only tabs, so the hint that describes a closable tab sits outside it. *@
@@ -630,6 +631,10 @@
     private string TabId(string panel) => $"{_id}-tab-{panel}";
 
     private string PanelId(string panel) => $"{_id}-panel-{panel}";
+
+    // Only a dock that runs on the server stops working when the connection to the server is lost.
+    private string? ConnectionLostText => AllowPopOut && RendererInfo.Name == "Server"
+        ? Labels.ConnectionLost ?? Localizer[TbStrings.DockConnectionLost] : null;
 
     private static string? EdgeName(DockPosition? edge) => edge?.ToString().ToLowerInvariant();
 
