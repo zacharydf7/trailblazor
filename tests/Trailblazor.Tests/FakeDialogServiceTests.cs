@@ -149,6 +149,28 @@ public class FakeDialogServiceTests : BunitContext
         Assert.Equal("Trail notice", Assert.Single(Dialogs.Opened).Title);
     }
 
+    [Theory]
+    [InlineData("ConfirmAsync", true)]
+    [InlineData("CloseAsync(true)", true)]
+    [InlineData("CloseAsync(false)", false)]
+    [InlineData("CancelAsync", false)]
+    public async Task Last_ShouldAnswerYesOnlyWithAConfirmedTrue_WhenTheTestClosesADialogWithNoResult(string close,
+        bool expected)
+    {
+        var showing = Dialogs.ShowAsync<NoticeDialog>("Trail notice");
+        var notice = Dialogs.Last<NoticeDialog>();
+
+        await (close switch
+        {
+            "ConfirmAsync" => notice.ConfirmAsync(),
+            "CloseAsync(true)" => notice.CloseAsync(true),
+            "CloseAsync(false)" => notice.CloseAsync(false),
+            _ => notice.CancelAsync(),
+        });
+
+        Assert.Equal(expected, await showing);
+    }
+
     [Fact]
     public async Task AnswerWith_ShouldCloseTheDialogWithTheResultAtOnce_WhenTheDialogOpens()
     {

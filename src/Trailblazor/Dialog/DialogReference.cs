@@ -418,8 +418,8 @@ public sealed class DialogReference<TResult> : DialogReference
     public Task<DialogResult<TResult>> Result => _result.Task;
 
     /// <summary>Closes the dialog as confirmed, with <paramref name="value"/> as its result. Does nothing once it has
-    /// closed. Closing an <see cref="IDialogService.ConfirmAsync"/> question with false answers it no, as canceling
-    /// it does.</summary>
+    /// closed. Closing an <see cref="IDialogService.ConfirmAsync"/> question, or a dialog awaited with
+    /// <see cref="IDialogService.ShowAsync{TDialog}"/>, with false answers it no, as canceling it does.</summary>
     public Task CloseAsync(TResult value) => CloseAsync(true, value);
 
     /// <summary>Sets some of the open dialog's parameters, and its content renders again with them.

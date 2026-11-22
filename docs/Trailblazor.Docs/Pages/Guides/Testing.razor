@@ -788,8 +788,11 @@
         <ul>
             <li>
                 <code>Last&lt;TDialog, TResult&gt;()</code> finds the last dialog of a type, to check and close, and
-                <code>Last&lt;TDialog&gt;()</code> finds one with no result. A title from the content's
-                <code>DefaultTitle</code> is there only once a rendered <code>TbRoot</code> shows the dialog.
+                <code>Last&lt;TDialog&gt;()</code> finds one with no result. <code>ShowAsync&lt;TDialog&gt;</code>
+                returns true when that one is closed with <code>ConfirmAsync()</code> or
+                <code>CloseAsync(true)</code>, and false after <code>CancelAsync()</code> or
+                <code>CloseAsync(false)</code>. A title from the content's <code>DefaultTitle</code> is there only
+                once a rendered <code>TbRoot</code> shows the dialog.
             </li>
             <li>
                 <code>LastConfirm()</code> finds the last confirm or alert; its <code>Message</code> is the text it

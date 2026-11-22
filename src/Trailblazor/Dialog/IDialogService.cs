@@ -33,14 +33,16 @@ public interface IDialogService
         where TDialog : TbDialogContent<TResult>;
 
     /// <summary>Opens <typeparamref name="TDialog"/>, a dialog with no result, and returns at once, as
-    /// <see cref="Show{TDialog, TResult}"/> does. Close it as confirmed with <c>CloseAsync(true)</c>, or cancel it with
-    /// <see cref="DialogReference.CancelAsync"/>.</summary>
+    /// <see cref="Show{TDialog, TResult}"/> does. Close it as confirmed with
+    /// <see cref="DialogReference.ConfirmAsync"/>, or cancel it with <see cref="DialogReference.CancelAsync"/>.
+    /// </summary>
     DialogReference<bool> Show<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog>(
         string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent;
 
     /// <summary>Opens <typeparamref name="TDialog"/>, a dialog with no result, waits until it closes, and returns
-    /// whether it was confirmed.</summary>
+    /// whether it was confirmed. Closing it from code with <c>CloseAsync(false)</c> returns false, as canceling it
+    /// does.</summary>
     Task<bool> ShowAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog>(
         string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
         where TDialog : TbDialogContent;

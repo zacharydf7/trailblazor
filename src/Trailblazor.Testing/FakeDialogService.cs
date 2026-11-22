@@ -34,8 +34,9 @@ public sealed class FakeDialogService : IDialogService
 
     /// <summary>Closes each <typeparamref name="TDialog"/> with <paramref name="result"/> as it opens, so a click that
     /// awaits one finishes, as <see cref="Answer"/> does for confirms and alerts. A dialog with no result is a
-    /// <c>TbDialogContent&lt;bool&gt;</c>, so <c>AnswerWith&lt;TDialog, bool&gt;(true)</c> confirms it. A later answer
-    /// for the same dialog type replaces this one.</summary>
+    /// <c>TbDialogContent&lt;bool&gt;</c>, so <c>AnswerWith&lt;TDialog, bool&gt;(true)</c> confirms it, and with false
+    /// <see cref="ShowAsync{TDialog}"/> returns false. A later answer for the same dialog type replaces this one.
+    /// </summary>
     public void AnswerWith<TDialog, TResult>(TResult result) where TDialog : TbDialogContent<TResult> =>
         SetAnswer(typeof(TDialog), dialog => ((DialogReference<TResult>)dialog).CloseAsync(result));
 
@@ -57,7 +58,8 @@ public sealed class FakeDialogService : IDialogService
             ?? throw new InvalidOperationException($"No {typeof(TDialog).Name} was opened.");
 
     /// <summary>The last <typeparamref name="TDialog"/> opened, a dialog with no result, to check its title and
-    /// parameters and close it: <c>CloseAsync(true)</c> confirms and <c>CancelAsync()</c> cancels. A title from the
+    /// parameters and close it: <see cref="ShowAsync{TDialog}"/> returns true after <c>ConfirmAsync()</c> or
+    /// <c>CloseAsync(true)</c>, and false after <c>CancelAsync()</c> or <c>CloseAsync(false)</c>. A title from the
     /// content's <c>DefaultTitle</c> is there only once a rendered <see cref="TbRoot"/> shows the dialog.</summary>
     /// <exception cref="InvalidOperationException">No <typeparamref name="TDialog"/> was opened.</exception>
     public DialogReference<bool> Last<TDialog>() where TDialog : TbDialogContent<bool> => Last<TDialog, bool>();
@@ -92,7 +94,8 @@ public sealed class FakeDialogService : IDialogService
     /// <inheritdoc />
     public async Task<bool> ShowAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog>(
         string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
-        where TDialog : TbDialogContent => (await Show<TDialog>(title, parameters, options).Result).Confirmed;
+        where TDialog : TbDialogContent =>
+        DialogService.IsYes(await Show<TDialog>(title, parameters, options).Result);
 #pragma warning restore RS0026
 
     /// <inheritdoc />

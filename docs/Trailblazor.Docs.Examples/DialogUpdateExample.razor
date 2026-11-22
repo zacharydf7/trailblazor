@@ -16,7 +16,7 @@
             dialog.Update<ExportDialog>(p => p.Set(d => d.Percent, percent));
         }
 
-        await dialog.CloseAsync(true);
+        await dialog.ConfirmAsync();
         var exported = (await dialog.Result).Confirmed;
         _status = exported ? "Exported" : "Export stopped";
         if (exported)

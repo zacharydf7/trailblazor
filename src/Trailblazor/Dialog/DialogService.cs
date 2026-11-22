@@ -62,7 +62,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
 
     public async Task<bool> ShowAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDialog>(
         string? title = null, Action<DialogParameters<TDialog>>? parameters = null, DialogOptions? options = null)
-        where TDialog : TbDialogContent => (await Show<TDialog>(title, parameters, options).Result).Confirmed;
+        where TDialog : TbDialogContent => IsYes(await Show<TDialog>(title, parameters, options).Result);
 
     public DialogReference<TResult> ShowDynamic<TResult>(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type dialog, string? title = null,
@@ -110,7 +110,7 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         DialogOptions? options = null) =>
         IsYes(await OpenConfirm(title, message, confirmText, cancelText, tone, telemetryName, options).Result);
 
-    // A confirm closed with false says no, as one that is canceled does.
+    // A confirm, or a dialog with no result, closed with false says no, as one that is canceled does.
     internal static bool IsYes(DialogResult<bool> answer) => answer.Confirmed && answer.Value;
 
     public async Task AlertAsync(string title, string message, string? okText = null, Tone tone = Tone.Info,
