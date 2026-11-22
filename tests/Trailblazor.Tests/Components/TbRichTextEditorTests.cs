@@ -163,7 +163,7 @@ public class TbRichTextEditorTests : BunitContext
 
         Assert.Equal("<p><strong>Hi</strong> there</p>", arguments[1]);
         Assert.Equal("""{"formats":"bold","blocks":"quote bullet","links":null,"images":null,"""
-            + "\"mentions\":false,\"transformsPaste\":false,"
+            + "\"mentions\":null,\"transformsPaste\":false,"
             + "\"readOnly\":false,\"updateOnInput\":true,\"updateDelay\":250}", JsonSerializer.Serialize(arguments[2]));
     }
 
@@ -391,7 +391,7 @@ public class TbRichTextEditorTests : BunitContext
         Assert.Equal(Html, value);
         Assert.Empty(_handle.Invocations["setValue"]);
         var options = JsonSerializer.Serialize(_module.Invocations["attachRichTextEditor"].Single().Arguments[2]);
-        Assert.Contains("\"mentions\":true", options);
+        Assert.Contains("\"mentions\":\"@\"", options);
     }
 
     [Fact]
@@ -406,8 +406,161 @@ public class TbRichTextEditorTests : BunitContext
         Assert.Equal("<p>Ask @Ada today</p>", value);
         Assert.Equal("<p>Ask @Ada today</p>", Assert.Single(_handle.Invocations["setValue"]).Arguments[0]);
         var options = JsonSerializer.Serialize(_module.Invocations["attachRichTextEditor"].Single().Arguments[2]);
-        Assert.Contains("\"mentions\":false", options);
+        Assert.Contains("\"mentions\":null", options);
     }
+
+    [Fact]
+    public void Render_ShouldHandTheScriptItsListOfSuggestions_WhenTheEditorHasTriggersAndItemsToSuggest()
+    {
+        var cut = RenderSuggesting(parameters => parameters.Add(editor => editor.MentionItems, [new("Ada")]));
+
+        var (editor, list) = (cut.Find("[data-part=input]"), cut.Find("[data-part=mention-list]"));
+        Assert.Equal((list.Id, "list", "@#"), (editor.GetAttribute("aria-controls"),
+            editor.GetAttribute("aria-autocomplete"), editor.GetAttribute("data-triggers")));
+        Assert.Equal(("listbox", cut.Find("label").Id),
+            (list.GetAttribute("role"), list.GetAttribute("aria-labelledby")));
+        Assert.NotNull(Assert.Single(_handle.Invocations["setMentions"]).Arguments[0]);
+        var options = JsonSerializer.Serialize(_module.Invocations["attachRichTextEditor"].Single().Arguments[2]);
+        Assert.Contains("\"mentions\":\"@#\"", options);
+    }
+
+    [Fact]
+    public void Render_ShouldLeaveTheSuggestionsOut_WhenTheEditorHasTriggersButNothingToSuggest()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.MentionTriggers, "@"));
+
+        Assert.Empty(cut.FindAll("[data-part=mention-list]"));
+        Assert.Null(cut.Find("[data-part=input]").GetAttribute("aria-controls"));
+        Assert.Empty(_handle.Invocations["setMentions"]);
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenTheMentionTriggersHaveWhitespace()
+    {
+        var thrown = Assert.Throws<InvalidOperationException>(() => Render<TbRichTextEditor>(parameters =>
+            parameters.Add(editor => editor.Label, "Notes").Add(editor => editor.MentionTriggers, "@ #")));
+
+        Assert.Contains("MentionTriggers", thrown.Message);
+    }
+
+    [Fact]
+    public async Task Query_ShouldListTheSuggestionsWithTheirIdsAndSayHowMany_WhenTheScriptAsks()
+    {
+        var announcer = Render<AnnouncerHost>();
+        var queries = new List<MentionQuery>();
+        var cut = RenderSuggesting(parameters => parameters.Add(editor => editor.MaxMentionItems, 2)
+            .Add(editor => editor.MentionSearch, (query, _) =>
+            {
+                queries.Add(query);
+                return Task.FromResult<IEnumerable<MentionItem>>(
+                    [new("Ada") { Id = "42", Description = "Math" }, new("Adam"), new("Addie")]);
+            }));
+
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("@", "ad", 1));
+
+        Assert.Equal([new MentionQuery("@", "ad")], queries);
+        var list = cut.Find("[data-part=mention-list]");
+        Assert.Equal("1", list.GetAttribute("data-results-for"));
+        Assert.Equal([("@Ada", "42", "Ada"), ("@Adam", null, "Adam")], list.QuerySelectorAll("[role=option]").Select(
+            option => (option.GetAttribute("data-insert"), option.GetAttribute("data-mention-id"),
+                option.GetAttribute("aria-label"))));
+        Assert.Contains("Suggestions: 2", Spoken(announcer));
+        await cut.InvokeAsync(() => MentionEvents().OnChosen(0, 1));
+
+        // A choice empties the list, which the script closed as it put the mention in.
+        Assert.Empty(cut.FindAll("[data-part=mention-list] [role=option]"));
+    }
+
+    [Fact]
+    public async Task Query_ShouldEmptyTheListAndTellTheApp_WhenTheSearchFails()
+    {
+        var announcer = Render<AnnouncerHost>();
+        Exception? failure = null;
+        var cut = RenderSuggesting(parameters => parameters
+            .Add(editor => editor.MentionSearch, (_, _) => throw new IOException("Down"))
+            .Add(editor => editor.OnMentionSearchFailed, (Exception exception) => failure = exception)
+            .Add(editor => editor.Labels, new RichTextEditorLabels { MentionSearchFailed = "No people today." }));
+
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("@", "a", 3));
+
+        Assert.IsType<IOException>(failure);
+        Assert.Equal("3", cut.Find("[data-part=mention-list]").GetAttribute("data-results-for"));
+        Assert.Contains("No people today.", Spoken(announcer));
+    }
+
+    [Fact]
+    public async Task OnMentionsChanged_ShouldReportOnlyWhatTheUserChanges_WhenTheValueGainsAndLosesMentions()
+    {
+        const string Ada = "<span data-mention=\"42\" data-trigger=\"@\">@Ada</span>";
+        var reported = new List<IReadOnlyList<Mention>>();
+        var cut = RenderSuggesting(parameters => parameters.Add(editor => editor.Value, $"<p>{Ada}</p>")
+            .Add(editor => editor.OnMentionsChanged, reported.Add));
+
+        // The app set the first value itself, and an edit that keeps the same mentions is no news either.
+        await ChangeAsync(cut, $"<p>{Ada} and more</p>");
+        Assert.Empty(reported);
+        await ChangeAsync(cut, $"<p>{Ada} and <span data-mention=\"7\" data-trigger=\"#\">#trails</span></p>");
+        await ChangeAsync(cut, "<p>and</p>");
+
+        Assert.Equal(2, reported.Count);
+        Assert.Equal([new Mention("@", new MentionItem("Ada") { Id = "42" }),
+            new Mention("#", new MentionItem("trails") { Id = "7" })], reported[0]);
+        Assert.Empty(reported[1]);
+    }
+
+    [Fact]
+    public async Task OnMentionsChanged_ShouldReportAMentionOnce_WhenTheAppNeverStoresTheValueItIsGiven()
+    {
+        const string Ada = "<span data-mention=\"42\" data-trigger=\"@\">@Ada</span>";
+        var reported = new List<IReadOnlyList<Mention>>();
+        var cut = RenderSuggesting(parameters => parameters.Add(editor => editor.Value, "<p>x</p>")
+            .Add(editor => editor.OnMentionsChanged, reported.Add));
+
+        // The parent renders again with the value it had, as one that never stores the value it is given does.
+        await ChangeAsync(cut, $"<p>{Ada}</p>");
+        cut.Render(parameters => parameters.Add(editor => editor.Value, "<p>x</p>"));
+        await ChangeAsync(cut, $"<p>{Ada} and more</p>");
+        Assert.Single(reported);
+
+        // Taking the mention out again gives the value the parent still holds and has just passed in again, so the
+        // value itself is no news to it, but the app hears that the mention has gone.
+        cut.Render(parameters => parameters.Add(editor => editor.Value, "<p>x</p>"));
+        await ChangeAsync(cut, "<p>x</p>");
+
+        Assert.Equal(2, reported.Count);
+        Assert.Empty(reported[1]);
+    }
+
+    [Fact]
+    public async Task Commit_ShouldCountOnlyOnceTheAppHasHeardOfTheMentions_WhenItsHandlerTakesAWhile()
+    {
+        var heard = new TaskCompletionSource();
+        var cut = RenderSuggesting(parameters => parameters.Add(editor => editor.OnMentionsChanged, _ => heard.Task));
+        string? Commits() => cut.Find("[data-commits]").GetAttribute("data-commits");
+        var before = Commits();
+
+        // A test helper that waits for the commit must not return while the app is still handling the mentions.
+        var change = ChangeAsync(cut, "<p><span data-mention=\"42\" data-trigger=\"@\">@Ada</span></p>");
+        cut.Render();
+        Assert.Equal(before, Commits());
+        heard.SetResult();
+        await change;
+
+        cut.WaitForAssertion(() => Assert.NotEqual(before, Commits()));
+    }
+
+    private IRenderedComponent<TbRichTextEditor> RenderSuggesting(
+        Action<ComponentParameterCollectionBuilder<TbRichTextEditor>> configure)
+    {
+        _handle.SetupVoid("setMentions", _ => true).SetVoidResult();
+        return Render<TbRichTextEditor>(parameters => configure(parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.MentionTriggers, "@#")));
+    }
+
+    // The .NET object the script calls back as a trigger is typed and a suggestion chosen.
+    private MentionInputEvents MentionEvents() =>
+        ((DotNetObjectReference<MentionInputEvents>)_handle.Invocations["setMentions"].Single().Arguments[1]!).Value;
 
     [Fact]
     public async Task Value_ShouldNotReachTheScript_WhenASlowParentPassesBackAnOlderValueWhileTypingGoesOn()

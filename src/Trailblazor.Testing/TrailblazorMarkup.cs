@@ -105,6 +105,14 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             ?? throw new InvalidOperationException("The mention input's script hasn't attached, as it does once the "
                 + "field renders interactively.");
 
+    // The events the rich text editor's script calls back as a trigger is typed in this editor and a suggestion chosen.
+    public MentionInputEvents RichTextMentions(IElement editor) => Js.Invocations["setMentions"]
+        .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<MentionInputEvents>)
+        .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value)
+        .LastOrDefault(events => events.InputId == editor.Id)
+            ?? throw new InvalidOperationException("The editor suggests no mentions: it needs MentionTriggers and "
+                + "a MentionSearch or MentionItems, and its script attaches once it renders interactively.");
+
     // The events the speech recognition script calls back for this dictation button, matched by its id.
     public SpeechToTextEvents SpeechToText(IElement button) => Js.Invocations["attachSpeechToText"]
         .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<SpeechToTextEvents>)
@@ -456,7 +464,7 @@ public sealed class TrailblazorMarkup
     /// <summary>The <c>TbRichTextEditor</c> with this label, or with this <c>AriaLabel</c> when it has no label.
     /// </summary>
     public TbRichTextEditorDriver RichTextEditor(string label) =>
-        new(() => Field(label, "[role=textbox][contenteditable]"));
+        new(() => Field(label, "[role=textbox][contenteditable]"), _findAll, _scripts);
 
     /// <summary>The <c>TbTour</c> on the page; a page shows one tour at a time.</summary>
     public TbTourDriver Tour() => new(() => _findAll(".tb-tour"));
@@ -1535,6 +1543,26 @@ internal static class Typing
             throw new InvalidOperationException(
                 $"This field is read-only or disabled, so {what} can't be typed into it.");
         }
+    }
+
+    // The trigger and text at the end of what is typed, found as the scripts find them before the caret.
+    internal static MentionQuery? MentionAt(string text, string triggers)
+    {
+        for (var start = text.Length - 1; start >= 0 && text.Length - start <= 50; start--)
+        {
+            if (char.IsWhiteSpace(text[start]))
+            {
+                return null;
+            }
+
+            if (triggers.Contains(text[start]) && (start == 0 || char.IsWhiteSpace(text[start - 1])
+                || "([{\"'".Contains(text[start - 1])))
+            {
+                return new MentionQuery(text[start].ToString(), text[(start + 1)..]);
+            }
+        }
+
+        return null;
     }
 }
 
@@ -3924,26 +3952,8 @@ public sealed class TbMentionInputDriver : TbFieldDriver
     private int ResultsFor() => int.Parse(_findAll($"[id='{_find().GetAttribute("aria-controls")}']")[0]
         .GetAttribute("data-results-for")!, CultureInfo.InvariantCulture);
 
-    // The trigger and text before the end, found as the field's script finds them before the caret.
-    private MentionQuery? QueryAt(string text)
-    {
-        var triggers = _find().GetAttribute("data-triggers") ?? "@";
-        for (var start = text.Length - 1; start >= 0 && text.Length - start <= 50; start--)
-        {
-            if (char.IsWhiteSpace(text[start]))
-            {
-                return null;
-            }
-
-            if (triggers.Contains(text[start]) && (start == 0 || char.IsWhiteSpace(text[start - 1])
-                || "([{\"'".Contains(text[start - 1])))
-            {
-                return new MentionQuery(text[start].ToString(), text[(start + 1)..]);
-            }
-        }
-
-        return null;
-    }
+    private MentionQuery? QueryAt(string text) =>
+        Typing.MentionAt(text, _find().GetAttribute("data-triggers") ?? "@");
 
     private IEnumerable<IElement> Options() =>
         _findAll($"[id='{_find().GetAttribute("aria-controls")}'] [role=option][data-part=option]");
@@ -4396,13 +4406,19 @@ public sealed class TbCalendarDriver : TbFieldDriver
 public sealed class TbRichTextEditorDriver : TbFieldDriver
 {
     private readonly Func<IElement> _find;
+    private readonly Func<string, IReadOnlyList<IElement>> _findAll;
+    private readonly ScriptCalls _scripts;
 
-    internal TbRichTextEditorDriver(Func<IElement> find) : base(find) => _find = find;
+    internal TbRichTextEditorDriver(Func<IElement> find, Func<string, IReadOnlyList<IElement>> findAll,
+        ScriptCalls scripts) : base(find) => (_find, _findAll, _scripts) = (find, findAll, scripts);
 
     /// <summary>Replaces the editor's text with this HTML and commits it, through the same event the editor's script
     /// raises in a browser, so the value keeps only the formats the editor allows. A disabled or read-only editor
     /// throws, since the user can't change it.</summary>
-    public async Task EnterAsync(string html)
+    public async Task EnterAsync(string html) =>
+        await Unlocked().TriggerEventAsync("ontbrichtextchange", new RichTextChangeEventArgs { Html = html });
+
+    private IElement Unlocked()
     {
         var editor = _find();
         if (editor.GetAttribute("aria-disabled") == "true" || editor.GetAttribute("aria-readonly") == "true")
@@ -4410,7 +4426,33 @@ public sealed class TbRichTextEditorDriver : TbFieldDriver
             throw new InvalidOperationException("This editor is disabled or read-only, so its text can't be changed.");
         }
 
-        await editor.TriggerEventAsync("ontbrichtextchange", new RichTextChangeEventArgs { Html = html });
+        return editor;
+    }
+
+    /// <summary>Mentions an item, as typing this text into an empty editor and choosing the suggestion with this
+    /// name does. The text must end with a trigger and the start of the mention, such as <c>"Thanks @ad"</c>. The
+    /// app's search runs for it, and the editor's text becomes the text before the trigger, the mention and a
+    /// space. A disabled or read-only editor throws.</summary>
+    public async Task MentionAsync(string typed, string suggestion)
+    {
+        var editor = Unlocked();
+        var events = _scripts.RichTextMentions(editor);
+        var query = Typing.MentionAt(typed, editor.GetAttribute("data-triggers") ?? "")
+            ?? throw new InvalidOperationException($"\"{typed}\" doesn't end with a mention being typed: one of "
+                + "the editor's triggers at the start of a word, with no space after it.");
+        var list = $"[id='{editor.GetAttribute("aria-controls")}']";
+        var number = int.Parse(_findAll(list)[0].GetAttribute("data-results-for")!, CultureInfo.InvariantCulture) + 1;
+        await _scripts.InvokeAsync(() => events.OnQuery(query.Trigger, query.Text, number));
+        var options = _findAll($"{list} [role=option][data-part=option]").ToList();
+        var option = Choices.Named(options, suggestion);
+        var item = new MentionItem(option.GetAttribute("data-insert")![query.Trigger.Length..])
+        {
+            Id = option.GetAttribute("data-mention-id"),
+        };
+        await _scripts.InvokeAsync(() => events.OnChosen(options.IndexOf(option), number));
+        var before = typed[..^(query.Trigger.Length + query.Text.Length)];
+        await EnterAsync(new RichTextDocument(
+            [new([new(before), new(new Mention(query.Trigger, item)), new(" ")])]).ToHtml());
     }
 }
 

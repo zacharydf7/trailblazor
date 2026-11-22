@@ -40,6 +40,7 @@ import './date-grid.js';
 import './dialog.js';
 import './field.js';
 import './inert.js';
+import './mention-suggestions.js';
 import { forwardToo } from './pop-out.js';
 import './ribbon-key-tips.js';
 import './option-filter.js';

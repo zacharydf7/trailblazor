@@ -36,9 +36,10 @@ public static class TelemetryCatalog
         new("trailblazor.control.failed", "Counter", "{failure}",
             "Loads and searches that failed in controls with a TelemetryName.", [.. CommonTags, ActionTag],
             "A data grid's DataProvider throws, for its rows or for an export, or a tree view's LoadChildren "
-            + "throws, with the action load, or an autocomplete's or a mention input's Search throws, with the "
-            + "action search. A load or a search that was canceled or replaced isn't counted. Each failure is "
-            + "also logged as a warning, whether or not the control has a TelemetryName."),
+            + "throws, with the action load. An autocomplete's or a mention input's Search, or a rich text "
+            + "editor's MentionSearch, throws, with the action search. A load or a search that was canceled or "
+            + "replaced isn't counted. Each failure is also logged as a warning, whether or not the control has a "
+            + "TelemetryName."),
         new("trailblazor.dialog.closed", "Counter", "{dialog}",
             "Dialogs with a TelemetryName that closed, by how they closed.", [.. CommonTags, OutcomeTag],
             "A dialog with a TelemetryName closes: confirmed, canceled, or dismissed by escape, backdrop or "

@@ -82,7 +82,9 @@
            wait for. *@
         <div @attributes="ControlAttributes" @ref="_content" @ontbrichtextchange="OnChangedAsync"
              @ontbrichtextlink="OnLinkAsync" @ontbrichtextpaste="OnPasteAsync" data-part="input"
-             id="@InputId" role="textbox"
+             id="@InputId" role="textbox" aria-autocomplete="@(SuggestsMentions ? "list" : null)"
+             aria-controls="@(SuggestsMentions ? MentionListId : null)"
+             data-triggers="@(SuggestsMentions ? MentionTriggers : null)"
              aria-multiline="true" aria-labelledby="@(ShownLabel is null ? null : LabelId)"
              aria-describedby="@(ShowCount ? ClassNames.Join(InputDescribedBy, CountId) : InputDescribedBy)"
              aria-required="@AriaRequired"
@@ -90,6 +92,7 @@
              aria-disabled="@(Disabled ? "true" : null)" aria-placeholder="@Placeholder" data-placeholder="@Placeholder"
              contenteditable="@(Disabled || _handle is null ? "false" : "true")" tabindex="@(Disabled ? "-1" : "0")"
              data-ready="@(_handle is null ? null : "")" data-count="@(ShowCount ? CountId : null)" hidden="@_source"
+             data-sends-answered="@_sendsAnswered"
              @ontbcharactersleft="OnCharactersLeft"
              inputmode="@(ReadOnly ? "none" : null)" spellcheck="true"
              style="--tb-rich-text-editor-lines: @Lines; --tb-rich-text-editor-max-lines: @(MaxLines ?? 0)"
@@ -100,6 +103,16 @@
                 @((MarkupString)Canonical)
             }
         </div>
+        @if (SuggestsMentions)
+        {
+            @* The script moves this mark to the trigger being typed, and the list of suggestions opens under it. *@
+            <span data-part="mention-caret" class="tb-mention-input__caret" aria-hidden="true"></span>
+            <div @ref="_mentionList" id="@MentionListId" popover="manual" role="listbox" data-part="mention-list"
+                 aria-labelledby="@(ShownLabel is null ? null : LabelId)"
+                 data-results-for="@_suggestions.ResultsFor" class="tb-select__listbox tb-mention-input__listbox">
+                @_suggestions.Options(MentionListId, MentionItemTemplate, withIds: true)
+            </div>
+        }
         @if (_source)
         {
             @* Re-keyed whenever the parse cleans up an edit, so the text area shows what was kept even when the
@@ -116,7 +129,25 @@
 
 @code {
     private ElementReference _content;
+    private ElementReference _mentionList;
     private IJSObjectReference? _handle;
+    private readonly MentionSuggestions _suggestions = new();
+    private DotNetObjectReference<MentionInputEvents>? _mentionEvents;
+    // Whether the script has the list of suggestions, so it hears when the editor starts or stops suggesting.
+    private bool _suggesting;
+    private int? _announcedSuggestions;
+    // The mentions in the value the app last had, so it hears only of changes the user makes. The value the parent
+    // last passed in is kept too, since a parent that doesn't store the value passes the same old one with every
+    // render.
+    private IReadOnlyList<Mention> _mentions = [];
+    private string? _mentionsOf;
+    private string? _mentionsParameter;
+    private IReadOnlyList<Mention>? _mentionsToReport;
+    // How many values the script has sent, and how many of those the app has taken with their callbacks finished.
+    // The script counts its sends in data-sends and this count goes out in data-sends-answered, so a test helper can
+    // wait until the two match.
+    private int _sendsReceived;
+    private int _sendsAnswered;
     // The value the script holds, so the value coming back from the parent isn't sent to it again.
     private string? _sent;
     // A long value or paste comes in parts, one event each.
@@ -166,9 +197,42 @@
     /// <summary>The characters that start a mention, such as <c>"@"</c>, or <c>"@#"</c> for people and tags. With
     /// any set, the editor keeps the mentions in its value and in what is pasted, whatever their trigger, as
     /// <see cref="RichTextSchema.Mentions"/> describes, each as one unit that the caret steps over and Backspace or
-    /// Delete removes whole. Without any, a mention reads as its text. Defaults to none.</summary>
+    /// Delete removes whole. With <see cref="MentionSearch"/> or <see cref="MentionItems"/> too, typing one of
+    /// them at the start of a word suggests what to mention. It can't hold whitespace. Without triggers, a mention
+    /// reads as its text. Defaults to none.</summary>
     [Parameter]
     public string? MentionTriggers { get; set; }
+
+    /// <summary>Finds the suggestions for a trigger and the text typed after it, such as people whose names start
+    /// with it. Typing more cancels the previous search. Without it, <see cref="MentionItems"/> are filtered by the
+    /// text.</summary>
+    [Parameter]
+    public Func<MentionQuery, CancellationToken, Task<IEnumerable<MentionItem>>>? MentionSearch { get; set; }
+
+    /// <summary>Suggestions to filter by the text typed after a trigger, when there is no
+    /// <see cref="MentionSearch"/>.</summary>
+    [Parameter]
+    public IEnumerable<MentionItem>? MentionItems { get; set; }
+
+    /// <summary>The most suggestions the list shows. Defaults to 8.</summary>
+    [Parameter]
+    public int MaxMentionItems { get; set; } = 8;
+
+    /// <summary>Shows each suggestion in the list, in place of its text and description.</summary>
+    [Parameter]
+    public RenderFragment<MentionItem>? MentionItemTemplate { get; set; }
+
+    /// <summary>Raised with the mentions in the value, in order, when the user's edit changes them: one is chosen,
+    /// pasted or deleted. Each has the id of its item, so the app needn't read the HTML;
+    /// <see cref="RichTextDocument.Mentions"/> gives the same list for a saved value.</summary>
+    [Parameter]
+    public EventCallback<IReadOnlyList<Mention>> OnMentionsChanged { get; set; }
+
+    /// <summary>Raised when <see cref="MentionSearch"/> fails. The list closes, screen readers hear that
+    /// suggestions couldn't load, and typing again searches again. The failure is also logged as a warning, and
+    /// counted in <c>trailblazor.control.failed</c> when the editor has a <c>TelemetryName</c>.</summary>
+    [Parameter]
+    public EventCallback<Exception> OnMentionSearchFailed { get; set; }
 
     /// <summary>Stores an image file the user chose, such as in the app's storage, and returns its URL. Read the file
     /// with <c>OpenReadStream(MaxImageSize, token)</c>, since the stream's default limit is only 512 KB, and pass the
@@ -337,6 +401,11 @@
 
     private bool KeepsMentions => !string.IsNullOrEmpty(MentionTriggers);
 
+    private bool SuggestsMentions => KeepsMentions && RendererInfo.IsInteractive
+        && (MentionSearch is not null || MentionItems is not null);
+
+    private string MentionListId => $"{FieldId}-mentions";
+
     private RichTextSchema Schema => new()
     {
         Formats = Formats, Blocks = Blocks, LinkSchemes = LinkSchemes, ImageSchemes = ImageSchemes,
@@ -411,7 +480,7 @@
             .Concat(Blocks.HasFlag(RichTextBlocks.Tables) ? ["table"] : [])),
         links = Formats.HasFlag(RichTextFormats.Link) ? string.Join(' ', LinkSchemes) : null,
         images = Blocks.HasFlag(RichTextBlocks.Images) ? string.Join(' ', ImageSchemes) : null,
-        mentions = KeepsMentions,
+        mentions = KeepsMentions ? MentionTriggers : null,
         transformsPaste = TransformPaste is not null,
         readOnly = ReadOnly,
         updateOnInput = UpdateOnInput,
@@ -435,7 +504,23 @@
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
+        if (MentionTriggers?.Any(char.IsWhiteSpace) == true)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbRichTextEditor)}'s {nameof(MentionTriggers)} can't have whitespace in it.");
+        }
+
         await base.OnParametersSetAsync();
+        // A value the app sets is its own news; only what the user changes after it is reported.
+        if (OnMentionsChanged.HasDelegate && Value != _mentionsParameter)
+        {
+            _mentionsParameter = Value;
+            if (Value != _mentionsOf)
+            {
+                (_mentionsOf, _mentions) = (Value, RichTextDocument.Parse(Value, Schema).Mentions);
+            }
+        }
+
         // A parent that takes away the source button or the toolbar takes the source away with it.
         _source &= ShowSource && ShowToolbar;
         if (_handle is null)
@@ -474,6 +559,7 @@
         await base.OnAfterRenderAsync(firstRender);
         if (!firstRender)
         {
+            await SetMentionsAsync();
             return;
         }
 
@@ -502,6 +588,67 @@
         }
     }
 
+    // The script gets the list of suggestions once it is rendered, and loses it when the editor stops suggesting.
+    private async Task SetMentionsAsync()
+    {
+        if (_handle is null || _disposed || _suggesting == SuggestsMentions)
+        {
+            return;
+        }
+
+        _suggesting = SuggestsMentions;
+        _mentionEvents ??= DotNetObjectReference.Create(
+            new MentionInputEvents(DispatchExceptionAsync, InputId, OnMentionQueryAsync, OnMentionChosenAsync));
+        try
+        {
+            await _handle.InvokeVoidAsync("setMentions", _suggesting ? _mentionList : null, _mentionEvents);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the editor went with it.
+        }
+    }
+
+    private async Task OnMentionQueryAsync(string? trigger, string text, int number)
+    {
+        var query = trigger is null || ReadOnly || Disabled ? null : new MentionQuery(trigger, text);
+        try
+        {
+            if (!await _suggestions.FindAsync(query, number, MentionSearch, MentionItems, MaxMentionItems))
+            {
+                return;
+            }
+
+            var count = query is null ? (int?)null : _suggestions.Results.Count;
+            // Only a new count is spoken, so typing doesn't bring an announcement with every key.
+            if (count is not null && count != _announcedSuggestions)
+            {
+                Announcer.Polite(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    Labels.MentionSuggestions ?? Localizer[TbStrings.MentionInputSuggestions], count));
+            }
+
+            _announcedSuggestions = count;
+            StateHasChanged();
+        }
+        catch (Exception exception)
+        {
+            _announcedSuggestions = null;
+            StateHasChanged();
+            Announcer.Polite(Labels.MentionSearchFailed ?? Localizer[TbStrings.MentionInputSearchFailed]);
+            Telemetry.Failed(TelemetryName, Label ?? AriaLabel, "search", exception);
+            await OnMentionSearchFailed.InvokeAsync(exception);
+        }
+    }
+
+    // The script has the chosen item's id and text from its option, so the list only needs emptying.
+    private Task OnMentionChosenAsync(int index, int resultsFor)
+    {
+        _suggestions.Stop();
+        _suggestions.Clear(_suggestions.ResultsFor);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
     // What the script sends is read again here, so the value holds only what the editor allows, whatever the
     // browser sent.
     private async Task OnChangedAsync(RichTextChangeEventArgs change)
@@ -514,6 +661,7 @@
 
         var html = _parts.ToString();
         _parts.Clear();
+        _sendsReceived++;
         await TakeAsync(html, RichTextDocument.Parse(html, Schema).ToHtml(), load: false);
     }
 
@@ -641,8 +789,17 @@
                     _echoes.RemoveAt(0);
                 }
 
+                // Worked out before the parent has the value: its render sets the value here again, which counts
+                // as the app's own.
+                var mentions = OnMentionsChanged.HasDelegate
+                    ? RichTextDocument.Parse(delivered, Schema).Mentions : _mentions;
+                _mentionsToReport = mentions.SequenceEqual(_mentions) ? null : mentions;
+                (_mentionsOf, _mentions) = (delivered, mentions);
                 _delivering = SetValueAsync(delivered);
                 await _delivering;
+                // A value the parent already holds raises no ValueChanged, as when an edit is undone back to a value
+                // the parent never replaced, but its mentions can still be news.
+                await ValueDeliveredAsync(delivered);
             }
         }
         finally
@@ -650,6 +807,18 @@
             // Once the last handler finishes, renders show the parent's current value, so an older one is a real change.
             _delivering = null;
             _echoes.Clear();
+            _sendsAnswered = _sendsReceived;
+        }
+    }
+
+    // Raises OnMentionsChanged right after ValueChanged, so a change counts as answered only once the app has heard
+    // of its mentions too.
+    private protected override async Task ValueDeliveredAsync(string? value)
+    {
+        if (_mentionsToReport is { } mentions)
+        {
+            _mentionsToReport = null;
+            await OnMentionsChanged.InvokeAsync(mentions);
         }
     }
 
@@ -659,9 +828,12 @@
         // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
         Dispose();
         _disposed = true;
+        _suggestions.Dispose();
         if (_handle is not null)
         {
             await _handle.DisposeHandleAsync();
         }
+
+        _mentionEvents?.Dispose();
     }
 }

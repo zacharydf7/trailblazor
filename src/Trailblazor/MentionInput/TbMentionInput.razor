@@ -13,34 +13,9 @@
     @if (RendererInfo.IsInteractive)
     {
         <div @ref="_listbox" id="@ListboxId" popover="manual" role="listbox" data-part="listbox"
-             aria-labelledby="@(ShownLabel is null ? null : LabelId)" data-results-for="@_resultsFor"
+             aria-labelledby="@(ShownLabel is null ? null : LabelId)" data-results-for="@_suggestions.ResultsFor"
              class="tb-select__listbox tb-mention-input__listbox">
-            @for (var index = 0; index < _results.Count; index++)
-            {
-                var item = _results[index];
-                var id = $"{ListboxId}-{index}";
-                @* The item's text is its accessible name and its description goes in aria-describedby, so the name
-                   matches the text inserted. *@
-                <div id="@id" role="option" aria-selected="false" data-part="option"
-                     data-insert="@(_resultsTrigger + item.Text)" class="tb-select__option"
-                     aria-label="@(ItemTemplate is null ? item.Text : null)"
-                     aria-describedby="@(ItemTemplate is null && item.Description is not null
-                                            ? $"{id}-description" : null)">
-                    @if (ItemTemplate is not null)
-                    {
-                        @ItemTemplate(item)
-                    }
-                    else
-                    {
-                        <span class="tb-mention-input__text">@item.Text</span>
-                        @if (item.Description is not null)
-                        {
-                            <span id="@($"{id}-description")" data-part="description"
-                                  class="tb-mention-input__description">@item.Description</span>
-                        }
-                    }
-                </div>
-            }
+            @_suggestions.Options(ListboxId, ItemTemplate, withIds: false)
         </div>
     }
 </text>, null, null)
@@ -83,15 +58,11 @@
     private ElementReference _listbox;
     private IJSObjectReference? _handle;
     private DotNetObjectReference<MentionInputEvents>? _events;
-    private CancellationTokenSource? _search;
+    private readonly MentionSuggestions _suggestions = new();
     private bool _disposed;
     // Whether the script is attached to a text area, so it attaches again when Lines swaps the input for a text area or
     // back.
     private bool _attachedToTextArea;
-    private IReadOnlyList<MentionItem> _results = [];
-    private string _resultsTrigger = "";
-    // The script's number for the query these results answer, so it knows when the latest suggestions have landed.
-    private int _resultsFor;
     private int? _announcedCount;
     // The mentions chosen, and those last reported to the app: the chosen ones still in the text.
     private List<Mention> _chosen = [];
@@ -189,45 +160,27 @@
 
     private async Task OnQueryAsync(string? trigger, string text, int number)
     {
-        StopSearch();
         var query = trigger is null || ReadOnly || Disabled ? null : new MentionQuery(trigger, text);
-        if (query is null)
-        {
-            _results = [];
-            _resultsFor = number;
-            _announcedCount = null;
-            StateHasChanged();
-            return;
-        }
-
-        _search = new CancellationTokenSource();
-        var token = _search.Token;
         try
         {
-            var found = Search is not null ? await Search(query, token)
-                : Items?.Where(item => TextFold.Contains(item.Text, query.Text)) ?? [];
-            token.ThrowIfCancellationRequested();
-            _results = [.. found.Take(MaxItems)];
-            _resultsTrigger = query.Trigger;
-            _resultsFor = number;
-            // Only a new count is spoken, so typing doesn't bring an announcement with every key.
-            if (_results.Count != _announcedCount)
+            if (!await _suggestions.FindAsync(query, number, Search, Items, MaxItems))
             {
-                _announcedCount = _results.Count;
-                Announcer.Polite(string.Format(CultureInfo.CurrentCulture,
-                    Labels.Suggestions ?? Localizer[TbStrings.MentionInputSuggestions], _results.Count));
+                return;
             }
 
+            var count = query is null ? (int?)null : _suggestions.Results.Count;
+            // Only a new count is spoken, so typing doesn't bring an announcement with every key.
+            if (count is not null && count != _announcedCount)
+            {
+                Announcer.Polite(string.Format(CultureInfo.CurrentCulture,
+                    Labels.Suggestions ?? Localizer[TbStrings.MentionInputSuggestions], count));
+            }
+
+            _announcedCount = count;
             StateHasChanged();
-        }
-        // A search the user moved on from ends quietly, even when it reports the cancel its own way.
-        catch (Exception) when (token.IsCancellationRequested)
-        {
         }
         catch (Exception exception)
         {
-            _results = [];
-            _resultsFor = number;
             _announcedCount = null;
             StateHasChanged();
             Announcer.Polite(Labels.SearchFailed ?? Localizer[TbStrings.MentionInputSearchFailed]);
@@ -236,24 +189,17 @@
         }
     }
 
-    private void StopSearch()
-    {
-        _search?.Cancel();
-        _search?.Dispose();
-        _search = null;
-    }
-
     // The script calls this before it puts the mention's text in, so the input event that follows reports it. A choice
     // from suggestions a later search has replaced isn't counted.
     private async Task OnChosenAsync(int index, int resultsFor)
     {
-        StopSearch();
-        if (resultsFor == _resultsFor && index >= 0 && index < _results.Count)
+        _suggestions.Stop();
+        if (_suggestions.At(index, resultsFor) is { } item)
         {
-            _chosen.Add(new Mention(_resultsTrigger, _results[index]));
+            _chosen.Add(new Mention(_suggestions.Trigger, item));
         }
 
-        _results = [];
+        _suggestions.Clear(_suggestions.ResultsFor);
         StateHasChanged();
         await ReportMentionsAsync();
     }
@@ -336,8 +282,7 @@
         // Blazor calls only DisposeAsync when both exist, so the field's own cleanup has to run from here.
         Dispose();
         _disposed = true;
-        _search?.Cancel();
-        _search?.Dispose();
+        _suggestions.Dispose();
         if (_handle is not null)
         {
             await _handle.DisposeHandleAsync();

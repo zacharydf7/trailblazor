@@ -1,6 +1,7 @@
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { viewOf } from '../Trailblazor.Primitives/pages.js';
 import { isApple } from '../Trailblazor.Primitives/platform.js';
+import { createMentionSuggestions, longestMention } from './mention-suggestions.js';
 // The rich text editor's engine. The browser types, composes and spellchecks natively and the engine reads the result
 // back; every other edit the engine makes on its own model and renders. It never uses document.execCommand.
 // A paragraph is { kind, level, runs }, never changed in place; a run is { text, marks in MARKS order, link or null };
@@ -49,8 +50,8 @@ const MAX_PART = 5000;
 
 // options: { formats, blocks, links, images, mentions, transformsPaste, readOnly, updateOnInput, updateDelay }, with
 // formats as mark names, blocks as kinds, and links and images as URL schemes split by spaces, links null where links
-// aren't allowed, images null where images aren't, mentions true where mentions are kept, and updateDelay in
-// milliseconds.
+// aren't allowed, images null where images aren't, mentions as the characters that start a mention, null where
+// mentions aren't kept, and updateDelay in milliseconds.
 export function attachRichTextEditor(root, value, options) {
     const toolbar = root.closest('.tb-rich-text-editor')?.querySelector('[data-part="toolbar"]') ?? null;
     const label = root.ownerDocument.getElementById(root.getAttribute('aria-labelledby') ?? '');
@@ -62,6 +63,9 @@ export function attachRichTextEditor(root, value, options) {
         insertImage: (source, alt) => editor.insertImage(source, alt),
         tableState: () => editor.tableState(),
         insertPasted: html => editor.insertPasted(html),
+        // Hands over the list that shows mention suggestions and the .NET object that searches for them; a null list
+        // stops suggesting.
+        setMentions: (listbox, events) => editor.setMentions(listbox, events),
         // Sends the value now, as a change event that reaches .NET before this call returns.
         flush: () => editor.send(),
         dispose: () => editor.dispose(),
@@ -87,6 +91,9 @@ class Editor {
         this.pendingBlocks = new Map();
         this.pendingAll = false;
         this.sendTimer = 0;
+        // How many values the editor has sent, which .NET answers in data-sends-answered once the app has them all.
+        this.sends = 0;
+        this.mentions = null;
         this.abort = new AbortController();
         this.setOptions(options);
         this.observer = new MutationObserver(records => {
@@ -200,6 +207,7 @@ class Editor {
             images: options.images === null ? null : options.images.toLowerCase().split(' ').filter(Boolean),
             mentions: !!options.mentions,
         };
+        this.mentionTriggers = options.mentions ?? '';
         this.transformsPaste = !!options.transformsPaste;
         this.readOnly = !!options.readOnly;
         this.updateOnInput = !!options.updateOnInput;
@@ -231,7 +239,79 @@ class Editor {
         this.updateToolbar();
     }
 
+    // The suggestions that mention-suggestions.js runs: the editor finds the mention being typed, places the mark the
+    // list opens under, and puts the chosen one in.
+    setMentions(listbox, events) {
+        this.mentions?.dispose();
+        this.mentions = null;
+        if (!listbox) return;
+        const caret = listbox.parentElement.querySelector('[data-part="mention-caret"]');
+        this.mentions = createMentionSuggestions(this.root, listbox, caret, events, {
+            find: () => this.mentionQuery(),
+            placeCaret: query => this.placeMentionCaret(caret, query),
+            // The option carries what the mention shows, after its trigger, and its item's id.
+            insert: (query, option) => this.insertMention(query, option.dataset.mentionId ?? null,
+                option.dataset.insert.slice(query.trigger.length)),
+        });
+        // Marks that the suggestions work, which tests wait for.
+        listbox.dataset.ready = '';
+    }
+
+    // The trigger and text before the caret, when a trigger starts a word there with no space or mention after it.
+    mentionQuery() {
+        if (this.readOnly || this.composing || !this.selection || this.hasRange()
+            || this.root.ownerDocument.activeElement !== this.root) return null;
+        const { block, offset } = this.selection.head;
+        const runs = this.doc[block].runs;
+        const text = textOf(runs);
+        // The search for a trigger stops at the last mention before the caret.
+        let floor = 0;
+        let end = 0;
+        for (const run of runs) {
+            end += run.text.length;
+            if (run.mention && end <= offset) floor = end;
+        }
+        for (let start = offset - 1; start >= floor && offset - start <= longestMention; start--) {
+            if (/\s/.test(text[start])) return null;
+            if (this.mentionTriggers.includes(text[start]) && (start === 0 || /[\s([{"']/.test(text[start - 1]))) {
+                return { trigger: text[start], place: `${block}:${start}`, block, start, end: offset,
+                    text: text.slice(start + 1, offset) };
+            }
+        }
+        return null;
+    }
+
+    // Moves the mark the suggestions open under to where the query's trigger is drawn.
+    placeMentionCaret(caret, query) {
+        const element = this.blockElements()[query.block];
+        const range = this.root.ownerDocument.createRange();
+        range.setStart(...pointAt(element, query.start));
+        range.setEnd(...pointAt(element, query.start + 1));
+        const box = range.getBoundingClientRect();
+        const frame = caret.offsetParent.getBoundingClientRect();
+        const edge = getComputedStyle(this.root).direction === 'rtl' ? box.right : box.left;
+        caret.style.left = `${edge - frame.left + caret.offsetParent.scrollLeft}px`;
+        caret.style.top = `${box.top - frame.top + caret.offsetParent.scrollTop}px`;
+        caret.style.height = `${box.height}px`;
+    }
+
+    // Puts a chosen mention in place of the trigger and the text typed after it, with a space after it to type on.
+    // Its text is cleaned as RichTextRun cleans a mention's.
+    insertMention(query, id, text) {
+        this.edit(() => {
+            const target = this.doc[query.block];
+            const marks = slice(target.runs, query.start, query.start + 1)[0]?.marks ?? [];
+            const mention = { text: query.trigger + text.replace(/[\t\n\r\f\xa0]/g, ' '), marks, link: null,
+                mention: { id: id || null, trigger: query.trigger } };
+            this.doc[query.block] = { ...target,
+                runs: replace(target.runs, query.start, query.end, [mention, { text: ' ', marks, link: null }]) };
+            const caret = { block: query.block, offset: query.start + mention.text.length + 1 };
+            this.selection = { anchor: caret, head: caret };
+        });
+    }
+
     dispose() {
+        this.mentions?.dispose();
         this.abort.abort();
         this.observer.disconnect();
         clearTimeout(this.sendTimer);
@@ -383,6 +463,8 @@ class Editor {
             this.selection = this.readSelection() ?? this.selection;
             this.writeSelection();
         }
+        // While suggestions show, Up, Down, Enter, Tab and Escape are the list's.
+        if (this.mentions?.onKeyDown(event)) return;
         const move = CARET_MOVES[event.key];
         if (move) {
             const flips = ['ArrowLeft', 'ArrowRight'].includes(event.key)
@@ -566,6 +648,7 @@ class Editor {
         // If readSelection moved the caret off a rule or image, or out of a mention, move it on the page too.
         if (this.browserCaretBesideAtom() || this.browserSelectionInMention()) this.writeSelection();
         this.updateToolbar();
+        this.mentions?.update(false);
     }
 
     // Whether either end of the browser's selection is inside a mention, where no key would reach the editor.
@@ -1281,6 +1364,7 @@ class Editor {
         this.root.dispatchEvent(new Event('input', { bubbles: true }));
         if (edited) this.closeStep();
         this.updateToolbar();
+        this.mentions?.update(true);
         clearTimeout(this.sendTimer);
         if (this.updateOnInput) this.sendTimer = setTimeout(() => this.send(), this.updateDelay);
     }
@@ -1290,6 +1374,7 @@ class Editor {
         const html = this.value();
         if (html === this.lastSent) return;
         this.lastSent = html;
+        this.root.dataset.sends = String(++this.sends);
         // Each part's handler finishes before the next browser event, so a click right after leaving sees the value.
         this.dispatchInParts('tb-rich-text-change', html);
     }

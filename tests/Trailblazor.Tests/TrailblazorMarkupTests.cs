@@ -1078,6 +1078,49 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task RichTextEditor_ShouldSearchAndPutTheMentionIn_WhenMentionAsyncChoosesASuggestion()
+    {
+        string? notes = null;
+        IReadOnlyList<Mention> mentions = [];
+        var queries = new List<MentionQuery>();
+        var cut = RenderRichTextEditor(parameters => parameters.Add(editor => editor.MentionTriggers, "@")
+            .Add(editor => editor.MentionSearch, (query, _) =>
+            {
+                queries.Add(query);
+                return Task.FromResult<IEnumerable<MentionItem>>([new("Ada Lovelace") { Id = "42" }, new("Adam Ant")]);
+            })
+            .Add(editor => editor.OnMentionsChanged, (IReadOnlyList<Mention> changed) => mentions = changed)
+            .Add(editor => editor.ValueChanged, (string html) => notes = html));
+
+        await cut.Tb().RichTextEditor("Notes").MentionAsync("Thanks @ad", "Ada Lovelace");
+
+        Assert.Equal([new MentionQuery("@", "ad")], queries);
+        Assert.Equal("<p>Thanks <span data-mention=\"42\" data-trigger=\"@\">@Ada Lovelace</span>&nbsp;</p>", notes);
+        Assert.Equal([new Mention("@", new MentionItem("Ada Lovelace") { Id = "42" })], mentions);
+    }
+
+    [Fact]
+    public async Task RichTextEditor_ShouldSayWhatIsWrong_WhenMentionAsyncCannotMention()
+    {
+        var plain = RenderRichTextEditor(_ => { });
+        var suggesting = RenderRichTextEditor(parameters => parameters.Add(editor => editor.MentionTriggers, "@")
+            .Add(editor => editor.MentionItems, [new("Ada")]));
+        var locked = RenderRichTextEditor(parameters => parameters.Add(editor => editor.MentionTriggers, "@")
+            .Add(editor => editor.MentionItems, [new("Ada")]).Add(editor => editor.ReadOnly, true));
+
+        var readOnly = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            locked.Tb().RichTextEditor("Notes").MentionAsync("@a", "Ada"));
+        var none = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            plain.Tb().RichTextEditor("Notes").MentionAsync("@a", "Ada"));
+        var untyped = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            suggesting.Tb().RichTextEditor("Notes").MentionAsync("mail@a", "Ada"));
+
+        Assert.Contains("read-only", readOnly.Message);
+        Assert.Contains("MentionTriggers", none.Message);
+        Assert.Contains("doesn't end with a mention", untyped.Message);
+    }
+
+    [Fact]
     public async Task Menu_ShouldClickTheItemThroughItsSubmenus_WhenChosenByPath()
     {
         var clicked = new List<string>();
@@ -3997,6 +4040,7 @@ public class TrailblazorMarkupTests : BunitContext
         var handle = JSInterop.SetupModule("./_content/Trailblazor/rich-text-editor.js")
             .SetupModule("attachRichTextEditor", _ => true);
         handle.SetupVoid("setValue", _ => true).SetVoidResult();
+        handle.SetupVoid("setMentions", _ => true).SetVoidResult();
         return Render<TbRichTextEditor>(builder => parameters(builder.Add(editor => editor.Label, "Notes")));
     }
 

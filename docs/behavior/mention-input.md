@@ -38,4 +38,4 @@ Familiar apps: mentioning someone with @ in GitHub, Slack or Google Docs comment
 ## Not applicable
 
 - Telling a browser's own move from the user's before the pointer has really moved in the window: the library learns the pointer's place from its real moves, so the first move a kind of pointer makes in a window counts as the user's, whoever sent it. The move's own `movementX` and `movementY` don't help: the test browsers report zero for real moves too.
-- Mentions in a rich text editor: a separate issue, since they need the editor's own selection.
+- Mentions in formatted text: the rich text editor suggests and keeps them itself, with `MentionTriggers`.

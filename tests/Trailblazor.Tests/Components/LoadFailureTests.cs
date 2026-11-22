@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.JSInterop;
 using Trailblazor.Testing;
 
 namespace Trailblazor.Tests.Components;
@@ -91,6 +92,27 @@ public class LoadFailureTests : BunitContext
         await cut.Tb().MentionInput("Comment").TypeAsync("@a");
 
         AssertFailed("Trailblazor.TbMentionInput", "TbMentionInput comment-box failed to search.", "comment-box",
+            "search");
+    }
+
+    [Fact]
+    public async Task RichTextEditor_ShouldLogAWarningAndCountTheFailure_WhenItsMentionSearchThrows()
+    {
+        var handle = JSInterop.SetupModule("./_content/Trailblazor/rich-text-editor.js")
+            .SetupModule("attachRichTextEditor", _ => true);
+        foreach (var call in new[] { "setValue", "setOptions", "setMentions", "dispose" })
+        {
+            handle.SetupVoid(call, _ => true).SetVoidResult();
+        }
+
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Report")
+            .Add(editor => editor.TelemetryName, "trail-report").Add(editor => editor.MentionTriggers, "@")
+            .Add(editor => editor.MentionSearch, (_, _) => throw new IOException("Down")));
+        var handed = handle.Invocations["setMentions"].Single().Arguments[1]!;
+
+        await cut.InvokeAsync(() => ((DotNetObjectReference<MentionInputEvents>)handed).Value.OnQuery("@", "a", 1));
+
+        AssertFailed("Trailblazor.TbRichTextEditor", "TbRichTextEditor trail-report failed to search.", "trail-report",
             "search");
     }
 

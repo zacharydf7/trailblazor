@@ -3900,7 +3900,9 @@
         padding-inline: 0;
     }
 
+    /* The mention caret, which the suggestions open under, is placed relative to this box. */
     .tb-rich-text-editor {
+        position: relative;
         display: flex;
         flex: 1 1 auto;
         flex-direction: column;

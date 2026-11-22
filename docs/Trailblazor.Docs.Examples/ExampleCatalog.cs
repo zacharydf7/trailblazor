@@ -132,8 +132,9 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
 
     private const string FieldTelemetry = "With a `TelemetryName`, such as `\"trail-name\"`, it counts "
         + "`trailblazor.control.shown` as it first renders, and `trailblazor.field.invalid` each time its `TbForm` is "
-        + "submitted while it has an error. An autocomplete or a mention input also counts a `Search` that fails "
-        + "in `trailblazor.control.failed`. Its value is never recorded.";
+        + "submitted while it has an error. An autocomplete or a mention input also counts a `Search` that fails, "
+        + "and a rich text editor a `MentionSearch` that fails, in `trailblazor.control.failed`. Its value is never "
+        + "recorded.";
 
     private static bool IsField(Type type)
     {
@@ -5528,7 +5529,7 @@ public static class ExampleCatalog
             [
                 "For plain text, even several lines of it, use a [text field](components/text-field) with `Lines`.",
             ],
-            Related = ["text-field", "form", "toolbar"],
+            Related = ["text-field", "form", "toolbar", "mention-input"],
             Sections =
             [
                 new("try-it", "Try it", "Use the controls to see what each parameter does.",
@@ -5577,6 +5578,17 @@ public static class ExampleCatalog
                     + "adds a row after the last one. A cell holds text, formats, links and line breaks; pasted "
                     + "tables keep only that, and `ToMarkdown` writes tables as pipe tables.",
                     typeof(RichTextEditorTablesExample)),
+                new("mentions", "Mentions", "`MentionTriggers` lists the characters that start a mention, such as "
+                    + "`@`. With a `MentionSearch` function or `MentionItems` too, typing one at the start of a word "
+                    + "opens a list of suggestions under the trigger, as a [mention input](components/mention-input) "
+                    + "does. Choosing a suggestion replaces what was typed with the mention and a space. A mention "
+                    + "is one unit of the text: the caret steps over it and Backspace or Delete removes it whole. In "
+                    + "the value it is a `<span>` with the item's `Id` in `data-mention`, and `OnMentionsChanged` "
+                    + "gives the mentions in the text when the user's edit changes them, so the app needn't read the "
+                    + "HTML. The value "
+                    + "comes from the page, so check each id before acting on it. Without `MentionTriggers` the "
+                    + "editor keeps no mentions, and one pasted in is plain text.",
+                    typeof(RichTextEditorMentionsExample)),
                 new("changing-what-is-pasted", "Changing what's pasted", "`TransformPaste` changes what is pasted "
                     + "or dropped in, after the built-in cleanup: it gets the pasted text as a `RichTextDocument` and "
                     + "returns the document to put in. This example keeps the formats but drops the links. It's a "
@@ -5653,6 +5665,16 @@ public static class ExampleCatalog
                 new(["Tab"], "Leaves the editor, as from any field.") { When = "Outside a list" },
                 new(["Left", "Right"], "Moves between the buttons.") { When = "In the toolbar" },
                 new(["Home", "End"], "Goes to the first or last button.") { When = "In the toolbar" },
+                new(["Left", "Right"], "Crosses a mention in one step.") { When = "With `MentionTriggers`" },
+                new(["Backspace", "Delete"], "Next to a mention, removes it whole.")
+                    { When = "With `MentionTriggers`" },
+                new(["Down", "Up"], "Moves to the next or previous suggestion, wrapping around.")
+                    { When = "While mention suggestions show" },
+                new(["Enter", "Tab"], "Puts the active suggestion in as a mention, with a space after it. Pressed "
+                    + "while newer suggestions are on their way, it puts the first of those in once they arrive.")
+                    { When = "While mention suggestions show" },
+                new(["Escape"], "Closes the suggestions until the text changes.")
+                    { When = "While mention suggestions show" },
             ],
             RightToLeftKeys = "In the toolbar, Left moves to the next button and Right to the previous one.",
             Labeling =
@@ -5666,12 +5688,17 @@ public static class ExampleCatalog
                     + "these words too.",
                 "The Table button is named \"Table\", and the table menu's button \"Table options\"; `Labels` "
                     + "changes these and the menu's commands.",
+                "The list of mention suggestions is a `listbox` named by the editor's label. Each suggestion is "
+                    + "named by its text, with its description as its accessible description.",
             ],
             Announcements =
             [
                 "A validation message that appears as someone edits the field is read out once, as on every field.",
                 "Each format and block button's state is announced through `aria-pressed`, and it follows the "
                     + "selection as the caret moves.",
+                "As mention suggestions come in, their count is read out when it changes, such as \"Suggestions: "
+                    + "3\". When `MentionSearch` fails, \"Couldn't load suggestions.\" is read out. `Labels` changes "
+                    + "these words.",
             ],
             Accessibility =
             [
@@ -5699,7 +5726,10 @@ public static class ExampleCatalog
                 "An image is an `<img>` that keeps the alt text it came with, if any. The caret steps over it, and "
                     + "Backspace or Delete next to it removes it.",
                 "With `MentionTriggers`, a mention in the value is one unit: the caret steps over it, and Backspace "
-                    + "or Delete next to it removes it whole.",
+                    + "or Delete next to it removes it whole. While suggestions show, focus stays in the text: the "
+                    + "editing area has `aria-autocomplete=\"list\"`, `aria-controls` for the list and "
+                    + "`aria-activedescendant` for the active suggestion, and the list has `aria-busy` while a "
+                    + "search is on its way.",
             ],
             AppDuties =
             [
@@ -5747,6 +5777,10 @@ public static class ExampleCatalog
                 new("count-said", "The counter's words for screen readers, such as 12 of 200 characters."),
                 new("image", "The Image button, with `UploadImage` and `RichTextBlocks.Images`."),
                 new("table-menu", "The table menu, with `RichTextBlocks.Tables`."),
+                new("mention-list", "The list of mention suggestions. Each suggestion is an `option` part, with the "
+                    + "text it puts in as `data-insert` and its item's `Id` as `data-mention-id`, and a `description` "
+                    + "part when it has one."),
+                new("mention-caret", "The mark at the trigger being typed, which the list opens under."),
                 new("source-toggle", "The HTML source button, with `ShowSource`."),
                 new("source", "The text area of the value's HTML, while the source shows."),
             ],
@@ -5760,6 +5794,10 @@ public static class ExampleCatalog
                     + "reaches .NET when focus leaves, or as it's typed with `UpdateOnInput`.",
                 "To add a link in Playwright, select the text and press `ControlOrMeta+k`, then fill the dialog's "
                     + "\"Link\" field and press Enter.",
+                "In Playwright, `page.Tb().RichTextEditor(label).MentionAsync(\" Thanks @an\", \"Ana Lopez\")` types "
+                    + "the start of a mention at the end of the text, chooses the suggestion and waits until the app "
+                    + "has the value. In bUnit, `MentionAsync` replaces the editor's text with the typed text and the "
+                    + "mention, and runs the app's `MentionSearch` or filters `MentionItems` as in a browser.",
                 "`TransformPaste` is a plain function, so test it on a `RichTextDocument` without the editor.",
                 "With `ShowSource`, press the \"HTML source\" button, fill the `source` part and press the button "
                     + "again; the value updates when focus leaves the text area.",
@@ -5890,8 +5928,10 @@ public static class ExampleCatalog
                 "To pick one person or thing as the field's whole value, use an "
                     + "[autocomplete](components/autocomplete).",
                 "For a list of people or tags as their own items, use a [tag input](components/tag-input).",
+                "For mentions in formatted text, use a [rich text editor](components/rich-text-editor) with "
+                    + "`MentionTriggers`, which keeps each mention's id in its value.",
             ],
-            Related = ["autocomplete", "tag-input", "text-field"],
+            Related = ["autocomplete", "tag-input", "text-field", "rich-text-editor"],
             Pattern = new("combobox", "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/"),
             Sections =
             [
@@ -5934,7 +5974,8 @@ public static class ExampleCatalog
             [
                 "The field keeps focus while the keys move through the suggestions: it marks the active one with "
                     + "`aria-activedescendant` and points at the list with `aria-controls`, and "
-                    + "`aria-autocomplete=\"list\"` tells screen readers it offers suggestions.",
+                    + "`aria-autocomplete=\"list\"` tells screen readers it offers suggestions. The list has "
+                    + "`aria-busy` while a search is on its way.",
                 "With `Lines=\"1\"` the input is a `combobox` whose `aria-expanded` says whether the list is open. A "
                     + "text area can't be a combobox, so it stays a text box, and screen readers hear the count of "
                     + "suggestions instead.",

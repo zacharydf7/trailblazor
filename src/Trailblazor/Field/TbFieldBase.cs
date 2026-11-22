@@ -719,9 +719,14 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
         }
     }
 
+    // Runs once the app has a new value, before the field validates it and counts the commit, such as to raise a
+    // callback that goes with the value.
+    private protected virtual Task ValueDeliveredAsync(TValue? value) => Task.CompletedTask;
+
     private async Task ChangeAsync(TValue? value)
     {
         await ValueChanged.InvokeAsync(value!);
+        await ValueDeliveredAsync(value);
         if (_disposed)
         {
             return;

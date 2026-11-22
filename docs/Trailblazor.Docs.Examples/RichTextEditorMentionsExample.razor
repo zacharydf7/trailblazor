@@ -1,0 +1,22 @@
+@* Typing @ suggests people to mention, and the app hears whom the text mentions, with their ids. *@
+<TbStack Gap="4" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Trail report" @bind-Value="_report" MentionTriggers="@("@")" MentionItems="People"
+                      OnMentionsChanged="mentions => _mentions = mentions" UpdateOnInput
+                      HelperText="Type @@ to mention someone." />
+    <output>Mentioned: @(_mentions.Count > 0 ? string.Join(", ", _mentions.Select(Name)) : "no one yet")</output>
+</TbStack>
+
+@code {
+    // An app with many people would search them in MentionSearch, such as with a database query.
+    private static readonly MentionItem[] People =
+    [
+        new("Ana Lopez") { Id = "u1", Description = "Trail crew" },
+        new("Dan Ng") { Id = "u2", Description = "Ranger" },
+        new("Priya Shah") { Id = "u3", Description = "Volunteer" },
+    ];
+
+    private string? _report = "<p>The bridge at Pine Hollow is out.</p>";
+    private IReadOnlyList<Mention> _mentions = [];
+
+    private static string Name(Mention mention) => $"{mention.Trigger}{mention.Item.Text} ({mention.Item.Id})";
+}

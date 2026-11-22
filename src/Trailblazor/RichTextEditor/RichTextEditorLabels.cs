@@ -95,6 +95,14 @@ public sealed record RichTextEditorLabels
     /// cref="TbStrings.RichTextEditorLinkAddress"/>.</summary>
     public string? LinkAddress { get; init; }
 
+    /// <summary>Read out as mention suggestions come in, with <c>{0}</c> for how many. Leave it null for the app's
+    /// text for <see cref="TbStrings.MentionInputSuggestions"/>.</summary>
+    public string? MentionSuggestions { get; init; }
+
+    /// <summary>Read out when the search for mention suggestions fails. Leave it null for the app's text for
+    /// <see cref="TbStrings.MentionInputSearchFailed"/>.</summary>
+    public string? MentionSearchFailed { get; init; }
+
     /// <summary>The message for a URL whose scheme isn't allowed, with <c>{0}</c> for the allowed schemes. Leave it
     /// null for the app's text for <see cref="TbStrings.RichTextEditorLinkNotAllowed"/>.</summary>
     public string? LinkNotAllowed { get; init; }

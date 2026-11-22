@@ -1,12 +1,56 @@
 @page "/rich-text-mentions"
 
-@* An editor that keeps mentions, with its value shown and a way to set it from .NET. *@
-<TbRichTextEditor Label="Notes" @bind-Value="_notes" UpdateOnInput MentionTriggers="@("@#")" />
+@* An editor that keeps mentions and suggests people for @ and tags for #, with its value and its mentions shown and a
+   way to set the value from .NET. A search for "boom" fails, and one for "adam" is slow. With slow in the address, the
+   app takes a while over each value and each change of mentions, as one that saves them does. *@
+<TbRichTextEditor Label="Notes" Value="@_notes" ValueChanged="OnNotesAsync" UpdateOnInput MentionTriggers="@("@#")"
+                  MentionSearch="SearchAsync" OnMentionsChanged="OnMentionsAsync"
+                  OnMentionSearchFailed="_ => _failed++" />
 <output data-testid="notes">@_notes</output>
+<output data-testid="mentions">@string.Join(", ", _mentions.Select(mention =>
+    $"{mention.Trigger}{mention.Item.Text}={mention.Item.Id}"))</output>
+<output data-testid="failed">@_failed</output>
 <TbTextField TValue="string" Label="Source" @bind-Value="_source" UpdateOnInput />
 <TbButton OnClick="() => _notes = _source">Set notes</TbButton>
 
 @code {
+    private static readonly MentionItem[] People =
+    [
+        new("Ada Lovelace") { Id = "42", Description = "Mathematics" }, new("Adam Ant") { Id = "7" },
+        new("Bo") { Id = "2" },
+    ];
+
+    private static readonly MentionItem[] Tags = [new("trails") { Id = "t1" }, new("trees") { Id = "t2" }];
+
     private string? _notes;
     private string? _source;
+    private IReadOnlyList<Mention> _mentions = [];
+    private int _failed;
+
+    [SupplyParameterFromQuery]
+    private string? Slow { get; set; }
+
+    private async Task OnNotesAsync(string? notes)
+    {
+        await Task.Delay(Slow is null ? 0 : 150);
+        _notes = notes;
+    }
+
+    private async Task OnMentionsAsync(IReadOnlyList<Mention> mentions)
+    {
+        await Task.Delay(Slow is null ? 0 : 150);
+        _mentions = mentions;
+    }
+
+    private static async Task<IEnumerable<MentionItem>> SearchAsync(MentionQuery query, CancellationToken cancel)
+    {
+        await Task.Delay(query.Text == "adam" ? 500 : 50, cancel);
+        if (query.Text == "boom")
+        {
+            throw new InvalidOperationException("The search is down.");
+        }
+
+        return (query.Trigger == "#" ? Tags : People)
+            .Where(item => item.Text.Contains(query.Text, StringComparison.OrdinalIgnoreCase));
+    }
 }

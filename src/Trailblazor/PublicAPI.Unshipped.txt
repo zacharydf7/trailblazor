@@ -3765,8 +3765,20 @@ Trailblazor.TbRichTextEditor.Lines.get -> int
 Trailblazor.TbRichTextEditor.Lines.set -> void
 Trailblazor.TbRichTextEditor.MaxLines.get -> int?
 Trailblazor.TbRichTextEditor.MaxLines.set -> void
+Trailblazor.TbRichTextEditor.MaxMentionItems.get -> int
+Trailblazor.TbRichTextEditor.MaxMentionItems.set -> void
+Trailblazor.TbRichTextEditor.MentionItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.MentionItem!>?
+Trailblazor.TbRichTextEditor.MentionItemTemplate.set -> void
+Trailblazor.TbRichTextEditor.MentionItems.get -> System.Collections.Generic.IEnumerable<Trailblazor.MentionItem!>?
+Trailblazor.TbRichTextEditor.MentionItems.set -> void
+Trailblazor.TbRichTextEditor.MentionSearch.get -> System.Func<Trailblazor.MentionQuery!, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Trailblazor.MentionItem!>!>!>?
+Trailblazor.TbRichTextEditor.MentionSearch.set -> void
 Trailblazor.TbRichTextEditor.MentionTriggers.get -> string?
 Trailblazor.TbRichTextEditor.MentionTriggers.set -> void
+Trailblazor.TbRichTextEditor.OnMentionSearchFailed.get -> Microsoft.AspNetCore.Components.EventCallback<System.Exception!>
+Trailblazor.TbRichTextEditor.OnMentionSearchFailed.set -> void
+Trailblazor.TbRichTextEditor.OnMentionsChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyList<Trailblazor.Mention!>!>
+Trailblazor.TbRichTextEditor.OnMentionsChanged.set -> void
 Trailblazor.TbRichTextEditor.Placeholder.get -> string?
 Trailblazor.TbRichTextEditor.Placeholder.set -> void
 Trailblazor.TbRichTextEditor.ShowToolbar.get -> bool
@@ -3884,6 +3896,10 @@ Trailblazor.RichTextEditorLabels.LinkAddress.get -> string?
 Trailblazor.RichTextEditorLabels.LinkAddress.init -> void
 Trailblazor.RichTextEditorLabels.LinkNotAllowed.get -> string?
 Trailblazor.RichTextEditorLabels.LinkNotAllowed.init -> void
+Trailblazor.RichTextEditorLabels.MentionSearchFailed.get -> string?
+Trailblazor.RichTextEditorLabels.MentionSearchFailed.init -> void
+Trailblazor.RichTextEditorLabels.MentionSuggestions.get -> string?
+Trailblazor.RichTextEditorLabels.MentionSuggestions.init -> void
 Trailblazor.RichTextEditorLabels.LinkText.get -> string?
 Trailblazor.RichTextEditorLabels.LinkText.init -> void
 Trailblazor.RichTextEditorLabels.OpenLink.get -> string?
