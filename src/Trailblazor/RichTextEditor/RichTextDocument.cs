@@ -86,6 +86,11 @@ public sealed class RichTextDocument
     /// <summary>The paragraphs, in order. There is always at least one.</summary>
     public IReadOnlyList<RichTextParagraph> Paragraphs { get; }
 
+    /// <summary>The mentions in the document, in order, each with the trigger it was typed with and the app's id for
+    /// what it mentions. The ids come from the HTML, so check them as you would any other input.</summary>
+    public IReadOnlyList<Mention> Mentions =>
+        [.. Paragraphs.SelectMany(paragraph => paragraph.Runs).Select(run => run.Mention).OfType<Mention>()];
+
     /// <summary>Whether the document has no text: one empty paragraph.</summary>
     public bool IsEmpty => Paragraphs is [{ Runs.Count: 0, Kind: RichTextParagraphKind.Paragraph }];
 
@@ -103,9 +108,12 @@ public sealed class RichTextDocument
     /// its cells goes before the table, as a browser shows it. Formats come from tags (<c>b</c>, <c>strong</c>,
     /// <c>i</c>, <c>em</c>, <c>u</c>, <c>s</c>, <c>sub</c>, <c>sup</c>, <c>code</c> and similar) and from inline
     /// styles (font weight, font style, text decoration, vertical alignment and monospace fonts), as Word, Google Docs
-    /// and browsers write them. Word's list paragraphs read as lists. Everything else, including scripts, attributes,
-    /// images the schema doesn't allow and links with a scheme it doesn't allow, becomes plain text or is dropped, so
-    /// the result is safe to render. Tabs and no-break spaces read as plain spaces. A few rare cases can still read
+    /// and browsers write them. Word's list paragraphs read as lists. Where the schema allows mentions, a
+    /// <c>span</c> with a <c>data-mention</c> attribute reads as one: its text is one run, the attribute's value is
+    /// the item's id, and <c>data-trigger</c> is its trigger when its text starts with it; otherwise the whole text
+    /// is the item's. Everything else, including scripts, attributes, images the schema doesn't allow and links
+    /// with a scheme it doesn't allow, becomes plain text or is dropped, so the result is safe to render. Tabs and
+    /// no-break spaces read as plain spaces. A few rare cases can still read
     /// differently from a browser, such as tags misnested beyond a simple reorder, character references whose names
     /// HTML 4 lacks (which stay as written), and stray text in a table that a browser joins to the line just before the
     /// table.</remarks>
@@ -126,9 +134,10 @@ public sealed class RichTextDocument
     /// with its first row in a <c>&lt;thead&gt;</c> of <c>&lt;th scope="col"&gt;</c> cells when they're all header
     /// cells and the other rows in a <c>&lt;tbody&gt;</c>. Inside a paragraph or cell, <c>&lt;br&gt;</c> is a
     /// line break, a link is the outermost tag, the other formats follow in the order of
-    /// <see cref="RichTextFormats"/>, and <c>&amp;nbsp;</c> stands for each space HTML would otherwise collapse. An
-    /// empty document is <c>""</c>. Parsing the result with a schema that allows its formats, blocks, link schemes and
-    /// image schemes gives back the same document.</summary>
+    /// <see cref="RichTextFormats"/>, a mention is a <c>&lt;span&gt;</c> inside its formats with its id in
+    /// <c>data-mention</c> and its trigger in <c>data-trigger</c>, and <c>&amp;nbsp;</c> stands for each space HTML
+    /// would otherwise collapse. An empty document is <c>""</c>. Parsing the result with a schema that allows its
+    /// formats, blocks, link schemes, image schemes and mentions gives back the same document.</summary>
     public string ToHtml()
     {
         if (IsEmpty)
@@ -314,9 +323,10 @@ public sealed class RichTextDocument
     }
 
     /// <summary>Writes the document as markdown that <see cref="FromMarkdown(string?)"/> reads back the same, apart
-    /// from what markdown can't hold: underline, subscript and superscript text is written plain; empty paragraphs,
-    /// line breaks at a paragraph's end and spaces at a line's start or end are left out; line breaks in a heading or
-    /// in code that shares its paragraph become spaces; a space or line break at a format's edge moves outside it; and
+    /// from what markdown can't hold: underline, subscript and superscript text is written plain; a mention is
+    /// written as its text; empty paragraphs, line breaks at a paragraph's end and spaces at a line's start or end
+    /// are left out; line breaks in a heading or in code that shares its paragraph become spaces; a space or line
+    /// break at a format's edge moves outside it; and
     /// in a table, line breaks in a cell become spaces, header cells outside a first row of header cells become plain
     /// cells, a first row of empty header cells is left out, and code with an odd number of backslashes right before
     /// a pipe reads back with one more.
@@ -352,9 +362,20 @@ public sealed class RichTextDocument
                 html.Append('<').Append(tag).Append('>');
             }
 
+            if (run.Mention is { } mention)
+            {
+                html.Append("<span data-mention=\"").Append(Attribute(mention.Item.Id ?? ""))
+                    .Append("\" data-trigger=\"").Append(Attribute(mention.Trigger)).Append("\">");
+            }
+
             for (var i = 0; i < run.Text.Length; i++)
             {
                 WriteCharacter(html, text, offset + i);
+            }
+
+            if (run.Mention is not null)
+            {
+                html.Append("</span>");
             }
 
             for (var i = tags.Count - 1; i >= 0; i--)

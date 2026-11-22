@@ -1827,7 +1827,7 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal("<p>cx</p><p>yd</p>", await page.EvaluateAsync<string>("() => window.sent"));
     }
 
-    private static ILocator Editor(IPage page, string label) =>
+    internal static ILocator Editor(IPage page, string label) =>
         page.GetByRole(AriaRole.Textbox, new() { Name = label, Exact = true });
 
     private static ILocator Tool(ILocator editor, string name) =>
@@ -1835,7 +1835,7 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
             .GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
 
     // Sets the notes from .NET and waits for the editor to show their text.
-    private static async Task<ILocator> SetAsync(IPage page, string html, string text)
+    internal static async Task<ILocator> SetAsync(IPage page, string html, string text)
     {
         await page.GetByRole(AriaRole.Textbox, new() { Name = "Source" }).FillAsync(html);
         await page.GetByRole(AriaRole.Button, new() { Name = "Set notes" }).ClickAsync();
@@ -1844,11 +1844,11 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         return notes;
     }
 
-    private static Task CaretAsync(ILocator editor, int block, int offset) =>
+    internal static Task CaretAsync(ILocator editor, int block, int offset) =>
         SelectAsync(editor, block, offset, block, offset);
 
     // Selects by paragraph and offset in its text, counting a line break as one character.
-    private static async Task SelectAsync(ILocator editor, int anchorBlock, int anchorOffset, int headBlock,
+    internal static async Task SelectAsync(ILocator editor, int anchorBlock, int anchorOffset, int headBlock,
         int headOffset)
     {
         await Expect(editor).ToHaveAttributeAsync("data-ready", "");
@@ -1890,7 +1890,7 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
         """);
 
     // Playwright can't write to the system clipboard in every browser, so the paste event carries its own data.
-    private static Task PasteAsync(ILocator editor, string? html, string text) => editor.EvaluateAsync("""
+    internal static Task PasteAsync(ILocator editor, string? html, string text) => editor.EvaluateAsync("""
         (editor, [html, text]) => {
             const data = new DataTransfer();
             if (html) data.setData('text/html', html);

@@ -132,6 +132,8 @@ internal sealed partial class RichTextHtmlReader
     private (RichTextParagraphKind Kind, int Level) _block;
     // The Word list marker being skipped and its text, which says, once it ends, whether its list is numbered.
     private Element? _markerElement;
+    // The open <span data-mention>, whose text is one mention; one inside another is part of the outer one.
+    private Element? _mentionElement;
     private StringBuilder? _marker;
     private bool _numberedMarker;
     private int _position;
@@ -231,8 +233,8 @@ internal sealed partial class RichTextHtmlReader
         {
             _position++;
             var name = ReadName();
-            var (style, href, source, alt, selfClosing) = ReadAttributes();
-            StartTag(name, style, href, source, alt, selfClosing);
+            var (style, href, source, alt, mention, selfClosing) = ReadAttributes();
+            StartTag(name, style, href, source, alt, mention, selfClosing);
             if (RawText.Contains(name))
             {
                 ReadRawText(name);
@@ -245,7 +247,8 @@ internal sealed partial class RichTextHtmlReader
         }
     }
 
-    private void StartTag(string name, string style, string? href, string? source, string? alt, bool selfClosing)
+    private void StartTag(string name, string style, string? href, string? source, string? alt, MentionMark? mention,
+        bool selfClosing)
     {
         _started = true;
         if (InOpenHead && !HeadContent.Contains(name))
@@ -398,6 +401,11 @@ internal sealed partial class RichTextHtmlReader
         }
 
         element.FosteredInto = fosteredInto;
+        if (name == "span" && mention is not null && _schema.Mentions && _mentionElement is null)
+        {
+            (element.Mention, _mentionElement) = (mention, element);
+        }
+
         if (name == "table" && _cell is null && _schema.Blocks.HasFlag(RichTextBlocks.Tables))
         {
             _tables.Add(new Table(element));
@@ -679,6 +687,11 @@ internal sealed partial class RichTextHtmlReader
             (_markerElement, _marker) = (null, null);
         }
 
+        if (element == _mentionElement)
+        {
+            _mentionElement = null;
+        }
+
         if (!element.Skipped && FormattingBoundaries.Contains(element.Name))
         {
             var boundary = Math.Max(_formatting.FindLastIndex(entry => entry is null), 0);
@@ -890,7 +903,7 @@ internal sealed partial class RichTextHtmlReader
         // blocks there goes in as one paragraph.
         if (FosteringTable() is { } table)
         {
-            (table.Fostered ??= []).Add(new Piece(text, Formats & _formats, Link, pre));
+            (table.Fostered ??= []).Add(new Piece(text, Formats & _formats, Link, pre, _mentionElement?.Mention));
             return;
         }
 
@@ -901,7 +914,7 @@ internal sealed partial class RichTextHtmlReader
             _runs = [];
         }
 
-        _runs.Add(new Piece(text, Formats & _formats, Link, pre));
+        _runs.Add(new Piece(text, Formats & _formats, Link, pre, _mentionElement?.Mention));
         var shown = text.TrimEnd(' ');
         if (shown.Length > 0)
         {
@@ -917,7 +930,7 @@ internal sealed partial class RichTextHtmlReader
         {
             if (_lineHasText)
             {
-                _runs!.Add(new Piece("\n", RichTextFormats.None, null, Pre: false));
+                _runs!.Add(new Piece("\n", RichTextFormats.None, null, Pre: false, Mention: null));
                 _lineHasText = false;
             }
 
@@ -965,7 +978,27 @@ internal sealed partial class RichTextHtmlReader
         runs = Keep(runs, (text, i, pre) => pre || text[i] != ' ' || (i < text.Length - 1 && text[i + 1] != '\n'));
         // A paragraph's last line break shows nothing.
         runs = Keep(runs, (text, i, _) => i < text.Length - 1 || text[i] != '\n');
-        return [.. runs.Select(run => new RichTextRun(run.Text, run.Formats, run.Link, vetted: true))];
+        var shown = new List<RichTextRun>(runs.Count);
+        for (var i = 0; i < runs.Count; i++)
+        {
+            var run = runs[i];
+            if (run.Mention is not { } mark)
+            {
+                shown.Add(new RichTextRun(run.Text, run.Formats, run.Link, vetted: true));
+                continue;
+            }
+
+            // A mention's pieces, such as text on both sides of a tag inside its span, are one run.
+            var text = new StringBuilder(run.Text);
+            while (i + 1 < runs.Count && ReferenceEquals(runs[i + 1].Mention, mark))
+            {
+                text.Append(runs[++i].Text);
+            }
+
+            shown.Add(new RichTextRun(mark.Of(text.ToString()), run.Formats & ~RichTextFormats.Link));
+        }
+
+        return shown;
     }
 
     // The open table when the parser is inside it but outside its cells and caption.
@@ -1122,13 +1155,17 @@ internal sealed partial class RichTextHtmlReader
             || (oldLoose && !doctype.Contains(".dtd", StringComparison.Ordinal));
     }
 
-    // Reads to the end of a start tag, keeping only its style, href, src and alt and whether it closed itself.
-    private (string Style, string? Href, string? Source, string? Alt, bool SelfClosing) ReadAttributes()
+    // Reads to the end of a start tag, keeping only its style, href, src and alt, the id and trigger of a mention, and
+    // whether it closed itself.
+    private (string Style, string? Href, string? Source, string? Alt, MentionMark? Mention, bool SelfClosing)
+        ReadAttributes()
     {
         string? style = null;
         string? href = null;
         string? source = null;
         string? alt = null;
+        string? mention = null;
+        string? trigger = null;
         var selfClosing = false;
         while (_position < _html.Length)
         {
@@ -1181,9 +1218,17 @@ internal sealed partial class RichTextHtmlReader
             {
                 alt = HtmlCharacterReferences.DecodeAttribute(value);
             }
+            else if (mention is null && name.Equals("data-mention", StringComparison.OrdinalIgnoreCase))
+            {
+                mention = HtmlCharacterReferences.DecodeAttribute(value);
+            }
+            else if (trigger is null && name.Equals("data-trigger", StringComparison.OrdinalIgnoreCase))
+            {
+                trigger = HtmlCharacterReferences.DecodeAttribute(value);
+            }
         }
 
-        return (style ?? "", href, source, alt, selfClosing);
+        return (style ?? "", href, source, alt, mention is null ? null : new(mention, trigger ?? ""), selfClosing);
     }
 
     private string ReadAttributeValue()
@@ -1316,6 +1361,9 @@ internal sealed partial class RichTextHtmlReader
         // For a block directly in a table, the table it goes before.
         public Element? FosteredInto { get; set; }
 
+        // For a <span data-mention>, the mention its text is.
+        public MentionMark? Mention { get; set; }
+
         public bool IsOpen { get; set; }
 
         // Rises with each element opened, so of two open elements the one with the higher serial is above.
@@ -1350,7 +1398,19 @@ internal sealed partial class RichTextHtmlReader
         }
     }
 
-    private readonly record struct Piece(string Text, RichTextFormats Formats, string? Link, bool Pre);
+    private readonly record struct Piece(string Text, RichTextFormats Formats, string? Link, bool Pre,
+        MentionMark? Mention);
+
+    // A mention span's id and trigger. A class, so two spans for the same item stay two mentions.
+    private sealed class MentionMark(string id, string trigger)
+    {
+        // The trigger counts only when the text starts with it; otherwise the whole text is the item's.
+        public Mention Of(string text)
+        {
+            var typed = trigger.Length > 0 && text.StartsWith(trigger, StringComparison.Ordinal) ? trigger : "";
+            return new(typed, new MentionItem(text[typed.Length..]) { Id = id });
+        }
+    }
 
     // Target is any href (a styled underline under it is the link's look); Kept is Target if the schema allows it.
     private readonly record struct LinkState(string? Target, string? Kept);

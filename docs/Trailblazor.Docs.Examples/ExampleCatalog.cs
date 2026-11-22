@@ -5698,6 +5698,8 @@ public static class ExampleCatalog
                     + "item, Tab indents instead, as in word processors, and Escape lets the next Tab leave.",
                 "An image is an `<img>` that keeps the alt text it came with, if any. The caret steps over it, and "
                     + "Backspace or Delete next to it removes it.",
+                "With `MentionTriggers`, a mention in the value is one unit: the caret steps over it, and Backspace "
+                    + "or Delete next to it removes it whole.",
             ],
             AppDuties =
             [

@@ -1,13 +1,13 @@
 namespace Trailblazor;
 
-/// <summary>What a <see cref="RichTextDocument"/> may keep when it reads HTML: its formats, its kinds of block and the
-/// URL schemes its links and images may use. A format it doesn't allow is dropped while its text stays, a block it
-/// doesn't allow gives way to an allowed block around it or a plain paragraph, and a rule or image it doesn't allow is
-/// dropped.</summary>
+/// <summary>What a <see cref="RichTextDocument"/> may keep when it reads HTML: its formats, its kinds of block, the
+/// URL schemes its links and images may use, and whether it keeps mentions. A format it doesn't allow is dropped
+/// while its text stays, a block it doesn't allow gives way to an allowed block around it or a plain paragraph, a
+/// rule or image it doesn't allow is dropped, and a mention it doesn't allow is plain text.</summary>
 public sealed record RichTextSchema
 {
-    /// <summary>Every format and every block but images and tables, and links that use <c>http</c>, <c>https</c>,
-    /// <c>mailto</c> or <c>tel</c>.</summary>
+    /// <summary>Every format and every block but images and tables, links that use <c>http</c>, <c>https</c>,
+    /// <c>mailto</c> or <c>tel</c>, and no mentions.</summary>
     public static RichTextSchema Default { get; } = new();
 
     /// <summary>The formats to keep. Without <see cref="RichTextFormats.Link"/>, every link becomes plain text.
@@ -29,15 +29,22 @@ public sealed record RichTextSchema
     /// here. Defaults to <c>https</c> and <c>http</c>.</summary>
     public IReadOnlyList<string> ImageSchemes { get; init; } = ["https", "http"];
 
-    /// <summary>Whether this schema keeps the same formats, blocks, link schemes and image schemes as another, listed
-    /// in the same order; schemes compare without regard to case.</summary>
+    /// <summary>Whether to keep mentions: a <c>span</c> with a <c>data-mention</c> attribute then reads as one run
+    /// that is a <see cref="Mention"/>, and otherwise as its text. Defaults to false, since other editors write that
+    /// attribute too, with ids of their own.</summary>
+    public bool Mentions { get; init; }
+
+    /// <summary>Whether this schema keeps the same formats, blocks, link schemes, image schemes and mentions as
+    /// another, with the schemes listed in the same order; schemes compare without regard to case.</summary>
     /// <param name="other">The schema to compare with.</param>
     public bool Equals(RichTextSchema? other) => other is not null && Formats == other.Formats
         && Blocks == other.Blocks && LinkSchemes.SequenceEqual(other.LinkSchemes, StringComparer.OrdinalIgnoreCase)
-        && ImageSchemes.SequenceEqual(other.ImageSchemes, StringComparer.OrdinalIgnoreCase);
+        && ImageSchemes.SequenceEqual(other.ImageSchemes, StringComparer.OrdinalIgnoreCase)
+        && Mentions == other.Mentions;
 
     /// <inheritdoc />
-    public override int GetHashCode() => HashCode.Combine(Formats, Blocks, LinkSchemes.Count, ImageSchemes.Count);
+    public override int GetHashCode() =>
+        HashCode.Combine(Formats, Blocks, LinkSchemes.Count, ImageSchemes.Count, Mentions);
 
     internal bool AllowsLink(string url) => Allows(LinkSchemes, url);
 

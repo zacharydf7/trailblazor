@@ -1,0 +1,12 @@
+@page "/rich-text-mentions"
+
+@* An editor that keeps mentions, with its value shown and a way to set it from .NET. *@
+<TbRichTextEditor Label="Notes" @bind-Value="_notes" UpdateOnInput MentionTriggers="@("@#")" />
+<output data-testid="notes">@_notes</output>
+<TbTextField TValue="string" Label="Source" @bind-Value="_source" UpdateOnInput />
+<TbButton OnClick="() => _notes = _source">Set notes</TbButton>
+
+@code {
+    private string? _notes;
+    private string? _source;
+}

@@ -47,9 +47,10 @@ const TYPING_PAUSE = 1000;
 // Keeps each part under Blazor Server's default 32 KB message limit, even at 6 bytes of JSON per control character.
 const MAX_PART = 5000;
 
-// options: { formats, blocks, links, images, transformsPaste, readOnly, updateOnInput, updateDelay }, with formats as
-// mark names, blocks as kinds, and links and images as URL schemes split by spaces, links null where links aren't
-// allowed, images null where images aren't, and updateDelay in milliseconds.
+// options: { formats, blocks, links, images, mentions, transformsPaste, readOnly, updateOnInput, updateDelay }, with
+// formats as mark names, blocks as kinds, and links and images as URL schemes split by spaces, links null where links
+// aren't allowed, images null where images aren't, mentions true where mentions are kept, and updateDelay in
+// milliseconds.
 export function attachRichTextEditor(root, value, options) {
     const toolbar = root.closest('.tb-rich-text-editor')?.querySelector('[data-part="toolbar"]') ?? null;
     const label = root.ownerDocument.getElementById(root.getAttribute('aria-labelledby') ?? '');
@@ -197,6 +198,7 @@ class Editor {
             blocks: new Set(options.blocks.split(' ').filter(kind => KINDS.includes(kind))),
             links: options.links === null ? null : options.links.toLowerCase().split(' ').filter(Boolean),
             images: options.images === null ? null : options.images.toLowerCase().split(' ').filter(Boolean),
+            mentions: !!options.mentions,
         };
         this.transformsPaste = !!options.transformsPaste;
         this.readOnly = !!options.readOnly;
@@ -375,6 +377,12 @@ class Editor {
 
     onKeyDown(event) {
         if (isComposing(event)) return;
+        // A key acts on the browser's own selection, and a key pressed inside a mention would do nothing, so the
+        // selection leaves the mention first; the selectionchange that moves it out may not have run yet.
+        if (this.browserSelectionInMention()) {
+            this.selection = this.readSelection() ?? this.selection;
+            this.writeSelection();
+        }
         const move = CARET_MOVES[event.key];
         if (move) {
             const flips = ['ArrowLeft', 'ArrowRight'].includes(event.key)
@@ -555,9 +563,16 @@ class Editor {
             this.selection = selection;
             this.storedMarks = null;
         }
-        // If readSelection moved the caret off a rule or image, move it on the page too.
-        if (this.browserCaretBesideAtom()) this.writeSelection();
+        // If readSelection moved the caret off a rule or image, or out of a mention, move it on the page too.
+        if (this.browserCaretBesideAtom() || this.browserSelectionInMention()) this.writeSelection();
         this.updateToolbar();
+    }
+
+    // Whether either end of the browser's selection is inside a mention, where no key would reach the editor.
+    browserSelectionInMention() {
+        const dom = this.root.ownerDocument.getSelection();
+        return [dom.anchorNode, dom.focusNode].some(node => node && this.root.contains(node)
+            && (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement).closest('[data-mention]'));
     }
 
     browserCaretBesideAtom() {
@@ -1101,7 +1116,8 @@ class Editor {
                 const start = block === from.block ? from.offset : 0;
                 const end = block === to.block ? to.offset : Infinity;
                 this.doc[block] = { ...this.doc[block],
-                    runs: mapRuns(this.doc[block].runs, start, end, run => ({ ...run, link: url })) };
+                    runs: mapRuns(this.doc[block].runs, start, end,
+                        run => run.mention ? run : { ...run, link: url }) };
             }
             this.selection = { anchor: to, head: to };
         });
@@ -1326,8 +1342,12 @@ const isListItem = kind => kind === 'bullet' || kind === 'number';
 const outdented = target => isListItem(target.kind) && target.level > 0
     ? { ...target, level: target.level - 1 } : { ...target, kind: 'paragraph', level: 0 };
 const sameMarks = (a, b) => a.length === b.length && a.every((mark, i) => mark === b[i]);
-const sameStyle = (a, b) => sameMarks(a.marks, b.marks) && a.link === b.link;
-const sameRuns = (a, b) => a.length === b.length && a.every((run, i) => run.text === b[i].text && sameStyle(run, b[i]));
+// A run with a mention, { id, trigger }, is one unit: its text is the trigger and the name, it has no link, and it
+// never joins a neighbor, so no run has the same style as one.
+const sameStyle = (a, b) => !a.mention && !b.mention && sameMarks(a.marks, b.marks) && a.link === b.link;
+const sameMention = (a, b) => !a === !b && (!a || (a.id === b.id && a.trigger === b.trigger));
+const sameRuns = (a, b) => a.length === b.length && a.every((run, i) => run.text === b[i].text
+    && sameMarks(run.marks, b[i].marks) && run.link === b[i].link && sameMention(run.mention, b[i].mention));
 const length = runs => runs.reduce((sum, run) => sum + run.text.length, 0);
 const textOf = runs => runs.map(run => run.text).join('');
 const compare = (a, b) => a.block - b.block || a.offset - b.offset;
@@ -1400,7 +1420,9 @@ function slice(runs, from, to = Infinity) {
         const sliceEnd = Math.min(to, end);
         if (sliceStart < sliceEnd) {
             const text = run.text.slice(sliceStart - start, sliceEnd - start);
-            result.push({ text, marks: run.marks, link: run.link });
+            // Part of a mention is plain text.
+            const mention = text.length === run.text.length ? run.mention ?? null : null;
+            result.push({ text, marks: run.marks, link: run.link, mention });
         }
         start = end;
     }
@@ -1561,6 +1583,12 @@ function paragraphHtml(runs, forValue) {
         let inner = '';
         for (let i = 0; i < run.text.length; i++) inner += characterHtml(text, offset + i, forValue);
         offset += run.text.length;
+        // In the editor a mention can't be edited, so the browser moves across it, deletes it and types beside it as
+        // it would one character.
+        if (run.mention) {
+            inner = `<span data-mention="${attribute(run.mention.id ?? '')}" data-trigger="`
+                + `${attribute(run.mention.trigger)}"${forValue ? '' : ' contenteditable="false"'}>${inner}</span>`;
+        }
         html += run.marks.reduceRight((content, mark) => `<${MARK_TAGS[mark]}>${content}</${MARK_TAGS[mark]}>`, inner);
     }
     if (link !== null) html += '</a>';
@@ -1594,7 +1622,8 @@ function updateBlock(element, target) {
     if (ownHtml === html && !element.attributes.length) return;
     for (const node of own) node.remove();
     const template = document.createElement('template');
-    // Safe: paragraphHtml escapes every character of text and each href, and its only tags are the marks' and links'.
+    // Safe: paragraphHtml escapes every character of text, each href and each mention's id and trigger, and its only
+    // tags are the marks', links' and mentions'.
     template.innerHTML = html;
     element.insertBefore(template.content, nested[0] ?? null);
     for (const attribute of [...element.attributes]) element.removeAttribute(attribute.name);
@@ -1640,7 +1669,7 @@ function withRoomBetweenTables(doc) {
 // A block context is what an element puts its text in: its own allowed heading, quote, list item or Word list
 // paragraph, else its parent's, with the lists around it counted. Where tables are allowed, a table's cells wait until
 // it ends, so whatever else it holds, such as its caption, goes before it, as RichTextDocument reads it.
-function readBlocks(container, collapse, { formats, blocks, links, images }) {
+function readBlocks(container, collapse, { formats, blocks, links, images, mentions }) {
     const paragraphs = [];
     let runs = null;
     let block = null;
@@ -1673,7 +1702,7 @@ function readBlocks(container, collapse, { formats, blocks, links, images }) {
         afterImage = false;
         // Inside a cell, a block ends a line of the cell instead.
         if (inCell) {
-            if (lineHasText) add({ text: '\n', marks: [], link: null, pre: false });
+            if (lineHasText) add({ text: '\n', marks: [], link: null, pre: false, mention: null });
             return;
         }
         lineHasText = false;
@@ -1697,7 +1726,8 @@ function readBlocks(container, collapse, { formats, blocks, links, images }) {
         if (!own || !(own[2] ? blocks.has('bullet') || blocks.has('number') : blocks.has(own[0]))) return context;
         return { ...context, kind: own[0], level: own[1], word: own[2] };
     };
-    const walk = (node, marks, pre, link, context) => {
+    // mention is the { id, trigger } of the <span data-mention> around the node, the same object for all its text.
+    const walk = (node, marks, pre, link, context, mention) => {
         for (const child of node.childNodes) {
             if (child.nodeType === Node.TEXT_NODE) {
                 let text = collapse && !pre ? child.data.replace(/[\t\n\r\f ]+/g, ' ') : child.data;
@@ -1705,7 +1735,7 @@ function readBlocks(container, collapse, { formats, blocks, links, images }) {
                 if (afterImage && pre && text.startsWith('\n')) [text, afterImage] = [text.slice(1), false];
                 afterImage &&= /^[\t\n\f\r ]*$/.test(text);
                 start(context);
-                add({ text, marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre });
+                add({ text, marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre, mention });
             } else if (child.nodeType === Node.ELEMENT_NODE && isWordListMarker(child)) {
                 numbered = /^\(?([0-9]+|[a-z]+|[A-Z]+)[.)]$/.test(child.textContent.trim());
             } else if (child.nodeType === Node.ELEMENT_NODE && !SKIPPED.has(child.localName)) {
@@ -1715,7 +1745,7 @@ function readBlocks(container, collapse, { formats, blocks, links, images }) {
                         continue;
                     }
                     start(context);
-                    add({ text: '\n', marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre });
+                    add({ text: '\n', marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre, mention });
                     continue;
                 }
                 // A rule between two lines leaves them separate paragraphs, with the rule between if it's allowed.
@@ -1739,8 +1769,12 @@ function readBlocks(container, collapse, { formats, blocks, links, images }) {
                 const childMarks = marksOf(child, marks, childLink.target !== null);
                 const childPre = pre || PREFORMATTED.has(child.localName);
                 const childContext = contextOf(child, context);
+                // A mention span inside another is part of the outer one, and where mentions aren't kept it is text.
+                const childMention = mention ?? (mentions && child.localName === 'span'
+                    && child.hasAttribute('data-mention')
+                    ? { id: child.getAttribute('data-mention') || null, trigger: child.dataset.trigger ?? '' } : null);
                 if (!BLOCKS.has(child.localName)) {
-                    walk(child, childMarks, childPre, childLink, childContext);
+                    walk(child, childMarks, childPre, childLink, childContext, childMention);
                     continue;
                 }
                 finish();
@@ -1750,7 +1784,7 @@ function readBlocks(container, collapse, { formats, blocks, links, images }) {
                 const part = table && !inCell && ['tr', 'td', 'th'].includes(name);
                 if (name === 'table' && blocks.has('table') && !inCell) table = { cells: [], row: 0, column: 0 };
                 if (part && name !== 'tr') inCell = true;
-                walk(child, childMarks, childPre, childLink, childContext);
+                walk(child, childMarks, childPre, childLink, childContext, childMention);
                 if (part && name !== 'tr') {
                     // A cell takes the next place in its row, even when it's empty.
                     inCell = false;
@@ -1781,7 +1815,7 @@ function readBlocks(container, collapse, { formats, blocks, links, images }) {
         }
     };
     walk(container, [], false, { target: null, kept: null },
-        { kind: 'paragraph', level: 0, word: false, lists: 0, ordered: false });
+        { kind: 'paragraph', level: 0, word: false, lists: 0, ordered: false }, null);
     finish();
     return paragraphs;
 }
@@ -1830,11 +1864,24 @@ function finishParagraph(runs, collapse) {
             || (i < text.length - 1 && text[i + 1] !== '\n'));
     }
     // A paragraph's last line break shows nothing.
-    const text = textOf(runs);
-    const trimmed = text.endsWith('\n') ? slice(runs, 0, text.length - 1) : runs;
+    runs = keepCharacters(runs, (text, i) => i < text.length - 1 || text[i] !== '\n');
+    // A mention's pieces, such as text on both sides of a tag inside its span, are one run.
+    const joined = [];
+    for (const run of runs) {
+        const last = joined.at(-1);
+        if (run.mention && last?.mention === run.mention) last.text += run.text;
+        else joined.push({ ...run });
+    }
     // The model holds plain spaces only, so the value it writes parses back to the same text.
-    return normalize(trimmed.map(run => ({ text: run.text.replace(/[\t\f\r\xa0]/g, ' '), marks: run.marks,
-        link: run.link })));
+    return normalize(joined.map(run => {
+        const text = run.text.replace(/[\t\f\r\xa0]/g, ' ');
+        if (!run.mention) return { text, marks: run.marks, link: run.link, mention: null };
+        // As RichTextDocument reads one: on one line, with no link, and with its trigger only when its text starts
+        // with it.
+        const line = text.replace(/\n/g, ' ');
+        const trigger = run.mention.trigger && line.startsWith(run.mention.trigger) ? run.mention.trigger : '';
+        return { text: line, marks: run.marks, link: null, mention: { id: run.mention.id, trigger } };
+    }));
 }
 
 function keepCharacters(runs, keep) {
@@ -1846,7 +1893,7 @@ function keepCharacters(runs, keep) {
             if (keep(text, offset + i, run.pre)) kept += run.text[i];
         }
         offset += run.text.length;
-        return { text: kept, marks: run.marks, link: run.link, pre: run.pre };
+        return { text: kept, marks: run.marks, link: run.link, pre: run.pre, mention: run.mention };
     });
 }
 
@@ -1898,6 +1945,11 @@ function leaves(block) {
 
 const leafLength = (leaf, i, all) => leaf.nodeType === Node.TEXT_NODE ? leaf.data.length : i === all.length - 1 ? 0 : 1;
 const indexOf = node => Array.prototype.indexOf.call(node.parentNode.childNodes, node);
+// The mention a text node of the block is in, if any.
+const mentionOf = (leaf, block) => {
+    const span = leaf.parentElement.closest('[data-mention]');
+    return span && span !== block && block.contains(span) ? span : null;
+};
 
 function offsetAt(block, node, offset) {
     const all = leaves(block);
@@ -1906,6 +1958,9 @@ function offsetAt(block, node, offset) {
     point.setStart(node, Math.min(offset, size));
     let count = 0;
     for (const [i, leaf] of all.entries()) {
+        // A point inside a mention counts as the nearer end of it, since a mention is one unit.
+        const inMention = leaf === node && mentionOf(leaf, block);
+        if (inMention) return count + (offset * 2 < leaf.data.length ? 0 : leaf.data.length);
         if (leaf === node) return count + offset;
         if (point.comparePoint(leaf.parentNode, indexOf(leaf) + 1) > 0) break;
         count += leafLength(leaf, i, all);
@@ -1918,6 +1973,9 @@ function pointAt(block, offset) {
     let count = 0;
     for (const [i, leaf] of all.entries()) {
         const leafSize = leafLength(leaf, i, all);
+        // The caret goes before or after a mention, never into its text, which can't be edited.
+        const mention = leaf.nodeType === Node.TEXT_NODE && offset <= count + leafSize ? mentionOf(leaf, block) : null;
+        if (mention) return [mention.parentNode, indexOf(mention) + (offset > count ? 1 : 0)];
         if (leaf.nodeType === Node.TEXT_NODE ? offset <= count + leafSize : offset === count) {
             return leaf.nodeType === Node.TEXT_NODE ? [leaf, offset - count] : [leaf.parentNode, indexOf(leaf)];
         }

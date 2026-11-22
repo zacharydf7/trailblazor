@@ -3707,6 +3707,7 @@ static Trailblazor.GridState.operator !=(Trailblazor.GridState? left, Trailblazo
 static Trailblazor.GridState.operator ==(Trailblazor.GridState? left, Trailblazor.GridState? right) -> bool
 Trailblazor.RichTextDocument
 Trailblazor.RichTextDocument.IsEmpty.get -> bool
+Trailblazor.RichTextDocument.Mentions.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.Mention!>!
 Trailblazor.RichTextDocument.Paragraphs.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.RichTextParagraph!>!
 Trailblazor.RichTextDocument.RichTextDocument(System.Collections.Generic.IEnumerable<Trailblazor.RichTextParagraph!>! paragraphs) -> void
 Trailblazor.RichTextDocument.ToHtml() -> string!
@@ -3764,6 +3765,8 @@ Trailblazor.TbRichTextEditor.Lines.get -> int
 Trailblazor.TbRichTextEditor.Lines.set -> void
 Trailblazor.TbRichTextEditor.MaxLines.get -> int?
 Trailblazor.TbRichTextEditor.MaxLines.set -> void
+Trailblazor.TbRichTextEditor.MentionTriggers.get -> string?
+Trailblazor.TbRichTextEditor.MentionTriggers.set -> void
 Trailblazor.TbRichTextEditor.Placeholder.get -> string?
 Trailblazor.TbRichTextEditor.Placeholder.set -> void
 Trailblazor.TbRichTextEditor.ShowToolbar.get -> bool
@@ -3819,12 +3822,17 @@ Trailblazor.RichTextParagraphKind
 Trailblazor.RichTextParagraphKind.Paragraph = 0 -> Trailblazor.RichTextParagraphKind
 Trailblazor.RichTextRun.RichTextRun(string! text, Trailblazor.RichTextFormats formats = Trailblazor.RichTextFormats.None, string? link = null) -> void
 Trailblazor.RichTextRun.Link.get -> string?
+Trailblazor.RichTextRun.Mention.get -> Trailblazor.Mention?
+Trailblazor.RichTextRun.RichTextRun(Trailblazor.Mention! mention) -> void
+Trailblazor.RichTextRun.RichTextRun(Trailblazor.Mention! mention, Trailblazor.RichTextFormats formats) -> void
 Trailblazor.RichTextSchema.Formats.get -> Trailblazor.RichTextFormats
 Trailblazor.RichTextSchema.Formats.init -> void
 Trailblazor.RichTextSchema.Blocks.get -> Trailblazor.RichTextBlocks
 Trailblazor.RichTextSchema.Blocks.init -> void
 Trailblazor.RichTextSchema.LinkSchemes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.RichTextSchema.LinkSchemes.init -> void
+Trailblazor.RichTextSchema.Mentions.get -> bool
+Trailblazor.RichTextSchema.Mentions.init -> void
 Trailblazor.RichTextSchema
 Trailblazor.RichTextSchema.<Clone>$() -> Trailblazor.RichTextSchema!
 Trailblazor.RichTextSchema.Equals(Trailblazor.RichTextSchema? other) -> bool

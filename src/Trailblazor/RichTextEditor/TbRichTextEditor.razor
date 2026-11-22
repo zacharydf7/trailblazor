@@ -163,6 +163,13 @@
     [Parameter]
     public IReadOnlyList<string> ImageSchemes { get; set; } = RichTextSchema.Default.ImageSchemes;
 
+    /// <summary>The characters that start a mention, such as <c>"@"</c>, or <c>"@#"</c> for people and tags. With
+    /// any set, the editor keeps the mentions in its value and in what is pasted, whatever their trigger, as
+    /// <see cref="RichTextSchema.Mentions"/> describes, each as one unit that the caret steps over and Backspace or
+    /// Delete removes whole. Without any, a mention reads as its text. Defaults to none.</summary>
+    [Parameter]
+    public string? MentionTriggers { get; set; }
+
     /// <summary>Stores an image file the user chose, such as in the app's storage, and returns its URL. Read the file
     /// with <c>OpenReadStream(MaxImageSize, token)</c>, since the stream's default limit is only 512 KB, and pass the
     /// token to any other work too: it's canceled if the dialog closes first, as when the user cancels. With this and
@@ -328,9 +335,12 @@
 
     private bool ShowsImageButton => Blocks.HasFlag(RichTextBlocks.Images) && UploadImage is not null;
 
+    private bool KeepsMentions => !string.IsNullOrEmpty(MentionTriggers);
+
     private RichTextSchema Schema => new()
     {
         Formats = Formats, Blocks = Blocks, LinkSchemes = LinkSchemes, ImageSchemes = ImageSchemes,
+        Mentions = KeepsMentions,
     };
 
     // The value as the editor holds it: parsed, so only the allowed formats and safe markup reach the page.
@@ -401,6 +411,7 @@
             .Concat(Blocks.HasFlag(RichTextBlocks.Tables) ? ["table"] : [])),
         links = Formats.HasFlag(RichTextFormats.Link) ? string.Join(' ', LinkSchemes) : null,
         images = Blocks.HasFlag(RichTextBlocks.Images) ? string.Join(' ', ImageSchemes) : null,
+        mentions = KeepsMentions,
         transformsPaste = TransformPaste is not null,
         readOnly = ReadOnly,
         updateOnInput = UpdateOnInput,

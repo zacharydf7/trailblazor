@@ -163,7 +163,7 @@ public class TbRichTextEditorTests : BunitContext
 
         Assert.Equal("<p><strong>Hi</strong> there</p>", arguments[1]);
         Assert.Equal("""{"formats":"bold","blocks":"quote bullet","links":null,"images":null,"""
-            + "\"transformsPaste\":false,"
+            + "\"mentions\":false,\"transformsPaste\":false,"
             + "\"readOnly\":false,\"updateOnInput\":true,\"updateDelay\":250}", JsonSerializer.Serialize(arguments[2]));
     }
 
@@ -375,6 +375,38 @@ public class TbRichTextEditorTests : BunitContext
 
         Assert.Equal("<p>typed</p>", cut.Instance.Value);
         Assert.Empty(_handle.Invocations["setValue"]);
+    }
+
+    [Fact]
+    public async Task Change_ShouldKeepAMentionAndLeaveTheScriptAlone_WhenTheEditorHasMentionTriggers()
+    {
+        const string Html = "<p>Ask <span data-mention=\"42\" data-trigger=\"@\">@Ada</span> today</p>";
+        string? value = null;
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.MentionTriggers, "@").Add(editor => editor.ValueChanged, (string html) => value = html));
+
+        await ChangeAsync(cut, Html);
+
+        // The server reads the mention back as the script wrote it, so it has nothing to correct.
+        Assert.Equal(Html, value);
+        Assert.Empty(_handle.Invocations["setValue"]);
+        var options = JsonSerializer.Serialize(_module.Invocations["attachRichTextEditor"].Single().Arguments[2]);
+        Assert.Contains("\"mentions\":true", options);
+    }
+
+    [Fact]
+    public async Task Change_ShouldTakeAMentionAsItsText_WhenTheEditorHasNoMentionTriggers()
+    {
+        string? value = null;
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.ValueChanged, (string html) => value = html));
+
+        await ChangeAsync(cut, "<p>Ask <span data-mention=\"42\" data-trigger=\"@\">@Ada</span> today</p>");
+
+        Assert.Equal("<p>Ask @Ada today</p>", value);
+        Assert.Equal("<p>Ask @Ada today</p>", Assert.Single(_handle.Invocations["setValue"]).Arguments[0]);
+        var options = JsonSerializer.Serialize(_module.Invocations["attachRichTextEditor"].Single().Arguments[2]);
+        Assert.Contains("\"mentions\":false", options);
     }
 
     [Fact]

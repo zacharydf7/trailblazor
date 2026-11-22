@@ -7,7 +7,8 @@ namespace Trailblazor;
 public sealed class RichTextParagraph
 {
     /// <summary>Creates a paragraph from its runs. Empty runs are dropped, and neighbors with the same formats and
-    /// link are joined, so the paragraph keeps the fewest runs that say the same thing.</summary>
+    /// link are joined, so the paragraph keeps the fewest runs that say the same thing. A mention stays a run of its
+    /// own.</summary>
     /// <param name="runs">The runs, in order. A rule has none.</param>
     /// <param name="kind">What kind of block the paragraph is. An image needs
     /// <see cref="RichTextParagraph(RichTextImage)"/> instead, and a table cell
@@ -44,6 +45,14 @@ public sealed class RichTextParagraph
         RichTextRun? style = null;
         foreach (var run in runs.Where(run => run.Text.Length > 0))
         {
+            if (run.Mention is not null)
+            {
+                Flush();
+                joined.Add(run);
+                style = null;
+                continue;
+            }
+
             if (run.Formats != style?.Formats || run.Link != style?.Link)
             {
                 Flush();

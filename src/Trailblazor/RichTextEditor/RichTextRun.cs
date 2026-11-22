@@ -1,7 +1,7 @@
 namespace Trailblazor;
 
 /// <summary>A stretch of text in a <see cref="RichTextParagraph"/> that has one set of formats and at most one link.
-/// </summary>
+/// A run can instead be a mention: one unit of text with formats but no link.</summary>
 public sealed record RichTextRun
 {
     /// <summary>Creates a run.</summary>
@@ -17,6 +17,26 @@ public sealed record RichTextRun
     public RichTextRun(string text, RichTextFormats formats = RichTextFormats.None, string? link = null)
         : this(text, formats, link, vetted: false)
     {
+    }
+
+    /// <summary>Creates a run that is a mention: one unit of text that carries the app's id for the person or thing
+    /// mentioned.</summary>
+    /// <param name="mention">The mention. The run's text is its trigger followed by its item's text, each cleaned as
+    /// a run's text is, with line breaks as spaces too. The item's description isn't kept, and an empty id is none.
+    /// </param>
+    public RichTextRun(Mention mention) : this(mention, RichTextFormats.None)
+    {
+    }
+
+    /// <summary>Creates a run that is a mention with formats.</summary>
+    /// <param name="mention">The mention, as in <see cref="RichTextRun(Mention)"/>.</param>
+    /// <param name="formats">The formats the text has. A mention can't be a link.</param>
+    /// <exception cref="ArgumentException">The formats are both subscript and superscript, or they have
+    /// <see cref="RichTextFormats.Link"/>.</exception>
+    public RichTextRun(Mention mention, RichTextFormats formats)
+        : this(Cleaned(mention).Trigger + Cleaned(mention).Item.Text, formats, link: null, vetted: true)
+    {
+        Mention = Cleaned(mention);
     }
 
     // The reader and paragraphs pass links already cleaned and checked, so a long link isn't scanned again per run.
@@ -57,4 +77,20 @@ public sealed record RichTextRun
 
     /// <summary>The URL the text links to, or null for none.</summary>
     public string? Link { get; }
+
+    /// <summary>The mention the run is, or null for ordinary text. A mention's <see cref="Text"/> is its trigger
+    /// followed by its item's text.</summary>
+    public Mention? Mention { get; }
+
+    private static Mention Cleaned(Mention mention)
+    {
+        ArgumentNullException.ThrowIfNull(mention);
+        return new(Clean(mention.Trigger), new MentionItem(Clean(mention.Item.Text))
+        {
+            Id = string.IsNullOrEmpty(mention.Item.Id) ? null : mention.Item.Id,
+        });
+    }
+
+    private static string Clean(string text) => text.Replace('\r', ' ').Replace('\n', ' ').Replace('\t', ' ')
+        .Replace('\f', ' ').Replace('\u00A0', ' ');
 }

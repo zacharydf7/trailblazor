@@ -9,6 +9,7 @@
         <TbTableOfContentsItem TargetId="reading-html" Text="Reading HTML" />
         <TbTableOfContentsItem TargetId="safe-to-show" Text="Safe to show" />
         <TbTableOfContentsItem TargetId="paragraphs-and-runs" Text="Paragraphs and runs" />
+        <TbTableOfContentsItem TargetId="mentions" Text="Mentions" />
         <TbTableOfContentsItem TargetId="markdown" Text="Markdown" />
         <TbTableOfContentsItem TargetId="api" Text="API" />
         <TbTableOfContentsItem TargetId="related" Text="Related" />
@@ -147,6 +148,25 @@
         <CodeBlock Label="Reading runs" Code="@ReadingRuns" />
         <CodeBlock Label="Building a document" Code="@Building" />
 
+        <DocsHeading Id="mentions" Text="Mentions" Class="docs-section" />
+        <TbText>
+            A run can be a mention of a person or thing: one unit of text that carries the app's id for what it
+            mentions. Its <code>Mention</code> has the trigger it was typed with, such as <code>@@</code>, and the
+            item's text and id, and its <code>Text</code> is the trigger followed by the item's text. A mention
+            never joins the runs beside it and can't be a link, though it can have formats. In HTML it is a
+            <code>span</code> with the id in <code>data-mention</code> and the trigger in
+            <code>data-trigger</code>, so the id survives a round trip; markdown has no form for one, so
+            <code>ToMarkdown</code> writes its text. HTML is read with its mentions only when the schema's
+            <code>Mentions</code> is on, which it isn't by default: other editors write
+            <code>data-mention</code> too, with ids of their own, so pasted HTML shouldn't bring mentions into an
+            app that has none. The document's own <code>Mentions</code> lists its mentions in order,
+            for example to notify the people a saved note mentions. The ids come from the HTML, so check each one
+            before acting on it, as you would any other input. A
+            <a href="components/rich-text-editor">rich text editor</a> keeps mentions when it has
+            <code>MentionTriggers</code>, and there a mention moves and deletes as one character.
+        </TbText>
+        <CodeBlock Label="Reading and writing mentions" Code="@Mentions" />
+
         <DocsHeading Id="markdown" Text="Markdown" Class="docs-section" />
         <TbText>
             <code>FromMarkdown</code> reads markdown into a document, keeping what a schema allows, as
@@ -237,6 +257,21 @@
 
         // A rich text editor's value, stored as markdown
         var markdown = RichTextDocument.Parse(notesHtml).ToMarkdown();
+        """;
+
+    private const string Mentions = """
+        var ada = new Mention("@", new MentionItem("Ada Lovelace") { Id = "42" });
+        var note = new RichTextDocument([new RichTextParagraph([new("Ask "), new(ada), new(" about the bridge.")])]);
+
+        // <p>Ask <span data-mention="42" data-trigger="@">@Ada Lovelace</span> about the bridge.</p>
+        var html = note.ToHtml();
+
+        var schema = RichTextSchema.Default with { Mentions = true };
+        foreach (var mention in RichTextDocument.Parse(html, schema).Mentions)
+        {
+            // Look the id up before trusting it: the HTML may not be what the editor wrote.
+            await NotifyAsync(mention.Item.Id);
+        }
         """;
 
     private const string Building = """

@@ -3979,6 +3979,14 @@
         font-size: 0.9em;
     }
 
+    /* The border shows in forced colors, where the tint doesn't. */
+    :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) [data-mention] {
+        padding-inline: 0.2em;
+        border: 1px solid transparent;
+        border-radius: var(--tb-radius-sm);
+        background: color-mix(in srgb, var(--tb-color-primary) 12%, transparent);
+    }
+
     :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) hr {
         margin-block: 0.75em;
         border: 0;
