@@ -57,6 +57,26 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldShowItsSubmitButtonBusyAndHandleOneSubmit_WhenMoreArriveWhileTheHandlerRuns(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/form-submitting");
+        await Field(page, "Guest").FillAsync("Robin");
+
+        await Field(page, "Guest").PressAsync("Enter");
+
+        await Expect(Button(page, "Book")).ToHaveAttributeAsync("aria-busy", "true");
+        // Playwright treats aria-disabled as disabled and would wait until the timeout without Force.
+        await Button(page, "Book").ClickAsync(new() { Force = true });
+        await Field(page, "Guest").PressAsync("Enter");
+        await Button(page, "Finish").ClickAsync();
+
+        // Finish round-trips after both extra submits, so either would have been counted by now.
+        await Expect(Button(page, "Book")).Not.ToHaveAttributeAsync("aria-busy", "true");
+        await Expect(page.GetByTestId("bookings")).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldSubmitOnceInteractive_WhenThePageIsStillPrerendered(string browser)
     {
         var (page, held) = await OpenHeldAsync(browser, "/examples/form");

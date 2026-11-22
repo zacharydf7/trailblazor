@@ -22,7 +22,8 @@ public sealed class TbFormLocator(ILocator scope, string? name)
     /// has handled it: raised <c>OnSubmit</c> when it has one, or else checked the fields and raised
     /// <c>OnValidSubmit</c> or <c>OnInvalidSubmit</c>. The wait also ends when handling it takes the form off the page,
     /// and when a dialog opens, since a handler that awaits the dialog's answer finishes only once the test answers it.
-    /// A disabled form ignores it. A statically rendered form posts with the browser, without the wait.</summary>
+    /// A disabled form ignores it, and so does a form still handling an earlier submit. A statically rendered form
+    /// posts with the browser, without the wait.</summary>
     public async Task SubmitAsync()
     {
         await Form.WaitForAsync();

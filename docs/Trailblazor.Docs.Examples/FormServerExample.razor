@@ -4,7 +4,7 @@
                  Error="@_siteError" Required RequiredMessage="Enter a campsite."
                  HelperText="Try Ridge 12, which is already taken." />
     <TbStack Row Gap="2">
-        <TbButton Type="ButtonType.Submit" Loading="_saving">Reserve</TbButton>
+        <TbButton Type="ButtonType.Submit">Reserve</TbButton>
     </TbStack>
     <output>@_reserved</output>
 </TbForm>
@@ -13,15 +13,12 @@
     private TbTextField<string> _siteField = default!;
     private string? _site;
     private string? _siteError;
-    private bool _saving;
     private string? _reserved;
 
     private async Task ReserveAsync()
     {
-        _saving = true;
         _reserved = null;
         var error = await SendToServerAsync(_site);
-        _saving = false;
         if (error is null)
         {
             _reserved = $"Reserved {_site}.";

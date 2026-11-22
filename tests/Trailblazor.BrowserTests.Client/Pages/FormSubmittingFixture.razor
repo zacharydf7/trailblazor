@@ -1,0 +1,22 @@
+@page "/form-submitting"
+
+@* A form whose handler waits for Finish, which holds it in the middle of a submit. *@
+<TbForm aria-label="Booking" OnValidSubmit="BookAsync">
+    <TbTextField Label="Guest" @bind-Value="_guest" />
+    <TbButton Type="ButtonType.Submit">Book</TbButton>
+</TbForm>
+<TbButton OnClick="() => _hold.TrySetResult()">Finish</TbButton>
+<p>Bookings: <span data-testid="bookings">@_bookings</span></p>
+
+@code {
+    private TaskCompletionSource _hold = new();
+    private string? _guest;
+    private int _bookings;
+
+    private async Task BookAsync()
+    {
+        _bookings++;
+        await _hold.Task;
+        _hold = new();
+    }
+}

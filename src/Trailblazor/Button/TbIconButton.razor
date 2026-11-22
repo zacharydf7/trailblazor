@@ -30,7 +30,7 @@ else
     public IconButtonClasses? Classes { get; set; }
 
     private RenderFragment Button => Root("tb-icon-button", AriaLabel, @<text>
-        @if (Loading)
+        @if (Busy)
         {
             <span data-part="spinner" class="@ClassNames.Join("tb-button__spinner", Classes?.Spinner)"></span>
         }

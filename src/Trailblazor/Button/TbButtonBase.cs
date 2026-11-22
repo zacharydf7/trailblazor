@@ -37,7 +37,8 @@ public abstract partial class TbButtonBase : TbComponentBase
     public bool FocusableWhenDisabled { get; set; }
 
     /// <summary>Shows a busy spinner and ignores clicks, but keeps the button focusable so focus isn't lost while
-    /// the work runs.</summary>
+    /// the work runs. A submit button in a <see cref="TbForm"/> shows the same while the form handles a submit,
+    /// unless the form's <c>ShowSubmitting</c> is off.</summary>
     [Parameter]
     public bool Loading { get; set; }
 
@@ -69,7 +70,8 @@ public abstract partial class TbButtonBase : TbComponentBase
     [Parameter]
     public ButtonType Type { get; set; } = ButtonType.Button;
 
-    /// <summary>Raised when the button is clicked, unless it is disabled or loading.</summary>
+    /// <summary>Raised when the button is clicked, unless it is disabled or loading, or it is a submit button whose
+    /// form is handling a submit.</summary>
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -87,6 +89,9 @@ public abstract partial class TbButtonBase : TbComponentBase
     [CascadingParameter(Name = TbForm.DisabledCascade)]
     private bool FormDisabled { get; set; }
 
+    [CascadingParameter(Name = TbForm.SubmittingCascade)]
+    private bool FormSubmitting { get; set; }
+
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
 
@@ -99,6 +104,8 @@ public abstract partial class TbButtonBase : TbComponentBase
     private bool Off => Disabled || Group?.Disabled == true
         || (FormDisabled && Type is ButtonType.Submit or ButtonType.Reset);
 
+    private protected bool Busy => Loading || (FormSubmitting && Type is ButtonType.Submit);
+
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
     private string TypeAttribute => Type.ToString().ToLowerInvariant();
@@ -106,7 +113,7 @@ public abstract partial class TbButtonBase : TbComponentBase
     private bool Toggles => PressedChanged.HasDelegate;
 
     // Still focusable, but nothing happens when it is pressed.
-    private bool Inert => Loading || (Off && FocusableWhenDisabled);
+    private bool Inert => Busy || (Off && FocusableWhenDisabled);
 
     private int? Clicks => RendererInfo.IsInteractive ? _clicks : null;
 
@@ -160,7 +167,7 @@ public abstract partial class TbButtonBase : TbComponentBase
 
     private async Task HandleClickAsync(MouseEventArgs args)
     {
-        if (Off || Loading)
+        if (Off || Busy)
         {
             return;
         }

@@ -5846,6 +5846,12 @@ Trailblazor.TbFieldBase<TValue>.ValidationStatus.get -> Trailblazor.FieldValidat
 Trailblazor.TbFieldBase<TValue>.ValidationStatusChanged.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.FieldValidationStatus>
 Trailblazor.TbFieldBase<TValue>.ValidationStatusChanged.set -> void
 Trailblazor.TbForm.IsValidating.get -> bool
+Trailblazor.TbForm.IsSubmitting.get -> bool
+Trailblazor.TbForm.IsSubmitting.set -> void
+Trailblazor.TbForm.IsSubmittingChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
+Trailblazor.TbForm.IsSubmittingChanged.set -> void
+Trailblazor.TbForm.ShowSubmitting.get -> bool
+Trailblazor.TbForm.ShowSubmitting.set -> void
 Trailblazor.ChatAttachment
 Trailblazor.ChatAttachment.<Clone>$() -> Trailblazor.ChatAttachment!
 Trailblazor.ChatAttachment.ChatAttachment(string! Name, string! Url) -> void

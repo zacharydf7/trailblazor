@@ -241,9 +241,12 @@
 
         <DocsHeading Id="submit-in-progress" Text="A submit in progress" Class="docs-section" />
         <TbText>
-            Set <code>Loading</code> on the submit button while the save runs. It shows a spinner and is marked busy for
-            screen readers, ignores more clicks, and stays focusable, so focus isn't lost. When the save finishes, say
-            so: an <code>output</code> element reads out changes to its text, or use the
+            While the form's handler runs, each submit button in the form shows a spinner, is marked busy for screen
+            readers and ignores more clicks, as a button with <code>Loading</code> does. It stays focusable, so focus
+            isn't lost. The form drops a second submit meanwhile, so the handler needs no flag of its own.
+            <code>@@bind-IsSubmitting</code> lets the page follow it, such as to turn off a cancel button, and
+            <code>ShowSubmitting="false"</code> leaves the buttons as they are. When the save finishes, say so: an
+            <code>output</code> element reads out changes to its text, or use the
             <a href="guides/announcements">announcer</a>.
         </TbText>
         <CodeBlock Label="Saving" Code="@Saving" />
@@ -463,15 +466,19 @@
         """;
 
     private const string Saving = """
-        <TbButton Type="ButtonType.Submit" Loading="_saving">Reserve</TbButton>
+        <TbForm OnValidSubmit="ReserveAsync" @bind-IsSubmitting="_reserving">
+            <TbTextField Label="Campsite" @bind-Value="_site" Required />
+            <TbButton Type="ButtonType.Submit">Reserve</TbButton>
+            <TbButton Variant="Variant.Outlined" Disabled="_reserving">Cancel</TbButton>
+        </TbForm>
         <output>@_reserved</output>
 
         @code {
+            private bool _reserving;
+
             private async Task ReserveAsync()
             {
-                _saving = true;
                 await SendToServerAsync(_site);
-                _saving = false;
                 _reserved = $"Reserved {_site}.";
             }
         }

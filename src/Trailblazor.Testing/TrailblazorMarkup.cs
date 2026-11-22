@@ -1575,8 +1575,9 @@ public sealed class TbFormDriver
         .Select(message => message.TextContent.Trim())];
 
     /// <summary>Submits the form as its submit button does: it raises <c>OnSubmit</c> when it has one, and otherwise
-    /// checks the fields and raises <c>OnValidSubmit</c> or <c>OnInvalidSubmit</c>. A disabled form ignores it. Throws
-    /// on a static page, where the form would post with the browser.</summary>
+    /// checks the fields and raises <c>OnValidSubmit</c> or <c>OnInvalidSubmit</c>. A disabled form ignores it, and so
+    /// does a form still handling an earlier submit. Throws on a static page, where the form would post with the
+    /// browser.</summary>
     public async Task SubmitAsync()
     {
         var form = _find();

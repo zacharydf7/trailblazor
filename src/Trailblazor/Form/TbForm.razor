@@ -19,7 +19,11 @@
         @* Not fixed, so submit and reset buttons follow Disabled, and required marks follow RequiredMarkers, without
            being rendered again by their parents. *@
         <CascadingValue Value="Disabled" Name="@DisabledCascade">
-            <CascadingValue Value="!RequiredMarkers" Name="@HiddenMarkersCascade">@ChildContent</CascadingValue>
+            <CascadingValue Value="!RequiredMarkers" Name="@HiddenMarkersCascade">
+                <CascadingValue Value="@(_submitting && ShowSubmitting)" Name="@SubmittingCascade">
+                    @ChildContent
+                </CascadingValue>
+            </CascadingValue>
         </CascadingValue>
     </CascadingValue>
 </EditForm>
@@ -28,6 +32,7 @@
 @code {
     internal const string DisabledCascade = "TbForm.Disabled";
     internal const string HiddenMarkersCascade = "TbForm.HiddenMarkers";
+    internal const string SubmittingCascade = "TbForm.Submitting";
 
     private readonly List<IFormField> _fields = [];
     private readonly string _id = $"tb-form-{Guid.NewGuid():N}";
@@ -40,6 +45,8 @@
     private bool _stale = true;
     // How many submits the form has finished handling; the Playwright driver waits for it to change.
     private int _submits;
+    // IsSubmitting is a parameter the parent can overwrite, so the form tracks the real state here.
+    private bool _submitting;
     // While a field's edit, a reset or a validation is under way, renders and the context's events hold their report
     // until it ends.
     private int _edits;
@@ -93,6 +100,24 @@
     /// readers they're required, and still show their message when left empty.</summary>
     [Parameter]
     public bool RequiredMarkers { get; set; } = true;
+
+    /// <summary>Shows each submit button in the form as busy while the form handles a submit, as the button's
+    /// <c>Loading</c> does: with a spinner, marked busy for screen readers, and still focusable. Turn it off to show
+    /// the wait another way, from <see cref="IsSubmitting"/>. A second submit is dropped either way.</summary>
+    [Parameter]
+    public bool ShowSubmitting { get; set; } = true;
+
+    /// <summary>Whether the form is handling a submit: from the submit, through its checks, until
+    /// <see cref="OnSubmit"/>, <see cref="OnValidSubmit"/> or <see cref="OnInvalidSubmit"/> finishes, even by
+    /// throwing. A submit that arrives meanwhile is dropped, and the form's submit buttons show as busy unless
+    /// <see cref="ShowSubmitting"/> is off. Bind it with <c>@bind-IsSubmitting</c>, such as to turn off a cancel
+    /// button meanwhile. Setting it from the page doesn't start or end a submit.</summary>
+    [Parameter]
+    public bool IsSubmitting { get; set; }
+
+    /// <summary>Raised when <see cref="IsSubmitting"/> changes.</summary>
+    [Parameter]
+    public EventCallback<bool> IsSubmittingChanged { get; set; }
 
     /// <summary>Whether the form would pass now: no <c>Required</c> field is empty, no field holds a number past its
     /// limits, every field's <c>Validation</c> passes, the model's data annotations pass when <see
@@ -428,12 +453,28 @@
 
     private async Task HandleSubmitAsync(EditContext context)
     {
-        // Enter in a field, or a submit button the form doesn't know of, can still post a disabled form.
-        if (Disabled)
+        // Enter in a field, or a submit button the form doesn't know of, can still post a disabled form. A second
+        // submit is dropped while the first is handled, as static-form.js drops one on a static page.
+        if (Disabled || _submitting)
         {
             return;
         }
 
+        _submitting = IsSubmitting = true;
+        try
+        {
+            await IsSubmittingChanged.InvokeAsync(true);
+            await RaiseSubmitAsync(context);
+        }
+        finally
+        {
+            _submitting = IsSubmitting = false;
+            await IsSubmittingChanged.InvokeAsync(false);
+        }
+    }
+
+    private async Task RaiseSubmitAsync(EditContext context)
+    {
         if (OnSubmit.HasDelegate)
         {
             await OnSubmit.InvokeAsync(context);

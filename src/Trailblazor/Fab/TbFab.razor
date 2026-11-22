@@ -3,7 +3,7 @@
 
 @Root(ClassNames.Join("tb-fab", ClassNames.Modifier("tb-fab", Position), Extended ? "tb-fab--extended" : null),
     Extended ? null : Label, @<text>
-        @if (Loading)
+        @if (Busy)
         {
             <span data-part="spinner" class="tb-button__spinner"></span>
         }

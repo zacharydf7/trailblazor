@@ -14,10 +14,10 @@
                    tabindex="@(Off ? (FocusableWhenDisabled ? "0" : null) : Theirs("tabindex"))"
                    data-kept-focusable="@(Off && FocusableWhenDisabled ? "" : null)"
                    aria-label="@(ariaLabel ?? Theirs("aria-label"))"
-                   aria-disabled="@(Off || Loading ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
+                   aria-disabled="@(Off || Busy ? "true" : null)" aria-busy="@(Busy ? "true" : null)"
                    data-clicks="@Clicks" data-static="@StaticMark"
                    class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"
-                   @onclick:preventDefault="Loading">
+                   @onclick:preventDefault="Busy">
                     @content
                 </a>
             }
@@ -26,7 +26,7 @@
                 <button @ref="_element" @attributes="AdditionalAttributes" type="@TypeAttribute"
                         disabled="@(Off && !FocusableWhenDisabled)"
                         aria-label="@(ariaLabel ?? Theirs("aria-label"))"
-                        aria-disabled="@(Inert ? "true" : null)" aria-busy="@(Loading ? "true" : null)"
+                        aria-disabled="@(Inert ? "true" : null)" aria-busy="@(Busy ? "true" : null)"
                         data-clicks="@Clicks" data-static="@StaticMark"
                         aria-pressed="@(Toggles ? (Mixed ? "mixed" : Pressed ? "true" : "false")
                                           : Theirs("aria-pressed"))"

@@ -2,7 +2,7 @@
 @inherits TbButtonBase
 
 @Root(FullWidth ? "tb-button--full-width" : null, null, @<text>
-    @if (Loading)
+    @if (Busy)
     {
         <span data-part="spinner" class="@ClassNames.Join("tb-button__spinner", Classes?.Spinner)"></span>
     }

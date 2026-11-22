@@ -1436,9 +1436,10 @@ public static class ExampleCatalog
                     + "button's name, and slot content adds to it only if it has text of its own.",
                     typeof(ButtonIconExample)),
                 new("loading", "Loading", "`Loading` shows a spinner and ignores clicks, so a slow action can't run "
-                    + "twice. The button stays focusable, so focus isn't lost while it waits. On a static page, a "
-                    + "`TbForm`'s submit button also shows a spinner and ignores a second press while its post is on "
-                    + "its way, for up to 10 seconds.",
+                    + "twice. The button stays focusable, so focus isn't lost while it waits. A `TbForm`'s submit "
+                    + "button shows the same by itself while the form handles a submit. On a static page, where "
+                    + "there's no handler to wait for, it does the same while its post is on its way, for up to "
+                    + "10 seconds.",
                     typeof(ButtonLoadingExample)),
                 new("disabled", "Disabled", "`Disabled` turns the button off and takes it out of the tab order. With "
                     + "`FocusableWhenDisabled` it stays a tab stop, so its tooltip can say why it is off.",
@@ -5155,8 +5156,9 @@ public static class ExampleCatalog
                     + "and other buttons in the form aren't affected.",
                     typeof(FormLockedExample)),
                 new("server-errors", "Server errors", "A field's `Error` shows what the server said, and blocks the "
-                    + "next submit until it is cleared, so clear it when the value changes. `Loading` shows the save "
-                    + "is running and ignores more clicks.", typeof(FormServerExample)),
+                    + "next submit until it is cleared, so clear it when the value changes. While the handler runs, "
+                    + "the form shows its submit button as busy and drops a second submit, so the page needs no "
+                    + "flag of its own.", typeof(FormServerExample)),
                 new("error-summary", "Error summary", "For a long form, list the errors above it, and let each one "
                     + "move focus to its field. `OnSubmit` leaves focus to you, so the summary can take it, and the "
                     + "page title starts with \"Error:\" while there are errors.", typeof(FormErrorSummaryExample)),
@@ -5194,6 +5196,9 @@ public static class ExampleCatalog
                     + "`FocusAsync()` would.",
                 "With `OnSubmit`, focus stays where it is, so your handler can move it.",
                 "A reset leaves focus where it was.",
+                "While the form handles a submit, each submit button in it shows a spinner, is marked "
+                    + "`aria-busy` and `aria-disabled`, and stays focusable, as a button with `Loading` does, unless "
+                    + "`ShowSubmitting` is off.",
             ],
             AppDuties =
             [
@@ -5229,6 +5234,11 @@ public static class ExampleCatalog
                     + "[guide](guides/forms#model-and-data-annotations) says which message."),
                 new("A form with `OnSubmit` isn't counted in `trailblazor.form.submitted`, since it doesn't validate "
                     + "the submit itself."),
+                new("From a submit until its handler finishes, `IsSubmitting` is true, the form's submit buttons "
+                    + "show as busy, and another submit is dropped. `ShowSubmitting=\"false\"` leaves the buttons "
+                    + "as they are. A submit button outside the form, tied to it with the `form` attribute, doesn't "
+                    + "show as busy, since the form's cascade doesn't reach it. Its second submit is still "
+                    + "dropped. Bind `@bind-IsSubmitting` and set that button's `Loading` from it."),
                 new("Every field has `FocusAsync()`, to move focus from code. A disabled field doesn't take focus."),
                 new("A reset leaves a field's `Error` in place, so clear it in `OnReset` if the form is starting over. A "
                     + "message from a `DataAnnotationsValidator` inside the form stays too, unless the reset changes "
