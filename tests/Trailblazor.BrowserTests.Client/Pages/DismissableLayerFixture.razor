@@ -56,14 +56,16 @@
         if (_outerOpen && _outerLayer is null)
         {
             var onDismiss = EventCallback.Factory.Create<DismissReason>(this, reason => Dismiss("outer", reason));
-            _outerLayer = await DismissableLayer.CreateAsync(Modules, _outerElement, _outerTrigger, onDismiss);
+            _outerLayer = await DismissableLayer.CreateAsync(Modules, _outerElement, _outerTrigger, onDismiss,
+                DispatchExceptionAsync);
             changed = true;
         }
 
         if (_innerOpen && _innerLayer is null)
         {
             var onDismiss = EventCallback.Factory.Create<DismissReason>(this, reason => Dismiss("inner", reason));
-            _innerLayer = await DismissableLayer.CreateAsync(Modules, _innerElement, _innerTrigger, onDismiss);
+            _innerLayer = await DismissableLayer.CreateAsync(Modules, _innerElement, _innerTrigger, onDismiss,
+                DispatchExceptionAsync);
             changed = true;
         }
 

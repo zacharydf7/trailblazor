@@ -99,7 +99,10 @@ public abstract partial class TbListBoxBase<[DynamicallyAccessedMembers(Dynamica
                 return;
             }
 
-            _events = Multiple ? DotNetObjectReference.Create(new ListBoxEvents(ChooseAllAsync, ChooseRangeAsync)) : null;
+            _events = Multiple
+                ? DotNetObjectReference.Create(
+                    new ListBoxEvents(DispatchExceptionAsync, ChooseAllAsync, ChooseRangeAsync))
+                : null;
             var handle = await module.InvokeAsync<IJSObjectReference?>("attachListBox", _listbox, _events);
             if (handle is not null && _disposed)
             {

@@ -156,7 +156,7 @@ public partial class TbColorPicker : IAsyncDisposable
             return;
         }
 
-        _events = DotNetObjectReference.Create(new ColorPickerEvents(OnPadAsync));
+        _events = DotNetObjectReference.Create(new ColorPickerEvents(DispatchExceptionAsync, OnPadAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("createColorPad", _pad, _events);
         if (_disposed && handle is not null)
         {

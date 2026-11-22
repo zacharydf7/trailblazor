@@ -98,7 +98,7 @@
                 return;
             }
 
-            _events = DotNetObjectReference.Create(new MenuEvents(OnToggleAsync));
+            _events = DotNetObjectReference.Create(new MenuEvents(DispatchExceptionAsync, OnToggleAsync));
             var handle = await module.InvokeAsync<IJSObjectReference?>("createContextMenu", _target, _menu, _events);
             if (handle is not null && _disposed)
             {

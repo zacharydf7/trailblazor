@@ -97,7 +97,8 @@
                 return;
             }
 
-            _events = DotNetObjectReference.Create(new SpeechToTextEvents(_buttonId, TextAsync, ErrorAsync, StoppedBy));
+            _events = DotNetObjectReference.Create(
+                new SpeechToTextEvents(DispatchExceptionAsync, _buttonId, TextAsync, ErrorAsync, StoppedBy));
             var handle = await module.InvokeAsync<IJSObjectReference?>("attachSpeechToText", _root, _events);
             if (_disposed && handle is not null)
             {

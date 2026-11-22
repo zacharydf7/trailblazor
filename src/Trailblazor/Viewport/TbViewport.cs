@@ -179,7 +179,7 @@ public sealed partial class TbViewport : TbComponentBase, IAsyncDisposable
             return;
         }
 
-        _report = DotNetObjectReference.Create(new ViewportReport(OnZoomAsync));
+        _report = DotNetObjectReference.Create(new ViewportReport(DispatchExceptionAsync, OnZoomAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachViewport", _root, _report);
         if (handle is null)
         {

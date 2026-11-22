@@ -109,6 +109,22 @@ public class DockManagerTests(BrowserFixture fixture) : DockManagerPage(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldHandAFailingLayoutChangedToTheErrorBoundary_WhenAKeyClosesATab(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-failing");
+        var errors = new List<string>();
+        page.PageError += (_, error) => errors.Add(error);
+        await Expect(page.Locator(".tb-dock")).ToHaveAttributeAsync("data-ready", "");
+        await Tab(page, "Trails").FocusAsync();
+
+        await page.Keyboard.PressAsync("Delete");
+
+        await Expect(page.GetByTestId("caught")).ToHaveTextAsync("The app's handler failed.");
+        // The failure went to the renderer and not back to the script, where it would be an unhandled rejection.
+        Assert.Empty(errors);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dock_ShouldKeepAHiddenPanelOutOfReachAndAtItsScrollPosition_WhenAnotherTabShows(string browser)
     {
         var page = await OpenDockAsync(browser);

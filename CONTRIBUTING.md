@@ -29,6 +29,12 @@ An issue is done when all of these hold:
   click focuses a button, which it doesn't in Safari. To run tests as CI does, use an Ubuntu 24.04 container (the
   release `ci.yml` names) with the .NET SDK, the browsers from Playwright's `install --with-deps`, and the
   `fonts-dejavu-core` package.
+- An object a component hands its script to call back derives from `ScriptListener`, takes the component's
+  `DispatchExceptionAsync`, and runs each `[JSInvokable]` method through `Run`, with a fallback answer when the
+  script waits for one. A failure, the app's callback's included, then goes to the renderer, where an error
+  boundary catches it, and not back to the script. A component that is itself what its script calls uses
+  `ScriptListener.RunAsync`, as the dialog's frame does. `ScriptListenerContractTests` fails for an object that
+  does neither.
 - A script works on an element that may be in another browser window, so it asks that element for its window:
   `element.ownerDocument` for the focused element and for finding others, and `viewOf`, `watchSizes` and `frames` from
   `pages.js` for sizes, size changes and animation frames. A script with only an id uses `findById`, and one that

@@ -75,7 +75,7 @@
                 return;
             }
 
-            _events = DotNetObjectReference.Create(new TableOfContentsEvents(OnActiveAsync));
+            _events = DotNetObjectReference.Create(new TableOfContentsEvents(DispatchExceptionAsync, OnActiveAsync));
             _handle = await module.InvokeAsync<IJSObjectReference?>("attachTableOfContents", _root, _events);
             if (_disposed && _handle is not null)
             {

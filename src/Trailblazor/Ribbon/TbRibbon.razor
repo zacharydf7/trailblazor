@@ -224,7 +224,7 @@
                 return;
             }
 
-            _events = DotNetObjectReference.Create(new RibbonEvents(ToggleFromScriptAsync));
+            _events = DotNetObjectReference.Create(new RibbonEvents(DispatchExceptionAsync, ToggleFromScriptAsync));
             var handle = await module.InvokeAsync<IJSObjectReference?>("attachRibbonRoot", _root, _events);
             if (handle is not null && _disposed)
             {

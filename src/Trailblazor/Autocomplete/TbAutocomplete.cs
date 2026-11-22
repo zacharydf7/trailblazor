@@ -207,7 +207,8 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
                     return;
                 }
 
-                _events = DotNetObjectReference.Create(new AutocompleteEvents(OnToggleAsync, BrowseAsync));
+                _events = DotNetObjectReference.Create(
+                    new AutocompleteEvents(DispatchExceptionAsync, OnToggleAsync, BrowseAsync));
                 var handle = await module.InvokeAsync<IJSObjectReference?>("createAutocomplete", _input, _listbox,
                     _events);
                 if (handle is null)

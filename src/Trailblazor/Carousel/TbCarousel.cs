@@ -204,7 +204,8 @@ public partial class TbCarousel
                 return;
             }
 
-            _events = DotNetObjectReference.Create(new CarouselEvents(OnFocusEnter, OnFocusLeave, OnMoveEnd));
+            _events = DotNetObjectReference.Create(
+                new CarouselEvents(DispatchExceptionAsync, OnFocusEnter, OnFocusLeave, OnMoveEnd));
             var handle = await module.InvokeAsync<IJSObjectReference?>("createCarousel", _section, _events);
             if (handle is null)
             {

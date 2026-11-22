@@ -1,0 +1,22 @@
+@page "/dock-failing"
+
+@* The app's LayoutChanged throws, inside an error boundary that shows what it caught. *@
+<ErrorBoundary>
+    <ChildContent>
+        <div style="inline-size: 32rem; block-size: 16rem">
+            <TbDockManager Layout="_layout" LayoutChanged="Fail" AriaLabel="Hike planner">
+                <TbDockPanel Id="trails" Title="Trails">Trail list</TbDockPanel>
+                <TbDockPanel Id="map" Title="Map">Map</TbDockPanel>
+            </TbDockManager>
+        </div>
+    </ChildContent>
+    <ErrorContent Context="failure">
+        <p data-testid="caught">@failure.Message</p>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private readonly DockLayout _layout = new(new DockGroup("trails", "map"));
+
+    private static void Fail(DockLayout layout) => throw new InvalidOperationException("The app's handler failed.");
+}

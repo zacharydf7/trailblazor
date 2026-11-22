@@ -1750,8 +1750,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     // Rows can move once the app handles OnRowMove, which it may start doing after the first render.
     private async Task AttachReorderAsync()
     {
-        _moveEvents = DotNetObjectReference.Create(new SortableEvents(OnRowDragOverAsync, OnRowDropAsync,
-            OnRowKeyAsync) { Name = () => AriaLabel });
+        _moveEvents = DotNetObjectReference.Create(new SortableEvents(DispatchExceptionAsync, OnRowDragOverAsync,
+            OnRowDropAsync, OnRowKeyAsync) { Name = () => AriaLabel });
         // A grid marked ready before its rows could move isn't ready again until they can.
         if (_handle is not null && !_createdWaitingForReorder)
         {

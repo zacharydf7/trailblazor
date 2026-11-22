@@ -120,7 +120,7 @@
             try
             {
                 var layer = await DismissableLayer.CreateAsync(Modules, _overlay, null,
-                    EventCallback.Factory.Create<DismissReason>(this, OnDismissAsync));
+                    EventCallback.Factory.Create<DismissReason>(this, OnDismissAsync), DispatchExceptionAsync);
                 // The overlay may have closed, or gone, while the layer was being made.
                 if (_disposed || !Open || !CloseOnClick)
                 {

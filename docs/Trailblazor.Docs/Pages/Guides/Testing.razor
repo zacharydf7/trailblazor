@@ -737,6 +737,11 @@
                 where it awaits. Wherever these notes say a helper throws, it throws this way.
             </li>
             <li>
+                A helper that stands in for a component's script, such as a drag or a separator's
+                <code>ResizeAsync</code>, throws what the app's callback threw. With an <code>ErrorBoundary</code>
+                around the component, the boundary shows the failure and the helper doesn't throw, as in a browser.
+            </li>
+            <li>
                 Choosing needs an interactive page, since a static select is a native one that posts with its form. The
                 slider, autocomplete, color picker and file upload helpers throw on a static page for the same reason.
             </li>

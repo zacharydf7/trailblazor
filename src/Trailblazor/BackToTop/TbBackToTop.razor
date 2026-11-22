@@ -81,7 +81,7 @@
                 return;
             }
 
-            _events = DotNetObjectReference.Create(new BackToTopEvents(Shown));
+            _events = DotNetObjectReference.Create(new BackToTopEvents(DispatchExceptionAsync, Shown));
             _sent = (ScrollContainer, Threshold);
             var handle = await module.InvokeAsync<IJSObjectReference?>("attachBackToTop", _root, _events,
                 ScrollContainer, Threshold);

@@ -182,7 +182,8 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
             return;
         }
 
-        _events = DotNetObjectReference.Create(new CalendarEvents(OnShowDateAsync, OnPickAsync));
+        _events = DotNetObjectReference.Create(
+            new CalendarEvents(DispatchExceptionAsync, OnShowDateAsync, OnPickAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("createCalendar", _grid, _events,
             (int)DateCulture.DateTimeFormat.FirstDayOfWeek);
         if (handle is null)

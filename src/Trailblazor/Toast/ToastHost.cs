@@ -96,7 +96,7 @@ internal sealed class ToastHost : ComponentBase, IAsyncDisposable
                     return;
                 }
 
-                _events = DotNetObjectReference.Create(new ToasterEvents(OnPauseAsync));
+                _events = DotNetObjectReference.Create(new ToasterEvents(DispatchExceptionAsync, OnPauseAsync));
                 var handle = await module.InvokeAsync<IJSObjectReference?>("attachToaster", _element, _events);
                 if (handle is null)
                 {

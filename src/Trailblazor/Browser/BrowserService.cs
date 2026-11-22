@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
 
 namespace Trailblazor;
 
-internal sealed class BrowserService(JsModuleLoader modules) : IBrowserService
+internal sealed class BrowserService(JsModuleLoader modules, ILogger<BrowserService>? logger = null)
+    : IBrowserService
 {
     public async Task<bool> CopyTextAsync(string text) =>
         await (await ImportAsync()).InvokeAsync<bool>("copyText", text);
@@ -40,7 +42,7 @@ internal sealed class BrowserService(JsModuleLoader modules) : IBrowserService
 
     private async Task<IAsyncDisposable> ObserveAsync<T>(string function, Func<T, Task> onChange, params object[] args)
     {
-        var listener = DotNetObjectReference.Create(new BrowserListener<T>(onChange));
+        var listener = DotNetObjectReference.Create(new BrowserListener<T>(LogFailure, onChange));
         try
         {
             var handle = await (await ImportAsync()).InvokeAsync<IJSObjectReference>(function, [listener, .. args]);
@@ -51,6 +53,13 @@ internal sealed class BrowserService(JsModuleLoader modules) : IBrowserService
             listener.Dispose();
             throw;
         }
+    }
+
+    // The app's callback belongs to no component, so its failure has no renderer to go to and is logged instead.
+    private Task LogFailure(Exception exception)
+    {
+        logger?.LogError(exception, "A callback that observes the viewport or its breakpoint failed.");
+        return Task.CompletedTask;
     }
 
     private Task<IJSObjectReference> ImportAsync() => modules.ImportAsync("./_content/Trailblazor/browser.js");
@@ -74,8 +83,9 @@ internal sealed class BrowserService(JsModuleLoader modules) : IBrowserService
 }
 
 // Hears the browser report a change, so the service needn't expose [JSInvokable] methods.
-internal sealed class BrowserListener<T>(Func<T, Task> onChange)
+internal sealed class BrowserListener<T>(Func<Exception, Task> onException, Func<T, Task> onChange)
+    : ScriptListener(onException)
 {
     [JSInvokable]
-    public Task OnChange(T value) => onChange(value);
+    public Task OnChange(T value) => Run(() => onChange(value));
 }

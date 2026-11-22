@@ -10,6 +10,9 @@ public class DismissableLayerTests : BunitContext
 {
     private const string ModulePath = "./_content/Trailblazor.Primitives/dismissable-layer.js";
 
+    // No call in these tests fails, and one that did would fail its test.
+    private static Task Rethrow(Exception exception) => Task.FromException(exception);
+
     [Fact]
     public async Task CreateAsync_ShouldPassLayerAndTriggerToJs_WhenCalled()
     {
@@ -18,7 +21,7 @@ public class DismissableLayerTests : BunitContext
         var layer = new ElementReference("layer");
         var trigger = new ElementReference("trigger");
 
-        await DismissableLayer.CreateAsync(new JsModuleLoader(JSInterop.JSRuntime), layer, trigger, default);
+        await DismissableLayer.CreateAsync(new JsModuleLoader(JSInterop.JSRuntime), layer, trigger, default, Rethrow);
 
         var invocation = module.VerifyInvoke("createDismissableLayer");
         Assert.Equal(layer, invocation.Arguments[0]);
@@ -32,7 +35,7 @@ public class DismissableLayerTests : BunitContext
         DismissReason? received = null;
         var onDismiss = EventCallback.Factory.Create<DismissReason>(this, reason => received = reason);
         var loader = new JsModuleLoader(JSInterop.JSRuntime);
-        var layer = await DismissableLayer.CreateAsync(loader, default, null, onDismiss);
+        var layer = await DismissableLayer.CreateAsync(loader, default, null, onDismiss, Rethrow);
 
         await layer.OnDismissRequested(DismissReason.PointerDownOutside);
 
@@ -44,7 +47,8 @@ public class DismissableLayerTests : BunitContext
     {
         var module = JSInterop.SetupModule(ModulePath);
         module.SetupModule("createDismissableLayer", _ => true).SetupVoid("dispose").SetVoidResult();
-        var layer = await DismissableLayer.CreateAsync(new JsModuleLoader(JSInterop.JSRuntime), default, null, default);
+        var layer = await DismissableLayer.CreateAsync(new JsModuleLoader(JSInterop.JSRuntime), default, null, default,
+            Rethrow);
         var arguments = module.VerifyInvoke("createDismissableLayer").Arguments;
         var reference = (DotNetObjectReference<DismissableLayer>)arguments[2]!;
 
@@ -58,7 +62,8 @@ public class DismissableLayerTests : BunitContext
     {
         var handle = JSInterop.SetupModule(ModulePath).SetupModule("createDismissableLayer", _ => true);
         handle.SetupVoid("dispose").SetVoidResult();
-        var layer = await DismissableLayer.CreateAsync(new JsModuleLoader(JSInterop.JSRuntime), default, null, default);
+        var layer = await DismissableLayer.CreateAsync(new JsModuleLoader(JSInterop.JSRuntime), default, null, default,
+            Rethrow);
 
         await layer.DisposeAsync();
         await layer.DisposeAsync();

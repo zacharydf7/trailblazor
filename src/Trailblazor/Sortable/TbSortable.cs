@@ -175,8 +175,8 @@ public sealed partial class TbSortable<TItem> : TbComponentBase, ISortableGroupM
                 return;
             }
 
-            _events = DotNetObjectReference.Create(new SortableEvents(OnDragOverAsync, OnDropAsync, OnKeyAsync,
-                OnDragOverListAsync, OnDropListAsync, OnListKeyAsync) { Name = () => Label });
+            _events = DotNetObjectReference.Create(new SortableEvents(DispatchExceptionAsync, OnDragOverAsync,
+                OnDropAsync, OnKeyAsync, OnDragOverListAsync, OnDropListAsync, OnListKeyAsync) { Name = () => Label });
             var handle = await module.InvokeAsync<IJSObjectReference?>("attachSortable", _list, _events);
             if (handle is not null && _disposed)
             {

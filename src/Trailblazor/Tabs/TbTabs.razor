@@ -353,7 +353,8 @@
                 return;
             }
 
-            _order = DotNetObjectReference.Create(new TabOrder(ReorderAsync, SelectAsync, CloseFromKeyAsync));
+            _order = DotNetObjectReference.Create(
+                new TabOrder(DispatchExceptionAsync, ReorderAsync, SelectAsync, CloseFromKeyAsync));
             var attached = await module.InvokeAsync<TabsAttachment?>("attachTabs", _list, _order, ReturnsToEarlierTab);
             if (attached is null)
             {
@@ -505,38 +506,22 @@
         }
     }
 
-    // The arrow keys select a tab without clicking it, so its OnClick isn't raised. Called from the script, so a
-    // failing callback goes to the renderer instead of the browser's console.
+    // The arrow keys select a tab without clicking it, so its OnClick isn't raised.
     private async Task SelectAsync(string tabId)
     {
-        try
+        if (_tabs.Find(tab => tab.TabId == tabId) is { } tab)
         {
-            if (_tabs.Find(tab => tab.TabId == tabId) is { } tab)
-            {
-                await ActivateAsync(tab);
-                StateHasChanged();
-            }
-        }
-        catch (Exception exception)
-        {
-            await DispatchExceptionAsync(exception);
+            await ActivateAsync(tab);
+            StateHasChanged();
         }
     }
 
-    // Called from the script for Delete or Backspace, so a failing callback goes to the renderer instead of the
-    // browser's console.
+    // Called from the script for Delete or Backspace.
     private async Task CloseFromKeyAsync(string tabId)
     {
-        try
+        if (_tabs.Find(tab => tab.TabId == tabId) is { CanClose: true } tab)
         {
-            if (_tabs.Find(tab => tab.TabId == tabId) is { CanClose: true } tab)
-            {
-                await tab.CloseAsync();
-            }
-        }
-        catch (Exception exception)
-        {
-            await DispatchExceptionAsync(exception);
+            await tab.CloseAsync();
         }
     }
 

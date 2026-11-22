@@ -297,7 +297,7 @@
         // Only a bound Open or a TelemetryName needs to hear about toggles, so a popover with neither costs no round
         // trips.
         _reference = OpenChanged.HasDelegate || TelemetryName is not null
-            ? DotNetObjectReference.Create(new PopoverEvents(OnToggleAsync, PanelId)) : null;
+            ? DotNetObjectReference.Create(new PopoverEvents(DispatchExceptionAsync, OnToggleAsync, PanelId)) : null;
         var options = new AnchoredPositionOptions
         {
             Side = Anchors.Side(Placement), Align = Anchors.Align(Align), Offset = 8,

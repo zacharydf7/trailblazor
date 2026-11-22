@@ -669,8 +669,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
             return;
         }
 
-        _events = DotNetObjectReference.Create(new TreeViewEvents(OnFocusAsync, OnKeyAsync, OnExtendAsync,
-            OnItemOrderAsync, OnDragOverAsync, OnViewAsync, OnFindAsync));
+        _events = DotNetObjectReference.Create(new TreeViewEvents(DispatchExceptionAsync, OnFocusAsync, OnKeyAsync,
+            OnExtendAsync, OnItemOrderAsync, OnDragOverAsync, OnViewAsync, OnFindAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("createTreeView", _tree, _events);
         if (handle is null)
         {

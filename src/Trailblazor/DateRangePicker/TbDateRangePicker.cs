@@ -196,7 +196,8 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
             return;
         }
 
-        _events = DotNetObjectReference.Create(new DateRangePickerEvents(OnToggleAsync, OnShowDateAsync, OnPickAsync));
+        _events = DotNetObjectReference.Create(
+            new DateRangePickerEvents(DispatchExceptionAsync, OnToggleAsync, OnShowDateAsync, OnPickAsync));
         var handle = await module.InvokeAsync<IJSObjectReference?>("createDateRangePicker", _panel, _events,
             (int)DateCulture.DateTimeFormat.FirstDayOfWeek);
         if (handle is null)

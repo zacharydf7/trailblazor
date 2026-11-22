@@ -172,7 +172,8 @@
                         return;
                     }
 
-                    _events ??= DotNetObjectReference.Create(new TourEvents(() => EndAsync(TourEnd.Skipped)));
+                    _events ??= DotNetObjectReference.Create(
+                        new TourEvents(DispatchExceptionAsync, () => EndAsync(TourEnd.Skipped)));
                     var root = _root;
                     var handle = await _module.InvokeAsync<IJSObjectReference?>("createTour", root, _events,
                         Settings.Value.Dialogs.OutsidePopups);

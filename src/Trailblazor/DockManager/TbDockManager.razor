@@ -467,9 +467,10 @@
             return;
         }
 
-        _report = DotNetObjectReference.Create(new DockReport(SelectFromScriptAsync, CloseFromScriptAsync,
-            OnResizeAsync, MoveFromScriptAsync, ToggleMaximizedFromScriptAsync, RaiseFromScriptAsync, OnFloatAsync,
-            PullOutFromScriptAsync, ConcealFromScriptAsync, SlideFromScriptAsync, AutoHideFromScriptAsync,
+        _report = DotNetObjectReference.Create(new DockReport(DispatchExceptionAsync, SelectFromScriptAsync,
+            CloseFromScriptAsync, OnResizeAsync, MoveFromScriptAsync, ToggleMaximizedFromScriptAsync,
+            RaiseFromScriptAsync, OnFloatAsync, PullOutFromScriptAsync, ConcealFromScriptAsync, SlideFromScriptAsync,
+            AutoHideFromScriptAsync,
             panel => ReturnAsync(panel, focus: false),
             tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);

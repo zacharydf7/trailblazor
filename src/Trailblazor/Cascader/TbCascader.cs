@@ -150,7 +150,8 @@ public partial class TbCascader<[DynamicallyAccessedMembers(DynamicallyAccessedM
                 return;
             }
 
-            _events = DotNetObjectReference.Create(new CascaderEvents(OnToggleAsync, OpenFromKeysAsync));
+            _events = DotNetObjectReference.Create(
+                new CascaderEvents(DispatchExceptionAsync, OnToggleAsync, OpenFromKeysAsync));
             var handle = await module.InvokeAsync<IJSObjectReference?>("createCascader", _input, _popup, _events);
             if (_disposed && handle is not null)
             {

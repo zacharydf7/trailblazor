@@ -30,7 +30,7 @@
         if (_open && _layer is null)
         {
             var onDismiss = EventCallback.Factory.Create<DismissReason>(this, OnDismiss);
-            _layer = await DismissableLayer.CreateAsync(Modules, _element, _trigger, onDismiss);
+            _layer = await DismissableLayer.CreateAsync(Modules, _element, _trigger, onDismiss, DispatchExceptionAsync);
             StateHasChanged();
         }
         else if (!_open && _layer is not null)

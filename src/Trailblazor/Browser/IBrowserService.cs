@@ -41,11 +41,13 @@ public interface IBrowserService
     Task<Viewport> GetViewportAsync();
 
     /// <summary>Calls <paramref name="onChange"/> with the viewport now, and again each time the user stops resizing
-    /// it. Dispose the result to stop.</summary>
+    /// it. Dispose the result to stop. What the callback throws is logged as an error and reaches no error
+    /// boundary, since the callback belongs to no component.</summary>
     Task<IAsyncDisposable> ObserveViewportAsync(Func<Viewport, Task> onChange);
 
     /// <summary>Calls <paramref name="onChange"/> with the breakpoint now, and again each time the viewport crosses
     /// into another one. It is cheaper than <see cref="ObserveViewportAsync"/> when only the breakpoint matters.
-    /// Dispose the result to stop.</summary>
+    /// Dispose the result to stop. What the callback throws is handled as for <see cref="ObserveViewportAsync"/>.
+    /// </summary>
     Task<IAsyncDisposable> ObserveBreakpointAsync(Func<Breakpoint, Task> onChange);
 }

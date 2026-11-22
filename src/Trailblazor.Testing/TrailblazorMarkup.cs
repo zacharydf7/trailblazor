@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using AngleSharp.Dom;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -19,13 +20,14 @@ public static class TrailblazorMarkupExtensions
         where TComponent : IComponent =>
         new(selector => rendered.FindAll(selector), new ScriptCalls(rendered.Services, rendered.InvokeAsync,
             done => rendered.WaitForStateAsync(done), () => ((IRenderedComponent<IComponent>)rendered)
-                .FindComponents<ListeningInputFile>().Select(input => (IRenderedComponent<InputFile>)input)));
+                .FindComponents<ListeningInputFile>().Select(input => (IRenderedComponent<InputFile>)input),
+            () => rendered.Render()));
 }
 
 // Calls the .NET object a component handed its script, as the script would, for what only a script sees, such as
 // where a drag drops.
 internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Task> invoke,
-    Func<Func<bool>, Task> waitFor, Func<IEnumerable<IRenderedComponent<InputFile>>> inputFiles)
+    Func<Func<bool>, Task> waitFor, Func<IEnumerable<IRenderedComponent<InputFile>>> inputFiles, Action render)
 {
     // The drag events of the sortable list or grid with this accessible name, among those still in use.
     public SortableEvents Sortable(string? name)
@@ -127,7 +129,22 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             && Equals(given, id))
         ?? throw new InvalidOperationException("The file input isn't in the rendered component.");
 
-    public Task InvokeAsync(Func<Task> work) => invoke(work);
+    // A component hands what a script's call throws to the renderer, unless an error boundary took it. bUnit keeps
+    // such a failure and throws it as the component next renders, so that render is made here: the test gets the
+    // failure where it made the call, once. A failure after an earlier one arrives in a new task.
+    public async Task InvokeAsync(Func<Task> work)
+    {
+        var renderer = services.GetRequiredService<BunitContext>().Renderer;
+        var before = renderer.UnhandledException;
+        var failedBefore = before.IsCompleted;
+        await invoke(work);
+        var after = renderer.UnhandledException;
+        if (after.IsCompleted && (!failedBefore || !ReferenceEquals(after, before)))
+        {
+            render();
+            ExceptionDispatchInfo.Capture(await after).Throw();
+        }
+    }
 
     public Task WaitForAsync(Func<bool> done) => waitFor(done);
 

@@ -1,13 +1,15 @@
 using Microsoft.JSInterop;
+using Trailblazor.Primitives;
 
 namespace Trailblazor;
 
 // Hears the browser open and close a popover's panel, so the public popover needn't expose [JSInvokable] methods.
-internal sealed class PopoverEvents(Func<bool, Task> onToggle, string panelId)
+internal sealed class PopoverEvents(Func<Exception, Task> onException, Func<bool, Task> onToggle, string panelId)
+    : ScriptListener(onException)
 {
     // The id of the panel these events are for, by which the bUnit driver finds a popover's events.
     public string PanelId => panelId;
 
     [JSInvokable]
-    public Task OnToggle(bool open) => onToggle(open);
+    public Task OnToggle(bool open) => Run(() => onToggle(open));
 }

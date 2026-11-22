@@ -110,6 +110,12 @@
             <li><code>ObserveBreakpointAsync</code> calls back with the breakpoint now and each time it changes.</li>
             <li><code>ObserveViewportAsync</code> does the same with the size, once resizing pauses.</li>
             <li>Dispose the result to stop.</li>
+            <li>
+                What the callback throws is logged as an error. It reaches no <code>ErrorBoundary</code>, since
+                the callback belongs to no component; catch it in the callback and call the component's
+                <code>DispatchExceptionAsync</code> to send it to one. In bUnit, the fake awaits the callback,
+                so a test gets the failure from the call that reported the viewport.
+            </li>
         </ul>
         <CodeBlock Label="Following the breakpoint" Code="@Observe" />
         <DocsCallout Title="Prefer CSS for layout">

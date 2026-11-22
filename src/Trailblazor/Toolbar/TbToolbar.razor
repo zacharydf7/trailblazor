@@ -105,7 +105,7 @@
                 return;
             }
 
-            _overflow = DotNetObjectReference.Create(new ToolbarOverflow(OnOverflow));
+            _overflow = DotNetObjectReference.Create(new ToolbarOverflow(DispatchExceptionAsync, OnOverflow));
             _attachedVertical = Vertical;
             var handle = await module.InvokeAsync<IJSObjectReference?>("attachToolbar", _toolbar,
                 Vertical ? null : _more, _overflow);

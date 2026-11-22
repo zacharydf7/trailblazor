@@ -2782,6 +2782,82 @@ public class TbDockManagerTests : BunitContext
             Services.GetRequiredService<FakeAnnouncer>().Polite);
     }
 
+    [Fact]
+    public async Task Close_ShouldHandAFailingLayoutChangedToTheRenderer_WhenTheScriptStartsIt()
+    {
+        var cut = RenderDock(Hike, HikePanels, Fail);
+
+        await cut.InvokeAsync(() => Report().OnClose("map", true));
+
+        var failure = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5),
+            Xunit.TestContext.Current.CancellationToken);
+        Assert.Equal("The app's handler failed.", failure.Message);
+    }
+
+    [Fact]
+    public async Task Close_ShouldShowTheErrorBoundarysContent_WhenTheScriptStartsItAndLayoutChangedThrows()
+    {
+        var cut = Render(FailingInABoundary());
+
+        await cut.InvokeAsync(() => Report().OnClose("map", true));
+
+        Assert.Equal("The app's handler failed.", cut.Markup);
+    }
+
+    [Fact]
+    public async Task Helpers_ShouldLeaveTheFailureToTheErrorBoundary_WhenOneIsAroundTheDock()
+    {
+        var cut = Render(FailingInABoundary());
+
+        await cut.Tb().Dock().ResizeAsync("Resize Trails", 40);
+
+        Assert.Equal("The app's handler failed.", cut.Markup);
+    }
+
+    [Fact]
+    public async Task Helpers_ShouldThrowEachFailureOnce_WhenTwoCallsInOneTestFail()
+    {
+        var cut = RenderDock(Hike, HikePanels, Fail);
+        var dock = cut.Tb().Dock();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => dock.ResizeAsync("Resize Trails", 40));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => dock.ResizeAsync("Resize Trails", 30));
+
+        // bUnit throws a failure it still holds at the next render.
+        cut.Render();
+    }
+
+    // A dock whose LayoutChanged throws, inside an error boundary that shows what it caught.
+    private RenderFragment FailingInABoundary() => builder =>
+    {
+        builder.OpenComponent<ErrorBoundary>(0);
+        builder.AddAttribute(1, nameof(ErrorBoundary.ChildContent), (RenderFragment)(inner =>
+        {
+            inner.OpenComponent<TbDockManager>(0);
+            inner.AddAttribute(1, nameof(TbDockManager.Layout), Hike);
+            inner.AddAttribute(2, nameof(TbDockManager.LayoutChanged),
+                EventCallback.Factory.Create<DockLayout>(this, (Action<DockLayout>)Fail));
+            inner.AddAttribute(3, nameof(TbDockManager.ChildContent), Panels(HikePanels));
+            inner.CloseComponent();
+        }));
+        builder.AddAttribute(2, nameof(ErrorBoundary.ErrorContent), (RenderFragment<Exception>)(failure =>
+            content => content.AddContent(0, failure.Message)));
+        builder.CloseComponent();
+    };
+
+    [Fact]
+    public async Task Helpers_ShouldThrowTheAppsFailureWhereTheTestCalled_WhenLayoutChangedThrowsAfterAScriptsCall()
+    {
+        var cut = RenderDock(Hike, HikePanels, Fail);
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Dock().ResizeAsync("Resize Trails", 40));
+
+        Assert.Equal("The app's handler failed.", failure.Message);
+    }
+
+    private static void Fail(DockLayout layout) => throw new InvalidOperationException("The app's handler failed.");
+
     private IRenderedComponent<TbDockManager> RenderPoppable(DockLayout layout, Action<DockLayout>? onChange = null,
         Panel[]? panels = null)
     {

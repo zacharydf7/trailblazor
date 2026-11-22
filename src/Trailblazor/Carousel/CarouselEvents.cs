@@ -1,17 +1,20 @@
 using Microsoft.JSInterop;
+using Trailblazor.Primitives;
 
 namespace Trailblazor;
 
 // Hears focus enter and leave the carousel, and hears when a move between slides ends, so the public carousel
 // needn't expose [JSInvokable] methods.
-internal sealed class CarouselEvents(Action<bool> onFocusEnter, Action onFocusLeave, Action<int> onMoveEnd)
+internal sealed class CarouselEvents(Func<Exception, Task> onException, Action<bool> onFocusEnter, Action onFocusLeave,
+    Action<int> onMoveEnd)
+    : ScriptListener(onException)
 {
     [JSInvokable]
-    public void OnFocusEnter(bool fromKeyboard) => onFocusEnter(fromKeyboard);
+    public Task OnFocusEnter(bool fromKeyboard) => Run(() => onFocusEnter(fromKeyboard));
 
     [JSInvokable]
-    public void OnFocusLeave() => onFocusLeave();
+    public Task OnFocusLeave() => Run(() => onFocusLeave());
 
     [JSInvokable]
-    public void OnMoveEnd(int move) => onMoveEnd(move);
+    public Task OnMoveEnd(int move) => Run(() => onMoveEnd(move));
 }

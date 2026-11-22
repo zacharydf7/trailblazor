@@ -1,5 +1,7 @@
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.JSInterop;
 
 namespace Trailblazor.Tests.Components;
@@ -32,6 +34,22 @@ public class BrowserServiceTests : BunitContext
 
         Assert.Equal([640, 768, 1024, 1280], (int[])arguments[1]!);
         Assert.Equal([Breakpoint.Md], reported);
+    }
+
+    [Fact]
+    public async Task ObserveViewport_ShouldLogTheFailureAndNotThrow_WhenTheAppsCallbackThrows()
+    {
+        var logs = new FakeLogCollector();
+        Services.AddSingleton<ILogger<BrowserService>>(new FakeLogger<BrowserService>(logs));
+        _module.SetupModule("observeViewport", _ => true);
+
+        await Browser.ObserveViewportAsync(_ => throw new InvalidOperationException("Offline."));
+        var listener = (DotNetObjectReference<BrowserListener<Viewport>>)
+            _module.Invocations["observeViewport"].Single().Arguments[0]!;
+        await listener.Value.OnChange(new Viewport(800, 600));
+
+        var log = Assert.Single(logs.GetSnapshot());
+        Assert.Equal((LogLevel.Error, "Offline."), (log.Level, log.Exception?.Message));
     }
 
     [Fact]

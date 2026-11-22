@@ -259,8 +259,8 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
             return;
         }
 
-        _toggle = DotNetObjectReference.Create(new SelectToggle(OnToggleAsync, OnRemoveChipAsync, OnFilterAsync,
-            OnFindAsync, InputId));
+        _toggle = DotNetObjectReference.Create(new SelectToggle(DispatchExceptionAsync, OnToggleAsync,
+            OnRemoveChipAsync, OnFilterAsync, OnFindAsync, InputId));
         _attachedFiltered = Filterable;
         var handle = await module.InvokeAsync<IJSObjectReference?>("createSelect", _combobox, _listbox, _toggle);
         if (handle is null)

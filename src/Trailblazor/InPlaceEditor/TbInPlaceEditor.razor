@@ -164,7 +164,8 @@
                     return;
                 }
 
-                _events = DotNetObjectReference.Create(new InPlaceEditorEvents(SaveAsync, CancelAsync));
+                _events = DotNetObjectReference.Create(
+                    new InPlaceEditorEvents(DispatchExceptionAsync, SaveAsync, CancelAsync));
                 var handle = await module.InvokeAsync<IJSObjectReference?>("attachInPlaceEditor", _root, _events);
                 if (_disposed && handle is not null)
                 {

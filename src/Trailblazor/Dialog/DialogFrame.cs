@@ -190,21 +190,12 @@ internal sealed class DialogFrame : ComponentBase, IAsyncDisposable
 
     // The browser closed the dialog by itself, so there is nothing left to ask.
     [JSInvokable]
-    public Task Cancel() => Dialog.CancelAsync();
+    public Task Cancel() => ScriptListener.RunAsync(Dialog.CancelAsync, DispatchExceptionAsync);
 
     // Called from the script, so a failing CanDismiss goes to the renderer instead of the browser's console.
     [JSInvokable]
-    public async Task Dismiss(DialogDismissReason reason)
-    {
-        try
-        {
-            await Dialog.DismissAsync(reason);
-        }
-        catch (Exception exception)
-        {
-            await DispatchExceptionAsync(exception);
-        }
-    }
+    public Task Dismiss(DialogDismissReason reason) =>
+        ScriptListener.RunAsync(() => Dialog.DismissAsync(reason), DispatchExceptionAsync);
 
     private void OnChanged() => InvokeAsync(() =>
     {
