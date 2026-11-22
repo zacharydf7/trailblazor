@@ -17,9 +17,9 @@ public sealed class RichTextCommand(string text)
     /// <summary>More words the command is found by, such as "sign off" for a signature.</summary>
     public string? Keywords { get; init; }
 
-    /// <summary>HTML the command puts in where the slash was: text joins the line, and a heading, quote or list
-    /// starts under it. Only what the editor's formats and blocks allow goes in, as for pasted text, but
-    /// <see cref="TbRichTextEditor.TransformPaste"/> doesn't run for it.</summary>
+    /// <summary>HTML the command puts in where the slash was: text joins the line, and a heading, quote, list or
+    /// block of the app's own starts under it. Only what the editor's formats and blocks allow goes in, as for
+    /// pasted text, but <see cref="TbRichTextEditor.TransformPaste"/> doesn't run for it.</summary>
     public string? Html { get; init; }
 
     /// <summary>Called when the command is chosen, after its <see cref="Html"/> has gone in. It runs outside the

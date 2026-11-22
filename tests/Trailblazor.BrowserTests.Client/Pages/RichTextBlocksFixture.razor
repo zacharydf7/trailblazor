@@ -1,0 +1,22 @@
+@page "/rich-text-blocks"
+
+@* An editor with two kinds of block of the app's own, a callout with its own keys and one named as a member every
+   script object has, and slash commands, one of which puts a callout in. Its value shows and can be set from .NET. *@
+<TbRichTextEditor Label="Notes" @bind-Value="_notes" UpdateOnInput SlashCommands CustomBlocks="Blocks"
+                  Commands="Commands" />
+<output data-testid="notes">@_notes</output>
+<TbTextField TValue="string" Label="Source" @bind-Value="_source" UpdateOnInput />
+<TbButton OnClick="() => _notes = _source">Set notes</TbButton>
+
+@code {
+    private static readonly RichTextBlock[] Blocks =
+    [
+        new("callout") { Label = "Callout", Shortcut = "Alt+Shift+C" }, new("constructor") { Label = "Constructor" },
+    ];
+
+    private static readonly RichTextCommand[] Commands =
+        [new("Warning") { Html = "<p data-tb-block=\"callout\">Careful</p>" }];
+
+    private string? _notes;
+    private string? _source;
+}

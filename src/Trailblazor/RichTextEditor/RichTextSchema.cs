@@ -45,18 +45,31 @@ public sealed record RichTextSchema
             : throw new ArgumentException("Each mark must be a name a RichTextMark can have.", nameof(value));
     } = [];
 
-    /// <summary>Whether this schema keeps the same formats, blocks, link schemes, image schemes, mentions and marks
-    /// as another, with the schemes and the marks listed in the same order; schemes compare without regard to
-    /// case.</summary>
+    /// <summary>The names of the app's own kinds of block to keep, each a <see cref="RichTextBlock"/>'s name. A
+    /// <c>p</c> with the name in <c>data-tb-block</c> reads as a block of that kind when the name is listed here,
+    /// and as a plain paragraph otherwise. Defaults to none.</summary>
+    /// <exception cref="ArgumentException">A name isn't one a <see cref="RichTextBlock"/> can have.</exception>
+    public IReadOnlyList<string> CustomBlocks
+    {
+        get;
+        init => field = value.All(RichTextBlock.IsName) ? value
+            : throw new ArgumentException("Each block must be a name a RichTextBlock can have.", nameof(value));
+    } = [];
+
+    /// <summary>Whether this schema keeps the same formats, blocks, link schemes, image schemes, mentions, marks and
+    /// blocks of the app's own as another, with the schemes, the marks and those blocks listed in the same order;
+    /// schemes compare without regard to case.</summary>
     /// <param name="other">The schema to compare with.</param>
     public bool Equals(RichTextSchema? other) => other is not null && Formats == other.Formats
         && Blocks == other.Blocks && LinkSchemes.SequenceEqual(other.LinkSchemes, StringComparer.OrdinalIgnoreCase)
         && ImageSchemes.SequenceEqual(other.ImageSchemes, StringComparer.OrdinalIgnoreCase)
-        && Mentions == other.Mentions && Marks.SequenceEqual(other.Marks, StringComparer.Ordinal);
+        && Mentions == other.Mentions && Marks.SequenceEqual(other.Marks, StringComparer.Ordinal)
+        && CustomBlocks.SequenceEqual(other.CustomBlocks, StringComparer.Ordinal);
 
     /// <inheritdoc />
     public override int GetHashCode() =>
-        HashCode.Combine(Formats, Blocks, LinkSchemes.Count, ImageSchemes.Count, Mentions, Marks.Count);
+        HashCode.Combine(Formats, Blocks, LinkSchemes.Count, ImageSchemes.Count, Mentions, Marks.Count,
+            CustomBlocks.Count);
 
     internal bool AllowsLink(string url) => Allows(LinkSchemes, url);
 

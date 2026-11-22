@@ -11,13 +11,14 @@ public sealed class RichTextParagraph
     /// own.</summary>
     /// <param name="runs">The runs, in order. A rule has none.</param>
     /// <param name="kind">What kind of block the paragraph is. An image needs
-    /// <see cref="RichTextParagraph(RichTextImage)"/> instead, and a table cell
-    /// <see cref="RichTextParagraph(IEnumerable{RichTextRun}, RichTextTableCell)"/>.</param>
+    /// <see cref="RichTextParagraph(RichTextImage)"/> instead, a table cell
+    /// <see cref="RichTextParagraph(IEnumerable{RichTextRun}, RichTextTableCell)"/>, and a block of the app's own
+    /// <see cref="RichTextParagraph(IEnumerable{RichTextRun}, string)"/>.</param>
     /// <param name="level">How far a list item is nested, from 0 for the outermost list. Other kinds have level 0.
     /// </param>
     /// <exception cref="ArgumentException">A rule is given runs with text, or the kind is
-    /// <see cref="RichTextParagraphKind.Image"/> or <see cref="RichTextParagraphKind.TableCell"/>, which need an image
-    /// or a cell.</exception>
+    /// <see cref="RichTextParagraphKind.Image"/>, <see cref="RichTextParagraphKind.TableCell"/> or
+    /// <see cref="RichTextParagraphKind.Block"/>, which need an image, a cell or a name.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The level is negative, or not 0 for a paragraph that isn't a
     /// list item.</exception>
     public RichTextParagraph(IEnumerable<RichTextRun> runs,
@@ -33,6 +34,11 @@ public sealed class RichTextParagraph
         if (kind == RichTextParagraphKind.TableCell)
         {
             throw new ArgumentException("A table cell needs its place in the table.", nameof(kind));
+        }
+
+        if (kind == RichTextParagraphKind.Block)
+        {
+            throw new ArgumentException("A block of the app's own needs its name.", nameof(kind));
         }
 
         if (level > 0 && !IsListItem(kind))
@@ -107,6 +113,18 @@ public sealed class RichTextParagraph
         Cell = cell;
     }
 
+    /// <summary>Creates a block of the app's own, of kind <see cref="RichTextParagraphKind.Block"/>. Its runs are
+    /// joined as in <see cref="RichTextParagraph(IEnumerable{RichTextRun}, RichTextParagraphKind, int)"/>.</summary>
+    /// <param name="runs">The block's runs, in order.</param>
+    /// <param name="block">The name of the block's kind, a <see cref="RichTextBlock"/>'s name.</param>
+    /// <exception cref="ArgumentException">The name isn't one a <see cref="RichTextBlock"/> can have.</exception>
+    public RichTextParagraph(IEnumerable<RichTextRun> runs, string block) : this(runs)
+    {
+        Block = RichTextBlock.IsName(block) ? block
+            : throw new ArgumentException("The name must be one a RichTextBlock can have.", nameof(block));
+        Kind = RichTextParagraphKind.Block;
+    }
+
     /// <summary>The runs, in order. An empty paragraph has none.</summary>
     public IReadOnlyList<RichTextRun> Runs { get; }
 
@@ -124,6 +142,10 @@ public sealed class RichTextParagraph
 
     /// <summary>Where a table cell sits in its table; null for every other kind.</summary>
     public RichTextTableCell? Cell { get; }
+
+    /// <summary>The name of the kind of a block of the app's own, a <see cref="RichTextBlock"/>'s name; null for
+    /// every other kind.</summary>
+    public string? Block { get; }
 
     internal static bool IsListItem(RichTextParagraphKind kind) =>
         kind is RichTextParagraphKind.BulletedItem or RichTextParagraphKind.NumberedItem;

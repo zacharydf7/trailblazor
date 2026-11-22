@@ -1,7 +1,7 @@
 namespace Trailblazor;
 
 /// <summary>What a <see cref="RichTextParagraph"/> is: a plain paragraph, a heading, a quote, a list item, a rule, an
-/// image or a table cell.</summary>
+/// image, a table cell or a block of the app's own.</summary>
 public enum RichTextParagraphKind
 {
     /// <summary>A plain paragraph, written as <c>&lt;p&gt;</c>.</summary>
@@ -37,4 +37,8 @@ public enum RichTextParagraphKind
     /// links and line breaks, but no blocks; <see cref="RichTextParagraph.Cell"/> says where it sits. Neighboring
     /// cells make one table.</summary>
     TableCell,
+
+    /// <summary>A block of the app's own, written as <c>&lt;p data-tb-block&gt;</c>.
+    /// <see cref="RichTextParagraph.Block"/> names its kind.</summary>
+    Block,
 }

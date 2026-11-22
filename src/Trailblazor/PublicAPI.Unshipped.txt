@@ -3867,6 +3867,20 @@ Trailblazor.RichTextMark.Shortcut.get -> string?
 Trailblazor.RichTextMark.Shortcut.init -> void
 Trailblazor.RichTextMark.Floating.get -> bool
 Trailblazor.RichTextMark.Floating.init -> void
+Trailblazor.RichTextBlock
+Trailblazor.RichTextBlock.RichTextBlock(string! name) -> void
+Trailblazor.RichTextBlock.Name.get -> string!
+Trailblazor.RichTextBlock.Label.get -> string?
+Trailblazor.RichTextBlock.Label.init -> void
+Trailblazor.RichTextBlock.Icon.get -> Trailblazor.Icon?
+Trailblazor.RichTextBlock.Icon.init -> void
+Trailblazor.RichTextBlock.Shortcut.get -> string?
+Trailblazor.RichTextBlock.Shortcut.init -> void
+Trailblazor.RichTextParagraphKind.Block = 10 -> Trailblazor.RichTextParagraphKind
+Trailblazor.RichTextParagraph.RichTextParagraph(System.Collections.Generic.IEnumerable<Trailblazor.RichTextRun!>! runs, string! block) -> void
+Trailblazor.RichTextParagraph.Block.get -> string?
+Trailblazor.RichTextSchema.CustomBlocks.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.RichTextSchema.CustomBlocks.init -> void
 Trailblazor.RichTextRun.Color.get -> Trailblazor.Tone?
 Trailblazor.RichTextRun.RichTextRun(Trailblazor.Mention! mention, Trailblazor.RichTextFormats formats, Trailblazor.Tone? color) -> void
 Trailblazor.RichTextRun.Link.get -> string?
@@ -3944,6 +3958,8 @@ Trailblazor.TbRichTextEditor.FloatingFormats.get -> Trailblazor.RichTextFormats?
 Trailblazor.TbRichTextEditor.FloatingFormats.set -> void
 Trailblazor.TbRichTextEditor.Marks.get -> System.Collections.Generic.IEnumerable<Trailblazor.RichTextMark!>?
 Trailblazor.TbRichTextEditor.Marks.set -> void
+Trailblazor.TbRichTextEditor.CustomBlocks.get -> System.Collections.Generic.IEnumerable<Trailblazor.RichTextBlock!>?
+Trailblazor.TbRichTextEditor.CustomBlocks.set -> void
 const Trailblazor.TbStrings.RichTextEditorTextColor = "RichTextEditor.TextColor" -> string!
 Trailblazor.RichTextEditorLabels.TextColor.get -> string?
 Trailblazor.RichTextEditorLabels.TextColor.init -> void

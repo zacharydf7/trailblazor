@@ -242,6 +242,7 @@ internal static partial class RichTextMarkdown
             var paragraph = all[index];
             // Markdown has no empty paragraph: blank lines only separate blocks. A table is written at its first cell.
             if ((paragraph.Kind is RichTextParagraphKind.Paragraph or RichTextParagraphKind.Quote
+                    or RichTextParagraphKind.Block
                 && paragraph.Text.Trim(' ', '\n').Length == 0) || paragraph.Cell is { Row: > 0 } or { Column: > 0 })
             {
                 continue;

@@ -1155,6 +1155,23 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task RichTextEditor_ShouldKeepTheAppsMarksBlocksAndMentions_WhenSlashCommandAsyncPutsHtmlWithThemIn()
+    {
+        const string Warning = "<p data-tb-block=\"callout\">Press <kbd>Esc</kbd> or ask "
+            + "<span data-mention=\"42\" data-trigger=\"@\">@Ada</span> first</p>";
+        string? notes = null;
+        var cut = RenderRichTextEditor(parameters => parameters.Add(editor => editor.SlashCommands, true)
+            .Add(editor => editor.Marks, [new("kbd")]).Add(editor => editor.CustomBlocks, [new("callout")])
+            .Add(editor => editor.MentionTriggers, "@")
+            .Add(editor => editor.Commands, [new("Warning") { Html = Warning }])
+            .Add(editor => editor.ValueChanged, (string html) => notes = html));
+
+        await cut.Tb().RichTextEditor("Notes").SlashCommandAsync("Careful /warn", "Warning");
+
+        Assert.Equal($"<p>Careful&nbsp;</p>{Warning}", notes);
+    }
+
+    [Fact]
     public async Task RichTextEditor_ShouldSayWhatIsWrong_WhenSlashCommandAsyncCannotRunTheCommand()
     {
         var plain = RenderRichTextEditor(_ => { }).Tb().RichTextEditor("Notes");

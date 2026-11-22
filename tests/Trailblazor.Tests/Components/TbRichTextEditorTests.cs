@@ -566,6 +566,44 @@ public class TbRichTextEditorTests : BunitContext
     }
 
     [Fact]
+    public async Task CustomBlocks_ShouldAddAButtonAndASlashCommandForEach_WhenTheAppDeclaresThem()
+    {
+        _handle.SetupVoid("setMentions", _ => true).SetVoidResult();
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Blocks, RichTextBlocks.Quotes | RichTextBlocks.Rules)
+            .Add(editor => editor.SlashCommands, true)
+            .Add(editor => editor.Value, "<p data-tb-block=\"callout\">Mind</p><p data-tb-block=\"aside\">x</p>")
+            .Add(editor => editor.CustomBlocks,
+                [new("callout") { Label = "Callout", Shortcut = "Alt+Shift+C" }, new("note")]));
+
+        // A block's button comes after the editor's kinds of block, named by its label, or by its name without one.
+        var buttons = cut.FindAll("[data-part=toolbar] [data-block]");
+        Assert.Equal([("quote", "Quote"), ("callout", "Callout"), ("note", "note")],
+            buttons.Select(button => (button.GetAttribute("data-block"), button.GetAttribute("aria-label"))));
+        Assert.Equal(("false", "Alt+Shift+C"),
+            (buttons[1].GetAttribute("aria-pressed"), buttons[1].GetAttribute("aria-keyshortcuts")));
+        // The script learns the kinds and their keys with the editor's own, and the value keeps only these kinds.
+        var attach = _module.Invocations["attachRichTextEditor"].Single();
+        var options = JsonSerializer.Serialize(attach.Arguments[2]);
+        Assert.Contains("\"blocks\":\"quote callout note rule\"", options);
+        Assert.Contains("\"shortcuts\":\"callout Alt\\u002BShift\\u002BC\"", options);
+        Assert.Equal("<p data-tb-block=\"callout\">Mind</p><p>x</p>", attach.Arguments[1]);
+        await cut.InvokeAsync(() => MentionEvents().OnQuery("/", "", 1, "paragraph"));
+        Assert.Equal([("quote", "Quote"), ("callout", "Callout"), ("note", "note"), ("rule", "Horizontal line")],
+            Commands(cut));
+    }
+
+    [Fact]
+    public void CustomBlocks_ShouldThrow_WhenOneSharesItsNameWithAMarkOrAnotherBlock()
+    {
+        Assert.Throws<InvalidOperationException>(() => Render<TbRichTextEditor>(parameters => parameters
+            .Add(editor => editor.Label, "Notes").Add(editor => editor.Marks, [new("aside")])
+            .Add(editor => editor.CustomBlocks, [new("aside")])));
+        Assert.Throws<InvalidOperationException>(() => Render<TbRichTextEditor>(parameters => parameters
+            .Add(editor => editor.Label, "Notes").Add(editor => editor.CustomBlocks, [new("note"), new("note")])));
+    }
+
+    [Fact]
     public void Marks_ShouldThrow_WhenTwoHaveTheSameName() =>
         Assert.Throws<InvalidOperationException>(() => Render<TbRichTextEditor>(parameters => parameters
             .Add(editor => editor.Label, "Notes").Add(editor => editor.Marks, [new("kbd"), new("kbd")])));

@@ -42,6 +42,10 @@
                 <code>&lt;p&gt;&lt;br&gt;&lt;/p&gt;</code> for an empty one
             </li>
             <li>
+                a <code>&lt;p data-tb-block&gt;</code> with the kind's name for a block of the app's own, such as a
+                callout
+            </li>
+            <li>
                 <code>&lt;h1&gt;</code> to <code>&lt;h3&gt;</code> for headings, one <code>&lt;blockquote&gt;</code>
                 around neighboring quote paragraphs, and <code>&lt;hr&gt;</code> for a rule
             </li>
@@ -66,8 +70,9 @@
             <li><code>""</code> for an empty document</li>
         </ul>
         <TbText>
-            Parsing that HTML with a schema that allows its formats, blocks, and link and image schemes gives back the
-            same document, so two values with the same content compare equal as strings.
+            Parsing that HTML with a schema that allows its formats, blocks, link and image schemes, and the app's own
+            marks and blocks gives back the same document, so two values with the same content compare equal as
+            strings.
         </TbText>
 
         <DocsHeading Id="reading-html" Text="Reading HTML" Class="docs-section" />
@@ -111,10 +116,11 @@
         </ul>
         <TbText>
             Pass a <code>RichTextSchema</code> to say what to keep: its <code>Formats</code>, its <code>Blocks</code>,
-            the names of the app's own <code>Marks</code>, and the <code>LinkSchemes</code> and
-            <code>ImageSchemes</code> that links and images may use. A format or a mark it
+            the names of the app's own <code>Marks</code> and <code>CustomBlocks</code>, and the
+            <code>LinkSchemes</code> and <code>ImageSchemes</code> that links and images may use. A format or a mark it
             doesn't allow is dropped while its text stays, a block it doesn't allow gives way to an allowed block
-            around it or a plain paragraph, and a rule or image it doesn't allow is dropped. Images are kept only when
+            around it or a plain paragraph, a block of the app's own it doesn't name becomes a plain paragraph, and a
+            rule or image it doesn't allow is dropped. Images are kept only when
             <code>Blocks</code> includes <code>RichTextBlocks.Images</code>, which it doesn't by default. For example,
             a short description might allow only bold and italic, in plain paragraphs:
         </TbText>
@@ -124,9 +130,10 @@
         <TbText>
             Everything other than text, blocks, line breaks, formats, links and allowed images is dropped while
             reading: scripts, styles, event handlers, and every attribute but a link's <code>href</code>, an
-            image's <code>src</code> and <code>alt</code>, a text color's <code>data-tb-color</code>, which is
-            kept only when it names a tone, and a mark's <code>data-tb-mark</code>, which is kept only when it names
-            a mark the schema has. A link keeps its target only when it's relative or its
+            image's <code>src</code> and <code>alt</code>, a text color's <code>data-tb-color</code> (kept only when
+            it names a tone), a mark's <code>data-tb-mark</code> (kept only when it names a mark the schema has) and a
+            paragraph's <code>data-tb-block</code> (kept only when it names a block in the schema's
+            <code>CustomBlocks</code>). A link keeps its target only when it's relative or its
             scheme is one the schema allows: <code>http</code>, <code>https</code>, <code>mailto</code> and
             <code>tel</code> by default. Any other link becomes plain text, and so does one to
             <code>javascript:</code> or <code>vbscript:</code> even when a schema lists it; a run built in code refuses
@@ -149,7 +156,8 @@
             <code>Heading2</code> or <code>BulletedItem</code>, and a list item's <code>Level</code> how far it is
             nested. An image paragraph has no runs; its <code>Image</code> gives the source and alt text. A table cell
             is a paragraph of kind <code>TableCell</code>; its <code>Cell</code> gives its row, its column and whether
-            it's a header cell. Neighboring cells make one table. A
+            it's a header cell. Neighboring cells make one table. A block of the app's own, such as a callout,
+            is a paragraph of kind <code>Block</code>; its <code>Block</code> gives the kind's name. A
             <code>'\n'</code> in a run's text is a line break. A run's <code>Formats</code> is a
             <code>RichTextFormats</code> flags value, such as <code>Bold | Italic</code>, its <code>Link</code> is
             the URL it links to, if any, and its <code>Color</code> is the <code>Tone</code> it's colored with, if
@@ -197,7 +205,8 @@
             </li>
             <li>
                 <code>ToMarkdown</code> writes markdown that reads back the same, apart from what markdown can't hold:
-                underline, subscript, superscript, highlighted and colored text is written plain; empty paragraphs,
+                underline, subscript, superscript, highlighted and colored text is written plain, as is text with one of
+                the app's own marks; a block of the app's own is written as a plain paragraph; empty paragraphs,
                 line breaks at a paragraph's end and spaces at a line's start or end are left out; line breaks in a
                 heading or in code that shares its paragraph become spaces; a space or line break at a format's edge
                 moves outside it; and in a table, line breaks in a cell become spaces, header cells outside a first row
@@ -215,6 +224,7 @@
         <ApiTable Type="typeof(RichTextTableCell)" />
         <ApiTable Type="typeof(RichTextSchema)" />
         <ApiTable Type="typeof(RichTextMark)" />
+        <ApiTable Type="typeof(RichTextBlock)" />
 
         <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>

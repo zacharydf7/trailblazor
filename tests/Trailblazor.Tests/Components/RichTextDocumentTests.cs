@@ -351,6 +351,52 @@ public class RichTextDocumentTests
     public void ToMarkdown_ShouldWriteAnAppsMarkAsItsTextAlone_WhenCalled() =>
         Assert.Equal("Press Esc", RichTextDocument.Parse("<p>Press <kbd>Esc</kbd></p>", WithMarks).ToMarkdown());
 
+    private static readonly RichTextSchema WithBlocks = new() { CustomBlocks = ["callout", "aside"] };
+
+    [Theory]
+    [InlineData("<p data-tb-block=\"callout\">Mind the <b>gap</b></p><p>x</p>",
+        "<p data-tb-block=\"callout\">Mind the <strong>gap</strong></p><p>x</p>")]
+    // Each paragraph is a block by itself, also beside another and inside a quote, which it leaves.
+    [InlineData("<P DATA-TB-BLOCK=aside>a</P><p data-tb-block='callout'>b</p>",
+        "<p data-tb-block=\"aside\">a</p><p data-tb-block=\"callout\">b</p>")]
+    [InlineData("<blockquote><p>q</p><p data-tb-block=\"callout\">c</p></blockquote>",
+        "<blockquote><p>q</p></blockquote><p data-tb-block=\"callout\">c</p>")]
+    // Only a p is one, and only by a name the schema has. An empty one is kept as an empty paragraph is.
+    [InlineData("<div data-tb-block=\"callout\">a</div><p data-tb-block=\"other\">b</p>"
+        + "<h2 data-tb-block=\"callout\">c</h2>", "<p>a</p><p>b</p><h2>c</h2>")]
+    [InlineData("<p>a</p><p data-tb-block=\"callout\"></p>", "<p>a</p><p data-tb-block=\"callout\"><br></p>")]
+    public void Parse_ShouldKeepTheAppsBlocks_WhenTheSchemaHasThem(string html, string expected) =>
+        Assert.Equal(expected, RichTextDocument.Parse(html, WithBlocks).ToHtml());
+
+    [Fact]
+    public void Parse_ShouldReadAnAppsBlockAsAPlainParagraph_WhenTheSchemaHasNoSuchBlock() =>
+        Assert.Equal("<p>Mind the gap</p>",
+            RichTextDocument.Parse("<p data-tb-block=\"callout\">Mind the gap</p>").ToHtml());
+
+    [Fact]
+    public void Paragraph_ShouldBeABlockOfTheAppsOwn_WhenGivenItsName()
+    {
+        var paragraph = new RichTextParagraph([new("Mind the gap")], "callout");
+
+        Assert.Equal((RichTextParagraphKind.Block, "callout", 0), (paragraph.Kind, paragraph.Block, paragraph.Level));
+        Assert.Null(new RichTextParagraph([new("x")]).Block);
+        Assert.Equal("<p data-tb-block=\"callout\">Mind the gap</p>", new RichTextDocument([paragraph]).ToHtml());
+        // Markdown has no syntax for one, so it is written as a plain paragraph.
+        Assert.Equal("Mind the gap", new RichTextDocument([paragraph]).ToMarkdown());
+        Assert.Throws<ArgumentException>(() => new RichTextParagraph([], RichTextParagraphKind.Block));
+        Assert.Throws<ArgumentException>(() => new RichTextParagraph([], "Not A Name"));
+    }
+
+    [Theory]
+    [InlineData("quote")]
+    [InlineData("Callout")]
+    [InlineData("")]
+    public void Block_ShouldThrow_WhenGivenANameItCannotBeWrittenBy(string name)
+    {
+        Assert.Throws<ArgumentException>(() => new RichTextBlock(name));
+        Assert.Throws<ArgumentException>(() => new RichTextSchema { CustomBlocks = [name] });
+    }
+
     [Fact]
     public void ToHtml_ShouldNestEachRunsTagsInOneOrder_WhenARunHasSeveralFormats()
     {

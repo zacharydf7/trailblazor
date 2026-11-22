@@ -41,7 +41,7 @@ public static class GuideCatalog
             Api =
             [
                 typeof(RichTextDocument), typeof(RichTextParagraph), typeof(RichTextRun), typeof(RichTextImage),
-                typeof(RichTextTableCell), typeof(RichTextSchema), typeof(RichTextMark),
+                typeof(RichTextTableCell), typeof(RichTextSchema), typeof(RichTextMark), typeof(RichTextBlock),
             ],
         },
         new("guides/icons", "Icons", "Draw Material Symbols or your own SVG icons, and find the one you need."),

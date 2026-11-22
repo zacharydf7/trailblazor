@@ -36,16 +36,16 @@ const MARK_ELEMENTS = ['cite', 'dfn', 'kbd', 'q', 'samp', 'var'];
 const markOpen = mark => MARKS.includes(mark) ? MARK_TAGS[mark]
     : MARK_ELEMENTS.includes(mark) ? mark : `span data-tb-mark="${mark}"`;
 const markClose = mark => MARKS.includes(mark) ? MARK_TAGS[mark] : MARK_ELEMENTS.includes(mark) ? mark : 'span';
-// The keys for each of an app's marks, one mark to a line: its name, then each way to press it, written as
+// The keys for each of an app's marks and blocks, one to a line: its name, then each way to press it, written as
 // aria-keyshortcuts are, such as 'kbd Control+Shift+K Meta+Shift+K'.
 const MODIFIERS = ['Control', 'Meta', 'Alt', 'Shift'];
 const parseShortcuts = text => text.split('\n').flatMap(entry => {
-    const [mark, ...ways] = entry.split(' ').filter(Boolean);
+    const [name, ...ways] = entry.split(' ').filter(Boolean);
     return ways.map(way => {
         const parts = way.split('+');
         // The plus key comes after the plus that joins it on, as in 'Control++'.
         const key = way.endsWith('++') ? '+' : parts.at(-1).toLowerCase();
-        return { mark, key, held: MODIFIERS.map(name => parts.includes(name)) };
+        return { name, key, held: MODIFIERS.map(modifier => parts.includes(modifier)) };
     });
 });
 const FORMAT_INPUTS = {
@@ -66,6 +66,11 @@ const MARKDOWN_STARTS = new Map([['#', 'heading1'], ['##', 'heading2'], ['###', 
 const CARET_MOVES = { ArrowLeft: -1, ArrowUp: -1, Home: -1, PageUp: -1, ArrowRight: 1, ArrowDown: 1, End: 1, PageDown: 1 };
 const KINDS = ['paragraph', 'heading1', 'heading2', 'heading3', 'quote', 'bullet', 'number', 'rule', 'table'];
 const HEADING_TAGS = { heading1: 'h1', heading2: 'h2', heading3: 'h3' };
+// A kind of block of the app's own, which the editor learns of by name: a paragraph with the name in data-tb-block,
+// as RichTextDocument writes it.
+const isOwnBlock = kind => !KINDS.includes(kind) && kind !== 'image' && kind !== 'cell';
+// Only the editor's own kinds are looked up in HEADING_TAGS, where a name such as 'constructor' would find something.
+const headingTag = kind => Object.hasOwn(HEADING_TAGS, kind) ? HEADING_TAGS[kind] : undefined;
 const BLOCKS = new Set(['address', 'article', 'aside', 'blockquote', 'caption', 'center', 'dd', 'details', 'dialog',
     'dir', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'header', 'hgroup', 'legend', 'li', 'listing', 'main', 'menu', 'nav', 'ol', 'p', 'plaintext', 'pre', 'search',
@@ -250,15 +255,20 @@ class Editor {
     }
 
     setOptions(options) {
-        // The name of an app's mark goes into the editor's HTML as a tag or an attribute, so only a plain name counts.
+        // The name of an app's mark or block goes into the editor's HTML as a tag or an attribute, so only a plain
+        // name counts.
+        const plain = name => /^[a-z][a-z0-9-]*$/.test(name);
         const own = (options.marks ?? '').split(' ')
-            .filter(mark => /^[a-z][a-z0-9-]*$/.test(mark) && !MARKS.includes(mark) && mark !== 'color');
-        this.markShortcuts = parseShortcuts(options.shortcuts ?? '').filter(each => own.includes(each.mark));
+            .filter(mark => plain(mark) && !MARKS.includes(mark) && mark !== 'color');
+        const blocks = options.blocks.split(' ')
+            .filter(kind => KINDS.includes(kind) || (plain(kind) && isOwnBlock(kind)));
+        this.ownShortcuts = parseShortcuts(options.shortcuts ?? '')
+            .filter(each => own.includes(each.name) || (blocks.includes(each.name) && isOwnBlock(each.name)));
         this.schema = {
             formats: new Set([
                 ...options.formats.split(' ').filter(mark => MARKS.includes(mark) || mark === 'color'), ...own]),
             marks: new Set(own),
-            blocks: new Set(options.blocks.split(' ').filter(kind => KINDS.includes(kind))),
+            blocks: new Set(blocks),
             links: options.links === null ? null : options.links.toLowerCase().split(' ').filter(Boolean),
             images: options.images === null ? null : options.images.toLowerCase().split(' ').filter(Boolean),
             mentions: !!options.mentions,
@@ -647,20 +657,21 @@ class Editor {
                 && getComputedStyle(this.root).direction === 'rtl';
             this.caretMove = flips ? -move : move;
         }
-        // A mark's keys are matched by the character typed, whatever the keyboard's layout. Alt on a Mac and Shift
-        // with a digit type another character, so there the key's place on the keyboard stands in. AltGr, which
-        // reads as Control with Alt, types a letter and is never a mark's keys.
+        // The keys of an app's mark or block are matched by the character typed, whatever the keyboard's layout. Alt
+        // on a Mac and Shift with a digit type another character, so there the key's place on the keyboard stands
+        // in. AltGr, which reads as Control with Alt, types a letter and never matches them.
         const held = [event.ctrlKey, event.metaKey, event.altKey, event.shiftKey];
         const byPlace = (event.altKey && isApple()) || (event.shiftKey && /^Digit\d$/.test(event.code));
         const typed = (byPlace ? event.code.replace(/^(Key|Digit)/, '') : event.key).toLowerCase();
         const shortcut = isApple() || !event.getModifierState('AltGraph')
-            ? this.markShortcuts.find(each => each.key === typed
+            ? this.ownShortcuts.find(each => each.key === typed
                 && each.held.every((modifier, at) => modifier === held[at]))
             : undefined;
         if (shortcut) {
             event.preventDefault();
             this.selection = this.readSelection() ?? this.selection;
-            this.toggleMark(shortcut.mark);
+            if (this.schema.marks.has(shortcut.name)) this.toggleMark(shortcut.name);
+            else this.setBlock(shortcut.name);
             return;
         }
 
@@ -1028,7 +1039,7 @@ class Editor {
             if (isAtom(pasted) || isCell(pasted)) {
                 const needsHead = i === 0 && (from.block === 0 || needsRoom(this.doc[from.block - 1], pasted));
                 return [...(head.length || needsHead ? [{ ...target, runs: head }] : []), pasted,
-                    ...(i === last ? [HEADING_TAGS[target.kind] && !tail.length ? paragraph([])
+                    ...(i === last ? [headingTag(target.kind) && !tail.length ? paragraph([])
                         : { ...target, runs: tail }] : [])];
             }
             const kind = (i === 0 && from.offset > 0) || pasted.kind === 'paragraph' ? target : pasted;
@@ -1054,7 +1065,7 @@ class Editor {
             this.insertText('\n');
             return;
         }
-        if (!target.runs.length && target.kind !== 'paragraph' && !HEADING_TAGS[target.kind]) {
+        if (!target.runs.length && target.kind !== 'paragraph' && !headingTag(target.kind)) {
             this.doc[from.block] = outdented(target);
             return;
         }
@@ -1068,7 +1079,7 @@ class Editor {
         }
 
         const after = slice(target.runs, from.offset);
-        const next = HEADING_TAGS[target.kind] && !after.length ? paragraph([]) : { ...target, runs: after };
+        const next = headingTag(target.kind) && !after.length ? paragraph([]) : { ...target, runs: after };
         this.doc.splice(from.block, 1, { ...target, runs: slice(target.runs, 0, from.offset) }, next);
         const caret = { block: from.block + 1, offset: 0 };
         this.selection = { anchor: caret, head: caret };
@@ -1081,7 +1092,7 @@ class Editor {
     backspaceAtStart(block) {
         const target = this.doc[block];
         if (isCell(target)) return;
-        if (target.kind === 'quote' || isListItem(target.kind)) {
+        if (target.kind === 'quote' || isListItem(target.kind) || isOwnBlock(target.kind)) {
             this.edit(() => this.doc[block] = outdented(target));
         } else if (block > 0 && isCell(this.doc[block - 1])) {
             const caret = { block: block - 1, offset: length(this.doc[block - 1].runs) };
@@ -1905,8 +1916,9 @@ function documentHtml(doc, forValue) {
             html += '<blockquote>';
             inQuote = true;
         }
-        const tag = HEADING_TAGS[target.kind] ?? 'p';
-        html += `<${tag}>${paragraphHtml(target.runs, forValue)}</${tag}>`;
+        const tag = headingTag(target.kind) ?? 'p';
+        const named = isOwnBlock(target.kind) ? ` data-tb-block="${target.kind}"` : '';
+        html += `<${tag}${named}>${paragraphHtml(target.runs, forValue)}</${tag}>`;
     }
     closeLists(0);
     return inQuote ? html + '</blockquote>' : html;
@@ -1999,7 +2011,11 @@ function updateBlock(element, target) {
     const own = [...element.childNodes].filter(node => !nested.includes(node));
     const ownHtml = own.map(node => node.nodeType === Node.TEXT_NODE ? escapeText(node.data) : node.outerHTML ?? '')
         .join('');
-    if (ownHtml === html && !element.attributes.length) return;
+    // A block of the app's own keeps the one attribute that names its kind.
+    const named = isOwnBlock(target.kind) ? target.kind : null;
+    const fits = named === null ? !element.attributes.length
+        : element.attributes.length === 1 && element.getAttribute('data-tb-block') === named;
+    if (ownHtml === html && fits) return;
     for (const node of own) node.remove();
     const template = document.createElement('template');
     // Safe: paragraphHtml escapes every character of text, each href and each mention's id and trigger, and its only
@@ -2007,6 +2023,7 @@ function updateBlock(element, target) {
     template.innerHTML = html;
     element.insertBefore(template.content, nested[0] ?? null);
     for (const attribute of [...element.attributes]) element.removeAttribute(attribute.name);
+    if (named !== null) element.setAttribute('data-tb-block', named);
 }
 
 const escapeText = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -2098,7 +2115,10 @@ function readBlocks(container, collapse, { formats, blocks, links, images, menti
         const name = element.localName;
         const context = LISTS.has(name) ? { ...parent, lists: parent.lists + 1, ordered: name === 'ol' } : parent;
         const level = /mso-list:\s*l\d+\s+level(\d{1,2})/i.exec(element.getAttribute('style') ?? '');
-        const own = name === 'h1' ? ['heading1', 0, false] : name === 'h2' ? ['heading2', 0, false]
+        // A <p> that names one of the app's kinds of block is that kind.
+        const named = name === 'p' ? element.getAttribute('data-tb-block') : null;
+        const own = named !== null && blocks.has(named) && isOwnBlock(named) ? [named, 0, false]
+            : name === 'h1' ? ['heading1', 0, false] : name === 'h2' ? ['heading2', 0, false]
             : /^h[3-6]$/.test(name) ? ['heading3', 0, false]
             : name === 'blockquote' ? ['quote', 0, false]
             : name === 'li' ? [parent.ordered ? 'number' : 'bullet', Math.max(parent.lists - 1, 0), false]

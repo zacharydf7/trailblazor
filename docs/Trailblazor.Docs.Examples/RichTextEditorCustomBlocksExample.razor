@@ -1,0 +1,22 @@
+@* A callout, a kind of block of the app's own that this page's style gives a look, with keys of its own and a slash
+   command. *@
+<TbStack Gap="3" Style="max-inline-size: 36rem">
+    <TbRichTextEditor Label="Release notes" @bind-Value="_notes" CustomBlocks="Blocks" SlashCommands
+                      HelperText="Put the caret in a paragraph and press the Callout button, or Alt+Shift+C." />
+</TbStack>
+
+<style>
+    [data-tb-block="callout"] {
+        border-inline-start: 4px solid var(--tb-color-info);
+        border-radius: var(--tb-radius-md);
+        background: var(--tb-color-info-subtle);
+        padding: var(--tb-space-2) var(--tb-space-3);
+    }
+</style>
+
+@code {
+    private static readonly RichTextBlock[] Blocks = [new("callout") { Label = "Callout", Shortcut = "Alt+Shift+C" }];
+
+    private string? _notes = "<p>Version 2 moves the settings to their own page.</p>"
+        + "<p data-tb-block=\"callout\">Note: export your settings before you update.</p>";
+}

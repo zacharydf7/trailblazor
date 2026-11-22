@@ -127,7 +127,8 @@ public sealed class RichTextDocument
     }
 
     /// <summary>Writes the document as canonical HTML: a <c>&lt;p&gt;</c> for each paragraph
-    /// (<c>&lt;p&gt;&lt;br&gt;&lt;/p&gt;</c> when it's empty), <c>&lt;h1&gt;</c> to <c>&lt;h3&gt;</c> for headings,
+    /// (<c>&lt;p&gt;&lt;br&gt;&lt;/p&gt;</c> when it's empty), with its kind's name in <c>data-tb-block</c> for a
+    /// block of the app's own, <c>&lt;h1&gt;</c> to <c>&lt;h3&gt;</c> for headings,
     /// neighboring quote paragraphs in one <c>&lt;blockquote&gt;</c>, list items in <c>&lt;ul&gt;</c> and
     /// <c>&lt;ol&gt;</c> with each nested list inside the item before it, <c>&lt;hr&gt;</c> for a rule,
     /// <c>&lt;img&gt;</c> with its <c>src</c> and <c>alt</c> for an image, and a <c>&lt;table&gt;</c> for each table,
@@ -137,7 +138,8 @@ public sealed class RichTextDocument
     /// <see cref="RichTextFormats"/>, a mention is a <c>&lt;span&gt;</c> inside its formats with its id in
     /// <c>data-mention</c> and its trigger in <c>data-trigger</c>, and <c>&amp;nbsp;</c> stands for each space HTML
     /// would otherwise collapse. An empty document is <c>""</c>. Parsing the result with a schema that allows its
-    /// formats, blocks, link schemes, image schemes and mentions gives back the same document.</summary>
+    /// formats, blocks, link schemes, image schemes, mentions, marks and blocks of the app's own gives back the same
+    /// document.</summary>
     public string ToHtml()
     {
         if (IsEmpty)
@@ -223,7 +225,13 @@ public sealed class RichTextDocument
                 continue;
             }
 
-            html.Append('<').Append(block).Append('>');
+            html.Append('<').Append(block);
+            if (paragraph.Block is not null)
+            {
+                html.Append(" data-tb-block=\"").Append(paragraph.Block).Append('"');
+            }
+
+            html.Append('>');
             WriteParagraph(html, paragraph);
             html.Append("</").Append(block).Append('>');
         }

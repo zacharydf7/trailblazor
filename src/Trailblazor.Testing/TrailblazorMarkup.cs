@@ -4501,7 +4501,8 @@ public sealed class TbRichTextEditorDriver : TbFieldDriver
         }
 
         await _scripts.InvokeAsync(() => events.OnChosen(options.IndexOf(option), number));
-        var put = RichTextDocument.Parse(await _scripts.RichTextInsertAsync(() => events.OnCommand(id))).Paragraphs;
+        var html = await _scripts.RichTextInsertAsync(() => events.OnCommand(id));
+        var put = RichTextDocument.Parse(html, events.Schema ?? RichTextSchema.Default).Paragraphs;
         var before = typed[..^(query.Trigger.Length + query.Text.Length)];
         var line = new RichTextParagraph([new(before)]);
         // As the script puts the HTML in: text joins the line being typed; a heading, quote or list starts under

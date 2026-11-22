@@ -50,8 +50,11 @@ public sealed partial class RichTextMark
     /// <see cref="TbRichTextEditor.ShowFloatingToolbar"/>. Defaults to true.</summary>
     public bool Floating { get; init; } = true;
 
-    internal static bool IsName(string? name) =>
-        name is not null && NamePattern().IsMatch(name) && !Taken.Contains(name);
+    internal static bool IsName(string? name) => IsPlain(name) && !Taken.Contains(name);
+
+    // The shape of a name that goes into the HTML as a tag or an attribute's value, for a mark or a block.
+    internal static bool IsPlain([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? name) =>
+        name is not null && NamePattern().IsMatch(name);
 
     internal static bool IsElement(string name) => Elements.Contains(name);
 

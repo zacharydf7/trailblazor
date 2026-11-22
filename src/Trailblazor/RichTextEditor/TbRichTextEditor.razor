@@ -327,12 +327,12 @@
 
     /// <summary>Opens a list of commands when a slash is typed at the start of a word: the kinds of block that
     /// <see cref="Blocks"/> allows and the toolbar has a button for, such as Heading 1, Bulleted list or Table,
-    /// under their buttons' names, and then the app's own <see cref="Commands"/>. The list leaves out the kind
-    /// the block already is, offers Paragraph in a heading, quote or list item, and in a table's cell offers no
-    /// kinds of block. What is typed after the slash narrows the list. Enter, Tab or a click runs a command and
-    /// takes the slash and the typed text out; Escape closes the list and leaves them as text. Off by default,
-    /// since it changes what a typed slash does. While it is on, the slash can't be one of the
-    /// <see cref="MentionTriggers"/>.</summary>
+    /// and the app's own <see cref="CustomBlocks"/>, under their buttons' names, and then the app's own
+    /// <see cref="Commands"/>. The list leaves out the kind the block already is, offers Paragraph in a heading,
+    /// quote, list item or block of the app's own, and in a table's cell offers no kinds of block. What is typed
+    /// after the slash narrows the list. Enter, Tab or a click runs a command and takes the slash and the typed
+    /// text out; Escape closes the list and leaves them as text. Off by default, since it changes what a typed
+    /// slash does. While it is on, the slash can't be one of the <see cref="MentionTriggers"/>.</summary>
     [Parameter]
     public bool SlashCommands { get; set; }
 
@@ -434,6 +434,13 @@
     /// names.</summary>
     [Parameter]
     public IEnumerable<RichTextMark>? Marks { get; set; }
+
+    /// <summary>Kinds of block of the app's own, such as a callout. The toolbar has a button for each, after the
+    /// heading, quote and list buttons, a slash command lists it with <see cref="SlashCommands"/>, and text pasted in
+    /// keeps them. A paragraph of the kind is written as <c>&lt;p data-tb-block="name"&gt;</c>. To read the value
+    /// in code, give <see cref="RichTextSchema.CustomBlocks"/> the same names.</summary>
+    [Parameter]
+    public IEnumerable<RichTextBlock>? CustomBlocks { get; set; }
 
     /// <summary>Updates the value on every change instead of when focus leaves the editor.</summary>
     [Parameter]
@@ -553,6 +560,12 @@
                     tool.Shortcuts);
             }
 
+            foreach (var block in CustomBlocks ?? [])
+            {
+                yield return new Tool(null, block.Name, null, block.Icon ?? RichTextEditorIcons.Block,
+                    block.Label ?? block.Name, block.Shortcut);
+            }
+
             if ((Blocks & (RichTextBlocks.BulletedLists | RichTextBlocks.NumberedLists)) != 0)
             {
                 yield return new Tool(null, null, "outdent", RichTextEditorIcons.Outdent,
@@ -620,6 +633,7 @@
     {
         Formats = Formats, Blocks = Blocks, LinkSchemes = LinkSchemes, ImageSchemes = ImageSchemes,
         Mentions = KeepsMentions, Marks = [.. (Marks ?? []).Select(mark => mark.Name)],
+        CustomBlocks = [.. (CustomBlocks ?? []).Select(block => block.Name)],
     };
 
     // The value as the editor holds it: parsed, so only the allowed formats and safe markup reach the page.
@@ -687,9 +701,11 @@
         formats = string.Join(' ', MarkToolsFor(Formats).Select(tool => tool.Format)
             .Concat(Formats.HasFlag(RichTextFormats.Color) ? ["color"] : [])),
         marks = string.Join(' ', (Marks ?? []).Select(mark => mark.Name)),
-        // One mark to a line: its name, then its keys.
-        shortcuts = string.Join('\n', (Marks ?? []).Where(mark => mark.Shortcut is not null)
-            .Select(mark => $"{mark.Name} {mark.Shortcut!.ReplaceLineEndings(" ")}")),
+        // One mark or block of the app's own to a line: its name, then its keys.
+        shortcuts = string.Join('\n', (Marks ?? []).Select(mark => (mark.Name, mark.Shortcut))
+            .Concat((CustomBlocks ?? []).Select(block => (block.Name, block.Shortcut)))
+            .Where(own => own.Shortcut is not null)
+            .Select(own => $"{own.Name} {own.Shortcut!.ReplaceLineEndings(" ")}")),
         blocks = string.Join(' ', BlockTools.Select(tool => tool.Block).OfType<string>()
             .Concat(Blocks.HasFlag(RichTextBlocks.Rules) ? ["rule"] : [])
             .Concat(Blocks.HasFlag(RichTextBlocks.Tables) ? ["table"] : [])),
@@ -720,10 +736,12 @@
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
-        if (Marks?.GroupBy(mark => mark.Name).FirstOrDefault(named => named.Count() > 1) is { } twice)
+        // The script keeps the app's marks and blocks by name, and tells a mark's keys from a block's by name alone.
+        var names = (Marks ?? []).Select(mark => mark.Name).Concat((CustomBlocks ?? []).Select(block => block.Name));
+        if (names.GroupBy(name => name).FirstOrDefault(named => named.Count() > 1) is { } twice)
         {
-            throw new InvalidOperationException(
-                $"{nameof(TbRichTextEditor)}'s {nameof(Marks)} has more than one mark named \"{twice.Key}\".");
+            throw new InvalidOperationException($"{nameof(TbRichTextEditor)} has more than one mark or block named "
+                + $"\"{twice.Key}\": the names in {nameof(Marks)} and {nameof(CustomBlocks)} must all differ.");
         }
 
         if (SlashCommands && MentionTriggers?.Contains('/') == true)
@@ -827,7 +845,8 @@
 
         _suggesting = Suggests;
         _mentionEvents ??= DotNetObjectReference.Create(new MentionInputEvents(
-            DispatchExceptionAsync, InputId, OnMentionQueryAsync, OnMentionChosenAsync, OnCommandAsync));
+            DispatchExceptionAsync, InputId, OnMentionQueryAsync, OnMentionChosenAsync, OnCommandAsync,
+            () => Schema));
         try
         {
             await _handle.InvokeVoidAsync("setMentions", _suggesting ? _mentionList : null, _mentionEvents);

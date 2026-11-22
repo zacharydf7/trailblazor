@@ -113,6 +113,7 @@ internal sealed partial class RichTextHtmlReader
     private readonly RichTextFormats _formats;
     private readonly RichTextSchema _schema;
     private readonly HashSet<string> _marks;
+    private readonly HashSet<string> _customBlocks;
     private readonly List<Element> _open = [];
     // Formatting to reopen, in order; null marks a boundary.
     private readonly List<Element?> _formatting = [];
@@ -130,7 +131,7 @@ internal sealed partial class RichTextHtmlReader
     // Whether the paragraph's last line has text, so a block ending inside a cell needs a line break there.
     private bool _lineHasText;
     // The kind and level of the paragraph being read, set when its first text arrives.
-    private (RichTextParagraphKind Kind, int Level) _block;
+    private (RichTextParagraphKind Kind, int Level, string? Block) _block;
     // The Word list marker being skipped and its text, which says, once it ends, whether its list is numbered.
     private Element? _markerElement;
     // The open <span data-mention>, whose text is one mention; one inside another is part of the outer one.
@@ -153,6 +154,7 @@ internal sealed partial class RichTextHtmlReader
         _formats = schema.Formats & AllFormats;
         _schema = schema;
         _marks = new(schema.Marks, StringComparer.Ordinal);
+        _customBlocks = new(schema.CustomBlocks, StringComparer.Ordinal);
     }
 
     private RichTextFormats Formats => _open.Count > 0 ? _open[^1].Formats : RichTextFormats.None;
@@ -239,8 +241,8 @@ internal sealed partial class RichTextHtmlReader
         {
             _position++;
             var name = ReadName();
-            var (style, href, source, alt, mention, color, mark, selfClosing) = ReadAttributes();
-            StartTag(name, style, href, source, alt, mention, color, mark, selfClosing);
+            var (style, href, source, alt, mention, color, mark, ownBlock, selfClosing) = ReadAttributes();
+            StartTag(name, style, href, source, alt, mention, color, mark, ownBlock, selfClosing);
             if (RawText.Contains(name))
             {
                 ReadRawText(name);
@@ -254,7 +256,7 @@ internal sealed partial class RichTextHtmlReader
     }
 
     private void StartTag(string name, string style, string? href, string? source, string? alt, MentionMark? mention,
-        Tone? color, string? mark, bool selfClosing)
+        Tone? color, string? mark, string? ownBlock, bool selfClosing)
     {
         _started = true;
         if (InOpenHead && !HeadContent.Contains(name))
@@ -406,7 +408,7 @@ internal sealed partial class RichTextHtmlReader
             && RichTextMark.IsElement(ownMark) == (name != "span") ? ownMark : null;
         var formats = FormatsOf(ownMark is null ? name : "span", style, Formats, link.Target is not null);
         var element = new Element(name, style, own, formats, link,
-            ContextOf(name, style, OpenContext), block, InPre || pre, skipped: false, _paragraphs.Count)
+            ContextOf(name, style, OpenContext, ownBlock), block, InPre || pre, skipped: false, _paragraphs.Count)
         {
             OwnColor = name == "span" && _formats.HasFlag(RichTextFormats.Color) ? color : null,
             OwnMark = ownMark,
@@ -742,9 +744,9 @@ internal sealed partial class RichTextHtmlReader
             // A block with no text is still a paragraph, but a row of a table being read isn't a block of its own.
             if (_cell is null && _paragraphs.Count == element.FirstParagraph && !tableRow)
             {
-                var (kind, level) = Resolve(element.Context);
+                var empty = Resolve(element.Context);
                 _numberedMarker = false;
-                _paragraphs.Add(new RichTextParagraph([], kind, level));
+                _paragraphs.Add(ParagraphOf([], empty));
             }
 
             if (element.FosteredInto is { } table)
@@ -766,22 +768,24 @@ internal sealed partial class RichTextHtmlReader
         }
 
         table.Fostered = null;
-        var (kind, level) = Resolve(table.Context);
-        var paragraph = new RichTextParagraph(Shown(fostered), kind, level);
+        var paragraph = ParagraphOf(Shown(fostered), Resolve(table.Context));
         if (paragraph.Runs.Count > 0 || fostered.Exists(piece => piece.Text.Contains('\n')))
         {
             _paragraphs.Insert(table.FirstParagraph++, paragraph);
         }
     }
 
-    // An element's own heading, quote, list item or Word list paragraph, if the schema allows it, else its parent's.
-    private BlockContext ContextOf(string name, string style, BlockContext parent)
+    // An element's own heading, quote, list item, Word list paragraph or block of the app's own, if the schema
+    // allows it, else its parent's. ownBlock is the name in a <p>'s data-tb-block.
+    private BlockContext ContextOf(string name, string style, BlockContext parent, string? ownBlock)
     {
         var context = name is "ul" or "ol" or "menu" or "dir"
             ? parent with { Lists = parent.Lists + 1, Ordered = name == "ol" }
             : parent;
         var own = name switch
         {
+            "p" when ownBlock is not null && _customBlocks.Contains(ownBlock) =>
+                (RichTextParagraphKind.Block, 0, false),
             "h1" => (RichTextParagraphKind.Heading1, 0, false),
             "h2" => (RichTextParagraphKind.Heading2, 0, false),
             "h3" or "h4" or "h5" or "h6" => (RichTextParagraphKind.Heading3, 0, false),
@@ -796,27 +800,36 @@ internal sealed partial class RichTextHtmlReader
         };
         if (own is not var (kind, level, word)
             || !(word ? Allows(RichTextParagraphKind.BulletedItem) || Allows(RichTextParagraphKind.NumberedItem)
-                : Allows(kind)))
+                : kind == RichTextParagraphKind.Block || Allows(kind)))
         {
             return context;
         }
 
-        return context with { Kind = kind, Level = level, WordList = word };
+        return context with
+        {
+            Kind = kind, Level = level, WordList = word,
+            Block = kind == RichTextParagraphKind.Block ? ownBlock : null,
+        };
     }
 
-    private (RichTextParagraphKind Kind, int Level) CurrentBlock() => Resolve(OpenContext);
+    private (RichTextParagraphKind Kind, int Level, string? Block) CurrentBlock() => Resolve(OpenContext);
 
     // A Word list paragraph is numbered when its skipped marker is a number or letters.
-    private (RichTextParagraphKind Kind, int Level) Resolve(BlockContext context)
+    private (RichTextParagraphKind Kind, int Level, string? Block) Resolve(BlockContext context)
     {
         if (!context.WordList)
         {
-            return (context.Kind, context.Level);
+            return (context.Kind, context.Level, context.Block);
         }
 
         var kind = _numberedMarker ? RichTextParagraphKind.NumberedItem : RichTextParagraphKind.BulletedItem;
-        return Allows(kind) ? (kind, context.Level) : (RichTextParagraphKind.Paragraph, 0);
+        return Allows(kind) ? (kind, context.Level, null) : (RichTextParagraphKind.Paragraph, 0, null);
     }
+
+    // A block of the app's own is made by its name, and every other kind by its kind and level.
+    private static RichTextParagraph ParagraphOf(List<RichTextRun> runs,
+        (RichTextParagraphKind Kind, int Level, string? Block) block) =>
+        block.Block is null ? new(runs, block.Kind, block.Level) : new(runs, block.Block);
 
     private bool Allows(RichTextParagraphKind kind) => _schema.Blocks.HasFlag(kind switch
     {
@@ -965,7 +978,7 @@ internal sealed partial class RichTextHtmlReader
         }
 
         var hasBreak = _runs.Exists(run => run.Text.Contains('\n'));
-        var paragraph = new RichTextParagraph(TakeRuns(), _block.Kind, _block.Level);
+        var paragraph = ParagraphOf(TakeRuns(), _block);
         // A line break shows a line even with nothing on it, such as a <br> between two paragraphs.
         if (paragraph.Runs.Count > 0 || hasBreak)
         {
@@ -1179,10 +1192,11 @@ internal sealed partial class RichTextHtmlReader
     }
 
     // Reads to the end of a start tag, keeping only its style, href, src and alt, the id and trigger of a mention, its
-    // text color, the mark it names and whether it closed itself.
+    // text color, the mark and the block it names and whether it closed itself.
     private (string Style, string? Href, string? Source, string? Alt, MentionMark? Mention, Tone? Color,
-        string? Mark, bool SelfClosing) ReadAttributes()
+        string? Mark, string? Block, bool SelfClosing) ReadAttributes()
     {
+        string? block = null;
         string? mark = null;
         string? color = null;
         string? style = null;
@@ -1259,10 +1273,14 @@ internal sealed partial class RichTextHtmlReader
             {
                 mark = HtmlCharacterReferences.DecodeAttribute(value);
             }
+            else if (block is null && name.Equals("data-tb-block", StringComparison.OrdinalIgnoreCase))
+            {
+                block = HtmlCharacterReferences.DecodeAttribute(value);
+            }
         }
 
         return (style ?? "", href, source, alt, mention is null ? null : new(mention, trigger ?? ""),
-            RichTextRun.ColorOf(color), mark, selfClosing);
+            RichTextRun.ColorOf(color), mark, block, selfClosing);
     }
 
     private string ReadAttributeValue()
@@ -1463,7 +1481,7 @@ internal sealed partial class RichTextHtmlReader
 
     // The kind and level of paragraph an element's text goes in, and the count of lists around it.
     private readonly record struct BlockContext(RichTextParagraphKind Kind, int Level, bool WordList, int Lists,
-        bool Ordered);
+        bool Ordered, string? Block = null);
 
     private enum Scope
     {

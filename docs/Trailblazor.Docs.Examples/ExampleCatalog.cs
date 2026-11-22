@@ -5662,10 +5662,11 @@ public static class ExampleCatalog
                 new("slash-commands", "Slash commands", "With `SlashCommands`, typing `/` at the start of a "
                     + "word opens a list of commands. It has the kinds of block that `Blocks` allows and the "
                     + "toolbar has a button for, under their buttons' names: headings, a quote and lists to turn "
-                    + "the paragraph into, and a horizontal line and a table to put in. The app's own `Commands` "
-                    + "come after them. The list leaves out what can't apply where the slash is: the kind the "
-                    + "block already is, and every kind of block in a table's cell. In a heading, quote or list "
-                    + "item it starts with Paragraph, which turns the block back into a plain paragraph. "
+                    + "the paragraph into, and a horizontal line and a table to put in. Your own `CustomBlocks` "
+                    + "are among them, and the app's own `Commands` come after them. The list leaves out what "
+                    + "can't apply where the slash is: the kind the block already is, and every kind of block in "
+                    + "a table's cell. In a heading, quote, list item or block of your own it starts with "
+                    + "Paragraph, which turns the block back into a plain paragraph. "
                     + "What is typed after the slash narrows the list, by a command's name or by "
                     + "a `RichTextCommand`'s `Keywords`, and every command that matches is listed: "
                     + "`MaxMentionItems` and `MentionItemTemplate` are for mentions only. Enter, Tab or a click "
@@ -5673,9 +5674,9 @@ public static class ExampleCatalog
                     + "the text changes, and a space after the slash leaves it as plain text. A command of the "
                     + "app's own puts its `Html` in where the slash was, keeping only what the editor's formats "
                     + "and blocks allow, without running `TransformPaste`: text joins the line, and a heading, "
-                    + "quote or list starts under it. Then the command's `OnChosen` is called; here, "
-                    + "Remind me only calls back. It is off by default, since it changes what a typed slash does. "
-                    + "While it is on, the slash can't also be a mention trigger.",
+                    + "quote, list or block of your own starts under it. Then the command's `OnChosen` is called; "
+                    + "here, Remind me only calls back. It is off by default, since it changes what a typed slash "
+                    + "does. While it is on, the slash can't also be a mention trigger.",
                     typeof(RichTextEditorSlashExample)),
                 new("changing-what-is-pasted", "Changing what's pasted", "`TransformPaste` changes what is pasted "
                     + "or dropped in, after the built-in cleanup: it gets the pasted text as a `RichTextDocument` and "
@@ -5708,6 +5709,19 @@ public static class ExampleCatalog
                     + "keeps them when `RichTextSchema.Marks` has their names. A mark is on or off and carries "
                     + "no value, and Markdown has no syntax for one, so `ToMarkdown` writes its text alone.",
                     typeof(RichTextEditorMarksExample)),
+                new("your-own-blocks", "Your own blocks", "`CustomBlocks` gives the editor kinds of block of "
+                    + "the app's own, each a `RichTextBlock`, such as a callout. The toolbar gets a button for "
+                    + "each after the heading, quote and list buttons, with the block's `Label` and `Icon`. The "
+                    + "button, "
+                    + "or the block's `Shortcut`, turns a paragraph into the kind and back, and with "
+                    + "`SlashCommands` the list of commands has it too. A paragraph of the kind is written as "
+                    + "`<p data-tb-block=\"name\">`, which your style sheet gives a look, in the editor and "
+                    + "wherever you show the value. It holds text and formats, as a plain paragraph does, but "
+                    + "no other blocks. Each paragraph is a block by itself: Enter goes on in the same "
+                    + "kind, and Enter in an empty one leaves it. Text pasted in keeps these kinds, and "
+                    + "code that reads the value keeps them when `RichTextSchema.CustomBlocks` has their "
+                    + "names. Markdown has no syntax for one, so `ToMarkdown` writes it as a plain paragraph.",
+                    typeof(RichTextEditorCustomBlocksExample)),
                 new("floating-toolbar", "A toolbar over the selection", "`ShowFloatingToolbar` shows a small "
                     + "toolbar over selected text, with a button for each character format the editor allows, "
                     + "each of your own marks and the link, but no text color menu, so formatting needs no trip "
@@ -5744,8 +5758,8 @@ public static class ExampleCatalog
             ],
             Api =
             [
-                typeof(TbRichTextEditor), typeof(RichTextCommand), typeof(RichTextMark), typeof(RichTextEditorLabels),
-                typeof(FieldClasses),
+                typeof(TbRichTextEditor), typeof(RichTextCommand), typeof(RichTextMark), typeof(RichTextBlock),
+                typeof(RichTextEditorLabels), typeof(FieldClasses),
             ],
             Keyboard =
             [
@@ -5773,13 +5787,14 @@ public static class ExampleCatalog
                 new(["Escape"], "Lets the next Tab leave the editor.") { When = "In a list item or a table" },
                 new(["Enter", "Shift+Enter"], "Breaks the line within the cell.") { When = "In a table" },
                 new(["Enter"], "Starts a new paragraph; at the end of a heading, a plain one."),
-                new(["Enter"], "Leaves the list or quote, a level at a time.")
+                new(["Enter"], "Leaves the list or quote, a level at a time, or the block of your own.")
                 {
-                    When = "In an empty list item or quote paragraph",
+                    When = "In an empty list item, quote paragraph or block of your own",
                 },
-                new(["Backspace"], "Takes the list or quote away, a level at a time, before joining paragraphs.")
+                new(["Backspace"], "Takes the list or quote away, a level at a time, or turns a block of your own "
+                    + "back into a plain paragraph, before joining paragraphs.")
                 {
-                    When = "At the start of a list item or quote paragraph",
+                    When = "At the start of a list item, quote paragraph or block of your own",
                 },
                 new(["Backspace", "Delete"], "Takes away the rule or image before or after the paragraph.")
                 {
@@ -5823,6 +5838,9 @@ public static class ExampleCatalog
                 new(["A mark's keys"], "Turns one of your own marks on or off. The keys are the ones its "
                     + "`Shortcut` lists, exactly as written: list `Meta` beside `Control` for macOS.")
                     { When = "With `Marks`" },
+                new(["A block's keys"], "Turns the paragraph into one of your own kinds of block, or back into a "
+                    + "plain paragraph. The keys are the ones its `Shortcut` lists, written as a mark's are.")
+                    { When = "With `CustomBlocks`" },
                 new(["Alt+F10"], "Moves the focus to the toolbar over the selection.")
                     { When = "In the text, while the floating toolbar shows" },
                 new(["Left", "Right", "Home", "End"], "Moves between the floating toolbar's buttons.")
@@ -5864,6 +5882,8 @@ public static class ExampleCatalog
                     + "shows. `Labels` changes these.",
                 "The button of one of your own marks is named by its `Label`, or by the mark's name without one, "
                     + "and says whether the mark is on, as a format's button does.",
+                "The button of one of your own kinds of block is named by its `Label`, or by the kind's name "
+                    + "without one, and says whether the paragraph is of that kind, as a quote's button does.",
                 "The floating toolbar is a `toolbar` named \"Selection formatting\", and its buttons have the "
                     + "main toolbar's names. `Labels` changes its name.",
             ],
@@ -5932,6 +5952,9 @@ public static class ExampleCatalog
                 "Give each of your own marks a `Label`, and don't let a mark's look be the only sign of what it "
                     + "means: a screen reader says nothing for a `span`, and little for most of the elements a "
                     + "mark can be, such as `kbd`.",
+                "Give each of your own kinds of block a `Label`, and say what a block is in its text, such as "
+                    + "\"Note:\" at the start of a callout: a screen reader reads it as a plain paragraph, "
+                    + "whatever your style makes it look like.",
                 "Keep the main toolbar where people may format by touch: the floating toolbar doesn't show for a "
                     + "selection made by touch, so an editor with `ShowToolbar=\"false\"` gives them no buttons.",
                 "Don't let a highlight or a text color be the only sign of something, such as text that needs "
@@ -6029,6 +6052,9 @@ public static class ExampleCatalog
                     + "value, give `EnterAsync` the HTML it makes.",
                 "To test your own marks, give `EnterAsync` HTML that has them, such as "
                     + "`<p>Press <kbd>Esc</kbd></p>`, and in Playwright click a mark's button by its label.",
+                "To test your own kinds of block, give `EnterAsync` HTML that has them, such as "
+                    + "`<p data-tb-block=\"callout\">Mind the gap</p>`, and in Playwright click a block's "
+                    + "button by its label or run its slash command with `SlashCommandAsync`.",
                 "The floating toolbar is the `toolbar` named \"Selection formatting\". In Playwright it shows a "
                     + "frame after text is selected with the keyboard or the mouse, so wait for it to be visible "
                     + "before reading where it is, and click its buttons by name. bUnit runs no script, so "
