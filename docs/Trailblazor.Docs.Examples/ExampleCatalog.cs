@@ -3213,7 +3213,9 @@ public static class ExampleCatalog
                     + "panel that already floated alone goes back to that window. The same holds for a panel the "
                     + "app takes away while it is in its window, such as a form that is there only while a task "
                     + "runs: when the app shows it again, it is where it was docked, not in a new window, which a "
-                    + "page can't open unless the user has just acted. While a panel is away, the dock keeps a button for it in "
+                    + "page can't open unless the user has just acted. A panel with `KeepWindowFor` keeps its "
+                    + "browser window instead (see Panels that come and go). While a panel is away, the dock keeps "
+                    + "a button for it in "
                     + "a row above its groups: the button's menu brings the panel's window to the front, where the "
                     + "browser allows it, or returns the panel. `PoppedOut` lists the panels that are away, "
                     + "`PoppedOutChanged` reports each change, and `ReturnAsync` brings one back from code. "
@@ -3237,6 +3239,14 @@ public static class ExampleCatalog
                     + "page's head and the root as they change. When the browser refuses to open the window, the "
                     + "panel stays where it was.",
                     typeof(DockManagerPopOutExample)),
+                new("short-lived", "Panels that come and go", "`KeepWindowFor` sets how long a panel's browser "
+                    + "window stays open after the app takes the panel away while it shows there, as when a task's "
+                    + "form is done. Meanwhile the window says that the panel isn't open. When "
+                    + "the app makes the panel again, it shows in that window, with no click. The time runs only "
+                    + "while the panel is away, and starts over each time the panel goes. The kept window closes "
+                    + "when its time is up, when the user closes it, or when the page goes away, and the panel "
+                    + "then shows where it was docked when the app makes it again. `Timeout.InfiniteTimeSpan` "
+                    + "keeps the window until it is closed.", typeof(DockManagerKeepWindowExample)),
                 new("auto-hide", "Auto-hide strips", "Auto-hide in a panel's menus puts the panel away on a strip "
                     + "along an edge of the dock, where only a button with its title shows. The button slides the "
                     + "panel out over the dock, along that edge and a quarter of the dock deep unless its `Size` says "
@@ -3409,7 +3419,9 @@ public static class ExampleCatalog
                     + "title too, and the button that brings it back is named \"Return to the dock\". "
                     + "`Labels.PopOut` and `Return` replace the menu item and the button, `PoppedOut`, `Returned`, "
                     + "`PopOutBlocked` and `PopOutLapsed` what is said, each with `{0}` for the panel's title, and "
-                    + "`ConnectionLost` the notice a window shows while the page has lost its connection.",
+                    + "`ConnectionLost` the notice a window shows while the page has lost its connection. "
+                    + "`EmptyWindow` replaces what a window says while it is kept for a panel that is away, with "
+                    + "`{0}` for the panel's title.",
                 "The buttons for the panels that are in windows of their own sit in a `group` named \"Panels in "
                     + "their own windows\". Each is named by its panel's title and described as \"In its own "
                     + "browser window\", and its menu has Show its window and Return to the dock. `Labels.Away`, "
@@ -3448,6 +3460,9 @@ public static class ExampleCatalog
                 "While the page has lost its connection to the server, screen readers in a panel's own browser "
                     + "window hear \"The page lost its connection to the server. This panel works again when the "
                     + "page reconnects.\" It is said in that window only.",
+                "A browser window kept for a panel the app took away says \"Editor isn't open right now. This "
+                    + "window shows it again when it is.\" in a `status`, and when the panel is back in it, screen "
+                    + "readers hear \"Editor opened in a new window.\"",
                 "A screen reader follows the window that has the focus, so whatever is announced while a panel is in "
                     + "a window of its own is said in that window as well as on the page. While a modal dialog is "
                     + "open, messages go to its own live regions and are said there only.",
@@ -3808,6 +3823,9 @@ public static class ExampleCatalog
                     + "lost its connection to the server, with the class `tb-dock__connection-lost` and the role "
                     + "`alert`. The dock's script adds it to that window's body and removes it. Its text is in a "
                     + "`p`, which draws the box."),
+                new("empty-window", "The line a panel's own browser window shows while it stays open without its "
+                    + "panel, with the class `tb-dock__empty-window` and the role `status`. The dock's script adds "
+                    + "it to that window's body, and it goes when the panel is back in the window."),
                 new("return-bar", "The bar across the top of a panel that shows in a browser window of its own, "
                     + "with the class `tb-dock__return-bar`. The panel has `data-popped`, the class "
                     + "`tb-dock__panel--popped`, the role `region` and no `data-dock-group` from the moment Open in "
@@ -3952,6 +3970,11 @@ public static class ExampleCatalog
                     + "`components-reconnect-state-changed` on the page's `document` with `detail.state` `show`, "
                     + "then `hide`. bUnit runs no script, so there the dock's `data-connection-lost` holds the "
                     + "notice's text.",
+                "With `KeepWindowFor`, the `Page` that `PopOutAsync` gave stays open when the app takes the panel "
+                    + "away. Until the app makes the panel again, that `Page` has a `status` with the "
+                    + "`empty-window` part, found with `GetByRole(AriaRole.Status)`, and then the panel is back on "
+                    + "it. Both take a moment, so assert them with `Expect`, which waits. In bUnit the panel comes "
+                    + "back drawn as it is in its window, as after `PopOutAsync`.",
                 "In Playwright, announcements made while a panel is in its window can be checked on its `Page` or "
                     + "on the page's, with `Tb().Announcements.ExpectAnnouncedAsync(text)` on either. Toasts are "
                     + "on the `Page` the last key, press or focus was in, so right after `PopOutAsync` they are on the "

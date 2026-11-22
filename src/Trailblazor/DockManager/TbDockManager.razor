@@ -332,6 +332,12 @@
     private readonly HashSet<string> _landed = [];
     // The popped panels the script was last told of.
     private string[] _poppedInScript = [];
+    // The browser windows kept open for panels the app took away, by panel id, each with what the script needs.
+    private readonly Dictionary<string, EmptyWindow> _keptWindows = [];
+    // The element ids of the panels whose kept windows the script has yet to be told to close.
+    private readonly List<string> _unkept = [];
+    // Whether the app has yet to hear of a layout that changed while a panel registered.
+    private bool _layoutOwed;
     // The popped panels the app was last told of.
     private string[] _poppedReported = [];
     // The auto-hidden panels the dock shows on its strips, as of the last render.
@@ -543,6 +549,11 @@
             RaiseFromScriptAsync, OnFloatAsync, PullOutFromScriptAsync, ConcealFromScriptAsync, SlideFromScriptAsync,
             AutoHideFromScriptAsync,
             panel => ReturnAsync(panel, focus: false),
+            panel =>
+            {
+                _keptWindows.Remove(panel);
+                return Task.CompletedTask;
+            },
             tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);
         if (handle is not null && _disposed)
@@ -580,11 +591,42 @@
         }
     }
 
-    internal void Add(TbDockPanel panel) => _panels.Add(panel);
+    internal void Add(TbDockPanel panel)
+    {
+        _panels.Add(panel);
+        if (!_keptWindows.Remove(panel.Name, out var window))
+        {
+            return;
+        }
+
+        // A panel the app made again goes straight to the browser window kept for it, before the render that
+        // would show it in the dock. No window is asked for, so no click is needed, and no user action is
+        // counted. The app hears of the layout after that render.
+        if (CanPopOut(panel.Name))
+        {
+            _goingHome.Remove(panel.Name);
+            _layout = FloatedForItsWindow(panel.Name);
+            _layoutOwed = true;
+        }
+        else
+        {
+            _unkept.Add(window.Id);
+        }
+    }
 
     internal void Remove(TbDockPanel panel)
     {
         _panels.Remove(panel);
+        if (panel.KeepWindowFor is { } time && (time > TimeSpan.Zero || time == Timeout.InfiniteTimeSpan)
+            && _landed.Contains(panel.Name) && Panel(panel.Name) is null)
+        {
+            // A browser's timer fires at once when asked to wait longer than about 24 days.
+            var endless = time == Timeout.InfiniteTimeSpan || time.TotalMilliseconds > int.MaxValue;
+            _keptWindows[panel.Name] = new(PanelId(panel.Name),
+                Format(Labels.EmptyWindow, TbStrings.DockEmptyWindow, panel.Title),
+                endless ? null : time.TotalMilliseconds);
+        }
+
         _select.KeepOnly(id => Panel(id) is not null);
         _close.KeepOnly(id => Panel(id) is not null);
         if (Panel(panel.Name) is null)
@@ -1196,21 +1238,27 @@
     {
         try
         {
-            var alone = _layout.FloatOf(panel) is { Group.Panels.Count: 1 };
-            var floated = alone ? _layout : _layout.Float(panel);
-            if (!alone)
-            {
-                _homes[panel] = (_layout, floated, _turns++);
-            }
-
-            _popped.Add(panel);
-            _popOutAfterRender.Add(panel);
-            await ChangeAsync(floated, PopOutAction);
+            await ChangeAsync(FloatedForItsWindow(panel), PopOutAction);
         }
         finally
         {
             _commits++;
         }
+    }
+
+    // Marks the panel as on its way to a browser window, and gives the layout that floats it alone meanwhile.
+    private DockLayout FloatedForItsWindow(string panel)
+    {
+        var alone = _layout.FloatOf(panel) is { Group.Panels.Count: 1 };
+        var floated = alone ? _layout : _layout.Float(panel);
+        if (!alone)
+        {
+            _homes[panel] = (_layout, floated, _turns++);
+        }
+
+        _popped.Add(panel);
+        _popOutAfterRender.Add(panel);
+        return floated;
     }
 
     // Tells the script which panels show in browser windows of their own, after the render that draws them so.
@@ -1221,6 +1269,12 @@
         {
             _goingHome.Remove(gone);
             await GoHomeAsync(gone);
+        }
+
+        if (_layoutOwed)
+        {
+            _layoutOwed = false;
+            await ChangeAsync(_layout, null);
         }
 
         if (_handle is null)
@@ -1273,7 +1327,24 @@
         if (!popped.SequenceEqual(_poppedInScript))
         {
             _poppedInScript = popped;
-            await _handle.InvokeVoidAsync("popped", (object)popped);
+            await _handle.InvokeVoidAsync("popped", popped, _keptWindows.Values);
+        }
+
+        // A kept window closes when its panel comes back unable to show in one, and when the dock stops allowing
+        // windows. Each id leaves the list before the script is called, so a render that comes while the script
+        // answers takes only those left, and none is closed twice.
+        if (!AllowPopOut)
+        {
+            _unkept.AddRange(_keptWindows.Values.Select(window => window.Id));
+            _keptWindows.Clear();
+        }
+
+        foreach (var id in _unkept.ToList())
+        {
+            if (_unkept.Remove(id))
+            {
+                await _handle.InvokeVoidAsync("unkeep", id);
+            }
         }
 
         // The app is told here, after the window has opened or been refused, however the panel came back.
@@ -1586,6 +1657,10 @@
     // Screen readers hear whole percentages, rounded as the script rounds them: a half goes up.
     private static string Whole(double value) =>
         Math.Round(value, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture);
+
+    // A window the script keeps open for a panel that is away: the panel's element id, what the window says, and
+    // how long it stays, in milliseconds, or null for as long as the page does.
+    private sealed record EmptyWindow(string Id, string Text, double? Lifetime);
 
     private string Format(string? label, string key, params object[] values) =>
         string.Format(CultureInfo.CurrentCulture, label ?? Localizer[key], values);

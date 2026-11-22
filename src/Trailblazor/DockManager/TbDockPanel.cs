@@ -51,6 +51,16 @@ public sealed class TbDockPanel : TbComponentBase, IDisposable
     [Parameter]
     public bool AllowPopOut { get; set; } = true;
 
+    /// <summary>How long the panel's own browser window stays open after the app takes the panel away while it shows
+    /// there, for a panel that comes and goes, such as a form that is there only while a task runs. The window says
+    /// that the panel isn't open, and shows the panel again when the app makes it again, so the user needn't open
+    /// the window each time. <see cref="Timeout.InfiniteTimeSpan"/>, or a time longer than a browser's timer can wait
+    /// (about 24 days), keeps the window until the user or the page closes it. Null (the default) or a time of zero
+    /// or less closes the window with the panel, which then shows where it was docked when it is made again.
+    /// </summary>
+    [Parameter]
+    public TimeSpan? KeepWindowFor { get; set; }
+
     /// <summary>Whether the content stays rendered, hidden, while another tab of its group shows, so its state
     /// survives. Defaults to true. Set it to false for content that is cheap to build again and costly to keep.
     /// Either way the content first renders when the panel first shows, and a closed panel's content is disposed.

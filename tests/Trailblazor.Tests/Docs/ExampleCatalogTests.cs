@@ -186,7 +186,7 @@ public class ExampleCatalogTests
     private static readonly Dictionary<string, (string Script, string[] Parts)> ScriptParts = new()
     {
         ["Dialog"] = ("dialog.js", ["scrim"]),
-        ["DockManager"] = ("dock-manager.js", ["connection-lost"]),
+        ["DockManager"] = ("dock-manager.js", ["connection-lost", "empty-window"]),
     };
 
     // Folders whose bases and children other components render, and the components whose pages may list their parts.

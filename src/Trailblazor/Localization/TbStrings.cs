@@ -836,6 +836,10 @@ public static class TbStrings
     /// shown in a dock panel's own browser window, over the panel, while the connection is lost.</summary>
     public const string DockConnectionLost = "Dock.ConnectionLost";
 
+    /// <summary>"{0} isn't open right now. This window shows it again when it is.": shown in a dock panel's own
+    /// browser window that stays open after the app took the panel away; {0} is the panel's title.</summary>
+    public const string DockEmptyWindow = "Dock.EmptyWindow";
+
     /// <summary>"Panels in their own windows": names the row of buttons a dock keeps for the panels that show in
     /// browser windows of their own.</summary>
     public const string DockAway = "Dock.Away";
@@ -1905,6 +1909,7 @@ public static class TbStrings
         [DockPopOutLapsed] = "The new window for {0} closed before the panel was ready. Try again.",
         [DockConnectionLost] = "The page lost its connection to the server. This panel works again when the page "
             + "reconnects.",
+        [DockEmptyWindow] = "{0} isn't open right now. This window shows it again when it is.",
         [DockAway] = "Panels in their own windows",
         [DockAwayHint] = "In its own browser window",
         [DockShowWindow] = "Show its window",

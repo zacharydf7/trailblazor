@@ -1,0 +1,36 @@
+@* A panel that is there only while a task runs keeps its browser window between runs. *@
+<TbStack Gap="2">
+    <TbText>
+        Start a check-in, choose "Open in new window" in its menu, finish it in that window, then start another.
+    </TbText>
+    <TbButton OnClick="() => _checkingIn = true" Disabled="_checkingIn">Start a check-in</TbButton>
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Hut desk" AllowPopOut Style="block-size: 16rem">
+        <TbDockPanel Id="guests" Title="Guests">
+            <TbText class="tb-p-3">Guests checked in: @_checkedIn</TbText>
+        </TbDockPanel>
+        @if (_checkingIn)
+        {
+            <TbDockPanel Id="check-in" Title="Check-in" KeepWindowFor="TimeSpan.FromMinutes(5)">
+                <TbStack Gap="2" class="tb-p-3">
+                    <TbTextField Label="Guest's name" @bind-Value="_name" />
+                    <TbButton Size="Size.Small" OnClick="Finish">Finish the check-in</TbButton>
+                </TbStack>
+            </TbDockPanel>
+        }
+    </TbDockManager>
+</TbStack>
+
+@code {
+    private DockLayout _layout = new(new DockSplit(new DockGroup("guests"), new DockGroup("check-in")));
+
+    private bool _checkingIn;
+    private string? _name;
+    private int _checkedIn;
+
+    private void Finish()
+    {
+        _checkedIn++;
+        _name = null;
+        _checkingIn = false;
+    }
+}

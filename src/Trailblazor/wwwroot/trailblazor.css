@@ -7799,6 +7799,13 @@
         color: var(--tb-color-text);
     }
 
+    /* What a panel's own browser window says while it stays open without its panel. */
+    .tb-dock__empty-window {
+        margin: 0;
+        padding: var(--tb-space-4);
+        color: var(--tb-color-text-muted);
+    }
+
     /* The dock takes the focus when its last panel closes. */
     .tb-dock:focus-visible,
     .tb-dock__panel:focus-visible {

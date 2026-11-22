@@ -1,6 +1,8 @@
 @page "/dock-short-lived"
 
-@* A panel that is there only while a task runs: Edit makes it, and its own Done button takes it away. *@
+@* A panel that is there only while a task runs: Edit makes it, and its own Done button takes it away. With ?keep=N
+   in the address, its browser window stays open for N seconds after the panel goes. Its Save and new button takes
+   it away and makes it again at once, and its draft isn't bound, so a panel made again starts with none. *@
 <TbButton OnClick="() => _editing = true">Edit</TbButton>
 <div style="inline-size: 40rem; block-size: 16rem">
     <TbDockManager @bind-Layout="_layout" AriaLabel="Trips" AllowPopOut>
@@ -9,8 +11,11 @@
         </TbDockPanel>
         @if (_editing)
         {
-            <TbDockPanel Id="editor" Title="Editor">
+            <TbDockPanel Id="editor" Title="Editor"
+                         KeepWindowFor="@(Keep is { } seconds ? TimeSpan.FromSeconds(seconds) : null)">
                 <TbButton OnClick="() => _editing = false">Done</TbButton>
+                <TbButton OnClick="SaveAndStartAnewAsync">Save and new</TbButton>
+                <input aria-label="Draft" />
             </TbDockPanel>
         }
         <TbDockPanel Id="map" Title="Map">
@@ -20,6 +25,16 @@
 </div>
 
 @code {
+    [SupplyParameterFromQuery]
+    public int? Keep { get; set; }
+
     private DockLayout _layout = new(new DockSplit(new DockGroup("list"), new DockGroup("editor"), new DockGroup("map")));
     private bool _editing = true;
+
+    private async Task SaveAndStartAnewAsync()
+    {
+        _editing = false;
+        await Task.Yield();
+        _editing = true;
+    }
 }

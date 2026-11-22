@@ -26,17 +26,6 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         return window;
     }
 
-    // Waits until the window has closed, which it may have done already.
-    private static async Task ClosedAsync(IPage window)
-    {
-        for (var tries = 0; !window.IsClosed && tries < 100; tries++)
-        {
-            await Task.Delay(50);
-        }
-
-        Assert.True(window.IsClosed);
-    }
-
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Panel_ShouldKeepItsStateAndWork_WhenItOpensInAWindowOfItsOwn(string browser)
     {

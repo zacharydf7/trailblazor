@@ -43,6 +43,17 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
     protected const string AddsToThePagesBody =
         "The page's own script adds its popup to the page's body, which the panel's window doesn't show.";
 
+    // Waits until the window has closed, which it may have done already.
+    protected static async Task ClosedAsync(IPage window)
+    {
+        for (var tries = 0; !window.IsClosed && tries < 100; tries++)
+        {
+            await Task.Delay(50);
+        }
+
+        Assert.True(window.IsClosed);
+    }
+
     // Waits until the element is its own page's focused one. With more than one window open, which of them a test
     // browser counts as the active one varies, and Playwright's own focus check also needs the element's window to be
     // the active one.

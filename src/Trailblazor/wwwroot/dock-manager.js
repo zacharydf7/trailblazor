@@ -1076,6 +1076,43 @@ export function attachDock(root, reporter) {
         }
     };
     connection.heard.add(showConnection);
+    // The windows that stay open for panels the app took away, by the panels' element ids. Each says that its panel
+    // isn't open and waits in `opened` for the dock to ask for it, as a window that a click opened does.
+    const kept = new Map();
+    const keepWindow = (id, text, lifetime) => {
+        const shown = windows.get(id);
+        windows.delete(id);
+        sayLost(shown, false);
+        const page = shown.other.document;
+        const note = page.body.appendChild(page.createElement('p'));
+        note.className = 'tb-dock__empty-window';
+        note.dataset.part = 'empty-window';
+        note.setAttribute('role', 'status');
+        // Screen readers say a status's text when it's added, not text the status arrives with.
+        shown.other.requestAnimationFrame(() => {
+            note.textContent = text;
+        });
+        // The window's own timer runs on time while the page is in the background.
+        const closing = lifetime === null ? null : shown.other.setTimeout(() => shown.other.close(), lifetime);
+        const release = () => {
+            shown.stop();
+            shown.other.clearTimeout(closing);
+        };
+        opened.set(id, shown.other);
+        kept.set(id, { other: shown.other, panel: shown.panel.dataset.panel, release });
+    };
+    const forgetKept = (id, other) => {
+        if (kept.get(id)?.other === other) {
+            kept.get(id).release();
+            // The dock stops counting on the window, so the panel shows where it was docked when it is made again.
+            callDotNet(reporter, 'OnKeptWindowClosed', kept.get(id).panel);
+            kept.delete(id);
+            // A click may have opened another window for the panel since.
+            if (opened.get(id) === other) {
+                opened.delete(id);
+            }
+        }
+    };
     // A panel on its way to a window is hidden first, with no scroll positions left to note, so every panel's are
     // noted in the click. On its way back the dock draws it as its own before it moves, which loses them too, so
     // they are noted in the click on its Return button. Each panel's are used once, and only for that panel.
@@ -1106,6 +1143,8 @@ export function attachDock(root, reporter) {
         // A second click for the same panel replaces the window the first click opened; another panel's window
         // is left alone.
         const id = item.dataset.pop;
+        kept.get(id)?.release();
+        kept.delete(id);
         opened.get(id)?.close();
         lapsed.delete(id);
         // The dock's own window opens it: a dock inside a panel that shows in a window is in that window, and the
@@ -1171,6 +1210,8 @@ export function attachDock(root, reporter) {
     // The windows go with the page, and with the dock. Their panels come back first, so a page that the browser
     // keeps to show again when the user goes back still has them, and only such a page's dock is told.
     const closeWindows = report => {
+        kept.forEach(each => each.release());
+        kept.clear();
         opened.forEach(other => other?.close());
         opened.clear();
         arriving.forEach(other => other.close());
@@ -1263,12 +1304,24 @@ export function attachDock(root, reporter) {
         async popOut(id) {
             // A second click on a group's item reaches the dock after the first has made the item the next panel's,
             // while the click's window was opened for the first panel. Nothing was refused, so nothing is said.
+            // The app can take a panel away and make it again before this script hears that it had gone. The window
+            // is still counted as showing the old panel, which Blazor removed, and takes the new one.
+            const left = windows.get(id);
+            if (left && !left.panel.isConnected) {
+                windows.delete(id);
+                left.stop();
+                opened.set(id, left.other);
+            }
+
             if (!opened.has(id) && !lapsed.has(id)) {
                 return 'unasked';
             }
 
             const [other, panel] = [opened.get(id), root.ownerDocument.getElementById(id)];
             opened.delete(id);
+            // A window kept for this panel is written anew as the panel moves in, which drops what it said.
+            kept.get(id)?.release();
+            kept.delete(id);
             // The window opened and then closed because the dock asked too late; the browser didn't refuse it.
             if (lapsed.delete(id)) {
                 return 'lapsed';
@@ -1307,7 +1360,10 @@ export function attachDock(root, reporter) {
             windows.set(id, { other, panel, stop });
             settleStops();
             // Closing the window puts the panel back, while the window still holds it.
-            other.addEventListener('pagehide', () => bringBack(id, true));
+            other.addEventListener('pagehide', () => {
+                bringBack(id, true);
+                forgetKept(id, other);
+            });
             panel.focus({ preventScroll: true });
             // The connection may have been lost while the panel was on its way. The notice comes after the focus, which
             // it gives back to the panel later.
@@ -1323,9 +1379,15 @@ export function attachDock(root, reporter) {
             }
         },
         // The element ids of the panels that still show in windows of their own. Any other comes back to the dock.
-        popped(ids) {
+        popped(ids, keep = []) {
             for (const id of [...windows.keys()].filter(each => !ids.includes(each))) {
-                bringBack(id, false);
+                // A window is kept only for a panel the app took away, which is gone from the window by now.
+                const stay = keep.find(each => each.id === id);
+                if (stay && !windows.get(id).panel.isConnected) {
+                    keepWindow(id, stay.text, stay.lifetime);
+                } else {
+                    bringBack(id, false);
+                }
             }
 
             for (const [id, other] of arriving) {
@@ -1333,6 +1395,10 @@ export function attachDock(root, reporter) {
                     other.close();
                 }
             }
+        },
+        // Closes the window kept for a panel that may no longer show in one.
+        unkeep(id) {
+            kept.get(id)?.other.close();
         },
         dispose() {
             root.removeEventListener('click', onPopOutClick, { capture: true });

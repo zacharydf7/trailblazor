@@ -7451,6 +7451,11 @@ Trailblazor.DockLabels.PopOutLapsed.init -> void
 const Trailblazor.TbStrings.DockConnectionLost = "Dock.ConnectionLost" -> string!
 Trailblazor.DockLabels.ConnectionLost.get -> string?
 Trailblazor.DockLabels.ConnectionLost.init -> void
+const Trailblazor.TbStrings.DockEmptyWindow = "Dock.EmptyWindow" -> string!
+Trailblazor.DockLabels.EmptyWindow.get -> string?
+Trailblazor.DockLabels.EmptyWindow.init -> void
+Trailblazor.TbDockPanel.KeepWindowFor.get -> System.TimeSpan?
+Trailblazor.TbDockPanel.KeepWindowFor.set -> void
 Trailblazor.TbDockManager.AllowPopOut.get -> bool
 Trailblazor.TbDockManager.FocusablePanels.get -> Trailblazor.TabPanelFocus
 Trailblazor.TbDockManager.FocusablePanels.set -> void

@@ -122,6 +122,11 @@ public sealed record DockLabels
     /// the server. Leave it null for the app's text for <see cref="TbStrings.DockConnectionLost"/>.</summary>
     public string? ConnectionLost { get; init; }
 
+    /// <summary>What a panel's own browser window says while it stays open after the app took the panel away, with
+    /// <c>{0}</c> for the panel's title. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockEmptyWindow"/>.</summary>
+    public string? EmptyWindow { get; init; }
+
     /// <summary>Names the row of buttons the dock keeps for the panels that show in browser windows of their own.
     /// Leave it null for the app's text for <see cref="TbStrings.DockAway"/>.</summary>
     public string? Away { get; init; }

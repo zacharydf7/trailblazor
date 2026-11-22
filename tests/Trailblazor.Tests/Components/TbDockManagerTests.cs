@@ -1,4 +1,5 @@
 using System.Diagnostics.Metrics;
+using System.Text.Json;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -2083,7 +2084,7 @@ public class TbDockManagerTests : BunitContext
     }
 
     private sealed record Panel(string Id, string Title, bool Closable = true, bool KeepAlive = true,
-        bool AllowPopOut = true);
+        bool AllowPopOut = true, TimeSpan? KeepWindowFor = null);
 
     [Fact]
     public async Task AutoHide_ShouldPutThePanelOnAStripWithTheFocusOnItsButton_WhenChosenInAGroupsMenu()
@@ -3031,6 +3032,141 @@ public class TbDockManagerTests : BunitContext
         Assert.Single(_handle.Invocations["popOut"]);
     }
 
+    // The hike's panels, with a time for the notes' browser window to stay open after the app takes them away.
+    private static Panel[] WithNotesKept(TimeSpan time, bool allowPopOut = true) => [.. HikePanels.Select(panel =>
+        panel.Id == "notes" ? panel with { KeepWindowFor = time, AllowPopOut = allowPopOut } : panel)];
+
+    // Pops the notes out, has the app take them away, and gives what the script was told to keep.
+    private async Task<JsonElement> TakeNotesAwayInTheirWindowAsync(IRenderedComponent<TbDockManager> cut,
+        Panel[] panels)
+    {
+        await cut.Tb().Dock().PopOutAsync("Notes");
+        cut.Render(parameters => parameters.Add(each => each.ChildContent,
+            Panels([.. panels.Where(panel => panel.Id != "notes")])));
+        cut.WaitForAssertion(() => Assert.Empty((string[])_handle.Invocations["popped"][^1].Arguments[0]!));
+        return JsonSerializer.SerializeToElement(_handle.Invocations["popped"][^1].Arguments[1],
+            JsonSerializerOptions.Web);
+    }
+
+    // -10,000 ticks are Timeout.InfiniteTimeSpan, and the others are longer than a browser's timer can wait.
+    [Theory]
+    [InlineData(-10_000L)]
+    [InlineData(25 * TimeSpan.TicksPerDay)]
+    [InlineData(long.MaxValue)]
+    public async Task KeepWindowFor_ShouldGiveTheScriptNoTime_WhenGivenAnEndlessOrVeryLongTime(long ticks)
+    {
+        var panels = WithNotesKept(TimeSpan.FromTicks(ticks));
+        var cut = RenderPoppable(Hike, panels: panels);
+
+        var kept = Assert.Single((await TakeNotesAwayInTheirWindowAsync(cut, panels)).EnumerateArray());
+
+        Assert.Equal(JsonValueKind.Null, kept.GetProperty("lifetime").ValueKind);
+    }
+
+    [Theory]
+    [InlineData(0L)]
+    [InlineData(-TimeSpan.TicksPerSecond)]
+    public async Task KeepWindowFor_ShouldKeepNoWindow_WhenGivenNoTimeOrLess(long ticks)
+    {
+        var panels = WithNotesKept(TimeSpan.FromTicks(ticks));
+        var cut = RenderPoppable(Hike, panels: panels);
+
+        Assert.Empty((await TakeNotesAwayInTheirWindowAsync(cut, panels)).EnumerateArray());
+    }
+
+    [Fact]
+    public void KeepWindowFor_ShouldKeepNoWindow_WhenThePanelIsTakenAwayWhileDocked()
+    {
+        var panels = WithNotesKept(TimeSpan.FromMinutes(10));
+        var cut = RenderPoppable(Hike, panels: panels);
+
+        cut.Render(parameters => parameters.Add(each => each.ChildContent,
+            Panels([.. panels.Where(panel => panel.Id != "notes")])));
+        cut.Render(parameters => parameters.Add(each => each.ChildContent, Panels(panels)));
+
+        Assert.Empty(cut.Tb().Dock().PoppedOut);
+        Assert.Equal(["Trails", "Map", "Notes", "Weather"], cut.Tb().Dock().Panels);
+        Assert.Empty(_handle.Invocations["popOut"]);
+    }
+
+    [Fact]
+    public async Task KeepWindowFor_ShouldCloseTheKeptWindow_WhenTheDockStopsAllowingWindowsWhileThePanelIsAway()
+    {
+        var panels = WithNotesKept(TimeSpan.FromMinutes(10));
+        var cut = RenderPoppable(Hike, panels: panels);
+        await TakeNotesAwayInTheirWindowAsync(cut, panels);
+
+        cut.Render(parameters => parameters.Add(dock => dock.AllowPopOut, false));
+
+        cut.WaitForAssertion(() => Assert.EndsWith("-panel-notes",
+            (string)Assert.Single(_handle.Invocations["unkeep"]).Arguments[0]!));
+    }
+
+    [Fact]
+    public async Task KeepWindowFor_ShouldKeepTheWindowAndShowThePanelInItAgain_WhenTheAppTakesThePanelAwayAndBack()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var panels = WithNotesKept(TimeSpan.FromMinutes(10));
+        var changes = new List<DockLayout>();
+        var cut = RenderPoppable(Hike, changes.Add, panels);
+        cut.Render(parameters => parameters.Add(dock => dock.TelemetryName, "hike-planner"));
+
+        var kept = Assert.Single((await TakeNotesAwayInTheirWindowAsync(cut, panels)).EnumerateArray());
+
+        // The script hears which panel's window stays, what it says and for how long.
+        Assert.EndsWith("-panel-notes", kept.GetProperty("id").GetString());
+        Assert.Equal("Notes isn't open right now. This window shows it again when it is.",
+            kept.GetProperty("text").GetString());
+        Assert.Equal(600000, kept.GetProperty("lifetime").GetDouble());
+
+        cut.Render(parameters => parameters.Add(each => each.ChildContent, Panels(panels)));
+
+        // The panel goes to the window that waited for it, with no click: the app hears of the one layout that
+        // floats it, and only the user's own choice of Open in new window was counted.
+        cut.WaitForAssertion(() => Assert.Equal(["Notes"], cut.Tb().Dock().PoppedOut));
+        Assert.Equal(2, _handle.Invocations["popOut"].Count);
+        Assert.Equal([changes[0], Hike, changes[0]], changes);
+        Assert.Equal(["pop_out"],
+            used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public async Task KeepWindowFor_ShouldShowThePanelWhereItWasDocked_WhenTheKeptWindowIsGone()
+    {
+        var panels = WithNotesKept(TimeSpan.FromMinutes(10));
+        var cut = RenderPoppable(Hike, panels: panels);
+        cut.Render(parameters => parameters.Add(dock => dock.Labels, new DockLabels { EmptyWindow = "{0} is away." }));
+
+        var kept = Assert.Single((await TakeNotesAwayInTheirWindowAsync(cut, panels)).EnumerateArray());
+
+        // The app's label replaces the library's text.
+        Assert.Equal("Notes is away.", kept.GetProperty("text").GetString());
+
+        // The script says that the window closed: its time was up, or the user closed it.
+        await cut.InvokeAsync(() => Report().OnKeptWindowClosed("notes"));
+        cut.Render(parameters => parameters.Add(each => each.ChildContent, Panels(panels)));
+
+        Assert.Empty(cut.Tb().Dock().PoppedOut);
+        Assert.Equal(["Trails", "Map", "Notes", "Weather"], cut.Tb().Dock().Panels);
+        Assert.Single(_handle.Invocations["popOut"]);
+    }
+
+    [Fact]
+    public async Task KeepWindowFor_ShouldCloseTheKeptWindow_WhenThePanelComesBackUnableToShowInOne()
+    {
+        var panels = WithNotesKept(TimeSpan.FromMinutes(10));
+        var cut = RenderPoppable(Hike, panels: panels);
+        await TakeNotesAwayInTheirWindowAsync(cut, panels);
+
+        cut.Render(parameters => parameters.Add(each => each.ChildContent,
+            Panels(WithNotesKept(TimeSpan.FromMinutes(10), allowPopOut: false))));
+
+        cut.WaitForAssertion(() => Assert.EndsWith("-panel-notes",
+            (string)Assert.Single(_handle.Invocations["unkeep"]).Arguments[0]!));
+        Assert.Single(_handle.Invocations["popOut"]);
+    }
+
     [Fact]
     public async Task Close_ShouldGiveTheFocusToTheDock_WhenTheOnlyOtherPanelIsInABrowserWindowOfItsOwn()
     {
@@ -3192,7 +3328,8 @@ public class TbDockManagerTests : BunitContext
             builder.AddAttribute(3, nameof(TbDockPanel.Closable), panel.Closable);
             builder.AddAttribute(4, nameof(TbDockPanel.KeepAlive), panel.KeepAlive);
             builder.AddAttribute(5, nameof(TbDockPanel.AllowPopOut), panel.AllowPopOut);
-            builder.AddAttribute(6, nameof(TbDockPanel.ChildContent), (RenderFragment)(content =>
+            builder.AddAttribute(6, nameof(TbDockPanel.KeepWindowFor), panel.KeepWindowFor);
+            builder.AddAttribute(7, nameof(TbDockPanel.ChildContent), (RenderFragment)(content =>
             {
                 content.OpenComponent<Probe>(0);
                 content.AddAttribute(1, nameof(Probe.Name), panel.Id);

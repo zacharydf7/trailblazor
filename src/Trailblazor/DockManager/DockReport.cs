@@ -11,7 +11,8 @@ internal sealed class DockReport(Func<Exception, Task> onException, Func<string,
     Func<string, bool, Task> onClose, Func<int, double, int, Task> onResize, Func<string, string?, string, Task> onMove,
     Func<string, Task> onMaximize, Func<string, Task> onRaise, Func<string, DockBox, bool, int, Task> onFloat,
     Func<string, DockBox, Task> onPullOut, Func<bool, Task> onConceal, Func<string, double, int, Task> onSlide,
-    Func<string, string, Task> onAutoHide, Func<string, Task> onReturn, Func<string, bool> holds)
+    Func<string, string, Task> onAutoHide, Func<string, Task> onReturn, Func<string, Task> onKeptWindowClosed,
+    Func<string, bool> holds)
     : ScriptListener(onException)
 {
     // Whether the dock holds the tab with this element id, by which the bUnit driver finds a dock's reports. Panel
@@ -68,4 +69,8 @@ internal sealed class DockReport(Func<Exception, Task> onException, Func<string,
     // The browser window that showed the panel closed, and the panel is back in the dock.
     [JSInvokable]
     public Task OnReturn(string panel) => Run(() => onReturn(panel));
+
+    // The browser window kept open for a panel the app took away has closed while the panel was still away.
+    [JSInvokable]
+    public Task OnKeptWindowClosed(string panel) => Run(() => onKeptWindowClosed(panel));
 }
