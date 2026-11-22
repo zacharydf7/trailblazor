@@ -323,6 +323,104 @@ public class RichTextDocumentTests
     }
 
     [Fact]
+    public void RichTextRun_ShouldHaveTheColorFormat_WhenGivenAColor()
+    {
+        var run = new RichTextRun("a", RichTextFormats.Bold, color: Tone.Danger);
+
+        Assert.Equal(Tone.Danger, run.Color);
+        Assert.Equal(RichTextFormats.Bold | RichTextFormats.Color, run.Formats);
+        Assert.Equal(RichTextFormats.None, new RichTextRun("a").Formats);
+    }
+
+    [Fact]
+    public void RichTextRun_ShouldKeepItsColor_WhenBuiltFromAnotherRunsFormatsAndColor()
+    {
+        var run = RichTextDocument.Parse(
+            "<a href=\"https://a.example\"><span data-tb-color=\"danger\"><b>a</b></span></a>").Paragraphs[0].Runs[0];
+
+        // A transform that drops links rebuilds each run this way; the Color flag needs the color with it.
+        var rebuilt = new RichTextRun(run.Text, run.Formats & ~RichTextFormats.Link, color: run.Color);
+
+        Assert.Equal((RichTextFormats.Bold | RichTextFormats.Color, Tone.Danger, null),
+            (rebuilt.Formats, rebuilt.Color, rebuilt.Link));
+    }
+
+    [Fact]
+    public void RichTextRun_ShouldRejectTheFormats_WhenTheyHaveColorWithoutAColor() =>
+        Assert.Throws<ArgumentException>(() => new RichTextRun("a", RichTextFormats.Color));
+
+    [Fact]
+    public void RichTextRun_ShouldRejectTheColor_WhenItIsNoTone() =>
+        Assert.Throws<ArgumentOutOfRangeException>(() => new RichTextRun("a", color: (Tone)99));
+
+    [Fact]
+    public void RichTextParagraph_ShouldJoinRunsOfOneColorOnly_WhenGivenNeighboringRuns()
+    {
+        var paragraph = new RichTextParagraph([new RichTextRun("a", color: Tone.Info),
+            new RichTextRun("b", color: Tone.Info), new RichTextRun("c", color: Tone.Danger), new RichTextRun("d")]);
+
+        Assert.Equal(["ab", "c", "d"], paragraph.Runs.Select(run => run.Text));
+        Assert.Equal([Tone.Info, Tone.Danger, null], paragraph.Runs.Select(run => run.Color));
+    }
+
+    [Fact]
+    public void ToHtml_ShouldWriteAColorAroundTheFormatTagsAndInsideTheLink_WhenARunHasAColor()
+    {
+        var run = new RichTextRun("a", RichTextFormats.Bold | RichTextFormats.Underline | RichTextFormats.Highlight,
+            "https://a.example", Tone.Danger);
+
+        Assert.Equal("<p><a href=\"https://a.example\"><span data-tb-color=\"danger\"><strong><u><mark>a</mark></u>"
+            + "</strong></span></a></p>", new RichTextDocument([new RichTextParagraph([run])]).ToHtml());
+    }
+
+    [Fact]
+    public void ToHtml_ShouldWriteOneSpan_WhenNeighboringRunsShareAColorInsideALinkOrOutside()
+    {
+        var document = new RichTextDocument([new RichTextParagraph([
+            new RichTextRun("a ", color: Tone.Info), new RichTextRun("b", RichTextFormats.Bold, color: Tone.Info),
+            new RichTextRun("c", link: "https://a.example", color: Tone.Info), new RichTextRun("d", color: Tone.Info),
+            new RichTextRun("e", color: Tone.Danger), new RichTextRun("f")])]);
+
+        Assert.Equal("<p><span data-tb-color=\"info\">a <strong>b</strong></span><a href=\"https://a.example\">"
+            + "<span data-tb-color=\"info\">c</span></a><span data-tb-color=\"info\">d</span>"
+            + "<span data-tb-color=\"danger\">e</span>f</p>", document.ToHtml());
+    }
+
+    [Fact]
+    public void ToHtml_ShouldWriteAMentionsColorAroundItsFormats_WhenAMentionHasAColor()
+    {
+        var mention = new Mention("@", new MentionItem("Ada") { Id = "1" });
+        var document = new RichTextDocument(
+            [new RichTextParagraph([new RichTextRun(mention, RichTextFormats.Bold, Tone.Success)])]);
+
+        var html = document.ToHtml();
+
+        Assert.Equal("<p><span data-tb-color=\"success\"><strong><span data-mention=\"1\" data-trigger=\"@\">@Ada"
+            + "</span></strong></span></p>", html);
+        var read = RichTextDocument.Parse(html, new RichTextSchema { Mentions = true }).Paragraphs[0].Runs[0];
+        Assert.Equal((Tone.Success, "1"), (read.Color, read.Mention?.Item.Id));
+    }
+
+    [Theory]
+    [InlineData("<span data-tb-color=\"danger\">a</span>b", "<p><span data-tb-color=\"danger\">a</span>b</p>")]
+    [InlineData("<span data-tb-color=\"danger\">a<span data-tb-color=\"info\">b</span>c</span>",
+        "<p><span data-tb-color=\"danger\">a</span><span data-tb-color=\"info\">b</span>"
+        + "<span data-tb-color=\"danger\">c</span></p>")]
+    [InlineData("<span data-tb-color=\"Danger\">a</span><span data-tb-color=\"red\">b</span>", "<p>ab</p>")]
+    [InlineData("<b data-tb-color=\"danger\">a</b><span style=\"color:red\">b</span>", "<p><strong>a</strong>b</p>")]
+    public void Parse_ShouldReadAColor_WhenASpanNamesATone(string html, string expected) =>
+        Assert.Equal(expected, RichTextDocument.Parse(html).ToHtml());
+
+    [Fact]
+    public void Parse_ShouldReadColoredTextAsPlain_WhenTheFormatsLeaveColorOut()
+    {
+        var document = RichTextDocument.Parse("<span data-tb-color=\"danger\"><b>a</b> b</span>",
+            new RichTextSchema { Formats = RichTextFormats.Bold });
+
+        Assert.Equal("<p><strong>a</strong> b</p>", document.ToHtml());
+    }
+
+    [Fact]
     public void RichTextRun_ShouldRejectTheFormats_WhenTheyAreBothSubscriptAndSuperscript() =>
         Assert.Throws<ArgumentException>(() =>
             new RichTextRun("a", RichTextFormats.Subscript | RichTextFormats.Superscript));

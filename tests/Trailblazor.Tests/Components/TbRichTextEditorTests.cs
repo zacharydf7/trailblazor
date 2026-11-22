@@ -38,6 +38,45 @@ public class TbRichTextEditorTests : BunitContext
         Assert.Null(cut.Find("[data-part=label]").GetAttribute("for"));
     }
 
+    // .NET reads a color for every tone, so the script and the style sheet have to know each one too: a tone only
+    // .NET knew would make the editor load its value again, and lose its undo history, each time it came up.
+    [Fact]
+    public void Colors_ShouldBeTheTonesInTheScriptAndTheStyleSheet_WhenComparedWithTheToneEnum()
+    {
+        var tones = Enum.GetNames<Tone>().Select(name => name.ToLowerInvariant()).ToList();
+        var assets = Path.Combine(Trailblazor.Tests.Docs.Repository.Root, "src", "Trailblazor", "wwwroot");
+        var script = System.Text.RegularExpressions.Regex.Match(
+            File.ReadAllText(Path.Combine(assets, "rich-text-editor.js")), @"const COLORS = \[([^\]]*)\]");
+        var styled = System.Text.RegularExpressions.Regex.Matches(
+            File.ReadAllText(Path.Combine(assets, "trailblazor.css")), "\\[data-tb-color=\"(\\w+)\"\\] \\{");
+
+        Assert.Equal(tones, script.Groups[1].Value.Split(',').Select(name => name.Trim().Trim('\'')));
+        Assert.Equal(tones, styled.Select(rule => rule.Groups[1].Value));
+    }
+
+    [Fact]
+    public void Render_ShouldOfferATextColorMenuWithTheAppsNames_WhenColorIsAllowed()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Formats, RichTextFormats.Color)
+            .Add(editor => editor.Labels, new RichTextEditorLabels { TextColor = "Ink", ColorDanger = "Brick" }));
+
+        Assert.Equal("Ink", cut.Find("[data-part=color-menu] button").GetAttribute("aria-label"));
+        // Color is a format to clear too.
+        Assert.Single(cut.FindAll("button[data-command=clear]"));
+        cut.Find("[data-part=color-menu] button").Click();
+        cut.WaitForAssertion(() => Assert.Equal(
+            ["Default", "Primary", "Secondary", "Gray", "Green", "Amber", "Brick", "Blue"],
+            cut.FindAll("[data-part=color-menu] [role=menuitemradio]").Select(item => item.TextContent.Trim())));
+        Assert.Equal(["", "primary", "secondary", "neutral", "success", "warning", "danger", "info"],
+            cut.FindAll("[data-part=color-menu] [role=menuitemradio]")
+                .Select(item => item.GetAttribute("data-color-command")));
+
+        cut.Render(parameters => parameters.Add(editor => editor.Formats, RichTextFormats.Bold));
+
+        Assert.Empty(cut.FindAll("[data-part=color-menu]"));
+    }
+
     [Fact]
     public void Render_ShouldShowAHighlightButtonWithItsShortcutAndTheAppsName_WhenHighlightIsAllowed()
     {

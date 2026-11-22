@@ -5603,12 +5603,23 @@ public static class ExampleCatalog
                     + "editor allows survive. [Rich text](guides/rich-text) covers reading it in C#.",
                     typeof(RichTextEditorExample)),
                 new("formats", "Formats", "`Formats` lists the formats the editor allows: bold, italic, "
-                    + "underline, strikethrough, subscript, superscript, inline code, highlight and links. The "
-                    + "toolbar shows a button for each, and pasted text keeps only those. Highlighted text is a "
-                    + "`<mark>` in the value, in the browser's marker color, which a `mark` rule under "
-                    + "`.tb-rich-text-editor` changes. `RichTextFormats.None` with "
+                    + "underline, strikethrough, subscript, superscript, inline code, highlight, text color and "
+                    + "links. The toolbar shows a button for each, or a menu for text color, and pasted text keeps "
+                    + "only those. Highlighted text is a `<mark>` in the value, in the browser's marker color, "
+                    + "which a `mark` rule under `.tb-rich-text-editor` changes. `RichTextFormats.None` with "
                     + "`Blocks=\"RichTextBlocks.None\"` makes a field of plain paragraphs.",
                     typeof(RichTextEditorFormatsExample)),
+                new("text-color", "Text color", "With `RichTextFormats.Color`, the toolbar has a Text color "
+                    + "menu: the design system's tones, each named by its color, such as Red, or Primary and "
+                    + "Secondary for the palette's own two, and Default, which takes the color off. Each color is "
+                    + "a tone rather than an arbitrary color, so the text keeps its contrast in light and dark "
+                    + "mode and in every palette. In the value it is a `<span data-tb-color>` with the tone's "
+                    + "name, which the library's style sheet colors wherever the value is shown on the page. "
+                    + "Each color is its tone's `--tb-color-<tone>-text`, such as `--tb-color-danger-text`, so a "
+                    + "palette changes it, and a `[data-tb-color=\"danger\"]` rule of your own restyles one. "
+                    + "`RichTextRun.Color` gives the tone to code that shows the value somewhere else, such as in "
+                    + "an email. Clear formatting takes the color off, and a color from another app's styles, "
+                    + "such as Word's or a web page's, isn't kept.", typeof(RichTextEditorColorsExample)),
                 new("blocks", "Blocks", "`Blocks` lists the kinds of block the editor allows: headings, quotes, and "
                     + "bulleted and numbered lists. The toolbar shows a button for each, three for headings, with "
                     + "Outdent and Indent for lists, and pasted text keeps only those. Typing Markdown such as `# `, "
@@ -5746,6 +5757,10 @@ public static class ExampleCatalog
                     + "these words too.",
                 "The Table button is named \"Table\", and the table menu's button \"Table options\"; `Labels` "
                     + "changes these and the menu's commands.",
+                "The Text color menu's button is named \"Text color\", and its items \"Default\" and each "
+                    + "color's name, such as \"Red\", or \"Primary\" and \"Secondary\" for the palette's own "
+                    + "two, so screen readers hear a color rather than the tone's name, \"danger\"; `Labels` "
+                    + "changes these.",
                 "The list of mention suggestions is a `listbox` named by the editor's label. Each suggestion is "
                     + "named by its text, with its description as its accessible description.",
             ],
@@ -5754,6 +5769,8 @@ public static class ExampleCatalog
                 "A validation message that appears as someone edits the field is read out once, as on every field.",
                 "Each format and block button's state is announced through `aria-pressed`, and it follows the "
                     + "selection as the caret moves.",
+                "The Text color menu's button doesn't say the selection's color; as the menu opens, that color "
+                    + "is its checked item, with none checked when the selection has more than one.",
                 "As mention suggestions come in, their count is read out when it changes, such as \"Suggestions: "
                     + "3\". When `MentionSearch` fails, \"Couldn't load suggestions.\" is read out. `Labels` changes "
                     + "these words.",
@@ -5775,7 +5792,10 @@ public static class ExampleCatalog
                 "Formats are real `<strong>`, `<em>`, `<u>`, `<s>`, `<sub>`, `<sup>`, `<code>`, `<mark>` and `<a>` "
                     + "elements, and blocks are real headings, block quotes, lists and `<hr>` rules, which screen "
                     + "readers can report and move between. In forced colors, highlighted text keeps the "
-                    + "browser's marker background.",
+                    + "browser's marker background, and colored text takes the system's text color.",
+                "The Text color menu is a [menu](components/menu) button whose colors are radio items. The "
+                    + "selection's color is checked as it opens, none when the selection has several, and focus "
+                    + "returns to the editor after a choice.",
                 "Tables are real `<table>` elements, with the header row's cells as `<th scope=\"col\">` in the "
                     + "value, so screen readers announce rows, columns and the header of each cell. The table menu is "
                     + "a [menu](components/menu) button; a command that doesn't fit where the caret is, such as adding "
@@ -5794,8 +5814,11 @@ public static class ExampleCatalog
             [
                 "Give the editor a `Label`, or an `AriaLabel` where its purpose is plain from what surrounds it.",
                 "Put a `TbRoot` in the layout, which hosts the link dialog.",
-                "Don't let a highlight be the only sign of something, such as text that needs a change: not "
-                    + "every screen reader says that text is highlighted.",
+                "Don't let a highlight or a text color be the only sign of something, such as text that needs "
+                    + "a change: not every screen reader says that text is highlighted, and none says its color "
+                    + "unless asked.",
+                "With a palette whose tones aren't the built-in hues, rename the colors with `Labels` so each "
+                    + "name in the Text color menu matches what it shows.",
                 "Parse the value with `RichTextDocument` on the server before storing it; the editor does, but a "
                     + "value posted some other way may not have gone through it.",
                 "With `RichTextBlocks.Images`, an image loads from wherever its source points, since `ImageSchemes` "
@@ -5838,6 +5861,8 @@ public static class ExampleCatalog
                 new("count-said", "The counter's words for screen readers, such as 12 of 200 characters."),
                 new("image", "The Image button, with `UploadImage` and `RichTextBlocks.Images`."),
                 new("table-menu", "The table menu, with `RichTextBlocks.Tables`."),
+                new("color-menu", "The Text color menu, with `RichTextFormats.Color`. Each of its items has its "
+                    + "tone's name in `data-color-command`, empty for Default."),
                 new("mention-list", "The list of mention suggestions. Each suggestion is an `option` part, with the "
                     + "text it puts in as `data-insert` and its item's `Id` as `data-mention-id`, and a `description` "
                     + "part when it has one."),
@@ -5855,6 +5880,9 @@ public static class ExampleCatalog
                     + "reaches .NET when focus leaves, or as it's typed with `UpdateOnInput`.",
                 "To add a link in Playwright, select the text and press `ControlOrMeta+k`, then fill the dialog's "
                     + "\"Link\" field and press Enter.",
+                "To color text in Playwright, select it, click the \"Text color\" button and then the "
+                    + "`menuitemradio` named by the color, such as \"Red\". In bUnit, give the colored HTML to "
+                    + "`EnterAsync`, such as `<p><span data-tb-color=\"danger\">closed</span></p>`.",
                 "In Playwright, `page.Tb().RichTextEditor(label).MentionAsync(\" Thanks @an\", \"Ana Lopez\")` types "
                     + "the start of a mention at the end of the text, chooses the suggestion and waits until the app "
                     + "has the value. In bUnit, `MentionAsync` replaces the editor's text with the typed text and the "

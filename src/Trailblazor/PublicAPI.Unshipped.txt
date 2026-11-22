@@ -3822,6 +3822,7 @@ Trailblazor.RichTextBlocks.None = 0 -> Trailblazor.RichTextBlocks
 static Trailblazor.RichTextDocument.Parse(string? html, Trailblazor.RichTextSchema! schema) -> Trailblazor.RichTextDocument!
 Trailblazor.RichTextFormats.Code = 64 -> Trailblazor.RichTextFormats
 Trailblazor.RichTextFormats.Highlight = 256 -> Trailblazor.RichTextFormats
+Trailblazor.RichTextFormats.Color = 512 -> Trailblazor.RichTextFormats
 Trailblazor.RichTextFormats.Link = 128 -> Trailblazor.RichTextFormats
 Trailblazor.RichTextParagraph.RichTextParagraph(System.Collections.Generic.IEnumerable<Trailblazor.RichTextRun!>! runs, Trailblazor.RichTextParagraphKind kind = Trailblazor.RichTextParagraphKind.Paragraph, int level = 0) -> void
 Trailblazor.RichTextParagraph.Kind.get -> Trailblazor.RichTextParagraphKind
@@ -3835,7 +3836,9 @@ Trailblazor.RichTextParagraphKind.NumberedItem = 6 -> Trailblazor.RichTextParagr
 Trailblazor.RichTextParagraphKind.Rule = 7 -> Trailblazor.RichTextParagraphKind
 Trailblazor.RichTextParagraphKind
 Trailblazor.RichTextParagraphKind.Paragraph = 0 -> Trailblazor.RichTextParagraphKind
-Trailblazor.RichTextRun.RichTextRun(string! text, Trailblazor.RichTextFormats formats = Trailblazor.RichTextFormats.None, string? link = null) -> void
+Trailblazor.RichTextRun.RichTextRun(string! text, Trailblazor.RichTextFormats formats = Trailblazor.RichTextFormats.None, string? link = null, Trailblazor.Tone? color = null) -> void
+Trailblazor.RichTextRun.Color.get -> Trailblazor.Tone?
+Trailblazor.RichTextRun.RichTextRun(Trailblazor.Mention! mention, Trailblazor.RichTextFormats formats, Trailblazor.Tone? color) -> void
 Trailblazor.RichTextRun.Link.get -> string?
 Trailblazor.RichTextRun.Mention.get -> Trailblazor.Mention?
 Trailblazor.RichTextRun.RichTextRun(Trailblazor.Mention! mention) -> void
@@ -3872,6 +3875,33 @@ Trailblazor.RichTextEditorLabels.Code.get -> string?
 Trailblazor.RichTextEditorLabels.Code.init -> void
 Trailblazor.RichTextEditorLabels.Highlight.get -> string?
 Trailblazor.RichTextEditorLabels.Highlight.init -> void
+const Trailblazor.TbStrings.RichTextEditorTextColor = "RichTextEditor.TextColor" -> string!
+Trailblazor.RichTextEditorLabels.TextColor.get -> string?
+Trailblazor.RichTextEditorLabels.TextColor.init -> void
+const Trailblazor.TbStrings.RichTextEditorDefaultColor = "RichTextEditor.DefaultColor" -> string!
+Trailblazor.RichTextEditorLabels.DefaultColor.get -> string?
+Trailblazor.RichTextEditorLabels.DefaultColor.init -> void
+const Trailblazor.TbStrings.RichTextEditorColorPrimary = "RichTextEditor.ColorPrimary" -> string!
+Trailblazor.RichTextEditorLabels.ColorPrimary.get -> string?
+Trailblazor.RichTextEditorLabels.ColorPrimary.init -> void
+const Trailblazor.TbStrings.RichTextEditorColorSecondary = "RichTextEditor.ColorSecondary" -> string!
+Trailblazor.RichTextEditorLabels.ColorSecondary.get -> string?
+Trailblazor.RichTextEditorLabels.ColorSecondary.init -> void
+const Trailblazor.TbStrings.RichTextEditorColorNeutral = "RichTextEditor.ColorNeutral" -> string!
+Trailblazor.RichTextEditorLabels.ColorNeutral.get -> string?
+Trailblazor.RichTextEditorLabels.ColorNeutral.init -> void
+const Trailblazor.TbStrings.RichTextEditorColorSuccess = "RichTextEditor.ColorSuccess" -> string!
+Trailblazor.RichTextEditorLabels.ColorSuccess.get -> string?
+Trailblazor.RichTextEditorLabels.ColorSuccess.init -> void
+const Trailblazor.TbStrings.RichTextEditorColorWarning = "RichTextEditor.ColorWarning" -> string!
+Trailblazor.RichTextEditorLabels.ColorWarning.get -> string?
+Trailblazor.RichTextEditorLabels.ColorWarning.init -> void
+const Trailblazor.TbStrings.RichTextEditorColorDanger = "RichTextEditor.ColorDanger" -> string!
+Trailblazor.RichTextEditorLabels.ColorDanger.get -> string?
+Trailblazor.RichTextEditorLabels.ColorDanger.init -> void
+const Trailblazor.TbStrings.RichTextEditorColorInfo = "RichTextEditor.ColorInfo" -> string!
+Trailblazor.RichTextEditorLabels.ColorInfo.get -> string?
+Trailblazor.RichTextEditorLabels.ColorInfo.init -> void
 Trailblazor.RichTextEditorLabels.Heading1.get -> string?
 Trailblazor.RichTextEditorLabels.Heading1.init -> void
 Trailblazor.RichTextEditorLabels.Heading2.get -> string?

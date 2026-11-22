@@ -113,6 +113,13 @@ public class RichTextMarkdownTests
         Assert.Equal(document.ToHtml(), RichTextDocument.FromMarkdown(document.ToMarkdown(), images).ToHtml());
     }
 
+    [Theory]
+    [InlineData("<p><span data-tb-color=\"danger\">a <b>b</b></span> c</p>", "a **b** c")]
+    [InlineData("<p>a <span data-tb-color=\"danger\">b</span><br></p>", "a b")]
+    [InlineData("<p><span data-tb-color=\"danger\"><code>a<br>b</code></span></p>", "```\na\nb\n```")]
+    public void ToMarkdown_ShouldWriteColoredTextPlain_WhenWritten(string html, string markdown) =>
+        Assert.Equal(markdown, RichTextDocument.Parse(html).ToMarkdown());
+
     [Fact]
     public void ToMarkdown_ShouldWriteHighlightedTextPlain_WhenWritten() =>
         Assert.Equal("a **b** c", RichTextDocument.Parse("<p><mark>a <b>b</b></mark> c</p>").ToMarkdown());

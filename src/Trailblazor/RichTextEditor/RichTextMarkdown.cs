@@ -10,6 +10,10 @@ internal static partial class RichTextMarkdown
 {
     private const int ListIndent = 4;
 
+    // The formats markdown has no marks for, whose text is written plain.
+    private const RichTextFormats Unwritten = RichTextFormats.Underline | RichTextFormats.Subscript
+        | RichTextFormats.Superscript | RichTextFormats.Highlight | RichTextFormats.Color;
+
     public static RichTextDocument Read(string? markdown)
     {
         var paragraphs = new List<RichTextParagraph>();
@@ -285,7 +289,8 @@ internal static partial class RichTextMarkdown
                     WriteRuns(markdown, paragraph.Runs, lineBreak: indent + new string(' ', marker.Length));
                     break;
                 default:
-                    if (paragraph.Runs is [{ Formats: RichTextFormats.Code, Text: var text }] && text.Contains('\n'))
+                    if (paragraph.Runs is [{ Text: var text } code] && text.Contains('\n')
+                        && (code.Formats & ~Unwritten) == RichTextFormats.Code)
                     {
                         var ticks = new string('`', Math.Max(3, LongestRun(text, '`') + 1));
                         markdown.Append(ticks).Append('\n').Append(text).Append('\n').Append(ticks);
@@ -358,7 +363,8 @@ internal static partial class RichTextMarkdown
         {
             var last = runs[^1].Text.TrimEnd(' ').TrimEnd('\n');
             runs = last.Length == 0 ? runs.Take(runs.Count - 1).ToList()
-                : [.. runs.Take(runs.Count - 1), new RichTextRun(last, runs[^1].Formats, runs[^1].Link)];
+                : [.. runs.Take(runs.Count - 1),
+                    new RichTextRun(last, runs[^1].Formats, runs[^1].Link, runs[^1].Color)];
         }
 
         var open = new List<string>();

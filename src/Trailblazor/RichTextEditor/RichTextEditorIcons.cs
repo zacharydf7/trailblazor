@@ -30,6 +30,11 @@ internal static class RichTextEditorIcons
         new($"<path {Lines} stroke-width=\"1.8\" d=\"M15 3.5l4.5 4.5-8 8H7V11.5z\" />"
             + $"<path {Lines} stroke-width=\"3\" d=\"M5 20.5h14\" />");
 
+    // A capital A over a bar, as word processors draw the text color.
+    public static Icon TextColor { get; } =
+        new($"<path {Lines} stroke-width=\"2\" d=\"M6.5 16 12 3.5 17.5 16M8.5 11.5h7\" />"
+            + $"<path {Lines} stroke-width=\"3\" d=\"M5 20.5h14\" />");
+
     // Angle brackets in a page, set apart from Code's bare brackets.
     public static Icon Source { get; } = new($"<path {Lines} stroke-width=\"1.8\" d=\"M5 3.5h14v17H5z\" />"
         + $"<path {Lines} stroke-width=\"2\" d=\"M10 9l-3 3 3 3M14 9l3 3-3 3\" />");

@@ -715,6 +715,127 @@ public class RichTextEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Color_ShouldStayOnItsTextThroughTypingAndFormats_WhenAValueHasColoredText(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>plain <span data-tb-color=\"danger\">red</span></p>", "plain red");
+
+        // The style sheet colors the text by its tone.
+        Assert.True(await notes.Locator("[data-tb-color=danger]").EvaluateAsync<bool>(
+            "span => getComputedStyle(span).color !== getComputedStyle(span.parentElement).color"));
+
+        // Text typed inside it takes the color, and a format goes inside the color.
+        await CaretAsync(notes, 0, 8);
+        await page.Keyboard.TypeAsync("!");
+        await SelectAsync(notes, 0, 6, 0, 8);
+        await page.Keyboard.PressAsync("ControlOrMeta+b");
+
+        await Expect(page.GetByTestId("notes"))
+            .ToHaveTextAsync("<p>plain <span data-tb-color=\"danger\"><strong>re</strong>!d</span></p>");
+
+        // Clearing the formats takes the color off too.
+        await SelectAsync(notes, 0, 0, 0, 10);
+        await page.Keyboard.PressAsync("ControlOrMeta+\\");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>plain re!d</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Color_ShouldApplyAndShowAsChosenAndComeOff_WhenPickedFromTheTextColorMenu(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>one two</p>", "one two");
+        ILocator Choice(string name) => page.GetByRole(AriaRole.Menuitemradio, new() { Name = name, Exact = true });
+
+        await SelectAsync(notes, 0, 4, 0, 7);
+        await Tool(notes, "Text color").ClickAsync();
+        await Expect(Choice("Default")).ToHaveAttributeAsync("aria-checked", "true");
+        await Choice("Red").ClickAsync();
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>one <span data-tb-color=\"danger\">two</span></p>");
+        // Focus returns to the editor, and the menu shows the color where the caret is.
+        await FocusedAsync(notes);
+        await Tool(notes, "Text color").ClickAsync();
+        await Expect(Choice("Red")).ToHaveAttributeAsync("aria-checked", "true");
+
+        // Another color replaces the one the text has.
+        await Choice("Blue").ClickAsync();
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>one <span data-tb-color=\"info\">two</span></p>");
+
+        // Over text of two colors none is chosen, and Default takes the color off all of it.
+        await SelectAsync(notes, 0, 0, 0, 7);
+        await Tool(notes, "Text color").ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Menuitemradio, new() { Checked = true })).ToHaveCountAsync(0);
+        await Choice("Default").ClickAsync();
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>one two</p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Color_ShouldGoOnTheNextTextTyped_WhenChosenWithTheKeyboardAndNothingSelected(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page, "<p>one</p>", "one");
+
+        // The menu opens on its chosen item, Default, and the next one down is the first tone.
+        await CaretAsync(notes, 0, 3);
+        await Tool(notes, "Text color").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await FocusedAsync(page.GetByRole(AriaRole.Menuitemradio, new() { Name = "Default", Exact = true }));
+        await page.Keyboard.PressAsync("ArrowDown");
+        await page.Keyboard.PressAsync("Enter");
+        await FocusedAsync(notes);
+        await page.Keyboard.TypeAsync("!");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p>one<span data-tb-color=\"primary\">!</span></p>");
+    }
+
+    [Theory]
+    [InlineData("chromium")]
+    [InlineData("firefox")]
+    public async Task Color_ShouldGiveWayToTheSystemsTextColor_WhenColorsAreForced(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor", new() { ForcedColors = ForcedColors.Active });
+        var notes = await SetAsync(page, "<p>plain <span data-tb-color=\"danger\">red</span></p>", "plain red");
+
+        Assert.True(await notes.Locator("[data-tb-color=danger]").EvaluateAsync<bool>(
+            "span => getComputedStyle(span).color === getComputedStyle(span.parentElement).color"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Color_ShouldGoInsideTheLink_WhenColoredTextRunsAcrossALinksEdges(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var notes = await SetAsync(page,
+            "<p><span data-tb-color=\"info\">a <a href=\"https://a.example\">b</a> c</span></p>", "a b c");
+
+        // The editor draws the text as the value holds it: the link around its part of the color.
+        await Expect(notes.Locator("a > span[data-tb-color=info]")).ToHaveTextAsync("b");
+        await Expect(notes.Locator("span[data-tb-color=info]")).ToHaveCountAsync(3);
+
+        // And writes it so once the text changes.
+        await CaretAsync(notes, 0, 5);
+        await page.Keyboard.TypeAsync("!");
+
+        await Expect(page.GetByTestId("notes")).ToHaveTextAsync("<p><span data-tb-color=\"info\">a </span>"
+            + "<a href=\"https://a.example\"><span data-tb-color=\"info\">b</span></a>"
+            + "<span data-tb-color=\"info\"> c!</span></p>");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Color_ShouldBeLeftOut_WhenColoredTextIsPastedWhereTheFormatsLeaveColorOut(string browser)
+    {
+        var page = await OpenAsync(browser, "/rich-text-editor");
+        var formula = Editor(page, "Formula");
+
+        await CaretAsync(formula, 0, 0);
+        await PasteAsync(formula, "<span data-tb-color=\"danger\">H<sub>2</sub>O</span>", "H2O");
+
+        await Expect(page.GetByTestId("formula")).ToHaveTextAsync("<p>H<sub>2</sub>O</p>");
+        await Expect(formula.Locator("[data-tb-color]")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Highlight_ShouldStandOutFromTheTextAroundIt_WhenColorsAreForced(string browser)
     {
         var page = await OpenAsync(browser, "/rich-text-editor", new() { ForcedColors = ForcedColors.Active });

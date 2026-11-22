@@ -35,6 +35,42 @@ public sealed record RichTextEditorLabels
     /// cref="TbStrings.RichTextEditorCode"/>.</summary>
     public string? Code { get; init; }
 
+    /// <summary>Names the text color menu's button. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorTextColor"/>.</summary>
+    public string? TextColor { get; init; }
+
+    /// <summary>The text color menu's item that takes the color off. Leave it null for the app's text for <see
+    /// cref="TbStrings.RichTextEditorDefaultColor"/>.</summary>
+    public string? DefaultColor { get; init; }
+
+    /// <summary>Names the primary tone's color in the text color menu. Leave it null for the app's text for
+    /// <see cref="TbStrings.RichTextEditorColorPrimary"/>.</summary>
+    public string? ColorPrimary { get; init; }
+
+    /// <summary>Names the secondary tone's color in the text color menu. Leave it null for the app's text for
+    /// <see cref="TbStrings.RichTextEditorColorSecondary"/>.</summary>
+    public string? ColorSecondary { get; init; }
+
+    /// <summary>Names the neutral tone's color in the text color menu. Leave it null for the app's text for
+    /// <see cref="TbStrings.RichTextEditorColorNeutral"/>.</summary>
+    public string? ColorNeutral { get; init; }
+
+    /// <summary>Names the success tone's color in the text color menu. Leave it null for the app's text for
+    /// <see cref="TbStrings.RichTextEditorColorSuccess"/>.</summary>
+    public string? ColorSuccess { get; init; }
+
+    /// <summary>Names the warning tone's color in the text color menu. Leave it null for the app's text for
+    /// <see cref="TbStrings.RichTextEditorColorWarning"/>.</summary>
+    public string? ColorWarning { get; init; }
+
+    /// <summary>Names the danger tone's color in the text color menu. Leave it null for the app's text for
+    /// <see cref="TbStrings.RichTextEditorColorDanger"/>.</summary>
+    public string? ColorDanger { get; init; }
+
+    /// <summary>Names the info tone's color in the text color menu. Leave it null for the app's text for
+    /// <see cref="TbStrings.RichTextEditorColorInfo"/>.</summary>
+    public string? ColorInfo { get; init; }
+
     /// <summary>Names the highlight button. Leave it null for the app's text for <see
     /// cref="TbStrings.RichTextEditorHighlight"/>.</summary>
     public string? Highlight { get; init; }

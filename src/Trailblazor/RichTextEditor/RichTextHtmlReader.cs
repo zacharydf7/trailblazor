@@ -9,7 +9,7 @@ internal sealed partial class RichTextHtmlReader
 {
     public const RichTextFormats AllFormats = RichTextFormats.Bold | RichTextFormats.Italic | RichTextFormats.Underline
         | RichTextFormats.Strikethrough | RichTextFormats.Subscript | RichTextFormats.Superscript | RichTextFormats.Code
-        | RichTextFormats.Highlight | RichTextFormats.Link;
+        | RichTextFormats.Highlight | RichTextFormats.Color | RichTextFormats.Link;
 
     public const RichTextBlocks AllBlocks = RichTextBlocks.Headings | RichTextBlocks.Quotes
         | RichTextBlocks.BulletedLists | RichTextBlocks.NumberedLists | RichTextBlocks.Rules;
@@ -155,6 +155,8 @@ internal sealed partial class RichTextHtmlReader
 
     private RichTextFormats Formats => _open.Count > 0 ? _open[^1].Formats : RichTextFormats.None;
 
+    private Tone? Color => _open.Count > 0 ? _open[^1].Color : null;
+
     private LinkState OpenLink => _open.Count > 0 ? _open[^1].Link : default;
 
     private BlockContext OpenContext => _open.Count > 0 ? _open[^1].Context : default;
@@ -233,8 +235,8 @@ internal sealed partial class RichTextHtmlReader
         {
             _position++;
             var name = ReadName();
-            var (style, href, source, alt, mention, selfClosing) = ReadAttributes();
-            StartTag(name, style, href, source, alt, mention, selfClosing);
+            var (style, href, source, alt, mention, color, selfClosing) = ReadAttributes();
+            StartTag(name, style, href, source, alt, mention, color, selfClosing);
             if (RawText.Contains(name))
             {
                 ReadRawText(name);
@@ -248,7 +250,7 @@ internal sealed partial class RichTextHtmlReader
     }
 
     private void StartTag(string name, string style, string? href, string? source, string? alt, MentionMark? mention,
-        bool selfClosing)
+        Tone? color, bool selfClosing)
     {
         _started = true;
         if (InOpenHead && !HeadContent.Contains(name))
@@ -394,7 +396,10 @@ internal sealed partial class RichTextHtmlReader
         var own = new LinkState(target, target is not null && _schema.AllowsLink(target) ? target : null);
         var link = LinkOf(name, own, OpenLink);
         var element = new Element(name, style, own, FormatsOf(name, style, Formats, link.Target is not null), link,
-            ContextOf(name, style, OpenContext), block, InPre || pre, skipped: false, _paragraphs.Count);
+            ContextOf(name, style, OpenContext), block, InPre || pre, skipped: false, _paragraphs.Count)
+        {
+            OwnColor = name == "span" && _formats.HasFlag(RichTextFormats.Color) ? color : null,
+        };
         if (!Push(element))
         {
             return;
@@ -589,6 +594,7 @@ internal sealed partial class RichTextHtmlReader
             return false;
         }
 
+        element.Color = element.OwnColor ?? Color;
         _open.Add(element);
         element.IsOpen = true;
         element.Serial = ++_opened;
@@ -903,7 +909,8 @@ internal sealed partial class RichTextHtmlReader
         // blocks there goes in as one paragraph.
         if (FosteringTable() is { } table)
         {
-            (table.Fostered ??= []).Add(new Piece(text, Formats & _formats, Link, pre, _mentionElement?.Mention));
+            (table.Fostered ??= []).Add(
+                new Piece(text, Formats & _formats, Link, pre, _mentionElement?.Mention, Color));
             return;
         }
 
@@ -914,7 +921,7 @@ internal sealed partial class RichTextHtmlReader
             _runs = [];
         }
 
-        _runs.Add(new Piece(text, Formats & _formats, Link, pre, _mentionElement?.Mention));
+        _runs.Add(new Piece(text, Formats & _formats, Link, pre, _mentionElement?.Mention, Color));
         var shown = text.TrimEnd(' ');
         if (shown.Length > 0)
         {
@@ -930,7 +937,7 @@ internal sealed partial class RichTextHtmlReader
         {
             if (_lineHasText)
             {
-                _runs!.Add(new Piece("\n", RichTextFormats.None, null, Pre: false, Mention: null));
+                _runs!.Add(new Piece("\n", RichTextFormats.None, null, Pre: false, Mention: null, Color: null));
                 _lineHasText = false;
             }
 
@@ -984,7 +991,7 @@ internal sealed partial class RichTextHtmlReader
             var run = runs[i];
             if (run.Mention is not { } mark)
             {
-                shown.Add(new RichTextRun(run.Text, run.Formats, run.Link, vetted: true));
+                shown.Add(new RichTextRun(run.Text, run.Formats, run.Link, run.Color, vetted: true));
                 continue;
             }
 
@@ -995,7 +1002,7 @@ internal sealed partial class RichTextHtmlReader
                 text.Append(runs[++i].Text);
             }
 
-            shown.Add(new RichTextRun(mark.Of(text.ToString()), run.Formats & ~RichTextFormats.Link));
+            shown.Add(new RichTextRun(mark.Of(text.ToString()), run.Formats & ~RichTextFormats.Link, run.Color));
         }
 
         return shown;
@@ -1155,11 +1162,12 @@ internal sealed partial class RichTextHtmlReader
             || (oldLoose && !doctype.Contains(".dtd", StringComparison.Ordinal));
     }
 
-    // Reads to the end of a start tag, keeping only its style, href, src and alt, the id and trigger of a mention, and
-    // whether it closed itself.
-    private (string Style, string? Href, string? Source, string? Alt, MentionMark? Mention, bool SelfClosing)
-        ReadAttributes()
+    // Reads to the end of a start tag, keeping only its style, href, src and alt, the id and trigger of a mention, its
+    // text color and whether it closed itself.
+    private (string Style, string? Href, string? Source, string? Alt, MentionMark? Mention, Tone? Color,
+        bool SelfClosing) ReadAttributes()
     {
+        string? color = null;
         string? style = null;
         string? href = null;
         string? source = null;
@@ -1226,9 +1234,14 @@ internal sealed partial class RichTextHtmlReader
             {
                 trigger = HtmlCharacterReferences.DecodeAttribute(value);
             }
+            else if (color is null && name.Equals("data-tb-color", StringComparison.OrdinalIgnoreCase))
+            {
+                color = HtmlCharacterReferences.DecodeAttribute(value);
+            }
         }
 
-        return (style ?? "", href, source, alt, mention is null ? null : new(mention, trigger ?? ""), selfClosing);
+        return (style ?? "", href, source, alt, mention is null ? null : new(mention, trigger ?? ""),
+            RichTextRun.ColorOf(color), selfClosing);
     }
 
     private string ReadAttributeValue()
@@ -1364,6 +1377,12 @@ internal sealed partial class RichTextHtmlReader
         // For a <span data-mention>, the mention its text is.
         public MentionMark? Mention { get; set; }
 
+        // For a <span data-tb-color>, the color it gives its text.
+        public Tone? OwnColor { get; init; }
+
+        // The color of the text inside: its own, or the one around it.
+        public Tone? Color { get; set; }
+
         public bool IsOpen { get; set; }
 
         // Rises with each element opened, so of two open elements the one with the higher serial is above.
@@ -1399,7 +1418,7 @@ internal sealed partial class RichTextHtmlReader
     }
 
     private readonly record struct Piece(string Text, RichTextFormats Formats, string? Link, bool Pre,
-        MentionMark? Mention);
+        MentionMark? Mention, Tone? Color);
 
     // A mention span's id and trigger. A class, so two spans for the same item stay two mentions.
     private sealed class MentionMark(string id, string trigger)

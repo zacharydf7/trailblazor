@@ -323,9 +323,9 @@ public sealed class RichTextDocument
     }
 
     /// <summary>Writes the document as markdown that <see cref="FromMarkdown(string?)"/> reads back the same, apart
-    /// from what markdown can't hold: underline, subscript, superscript and highlighted text is written plain; a
-    /// mention is written as its text; empty paragraphs, line breaks at a paragraph's end and spaces at a line's
-    /// start or end are left out; line breaks in a heading or in code that shares its paragraph become spaces; a
+    /// from what markdown can't hold: underline, subscript, superscript, highlighted and colored text is written
+    /// plain; a mention is written as its text; empty paragraphs, line breaks at a paragraph's end and spaces at a
+    /// line's start or end are left out; line breaks in a heading or in code that shares its paragraph become spaces; a
     /// space or line break at a format's edge moves outside it; and
     /// in a table, line breaks in a cell become spaces, header cells outside a first row of header cells become plain
     /// cells, a first row of empty header cells is left out, and code with an odd number of backslashes right before
@@ -342,12 +342,14 @@ public sealed class RichTextDocument
         var text = paragraph.Text;
         var offset = 0;
         string? openLink = null;
+        Tone? openColor = null;
         foreach (var run in paragraph.Runs)
         {
             var tags = Tags.Where(tag => run.Formats.HasFlag(tag.Format)).Select(tag => tag.Tag).ToList();
             // One link stays one <a> across its differently formatted runs, so it's one stop for the keyboard.
             if (run.Link != openLink)
             {
+                CloseColor();
                 CloseLink();
                 if (run.Link is not null)
                 {
@@ -355,6 +357,19 @@ public sealed class RichTextDocument
                 }
 
                 openLink = run.Link;
+            }
+
+            // The color goes around the format tags, so an underline or a strikethrough takes it too, and one color
+            // stays one <span> across its differently formatted runs, inside the link.
+            if (run.Color != openColor)
+            {
+                CloseColor();
+                if (run.Color is { } color)
+                {
+                    html.Append("<span data-tb-color=\"").Append(RichTextRun.ColorName(color)).Append("\">");
+                }
+
+                openColor = run.Color;
             }
 
             foreach (var tag in tags)
@@ -386,6 +401,7 @@ public sealed class RichTextDocument
             offset += run.Text.Length;
         }
 
+        CloseColor();
         CloseLink();
         // A paragraph's last line break shows nothing, so an empty paragraph or a trailing break needs one more.
         if (text.Length == 0 || text[^1] == '\n')
@@ -399,6 +415,15 @@ public sealed class RichTextDocument
             {
                 html.Append("</a>");
                 openLink = null;
+            }
+        }
+
+        void CloseColor()
+        {
+            if (openColor is not null)
+            {
+                html.Append("</span>");
+                openColor = null;
             }
         }
     }

@@ -3981,6 +3981,35 @@
         font-size: 0.9em;
     }
 
+    /* A rich text value's text colors, wherever on the page the value is shown. */
+    [data-tb-color="primary"] {
+        color: var(--tb-color-primary-text);
+    }
+
+    [data-tb-color="secondary"] {
+        color: var(--tb-color-secondary-text);
+    }
+
+    [data-tb-color="neutral"] {
+        color: var(--tb-color-neutral-text);
+    }
+
+    [data-tb-color="success"] {
+        color: var(--tb-color-success-text);
+    }
+
+    [data-tb-color="warning"] {
+        color: var(--tb-color-warning-text);
+    }
+
+    [data-tb-color="danger"] {
+        color: var(--tb-color-danger-text);
+    }
+
+    [data-tb-color="info"] {
+        color: var(--tb-color-info-text);
+    }
+
     /* The border shows in forced colors, where the tint doesn't. */
     :is(.tb-rich-text-editor__content, .tb-markdown-editor__preview) [data-mention] {
         padding-inline: 0.2em;

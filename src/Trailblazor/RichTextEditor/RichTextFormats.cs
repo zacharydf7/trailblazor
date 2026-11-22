@@ -32,6 +32,10 @@ public enum RichTextFormats
     /// <summary>Highlight, written as <c>&lt;mark&gt;</c>.</summary>
     Highlight = 256,
 
+    /// <summary>A text color, written as <c>&lt;span data-tb-color&gt;</c>. A run has it exactly when it has a
+    /// <see cref="RichTextRun.Color"/>.</summary>
+    Color = 512,
+
     /// <summary>A link, written as <c>&lt;a href&gt;</c>. A run has it exactly when it has a
     /// <see cref="RichTextRun.Link"/>.</summary>
     Link = 128,

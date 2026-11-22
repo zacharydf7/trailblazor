@@ -1,0 +1,13 @@
+@* A text color is one of the design system's tones, kept in the value by its name. *@
+<TbStack Gap="3" Style="max-inline-size: 32rem">
+    <TbRichTextEditor Label="Trail status" @bind-Value="_status" UpdateOnInput
+                      Formats="RichTextFormats.Bold | RichTextFormats.Color" Blocks="RichTextBlocks.None"
+                      HelperText="Select some text and choose a color from the Text color menu." />
+    <TbText>The value, shown elsewhere on the page:</TbText>
+    <div>@((MarkupString)RichTextDocument.Parse(_status).ToHtml())</div>
+</TbStack>
+
+@code {
+    private string? _status = "<p>The ford is <span data-tb-color=\"danger\">closed</span> and the ridge trail is "
+        + "<span data-tb-color=\"success\">open</span>.</p>";
+}

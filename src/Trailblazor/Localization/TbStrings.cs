@@ -1076,6 +1076,33 @@ public static class TbStrings
     /// <summary>"Code": names a rich text editor's inline code button.</summary>
     public const string RichTextEditorCode = "RichTextEditor.Code";
 
+    /// <summary>"Text color": names a rich text editor's text color menu.</summary>
+    public const string RichTextEditorTextColor = "RichTextEditor.TextColor";
+
+    /// <summary>"Default": the text color menu's item that takes the color off.</summary>
+    public const string RichTextEditorDefaultColor = "RichTextEditor.DefaultColor";
+
+    /// <summary>"Primary": names the primary tone's color in a rich text editor's text color menu.</summary>
+    public const string RichTextEditorColorPrimary = "RichTextEditor.ColorPrimary";
+
+    /// <summary>"Secondary": names the secondary tone's color in a rich text editor's text color menu.</summary>
+    public const string RichTextEditorColorSecondary = "RichTextEditor.ColorSecondary";
+
+    /// <summary>"Gray": names the neutral tone's color in a rich text editor's text color menu.</summary>
+    public const string RichTextEditorColorNeutral = "RichTextEditor.ColorNeutral";
+
+    /// <summary>"Green": names the success tone's color in a rich text editor's text color menu.</summary>
+    public const string RichTextEditorColorSuccess = "RichTextEditor.ColorSuccess";
+
+    /// <summary>"Amber": names the warning tone's color in a rich text editor's text color menu.</summary>
+    public const string RichTextEditorColorWarning = "RichTextEditor.ColorWarning";
+
+    /// <summary>"Red": names the danger tone's color in a rich text editor's text color menu.</summary>
+    public const string RichTextEditorColorDanger = "RichTextEditor.ColorDanger";
+
+    /// <summary>"Blue": names the info tone's color in a rich text editor's text color menu.</summary>
+    public const string RichTextEditorColorInfo = "RichTextEditor.ColorInfo";
+
     /// <summary>"Highlight": names a rich text editor's highlight button.</summary>
     public const string RichTextEditorHighlight = "RichTextEditor.Highlight";
 
@@ -1983,6 +2010,15 @@ public static class TbStrings
         [RichTextEditorSuperscript] = "Superscript",
         [RichTextEditorCode] = "Code",
         [RichTextEditorHighlight] = "Highlight",
+        [RichTextEditorTextColor] = "Text color",
+        [RichTextEditorDefaultColor] = "Default",
+        [RichTextEditorColorPrimary] = "Primary",
+        [RichTextEditorColorSecondary] = "Secondary",
+        [RichTextEditorColorNeutral] = "Gray",
+        [RichTextEditorColorSuccess] = "Green",
+        [RichTextEditorColorWarning] = "Amber",
+        [RichTextEditorColorDanger] = "Red",
+        [RichTextEditorColorInfo] = "Blue",
         [RichTextEditorHeading1] = "Heading 1",
         [RichTextEditorHeading2] = "Heading 2",
         [RichTextEditorHeading3] = "Heading 3",

@@ -16,6 +16,28 @@
                        aria-controls="@InputId" Class="tb-rich-text-editor__toolbar">
                 @foreach (var tool in Tools)
                 {
+                    @if (tool.Command == "color")
+                    {
+                        @* The script says which color the selection has as the menu opens, and applies the one
+                           chosen. Each color's name is drawn in its color. *@
+                        <TbMenu Icon="tool.Icon" Variant="Trailblazor.Variant.Text" Size="Size.Small"
+                                Disabled="@(Disabled || ReadOnly || _source)" data-part="color-menu"
+                                AriaLabel="@tool.Label" OpenChanged="OpenColorMenuAsync">
+                            <TbMenuRadioGroup TValue="string" aria-label="@tool.Label" @bind-Value="_color">
+                                <TbMenuRadioItem Value="@("")" data-color-command="">
+                                    @(Labels.DefaultColor ?? Localizer[TbStrings.RichTextEditorDefaultColor])
+                                </TbMenuRadioItem>
+                                @foreach (var (color, name) in ColorChoices)
+                                {
+                                    <TbMenuRadioItem Value="@color" data-color-command="@color">
+                                        <span data-tb-color="@color">@name</span>
+                                    </TbMenuRadioItem>
+                                }
+                            </TbMenuRadioGroup>
+                        </TbMenu>
+                        continue;
+                    }
+
                     @* The script keeps aria-pressed up to date as the selection moves, so .NET never changes it. *@
                     <TbIconButton Icon="tool.Icon" AriaLabel="@tool.Label" ShowTooltip Size="Size.Small"
                                   Disabled="@(Disabled || ReadOnly || _source)" data-format="@tool.Format"
@@ -164,10 +186,13 @@
     private (string? Value, bool Missing)? _missing;
     private bool _source;
     private RichTextTableState _table = new(false, false, false);
+    // The color the menu shows as chosen: a tone's name, empty for none, or null where the selection has several.
+    private string? _color = "";
     private int _sourceChanges;
     private ElementReference _sourceArea;
 
-    /// <summary>The formats the editor allows: the toolbar has a button for each, and text pasted in keeps only these.
+    /// <summary>The formats the editor allows: the toolbar has a button for each, and a Text color menu for
+    /// <see cref="RichTextFormats.Color"/>, and text pasted in keeps only these.
     /// <see cref="RichTextFormats.Link"/> adds a link button that opens a dialog, which needs a <see cref="TbRoot"/> in
     /// the layout. Defaults to all of them; with <see cref="RichTextFormats.None"/> and
     /// <see cref="RichTextBlocks.None"/> in <see cref="Blocks"/>, it's a plain multi-line field.</summary>
@@ -317,9 +342,27 @@
     private sealed record Tool(string? Format, string? Block, string? Command, Icon Icon, string Label,
         string? Shortcuts);
 
-    private IReadOnlyList<Tool> Tools => [.. MarkTools, .. LinkTools, .. BlockTools, .. ClearTools];
+    private IReadOnlyList<Tool> Tools => [.. MarkTools, .. ColorTools, .. LinkTools, .. BlockTools, .. ClearTools];
 
-    private IEnumerable<Tool> ClearTools => MarkTools.Any()
+    private IEnumerable<Tool> ColorTools => Formats.HasFlag(RichTextFormats.Color)
+        ? [new(null, null, "color", RichTextEditorIcons.TextColor,
+            Labels.TextColor ?? Localizer[TbStrings.RichTextEditorTextColor], null)]
+        : [];
+
+    // Each tone is named for its color in the built-in palettes; Labels can rename them.
+    private IEnumerable<(string Color, string Name)> ColorChoices =>
+    [
+        (RichTextRun.ColorName(Tone.Primary), Labels.ColorPrimary ?? Localizer[TbStrings.RichTextEditorColorPrimary]),
+        (RichTextRun.ColorName(Tone.Secondary),
+            Labels.ColorSecondary ?? Localizer[TbStrings.RichTextEditorColorSecondary]),
+        (RichTextRun.ColorName(Tone.Neutral), Labels.ColorNeutral ?? Localizer[TbStrings.RichTextEditorColorNeutral]),
+        (RichTextRun.ColorName(Tone.Success), Labels.ColorSuccess ?? Localizer[TbStrings.RichTextEditorColorSuccess]),
+        (RichTextRun.ColorName(Tone.Warning), Labels.ColorWarning ?? Localizer[TbStrings.RichTextEditorColorWarning]),
+        (RichTextRun.ColorName(Tone.Danger), Labels.ColorDanger ?? Localizer[TbStrings.RichTextEditorColorDanger]),
+        (RichTextRun.ColorName(Tone.Info), Labels.ColorInfo ?? Localizer[TbStrings.RichTextEditorColorInfo]),
+    ];
+
+    private IEnumerable<Tool> ClearTools => MarkTools.Any() || ColorTools.Any()
         ? [new(null, null, "clear", RichTextEditorIcons.ClearFormatting,
             Labels.ClearFormatting ?? Localizer[TbStrings.RichTextEditorClearFormatting], "Control+\\ Meta+\\")]
         : [];
@@ -476,7 +519,8 @@
     // An anonymous object compares by value, so the script hears of options only when they change.
     private object Options => new
     {
-        formats = string.Join(' ', MarkTools.Select(tool => tool.Format)),
+        formats = string.Join(' ', MarkTools.Select(tool => tool.Format)
+            .Concat(Formats.HasFlag(RichTextFormats.Color) ? ["color"] : [])),
         blocks = string.Join(' ', BlockTools.Select(tool => tool.Block).OfType<string>()
             .Concat(Blocks.HasFlag(RichTextBlocks.Rules) ? ["rule"] : [])
             .Concat(Blocks.HasFlag(RichTextBlocks.Tables) ? ["table"] : [])),
@@ -728,6 +772,24 @@
         try
         {
             await _handle.InvokeVoidAsync("insertImage", image.Source, image.Alt);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the editor went with it.
+        }
+    }
+
+    // The color menu shows the color of the selection as it opens.
+    private async Task OpenColorMenuAsync(bool open)
+    {
+        if (!open || _handle is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _color = await _handle.InvokeAsync<string?>("colorState");
         }
         catch (JSDisconnectedException)
         {

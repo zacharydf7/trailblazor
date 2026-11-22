@@ -13,6 +13,13 @@ const MARK_TAGS = {
     bold: 'strong', italic: 'em', underline: 'u', strikethrough: 's', subscript: 'sub', superscript: 'sup',
     code: 'code', highlight: 'mark',
 };
+// A text color is a mark too, so it is kept, merged, typed on and cleared as the others are: 'color:' and one of the
+// design system's tones. It comes first among a run's marks, since its <span> goes around the format tags.
+const COLOR = 'color:';
+const COLORS = ['primary', 'secondary', 'neutral', 'success', 'warning', 'danger', 'info'];
+const isColor = mark => mark.startsWith(COLOR);
+// The format that allows a mark: its own name, or 'color' for a color.
+const formatOf = mark => isColor(mark) ? 'color' : mark;
 const TAG_MARKS = {
     b: 'bold', strong: 'bold', i: 'italic', em: 'italic', u: 'underline', ins: 'underline',
     s: 'strikethrough', strike: 'strikethrough', del: 'strikethrough', sub: 'subscript', sup: 'superscript',
@@ -64,6 +71,7 @@ export function attachRichTextEditor(root, value, options) {
         setLink: (url, text) => editor.setLink(url, text),
         insertImage: (source, alt) => editor.insertImage(source, alt),
         tableState: () => editor.tableState(),
+        colorState: () => editor.colorState(),
         insertPasted: html => editor.insertPasted(html),
         // Hands over the list that shows mention suggestions and the .NET object that searches for them; a null list
         // stops suggesting.
@@ -182,6 +190,11 @@ class Editor {
             const item = event.target.closest('[data-table-command]');
             if (item && item.getAttribute('aria-disabled') !== 'true') this.tableCommand(item.dataset.tableCommand);
         }, true);
+        // The color menu's choice runs the same way; its Default item has no color.
+        on(toolbar, 'click', event => {
+            const item = event.target.closest('[data-color-command]');
+            if (item && item.getAttribute('aria-disabled') !== 'true') this.setColor(item.dataset.colorCommand || null);
+        }, true);
         on(toolbar, 'click', event => {
             const button = event.target.closest('[data-format], [data-block], [data-command]');
             if (!button || button.disabled) return;
@@ -203,7 +216,7 @@ class Editor {
 
     setOptions(options) {
         this.schema = {
-            formats: new Set(options.formats.split(' ').filter(mark => MARKS.includes(mark))),
+            formats: new Set(options.formats.split(' ').filter(mark => MARKS.includes(mark) || mark === 'color')),
             blocks: new Set(options.blocks.split(' ').filter(kind => KINDS.includes(kind))),
             links: options.links === null ? null : options.links.toLowerCase().split(' ').filter(Boolean),
             images: options.images === null ? null : options.images.toLowerCase().split(' ').filter(Boolean),
@@ -995,6 +1008,50 @@ class Editor {
         this.selection = { anchor: { block: end, offset: 0 }, head: { block: end, offset: 0 } };
     }
 
+    // Colors the selection, or the next text typed when nothing is selected; a null color takes the color off.
+    setColor(color) {
+        if (this.readOnly || !this.schema.formats.has('color') || (color && !COLORS.includes(color))) return;
+        this.readBack();
+        const recolor = marks => color ? withMark(marks, COLOR + color) : marks.filter(mark => !isColor(mark));
+        const { from, to } = this.range();
+        this.root.focus();
+        if (compare(from, to) === 0) {
+            this.storedMarks = recolor(this.storedMarks ?? marksAt(this.doc[from.block].runs, from.offset));
+            this.updateToolbar();
+            return;
+        }
+        this.edit(() => {
+            for (let block = from.block; block <= to.block; block++) {
+                const start = block === from.block ? from.offset : 0;
+                const end = block === to.block ? to.offset : Infinity;
+                this.doc[block] = { ...this.doc[block], runs: mapRuns(this.doc[block].runs, start, end,
+                    run => ({ ...run, marks: recolor(run.marks) })) };
+            }
+        });
+    }
+
+    // The color of the selection, or of the next text typed, for the color menu: a tone's name, '' for none, and
+    // null where the selection has more than one.
+    colorState() {
+        const colorOf = marks => marks.find(isColor)?.slice(COLOR.length) ?? '';
+        const { from, to } = this.range();
+        if (compare(from, to) === 0) {
+            return colorOf(this.storedMarks ?? marksAt(this.doc[from.block].runs, from.offset));
+        }
+        let found = null;
+        for (let block = from.block; block <= to.block; block++) {
+            const start = block === from.block ? from.offset : 0;
+            const end = block === to.block ? to.offset : Infinity;
+            for (const run of slice(this.doc[block].runs, start, end)) {
+                if (/^\n*$/.test(run.text)) continue;
+                const color = colorOf(run.marks);
+                if (found !== null && found !== color) return null;
+                found = color;
+            }
+        }
+        return found ?? '';
+    }
+
     // Where the caret is, for the table menu.
     tableState() {
         this.readBack();
@@ -1536,11 +1593,12 @@ function linkInside(runs, offset) {
 }
 
 function withMark(marks, mark) {
-    const set = new Set(marks);
+    // Text has one color, so a new one replaces the old.
+    const set = new Set(isColor(mark) ? marks.filter(each => !isColor(each)) : marks);
     set.add(mark);
     if (mark === 'subscript') set.delete('superscript');
     if (mark === 'superscript') set.delete('subscript');
-    return MARKS.filter(m => set.has(m));
+    return [...[...set].filter(isColor), ...MARKS.filter(m => set.has(m))];
 }
 
 // Repeated text makes a change ambiguous ("a" typed into "aa"), so the change slides back toward the caret.
@@ -1660,12 +1718,23 @@ function paragraphHtml(runs, forValue) {
     let html = '';
     let offset = 0;
     let link = null;
+    let color = null;
     for (const run of runs) {
-        // One link stays one <a> across its differently formatted runs, as RichTextDocument writes it.
+        // One link stays one <a> across its differently formatted runs, as RichTextDocument writes it, and inside
+        // it one color stays one <span> around the format tags.
+        const runColor = run.marks.find(isColor) ?? null;
+        if (color !== null && (run.link !== link || runColor !== color)) {
+            html += '</span>';
+            color = null;
+        }
         if (run.link !== link) {
             if (link !== null) html += '</a>';
             if (run.link !== null) html += `<a href="${attribute(run.link)}">`;
             link = run.link;
+        }
+        if (runColor !== color) {
+            html += `<span data-tb-color="${runColor.slice(COLOR.length)}">`;
+            color = runColor;
         }
         let inner = '';
         for (let i = 0; i < run.text.length; i++) inner += characterHtml(text, offset + i, forValue);
@@ -1676,8 +1745,10 @@ function paragraphHtml(runs, forValue) {
             inner = `<span data-mention="${attribute(run.mention.id ?? '')}" data-trigger="`
                 + `${attribute(run.mention.trigger)}"${forValue ? '' : ' contenteditable="false"'}>${inner}</span>`;
         }
-        html += run.marks.reduceRight((content, mark) => `<${MARK_TAGS[mark]}>${content}</${MARK_TAGS[mark]}>`, inner);
+        html += run.marks.filter(mark => !isColor(mark))
+            .reduceRight((content, mark) => `<${MARK_TAGS[mark]}>${content}</${MARK_TAGS[mark]}>`, inner);
     }
+    if (color !== null) html += '</span>';
     if (link !== null) html += '</a>';
     // A paragraph's last line break shows nothing, so an empty paragraph or a trailing break needs one more.
     return !text || text.endsWith('\n') ? html + '<br>' : html;
@@ -1822,7 +1893,7 @@ function readBlocks(container, collapse, { formats, blocks, links, images, menti
                 if (afterImage && pre && text.startsWith('\n')) [text, afterImage] = [text.slice(1), false];
                 afterImage &&= /^[\t\n\f\r ]*$/.test(text);
                 start(context);
-                add({ text, marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre, mention });
+                add({ text, marks: marks.filter(mark => formats.has(formatOf(mark))), link: link.kept, pre, mention });
             } else if (child.nodeType === Node.ELEMENT_NODE && isWordListMarker(child)) {
                 numbered = /^\(?([0-9]+|[a-z]+|[A-Z]+)[.)]$/.test(child.textContent.trim());
             } else if (child.nodeType === Node.ELEMENT_NODE && !SKIPPED.has(child.localName)) {
@@ -1832,7 +1903,8 @@ function readBlocks(container, collapse, { formats, blocks, links, images, menti
                         continue;
                     }
                     start(context);
-                    add({ text: '\n', marks: marks.filter(mark => formats.has(mark)), link: link.kept, pre, mention });
+                    add({ text: '\n', marks: marks.filter(mark => formats.has(formatOf(mark))), link: link.kept, pre,
+                        mention });
                     continue;
                 }
                 // A rule between two lines leaves them separate paragraphs, with the rule between if it's allowed.
@@ -1998,6 +2070,9 @@ function marksOf(element, inherited, inLink) {
     const add = mark => marks = withMark(marks, mark);
     const remove = (...names) => marks = marks.filter(mark => !names.includes(mark));
     if (TAG_MARKS[element.localName]) add(TAG_MARKS[element.localName]);
+    // Only a tone's own name, as the editor writes it, is a color; a color from a style is another page's.
+    const color = element.localName === 'span' ? element.getAttribute('data-tb-color') : null;
+    if (COLORS.includes(color)) add(COLOR + color);
     const style = element.style;
     if (style) {
         const weight = style.fontWeight;
