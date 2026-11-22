@@ -49,29 +49,7 @@ public class GridPrerenderTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.GetByRole(AriaRole.Cell, new() { Name = "Trail 1", Exact = true })).ToBeVisibleAsync();
     }
 
-    // The page shows the count it had when it last drew, so the count is read once this click's draw has landed.
-    private static async Task<string> CallsAsync(IPage page, int counted)
-    {
-        await page.Tb().Button("Count").ClickAsync();
-        await Expect(page.GetByTestId("counted")).ToHaveTextAsync($"{counted}");
-        return (await page.GetByTestId("calls").TextContentAsync())!;
-    }
-
-    // Opens the grid's page under a new run id, so the call count is this test's alone, holds it before it turns
-    // interactive, and watches for the loading row from then on.
-    private async Task<(IPage Page, TaskCompletionSource Held)> OpenPrerenderedAsync(string browser, string query)
-    {
-        var (page, held) = await OpenHeldAsync(browser, "/grid-prerender");
-        await page.GotoAsync(new Uri(new Uri(page.Url), $"/grid-prerender?run={Guid.NewGuid():N}&{query}").ToString(),
-            new() { WaitUntil = WaitUntilState.Commit });
-        await Expect(page.GetByRole(AriaRole.Cell, new() { Name = "Trail 1", Exact = true })).ToBeVisibleAsync();
-        await page.EvaluateAsync("""
-            () => {
-                window.sawLoading = false;
-                new MutationObserver(() => window.sawLoading ||= document.querySelector('[data-part=loading]') !== null)
-                    .observe(document.documentElement, { childList: true, subtree: true });
-            }
-            """);
-        return (page, held);
-    }
+    private Task<(IPage Page, TaskCompletionSource Held)> OpenPrerenderedAsync(string browser, string query) =>
+        OpenPrerenderedAsync(browser, "/grid-prerender", query,
+            page => page.GetByRole(AriaRole.Cell, new() { Name = "Trail 1", Exact = true }));
 }

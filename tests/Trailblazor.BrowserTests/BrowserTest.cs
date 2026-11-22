@@ -103,6 +103,35 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         return (page, held);
     }
 
+    // Opens a page under a new run id, so a count the page keeps by run is this test's alone, holds it before it
+    // turns interactive, and from when its prerendered content shows, notes in window.sawLoading whether a loading row
+    // ever shows.
+    protected async Task<(IPage Page, TaskCompletionSource Held)> OpenPrerenderedAsync(string browser, string path,
+        string query, Func<IPage, ILocator> prerendered)
+    {
+        var (page, held) = await OpenHeldAsync(browser, path);
+        await page.GotoAsync(new Uri(new Uri(page.Url), $"{path}?run={Guid.NewGuid():N}&{query}").ToString(),
+            new() { WaitUntil = WaitUntilState.Commit });
+        await Expect(prerendered(page)).ToBeVisibleAsync();
+        await page.EvaluateAsync("""
+            () => {
+                window.sawLoading = false;
+                new MutationObserver(() => window.sawLoading ||= document.querySelector('[data-part=loading]') !== null)
+                    .observe(document.documentElement, { childList: true, subtree: true });
+            }
+            """);
+        return (page, held);
+    }
+
+    // Such a page shows the count it had when it last drew, so the count is read once a click on its Count button
+    // has drawn it again.
+    protected static async Task<string> CallsAsync(IPage page, int counted)
+    {
+        await page.Tb().Button("Count").ClickAsync();
+        await Expect(page.GetByTestId("counted")).ToHaveTextAsync($"{counted}");
+        return (await page.GetByTestId("calls").TextContentAsync())!;
+    }
+
     // The page stays prerendered until Blazor's script is let through, which the test does once the helper is waiting.
     protected async Task<(IPage Page, TaskCompletionSource Held)> OpenHeldAsync(string browser, string path)
     {

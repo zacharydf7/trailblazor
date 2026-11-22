@@ -1,0 +1,20 @@
+@* A row that starts open keeps the children it loaded while the page prerendered. *@
+<TbTreeView TItem="Place" TKey="int" AriaLabel="Regions with a row open" Items="Regions" KeySelector="place => place.Id"
+            ItemText="place => place.Name" LoadChildren="LoadTrailsAsync" HasChildren="place => place.Id < 10"
+            @bind-ExpandedKeys="_open" PrerenderKey="region-trails" />
+
+@code {
+    private static readonly Place[] Regions = [new(1, "North ridge"), new(2, "River valley")];
+
+    private IReadOnlyCollection<int> _open = [1];
+
+    // Stands in for a server that takes a moment to list a region's trails.
+    private static async Task<IEnumerable<Place>> LoadTrailsAsync(Place region, CancellationToken cancel)
+    {
+        await Task.Delay(800, cancel);
+        return [new(region.Id * 10 + 1, $"{region.Name} loop"), new(region.Id * 10 + 2, $"{region.Name} spur")];
+    }
+
+    // A record's public properties write to JSON and read back through its constructor, and its key is the same after.
+    private sealed record Place(int Id, string Name);
+}

@@ -1,0 +1,35 @@
+@page "/tree-prerender"
+@using System.Collections.Concurrent
+
+@* A tree whose first row starts open and loads its children, on a page that prerenders. The loader counts its calls
+   for the run named in the address, in the process that runs it: both passes on the server, only the browser's in
+   WebAssembly. It takes long enough for the loading row to show. With persist in the address, the tree keeps its
+   prerendered children. The Count button draws the page again and shows how many times it was clicked. *@
+<TbTreeView TItem="Place" TKey="int" AriaLabel="Places" Items="Regions" KeySelector="place => place.Id"
+            ItemText="place => place.Name" LoadChildren="LoadAsync" HasChildren="place => place.Id < 10"
+            @bind-ExpandedKeys="_open" PrerenderKey="@(Persist is null ? null : "places")" />
+<TbButton OnClick="() => _counted++">Count</TbButton>
+<p data-testid="counted">@_counted</p>
+<p data-testid="calls">@Calls.GetValueOrDefault(Run ?? "")</p>
+
+@code {
+    private static readonly ConcurrentDictionary<string, int> Calls = new();
+    private static readonly Place[] Regions = [new(1, "North ridge"), new(2, "River valley")];
+    private IReadOnlyCollection<int> _open = [1];
+    private int _counted;
+
+    [SupplyParameterFromQuery]
+    private string? Run { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? Persist { get; set; }
+
+    private async Task<IEnumerable<Place>> LoadAsync(Place region, CancellationToken cancel)
+    {
+        Calls.AddOrUpdate(Run ?? "", 1, (_, count) => count + 1);
+        await Task.Delay(300, cancel);
+        return [new(region.Id * 10 + 1, $"{region.Name} loop"), new(region.Id * 10 + 2, $"{region.Name} spur")];
+    }
+
+    public sealed record Place(int Id, string Name);
+}

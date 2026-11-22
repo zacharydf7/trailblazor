@@ -131,7 +131,7 @@ public class TbDataGridPrerenderTests : BunitContext
     [Fact]
     public void PrerenderKey_ShouldLoadAsUsual_WhenTheAppKeepsNoStateAcrossPrerendering()
     {
-        // No PersistentComponentState is registered, as in an app that isn't a Blazor Web App.
+        // No PersistentComponentState is registered, as in a host that doesn't provide one.
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
         RenderGrid(LoadAsync);
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));

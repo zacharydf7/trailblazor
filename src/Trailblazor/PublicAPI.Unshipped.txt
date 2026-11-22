@@ -3089,6 +3089,8 @@ Trailblazor.TbTreeView<TItem, TKey>.OnMove.get -> Microsoft.AspNetCore.Component
 Trailblazor.TbTreeView<TItem, TKey>.OnMove.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.OnLoadFailed.get -> Microsoft.AspNetCore.Components.EventCallback<System.Exception!>
 Trailblazor.TbTreeView<TItem, TKey>.OnLoadFailed.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.PrerenderKey.get -> string?
+Trailblazor.TbTreeView<TItem, TKey>.PrerenderKey.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ParentKeySelector.get -> System.Func<TItem, object?>?
 Trailblazor.TbTreeView<TItem, TKey>.ParentKeySelector.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.RefreshAsync() -> System.Threading.Tasks.Task!

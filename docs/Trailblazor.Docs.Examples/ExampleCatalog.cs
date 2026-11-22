@@ -11117,6 +11117,15 @@ public static class ExampleCatalog
                     + "time it opens, and `HasChildren` says which rows have a toggle before then. A loading row "
                     + "shows while they load. If the load fails, a row offers to try again, and `OnLoadFailed` gets the "
                     + "exception.", typeof(TreeViewLoadExample)),
+                new("prerendered-children", "Open rows on a prerendered page", "On a prerendered page, a row "
+                    + "that starts open loads its children twice: once while the page prerenders and again when "
+                    + "it turns interactive, with a loading row in place of the children in between. With a "
+                    + "`PrerenderKey`, the tree keeps the prerendered children with the page and takes them as "
+                    + "loaded when it turns interactive, so each row loads once. Give each tree on a page its own "
+                    + "key. The items must write to JSON and read back, and a parent's key must come out the same "
+                    + "afterward: set a `KeySelector`, or use items that compare by value, such as records whose "
+                    + "members all do. This site doesn't prerender, so here the row just loads.",
+                    typeof(TreeViewPrerenderedExample)),
                 new("empty", "Empty", "With no rows, the tree says so. `EmptyContent` shows your own content, such as "
                     + "a way to add the first row. `ShowEmpty=\"false\"` shows nothing, for a page that already says "
                     + "the tree is empty.", typeof(TreeViewEmptyExample)),
@@ -11240,6 +11249,10 @@ public static class ExampleCatalog
             [
                 "A `TbTreeItem` renders a plain row, open to `InitialExpandDepth`.",
                 "With `Virtualize`, every row renders.",
+                "With `LoadChildren`, a row that starts open loads its children while prerendering and shows "
+                    + "them. It loads them again once the page is interactive, and shows a loading row meanwhile, "
+                    + "unless a `PrerenderKey` [keeps the prerendered children]"
+                    + "(components/tree-view#prerendered-children).",
             ],
             Notes =
             [

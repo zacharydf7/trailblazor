@@ -423,6 +423,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
                 "when its items aren't their own keys.");
         }
 
+        TakePrerenderedChildren();
         var expanded = _expanded;
         _expanded = TakeFromParent(ExpandedKeys, ref _expandedFromParent, _expanded);
         _expandedByParent ??= ReferenceEquals(expanded, _expanded) ? null : expanded;
@@ -599,6 +600,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
+        await CheckKeptChildrenAsync();
         if (_expandedByParent is { } before)
         {
             _expandedByParent = null;
@@ -1839,16 +1841,26 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         }
 
         Build();
-        // A row checked before its children loaded checks them too, as a cascade would have.
-        if (Checkable && CascadeChecks && _checked.Contains(node.Key) && _nodes.TryGetValue(node.Key, out var loaded))
+        if (CheckLoadedChildren(node.Key))
         {
-            _checked.UnionWith(EnabledDescendants(loaded).Select(descendant => descendant.Key));
-            KeepParentsInStep(_checked);
             await CheckedKeysChanged.InvokeAsync(Reported(_checked));
         }
 
         Flatten();
         StateHasChanged();
+    }
+
+    // A row checked before its children loaded checks them too, as a cascade would have.
+    private bool CheckLoadedChildren(object key)
+    {
+        if (!Checkable || !CascadeChecks || !_checked.Contains(key) || !_nodes.TryGetValue(key, out var loaded))
+        {
+            return false;
+        }
+
+        _checked.UnionWith(EnabledDescendants(loaded).Select(descendant => descendant.Key));
+        KeepParentsInStep(_checked);
+        return true;
     }
 
     private Task RetryAsync(TreeNode<TItem> node)
@@ -1884,6 +1896,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     public async ValueTask DisposeAsync()
     {
         _disposed = true;
+        _keepsPrerendered?.Dispose();
         _scrollAfterRender?.Done.TrySetResult();
         foreach (var load in _loads.Values)
         {

@@ -2,9 +2,10 @@
 @using System.Collections.Concurrent
 
 @* A grid that loads a page of rows from a provider, on a page that prerenders. The provider counts its calls for the
-   run named in the address, across the prerendered pass and the interactive one, and takes long enough for the grid's
-   loading row to show. With persist in the address, the grid keeps its prerendered rows; with totals, a column asks
-   for a total. The Count button draws the count again and says how often it has. *@
+   run named in the address, in the process that runs it: both passes on the server, only the browser's in
+   WebAssembly. It takes long enough for the grid's loading row to show. With persist in the address, the grid keeps
+   its prerendered rows; with totals, a column asks for a total. The Count button draws the page again and shows how
+   many times it was clicked. *@
 <TbDataGrid TItem="Trail" AriaLabel="Trails" DataProvider="LoadAsync" PageSize="5"
             PrerenderKey="@(Persist is null ? null : "trails")">
     <TbColumn Field="trail => trail.Name" Title="Name" Id="name" />
