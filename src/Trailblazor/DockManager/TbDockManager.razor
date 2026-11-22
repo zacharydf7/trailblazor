@@ -46,7 +46,8 @@
 <div @ref="_root" role="group" aria-label="@AriaLabel" data-part="dock"
      tabindex="@(empty ? "-1" : null)"
      data-report="@_reported" data-commits="@(RendererInfo.IsInteractive ? _counted : null)"
-     data-min-size="@MinGroupSize" data-focusable-panels="@PanelStops" class="tb-dock">
+     data-min-size="@MinGroupSize" data-focusable-panels="@PanelStops" data-persistence-key="@PersistenceKey"
+     class="tb-dock">
     @Content(_declared, panels)
     @* A tab list holds only tabs, so the hint that describes a closable tab sits outside it. *@
     <span id="@_closeHintId" hidden>@(Labels.CloseHint ?? Localizer[TbStrings.DockCloseHint])</span>
@@ -394,7 +395,9 @@
     /// raises <see cref="LayoutChanged"/>; setting another <see cref="Layout"/> later replaces the saved one, which
     /// is how a Reset button works. Use a key unique to each dock. When the key changes, the dock reads the layout
     /// saved under the new one. To keep layouts on a server instead, bind <see cref="Layout"/> and save
-    /// <see cref="DockLayout.ToJson"/>.</summary>
+    /// <see cref="DockLayout.ToJson"/>. With <see cref="AllowPopOut"/>, the dock also saves where each panel's
+    /// browser window last was, and its size, beside the layout; without a key it keeps them for the browser session.
+    /// </summary>
     [Parameter]
     public string? PersistenceKey { get; set; }
 
@@ -1092,7 +1095,8 @@
         @if (CanPopOut(panel))
         {
             @* The script opens the window in the click, and keeps it for this panel until the dock asks for it. *@
-            <TbMenuItem data-move="pop-out" data-pop="@PanelId(panel)" OnClick="() => PopOutAsync(panel)">
+            <TbMenuItem data-move="pop-out" data-pop="@PanelId(panel)" data-pop-panel="@panel"
+                        OnClick="() => PopOutAsync(panel)">
                 @(Labels.PopOut ?? Localizer[TbStrings.DockPopOut])
             </TbMenuItem>
         }

@@ -967,6 +967,43 @@ export function attachDock(root, reporter) {
     // for, and the panels whose windows closed because the dock took too long to ask.
     const opened = new Map();
     const lapsed = new Set();
+    // Where each panel's browser window last was on the screen and how large, by the panel's id. It is kept for the
+    // browser session, or beside the saved layout when the dock has a PersistenceKey. Storage can be full or turned
+    // off, and then a window opens over the dock each time.
+    const boxStore = () => 'persistenceKey' in root.dataset ? localStorage : sessionStorage;
+    const boxKey = panel => `tb-dock-window:${root.dataset.persistenceKey ?? ''}:${panel}`;
+    const keptBox = panel => {
+        try {
+            const box = JSON.parse(boxStore().getItem(boxKey(panel)));
+            return ['width', 'height', 'left', 'top'].every(side => Number.isFinite(box?.[side])) ? box : null;
+        } catch {
+            return null;
+        }
+    };
+    const keptBoxes = new Map();
+    const keepBox = (panel, other) => {
+        // A minimized window can say it is far off every screen, and a window out of view can't have been moved.
+        if (other.document.visibilityState === 'hidden') {
+            return;
+        }
+
+        const [key, box] = [boxKey(panel), JSON.stringify({
+            width: other.innerWidth, height: other.innerHeight, left: other.screenX, top: other.screenY,
+        })];
+        if (keptBoxes.get(key) === box) {
+            return;
+        }
+
+        keptBoxes.set(key, box);
+        try {
+            boxStore().setItem(key, box);
+        } catch {
+        }
+    };
+    // Nothing tells a page that a window moved, and a window that is closing no longer says where it is (WebKit
+    // answers the screen's corner), so a window's box is noted as it is resized and this often while it is open,
+    // in milliseconds, and not as it closes.
+    const boxEvery = 500;
     // A panel on its way to a window is hidden first, with no scroll positions left to note, so every panel's are
     // noted in the click. On its way back the dock draws it as its own before it moves, which loses them too, so
     // they are noted in the click on its Return button. Each panel's are used once, and only for that panel.
@@ -999,14 +1036,18 @@ export function attachDock(root, reporter) {
         const id = item.dataset.pop;
         opened.get(id)?.close();
         lapsed.delete(id);
-        const box = root.getBoundingClientRect();
-        const [width, height] = [Math.max(smallestWindow.width, Math.round(box.width / 2)),
-            Math.max(smallestWindow.height, Math.round(box.height / 2))];
         // The dock's own window opens it: a dock inside a panel that shows in a window is in that window, and the
         // browser only lets the window the click was in open another.
         const view = viewOf(root);
-        const [left, top] = [Math.round(view.screenX + box.left + box.width / 4),
-            Math.round(view.screenY + box.top + box.height / 4)];
+        const dock = root.getBoundingClientRect();
+        // The window opens where the panel's last one was, and the first time over the middle of the dock at half
+        // the dock's size. The browser keeps it on a screen that is still there.
+        const { width, height, left, top } = keptBox(item.dataset.popPanel) ?? {
+            width: Math.max(smallestWindow.width, Math.round(dock.width / 2)),
+            height: Math.max(smallestWindow.height, Math.round(dock.height / 2)),
+            left: Math.round(view.screenX + dock.left + dock.width / 4),
+            top: Math.round(view.screenY + dock.top + dock.height / 4),
+        };
         const unclaimed = view.open('', '', `popup,width=${width},height=${height},left=${left},top=${top}`);
         opened.set(id, unclaimed);
         // A window the dock doesn't ask for within ten seconds, because the click led nowhere or the page is slow,
@@ -1178,9 +1219,15 @@ export function attachDock(root, reporter) {
                 other.document.title = panel.getAttribute('aria-label') ?? other.document.title;
             });
             titled.observe(panel, { attributes: true, attributeFilter: ['aria-label'] });
+            const keep = () => keepBox(panel.dataset.panel, other);
+            keep();
+            other.addEventListener('resize', keep);
+            const noting = other.setInterval(keep, boxEvery);
             const stop = () => {
                 unfollow();
                 titled.disconnect();
+                other.clearInterval(noting);
+                other.removeEventListener('resize', keep);
             };
             windows.set(id, { other, panel, stop });
             settleStops();
