@@ -963,7 +963,10 @@ export function attachDock(root, reporter) {
     const arriving = new Map();
     const unclaimedLimit = 10000;
     const smallestWindow = { width: 320, height: 240 };
-    let opened = null;
+    // The windows that clicks opened and the dock hasn't asked for yet, by the element id of the panel each is
+    // for, and the panels whose windows closed because the dock took too long to ask.
+    const opened = new Map();
+    const lapsed = new Set();
     // A panel on its way to a window is hidden first, with no scroll positions left to note, so every panel's are
     // noted in the click. On its way back the dock draws it as its own before it moves, which loses them too, so
     // they are noted in the click on its Return button. Each panel's are used once, and only for that panel.
@@ -981,7 +984,8 @@ export function attachDock(root, reporter) {
     };
     const onPopOutClick = event => {
         // The item of a dock nested in one of this dock's panels is that dock's to answer.
-        if (event.target.closest?.('[data-move="pop-out"]')?.closest('.tb-dock') !== root) {
+        const item = event.target.closest?.('[data-move="pop-out"]');
+        if (item?.closest('.tb-dock') !== root) {
             return;
         }
 
@@ -990,7 +994,11 @@ export function attachDock(root, reporter) {
             scrollsAtClick.set(panel, keepScrolls(panel));
         }
 
-        opened?.close();
+        // A second click for the same panel replaces the window the first click opened; another panel's window
+        // is left alone.
+        const id = item.dataset.pop;
+        opened.get(id)?.close();
+        lapsed.delete(id);
         const box = root.getBoundingClientRect();
         const [width, height] = [Math.max(smallestWindow.width, Math.round(box.width / 2)),
             Math.max(smallestWindow.height, Math.round(box.height / 2))];
@@ -999,13 +1007,15 @@ export function attachDock(root, reporter) {
         const view = viewOf(root);
         const [left, top] = [Math.round(view.screenX + box.left + box.width / 4),
             Math.round(view.screenY + box.top + box.height / 4)];
-        opened = view.open('', '', `popup,width=${width},height=${height},left=${left},top=${top}`);
-        // A window the dock never asks for, because the click led nowhere, doesn't stay open and empty.
-        const unclaimed = opened;
+        const unclaimed = view.open('', '', `popup,width=${width},height=${height},left=${left},top=${top}`);
+        opened.set(id, unclaimed);
+        // A window the dock doesn't ask for within ten seconds, because the click led nowhere or the page is slow,
+        // doesn't stay open and empty.
         setTimeout(() => {
-            if (unclaimed && opened === unclaimed) {
+            if (unclaimed && opened.get(id) === unclaimed) {
                 unclaimed.close();
-                opened = null;
+                opened.delete(id);
+                lapsed.add(id);
             }
         }, unclaimedLimit);
     };
@@ -1045,8 +1055,8 @@ export function attachDock(root, reporter) {
     // The windows go with the page, and with the dock. Their panels come back first, so a page that the browser
     // keeps to show again when the user goes back still has them, and only such a page's dock is told.
     const closeWindows = report => {
-        opened?.close();
-        opened = null;
+        opened.forEach(other => other?.close());
+        opened.clear();
         arriving.forEach(other => other.close());
         for (const id of [...windows.keys()]) {
             bringBack(id, report);
@@ -1131,11 +1141,23 @@ export function attachDock(root, reporter) {
             return Boolean(tab) && holdsFocus(tab);
         },
         // Moves the panel with this element id into the window its menu item opened. The answer is what went wrong,
-        // and null when nothing did: a browser can refuse to open the window (`blocked`), and the window can close
-        // before the panel gets there (`closed`).
+        // and null when nothing did: a browser can refuse to open the window (`blocked`), the window can close
+        // because the dock asked for it too late (`lapsed`), it can close before the panel gets there (`closed`), and
+        // no click may have opened one for this panel (`unasked`).
         async popOut(id) {
-            const [other, panel] = [opened, root.ownerDocument.getElementById(id)];
-            opened = null;
+            // A second click on a group's item reaches the dock after the first has made the item the next panel's,
+            // while the click's window was opened for the first panel. Nothing was refused, so nothing is said.
+            if (!opened.has(id) && !lapsed.has(id)) {
+                return 'unasked';
+            }
+
+            const [other, panel] = [opened.get(id), root.ownerDocument.getElementById(id)];
+            opened.delete(id);
+            // The window opened and then closed because the dock asked too late; the browser didn't refuse it.
+            if (lapsed.delete(id)) {
+                return 'lapsed';
+            }
+
             if (!other || other.closed || !panel) {
                 other?.close();
                 return 'blocked';

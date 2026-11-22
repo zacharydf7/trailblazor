@@ -2710,6 +2710,52 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public async Task PopOut_ShouldPutThePanelBackAndSayItsWindowClosedBeforeThePanelWasReady_WhenTheDockAsksTooLate()
+    {
+        _handle.Setup<string?>("popOut", _ => true).SetResult("lapsed");
+        var cut = RenderPoppable(Hike);
+        var dock = cut.Tb().Dock();
+
+        await dock.PopOutAsync("Notes");
+
+        Assert.Empty(dock.PoppedOut);
+        Assert.Empty(dock.Floating);
+        // The browser refused nothing, so the user isn't told it did.
+        Assert.Equal(["The new window for Notes closed before the panel was ready. Try again."],
+            Services.GetRequiredService<FakeAnnouncer>().Polite);
+    }
+
+    [Fact]
+    public async Task PopOut_ShouldPutThePanelBackSayNothingAndLeaveTheFocus_WhenNoClickOpenedAWindowForIt()
+    {
+        _handle.Setup<string?>("popOut", _ => true).SetResult("unasked");
+        var cut = RenderPoppable(Hike);
+        var dock = cut.Tb().Dock();
+
+        await dock.PopOutAsync("Notes");
+
+        Assert.Empty(dock.PoppedOut);
+        Assert.Empty(dock.Floating);
+        Assert.Equal(["Trails", "Map", "Notes", "Weather"], dock.Panels);
+        Assert.Empty(Services.GetRequiredService<FakeAnnouncer>().Polite);
+        Assert.DoesNotContain(JSInterop.Invocations, call => call.Identifier.EndsWith("focus"));
+    }
+
+    [Fact]
+    public void PopOut_ShouldGiveEachGroupsItemItsShowingPanelsId_WhenAllowPopOutIsOn()
+    {
+        var cut = RenderPoppable(Hike);
+
+        // The script keeps the window a click opens for that panel, so two quick clicks don't share one.
+        Assert.All(cut.FindAll("[data-part=group]"), group =>
+        {
+            var showing = group.QuerySelector("[role=tab][aria-selected=true]")!.GetAttribute("data-panel");
+            Assert.Equal(cut.Find($"[data-part=panel][data-panel={showing}]").Id,
+                group.QuerySelector("[data-part=group-menu] [data-move=pop-out]")!.GetAttribute("data-pop"));
+        });
+    }
+
+    [Fact]
     public async Task PopOut_ShouldPutThePanelBackAndSayNothing_WhenTheWindowClosesBeforeThePanelGetsThere()
     {
         _handle.Setup<string?>("popOut", _ => true).SetResult("closed");

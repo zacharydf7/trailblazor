@@ -3394,8 +3394,8 @@ public static class ExampleCatalog
                     + "said when a panel is put away, with `{0}` for its title.",
                 "A panel in a browser window of its own is a `region` named by its title, which is the window's "
                     + "title too, and the button that brings it back is named \"Return to the dock\". "
-                    + "`Labels.PopOut` and `Return` replace the menu item and the button, and `PoppedOut`, `Returned` "
-                    + "and `PopOutBlocked` what is said, each with `{0}` for the panel's title.",
+                    + "`Labels.PopOut` and `Return` replace the menu item and the button, and `PoppedOut`, `Returned`, "
+                    + "`PopOutBlocked` and `PopOutLapsed` what is said, each with `{0}` for the panel's title.",
                 "The buttons for the panels that are in windows of their own sit in a `group` named \"Panels in "
                     + "their own windows\". Each is named by its panel's title and described as \"In its own "
                     + "browser window\", and its menu has Show its window and Return to the dock. `Labels.Away`, "
@@ -3427,7 +3427,10 @@ public static class ExampleCatalog
                     + "hear whether its panel is out.",
                 "When a panel opens in a browser window of its own, screen readers hear \"Notes opened in a new "
                     + "window.\" once the panel is there, and \"Notes is back in the dock.\" when it returns. When the "
-                    + "browser refuses the window, they hear \"The browser blocked the new window for Notes.\"",
+                    + "browser refuses the window, they hear \"The browser blocked the new window for Notes.\" When "
+                    + "the window opened and then closed because the page took more than ten seconds to answer the "
+                    + "click, as on a slow connection, they hear \"The new window for Notes closed before the panel was ready. "
+                    + "Try again.\"",
                 "A screen reader follows the window that has the focus, so whatever is announced while a panel is in "
                     + "a window of its own is said in that window as well as on the page. While a modal dialog is "
                     + "open, messages go to its own live regions and are said there only.",
@@ -3907,7 +3910,9 @@ public static class ExampleCatalog
                 "`PopOutAsync(\"Notes\")` chooses Open in new window and gives the panel. In Playwright it waits "
                     + "until the panel is in its new window (`data-popped` alone doesn't say it has arrived), and its "
                     + "`Page` is that window's page, where the panel's content is found and its components' helpers "
-                    + "work as on any page; closing that page does what closing the window does.",
+                    + "work as on any page; closing that page does what closing the window does. In Playwright, to go "
+                    + "on with the helpers inside the panel, call `Tb()` on what it gives, as "
+                    + "`(await dock.PopOutAsync(\"Notes\")).Tb().Button(\"Save\")`.",
                 "bUnit has no windows, so there `PopOutAsync` leaves the panel in the markup, drawn as it is in its "
                     + "window, and `Panel` and `PanelElement` still find it.",
                 "`PoppedOutAsync()` in Playwright, or `PoppedOut` in bUnit, lists the panels in windows of their "

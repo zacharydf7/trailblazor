@@ -323,8 +323,9 @@
     private int _turns;
     // The panels that stopped showing in a window of their own in the last render, which go back where they were.
     private readonly HashSet<string> _goingHome = [];
-    // The panel to move into the browser window its menu item opened, once it is rendered for one.
-    private string? _popOutAfterRender;
+    // The panels to move into the browser windows their menu items opened, once they are rendered for them. Two
+    // items can be chosen before the dock renders, and each panel is asked for once.
+    private readonly HashSet<string> _popOutAfterRender = [];
     // The popped panels whose windows have them, which a window still waiting for its style sheets doesn't yet.
     private readonly HashSet<string> _landed = [];
     // The popped panels the script was last told of.
@@ -1090,7 +1091,8 @@
         </TbSubMenu>
         @if (CanPopOut(panel))
         {
-            <TbMenuItem data-move="pop-out" OnClick="() => PopOutAsync(panel)">
+            @* The script opens the window in the click, and keeps it for this panel until the dock asks for it. *@
+            <TbMenuItem data-move="pop-out" data-pop="@PanelId(panel)" OnClick="() => PopOutAsync(panel)">
                 @(Labels.PopOut ?? Localizer[TbStrings.DockPopOut])
             </TbMenuItem>
         }
@@ -1193,7 +1195,7 @@
             }
 
             _popped.Add(panel);
-            _popOutAfterRender = panel;
+            _popOutAfterRender.Add(panel);
             await ChangeAsync(floated, PopOutAction);
         }
         finally
@@ -1217,10 +1219,10 @@
             return;
         }
 
-        if (_popOutAfterRender is { } panel)
+        foreach (var panel in _popOutAfterRender.ToList())
         {
-            _popOutAfterRender = null;
-            if (_popped.Contains(panel) && Panel(panel) is { } opened)
+            // A render that comes while the script answers for one panel takes the next, so each is asked for once.
+            if (_popOutAfterRender.Remove(panel) && _popped.Contains(panel) && Panel(panel) is { } opened)
             {
                 // The script answers with what went wrong, and with nothing when the panel is in its window. The
                 // answer can take a moment: the panel waits for its window's style sheets.
@@ -1237,12 +1239,18 @@
                 }
                 else if (_popped.Remove(panel))
                 {
-                    // The browser refused the window, or the window closed before the panel got there, so the panel
-                    // goes back where it was. Only a refusal is said: closing was the user's doing.
-                    _focusAfterRender = panel;
+                    // The browser refused the window, the window closed before the panel got there, it closed because
+                    // the dock asked too late, or no click opened one for this panel, so the panel goes back where it
+                    // was. A refusal and a late ask are said; a window the user closed isn't, nor one never opened,
+                    // which also leaves the focus where it is.
+                    _focusAfterRender = wrong == "unasked" ? null : panel;
                     if (wrong == "blocked")
                     {
                         Announcer.Polite(Format(Labels.PopOutBlocked, TbStrings.DockPopOutBlocked, opened.Title));
+                    }
+                    else if (wrong == "lapsed")
+                    {
+                        Announcer.Polite(Format(Labels.PopOutLapsed, TbStrings.DockPopOutLapsed, opened.Title));
                     }
 
                     await GoHomeAsync(panel);

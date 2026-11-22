@@ -828,6 +828,10 @@ public static class TbStrings
     /// dock's panel; {0} is its title.</summary>
     public const string DockPopOutBlocked = "Dock.PopOutBlocked";
 
+    /// <summary>"The new window for {0} closed before the panel was ready. Try again.": said when a dock panel's
+    /// window closed because the dock didn't ask for it within ten seconds; {0} is the panel's title.</summary>
+    public const string DockPopOutLapsed = "Dock.PopOutLapsed";
+
     /// <summary>"Panels in their own windows": names the row of buttons a dock keeps for the panels that show in
     /// browser windows of their own.</summary>
     public const string DockAway = "Dock.Away";
@@ -1894,6 +1898,7 @@ public static class TbStrings
         [DockPoppedOut] = "{0} opened in a new window.",
         [DockReturned] = "{0} is back in the dock.",
         [DockPopOutBlocked] = "The browser blocked the new window for {0}.",
+        [DockPopOutLapsed] = "The new window for {0} closed before the panel was ready. Try again.",
         [DockAway] = "Panels in their own windows",
         [DockAwayHint] = "In its own browser window",
         [DockShowWindow] = "Show its window",

@@ -679,6 +679,79 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Windows_ShouldEachTakeTheirOwnPanel_WhenTwoPanelsAreOpenedBeforeTheDockAnswers(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        var dock = page.Tb().Dock("Workbench");
+
+        // Both groups' items are clicked in one task, so the second click comes before the dock has asked for
+        // the first one's window.
+        var windows = new List<IPage>();
+        page.Popup += (_, popup) => windows.Add(popup);
+        await Workbench(page).EvaluateAsync("""
+            dock => {
+                for (const menu of dock.querySelectorAll(':scope > [data-part=group] [data-part=group-menu]')) {
+                    menu.querySelector('[data-move=pop-out]').click();
+                }
+            }
+            """);
+
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Panels in their own windows" })
+            .GetByRole(AriaRole.Button)).ToHaveCountAsync(2);
+        Assert.Equal(["Gear", "Notes"], (await dock.PoppedOutAsync()).Order());
+        Assert.Equal(2, windows.Count(window => !window.IsClosed));
+        await Expect(page.Locator("[data-part=announcer]")).Not.ToContainTextAsync("blocked");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task PopOut_ShouldSayTheWindowClosedBeforeThePanelWasReady_WhenTheDockAsksAfterTenSeconds(
+        string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        // The ten seconds are up at once, so the window has closed by the time the dock asks for it.
+        await page.EvaluateAsync("""
+            () => {
+                const wait = window.setTimeout;
+                window.setTimeout = (run, time, ...rest) => time === 10000 ? (run(), 0) : wait(run, time, ...rest);
+            }
+            """);
+
+        await page.Tb().Dock("Workbench").ChooseFromTabMenuAsync("Notes", "Open in new window");
+
+        await page.Tb().Announcements.ExpectAnnouncedAsync(
+            "The new window for Notes closed before the panel was ready. Try again.");
+        await Expect(page.Locator("[data-part=announcer]")).Not.ToContainTextAsync("blocked");
+        Assert.Empty(await page.Tb().Dock("Workbench").FloatingAsync());
+        Assert.Equal(["Notes", "Map", "Gear"], await page.Tb().Dock("Workbench").PanelsAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldTakeItsPanelOnce_WhenThePanelsItemIsClickedTwiceBeforeTheDockAnswers(
+        string browser)
+    {
+        var page = await OpenDockAsync(browser);
+
+        // Both clicks come before the dock has asked for a window, and the second one's window replaces the first's.
+        // The dock hears the second click after the item has become the map's, and has no window to give the map.
+        await Workbench(page).EvaluateAsync("""
+            dock => {
+                const item = dock.querySelector(':scope > [data-part=group] [data-part=group-menu] [data-move=pop-out]');
+                item.click();
+                item.click();
+            }
+            """);
+
+        // The panel has a button on the page only once its window has it.
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Panels in their own windows" })
+            .GetByRole(AriaRole.Button)).ToHaveCountAsync(1);
+        Assert.Equal(["Notes"], await page.Tb().Dock("Workbench").PoppedOutAsync());
+        // The map stays docked, and nothing is said of a window the browser never refused.
+        await Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Map", Exact = true })).ToBeVisibleAsync();
+        await Expect(page.Locator("[data-part=announcer]")).Not.ToContainTextAsync("blocked");
+        Assert.Empty(await page.Tb().Dock("Workbench").FloatingAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Window_ShouldCloseAfterTenSecondsUnlessItHoldsAPanel_WhenTheDockNeverFillsIt(string browser)
     {
         var page = await OpenDockAsync(browser);
@@ -686,18 +759,22 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
 
         // A click the dock's script takes for the menu's item, with no dock behind it to ask for the window.
         const string Click = """
-            dock => {
+            (dock, panel) => {
                 const item = dock.appendChild(document.createElement('button'));
                 item.dataset.move = 'pop-out';
+                item.dataset.pop = panel;
                 item.click();
                 item.remove();
             }
             """;
-        var first = await page.RunAndWaitForPopupAsync(() => Workbench(page).EvaluateAsync(Click));
-        var window = await page.RunAndWaitForPopupAsync(() => Workbench(page).EvaluateAsync(Click));
+        var first = await page.RunAndWaitForPopupAsync(() => Workbench(page).EvaluateAsync(Click, "one"));
+        var other = await page.RunAndWaitForPopupAsync(() => Workbench(page).EvaluateAsync(Click, "two"));
+        var window = await page.RunAndWaitForPopupAsync(() => Workbench(page).EvaluateAsync(Click, "one"));
 
-        // The second click's window takes the first one's place at once.
+        // A second click for the same panel replaces the window the first click opened, at once, and leaves
+        // another panel's window alone.
         await ClosedAsync(first);
+        Assert.False(other.IsClosed);
         await page.Clock.FastForwardAsync(8000);
         Assert.False(window.IsClosed);
 

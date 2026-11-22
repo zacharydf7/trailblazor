@@ -7415,6 +7415,9 @@ const Trailblazor.TbStrings.DockReturned = "Dock.Returned" -> string!
 Trailblazor.DockLabels.PopOutBlocked.get -> string?
 Trailblazor.DockLabels.PopOutBlocked.init -> void
 const Trailblazor.TbStrings.DockPopOutBlocked = "Dock.PopOutBlocked" -> string!
+const Trailblazor.TbStrings.DockPopOutLapsed = "Dock.PopOutLapsed" -> string!
+Trailblazor.DockLabels.PopOutLapsed.get -> string?
+Trailblazor.DockLabels.PopOutLapsed.init -> void
 Trailblazor.TbDockManager.AllowPopOut.get -> bool
 Trailblazor.TbDockManager.FocusablePanels.get -> Trailblazor.TabPanelFocus
 Trailblazor.TbDockManager.FocusablePanels.set -> void

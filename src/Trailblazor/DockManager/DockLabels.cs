@@ -113,6 +113,11 @@ public sealed record DockLabels
     /// the panel's title. Leave it null for the app's text for <see cref="TbStrings.DockPopOutBlocked"/>.</summary>
     public string? PopOutBlocked { get; init; }
 
+    /// <summary>What screen readers hear when a panel's new window closed before the panel was ready for it, as on a
+    /// slow connection, with <c>{0}</c> for the panel's title. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockPopOutLapsed"/>.</summary>
+    public string? PopOutLapsed { get; init; }
+
     /// <summary>Names the row of buttons the dock keeps for the panels that show in browser windows of their own.
     /// Leave it null for the app's text for <see cref="TbStrings.DockAway"/>.</summary>
     public string? Away { get; init; }
