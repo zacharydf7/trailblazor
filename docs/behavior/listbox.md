@@ -37,6 +37,7 @@ Familiar apps: a native `<select size>`, the list panes in Windows dialogs and m
 
 - [x] A tap chooses through the same click handler, and a swipe scrolls the list without choosing. `listbox.js`
 - [x] Each `Size` steps the options' height with density, and a small option stays at least 24px high. `SizeTests.Size_ShouldStepThePartsHeightWithDensity_WhenSmallMediumOrLarge`
+- [x] The list is as tall as `Rows` whole options, even under an app's box-sizing reset. `ListBoxTests.ListBox_ShouldBeAsTallAsRowsWholeOptions_WhenShownWithOrWithoutABoxSizingReset`
 
 ## Focus
 

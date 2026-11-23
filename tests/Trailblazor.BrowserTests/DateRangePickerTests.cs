@@ -17,6 +17,19 @@ public class DateRangePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator Day(IPage page, string name) =>
         Calendar(page).GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Picker_ShouldShowBothWholeDates_WhenItsFieldIsCentered(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/date-range-picker");
+        await CenterFieldAsync(Box(page, "start"));
+        // Without its helper text, nothing but the boxes gives the field a width.
+        await Box(page, "start").EvaluateAsync(
+            "box => box.closest('.tb-field').querySelector('[data-part=helper]').style.display = 'none'");
+
+        Assert.True(await ShowsWholeValueAsync(Box(page, "start")));
+        Assert.True(await ShowsWholeValueAsync(Box(page, "end")));
+    }
+
     private async Task<IPage> OpenWithCalendarAsync(string browser, string label = "Trip dates",
         BrowserNewContextOptions? options = null)
     {

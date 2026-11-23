@@ -12,6 +12,17 @@ public class BadgeTests(BrowserFixture fixture) : BrowserTest(fixture)
         }
         """;
 
+    // The badge's center, and the point where the circle's edge meets the diagonal to its bottom end corner.
+    private const string CircleCornerScript = """
+        host => {
+            const badge = host.querySelector('[data-part=badge]').getBoundingClientRect();
+            const circle = host.firstElementChild.getBoundingClientRect();
+            const radius = circle.width / 2;
+            return [badge.left + badge.width / 2, badge.top + badge.height / 2,
+                circle.left + radius + radius * Math.SQRT1_2, circle.top + radius + radius * Math.SQRT1_2];
+        }
+        """;
+
     private static ILocator Host(IPage page, string buttonName) => page.Locator(".tb-badge-host")
         .Filter(new() { Has = page.GetByRole(AriaRole.Button, new() { Name = buttonName }) });
 
@@ -50,15 +61,7 @@ public class BadgeTests(BrowserFixture fixture) : BrowserTest(fixture)
             }
             """;
         var start = await Host(page, "Drafts, 1 new").EvaluateAsync<double[]>(StartScript);
-        var avatar = await Host(page, "Messages, sync is on").EvaluateAsync<double[]>("""
-            host => {
-                const badge = host.querySelector('[data-part=badge]').getBoundingClientRect();
-                const circle = host.firstElementChild.getBoundingClientRect();
-                const radius = circle.width / 2;
-                return [badge.left + badge.width / 2, badge.top + badge.height / 2,
-                    circle.left + radius + radius * Math.SQRT1_2, circle.top + radius + radius * Math.SQRT1_2];
-            }
-            """);
+        var avatar = await Host(page, "Messages, sync is on").EvaluateAsync<double[]>(CircleCornerScript);
 
         await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
         var startRtl = await Host(page, "Drafts, 1 new").EvaluateAsync<double[]>(StartScript);
@@ -68,6 +71,48 @@ public class BadgeTests(BrowserFixture fixture) : BrowserTest(fixture)
             Assert.Equal(corner[2], corner[0], tolerance: 1);
             Assert.Equal(corner[3], corner[1], tolerance: 1);
         }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Badge_ShouldStayOnItsAvatar_WhenAColumnStretchesItsHost(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/avatar");
+        var host = page.Locator(".tb-badge-host")
+            .Filter(new() { Has = page.GetByRole(AriaRole.Img, new() { Name = "Lynn Conway" }) });
+
+        var corner = await host.EvaluateAsync<double[]>(CircleCornerScript);
+
+        Assert.Equal(corner[2], corner[0], tolerance: 1);
+        Assert.Equal(corner[3], corner[1], tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Badge_ShouldLetAFullWidthButtonFillTheColumn_WhenItSitsOnOne(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/badge");
+        var host = Host(page, "Review changes");
+        // A stretching column, as a TbStack is, around a button made full width.
+        await host.EvaluateAsync("""
+            host => {
+                Object.assign(host.parentElement.style,
+                    { display: 'flex', flexDirection: 'column', alignItems: 'stretch' });
+                host.querySelector('button').classList.add('tb-button--full-width');
+            }
+            """);
+
+        // The button's width and the column's width inside its padding.
+        var widths = await host.EvaluateAsync<double[]>("""
+            host => {
+                const style = getComputedStyle(host.parentElement);
+                return [host.querySelector('button').getBoundingClientRect().width,
+                    host.parentElement.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)];
+            }
+            """);
+        var corner = await host.EvaluateAsync<double[]>(CornerScript);
+
+        Assert.Equal(widths[1], widths[0], tolerance: 1);
+        Assert.Equal(corner[2], corner[0], tolerance: 1);
+        Assert.Equal(corner[3], corner[1], tolerance: 1);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

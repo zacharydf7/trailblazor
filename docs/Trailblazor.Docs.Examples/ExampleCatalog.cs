@@ -6092,8 +6092,9 @@ public static class ExampleCatalog
                     + "The Preview button shows the markdown as it will look, in place of the text, and hides it "
                     + "again.", typeof(MarkdownEditorExample)),
                 new("beside", "Preview beside the text", "With `Preview=\"MarkdownPreview.Beside\"`, the preview "
-                    + "shows beside the text as it's typed, and under it on a narrow screen. `MarkdownPreview.None` "
-                    + "leaves the preview out.", typeof(MarkdownEditorBesideExample)),
+                    + "shows beside the text as it's typed when the editor is at least 40rem wide, and under it when "
+                    + "it's narrower, as on a phone. Where nothing stretches the editor, give it a width, as this one "
+                    + "has. `MarkdownPreview.None` leaves the preview out.", typeof(MarkdownEditorBesideExample)),
             ],
             Api =
             [

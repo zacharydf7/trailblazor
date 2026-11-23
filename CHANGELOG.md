@@ -85,6 +85,13 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Markup and behavior
 
+#### 2026-11-23
+
+- `TbMarkdownEditor` no longer shrinks until its toolbar buttons stack one above another when nothing gives its field a width, as in a centered column. It is as wide as its toolbar on one row there, and narrower, with the buttons wrapping, where there is less room; showing the preview doesn't change its width. The whole editor is no longer a size container: only the panes of an editor with `Preview="MarkdownPreview.Beside"` are, and the preview goes beside the text once they are 40rem wide, so give such an editor a width where nothing stretches it. A field that stretches or has a width of its own is unchanged.
+- The date box of `TbDateTimePicker` and the two boxes of `TbDateRangePicker` now start from a text box's usual width instead of zero. When nothing else gives the field a width, they no longer shrink until the date is hidden.
+- A `TbBadge` around content, such as a button or an avatar, is now only as wide as that content. Before, in a column that stretches its items, such as a `TbStack`, it stretched across the column and its badge sat at the far end, away from its content's corner. Around a `FullWidth` button it still fills the column.
+- `TbListBox`, `TbMultiListBox` and the lists of `TbTransferList` are now tall enough for `Rows` whole options. Before, their height counted each option's minimum height but not its padding, so `Rows="3"` showed about two and a half options. An option is now `box-sizing: border-box` with its padding in its `min-height`, so its height doesn't change with an app's box-sizing reset.
+
 #### 2026-11-22
 
 - A dialog opened through `IDialogService` is now canceled when the app goes to another page in place, by a link, from code or with the browser's Back button. Before, it stayed open over the new page, since its host is in the layout. It closes as from code, so its caller gets a canceled result and nothing asks whether it may be dismissed. A change of only the query string or the fragment leaves it open. To keep a dialog across pages, set `CloseOnNavigation = false` in its `DialogOptions`, or, for every dialog, `Dialogs.CloseOnNavigation = false` in `AddTrailblazor`. A `TbDialog` in markup is not affected.

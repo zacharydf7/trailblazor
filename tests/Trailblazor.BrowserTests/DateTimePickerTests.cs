@@ -11,6 +11,17 @@ public class DateTimePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     private static ILocator OpenButton(IPage page) => page.GetByRole(AriaRole.Button, new() { Name = "Choose a date" });
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Picker_ShouldShowTheWholeDate_WhenItsFieldIsCentered(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/date-time-picker");
+        var date = page.Locator(".tb-field").Filter(new() { Has = page.GetByText("Gates open", new() { Exact = true }) })
+            .Locator("[data-part=date-input]");
+        await CenterFieldAsync(date);
+
+        Assert.True(await ShowsWholeValueAsync(date));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Picker_ShouldPickADayWithTheKeysAndKeepTheTime_WhenTheCalendarButtonIsPressed(string browser)
     {
         var page = await OpenAsync(browser, "/date-time-picker");

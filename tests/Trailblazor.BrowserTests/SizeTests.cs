@@ -8,7 +8,7 @@ public class SizeTests(BrowserFixture fixture) : BrowserTest(fixture)
         string[] Compact)[] Parts =
     [
         ("tabs", AriaRole.Tablist, "tabs", "[role=tab]", ["32px", "40px", "48px"], ["26px", "32px", "40px"]),
-        ("listbox", AriaRole.Listbox, "start time", "[role=option]", ["28px", "32px", "40px"], ["24px", "28px", "36px"]),
+        ("listbox", AriaRole.Listbox, "start time", "[role=option]", ["36px", "40px", "48px"], ["32px", "36px", "44px"]),
         ("toolbar", AriaRole.Toolbar, "map tools", "button", ["32px", "40px", "48px"], ["26px", "32px", "40px"]),
     ];
 

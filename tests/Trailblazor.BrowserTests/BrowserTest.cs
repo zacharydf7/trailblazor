@@ -313,6 +313,31 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
         }
         """);
 
+    // Centers the field holding this element, as the docs site's example frame does, so it takes its content's width.
+    protected static Task CenterFieldAsync(ILocator inField) =>
+        StyleFieldsParentAsync(inField, new { display = "grid", justifyItems = "center" });
+
+    // Sets these styles, named as in JavaScript, on the parent of the field holding this element.
+    protected static Task StyleFieldsParentAsync(ILocator inField, object styles) => inField.EvaluateAsync(
+        "(element, styles) => Object.assign(element.closest('.tb-field').parentElement.style, styles)", styles);
+
+    // Whether a text box is wide enough to show its whole value.
+    protected static Task<bool> ShowsWholeValueAsync(ILocator input) => input.EvaluateAsync<bool>("""
+        input => {
+            const style = getComputedStyle(input);
+            const probe = document.body.appendChild(document.createElement('span'));
+            for (const name of ['fontFamily', 'fontSize', 'fontWeight', 'letterSpacing', 'fontVariantNumeric']) {
+                probe.style[name] = style[name];
+            }
+            probe.style.whiteSpace = 'pre';
+            probe.textContent = input.value;
+            const needed = probe.getBoundingClientRect().width;
+            probe.remove();
+            const shown = input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+            return input.value.length > 0 && shown >= needed;
+        }
+        """);
+
     public async ValueTask DisposeAsync()
     {
         foreach (var context in _contexts)

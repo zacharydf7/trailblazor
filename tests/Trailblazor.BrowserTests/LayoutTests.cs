@@ -194,6 +194,33 @@ public class LayoutTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(column.Width, box.Width, tolerance: 1);
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FieldRowErrorsExample_ShouldKeepEachFieldClearOfTheNext_WhenShownOnAPhone(string browser)
+    {
+        var page = await OpenAtWidthAsync(browser, "/examples/field-row", width: 390);
+        var fields = page.Locator(".tb-field-row").Filter(new() { Has = page.GetByLabel("ZIP code") })
+            .Locator(".tb-field");
+
+        // Where each field's label text, box and text box start and end, as drawn, even where they overflow a column
+        // that is too narrow.
+        var spans = await fields.EvaluateAllAsync<double[][]>("""
+            fields => fields.map(field => {
+                const label = document.createRange();
+                label.selectNodeContents(field.querySelector('[data-part=label]'));
+                const parts = [label, ...field.querySelectorAll('[data-part=control], [data-part=control] input')]
+                    .map(part => part.getBoundingClientRect());
+                return [Math.min(...parts.map(part => part.left)), Math.max(...parts.map(part => part.right))];
+            })
+            """);
+
+        Assert.Equal(3, spans.Length);
+        for (var i = 1; i < spans.Length; i++)
+        {
+            Assert.True(spans[i - 1][1] <= spans[i][0],
+                $"Field {i} ends {spans[i - 1][1] - spans[i][0]}px into the next.");
+        }
+    }
+
     private Task<IPage> OpenAtWidthAsync(string browser, string path, int width) =>
         OpenAsync(browser, path, new() { ViewportSize = new() { Width = width, Height = 900 } });
 

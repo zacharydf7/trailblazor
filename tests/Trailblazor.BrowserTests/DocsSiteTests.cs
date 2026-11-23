@@ -423,6 +423,20 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(page.Locator("#blazor-error-ui")).ToBeHiddenAsync();
     }
 
+    public static TheoryData<string, string> IconButtonAddresses => new(
+        from browser in AllBrowsers.Names
+        from path in new[] { "components/icon-button", "preview/icon-button/mixed" }
+        select (browser, path));
+
+    [Theory, MemberData(nameof(IconButtonAddresses))]
+    public async Task IconButtonPage_ShouldLoadTheIconPack_WhenOpenedDirectly(string browser, string path)
+    {
+        var page = await OpenDocsAsync(browser, path);
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Bold" })).ToBeVisibleAsync();
+        await Expect(page.Locator("#blazor-error-ui")).ToBeHiddenAsync();
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Preview_ShouldShowTheExampleWithoutTheSite_WhenASectionIsOpenedOnItsOwn(string browser)
     {

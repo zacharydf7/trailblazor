@@ -1,8 +1,7 @@
-<TbFieldRow Columns="minmax(0, 1fr) minmax(0, 6rem) minmax(0, 8rem) auto">
+<TbFieldRow Columns="minmax(0, 1fr) minmax(0, 5rem) minmax(0, 7rem)">
     <TbTextField Label="City" @bind-Value="_city" />
     <TbTextField Label="State" @bind-Value="_state" HelperText="Two letters" />
     <TbTextField Label="ZIP code" @bind-Value="_zipCode" Validation="CheckZipCode" />
-    <TbButton Variant="Variant.Outlined">Find on map</TbButton>
 </TbFieldRow>
 
 @code {

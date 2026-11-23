@@ -19,6 +19,32 @@ public class ListBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.True(longOption!.Height > shortOption!.Height, $"The option is {longOption.Height}px tall.");
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ListBox_ShouldBeAsTallAsRowsWholeOptions_WhenShownWithOrWithoutABoxSizingReset(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/listbox");
+        // Trail has six options in four rows; each size's list has three options in three rows.
+        var lists = new[] { ("Trail", 4), ("Small start time", 3), ("Medium start time", 3), ("Large start time", 3) };
+
+        foreach (var reset in new[] { false, true })
+        {
+            if (reset)
+            {
+                await page.AddStyleTagAsync(new() { Content = "*, *::before, *::after { box-sizing: border-box; }" });
+            }
+
+            foreach (var (name, rows) in lists)
+            {
+                // The list's height, and the height of its first option times the rows.
+                var heights = await ListBox(page, name).EvaluateAsync<double[]>(
+                    "(list, rows) => [list.clientHeight, rows * list.querySelector('[role=option]').offsetHeight]",
+                    rows);
+                Assert.True(Math.Abs(heights[0] - heights[1]) <= 1,
+                    $"{name} is {heights[0]}px tall for {heights[1]}px of rows, with a reset: {reset}.");
+            }
+        }
+    }
+
     private async Task<IPage> OpenListBoxAsync(string browser, string name)
     {
         var page = await OpenAsync(browser, "/examples/listbox");

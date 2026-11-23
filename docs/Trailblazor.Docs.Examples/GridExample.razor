@@ -5,10 +5,10 @@
     <TbGridItem SpanMd="6">
         <TbSurface Outlined class="tb-p-3"><TbText>Full width, half from medium up</TbText></TbSurface>
     </TbGridItem>
-    @for (var i = 1; i <= 4; i++)
+    @foreach (var quarter in Enumerable.Range(1, 4))
     {
         <TbGridItem Span="6" SpanLg="3">
-            <TbSurface Outlined class="tb-p-3"><TbText>Quarter @i</TbText></TbSurface>
+            <TbSurface Outlined class="tb-p-3"><TbText>Quarter @quarter</TbText></TbSurface>
         </TbGridItem>
     }
 </TbGrid>

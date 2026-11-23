@@ -1044,8 +1044,15 @@
         vertical-align: middle;
     }
 
+    /* The badge sits on the host's corner, so the host keeps its content's width even where a column stretches it,
+       unless the content is a button meant to fill the column. */
     .tb-badge-host--overlap {
         position: relative;
+        inline-size: fit-content;
+    }
+
+    .tb-badge-host--overlap:has(> .tb-button--full-width) {
+        inline-size: auto;
     }
 
     .tb-badge {
@@ -4171,19 +4178,25 @@
         resize: vertical;
     }
 
+    /* The preview's text gives it no width, so showing it in place of the text doesn't widen the editor. */
     .tb-markdown-editor__preview {
         box-sizing: border-box;
+        contain: inline-size;
         min-block-size: 6lh;
         padding: var(--tb-field-padding-block) var(--tb-control-padding-inline);
         line-height: var(--tb-line-height-normal);
         overflow-wrap: anywhere;
     }
 
-    /* Beside the text from a medium width up, and under it below. */
-    @container (min-width: 40rem) {
-        .tb-markdown-editor--beside .tb-markdown-editor__panes {
-            grid-template-columns: 1fr 1fr;
-        }
+    /* The preview sits beside the text from a medium width up, and under it below. Only the panes are a size
+       container, which gives them no width of their own, so the editor still takes its width from its toolbar. */
+    .tb-markdown-editor--beside .tb-markdown-editor__panes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        container-type: inline-size;
+    }
+
+    .tb-markdown-editor--beside .tb-markdown-editor__panes > * {
+        grid-column: 1 / -1;
     }
 
     .tb-markdown-editor--beside .tb-markdown-editor__preview {
@@ -4191,17 +4204,19 @@
     }
 
     @container (min-width: 40rem) {
+        .tb-markdown-editor--beside .tb-markdown-editor__panes > * {
+            grid-column: auto;
+        }
+
         .tb-markdown-editor--beside .tb-markdown-editor__preview {
             border-block-start: 0;
             border-inline-start: 1px solid var(--tb-border-subtle);
         }
     }
 
-    /* As an inline-size container the editor gets no width from its content, so it grows to fill the field's box. */
     .tb-markdown-editor {
         flex: 1 1 auto;
         min-width: 0;
-        container-type: inline-size;
     }
 
     .tb-rich-text-editor__content[data-empty]::before {
@@ -7095,8 +7110,9 @@
     /* Each size offsets the option height from the density's item height; small never drops below 24px. */
     .tb-listbox {
         --tb-listbox-item-height: var(--tb-item-height);
+        --tb-listbox-row-height: calc(var(--tb-listbox-item-height) + 2 * var(--tb-space-1));
         box-sizing: border-box;
-        max-block-size: calc(var(--tb-listbox-rows) * var(--tb-listbox-item-height));
+        max-block-size: calc(var(--tb-listbox-rows) * var(--tb-listbox-row-height));
         padding-block: 0;
         overflow-y: auto;
         font-size: var(--tb-font-size-sm);
@@ -7106,8 +7122,10 @@
         max-block-size: none;
     }
 
+    /* A row's height includes the option's padding, so the list fits Rows whole options under any box-sizing reset. */
     .tb-listbox .tb-select__option {
-        min-height: var(--tb-listbox-item-height);
+        box-sizing: border-box;
+        min-height: var(--tb-listbox-row-height);
         font-size: inherit;
     }
 
@@ -10047,20 +10065,12 @@
         min-width: 0;
     }
 
-    .tb-date-range__input {
-        width: 0;
-    }
-
     .tb-date-time__boxes {
         display: flex;
         flex: 1 1 auto;
         align-items: center;
         gap: var(--tb-space-1);
         min-width: 0;
-    }
-
-    .tb-date-time__date {
-        width: 0;
     }
 
     .tb-date-time__time {

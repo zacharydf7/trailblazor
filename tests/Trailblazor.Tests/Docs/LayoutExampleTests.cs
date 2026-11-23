@@ -51,6 +51,16 @@ public class LayoutExampleTests : DocsTest
     }
 
     [Fact]
+    public void GridExample_ShouldNumberEachQuarter_WhenRendered()
+    {
+        var cut = Render<GridExample>();
+
+        Assert.Equal(["Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4"], cut.FindAll(".tb-grid-item")
+            .Select(item => item.TextContent.Trim())
+            .Where(text => text.StartsWith("Quarter", StringComparison.Ordinal)));
+    }
+
+    [Fact]
     public void GridNestedExample_ShouldShowTwoColumnsInTheInnerGrid_WhenRendered()
     {
         var cut = Render<GridNestedExample>();

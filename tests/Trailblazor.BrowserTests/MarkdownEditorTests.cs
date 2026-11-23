@@ -170,6 +170,70 @@ public class MarkdownEditorTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Editor_ShouldKeepItsToolbarOnOneRow_WhenItsFieldIsCentered(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/markdown-editor");
+
+        // The editor with the preview behind a button, then the one with the preview beside the text.
+        foreach (var label in new[] { "Trail notes", "Trail description" })
+        {
+            var input = page.Tb().MarkdownEditor(label).Input;
+            await CenterFieldAsync(input);
+            // The tops of the first and last toolbar buttons.
+            var tops = await input.Locator("xpath=ancestor::*[@data-part='editor'][1]").EvaluateAsync<double[]>("""
+                editor => {
+                    const buttons = [...editor.querySelectorAll('[data-part=toolbar] button')]
+                        .filter(button => button.offsetWidth > 0);
+                    return [buttons[0], buttons.at(-1)].map(button => button.getBoundingClientRect().top);
+                }
+                """);
+
+            Assert.Equal(tops[0], tops[1], 1.0);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Editor_ShouldFitItsParent_WhenACenteredColumnOrARowIsNarrowerThanItAsksFor(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/markdown-editor");
+        var input = page.Tb().MarkdownEditor("Trail notes").Input;
+
+        foreach (var layout in new object[]
+        {
+            new { display = "grid", justifyItems = "center", inlineSize = "20rem" },
+            new { display = "flex", flexDirection = "row", inlineSize = "20rem" },
+        })
+        {
+            await StyleFieldsParentAsync(input, layout);
+            // The right edges of the field and of its parent.
+            var edges = await input.EvaluateAsync<double[]>("""
+                input => {
+                    const field = input.closest('.tb-field');
+                    return [field.getBoundingClientRect().right, field.parentElement.getBoundingClientRect().right];
+                }
+                """);
+
+            Assert.True(edges[0] <= edges[1] + 1, $"The field ends {edges[0] - edges[1]}px past its parent.");
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Preview_ShouldKeepTheEditorsWidth_WhenShownInACenteredField(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/markdown-editor");
+        var editor = page.Tb().MarkdownEditor("Trail notes");
+        await CenterFieldAsync(editor.Input);
+        var paragraph = string.Join(' ', Enumerable.Repeat("A long day on the ridge with water every hour.", 8));
+        await editor.EnterAsync(paragraph);
+        var field = editor.Input.Locator("xpath=ancestor::*[contains(@class, 'tb-markdown-editor-field')][1]");
+        var width = (await field.BoundingBoxAsync())!.Width;
+
+        await editor.ShowPreviewAsync();
+
+        Assert.Equal(width, (await field.BoundingBoxAsync())!.Width, 1.0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldPressAToolbarButtonAndReadThePreview_WhenFoundByLabel(string browser)
     {
         var page = await OpenAsync(browser, "/examples/markdown-editor");
