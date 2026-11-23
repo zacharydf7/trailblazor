@@ -2815,6 +2815,19 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public async Task PopOut_ShouldLeaveThePanelAway_WhenTheScriptSaysALaterAskTookOver()
+    {
+        _handle.Setup<string?>("popOut", _ => true).SetResult("replaced");
+        var cut = RenderPoppable(Hike);
+        var dock = cut.Tb().Dock();
+
+        await dock.PopOutAsync("Notes");
+
+        Assert.Equal(["Notes"], dock.PoppedOut);
+        Assert.Empty(Services.GetRequiredService<FakeAnnouncer>().Polite);
+    }
+
+    [Fact]
     public async Task Return_ShouldTellTheScriptThePanelIsBack_WhenItsWindowIsStillLoading()
     {
         // The script's answer stays out, as it does while the panel's window waits for its style sheets.

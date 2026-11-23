@@ -1293,7 +1293,8 @@
                 var id = PanelId(panel);
                 _poppedInScript = [.. _poppedInScript.Union([id]).Order(StringComparer.Ordinal)];
                 // The script answers with what went wrong, and with nothing when the panel is in its window. The
-                // answer can take a moment: the panel waits for its window's style sheets.
+                // answer can take a moment: the panel waits for its window's style sheets. When the panel was asked
+                // for again meanwhile, that ask answers for it, and this one's answer changes nothing.
                 var wrong = await _handle.InvokeAsync<string?>("popOut", id);
                 // The dock can have gone while the window loaded, as when the app goes to another page.
                 if (_disposed)
@@ -1311,7 +1312,7 @@
                         StateHasChanged();
                     }
                 }
-                else if (_popped.Remove(panel))
+                else if (wrong != "replaced" && _popped.Remove(panel))
                 {
                     // The browser refused the window, the window closed before the panel got there, it closed because
                     // the dock asked too late, or no click opened one for this panel, so the panel goes back where it

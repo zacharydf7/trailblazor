@@ -1097,6 +1097,25 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldStayInItsSecondWindow_WhenItIsOpenedAgainWhileItsFirstWindowIsStillWaitedFor(
+        string browser)
+    {
+        var (page, first) = await StartOpeningUnboundToolsAsync(browser);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Return tools" }).ClickAsync();
+        await ClosedAsync(first);
+
+        var second = await StartOpeningToolsAsync(page);
+        var tools = second.GetByRole(AriaRole.Region, new() { Name = "Tools" });
+        await Expect(tools).ToBeVisibleAsync();
+        // Past the three seconds for which the first window's sheets, which never load in a closed window, are
+        // waited for.
+        await page.WaitForTimeoutAsync(3500);
+
+        await Expect(tools).ToBeVisibleAsync();
+        Assert.Equal(["Tools"], await page.Tb().Dock("Bench").PoppedOutAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Window_ShouldClose_WhenThePanelsElementLeavesThePageWhileItsWindowLoads(string browser)
     {
         var (page, window) = await StartOpeningUnboundToolsAsync(browser);

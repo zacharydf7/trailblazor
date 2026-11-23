@@ -1299,8 +1299,9 @@ export function attachDock(root, reporter) {
         },
         // Moves the panel with this element id into the window its menu item opened. The answer is what went wrong,
         // and null when nothing did: a browser can refuse to open the window (`blocked`), the window can close
-        // because the dock asked for it too late (`lapsed`), it can close before the panel gets there (`closed`), and
-        // no click may have opened one for this panel (`unasked`).
+        // because the dock asked for it too late (`lapsed`), it can close before the panel gets there (`closed`), no
+        // click may have opened one for this panel (`unasked`), and a later ask for the panel may have taken over
+        // (`replaced`).
         async popOut(id) {
             // A second click on a group's item reaches the dock after the first has made the item the next panel's,
             // while the click's window was opened for the first panel. Nothing was refused, so nothing is said.
@@ -1332,8 +1333,16 @@ export function attachDock(root, reporter) {
                 return 'blocked';
             }
 
+            // A window still loading for an earlier ask is closed, so it can't take the panel after this one has.
+            arriving.get(id)?.close();
             arriving.set(id, other);
             const unfollow = await showInWindow(other, panel, panel.getAttribute('aria-label'), 'tb-dock-window');
+            // The panel can have been asked for again while this window loaded, as when the app brought it back and
+            // the user opened it once more. That later ask answers for the panel, whose window isn't this one.
+            if (arriving.get(id) !== other) {
+                return 'replaced';
+            }
+
             arriving.delete(id);
             if (!unfollow) {
                 return 'closed';
