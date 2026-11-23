@@ -47,6 +47,7 @@ Familiar apps: sign-in and checkout forms on the web, the settings forms in clou
 - [x] A reset empties a file upload's picker and its rejections. `TbFormTests.Reset_ShouldEmptyAFileUploadsPickerAndItsRejections_WhenCalled`
 - [x] A reset marks the edit context unmodified. `TbFormTests.Reset_ShouldMarkTheFormUnmodified_WhenAFieldHadChanged`
 - [x] On a static page, the browser's own reset puts the inputs back. `FormTests.Form_ShouldLeaveTheResetToTheBrowser_WhenTheFormIsOnAStaticPage`
+- [x] A button among the fields keeps its own width at the form's start, and a `FullWidth` one fills the form. `FormTests.Form_ShouldKeepAButtonsOwnWidth_WhenTheButtonSitsAmongTheFields`
 
 ## Touch
 

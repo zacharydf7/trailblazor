@@ -2301,10 +2301,10 @@ public static class ExampleCatalog
             ],
             WhenNotToUse =
             [
-                "For a control of a different shape, use `IThemeService` directly, as [your own control]"
-                    + "(components/theme-picker#custom) shows.",
+                "To put the choice in a settings form as a labeled field, use `IThemeService` directly, as "
+                    + "[your own control](components/theme-picker#custom) shows.",
             ],
-            Related = ["toggle-group", "switch"],
+            Related = ["toggle-group", "radio-group"],
             Sections =
             [
                 new("modes", "Choosing a mode", "`TbThemePicker` offers Light, Dark and Match the device, and "
@@ -5239,7 +5239,8 @@ public static class ExampleCatalog
                     + "all. Sign up stays on, so a submit can show what to fix; `@bind-IsValid` and `@bind-Errors` "
                     + "drive the line under it, and `InputAttributes` lets the browser fill in the name. The form "
                     + "stacks what it holds in a column with a gap between each item, so fields need no spacing of "
-                    + "their own.",
+                    + "their own. A button among the fields keeps its own width at the start; `FullWidth` makes it "
+                    + "fill the form.",
                     typeof(FormExample)),
                 new("your-own-checks", "Your own checks", "`Validation` checks one value and returns its messages. To "
                     + "compare two fields, as here when the largest group goes below the smallest, an `Error` works "

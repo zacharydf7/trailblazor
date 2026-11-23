@@ -1,12 +1,12 @@
 <TbStepper @bind-ActiveKey="_step" Vertical AriaLabel="Account setup">
     <TbStep Title="Profile" Completed="_profile">
-        <TbStack Gap="2">
+        <TbStack Gap="2" Align="Align.Start">
             <TbText>Add your name and a photo.</TbText>
             <TbButton OnClick="() => (_profile, _step) = (true, Alerts)">Continue</TbButton>
         </TbStack>
     </TbStep>
     <TbStep Title="@Alerts" Optional Completed="_alerts">
-        <TbStack Gap="2">
+        <TbStack Gap="2" Align="Align.Start">
             <TbText>Choose which trail alerts to get.</TbText>
             <TbButton OnClick="() => (_alerts, _step) = (true, Done)">Continue</TbButton>
         </TbStack>

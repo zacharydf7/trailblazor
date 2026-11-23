@@ -1,20 +1,26 @@
 <TbStack Gap="4" Style="max-inline-size: 32rem">
-    <TbCarousel AriaLabel="Faded views" Transition="CarouselTransition.Fade">
-        @foreach (var view in Views)
-        {
-            <TbCarouselSlide AriaLabel="@view">
-                <TbSurface Outlined Style="padding: var(--tb-space-6)"><TbText>@view</TbText></TbSurface>
-            </TbCarouselSlide>
-        }
-    </TbCarousel>
-    <TbCarousel AriaLabel="Instant views" Transition="CarouselTransition.None">
-        @foreach (var view in Views)
-        {
-            <TbCarouselSlide AriaLabel="@view">
-                <TbSurface Outlined Style="padding: var(--tb-space-6)"><TbText>@view</TbText></TbSurface>
-            </TbCarouselSlide>
-        }
-    </TbCarousel>
+    <TbStack Gap="1">
+        <TbText TextStyle="TextStyle.Label">Faded views</TbText>
+        <TbCarousel AriaLabel="Faded views" Transition="CarouselTransition.Fade">
+            @foreach (var view in Views)
+            {
+                <TbCarouselSlide AriaLabel="@view">
+                    <TbSurface Outlined Style="padding: var(--tb-space-6)"><TbText>@view</TbText></TbSurface>
+                </TbCarouselSlide>
+            }
+        </TbCarousel>
+    </TbStack>
+    <TbStack Gap="1">
+        <TbText TextStyle="TextStyle.Label">Instant views</TbText>
+        <TbCarousel AriaLabel="Instant views" Transition="CarouselTransition.None">
+            @foreach (var view in Views)
+            {
+                <TbCarouselSlide AriaLabel="@view">
+                    <TbSurface Outlined Style="padding: var(--tb-space-6)"><TbText>@view</TbText></TbSurface>
+                </TbCarouselSlide>
+            }
+        </TbCarousel>
+    </TbStack>
 </TbStack>
 
 @code {

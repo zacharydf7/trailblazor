@@ -1,7 +1,11 @@
 @implements IDisposable
 @inject IThemeService Theme
 
-<TbSwitch Label="Dark page" Value="Theme.Mode == ThemeMode.Dark" ValueChanged="SetDarkAsync" />
+<TbRadioGroup TValue="ThemeMode" Label="Page colors" Value="Theme.Mode" ValueChanged="Theme.SetModeAsync" Segmented>
+    <TbRadio Value="ThemeMode.Light">Light</TbRadio>
+    <TbRadio Value="ThemeMode.Dark">Dark</TbRadio>
+    <TbRadio Value="ThemeMode.System">Match the device</TbRadio>
+</TbRadioGroup>
 
 @code {
     protected override void OnInitialized() => Theme.Changed += OnThemeChanged;
@@ -14,8 +18,6 @@
             await Theme.LoadAsync();
         }
     }
-
-    private Task SetDarkAsync(bool dark) => Theme.SetModeAsync(dark ? ThemeMode.Dark : ThemeMode.Light);
 
     private void OnThemeChanged() => InvokeAsync(StateHasChanged);
 

@@ -26,6 +26,24 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Form_ShouldKeepAButtonsOwnWidth_WhenTheButtonSitsAmongTheFields(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/form");
+        // Two examples on this page render a form with this name, each with a Join button among the fields.
+        var form = page.GetByRole(AriaRole.Form, new() { Name = "Trail club sign-up" }).First;
+
+        var button = form.GetByRole(AriaRole.Button, new() { Name = "Join" });
+
+        var formBox = (await form.BoundingBoxAsync())!;
+        var join = (await button.BoundingBoxAsync())!;
+        Assert.True(join.Width < formBox.Width / 2, $"The button is {join.Width}px wide in a {formBox.Width}px form.");
+        Assert.Equal(formBox.X, join.X, tolerance: 1);
+        // A FullWidth button still fills the form.
+        await button.EvaluateAsync("button => button.classList.add('tb-button--full-width')");
+        Assert.Equal(formBox.Width, (await button.BoundingBoxAsync())!.Width, tolerance: 1);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldSubmitAndReadTheFieldsMessages_WhenThePageIsInteractive(string browser)
     {
         var page = await OpenAsync(browser, "/examples/form");

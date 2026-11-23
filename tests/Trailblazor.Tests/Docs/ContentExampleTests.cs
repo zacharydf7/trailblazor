@@ -29,11 +29,11 @@ public class ContentExampleTests : DocsTest
     }
 
     [Fact]
-    public void ThemePickerCustomExample_ShouldSetTheMode_WhenTheSwitchIsTurnedOn()
+    public void ThemePickerCustomExample_ShouldSetTheMode_WhenDarkIsChosen()
     {
         var cut = Render<ThemePickerCustomExample>();
 
-        cut.Find("input[role=switch]").Change(true);
+        cut.Find("input[value=Dark]").Change("on");
 
         Assert.Equal(ThemeMode.Dark, Services.GetRequiredService<IThemeService>().Mode);
     }
@@ -89,7 +89,7 @@ public class ContentExampleTests : DocsTest
 
         var cut = Render<ThemePickerCustomExample>();
 
-        cut.WaitForAssertion(() => Assert.True(cut.Find("input[role=switch]").HasAttribute("checked")));
+        cut.WaitForAssertion(() => Assert.True(cut.Find("input[value=Dark]").HasAttribute("checked")));
     }
 
     [Fact]

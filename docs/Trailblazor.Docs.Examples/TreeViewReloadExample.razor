@@ -2,8 +2,10 @@
     <TbTreeView TItem="Folder" TKey="int" AriaLabel="Shared folders" Items="_folders" KeySelector="folder => folder.Id"
                 ChildrenSelector="folder => folder.Children" ItemText="folder => folder.Name"
                 @bind-SelectedKeys="_selected" />
-    <TbButton OnClick="Load">Reload</TbButton>
-    <output aria-label="Loads">Loaded @_loads @(_loads == 1 ? "time" : "times").</output>
+    <TbStack Gap="3" Align="Align.Start">
+        <TbButton OnClick="Load">Reload</TbButton>
+        <output aria-label="Loads">Loaded @_loads @(_loads == 1 ? "time" : "times").</output>
+    </TbStack>
 </TbStack>
 
 @code {

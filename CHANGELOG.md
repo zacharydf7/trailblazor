@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-23
 
+- A `TbButton` placed directly in a `TbForm`, among its fields, now keeps its own width at the form's start. Before, the form's column stretched it across the form. A `FullWidth` button still fills the form, and buttons grouped in a row, such as a `TbStack Row`, are unchanged.
 - `TbMarkdownEditor` no longer shrinks until its toolbar buttons stack one above another when nothing gives its field a width, as in a centered column. It is as wide as its toolbar on one row there, and narrower, with the buttons wrapping, where there is less room; showing the preview doesn't change its width. The whole editor is no longer a size container: only the panes of an editor with `Preview="MarkdownPreview.Beside"` are, and the preview goes beside the text once they are 40rem wide, so give such an editor a width where nothing stretches it. A field that stretches or has a width of its own is unchanged.
 - The date box of `TbDateTimePicker` and the two boxes of `TbDateRangePicker` now start from a text box's usual width instead of zero. When nothing else gives the field a width, they no longer shrink until the date is hidden.
 - A `TbBadge` around content, such as a button or an avatar, is now only as wide as that content. Before, in a column that stretches its items, such as a `TbStack`, it stretched across the column and its badge sat at the far end, away from its content's corner. Around a `FullWidth` button it still fills the column.

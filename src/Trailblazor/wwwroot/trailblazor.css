@@ -8327,6 +8327,11 @@
         gap: var(--tb-space-4);
     }
 
+    /* A button among the fields keeps its own width, unless it's FullWidth. */
+    .tb-form > .tb-button {
+        align-self: flex-start;
+    }
+
     /* A scrolling list could shrink to nothing when an app makes the tabs a flex column that fills a pane. */
     .tb-tabs__list {
         display: flex;
