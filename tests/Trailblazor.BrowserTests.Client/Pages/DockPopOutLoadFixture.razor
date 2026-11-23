@@ -1,0 +1,25 @@
+@page "/dock-pop-out-load"
+
+@* A dock with no @bind-Layout, so nothing but the dock itself renders it, and buttons that bring Tools back, take it
+   away, make it again, or stop allowing windows. *@
+<TbButton OnClick="ReturnToolsAsync">Return tools</TbButton>
+<TbButton OnClick="() => _tools = false">Remove tools</TbButton>
+<TbButton OnClick="() => _tools = true">Make tools</TbButton>
+<TbButton OnClick="() => _allow = false">Stop windows</TbButton>
+<div style="inline-size: 40rem; block-size: 16rem">
+    <TbDockManager @ref="_dock" AriaLabel="Bench" AllowPopOut="_allow">
+        @if (_tools)
+        {
+            <TbDockPanel Id="tools" Title="Tools">Tool list</TbDockPanel>
+        }
+        <TbDockPanel Id="other" Title="Other">Other notes</TbDockPanel>
+    </TbDockManager>
+</div>
+
+@code {
+    private TbDockManager _dock = null!;
+    private bool _tools = true;
+    private bool _allow = true;
+
+    private Task ReturnToolsAsync() => _dock.ReturnAsync("tools");
+}

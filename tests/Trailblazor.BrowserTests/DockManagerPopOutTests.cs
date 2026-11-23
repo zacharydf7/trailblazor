@@ -1039,6 +1039,74 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         await ClosedAsync(window);
     }
 
+    // Opens the page whose dock has no @bind-Layout, so only the dock's own renders tell its script anything, and
+    // starts Tools on its way to a window that is still waiting for a slow sheet.
+    private async Task<(IPage Page, IPage Window)> StartOpeningUnboundToolsAsync(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-pop-out-load");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Bench" })).ToHaveAttributeAsync("data-ready", "");
+        await AddASlowSheetAsync(page, 1500);
+        var window = await StartOpeningToolsAsync(page);
+        await ToolsAboutToLeaveAsync(page);
+        return (page, window);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldStayInTheDock_WhenTheAppReturnsItWhileItsWindowLoads(string browser)
+    {
+        var (page, window) = await StartOpeningUnboundToolsAsync(browser);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Return tools" }).ClickAsync();
+
+        await ClosedAsync(window);
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Tools" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldStayInTheDock_WhenTheDockStopsAllowingWindowsWhileItsWindowLoads(string browser)
+    {
+        var (page, window) = await StartOpeningUnboundToolsAsync(browser);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Stop windows" }).ClickAsync();
+
+        await ClosedAsync(window);
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Tools" })).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldClose_WhenTheAppRemovesThePanelWhileItsWindowLoads(string browser)
+    {
+        var (page, window) = await StartOpeningUnboundToolsAsync(browser);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Remove tools" }).ClickAsync();
+
+        await ClosedAsync(window);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Page_ShouldHoldOnePanelElement_WhenAPanelRemovedWhileItsWindowLoadedIsMadeAgain(string browser)
+    {
+        var (page, window) = await StartOpeningUnboundToolsAsync(browser);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Remove tools" }).ClickAsync();
+        await ClosedAsync(window);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Make tools" }).ClickAsync();
+
+        await Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Tools" })).ToBeVisibleAsync();
+        Assert.Equal(1, await page.Locator("[data-part=panel][data-panel=tools]").CountAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldClose_WhenThePanelsElementLeavesThePageWhileItsWindowLoads(string browser)
+    {
+        var (page, window) = await StartOpeningUnboundToolsAsync(browser);
+
+        // Taken out by script, so the dock, which would close the window itself, doesn't hear of it.
+        await page.Locator("[data-part=panel][data-panel=tools]").EvaluateAsync("panel => panel.remove()");
+
+        await ClosedAsync(window);
+    }
+
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Panel_ShouldKeepItsScrollPosition_WhenItGoesToAWindowAndComesBack(string browser)
     {

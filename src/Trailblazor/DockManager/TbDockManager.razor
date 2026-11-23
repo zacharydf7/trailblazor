@@ -1287,9 +1287,14 @@
             // A render that comes while the script answers for one panel takes the next, so each is asked for once.
             if (_popOutAfterRender.Remove(panel) && _popped.Contains(panel) && Panel(panel) is { } opened)
             {
+                // The script hears of the panel in this call, so the panel counts in what the script was last told
+                // from here on. When the panel is dropped while its window loads, the next list differs from that,
+                // and the script, told so, closes the window.
+                var id = PanelId(panel);
+                _poppedInScript = [.. _poppedInScript.Union([id]).Order(StringComparer.Ordinal)];
                 // The script answers with what went wrong, and with nothing when the panel is in its window. The
                 // answer can take a moment: the panel waits for its window's style sheets.
-                var wrong = await _handle.InvokeAsync<string?>("popOut", PanelId(panel));
+                var wrong = await _handle.InvokeAsync<string?>("popOut", id);
                 if (wrong is null)
                 {
                     Announcer.Polite(Format(Labels.PoppedOut, TbStrings.DockPoppedOut, opened.Title));

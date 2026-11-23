@@ -2642,8 +2642,9 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal(["Trails", "Map", "Weather"], dock.Panels);
         Assert.Empty(cut.FindAll("[data-part=group][data-floating], [data-part=window-grip]"));
         Assert.DoesNotContain("dispose notes", _log);
+        // The script hears of the panel as it is asked to move it, and isn't told again.
         Assert.Equal(panel.Id, _handle.Invocations["popOut"].Single().Arguments.Single());
-        Assert.Equal([panel.Id], (string[])_handle.Invocations["popped"].Single().Arguments[0]!);
+        Assert.Empty(_handle.Invocations["popped"]);
         Assert.Equal(["Notes opened in a new window."], Services.GetRequiredService<FakeAnnouncer>().Polite);
         Assert.Equal(["pop_out"],
             used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
@@ -2703,8 +2704,8 @@ public class TbDockManagerTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=return-bar]"));
         Assert.Equal(["The browser blocked the new window for Notes."],
             Services.GetRequiredService<FakeAnnouncer>().Polite);
-        // The script was never told of a popped panel, so it has none to bring back.
-        Assert.Empty(_handle.Invocations["popped"]);
+        // The script counted the panel as away from the moment it was asked to move it, and is told it isn't.
+        Assert.Empty((string[])_handle.Invocations["popped"].Single().Arguments[0]!);
         // The choice is counted whether or not the browser opens the window.
         Assert.Equal(["pop_out"],
             used.GetMeasurementSnapshot().Select(measurement => measurement.Tags["trailblazor.action"]));
@@ -2795,6 +2796,20 @@ public class TbDockManagerTests : BunitContext
         Assert.Equal(["Trails", "Map", "Notes", "Weather"], dock.Panels);
         Assert.Empty(cut.FindAll("[data-part=return-bar]"));
         Assert.Empty(Services.GetRequiredService<FakeAnnouncer>().Polite);
+    }
+
+    [Fact]
+    public async Task Return_ShouldTellTheScriptThePanelIsBack_WhenItsWindowIsStillLoading()
+    {
+        // The script's answer stays out, as it does while the panel's window waits for its style sheets.
+        _handle.Setup<string?>("popOut", _ => true);
+        var cut = RenderPoppable(Hike);
+        await cut.Tb().Dock().PopOutAsync("Notes");
+
+        await cut.Instance.ReturnAsync("notes");
+
+        // The script closes a window that is still loading when it is told the panel isn't away.
+        cut.WaitForAssertion(() => Assert.Empty((string[])_handle.Invocations["popped"][^1].Arguments[0]!));
     }
 
     [Fact]

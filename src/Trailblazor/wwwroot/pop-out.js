@@ -311,8 +311,8 @@ const sheetsLoaded = page => {
 // Moves the element into the other window, which the caller opened, names the window and gives its body a class.
 // The element moves once the window's linked sheets have loaded, or their time is up, so it seldom shows unstyled
 // there and a script that measures it finds it laid out; the promise gives null when the window was closed
-// meanwhile. The caller moves the element back, and then calls the function the promise gives, which stops following
-// the page's styles and repeating its announcements.
+// meanwhile, or when the element left the page, and then it closes the window. The caller moves the element back, and
+// then calls the function the promise gives, which stops following the page's styles and repeating its announcements.
 export async function showInWindow(other, element, title, className) {
     const page = other.document;
     // A window opens on a blank page in quirks mode, which lays out and measures some things differently from the
@@ -332,8 +332,10 @@ export async function showInWindow(other, element, title, className) {
         unsay();
     };
     await sheetsLoaded(page);
-    if (other.closed) {
+    // The element can have left the page meanwhile too, and the window would then show a dead copy of it.
+    if (other.closed || !element.isConnected) {
         stop();
+        other.close();
         return null;
     }
 
