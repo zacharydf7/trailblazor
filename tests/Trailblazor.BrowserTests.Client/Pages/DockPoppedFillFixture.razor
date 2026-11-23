@@ -1,0 +1,28 @@
+@page "/dock-popped-fill"
+
+@* A dock whose panels each hold content as tall as the panel: Editor is a column with its Save button at the bottom,
+   Chapters is filling tabs, and Trails a filling grid with more rows than fit. *@
+<div style="inline-size: 48rem; block-size: 24rem">
+    <TbDockManager AriaLabel="Desk" AllowPopOut>
+        <TbDockPanel Id="editor" Title="Editor">
+            <div style="display: flex; flex-direction: column; block-size: 100%">
+                <textarea aria-label="Text" style="flex: 1; min-block-size: 0"></textarea>
+                <div><button type="button">Save</button></div>
+            </div>
+        </TbDockPanel>
+        <TbDockPanel Id="chapters" Title="Chapters">
+            <TbTabs AriaLabel="Chapters" Fill>
+                <TbTab Text="One"><div style="block-size: 60rem">Chapter one</div></TbTab>
+            </TbTabs>
+        </TbDockPanel>
+        <TbDockPanel Id="trails" Title="Trails">
+            <TbDataGrid TItem="string" Items="Trails" AriaLabel="Trails" KeySelector="trail => trail" Fill>
+                <TbColumn TItem="string" Field="trail => trail" Title="Name" />
+            </TbDataGrid>
+        </TbDockPanel>
+    </TbDockManager>
+</div>
+
+@code {
+    private static readonly string[] Trails = [.. Enumerable.Range(1, 40).Select(number => $"Trail {number}")];
+}

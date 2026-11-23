@@ -320,11 +320,13 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         const string Background = "element => getComputedStyle(element).backgroundColor";
         Assert.Equal(await Workbench(page).EvaluateAsync<string>(Background),
             await region.EvaluateAsync<string>(Background));
-        // The panel fills its window, which is half as wide as the dock and, the dock being low, as tall as the
-        // smallest window the dock opens.
+        // The bar and, below it, the panel fill the window, which is half as wide as the dock and, the dock being
+        // low, as tall as the smallest window the dock opens.
+        var bar = (await window.Locator("[data-part=return-bar]").BoundingBoxAsync())!;
         var box = (await region.BoundingBoxAsync())!;
         var size = await window.EvaluateAsync<int[]>("[innerWidth, innerHeight]");
-        Assert.Equal((0, 0, size[0], size[1]), (box.X, box.Y, box.Width, box.Height));
+        Assert.Equal((0, 0, size[0]), (bar.X, bar.Y, bar.Width));
+        Assert.Equal((0, bar.Height, size[0], size[1] - bar.Height), (box.X, box.Y, box.Width, box.Height));
         Assert.Equal((384, 240), (size[0], size[1]));
 
         // The root's attributes and the style sheets keep following the page.
@@ -958,7 +960,7 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         var tools = await ToolsAboutToLeaveAsync(page);
         Assert.Equal(1, await tools.CountAsync());
         await Expect(tools).ToBeHiddenAsync();
-        await Expect(window.Locator("[data-part=return-bar]")).ToHaveCSSAsync("position", "sticky");
+        await Expect(window.Locator("[data-part=return-bar]")).ToHaveCSSAsync("position", "fixed");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
@@ -1050,9 +1052,7 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
         Assert.Equal(240, await popped.EvaluateAsync<int>("panel => panel.scrollTop"));
 
         await popped.EvaluateAsync("panel => panel.scrollTop = 120");
-        // Clicked from script: Playwright's own click would first scroll the panel back to its top, where the bar
-        // sits in the layout, and lose the position under test.
-        await popped.Locator("[data-part=return]").EvaluateAsync("button => button.click()");
+        await popped.Locator("[data-part=return]").ClickAsync();
 
         var tools = page.Locator("[data-part=panel][data-panel=tools]");
         await Expect(tools).ToBeVisibleAsync();
@@ -1651,5 +1651,26 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
 
         var bar = window.Locator("[data-part=return-bar]");
         Assert.True((await EdgesAsync(tab)).Top >= (await EdgesAsync(bar)).Bottom, "The tab is under the bar.");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Content_ShouldFitThePanelsWindow_WhenItIsAsTallAsItsPanel(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-popped-fill");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "Desk" })).ToHaveAttributeAsync("data-ready", "");
+
+        // A column with its button at the bottom, filling tabs and a filling grid.
+        foreach (var title in new[] { "Editor", "Chapters", "Trails" })
+        {
+            var panel = await page.Tb().Dock("Desk").PopOutAsync(title);
+            await panel.Page.SetViewportSizeAsync(400, 240);
+
+            // The panel has nothing to scroll, and its content runs from the bar to the window's bottom edge.
+            var bar = panel.Locator("[data-part=return-bar]");
+            var content = await EdgesAsync(panel.Locator("> :not([data-part=return-bar])"));
+            Assert.Equal(0, await panel.EvaluateAsync<int>("panel => panel.scrollHeight - panel.clientHeight"));
+            Assert.Equal((await EdgesAsync(bar)).Bottom, content.Top, 0.5);
+            Assert.Equal(240, content.Bottom, 0.5);
+        }
     }
 }

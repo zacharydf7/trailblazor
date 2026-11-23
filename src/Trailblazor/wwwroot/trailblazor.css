@@ -7889,26 +7889,32 @@
         content-visibility: hidden;
     }
 
-    /* A panel in a browser window of its own fills that window, under the bar that brings it back. On its way there
-       and back it is in the dock for a moment, where it doesn't show. */
+    /* A panel in a browser window of its own fills that window below the bar that brings it back, so content as tall
+       as the panel fits the window. On its way there and back it is in the dock for a moment, where it doesn't
+       show. */
     .tb-dock > .tb-dock__panel--popped {
         display: none;
     }
 
     .tb-dock-window > .tb-dock__panel--popped {
+        --tb-dock-return-bar-size: calc(var(--tb-control-height-sm) + 1px);
         position: fixed;
         inset: 0;
+        inset-block-start: var(--tb-dock-return-bar-size);
         inline-size: auto;
         block-size: auto;
         background: var(--tb-color-surface);
-        /* What scrolls into view, such as the control that takes the focus, stops below the bar. */
-        scroll-padding-block-start: calc(var(--tb-control-height-sm) + 1px);
     }
 
+    /* The bar is fixed across the window's top, outside the panel's scrolling box, and exactly as tall as the room
+       the panel leaves above itself. */
     .tb-dock__return-bar {
-        position: sticky;
+        position: fixed;
         inset-block-start: 0;
+        inset-inline: 0;
         z-index: 1;
+        box-sizing: border-box;
+        block-size: var(--tb-dock-return-bar-size);
         display: flex;
         justify-content: flex-end;
         border-block-end: 1px solid var(--tb-border-subtle);

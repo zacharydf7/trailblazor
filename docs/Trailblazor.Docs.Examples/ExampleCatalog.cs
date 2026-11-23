@@ -3709,6 +3709,9 @@ public static class ExampleCatalog
                     + "goes to a window and as it comes back, and a component whose script finds its own elements "
                     + "through the page's `document` no longer finds them there. Keep such a panel on the "
                     + "page with `AllowPopOut=\"false\"` on the `TbDockPanel`.") { Pitfall = true },
+                new("Content that fills its panel, with `height: 100%`, `Fill` tabs or a `Fill` grid, needs no "
+                    + "change for pop-out: in the panel's window it runs from the Return bar to the window's bottom "
+                    + "edge."),
                 new("A listener of your own on the page's `window` or `document`, such as one for keyboard "
                     + "shortcuts, also hears the keys typed in a panel's window, with the element there as the "
                     + "event's `target`. One that looks for the focused field with `document.activeElement` or "
@@ -3828,11 +3831,12 @@ public static class ExampleCatalog
                 new("empty-window", "The line a panel's own browser window shows while it stays open without its "
                     + "panel, with the class `tb-dock__empty-window` and the role `status`. The dock's script adds "
                     + "it to that window's body, and it goes when the panel is back in the window."),
-                new("return-bar", "The bar across the top of a panel that shows in a browser window of its own, "
-                    + "with the class `tb-dock__return-bar`. The panel has `data-popped`, the class "
-                    + "`tb-dock__panel--popped`, the role `region` and no `data-dock-group` from the moment Open in "
-                    + "new window is chosen, also while it waits on the page, hidden, for its window's style "
-                    + "sheets."),
+                new("return-bar", "The bar across the top of the browser window that a panel shows in, with the "
+                    + "class `tb-dock__return-bar`. It is the panel's first child, fixed above the panel's box, so "
+                    + "it doesn't scroll with the panel or count toward its height. The panel has `data-popped`, "
+                    + "the class `tb-dock__panel--popped`, the role `region` and no `data-dock-group` from the "
+                    + "moment Open in new window is chosen, also while it waits on the page, hidden, for its "
+                    + "window's style sheets."),
                 new("return", "The button in that bar, which brings the panel back to the dock."),
                 new("away", "The row of buttons for the panels that show in browser windows of their own, above "
                     + "the strips and the groups, with the class `tb-dock__away`. It is there only while a panel "
