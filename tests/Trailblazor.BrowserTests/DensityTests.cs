@@ -14,7 +14,7 @@ public class DensityTests(BrowserFixture fixture) : BrowserTest(fixture)
         ("chip", ".tb-chip:not(.tb-chip--small, .tb-chip--large)", "height", "32px", "24px", null),
         ("table", ".tb-table--small td", "height", "32px", "24px", null),
         ("tree-view", ".tb-tree__item", "min-height", "32px", "28px", null),
-        ("listbox", "[role=option]", "min-height", "32px", "28px", null),
+        ("listbox", "[role=option]", "min-height", "40px", "36px", null),
         ("menu", "[role=menuitem]", "min-height", "32px", "28px", "Actions"),
         ("alert", ".tb-alert", "padding-top", "12px", "6px", null),
         ("app-shell", ".tb-nav-menu__link", "min-height", "40px", "32px", null),
