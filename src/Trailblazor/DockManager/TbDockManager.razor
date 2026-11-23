@@ -575,7 +575,7 @@
         _saveAfterRender = false;
         if (_handle is not null && PersistenceKey is { } key
             && DockLayout.TryParse(await _handle.InvokeAsync<string?>("saved", key), out var saved)
-            && !saved.Equals(_layout))
+            && !_disposed && !saved.Equals(_layout))
         {
             _layout = saved;
             await LayoutChanged.InvokeAsync(saved);
@@ -843,9 +843,9 @@
     {
         try
         {
-            // The answer can take a while, and the panel can have gone by another way meanwhile.
+            // The answer can take a while, and the panel can have gone by another way meanwhile, or the whole dock.
             if (Panel(panel) is { Closable: true } closing && InLayout(panel) && await MayCloseAsync(closing)
-                && InLayout(panel))
+                && !_disposed && InLayout(panel))
             {
                 var button = StripAfterClosing(panel);
                 // When the closed panel was on a strip and no other button is left there, a tab that shows takes the
@@ -1295,6 +1295,12 @@
                 // The script answers with what went wrong, and with nothing when the panel is in its window. The
                 // answer can take a moment: the panel waits for its window's style sheets.
                 var wrong = await _handle.InvokeAsync<string?>("popOut", id);
+                // The dock can have gone while the window loaded, as when the app goes to another page.
+                if (_disposed)
+                {
+                    return;
+                }
+
                 if (wrong is null)
                 {
                     Announcer.Polite(Format(Labels.PoppedOut, TbStrings.DockPoppedOut, opened.Title));
@@ -1322,6 +1328,12 @@
                     }
 
                     await GoHomeAsync(panel);
+                    // The app can take its time over the layout it is handed, and the dock can go meanwhile.
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
                     FocusStripIfStowed(panel);
                     StateHasChanged();
                 }
@@ -1344,16 +1356,17 @@
             _keptWindows.Clear();
         }
 
+        // The dock can go while its script answers, and then nothing more is asked of the script or told to the app.
         foreach (var id in _unkept.ToList())
         {
-            if (_unkept.Remove(id))
+            if (!_disposed && _unkept.Remove(id))
             {
                 await _handle.InvokeVoidAsync("unkeep", id);
             }
         }
 
         // The app is told here, after the window has opened or been refused, however the panel came back.
-        if (PoppedOut is var away && !away.SequenceEqual(_poppedReported))
+        if (!_disposed && PoppedOut is var away && !away.SequenceEqual(_poppedReported))
         {
             _poppedReported = [.. away];
             await PoppedOutChanged.InvokeAsync(away);
@@ -1674,9 +1687,11 @@
     public async ValueTask DisposeAsync()
     {
         _disposed = true;
-        if (_handle is not null)
+        // Cleared, so what checks for the script after the dock has gone, such as a save, finds none.
+        if (_handle is { } handle)
         {
-            await _handle.DisposeHandleAsync();
+            _handle = null;
+            await handle.DisposeHandleAsync();
         }
 
         _report?.Dispose();

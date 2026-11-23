@@ -93,6 +93,27 @@ public class TbDockManagerCloseGuardTests : BunitContext
     }
 
     [Fact]
+    public async Task Close_ShouldNeitherTellTheAppNorCallTheScript_WhenCanCloseAnswersYesAfterTheDockWent()
+    {
+        var handle = _module.SetupModule("attachDock", _ => true);
+        handle.Mode = JSRuntimeMode.Loose;
+        var answer = new TaskCompletionSource<bool>();
+        _answer = () => answer.Task;
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.PersistenceKey, "hike").Add(dock => dock.LayoutChanged, _changes.Add)
+            .Add(dock => dock.ChildContent, Panels()));
+        var asked = CloseAsync(cut, "mark");
+
+        await DisposeComponentsAsync();
+        Assert.Single(handle.Invocations["dispose"]);
+        answer.SetResult(true);
+        await asked;
+
+        Assert.Empty(handle.Invocations["save"]);
+        Assert.Empty(_changes);
+    }
+
+    [Fact]
     public void Layout_ShouldCloseThePanelWithoutAsking_WhenTheAppClosesIt()
     {
         var cut = RenderDock(Hike);

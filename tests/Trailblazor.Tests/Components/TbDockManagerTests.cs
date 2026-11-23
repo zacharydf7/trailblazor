@@ -928,6 +928,22 @@ public class TbDockManagerTests : BunitContext
         Assert.Empty(_handle.Invocations["save"]);
     }
 
+    [Fact]
+    public async Task PersistenceKey_ShouldNotHandTheSavedLayoutToTheApp_WhenTheBrowserAnswersAfterTheDockWent()
+    {
+        var answer = _handle.Setup<string?>("saved", _ => true);
+        var changes = new List<DockLayout>();
+        Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.PersistenceKey, "hike").Add(dock => dock.LayoutChanged, changes.Add)
+            .Add(dock => dock.ChildContent, Panels(HikePanels)));
+
+        await DisposeComponentsAsync();
+        answer.SetResult(Hike.Close("weather").ToJson());
+        await Renderer.Dispatcher.InvokeAsync(() => { });
+
+        Assert.Empty(changes);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("not a layout")]
@@ -2810,6 +2826,45 @@ public class TbDockManagerTests : BunitContext
 
         // The script closes a window that is still loading when it is told the panel isn't away.
         cut.WaitForAssertion(() => Assert.Empty((string[])_handle.Invocations["popped"][^1].Arguments[0]!));
+    }
+
+    [Fact]
+    public async Task PopOut_ShouldNeitherTellTheAppNorCallTheScript_WhenTheScriptAnswersAfterTheDockWent()
+    {
+        var answer = _handle.Setup<string?>("popOut", _ => true);
+        var changes = new List<DockLayout>();
+        var cut = RenderPoppable(Hike, changes.Add);
+        cut.Render(parameters => parameters.Add(dock => dock.PersistenceKey, "hike"));
+        await cut.Tb().Dock().PopOutAsync("Notes");
+        var (changed, saved) = (changes.Count, _handle.Invocations["save"].Count);
+
+        await DisposeComponentsAsync();
+        // The script closes the window that was loading as it is disposed, and says so.
+        answer.SetResult("closed");
+        await Renderer.Dispatcher.InvokeAsync(() => { });
+
+        Assert.Equal(changed, changes.Count);
+        Assert.Equal(saved, _handle.Invocations["save"].Count);
+        Assert.Empty(_handle.Invocations["popped"]);
+    }
+
+    [Fact]
+    public async Task PopOut_ShouldStopWithoutFailing_WhenTheAppTakesARefusedPanelsLayoutAfterTheDockWent()
+    {
+        _handle.Setup<string?>("popOut", _ => true).SetResult("blocked");
+        var taken = new TaskCompletionSource();
+        var cut = RenderPoppable(Hike);
+        // The app is slow over the layout that puts the panel back, as one that saves it to a server is.
+        cut.Render(parameters => parameters.Add(dock => dock.LayoutChanged,
+            layout => layout.Equals(Hike) ? taken.Task : Task.CompletedTask));
+        await cut.Tb().Dock().PopOutAsync("Notes");
+
+        await DisposeComponentsAsync();
+        taken.SetResult();
+        await Renderer.Dispatcher.InvokeAsync(() => { });
+
+        Assert.False(Renderer.UnhandledException.IsCompleted);
+        Assert.Empty(_handle.Invocations["popped"]);
     }
 
     [Fact]
