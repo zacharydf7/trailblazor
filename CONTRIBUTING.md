@@ -55,7 +55,9 @@ An issue is done when all of these hold:
 - A new component has a behavior checklist in `docs/behavior`, written before it's built, and a change to a component's
   behavior updates its checklist. See [the format](docs/behavior/README.md).
 - The docs site is updated: a new or changed component, parameter or behavior has its page, interactive example, API
-  table, accessibility notes and testing notes brought up to date, and the docs examples pass the axe checks.
+  table, accessibility notes and testing notes brought up to date, and the docs examples pass the axe checks. The
+  page's Testing section shows a whole test of one of its examples, in bUnit and in Playwright: see
+  [the test a page shows](#the-test-a-page-shows).
 - A docs review reads the component's page and API page against the [docs checklist](#docs-checklist), alongside the
   code and prose reviews, and every item is ticked or marked "n/a" with a reason.
 - The change follows the conventions: American English, comments only for real constraints, test names
@@ -96,11 +98,33 @@ order:
 | `Modes` | Accessibility: Before the page is interactive, and Getting Started's render modes table | How much works on a static page, and on a prerendered one before it turns interactive |
 | `Notes` | Notes and limitations | Behavior, limitations and known issues; a `Pitfall` shows as a warning |
 | `Telemetry`, `Blocks`, `Target`, `TestingTip` or `TestingTips`, `DataParts` | Their own sections | Counts, styles and how to test it |
+| `Scenario` | Testing | A whole test of one of the page's examples, in bUnit and in Playwright |
 | `Related` | Related | Catalog names of related components, linked with their summaries |
 
 A field's page adds the shared `AriaLabel` advice to Labeling and the focus events to Notes. Catalog text shows text
 between backticks as code, and `[text](components/name)` links to a component's page, or `[text](guides/name)` to a
 guide's; a test checks that every such link, and every `Related` name, reaches a page in the catalogs.
+
+### The test a page shows
+
+A component page's Testing section shows a whole test of one of the page's examples, once in bUnit and once in
+Playwright, so a reader sees the helpers do a real job before reading the tips. The code on the page is the body of a
+test the suites run:
+
+- The bUnit test is the one test in `tests/Trailblazor.Tests/Docs/Scenarios/<Name>ScenarioTests.cs`, and the Playwright
+  test the one in `tests/Trailblazor.BrowserTests/Scenarios/<Name>ScenarioTests.cs`, where `<Name>` is the page's
+  catalog name in Pascal case, such as `DataGridScenarioTests` for `data-grid`. The bUnit test renders the example's
+  component, and the Playwright test opens `/examples/<name>/<section>`, which shows that one example.
+- `Scenario = new("<section>", "it ...")` in the page's catalog entry names the example's section and says in a
+  sentence what the test does. The sentence follows "A whole test of the ... example:" on the page.
+- Test a task a user of an app would do, such as filling in, choosing, saving or checking, along with what the app
+  shows in response. Drive it through `cut.Tb()` and `page.Tb()`, with the same steps in both packages, and assert on
+  what a user would see. Keep comments to what a reader new to the helpers needs.
+- The page shows only the test's body, so the body has to read well alone: the bUnit class is a `BunitContext` that
+  calls `this.AddTrailblazor()`, and each file holds one test. In Playwright, check what a form's submit shows with
+  `Expect`, since a click on a submit button returns before the form has handled it (#698).
+- `TestScenarioTests` lists the pages that have no scenario yet. A page leaves the list when it gets its scenario,
+  and a new page ships with one rather than joining the list.
 
 ## Docs checklist
 
@@ -157,6 +181,8 @@ mark it "n/a" with a reason (a layout component has no keys, for example). Some 
 
 - [ ] Testing gives the role-based locator, the `Trailblazor.Testing` helpers for bUnit and Playwright where they
       exist, and any wait the component needs, as short items rather than one paragraph.
+- [ ] Testing shows a whole test of one of the page's examples in bUnit and in Playwright (`Scenario`): a task a user
+      would do, driven through the helpers, with the same steps in both and assertions on what the user sees.
 - [ ] Telemetry says what a `TelemetryName` makes the component count and when, and that values are never recorded.
 - [ ] Design tokens list what the component reads, and the page says how to restyle one instance (the `Classes`
       parameter, parts and state attributes) or links to where that is explained.

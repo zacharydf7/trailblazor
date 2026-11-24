@@ -90,6 +90,10 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // The CSS blocks the component is styled under, such as tb-button, which its design tokens are read from.
     public required IReadOnlyList<string> Blocks { get; init; }
 
+    // A whole test of one of the page's examples, in bUnit and in Playwright, which the page shows from the test
+    // suites' own files.
+    public TestScenario? Scenario { get; init; }
+
     // Extra testing advice for the page; text in backticks shows as code.
     public string? TestingTip { get; init; }
 
@@ -217,6 +221,24 @@ public sealed record TestTarget(string Role, string? Name = null)
     private string RoleName => $"{char.ToUpperInvariant(Role[0])}{Role[1..]}";
 }
 
+// A realistic test of the example in the section with this id: Checks says in a sentence what the test does. Its
+// code is the body of the one test in <Name>ScenarioTests.cs, in tests/Trailblazor.Tests/Docs/Scenarios for bUnit and
+// in tests/Trailblazor.BrowserTests/Scenarios for Playwright, so the suites run what the page shows.
+public sealed record TestScenario(string Section, string Checks)
+{
+    public static string Bunit(Example example) => Body("Bunit", example);
+
+    public static string Playwright(Example example) => Body("Playwright", example);
+
+    // The class and its file are named after the page, as in DataGridScenarioTests for data-grid.
+    public static string TypeOf(Example example) =>
+        string.Concat(example.Name.Split('-').Select(word => char.ToUpperInvariant(word[0]) + word[1..]))
+            + "ScenarioTests";
+
+    private static string Body(string package, Example example) =>
+        RecipeSnippet.OfTest(ExampleSource.OfScenario(package, $"{TypeOf(example)}.cs"), TypeOf(example));
+}
+
 // The element a component marks with data-ready, as a CSS selector and as the testing guide names it. An element
 // marked only while it's shown is checked after OpenedBy is clicked.
 public sealed record ReadyMark(string Selector, string Element)
@@ -230,6 +252,9 @@ public sealed record ExampleSource(string File, string Text)
 
     // A recipe's file that the site shows without running.
     public static ExampleSource OfRecipeFile(string file) => Read("Recipes", file);
+
+    // A scenario's test file for one testing package, Bunit or Playwright.
+    public static ExampleSource OfScenario(string package, string file) => Read($"Scenarios/{package}", file);
 
     private static ExampleSource Read(string folder, string file)
     {
@@ -1519,6 +1544,8 @@ public static class ExampleCatalog
                 new("spinner", "The spinner shown while the button is loading."),
                 new("end", "The end icon or content, after the label."),
             ],
+            Scenario = new("submit", "it tries to send a trail report with no trail name, checks that nothing is "
+                + "sent and that the field says why, then names the trail and sends it."),
             TestingTip = "`await page.Tb().Button(\"Save\").ClickAsync()` from `Trailblazor.Testing.Playwright` "
                 + "clicks a button once the page is interactive and it's no longer busy, and returns once the app has "
                 + "run its `OnClick`, or once a dialog opens, since a handler that awaits the dialog's answer finishes "
@@ -5658,6 +5685,9 @@ public static class ExampleCatalog
                 new("count-shown", "The counter's text, such as 12 / 200, which screen readers skip."),
                 new("count-said", "The counter's words for screen readers, such as 12 of 200 characters."),
             ],
+            Scenario = new("validation-and-server-errors", "it enters a permit number that is too short, reads the "
+                + "field's error, and fixes the number; then it checks a handle that is taken, reads the error the "
+                + "app sets, and sees it clear when the handle changes."),
             TestingTip = "A field with `UpdateDelay` takes its value once typing pauses, so assert with Playwright's "
                 + "`Expect`, which waits, or press Enter to update it at once. In bUnit, which runs no browser, the "
                 + "value updates on each input, so there's nothing to wait for. "
@@ -7457,6 +7487,8 @@ public static class ExampleCatalog
                     <TbOption Value="…" />
                 </TbMultiSelect>
                 """,
+            Scenario = new("multiple", "it chooses two more topics, takes one away and clears the field, and checks "
+                + "the value the app has after each step."),
             TestingTip = "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` "
                 + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
                 + "works on the native `<select>` too. For object values loaded again, such as entities, give the "
@@ -7465,6 +7497,8 @@ public static class ExampleCatalog
                 + "`page.Tb().Select(row.GetByLabel(\"Size\"))`, or `page.Locator(\"#size\")` for one with an "
                 + "`id`. In bUnit, `await cut.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` from "
                 + "`Trailblazor.Testing` does the same, and `cut.Tb().Select(\"Shipping\").Text` reads what it shows. "
+                + "On a `TbMultiSelect`, `Chosen` lists the chosen options, `UnchooseAsync` takes options away and "
+                + "`ClearAsync()` presses the clear button; in Playwright the read is `ChosenAsync()`. "
                 + "\"Select all\" is an option like the others, so `ChooseAsync(\"Select all\")` chooses it. With "
                 + "`AttachOnFirstUse`, the combobox gets `data-ready` only when it's first focused or pointed at, so "
                 + "`ChooseAsync` focuses it first. `Option(\"Overnight\")` reads whether an option is `Disabled` and "
@@ -10441,6 +10475,8 @@ public static class ExampleCatalog
                     <TbDialogActions>…</TbDialogActions>
                 </TbDialog>
                 """,
+            Scenario = new("confirming", "it clicks Delete report and cancels the confirmation, then clicks again "
+                + "and confirms, and checks what the app did with each answer."),
             TestingTip = "In bUnit, `this.ShowDialogAsync<TDialog, TResult>(title)` from `Trailblazor.Testing` hosts "
                 + "and opens a dialog in one call, or `this.ShowDialogAsync<TDialog>(title)` for a dialog with no "
                 + "result. "
@@ -11350,6 +11386,8 @@ public static class ExampleCatalog
                     <TbTab Text="…">…</TbTab>
                 </TbTabs>
                 """,
+            Scenario = new("forms", "it saves an empty form, reads which tabs are marked as needing attention, fills "
+                + "in each tab's field, and saves again."),
             TestingTip = "Find tabs with `GetByRole(AriaRole.Tab, new() { Name = \"Summary\" })` and check "
                 + "`aria-selected`; the shown panel is `GetByRole(AriaRole.Tabpanel)`. "
                 + "`await cut.Tb().Tabs().SelectAsync(\"Summary\")` from `Trailblazor.Testing` picks a tab by its "
@@ -12284,6 +12322,8 @@ public static class ExampleCatalog
                     </TbColumn>
                 </TbDataGrid>
                 """,
+            Scenario = new("sort-page-and-select", "it sorts the trails by length, selects two rows by name, checks "
+                + "what the app has chosen, and goes to the second page."),
             TestingTips =
             [
                 "In Playwright, `page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row with "

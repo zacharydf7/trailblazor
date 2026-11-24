@@ -6,9 +6,31 @@ public static class RecipeSnippet
 {
     // The body of the method named member in the class named type, without its braces or the expression body's arrow,
     // and with the method's indentation taken off.
-    public static string Of(string file, string type, string member)
+    public static string Of(string file, string type, string member) =>
+        Of(ExampleSource.OfRecipeFile(file), type, member);
+
+    // The body of the first test in the class named type: the method under its first [Fact] or [Theory].
+    public static string OfTest(ExampleSource source, string type)
     {
-        var lines = ExampleSource.OfRecipeFile(file).Text.Split('\n').Select(line => line.TrimEnd('\r')).ToList();
+        var lines = source.Text.Split('\n').Select(line => line.Trim()).ToList();
+        var start = lines.FindIndex(line => line.Contains($" class {type}", StringComparison.Ordinal));
+        var mark = start < 0 ? -1 : lines.FindIndex(start, line => line.StartsWith("[Fact", StringComparison.Ordinal)
+            || line.StartsWith("[Theory", StringComparison.Ordinal));
+        if (mark < 0)
+        {
+            throw new InvalidOperationException($"{source.File} has no test in {type}.");
+        }
+
+        // The name is what comes before the parameters on the line after the attribute.
+        var signature = lines[mark + 1];
+        var member = signature[..signature.IndexOf('(', StringComparison.Ordinal)].Split(' ')[^1];
+        return Of(source, type, member);
+    }
+
+    private static string Of(ExampleSource source, string type, string member)
+    {
+        var file = source.File;
+        var lines = source.Text.Split('\n').Select(line => line.TrimEnd('\r')).ToList();
         // The member is looked for only within its class, up to the next class in the file.
         var start = lines.FindIndex(line => line.Contains($" class {type}", StringComparison.Ordinal));
         var next = start < 0 ? -1

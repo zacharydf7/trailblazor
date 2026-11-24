@@ -1,9 +1,10 @@
 @page "/examples/{Name}"
+@page "/examples/{Name}/{Section}"
 @using Trailblazor.Docs.Examples
 
 <PageTitle>@Example.Title example</PageTitle>
-@* Shows every section, as its page does. *@
-@foreach (var section in Example.Sections)
+@* Shows every section, as its page does, or the one a scenario's test asks for. *@
+@foreach (var section in Shown)
 {
     <DynamicComponent Type="section.Component" />
 }
@@ -12,7 +13,15 @@
     [Parameter]
     public string Name { get; set; } = "";
 
+    [Parameter]
+    public string? Section { get; set; }
+
     // An unknown name must fail loudly; a not-found page would give axe a trivially clean result.
     private Example Example => ExampleCatalog.Find(Name)
         ?? throw new InvalidOperationException($"No example is named {Name}.");
+
+    private IEnumerable<ExampleSection> Shown => Section is null ? Example.Sections
+        : Example.Sections.Any(section => section.Id == Section)
+            ? Example.Sections.Where(section => section.Id == Section)
+            : throw new InvalidOperationException($"The {Name} example has no section {Section}.");
 }

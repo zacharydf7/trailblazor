@@ -18,6 +18,11 @@
     <EmbeddedResource Include="..\Trailblazor.Docs.Recipes\*.razor;..\Trailblazor.Docs.Recipes\*.cs"
                       Exclude="..\Trailblazor.Docs.Recipes\_Imports.razor"
                       LogicalName="Recipes/%(Filename)%(Extension)" />
+    <!-- The test each component page shows is a test the suites run. -->
+    <EmbeddedResource Include="..\..\tests\Trailblazor.Tests\Docs\Scenarios\*.cs"
+                      LogicalName="Scenarios/Bunit/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\tests\Trailblazor.BrowserTests\Scenarios\*.cs"
+                      LogicalName="Scenarios/Playwright/%(Filename)%(Extension)" />
     <EmbeddedResource Include="roadmap.json" LogicalName="Roadmap/roadmap.json" />
     <EmbeddedResource Include="..\Trailblazor.Docs\Pages\Guides\*.razor" LogicalName="Guides/%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\src\Trailblazor\wwwroot\trailblazor.css" LogicalName="Css/trailblazor.css" />

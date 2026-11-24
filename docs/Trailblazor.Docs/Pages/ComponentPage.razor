@@ -184,6 +184,26 @@
                     <a href="guides/testing#waiting">testing guide</a> explains.
                 </TbText>
             }
+            @if (example.Scenario is { } scenario)
+            {
+                <TbText>
+                    @DocsText.Render($"A whole test of the [{SectionTitle(example, scenario)}](components/"
+                        + $"{example.Name}#{scenario.Section}) example: {scenario.Checks} The code below runs in the "
+                        + "library's own test suites, with the helpers from `Trailblazor.Testing` and "
+                        + "`Trailblazor.Testing.Playwright` that the [testing guide](guides/testing) sets up.")
+                </TbText>
+                <TbText>
+                    @DocsText.Render("The bUnit test's class is a `BunitContext` that calls `this.AddTrailblazor()`. "
+                        + "In the Playwright test, `OpenAsync` is the suite's own: in the browser the test runs "
+                        + "for, it opens the example on a page by itself and waits until the page is interactive, as "
+                        + "`page.GotoAsync(...)` followed by `page.Tb().InteractiveAsync()` does in your tests, and "
+                        + "`Expect` is Playwright's `Assertions.Expect`.")
+                </TbText>
+                <CodeBlock Label="The test in bUnit" Code="@TestScenario.Bunit(example)"
+                           Language="CodeLanguage.CSharp" />
+                <CodeBlock Label="The test in Playwright" Code="@TestScenario.Playwright(example)"
+                           Language="CodeLanguage.CSharp" />
+            }
             @if (example.TestingTip is { } tip)
             {
                 <TbText>@DocsText.Render(tip)</TbText>
@@ -226,6 +246,9 @@ else
 @code {
     [Parameter]
     public string Name { get; set; } = "";
+
+    private static string SectionTitle(Example example, TestScenario scenario) =>
+        example.Sections.Single(section => section.Id == scenario.Section).Title;
 
     private static IReadOnlyList<string> PlainNotes(Example example) =>
         [.. example.NotesShown.Where(note => !note.Pitfall).Select(note => note.Text)];
