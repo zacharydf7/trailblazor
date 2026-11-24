@@ -2073,6 +2073,8 @@ public static class ExampleCatalog
             [
                 "In bUnit, `cut.Tb().SpeechToText(\"Dictate notes\")` finds it: `StartAsync()` and `StopAsync()` "
                     + "press it, and `SayAsync(\"...\")` hands the app a phrase as the browser would on hearing it.",
+                "In bUnit, `SayAsync(\"...\")` on a button without `Continuous` then stops listening, as a browser "
+                    + "does after one phrase: call `StartAsync()` again before the next phrase, or set `Continuous`.",
                 "In Playwright, a test browser has no microphone, so replace `window.SpeechRecognition` with a fake "
                     + "in an init script; `page.Tb().SpeechToText(\"Dictate notes\")` presses it and reads its state.",
             ],

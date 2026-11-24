@@ -4,12 +4,18 @@ namespace Trailblazor.BrowserTests;
 
 public class SpeechToTextTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
-    // A test browser has no microphone, so a fake recognizer stands in, and window.say hands it a phrase.
+    // A test browser has no microphone, so a fake recognizer stands in, and window.say hands it a phrase. Like a real
+    // one, it ends after that phrase unless continuous.
     private const string FakeRecognition = """
         window.SpeechRecognition = class {
             start() {
-                window.say = text => this.onresult({ resultIndex: 0,
-                    results: [Object.assign([{ transcript: text }], { isFinal: true })] });
+                window.say = text => {
+                    this.onresult({ resultIndex: 0,
+                        results: [Object.assign([{ transcript: text }], { isFinal: true })] });
+                    if (!this.continuous) {
+                        this.onend?.();
+                    }
+                };
             }
             stop() { this.onend?.(); }
             abort() { this.onend?.(); }
@@ -36,6 +42,9 @@ public class SpeechToTextTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.EvaluateAsync("() => window.say('Muddy by the bridge')");
         await Expect(page.GetByRole(AriaRole.Textbox, new() { Name = "Trail notes" }))
             .ToHaveValueAsync("Muddy by the bridge");
+        await Expect(dictate.Button).ToHaveAttributeAsync("aria-pressed", "false");
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(dictate.Button).ToHaveAttributeAsync("aria-pressed", "true");
         await page.Keyboard.PressAsync("Enter");
 
         await Expect(dictate.Button).ToHaveAttributeAsync("aria-pressed", "false");

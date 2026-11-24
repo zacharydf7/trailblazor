@@ -11,7 +11,7 @@ Familiar apps: the microphone buttons in Google Docs' voice typing and Gmail's s
 ## Pointer
 
 - [x] Pressing it starts listening and pressing it again stops. `TbSpeechToTextTests.StartAsync_ShouldListenAndSayItIs_WhenPressed`
-- [x] After a phrase or an error, the browser stops it: the button unpresses and "Stopped listening" is announced. `TbSpeechToTextTests.Stopped_ShouldUnpressTheButtonAndSaySo_WhenTheBrowserStops`
+- [x] After a phrase or an error, the browser stops it: the button unpresses and "Stopped listening" is announced. `SpeechToTextTests.SpeechToText_ShouldFillTheFieldFromWhatIsSaid_WhenListening`, `TbSpeechToTextTests.Stopped_ShouldUnpressTheButtonAndSaySo_WhenTheBrowserStops`, `TbSpeechToTextTests.SayAsync_ShouldEndListeningUnlessContinuous_WhenGivenContinuous`
 - [x] Stopping and quickly starting again keeps listening, even when the earlier recognition ends late. `SpeechToTextTests.SpeechToText_ShouldKeepListening_WhenStartedAgainBeforeTheLastStopEnds`, `TbSpeechToTextTests.Stopped_ShouldKeepTheButtonPressed_WhenAnEarlierRecognitionEndsLate`
 - [x] Disabling it while it listens stops listening. `TbSpeechToTextTests.Disabled_ShouldStopListening_WhenSetWhileListening`
 - [x] Each phrase heard is handed to the app. `SpeechToTextTests.SpeechToText_ShouldFillTheFieldFromWhatIsSaid_WhenListening`, `TbSpeechToTextTests.SayAsync_ShouldHandThePhraseToTheApp_WhenListening`

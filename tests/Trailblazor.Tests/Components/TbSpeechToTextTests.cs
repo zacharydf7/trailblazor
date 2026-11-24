@@ -29,11 +29,11 @@ public class TbSpeechToTextTests : BunitContext
         return handle;
     }
 
-    private IRenderedComponent<TbSpeechToText> RenderButton(string? telemetryName = null) =>
+    private IRenderedComponent<TbSpeechToText> RenderButton(string? telemetryName = null, bool continuous = false) =>
         Render<TbSpeechToText>(parameters => parameters.Add(button => button.Label, "Dictate notes")
             .Add(button => button.OnText, text => _said.Add(text))
-            .Add(button => button.OnError, error => _errors.Add(error))
-            .Add(button => button.Language, "en-US").Add(button => button.TelemetryName, telemetryName));
+            .Add(button => button.OnError, error => _errors.Add(error)).Add(button => button.Language, "en-US")
+            .Add(button => button.TelemetryName, telemetryName).Add(button => button.Continuous, continuous));
 
     [Fact]
     public void Render_ShouldStayHidden_WhenTheScriptHasntFoundSpeechRecognition()
@@ -146,6 +146,36 @@ public class TbSpeechToTextTests : BunitContext
         await button.SayAsync("Muddy by the bridge");
 
         Assert.Equal(["Muddy by the bridge"], _said);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SayAsync_ShouldEndListeningUnlessContinuous_WhenGivenContinuous(bool continuous)
+    {
+        Recognizes();
+        var cut = RenderButton(continuous: continuous);
+        var button = cut.Tb().SpeechToText("Dictate notes");
+
+        await button.StartAsync();
+        await button.SayAsync("Muddy by the bridge");
+
+        Assert.Equal(continuous, button.IsListening);
+        Assert.Equal(continuous ? "true" : "false", cut.Find("button").GetAttribute("aria-pressed"));
+    }
+
+    [Fact]
+    public async Task SayAsync_ShouldFollowContinuousAsItWasAtStart_WhenContinuousChangesWhileListening()
+    {
+        Recognizes();
+        var cut = RenderButton();
+        var button = cut.Tb().SpeechToText("Dictate notes");
+
+        await button.StartAsync();
+        cut.Render(parameters => parameters.Add(stt => stt.Continuous, true));
+        await button.SayAsync("Muddy by the bridge");
+
+        Assert.False(button.IsListening);
     }
 
     [Fact]

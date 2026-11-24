@@ -2578,8 +2578,9 @@ public sealed class TbSpeechToTextDriver
     /// <summary>Presses the button to stop listening. Throws while it isn't listening.</summary>
     public Task StopAsync() => PressAsync(listening: true);
 
-    /// <summary>Hands this phrase to the app as the browser would on hearing it, which raises <c>OnText</c>.
-    /// Throws while it isn't listening; start it with <see cref="StartAsync"/> first.</summary>
+    /// <summary>Hands this phrase to the app as the browser would on hearing it, which raises <c>OnText</c>. Without
+    /// <c>Continuous</c> it then stops listening, as the browser does after one phrase. Throws while it isn't
+    /// listening; start it with <see cref="StartAsync"/> first.</summary>
     public async Task SayAsync(string text)
     {
         if (!IsListening)
@@ -2588,7 +2589,15 @@ public sealed class TbSpeechToTextDriver
         }
 
         var events = _scripts.SpeechToText(_find());
-        await _scripts.InvokeAsync(() => events.OnText(text));
+        await _scripts.InvokeAsync(async () =>
+        {
+            var ends = events.SessionAPhraseEnds;
+            await events.OnText(text);
+            if (ends is { } session)
+            {
+                await events.OnStopped(session);
+            }
+        });
     }
 
     private async Task PressAsync(bool listening)

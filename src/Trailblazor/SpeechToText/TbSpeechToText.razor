@@ -24,6 +24,7 @@
     private bool _available;
     private bool _listening;
     private int _session;
+    private bool _stopsAfterPhrase;
     private bool _disposed;
 
     /// <summary>Raised with each phrase the browser recognizes, such as to add it to a field.</summary>
@@ -98,7 +99,8 @@
             }
 
             _events = DotNetObjectReference.Create(
-                new SpeechToTextEvents(DispatchExceptionAsync, _buttonId, TextAsync, ErrorAsync, StoppedBy));
+                new SpeechToTextEvents(DispatchExceptionAsync, _buttonId, TextAsync, ErrorAsync, StoppedBy,
+                    () => _listening && _stopsAfterPhrase ? _session : null));
             var handle = await module.InvokeAsync<IJSObjectReference?>("attachSpeechToText", _root, _events);
             if (_disposed && handle is not null)
             {
@@ -129,6 +131,7 @@
         if (listen)
         {
             _listening = true;
+            _stopsAfterPhrase = !Continuous;
             Telemetry.Used(TelemetryName, "start");
             Announcer.Polite(Labels.Listening ?? Localizer[TbStrings.SpeechToTextListening]);
             await _handle.InvokeVoidAsync("start", Language, Continuous, ++_session);
