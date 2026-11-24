@@ -638,7 +638,10 @@
                             <code>MoveTabAsync(panel, places)</code>, <code>MoveToGroupAsync(panel, group)</code>,
                             <code>MoveToNewGroupAsync(panel, side)</code> and
                             <code>MoveToEdgeAsync(panel, edge)</code> move a panel as its group's menu does, selecting
-                            it first. <code>ChooseFromTabMenuAsync(panel, path)</code> opens the menu of a panel's
+                            it first. <code>NarrowAsync()</code> tells the dock that it is narrower than its
+                            <code>CompactBelow</code> width, and <code>IsCompact</code> says whether it shows its
+                            docked panels as one group.
+                            <code>ChooseFromTabMenuAsync(panel, path)</code> opens the menu of a panel's
                             tab, as a right-click does, and clicks an item in it, through the submenus named before
                             it. <code>MaximizeAsync(panel)</code> has a panel's group fill the dock, and
                             <code>RestoreAsync()</code> shows every group again. <code>FloatAsync(panel)</code> takes a
@@ -1480,7 +1483,9 @@
             + "`SizeAsync(separator)` reads its percent; both take a slid-out panel's inner edge too, by its name, "
             + "such as \"Resize Notes\". `MoveTabAsync(panel, places)`, `MoveToGroupAsync(panel, group)`, "
             + "`MoveToNewGroupAsync(panel, side)` and `MoveToEdgeAsync(panel, edge)` select a panel and move it from "
-            + "its group's menu, and wait until the app has the layout. `ChooseFromTabMenuAsync(panel, path)` "
+            + "its group's menu, and wait until the app has the layout. `IsCompactAsync()` says whether the dock is "
+            + "compact: narrower than its `CompactBelow` width and showing its docked panels as one group. "
+            + "`ChooseFromTabMenuAsync(panel, path)` "
             + "right-clicks a panel's tab, clicks an item in the menu that opens, through the submenus named before "
             + "it, and waits until the app has the layout. `MaximizeAsync(panel)` has a panel's group fill the dock "
             + "from its group's menu, and `RestoreAsync()` clicks the Restore button; both wait until the app has the "

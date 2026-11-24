@@ -3327,9 +3327,18 @@ public static class ExampleCatalog
                     + "goes to that control, as in Start here. Any other panel is a tab stop itself, so its text "
                     + "can be reached, as Packing list is. `FocusablePanels` set to `Always` makes every showing "
                     + "panel a tab stop, and `Never` none.", typeof(DockManagerPanelStopsExample)),
-                new("many", "Many panels and long titles", "A row with more tabs than fit scrolls sideways, and "
-                    + "the showing tab is brought into view. A long title is cut short. `Icon` puts an icon "
-                    + "before a tab's title.", typeof(DockManagerManyExample)),
+                new("many", "Many panels and long titles", "A row with more tabs than fit scrolls sideways and "
+                    + "fades at each side that has tabs past it, and the showing tab is brought into view. A long "
+                    + "title is cut short. `Icon` puts an icon before a tab's title.",
+                    typeof(DockManagerManyExample)),
+                new("narrow", "Narrow docks", "A dock narrower than `CompactBelow`, 640 pixels unless set, is "
+                    + "compact: where its layout puts groups side by side, it shows its docked panels as the tabs of "
+                    + "one group that fills it, one panel at a time, in the groups' order. The width is the dock's "
+                    + "whole width, strips included, not the window's, so a dock in a narrow column is compact on a "
+                    + "wide screen too, as the switch shows; on a phone the dock is narrow either way. The layout "
+                    + "keeps every group, and they show again once the dock is wide enough. The button calls "
+                    + "`ShowAsync(panel)` on the dock, which brings a docked panel to the front from code.",
+                    typeof(DockManagerCompactExample)),
             ],
             Api = [typeof(TbDockManager), typeof(TbDockPanel), typeof(DockLayout), typeof(DockGroup),
                 typeof(DockSplit), typeof(DockNode), typeof(DockFloat), typeof(DockAutoHidden), typeof(DockPosition),
@@ -3467,6 +3476,9 @@ public static class ExampleCatalog
                 "After a window moves, screen readers hear where it is, as in \"The window is 35% across and 15% "
                     + "down.\", and after it is resized, how big, as in \"The window is 40% wide and 60% tall.\" "
                     + "Both are in whole percents of the dock.",
+                "Nothing is announced when the dock turns compact or wide again: its tabs and the showing panel "
+                    + "change in place. While it is compact, the windows' tab lists count on from the one docked "
+                    + "group, as in \"Floating panel group 2\".",
                 "When a panel is put away on a strip, screen readers hear \"Notes is auto-hidden.\", with the "
                     + "panel's title. When it slides out, focus moves to its tab, in a tab list named "
                     + "\"Auto-hidden panel\". A strip's button has `aria-expanded`, so on the button screen readers "
@@ -3546,6 +3558,9 @@ public static class ExampleCatalog
                     + "window but the notice is `inert`, and when the connection is back the focus returns to where "
                     + "it was.",
                 "Tab and screen readers meet the groups in reading order, and still do after the layout changes.",
+                "In a compact dock, the docked panels' tabs are one `tablist`, named \"Panel group 1\", and one "
+                    + "stop for the Tab key. When the dock turns compact, or wide again, a tab that holds the focus "
+                    + "keeps it, and a panel that holds the focus stays in front.",
                 "A hidden panel is `inert`: nothing in it can be focused or read until its tab shows it.",
                 "A modified panel's dot is drawn in the tab's text color, so it stays in forced colors. On a "
                     + "touch screen, where nothing can hover, a modified tab that can close shows both its dot "
@@ -3606,6 +3621,9 @@ public static class ExampleCatalog
                     + "menus, the separators' grips, the Restore button of a group that fills the dock, and each "
                     + "window's Move button and grip appear. Until then, a right-click on a tab opens the browser's "
                     + "own menu.",
+                "The groups show side by side until the page is interactive, however narrow the dock is: the "
+                    + "dock's script measures it, so `CompactBelow` makes a dock compact only then, and a static "
+                    + "page never does.",
                 "The strips render with their buttons, and a panel the layout has slid out shows over the dock. The "
                     + "buttons start working once the page is interactive, as does the panel's inner edge, whose grip "
                     + "appears then. Until then, the separators state no `aria-valuemin` or `aria-valuemax`, and the "
@@ -3637,6 +3655,19 @@ public static class ExampleCatalog
                     + "up, and the tab is put down again; a pen that rests on the tab for half a second opens the "
                     + "menu too. A right-click on the empty part of a row of tabs opens the menu for the group's "
                     + "showing panel."),
+                new("`CompactBelow=\"Breakpoint.Xs\"` keeps the groups side by side at every width. Groups that are "
+                    + "only above and below each other stay as they are at any width."),
+                new("A panel selected while the dock is compact is its own group's showing tab once the dock is wide "
+                    + "again. A group that fills the dock doesn't count while the dock is compact, and fills it "
+                    + "again once the dock is wide."),
+                new("A compact dock's menus offer no new group and no Maximize or Restore, and Move to group lists "
+                    + "only the floating windows. A tab of the row dropped at an edge or a side of the dock floats, "
+                    + "as one dropped on the middle of the row's panel does. A tab from a window, or a strip's "
+                    + "button, dropped there joins the row."),
+                new("A window keeps its percent of the dock, so in a compact dock on a phone it is small. Dock in "
+                    + "its menu puts its panel in the row.") { Pitfall = true },
+                new("`ShowAsync(panel)` shows a docked panel in a compact dock even when it is already its group's "
+                    + "showing tab. Setting `Layout.Open(panel)` can't, since that layout is the one the dock has."),
                 new("A dock with one group has nothing to cover, so its menus leave Maximize out and a double "
                     + "click on a tab does nothing more than select it."),
                 new("A group that fills the dock is part of the layout: `ToJson` writes it, and a dock with a "
@@ -3806,8 +3837,10 @@ public static class ExampleCatalog
                 new("slide-grip", "The grip menu on that edge, with the same attributes. Its button drags the edge "
                     + "or opens two items that resize the panel, which carry `data-step` (`larger` or `smaller`)."),
                 new("dock", "The dock itself, around its groups, panels, separators, grips and drop mark, which are "
-                    + "all its children. It has `data-moving` while a tab or a strip's button is dragged, and "
-                    + "`data-resizing` while a separator, a window or a slid-out panel's edge is."),
+                    + "all its children. It has `data-moving` while a tab or a strip's button is dragged, "
+                    + "`data-resizing` while a separator, a window or a slid-out panel's edge is, "
+                    + "`data-compact-below` with the `CompactBelow` width in pixels, which `Breakpoint.Xs` leaves "
+                    + "out, and `data-compact` while it is compact."),
                 new("group", "One group's row, across the top of the group's box. `data-group` holds its number, "
                     + "from 0. The one that fills the dock has `data-maximized`, and the ones it covers have the "
                     + "class `tb-dock__group--covered`. A floating window's row has `data-floating`, the class "
@@ -3821,7 +3854,8 @@ public static class ExampleCatalog
                 new("tabs", "The tab list in a group's row. It sits inside a `TbContextMenu` with the class "
                     + "`tb-dock__tab-area`, which opens a tab's menu and brings its own `target` and `menu` parts "
                     + "into each group. Each tab carries `data-context-key` with its panel's `Id`, and the tab "
-                    + "list carries the showing panel's."),
+                    + "list carries the showing panel's. The list has `data-more-left` or `data-more-right` while "
+                    + "tabs are past that side of a row that scrolls."),
                 new("group-menu", "The menu after a group's tabs, which moves, floats, docks, auto-hides or closes the "
                     + "group's showing panel, maximizes or restores the group and, with `AllowPopOut`, opens the panel "
                     + "in a browser window of its own. Its items carry `data-move` (`back`, `forward`, `pop-out`, "
@@ -3867,7 +3901,8 @@ public static class ExampleCatalog
                     + "carry `data-step` (`wider`, `narrower`, `taller` or `shorter`)."),
                 new("separator", "The focusable line between two parts, dragged or moved with the keyboard to "
                     + "resize them."),
-                new("grip", "A separator's handle menu, on the middle of its line: its button drags the separator "
+                new("grip", "A separator's handle menu, on the middle of its line, or just above the middle of the "
+                    + "line between a group and the one below it: its button drags the separator "
                     + "or opens the items that resize, which carry `data-step` (`larger` or `smaller`)."),
                 new("drop-mark", "The mark over the place where a dragged tab's or strip button's panel would land. "
                     + "`data-show` is `line` for the line beside a tab and `box` for a group, half of one, a band "
@@ -3914,6 +3949,14 @@ public static class ExampleCatalog
                 "The move helpers use the group's menu, which acts on the showing panel, so each selects the "
                     + "panel first. They find the menu's items by the attributes listed for the `group-menu` "
                     + "part, so they work whatever the `Labels` say.",
+                "`IsCompactAsync()` or `IsCompact` says whether the dock is compact, which `data-compact` on the "
+                    + "`dock` part marks. In Playwright, narrow the dock's container or the viewport, then wait for "
+                    + "`data-compact` to come or go before reading it, as in `Expect(page.Locator(\"[data-part="
+                    + "dock]\")).ToHaveAttributeAsync(\"data-compact\", \"\")`: the helper reads the dock as it is.",
+                "bUnit has no pixels, so there `NarrowAsync()` tells the dock that it is narrower than "
+                    + "`CompactBelow`, and `NarrowAsync(false)` that it is wide enough again.",
+                "`MoveToNewGroupAsync` and `MoveToEdgeAsync` throw an `InvalidOperationException` for a compact "
+                    + "dock, which has one group, and `MoveToGroupAsync` does for any number but a floating window's.",
                 "When the menu doesn't offer a move, as for a tab already at the end of its row or a panel alone "
                     + "in its group, the move helper throws an `InvalidOperationException` that says why.",
                 "`MaximizeAsync(\"Notes\")` shows a panel and has its group fill the dock, with Maximize in the "

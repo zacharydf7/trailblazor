@@ -2,6 +2,7 @@ import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { createGripDrag } from '../Trailblazor.Primitives/grip-drag.js';
 import { viewOf, watchSizes } from '../Trailblazor.Primitives/pages.js';
 import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
+import { markScrollEdges } from '../Trailblazor.Primitives/scroll-edges.js';
 import { hold, release } from './inert.js';
 import { showInWindow } from './pop-out.js';
 import { nextTab, scrollTabIntoRow, startsWithControl } from './tabs.js';
@@ -155,11 +156,22 @@ export function attachDock(root, reporter) {
             reveal(row);
         }
     });
+    // A row that holds more tabs than fit scrolls with no scrollbar, so each row's sides are marked to fade where
+    // tabs are past them.
+    const edges = new Map();
     const watchGroups = () => {
         for (const group of parts('group')) {
             const row = group.querySelector('.tb-dock__tabs');
             selected.observe(row, { subtree: true, attributes: true, attributeFilter: ['aria-selected'] });
             reveal(row);
+            if (!edges.has(row)) {
+                edges.set(row, markScrollEdges(row));
+            }
+        }
+
+        for (const [row, marks] of [...edges].filter(([row]) => !row.isConnected)) {
+            marks.dispose();
+            edges.delete(row);
         }
     };
     const added = new MutationObserver(() => {
@@ -455,17 +467,38 @@ export function attachDock(root, reporter) {
             event.stopPropagation();
         }
     };
+    // A dock narrower than its compact width shows its docked panels as the tabs of one group, which the app draws
+    // once it hears. The panel that holds the focus, in its tab or inside it, goes along, so it stays in front.
+    let narrow = false;
+    const fit = () => {
+        // The frame's width counts, so a strip that comes or goes along a side doesn't change the dock's form.
+        const width = root.parentElement.getBoundingClientRect().width;
+        // A dock that isn't laid out has no width to go by, and keeps the form it has.
+        if (width === 0 || (width < Number(root.dataset.compactBelow ?? 0)) === narrow) {
+            return;
+        }
+
+        narrow = !narrow;
+        const active = root.ownerDocument.activeElement;
+        const tab = ownPart(active, 'tab');
+        const holder = tab ?? parts('panel').find(panel => panel.contains(active));
+        callDotNet(reporter, 'OnNarrow', narrow, holder?.dataset.panel ?? null, Boolean(tab));
+    };
     // The limits change when a separator's sides or its value do, when the slid-out panel's edge changes, when the
-    // least size does, and when the dock is resized. A panel's content can have such attributes of its own, which
-    // don't count.
+    // least size does, and when the dock is resized, and the compact width can change too. A panel's content can
+    // have such attributes of its own, which don't count.
     const limited = new MutationObserver(records => {
         if (records.some(record => record.target === root || record.target.parentElement === root)) {
             stateLimits();
+            fit();
         }
     });
-    limited.observe(root, { subtree: true, attributes: true,
-        attributeFilter: ['aria-valuenow', 'data-before', 'data-after', 'data-edge', 'data-min-size'] });
-    const sized = watchSizes(stateLimits);
+    limited.observe(root, { subtree: true, attributes: true, attributeFilter: ['aria-valuenow', 'data-before',
+        'data-after', 'data-edge', 'data-min-size', 'data-compact-below'] });
+    const sized = watchSizes(() => {
+        stateLimits();
+        fit();
+    });
     sized.observe(root);
     // The edge a press is on: the separator itself, which drags at once, or the button of its grip's menu.
     const slideHandle = target => {
@@ -767,9 +800,11 @@ export function attachDock(root, reporter) {
             return null;
         }
 
+        // A compact dock shows one group, so a new one, along an edge or beside a group, would show nowhere.
+        const compact = root.hasAttribute('data-compact');
         // An edge would give the only docked panel the group it has.
         const docked = groups.filter(group => layerOf(group) < 0).flatMap(tabsOf);
-        const edge = layerOf(over) < 0 && !(docked.length === 1 && docked[0] === carried)
+        const edge = !compact && layerOf(over) < 0 && !(docked.length === 1 && docked[0] === carried)
             && nearSide(dock, x, y, edgeReach, edgeReach);
         if (edge) {
             // With nothing docked, the new group takes the whole dock.
@@ -816,7 +851,8 @@ export function attachDock(root, reporter) {
             height: body.bottom - top.top };
         // A window has no sides to split off, so all of it takes the panel as a tab, and a tab alone in its group has
         // no tabs to split off from.
-        const side = others.length && layerOf(group) < 0 && nearSide(body, x, y, body.width / 4, body.height / 4);
+        const side = !compact && others.length && layerOf(group) < 0
+            && nearSide(body, x, y, body.width / 4, body.height / 4);
         if (side) {
             const beside = others.find(tab => tab.getAttribute('aria-selected') === 'true') ?? others[0];
             return { target: beside.dataset.panel, position: positionOn(side), box: sideOf(whole, side, 0.5) };
@@ -1424,6 +1460,7 @@ export function attachDock(root, reporter) {
             rendered.disconnect();
             limited.disconnect();
             sized.disconnect();
+            edges.forEach(marks => marks.dispose());
             stopsWatch.disconnect();
             root.removeEventListener('pointerdown', onPointerDown);
             root.removeEventListener('pointermove', onPointerMove);

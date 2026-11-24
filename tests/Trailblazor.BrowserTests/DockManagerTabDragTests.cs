@@ -879,6 +879,30 @@ public class DockManagerTabDragTests(BrowserFixture fixture) : DockManagerPage(f
         Assert.Equal(["Trails", "Map", "Notes", "Gear"], await page.Tb().Dock().PanelsAsync());
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldMakeNoNewGroup_WhenATabIsDroppedAtAnEdgeOrASideOfACompactDock(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?compact=true");
+        await NarrowAsync(page, "24rem");
+        await Expect(page.Locator(".tb-dock")).ToHaveAttributeAsync("data-compact", "");
+        var area = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+
+        // Along the bottom edge, where a wide dock would give the panel a group of its own. A compact dock takes the
+        // drop as one on the middle of the tab's own group, which floats the panel.
+        await CarryAsync(page, "Map", area.X + area.Width / 2, area.Y + area.Height - 4);
+        await DropAsync(page);
+
+        Assert.Equal(["Map"], await page.Tb().Dock().FloatingAsync());
+
+        // The same goes for the side of the group, where a wide dock would split it.
+        await CarryAsync(page, "Notes", area.X + area.Width - 24, area.Y + area.Height / 2);
+        await DropAsync(page);
+
+        Assert.Equal(["Map", "Notes"], await page.Tb().Dock().FloatingAsync());
+        Assert.True(await page.Tb().Dock().IsCompactAsync());
+        Assert.Equal(["Trails", "Gear", "Weather", "Map", "Notes"], await page.Tb().Dock().PanelsAsync());
+    }
+
     private static ILocator Strip(IPage page, string edge) => page.Locator($"[data-part=strip][data-edge={edge}]");
 
     private static ILocator Mark(IPage page) => page.Locator(".tb-dock__drop");

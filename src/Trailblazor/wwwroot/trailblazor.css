@@ -8109,9 +8109,12 @@
         min-inline-size: 0;
     }
 
+    /* A row with more tabs than fit scrolls, and fades at each side that has tabs past it. A tab brought into view
+       rests clear of the fade. */
     .tb-dock__tabs {
         overflow-x: auto;
         scrollbar-width: none;
+        scroll-padding-inline: var(--tb-space-8);
     }
 
     .tb-dock__tab {
@@ -8216,7 +8219,10 @@
         pointer-events: none;
     }
 
+    /* The line between a group and the one below it runs along that group's row of tabs, so the grip sits just
+       above the line, clear of the tabs and their close marks. */
     .tb-menu.tb-dock__grip--vertical {
+        align-items: flex-end;
         inline-size: calc(var(--tb-dock-live-w, var(--tb-dock-w)) * 1%);
         block-size: 0;
     }
@@ -9252,15 +9258,15 @@
     /* A box that scrolls sideways with no scrollbar of its own to show that it scrolls fades out at each side that has
        more past it. scroll-edges.js marks the sides. A mask would cut off the focus ring, which is drawn outside the
        box, so a box that shows focus doesn't fade. */
-    :is(.tb-data-grid__scroll, .tb-kanban)[data-more-left]:not(:focus-visible) {
+    :is(.tb-data-grid__scroll, .tb-kanban, .tb-dock__tabs)[data-more-left]:not(:focus-visible) {
         mask-image: linear-gradient(to right, transparent, black var(--tb-space-8));
     }
 
-    :is(.tb-data-grid__scroll, .tb-kanban)[data-more-right]:not(:focus-visible) {
+    :is(.tb-data-grid__scroll, .tb-kanban, .tb-dock__tabs)[data-more-right]:not(:focus-visible) {
         mask-image: linear-gradient(to left, transparent, black var(--tb-space-8));
     }
 
-    :is(.tb-data-grid__scroll, .tb-kanban)[data-more-left][data-more-right]:not(:focus-visible) {
+    :is(.tb-data-grid__scroll, .tb-kanban, .tb-dock__tabs)[data-more-left][data-more-right]:not(:focus-visible) {
         mask-image: linear-gradient(to right, transparent, black var(--tb-space-8),
             black calc(100% - var(--tb-space-8)), transparent);
     }

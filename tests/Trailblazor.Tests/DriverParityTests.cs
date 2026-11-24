@@ -109,6 +109,8 @@ public class DriverParityTests
         ["TrailblazorPage.Announcements()"] = "bUnit tests read FakeAnnouncer",
         ["TbGridLocator.Copy()"] = "pressing Ctrl+C needs the browser's copy event; bUnit reads the same text with "
             + "SelectedCells",
+        ["TbDockDriver.Narrow(Boolean)"] = "bUnit has no widths, so the test says the dock is narrow; on a page the dock's "
+            + "own width decides",
         ["TbFileUploadLocator.Choose(FilePayload[])"] = InTestFile,
         ["TbFileUploadDriver.Choose(InputFileContent[])"] = InTestFile,
         ["TbChatLocator.Attach(FilePayload[])"] = InTestFile,

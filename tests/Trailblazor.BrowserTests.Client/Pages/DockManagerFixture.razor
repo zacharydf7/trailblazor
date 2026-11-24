@@ -8,7 +8,10 @@
 <TbButton OnClick="@(() => _layout = _layout.Open("notes"))">Open notes</TbButton>
 <TbButton OnClick="@(() => _layout = _layout.Close("gear"))">Close gear</TbButton>
 <div style="inline-size: 48rem; block-size: 24rem" dir="@Direction">
-    <TbDockManager @bind-Layout="_layout" AriaLabel="Hike planner" MinGroupSize="64" PersistenceKey="@Key">
+    @* Tests narrow this dock to move its separators' limits, so it keeps its groups unless a test asks for the
+       compact form. *@
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Hike planner" MinGroupSize="64" PersistenceKey="@Key"
+                   CompactBelow="@(Compact ? Breakpoint.Sm : Breakpoint.Xs)">
         <EmptyContent>Nothing is open.</EmptyContent>
         <ChildContent>
         <TbDockPanel Id="trails" Title="Trails">
@@ -93,6 +96,9 @@
 
     [SupplyParameterFromQuery]
     private string? Key { get; set; }
+
+    [SupplyParameterFromQuery]
+    private bool Compact { get; set; }
 
     protected override void OnInitialized()
     {

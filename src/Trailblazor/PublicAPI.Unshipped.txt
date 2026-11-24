@@ -7264,6 +7264,9 @@ Trailblazor.TbDockManager.PoppedOut.get -> System.Collections.Generic.IReadOnlyL
 Trailblazor.TbDockManager.PoppedOutChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyList<string!>!>
 Trailblazor.TbDockManager.PoppedOutChanged.set -> void
 Trailblazor.TbDockManager.ReturnAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.TbDockManager.CompactBelow.get -> Trailblazor.Breakpoint
+Trailblazor.TbDockManager.CompactBelow.set -> void
+Trailblazor.TbDockManager.ShowAsync(string! panel) -> System.Threading.Tasks.Task!
 const Trailblazor.TbStrings.DockAway = "Dock.Away" -> string!
 const Trailblazor.TbStrings.DockAwayHint = "Dock.AwayHint" -> string!
 const Trailblazor.TbStrings.DockShowWindow = "Dock.ShowWindow" -> string!

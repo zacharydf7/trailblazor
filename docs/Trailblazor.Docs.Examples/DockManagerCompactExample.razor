@@ -1,0 +1,33 @@
+<TbStack Gap="3">
+    <TbStack Row Gap="3" Align="Align.Center">
+        <TbSwitch Label="In a narrow column" @bind-Value="_narrow" />
+        <TbButton OnClick="@(() => _dock!.ShowAsync("forecast"))">Show the forecast</TbButton>
+    </TbStack>
+    <TbDockManager @ref="_dock" @bind-Layout="_layout" AriaLabel="Trip planner" Style="@Box">
+        <TbDockPanel Id="route" Title="Route">
+            <TbText class="tb-p-3">Trailhead to the saddle, then along the ridge.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="stops" Title="Stops">
+            <TbText class="tb-p-3">Creek crossing, saddle and summit.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="notes" Title="Notes">
+            <TbText class="tb-p-3">Start before seven to be off the ridge by noon.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="forecast" Title="Forecast">
+            <TbText class="tb-p-3">Clear until noon, then showers.</TbText>
+        </TbDockPanel>
+    </TbDockManager>
+</TbStack>
+
+@code {
+    private TbDockManager? _dock;
+    private bool _narrow = true;
+
+    // The dock is compact below 640 pixels of its own width, and a 24rem column, 384 pixels, is narrower than that.
+    private string Box => $"block-size: 16rem; max-inline-size: {(_narrow ? "24rem" : "none")}";
+
+    // Route and Stops share a group. Beside them, the notes sit above the forecast.
+    private DockLayout _layout = new(new DockSplit(
+        new DockGroup("route", "stops"),
+        new DockSplit(new DockGroup("notes"), new DockGroup("forecast")) { Vertical = true }));
+}

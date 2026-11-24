@@ -5,14 +5,15 @@ namespace Trailblazor;
 
 // Hears the browser select a tab with the arrow keys, close one with a key or a middle click, move a separator,
 // drop a dragged tab or strip button or pull a tab out into a window, double-click a tab, press or focus a window
-// behind another, move or resize a window, resize or leave a slid-out panel, and close a panel's browser window, so
-// the public dock needn't expose [JSInvokable] methods.
+// behind another, move or resize a window, resize or leave a slid-out panel, close a panel's browser window, and
+// find the dock narrower than its compact width or wide enough again, so the public dock needn't expose [JSInvokable]
+// methods.
 internal sealed class DockReport(Func<Exception, Task> onException, Func<string, Task> onSelect,
     Func<string, bool, Task> onClose, Func<int, double, int, Task> onResize, Func<string, string?, string, Task> onMove,
     Func<string, Task> onMaximize, Func<string, Task> onRaise, Func<string, DockBox, bool, int, Task> onFloat,
     Func<string, DockBox, Task> onPullOut, Func<bool, Task> onConceal, Func<string, double, int, Task> onSlide,
-    Func<string, string, Task> onAutoHide, Func<string, Task> onReturn, Func<string, Task> onKeptWindowClosed,
-    Func<string, bool> holds)
+    Func<string, string, Task> onAutoHide, Func<bool, string?, bool, Task> onNarrow, Func<string, Task> onReturn,
+    Func<string, Task> onKeptWindowClosed, Func<string, bool> holds)
     : ScriptListener(onException)
 {
     // Whether the dock holds the tab with this element id, by which the bUnit driver finds a dock's reports. Panel
@@ -65,6 +66,11 @@ internal sealed class DockReport(Func<Exception, Task> onException, Func<string,
     // the script's reports, as for a separator.
     [JSInvokable]
     public Task OnSlide(string panel, double size, int report) => Run(() => onSlide(panel, size, report));
+
+    // The dock is narrower than its compact width now, or wide enough again. Focused is the panel whose tab holds the
+    // focus, when onTab is true, or that holds it inside, and null when the focus is elsewhere.
+    [JSInvokable]
+    public Task OnNarrow(bool narrow, string? focused, bool onTab) => Run(() => onNarrow(narrow, focused, onTab));
 
     // The browser window that showed the panel closed, and the panel is back in the dock.
     [JSInvokable]

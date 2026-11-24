@@ -47,6 +47,7 @@
      tabindex="@(empty ? "-1" : null)"
      data-report="@_reported" data-commits="@(RendererInfo.IsInteractive ? _counted : null)"
      data-min-size="@MinGroupSize" data-focusable-panels="@PanelStops" data-persistence-key="@PersistenceKey"
+     data-compact-below="@CompactWidth" data-compact="@_compact"
      data-connection-lost="@ConnectionLostText"
      class="tb-dock">
     @Content(_declared, panels)
@@ -357,6 +358,15 @@
     // The count the page shows, which catches up once an action's render and the focus it moves are both done.
     private int _counted;
     private bool _disposed;
+    // Whether the script found the dock narrower than CompactBelow.
+    private bool _narrow;
+    // Whether the dock shows its docked panels as the tabs of one group, as of the last render.
+    private bool _compact;
+    // The docked panel last brought to the front, which is the one a compact dock shows.
+    private string? _front;
+    // The tabs of the one group a compact dock showed at the last render, by which the panel that takes a departed
+    // one's place is found.
+    private List<string> _merged = [];
 
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
@@ -422,6 +432,18 @@
     [Parameter]
     public int MinGroupSize { get; set; } = 96;
 
+    /// <summary>The width below which a dock with groups side by side shows its docked panels as the tabs of one
+    /// group that fills it, one panel at a time, so a dock on a phone or in a narrow column stays readable. The
+    /// width is the dock's whole width, strips included, not the window's. The layout keeps every group, and they
+    /// show again once the dock is wide enough. Defaults to <see cref="Breakpoint.Sm"/>, 640px;
+    /// <see cref="Breakpoint.Xs"/> keeps the groups side by side at every width. Groups that are only above and
+    /// below each other stay as they are at any width. The dock's script measures it, so the groups show side by
+    /// side until the page is interactive, and on a static page always.</summary>
+    [Parameter]
+    public Breakpoint CompactBelow { get; set; } = Breakpoint.Sm;
+
+    private int? CompactWidth => CompactBelow > Breakpoint.Xs ? Viewport.MinWidths[(int)CompactBelow - 1] : null;
+
     /// <summary>Decides when a showing panel is a tab stop of its own, which lets the Tab key reach a panel that
     /// holds no control. Defaults to <see cref="TabPanelFocus.Auto"/>: a panel that starts with a control is no tab
     /// stop, since Tab reaches that control, and any other panel is one. With <see cref="TabPanelFocus.Auto"/>,
@@ -478,6 +500,29 @@
     /// in a window of its own.</summary>
     public Task ReturnAsync(string panel) => InvokeAsync(() => ReturnFromPageAsync(panel, focus: false));
 
+    /// <summary>Brings a docked panel to the front. The dock sets the layout that <see cref="DockLayout.Open"/>
+    /// gives, in which the panel's tab is its group's showing tab and no other group covers it, and raises
+    /// <see cref="LayoutChanged"/> when that changes the layout. A compact dock, one narrower than
+    /// <see cref="CompactBelow"/> whose groups sit side by side, shows one docked panel at a time; this shows the
+    /// panel there even when it is already its group's showing tab, and then the layout doesn't change. Does
+    /// nothing for a panel that isn't docked.</summary>
+    public Task ShowAsync(string panel) => InvokeAsync(async () =>
+    {
+        if (!IsDocked(panel))
+        {
+            return;
+        }
+
+        _front = panel;
+        var layout = _layout.Open(panel);
+        if (!layout.Equals(_layout))
+        {
+            await ChangeAsync(layout, null);
+        }
+
+        StateHasChanged();
+    });
+
     /// <summary>The dock's accessible name, such as "Workbench".</summary>
     [Parameter]
     public string? AriaLabel { get; set; }
@@ -506,6 +551,7 @@
             var layout = Layout ?? new();
             // A binding hands back the layout the dock just raised, which is saved already.
             _saveAfterRender |= !layout.Equals(_layout);
+            Follow(layout);
             _layout = layout;
         }
     }
@@ -580,7 +626,7 @@
         _report = DotNetObjectReference.Create(new DockReport(DispatchExceptionAsync, SelectFromScriptAsync,
             CloseFromScriptAsync, OnResizeAsync, MoveFromScriptAsync, ToggleMaximizedFromScriptAsync,
             RaiseFromScriptAsync, OnFloatAsync, PullOutFromScriptAsync, ConcealFromScriptAsync, SlideFromScriptAsync,
-            AutoHideFromScriptAsync,
+            AutoHideFromScriptAsync, OnNarrowAsync,
             panel => ReturnAsync(panel, focus: false),
             panel =>
             {
@@ -726,7 +772,52 @@
 
     // What the layout shows now. The server can hold renders back while the browser catches up, so what the script
     // reports is matched against this, not against what was last rendered.
-    private DockArrangement Shown() => _layout.Arrange(id => Panel(id) is not null);
+    private DockArrangement Shown() => Shown(_layout, out _);
+
+    private DockArrangement Shown(DockLayout layout, out bool compact)
+    {
+        var shown = layout.Arrange(id => Panel(id) is not null);
+        compact = _narrow && CompactWidth is not null
+            && shown.Separators.Any(separator => !separator.Split.Vertical);
+        return compact ? Merged(shown) : shown;
+    }
+
+    // A compact dock shows its docked panels as the tabs of one group that fills it, in the groups' order. The panel
+    // last brought to the front shows, or the one that took its place among the tabs when it has gone.
+    private DockArrangement Merged(DockArrangement shown)
+    {
+        var panels = shown.Groups.SelectMany(group => group.Panels).ToList();
+        var first = shown.Groups[shown.Maximized ?? 0];
+        var active = _front is not null && panels.Contains(_front) ? _front
+            : _merged.IndexOf(_front!) is >= 0 and var at ? panels[Math.Min(at, panels.Count - 1)] : first.Active;
+        return shown with
+        {
+            Groups = [new DockGroupBox(first.Group, new DockBox(0, 0, 100, 100), panels, active)],
+            Separators = [],
+            Maximized = null,
+        };
+    }
+
+    private bool IsDocked(string panel) => Shown().Groups.Any(group => group.Panels.Contains(panel));
+
+    // A layout that brings a panel to the front of a docked group brings it to the front of a compact dock too: a
+    // panel that wasn't docked, or one that now shows in a group that still holds a tab which showed before. A tab
+    // that shows only because the one in front of it left its group wasn't brought there.
+    private void Follow(DockLayout layout)
+    {
+        var before = _layout.Arrange(id => Panel(id) is not null).Groups;
+        var (docked, showed) = (before.SelectMany(group => group.Panels).ToHashSet(),
+            before.Select(group => group.Active).ToHashSet());
+        foreach (var group in layout.Arrange(id => Panel(id) is not null).Groups)
+        {
+            if (!docked.Contains(group.Active)
+                || group.Panels.Any(panel => panel != group.Active && showed.Contains(panel)))
+            {
+                _front = group.Active;
+                return;
+            }
+        }
+    }
 
     // Works out what shows and where, and keeps every slot rendered before at its place among the slots.
     private List<Slot> Arrange()
@@ -743,7 +834,9 @@
             _layout = _layout.Place(panel.Name);
         }
 
-        var shown = Shown();
+        var shown = Shown(_layout, out _compact);
+        _merged = _compact ? [.. shown.Groups[0].Panels] : [];
+        _front = _compact ? shown.Groups[0].Active : _front;
         var slots = new List<Slot>();
         for (var index = 0; index < shown.Groups.Count; index++)
         {
@@ -865,9 +958,20 @@
     {
         try
         {
+            var showed = _front;
+            if (IsDocked(panel))
+            {
+                _front = panel;
+            }
+
             if (_layout.GroupOf(panel) is { } group && group.Active != panel)
             {
                 await ChangeAsync(_layout.Open(panel), "select");
+            }
+            else if (_compact && _front != showed)
+            {
+                // Its own group showed the panel already, so the layout stays as it is.
+                Telemetry.Used(TelemetryName, "select");
             }
         }
         finally
@@ -995,7 +1099,7 @@
         }
 
         // The group goes with its last tab, and a group that the maximized one covers can't take the focus.
-        var after = _layout.Close(panel).Arrange(id => Panel(id) is not null);
+        var after = Shown(_layout.Close(panel), out _);
         var reachable = (after.Maximized is { } filling ? after.Groups.Skip(filling).Take(1) : after.Groups)
             .Concat(InDock(after.Floats)).Select(group => group.Active).ToList();
         return new[] { groups.ElementAtOrDefault(index + 1)?.Active, groups.ElementAtOrDefault(index - 1)?.Active }
@@ -1012,9 +1116,11 @@
             {
                 // Read before the app's LayoutChanged runs, since the app may take the panel away in it.
                 var title = Panel(panel)!.Title;
-                var group = layout.Arrange(id => Panel(id) is not null).Groups.ToList()
-                    .FindIndex(each => each.Panels.Contains(panel));
+                var group = Shown(layout, out _).Groups.ToList().FindIndex(each => each.Panels.Contains(panel));
                 _focusAfterRender = panel;
+                // A moved tab shows where it lands, in a compact dock too, where its own group may have shown it
+                // already behind another group's panel.
+                _front = group >= 0 ? panel : _front;
                 await ChangeAsync(layout, action);
                 // A panel that isn't in a docked group now is in a window.
                 Announcer.Polite(group < 0 ? Format(Labels.Floated, TbStrings.DockFloated, title)
@@ -1148,7 +1254,8 @@
                 }
             </TbSubMenu>
         }
-        @if (sibling is not null && group.Layer is null)
+        @* A compact dock shows one group, so a new one would show nowhere. *@
+        @if (sibling is not null && group.Layer is null && !_compact)
         {
             <TbSubMenu Label="@(Labels.NewGroup ?? Localizer[TbStrings.DockNewGroup])">
                 @foreach (var (position, label, text) in Sides(edge: false))
@@ -1160,7 +1267,7 @@
                 }
             </TbSubMenu>
         }
-        @if (sibling is not null || group.Layer is not null || others.Any(each => each.Layer is null))
+        @if (!_compact && (sibling is not null || group.Layer is not null || others.Any(each => each.Layer is null)))
         {
             <TbSubMenu Label="@(Labels.NewGroupAtEdge ?? Localizer[TbStrings.DockNewGroupAtEdge])">
                 @foreach (var (position, label, text) in Sides(edge: true))
@@ -1579,6 +1686,7 @@
 
     private async Task ChangeAsync(DockLayout layout, string? action)
     {
+        Follow(layout);
         _layout = layout;
         if (action is not null)
         {
@@ -1599,6 +1707,22 @@
             await ChangeAsync(layout, null);
             StateHasChanged();
         }
+    }
+
+    // The dock got narrower than CompactBelow, or wide enough again. Focused is the panel whose tab holds the focus, or
+    // that holds it inside, which stays in front. The tabs are drawn anew in the one row, or back in their groups'
+    // rows, so a tab that held the focus takes it again.
+    private Task OnNarrowAsync(bool narrow, string? focused, bool onTab)
+    {
+        _narrow = narrow;
+        if (focused is not null && IsDocked(focused))
+        {
+            _front = focused;
+            _focusAfterRender = onTab ? focused : _focusAfterRender;
+        }
+
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 
     // The script's calls arrive outside Blazor's events, so the dock renders what they changed itself.

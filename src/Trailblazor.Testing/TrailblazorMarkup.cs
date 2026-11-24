@@ -3330,17 +3330,37 @@ public sealed class TbDockDriver
 
     /// <summary>Gives the panel with this title a new group on this side of its own, sharing the space the group
     /// had, as "New group beside this one" in its group's menu does. Throws for a panel that is alone in its group,
-    /// and for <c>Before</c> or <c>After</c>.</summary>
+    /// for a compact dock, and for <c>Before</c> or <c>After</c>.</summary>
     public async Task MoveToNewGroupAsync(string panel, DockPosition side) =>
-        await ChooseAsync(panel, $"[data-move-beside={Side(side, nameof(side))}]",
-            $"The panel \"{panel}\" is alone in its group, so it has no group to split.");
+        await ChooseAsync(panel, $"[data-move-beside={Side(side, nameof(side))}]", IsCompact ? Compact
+            : $"The panel \"{panel}\" is alone in its group, so it has no group to split.");
 
     /// <summary>Gives the panel with this title a new group along this edge of the dock, as "New group at the dock's
-    /// edge" in its group's menu does. Throws when it's the only panel docked, and for <c>Before</c> or <c>After</c>.
-    /// </summary>
+    /// edge" in its group's menu does. Throws when it's the only panel docked, for a compact dock, and for
+    /// <c>Before</c> or <c>After</c>.</summary>
     public async Task MoveToEdgeAsync(string panel, DockPosition edge) =>
-        await ChooseAsync(panel, $"[data-move-edge={Side(edge, nameof(edge))}]",
-            $"The panel \"{panel}\" is the only one docked, so it has nowhere to move.");
+        await ChooseAsync(panel, $"[data-move-edge={Side(edge, nameof(edge))}]", IsCompact ? Compact
+            : $"The panel \"{panel}\" is the only one docked, so it has nowhere to move.");
+
+    /// <summary>Whether the dock is compact: told that it is narrower than its <c>CompactBelow</c> width, with its
+    /// docked panels showing as the tabs of one group in place of the groups its layout puts side by side.</summary>
+    public bool IsCompact => _find().HasAttribute("data-compact");
+
+    /// <summary>Tells the dock that it is narrower than its <c>CompactBelow</c> width or, with false, that it is
+    /// wide enough again. On a page the dock's script does this from the dock's own width. A narrow dock whose
+    /// layout puts groups side by side becomes compact, unless its <c>CompactBelow</c> is <c>Breakpoint.Xs</c>.
+    /// Throws for a dock that shows no tab, since the helper finds the dock's script by one.</summary>
+    public async Task NarrowAsync(bool narrow = true)
+    {
+        var tab = Tabs().FirstOrDefault() ?? throw new InvalidOperationException(
+            "The dock shows no tab, and the helper finds the dock's script by one; open a panel first.");
+        var report = _scripts.Dock(tab.Id!);
+        await _scripts.InvokeAsync(() => report.OnNarrow(narrow, null, false));
+    }
+
+    private const string Compact = "The dock is compact: it was told it is narrower than its CompactBelow width and "
+        + "shows one group, so a panel can't get a new group. Call NarrowAsync(false), or set a smaller CompactBelow, "
+        + "such as Breakpoint.Xs.";
 
     /// <summary>The titles of the panels in floating windows, window by window, oldest window first.</summary>
     public IReadOnlyList<string> Floating => Tabs().Where(tab => IsWindow(tab.Closest("[data-part=group]")!))

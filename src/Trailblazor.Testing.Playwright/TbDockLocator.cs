@@ -161,18 +161,28 @@ public sealed class TbDockLocator(ILocator scope, string? name)
             $"The dock has no other group {group} to move \"{panel}\" to.");
 
     /// <summary>Gives the panel with this title a new group on this side of its own, sharing the space the group
-    /// had, with "New group beside this one" in its group's menu. Throws for a panel that is alone in its group, and
-    /// for <c>Before</c> or <c>After</c>.</summary>
+    /// had, with "New group beside this one" in its group's menu. Throws for a panel that is alone in its group, for
+    /// a compact dock, and for <c>Before</c> or <c>After</c>.</summary>
     public async Task MoveToNewGroupAsync(string panel, DockPosition side) =>
-        await ChooseAsync(panel, $"[data-move-beside={Side(side, nameof(side))}]",
-            $"The panel \"{panel}\" is alone in its group, so it has no group to split.");
+        await ChooseAsync(panel, $"[data-move-beside={Side(side, nameof(side))}]", await IsCompactAsync() ? Compact
+            : $"The panel \"{panel}\" is alone in its group, so it has no group to split.");
 
     /// <summary>Gives the panel with this title a new group along this edge of the dock, with "New group at the
-    /// dock's edge" in its group's menu. Throws when it's the only panel docked, and for <c>Before</c> or
-    /// <c>After</c>.</summary>
+    /// dock's edge" in its group's menu. Throws when it's the only panel docked, for a compact dock, and for
+    /// <c>Before</c> or <c>After</c>.</summary>
     public async Task MoveToEdgeAsync(string panel, DockPosition edge) =>
-        await ChooseAsync(panel, $"[data-move-edge={Side(edge, nameof(edge))}]",
-            $"The panel \"{panel}\" is the only one docked, so it has nowhere to move.");
+        await ChooseAsync(panel, $"[data-move-edge={Side(edge, nameof(edge))}]", await IsCompactAsync() ? Compact
+            : $"The panel \"{panel}\" is the only one docked, so it has nowhere to move.");
+
+    /// <summary>Whether the dock is compact: narrower than its <c>CompactBelow</c> width, with its docked panels
+    /// showing as the tabs of one group in place of the groups its layout puts side by side. It reads the dock as
+    /// it is and doesn't wait: after the dock's width changes, wait for <c>data-compact</c> on the dock to come or
+    /// go first.</summary>
+    public async Task<bool> IsCompactAsync() => await Root.GetAttributeAsync("data-compact") is not null;
+
+    private const string Compact = "The dock is compact: it is narrower than its CompactBelow width and shows one "
+        + "group, so a panel can't get a new group. Make the dock wider, or set a smaller CompactBelow, such as "
+        + "Breakpoint.Xs.";
 
     // Clicks an item of the menu of the panel's group, which acts on the group's showing panel, and waits until the
     // app has the layout.
