@@ -374,6 +374,11 @@ public static class ExampleCatalog
             ],
             Target = new("heading", "Display"),
             Blocks = ["tb-text"],
+            Scenario = new("elements", "it checks that the small text given a heading element is a heading, and that "
+                + "the large text without one isn't.")
+            {
+                WithoutHelpers = true,
+            },
             TestingTip = "Text cut off by `MaxLines` is still all in the markup, so text assertions and `GetByText` "
                 + "match the whole string. Whether it is cut off shows only in a browser, not in bUnit.",
         },
@@ -599,6 +604,11 @@ public static class ExampleCatalog
                 new("group", "A group of avatars."),
                 new("more", "The group's count of the others, as in \"+3\"."),
             ],
+            Scenario = new("basic", "it checks each avatar's name and the initials of a person without a photo, and, "
+                + "in a browser, that a photo that fails to load shows initials instead.")
+            {
+                WithoutHelpers = true,
+            },
             TestingTip = "Find an avatar by its role and name: `GetByRole(AriaRole.Img, new() { Name = \"Ada Lovelace\" })` "
                 + "in Playwright, or `[data-part=avatar][aria-label='Ada Lovelace']` in bUnit.",
             Telemetry =
@@ -1129,6 +1139,11 @@ public static class ExampleCatalog
             ],
             Target = new("img", "A trail winding between two hills"),
             Blocks = ["tb-image"],
+            Scenario = new("events", "it checks that the app hears that one photo loaded and the other failed. bUnit "
+                + "loads no images, so its test raises the load and error events as a browser would.")
+            {
+                WithoutHelpers = true,
+            },
             TestingTip = "Find an image by its alternative text: `GetByRole(AriaRole.Img, new() { Name = \"A trail "
                 + "winding between two hills\" })` in Playwright, or `img[alt='A trail winding between two hills']` in "
                 + "bUnit.",
@@ -1749,6 +1764,11 @@ public static class ExampleCatalog
             ],
             Target = new("group", "Text alignment"),
             Blocks = ["tb-button-group"],
+            Scenario = new("shared-settings", "it checks that the disabled group's buttons are all off, and the other "
+                + "group's still work.")
+            {
+                WithoutHelpers = true,
+            },
             TestingTip = "Find the group by its name, then its buttons inside it: `GetByRole(AriaRole.Group, new() { "
                 + "Name = \"Text alignment\" }).GetByRole(AriaRole.Button, new() { Name = \"Center\" })` in "
                 + "Playwright, or `[role=group][aria-label='Text alignment'] button` in bUnit.",
@@ -8653,6 +8673,7 @@ public static class ExampleCatalog
                 .. FieldParts,
                 new("input", "The time box."),
             ],
+            Scenario = new("value", "it chooses a time and checks the value and what the app shows."),
             TestingTip = "`page.Tb().TimePicker(\"Start time\")` in Playwright, or `cut.Tb().TimePicker(\"Start "
                 + "time\")` in bUnit, finds the time picker by its label: `ChooseAsync(new TimeOnly(14, 30))` sets the "
                 + "time however the box displays it, and `ValueAsync()` or `Value` reads it.",
@@ -13127,6 +13148,13 @@ public static class ExampleCatalog
             [
                 new("link", "A link to one section."),
             ],
+            Scenario = new("active", "it scrolls the notes to a section and checks that the contents mark it, then "
+                + "follows a link and checks the section it brings into view. Only a browser scrolls, so the test is "
+                + "in Playwright alone.")
+            {
+                Only = ScenarioPackage.Playwright,
+                WithoutHelpers = true,
+            },
             TestingTip = "Scroll a section into view and check its link with `ToHaveAttributeAsync(\"aria-current\", "
                 + "\"location\")`.",
             Telemetry =
