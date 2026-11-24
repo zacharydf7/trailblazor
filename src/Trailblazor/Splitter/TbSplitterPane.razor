@@ -88,7 +88,8 @@
 
     /// <summary>Whether the pane is collapsed. Bind it with <c>@bind-Collapsed</c> to collapse it from a button. A
     /// collapsed pane keeps its content and its size, which it goes back to when restored. If focus is inside the pane
-    /// when it collapses, focus moves to the separator after it, or before it for the last pane.</summary>
+    /// when it collapses, focus moves to the separator after it, or before it for the last pane; while the splitter
+    /// is stacked, into the next pane that shows, or the one before it when none follows.</summary>
     [Parameter]
     public bool Collapsed { get; set; }
 

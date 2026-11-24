@@ -1,4 +1,5 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
+import { firstTabbable } from '../Trailblazor.Primitives/focus-scope.js';
 import { createGripDrag } from '../Trailblazor.Primitives/grip-drag.js';
 import { frames, watchSizes } from '../Trailblazor.Primitives/pages.js';
 // Dragging, the keys and the grip's menu resize panes in the browser, keeping every pane's share, and report the new
@@ -11,12 +12,47 @@ export function attachSplitter(root, reporter) {
     }
 
     const storageKey = key => `tb-splitter:${key}`;
+    // The pane beside `from`, a pane or a separator's bar, in the same splitter, that shows and can take focus: the
+    // nearest one before it when `before` is set, or else the nearest one after it, and the other side when that side
+    // has none.
+    const shownBeside = (from, before) => {
+        const shown = [...from.parentElement.children].filter(child => child !== from
+            && child.dataset.part === 'pane' && !child.inert && child.checkVisibility({ visibilityProperty: true }));
+        const after = shown.filter(pane => from.compareDocumentPosition(pane) & Node.DOCUMENT_POSITION_FOLLOWING);
+        const earlier = shown.filter(pane => !after.includes(pane));
+        return before ? earlier.at(-1) ?? after[0] : after[0] ?? earlier.at(-1);
+    };
+    // Focus that would fall to the page goes into a pane instead: to its first control, or to the pane itself. A pane
+    // that isn't focusable of its own is focusable only until focus leaves it.
+    const focusInto = pane => {
+        const control = firstTabbable(pane);
+        if (control) {
+            control.focus();
+            return;
+        }
+
+        if (!pane.hasAttribute('tabindex')) {
+            pane.tabIndex = -1;
+            pane.addEventListener('blur', () => pane.removeAttribute('tabindex'), { once: true });
+        }
+
+        pane.focus();
+    };
     // While the splitter is narrower than data-stack-below, its panes go one under the other with nothing to drag.
     // Its width comes from what holds it, so setting data-stacked doesn't change the width being measured. A size
-    // change is answered a frame later, since stacking changes the height of what is observed.
+    // change is answered a frame later, since stacking changes the height of what is observed. When stacking hides
+    // the separator that has focus, whether this splitter's own or one of a vertical splitter inside a pane, focus
+    // moves to the pane before that separator, or the one after it when the one before is collapsed.
     const stack = () => {
         const below = Number(root.dataset.stackBelow);
         root.toggleAttribute('data-stacked', below > 0 && root.getBoundingClientRect().width < below);
+        const active = root.ownerDocument.activeElement;
+        if (root.contains(active) && active.dataset.part === 'separator' && !active.checkVisibility()) {
+            const pane = shownBeside(active.parentElement, true);
+            if (pane) {
+                focusInto(pane);
+            }
+        }
     };
     const stackFrame = frames(root, stack);
     const widths = watchSizes(() => stackFrame.request());
@@ -191,15 +227,25 @@ export function attachSplitter(root, reporter) {
     reportOrder();
 
     // A collapsed pane is hidden, and focus inside it would fall to the page. An observer runs before the browser drops
-    // that focus, and moves it to the pane's separator: the one after it, or the one before it for the last pane. A
-    // collapse or restore also changes the sizes outside the reports, so the keys measure them again.
+    // that focus, and moves it to the pane's separator: the one after it, or the one before it for the last pane.
+    // While stacked, the separators are hidden too, so focus goes into the next pane that shows, or the last one
+    // before it when none follows. A collapse or restore also changes the sizes outside the reports, so the keys
+    // measure them again.
     const collapses = new MutationObserver(records => {
         reported = null;
         for (const { target: pane } of records) {
             if (panes().includes(pane) && pane.hasAttribute('data-collapsed')
                 && pane.contains(pane.ownerDocument.activeElement)) {
-                const bar = pane.nextElementSibling ?? pane.previousElementSibling;
-                bar?.querySelector(':scope > [data-part="separator"]').focus();
+                const separator = (pane.nextElementSibling ?? pane.previousElementSibling)
+                    ?.querySelector(':scope > [data-part="separator"]');
+                if (separator?.checkVisibility()) {
+                    separator.focus();
+                } else {
+                    const next = shownBeside(pane, false);
+                    if (next) {
+                        focusInto(next);
+                    }
+                }
             }
         }
     });

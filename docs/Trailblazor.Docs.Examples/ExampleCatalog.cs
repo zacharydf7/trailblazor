@@ -4374,13 +4374,15 @@ public static class ExampleCatalog
             [
                 "A collapsed pane keeps its content but hides it from sight and from the tab order. If focus is inside "
                     + "the pane when it collapses, focus moves to the separator after it, or before it for the last "
-                    + "pane.",
+                    + "pane; while stacked, into the next pane that shows, or the one before it when none follows.",
                 "A click or tap on the grip opens its menu: Make larger and Make smaller (by 10%), plus Collapse or "
                     + "Restore for a `Collapsible` pane. The menu is the single-pointer alternative to dragging (WCAG "
                     + "2.5.7).",
                 "The grip stays out of the tab order, since the separator's keys do the same as its menu.",
                 "While `StackBelow` has the panes stacked, there are no separators, so there is nothing to resize or "
-                    + "to focus between the panes, and a separator that had focus loses it.",
+                    + "to focus between the panes. A separator that had focus hands it to the pane before it, or the "
+                    + "pane after it when that one is collapsed: to its first control, or to the pane itself when it "
+                    + "holds none.",
             ],
             AppDuties =
             [

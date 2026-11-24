@@ -44,8 +44,8 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] With `StackBelow`, a splitter narrower than that breakpoint's width shows its panes one under the other, with a line where each separator was and nothing to drag, and side by side again, at the sizes it had, once it is wide. `SplitterTests.Splitter_ShouldStackItsPanesWithNothingToDrag_WhenItIsNarrowerThanStackBelow`, `TbSplitterTests.Render_ShouldGiveTheScriptTheBreakpointsWidth_WhenGivenStackBelow`
 - [x] A stacked splitter keeps the height it has: its panes are at least as tall as what they hold, and it scrolls when they need more. `SplitterTests.Splitter_ShouldStackItsPanesWithNothingToDrag_WhenItIsNarrowerThanStackBelow`
 - [x] A `Vertical` splitter that is a stacked pane's own child stacks with it, and a collapsed pane takes no room while stacked. `SplitterTests.Splitter_ShouldStackAVerticalSplitterInsideAndHideACollapsedPane_WhenItsOuterSplitterStacks`
-- [ ] A separator that has focus when the splitter stacks keeps focus inside the splitter. Today it is hidden and focus falls to the page. #695
-- [ ] Collapsing the pane that holds focus while the splitter is stacked keeps focus inside the splitter. Today focus goes to a hidden separator, and so falls to the page. #695
+- [x] A separator that has focus when the splitter stacks hands focus to the pane before it, or after it when that one is collapsed: to the pane's first control, or to the pane itself when it holds none, which stays focusable only until focus leaves it. `SplitterTests.Splitter_ShouldMoveFocusIntoThePaneBefore_WhenStackingHidesTheFocusedSeparator`, `SplitterTests.Splitter_ShouldMoveFocusIntoThePaneAfter_WhenStackingHidesASeparatorWhosePaneBeforeIsCollapsed`
+- [x] Collapsing the pane that holds focus while the splitter is stacked moves focus into the next pane that shows, or into the last pane that shows when none follows it, since the separators are hidden. `SplitterTests.Splitter_ShouldMoveFocusIntoTheNextPane_WhenAStackedPaneHoldingFocusCollapses`
 
 ## Focus
 

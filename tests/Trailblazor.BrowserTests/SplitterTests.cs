@@ -79,6 +79,70 @@ public class SplitterTests(BrowserFixture fixture) : SplitterKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldMoveFocusIntoThePaneBefore_WhenStackingHidesTheFocusedSeparator(string browser)
+    {
+        var page = await OpenSplitterAsync(browser);
+        var notes = page.GetByText("The saddle loop climbs through pines");
+        var splitter = page.Locator("[data-part=splitter]", new() { Has = notes });
+        var list = splitter.Locator("[data-part=pane]").First;
+        var separator = Separator(page, "Resize Trail list");
+        await separator.FocusAsync();
+
+        await splitter.Locator("xpath=..").EvaluateAsync("frame => frame.style.inlineSize = '30rem'");
+
+        await Expect(splitter).ToHaveAttributeAsync("data-stacked", "");
+        // The Trail list pane holds no control, so it takes focus itself and is focusable only until focus leaves it.
+        await Expect(list).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Tab");
+        await Expect(list).Not.ToHaveAttributeAsync("tabindex", new System.Text.RegularExpressions.Regex(".*"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldMoveFocusIntoThePaneAfter_WhenStackingHidesASeparatorWhosePaneBeforeIsCollapsed(
+        string browser)
+    {
+        var page = await OpenSplitterAsync(browser, "/splitter-focus");
+        var separator = Separator(page, "Resize Notes");
+        await separator.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByText("Notes pane")).ToBeHiddenAsync();
+        await Expect(separator).ToBeFocusedAsync();
+
+        await page.Locator("#narrowing").EvaluateAsync("frame => frame.style.inlineSize = '20rem'");
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Map action" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldKeepAPanesOwnTabIndex_WhenStackingMovesFocusIntoIt(string browser)
+    {
+        var page = await OpenSplitterAsync(browser, "/splitter-focus");
+        var log = page.Locator("[data-part=pane]", new() { HasText = "Log pane" });
+        await Separator(page, "Resize Log").FocusAsync();
+
+        await page.Locator("#keeping").EvaluateAsync("frame => frame.style.inlineSize = '20rem'");
+
+        await Expect(log).ToBeFocusedAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Collapse left" }).FocusAsync();
+        await Expect(log).ToHaveAttributeAsync("tabindex", "0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldMoveFocusIntoTheNextPane_WhenAStackedPaneHoldingFocusCollapses(string browser)
+    {
+        var page = await OpenSplitterAsync(browser, "/splitter-focus");
+        var upper = page.GetByRole(AriaRole.Button, new() { Name = "Collapse upper" });
+        var splitter = upper.Locator("xpath=ancestor::*[@data-part='splitter'][1]");
+        await Expect(splitter).ToHaveAttributeAsync("data-stacked", "");
+
+        // From the keyboard, since WebKit doesn't focus a button that is clicked.
+        await upper.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Lower action" })).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Splitter_ShouldResizeAndCollapseThePane_WhenTheGripsMenuIsClicked(string browser)
     {
         var page = await OpenSplitterAsync(browser);

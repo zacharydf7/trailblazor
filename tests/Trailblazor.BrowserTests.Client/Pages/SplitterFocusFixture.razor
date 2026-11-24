@@ -26,7 +26,38 @@
     </TbSplitter>
 </div>
 
+@* A stacked splitter whose first pane collapses from a button inside it. *@
+<div style="inline-size: 20rem">
+    <TbSplitter StackBelow="Breakpoint.Sm">
+        <TbSplitterPane Label="Upper" Collapsible @bind-Collapsed="_upper">
+            <TbButton OnClick="() => _upper = true">Collapse upper</TbButton>
+        </TbSplitterPane>
+        <TbSplitterPane Label="Lower">
+            <TbButton>Lower action</TbButton>
+        </TbSplitterPane>
+    </TbSplitter>
+</div>
+
+@* A splitter that stacks once its frame is narrowed, with a collapsible pane before its separator. *@
+<div id="narrowing" style="inline-size: 48rem; block-size: 10rem">
+    <TbSplitter StackBelow="Breakpoint.Sm">
+        <TbSplitterPane Label="Notes" Collapsible>Notes pane</TbSplitterPane>
+        <TbSplitterPane Label="Map">
+            <TbButton>Map action</TbButton>
+        </TbSplitterPane>
+    </TbSplitter>
+</div>
+
+@* A splitter that stacks once its frame is narrowed, whose first pane the app makes focusable for scrolling. *@
+<div id="keeping" style="inline-size: 48rem; block-size: 10rem">
+    <TbSplitter StackBelow="Breakpoint.Sm">
+        <TbSplitterPane Label="Log" tabindex="0">Log pane</TbSplitterPane>
+        <TbSplitterPane Label="Summary">Summary pane</TbSplitterPane>
+    </TbSplitter>
+</div>
+
 @code {
+    private bool _upper;
     private bool _left;
     private bool _right;
     private bool _between;
