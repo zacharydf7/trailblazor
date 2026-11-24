@@ -120,6 +120,9 @@ of a test the suites run:
 - Test a task a user of an app would do, such as filling in, choosing, saving or checking, along with what the app
   shows in response. Drive it through `cut.Tb()` and `page.Tb()`, with the same steps in both packages, and assert on
   what a user would see. Keep comments to what a reader new to the helpers needs.
+- A component with no helper of its own, such as a table or a progress bar, is read by role, or by `data-part` where a
+  role can't reach, in Playwright and by its markup in bUnit, as an app's tests would. Set `WithoutHelpers = true` on
+  its scenario, and the page says so.
 - Some components can be checked in only one package: back to top scrolls a page, which only a browser does, and only
   the bUnit helpers can hand a phrase to speech to text. Such a page shows the one test. Set
   `Only = ScenarioPackage.Playwright` or `Only = ScenarioPackage.Bunit` on its scenario, leave out the other
@@ -186,8 +189,8 @@ mark it "n/a" with a reason (a layout component has no keys, for example). Some 
 - [ ] Testing gives the role-based locator, the `Trailblazor.Testing` helpers for bUnit and Playwright where they
       exist, and any wait the component needs, as short items rather than one paragraph.
 - [ ] Testing shows a whole test of one of the page's examples in bUnit and in Playwright (`Scenario`), or in the one
-      package that can check it (`Only`): a task a user would do, driven through the helpers, with the same steps in
-      both when there are two and assertions on what the user sees.
+      package that can check it (`Only`): a task a user would do, driven through the helpers where the component has
+      them, with the same steps in both when there are two and assertions on what the user sees.
 - [ ] Telemetry says what a `TelemetryName` makes the component count and when, and that values are never recorded.
 - [ ] Design tokens list what the component reads, and the page says how to restyle one instance (the `Classes`
       parameter, parts and state attributes) or links to where that is explained.

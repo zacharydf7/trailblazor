@@ -191,8 +191,11 @@
                 <TbText>
                     @DocsText.Render($"A whole test of the example under [{SectionTitle(example, scenario)}]"
                         + $"(components/{example.Name}#{scenario.Section}): {scenario.Checks} The code below runs "
-                        + $"in the library's own test suites, with the helpers from {Packages(scenario)} that the "
-                        + "[testing guide](guides/testing) sets up.")
+                        + (scenario.WithoutHelpers ? "in the library's own test suites, set up as the [testing guide]"
+                            + "(guides/testing) shows. The component has no helper of its own, so the tests read it by "
+                            + "role and by its markup, as an app's tests would."
+                            : $"in the library's own test suites, with the helpers from {Packages(scenario)} that the "
+                            + "[testing guide](guides/testing) sets up."))
                 </TbText>
                 <TbText>
                     @DocsText.Render(bunit is null ? PlaywrightSetup

@@ -230,6 +230,9 @@ public sealed record TestScenario(string Section, string Checks)
     // The one package with a test, when the other can't check the component; null when both can.
     public ScenarioPackage? Only { get; init; }
 
+    // A component with no helper of its own, such as a table: its tests read it by role and by its markup.
+    public bool WithoutHelpers { get; init; }
+
     public static string? Bunit(Example example) =>
         example.Scenario!.Only == ScenarioPackage.Playwright ? null : Body(ScenarioPackage.Bunit, example);
 
@@ -670,6 +673,8 @@ public static class ExampleCatalog
                 new("title", "What happened."),
                 new("content", "More about the event."),
             ],
+            Scenario = new("basic", "it reads the events' titles in order, and the first event's time as machines "
+                + "read it.") { WithoutHelpers = true },
             TestingTip = "Find the timeline with `GetByRole(AriaRole.List, new() { Name = \"Trip history\" })` and an "
                 + "event with `GetByRole(AriaRole.Listitem).Filter(new() { HasText = \"Trip booked\" })`. A `time` "
                 + "element's `datetime` attribute holds the time in ISO 8601, whatever the culture.",
@@ -1438,6 +1443,10 @@ public static class ExampleCatalog
             ],
             Target = new("img", "Failed"),
             Blocks = ["tb-icon"],
+            Scenario = new("meaning", "it checks that each labeled icon is an image with its label as its name.")
+            {
+                WithoutHelpers = true,
+            },
             TestingTip = "Find an icon with a `Label` by its role and name: `GetByRole(AriaRole.Img, new() { Name = "
                 + "\"Failed\" })` in Playwright, or `[role=img][aria-label='Failed']` in bUnit. An icon without one is "
                 + "hidden from screen readers and from `GetByRole`, so check the text beside it instead.",
@@ -5306,6 +5315,8 @@ public static class ExampleCatalog
                 new("value", "The value shown as text, such as \"40%\"."),
                 new("label", "The progress's visible label."),
             ],
+            Scenario = new("value", "it checks the value the upload bar says, and that the bar with no value says "
+                + "none.") { WithoutHelpers = true },
             TestingTip = "Find it with `GetByRole(AriaRole.Progressbar, new() { Name = \"Upload\" })` and check "
                 + "`aria-valuenow`, or `aria-valuetext` when it has a `ValueFormatter`. The shown text is in "
                 + "`[data-part=label]` and `[data-part=value]`.",
@@ -12718,6 +12729,10 @@ public static class ExampleCatalog
             ],
             Target = new("table", "Opening hours"),
             Blocks = ["tb-table"],
+            Scenario = new("basic", "it reads the centers from the row headers and one center's hours from its cells.")
+            {
+                WithoutHelpers = true,
+            },
             TestingTip = "Find it by role and name, `GetByRole(AriaRole.Table, new() { Name = \"Opening hours\" })`, "
                 + "and its cells with `GetByRole(AriaRole.Cell, ...)`.",
             Telemetry =

@@ -10,8 +10,8 @@ public class TestScenarioTests : DocsTest
     // a new page ships with one instead of joining it.
     private static readonly string[] Owed =
     [
-        "text", "avatar", "timeline", "image", "icon", "button-group", "progress", "mention-input", "time-picker",
-        "query-builder", "tour", "table", "table-of-contents",
+        "text", "avatar", "image", "button-group", "mention-input", "time-picker", "query-builder", "tour",
+        "table-of-contents",
     ];
 
     // The pages with nothing for a user to do or for a test to check, such as a spacer's, which need no scenario.
@@ -47,13 +47,13 @@ public class TestScenarioTests : DocsTest
         if (TestScenario.Bunit(example) is { } bunit)
         {
             Assert.Contains($"Render<{section.Component.Name}>()", bunit);
-            Assert.Contains(".Tb().", bunit);
+            Assert.Equal(!scenario.WithoutHelpers, bunit.Contains(".Tb()."));
         }
 
         if (TestScenario.Playwright(example) is { } playwright)
         {
             Assert.Contains($"OpenAsync(browser, \"/examples/{name}/{scenario.Section}\")", playwright);
-            Assert.Contains(".Tb().", playwright);
+            Assert.Equal(!scenario.WithoutHelpers, playwright.Contains(".Tb()."));
         }
     }
 
@@ -129,6 +129,16 @@ public class TestScenarioTests : DocsTest
         Assert.EndsWith("with the helpers from Trailblazor.Testing that the testing guide sets up.", lead.TextContent);
         Assert.Contains(cut.FindAll("p"), text => text.TextContent.Contains("BunitContext"));
         Assert.DoesNotContain(cut.FindAll("p"), text => text.TextContent.Contains("OpenAsync"));
+    }
+
+    [Fact]
+    public void ComponentPage_ShouldSayTheTestsReadTheComponentByRole_WhenItHasNoHelper()
+    {
+        var cut = ComponentPage("table");
+
+        var lead = cut.FindAll("p").Single(text => text.TextContent.Contains("A whole test of the"));
+        Assert.EndsWith("The component has no helper of its own, so the tests read it by role and by its markup, as "
+            + "an app's tests would.", lead.TextContent);
     }
 
     [Fact]
