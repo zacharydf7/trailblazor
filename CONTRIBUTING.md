@@ -123,7 +123,8 @@ test the suites run:
 - The page shows only the test's body, so the body has to read well alone: the bUnit class is a `BunitContext` that
   calls `this.AddTrailblazor()`, and each file holds one test.
 - `TestScenarioTests` lists the pages that have no scenario yet. A page leaves the list when it gets its scenario,
-  and a new page ships with one rather than joining the list.
+  and a new page ships with one rather than joining the list. A page with nothing for a user to do or a test to
+  check, such as a spacer's, needs no scenario; `TestScenarioTests` names those pages too.
 
 ## Docs checklist
 

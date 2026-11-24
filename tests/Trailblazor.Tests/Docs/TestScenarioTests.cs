@@ -10,16 +10,21 @@ public class TestScenarioTests : DocsTest
     // a new page ships with one instead of joining it.
     private static readonly string[] Owed =
     [
-        "text", "kbd", "highlight", "qr-code", "avatar", "timeline", "virtual-list", "chat", "ai-prompt", "image",
-        "watermark", "divider", "surface", "card", "icon", "icon-button", "button-group", "floating-action-button",
-        "back-to-top", "speech-to-text", "smart-paste", "theme-picker", "ribbon", "toolbar", "insert-divider",
-        "stack", "spacer", "field-row", "grid", "masonry", "dock-manager", "viewport", "container", "app-shell",
-        "list", "kanban", "badge", "progress", "label", "rich-text-editor", "markdown-editor", "mention-input",
-        "signature-pad", "tree-select", "cascader", "color-picker", "file-upload", "calendar", "time-picker",
+        "text", "avatar", "timeline", "virtual-list", "chat", "ai-prompt", "image", "card", "icon", "icon-button",
+        "button-group", "floating-action-button", "back-to-top", "smart-paste", "theme-picker", "ribbon", "toolbar",
+        "insert-divider", "dock-manager", "viewport", "app-shell", "list", "progress", "label", "rich-text-editor",
+        "markdown-editor", "mention-input", "signature-pad", "color-picker", "file-upload", "calendar", "time-picker",
         "date-time-picker", "date-range-picker", "code-field", "property-grid", "model-fields", "query-builder",
-        "tooltip", "menubar", "command-palette", "hotkeys", "drawer", "lightbox", "focus-scope", "popover",
-        "popconfirm", "tour", "overlay", "tree-grid", "table", "breadcrumbs", "table-of-contents", "empty-state",
-        "skeleton",
+        "tooltip", "command-palette", "hotkeys", "drawer", "lightbox", "focus-scope", "popover", "tour", "tree-grid",
+        "table", "breadcrumbs", "table-of-contents", "empty-state", "speech-to-text", "overlay", "highlight",
+        "skeleton", "badge",
+    ];
+
+    // The pages with nothing for a user to do or for a test to check, such as a spacer's, which need no scenario.
+    private static readonly string[] NotOwed =
+    [
+        "kbd", "qr-code", "watermark", "divider", "surface", "stack", "spacer", "field-row", "grid", "masonry",
+        "container",
     ];
 
     public static TheoryData<string> WithScenario =>
@@ -30,7 +35,7 @@ public class TestScenarioTests : DocsTest
     {
         var without = ExampleCatalog.All.Where(example => example.Scenario is null).Select(example => example.Name);
 
-        Assert.Equal(Owed.Order(), without.Order());
+        Assert.Equal(Owed.Concat(NotOwed).Order(), without.Order());
     }
 
     [Theory, MemberData(nameof(WithScenario))]

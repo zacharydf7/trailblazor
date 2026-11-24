@@ -5105,11 +5105,15 @@ public static class ExampleCatalog
                 new("count", "How many cards it holds, against its `Limit` when it has one."),
                 new("footer", "What `ColumnFooterTemplate` draws under the column."),
             ],
+            Scenario = new("basic", "it moves a card to another column from its handle's menu, checks both columns, "
+                + "and checks that a move into the full column is refused."),
             TestingTip = "`page.Tb().Kanban(\"Trail work\")` in Playwright, or `cut.Tb().Kanban(...)` in bUnit, finds "
                 + "the board by its `AriaLabel`: `ColumnsAsync()` or `Columns` reads the titles, "
                 + "`CardsAsync(column)` or `Cards(column)` a column's cards, and `MoveToColumnAsync(card, column)` "
                 + "moves a card to the end of another column through its handle's menu. `Column(title)` gives that "
-                + "column's sortable list, for `MoveAsync` within it or a drag.",
+                + "column's sortable list, for `MoveAsync` within it or a drag. A move the app refuses, such as into "
+                + "a full column, is announced, which `page.Tb().Announcements` in Playwright or `FakeAnnouncer` in "
+                + "bUnit reads.",
         },
         new("badge", "Badge", ExampleCategory.Feedback,
             "A small count or dot on an icon or button, or in a line of text, that draws the eye to something new.")
@@ -7669,6 +7673,8 @@ public static class ExampleCatalog
             Anatomy = """
                 <TbTreeSelect Label="…" Items="…" KeySelector="…" ItemText="…" @bind-Value="_key" />
                 """,
+            Scenario = new("choose-one", "it filters the tree for a trail, chooses it by its path, and checks what "
+                + "the field shows and what the app has."),
             TestingTips =
             [
                 "In Playwright, `await page.Tb().TreeSelect(\"Trail\").ChooseAsync(\"River valley\", \"Cedar "
@@ -7943,6 +7949,8 @@ public static class ExampleCatalog
                     + "is open; or one matching path."),
                 new("status", "The message shown when no path matches. It's an option that can't be chosen."),
             ],
+            Scenario = new("basic", "it chooses a parking lot by its path, then another by searching, and checks what "
+                + "the field shows and the value the app has."),
             TestingTip = "`page.Tb().Cascader(\"Trailhead\")` in Playwright, or `cut.Tb().Cascader(...)` in bUnit, "
                 + "finds the field by its label: `ChooseAsync(\"North ridge\", \"Pine Hollow\", \"Lower lot\")` "
                 + "clicks through the lists, `ChooseResultAsync(\"lower\", \"North ridge / Pine Hollow / Lower lot\")` "
@@ -9890,6 +9898,8 @@ public static class ExampleCatalog
             Ready = new("[role=menubar]", "the bar"),
             Target = new("menubar", "Trail editor"),
             Blocks = ["tb-menubar"],
+            Scenario = new("basic", "it chooses a command from two of the bar's menus and checks what the app ran "
+                + "each time."),
             TestingTip = "`page.Tb().Menubar(\"Trail editor\")` in Playwright, or `cut.Tb().Menubar(...)` in bUnit, "
                 + "finds the bar by its `AriaLabel`: `MenusAsync()` or `Menus` reads the menus' names, and "
                 + "`Menu(\"Edit\").ChooseAsync(\"Undo\")` opens a menu and chooses one of its items.",
@@ -11077,9 +11087,11 @@ public static class ExampleCatalog
                 new("cancel", "The cancel button."),
                 new("confirm", "The confirm button."),
             ],
+            Scenario = new("basic", "it cancels deleting the trail, then confirms it, and checks what the app did "
+                + "with each answer."),
             TestingTip = "`await page.Tb().Popconfirm(\"Delete trail\").ConfirmAsync()` opens it, confirms and waits "
                 + "until it closes, which it does once `OnConfirm` has run; `CancelAsync()` cancels and waits until it "
-                + "closes, though an async `OnCancel` may still be running, so check its result with `Expect`. An "
+                + "has closed and `OnCancel` has run. An "
                 + "`OnConfirm` that waits for the user, such as one that opens a dialog, would keep the helper "
                 + "waiting, so click `[data-part=confirm]` instead. In bUnit, "
                 + "`cut.Tb().Popconfirm(\"Delete trail\")` from `Trailblazor.Testing` has `ConfirmAsync` and "
