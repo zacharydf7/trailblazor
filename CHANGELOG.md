@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-23
 
+- `TbBanner` now keeps its icon, message, actions and close button in one row, and a message too long for it wraps beside the icon. In a banner narrower than 30rem the actions go under the message. Before, parts that didn't fit wrapped into centered rows around a start-aligned message. The banner's inner element is a grid now, and the banner is a size container (`container-type: inline-size`), so give it a width where its parent doesn't stretch it.
 - In `TbDataGrid`'s filter row, a date column's range filter now takes 17rem at its narrowest, where it took about 25rem: its two boxes share the field's width, and no longer each ask for a text box's default width. Each box still shows its whole placeholder.
 - Under `TbColumnGroup` headings in `TbDataGrid`, a blank cell below the first or last column of a group now has `data-band-edge` (`start`, `end` or both) and draws the group's edge. Before, the blank cells had no edges, so they read as one cell that crossed from one group into the next.
 - `TbToolbar` now moves a button into its More menu as soon as its content would reach into the toolbar's end padding, in every browser. Before, Chrome, Edge and Safari waited until the content touched the toolbar's edge, 4px later than Firefox.

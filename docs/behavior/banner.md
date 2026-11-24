@@ -11,6 +11,7 @@ Familiar apps: GitHub's site-wide notices, a cloud console's "planned maintenanc
 ## Pointer
 
 - [x] Clicking the close button raises `OnClose`; the page hides the banner in its handler. `TbBannerTests.Close_ShouldRaiseOnClose_WhenItsButtonIsClicked`
+- [x] The icon, message, actions and close button share one row, centered while they fit, and a message too long for it wraps beside the icon. In a banner narrower than 30rem the actions go under the message, and the icon and close button keep to its first line. `BannerTests.Banner_ShouldWrapItsMessageBesideTheIcon_WhenThePartsDontFitOneRow`
 
 ## Touch
 

@@ -4554,7 +4554,9 @@ public static class ExampleCatalog
             [
                 new("basic", "Banner", "`Title` leads in bold and names the banner for screen readers, and the "
                     + "message follows. `Actions` holds links or buttons, and `OnClose` shows a close button; hide the "
-                    + "banner when it's pressed.", typeof(BannerExample)),
+                    + "banner when it's pressed. A message too long for one row wraps beside the icon, and in a "
+                    + "banner narrower than 30rem the actions go under it. The banner takes its width from its "
+                    + "container, so give it one where the parent doesn't stretch it.", typeof(BannerExample)),
                 new("tones", "Tones", "`Tone` sets the color and the icon.", typeof(BannerTonesExample)),
                 new("plain", "Without a title or icon", "Without a `Title`, `AriaLabel` names the banner for screen "
                     + "readers; with neither, it's named \"Notice\". `ShowIcon=\"false\"` hides the icon.",
