@@ -98,7 +98,7 @@ order:
 | `Modes` | Accessibility: Before the page is interactive, and Getting Started's render modes table | How much works on a static page, and on a prerendered one before it turns interactive |
 | `Notes` | Notes and limitations | Behavior, limitations and known issues; a `Pitfall` shows as a warning |
 | `Telemetry`, `Blocks`, `Target`, `TestingTip` or `TestingTips`, `DataParts` | Their own sections | Counts, styles and how to test it |
-| `Scenario` | Testing | A whole test of one of the page's examples, in bUnit and in Playwright |
+| `Scenario` | Testing | A whole test of one of the page's examples, in bUnit, Playwright or both |
 | `Related` | Related | Catalog names of related components, linked with their summaries |
 
 A field's page adds the shared `AriaLabel` advice to Labeling and the focus events to Notes. Catalog text shows text
@@ -107,9 +107,9 @@ guide's; a test checks that every such link, and every `Related` name, reaches a
 
 ### The test a page shows
 
-A component page's Testing section shows a whole test of one of the page's examples, once in bUnit and once in
-Playwright, so a reader sees the helpers do a real job before reading the tips. The code on the page is the body of a
-test the suites run:
+A component page's Testing section shows a whole test of one of the page's examples, in bUnit and in Playwright when
+both can check it, so a reader sees the helpers do a real job before reading the tips. The code on the page is the body
+of a test the suites run:
 
 - The bUnit test is the one test in `tests/Trailblazor.Tests/Docs/Scenarios/<Name>ScenarioTests.cs`, and the Playwright
   test the one in `tests/Trailblazor.BrowserTests/Scenarios/<Name>ScenarioTests.cs`, where `<Name>` is the page's
@@ -120,6 +120,10 @@ test the suites run:
 - Test a task a user of an app would do, such as filling in, choosing, saving or checking, along with what the app
   shows in response. Drive it through `cut.Tb()` and `page.Tb()`, with the same steps in both packages, and assert on
   what a user would see. Keep comments to what a reader new to the helpers needs.
+- Some components can be checked in only one package: back to top scrolls a page, which only a browser does, and only
+  the bUnit helpers can hand a phrase to speech to text. Such a page shows the one test. Set
+  `Only = ScenarioPackage.Playwright` or `Only = ScenarioPackage.Bunit` on its scenario, leave out the other
+  package's file, and add a sentence to the scenario saying why the test is in one package alone.
 - The page shows only the test's body, so the body has to read well alone: the bUnit class is a `BunitContext` that
   calls `this.AddTrailblazor()`, and each file holds one test.
 - `TestScenarioTests` lists the pages that have no scenario yet. A page leaves the list when it gets its scenario,
@@ -181,8 +185,9 @@ mark it "n/a" with a reason (a layout component has no keys, for example). Some 
 
 - [ ] Testing gives the role-based locator, the `Trailblazor.Testing` helpers for bUnit and Playwright where they
       exist, and any wait the component needs, as short items rather than one paragraph.
-- [ ] Testing shows a whole test of one of the page's examples in bUnit and in Playwright (`Scenario`): a task a user
-      would do, driven through the helpers, with the same steps in both and assertions on what the user sees.
+- [ ] Testing shows a whole test of one of the page's examples in bUnit and in Playwright (`Scenario`), or in the one
+      package that can check it (`Only`): a task a user would do, driven through the helpers, with the same steps in
+      both when there are two and assertions on what the user sees.
 - [ ] Telemetry says what a `TelemetryName` makes the component count and when, and that values are never recorded.
 - [ ] Design tokens list what the component reads, and the page says how to restyle one instance (the `Classes`
       parameter, parts and state attributes) or links to where that is explained.

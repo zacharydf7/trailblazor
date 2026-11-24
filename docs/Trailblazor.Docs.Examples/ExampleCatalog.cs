@@ -223,20 +223,32 @@ public sealed record TestTarget(string Role, string? Name = null)
 
 // A realistic test of the example in the section with this id: Checks says in a sentence what the test does. Its
 // code is the body of the one test in <Name>ScenarioTests.cs, in tests/Trailblazor.Tests/Docs/Scenarios for bUnit and
-// in tests/Trailblazor.BrowserTests/Scenarios for Playwright, so the suites run what the page shows.
+// in tests/Trailblazor.BrowserTests/Scenarios for Playwright, or in one of them as Only says, so the suites run what
+// the page shows.
 public sealed record TestScenario(string Section, string Checks)
 {
-    public static string Bunit(Example example) => Body("Bunit", example);
+    // The one package with a test, when the other can't check the component; null when both can.
+    public ScenarioPackage? Only { get; init; }
 
-    public static string Playwright(Example example) => Body("Playwright", example);
+    public static string? Bunit(Example example) =>
+        example.Scenario!.Only == ScenarioPackage.Playwright ? null : Body(ScenarioPackage.Bunit, example);
+
+    public static string? Playwright(Example example) =>
+        example.Scenario!.Only == ScenarioPackage.Bunit ? null : Body(ScenarioPackage.Playwright, example);
 
     // The class and its file are named after the page, as in DataGridScenarioTests for data-grid.
     public static string TypeOf(Example example) =>
         string.Concat(example.Name.Split('-').Select(word => char.ToUpperInvariant(word[0]) + word[1..]))
             + "ScenarioTests";
 
-    private static string Body(string package, Example example) =>
-        RecipeSnippet.OfTest(ExampleSource.OfScenario(package, $"{TypeOf(example)}.cs"), TypeOf(example));
+    private static string Body(ScenarioPackage package, Example example) =>
+        RecipeSnippet.OfTest(ExampleSource.OfScenario(package.ToString(), $"{TypeOf(example)}.cs"), TypeOf(example));
+}
+
+public enum ScenarioPackage
+{
+    Bunit,
+    Playwright,
 }
 
 // The element a component marks with data-ready, as a CSS selector and as the testing guide names it. An element
@@ -1892,6 +1904,9 @@ public static class ExampleCatalog
             [
                 new("button", "The button, inside a root with `data-shown` while it shows."),
             ],
+            Scenario = new("basic", "it scrolls the log down until the button shows, presses it, and checks that the "
+                + "log is back at its top with its title focused. Only a browser scrolls, so the test is in "
+                + "Playwright alone.") { Only = ScenarioPackage.Playwright },
             TestingTips =
             [
                 "In bUnit, `cut.Tb().BackToTop().ClickAsync()` presses it; it's there whether or not the page has "
@@ -1965,6 +1980,9 @@ public static class ExampleCatalog
             [
                 new("button", "The toggle button, pressed while it listens."),
             ],
+            Scenario = new("basic", "it starts dictating, hands the app a phrase as the browser does on hearing one, "
+                + "and checks the notes. A test browser has no microphone, and only the bUnit helpers can hand the "
+                + "app a phrase, so the test is in bUnit alone.") { Only = ScenarioPackage.Bunit },
             TestingTips =
             [
                 "In bUnit, `cut.Tb().SpeechToText(\"Dictate notes\")` finds it: `StartAsync()` and `StopAsync()` press "
@@ -10964,10 +10982,12 @@ public static class ExampleCatalog
                 new("focus-scope", "The element that keeps focus inside it. It has `data-trapped` while `Trapped` "
                     + "is on, even while a newer trap is the one in force."),
             ],
-            TestingTip = "bUnit can't move focus, so test the trap in Playwright: press Tab from the last control in "
-                + "the scope and expect the first to be focused with `ToBeFocusedAsync()`. A script applies a "
-                + "blocking scope's hold too, so test it in Playwright: expect a control outside the scope to be "
-                + "inside an `[inert]` element, which `Locator(\"[inert]\").GetByRole(...)` finds.",
+            Scenario = new("trapping", "it opens the panel, checks that focus moves into it and that Tab and "
+                + "Shift+Tab stay inside, then closes it and checks that focus goes back to the button. bUnit can't "
+                + "move focus, so the test is in Playwright alone.") { Only = ScenarioPackage.Playwright },
+            TestingTip = "Like the trap, a blocking scope's hold comes from a script, so test it in Playwright: expect "
+                + "a control outside the scope to be inside an `[inert]` element, which "
+                + "`Locator(\"[inert]\").GetByRole(...)` finds.",
             TestingTips =
             [
                 "After `Trapped` changes on a scope that stays, wait for `data-trapped` to appear or go before "

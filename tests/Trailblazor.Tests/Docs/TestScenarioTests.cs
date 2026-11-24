@@ -10,9 +10,8 @@ public class TestScenarioTests : DocsTest
     // a new page ships with one instead of joining it.
     private static readonly string[] Owed =
     [
-        "text", "avatar", "timeline", "image", "icon", "button-group", "back-to-top", "progress", "label",
-        "mention-input", "time-picker", "query-builder", "focus-scope", "tour", "table", "table-of-contents",
-        "speech-to-text", "highlight", "skeleton",
+        "text", "avatar", "timeline", "image", "icon", "button-group", "progress", "label", "mention-input",
+        "time-picker", "query-builder", "tour", "table", "table-of-contents", "highlight", "skeleton",
     ];
 
     // The pages with nothing for a user to do or for a test to check, such as a spacer's, which need no scenario.
@@ -42,12 +41,20 @@ public class TestScenarioTests : DocsTest
         var section = Assert.Single(example.Sections, section => section.Id == scenario.Section);
         // The sentence follows "A whole test of the example under ...:" on the page.
         Assert.Matches(@"^[a-z].*\.$", scenario.Checks);
+        Assert.Equal(scenario.Only == ScenarioPackage.Playwright, TestScenario.Bunit(example) is null);
+        Assert.Equal(scenario.Only == ScenarioPackage.Bunit, TestScenario.Playwright(example) is null);
         // The page says the tests drive that section's example, so each has to.
-        Assert.Contains($"Render<{section.Component.Name}>()", TestScenario.Bunit(example));
-        Assert.Contains($"OpenAsync(browser, \"/examples/{name}/{scenario.Section}\")",
-            TestScenario.Playwright(example));
-        Assert.All([TestScenario.Bunit(example), TestScenario.Playwright(example)],
-            test => Assert.Contains(".Tb().", test));
+        if (TestScenario.Bunit(example) is { } bunit)
+        {
+            Assert.Contains($"Render<{section.Component.Name}>()", bunit);
+            Assert.Contains(".Tb().", bunit);
+        }
+
+        if (TestScenario.Playwright(example) is { } playwright)
+        {
+            Assert.Contains($"OpenAsync(browser, \"/examples/{name}/{scenario.Section}\")", playwright);
+            Assert.Contains(".Tb().", playwright);
+        }
     }
 
     [Fact]
@@ -55,11 +62,11 @@ public class TestScenarioTests : DocsTest
     {
         var files = typeof(Example).Assembly.GetManifestResourceNames()
             .Where(resource => resource.StartsWith("Scenarios/", StringComparison.Ordinal));
-        var pages = ExampleCatalog.All.Where(example => example.Scenario is not null)
-            .Select(example => $"{TestScenario.TypeOf(example)}.cs");
+        var pages = ExampleCatalog.All.Where(example => example.Scenario is not null).SelectMany(example =>
+            (example.Scenario!.Only is { } only ? [only] : Enum.GetValues<ScenarioPackage>())
+                .Select(package => $"Scenarios/{package}/{TestScenario.TypeOf(example)}.cs"));
 
-        Assert.Equal(pages.SelectMany(page => new[] { $"Scenarios/Bunit/{page}", $"Scenarios/Playwright/{page}" })
-            .Order(), files.Order());
+        Assert.Equal(pages.Order(), files.Order());
     }
 
     [Fact]
@@ -94,6 +101,34 @@ public class TestScenarioTests : DocsTest
         var lead = cut.FindAll("p").Single(text => text.TextContent.Contains("A whole test of the"));
         Assert.Equal(("Submit", "components/button#submit"),
             (lead.QuerySelector("a")!.TextContent, lead.QuerySelector("a")!.GetAttribute("href")));
+    }
+
+    [Fact]
+    public void ComponentPage_ShouldShowOnlyTheBrowserTest_WhenTheScenarioIsOnlyInPlaywright()
+    {
+        var cut = ComponentPage("back-to-top");
+
+        Assert.Empty(cut.FindAll("[aria-label='The test in bUnit']"));
+        Assert.StartsWith("var page = await OpenAsync(browser, \"/examples/back-to-top/basic\");",
+            cut.Find("[aria-label='The test in Playwright']").TextContent);
+        var lead = cut.FindAll("p").Single(text => text.TextContent.Contains("A whole test of the"));
+        Assert.EndsWith("with the helpers from Trailblazor.Testing.Playwright that the testing guide sets up.",
+            lead.TextContent);
+        Assert.DoesNotContain(cut.FindAll("p"), text => text.TextContent.Contains("BunitContext"));
+    }
+
+    [Fact]
+    public void ComponentPage_ShouldShowOnlyTheBunitTest_WhenTheScenarioIsOnlyInBunit()
+    {
+        var cut = ComponentPage("speech-to-text");
+
+        Assert.Empty(cut.FindAll("[aria-label='The test in Playwright']"));
+        Assert.StartsWith("var cut = Render<SpeechToTextExample>();",
+            cut.Find("[aria-label='The test in bUnit']").TextContent);
+        var lead = cut.FindAll("p").Single(text => text.TextContent.Contains("A whole test of the"));
+        Assert.EndsWith("with the helpers from Trailblazor.Testing that the testing guide sets up.", lead.TextContent);
+        Assert.Contains(cut.FindAll("p"), text => text.TextContent.Contains("BunitContext"));
+        Assert.DoesNotContain(cut.FindAll("p"), text => text.TextContent.Contains("OpenAsync"));
     }
 
     [Fact]
