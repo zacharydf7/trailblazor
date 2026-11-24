@@ -26,6 +26,41 @@ public class TbPaginationTests : BunitContext
         Assert.All(cut.FindAll("[data-part=ellipsis]"), gap => Assert.Equal("true", gap.GetAttribute("aria-hidden")));
     }
 
+    [Theory]
+    [InlineData(null, "1 … 9 10 11 … 20")]
+    [InlineData(9, "1 … 9 10 11 … 20")]
+    [InlineData(8, "1 … 10 … 20")]
+    [InlineData(7, "1 … 10 … 20")]
+    [InlineData(6, "")]
+    public async Task OnFit_ShouldShowFewerPagesAndThenThePageBox_WhenFewerButtonsFitOnItsRow(int? slots, string pages)
+    {
+        var cut = RenderPagination(page: 10, count: 20);
+
+        await cut.InvokeAsync(() => cut.Instance.OnFit(slots));
+
+        // With Previous and Next, seven pages need nine buttons, and the current page between the ends needs seven.
+        Assert.Equal(pages, string.Join(" ",
+            cut.FindAll("[data-part=page], [data-part=ellipsis]").Select(item => item.TextContent.Trim())));
+        Assert.Equal(pages.Length == 0, cut.FindAll("[data-part=page-box]").Count == 1);
+    }
+
+    [Fact]
+    public async Task OnFit_ShouldGiveUpSiblingsBeforeThePagesAtTheEnds_WhenBothWereAskedFor()
+    {
+        var cut = Render<TbPagination>(parameters => parameters.Add(pagination => pagination.Page, 10)
+            .Add(pagination => pagination.PageCount, 20).Add(pagination => pagination.SiblingCount, 2)
+            .Add(pagination => pagination.BoundaryCount, 2));
+
+        // Two pages at each end around the current one, with Previous and Next, need nine buttons.
+        await cut.InvokeAsync(() => cut.Instance.OnFit(9));
+        Assert.Equal(["1", "2", "…", "10", "…", "19", "20"],
+            cut.FindAll("[data-part=page], [data-part=ellipsis]").Select(item => item.TextContent.Trim()));
+
+        await cut.InvokeAsync(() => cut.Instance.OnFit(8));
+        Assert.Equal(["1", "…", "10", "…", "20"],
+            cut.FindAll("[data-part=page], [data-part=ellipsis]").Select(item => item.TextContent.Trim()));
+    }
+
     [Fact]
     public void Click_ShouldGoToThePage_WhenAPageOrStepButtonIsClicked()
     {

@@ -6825,7 +6825,8 @@ override Trailblazor.TbAlert.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbAppShell.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbBanner.OnAfterRender(bool firstRender) -> void
 override Trailblazor.TbInsertDivider.OnAfterRender(bool firstRender) -> void
-override Trailblazor.TbPagination.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbPagination.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
+Trailblazor.TbPagination.DisposeAsync() -> System.Threading.Tasks.ValueTask
 override Trailblazor.TbStepper.OnAfterRender(bool firstRender) -> void
 Trailblazor.TbCarousel.TelemetryName.get -> string?
 Trailblazor.TbCarousel.TelemetryName.set -> void

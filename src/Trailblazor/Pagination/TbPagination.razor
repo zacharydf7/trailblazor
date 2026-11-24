@@ -1,20 +1,25 @@
 @namespace Trailblazor
 @using System.Globalization
 @using Microsoft.AspNetCore.Components.Forms
+@using Trailblazor.Primitives
 @inherits TbComponentBase
+@implements IAsyncDisposable
 @inject NavigationManager Navigation
 @inject ITbLocalizer Localizer
+@inject JsModuleLoader Modules
 
 @* The testing helper reads data-page and data-page-count, waits for data-ready before a click that needs the page to
-   be interactive, and after the click for data-commits, which counts the user's page changes the app has handled. *@
-<nav @attributes="AdditionalAttributes" data-page="@CurrentPage"
+   be interactive, and after the click for data-commits, which counts the user's page changes the app has handled.
+   data-ready waits for the first fit, and the script sets data-fitting while a later one is still to show. *@
+@{ var pages = ShownPages(); }
+<nav @attributes="AdditionalAttributes" @ref="_pager" data-page="@CurrentPage"
      data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
      aria-label="@(AriaLabel ?? Localizer[TbStrings.PaginationNavigation])"
-     data-page-count="@Count" data-ready="@(RendererInfo.IsInteractive ? "" : null)" style="@Style"
+     data-page-count="@Count" data-ready="@(RendererInfo.IsInteractive && _fitted ? "" : null)" style="@Style"
      class="@ClassNames.Join("tb-pagination", ClassNames.Modifier("tb-pagination", Size),
-                Compact ? "tb-pagination--compact" : null, Class)">
+                pages is null ? "tb-pagination--compact" : null, Class)">
     @* Safari drops the list role from a list without bullets, so it is set again. *@
-    <ul role="list" class="tb-pagination__list">
+    <ul @ref="_list" role="list" class="tb-pagination__list">
         @if (ShowFirstLast)
         {
             <li>@Step(BuiltInIcons.PageFirst, FirstLabel, 1, "first")</li>
@@ -23,7 +28,7 @@
         {
             <li>@Step(BuiltInIcons.ChevronStart, PreviousLabel, CurrentPage - 1, "previous")</li>
         }
-        @if (Compact)
+        @if (pages is null)
         {
             <li class="tb-pagination__jump">
                 @* The page box is the pager's own, so a form around it neither counts it nor turns it off. *@
@@ -44,7 +49,7 @@
         {
             @* Keyed by page, so the button chosen keeps its focus when the pages shown shift around it. *@
             var gap = "gap-start";
-            @foreach (var page in PageRange.For(CurrentPage, Count, SiblingCount, BoundaryCount))
+            @foreach (var page in pages)
             {
                 @if (page is int number)
                 {
@@ -90,9 +95,6 @@
 
     private ControlTelemetry Telemetry => field ??= new(Services, GetType());
 
-    /// <inheritdoc />
-    protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
-
     private int _commits;
 
     /// <summary>The current page, from 1. Bind it with <c>@bind-Page</c>.</summary>
@@ -107,11 +109,13 @@
     [Parameter, EditorRequired]
     public int PageCount { get; set; }
 
-    /// <summary>How many pages show on each side of the current one. Defaults to 1.</summary>
+    /// <summary>How many pages show on each side of the current one, when there is room for them. Defaults to 1.
+    /// </summary>
     [Parameter]
     public int SiblingCount { get; set; } = 1;
 
-    /// <summary>How many pages always show at each end. Defaults to 1.</summary>
+    /// <summary>How many pages show at each end, when there is room for them; one always does. Defaults to 1.
+    /// </summary>
     [Parameter]
     public int BoundaryCount { get; set; } = 1;
 
@@ -124,7 +128,8 @@
     public bool ShowPreviousNext { get; set; } = true;
 
     /// <summary>Shows a box for the current page and the page count instead of numbered buttons, for long lists or
-    /// tight spaces.</summary>
+    /// tight spaces. A pagination with too little room for its first, current and last pages turns to this form by
+    /// itself.</summary>
     [Parameter]
     public bool Compact { get; set; }
 

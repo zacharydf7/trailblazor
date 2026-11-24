@@ -85,6 +85,10 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Markup and behavior
 
+#### 2026-11-24
+
+- `TbPagination` now fits its pages to the room it has. Where its buttons would wrap onto a second row, it shows fewer pages: first it drops the current page's siblings, then any pages `BoundaryCount` adds past the first and last, and where even the first, current and last pages don't fit, it shows the compact form's page box. The pages come back when there is room. A pagination showing its page box gets `tb-pagination--compact`, as with `Compact`, and a `TbDataGrid`'s pager does the same. `data-ready` now waits for the first fit, and `data-fitting` marks a later one that is still to show. It now loads a script for this and implements `IAsyncDisposable`. Before the page is interactive the buttons still wrap.
+
 #### 2026-11-23
 
 - A `TbDataGrid` (a tree grid too) or `TbKanban` wider than its container now shows that it scrolls sideways where the browser draws no scrollbar until the user scrolls, as on a phone: its scroll box gets `data-more-left` and `data-more-right` for the sides with more content past them, and fades there with a `mask-image`. A box whose scrollbar takes room of its own already shows that it scrolls, so it is unchanged. A grid's side that pinned columns cover never fades, and neither does a scroll box while it shows a focus ring. A scroll of the kanban board that ends near a column's start also comes to rest on that column (`scroll-snap-type: inline proximity`). `TbKanban` now loads a script for this and implements `IAsyncDisposable`.

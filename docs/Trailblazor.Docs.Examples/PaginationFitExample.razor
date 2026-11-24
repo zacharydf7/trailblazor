@@ -1,0 +1,9 @@
+@* Drag the corner to narrow the frame and watch the pages go, until the page box takes their place. *@
+<div style="inline-size: 100%; max-inline-size: 36rem; resize: inline; overflow: hidden; padding: var(--tb-space-2);
+            border: 1px solid var(--tb-border-subtle); border-radius: var(--tb-radius-md)">
+    <TbPagination @bind-Page="_photo" PageCount="40" SiblingCount="2" BoundaryCount="2" AriaLabel="Trail photos" />
+</div>
+
+@code {
+    private int _photo = 20;
+}

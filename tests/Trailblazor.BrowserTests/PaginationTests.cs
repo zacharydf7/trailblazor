@@ -27,6 +27,124 @@ public class PaginationTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Pagination_ShouldShowFewerPagesOnOneRow_WhenItHasLittleRoom(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/pagination");
+        var reports = Navigation(page, "Trail reports").Locator("[data-part=page]");
+        var camps = Navigation(page, "Campsites");
+        // On its first page, Trail reports shows 1 to 5 and 20.
+        await Expect(reports).ToHaveCountAsync(6);
+        await Expect(camps.Locator("[data-part=page]")).Not.ToHaveCountAsync(0);
+        // No control of any pager starts below its first one.
+        const string OneRowEach = """
+            () => [...document.querySelectorAll('.tb-pagination__list')].every(list =>
+                [...list.children].every(item => item.offsetTop < list.children[0].offsetTop + list.children[0].offsetHeight))
+            """;
+
+        await page.SetViewportSizeAsync(390, 800);
+
+        // Trail reports gives up the current page's siblings, and Campsites, with more to show, turns to its page box.
+        await Expect(reports).ToHaveCountAsync(4);
+        await Expect(camps.Locator("[data-part=page-box]")).ToBeVisibleAsync();
+        await page.WaitForFunctionAsync(OneRowEach);
+
+        await page.SetViewportSizeAsync(1280, 800);
+        await Expect(reports).ToHaveCountAsync(6);
+        await Expect(camps.Locator("[data-part=page-box]")).ToHaveCountAsync(0);
+    }
+
+    private static ILocator Pages(IPage page, string pagination) =>
+        Navigation(page, pagination).Locator("[data-part=page]");
+
+    private static Task WidenAsync(IPage page, string frame, string width) =>
+        page.GetByTestId(frame).EvaluateAsync("(frame, width) => frame.style.inlineSize = width", width);
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Pagination_ShouldGetItsPagesBack_WhenTheRowItSharesOrTheBoxAroundItsWrapperWidens(string browser)
+    {
+        var page = await OpenAsync(browser, "/pagination-fit");
+        await Expect(Navigation(page, "Wrapped")).ToHaveAttributeAsync("data-ready", "");
+        await Expect(Pages(page, "Wrapped")).ToHaveCountAsync(6);
+
+        // The wrapper is as wide as what it holds, so only the frame around it changes size when there is room again.
+        await WidenAsync(page, "wrapped", "18rem");
+        await Expect(Pages(page, "Wrapped")).Not.ToHaveCountAsync(6);
+        await WidenAsync(page, "wrapped", "");
+        await Expect(Pages(page, "Wrapped")).ToHaveCountAsync(6);
+
+        // The note beside the pager takes room from it, and gives it back when it gets shorter.
+        await WidenAsync(page, "shared", "34rem");
+        await Expect(Pages(page, "Shared row")).ToHaveCountAsync(4);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Shorten the note" }).ClickAsync();
+        await Expect(Pages(page, "Shared row")).ToHaveCountAsync(6);
+
+        // So does a chip that wasn't in the row when the pager first measured it.
+        var chip = page.GetByRole(AriaRole.Button, new() { Name = "Toggle the chip" });
+        await chip.ClickAsync();
+        await Expect(Pages(page, "Shared row")).Not.ToHaveCountAsync(6);
+        await chip.ClickAsync();
+        await Expect(Pages(page, "Shared row")).ToHaveCountAsync(6);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Pagination_ShouldGetItsPagesBack_WhenItsPageBoxWasAllItShowed(string browser)
+    {
+        var page = await OpenAsync(browser, "/pagination-fit");
+        var alone = Navigation(page, "Pages alone");
+        await Expect(alone).ToHaveAttributeAsync("data-ready", "");
+
+        await WidenAsync(page, "alone", "9rem");
+        await Expect(alone.Locator("[data-part=page-box]")).ToBeVisibleAsync();
+        await WidenAsync(page, "alone", "");
+
+        await Expect(Pages(page, "Pages alone")).ToHaveCountAsync(6);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Pagination_ShouldKeepItsPages_WhenItIsHidden(string browser)
+    {
+        var page = await OpenAsync(browser, "/pagination-fit");
+        // Found by its element, since a hidden pager has no role to find it by.
+        var hidden = page.GetByTestId("hidden").Locator("nav");
+        await Expect(hidden).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByTestId("hidden").EvaluateAsync("frame => frame.hidden = true");
+        // The fit a size change brings is marked, then finishes; a hidden pager has no width to fit to.
+        await hidden.EvaluateAsync("pager => new Promise(done => requestAnimationFrame(() => setTimeout(done)))");
+        await Expect(hidden).Not.ToHaveAttributeAsync("data-fitting", "");
+
+        await Expect(hidden.Locator("[data-part=page]")).ToHaveCountAsync(6);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Pagination_ShouldKeepFocusInside_WhenTheFocusedPageGoesForLackOfRoom(string browser)
+    {
+        var page = await OpenAsync(browser, "/pagination-fit");
+        await Expect(Navigation(page, "Wrapped")).ToHaveAttributeAsync("data-ready", "");
+        await Page(page, "Wrapped", 5).FocusAsync();
+
+        // Page 5 is a sibling the pager gives up, and then every page goes for the page box.
+        await WidenAsync(page, "wrapped", "24rem");
+        await Expect(Page(page, "Wrapped", 1)).ToBeFocusedAsync();
+        await WidenAsync(page, "wrapped", "12rem");
+        await Expect(Navigation(page, "Wrapped").Locator("[data-part=page-box] input")).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task GoToPageAsync_ShouldReachThePage_WhenThePaginationStartsWithLittleRoom(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/pagination",
+            new() { ViewportSize = new() { Width = 390, Height = 800 } });
+
+        // Campsites turns to its page box here, and Trail reports to fewer pages, after the page is interactive.
+        await page.Tb().Pagination("Campsites").GoToPageAsync(9);
+        await page.Tb().Pagination("Trail reports").GoToPageAsync(7);
+
+        Assert.Equal(9, await page.Tb().Pagination("Campsites").PageAsync());
+        Assert.Equal(7, await page.Tb().Pagination("Trail reports").PageAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Pagination_ShouldGoToThePageAndKeepFocusOnIt_WhenAPageIsChosenWithTheKeyboard(string browser)
     {
         var page = await OpenAsync(browser, "/examples/pagination");

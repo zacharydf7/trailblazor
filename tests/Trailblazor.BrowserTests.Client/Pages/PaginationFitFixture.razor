@@ -1,0 +1,39 @@
+@page "/pagination-fit"
+
+@* A test sets each frame's width. The first pager shares a row with a note and with a chip that comes and goes, the
+   second is in a wrapper only as wide as what it holds, the third has no step buttons, so its compact form is a single
+   item, and the fourth gets hidden. *@
+<div data-testid="shared" style="display: flex; align-items: center; gap: 1rem">
+    <span style="flex: none">@_note</span>
+    <TbPagination @bind-Page="_shared" PageCount="20" AriaLabel="Shared row" />
+    @if (_chip)
+    {
+        <span style="flex: none">12 trails selected for the trip</span>
+    }
+</div>
+<button type="button" @onclick="@(() => _note = "20 trails")">Shorten the note</button>
+<button type="button" @onclick="() => _chip = !_chip">Toggle the chip</button>
+
+<div data-testid="wrapped" style="display: flex">
+    <div style="display: flex; align-items: center; gap: 1rem">
+        <TbPagination @bind-Page="_wrapped" PageCount="20" AriaLabel="Wrapped" />
+        <button type="button" style="flex: none">Export</button>
+    </div>
+</div>
+
+<div data-testid="alone" style="display: flex">
+    <TbPagination @bind-Page="_alone" PageCount="20" ShowPreviousNext="false" AriaLabel="Pages alone" />
+</div>
+
+<div data-testid="hidden">
+    <TbPagination @bind-Page="_hidden" PageCount="20" AriaLabel="Hidden" />
+</div>
+
+@code {
+    private string _note = "Showing 1 to 10 of 2,000 trails";
+    private bool _chip;
+    private int _shared = 1;
+    private int _wrapped = 1;
+    private int _alone = 1;
+    private int _hidden = 1;
+}

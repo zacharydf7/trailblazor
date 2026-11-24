@@ -11771,10 +11771,11 @@ public static class ExampleCatalog
             [
                 new("sort-page-and-select", "Sort, page and select", "Click a header to sort by it: the next click "
                     + "reverses it, and the next stops sorting by it. Shift adds a column to the sorts. Pages come "
-                    + "with a line such as \"1–5 of 7\" and a `TbPagination`. `ShowFirstLast` adds first and last "
-                    + "page buttons to it, and `PageSizes` adds a list of page sizes. `Multiple` selection gives each "
-                    + "row a checkbox and adds one to the header that selects every row on the page. `Single` uses "
-                    + "radio buttons. A column's `CellTemplate` can hold buttons.",
+                    + "with a line such as \"1–5 of 7\" and a `TbPagination`, which in a narrow grid shows fewer "
+                    + "pages and then a page box, as a [pagination](components/pagination) does. `ShowFirstLast` adds "
+                    + "first and last page buttons to it, and `PageSizes` adds a list of page sizes. `Multiple` "
+                    + "selection gives each row a checkbox and adds one to the header that selects every row on the "
+                    + "page. `Single` uses radio buttons. A column's `CellTemplate` can hold buttons.",
                     typeof(DataGridExample)),
                 new("row-click", "Clicking a row", "With a `SelectionMode` set, a click on a row selects it, unless the "
                     + "click lands on a button, link or field inside the row. `RowClickSelects=\"false\"` leaves "
@@ -12682,12 +12683,18 @@ public static class ExampleCatalog
                     typeof(PaginationExample)),
                 new("long-lists", "First, last and neighbors", "`ShowFirstLast` adds First and Last buttons to a "
                     + "pagination. `SiblingCount` sets how many pages show either side of the current "
-                    + "one.", typeof(PaginationLongExample)),
+                    + "one, when there is room for them.", typeof(PaginationLongExample)),
                 new("size", "Size", "`Size` sets the size of a pagination's buttons.", typeof(PaginationSizeExample)),
-                new("boundary", "Pages at the ends", "`BoundaryCount` sets how many pages a pagination always shows at "
-                    + "each end, 1 unless set.", typeof(PaginationBoundaryExample)),
+                new("boundary", "Pages at the ends", "`BoundaryCount` sets how many pages a pagination shows at each "
+                    + "end when there is room for them, 1 unless set.", typeof(PaginationBoundaryExample)),
+                new("little-room", "Little room", "A pagination with too little room for its pages on one row shows "
+                    + "fewer of them: first it drops the current page's siblings, then any pages `BoundaryCount` adds "
+                    + "past the first and last, and when even the first, current and last pages don't fit, it shows "
+                    + "the compact form's page box. The pages come back when there is room. Drag the frame's corner "
+                    + "here to see it happen.", typeof(PaginationFitExample)),
                 new("compact", "Compact", "`Compact` replaces a pagination's page buttons with a box for the page "
-                    + "number. Typing a page and pressing Enter, or leaving the box, goes there.",
+                    + "number. Typing a page and pressing Enter, or leaving the box, goes there. A pagination with "
+                    + "too little room for its pages turns to this form by itself.",
                     typeof(PaginationCompactExample)),
                 new("links", "Links", "With `PageHref`, every item of a pagination is a link, so they work before the "
                     + "page is interactive and can open in a new tab while this one stays on its page.",
@@ -12705,15 +12712,15 @@ public static class ExampleCatalog
                 new(["Enter", "Space"], "Presses the focused button.") { When = "As buttons" },
                 new(["Enter"], "Follows the link.") { When = "With `PageHref`" },
                 new(["Enter"], "Goes to the page typed in the box, without submitting a form around it.")
-                    { When = "In `Compact`" },
-                new(["Up", "Down"], "Goes to the next or previous page.") { When = "In `Compact`" },
+                    { When = "In the page box" },
+                new(["Up", "Down"], "Goes to the next or previous page.") { When = "In the page box" },
             ],
             Labeling =
             [
                 "A `navigation` landmark named by `AriaLabel` (\"Pagination\" by default); name each one when a page "
                     + "has several.",
-                "Each page is a button named \"Page 3\". The Previous, Next, First and Last buttons are named, and in "
-                    + "compact mode the page box is named \"Page\".",
+                "Each page is a button named \"Page 3\". The Previous, Next, First and Last buttons are named, and "
+                    + "the page box, shown with `Compact` or for lack of room, is named \"Page\".",
             ],
             Announcements =
             [
@@ -12723,13 +12730,16 @@ public static class ExampleCatalog
             [
                 "The Previous, Next, First and Last buttons turn off at either end but stay focusable, so focus stays "
                     + "on Next after it reaches the last page. Focus stays on a chosen page as the pages around it "
-                    + "shift.",
+                    + "shift. When a focused page goes for lack of room, as it can when the page is zoomed, focus "
+                    + "moves to the current page or to the page box.",
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
                 "With `PageHref`, every item is already a link. Without it, the buttons do nothing until the page is "
                     + "interactive.",
+                "Buttons too wide for their row wrap. Once the page is interactive, the pagination shows fewer pages "
+                    + "to keep to one row.",
             ],
             Ready = new(".tb-pagination", "the navigation"),
             Target = new("navigation", "Trail reports"),
@@ -12746,11 +12756,14 @@ public static class ExampleCatalog
                 new("last", "The button that goes to the last page."),
             ],
             TestingTip = "To go to a page, `await page.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from "
-                + "`Trailblazor.Testing.Playwright` clicks it, types it into a compact pagination's box, or steps "
-                + "with Next and Previous, then waits until the app has run its `PageChanged`, which the pagination "
-                + "counts in `data-commits` since it shows the new page first. In bUnit, "
+                + "`Trailblazor.Testing.Playwright` clicks it, types it into the page box of a pagination that is "
+                + "compact or has turned to its box for lack of room, or steps with Next and Previous, then waits "
+                + "until the app has run its `PageChanged`, which the pagination counts in `data-commits` since it "
+                + "shows the new page first. It waits for the pagination to fit its pages first: `data-ready` comes "
+                + "with the first fit, and `data-fitting` marks a later one that is still to show. In bUnit, "
                 + "`cut.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from `Trailblazor.Testing` does the same, and "
-                + "`Page` reads the current page.",
+                + "`Page` reads the current page. bUnit lays nothing out, so there a pagination always shows the "
+                + "pages it was asked for.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"trail-pages\"`, it counts `trailblazor.control.shown` as it "

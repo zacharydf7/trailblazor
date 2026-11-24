@@ -29,11 +29,15 @@ Familiar apps: search results, GitHub's lists, the pager under a data table
 ## Touch
 
 - [x] Tapping a control goes to its page, since it listens for the click. `TbButtonBase.razor`
-- [x] Controls too wide for their row wrap, so none is out of reach. `trailblazor.css`
+- [x] A pagination with too little room for its pages on one row shows fewer of them: first it drops the current page's siblings, then any pages `BoundaryCount` adds past the first and last, and when even the first, current and last pages don't fit, it shows the compact form's page box. `PaginationTests.Pagination_ShouldShowFewerPagesOnOneRow_WhenItHasLittleRoom`, `TbPaginationTests.OnFit_ShouldShowFewerPagesAndThenThePageBox_WhenFewerButtonsFitOnItsRow`, `TbPaginationTests.OnFit_ShouldGiveUpSiblingsBeforeThePagesAtTheEnds_WhenBothWereAskedFor`
+- [x] The pages come back when there is room, whether the pagination fills its container, shares a row with other content, sits in a wrapper only as wide as what it holds, or showed nothing but its page box. What shares a row with a wrapper around it, not with the pagination itself, isn't watched, so room that only it gives back shows at the next resize. `PaginationTests.Pagination_ShouldGetItsPagesBack_WhenTheRowItSharesOrTheBoxAroundItsWrapperWidens`, `PaginationTests.Pagination_ShouldGetItsPagesBack_WhenItsPageBoxWasAllItShowed`
+- [x] A hidden pagination keeps the pages it had. `PaginationTests.Pagination_ShouldKeepItsPages_WhenItIsHidden`
+- [x] Before the page is interactive, controls too wide for their row wrap, so none is out of reach. `trailblazor.css`
 
 ## Focus
 
 - [x] The chosen page keeps focus when the numbers shift around it. `PaginationTests.Pagination_ShouldGoToThePageAndKeepFocusOnIt_WhenAPageIsChosenWithTheKeyboard`
+- [x] When a focused page goes for lack of room, focus moves to the current page, or to the page box when that takes the pages' place. `PaginationTests.Pagination_ShouldKeepFocusInside_WhenTheFocusedPageGoesForLackOfRoom`
 - [x] A step button that reaches the end keeps focus, turned off. `PaginationTests.Pagination_ShouldStepStopAndKeepFocusAtTheEnds_WhenFirstPreviousNextAndLastAreUsed`
 - [x] A focused control shows a focus ring. `trailblazor.css`
 - [x] The navigation is named "Pagination", or by `AriaLabel`. `TbPaginationTests.Render_ShouldNameTheNavigationByAriaLabel_WhenGivenOne`

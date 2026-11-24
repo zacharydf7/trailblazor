@@ -2292,10 +2292,10 @@ public sealed class TbPaginationLocator(ILocator scope, string? name)
     public async Task<int> PageAsync() =>
         int.Parse((await Navigation.GetAttributeAsync("data-page"))!, CultureInfo.InvariantCulture);
 
-    /// <summary>Goes to this page and waits until it is current. A compact pagination gets the number typed into its
-    /// box; otherwise the page's button is clicked, after stepping toward it through the shown pages when it isn't
-    /// among them. Buttons wait for the page to be interactive; links, from <c>PageHref</c>, are followed at once.
-    /// Throws for a page past the last.</summary>
+    /// <summary>Goes to this page and waits until it is current. A pagination showing its page box, with
+    /// <c>Compact</c> or for lack of room, gets the number typed into the box; otherwise the page's button is clicked,
+    /// after stepping toward it through the shown pages when it isn't among them. Buttons wait for the page to be
+    /// interactive; links, from <c>PageHref</c>, are followed at once. Throws for a page past the last.</summary>
     public async Task GoToPageAsync(int number)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(number, 1);
@@ -2309,25 +2309,21 @@ public sealed class TbPaginationLocator(ILocator scope, string? name)
         }
 
         var box = Navigation.Locator("[data-part=page-box] input");
-        if (await box.CountAsync() > 0)
-        {
-            // The current page typed again raises no change for the app to answer.
-            if (await CurrentAsync() == number)
-            {
-                return;
-            }
-
-            await GoAsync(number, async () =>
-            {
-                await box.FillAsync(number.ToString(CultureInfo.InvariantCulture));
-                await box.PressAsync("Enter");
-            });
-            return;
-        }
-
         var pages = Navigation.Locator("[data-part=page]");
+        // The current page typed again raises no change for the app to answer, so it ends here too.
         while (await CurrentAsync() is var current && current != number)
         {
+            await FittedAsync();
+            if (await box.CountAsync() > 0)
+            {
+                await GoAsync(number, async () =>
+                {
+                    await box.FillAsync(number.ToString(CultureInfo.InvariantCulture));
+                    await box.PressAsync("Enter");
+                });
+                continue;
+            }
+
             var shown = (await pages.AllInnerTextsAsync())
                 .Select(shownPage => int.Parse(shownPage, CultureInfo.InvariantCulture)).ToList();
             // The page itself, or the shown page closest to it on the way there; with no page shown in between, as
@@ -2350,16 +2346,29 @@ public sealed class TbPaginationLocator(ILocator scope, string? name)
     private async Task<int> CurrentAsync() =>
         int.Parse((await Navigation.GetAttributeAsync("data-page"))!, CultureInfo.InvariantCulture);
 
+    // With little room a pagination shows fewer pages, or its page box, once its script has measured it, and again a
+    // frame after a resize, so this waits for the fit to show before a page is chosen.
+    private async Task FittedAsync()
+    {
+        await ReadyAsync();
+        await Navigation.EvaluateAsync("pager => new Promise(done => requestAnimationFrame(() => setTimeout(done)))");
+        await Assertions.Expect(Navigation).Not.ToHaveAttributeAsync("data-fitting", "");
+    }
+
     // Blazor attaches its handlers once the page is interactive, so a button or the box waits for that; a link
     // navigates without it.
-    private async Task GoAsync(int number, Func<Task> act)
+    private async Task ReadyAsync()
     {
         if (await Navigation.Locator("a[data-part=page]").CountAsync() == 0
             || await Navigation.Locator("[data-part=page-box]").CountAsync() > 0)
         {
             await Assertions.Expect(Navigation).ToHaveAttributeAsync("data-ready", "");
         }
+    }
 
+    private async Task GoAsync(int number, Func<Task> act)
+    {
+        await ReadyAsync();
         // The page shown changes before the app's PageChanged runs, so the wait follows the count of finished changes.
         await Commit.CountedAsync(Navigation, "data-commits", async () =>
         {
