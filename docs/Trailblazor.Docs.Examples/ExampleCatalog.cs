@@ -11809,8 +11809,12 @@ public static class ExampleCatalog
                     + "`Multiple` grid, Shift with a click on a row or its checkbox selects the range from the row last "
                     + "chosen. In a virtualized grid with a `DataProvider`, the range covers only the rows it has loaded.",
                     typeof(DataGridRowClickExample)),
-                new("columns", "Column options", "`Width` sets a column's width and `Align` lines up its cells. Without "
-                    + "`Align`, numbers line up at the end and everything else at the start. `SortBy` sorts by "
+                new("columns", "Column options", "`Width` sets a column's width and `Align` lines up its cells. A "
+                    + "column of text with no `Width` keeps at least 8rem, room for a few words on a line, so a grid "
+                    + "with little room scrolls sideways before its text wraps a word to a line; `MinWidth` sets a "
+                    + "different minimum for any column, and a date or a time stays on one line. In a grid with "
+                    + "`VirtualizeColumns`, only a column the user can resize has a minimum. Without `Align`, "
+                    + "numbers line up at the end and everything else at the start. `SortBy` sorts by "
                     + "something other than what the column shows, such as a rank, and `Sorts` sets the sort the grid "
                     + "starts with.", typeof(DataGridColumnsExample)),
                 new("row-classes", "Row classes", "`RowClass` gives a row a class of your own, from its item. Say the "

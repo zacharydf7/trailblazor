@@ -100,6 +100,8 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 ## Touch
 
 - [x] A tap on a row selects it: the grid listens for the click a tap sends. `Trailblazor.lib.module.js`
+- [x] A grid with little room scrolls sideways before its text wraps a word to a line: a column of text with no `Width` keeps at least 8rem, and a column's `MinWidth` sets a different minimum, whether or not the grid's columns can be resized. In a grid with `VirtualizeColumns`, only a column the user can resize has a minimum. `DataGridTests.Grid_ShouldScrollSidewaysBeforeItsTextWrapsAWordToALine_WhenItHasLittleRoom`, `TbDataGridResizeTests.Render_ShouldKeepRoomForAFewWordsInColumnsOfText_WhenColumnsArentResizable`, `TbDataGridResizeTests.Render_ShouldGiveAColumnNoMinimum_WhenColumnsAreDrawnOnlyInViewAndItCantBeResized`
+- [x] A date or a time stays on one line where the browser sizes the columns, however narrow the grid; with set column widths it wraps, as an editor's message in its cell always does. `TbDataGridTests.Render_ShouldKeepADateOnOneLine_WhenAColumnHoldsDates`, `trailblazor.css`
 - [x] A grid wider than its container, with no scrollbar of its own to show that it scrolls, fades at each side that has more columns past it, except a side its pinned columns cover, and not while its scroll box shows a focus ring. `DataGridTests.ScrollBox_ShouldFadeTheSideWithMoreColumns_WhenItScrollsWithNoScrollbarOfItsOwn`
 - [x] A scrollbar that takes room already shows that the grid scrolls, so a grid with one has no fade. `scroll-edges.js`
 - [x] A finger held on a handle for 300 ms starts a drag, through pointer events, and a swipe elsewhere scrolls. `pointer-drag.js`

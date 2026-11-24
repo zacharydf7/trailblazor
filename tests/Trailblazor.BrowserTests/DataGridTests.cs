@@ -211,6 +211,27 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Grid_ShouldScrollSidewaysBeforeItsTextWrapsAWordToALine_WhenItHasLittleRoom(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid",
+            new() { ViewportSize = new() { Width = 390, Height = 900 } });
+        var trails = page.Tb().Grid("Trails");
+        await trails.WaitForRowsAsync();
+        var table = page.GetByRole(AriaRole.Table, new() { Name = "Trails", Exact = true })
+            .Or(page.GetByRole(AriaRole.Grid, new() { Name = "Trails", Exact = true })).First;
+
+        // The Name and Region columns hold text, and keep at least 8rem each.
+        foreach (var column in new[] { "Name", "Region" })
+        {
+            var width = await table.Locator($"thead th[data-column={column}]")
+                .EvaluateAsync<double>("header => header.getBoundingClientRect().width");
+            Assert.True(width >= 127.5, $"{column} is {width}px wide.");
+        }
+
+        Assert.True(await ScrollBox(page, "Trails").EvaluateAsync<bool>("box => box.scrollWidth > box.clientWidth"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ScrollBox_ShouldFadeTheSideWithMoreColumns_WhenItScrollsWithNoScrollbarOfItsOwn(string browser)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");

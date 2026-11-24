@@ -9529,6 +9529,16 @@
         text-align: end;
     }
 
+    /* A date or a time has spaces in it, and stays on one line where a narrow grid would wrap it. A table with set
+       column widths would cut it short instead, so there it still wraps, and so does an editor's message. */
+    .tb-data-grid__table:not(.tb-data-grid__table--fixed) .tb-data-grid__cell--nowrap {
+        white-space: nowrap;
+    }
+
+    .tb-data-grid__cell--nowrap > :is(.tb-data-grid__editor, .tb-data-grid__row-actions) {
+        white-space: normal;
+    }
+
     .tb-data-grid__header[aria-sort],
     .tb-data-grid__header:has(.tb-data-grid__sort-icon) {
         color: var(--tb-color-text);

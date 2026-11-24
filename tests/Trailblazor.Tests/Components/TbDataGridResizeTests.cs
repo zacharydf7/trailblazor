@@ -51,6 +51,60 @@ public class TbDataGridResizeTests : BunitContext
         cut.Find($"th[data-column={column}]").GetAttribute("style");
 
     [Fact]
+    public void Render_ShouldKeepRoomForAFewWordsInColumnsOfText_WhenColumnsArentResizable()
+    {
+        var cut = Render<TbDataGrid<Hike>>(parameters => parameters.Add(grid => grid.Items, Hikes)
+            .Add(grid => grid.AriaLabel, "Hikes").Add(grid => grid.KeySelector, hike => hike.Id)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                Column(builder, 0, hike => hike.Name);
+                Column(builder, 10, hike => hike.Region, nameof(TbColumn<Hike>.Width), "10rem");
+                Column(builder, 20, hike => hike.Notes, nameof(TbColumn<Hike>.MinWidth), "5rem");
+                Column(builder, 30, hike => hike.Id);
+            })));
+
+        // Name is text with no Width, so it keeps 8rem, and Region's Width says how wide it means to be. Notes' own
+        // MinWidth always counts, and Id is a number, which doesn't wrap, so it has no minimum.
+        Assert.Equal("min-inline-size: 8rem", StyleOf(cut, "Name"));
+        Assert.Equal("width: 10rem", StyleOf(cut, "Region"));
+        Assert.Equal("min-inline-size: 5rem", StyleOf(cut, "Notes"));
+        Assert.Null(StyleOf(cut, "Id"));
+
+        static void Column(RenderTreeBuilder builder, int sequence, Expression<Func<Hike, object?>> field,
+            string? name = null, string? value = null)
+        {
+            builder.OpenComponent<TbColumn<Hike>>(sequence);
+            builder.AddAttribute(sequence + 1, nameof(TbColumn<Hike>.Field), field);
+            if (name is not null)
+            {
+                builder.AddAttribute(sequence + 2, name, value);
+            }
+
+            builder.CloseComponent();
+        }
+    }
+
+    [Fact]
+    public void Render_ShouldGiveAColumnNoMinimum_WhenColumnsAreDrawnOnlyInViewAndItCantBeResized()
+    {
+        var cut = Render<TbDataGrid<Hike>>(parameters => parameters.Add(grid => grid.Items, Hikes)
+            .Add(grid => grid.AriaLabel, "Hikes").Add(grid => grid.KeySelector, hike => hike.Id)
+            .Add(grid => grid.VirtualizeColumns, true).Add(grid => grid.ResizableColumns, true)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<TbColumn<Hike>>(0);
+                builder.AddAttribute(1, nameof(TbColumn<Hike>.Field),
+                    (Expression<Func<Hike, object?>>)(hike => hike.Notes));
+                builder.AddAttribute(2, nameof(TbColumn<Hike>.MinWidth), "12rem");
+                builder.AddAttribute(3, nameof(TbColumn<Hike>.Resizable), false);
+                builder.CloseComponent();
+            })));
+
+        // The grid works each column's place out from its pixel width, so nothing may draw it wider.
+        Assert.Equal("width: 160px", StyleOf(cut, "Notes"));
+    }
+
+    [Fact]
     public void Render_ShouldGiveEachResizableColumnAMenuAndAnEdge_WhenColumnsAreResizable()
     {
         var cut = RenderHikes();

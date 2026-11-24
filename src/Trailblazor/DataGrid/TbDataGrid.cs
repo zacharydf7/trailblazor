@@ -1557,7 +1557,14 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private string? HeaderStyle(TbColumn<TItem> column) =>
         Styles.Join(WidthOf(column) is { } width ? $"width: {width}" : null,
-            CanResize(column) ? $"min-inline-size: {column.MinWidth ?? "8rem"}" : null, PinStyle(column));
+            MinWidthOf(column) is { } least ? $"min-inline-size: {least}" : null, PinStyle(column));
+
+    // Text wraps, so a column of text keeps room for a few words unless it has a Width, and a narrow grid scrolls
+    // sideways first. Columns drawn only while in view keep the pixel widths the grid works their places out from.
+    private string? MinWidthOf(TbColumn<TItem> column) =>
+        CanResize(column) ? column.MinWidth ?? "8rem"
+        : VirtualizeColumns ? null
+        : column.MinWidth ?? (column.HoldsText && column.Width is null ? "8rem" : null);
 
     private string? WidthOf(TbColumn<TItem> column) => VirtualizeColumns
         ? $"{PixelsOf(column).ToString(CultureInfo.InvariantCulture)}px"

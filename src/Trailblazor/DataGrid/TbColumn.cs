@@ -173,8 +173,12 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     [Parameter]
     public bool Hideable { get; set; } = true;
 
-    /// <summary>The narrowest the user can make the column, as CSS, such as <c>"8rem"</c>. Defaults to 8rem, room for
-    /// its header's buttons and the start of its title.</summary>
+    /// <summary>The narrowest the column gets, as CSS, such as <c>"8rem"</c>: the least the user can resize it to, and
+    /// the least a grid with little room squeezes it to before it scrolls sideways. Defaults to 8rem for a column the
+    /// user can resize (room for its header's buttons and the start of its title) and for a column whose
+    /// <see cref="Field"/> is text and that has no <see cref="Width"/> (room for a few words on a line). Other
+    /// columns have no minimum, and with <see cref="TbDataGrid{TItem}.VirtualizeColumns"/> only a column the user
+    /// can resize has one.</summary>
     [Parameter]
     public string? MinWidth { get; set; }
 
@@ -222,6 +226,12 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
 
     internal bool AcceptsNull =>
         FieldType is not { IsValueType: true } || Nullable.GetUnderlyingType(FieldType) is not null;
+
+    internal bool HoldsText => ValueType == typeof(string);
+
+    // A date or a time is formatted with spaces in it, and reads as one thing.
+    private bool HoldsMoment => ValueType == typeof(DateOnly) || ValueType == typeof(DateTime)
+        || ValueType == typeof(DateTimeOffset) || ValueType == typeof(TimeOnly);
 
     internal ColumnFilterKind FilterKind => ValueType switch
     {
@@ -276,7 +286,7 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
         {
             _shown = shown;
             CellClass = ClassNames.Join("tb-data-grid__cell", ClassNames.Modifier("tb-data-grid__cell", Alignment),
-                Class);
+                HoldsMoment && CellTemplate is null ? "tb-data-grid__cell--nowrap" : null, Class);
             _averageNeedsFallback = Format is null || !WritesDecimals(Format);
             Grid.ColumnChanged();
         }

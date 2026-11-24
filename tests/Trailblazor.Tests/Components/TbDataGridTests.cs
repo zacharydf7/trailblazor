@@ -1511,8 +1511,20 @@ public class TbDataGridTests : BunitContext
             var cells = row.Children;
             Assert.Equal(["start", "start", "start", "start", null],
                 cells.Select(cell => cell.GetAttribute("data-pinned")));
-            Assert.Equal(styles, cells.Take(4).Select(cell => cell.GetAttribute("style")));
+            // Name is text, so its header also has a min-inline-size, ahead of the pin's inset.
+            var name = cells[2].ClassList.Contains("tb-data-grid__header") ? "min-inline-size: 8rem; " : "";
+            Assert.Equal(styles.Select((style, at) => at == 2 ? name + style : style),
+                cells.Take(4).Select(cell => cell.GetAttribute("style")));
         });
+    }
+
+    [Fact]
+    public void Render_ShouldKeepADateOnOneLine_WhenAColumnHoldsDates()
+    {
+        var cut = RenderTrails();
+
+        Assert.Contains("tb-data-grid__cell--nowrap", cut.Find("td[data-column=LastHiked]").ClassList);
+        Assert.DoesNotContain("tb-data-grid__cell--nowrap", cut.Find("td[data-column=Name]").ClassList);
     }
 
     [Fact]
