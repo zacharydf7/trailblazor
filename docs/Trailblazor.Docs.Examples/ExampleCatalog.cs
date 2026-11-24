@@ -7177,9 +7177,10 @@ public static class ExampleCatalog
                 new("helper", "The help text under the rating."),
                 new("error", "The validation message, shown while the value is invalid."),
             ],
-            TestingTip = "`page.Tb().Rating(label)` in Playwright, or `cut.Tb().Rating(label)` in bUnit, finds a "
-                + "rating by its label: `RateAsync(stars)` chooses that many stars, `ClearAsync()` takes a "
-                + "`Clearable` rating back to none, and `Value` or `ValueAsync()` reads how many are chosen.",
+            Scenario = new("basic", "it gives the ridge loop four stars and clears the rating, and checks what the "
+                + "app has after each."),
+            TestingTip = "`Rating(label)` finds a rating by its label in both packages. `ClearAsync()` works on a "
+                + "`Clearable` rating, and a rating with none chosen reads as 0.",
         },
         new("signature-pad", "Signature pad", ExampleCategory.Inputs,
             "A pad people sign by drawing with a mouse, pen or finger, or by typing their name instead.")
@@ -8017,10 +8018,11 @@ public static class ExampleCatalog
                 new("helper", "The help text under the field."),
                 new("error", "The validation message, or why a typed tag was refused."),
             ],
-            TestingTip = "Add a tag with `page.Tb().TagInput(\"Trail features\").AddAsync(\"Shade\")`, which types it "
-                + "and presses Enter once the field's keys work, then waits for the app's answer. Check the tags "
-                + "with `Expect(tags.Tags).ToHaveTextAsync([...])`. In bUnit, "
-                + "`cut.Tb().TagInput(\"Trail features\")` has `AddAsync`, `RemoveAsync` and `Tags`.",
+            Scenario = new("required", "it sends the report with no animals and reads the error, adds three "
+                + "animals and removes one, and sends the report."),
+            TestingTip = "In Playwright, `AddAsync` types the tag and presses Enter once the field's keys work, then "
+                + "waits for the app's answer. `Tags` is the locator of the tags, for `Expect`, and `TagsAsync()` "
+                + "reads their texts once. In bUnit, `Tags` is the texts.",
             Telemetry =
             [
                 "It also counts `trailblazor.control.used` with `trailblazor.action` `add` for each addition and "
@@ -8975,12 +8977,16 @@ public static class ExampleCatalog
                     <TbOption Value="…" />
                 </TbMultiListBox>
                 """,
+            Scenario = new("multiple", "it chooses two more pieces of gear, takes one away, and checks what the app "
+                + "has after each."),
             TestingTip = "To choose options, `await page.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from "
                 + "`Trailblazor.Testing.Playwright` picks them and waits for the page, and it works on the native "
                 + "`<select>` too. For object values loaded again, give the list box a `Comparer`. In bUnit, "
                 + "`await cut.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from `Trailblazor.Testing` "
-                + "does the same. `Option(\"Stove\")` reads whether an option is `Disabled` and `Chosen`, and "
-                + "`Disabled` reads the list box; in Playwright they're `OptionAsync` and `DisabledAsync()`.",
+                + "does the same. In a multiple list box, `UnchooseAsync` takes options away and `Chosen` "
+                + "(`ChosenAsync()` in Playwright) reads the chosen names. `Option(\"Stove\")` reads whether one "
+                + "option is `Disabled` and `Chosen`, and `Disabled` reads the list box; in Playwright they're "
+                + "`OptionAsync` and `DisabledAsync()`.",
             Telemetry =
             [
                 "An option with a `TelemetryName`, such as `\"size-large\"`, counts `trailblazor.control.used` each "
@@ -9073,14 +9079,11 @@ public static class ExampleCatalog
             Anatomy = """
                 <TbTransferList TItem="…" Label="…" Items="_items" ItemText="…" @bind-Value="_chosen" />
                 """,
-            TestingTips =
-            [
-                "In Playwright, `page.Tb().TransferList(\"Trip crew\")` from `Trailblazor.Testing.Playwright` moves "
-                    + "items with `await MoveAsync(\"Casey\", \"Devon\")` and back with `MoveBackAsync(...)`, and "
-                    + "reads the chosen items with `await ChosenAsync()`.",
-                "In bUnit, `cut.Tb().TransferList(\"Trip crew\")` from `Trailblazor.Testing` has the same "
-                    + "`MoveAsync`, `MoveBackAsync` and `Chosen`.",
-            ],
+            Scenario = new("move-items", "it moves two hikers onto the trip and one back, and checks who the app has "
+                + "on the trip after each."),
+            TestingTip = "`TransferList(label)` finds the field by its label in both packages and names items by "
+                + "their text. `Chosen` (`ChosenAsync()` in Playwright) reads the chosen list, which keeps the order "
+                + "of `Items`.",
             Telemetry =
             [
                 "With a `TelemetryName`, it also counts `trailblazor.control.used` with `trailblazor.action` `move` for "

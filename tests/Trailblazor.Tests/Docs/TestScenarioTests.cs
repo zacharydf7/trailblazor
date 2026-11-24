@@ -16,12 +16,12 @@ public class TestScenarioTests : DocsTest
         "theme-picker", "ribbon", "toolbar", "insert-divider", "stack", "spacer", "field-row", "grid", "masonry",
         "dock-manager", "splitter", "viewport", "container", "app-shell", "alert", "banner", "chip", "list",
         "sortable", "kanban", "badge", "progress", "label", "form", "rich-text-editor", "markdown-editor",
-        "mention-input", "rating", "signature-pad", "tree-select", "cascader", "tag-input", "color-picker",
-        "file-upload", "calendar", "date-picker", "time-picker", "date-time-picker", "date-range-picker", "listbox",
-        "transfer-list", "code-field", "property-grid", "model-fields", "query-builder", "in-place-editor", "tooltip",
-        "menu", "menubar", "context-menu", "command-palette", "hotkeys", "drawer", "lightbox", "focus-scope",
-        "popover", "popconfirm", "tour", "overlay", "accordion", "tree-view", "tree-grid", "table", "breadcrumbs",
-        "stepper", "pagination", "table-of-contents", "link", "empty-state", "skeleton", "toast",
+        "mention-input", "signature-pad", "tree-select", "cascader", "color-picker", "file-upload", "calendar",
+        "date-picker", "time-picker", "date-time-picker", "date-range-picker", "code-field", "property-grid",
+        "model-fields", "query-builder", "in-place-editor", "tooltip", "menu", "menubar", "context-menu",
+        "command-palette", "hotkeys", "drawer", "lightbox", "focus-scope", "popover", "popconfirm", "tour", "overlay",
+        "accordion", "tree-view", "tree-grid", "table", "breadcrumbs", "stepper", "pagination", "table-of-contents",
+        "link", "empty-state", "skeleton", "toast",
     ];
 
     public static TheoryData<string> WithScenario =>

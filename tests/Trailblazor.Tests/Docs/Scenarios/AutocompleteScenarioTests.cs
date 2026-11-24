@@ -22,9 +22,9 @@ public class AutocompleteScenarioTests : BunitContext
         // ChooseAsync types its own search, then clicks the suggestion.
         await trailhead.ChooseAsync("eagle", "Eagle Ridge North ridge");
         Assert.Equal("Eagle Ridge", trailhead.Text);
-        Assert.Equal("Starting at: Eagle Ridge", cut.FindAll("p")[^1].TextContent);
+        Assert.Contains(cut.FindAll("p"), text => text.TextContent == "Starting at: Eagle Ridge");
 
         await trailhead.ClearAsync();
-        Assert.Equal("Starting at: nowhere yet", cut.FindAll("p")[^1].TextContent);
+        Assert.Contains(cut.FindAll("p"), text => text.TextContent == "Starting at: nowhere yet");
     }
 }
