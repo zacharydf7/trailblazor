@@ -224,6 +224,8 @@ public class MenuTests(BrowserFixture fixture) : BrowserTest(fixture)
         var page = await OpenAsync(browser, "/examples/menu");
         var trigger = page.GetByRole(AriaRole.Button, new() { Name = "Actions" });
         await trigger.ClickAsync();
+        // The menu focuses its first item a moment after it opens, which would undo a key pressed before then.
+        await Expect(Item(page, "Duplicate")).ToBeFocusedAsync();
         await Item(page, "Duplicate").PressAsync("ArrowDown");
         await Expect(Item(page, "Rename")).ToBeFocusedAsync();
 
