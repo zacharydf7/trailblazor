@@ -2218,6 +2218,8 @@ public static class ExampleCatalog
                 new("label", "The `Label`, above the group."),
                 new("helper", "The `HelperText`, under the group."),
             ],
+            Scenario = new("any-number", "it reads which seasons are pressed, turns on two more and turns one off, "
+                + "and checks what the app shows."),
             TestingTip = "Press an item by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Satellite\" })`, "
                 + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Focusing an icon-only item shows "
                 + "a `tooltip` role with its name. In bUnit and Playwright, "
@@ -2316,6 +2318,8 @@ public static class ExampleCatalog
                 new("options", "The row of segments."),
                 new("input", "One segment's radio, hidden over the segment."),
             ],
+            Scenario = new("segments", "it reads the chosen difficulty, chooses another segment, and checks what the "
+                + "app shows."),
             TestingTip = "Each segment is a native radio, so Playwright's `CheckAsync()` works on "
                 + "`GetByRole(AriaRole.Radio, new() { Name = \"Hard\" })` inside the group, as on a radio group. The "
                 + "radio covers its segment's text, so click the radio rather than the text. In bUnit, `Change(true)` on "
@@ -4618,6 +4622,8 @@ public static class ExampleCatalog
                 new("actions", "The buttons the alert offers."),
                 new("close", "The button that dismisses the alert."),
             ],
+            Scenario = new("closing", "it closes the warning and brings it back with the button the app shows in its "
+                + "place."),
             TestingTip = "`page.Tb().Alert(\"Close this alert\")` in Playwright, or `cut.Tb().Alert(...)` in bUnit, "
                 + "finds an alert by its text: `CloseAsync()` presses its close button, and `TextAsync()` or `Text` "
                 + "reads its message. `AlertsAsync()`, or `Alerts` in bUnit, reads every alert's message, in order. "
@@ -4994,6 +5000,8 @@ public static class ExampleCatalog
                 new("handle", "The item's drag handle, which also moves it with the keyboard or its menu."),
                 new("drop-reason", "The reason shown while a dragged item is held over a place it may not go."),
             ],
+            Scenario = new("order", "it moves a rule to the top from its handle's menu, checks the new order, and "
+                + "tries a move the app refuses."),
             TestingTip = "The helpers move an item through its handle's menu, straight to either end or a place at "
                 + "a time: "
                 + "`page.Tb().Sortable(\"Trail alerts, first match wins\").MoveAsync(\"Storm warning\", 0)`, or "
@@ -5002,7 +5010,8 @@ public static class ExampleCatalog
                 + "`MoveToListAsync(\"Ridge loop\", \"Planned\")` moves an item through its handle's menu, and "
                 + "`DragToListAsync` drags it there. The helpers name an item by "
                 + "`ItemLabel`, or by its text when the list has none, so give a list whose items hold a field an "
-                + "`ItemLabel`. `ItemsAsync()` leaves out the `EmptyContent`, which by role is a `listitem`. "
+                + "`ItemLabel`. `ItemsAsync()`, or `Items` in bUnit, reads the items' names in order, and leaves out "
+                + "the `EmptyContent`, which by role is a `listitem`. "
                 + "Without them, press keys on a handle, found as "
                 + "`GetByRole(AriaRole.Button, new() { Name = \"Move Storm warning\" })`, and check the order the "
                 + "app shows. To drag, move the mouse from the handle to the lower half of the item it should "
@@ -9514,12 +9523,15 @@ public static class ExampleCatalog
                 new("save", "The button that saves the draft."),
                 new("cancel", "The button that throws the draft away."),
             ],
+            Scenario = new("basic", "it edits the trail name in place and saves it, then edits it again and cancels, "
+                + "and checks the value the app has after each."),
             TestingTips =
             [
-                "In bUnit, `cut.Tb().InPlaceEditor(\"Trail name\")` finds it: `EditAsync()`, `SaveAsync()` and "
-                    + "`CancelAsync()` press its parts, and `Text` and `IsEditing` read it. Change the draft through "
-                    + "the field's own helper, such as `cut.Tb().TextField(\"Trail name\").EnterAsync(...)`.",
-                "In Playwright, `page.Tb().InPlaceEditor(\"Trail name\")` does the same, and waits for each change.",
+                "`InPlaceEditor(label)` finds the editor in both packages, and the draft changes through the "
+                    + "helper of the field the editor holds. `IsEditing` (`IsEditingAsync()` in Playwright) reads "
+                    + "whether the editor is open.",
+                "In Playwright, `EditAsync()`, `SaveAsync()` and `CancelAsync()` each wait until the editor has "
+                    + "opened or closed.",
             ],
             Telemetry =
             [
@@ -13066,6 +13078,8 @@ public static class ExampleCatalog
             ],
             Target = new("link", "theming guide"),
             Blocks = ["tb-link"],
+            Scenario = new("button", "it clicks a link that runs the app's handler and checks that the batch ID "
+                + "shows."),
             TestingTip = "A link with an `Href` has the `link` role and one without has the `button` role. "
                 + "`Tb().Link(name).ClickAsync()` clicks either kind and waits until its `OnClick` has run, which the "
                 + "link counts in `data-clicks`; to find it yourself, use the role that matches. `ToBeDisabledAsync` "

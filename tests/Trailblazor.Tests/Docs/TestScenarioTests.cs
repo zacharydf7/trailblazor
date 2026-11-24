@@ -12,15 +12,14 @@ public class TestScenarioTests : DocsTest
     [
         "text", "kbd", "highlight", "qr-code", "avatar", "timeline", "carousel", "virtual-list", "chat", "ai-prompt",
         "image", "watermark", "divider", "surface", "card", "icon", "icon-button", "button-group",
-        "floating-action-button", "back-to-top", "speech-to-text", "smart-paste", "toggle-group", "segmented-control",
-        "theme-picker", "ribbon", "toolbar", "insert-divider", "stack", "spacer", "field-row", "grid", "masonry",
-        "dock-manager", "splitter", "viewport", "container", "app-shell", "alert", "list", "sortable", "kanban",
-        "badge", "progress", "label", "form", "rich-text-editor", "markdown-editor", "mention-input", "signature-pad",
-        "tree-select", "cascader", "color-picker", "file-upload", "calendar", "time-picker", "date-time-picker",
-        "date-range-picker", "code-field", "property-grid", "model-fields", "query-builder", "in-place-editor",
-        "tooltip", "menubar", "context-menu", "command-palette", "hotkeys", "drawer", "lightbox", "focus-scope",
-        "popover", "popconfirm", "tour", "overlay", "tree-grid", "table", "breadcrumbs", "table-of-contents", "link",
-        "empty-state", "skeleton",
+        "floating-action-button", "back-to-top", "speech-to-text", "smart-paste", "theme-picker", "ribbon", "toolbar",
+        "insert-divider", "stack", "spacer", "field-row", "grid", "masonry", "dock-manager", "splitter", "viewport",
+        "container", "app-shell", "list", "kanban", "badge", "progress", "label", "form", "rich-text-editor",
+        "markdown-editor", "mention-input", "signature-pad", "tree-select", "cascader", "color-picker", "file-upload",
+        "calendar", "time-picker", "date-time-picker", "date-range-picker", "code-field", "property-grid",
+        "model-fields", "query-builder", "tooltip", "menubar", "context-menu", "command-palette", "hotkeys", "drawer",
+        "lightbox", "focus-scope", "popover", "popconfirm", "tour", "overlay", "tree-grid", "table", "breadcrumbs",
+        "table-of-contents", "empty-state", "skeleton",
     ];
 
     public static TheoryData<string> WithScenario =>
