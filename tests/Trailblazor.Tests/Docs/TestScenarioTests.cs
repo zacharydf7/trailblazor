@@ -18,10 +18,9 @@ public class TestScenarioTests : DocsTest
         "sortable", "kanban", "badge", "progress", "label", "form", "rich-text-editor", "markdown-editor",
         "mention-input", "signature-pad", "tree-select", "cascader", "color-picker", "file-upload", "calendar",
         "date-picker", "time-picker", "date-time-picker", "date-range-picker", "code-field", "property-grid",
-        "model-fields", "query-builder", "in-place-editor", "tooltip", "menu", "menubar", "context-menu",
-        "command-palette", "hotkeys", "drawer", "lightbox", "focus-scope", "popover", "popconfirm", "tour", "overlay",
-        "accordion", "tree-view", "tree-grid", "table", "breadcrumbs", "stepper", "pagination", "table-of-contents",
-        "link", "empty-state", "skeleton", "toast",
+        "model-fields", "query-builder", "in-place-editor", "tooltip", "menubar", "context-menu", "command-palette",
+        "hotkeys", "drawer", "lightbox", "focus-scope", "popover", "popconfirm", "tour", "overlay", "tree-view",
+        "tree-grid", "table", "breadcrumbs", "table-of-contents", "link", "empty-state", "skeleton", "toast",
     ];
 
     public static TheoryData<string> WithScenario =>

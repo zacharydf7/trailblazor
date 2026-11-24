@@ -9771,6 +9771,8 @@ public static class ExampleCatalog
                     </TbSubMenu>
                 </TbMenu>
                 """,
+            Scenario = new("checks-and-radios", "it checks that the map shows, turns on Elevation and switches the "
+                + "units to kilometers from the menu, and checks what the app has."),
             TestingTip = "Open the menu with its trigger, then find items by role: `GetByRole(AriaRole.Menuitem)`, "
                 + "`Menuitemcheckbox` or `Menuitemradio`, with `ToBeCheckedAsync` for the last two. An item's `End` "
                 + "text is part of its name, so name an item with its count, such as \"Delete 3\". Its `Description` "
@@ -11528,6 +11530,8 @@ public static class ExampleCatalog
                     <TbAccordionItem Title="…">…</TbAccordionItem>
                 </TbAccordion>
                 """,
+            Scenario = new("items", "it expands the sizing item, reads its answer, and checks that the shipping item "
+                + "closed."),
             TestingTip = "`await page.Tb().AccordionItem(\"Sizing\").ExpandAsync()` from "
                 + "`Trailblazor.Testing.Playwright` opens an item, in an accordion or on its own, once the page is "
                 + "interactive, and hands back its panel once the app's `ExpandedChanged` has run (the header "
@@ -11537,7 +11541,8 @@ public static class ExampleCatalog
                 + "bUnit, `cut.Tb().AccordionItem(\"Sizing\")` from `Trailblazor.Testing` has the same `ExpandAsync` "
                 + "and `CollapseAsync`; bUnit runs no script, so an item it opens or closes stays `opening` or "
                 + "`closing`. Both find an item by its header's full name, or by its title alone when the header "
-                + "also shows a badge, such as \"Reviews\" beside a count.",
+                + "also shows a badge, such as \"Reviews\" beside a count. In both packages, `Trigger` is the "
+                + "header's button, whose `aria-expanded` says whether the item is open.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"shipping-details\"`, an item counts `trailblazor.control.shown` "
@@ -12780,6 +12785,8 @@ public static class ExampleCatalog
                 new("error", "A step's error message."),
                 new("content", "The current step's content, in a vertical stepper."),
             ],
+            Scenario = new("basic", "it reads the steps, goes on with the Next button, goes back by choosing a step, "
+                + "and checks which step is current and what the app shows for it."),
             TestingTips =
             [
                 "`page.Tb().Stepper(\"Trip booking\")` in Playwright, or `cut.Tb().Stepper(...)` in bUnit, finds "
@@ -12891,14 +12898,17 @@ public static class ExampleCatalog
                 new("next", "The button that goes to the page after."),
                 new("last", "The button that goes to the last page."),
             ],
+            Scenario = new("pages", "it goes to report page 7 and checks the page the pagination and the app show."),
             TestingTip = "To go to a page, `await page.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from "
                 + "`Trailblazor.Testing.Playwright` clicks it, types it into the page box of a pagination that is "
-                + "compact or has turned to its box for lack of room, or steps with Next and Previous, then waits "
+                + "compact or has turned to its box for lack of room, or steps toward it through the nearest page "
+                + "shown, or with Next and Previous when none is between, then waits "
                 + "until the app has run its `PageChanged`, which the pagination counts in `data-commits` since it "
                 + "shows the new page first. It waits for the pagination to fit its pages first: `data-ready` comes "
                 + "with the first fit, and `data-fitting` marks a later one that is still to show. In bUnit, "
                 + "`cut.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from `Trailblazor.Testing` does the same, and "
-                + "`Page` reads the current page. bUnit lays nothing out, so there a pagination always shows the "
+                + "`Page` (`PageAsync()` in Playwright) reads the current page. bUnit lays nothing out, so there a "
+                + "pagination always shows the "
                 + "pages it was asked for.",
             Telemetry =
             [
