@@ -1,9 +1,10 @@
 @namespace Trailblazor
 @typeparam TItem
 @inherits TbComponentBase
+@implements IAsyncDisposable
 
 @* Each column is a sortable list in one group, so its cards move within it and to the other columns. *@
-<section @attributes="AdditionalAttributes" aria-label="@AriaLabel" style="@Style"
+<section @attributes="AdditionalAttributes" @ref="_board" aria-label="@AriaLabel" style="@Style"
          class="@ClassNames.Join("tb-kanban", Class)">
     @for (var index = 0; index < Columns.Count; index++)
     {

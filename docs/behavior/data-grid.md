@@ -100,6 +100,8 @@ Familiar apps: Excel, Google Sheets, Outlook's message list, File Explorer's det
 ## Touch
 
 - [x] A tap on a row selects it: the grid listens for the click a tap sends. `Trailblazor.lib.module.js`
+- [x] A grid wider than its container, with no scrollbar of its own to show that it scrolls, fades at each side that has more columns past it, except a side its pinned columns cover, and not while its scroll box shows a focus ring. `DataGridTests.ScrollBox_ShouldFadeTheSideWithMoreColumns_WhenItScrollsWithNoScrollbarOfItsOwn`
+- [x] A scrollbar that takes room already shows that the grid scrolls, so a grid with one has no fade. `scroll-edges.js`
 - [x] A finger held on a handle for 300 ms starts a drag, through pointer events, and a swipe elsewhere scrolls. `pointer-drag.js`
 - [x] A tap on a handle opens its menu, which moves the row with no drag. `MoveHandle.cs`
 - [x] A slow tap on a row's handle, where the finger rests past the moment that picks the row up and lifts without moving, still opens the handle's menu and moves nothing. `SortableTests.GridRows_ShouldOpenAHandlesMenu_WhenAFingerRestsOnItForAMomentBeforeLifting`

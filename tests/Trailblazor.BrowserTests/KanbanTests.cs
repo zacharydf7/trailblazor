@@ -21,6 +21,42 @@ public class KanbanTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Kanban_ShouldFadeTheSideWithMoreColumns_WhenItScrollsWithNoScrollbarOfItsOwn(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+        await page.SetViewportSizeAsync(390, 800);
+        var board = page.GetByRole(AriaRole.Region, new() { Name = "Trail work", Exact = true });
+        // A scrollbar that takes room shows that the board scrolls, so the board is given none, as on a phone.
+        // The test browsers hide theirs anyway, so this matters only where a test runs in a window.
+        await board.EvaluateAsync("board => board.style.scrollbarWidth = 'none'");
+
+        await Expect(board).ToHaveAttributeAsync("data-more-right", "");
+        await Expect(board).Not.ToHaveAttributeAsync("data-more-left", "");
+        Assert.StartsWith("linear-gradient(to left", await MaskAsync());
+
+        await board.EvaluateAsync("board => board.scrollLeft = board.scrollWidth");
+        await Expect(board).ToHaveAttributeAsync("data-more-left", "");
+        await Expect(board).Not.ToHaveAttributeAsync("data-more-right", "");
+        Assert.StartsWith("linear-gradient(to right", await MaskAsync());
+        // A scroll that ends near a column's start comes to rest on that column.
+        // Browsers leave "proximity", the default, out of the value they report.
+        await Expect(board).ToHaveCSSAsync("scroll-snap-type", "inline");
+        await Expect(board.Locator("[data-part=column]").First).ToHaveCSSAsync("scroll-snap-align", "start");
+
+        // In right-to-left text the board starts at its right, so scrolled to its end it has more on the right, and
+        // back at its start, on the left.
+        await board.EvaluateAsync(
+            "board => { board.style.direction = 'rtl'; board.scrollLeft = -board.scrollWidth; }");
+        await Expect(board).ToHaveAttributeAsync("data-more-right", "");
+        await Expect(board).Not.ToHaveAttributeAsync("data-more-left", "");
+        await board.EvaluateAsync("board => board.scrollLeft = 0");
+        await Expect(board).ToHaveAttributeAsync("data-more-left", "");
+        await Expect(board).Not.ToHaveAttributeAsync("data-more-right", "");
+
+        Task<string> MaskAsync() => board.EvaluateAsync<string>("board => getComputedStyle(board).maskImage");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Kanban_ShouldMoveACardAcrossColumns_WhenLeftAndRightArePressedOnItsHandle(string browser)
     {
         var page = await OpenReadyAsync(browser);

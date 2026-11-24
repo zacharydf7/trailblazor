@@ -16,6 +16,8 @@ Familiar apps: Trello, GitHub Projects' board view, Jira's board
 
 ## Touch
 
+- [x] A board wider than its container, with no scrollbar of its own to show that it scrolls, fades at each side that has more columns past it, in either direction of text, and a scroll that ends near a column's start comes to rest on that column. `KanbanTests.Kanban_ShouldFadeTheSideWithMoreColumns_WhenItScrollsWithNoScrollbarOfItsOwn`, `trailblazor.css`
+- [x] A scrollbar that takes room already shows that the board scrolls, so a board with one has no fade. `scroll-edges.js`
 - [ ] Dragging a card by touch, which the sortable list handles, needs a real touch device to confirm; the handle's menu works by tap meanwhile. UNCONFIRMED
 
 ## Focus

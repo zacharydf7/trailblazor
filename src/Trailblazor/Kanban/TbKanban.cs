@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Trailblazor.Primitives;
 
 namespace Trailblazor;
@@ -14,6 +15,9 @@ public partial class TbKanban<TItem>
     private readonly string _id = $"tb-kanban-{Guid.NewGuid():N}";
     // The columns' sortable lists share this group, so cards move only between this board's columns.
     private readonly string _group = $"tb-kanban-{Guid.NewGuid():N}";
+    private ElementReference _board;
+    private IJSObjectReference? _edges;
+    private bool _disposed;
 
     /// <summary>Names the board for screen readers, such as "Trail work". Required.</summary>
     [Parameter, EditorRequired]
@@ -74,6 +78,9 @@ public partial class TbKanban<TItem>
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
 
+    [Inject]
+    private JsModuleLoader Modules { get; set; } = default!;
+
     private ControlTelemetry Telemetry => field ??= new(Services, GetType());
 
     private static bool IsFull(KanbanColumn<TItem> column) => column.Cards.Count >= column.Limit;
@@ -93,11 +100,45 @@ public partial class TbKanban<TItem>
     }
 
     /// <inheritdoc />
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (!firstRender)
         {
-            Telemetry.Rendered(TelemetryName);
+            return;
+        }
+
+        Telemetry.Rendered(TelemetryName);
+        try
+        {
+            // The script marks the sides of the board that have more columns past them, which the board fades.
+            var module = await Modules.ImportAsync("./_content/Trailblazor.Primitives/scroll-edges.js");
+            if (_disposed)
+            {
+                return;
+            }
+
+            var edges = await module.InvokeAsync<IJSObjectReference?>("markScrollEdges", _board);
+            if (edges is not null && _disposed)
+            {
+                await edges.DisposeHandleAsync();
+                return;
+            }
+
+            _edges = edges;
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, and the board went with it.
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_edges is not null)
+        {
+            await _edges.DisposeHandleAsync();
         }
     }
 

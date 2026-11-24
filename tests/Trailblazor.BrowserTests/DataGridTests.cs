@@ -211,6 +211,36 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ScrollBox_ShouldFadeTheSideWithMoreColumns_WhenItScrollsWithNoScrollbarOfItsOwn(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        await page.SetViewportSizeAsync(390, 900);
+        var box = page.Locator(".tb-data-grid:has(.tb-data-grid__filter--date) > [data-part=scroll]").First;
+        // A scrollbar that takes room shows that the grid scrolls, so the box is given none, as on a phone.
+        // The test browsers hide theirs anyway, so this matters only where a test runs in a window.
+        await box.EvaluateAsync("box => box.style.scrollbarWidth = 'none'");
+
+        await Expect(box).ToHaveAttributeAsync("data-more-right", "");
+        await Expect(box).Not.ToHaveAttributeAsync("data-more-left", "");
+        await box.EvaluateAsync("box => box.scrollLeft = 40");
+        await Expect(box).ToHaveAttributeAsync("data-more-left", "");
+        Assert.StartsWith("linear-gradient(to right, rgba(0, 0, 0, 0)",
+            await box.EvaluateAsync<string>("box => getComputedStyle(box).maskImage"));
+        // The box is a tab stop, and a fade would cut off its focus ring, so it goes while the ring shows.
+        await box.FocusAsync();
+        await page.Keyboard.PressAsync("Shift");
+        await Expect(box).ToHaveCSSAsync("mask-image", "none");
+
+        // The Trail column is pinned at the start and stays in view, so its side never fades.
+        var pinned = ScrollBox(page, "Trail effort");
+        await pinned.EvaluateAsync("box => box.style.scrollbarWidth = 'none'");
+        await Expect(pinned).ToHaveAttributeAsync("data-more-right", "");
+        await pinned.EvaluateAsync("box => box.scrollLeft = box.scrollWidth");
+        await Expect(pinned).Not.ToHaveAttributeAsync("data-more-right", "");
+        await Expect(pinned).Not.ToHaveAttributeAsync("data-more-left", "");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task FilterMenu_ShouldFilterByAConditionAndCheckedChoices_WhenApplied(string browser)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");

@@ -35,6 +35,7 @@ import '../Trailblazor.Primitives/grip-drag.js';
 import '../Trailblazor.Primitives/pages.js';
 import '../Trailblazor.Primitives/pointer-drag.js';
 import '../Trailblazor.Primitives/roving-focus.js';
+import '../Trailblazor.Primitives/scroll-edges.js';
 import './browser.js';
 import './date-grid.js';
 import './dialog.js';

@@ -4940,8 +4940,11 @@ public static class ExampleCatalog
                     + "others by its handle. `OnMove` gets each move: apply it with `ApplyBetween`, whose `FromList` "
                     + "and `ToList` are the columns' ids. A column's `Limit` caps its cards, as Doing's does here: a "
                     + "move into a full column is refused, with the reason read out, before `CanMove` is asked. "
-                    + "`ColumnFooterTemplate` adds something under each column, such as a button that adds a card.",
-                    typeof(KanbanExample)),
+                    + "`ColumnFooterTemplate` adds something under each column, such as a button that adds a card. A "
+                    + "board wider than its container scrolls sideways, and a scroll that ends near a column's start "
+                    + "comes to rest on that column. Where the browser shows no scrollbar until the board scrolls, as "
+                    + "on a phone, the board fades at each side that has more columns: it gets `data-more-left` and "
+                    + "`data-more-right` for those sides, and a `mask-image` draws the fade.", typeof(KanbanExample)),
             ],
             Api = [typeof(TbKanban<>), typeof(KanbanColumn<>), typeof(KanbanLabels), typeof(SortableMove<>)],
             Keyboard =
@@ -4981,7 +4984,8 @@ public static class ExampleCatalog
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
-                "The columns and cards render. Dragging and the handles start working once the page is interactive.",
+                "The columns and cards render, and the board scrolls sideways and snaps to its columns. Dragging, "
+                    + "the handles and the fade at the board's sides start working once the page is interactive.",
             ],
             Ready = new(".tb-sortable", "each column's list"),
             Target = new("region", "Trail work"),
@@ -11831,9 +11835,11 @@ public static class ExampleCatalog
                     + "row above their headers. Groups nest, and each level adds a row. Sorting, resizing, hiding and "
                     + "pinning work on the columns as usual; a heading spans the columns of its group that show, and "
                     + "splits where some of them are pinned and others aren't.", typeof(DataGridBandsExample)),
-                new("pinned-columns", "Pinned columns", "A column's `Pinned` keeps it in view at the start or end "
-                    + "of the row while the rows scroll sideways. A column pinned at the start keeps the selection "
-                    + "column with it.", typeof(DataGridPinnedExample)),
+                new("pinned-columns", "Pinned columns", "A grid wider than its container scrolls sideways in its own "
+                    + "box. Where the browser shows no scrollbar until the box scrolls, as on a phone, the box fades "
+                    + "at each side that has more columns. A column's `Pinned` keeps it in view at the start or end "
+                    + "of the row while the rows scroll sideways, and the box doesn't fade on that side. A column "
+                    + "pinned at the start keeps the selection column with it.", typeof(DataGridPinnedExample)),
                 new("resize-columns", "Resize, move and hide columns", "With `ResizableColumns`, the user resizes "
                     + "a column by dragging its header's edge, or from its column menu, which the keys and a single "
                     + "click reach. The first resize fixes every column at its width, so the others hold still. A "
@@ -12102,7 +12108,8 @@ public static class ExampleCatalog
                 "Overflow can't be measured yet, so the box the rows scroll in is a tab stop, and with an `AriaLabel` a "
                     + "`region`, whenever the grid has a `Height` and no cell navigation. Without a `Height`, the box "
                     + "isn't a tab stop, so on a static page a grid too wide for its box needs a `Height` or a control "
-                    + "in its rows for keys to scroll it.",
+                    + "in its rows for keys to scroll it. The fade at the scroll box's sides waits for the page to be "
+                    + "interactive too.",
                 "With `Items` and no `Virtualize`, it renders its first page of rows as a plain table, so they can be "
                     + "read at once. Sorting, filtering, paging and selecting start working once the page is "
                     + "interactive. With a `StateHref`, sorting and paging work before that, as links; the page size "
@@ -12143,7 +12150,8 @@ public static class ExampleCatalog
             DataParts =
             [
                 new("grid", "The grid itself."),
-                new("scroll", "The box that scrolls the rows."),
+                new("scroll", "The box that scrolls the rows, with `data-more-left` and `data-more-right` on the sides "
+                    + "that fade."),
                 new("sort", "A column header's sort button, or its link with a `StateHref`."),
                 new("sort-order", "The number that shows a column's place when sorting by several."),
                 new("filters", "The row of filter fields under the headers."),
@@ -12362,7 +12370,8 @@ public static class ExampleCatalog
             BeforeInteractive =
             [
                 "The top rows render as a table, and rows that `ExpandedParents` opens show their children, but rows "
-                    + "open and close only once the page is interactive.",
+                    + "open and close only once the page is interactive. The fade at the scroll box's sides waits "
+                    + "too.",
             ],
             Target = new("treegrid", "Trails by region"),
             Blocks = ["tb-data-grid"],

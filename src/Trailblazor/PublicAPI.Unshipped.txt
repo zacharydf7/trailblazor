@@ -6324,6 +6324,7 @@ Trailblazor.TbKanban<TItem>.KeySelector.get -> System.Func<TItem, object!>?
 Trailblazor.TbKanban<TItem>.KeySelector.set -> void
 Trailblazor.TbKanban<TItem>.Labels.get -> Trailblazor.KanbanLabels!
 Trailblazor.TbKanban<TItem>.Labels.set -> void
+Trailblazor.TbKanban<TItem>.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Trailblazor.TbKanban<TItem>.OnMove.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.SortableMove<TItem>!>
 Trailblazor.TbKanban<TItem>.OnMove.set -> void
 Trailblazor.TbKanban<TItem>.TbKanban() -> void
@@ -6337,7 +6338,7 @@ override Trailblazor.KanbanColumn<TItem>.ToString() -> string!
 override Trailblazor.KanbanLabels.Equals(object? obj) -> bool
 override Trailblazor.KanbanLabels.GetHashCode() -> int
 override Trailblazor.KanbanLabels.ToString() -> string!
-override Trailblazor.TbKanban<TItem>.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbKanban<TItem>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbKanban<TItem>.OnParametersSet() -> void
 static Trailblazor.KanbanColumn<TItem>.operator !=(Trailblazor.KanbanColumn<TItem>? left, Trailblazor.KanbanColumn<TItem>? right) -> bool
 static Trailblazor.KanbanColumn<TItem>.operator ==(Trailblazor.KanbanColumn<TItem>? left, Trailblazor.KanbanColumn<TItem>? right) -> bool

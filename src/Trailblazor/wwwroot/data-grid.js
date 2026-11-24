@@ -1,6 +1,7 @@
 import { createPointerDrag } from '../Trailblazor.Primitives/pointer-drag.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { frames, viewOf, watchSizes } from '../Trailblazor.Primitives/pages.js';
+import { markScrollEdges } from '../Trailblazor.Primitives/scroll-edges.js';
 
 // Inputs that act on Enter themselves, as a button does, so the grid leaves their Enter alone.
 const actOnEnter = new Set(['button', 'color', 'file', 'image', 'reset', 'submit']);
@@ -200,11 +201,16 @@ export function createDataGrid(table, waitForReorder) {
     };
     const names = new MutationObserver(syncScrollStop);
     names.observe(table, { attributes: true, attributeFilter: ['role', 'aria-label'] });
+    // Pinned columns stay in view whatever is past them, so the side they cover shows no fade.
+    const edges = markScrollEdges(scroll, () => ({
+        start: !!headers.querySelector('[data-pinned="start"]'), end: !!headers.querySelector('[data-pinned="end"]'),
+    }));
     // Changes inside a header, such as its filter menu opening, leave the pins alone. Blazor rewrites the scroll
     // box's style when the grid's height changes, which drops its padding.
     const columns = new MutationObserver(changes => {
         if (changes.some(change => change.target === headers || change.attributeName === 'data-pinned')) {
             watchPins();
+            edges.sync();
         } else if (changes.some(change => change.target === scroll)) {
             measurePins();
             syncScrollStop();
@@ -562,6 +568,7 @@ export function createDataGrid(table, waitForReorder) {
             resizes.disconnect();
             names.disconnect();
             columns.disconnect();
+            edges.dispose();
             scroll.removeEventListener('scroll', onHorizontalScroll);
             windowFrame.cancel();
             windowWidths.disconnect();

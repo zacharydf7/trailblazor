@@ -25,6 +25,7 @@ Familiar apps: File Explorer's and Finder's list views with folders, Microsoft P
 ## Touch
 
 - [x] A tap on a row's button opens or closes it, and the button is at least 24 pixels square. `trailblazor.css`
+- [x] A tree grid wider than its container fades at its sides as a data grid does. `data-grid.js`
 
 ## Focus
 
