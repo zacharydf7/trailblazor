@@ -10,8 +10,8 @@ public class TestScenarioTests : DocsTest
     // a new page ships with one instead of joining it.
     private static readonly string[] Owed =
     [
-        "text", "avatar", "timeline", "image", "icon", "button-group", "progress", "label", "mention-input",
-        "time-picker", "query-builder", "tour", "table", "table-of-contents", "highlight", "skeleton",
+        "text", "avatar", "timeline", "image", "icon", "button-group", "progress", "mention-input", "time-picker",
+        "query-builder", "tour", "table", "table-of-contents",
     ];
 
     // The pages with nothing for a user to do or for a test to check, such as a spacer's, which need no scenario.

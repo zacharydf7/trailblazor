@@ -455,6 +455,8 @@ public static class ExampleCatalog
             [
                 new("match", "A `mark` around a part that matches the search."),
             ],
+            Scenario = new("basic", "it checks the marked matches for the first search, searches again, and checks "
+                + "the trail that is left and what is marked in it."),
             TestingTips =
             [
                 "Find a result by its whole text, as `GetByText(\"Pine Hollow loop\")`: the marks don't split it.",
@@ -5399,9 +5401,10 @@ public static class ExampleCatalog
                 new("text", "The label's text."),
                 new("info", "The info popover: its button and the text it shows about the field."),
             ],
-            TestingTip = "Open the info with "
-                + "`await page.Tb().Popover(\"Information about Project code\").OpenAsync()`, which returns its panel. "
-                + "The info button's name contains the label, so find the control by role with an exact name, as "
+            Scenario = new("info-button", "it opens a label's info and checks what it says, then fills the field the "
+                + "label names, found by the label's text."),
+            TestingTip = "The field helpers find a field by its `TbLabel`'s text, as the test above does. In a role "
+                + "query, use an exact name, since the info button's name contains the label, as "
                 + "`GetByRole(AriaRole.Textbox, new() { Name = \"Project code\", Exact = true })`.",
         },
         new("form", "Form", ExampleCategory.Inputs,
@@ -13300,8 +13303,11 @@ public static class ExampleCatalog
             [
                 new("content", "The content the skeleton stands in for, shown once it loads."),
             ],
+            Scenario = new("wrapping-content", "it checks that the trip is busy and out of reach while it loads, ends "
+                + "the loading, and checks that the trip shows."),
             TestingTip = "Skeletons have no role, so wait for the loaded content rather than for them to go, or check "
-                + "that the region's `aria-busy` is `false`. Wrapped content is in the page while it loads, but "
+                + "that the region is no longer `aria-busy=\"true\"`: a wrapping skeleton removes the attribute, and "
+                + "a region the app marks has it set to `false`. Wrapped content is in the page while it loads, but "
                 + "hidden, so `ToBeVisibleAsync` waits for it to load.",
         },
         new("toast", "Toast", ExampleCategory.Feedback,
