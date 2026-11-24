@@ -67,8 +67,7 @@ public partial class TbDataGrid<TItem>
         column.FilterChoices is { } choices
             ? choices.OfType<object>().Select(value => (ChoiceKey(value), column.TextOf(value) ?? "", value))
             : column.FilterKind == ColumnFilterKind.YesNo
-                ? [(ChoiceKey(true), Text(Labels.FilterYes, TbStrings.DataGridFilterYes), true),
-                    (ChoiceKey(false), Text(Labels.FilterNo, TbStrings.DataGridFilterNo), false)]
+                ? [(ChoiceKey(true), YesNo(true), true), (ChoiceKey(false), YesNo(false), false)]
                 : column.Choices.Select(choice => (ChoiceKey(choice.Value), choice.Label, choice.Value));
 
     private Task FilterTextAsync(TbColumn<TItem> column, string? text) => SetFiltersAsync(column,

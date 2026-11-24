@@ -58,8 +58,8 @@ public class TbDataGridGroupTests : BunitContext
     {
         var cut = RenderHikes(parameters => parameters.Add(grid => grid.Groups, ["Loop", "Difficulty"]));
 
-        Assert.Equal(["Loop: False Rows: 2", "Difficulty: Easy Rows: 1", "Cedar Flats", "Difficulty: Hard Rows: 1",
-            "Eagle Ridge", "Loop: True Rows: 2", "Difficulty: Easy Rows: 1", "Pine Hollow",
+        Assert.Equal(["Loop: No Rows: 2", "Difficulty: Easy Rows: 1", "Cedar Flats", "Difficulty: Hard Rows: 1",
+            "Eagle Ridge", "Loop: Yes Rows: 2", "Difficulty: Easy Rows: 1", "Pine Hollow",
             "Difficulty: Moderate Rows: 1", "Ridge Loop"], Lines(cut));
         Assert.Equal(["1", "2", "2", "1", "2", "2"],
             cut.FindAll("tr[data-part=group]").Select(group => group.GetAttribute("data-level")));
@@ -93,7 +93,7 @@ public class TbDataGridGroupTests : BunitContext
         await groupBy.ChooseAsync("Loop", "Difficulty");
 
         Assert.Equal(["Loop", "Difficulty"], groups);
-        Assert.Equal("Loop: False Rows: 2", Text(cut.Find("tr[data-part=group]")));
+        Assert.Equal("Loop: No Rows: 2", Text(cut.Find("tr[data-part=group]")));
     }
 
     [Fact]

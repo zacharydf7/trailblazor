@@ -495,7 +495,7 @@ public abstract class DataGridKeysTests(BrowserFixture fixture) : BrowserTest(fi
         await grid.Locator("tbody tr[data-part=row]").Nth(2).Locator("td[data-column=odd]").ClickAsync();
 
         await page.Keyboard.PressAsync("ArrowDown");
-        await Expect(grid.GetByRole(AriaRole.Button, new() { Name = "Odd: True Rows: 3" })).ToBeFocusedAsync();
+        await Expect(grid.GetByRole(AriaRole.Button, new() { Name = "Odd: Yes Rows: 3" })).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("ArrowDown");
 
         await Expect(grid.Locator("tbody tr[data-part=row]").Nth(3).Locator("td[data-column=odd]")).ToBeFocusedAsync();

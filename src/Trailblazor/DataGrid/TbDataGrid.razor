@@ -78,14 +78,16 @@
             {
                 <span data-part="batch-error" class="tb-data-grid__batch-error">@_batchError</span>
             }
-            <TbButton Size="Size.Small" Disabled="!HasChanges" FocusableWhenDisabled data-part="save-changes"
-                      OnClick="SaveChangesFromBarAsync">
-                @Text(Labels.SaveChanges, TbStrings.DataGridSaveChanges)
-            </TbButton>
-            <TbButton Variant="Variant.Text" Size="Size.Small" Disabled="!HasChanges" FocusableWhenDisabled
-                      data-part="discard-changes" OnClick="DiscardChangesFromBarAsync">
-                @Text(Labels.DiscardChanges, TbStrings.DataGridDiscardChanges)
-            </TbButton>
+            <span class="tb-data-grid__batch-actions">
+                <TbButton Size="Size.Small" Disabled="!HasChanges" FocusableWhenDisabled data-part="save-changes"
+                          OnClick="SaveChangesFromBarAsync">
+                    @Text(Labels.SaveChanges, TbStrings.DataGridSaveChanges)
+                </TbButton>
+                <TbButton Variant="Variant.Text" Size="Size.Small" Disabled="!HasChanges" FocusableWhenDisabled
+                          data-part="discard-changes" OnClick="DiscardChangesFromBarAsync">
+                    @Text(Labels.DiscardChanges, TbStrings.DataGridDiscardChanges)
+                </TbButton>
+            </span>
         </div>
     }
     <div data-part="scroll" class="tb-data-grid__scroll" style="@(Height is null ? null : $"max-block-size: {Height}")"
@@ -414,7 +416,7 @@
                 <td data-part="select" data-pinned="@LeadPin" style="@LeadStyle(LeadCount - 1)"
                     class="tb-data-grid__select">
                     <input type="@(SelectionMode == SelectionMode.Single ? "radio" : "checkbox")"
-                           class="@(SelectionMode == SelectionMode.Single ? "tb-data-grid__check"
+                           class="@(SelectionMode == SelectionMode.Single ? "tb-radio__input tb-data-grid__check"
                                       : "tb-checkbox__input tb-data-grid__check")" checked="@selected"
                            name="@(SelectionMode == SelectionMode.Single ? _radioName : null)"
                            aria-label="@Format(Labels.SelectRow, TbStrings.DataGridSelectRow, label ?? LabelOf(item))"

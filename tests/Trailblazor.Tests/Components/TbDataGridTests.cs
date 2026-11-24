@@ -26,6 +26,13 @@ public class TbDataGridTests : BunitContext
 
     private sealed record Trip(Town From, Town To);
 
+    private enum Season { Summer, AllYear }
+
+    [Flags]
+    private enum Amenities { None = 0, FirePit = 1, Water = 2 }
+
+    private sealed record Camp(int Id, Season Season, bool Water, Amenities Amenities, bool? Shade);
+
     // A class compared by reference, so a new one never equals the last.
     private sealed class Holder(string name)
     {
@@ -1708,6 +1715,36 @@ public class TbDataGridTests : BunitContext
         Assert.Null(cut.Find("table").GetAttribute("aria-multiselectable"));
         Assert.Null(Row(cut, "2").GetAttribute("aria-selected"));
     }
+
+    [Fact]
+    public void Render_ShouldWriteYesNoAndEnumNamesInWords_WhenGivenNoFormat()
+    {
+        var cut = RenderCamps(null, new Camp(1, Season.AllYear, true, Amenities.Water | Amenities.FirePit, null),
+            new Camp(2, Season.Summer, false, Amenities.None, false));
+
+        Assert.Equal(["All year", "Yes", "Fire pit, Water", ""], CellsOf(cut, "1"));
+        Assert.Equal(["Summer", "No", "None", "No"], CellsOf(cut, "2"));
+    }
+
+    [Fact]
+    public void Render_ShouldWriteTheEnumsOwnName_WhenGivenFormatG()
+    {
+        var cut = RenderCamps("G", new Camp(1, Season.AllYear, true, Amenities.FirePit, null));
+
+        Assert.Equal("AllYear", CellsOf(cut, "1")[0]);
+    }
+
+    private IRenderedComponent<TbDataGrid<Camp>> RenderCamps(string? seasonFormat, params Camp[] camps) =>
+        Render<TbDataGrid<Camp>>(parameters => parameters.Add(grid => grid.Items, camps)
+            .Add(grid => grid.AriaLabel, "Camps").Add(grid => grid.KeySelector, camp => camp.Id)
+            .AddChildContent<TbColumn<Camp>>(column => column.Add(season => season.Field, camp => camp.Season)
+                .Add(season => season.Format, seasonFormat))
+            .AddChildContent<TbColumn<Camp>>(column => column.Add(water => water.Field, camp => camp.Water))
+            .AddChildContent<TbColumn<Camp>>(column => column.Add(amenities => amenities.Field, camp => camp.Amenities))
+            .AddChildContent<TbColumn<Camp>>(column => column.Add(shade => shade.Field, camp => camp.Shade)));
+
+    private static List<string> CellsOf(IRenderedComponent<TbDataGrid<Camp>> cut, string key) =>
+        [.. cut.FindAll($"tr[data-key='{key}'] td").Select(cell => cell.TextContent.Trim())];
 
     private SortableEvents MoveEvents() =>
         ((DotNetObjectReference<SortableEvents>)JSInterop.Invocations["attachSortable"].Single().Arguments[1]!).Value;

@@ -1463,10 +1463,10 @@ public static class TbStrings
     /// <summary>"Any": shown in a data grid's choice filter when it filters nothing.</summary>
     public const string DataGridFilterAny = "DataGrid.FilterAny";
 
-    /// <summary>"Yes": the choice that shows a data grid's rows whose yes-or-no column is true.</summary>
+    /// <summary>"Yes": how a data grid writes true, in a yes-or-no column's cells and its filter.</summary>
     public const string DataGridFilterYes = "DataGrid.FilterYes";
 
-    /// <summary>"No": the choice that shows a data grid's rows whose yes-or-no column is false.</summary>
+    /// <summary>"No": how a data grid writes false, in a yes-or-no column's cells and its filter.</summary>
     public const string DataGridFilterNo = "DataGrid.FilterNo";
 
     /// <summary>"Apply": the button that applies a data grid's filter menu.</summary>

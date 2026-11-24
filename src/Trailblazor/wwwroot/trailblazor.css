@@ -4519,22 +4519,24 @@
         background: var(--tb-choice-on-fill, var(--tb-color-on-primary));
     }
 
+    /* A radio outside a radio group, such as a grid's single-selection radio, has no tone or size tokens, so it falls
+       back to the primary tone and the medium size. */
     .tb-radio__input {
-        width: var(--tb-choice-box);
-        height: var(--tb-choice-box);
+        width: var(--tb-choice-box, 1.125rem);
+        height: var(--tb-choice-box, 1.125rem);
         border-radius: var(--tb-radius-full);
     }
 
     .tb-radio__input:checked {
-        border-color: var(--tb-choice-fill);
+        border-color: var(--tb-choice-fill, var(--tb-color-primary));
     }
 
     .tb-radio__input:checked::before {
         content: "";
-        width: calc(var(--tb-choice-box) / 2);
-        height: calc(var(--tb-choice-box) / 2);
+        width: calc(var(--tb-choice-box, 1.125rem) / 2);
+        height: calc(var(--tb-choice-box, 1.125rem) / 2);
         border-radius: var(--tb-radius-full);
-        background: var(--tb-choice-fill);
+        background: var(--tb-choice-fill, var(--tb-color-primary));
     }
 
     .tb-switch__input {
@@ -9673,6 +9675,13 @@
         margin-inline-end: auto;
     }
 
+    /* The buttons wrap as a pair, so a narrow bar never leaves one alone on a line. */
+    .tb-data-grid__batch-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+    }
+
     .tb-data-grid__batch-error {
         color: var(--tb-color-danger-text);
     }
@@ -9709,16 +9718,8 @@
         border-block: 2px dashed var(--tb-sortable-drop);
     }
 
-    /* In single selection a row's radio stays the browser's own; the checkboxes are drawn like every other box. */
-    .tb-data-grid__check[type="radio"] {
-        width: 1rem;
-        height: 1rem;
-        margin: 0;
-        accent-color: var(--tb-color-primary);
-        vertical-align: middle;
-    }
-
-    .tb-data-grid__check.tb-checkbox__input {
+    .tb-data-grid__check.tb-checkbox__input,
+    .tb-data-grid__check.tb-radio__input {
         margin-inline: auto;
     }
 

@@ -242,6 +242,15 @@ public class TbDataGridLabelsTests : BunitContext
     }
 
     [Fact]
+    public void Labels_ShouldWordTheYesOrNoCells_WhenGiven()
+    {
+        var cut = RenderHikes();
+
+        Assert.Equal(["Sure", "Nah"], cut.FindAll("tr[data-part=row] td[data-column=Loop]")
+            .Select(cell => cell.TextContent.Trim()));
+    }
+
+    [Fact]
     public async Task Labels_ShouldWordATreeRowsToggleAndAMovedRow_WhenGiven()
     {
         var host = Render<AnnouncerHost>();

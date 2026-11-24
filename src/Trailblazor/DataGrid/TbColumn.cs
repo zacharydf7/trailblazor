@@ -48,7 +48,10 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     public string? Id { get; set; }
 
     /// <summary>How the <see cref="Field"/>'s value is written, such as <c>"d"</c> for a short date or <c>"N2"</c>
-    /// for a number with two decimals, in the current culture.</summary>
+    /// for a number with two decimals, in the current culture. Without one, an enum's value reads its name in words,
+    /// such as "All year" for <c>AllYear</c>, and <c>"G"</c> keeps the name. True and false read "Yes" and "No", as
+    /// the grid's <see cref="DataGridLabels.FilterYes"/> and <see cref="DataGridLabels.FilterNo"/> word them, with or
+    /// without a format.</summary>
     [Parameter]
     public string? Format { get; set; }
 
@@ -433,6 +436,8 @@ public sealed partial class TbColumn<TItem> : ComponentBase, IDisposable
     {
         null => null,
         IFormattable formattable when Format is not null => formattable.ToString(Format, CultureInfo.CurrentCulture),
+        bool yes => Grid.YesNo(yes),
+        Enum choice => string.Join(", ", choice.ToString().Split(", ").Select(NameWords.Of)),
         IFormattable formattable => formattable.ToString(null, CultureInfo.CurrentCulture),
         _ => value.ToString(),
     };

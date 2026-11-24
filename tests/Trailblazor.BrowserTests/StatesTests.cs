@@ -138,13 +138,20 @@ public class StatesTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task GridRadio_ShouldStayTheBrowsersOwn_WhenTheGridSelectsOneRow(string browser)
+    public async Task GridRadio_ShouldLookLikeARadioGroupsRadio_WhenTheGridSelectsOneRow(string browser)
     {
-        var page = await OpenAsync(browser, "/examples/data-grid");
+        var page = await OpenAsync(browser, "/examples/radio-group");
+        await SetThemeAsync(page, "dark");
+        string[] radioGroup = [await LookAsync(page.GetByRole(AriaRole.Radio, new() { Name = "Letter", Exact = true })),
+            await LookAsync(page.GetByRole(AriaRole.Radio, new() { Name = "A4", Exact = true }))];
 
-        var radio = page.Locator("input[type=radio].tb-data-grid__check").First;
+        page = await OpenAsync(browser, "/examples/data-grid");
+        await SetThemeAsync(page, "dark");
+        var radios = page.Locator("input[type=radio].tb-data-grid__check");
+        await radios.First.CheckAsync();
+        string[] grid = [await LookAsync(radios.First), await LookAsync(radios.Nth(1))];
 
-        await Expect(radio).Not.ToHaveCSSAsync("appearance", "none");
+        Assert.Equal(radioGroup, grid);
     }
 
     // A box's size, corners, colors and mark, in one string to compare.

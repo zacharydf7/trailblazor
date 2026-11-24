@@ -225,12 +225,12 @@ public sealed record DataGridLabels
     /// app's text for <see cref="TbStrings.DataGridFilterAny"/>.</summary>
     public string? FilterAny { get; init; }
 
-    /// <summary>The choice that shows a data grid's rows whose yes-or-no column is true: "Yes" in English. Leave it
-    /// null for the app's text for <see cref="TbStrings.DataGridFilterYes"/>.</summary>
+    /// <summary>How a data grid writes true in a yes-or-no column, in its cells and its filter: "Yes" in English. Leave
+    /// it null for the app's text for <see cref="TbStrings.DataGridFilterYes"/>.</summary>
     public string? FilterYes { get; init; }
 
-    /// <summary>The choice that shows a data grid's rows whose yes-or-no column is false: "No" in English. Leave it
-    /// null for the app's text for <see cref="TbStrings.DataGridFilterNo"/>.</summary>
+    /// <summary>How a data grid writes false in a yes-or-no column, in its cells and its filter: "No" in English. Leave
+    /// it null for the app's text for <see cref="TbStrings.DataGridFilterNo"/>.</summary>
     public string? FilterNo { get; init; }
 
     /// <summary>The button that clears a data grid column's filter: "Clear" in English. Leave it null for the app's

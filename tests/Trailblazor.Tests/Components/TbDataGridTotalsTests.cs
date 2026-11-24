@@ -179,7 +179,7 @@ public class TbDataGridTotalsTests : BunitContext
         var cut = RenderGrouped(groupTotals: true);
 
         var names = cut.FindAll("tr td:first-child [data-part=totals-name]");
-        Assert.Equal(["Totals for Done: False", "Totals for Done: True", "Totals"],
+        Assert.Equal(["Totals for Done: No", "Totals for Done: Yes", "Totals"],
             names.Select(name => name.TextContent));
         Assert.All(names, name => Assert.Contains("tb-visually-hidden", name.ClassList));
         Assert.Null(cut.Tb().Grid("Hikes").Total("Name"));

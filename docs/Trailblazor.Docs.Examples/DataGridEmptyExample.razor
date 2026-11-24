@@ -1,20 +1,26 @@
-<TbStack Gap="4">
-    <TbDataGrid TItem="Trail" Items="None" AriaLabel="Closures" KeySelector="trail => trail.Id">
-        <TbColumn Field="trail => trail.Name" />
-        <TbColumn Field="trail => trail.Region" />
-    </TbDataGrid>
-    <TbDataGrid TItem="Trail" Items="_trips" AriaLabel="Saved trips" KeySelector="trail => trail.Id">
-        <EmptyContent>
-            <TbStack Gap="2" Align="Align.Center">
-                <TbText>Trips you save show here.</TbText>
-                <TbButton Variant="Variant.Outlined" Size="Size.Small" OnClick="PlanATrip">Plan a trip</TbButton>
-            </TbStack>
-        </EmptyContent>
-        <ChildContent>
+<TbStack Gap="6">
+    <TbStack Gap="2">
+        <TbText As="TextElement.H3" TextStyle="TextStyle.Title">Closures</TbText>
+        <TbDataGrid TItem="Trail" Items="None" AriaLabel="Closures" KeySelector="trail => trail.Id">
             <TbColumn Field="trail => trail.Name" />
             <TbColumn Field="trail => trail.Region" />
-        </ChildContent>
-    </TbDataGrid>
+        </TbDataGrid>
+    </TbStack>
+    <TbStack Gap="2">
+        <TbText As="TextElement.H3" TextStyle="TextStyle.Title">Saved trips</TbText>
+        <TbDataGrid TItem="Trail" Items="_trips" AriaLabel="Saved trips" KeySelector="trail => trail.Id">
+            <EmptyContent>
+                <TbStack Gap="2" Align="Align.Center">
+                    <TbText>Trips you save show here.</TbText>
+                    <TbButton Variant="Variant.Outlined" Size="Size.Small" OnClick="PlanATrip">Plan a trip</TbButton>
+                </TbStack>
+            </EmptyContent>
+            <ChildContent>
+                <TbColumn Field="trail => trail.Name" />
+                <TbColumn Field="trail => trail.Region" />
+            </ChildContent>
+        </TbDataGrid>
+    </TbStack>
 </TbStack>
 
 @code {

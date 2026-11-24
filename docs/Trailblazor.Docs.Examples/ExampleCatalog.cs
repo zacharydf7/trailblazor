@@ -12430,7 +12430,9 @@ public static class ExampleCatalog
                     + "with little room scrolls sideways before its text wraps a word to a line; `MinWidth` sets a "
                     + "different minimum for any column, and a date or a time stays on one line. In a grid with "
                     + "`VirtualizeColumns`, only a column the user can resize has a minimum. Without `Align`, "
-                    + "numbers line up at the end and everything else at the start. `SortBy` sorts by "
+                    + "numbers line up at the end and everything else at the start. `Format` writes a value, such as "
+                    + "`\"d\"` for a short date; without one, an enum's value reads its name in words, such as \"All "
+                    + "year\", and `\"G\"` keeps the name. True and false read \"Yes\" and \"No\". `SortBy` sorts by "
                     + "something other than what the column shows, such as a rank, and `Sorts` sets the sort the grid "
                     + "starts with.", typeof(DataGridColumnsExample)),
                 new("row-classes", "Row classes", "`RowClass` gives a row a class of your own, from its item. Say the "
@@ -12592,8 +12594,9 @@ public static class ExampleCatalog
                     + "one. `CanMoveRow` can refuse a move and say why.", typeof(DataGridReorderExample)),
                 new("labels", "Built-in text", "`Labels` replaces every word the grid itself shows and reads out, "
                     + "such as the header checkbox's name, the page size list's label and the count of rows shown. Its "
-                    + "`RowHandles` words the row handles and `Comparisons` names the filter menus' comparisons. The "
-                    + "page buttons and the lists and pickers inside the grid keep the app's text for their own words.",
+                    + "`RowHandles` words the row handles and `Comparisons` names the filter menus' comparisons. "
+                    + "`FilterYes` and `FilterNo` also word the yes-or-no cells. The page buttons and the lists and "
+                    + "pickers inside the grid keep the app's text for their own words.",
                     typeof(DataGridLabelsExample)),
             ],
             Api =
@@ -12906,6 +12909,8 @@ public static class ExampleCatalog
                     + "`ScrollToAsync`, before looking for a row further down.",
                 "In both packages, with `Async` names in Playwright, `Rows` and `Selected` read the rows shown and "
                     + "the selected ones as their data cells' texts, and `RowCount` counts the rows shown.",
+                "A yes-or-no cell reads \"Yes\" or \"No\", or the words of the grid's `Labels.FilterYes` and "
+                    + "`FilterNo`, so expect those in `Rows` and in a cell's text, not \"True\" and \"False\".",
                 "`IsBusy` reads whether rows are loading, from a `DataProvider` or while `Loading` is set, and "
                     + "`WaitForRowsAsync()` waits until they've loaded.",
                 "With the bUnit grid driver as `grid`, `cut.Tb().Within(() => grid.Row(\"Cedar Flats\"))` finds the "

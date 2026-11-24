@@ -2881,6 +2881,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private string Text(string? label, string key) => label ?? Localizer[key];
 
+    internal string YesNo(bool value) =>
+        value ? Text(Labels.FilterYes, TbStrings.DataGridFilterYes) : Text(Labels.FilterNo, TbStrings.DataGridFilterNo);
+
     private string Format(string? label, string key, params object?[] args) =>
         string.Format(CultureInfo.CurrentCulture, Text(label, key), args);
 
