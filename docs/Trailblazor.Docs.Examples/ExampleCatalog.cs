@@ -958,6 +958,8 @@ public static class ExampleCatalog
                 new("attach", "The button that chooses files."),
                 new("send", "The send button."),
             ],
+            Scenario = new("basic", "it sends a message, checks that it shows and, in bUnit, that Robin is typing, "
+                + "and waits for Robin's reply to stream in."),
             TestingTip = "`page.Tb().Chat(\"Trip planning\")` in Playwright, or `cut.Tb().Chat(...)` in bUnit, finds "
                 + "the chat by its `AriaLabel`: `SendAsync(text)` writes and sends a message, and in Playwright waits "
                 + "until `OnSend` has run, which the chat counts in `data-commits`; `AttachAsync(paths)` chooses files "
@@ -1045,9 +1047,12 @@ public static class ExampleCatalog
                 new("retry", "Generates the response again."),
                 new("insert", "Hands the response to `OnInsert`."),
             ],
+            Scenario = new("basic", "it asks what to pack, waits for the answer to stream in, checks it, and inserts "
+                + "it into the trip notes."),
             TestingTip = "`page.Tb().AiPrompt(\"Ask about the ridge trail\")` in Playwright, or "
                 + "`cut.Tb().AiPrompt(...)` in bUnit, finds the prompt by its `Label`: `PromptAsync(text)` writes a "
-                + "prompt and generates, and in Playwright waits until the response is done, stopped or failed; `ResponsesAsync()` or `Responses` "
+                + "prompt and generates, and in Playwright waits until the response is done, stopped or failed; "
+                + "`ResponsesAsync()` or `Responses` "
                 + "reads each response's text, newest first, and `StatusesAsync()` or `Statuses` their statuses; "
                 + "`StopAsync()` stops the response that's generating, and `CopyAsync()`, `RetryAsync()` and "
                 + "`InsertAsync()` act on a response, the newest by "
@@ -9648,6 +9653,8 @@ public static class ExampleCatalog
                 new("tooltip", "The tooltip bubble."),
                 new("arrow", "The arrow that points at the trigger."),
             ],
+            Scenario = new("description", "it reads the tooltip of the Add button and, in a browser, checks that the "
+                + "tooltip describes the button and that Escape hides it."),
             TestingTip = "`await page.Tb().Tooltip(\"Add\").TextAsync()` from `Trailblazor.Testing.Playwright` rests "
                 + "the pointer on the button named \"Add\" and returns the tooltip's text once it shows; it also takes "
                 + "a locator for the trigger. By hand, tab to or hover the trigger, since `FocusAsync` after a click "
@@ -10238,6 +10245,8 @@ public static class ExampleCatalog
                 new("group", "A group's table in the help."),
                 new("row", "One hotkey's row in the help."),
             ],
+            Scenario = new("page", "it presses the save shortcut, checks that the app saved, and opens the help to "
+                + "check the shortcuts it lists."),
             TestingTip = "`await page.Tb().Hotkey(\"Alt+Shift+S\").PressAsync()` from `Trailblazor.Testing.Playwright` "
                 + "waits until the hotkey's marker has `data-ready` set to its keys, then presses them, with Mod as "
                 + "`ControlOrMeta`. It then waits until the `OnPress` of the hotkey that fired has run, which its "
@@ -11278,6 +11287,8 @@ public static class ExampleCatalog
                 new("scrim", "The shade over the page behind the content."),
                 new("content", "The overlay's content."),
             ],
+            Scenario = new("page", "it opens the overlay, closes it by clicking outside its content, opens it again "
+                + "and closes it with Escape."),
             TestingTip = "`page.Tb().Overlay(name)` in Playwright, or `cut.Tb().Overlay(...)` in bUnit, finds the open "
                 + "overlay by its `aria-label`, or the only one. `ClickAsync()` clicks it outside its content and "
                 + "waits for its `OnClick`; with `CloseOnClick`, both `ClickAsync()` and `PressEscapeAsync()` close "
