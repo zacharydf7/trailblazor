@@ -2538,12 +2538,14 @@
         gap: var(--tb-space-3);
     }
 
+    /* A speed dial's actions keep their own sizes, whatever a theme sets for a menu's items. */
     .tb-speed-dial .tb-menu__item {
         flex-direction: row-reverse;
         justify-content: flex-start;
         min-height: 0;
         padding: 0;
         border-radius: var(--tb-radius-full);
+        font-size: var(--tb-font-size-sm);
     }
 
     /* The actions rise into place as the dial opens. */
@@ -5005,12 +5007,33 @@
         gap: 2px;
     }
 
+    /* A menu's item size is set on its list, so the lists of its submenus, which sit inside it, follow. The steps are
+       a list box's, and follow the density. They are the menu's own variables, which take precedence over the tokens
+       an app sets for every menu. */
+    .tb-menu__list--small {
+        --tb-menu-size-height: max(24px, calc(var(--tb-item-height) - 4px));
+        --tb-menu-size-text: var(--tb-font-size-xs);
+        --tb-menu-size-icon: 1rem;
+    }
+
+    .tb-menu__list--large {
+        --tb-menu-size-height: calc(var(--tb-item-height) + 8px);
+        --tb-menu-size-text: var(--tb-font-size-md);
+        --tb-menu-size-icon: 1.25rem;
+    }
+
+    /* The size of an item's text: the menu's own step, or else the token. A group's label is sized from it too. */
+    :is(.tb-menu__item, .tb-menu__group-label) {
+        --tb-menu-text: var(--tb-menu-size-text, var(--tb-menu-item-font-size, var(--tb-font-size-sm)));
+    }
+
     .tb-menu__item {
+        --tb-menu-icon: var(--tb-menu-size-icon, var(--tb-menu-item-icon-size, 1rem));
         display: flex;
         align-items: center;
         gap: var(--tb-space-2);
         box-sizing: border-box;
-        min-height: var(--tb-menu-item-height, var(--tb-item-height));
+        min-height: var(--tb-menu-size-height, var(--tb-menu-item-height, var(--tb-item-height)));
         width: 100%;
         padding: var(--tb-space-1) var(--tb-space-3);
         border: none;
@@ -5019,9 +5042,17 @@
         color: inherit;
         font: inherit;
         line-height: var(--tb-line-height-tight);
-        font-size: var(--tb-font-size-sm);
+        font-size: var(--tb-menu-text);
         text-align: start;
         cursor: pointer;
+    }
+
+    /* An item's own icon, its check and its submenu's chevron are one size, so they stay lined up. An icon in what
+       the app puts in the item keeps its own size. */
+    .tb-menu__item > :is([data-part="icon"], [data-part="chevron"]),
+    .tb-menu__indicator > .tb-icon {
+        width: var(--tb-menu-icon);
+        height: var(--tb-menu-icon);
     }
 
     /* The pointer moves focus too, so focus alone marks the item Enter would choose. Until the script attaches, hover
@@ -5045,9 +5076,16 @@
         margin-inline-start: auto;
     }
 
+    /* An item's description and end content, and a group's label, are a step smaller than the item's text, but no
+       smaller than 0.6875rem. */
+    .tb-menu__end,
+    .tb-menu__description,
+    .tb-menu__group-label {
+        font-size: max(0.6875rem, calc(var(--tb-menu-text) - 0.125rem));
+    }
+
     .tb-menu__end {
         color: var(--tb-color-text-muted);
-        font-size: var(--tb-font-size-xs);
     }
 
     .tb-menu__text {
@@ -5057,7 +5095,6 @@
 
     .tb-menu__description {
         color: var(--tb-color-text-muted);
-        font-size: var(--tb-font-size-xs);
     }
 
     /* The keycaps follow the end, or take its place at the far side when there's no end. */
@@ -5093,13 +5130,13 @@
         flex: none;
         align-items: center;
         justify-content: center;
-        width: 1rem;
+        width: var(--tb-menu-icon);
     }
 
     .tb-menu__item[role="menuitemradio"][aria-checked="true"] > .tb-menu__indicator::before {
         content: "";
-        width: 0.4rem;
-        height: 0.4rem;
+        width: calc(var(--tb-menu-icon) * 0.4);
+        height: calc(var(--tb-menu-icon) * 0.4);
         border-radius: var(--tb-radius-full);
         background: currentColor;
     }
@@ -5113,7 +5150,6 @@
     .tb-menu__group-label {
         padding: var(--tb-space-1) var(--tb-space-3);
         color: var(--tb-color-text-muted);
-        font-size: var(--tb-font-size-xs);
         font-weight: var(--tb-font-weight-semibold);
     }
 

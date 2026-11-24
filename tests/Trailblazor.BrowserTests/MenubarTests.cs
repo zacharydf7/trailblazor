@@ -4,8 +4,12 @@ namespace Trailblazor.BrowserTests;
 
 public class MenubarTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    // The bar under test, by name: its example page has other bars, in its sizes section.
+    private static ILocator Bar(IPage page) =>
+        page.GetByRole(AriaRole.Menubar, new() { Name = "Trail editor", Exact = true });
+
     private static ILocator Trigger(IPage page, string name) =>
-        page.GetByRole(AriaRole.Menubar).GetByRole(AriaRole.Menuitem, new() { Name = name, Exact = true });
+        Bar(page).GetByRole(AriaRole.Menuitem, new() { Name = name, Exact = true });
 
     private static ILocator Item(IPage page, string name) =>
         page.GetByRole(AriaRole.Menuitem, new() { Name = name, Exact = true });
@@ -13,7 +17,7 @@ public class MenubarTests(BrowserFixture fixture) : BrowserTest(fixture)
     private async Task<IPage> OpenReadyAsync(string browser)
     {
         var page = await OpenAsync(browser, "/examples/menubar");
-        await Expect(page.GetByRole(AriaRole.Menubar)).ToHaveAttributeAsync("data-ready", "");
+        await Expect(Bar(page)).ToHaveAttributeAsync("data-ready", "");
         return page;
     }
 
@@ -32,7 +36,7 @@ public class MenubarTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("ArrowLeft");
         await Expect(Trigger(page, "View")).ToBeFocusedAsync();
 
-        Assert.Equal(["-1", "-1", "0"], await page.GetByRole(AriaRole.Menubar).Locator("[data-part=trigger]")
+        Assert.Equal(["-1", "-1", "0"], await Bar(page).Locator("[data-part=trigger]")
             .EvaluateAllAsync<string[]>("triggers => triggers.map(trigger => trigger.getAttribute('tabindex'))"));
     }
 
@@ -76,7 +80,7 @@ public class MenubarTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Menubar_ShouldOpenTheMenuTapped_WhenAnotherIsOpen()
     {
         var page = await OpenAsync("chromium", "/examples/menubar", new() { HasTouch = true });
-        await Expect(page.GetByRole(AriaRole.Menubar)).ToHaveAttributeAsync("data-ready", "");
+        await Expect(Bar(page)).ToHaveAttributeAsync("data-ready", "");
 
         await Trigger(page, "File").TapAsync();
         await Expect(Item(page, "New trail")).ToBeVisibleAsync();
@@ -90,7 +94,7 @@ public class MenubarTests(BrowserFixture fixture) : BrowserTest(fixture)
     public async Task Menubar_ShouldKeepOneTabStop_WhenTheMenuHoldingItGoesAway(string browser)
     {
         var page = await OpenAsync(browser, "/menubar-changes");
-        await Expect(page.GetByRole(AriaRole.Menubar)).ToHaveAttributeAsync("data-ready", "");
+        await Expect(Bar(page)).ToHaveAttributeAsync("data-ready", "");
         await Trigger(page, "File").FocusAsync();
         await page.Keyboard.PressAsync("End");
         await Expect(Trigger(page, "View")).ToBeFocusedAsync();
@@ -98,7 +102,7 @@ public class MenubarTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.GetByRole(AriaRole.Button, new() { Name = "Remove View" }).ClickAsync();
         await Expect(Trigger(page, "View")).ToHaveCountAsync(0);
 
-        await Expect(page.GetByRole(AriaRole.Menubar).Locator("[data-part=trigger][tabindex='0']")).ToHaveCountAsync(1);
+        await Expect(Bar(page).Locator("[data-part=trigger][tabindex='0']")).ToHaveCountAsync(1);
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

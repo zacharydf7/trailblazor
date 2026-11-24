@@ -37,6 +37,7 @@ Familiar apps: Windows and macOS context menus, VS Code's editor and explorer, G
 - [x] A touch that moves more than a few pixels opens nothing, even on an area that doesn't pan, such as a map. `ContextMenuTests.LongPress_ShouldOpenNothing_WhenTheTouchMovesBeforeTheDelay`
 - [x] A mouse opens the menu only with its right button, not by holding the left one. `ContextMenuTests.MouseHold_ShouldOpenNothing_WhenTheLeftButtonRestsOnTheTarget`
 - [x] iOS shows no callout of its own for a link or image pressed in the area. `trailblazor.css`
+- [x] `ItemSize` sizes the items of the menu and its submenus, through a size class on the menu's list. `TbContextMenuTests.ItemSize_ShouldSizeTheMenusList_WhenGiven`, `trailblazor.css`
 
 ## Focus
 

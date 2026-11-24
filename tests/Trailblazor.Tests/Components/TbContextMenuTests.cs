@@ -32,6 +32,17 @@ public class TbContextMenuTests : BunitContext
         configure?.Invoke(parameters);
     });
 
+    [Theory]
+    [InlineData(Size.Small, "tb-menu__list--small")]
+    [InlineData(Size.Medium, "tb-menu__list--medium")]
+    [InlineData(Size.Large, "tb-menu__list--large")]
+    public void ItemSize_ShouldSizeTheMenusList_WhenGiven(Size size, string sized)
+    {
+        var cut = RenderMenu(parameters => parameters.Add(menu => menu.ItemSize, size));
+
+        Assert.Equal(sized, cut.Find("[role=menu]").ClassList.Single(name => name.StartsWith("tb-menu__list--")));
+    }
+
     [Fact]
     public void Render_ShouldDrawTheItemsForNoKeyInAHiddenMenu_WhenFirstRendered()
     {

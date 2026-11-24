@@ -18,7 +18,7 @@
     <div @ref="_menu" popover="manual" role="menu" aria-label="@AriaLabel" data-part="menu"
          data-key="@(_context.Key ?? "")" data-request="@_request" data-open="@(_open ? "" : null)"
          data-commits="@(RendererInfo.IsInteractive ? Commits.Count : null)"
-         class="@ClassNames.Join("tb-menu__list", Classes?.Menu)">
+         class="@ClassNames.Join("tb-menu__list", ClassNames.Modifier("tb-menu__list", ItemSize), Classes?.Menu)">
         <CascadingValue Value="Commits" IsFixed>
             <CascadingValue Value="Classes">@Items?.Invoke(_context)</CascadingValue>
         </CascadingValue>
@@ -58,6 +58,11 @@
     /// <summary>Turns the context menu off, so a right-click opens the browser's own menu instead.</summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>How big the menu's items are, in this menu and its submenus, as <see cref="TbMenu.ItemSize"/> sets for
+    /// a menu. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size ItemSize { get; set; } = Size.Medium;
 
     /// <summary>Raised when the user opens or closes the menu.</summary>
     [Parameter]

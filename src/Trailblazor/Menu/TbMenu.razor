@@ -38,7 +38,7 @@
     @* data-open comes with the items drawn as the menu opened, which tests wait for. *@
     <div @ref="_menu" id="@MenuId" popover="auto" role="menu" aria-labelledby="@TriggerId" data-part="menu"
          data-open="@(_open ? "" : null)" data-commits="@(RendererInfo.IsInteractive ? Commits.Count : null)"
-         class="@ClassNames.Join("tb-menu__list", Classes?.Menu)">
+         class="@ClassNames.Join("tb-menu__list", ClassNames.Modifier("tb-menu__list", ListSize), Classes?.Menu)">
         <CascadingValue Value="Commits" IsFixed>
             <CascadingValue Value="Classes">@ChildContent</CascadingValue>
         </CascadingValue>
@@ -103,9 +103,20 @@
     [Parameter]
     public Tone Tone { get; set; }
 
-    /// <summary>How big the trigger is. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    /// <summary>How big the trigger is. Defaults to <see cref="Trailblazor.Size.Medium"/>. In a menubar, it follows
+    /// the bar's unless set. For the items, see <see cref="ItemSize"/>.</summary>
     [Parameter]
     public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>How big the menu's items are, in this menu and its submenus: their height and text, with
+    /// descriptions and shortcuts a step smaller than the text. <see cref="Trailblazor.Size.Large"/> also enlarges
+    /// the icons, checks and chevrons. The heights follow the density, as a list box's do. Defaults to
+    /// <see cref="Trailblazor.Size.Medium"/>. In a menubar, it follows the bar's unless set. To size every menu at
+    /// once, set <c>--tb-menu-item-height</c>, <c>--tb-menu-item-font-size</c> and
+    /// <c>--tb-menu-item-icon-size</c> instead; a menu whose size isn't <see cref="Trailblazor.Size.Medium"/> keeps
+    /// its own steps.</summary>
+    [Parameter]
+    public Size ItemSize { get; set; } = Size.Medium;
 
     /// <summary>Which side of the trigger the menu opens on. It flips to the other side
     /// when there's no room. Placed to the side in a narrow window, it wraps to fit or else overlaps the trigger.
@@ -158,6 +169,7 @@
     private bool _givenVariant;
     private bool _givenTone;
     private bool _givenSize;
+    private bool _givenItemSize;
 
     [CascadingParameter]
     private TbButtonGroup? Group { get; set; }
@@ -174,7 +186,9 @@
     // An icon button is neutral by default, so it takes a tone only when the menu or its group sets one.
     private Tone IconTriggerTone => _givenTone || Group?.Tone is not null ? TriggerTone : Tone.Neutral;
 
-    private Size TriggerSize => TbButtonGroup.Choose(_givenSize, Size, Group?.Size);
+    private Size TriggerSize => TbButtonGroup.Choose(_givenSize, Size, Menubar?.Size ?? Group?.Size);
+
+    private Size ListSize => _givenItemSize || Menubar is null ? ItemSize : Menubar.ItemSize;
 
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
@@ -183,6 +197,7 @@
         _givenVariant = parameters.TryGetValue<Variant>(nameof(Variant), out _);
         _givenTone = parameters.TryGetValue<Tone>(nameof(Tone), out _);
         _givenSize = parameters.TryGetValue<Size>(nameof(Size), out _);
+        _givenItemSize = parameters.TryGetValue<Size>(nameof(ItemSize), out _);
         return base.SetParametersAsync(parameters);
     }
 

@@ -9534,6 +9534,14 @@ public static class ExampleCatalog
                     + "rows use it.", typeof(MenuOpenExample)),
                 new("disabled", "Disabled", "`Disabled` on a menu turns off its trigger, built in or custom.",
                     typeof(MenuDisabledExample)),
+                new("sizes", "Item sizes", "`ItemSize` sizes the items of one menu and its submenus: `Small`, "
+                    + "`Medium` by default, or `Large`. The steps match a [list box](components/listbox)'s and "
+                    + "follow the density. `Small` and `Large` step the height and the text, `Large` also "
+                    + "enlarges the icons, checks and chevrons, and descriptions and shortcuts stay a step "
+                    + "smaller than the text. `Size` still sizes the trigger alone. To size every menu at once, "
+                    + "set `--tb-menu-item-height`, `--tb-menu-item-font-size` and `--tb-menu-item-icon-size` on "
+                    + "`:root` instead; a menu whose `ItemSize` isn't `Medium` keeps its own steps.",
+                    typeof(MenuSizeExample)),
             ],
             Api =
             [
@@ -9669,6 +9677,11 @@ public static class ExampleCatalog
                     + "menu's trigger becomes one of the bar's items, shown as plain text, and the bar keeps one of "
                     + "them in the tab order. Everything a menu takes, such as submenus, checkbox items and "
                     + "separators, works the same.", typeof(MenubarExample)),
+                new("sizes", "Sizes", "`Size` sizes the menus' triggers on the bar, as a "
+                    + "[toolbar](components/toolbar)'s `Size` sizes its buttons, and `ItemSize` sizes the items "
+                    + "inside each menu, as on a [menu](components/menu#sizes). Each is `Small`, `Medium` by "
+                    + "default, or `Large`, and a menu that sets its own `Size` or `ItemSize` keeps it.",
+                    typeof(MenubarSizeExample)),
             ],
             Api = [typeof(TbMenubar), typeof(TbMenu), typeof(MenuClasses)],
             Keyboard =
@@ -9747,6 +9760,9 @@ public static class ExampleCatalog
                     + "the element the menu opened on, or null for the rest of the area. One context menu then "
                     + "serves every row. When the menu opens on a key whose items aren't drawn yet, it waits until "
                     + "they are, so it never shows another row's items.", typeof(ContextMenuKeysExample)),
+                new("sizes", "Item sizes", "`ItemSize` sizes the menu's items and those of its submenus: `Small`, "
+                    + "`Medium` by default, or `Large`, as on a [menu](components/menu#sizes).",
+                    typeof(ContextMenuSizeExample)),
             ],
             Api = [typeof(TbContextMenu), typeof(ContextMenuContext), typeof(MenuClasses)],
             Keyboard =

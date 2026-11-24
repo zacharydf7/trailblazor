@@ -2332,6 +2332,8 @@ Trailblazor.TbMenu.Icon.get -> Trailblazor.Icon?
 Trailblazor.TbMenu.Icon.set -> void
 Trailblazor.TbMenu.AriaLabel.get -> string?
 Trailblazor.TbMenu.AriaLabel.set -> void
+Trailblazor.TbMenu.ItemSize.get -> Trailblazor.Size
+Trailblazor.TbMenu.ItemSize.set -> void
 Trailblazor.TbMenu.Label.get -> string?
 Trailblazor.TbMenu.Label.set -> void
 Trailblazor.TbMenu.Open.get -> bool
@@ -5076,6 +5078,8 @@ Trailblazor.TbContextMenu.Classes.set -> void
 Trailblazor.TbContextMenu.Disabled.get -> bool
 Trailblazor.TbContextMenu.Disabled.set -> void
 Trailblazor.TbContextMenu.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbContextMenu.ItemSize.get -> Trailblazor.Size
+Trailblazor.TbContextMenu.ItemSize.set -> void
 Trailblazor.TbContextMenu.Items.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.ContextMenuContext!>?
 Trailblazor.TbContextMenu.Items.set -> void
 Trailblazor.TbContextMenu.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
@@ -6427,6 +6431,10 @@ Trailblazor.TbMenubar.AriaLabel.set -> void
 Trailblazor.TbMenubar.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbMenubar.ChildContent.set -> void
 Trailblazor.TbMenubar.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.TbMenubar.ItemSize.get -> Trailblazor.Size
+Trailblazor.TbMenubar.ItemSize.set -> void
+Trailblazor.TbMenubar.Size.get -> Trailblazor.Size
+Trailblazor.TbMenubar.Size.set -> void
 Trailblazor.TbMenubar.TbMenubar() -> void
 override Trailblazor.TbMenubar.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Trailblazor.TbMenubar.OnParametersSet() -> void

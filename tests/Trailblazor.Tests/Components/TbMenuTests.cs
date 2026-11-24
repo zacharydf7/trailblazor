@@ -442,6 +442,24 @@ public class TbMenuTests : BunitContext
         Assert.Contains("tb-button--small", cut.Find("[data-part=trigger]").ClassList);
     }
 
+    [Theory]
+    [InlineData(Size.Small, "tb-menu__list--small")]
+    [InlineData(Size.Medium, "tb-menu__list--medium")]
+    [InlineData(Size.Large, "tb-menu__list--large")]
+    public void ItemSize_ShouldSizeTheListThatHoldsItsSubmenusAndLeaveTheTrigger_WhenGiven(Size size, string sized)
+    {
+        var cut = Render<TbMenu>(parameters => parameters.Add(menu => menu.Label, "Actions")
+            .Add(menu => menu.ItemSize, size).AddChildContent<TbSubMenu>(submenu => submenu
+                .Add(each => each.Label, "More").AddChildContent<TbMenuItem>(item => item.AddChildContent("Rename"))));
+
+        var list = cut.Find(".tb-menu > [data-part=menu]");
+        Assert.Equal(sized, list.ClassList.Single(name => name.StartsWith("tb-menu__list--")));
+        // A submenu's list has no class of its own: it sits inside the menu's, whose size it takes.
+        var inner = list.QuerySelector("[data-part=menu]")!;
+        Assert.DoesNotContain(inner.ClassList, name => name.StartsWith("tb-menu__list--"));
+        Assert.Contains("tb-button--medium", cut.Find("[data-part=trigger]").ClassList);
+    }
+
     [Fact]
     public void Click_ShouldRaiseOnClick_WhenTheItemIsEnabled()
     {

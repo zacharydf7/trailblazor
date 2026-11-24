@@ -21,6 +21,7 @@ Familiar apps: the File, Edit and View menus of desktop apps, Google Docs' menus
 ## Touch
 
 - [x] A tap on a trigger opens its menu, even with another open; nothing needs hover. `MenubarTests.Menubar_ShouldOpenTheMenuTapped_WhenAnotherIsOpen`
+- [x] `Size` steps the height of the menus' triggers on the bar with density, and `ItemSize` sizes the items inside each menu. A menu that sets its own `Size` or `ItemSize` keeps it. `SizeTests.Size_ShouldStepThePartsHeightWithDensity_WhenSmallMediumOrLarge`, `TbMenubarTests.Sizes_ShouldReachEachMenusTriggerAndList_WhenTheMenuSetsNoneOfItsOwn`
 
 ## Focus
 

@@ -1,0 +1,20 @@
+<TbStack Row Wrap Gap="3">
+    @foreach (var size in Enum.GetValues<Size>())
+    {
+        <TbContextMenu AriaLabel="@($"{size} sketch actions")" ItemSize="size">
+            <ChildContent>
+                <TbSurface Outlined role="region" aria-label="@($"{size} sketch")" tabindex="0" class="tb-p-4">
+                    <TbText>@size items</TbText>
+                </TbSurface>
+            </ChildContent>
+            <Items>
+                <TbMenuItem Icon="ExampleIcons.Plus">Add a marker</TbMenuItem>
+                <TbMenuItem>Measure distance</TbMenuItem>
+                <TbSubMenu Label="Map style">
+                    <TbMenuItem>Terrain</TbMenuItem>
+                    <TbMenuItem>Satellite</TbMenuItem>
+                </TbSubMenu>
+            </Items>
+        </TbContextMenu>
+    }
+</TbStack>

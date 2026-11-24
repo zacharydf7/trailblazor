@@ -21,6 +21,17 @@ public partial class TbMenubar
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>How big the menus' triggers on the bar are, as a toolbar's <c>Size</c> sizes its buttons. A menu with
+    /// a <see cref="TbMenu.Size"/> of its own keeps it. Defaults to <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size Size { get; set; } = Size.Medium;
+
+    /// <summary>How big the items inside each of the bar's menus are, as <see cref="TbMenu.ItemSize"/> sets for one
+    /// menu. A menu with an <see cref="TbMenu.ItemSize"/> of its own keeps it. Defaults to
+    /// <see cref="Trailblazor.Size.Medium"/>.</summary>
+    [Parameter]
+    public Size ItemSize { get; set; } = Size.Medium;
+
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
 

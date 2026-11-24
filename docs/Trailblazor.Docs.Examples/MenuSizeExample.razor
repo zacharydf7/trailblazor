@@ -1,0 +1,21 @@
+<TbStack Row Wrap Gap="4" Align="Align.Center">
+    @foreach (var size in Enum.GetValues<Size>())
+    {
+        <TbMenu Label="@($"{size} items")" ItemSize="size">
+            <TbMenuItem Icon="ExampleIcons.Plus" Shortcut="Alt+Shift+M">Add a marker</TbMenuItem>
+            <TbMenuItem Description="Fits the route on one page">Print a map</TbMenuItem>
+            <TbMenuCheckboxItem @bind-Checked="_contours">Contour lines</TbMenuCheckboxItem>
+            <TbSubMenu Label="Units">
+                <TbMenuRadioGroup Label="Units" @bind-Value="_units">
+                    <TbMenuRadioItem Value="@("Miles")">Miles</TbMenuRadioItem>
+                    <TbMenuRadioItem Value="@("Kilometers")">Kilometers</TbMenuRadioItem>
+                </TbMenuRadioGroup>
+            </TbSubMenu>
+        </TbMenu>
+    }
+</TbStack>
+
+@code {
+    private bool _contours = true;
+    private string? _units = "Miles";
+}

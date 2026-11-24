@@ -231,6 +231,20 @@ public class TokensTests(BrowserFixture fixture) : BrowserTest(fixture)
             "bottom", "37px"),
         ("menu radius", "--tb-menu-radius", "<div class='tb-menu__list'></div>", "border-top-left-radius", "37px"),
         ("menu item height", "--tb-menu-item-height", "<div class='tb-menu__item'></div>", "min-height", "37px"),
+        ("menu item text", "--tb-menu-item-font-size", "<div class='tb-menu__item'></div>", "font-size", "37px"),
+        ("menu item icon", "--tb-menu-item-icon-size",
+            "<div class='tb-menu__item'><svg data-part='icon' class='tb-icon tb-icon--small'></svg></div>", "width",
+            "37px"),
+        // An icon in what the app puts in an item keeps its own size.
+        ("menu item's own content", "--tb-menu-item-icon-size",
+            "<div class='tb-menu__item'><span class='tb-menu__end'><svg class='tb-icon'></svg></span></div>", "width",
+            "20px"),
+        // A small menu keeps its own icon size, whatever is set for every menu.
+        ("small menu's icon", "--tb-menu-item-icon-size", "<div class='tb-menu__list tb-menu__list--small'>"
+            + "<div class='tb-menu__item'><svg data-part='icon' class='tb-icon'></svg></div></div>", "width", "16px"),
+        // A speed dial's actions keep their own text size whatever is set for a menu's items.
+        ("speed dial text", "--tb-menu-item-font-size",
+            "<div class='tb-speed-dial'><div class='tb-menu__item'></div></div>", "font-size", "14px"),
         ("popover radius", "--tb-popover-radius", "<div class='tb-popover__panel'></div>", "border-top-left-radius",
             "37px"),
         ("popover width", "--tb-popover-max-width", "<div class='tb-popover__panel'></div>", "max-inline-size",

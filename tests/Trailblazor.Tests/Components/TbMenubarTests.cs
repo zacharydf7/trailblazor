@@ -84,6 +84,23 @@ public class TbMenubarTests : BunitContext
         Assert.Equal("TbMenubar needs an AriaLabel.", thrown.Message);
     }
 
+    [Fact]
+    public void Sizes_ShouldReachEachMenusTriggerAndList_WhenTheMenuSetsNoneOfItsOwn()
+    {
+        var cut = Render<TbMenubar>(parameters => parameters.Add(bar => bar.AriaLabel, "Trail editor")
+            .Add(bar => bar.Size, Size.Small).Add(bar => bar.ItemSize, Size.Large)
+            .AddChildContent<TbMenu>(menu => menu.Add(each => each.Label, "File").AddChildContent(Item("New trail")))
+            .AddChildContent<TbMenu>(menu => menu.Add(each => each.Label, "View").Add(each => each.Size, Size.Large)
+                .Add(each => each.ItemSize, Size.Small).AddChildContent(Item("Zoom in"))));
+
+        var (triggers, lists) = (cut.FindAll("[data-part=trigger]"), cut.FindAll("[data-part=menu]"));
+        Assert.Contains("tb-button--small", triggers[0].ClassList);
+        Assert.Contains("tb-menu__list--large", lists[0].ClassList);
+        // A menu that sets its own keeps them.
+        Assert.Contains("tb-button--large", triggers[1].ClassList);
+        Assert.Contains("tb-menu__list--small", lists[1].ClassList);
+    }
+
     private IRenderedComponent<TbMenubar> RenderBar() => Render<TbMenubar>(parameters =>
         parameters.Add(bar => bar.AriaLabel, "Trail editor").AddChildContent(Menus));
 

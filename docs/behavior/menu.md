@@ -57,6 +57,8 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 - [x] A tap on the trigger or an item works as a click, and a tap outside closes the menu through the browser's popover handling. `TbMenu.razor`
 - [x] A tap on a submenu's item opens it, and a second tap goes in; hover handling ignores anything but a mouse. `menu.js`
 - [x] A submenu in a narrow window, such as a phone's, stays on screen and usable, overlapping its menu if it must. `NarrowPlacementTests.SubMenu_ShouldStayInsideTheWindowAndUsable_WhenNeitherSideHasRoom`
+- [x] `ItemSize` sets the height and text of the items in a menu and its submenus, in steps that follow the density; `Large` also enlarges the icon, check and chevron, which stay one size, and the description stays a step smaller than the text. A small item stays at least 24px high. `Size` sizes the trigger alone. `SizeTests.Menu_ShouldStepItsItemsWithDensityAndKeepTheirPartsInLine_WhenItemSizeIsSet`, `TbMenuTests.ItemSize_ShouldSizeTheListThatHoldsItsSubmenusAndLeaveTheTrigger_WhenGiven`
+- [x] `--tb-menu-item-height`, `--tb-menu-item-font-size` and `--tb-menu-item-icon-size`, set on `:root` or around a menu, size every menu's items with no other CSS. A menu with an `ItemSize` other than `Medium` keeps its own steps, an icon the app puts in an item keeps its own size, and a speed dial's actions keep theirs. `TokensTests.ComponentToken_ShouldRestyleOnlyItsComponent_WhenSetAroundIt`
 
 ## Focus
 
