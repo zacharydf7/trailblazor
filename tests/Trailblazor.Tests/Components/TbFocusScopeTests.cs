@@ -62,6 +62,21 @@ public class TbFocusScopeTests : BunitContext
     }
 
     [Fact]
+    public void Allow_ShouldNameTheRegionsTheHoldLeavesUsable_WhenGivenOrNot()
+    {
+        JSInterop.SetupModule(ModulePath).SetupModule("createFocusScope", _ => true).Mode = JSRuntimeMode.Loose;
+        JSInterop.SetupModule(BlockingPath).SetupModule("blockOutside", _ => true).Mode = JSRuntimeMode.Loose;
+        this.AddTrailblazor();
+
+        Render<TbFocusScope>(parameters => parameters.Add(each => each.Blocking, true)
+            .Add(each => each.Allow, ["#viewer", ".legend"]));
+        Render<TbFocusScope>(parameters => parameters.Add(each => each.Blocking, true));
+
+        Assert.Equal([["#viewer", ".legend"], []], JSInterop.Invocations
+            .Where(call => call.Identifier == "blockOutside").Select(call => (IEnumerable<string>)call.Arguments[3]!));
+    }
+
+    [Fact]
     public void Blocking_ShouldLeaveThePageAsItIs_WhenNotSet()
     {
         JSInterop.SetupModule(ModulePath).SetupModule("createFocusScope", _ => true);

@@ -10630,6 +10630,14 @@ public static class ExampleCatalog
                     + "or stops blocking. A scope nobody can get to, such as one in a dock panel behind another tab, holds nothing until it shows, so "
                     + "the app is never left with nothing usable.",
                     typeof(FocusScopeBlockingExample)),
+                new("allowing", "Keeping one region usable", "`Allow` names regions, by CSS selector, that a "
+                    + "blocking scope leaves usable: here the map, which people still zoom as they edit the "
+                    + "route, while the Routes panel and the dock's own tabs stay held. It reaches the app's "
+                    + "other windows too: open the map in a window of its own from its tab's menu, then choose "
+                    + "Edit route, and the map stays usable there with no scrim over its window. Only this "
+                    + "scope's hold lets the regions through: a modal dialog or a newer blocking scope holds "
+                    + "them like everything else, and an overlay or a tour holds those in its own window.",
+                    typeof(FocusScopeAllowExample)),
                 new("editing", "Holding only while editing", "`Blocking` and `Trapped` can change while a scope is "
                     + "there, so content that stays on the page can hold the rest of it for a while: bind "
                     + "`Blocking` to whether it is being edited. When the hold starts, focus moves into the scope, "
@@ -10654,7 +10662,8 @@ public static class ExampleCatalog
                 "Like the browser's own Tab, it counts an editable region and a media player with controls as tab "
                     + "stops.",
                 "With `Blocking`, what is outside the scope is `inert`: it can't be focused, pressed or read by a "
-                    + "screen reader.",
+                    + "screen reader. A region named in `Allow` is left as it is, so Tab moves on from the scope "
+                    + "into it and a screen reader reads it.",
             ],
             AppDuties =
             [
@@ -10668,10 +10677,14 @@ public static class ExampleCatalog
                 new("A scope that started trapping or holding later than another counts as the newer of the two, "
                     + "no matter which appeared first."),
                 new("`RestoreFocus` is read as the scope first renders, and `AutoFocus` then and again each time "
-                    + "`Blocking` turns on."),
-                new("In a blocking scope's own window, each element it holds is marked `data-tb-blocked` and drawn "
-                    + "at half opacity, so it doesn't look usable. Set `--tb-blocked-opacity` to change that, or "
-                    + "to `1` to leave it as it is. The app's other windows dim under a scrim, as for a dialog."),
+                    + "`Blocking` turns on. `Allow` is read each time a hold starts."),
+                new("Leave `Trapped` off on a scope with `Allow`. A trap brings the focus back whenever it leaves "
+                    + "the scope, so an allowed region could be seen but not worked in. `Blocking` alone already "
+                    + "keeps Tab out of everything else.") { Pitfall = true },
+                new("In a blocking scope's own window, and in another window that holds a region it allows, each "
+                    + "element it holds is marked `data-tb-blocked` and drawn at half opacity, so it doesn't look "
+                    + "usable. Set `--tb-blocked-opacity` to change that, or to `1` to leave it as it is. The "
+                    + "app's other windows dim under a scrim, as for a dialog."),
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
@@ -10697,6 +10710,9 @@ public static class ExampleCatalog
                 "After `Blocking` turns on for a scope that stays, wait for a control outside it to be inside an "
                     + "`[inert]` element. Waiting for `data-ready` won't help there, since the scope set it when it "
                     + "started.",
+                "A control in a region named in `Allow` is inside no `[inert]` element and under no "
+                    + "`[data-tb-blocked]` one. In another window that holds such a region, expect no "
+                    + "`[data-part=scrim]`.",
             ],
         },
         new("popover", "Popover", ExampleCategory.Overlays,

@@ -1,5 +1,5 @@
 import { autofocusTarget, getTabbables } from '../Trailblazor.Primitives/focus-scope.js';
-import { onPagesChange } from '../Trailblazor.Primitives/pages.js';
+import { onPagesChange, otherPages } from '../Trailblazor.Primitives/pages.js';
 import { setRegionWindow } from './dialog.js';
 import { alwaysUsable, hold, release } from './inert.js';
 import { collect, ownParts } from './overlay.js';
@@ -54,6 +54,21 @@ function apply() {
         }
     }
 
+    // One of the app's other windows that holds a region the scope allows is held piece by piece, as the scope's
+    // own window is, and what joins it later beside an allowed region or beside one of that region's ancestors is
+    // held too. The rest are held whole, as under a modal dialog.
+    const pieced = top?.allowed
+        ? [document, ...otherPages()].filter(each => each !== page && each.querySelector(top.allowed)) : [];
+    for (const each of pieced) {
+        for (const child of each.body.children) {
+            collect(child, top.usable, elements);
+        }
+
+        for (const allowed of each.querySelectorAll(top.allowed)) {
+            ancestors(allowed).forEach(node => watch(node, { childList: true }));
+        }
+    }
+
     for (const each of regions.filter(one => one.element.isConnected)) {
         for (const node of [each.element, ...ancestors(each.element)]) {
             watch(node, { attributes: true, attributeFilter: reach });
@@ -75,8 +90,8 @@ function apply() {
     held = elements;
     changed.disconnect();
     watched.forEach((options, node) => changed.observe(node, options));
-    // The app's other windows are held as a modal dialog holds them.
-    setRegionWindow(region ? () => region.ownerDocument : null);
+    // The app's other windows are held as a modal dialog holds them, apart from those held piece by piece.
+    setRegionWindow(region ? () => region.ownerDocument : null, pieced);
     // The focus moves in as the region first comes into force, which is later than its scope started when an older
     // region held it or it was out of reach.
     if (top && !top.entered) {
@@ -91,18 +106,19 @@ function apply() {
 onPagesChange(apply);
 
 // Makes everything beside the region, and beside each of its ancestors, inert, in its window and in the app's other
-// windows, until the result is disposed. Blazor's own parts, the live regions, toasts, dialogs and the popups the app
-// names stay usable. Sets data-ready on the region once it is counted, which tests wait for.
-export function blockOutside(element, outsidePopups, autoFocus) {
+// windows, until the result is disposed. Blazor's own parts, the live regions, toasts, dialogs, the popups the app
+// names and what this region allows stay usable. Sets data-ready on the region once it is counted, which tests wait
+// for.
+export function blockOutside(element, outsidePopups, autoFocus, allow) {
     // Blazor passes null for an element that was removed before this call arrived.
     if (!element) {
         return null;
     }
 
-    const usable = [...alwaysUsable, ...ownParts, ...outsidePopups].join(', ');
+    const usable = [...alwaysUsable, ...ownParts, ...outsidePopups, ...allow].join(', ');
     // A selector the app got wrong throws here, before anything is held.
     element.ownerDocument.querySelector(usable);
-    const region = { element, usable, autoFocus, entered: false };
+    const region = { element, usable, allowed: allow.join(', '), autoFocus, entered: false };
     regions.push(region);
     apply();
     element.dataset.ready = '';

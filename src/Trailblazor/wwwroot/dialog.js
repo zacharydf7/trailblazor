@@ -112,19 +112,25 @@ const blockedWindows = new Map();
 // Gives the document of the region that blocks the app without being a dialog, when there is one. A modal dialog
 // is in front of any region, so it decides first.
 let regionWindow = null;
+// The windows that region holds piece by piece itself, because each holds something the region leaves usable.
+let regionPieced = [];
 
 // Holds the app's other windows for a blocking region, whose document `pageOf` gives each time it is asked, or
-// frees them when given null.
-export function setRegionWindow(pageOf) {
+// frees them when given null. The region holds the `pieced` ones itself, so they aren't held whole here.
+export function setRegionWindow(pageOf, pieced) {
     regionWindow = pageOf;
+    regionPieced = pieced;
     blockWindows();
 }
 
 function blockWindows() {
-    const front = stack.findLast(entry => entry.modal)?.dialog.ownerDocument ?? regionWindow?.();
+    const modal = stack.findLast(entry => entry.modal)?.dialog.ownerDocument;
+    const front = modal ?? regionWindow?.();
     const open = [document, ...otherPages()];
     for (const page of new Set([...open, ...blockedWindows.keys()])) {
-        const block = front !== undefined && page !== front && open.includes(page);
+        // A region's Allow applies only to its own hold: under a modal dialog, every other window is held whole.
+        const block = front !== undefined && page !== front && open.includes(page)
+            && (modal !== undefined || !regionPieced.includes(page));
         if (block === blockedWindows.has(page)) {
             continue;
         }

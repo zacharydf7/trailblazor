@@ -2101,6 +2101,8 @@ Trailblazor.TbFileUpload.TbFileUpload() -> void
 Trailblazor.TbFileUpload.ZoneContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbFileUpload.ZoneContent.set -> void
 Trailblazor.TbFocusScope
+Trailblazor.TbFocusScope.Allow.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Trailblazor.TbFocusScope.Allow.set -> void
 Trailblazor.TbFocusScope.AutoFocus.get -> bool
 Trailblazor.TbFocusScope.Blocking.get -> bool
 Trailblazor.TbFocusScope.Blocking.set -> void

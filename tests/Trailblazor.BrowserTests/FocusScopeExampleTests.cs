@@ -73,6 +73,25 @@ public class FocusScopeExampleTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FocusScope_ShouldLeaveTheMapUsableAndHoldItsTab_WhenTheRouteIsEdited(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/focus-scope");
+        var planner = page.GetByRole(AriaRole.Group, new() { Name = "Route planner" });
+        await Expect(planner).ToHaveAttributeAsync("data-ready", "");
+
+        await planner.GetByRole(AriaRole.Button, new() { Name = "Edit route" }).ClickAsync();
+        await Expect(planner.GetByLabel("Route name")).ToBeFocusedAsync();
+        await Expect(page.Locator("[data-tb-blocked]").First).ToBeAttachedAsync();
+
+        // The map works, and the dock's own parts for it, such as its tab, are held with the rest.
+        await planner.GetByRole(AriaRole.Button, new() { Name = "Zoom in" }).ClickAsync();
+        await Expect(planner.GetByText("Zoom: 13")).ToBeVisibleAsync();
+        const string IsInert = "element => element.closest('[inert]') !== null";
+        Assert.True(await planner.GetByRole(AriaRole.Tab, new() { Name = "Map" }).EvaluateAsync<bool>(IsInert));
+        Assert.True(await planner.GetByRole(AriaRole.Tab, new() { Name = "Routes" }).EvaluateAsync<bool>(IsInert));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task FocusScope_ShouldTakeTheFocusAndGiveItBack_WhenBlockingTurnsOnAndOffWhileItStays(string browser)
     {
         var page = await OpenAsync(browser, "/examples/focus-scope");

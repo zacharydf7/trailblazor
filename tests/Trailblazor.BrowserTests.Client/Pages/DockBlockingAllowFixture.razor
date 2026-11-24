@@ -1,0 +1,52 @@
+@page "/dock-blocking-allow"
+@inject IDialogService Dialogs
+
+@* A dock whose editor panel holds a focus scope that blocks the rest of the app except the viewer panel, which stays
+   usable as part of the edit. The scope's Ask button asks a question in a modal dialog, and its Add button adds a
+   button after the dock once the hold has started. Each panel can be in a browser window of its own, and each
+   button outside the scope counts its presses. *@
+<TbButton OnClick="() => _outside++">Outside</TbButton>
+<p data-testid="outside">@_outside</p>
+<div style="inline-size: 48rem; block-size: 16rem">
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Workspace" AllowPopOut>
+        <TbDockPanel Id="editor" Title="Editor">
+            @if (_editing)
+            {
+                <TbFocusScope Blocking Allow="@(["[data-part=panel][data-panel=viewer]"])" role="region"
+                              aria-label="Trip editor">
+                    <TbButton OnClick="() => _editing = false">Finish</TbButton>
+                    <TbButton OnClick="AskAsync">Ask</TbButton>
+                    <TbButton OnClick="() => _late = true">Add</TbButton>
+                </TbFocusScope>
+            }
+            else
+            {
+                <TbButton OnClick="() => _editing = true">Start</TbButton>
+            }
+        </TbDockPanel>
+        <TbDockPanel Id="viewer" Title="Viewer">
+            <TbButton OnClick="() => _marks++">Mark</TbButton>
+            <p data-testid="marks">@_marks</p>
+        </TbDockPanel>
+        <TbDockPanel Id="notes" Title="Notes">
+            <TbButton OnClick="() => _notes++">Note</TbButton>
+            <p data-testid="notes">@_notes</p>
+        </TbDockPanel>
+    </TbDockManager>
+    @if (_late)
+    {
+        <TbButton OnClick="() => _outside++">Late</TbButton>
+    }
+</div>
+
+@code {
+    private DockLayout _layout = new(new DockSplit(new DockGroup("editor"), new DockGroup("viewer"),
+        new DockGroup("notes")));
+    private bool _editing;
+    private bool _late;
+    private int _outside;
+    private int _marks;
+    private int _notes;
+
+    private Task AskAsync() => Dialogs.ConfirmAsync("Keep the marks?", "They can't be drawn again.");
+}

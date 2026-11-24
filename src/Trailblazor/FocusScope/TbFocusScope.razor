@@ -62,6 +62,16 @@
     [Parameter]
     public bool Blocking { get; set; }
 
+    /// <summary>CSS selectors for regions that stay usable while this scope's <see cref="Blocking"/> holds the rest
+    /// of the app, such as a viewer that people draw in as part of an edit. It counts in the scope's own window and
+    /// in the app's other windows: a window that holds an allowed region is held piece by piece, as the scope's own
+    /// window is, instead of whole behind a scrim. Only this scope's hold lets the regions through: a modal dialog
+    /// or a newer blocking scope still holds them, and an overlay or a tour holds those in its own window, as it
+    /// holds everything there. It is read as a hold starts. Leave
+    /// <see cref="Trapped"/> off with it: a trap brings the focus back from an allowed region.</summary>
+    [Parameter]
+    public IReadOnlyList<string>? Allow { get; set; }
+
     /// <summary>The overlay or region whose focus the scope manages.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -192,7 +202,7 @@
     {
         var module = await Modules.ImportAsync("./_content/Trailblazor/blocking-region.js");
         return await module.InvokeAsync<IJSObjectReference?>("blockOutside", _element,
-            Settings.Value.Dialogs.OutsidePopups, AutoFocus);
+            Settings.Value.Dialogs.OutsidePopups, AutoFocus, Allow ?? []);
     }
 
     // A field asking for focus gets it now if the scope is active, or else, once the scope has noted where focus was,

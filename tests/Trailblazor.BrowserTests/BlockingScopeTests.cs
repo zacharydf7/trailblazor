@@ -212,6 +212,98 @@ public class BlockingScopeTests(BrowserFixture fixture) : BrowserTest(fixture)
         await Expect(notes.Page.Locator("[data-part=scrim]")).ToHaveCountAsync(0);
     }
 
+    private async Task<IPage> OpenAllowingDockAsync(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-blocking-allow");
+        var workspace = page.GetByRole(AriaRole.Group, new() { Name = "Workspace" });
+        await Expect(workspace).ToHaveAttributeAsync("data-ready", "");
+        return page;
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Scope_ShouldLeaveTheRegionItAllowsUsable_WhenItBlocksBesideIt(string browser)
+    {
+        var page = await OpenAllowingDockAsync(browser);
+        var (mark, note, outside) = (Button(page, "Mark"), Button(page, "Note"), Button(page, "Outside"));
+
+        await Button(page, "Start").ClickAsync();
+        await Expect(Button(page, "Finish")).ToBeFocusedAsync();
+        await Expect(page.Locator("[data-tb-blocked]").First).ToBeAttachedAsync();
+
+        // The viewer is left as it was for the pointer and for screen readers, while the rest is held.
+        Assert.False(await mark.EvaluateAsync<bool>(IsInert));
+        Assert.All(await Task.WhenAll(note.EvaluateAsync<bool>(IsInert), outside.EvaluateAsync<bool>(IsInert)),
+            Assert.True);
+        await mark.ClickAsync();
+        await Expect(page.GetByTestId("marks")).ToHaveTextAsync("1");
+        // Tab goes on from the scope into the viewer, and its button works from the keyboard.
+        await Button(page, "Ask").FocusAsync();
+        for (var press = 0; press < 4 && !await mark.EvaluateAsync<bool>("mark => mark === document.activeElement");
+            press++)
+        {
+            await page.Keyboard.PressAsync("Tab");
+        }
+
+        await Expect(mark).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(page.GetByTestId("marks")).ToHaveTextAsync("2");
+
+        await Button(page, "Finish").ClickAsync();
+
+        await Expect(page.Locator("[data-tb-blocked], [inert]")).ToHaveCountAsync(0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Scope_ShouldHoldAWindowWithAnAllowedRegionPieceByPiece_WhenItBlocksInAnotherWindow(string browser)
+    {
+        var page = await OpenAllowingDockAsync(browser);
+        var dock = page.Tb().Dock("Workspace");
+        var viewer = await dock.PopOutAsync("Viewer");
+        var notes = await dock.PopOutAsync("Notes");
+        var mark = viewer.GetByRole(AriaRole.Button, new() { Name = "Mark" });
+
+        // The scope starts on the page. The viewer's window has no scrim and its button works; the notes' window
+        // is held whole.
+        await Button(page, "Start").ClickAsync();
+        await Expect(Button(page, "Finish")).ToBeFocusedAsync();
+        await Expect(notes.Page.Locator("[data-part=scrim]")).ToBeAttachedAsync();
+        await Expect(viewer.Page.Locator("[data-part=scrim]")).ToHaveCountAsync(0);
+        Assert.False(await mark.EvaluateAsync<bool>(IsInert));
+        await mark.ClickAsync();
+        await Expect(viewer.GetByTestId("marks")).ToHaveTextAsync("1");
+
+        // A modal dialog holds every other window whole, whatever the scope allows.
+        await Button(page, "Ask").ClickAsync();
+        await Expect(viewer.Page.Locator("[data-part=scrim]")).ToBeAttachedAsync();
+        Assert.True(await mark.EvaluateAsync<bool>(IsInert));
+        await Button(page, "OK").ClickAsync();
+        await Expect(viewer.Page.Locator("[data-part=scrim]")).ToHaveCountAsync(0);
+        Assert.False(await mark.EvaluateAsync<bool>(IsInert));
+
+        await Button(page, "Finish").ClickAsync();
+        await Expect(notes.Page.Locator("[data-part=scrim]")).ToHaveCountAsync(0);
+        await dock.ReturnAsync("Viewer");
+
+        // The scope starts in the editor's own window. The page holds the viewer, so the page is held piece by
+        // piece: no scrim, the viewer usable, the rest inert.
+        var editor = await dock.PopOutAsync("Editor");
+        await editor.GetByRole(AriaRole.Button, new() { Name = "Start" }).ClickAsync();
+        await Expect(editor.GetByRole(AriaRole.Button, new() { Name = "Finish" })).ToBeFocusedAsync();
+        await Expect(page.Locator("[data-tb-blocked]").First).ToBeAttachedAsync();
+        await Expect(page.Locator("[data-part=scrim]")).ToHaveCountAsync(0);
+        Assert.False(await Button(page, "Mark").EvaluateAsync<bool>(IsInert));
+        Assert.True(await Button(page, "Outside").EvaluateAsync<bool>(IsInert));
+        await Button(page, "Mark").ClickAsync();
+        await Expect(page.GetByTestId("marks")).ToHaveTextAsync("2");
+        // A button that joins the page beside the dock after the hold started is held too.
+        await editor.GetByRole(AriaRole.Button, new() { Name = "Add" }).ClickAsync();
+        await Expect(Button(page, "Late")).ToHaveAttributeAsync("inert", "");
+
+        await editor.GetByRole(AriaRole.Button, new() { Name = "Finish" }).ClickAsync();
+
+        await Expect(page.Locator("[data-tb-blocked], [inert]")).ToHaveCountAsync(0);
+    }
+
     private static ILocator Button(IPage page, string name) =>
         page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
 }
