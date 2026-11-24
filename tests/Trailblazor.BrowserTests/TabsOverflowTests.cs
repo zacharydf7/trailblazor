@@ -2,6 +2,59 @@ namespace Trailblazor.BrowserTests;
 
 public class TabsOverflowTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldFadeTheSideWithMoreTabs_WhenTheRowScrollsBesideOtherContent(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+        // Beside Start and End content, and on its own, the row is too narrow for its tabs at this width.
+        foreach (var name in new[] { "Trail report", "Months" })
+        {
+            var list = page.GetByRole(AriaRole.Tablist, new() { Name = name, Exact = true });
+            await Expect(list).ToHaveAttributeAsync("data-ready", "");
+            // WebKit tells a row of its new size only once the row is in view.
+            await list.ScrollIntoViewIfNeededAsync();
+            // A scrollbar that takes room shows that the row scrolls, so the row is given none, as on a phone.
+            await list.EvaluateAsync("""
+                list => {
+                    list.parentElement.style.inlineSize = '18rem';
+                    list.style.scrollbarWidth = 'none';
+                    list.scrollLeft = 0;
+                }
+                """);
+
+            await Expect(list).ToHaveAttributeAsync("data-more-right", "");
+            await Expect(list).Not.ToHaveAttributeAsync("data-more-left", "");
+            Assert.StartsWith("linear-gradient(to left",
+                await list.EvaluateAsync<string>("list => getComputedStyle(list).maskImage"));
+
+            await list.EvaluateAsync("list => list.scrollLeft = list.scrollWidth");
+            await Expect(list).ToHaveAttributeAsync("data-more-left", "");
+            await Expect(list).Not.ToHaveAttributeAsync("data-more-right", "");
+        }
+
+        // A tab the row brings into view rests clear of the fade, which is 2rem wide, and the row's line stays whole.
+        var months = page.GetByRole(AriaRole.Tablist, new() { Name = "Months", Exact = true });
+        await months.EvaluateAsync("list => list.scrollLeft = 0");
+        await Expect(months).Not.ToHaveAttributeAsync("data-more-left", "");
+        var at = await months.EvaluateAsync<int>("""
+            list => [...list.children].findIndex(
+                tab => tab.getBoundingClientRect().right > list.getBoundingClientRect().right)
+            """);
+        var cut = months.GetByRole(AriaRole.Tab).Nth(at);
+        // The arrow keys reach the first tab the row cuts off, which a click would scroll to by itself.
+        await months.GetByRole(AriaRole.Tab).First.ClickAsync();
+        for (var step = 0; step < at; step++)
+        {
+            await page.Keyboard.PressAsync("ArrowRight");
+        }
+
+        await Expect(cut).ToHaveAttributeAsync("aria-selected", "true");
+        var (tab, row) = ((await cut.BoundingBoxAsync())!, (await months.BoundingBoxAsync())!);
+        // Firefox brings a focused tab further in than the 2rem the others stop at.
+        Assert.True(row.X + row.Width - tab.X - tab.Width >= 31.5, "The tab rests under the fade.");
+        await Expect(months).ToHaveCSSAsync("mask-size", "auto, 100% 1px");
+    }
+
     private async Task<IPage> OpenReadyAsync(string browser)
     {
         var page = await OpenAsync(browser, "/tabs-overflow");

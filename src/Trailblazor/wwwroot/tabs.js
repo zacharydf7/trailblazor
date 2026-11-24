@@ -1,6 +1,7 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { isTabbable } from '../Trailblazor.Primitives/focus-scope.js';
 import { watchSizes } from '../Trailblazor.Primitives/pages.js';
+import { markScrollEdges } from '../Trailblazor.Primitives/scroll-edges.js';
 // The arrow keys, Home and End move focus between enabled tabs; with automatic activation they also select it, through
 // `order` rather than a click, so the tab's OnClick hears only clicks. The headers follow the order in which tabs
 // register, so the tabs' order in the markup is reported to `order` too. Delete or Backspace on a closable tab closes
@@ -99,6 +100,8 @@ export function attachTabs(list, order, followsSelection) {
     root.addEventListener('click', onScrollerClick);
     root.addEventListener('mousedown', onScrollerPress);
     list.addEventListener('scroll', updateScrollers, { passive: true });
+    // The row fades at each side that has more tabs past it, where no scrollbar shows that it scrolls.
+    const edges = markScrollEdges(list);
 
     // A focused tab the parent removes, by any route, hands focus on as a closed tab does: to the tab selected in its
     // place if it was the selected one, or else to the next enabled tab or the one before. Removing a tab after focus
@@ -263,6 +266,7 @@ export function attachTabs(list, order, followsSelection) {
             list.removeEventListener('focusout', onFocusOut);
             root.removeEventListener('focusout', onPanelFocusOut);
             list.removeEventListener('scroll', updateScrollers);
+            edges.dispose();
             root.removeEventListener('click', onScrollerClick);
             root.removeEventListener('mousedown', onScrollerPress);
         },
@@ -270,15 +274,17 @@ export function attachTabs(list, order, followsSelection) {
     return { handle };
 }
 
-// Scrolls a row of tabs, and only the row, until the tab shows. A tab wider than the row shows the start of its label.
+// Scrolls a row of tabs, and only the row, until the tab shows, clear of the row's scroll padding, where a row with
+// more tabs past its edge fades. A tab wider than the room that leaves shows the start of its label at the row's edge.
 export function scrollTabIntoRow(list, tab) {
     const own = tab.getBoundingClientRect();
     const row = list.getBoundingClientRect();
-    const start = own.left - row.left;
-    const end = own.right - row.right;
-    const wider = own.width > row.width;
-    const left = wider ? (getComputedStyle(list).direction === 'rtl' ? end : start)
-        : start < 0 ? start : Math.max(end, 0);
+    const style = getComputedStyle(list);
+    const [before, after] = [parseFloat(style.scrollPaddingLeft) || 0, parseFloat(style.scrollPaddingRight) || 0];
+    const wider = own.width > row.width - before - after;
+    const start = own.left - row.left - (wider ? 0 : before);
+    const end = own.right - row.right + (wider ? 0 : after);
+    const left = wider ? (style.direction === 'rtl' ? end : start) : start < 0 ? start : Math.max(end, 0);
     list.scrollBy({ left, behavior: 'instant' });
 }
 

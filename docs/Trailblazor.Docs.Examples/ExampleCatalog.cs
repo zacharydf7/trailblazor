@@ -11185,8 +11185,10 @@ public static class ExampleCatalog
                     typeof(TabsKeepAliveExample)),
                 new("centered", "Centered", "`Centered` centers a tab list in its row.", typeof(TabsCenteredExample)),
                 new("overflow", "Many tabs", "A tab list too long for its row scrolls sideways, and moving focus to a "
-                    + "tab brings it into view. The selected tab scrolls fully into view, leaving the page where it is.",
-                    typeof(TabsOverflowExample)),
+                    + "tab brings it into view. The selected tab scrolls fully into view, leaving the page where it is. "
+                    + "Where the browser shows no scrollbar until the row scrolls, as on a phone, the row fades at "
+                    + "each side that has more tabs: it gets `data-more-left` and `data-more-right` for those sides, "
+                    + "once the page is interactive.", typeof(TabsOverflowExample)),
                 new("scroll-buttons", "Scroll buttons", "`ScrollButtons` puts a button at each end of the tab list; a "
                     + "click scrolls the tabs by most of the row's width. They show only while the row overflows, each "
                     + "turns off at its own end, and they're for the pointer, since the arrow keys already bring each "
@@ -11289,7 +11291,7 @@ public static class ExampleCatalog
             Blocks = ["tb-tabs"],
             DataParts =
             [
-                new("list", "The row of tabs."),
+                new("list", "The row of tabs, with `data-more-left` and `data-more-right` on the sides that fade."),
                 new("tab", "One tab."),
                 new("tab-anchor", "A hidden marker that keeps a tab's place when tabs move."),
                 new("icon", "A tab's icon."),

@@ -8434,18 +8434,42 @@
         align-self: flex-start;
     }
 
-    /* A scrolling list could shrink to nothing when an app makes the tabs a flex column that fills a pane. */
+    /* A scrolling list could shrink to nothing when an app makes the tabs a flex column that fills a pane. A tab
+       brought into view rests clear of the row's edge, where a row with more tabs past it fades. */
     .tb-tabs__list {
         display: flex;
         flex: none;
         gap: var(--tb-space-1);
         overflow-x: auto;
+        scroll-padding-inline: var(--tb-space-8);
         border-block-end: 1px solid var(--tb-border-subtle);
     }
 
     /* Safe, or a row too wide for its space would overflow past its start, where it can't be scrolled to. */
     .tb-tabs__list--centered {
         justify-content: safe center;
+    }
+
+    /* A row that scrolls with no scrollbar of its own to show it fades at each side that has more tabs past it, as a
+       grid's scroll box does. The row's line runs on under the cells beside the list, so a second layer keeps the
+       list's own line whole. */
+    .tb-tabs__list[data-more-left] {
+        mask-image: linear-gradient(to right, transparent, black var(--tb-space-8)), linear-gradient(black, black);
+    }
+
+    .tb-tabs__list[data-more-right] {
+        mask-image: linear-gradient(to left, transparent, black var(--tb-space-8)), linear-gradient(black, black);
+    }
+
+    .tb-tabs__list[data-more-left][data-more-right] {
+        mask-image: linear-gradient(to right, transparent, black var(--tb-space-8),
+            black calc(100% - var(--tb-space-8)), transparent), linear-gradient(black, black);
+    }
+
+    .tb-tabs__list:is([data-more-left], [data-more-right]) {
+        mask-size: auto, 100% 1px;
+        mask-position: 0 0, bottom;
+        mask-repeat: no-repeat;
     }
 
     .tb-tabs--vertical {
