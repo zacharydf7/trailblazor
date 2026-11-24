@@ -3965,6 +3965,8 @@ public static class ExampleCatalog
                     <TbDockPanel Id="…" Title="…">…</TbDockPanel>
                 </TbDockManager>
                 """,
+            Scenario = new("layout", "it checks which panel each group shows, selects one tab and closes another, and "
+                + "checks which panels show and which remain."),
             TestingTips =
             [
                 "`page.Tb().Dock(\"Hike planner\")` in Playwright, or `cut.Tb().Dock(\"Hike planner\")` in bUnit, "
@@ -4348,6 +4350,8 @@ public static class ExampleCatalog
                     …
                 </TbViewport>
                 """,
+            Scenario = new("zoom-from-code", "it presses the app's buttons that set the zoom and the fit, and checks "
+                + "that the viewport takes each."),
             TestingTips =
             [
                 "In Playwright, `page.Tb().Viewport(\"Ridge trail map\")` from `Trailblazor.Testing.Playwright` has "
@@ -8716,6 +8720,7 @@ public static class ExampleCatalog
                 new("popover", "The calendar button and the calendar it opens."),
                 new("input", "The browser's own date and time box, shown before the page is interactive."),
             ],
+            Scenario = new("value", "it chooses a date and a time and checks the value and what the app shows."),
             TestingTip = "`await page.Tb().DateTimePicker(\"Guided hike starts\").ChooseAsync(start)` from "
                 + "`Trailblazor.Testing.Playwright` types the date in the field's own format, fills the time and waits "
                 + "until the field has taken both. In bUnit, `cut.Tb().DateTimePicker(\"Guided hike starts\")` from "
@@ -9288,6 +9293,8 @@ public static class ExampleCatalog
                 new("group", "A group of properties."),
                 new("group-label", "A group's heading, which folds it."),
             ],
+            Scenario = new("model", "it reads a property, changes two others, and checks which property the app says "
+                + "changed each time."),
             TestingTip = "`page.Tb().PropertyGrid(\"Trail properties\")` from `Trailblazor.Testing.Playwright` finds the "
                 + "fields inside the grid by their labels, as anywhere else: "
                 + "`.NumberField(\"Length (km)\").EnterAsync(\"8\")` or `.Select(\"Surface\").ChooseAsync(\"Dirt\")`. "
@@ -9373,8 +9380,10 @@ public static class ExampleCatalog
                 new("group", "The `fieldset` around a group's fields."),
                 new("group-label", "A group's `legend`."),
             ],
+            Scenario = new("basic", "it submits the form with no trail name and checks the error, then names the "
+                + "trail, sets the length, submits again, and checks that the app saved the hike."),
             TestingTip = "Find each field by its label with the driver for its kind, as anywhere else: "
-                + "`page.Tb().TextField(\"Trail name\").FillAsync(\"Ridge loop\")` in Playwright, or "
+                + "`page.Tb().TextField(\"Trail name\").EnterAsync(\"Ridge loop\")` in Playwright, or "
                 + "`cut.Tb().NumberField(\"Length (km)\").EnterAsync(\"12\")` in bUnit. A property's field is in "
                 + "`[data-part=field][data-name=LengthKm]`.",
             Telemetry =

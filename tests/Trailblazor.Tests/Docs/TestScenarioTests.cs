@@ -10,9 +10,8 @@ public class TestScenarioTests : DocsTest
     // a new page ships with one instead of joining it.
     private static readonly string[] Owed =
     [
-        "text", "avatar", "timeline", "image", "card", "icon", "button-group", "back-to-top", "dock-manager",
-        "viewport", "app-shell", "progress", "label", "mention-input", "time-picker", "date-time-picker",
-        "property-grid", "model-fields", "query-builder", "focus-scope", "tour", "table", "table-of-contents",
+        "text", "avatar", "timeline", "image", "card", "icon", "button-group", "back-to-top", "app-shell", "progress",
+        "label", "mention-input", "time-picker", "query-builder", "focus-scope", "tour", "table", "table-of-contents",
         "empty-state", "speech-to-text", "highlight", "skeleton", "badge",
     ];
 
