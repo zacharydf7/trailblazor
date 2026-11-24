@@ -1811,13 +1811,11 @@ public static class ExampleCatalog
                     <TbMenuItem Icon="…" OnClick="…">…</TbMenuItem>
                 </TbSpeedDial>
                 """,
+            Scenario = new("speed-dial", "it chooses an action from the speed dial and checks what the app did."),
             TestingTips =
             [
                 "Find a floating button by its name: `GetByRole(AriaRole.Button, new() { Name = \"New message\" })` "
                     + "in Playwright, or `button[aria-label='New message']` in bUnit.",
-                "A speed dial is a menu: `await page.Tb().Menu(\"Add\").ChooseAsync(\"Trail\")` from "
-                    + "`Trailblazor.Testing.Playwright` opens it and chooses the action, and so does "
-                    + "`await cut.Tb().Menu(\"Add\").ChooseAsync(\"Trail\")` in bUnit.",
             ],
             Telemetry =
             [
@@ -2380,11 +2378,10 @@ public static class ExampleCatalog
             Ready = new(".tb-toggle-group", "the group"),
             Target = new("group", "Theme"),
             Blocks = ["tb-toggle-group", "tb-button"],
-            TestingTip = "The picker is a toggle group, so `page.Tb().ToggleGroup(\"Theme\")` in Playwright, or "
-                + "`cut.Tb().ToggleGroup(\"Theme\")` in bUnit, finds it: `ChooseAsync(\"Dark\")` picks a mode, and "
-                + "`ChosenAsync()` or `Chosen` reads it. Check the page with "
-                + "`ToHaveAttributeAsync(\"data-tb-theme\", \"dark\")` on `html`. A test that needs one theme can set "
-                + "`data-tb-theme` on `html` itself. Focusing a choice shows a `tooltip` role with its name.",
+            Scenario = new("modes", "it chooses Dark and checks the mode the app shows and, in a browser, the page's "
+                + "theme."),
+            TestingTip = "A test that needs one theme can set `data-tb-theme` on `html` itself. Focusing a choice "
+                + "shows a `tooltip` role with its name.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"header-theme\"`, it counts `trailblazor.control.shown` as it "
@@ -2682,6 +2679,8 @@ public static class ExampleCatalog
                     </TbRibbonTab>
                 </TbRibbon>
                 """,
+            Scenario = new("basic", "it selects the Trails tab, presses one of its commands, and checks which tab "
+                + "shows and what the app ran."),
             TestingTips =
             [
                 "`page.Tb().Ribbon(\"Trail planner\")` in Playwright, or `cut.Tb().Ribbon(...)` in bUnit, finds the "
@@ -2838,6 +2837,8 @@ public static class ExampleCatalog
                     <TbToolbarButton AriaLabel="…" Icon="…" OnClick="…" />
                 </TbToolbar>
                 """,
+            Scenario = new("overflow", "it clicks a toolbar button by its name, then, on a page too narrow for the "
+                + "toolbar, clicks one that has moved into the More menu, and checks what the app ran each time."),
             TestingTip = "`page.Tb().Toolbar(\"Trail notes\").ClickAsync(\"Add a note\")` in Playwright, or "
                 + "`cut.Tb().Toolbar(...)` in bUnit, clicks a toolbar button by its name once the toolbar is ready, "
                 + "and in Playwright chooses it from the More menu when it has moved there. By hand, find the button "
@@ -10126,6 +10127,8 @@ public static class ExampleCatalog
                 new("shortcut", "The keys shown beside a command."),
                 new("status", "The message shown when nothing matches."),
             ],
+            Scenario = new("commands", "it opens the palette as its shortcut does, finds a command by one of its "
+                + "keywords, runs it, and checks what the app ran."),
             TestingTip = "The helpers open, search and run commands: "
                 + "`page.Tb().CommandPalette().OpenAsync()` presses its shortcut, then `SearchAsync(\"trail\")` and "
                 + "`ChooseAsync(\"New trail\")` wait for the results and for `OnChoose`, and "
