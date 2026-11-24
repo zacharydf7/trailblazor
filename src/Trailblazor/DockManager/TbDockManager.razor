@@ -402,9 +402,9 @@
     /// raises <see cref="LayoutChanged"/>; setting another <see cref="Layout"/> later replaces the saved one, which
     /// is how a Reset button works. Use a key unique to each dock. When the key changes, the dock reads the layout
     /// saved under the new one. To keep layouts on a server instead, bind <see cref="Layout"/> and save
-    /// <see cref="DockLayout.ToJson"/>. With <see cref="AllowPopOut"/>, the dock also saves where each panel's
-    /// browser window last was, and its size, beside the layout; without a key it keeps them for the browser session.
-    /// </summary>
+    /// <see cref="DockLayout.ToJson"/> of <see cref="LayoutToSave"/>. With <see cref="AllowPopOut"/>, the dock also
+    /// saves where each panel's browser window last was, and its size, beside the layout; without a key it keeps
+    /// them for the browser session.</summary>
     [Parameter]
     public string? PersistenceKey { get; set; }
 
@@ -439,6 +439,30 @@
     /// </summary>
     public IReadOnlyList<string> PoppedOut =>
         [.. Shown().Floats.Select(window => window.Active).Where(_landed.Contains)];
+
+    /// <summary>The layout to keep between visits: the current one with each panel that is in a browser window of its
+    /// own put back where it was before it went, docked or in the floating window it had to itself, since a page
+    /// can't open windows as it loads. The dock saves this one under its <see cref="PersistenceKey"/>. An app that
+    /// keeps layouts itself and allows windows saves this layout's <c>ToJson()</c> rather than the layout
+    /// <see cref="LayoutChanged"/> hands it, which holds a floating window for each panel that is away. It is up to
+    /// date when <see cref="LayoutChanged"/> is raised.</summary>
+    public DockLayout LayoutToSave
+    {
+        get
+        {
+            // The last to go is the first back, as when the panels come home, so each finds the layout it left.
+            var layout = _layout;
+            foreach (var (panel, home) in _homes.OrderByDescending(each => each.Value.Turn))
+            {
+                if (layout.FloatOf(panel) is { Group.Panels.Count: 1 })
+                {
+                    layout = layout.Redocked(panel, home.Before, home.Floated);
+                }
+            }
+
+            return layout;
+        }
+    }
 
     /// <summary>Brings a panel back to the dock from its own browser window, which closes. The panel shows where it
     /// was docked before it went, or in the floating window it had to itself. Does nothing for a panel that isn't
@@ -587,7 +611,7 @@
     {
         if (_handle is not null && PersistenceKey is { } key)
         {
-            await _handle.InvokeVoidAsync("save", key, _layout.ToJson());
+            await _handle.InvokeVoidAsync("save", key, LayoutToSave.ToJson());
         }
     }
 

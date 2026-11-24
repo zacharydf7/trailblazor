@@ -1127,6 +1127,27 @@ public class DockManagerPopOutTests(BrowserFixture fixture) : BrowserTest(fixtur
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Panel_ShouldBeDockedWhereItWas_WhenThePageIsReloadedWhileItIsInAWindowOfItsOwn(string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-pop-out?key=reload");
+        await Expect(Workbench(page)).ToHaveAttributeAsync("data-ready", "");
+        var dock = page.Tb().Dock("Workbench");
+        // Opening Log makes the saved layout differ from the app's own, so its tab after the reload shows that
+        // the saved one was read.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Open log" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Log" })).ToBeVisibleAsync();
+        var docked = await dock.PanelsAsync();
+        await PopOutAsync(page, "Notes");
+        Assert.Equal(["Notes"], await dock.PoppedOutAsync());
+
+        await page.ReloadAsync();
+        await Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Log" })).ToBeVisibleAsync();
+
+        Assert.Empty(await dock.FloatingAsync());
+        Assert.Equal(docked, await dock.PanelsAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Panel_ShouldKeepItsScrollPosition_WhenItGoesToAWindowAndComesBack(string browser)
     {
         var page = await OpenAsync(browser, "/dock-popped-parts");

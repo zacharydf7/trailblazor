@@ -2686,18 +2686,42 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
-    public async Task PopOut_ShouldComeBackAsAFloatingWindow_WhenTheLayoutIsSavedAndReadByAnotherDock()
+    public async Task PopOut_ShouldSaveTheLayoutWithThePanelDockedWhereItWas_WhenThePanelIsInAWindowOfItsOwn()
     {
         DockLayout? changed = null;
         var cut = RenderPoppable(Hike, layout => changed = layout);
+        cut.Render(parameters => parameters.Add(dock => dock.PersistenceKey, "hike"));
         await cut.Tb().Dock().PopOutAsync("Notes");
 
-        // What a dock saves is its layout, which holds a window for the panel and nothing of the browser's.
-        Assert.True(DockLayout.TryParse(changed!.ToJson(), out var saved));
-        var later = RenderPoppable(saved).Tb().Dock();
+        // The app hears of the floating window the panel has while it is away. What is kept has no such window,
+        // since no page can open the browser's window again as it loads.
+        Assert.Equal(["notes"], changed!.Floating.Single().Group.Panels);
+        Assert.Equal(Hike, cut.Instance.LayoutToSave);
+        Assert.Equal(Hike.ToJson(), _handle.Invocations["save"][^1].Arguments[1]);
+    }
 
-        Assert.Empty(later.PoppedOut);
-        Assert.Equal(["Notes"], later.Floating);
+    [Fact]
+    public async Task LayoutToSave_ShouldPutEachPanelBackWhereItWas_WhenSeveralAreAwayOrOneFloatedAlready()
+    {
+        var floating = Hike.Float("weather");
+        var cut = RenderPoppable(floating);
+        var dock = cut.Tb().Dock();
+
+        await dock.PopOutAsync("Notes");
+        await dock.PopOutAsync("Trails");
+        // A panel that had a floating window to itself keeps it in what is saved.
+        await dock.PopOutAsync("Weather");
+
+        Assert.Equal(floating.ToJson(), cut.Instance.LayoutToSave.ToJson());
+
+        // What changes while panels are away is kept, with the panels that are still away docked.
+        await dock.ReturnAsync("Notes");
+        await dock.CloseAsync("Notes");
+
+        var kept = cut.Instance.LayoutToSave;
+        Assert.Equal(["notes"], kept.Closed);
+        Assert.Equal(["weather"], kept.Floating.SelectMany(window => window.Group.Panels));
+        Assert.Equal(["trails", "map"], kept.Groups.Single().Panels);
     }
 
     [Fact]

@@ -7242,6 +7242,7 @@ Trailblazor.DockLabels.AwayHint.get -> string?
 Trailblazor.DockLabels.AwayHint.init -> void
 Trailblazor.DockLabels.ShowWindow.get -> string?
 Trailblazor.DockLabels.ShowWindow.init -> void
+Trailblazor.TbDockManager.LayoutToSave.get -> Trailblazor.DockLayout!
 Trailblazor.TbDockManager.PoppedOut.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.TbDockManager.PoppedOutChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyList<string!>!>
 Trailblazor.TbDockManager.PoppedOutChanged.set -> void

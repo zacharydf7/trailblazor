@@ -3220,8 +3220,10 @@ public static class ExampleCatalog
                     + "browser allows it, or returns the panel. `PoppedOut` lists the panels that are away, "
                     + "`PoppedOutChanged` reports each change, and `ReturnAsync` brings one back from code. "
                     + "Which panels are in windows of their own isn't part of "
-                    + "the layout, since a page can't open windows as it loads, so a saved layout brings them back as "
-                    + "floating windows. A panel's window opens where its last one was, at that size: the dock notes "
+                    + "the layout, since a page can't open windows as it loads. What the dock saves under a "
+                    + "`PersistenceKey` has each of them back where it was before it went, docked or in the "
+                    + "floating window it had to itself, so a reload shows the arrangement the user had, and "
+                    + "`LayoutToSave` gives that layout to an app that saves layouts itself. A panel's window opens where its last one was, at that size: the dock notes "
                     + "each window's place and size while it is open and keeps them for the browser session, or "
                     + "beside the saved layout when the dock has a `PersistenceKey`. A panel that has had no window "
                     + "opens over the middle of the dock, at half the dock's size. The browser has the last word on "
@@ -3277,7 +3279,7 @@ public static class ExampleCatalog
                     + "A prerendered page shows the app's own layout until it is interactive, since the server "
                     + "can't read the browser's storage. To show a saved layout from the first render, keep it "
                     + "with the app instead: load it in `OnInitializedAsync`, pass it as `Layout`, save "
-                    + "`ToJson()` in `LayoutChanged`, and leave `PersistenceKey` off.",
+                    + "`ToJson()` of the dock's `LayoutToSave` in `LayoutChanged`, and leave `PersistenceKey` off.",
                     typeof(DockManagerRememberExample)),
                 new("saving", "Saving the layout yourself", "To keep layouts with the app's own settings, such as "
                     + "on a server, `ToJson` writes a layout as text and `DockLayout.TryParse` reads it back, "
@@ -3285,7 +3287,13 @@ public static class ExampleCatalog
                     + "largest group, and a saved panel the app no longer has isn't shown, though the layout keeps "
                     + "its place. A layout saved by one version of the app can outlive the panels a later version "
                     + "removes or renames. After `TryParse`, call `Retain` with the ids the app has now, which "
-                    + "forgets every other one, then `Open` the panels this version needs shown.",
+                    + "forgets every other one, then `Open` the panels this version needs shown. Save the "
+                    + "dock's `LayoutToSave`, read from the dock through `@ref`, as this example does, instead of "
+                    + "the layout the dock hands to `LayoutChanged`. When the dock allows browser windows, that "
+                    + "one holds a floating window for each panel that is in a window of its own, and "
+                    + "`LayoutToSave`, a `DockLayout` that is up to date as `LayoutChanged` is raised, has each "
+                    + "such panel back where it was before it went. Open a panel in a new window here and "
+                    + "save: the saved text has it docked.",
                     typeof(DockManagerSaveExample)),
                 new("closing", "Closing and reopening", "A panel closes from the mark on its tab, with Delete or "
                     + "Backspace on the tab, with a middle click, or from Close in its group's menu. Closing "
