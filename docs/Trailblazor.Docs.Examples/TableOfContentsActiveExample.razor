@@ -3,9 +3,12 @@
         <TbTableOfContentsItem TargetId="packing-shelter" Text="Shelter" />
         <TbTableOfContentsItem TargetId="packing-food" Text="Food" />
     </TbTableOfContents>
-    <TbText>Section in view: <output aria-label="Section in view">@(_active ?? "none")</output></TbText>
+    <TbText>
+        Section in view:
+        <output aria-label="Section in view">@(Titles.GetValueOrDefault(_active ?? "") ?? "none")</output>
+    </TbText>
     <div role="region" aria-label="Packing notes" tabindex="0" class="tb-px-3 tb-py-2"
-         style="block-size: 8rem; max-inline-size: 34rem; overflow: auto; border: 1px solid var(--tb-border-subtle);
+         style="block-size: 8rem; max-inline-size: 34rem; overflow: auto; border: 1px solid var(--tb-border-strong);
                 border-radius: var(--tb-radius-md)">
         <TbStack Gap="2">
             <TbText TextStyle="TextStyle.Title" As="TextElement.H3" id="packing-shelter">Shelter</TbText>
@@ -20,5 +23,8 @@
 </TbStack>
 
 @code {
+    private static readonly Dictionary<string, string> Titles =
+        new() { ["packing-shelter"] = "Shelter", ["packing-food"] = "Food" };
+
     private string? _active;
 }

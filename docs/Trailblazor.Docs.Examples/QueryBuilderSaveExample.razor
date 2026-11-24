@@ -2,10 +2,14 @@
 
 <TbStack Gap="3">
     <TbQueryBuilder Label="Saved search" Fields="Fields" MaxDepth="2" @bind-Value="_query" />
-    <TbText Muted>Saved as: <code>@JsonSerializer.Serialize(_query)</code></TbText>
+    <TbText Muted>Saved as:</TbText>
+    <pre role="region" tabindex="0" aria-label="Saved as" class="tb-m-0" style="overflow: auto"><code>@(
+        JsonSerializer.Serialize(_query, Indented))</code></pre>
 </TbStack>
 
 @code {
+    private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
+
     // A query read back from JSON, as from a user's saved searches.
     private QueryGroup _query = JsonSerializer.Deserialize<QueryGroup>("""
         {"Join":"Or","Conditions":[{"Column":"Region","Operator":"Contains","Value":"ridge"},

@@ -1,6 +1,9 @@
 <TbStack Gap="2">
     <TbDateRangePicker TDate="DateTime" Label="Created between" @bind-Value="_created" />
-    <output>Created between value: @_created.Start?.ToString("O") to @_created.End?.ToString("O")</output>
+    <output>
+        Created between value: <span class="tb-text-nowrap">@_created.Start?.ToString("s")</span> to
+        <span class="tb-text-nowrap">@_created.End?.ToString("s")</span>
+    </output>
 </TbStack>
 
 @code {

@@ -17,13 +17,13 @@ public class TableOfContentsScenarioTests(BrowserFixture fixture) : BrowserTest(
         // Scroll the notes to their end, as the wheel would.
         await page.GetByRole(AriaRole.Region, new() { Name = "Packing notes" })
             .EvaluateAsync("notes => notes.scrollTop = notes.scrollHeight");
-        await Expect(inView).ToHaveTextAsync("packing-food");
+        await Expect(inView).ToHaveTextAsync("Food");
         var food = contents.GetByRole(AriaRole.Link, new() { Name = "Food" });
         await Expect(food).ToHaveAttributeAsync("aria-current", "location");
 
         // Following a link scrolls its section into view.
         await contents.GetByRole(AriaRole.Link, new() { Name = "Shelter" }).ClickAsync();
         await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Shelter" })).ToBeInViewportAsync();
-        await Expect(inView).ToHaveTextAsync("packing-shelter");
+        await Expect(inView).ToHaveTextAsync("Shelter");
     }
 }

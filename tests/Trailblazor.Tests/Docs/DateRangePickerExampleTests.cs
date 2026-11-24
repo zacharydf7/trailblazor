@@ -52,7 +52,7 @@ public class DateRangePickerExampleTests : DocsTest
     {
         var cut = Render<DateRangePickerDateTimeExample>();
 
-        Assert.Contains("Created between value: 2026-06-01T08:30:00", cut.Markup);
+        Assert.Equal("Created between value: 2026-06-01T08:30:00 to 2026-06-30T00:00:00", Readout(cut.Find("output")));
     }
 
     [Fact]
@@ -69,11 +69,11 @@ public class DateRangePickerExampleTests : DocsTest
     public void ClearExample_ShouldShowNull_WhenTheDatesAreCleared()
     {
         var cut = Render<DateRangePickerClearExample>();
-        Assert.Contains("Closure dates value: 2026-06-12 to 2026-06-15", cut.Markup);
+        Assert.Equal("Closure dates value: 2026-06-12 to 2026-06-15", Readout(cut.Find("output")));
 
         cut.Find("[data-part=clear]").Click();
 
-        Assert.Contains("Closure dates value: null to null", cut.Markup);
+        Assert.Equal("Closure dates value: null to null", Readout(cut.Find("output")));
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class DateRangePickerExampleTests : DocsTest
 
         Assert.Contains("Enter the start date as", cut.Find("[data-part=error]").TextContent);
         Assert.Equal("true", cut.Find("[data-part=start-input]").GetAttribute("aria-invalid"));
-        Assert.Contains("Survey dates value: 2026-06-12", cut.Markup);
+        Assert.StartsWith("Survey dates value: 2026-06-12", Readout(cut.Find("output")));
     }
 
     [Fact]
@@ -151,6 +151,10 @@ public class DateRangePickerExampleTests : DocsTest
         Assert.DoesNotContain("ReadOnly", accessibility);
         Assert.DoesNotContain("Variant", accessibility);
     }
+
+    // The readout's text with line breaks and indents collapsed to single spaces, as a browser shows it.
+    private static string Readout(AngleSharp.Dom.IElement output) =>
+        string.Join(' ', output.TextContent.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     private static DateOnly DateOf(AngleSharp.Dom.IElement day) =>
         DateOnly.ParseExact(day.GetAttribute("data-date")!, "yyyy-MM-dd", CultureInfo.InvariantCulture);

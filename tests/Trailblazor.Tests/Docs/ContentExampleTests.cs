@@ -81,6 +81,17 @@ public class ContentExampleTests : DocsTest
     }
 
     [Fact]
+    public void ThemePickerCustomExample_ShouldChooseNothing_WhenTheRememberedModeIsNotReadYet()
+    {
+        SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
+        JSInterop.SetupModule("./_content/Trailblazor/theme.js").Setup<string?[]?>("read");
+
+        var cut = Render<ThemePickerCustomExample>();
+
+        Assert.Empty(cut.FindAll("input[checked]"));
+    }
+
+    [Fact]
     public void ThemePickerCustomExample_ShouldShowTheRememberedMode_WhenThePageIsInteractive()
     {
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));

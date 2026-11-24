@@ -1,7 +1,10 @@
 <TbStack Gap="2">
     <TbDateRangePicker TDate="DateOnly" Label="Survey dates" @bind-Value="_survey"
                        HelperText="Try typing the word soon in the first box, then leave it." />
-    <output>Survey dates value: @_survey.Start?.ToString("O") to @_survey.End?.ToString("O")</output>
+    <output>
+        Survey dates value: <span class="tb-text-nowrap">@_survey.Start?.ToString("O")</span> to
+        <span class="tb-text-nowrap">@_survey.End?.ToString("O")</span>
+    </output>
 </TbStack>
 
 @code {

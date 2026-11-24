@@ -3990,7 +3990,7 @@ public static class ExampleCatalog
                     + "hears the panel's window change size or lose the focus."),
                 new("The window opens in the click on the menu's item, since a browser only lets a page open one "
                     + "while it handles what the user did. A popup blocker that still refuses it leaves the panel "
-                    + "floating in the dock. So does closing the window before the panel gets there, and then nothing "
+                    + "where it was. So does closing the window before the panel gets there, and then nothing "
                     + "is said. A window that the dock doesn't fill within ten seconds closes."),
                 new("A theme, a palette, a density, a direction or a language set on an element around the dock, and "
                     + "not on the page's root, goes on the window's `<body>`, which has the class `tb-dock-window`. "
@@ -11342,14 +11342,14 @@ public static class ExampleCatalog
                 + "move focus, so the test is in Playwright alone.") { Only = ScenarioPackage.Playwright },
             TestingTips =
             [
-                "Like the trap, a blocking scope's hold comes from a script, so test it in Playwright: expect a "
-                    + "control outside the scope to be inside an `[inert]` element, which "
-                    + "`Locator(\"[inert]\").GetByRole(...)` finds.",
+                "Like the trap, a blocking scope's hold comes from a script, so test it in Playwright: on a "
+                    + "control outside the scope, `EvaluateAsync<bool>(\"e => e.closest('[inert]') !== null\")` is "
+                    + "true. `closest` checks the control too, since one right beside the scope is itself `inert`.",
                 "After `Trapped` changes on a scope that stays, wait for `data-trapped` to appear or go before "
                     + "pressing Tab.",
-                "After `Blocking` turns on for a scope that stays, wait for a control outside it to be inside an "
-                    + "`[inert]` element. Waiting for `data-ready` won't help there, since the scope set it when it "
-                    + "started.",
+                "After `Blocking` turns on for a scope that stays, wait for `closest('[inert]')` on a control "
+                    + "outside it to find an element. Waiting for `data-ready` won't help there, since the scope set "
+                    + "it when it started.",
                 "A control in a region named in `Allow` is inside no `[inert]` element and under no "
                     + "`[data-tb-blocked]` one. In another window that holds such a region, expect no "
                     + "`[data-part=scrim]`.",
@@ -13476,8 +13476,8 @@ public static class ExampleCatalog
                     + "`TargetId`, and an item inside another makes a nested list. The link to the section in view is "
                     + "marked as the page, or a scrolling panel, scrolls.", typeof(TableOfContentsExample)),
                 new("active", "Knowing the section in view", "`ActiveChanged` gives you a section's id when a table "
-                    + "of contents marks it as the section in view, and null when none "
-                    + "is.", typeof(TableOfContentsActiveExample)),
+                    + "of contents marks it as the section in view, and null when none is. Here the example shows the "
+                    + "section's title for its id.", typeof(TableOfContentsActiveExample)),
             ],
             Api = [typeof(TbTableOfContents), typeof(TbTableOfContentsItem)],
             Anatomy = """

@@ -43,7 +43,7 @@
                             <TbButton Variant="Variant.Text" OnClick="() => CopyAsync(icon.Name)"
                                       class="docs-icon-choice">
                                 <TbIcon Icon="@((Icon)icon.GetValue(null)!)" Size="Size.Large" />
-                                <span>@icon.Name</span>
+                                <span>@WordBreaks(icon.Name)</span>
                             </TbButton>
                         </div>
                     }
@@ -115,6 +115,10 @@
             || icon.Name.Contains(_query.Replace(" ", "").Replace("_", ""), StringComparison.OrdinalIgnoreCase));
 
     private IEnumerable<PropertyInfo> Shown => Matches.Take(MaxShown);
+
+    // A break opportunity before each word of an icon's name, so a long one wraps between its words.
+    private static MarkupString WordBreaks(string name) =>
+        new(System.Text.RegularExpressions.Regex.Replace(name, "(?<=[a-z0-9])(?=[A-Z])", "<wbr>"));
 
     private string Summary => Matches.Count() switch
     {

@@ -44,7 +44,13 @@
                 {
                     <TbText>You picked <code>@_color</code>.</TbText>
                 }
-                <TbText>@_viewport</TbText>
+                @if (_viewport is { } viewport)
+                {
+                    <TbText>
+                        Your window is @viewport.Width by @viewport.Height pixels, at the
+                        <code>@viewport.Breakpoint</code> breakpoint.
+                    </TbText>
+                }
             </TbStack>
         </div>
 
@@ -158,7 +164,7 @@
     private IAsyncDisposable? _observation;
     private bool _canPickColor;
     private string? _color;
-    private string _viewport = "";
+    private Viewport? _viewport;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -168,8 +174,7 @@
             StateHasChanged();
             _observation = await Browser.ObserveViewportAsync(viewport =>
             {
-                _viewport = $"Your window is {viewport.Width} by {viewport.Height} pixels, which is breakpoint "
-                    + $"{viewport.Breakpoint}.";
+                _viewport = viewport;
                 StateHasChanged();
                 return Task.CompletedTask;
             });

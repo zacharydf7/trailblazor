@@ -1,9 +1,15 @@
 namespace Trailblazor.Docs.Examples;
 
-// Simple shapes drawn for the examples until the Material icon pack exists.
+// Simple shapes drawn for the examples, since the docs site loads the Material icon pack only on its icon pages.
 public static class ExampleIcons
 {
     public static Icon Plus { get; } = new("<path d=\"M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z\" />");
+
+    public static Icon Gear { get; } = new("<path fill-rule=\"evenodd\" d=\""
+        + "M10.5 2h3l.5 2.6 1.7.7 2.2-1.5 2.1 2.1-1.5 2.2.7 1.7 2.6.5v3l-2.6.5-.7 1.7 1.5 2.2-2.1 "
+        + "2.1-2.2-1.5-1.7.7-.5 2.6h-3l-.5-2.6-1.7-.7-2.2 1.5-2.1-2.1 "
+        + "1.5-2.2-.7-1.7-2.6-.5v-3l2.6-.5.7-1.7-1.5-2.2 2.1-2.1 2.2 1.5 1.7-.7zM12 8.5a3.5 3.5 0 1 0 "
+        + "0 7 3.5 3.5 0 0 0 0-7z\" />");
 
     public static Icon More { get; } =
         new("<circle cx=\"12\" cy=\"5\" r=\"2\" /><circle cx=\"12\" cy=\"12\" r=\"2\" /><circle cx=\"12\" "

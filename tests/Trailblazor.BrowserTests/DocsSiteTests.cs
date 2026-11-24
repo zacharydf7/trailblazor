@@ -769,7 +769,7 @@ public class DocsSiteTests(BrowserFixture fixture) : BrowserTest(fixture)
         var viewport = page.GetByText("Your window is");
 
         await page.SetViewportSizeAsync(700, 500);
-        await Expect(viewport).ToHaveTextAsync("Your window is 700 by 500 pixels, which is breakpoint Sm.");
+        await Expect(viewport).ToHaveTextAsync("Your window is 700 by 500 pixels, at the Sm breakpoint.");
         var download = await page.RunAndWaitForDownloadAsync(() =>
             page.GetByRole(AriaRole.Button, new() { Name = "Download the list" }).ClickAsync());
 

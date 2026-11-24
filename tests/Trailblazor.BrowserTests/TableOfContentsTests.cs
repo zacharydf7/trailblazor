@@ -41,7 +41,7 @@ public class TableOfContentsTests(BrowserFixture fixture) : BrowserTest(fixture)
             .EvaluateAsync("panel => panel.scrollTop = panel.scrollHeight");
 
         await Expect(page.GetByRole(AriaRole.Status, new() { Name = "Section in view", Exact = true }))
-            .ToHaveTextAsync("packing-food");
+            .ToHaveTextAsync("Food");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

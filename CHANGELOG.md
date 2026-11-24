@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-24
 
+- The utility classes have `tb-text-nowrap`, which keeps text on one line, such as a date a browser would otherwise break after a hyphen.
 - In `TbRichTextEditor`, a mark or block of the app's own with no `Icon` now shows the first letter of its label, or of its name without one, on its toolbar button, so two of them can be told apart. Before, every such mark showed the same tag and every such block the same framed paragraph.
 - A `TbInsertDivider` where the pointer can't hover now shows a light line along with its button at rest. Before, only the button showed there.
 - A `TbLabel`'s or a field's info button now follows the label's last word, so a label that wraps keeps the button beside its text. Before, the button sat at the far edge of the label's box. A checkbox's or switch's info button stays beside its label, as before.

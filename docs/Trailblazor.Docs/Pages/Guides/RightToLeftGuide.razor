@@ -31,9 +31,15 @@
                 <div dir="@(_rightToLeft ? "rtl" : "ltr")">
                     <TbStack Gap="4" Style="max-inline-size: 28rem">
                         <TbTabs AriaLabel="Trail sections">
-                            <TbTab Key="route" Text="Route"><TbText>Twelve kilometers along the ridge.</TbText></TbTab>
-                            <TbTab Key="weather" Text="Weather"><TbText>Clear until the afternoon.</TbText></TbTab>
-                            <TbTab Key="reviews" Text="Reviews"><TbText>Most hikers rate it hard.</TbText></TbTab>
+                            <TbTab Key="route" Text="Route">
+                                <TbText><bdi>Twelve kilometers along the ridge.</bdi></TbText>
+                            </TbTab>
+                            <TbTab Key="weather" Text="Weather">
+                                <TbText><bdi>Clear until the afternoon.</bdi></TbText>
+                            </TbTab>
+                            <TbTab Key="reviews" Text="Reviews">
+                                <TbText><bdi>Most hikers rate it hard.</bdi></TbText>
+                            </TbTab>
                         </TbTabs>
                         <TbSlider @bind-Value="_distance" Label="Kilometers" Max="40" ShowValue />
                         <TbPagination @bind-Page="_page" PageCount="8" AriaLabel="Trail pages" />
@@ -97,7 +103,11 @@
                 The arrow keys that move a dialog, which go the way they point: Right moves it right in either
                 direction.
             </li>
-            <li>Code, numbers and Latin text inside right-to-left text, which the browser keeps left to right.</li>
+            <li>
+                Code, numbers and Latin text inside right-to-left text, which the browser keeps left to right. A Latin
+                sentence's closing period goes with the text around it, so wrap the sentence in <code>&lt;bdi&gt;</code>
+                to keep the period at its end, as the tabs above do.
+            </li>
         </ul>
         <CodeBlock Label="An icon that turns around" Code="@FlippedIcon" />
 

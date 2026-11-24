@@ -1,13 +1,17 @@
 @implements IDisposable
 @inject IThemeService Theme
 
-<TbRadioGroup TValue="ThemeMode" Label="Page colors" Value="Theme.Mode" ValueChanged="Theme.SetModeAsync" Segmented>
+@* Nothing shows as chosen until the remembered choice is read, so Match the device doesn't show as chosen first. *@
+<TbRadioGroup TValue="ThemeMode?" Label="Page colors" Value="@(_loaded ? Theme.Mode : null)"
+              ValueChanged="mode => Theme.SetModeAsync(mode!.Value)" Segmented>
     <TbRadio Value="ThemeMode.Light">Light</TbRadio>
     <TbRadio Value="ThemeMode.Dark">Dark</TbRadio>
     <TbRadio Value="ThemeMode.System">Match the device</TbRadio>
 </TbRadioGroup>
 
 @code {
+    private bool _loaded;
+
     protected override void OnInitialized() => Theme.Changed += OnThemeChanged;
 
     // Reads the remembered choice, which only an interactive page can do.
@@ -16,6 +20,8 @@
         if (firstRender && RendererInfo.IsInteractive)
         {
             await Theme.LoadAsync();
+            _loaded = true;
+            StateHasChanged();
         }
     }
 

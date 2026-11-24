@@ -367,6 +367,10 @@ a:focus-visible {
     .docs-example__stage[data-controls] {
         grid-template-columns: minmax(0, 1fr);
     }
+
+    .docs-example__stage[data-controls] > [role="group"] {
+        justify-self: stretch;
+    }
 }
 
 /* At 320 pixels, the width WCAG's reflow criterion uses, the full padding leaves too little room for a demo such as
@@ -579,7 +583,7 @@ a:focus-visible {
     inline-size: 100%;
     block-size: auto;
     padding-block: var(--tb-space-3);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 .docs-palette__summary {

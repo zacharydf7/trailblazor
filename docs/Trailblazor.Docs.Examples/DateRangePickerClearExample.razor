@@ -1,7 +1,8 @@
 <TbStack Gap="2">
     <TbDateRangePicker TDate="DateOnly" Label="Closure dates" @bind-Value="_closure" Clearable />
     <output>
-        Closure dates value: @(_closure.Start?.ToString("O") ?? "null") to @(_closure.End?.ToString("O") ?? "null")
+        Closure dates value: <span class="tb-text-nowrap">@(_closure.Start?.ToString("O") ?? "null")</span> to
+        <span class="tb-text-nowrap">@(_closure.End?.ToString("O") ?? "null")</span>
     </output>
 </TbStack>
 
