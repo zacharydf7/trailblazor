@@ -13,8 +13,8 @@ public class ThemePickerScenarioTests : BunitContext
     public async Task Theme_ShouldShowTheChosenMode_WhenAModeIsChosen()
     {
         var cut = Render<ThemePickerExample>();
-        // The picker is a toggle group named "Theme". bUnit has no page around the example, so this test checks what the
-        // app shows; the browser test checks the page's html too.
+        // The picker is a toggle group named "Theme". bUnit has no page around the example, so this test checks what
+        // the app shows; the browser test checks the page's html too.
         var theme = cut.Tb().ToggleGroup("Theme");
         Assert.Equal(["Match the device"], theme.Chosen);
 

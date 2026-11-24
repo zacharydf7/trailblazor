@@ -854,6 +854,8 @@ public static class ExampleCatalog
                 new("placeholder", "An item's place while it loads."),
                 new("empty", "The content shown when there are no items."),
             ],
+            Scenario = new("items", "it reads how many reports the list holds, and reads a report: the first in "
+                + "bUnit, which draws only the first view, and the last in a browser, after scrolling to it."),
             TestingTip = "`await page.Tb().VirtualList(\"Trail reports\").ItemAsync(500)` from "
                 + "`Trailblazor.Testing.Playwright` scrolls the list to an item, as a user does, and returns it once "
                 + "drawn; `CountAsync()` reads how many items there are, once an `ItemsProvider` has answered. In bUnit, "
@@ -1648,8 +1650,11 @@ public static class ExampleCatalog
                 new("icon", "The icon the button shows."),
                 new("spinner", "The spinner shown in place of the icon while loading."),
             ],
+            Scenario = new("mixed", "it checks that the Bold button shows that only some words are bold, presses it, "
+                + "and checks that every word is bold."),
             TestingTip = "`page.Tb().Button(\"Delete\")` from `Trailblazor.Testing.Playwright`, or "
-                + "`cut.Tb().Button(...)` in bUnit, finds it by its name and drives it just like a button. By hand, "
+                + "`cut.Tb().Button(...)` in bUnit, finds it by its name and drives it just like a button, including "
+                + "`PressedAsync()` and `MixedAsync()` (`Pressed` and `Mixed` in bUnit) for a toggle. By hand, "
                 + "find it with "
                 + "`GetByRole(AriaRole.Button, new() { Name = \"Delete\" })`. With `ShowTooltip`, focusing it shows a "
                 + "`tooltip` role with the same text.",
@@ -2087,6 +2092,8 @@ public static class ExampleCatalog
                 new("fill", "The box's button that fills the form."),
                 new("cancel", "The box's button that closes it without filling."),
             ],
+            Scenario = new("basic", "it pastes a trip leader's details, and checks what the app says it filled and "
+                + "each field the form filled in."),
             TestingTips =
             [
                 "In bUnit, `cut.Tb().SmartPaste()` finds it: `PasteAsync(\"...\")` presses it and fills the form "
@@ -2900,6 +2907,8 @@ public static class ExampleCatalog
             [
                 new("insert", "The button that inserts content at the divider."),
             ],
+            Scenario = new("between-items", "it adds a step after the first one with the divider below it, and checks "
+                + "the order of the steps."),
             TestingTip = "`page.Tb().InsertDivider(\"Add a step after Pack the tent\").InsertAsync()` in "
                 + "Playwright, or `cut.Tb().InsertDivider(...)` in bUnit, presses the insert button with that label "
                 + "once the page is interactive. By hand, click it by its name, as `GetByRole(AriaRole.Button, new() { "
@@ -12741,6 +12750,8 @@ public static class ExampleCatalog
                 new("text", "An item without an address, shown as plain text."),
                 new("separator", "What goes before each item; the stylesheet hides the first item's."),
             ],
+            Scenario = new("basic", "it reads the trail's items and the current page, follows the link one level up, "
+                + "and checks where the user is taken."),
             TestingTip = "`page.Tb().Breadcrumbs()` in Playwright, or `cut.Tb().Breadcrumbs()` in bUnit, finds the "
                 + "only trail, or the one you name: `FollowAsync(\"Guides\")` follows an item's link, "
                 + "`ItemsAsync()` or `Items` reads each item's text, and `CurrentAsync()` or `Current` reads the item "
