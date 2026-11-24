@@ -47,6 +47,22 @@ public class DriverReadsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Options_ShouldReadANameOnOneLineAndKeepItsNonBreakingSpace_WhenAnOptionsContentSpansLines(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/option-names");
+        var trailhead = page.Tb().Select("Trailhead");
+
+        // The line break and indentation read as one space, and the non-breaking space stays what it is.
+        Assert.Equal(["Pine Hollow North ridge", "12,50\u00A0\u20AC"], await trailhead.OptionsAsync());
+
+        await trailhead.ChooseAsync("Pine Hollow North ridge");
+        await Expect(page.Locator("output")).ToHaveTextAsync("hollow");
+        await trailhead.ChooseAsync("12,50\u00A0\u20AC");
+        await Expect(page.Locator("output")).ToHaveTextAsync("fee");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Option_ShouldTellWhetherAnOptionIsDisabledOrChosen_WhenASelectOrListBoxReadsIt(string browser)
     {
         var page = await OpenAsync(browser, "/examples/select");

@@ -2383,13 +2383,15 @@ public sealed class TbPaginationLocator(ILocator scope, string? name)
 // Option names as the helpers read them: what a screen reader hears.
 internal static class Choices
 {
-    // An aria-label, else the text outside hidden parts.
-    private const string NameOf = """
+    // An aria-label, else the text outside hidden parts, with each run of spaces, tabs and line breaks as one space,
+    // as a browser reads it: a template's line breaks and indentation aren't part of the name. A non-breaking space
+    // is no such run, and stays as it is.
+    public const string NameOf = """
         element => {
             if (element.hasAttribute('aria-label')) return element.getAttribute('aria-label');
             const copy = element.cloneNode(true);
             copy.querySelectorAll('[aria-hidden=true]').forEach(hidden => hidden.remove());
-            return copy.textContent.trim();
+            return copy.textContent.trim().replace(/[ \t\n\f\r]+/g, ' ');
         }
         """;
 

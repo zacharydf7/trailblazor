@@ -658,6 +658,27 @@ public class TrailblazorMarkupTests : BunitContext
         Assert.Equal(["Small", "Medium", "Large"], cut.Tb().Select("Size").Options);
     }
 
+    [Fact]
+    public async Task Select_ShouldReadAndFindAnOptionByItsNameOnOneLine_WhenItsContentSpansLinesOrHasANonBreakingSpace()
+    {
+        string? chosen = null;
+        var cut = Render<TbSelect<string>>(parameters => parameters.Add(select => select.Label, "Trailhead")
+            .Add(select => select.ValueChanged, (string value) => chosen = value)
+            .AddChildContent<TbOption<string>>(option => option.Add(o => o.Value, "hollow")
+                .AddChildContent("<span>Pine Hollow</span>\n                <span>North ridge</span>"))
+            .AddChildContent<TbOption<string>>(option => option.Add(o => o.Value, "fee")
+                .AddChildContent("12,50\u00A0\u20AC")));
+        var select = cut.Tb().Select("Trailhead");
+
+        // The line break and indentation read as one space, and the non-breaking space stays what it is.
+        Assert.Equal(["Pine Hollow North ridge", "12,50\u00A0\u20AC"], select.Options);
+
+        await select.ChooseAsync("Pine Hollow North ridge");
+        Assert.Equal("hollow", chosen);
+        await select.ChooseAsync("12,50\u00A0\u20AC");
+        Assert.Equal("fee", chosen);
+    }
+
     private IRenderedComponent<TbSelect<string>> RenderSizes(List<bool> opens,
         Action<ComponentParameterCollectionBuilder<TbSelect<string>>>? configure = null) =>
         Render<TbSelect<string>>(parameters =>

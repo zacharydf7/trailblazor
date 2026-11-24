@@ -14,7 +14,7 @@ public sealed class TbCascaderLocator(ILocator scope, ILocator field) : TbFieldL
     /// <summary>The paths that match what was typed, as the field shows them.</summary>
     public async Task<IReadOnlyList<string>> ResultsAsync() =>
         await (await PopupAsync()).Locator("[data-part=results] [data-part=option]").EvaluateAllAsync<string[]>(
-            "options => options.map(option => option.textContent.trim())");
+            "options => options.map(" + Choices.NameOf + ")");
 
     /// <summary>Chooses a path a level at a time, as a user clicks through the lists: the choice with each text in
     /// turn, such as <c>ChooseAsync("Canada", "Ontario", "Toronto")</c>. Waits until the app has heard each choice.

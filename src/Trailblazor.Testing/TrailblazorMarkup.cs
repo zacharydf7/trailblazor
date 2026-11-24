@@ -1304,11 +1304,14 @@ internal static class Choices
             .Where(name => name != "").ToList();
     }
 
+    // A browser reads each run of spaces, tabs and line breaks as one space, so a template's line breaks and
+    // indentation aren't part of the name. A non-breaking space is no such run, and stays as it is.
     private static string OwnName(IElement element) => element.GetAttribute("aria-label")
-        ?? string.Concat(element.Descendants<IText>()
+        ?? string.Join(' ', string.Concat(element.Descendants<IText>()
             .Where(text => text.ParentElement?.Closest("[aria-hidden=true]") is not { } hidden
                 || !element.Contains(hidden))
-            .Select(text => text.Data)).Trim();
+            .Select(text => text.Data)).Trim().Split([' ', '\t', '\n', '\f', '\r'],
+                StringSplitOptions.RemoveEmptyEntries));
 
     // What a failed lookup adds to its message: the names that are there, up to a dozen, so the test's author
     // needn't print the markup to see them.
@@ -3792,7 +3795,7 @@ public sealed class TbCascaderDriver : TbFieldDriver
 
     /// <summary>The paths that match what was typed, as the field shows them.</summary>
     public IReadOnlyList<string> Results => [.. Popup().QuerySelectorAll("[data-part=results] [data-part=option]")
-        .Select(option => option.TextContent.Trim())];
+        .Select(Choices.NameOf)];
 
     /// <summary>Chooses a path a level at a time, as a user clicks through the lists: the choice with each text in
     /// turn, such as <c>ChooseAsync("Canada", "Ontario", "Toronto")</c>. Throws when a level has no such choice, or
@@ -5916,7 +5919,7 @@ public sealed class TbMenuDriver
     {
         if (item.GetAttribute("aria-disabled") == "true")
         {
-            throw new InvalidOperationException($"The menu item \"{NameOf(item)}\" is disabled.");
+            throw new InvalidOperationException($"The menu item \"{Choices.NameOf(item)}\" is disabled.");
         }
 
         if (trigger.HasAttribute("data-static") && item.TagName != "A")
@@ -5953,11 +5956,6 @@ public sealed class TbMenuDriver
         await _scripts.InvokeAsync(() => events.OnToggle(open));
     }
 
-    // The name the Playwright helpers match, with runs of whitespace collapsed, since a new-tab link's hint follows a
-    // line break.
-    private static string NameOf(IElement element) =>
-        string.Join(' ', Choices.NameOf(element).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
-
     private IElement EnabledTrigger()
     {
         var trigger = Trigger();
@@ -5968,7 +5966,7 @@ public sealed class TbMenuDriver
     private IElement Trigger()
     {
         var triggers = _findAll("[aria-haspopup=menu][data-part=trigger]")
-            .Where(button => NameOf(button) == _trigger).ToList();
+            .Where(button => Choices.NameOf(button) == _trigger).ToList();
         return triggers.Count == 1 ? triggers[0]
             : throw new InvalidOperationException(
                 $"Expected one menu trigger named \"{_trigger}\", found {triggers.Count}.");
@@ -5976,13 +5974,13 @@ public sealed class TbMenuDriver
 
     private IElement ListOf(IElement opener) =>
         _findAll($"[id='{opener.GetAttribute("aria-controls")}']").SingleOrDefault()
-        ?? throw new InvalidOperationException($"The menu that \"{NameOf(opener)}\" opens isn't in the markup.");
+        ?? throw new InvalidOperationException($"The menu that \"{Choices.NameOf(opener)}\" opens isn't in the markup.");
 
     // A submenu's items sit inside the parent's list, so only the items whose nearest list is this one count.
     internal static IElement Find(IElement list, string name, string selector, string kind)
     {
         var found = list.QuerySelectorAll(selector)
-            .Where(item => item.Closest("[role=menu]") == list && NameOf(item) == name).ToList();
+            .Where(item => item.Closest("[role=menu]") == list && Choices.NameOf(item) == name).ToList();
         return found.Count switch
         {
             1 => found[0],

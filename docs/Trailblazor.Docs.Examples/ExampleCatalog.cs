@@ -6532,13 +6532,17 @@ public static class ExampleCatalog
                 new("decrement", "The button that steps the value down."),
                 new("increment", "The button that steps the value up."),
             ],
+            Scenario = new("limits-and-steps", "it steps the quantity up with the field's buttons, types a number "
+                + "past the limit and checks that the field is invalid and the app keeps its value, then types one "
+                + "within the limits."),
             TestingTip = "Without a `Format` the field reads what was typed through its own change event, which "
                 + "bUnit's `Change` doesn't reach; `await cut.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` "
                 + "from `Trailblazor.Testing` types into either kind. In Playwright, "
                 + "`await page.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` from "
                 + "`Trailblazor.Testing.Playwright` waits for the field's `data-ready`, types, leaves it and waits "
                 + "until the app has the value. In both, `StepAsync(2)` clicks the increase button twice and "
-                + "`StepAsync(-2)` the decrease button, stopping at `Min` or `Max`. For fields that share a label, "
+                + "`StepAsync(-2)` the decrease button, stopping at `Min` or `Max`, and `Text` (`TextAsync()` in "
+                + "Playwright) reads what the field shows. For fields that share a label, "
                 + "pass a locator in Playwright, as `NumberField(row.GetByLabel(\"Count\"))`.",
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
@@ -6624,6 +6628,8 @@ public static class ExampleCatalog
                 new("helper", "The help text under the checkbox."),
                 new("error", "The validation message, shown while the value is invalid."),
             ],
+            Scenario = new("required", "it reads the message an unticked required box shows once its form validates, "
+                + "ticks the box, and sees the message clear."),
             TestingTip = "It's a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work on "
                 + "`GetByRole(AriaRole.Checkbox, ...)`, and `ToBeCheckedAsync(new() { Indeterminate = true })` waits "
                 + "for the mixed state, which a script sets after rendering. In bUnit, `Change(true)` on the `input` "
@@ -6737,12 +6743,13 @@ public static class ExampleCatalog
                     <TbCheckboxItem Value="…">…</TbCheckboxItem>
                 </TbCheckboxGroup>
                 """,
+            Scenario = new("options-and-value", "it ticks two more days, unticks one, and checks which boxes are "
+                + "ticked and the value the app has."),
             TestingTip = "Each option is a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work "
                 + "on `GetByRole(AriaRole.Checkbox, ...)` inside the group. In bUnit, `Change(true)` or "
                 + "`Change(false)` on an option's `input` checks or unchecks it. The helpers name options by their "
-                + "text: in bUnit and Playwright, "
-                + "`Tb().CheckboxGroup(\"Trail days\").CheckAsync(\"Monday\", \"Friday\")` and `UncheckAsync` change "
-                + "them, and `Checked` (`CheckedAsync()` in Playwright) reads the checked ones.",
+                + "text, and `Checked` (`CheckedAsync()` in Playwright) reads the checked ones in the page's order, "
+                + "which can differ from the order of the app's value.",
         },
         new("switch", "Switch", ExampleCategory.Inputs,
             "Turns a setting on or off right away.")
@@ -6829,12 +6836,15 @@ public static class ExampleCatalog
                 new("thumb-icon", "An icon in the thumb, from `ThumbIcon` or `OffThumbIcon`, with `data-state` set to "
                     + "`on` or `off`."),
             ],
+            Scenario = new("label-and-help", "it turns auto-save off and on again and checks the value the app has "
+                + "each time."),
             TestingTip = "It's a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work on "
                 + "`GetByRole(AriaRole.Switch, ...)`. In bUnit, `Change(true)` on the `input` turns it on, but a "
                 + "browser script is what stops a `ReadOnly` switch from changing, so a `Change` on one still changes "
-                + "the value. Test read-only behavior in Playwright. In bUnit and Playwright, "
-                + "`Tb().Switch(\"Auto-save\").CheckAsync()` and `UncheckAsync()` turn it on and off, refusing a "
-                + "read-only or disabled switch, and `Checked` (`CheckedAsync()` in Playwright) reads it.",
+                + "the value. Test read-only behavior in Playwright. In bUnit and Playwright, the helper's "
+                + "`CheckAsync()` and `UncheckAsync()` refuse a read-only or disabled switch, and do nothing for a "
+                + "switch that is already on or off, so a test can ask for the state it needs without reading it "
+                + "first.",
             Telemetry = CheckboxTelemetry,
         },
         new("slider", "Slider", ExampleCategory.Inputs,
@@ -6952,16 +6962,17 @@ public static class ExampleCatalog
                 new("start-thumb", "A range slider's input for its low end."),
                 new("end-thumb", "A range slider's input for its high end."),
             ],
+            Scenario = new("range", "it reads both ends of the elevation range, sets new ones, and checks what the "
+                + "app has."),
             TestingTip = "`await page.Tb().Slider(\"Map brightness\").SetAsync(80)` from "
                 + "`Trailblazor.Testing.Playwright` moves the slider and waits until the app's `ValueChanged` and "
                 + "`OnValueCommitted` have run, which the slider counts in `data-commits` on its root. `ValueAsync()` "
                 + "reads the value back. "
-                + "`RangeSlider(\"Elevation\").SetAsync(1000, 3000)` does the same for both thumbs. With "
+                + "`RangeSlider(label)` does the same for both thumbs, and `RangeAsync()` reads them. With "
                 + "`GetByRole(AriaRole.Slider).FillAsync(\"80\")` alone, `ToHaveValueAsync(\"80\")` passes before the "
                 + "app hears of the change. A range slider's thumbs are named \"Elevation Minimum\" and \"Elevation "
                 + "Maximum\". In bUnit, `cut.Tb().Slider(\"Map brightness\").SetAsync(80)` moves the slider as a drag "
-                + "does, landing on the nearest step, and `Value` reads it; `RangeSlider(label).SetAsync(start, end)` "
-                + "moves both thumbs, and `Range` reads them.",
+                + "does, landing on the nearest step, and `Value` reads it; a range slider's read is `Range`.",
         },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.")
@@ -7075,6 +7086,8 @@ public static class ExampleCatalog
                     <TbRadio Value="…">…</TbRadio>
                 </TbRadioGroup>
                 """,
+            Scenario = new("error", "it has the app check the arrival day, reads the error the app sets on the group, "
+                + "chooses another day, and sees the error clear."),
             TestingTip = "Each option is a native radio, so Playwright's `CheckAsync()` works on "
                 + "`GetByRole(AriaRole.Radio, ...)` inside the group. In bUnit, `Change(true)` on an option's `input` "
                 + "chooses it. In bUnit and Playwright, `Tb().RadioGroup(\"Paper size\").ChooseAsync(\"A4\")` chooses "
@@ -7813,22 +7826,28 @@ public static class ExampleCatalog
                 new("status", "The message shown while suggestions load, when none match, when a search fails, or "
                     + "before someone has typed enough. It's an option that can't be chosen."),
             ],
-            TestingTip = "To choose a suggestion, `await page.Tb().Autocomplete(\"Trailhead\").ChooseAsync(\"pine\", "
-                + "\"Pine Hollow North ridge\")` from `Trailblazor.Testing.Playwright` types the text, waits for the "
-                + "search, and clicks the option by its name. `TypeAsync(text)` types and waits for the suggestions "
-                + "without choosing one. `EnterAsync(text)` types and leaves the field, which commits the text, and "
-                + "`ClearAsync()` uses the clear button. `TextAsync()` reads the field's text and `SuggestionsAsync()` "
-                + "the suggestions in its list, which stay after a choice closes it. The helpers that type wait until "
-                + "the list's `data-results-for` holds the typed text, which shows the results are for it. The four "
-                + "that act also wait until the app's handlers, `OnTextChanged` included, have run, which the list "
-                + "counts in `data-handled`. In bUnit, "
-                + "`cut.Tb().Autocomplete(...)` does the same, with `Suggestions` and `Text` as reads. "
-                + "With a `Search`, the browser waits out `DebounceDelay`, "
-                + "so in bUnit, which has no browser, `Search` runs and `OnTextChanged` fires on each input. Without a "
-                + "`Search`, `OnTextChanged` fires once `DebounceDelay` has passed on the app's `TimeProvider`, so advance a "
-                + "`FakeTimeProvider` past it, or set it to `TimeSpan.Zero`. Only the first `MaxItems` matches, 50 by "
-                + "default, become options, so type enough to bring the one you want into the list. For fields that "
-                + "share a label, pass a locator in Playwright, as `Autocomplete(row.GetByLabel(\"Town\"))`.",
+            Scenario = new("search", "it searches by region and reads the suggestions, chooses a trailhead by name, "
+                + "checks what the app has, and clears the field."),
+            TestingTips =
+            [
+                "`ChooseAsync(text, option)` types the text, waits for the search, and clicks the option by its "
+                    + "name. `TypeAsync(text)` stops before choosing, and `EnterAsync(text)` types and leaves the "
+                    + "field, which commits the text.",
+                "`SuggestionsAsync()`, or `Suggestions` in bUnit, reads the suggestions in the list, which stay "
+                    + "after a choice closes it.",
+                "In Playwright, the helpers that type wait until the list's `data-results-for` holds the typed "
+                    + "text, which shows the results are for it. `ChooseAsync`, `TypeAsync`, `EnterAsync` and "
+                    + "`ClearAsync` also wait until the app's handlers, `OnTextChanged` included, have run, which "
+                    + "the list counts in `data-handled`.",
+                "With a `Search`, the browser waits out `DebounceDelay`, so in bUnit, which has no browser, `Search` "
+                    + "runs and `OnTextChanged` fires on each input. Without a `Search`, `OnTextChanged` fires once "
+                    + "`DebounceDelay` has passed on the app's `TimeProvider`, so advance a `FakeTimeProvider` past "
+                    + "it, or set it to `TimeSpan.Zero`.",
+                "Only the first `MaxItems` matches, 50 by default, become options, so type enough to bring the one "
+                    + "you want into the list.",
+                "For fields that share a label, pass a locator in Playwright, as "
+                    + "`Autocomplete(row.GetByLabel(\"Town\"))`.",
+            ],
         },
         new("cascader", "Cascader", ExampleCategory.Inputs,
             "A field that chooses a path through nested choices, such as a region, then a trailhead, then a parking "

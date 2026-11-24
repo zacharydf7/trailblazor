@@ -1,0 +1,15 @@
+@page "/option-names"
+
+@* One option's content spans lines, and the other's text holds a non-breaking space. *@
+<TbSelect Label="Trailhead" @bind-Value="_trailhead">
+    <TbOption Value="@("hollow")">
+        <span>Pine Hollow</span>
+        <span>North ridge</span>
+    </TbOption>
+    <TbOption Value="@("fee")">12,50&nbsp;€</TbOption>
+</TbSelect>
+<output>@_trailhead</output>
+
+@code {
+    private string? _trailhead;
+}
