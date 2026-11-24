@@ -218,8 +218,13 @@ public sealed partial class TbViewport : TbComponentBase, IAsyncDisposable
         StateHasChanged();
     }
 
-    private ValueTask<double> UpdateAsync(double zoom, ViewportFit fit) =>
-        _handle!.InvokeAsync<double>("update", zoom, fit.ToString(), MinZoom, MaxZoom, ZoomStep, DragToPan);
+    // A script that isn't there, as in a bUnit test, answers 0, which no zoom can be, so the zoom asked for stands.
+    private async Task<double> UpdateAsync(double zoom, ViewportFit fit)
+    {
+        var settled = await _handle!.InvokeAsync<double>("update", zoom, fit.ToString(), MinZoom, MaxZoom, ZoomStep,
+            DragToPan);
+        return settled > 0 ? settled : zoom;
+    }
 
     private Task ZoomInAsync(MouseEventArgs args) => ZoomToAsync(_zoom * ZoomStep, InputOf(args));
 
