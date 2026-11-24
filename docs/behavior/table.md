@@ -11,6 +11,7 @@ Nothing of its own. It is a native table with no keys, and links or buttons writ
 ## Pointer
 
 - [x] With `StickyHeader`, the header stays in view as the rows scroll. `TableTests.Table_ShouldKeepItsHeaderInView_WhenItsRowsScrollWithStickyHeader`
+- [x] With `Striped`, every other row is shaded across, its row header cell included. The stripe is a tint of the text's color, so it shows alike in light and dark themes and on any surface, and `--tb-table-stripe-color` sets another. `TableTests.Table_ShouldShadeAStripedRowsHeaderCellWithTheRow_WhenStriped`
 
 ## Touch
 

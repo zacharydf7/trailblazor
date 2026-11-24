@@ -12,6 +12,7 @@ Familiar apps: the "Customize toolbar" and "Choose columns" dialogs in desktop a
 
 ## Pointer
 
+- [x] Side by side, the two lists start level whatever their heights, and the move buttons sit halfway down the taller one. `TransferListTests.TransferList_ShouldLineItsListsUpAtTheTop_WhenOneIsShorterThanTheOther`
 - [x] Clicking items marks them, and a move button moves them; the chosen items keep the order of `Items`. `TbTransferListTests.MoveAsync_ShouldMoveTheMarkedItemsKeepingTheItemsOrderAndSaySo_WhenCalled`, `TransferListTests.MoveAsync_ShouldMoveTheItemsAndWaitForThem_WhenCalled`
 - [x] Moving every item moves only the ones a filter shows. `TransferListTests.TransferList_ShouldMoveOnlyTheItemsShown_WhenTheListIsFilteredAndAllAreMoved`, `TbTransferListTests.MoveAll_ShouldMoveOnlyTheItemsTheFilterShows_WhenTheListIsFiltered`
 - [x] A filter keeps the items whose text contains what's typed, ignoring case and accents. `TbTransferListTests.Filter_ShouldIgnoreAccents_WhenTyped`

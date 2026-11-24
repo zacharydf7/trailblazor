@@ -4742,7 +4742,7 @@
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
         gap: var(--tb-space-3);
-        align-items: center;
+        align-items: start;
     }
 
     .tb-transfer-list__pane {
@@ -4755,6 +4755,7 @@
     .tb-transfer-list__moves {
         display: flex;
         flex-direction: column;
+        align-self: center;
         gap: var(--tb-space-1);
     }
 
@@ -8399,10 +8400,12 @@
         border-inline-end: 1px solid var(--tb-border-subtle);
     }
 
+    /* The panel keeps its text off the list's divider, as it keeps off the list above it when the tabs are in a row. */
     .tb-tabs--vertical > .tb-tabs__panel {
         flex: 1;
         min-width: 0;
         padding-block: 0;
+        padding-inline-start: var(--tb-space-4);
     }
 
     /* The Start content, the scroll buttons, and the add button with the End content each have a cell of their own
@@ -9082,9 +9085,11 @@
         font-variant-numeric: tabular-nums;
     }
 
-    /* A grid shares the table's cell rules, so its own row-height hook feeds the table's. */
+    /* A grid shares the table's cell rules, so its own row-height and stripe hooks feed the table's. */
     .tb-data-grid {
         --tb-table-row-height: var(--tb-data-grid-row-height, var(--tb-row-height));
+        --tb-table-stripe-color: var(--tb-data-grid-stripe-color,
+            color-mix(in srgb, var(--tb-color-text) 4%, transparent));
     }
 
     /* :where adds no weight for th/td, so a later cell class, such as its alignment, overrides these. */
@@ -9106,7 +9111,10 @@
         white-space: nowrap;
     }
 
+    /* A row's header cell paints no background, so the row's stripe shows through it as through the row's other
+       cells. */
     .tb-table tbody th {
+        background: none;
         color: var(--tb-color-text);
         font-weight: var(--tb-font-weight-medium);
     }
@@ -9123,14 +9131,16 @@
         height: calc(var(--tb-table-row-height, var(--tb-row-height)) + 0.5rem);
     }
 
-    /* A grid's stripe yields to hover, press and selection. A virtualized grid's rows come and go and share their
-       body with spacer rows, so each row says whether it is striped. */
+    /* A stripe is a tint of the text's color, fainter than a hovered row's, so it shows alike on a light and on a dark
+       surface. A grid's stripe yields to hover, press and selection. A virtualized grid's rows come and go and share
+       their body with spacer rows, so each row says whether it is striped. */
     .tb-table--striped tbody tr:nth-child(even),
     .tb-data-grid__row:where(.tb-data-grid--striped:not(.tb-data-grid--virtual) > .tb-data-grid__scroll
         > .tb-data-grid__table > tbody > :nth-child(even of .tb-data-grid__row)),
     .tb-data-grid__row--stripe:where(.tb-data-grid--striped > .tb-data-grid__scroll > .tb-data-grid__table > * > *) {
-        --tb-data-grid-row-shade: var(--tb-color-surface-sunken);
-        background: var(--tb-color-surface-sunken);
+        --tb-data-grid-row-shade: var(--tb-table-stripe-color,
+            color-mix(in srgb, var(--tb-color-text) 4%, transparent));
+        background: var(--tb-data-grid-row-shade);
     }
 
     .tb-data-grid__row:hover {

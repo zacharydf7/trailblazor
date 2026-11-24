@@ -45,7 +45,7 @@ public class DesignTokensTests
         string[] Names(params string[] blocks) => [.. DesignTokens.Hooks(blocks).Select(hook => hook.Name)];
 
         Assert.Contains("--tb-table-row-height", Names("tb-table"));
-        Assert.Equal(["--tb-data-grid-row-height"], Names("tb-data-grid"));
+        Assert.Equal(["--tb-data-grid-row-height", "--tb-data-grid-stripe-color"], Names("tb-data-grid"));
         Assert.Equal(["--tb-tabs-indicator-color", "--tb-tabs-indicator-size"], Names("tb-tabs"));
         Assert.DoesNotContain("--tb-dialog-tray-block", Names("tb-dialog"));
         Assert.DoesNotContain("--tb-color-picker-value", Names("tb-field", "tb-color-picker"));

@@ -18,6 +18,24 @@ public class TransferListTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task TransferList_ShouldLineItsListsUpAtTheTop_WhenOneIsShorterThanTheOther(string browser)
+    {
+        var page = await OpenCrewAsync(browser);
+        var crew = page.GetByRole(AriaRole.Group, new() { Name = "Trip crew" });
+        var (available, chosen) = (crew.Locator("[data-part=available]"), crew.Locator("[data-part=chosen]"));
+        var (left, right) = ((await available.BoundingBoxAsync())!, (await chosen.BoundingBoxAsync())!);
+
+        // The lists are side by side and of different heights, and start level.
+        Assert.NotEqual(left.X, right.X);
+        Assert.NotEqual(left.Height, right.Height, 1.0);
+        Assert.Equal(left.Y, right.Y, 0.5);
+        // The buttons between them stay centered beside the taller one.
+        var moves = (await crew.Locator("[data-part=moves]").BoundingBoxAsync())!;
+        var taller = left.Height > right.Height ? left : right;
+        Assert.Equal(taller.Y + taller.Height / 2, moves.Y + moves.Height / 2, 1.0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TransferList_ShouldMoveTheMarkedItem_WhenItsMarkedAndMovedWithTheKeys(string browser)
     {
         var page = await OpenCrewAsync(browser);

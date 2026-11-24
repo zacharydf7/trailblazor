@@ -17,6 +17,27 @@ public class TableTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(area.Y, box.Y, tolerance: 1);
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Table_ShouldShadeAStripedRowsHeaderCellWithTheRow_WhenStriped(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/table");
+        var hours = page.GetByRole(AriaRole.Table, new() { Name = "Opening hours" });
+        var striped = hours.GetByRole(AriaRole.Rowheader, new() { Name = "River valley" });
+        const string Fill = "cell => getComputedStyle(cell.parentElement).backgroundColor";
+
+        // The row is shaded, and its header cell paints nothing over that, as its other cells don't.
+        Assert.NotEqual("rgba(0, 0, 0, 0)", await striped.EvaluateAsync<string>(Fill));
+        foreach (var cell in new[] { striped, hours.GetByRole(AriaRole.Cell, new() { Name = "10–16" }) })
+        {
+            await Expect(cell).ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
+            await Expect(cell).ToHaveCSSAsync("background-image", "none");
+        }
+
+        // The stripe is the app's own color when it sets one.
+        await hours.EvaluateAsync("table => table.style.setProperty('--tb-table-stripe-color', 'rgb(1, 2, 3)')");
+        Assert.Equal("rgb(1, 2, 3)", await striped.EvaluateAsync<string>(Fill));
+    }
+
     private static ILocator Link(IPage page, string name) =>
         page.GetByRole(AriaRole.Link, new() { Name = name, Exact = true });
 

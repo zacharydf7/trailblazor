@@ -19,6 +19,34 @@ public class TabsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tabs_ShouldKeepThePanelsTextOffTheListsDivider_WhenVertical(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/tabs");
+        var settings = page.GetByRole(AriaRole.Tablist, new() { Name = "Trail settings" });
+        var panel = page.GetByRole(AriaRole.Tabpanel, new() { Name = "Route" });
+
+        // The text starts a gap after the list's edge, on whichever side the list is.
+        await ExpectAGapAsync();
+        await page.EvaluateAsync("() => document.documentElement.dir = 'rtl'");
+        await ExpectAGapAsync();
+
+        async Task ExpectAGapAsync()
+        {
+            var (list, text) = ((await settings.BoundingBoxAsync())!, await panel.EvaluateAsync<float[]>("""
+                panel => {
+                    const range = document.createRange();
+                    range.selectNodeContents(panel);
+                    const box = range.getBoundingClientRect();
+                    return [box.left, box.right];
+                }
+                """));
+            var gap = await page.EvaluateAsync<string>("() => document.documentElement.dir") == "rtl"
+                ? list.X - text[1] : text[0] - (list.X + list.Width);
+            Assert.InRange(gap, 15.5, 16.5);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldSelectTheTab_WhenGivenItsNameAndTheTabsName(string browser)
     {
         // Not waiting for the page to be interactive, which the helper waits for itself.
