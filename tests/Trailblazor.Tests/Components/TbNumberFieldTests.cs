@@ -9,6 +9,17 @@ public class TbNumberFieldTests : BunitContext
 {
     public TbNumberFieldTests() => this.AddTrailblazor();
 
+    [Fact]
+    public void Render_ShouldKeepStartAndEndNextToTheNumber_WhenTheFieldHasStepButtons()
+    {
+        var cut = Render<TbNumberField<int>>(parameters => parameters.Add(field => field.Label, "Trail fee")
+            .Add(field => field.Start, "$").Add(field => field.End, "a day"));
+
+        // A prefix before the minus button would read as a negative amount.
+        Assert.Equal(["decrement", "start", "input", "end", "increment"],
+            cut.Find("[data-part=control]").Children.Select(part => part.GetAttribute("data-part")));
+    }
+
     [Theory]
     [InlineData(null, "ontbnumberchange")]
     [InlineData("N0", "onchange")]

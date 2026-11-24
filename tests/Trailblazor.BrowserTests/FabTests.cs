@@ -23,6 +23,28 @@ public class FabTests(BrowserFixture fixture) : BrowserTest(fixture)
         """);
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Fab_ShouldKeepItsLabelOnOneLineInsideItsFrame_WhenExtended(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/floating-action-button");
+        var frame = page.GetByRole(AriaRole.Region, new() { Name = "Tasks" });
+        var button = frame.GetByRole(AriaRole.Button, new() { Name = "New task" });
+        var label = button.Locator("[data-part=label]");
+
+        foreach (var width in new[] { 1440, 390 })
+        {
+            await page.SetViewportSizeAsync(width, 800);
+            var (outer, pill) = ((await frame.BoundingBoxAsync())!, (await button.BoundingBoxAsync())!);
+            Assert.True(pill.X >= outer.X && pill.X + pill.Width <= outer.X + outer.Width,
+                $"At {width}px the button runs from {pill.X} to {pill.X + pill.Width}, outside its frame.");
+        }
+
+        // In a frame too narrow for the label, the label is as tall as before: still one line.
+        var line = (await label.BoundingBoxAsync())!.Height;
+        await frame.EvaluateAsync("frame => frame.style.inlineSize = '6rem'");
+        Assert.Equal(line, (await label.BoundingBoxAsync())!.Height, 0.5);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Fab_ShouldKeepTheWindowsCornerAndRunItsAction_WhenThePageScrolls(string browser)
     {
         var page = await OpenAsync(browser, "/fab");

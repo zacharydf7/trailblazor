@@ -29,6 +29,7 @@ Familiar apps: the browser's number box, the Windows number up-down control, the
 - [x] A step button stops at the limit and turns off there. `TbNumberFieldTests.Click_ShouldStopAtTheLimitAndDisableTheButton_WhenAStepWouldPassIt`
 - [x] A step in an empty field starts from the minimum. `TbNumberFieldTests.Click_ShouldStartFromTheMinimum_WhenTheFieldIsEmpty`
 - [x] A step button doesn't submit the form. `TbButtonBase.cs`
+- [x] The step buttons sit at the box's two edges, outside the `Start` and `End` content, so a prefix reads with the number and not with the minus button. `TbNumberFieldTests.Render_ShouldKeepStartAndEndNextToTheNumber_WhenTheFieldHasStepButtons`
 - [x] Clicking the label focuses the input. `TbFieldBase.razor`
 - [x] Holding a step button keeps stepping, faster the longer it's held, as the browser's own spinner does. The field shows each step, the value changes once when the button is let go, and the click that ends the hold adds no step. `NumberFieldTests.StepButton_ShouldKeepSteppingAndChangeTheValueOnce_WhenHeldAndLetGo`, `TbNumberFieldTests.Step_ShouldShowEachHeldStepAndChangeTheValueOnce_WhenAStepButtonIsHeldAndLetGo`
 - [x] Clicking anywhere in the box outside its controls, such as its padding, focuses the input, also when something around the field can take the focus itself, such as a tab's or a dock's panel. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`, `FieldBoxTests.Box_ShouldFocusItsInput_WhenSomethingAroundTheFieldCanTakeTheFocusToo`

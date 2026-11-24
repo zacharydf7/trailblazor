@@ -2466,8 +2466,10 @@
         opacity: 0;
     }
 
+    /* The label stays on one line where there is little room. */
     .tb-fab--extended {
         padding-inline: var(--tb-space-4) var(--tb-space-5);
+        white-space: nowrap;
     }
 
     /* Over the page as it scrolls, clear of a phone's rounded corners and home bar, and under dialogs and popups. */

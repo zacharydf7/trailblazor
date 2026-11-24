@@ -4,8 +4,9 @@
 
 @code {
     // The label, the box with the input and its slots, then the helper text and messages, shared by the text fields.
+    // `before` and `after` sit at the box's edges, outside the Start and End content.
     private protected RenderFragment Layout(FieldClasses? classes, RenderFragment input, RenderFragment? start,
-        RenderFragment? end) =>
+        RenderFragment? end, RenderFragment? before = null, RenderFragment? after = null) =>
         @<div @attributes="RootAttributes" style="@Style" data-commits="@_commits"
               class="@ClassNames.Join("tb-field", FieldModifiers, ShowsInvalid ? "tb-field--invalid" : null,
                          Disabled ? "tb-field--disabled" : null, ReadOnly ? "tb-field--readonly" : null, Class)">
@@ -14,6 +15,7 @@
                 @WithInfo(FieldLabel(classes))
             }
             <div data-part="control" class="@ClassNames.Join("tb-field__control", classes?.Control)">
+                @before
                 @if (start is not null)
                 {
                     <span data-part="start" class="@ClassNames.Join("tb-field__start", classes?.Start)">@start</span>
@@ -23,6 +25,7 @@
                 {
                     <span data-part="end" class="@ClassNames.Join("tb-field__end", classes?.End)">@end</span>
                 }
+                @after
             </div>
             @Messages(classes?.Helper, classes?.Status, classes?.Error)
             @AfterMessages

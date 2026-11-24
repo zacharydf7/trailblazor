@@ -87,6 +87,8 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-23
 
+- `TbNumberField` now draws its step buttons at the box's two edges, outside its `Start` and `End` content: the control's children are the decrement button, `start`, the input, `end` and the increment button. Before, `Start` came first, so a `$` before the minus button read as a negative amount.
+- An `Extended` `TbFab` now keeps its label on one line (`white-space: nowrap`). Before, a narrow container wrapped the label onto two lines.
 - A vertical `TbTabs` now keeps its panel's text `--tb-space-4` away from the tab list's divider. Before, the text started right at the divider.
 - `TbTransferList` now lines its two lists up at the top when they sit side by side. Before, the shorter list was centered against the taller one, so their headings didn't line up. The move buttons stay centered between them.
 - A striped row of `TbTable` now shades its row header cell too: a `th` in the table's body no longer paints `--tb-color-surface` over its row. The stripe of `TbTable` and `TbDataGrid` is a 4% tint of the text's color instead of `--tb-color-surface-sunken`, which was near black on a dark surface. The new `--tb-table-stripe-color` sets another color for a table, and `--tb-data-grid-stripe-color` for a grid. In the light theme the stripe looks as before.

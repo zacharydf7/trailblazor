@@ -7,24 +7,17 @@
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
 
-@Layout(Classes, @<text>
-    @* The step buttons repeat the arrow keys for pointers, so they stay out of the tab order. *@
-    @if (!HideStepButtons)
-    {
-        <TbIconButton Icon="BuiltInIcons.Minus"
-                      AriaLabel="@(Labels.Decrease ?? Localizer[TbStrings.NumberFieldDecrease])" Size="Size.Small"
-                      tabindex="-1" data-part="decrement" Disabled="@(Disabled || ReadOnly || !CanStep(-1))"
-                      OnClick="() => StepAsync(-1)" />
-    }
-    @Input
-    @if (!HideStepButtons)
-    {
-        <TbIconButton Icon="BuiltInIcons.Plus"
-                      AriaLabel="@(Labels.Increase ?? Localizer[TbStrings.NumberFieldIncrease])" Size="Size.Small"
-                      tabindex="-1" data-part="increment" Disabled="@(Disabled || ReadOnly || !CanStep(1))"
-                      OnClick="() => StepAsync(1)" />
-    }
-</text>, Start, End)
+@* The step buttons repeat the arrow keys for pointers, so they stay out of the tab order. They sit at the box's two
+   edges, outside the Start and End content, so a prefix reads with the number and not with the minus beside it. *@
+@Layout(Classes, Input, Start, End,
+    before: HideStepButtons ? null : @<TbIconButton Icon="BuiltInIcons.Minus"
+                  AriaLabel="@(Labels.Decrease ?? Localizer[TbStrings.NumberFieldDecrease])" Size="Size.Small"
+                  tabindex="-1" data-part="decrement" Disabled="@(Disabled || ReadOnly || !CanStep(-1))"
+                  OnClick="() => StepAsync(-1)" />,
+    after: HideStepButtons ? null : @<TbIconButton Icon="BuiltInIcons.Plus"
+                  AriaLabel="@(Labels.Increase ?? Localizer[TbStrings.NumberFieldIncrease])" Size="Size.Small"
+                  tabindex="-1" data-part="increment" Disabled="@(Disabled || ReadOnly || !CanStep(1))"
+                  OnClick="() => StepAsync(1)" />)
 
 @code {
     private ElementReference _input;

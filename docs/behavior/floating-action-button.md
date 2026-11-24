@@ -15,6 +15,7 @@ Familiar apps: Gmail's compose button, Google Calendar's create button and the n
 
 ## Pointer
 
+- [x] An extended button's label stays on one line, even where there is little room. `FabTests.Fab_ShouldKeepItsLabelOnOneLineInsideItsFrame_WhenExtended`
 - [x] A floating button keeps its corner of the window as the page scrolls, and a click runs its action. `FabTests.Fab_ShouldKeepTheWindowsCornerAndRunItsAction_WhenThePageScrolls`
 - [x] In right-to-left text, a button at the end sits on the left. `FabTests.Fab_ShouldSitOnTheLeft_WhenThePageIsRightToLeft`
 - [x] A click on a speed dial opens its actions above the trigger, each icon centered over the trigger's, with the first action focused and the plus turned into a cross. `FabTests.SpeedDial_ShouldOpenItsActionsAboveTheTriggerCenteredOverIt_WhenClicked`
