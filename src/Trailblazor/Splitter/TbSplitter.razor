@@ -5,8 +5,9 @@
 @implements IAsyncDisposable
 @inject JsModuleLoader Modules
 
+@* The script sets data-stacked while the splitter is narrower than data-stack-below, in pixels. *@
 <div @attributes="AdditionalAttributes" @ref="_root" data-part="splitter" data-report="@_reported" style="@Style"
-     data-commits="@(RendererInfo.IsInteractive ? _commits : null)"
+     data-commits="@(RendererInfo.IsInteractive ? _commits : null)" data-stack-below="@StackWidth"
      class="@ClassNames.Join("tb-splitter", Vertical ? "tb-splitter--vertical" : null, Class)">
     <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
 </div>
@@ -43,6 +44,16 @@
     /// <summary>Stacks the panes top to bottom instead of side by side.</summary>
     [Parameter]
     public bool Vertical { get; set; }
+
+    /// <summary>Stacks the panes one under the other, each at least as tall as what it holds and with no separators,
+    /// while the splitter itself is narrower than this breakpoint's width, such as 640px for
+    /// <see cref="Breakpoint.Sm"/>; <see cref="Breakpoint.Xs"/> never stacks. The splitter keeps its height and
+    /// scrolls when the panes need more. The sizes the user chose come back when it is wide again. Stacking starts
+    /// once the page is interactive.</summary>
+    [Parameter]
+    public Breakpoint? StackBelow { get; set; }
+
+    private int? StackWidth => StackBelow is { } below and > Breakpoint.Xs ? Viewport.MinWidths[(int)below - 1] : null;
 
     /// <summary>Saves the panes' sizes and collapsed state in the browser under this key, so a reload keeps the
     /// user's layout. Use a key unique to each splitter. When the key changes, the splitter applies the layout saved

@@ -7634,6 +7634,32 @@
         flex-direction: column;
     }
 
+    /* A stacked splitter shows its panes one under the other, each at least as tall as what it holds, with nothing to
+       drag. It keeps the height it has and scrolls when the panes need more. A vertical splitter right inside a
+       stacked pane may have no height to share, so it stacks too. */
+    :is(.tb-splitter[data-stacked], .tb-splitter[data-stacked] > .tb-splitter__pane > .tb-splitter--vertical) {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    :is(.tb-splitter[data-stacked], .tb-splitter[data-stacked] > .tb-splitter__pane > .tb-splitter--vertical)
+        > .tb-splitter__pane {
+        flex-shrink: 0;
+        flex-basis: auto;
+        overflow: visible;
+    }
+
+    /* A line stands where each separator was. */
+    :is(.tb-splitter[data-stacked], .tb-splitter[data-stacked] > .tb-splitter__pane > .tb-splitter--vertical)
+        > .tb-splitter__pane ~ .tb-splitter__pane {
+        border-block-start: 1px solid var(--tb-border-subtle);
+    }
+
+    :is(.tb-splitter[data-stacked], .tb-splitter[data-stacked] > .tb-splitter__pane > .tb-splitter--vertical)
+        > :is(.tb-splitter__bar, .tb-splitter__pane--collapsed) {
+        display: none;
+    }
+
     .tb-splitter__pane {
         flex-shrink: 1;
         flex-basis: 0;

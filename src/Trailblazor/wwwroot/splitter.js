@@ -1,5 +1,6 @@
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { createGripDrag } from '../Trailblazor.Primitives/grip-drag.js';
+import { frames, watchSizes } from '../Trailblazor.Primitives/pages.js';
 // Dragging, the keys and the grip's menu resize panes in the browser, keeping every pane's share, and report the new
 // sizes when they stop; Enter asks the server to collapse or restore. `reporter` hears both, and the panes' order in
 // the markup. Panes are named by id in every report.
@@ -10,6 +11,19 @@ export function attachSplitter(root, reporter) {
     }
 
     const storageKey = key => `tb-splitter:${key}`;
+    // While the splitter is narrower than data-stack-below, its panes go one under the other with nothing to drag.
+    // Its width comes from what holds it, so setting data-stacked doesn't change the width being measured. A size
+    // change is answered a frame later, since stacking changes the height of what is observed.
+    const stack = () => {
+        const below = Number(root.dataset.stackBelow);
+        root.toggleAttribute('data-stacked', below > 0 && root.getBoundingClientRect().width < below);
+    };
+    const stackFrame = frames(root, stack);
+    const widths = watchSizes(() => stackFrame.request());
+    widths.observe(root);
+    const stackBelow = new MutationObserver(stack);
+    stackBelow.observe(root, { attributes: true, attributeFilter: ['data-stack-below'] });
+    stack();
     const vertical = () => root.classList.contains('tb-splitter--vertical');
     const panes = () => [...root.children].filter(child => child.dataset.part === 'pane');
     const length = element => {
@@ -220,6 +234,10 @@ export function attachSplitter(root, reporter) {
             }
         },
         dispose() {
+            stackFrame.cancel();
+            widths.disconnect();
+            stackBelow.disconnect();
+            root.removeAttribute('data-stacked');
             observer.disconnect();
             collapses.disconnect();
             root.removeEventListener('pointerdown', onPointerDown);

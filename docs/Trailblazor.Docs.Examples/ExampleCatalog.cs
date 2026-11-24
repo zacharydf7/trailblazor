@@ -4038,8 +4038,8 @@ public static class ExampleCatalog
             ],
         },
         new("splitter", "Splitter", ExampleCategory.Layout,
-            "Lays out panes side by side or stacked, with separators that resize them by dragging, with the "
-                + "keyboard or from a menu.")
+            "Lays out panes side by side or one above the other, with separators that resize them by dragging, "
+                + "with the keyboard or from a menu.")
         {
             RightToLeftKeys = "Left and Right move the separator the way they point, so Left grows the start pane, "
                 + "now on the right.",
@@ -4061,8 +4061,17 @@ public static class ExampleCatalog
                     + "and `MaxSize`. A pane with no `Size` shares what's left. `Collapsible` lets a pane close, and "
                     + "`@bind-Collapsed` closes it from code. A splitter can sit inside a pane. Drag a separator or "
                     + "its grip to resize, in right-to-left layouts too.", typeof(SplitterExample)),
-                new("vertical", "Vertical", "`Vertical` stacks the panes. Its parent needs a set height.",
-                    typeof(SplitterVerticalExample)),
+                new("vertical", "Vertical", "`Vertical` puts the panes one above the other, still resizable. Its "
+                    + "parent needs a set height.", typeof(SplitterVerticalExample)),
+                new("stacking", "Stacking when narrow", "`StackBelow` names a breakpoint, such as `Breakpoint.Sm` for "
+                    + "640px, and `Xs` never stacks. While the splitter itself is narrower than that, its panes go "
+                    + "one under the other, each at least as tall as what it holds, with a line where each separator "
+                    + "was, and a collapsed pane stays hidden. The splitter keeps the height it has, and scrolls "
+                    + "when its panes need more. The sizes people chose come back when it is wide again. A `Vertical` "
+                    + "splitter that is a pane's own child stacks with it, as in Sizes, limits and collapsing on a "
+                    + "phone, and a side-by-side one inside a pane takes its own `StackBelow`. Drag the frame's "
+                    + "corner here to see it happen.",
+                    typeof(SplitterStackExample)),
                 new("persistence", "Remembering the layout", "`PersistenceKey` saves the panes' sizes and collapsed "
                     + "state in the browser under that key, so the layout comes back. Use a key unique to "
                     + "each splitter. When the key changes, the splitter applies the layout saved under the new "
@@ -4079,6 +4088,8 @@ public static class ExampleCatalog
                 new(["Home", "End"], "Takes the pane before it to its smallest or largest.") { When = "On a "
                     + "separator" },
                 new(["Enter"], "Collapses or restores a `Collapsible` pane.") { When = "On a separator" },
+                new(["Tab"], "Moves through the panes' content; there are no separators to stop at.")
+                    { When = "While stacked by `StackBelow`" },
             ],
             Labeling =
             [
@@ -4104,18 +4115,28 @@ public static class ExampleCatalog
                     + "Restore for a `Collapsible` pane. The menu is the single-pointer alternative to dragging (WCAG "
                     + "2.5.7).",
                 "The grip stays out of the tab order, since the separator's keys do the same as its menu.",
+                "While `StackBelow` has the panes stacked, there are no separators, so there is nothing to resize or "
+                    + "to focus between the panes, and a separator that had focus loses it.",
+            ],
+            AppDuties =
+            [
+                "With `StackBelow`, give people a way to restore a pane they can collapse, as the buttons in Sizes, "
+                    + "limits and collapsing do, since a stacked splitter has no separators to restore it from.",
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
                 "The panes render at their sizes. Resizing starts working once the page is interactive.",
+                "Panes stay side by side until the page is interactive. `StackBelow` stacks them only then, so on a "
+                    + "static page they never stack.",
             ],
             Ready = new("[data-part=splitter]", "the splitter"),
             Target = new("separator", "Resize Trails"),
             Blocks = ["tb-splitter"],
             DataParts =
             [
-                new("splitter", "The splitter itself, around its panes."),
+                new("splitter", "The splitter itself, around its panes, with `data-stack-below` for `StackBelow`'s "
+                    + "width in pixels and `data-stacked` while its panes are stacked."),
                 new("pane", "One pane, sized by the splitter."),
                 new("bar", "The bar between two panes."),
                 new("separator", "The bar's focusable separator, dragged or moved with the keyboard to resize."),
@@ -4135,7 +4156,9 @@ public static class ExampleCatalog
                 + "`RestoreAsync()` collapse and restore the pane that Enter on the separator toggles, and "
                 + "`CollapsedAsync()` or `Collapsed` reads whether it's collapsed. In "
                 + "Playwright they wait until the app's `CollapsedChanged` has run, which the splitter counts in "
-                + "`data-commits`.",
+                + "`data-commits`. A stacked splitter has no separators, so resize it in a test at a width above "
+                + "`StackBelow`; after changing the viewport, wait for `data-stacked` on `[data-part=splitter]` to "
+                + "be set or gone. bUnit runs no script, so there a splitter never stacks.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"map-and-list\"`, it counts `trailblazor.control.shown` as it "

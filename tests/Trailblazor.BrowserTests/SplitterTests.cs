@@ -1,7 +1,82 @@
+using Trailblazor.Testing.Playwright;
+
 namespace Trailblazor.BrowserTests;
 
 public class SplitterTests(BrowserFixture fixture) : SplitterKeysTests(fixture)
 {
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldStackItsPanesWithNothingToDrag_WhenItIsNarrowerThanStackBelow(string browser)
+    {
+        var page = await OpenSplitterAsync(browser);
+        var notes = page.GetByText("The saddle loop climbs through pines");
+        var splitter = page.Locator("[data-part=splitter]", new() { Has = notes });
+        var (list, text) = (splitter.Locator("[data-part=pane]").First, splitter.Locator("[data-part=pane]").Last);
+        var separator = Separator(page, "Resize Trail list");
+        await Expect(separator).ToBeVisibleAsync();
+        var beside = ((await list.BoundingBoxAsync())!, (await text.BoundingBoxAsync())!);
+        Assert.Equal(beside.Item1.Y, beside.Item2.Y, 0.5);
+
+        // The example's own frame, set to 30rem (480px), narrower than its 640px StackBelow.
+        await splitter.Locator("xpath=..").EvaluateAsync("frame => frame.style.inlineSize = '30rem'");
+
+        await Expect(splitter).ToHaveAttributeAsync("data-stacked", "");
+        await Expect(separator).ToBeHiddenAsync();
+        var (above, below, whole) = ((await list.BoundingBoxAsync())!, (await text.BoundingBoxAsync())!,
+            (await splitter.BoundingBoxAsync())!);
+        // Each pane is as wide as the splitter, the second under the first, in the height the example sets.
+        Assert.Equal(whole.Width, above.Width, 0.5);
+        Assert.Equal(above.Y + above.Height, below.Y, 0.5);
+        Assert.Equal(160, whole.Height, 0.5);
+
+        // The helper says why it can't resize a stacked splitter, where it would otherwise wait for a hidden separator.
+        var stacked = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => page.Tb().Splitter("Resize Trail list").ResizeAsync(40));
+        Assert.Contains("StackBelow", stacked.Message);
+
+        // With less height than the panes need, they keep the height of what they hold, and the splitter scrolls.
+        await splitter.EvaluateAsync("splitter => splitter.style.blockSize = '4rem'");
+        var held = (await list.Locator(":scope > *").BoundingBoxAsync())!.Height;
+        Assert.True((await list.BoundingBoxAsync())!.Height >= held - 0.5, "The first pane is shorter than its text.");
+        await Expect(splitter).ToHaveCSSAsync("overflow-y", "auto");
+        Assert.True(await splitter.EvaluateAsync<bool>("splitter => splitter.scrollHeight > splitter.clientHeight"));
+        await splitter.EvaluateAsync("splitter => splitter.style.blockSize = '10rem'");
+
+        // A splitter whose StackBelow goes away, as when the app clears it, is side by side again at once.
+        await splitter.EvaluateAsync("splitter => splitter.removeAttribute('data-stack-below')");
+        await Expect(splitter).Not.ToHaveAttributeAsync("data-stacked", "");
+        await splitter.EvaluateAsync("splitter => splitter.setAttribute('data-stack-below', '640')");
+        await Expect(splitter).ToHaveAttributeAsync("data-stacked", "");
+
+        await splitter.Locator("xpath=..").EvaluateAsync("frame => frame.style.inlineSize = ''");
+        await Expect(splitter).Not.ToHaveAttributeAsync("data-stacked", "");
+        await Expect(separator).ToBeVisibleAsync();
+        await Expect(separator).ToHaveAttributeAsync("aria-valuenow", "35");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Splitter_ShouldStackAVerticalSplitterInsideAndHideACollapsedPane_WhenItsOuterSplitterStacks(
+        string browser)
+    {
+        var page = await OpenSplitterAsync(browser);
+        var profile = page.GetByText("The elevation profile.");
+        var outer = page.Locator("[data-part=splitter]", new() { Has = profile }).First;
+
+        await page.SetViewportSizeAsync(390, 900);
+        await Expect(outer).ToHaveAttributeAsync("data-stacked", "");
+        // With no height from its frame, the vertical splitter in the Map pane has none to share, and stacks too.
+        await outer.Locator("xpath=..").EvaluateAsync("frame => frame.style.blockSize = 'auto'");
+        var elevation = page.Locator("[data-part=pane]", new() { Has = profile }).Last;
+        Assert.True((await elevation.BoundingBoxAsync())!.Height >= (await profile.BoundingBoxAsync())!.Height - 0.5,
+            "The Elevation pane is shorter than its text.");
+
+        // A collapsed pane takes no room while stacked.
+        var trails = page.GetByText("Ridge loop, creek path and summit spur.");
+        var before = (await outer.BoundingBoxAsync())!.Height;
+        await page.GetByRole(AriaRole.Button, new() { Name = "Hide trails" }).ClickAsync();
+        await Expect(trails).ToBeHiddenAsync();
+        Assert.True((await outer.BoundingBoxAsync())!.Height < before, "The collapsed pane still takes room.");
+    }
 
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Splitter_ShouldResizeAndCollapseThePane_WhenTheGripsMenuIsClicked(string browser)

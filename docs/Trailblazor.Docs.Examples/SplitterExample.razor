@@ -3,10 +3,13 @@
         <TbButton Variant="Variant.Outlined" Size="Size.Small" OnClick="() => _trailsCollapsed = !_trailsCollapsed">
             @(_trailsCollapsed ? "Show trails" : "Hide trails")
         </TbButton>
+        <TbButton Variant="Variant.Outlined" Size="Size.Small" OnClick="() => _detailsCollapsed = !_detailsCollapsed">
+            @(_detailsCollapsed ? "Show details" : "Hide details")
+        </TbButton>
         <TbText>Trails @(_trailsCollapsed ? "hidden" : $"{_trails:0}%"), details @($"{_details:0}%")</TbText>
     </TbStack>
     <div style="block-size: 18rem; border: 1px solid var(--tb-border-subtle); border-radius: var(--tb-radius-md)">
-        <TbSplitter>
+        <TbSplitter StackBelow="Breakpoint.Sm">
             <TbSplitterPane Label="Trails" @bind-Size="_trails" MinSize="15" MaxSize="40" Collapsible
                             @bind-Collapsed="_trailsCollapsed">
                 <TbText class="tb-p-3">Ridge loop, creek path and summit spur.</TbText>
@@ -21,7 +24,8 @@
                     </TbSplitterPane>
                 </TbSplitter>
             </TbSplitterPane>
-            <TbSplitterPane Label="Details" @bind-Size="_details" MinSize="15" Collapsible>
+            <TbSplitterPane Label="Details" @bind-Size="_details" MinSize="15" Collapsible
+                            @bind-Collapsed="_detailsCollapsed">
                 <TbText class="tb-p-3">Distance, climb and water stops.</TbText>
             </TbSplitterPane>
         </TbSplitter>
@@ -32,4 +36,5 @@
     private double? _trails = 25;
     private double? _details = 25;
     private bool _trailsCollapsed;
+    private bool _detailsCollapsed;
 }

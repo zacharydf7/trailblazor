@@ -39,6 +39,14 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] A tap on the grip opens its menu, and a finger gets 10px of wander where a mouse gets 4. `splitter.js`
 - [ ] A second finger on the splitter doesn't move or end a drag already running. UNCONFIRMED
 
+## Narrow widths
+
+- [x] With `StackBelow`, a splitter narrower than that breakpoint's width shows its panes one under the other, with a line where each separator was and nothing to drag, and side by side again, at the sizes it had, once it is wide. `SplitterTests.Splitter_ShouldStackItsPanesWithNothingToDrag_WhenItIsNarrowerThanStackBelow`, `TbSplitterTests.Render_ShouldGiveTheScriptTheBreakpointsWidth_WhenGivenStackBelow`
+- [x] A stacked splitter keeps the height it has: its panes are at least as tall as what they hold, and it scrolls when they need more. `SplitterTests.Splitter_ShouldStackItsPanesWithNothingToDrag_WhenItIsNarrowerThanStackBelow`
+- [x] A `Vertical` splitter that is a stacked pane's own child stacks with it, and a collapsed pane takes no room while stacked. `SplitterTests.Splitter_ShouldStackAVerticalSplitterInsideAndHideACollapsedPane_WhenItsOuterSplitterStacks`
+- [ ] A separator that has focus when the splitter stacks keeps focus inside the splitter. Today it is hidden and focus falls to the page. #695
+- [ ] Collapsing the pane that holds focus while the splitter is stacked keeps focus inside the splitter. Today focus goes to a hidden separator, and so falls to the page. #695
+
 ## Focus
 
 - [x] Each separator is one tab stop. `TbSplitterPane.razor`
@@ -48,7 +56,7 @@ Familiar apps: VS Code's sidebar and panel, the navigation pane in File Explorer
 - [x] Focus stays on the separator through a collapse and a restore. `SplitterTests.Splitter_ShouldCollapseAndRestoreThePane_WhenEnterIsPressed`
 - [x] A collapsed pane's content is out of the tab order. `SplitterTests.Splitter_ShouldHideACollapsedPanesContentFromTheTabOrder_WhenCollapsedFromAButton`
 - [x] A collapsed pane's content stays out of reach and hidden, even in an open accordion inside it. `HiddenContentTests.HiddenContent_ShouldBeSkippedByTab_WhenLoadingOrInACollapsedPane`, `HiddenContentTests.HiddenContent_ShouldHideAnOpenAccordionsPanel_WhenLoadingOrInACollapsedPane`, `TbSplitterTests.Render_ShouldGiveACollapsedPanesShareToTheOthers_WhenOneIsCollapsed`
-- [x] Collapsing the pane that holds focus, from a button inside it, moves focus to the separator after it, or before it for the last pane. `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorAfterThePane_WhenCollapsedFromInsideIt`, `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorAfterIt_WhenAMiddlePaneCollapsesFromInside`, `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorBeforeTheLastPane_WhenCollapsedFromInsideIt`
+- [x] While the panes are side by side or `Vertical`, collapsing the pane that holds focus, from a button inside it, moves focus to the separator after it, or before it for the last pane. `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorAfterThePane_WhenCollapsedFromInsideIt`, `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorAfterIt_WhenAMiddlePaneCollapsesFromInside`, `SplitterTests.Splitter_ShouldMoveFocusToTheSeparatorBeforeTheLastPane_WhenCollapsedFromInsideIt`
 - [x] Collapsing a pane leaves focus alone when focus is outside that pane. `SplitterTests.Splitter_ShouldLeaveFocusAlone_WhenAnotherPaneCollapses`
 
 ## Not applicable

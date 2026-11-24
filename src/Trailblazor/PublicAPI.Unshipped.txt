@@ -2703,6 +2703,8 @@ Trailblazor.TbSplitter.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Trailblazor.TbSplitter.PersistenceKey.get -> string?
 Trailblazor.TbSplitter.PersistenceKey.set -> void
 Trailblazor.TbSplitter.TbSplitter() -> void
+Trailblazor.TbSplitter.StackBelow.get -> Trailblazor.Breakpoint?
+Trailblazor.TbSplitter.StackBelow.set -> void
 Trailblazor.TbSplitter.Vertical.get -> bool
 Trailblazor.TbSplitter.Vertical.set -> void
 Trailblazor.TbSplitterPane

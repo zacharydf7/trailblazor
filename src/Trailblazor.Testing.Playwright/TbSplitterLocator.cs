@@ -16,9 +16,11 @@ public sealed class TbSplitterLocator(ILocator scope, string separator)
         "xpath=ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' tb-splitter ')][1]");
 
     /// <summary>Resizes the pane to this percent with the separator's keys, as a keyboard user would, and waits until
-    /// the app has the size.</summary>
+    /// the app has the size. Throws while <c>StackBelow</c> has the splitter stacked, which hides its separators.
+    /// </summary>
     public async Task ResizeAsync(int percent)
     {
+        await ThrowIfStackedAsync();
         // The keys work once the splitter's script has attached.
         await Assertions.Expect(Splitter).ToHaveAttributeAsync("data-ready", "");
         var presses = await SeparatorKeys.PressesAsync(Separator, percent - await SizeAsync());
@@ -48,7 +50,7 @@ public sealed class TbSplitterLocator(ILocator scope, string separator)
 
     /// <summary>Collapses the pane that Enter on the separator collapses, if it's open, by pressing Enter as a keyboard
     /// user would, and waits until the app's <c>CollapsedChanged</c> has run. Throws when neither pane beside the
-    /// separator can collapse.</summary>
+    /// separator can collapse, and while <c>StackBelow</c> has the splitter stacked.</summary>
     public Task CollapseAsync() => SetCollapsedAsync(true);
 
     /// <summary>Restores the pane that Enter on the separator restores, if it's collapsed, as
@@ -62,8 +64,20 @@ public sealed class TbSplitterLocator(ILocator scope, string separator)
         return Splitter.Locator($"[id='{id}']");
     }
 
+    // A stacked splitter hides its separators, and a hidden one would only show as a timeout.
+    private async Task ThrowIfStackedAsync()
+    {
+        var label = separator.Replace("\\", "\\\\").Replace("\"", "\\\"");
+        if (await scope.Locator($"[data-stacked] .tb-splitter__separator[aria-label=\"{label}\"]").CountAsync() > 0)
+        {
+            throw new InvalidOperationException($"\"{separator}\" is hidden while StackBelow has its splitter stacked; "
+                + "use a viewport wide enough for the panes to sit side by side.");
+        }
+    }
+
     private async Task SetCollapsedAsync(bool collapsed)
     {
+        await ThrowIfStackedAsync();
         // Enter works once the splitter's script has attached.
         await Assertions.Expect(Splitter).ToHaveAttributeAsync("data-ready", "");
         var pane = await ToggledPaneAsync();

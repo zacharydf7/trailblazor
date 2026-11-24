@@ -429,6 +429,18 @@ public class TbSplitterTests : BunitContext
     private static string[] PaneIds(IRenderedComponent<TbSplitter> cut) =>
         [.. cut.FindAll(".tb-splitter > [data-part=pane]").Select(pane => pane.Id!)];
 
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData(Breakpoint.Xs, null)]
+    [InlineData(Breakpoint.Sm, "640")]
+    [InlineData(Breakpoint.Xl, "1280")]
+    public void Render_ShouldGiveTheScriptTheBreakpointsWidth_WhenGivenStackBelow(Breakpoint? below, string? width)
+    {
+        var cut = Render<TbSplitter>(parameters => parameters.Add(splitter => splitter.StackBelow, below));
+
+        Assert.Equal(width, cut.Find("[data-part=splitter]").GetAttribute("data-stack-below"));
+    }
+
     private IRenderedComponent<TbSplitter> RenderSplitter(params Pane[] panes) =>
         Render<TbSplitter>(parameters => parameters.Add(splitter => splitter.ChildContent, builder =>
         {

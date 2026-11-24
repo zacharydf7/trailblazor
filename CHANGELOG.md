@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-24
 
+- `TbSplitter` has a `StackBelow`: while the splitter itself is narrower than that breakpoint's width, its panes go one under the other, each at least as tall as what it holds, with a line where each separator was, and a `Vertical` splitter that is a stacked pane's own child stacks with it. The splitter keeps its height and scrolls when the panes need more. It gets `data-stack-below` with the width in pixels and, while stacked, `data-stacked`. Before, three panes side by side in a phone's width wrapped their text a word to a line.
 - `TbPagination` now fits its pages to the room it has. Where its buttons would wrap onto a second row, it shows fewer pages: first it drops the current page's siblings, then any pages `BoundaryCount` adds past the first and last, and where even the first, current and last pages don't fit, it shows the compact form's page box. The pages come back when there is room. A pagination showing its page box gets `tb-pagination--compact`, as with `Compact`, and a `TbDataGrid`'s pager does the same. `data-ready` now waits for the first fit, and `data-fitting` marks a later one that is still to show. It now loads a script for this and implements `IAsyncDisposable`. Before the page is interactive the buttons still wrap.
 
 #### 2026-11-23
