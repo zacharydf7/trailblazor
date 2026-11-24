@@ -1,9 +1,13 @@
 <TbListBox @bind-Value="_route" Label="Route" Rows="3">
     <TbOption Value="@("loop")">
-        <TbStack Row Gap="2">Lake loop <TbChip Text="Easy" Size="Size.Small" /></TbStack>
+        <TbStack Row Gap="2" Align="Align.Center">
+            Lake loop <TbChip Text="Easy" Size="Size.Small" />
+        </TbStack>
     </TbOption>
     <TbOption Value="@("summit")">
-        <TbStack Row Gap="2">Summit trail <TbChip Text="Hard" Size="Size.Small" Tone="Tone.Warning" /></TbStack>
+        <TbStack Row Gap="2" Align="Align.Center">
+            Summit trail <TbChip Text="Hard" Size="Size.Small" Tone="Tone.Warning" />
+        </TbStack>
     </TbOption>
     <TbOption Value="@("any")" Text="Any trail">
         <TbIcon Icon="ExampleIcons.Trail" />

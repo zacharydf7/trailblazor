@@ -175,7 +175,14 @@ export function createCascader(input, popup, events) {
         setActive(null);
         open();
     };
-    const onInputClick = () => {
+    // A click anywhere in the field opens the lists, through its chevron too; the clear button and the lists handle
+    // their own clicks.
+    const onControlClick = event => {
+        if (event.target.closest('button') || popup.contains(event.target)) {
+            return;
+        }
+
+        input.focus();
         if (!isOpen()) {
             open();
         }
@@ -231,7 +238,7 @@ export function createCascader(input, popup, events) {
     observer.observe(popup, { childList: true, subtree: true });
     input.addEventListener('input', onInput);
     input.addEventListener('keydown', onKeyDown);
-    input.addEventListener('click', onInputClick);
+    control.addEventListener('click', onControlClick);
     input.addEventListener('focusout', onFocusOut);
     popup.addEventListener('pointerdown', onPopupPointerDown);
     popup.addEventListener('click', onPopupClick);
@@ -245,7 +252,7 @@ export function createCascader(input, popup, events) {
             observer.disconnect();
             input.removeEventListener('input', onInput);
             input.removeEventListener('keydown', onKeyDown);
-            input.removeEventListener('click', onInputClick);
+            control.removeEventListener('click', onControlClick);
             input.removeEventListener('focusout', onFocusOut);
             popup.removeEventListener('pointerdown', onPopupPointerDown);
             popup.removeEventListener('click', onPopupClick);

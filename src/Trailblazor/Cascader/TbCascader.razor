@@ -99,8 +99,19 @@
         builder.CloseElement();
     };
 
-    private RenderFragment? End => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(_text) ? null :
-        @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.CascaderClear])"
-                       aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="OnClearedAsync"
-                       data-part="clear" />;
+    private RenderFragment End =>
+        @<text>
+            @if (Clearable && !Disabled && !ReadOnly && !string.IsNullOrEmpty(_text))
+            {
+                <TbIconButton Icon="BuiltInIcons.Close"
+                              AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.CascaderClear])"
+                              aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="OnClearedAsync"
+                              data-part="clear" />
+            }
+            @if (RendererInfo.IsInteractive)
+            {
+                <TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" data-part="chevron"
+                        Class="tb-select__chevron" />
+            }
+        </text>;
 }

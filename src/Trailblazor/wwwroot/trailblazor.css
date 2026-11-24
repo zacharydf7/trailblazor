@@ -2281,6 +2281,8 @@
         background: var(--tb-button-subtle);
         color: var(--tb-button-text);
         box-shadow: inset 0 -2px 0 var(--tb-button-text);
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
     }
 
     /* A mixed toggle, on for only part of what it acts on, takes the light fill and a dashed edge in every variant. */
@@ -3874,6 +3876,28 @@
         outline: none;
     }
 
+    /* Chromium draws a time box's clock button in its own color and weight; this one matches the calendar button. */
+    .tb-field__input[type="time"]::-webkit-calendar-picker-indicator {
+        width: 1rem;
+        height: 1rem;
+        padding: 0;
+        background: var(--tb-color-text-muted);
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath \
+d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 2h2v5.6l3.7 3.7-1.4 1.4L11 12.4z'/%3E\
+%3C/svg%3E") center / contain no-repeat;
+    }
+
+    .tb-field__input[type="time"]:not(:disabled, :read-only)::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+    }
+
+    @media (forced-colors: active) {
+        .tb-field__input[type="time"]::-webkit-calendar-picker-indicator {
+            forced-color-adjust: none;
+            background: ButtonText;
+        }
+    }
+
     /* number-field.js marks a box too narrow for its step buttons and a few digits. */
     .tb-field__control[data-narrow] > :is([data-part="increment"], [data-part="decrement"]) {
         display: none;
@@ -4425,6 +4449,7 @@
         --tb-switch-width: 1.75rem;
         --tb-switch-height: 1rem;
         --tb-switch-thumb: 0.625rem;
+        --tb-choice-gap: 0;
         font-size: var(--tb-font-size-xs);
     }
 
@@ -4436,6 +4461,7 @@
         --tb-switch-width: 2.75rem;
         --tb-switch-height: 1.5rem;
         --tb-switch-thumb: 1.125rem;
+        --tb-choice-gap: var(--tb-space-2);
         font-size: var(--tb-font-size-md);
     }
 
@@ -4700,14 +4726,14 @@
     .tb-checkbox-group__options {
         display: flex;
         flex-direction: column;
-        gap: var(--tb-space-1);
+        gap: var(--tb-choice-gap, var(--tb-space-1));
     }
 
     .tb-radio-group__options--row,
     .tb-checkbox-group__options--row {
         flex-direction: row;
         flex-wrap: wrap;
-        gap: var(--tb-space-1) var(--tb-space-4);
+        gap: var(--tb-choice-gap, var(--tb-space-1)) var(--tb-space-4);
     }
 
     /* Each monospace character plus its letter-spacing fills a box; the gradient underlines each box. */
@@ -4737,7 +4763,7 @@
         text-transform: uppercase;
         background: repeating-linear-gradient(to right, var(--tb-code-field-slot-color, var(--tb-border-strong)) 0
                 calc(var(--tb-code-field-slot) - var(--tb-space-2)), transparent 0 var(--tb-code-field-slot))
-            calc(var(--tb-space-2) / 2) calc(100% - var(--tb-space-1)) /
+            calc(var(--tb-space-2) / 2) calc(100% - var(--tb-space-2)) /
             calc(var(--tb-code-field-length) * var(--tb-code-field-slot)) 2px no-repeat;
     }
 
@@ -6879,6 +6905,7 @@
     .tb-tag-input__tag {
         min-inline-size: 0;
         max-inline-size: 100%;
+        font-size: var(--tb-field-font-size, var(--tb-font-size-md));
     }
 
     .tb-tag-input__tag > .tb-chip__action {
@@ -9054,6 +9081,10 @@
         text-align: center;
     }
 
+    .tb-field--invalid > :is(.tb-file-upload__zone, .tb-file-upload__button) {
+        border-color: var(--tb-color-danger-text);
+    }
+
     .tb-file-upload__zone {
         min-block-size: 6rem;
         padding: var(--tb-space-4);
@@ -10514,6 +10545,12 @@
     .tb-calendar__cell:disabled {
         color: var(--tb-color-text-disabled);
         cursor: not-allowed;
+    }
+
+    /* A chosen day that is disabled or can't be chosen keeps its fill and text, dimmed together, to stay readable. */
+    .tb-calendar__cell--selected:is([aria-disabled="true"], :disabled) {
+        color: var(--tb-color-on-primary);
+        opacity: var(--tb-disabled-opacity);
     }
 
     .tb-calendar__cell[aria-disabled="true"] .tb-calendar__number {

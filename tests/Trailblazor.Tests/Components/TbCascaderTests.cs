@@ -47,6 +47,25 @@ public class TbCascaderTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldShowAChevronBesideTheInput_WhenInteractive()
+    {
+        var cut = RenderPlaces();
+
+        Assert.Same(cut.Find("input").Closest(".tb-field__control"),
+            cut.Find("[data-part=chevron]").Closest(".tb-field__control"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowNoChevron_WhenRenderedStatically()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = RenderPlaces();
+
+        Assert.Empty(cut.FindAll("[data-part=chevron]"));
+    }
+
+    [Fact]
     public async Task Pick_ShouldOpenTheNextLevel_WhenAChoiceHasMoreUnderIt()
     {
         var cut = RenderPlaces();

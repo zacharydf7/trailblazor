@@ -55,6 +55,17 @@ public class CascaderTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Cascader_ShouldOpenItsLists_WhenTheChevronIsClicked(string browser)
+    {
+        var page = await OpenReadyAsync(browser);
+
+        await page.Locator("[data-part=chevron]").First.ClickAsync(new() { Force = true });
+
+        await Expect(page.Locator("[data-part=popup]").First).ToBeVisibleAsync();
+        await Expect(Field(page)).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Cascader_ShouldSearchAndChooseAPath_WhenTheUserTypes(string browser)
     {
         var page = await OpenReadyAsync(browser);

@@ -6983,8 +6983,8 @@ public static class ExampleCatalog
                     + "posted, but neither a click nor Space changes it. `Disabled` on the group turns off every "
                     + "option, and `Disabled` on an item turns off that option alone.",
                     typeof(CheckboxGroupStatesExample)),
-                new("tone-and-size", "Tone and size", "`Tone` colors the checked boxes, and `Size` scales the boxes and "
-                    + "their labels.", typeof(CheckboxGroupToneExample)),
+                new("tone-and-size", "Tone and size", "`Tone` colors the checked boxes, and `Size` scales the boxes, "
+                    + "their labels and the space between them.", typeof(CheckboxGroupToneExample)),
             ],
             Api = [typeof(TbCheckboxGroup<>), typeof(TbCheckboxItem<>), typeof(ChoiceClasses)],
             Keyboard =
@@ -7331,8 +7331,8 @@ public static class ExampleCatalog
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` turns off every option but the "
                     + "chosen one, which stays a tab stop and still posts; with nothing chosen, every option is off. "
                     + "`Disabled` on the group turns off every option.", typeof(RadioGroupStatesExample)),
-                new("tone-and-size", "Tone and size", "`Tone` colors the chosen radio, and `Size` scales the radios "
-                    + "and their labels.", typeof(RadioGroupToneExample)),
+                new("tone-and-size", "Tone and size", "`Tone` colors the chosen radio, and `Size` scales the radios, "
+                    + "their labels and the space between them.", typeof(RadioGroupToneExample)),
             ],
             Api = [typeof(TbRadioGroup<>), typeof(TbRadio<>), typeof(ChoiceClasses)],
             Keyboard =
@@ -8251,6 +8251,7 @@ public static class ExampleCatalog
                 .. FieldParts,
                 new("input", "The combobox the user types in."),
                 new("clear", "The button that clears the text."),
+                new("chevron", "The arrow that shows the lists can open."),
                 new("popup", "What opens under the field: the lists, or the search results."),
                 new("column", "One level's list, with `data-level` from 0."),
                 new("results", "The list of paths that match what was typed."),
