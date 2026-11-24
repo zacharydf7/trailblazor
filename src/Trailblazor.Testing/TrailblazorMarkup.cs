@@ -845,7 +845,8 @@ public sealed class TrailblazorMarkup
     // elements its own aria-labelledby names, as Playwright's GetByLabel finds it too.
     private IElement Field(string label, params string[] controls)
     {
-        var all = _findAll("label[data-part=label]");
+        // A label for an id names that element, as in a browser, such as a TbLabel's beside its field.
+        var all = _findAll("label[data-part=label], label[for]");
         var labels = all.Where(element => LabelText(element) == label).ToList();
         var candidates = _findAll(string.Join(", ", controls));
         var unlabeled = labels.Count > 0 ? [] : candidates.Where(control =>
@@ -864,9 +865,16 @@ public sealed class TrailblazorMarkup
                         Choices.Labels(control).Prepend(control.GetAttribute("aria-label") ?? "")))));
         }
 
+        var named = labels.Select(ControlOf).OfType<IElement>().ToList();
+        if (named.Count == 0)
+        {
+            throw new InvalidOperationException($"The label \"{label}\" names no control a browser labels. A label's "
+                + "for names only an input, select, textarea or button; name another control, such as a combobox, "
+                + "with aria-labelledby and the label's id.");
+        }
+
         // A slider or checkbox can share the label, so only the fields of the kind asked for count.
-        var fields = labels.Select(ControlOf).OfType<IElement>().Where(control => controls.Any(control.Matches))
-            .ToList();
+        var fields = named.Where(control => controls.Any(control.Matches)).ToList();
         return fields.Count switch
         {
             1 => fields[0],
@@ -877,9 +885,9 @@ public sealed class TrailblazorMarkup
         };
     }
 
-    // A checkbox's label holds its input.
+    // A checkbox's label holds its input. A label's for names only what a browser labels, not a div with a role.
     private IElement? ControlOf(IElement label) => label.GetAttribute("for") is { Length: > 0 } target
-        ? _findAll($"[id='{target}']").FirstOrDefault()
+        ? _findAll($"[id='{target}']").FirstOrDefault(element => element.Matches(Labelable))
         : _findAll($"[aria-labelledby~='{label.Id}']").FirstOrDefault() ?? label.QuerySelector("input");
 
     // A group is named by the text in its legend, not the info button beside it.
@@ -891,6 +899,8 @@ public sealed class TrailblazorMarkup
         return groups.Count == 1 ? groups[0] : throw new InvalidOperationException(groups.Count == 0
             ? $"No group is labeled \"{label}\"." : $"{groups.Count} groups are labeled \"{label}\".");
     }
+
+    private const string Labelable = "input:not([type=hidden]), select, textarea, button, meter, output, progress";
 
     private static string LabelText(IElement label) => label.TextContent.Trim().TrimEnd('*').Trim();
 }

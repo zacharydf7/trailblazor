@@ -3639,6 +3639,43 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public void Field_ShouldBeFoundByItsLabel_WhenATbLabelOutsideItNamesItsId()
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbLabel>(0);
+            builder.AddAttribute(1, nameof(TbLabel.For), "bag-size");
+            builder.AddAttribute(2, nameof(TbLabel.Text), "Bag size");
+            builder.CloseComponent();
+            builder.OpenComponent<TbTextField<string>>(3);
+            builder.AddAttribute(4, "id", "bag-size");
+            builder.AddAttribute(5, nameof(TbTextField<string>.Value), "20");
+            builder.CloseComponent();
+        });
+
+        Assert.Equal("20", cut.Tb().TextField("Bag size").Text);
+    }
+
+    [Fact]
+    public void Field_ShouldSayTheLabelNamesNoControl_WhenATbLabelNamesTheIdOfAControlABrowserDoesntLabel()
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbLabel>(0);
+            builder.AddAttribute(1, nameof(TbLabel.For), "pace");
+            builder.AddAttribute(2, nameof(TbLabel.Text), "Pace");
+            builder.CloseComponent();
+            builder.OpenComponent<TbSelect<string>>(3);
+            builder.AddAttribute(4, "id", "pace");
+            builder.CloseComponent();
+        });
+
+        // A browser and Playwright find no combobox named Pace either.
+        var error = Assert.Throws<InvalidOperationException>(() => cut.Tb().Select("Pace").Options);
+        Assert.StartsWith("The label \"Pace\" names no control a browser labels.", error.Message);
+    }
+
+    [Fact]
     public void Field_ShouldSayOnlyThatNoFieldHasTheLabel_WhenTheMarkupHasNoFields()
     {
         var cut = Render<TbButton>(parameters => parameters.AddChildContent("Save"));
