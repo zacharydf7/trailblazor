@@ -129,6 +129,23 @@ public class TbDataGridPrerenderTests : BunitContext
     }
 
     [Fact]
+    public void PrerenderKey_ShouldAskTheProviderAndWarn_WhenTwoOfTheKeptRowsHaveTheSameKey()
+    {
+        var logs = new FakeLogCollector();
+        Services.AddSingleton<ILogger<TbDataGrid<Hike>>>(new FakeLogger<TbDataGrid<Hike>>(logs));
+        // Two rows that came back alike, as rows whose key was lost on the way do.
+        State.Persist("hikes", new { Asked = (string?)null, Items = new[] { Hikes[0], Hikes[0] }, TotalCount = 2 });
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+
+        var cut = RenderGrid(LoadAsync);
+
+        Assert.Single(_requests);
+        Assert.Equal(["Pine Hollow", "Eagle Ridge"], Names(cut));
+        var warning = Assert.Single(logs.GetSnapshot(), log => log.Level == LogLevel.Warning);
+        Assert.Contains("same key", warning.Message);
+    }
+
+    [Fact]
     public void PrerenderKey_ShouldLoadAsUsual_WhenTheAppKeepsNoStateAcrossPrerendering()
     {
         // No PersistentComponentState is registered, as in a host that doesn't provide one.

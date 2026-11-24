@@ -11585,6 +11585,14 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("With a `PrerenderKey`, the page carries every public property of each parent that was open "
+                    + "while it prerendered and of all that parent's children. With WebAssembly or Auto that "
+                    + "text is in the page for anyone to read. Give the tree items of a type made for showing, "
+                    + "with nothing a user shouldn't see.") { Pitfall = true },
+                new("Items that don't come back from JSON as they went in aren't kept under a `PrerenderKey`: "
+                    + "the tree logs a warning as it prerenders and loads the children again, as it does without "
+                    + "a key. A property with a private setter is lost that way, and so is one with no setter "
+                    + "that no constructor takes, unless it is computed from the others.") { Pitfall = true },
                 new("After changing `Items` in place, call `RefreshAsync`. A new collection, or an `OnMove`, builds the "
                     + "rows again by itself.") { Pitfall = true },
                 new("Without a `KeySelector`, each item is its own key. That suits strings, and records whose members "
@@ -11888,9 +11896,10 @@ public static class ExampleCatalog
                     + "when it turns interactive, and the prerendered rows give way to the loading row in between. "
                     + "With a `PrerenderKey`, the grid keeps the prerendered rows with the page and shows them as it "
                     + "turns interactive, so the provider is asked once. Give each grid on a page its own key. The "
-                    + "rows must write to JSON and read back, as a record with public properties does. Totals aren't "
-                    + "kept, so a grid with an `Aggregate` column asks once more for them, with the rows in view. "
-                    + "This site doesn't prerender, so here the grid just loads.", typeof(DataGridPrerenderedExample)),
+                    + "rows must write to JSON and read back, as a record with public properties does. Totals "
+                    + "aren't kept, so a grid with an `Aggregate` column asks once more for them, with the rows in "
+                    + "view. This site doesn't prerender, so here the grid just loads.",
+                    typeof(DataGridPrerenderedExample)),
                 new("reorder-rows", "Reorder rows", "With `OnRowMove`, rows held in `Items` can be put in order while "
                     + "the grid isn't sorted or filtered. Each row gets a handle in an \"Order\" column: drag it, press "
                     + "the arrow keys on it, or choose from its menu. Moves can cross pages, and the app applies each "
@@ -12071,6 +12080,15 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("With a `PrerenderKey`, the page carries every public property of each row the grid shows, "
+                    + "not only the columns. Without a `PageSize` that is every row the provider gives, so set "
+                    + "one on a long grid. With WebAssembly or Auto that text is in the page for anyone to "
+                    + "read. Give the grid rows of a type made for showing, with nothing a user shouldn't see.")
+                    { Pitfall = true },
+                new("Rows that don't come back from JSON as they went in aren't kept under a `PrerenderKey`: "
+                    + "the grid logs a warning as it prerenders and asks the provider again, as it does without "
+                    + "a key. A property with a private setter is lost that way, and so is one with no setter "
+                    + "that no constructor takes, unless it is computed from the others.") { Pitfall = true },
                 new("A row draws again only when its item, its selection, its `RowClass`, its `RowLabel` or the "
                     + "columns change. When a `CellTemplate` shows something else, call `RenderRows` after it "
                     + "changes. After changing `Items` in place, or after the page changes a filter of its own, call "

@@ -87,6 +87,27 @@ public class TbTreeViewPrerenderTests : BunitContext
     }
 
     [Fact]
+    public void PrerenderKey_ShouldLoadAndWarn_WhenTwoOfTheKeptParentsHaveTheSameKey()
+    {
+        var logs = new FakeLogCollector();
+        Services.AddSingleton<ILogger<TbTreeView<Place, int>>>(new FakeLogger<TbTreeView<Place, int>>(logs));
+        // Two parents that came back alike, as parents whose key was lost on the way do.
+        State.Persist("places", new[]
+        {
+            new { Parent = Regions[0], Children = new[] { new Place(10, "Lost loop") } },
+            new { Parent = Regions[0], Children = new[] { new Place(20, "Other loop") } },
+        });
+        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+
+        var cut = RenderPlaces(LoadAsync);
+
+        Assert.Equal(["North"], _loaded);
+        Assert.Equal(["North", "North loop", "South"], Texts(cut));
+        var warning = Assert.Single(logs.GetSnapshot(), log => log.Level == LogLevel.Warning);
+        Assert.Contains("same key", warning.Message);
+    }
+
+    [Fact]
     public void PrerenderKey_ShouldLoadAsUsual_WhenTheAppKeepsNoStateAcrossPrerendering()
     {
         // No PersistentComponentState is registered, as in a host that doesn't provide one.
