@@ -1,0 +1,31 @@
+@page "/focus-scope-change"
+
+@* A scope that Show brings, and that stays. Buttons inside it turn its Trapped and Blocking on and off: Trap and
+   Block stay, and Edit, which starts a hold, gives way to Done, which ends it. A button before the scope counts its
+   presses, and one comes after it. *@
+<TbButton OnClick="() => _shown = true">Show</TbButton>
+<TbButton OnClick="() => _outside++">Outside</TbButton>
+<p data-testid="outside">@_outside</p>
+@if (_shown)
+{
+    <TbFocusScope Trapped="_trapped" Blocking="_blocking" AutoFocus="false" role="region" aria-label="Editor">
+        <TbButton OnClick="() => _trapped = !_trapped">Trap</TbButton>
+        <TbButton OnClick="() => _blocking = !_blocking">Block</TbButton>
+        @if (_blocking)
+        {
+            <TbButton OnClick="() => _blocking = false">Done</TbButton>
+        }
+        else
+        {
+            <TbButton OnClick="() => _blocking = true">Edit</TbButton>
+        }
+    </TbFocusScope>
+}
+<TbButton>After</TbButton>
+
+@code {
+    private bool _shown;
+    private int _outside;
+    private bool _trapped;
+    private bool _blocking;
+}

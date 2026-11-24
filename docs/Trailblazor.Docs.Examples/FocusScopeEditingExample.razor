@@ -1,0 +1,33 @@
+<TbStack Gap="3">
+    <div><TbButton OnClick="Edit">Edit details</TbButton></div>
+    @* The trip's details stay on the page, and hold the rest of it only while they are being edited. AutoFocus
+       follows along, so the details don't take the focus as the page loads, only as the edit starts. *@
+    <TbFocusScope Blocking="_editing" AutoFocus="_editing" role="group" aria-label="Trip details">
+        <TbSurface Outlined class="tb-p-4">
+            <TbStack Gap="3">
+                <TbTextField Label="Trip name" @bind-Value="_draft" ReadOnly="!_editing" />
+                @if (_editing)
+                {
+                    <TbStack Row Gap="2">
+                        <TbButton OnClick="Save">Save</TbButton>
+                        <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" OnClick="Cancel">Cancel</TbButton>
+                    </TbStack>
+                }
+            </TbStack>
+        </TbSurface>
+    </TbFocusScope>
+</TbStack>
+
+@code {
+    private string _name = "Ridge loop";
+    private string? _draft = "Ridge loop";
+    private bool _editing;
+
+    private void Edit() => _editing = true;
+
+    private void Save() => (_name, _draft, _editing) = (Named(), Named(), false);
+
+    private void Cancel() => (_draft, _editing) = (_name, false);
+
+    private string Named() => string.IsNullOrWhiteSpace(_draft) ? _name : _draft;
+}

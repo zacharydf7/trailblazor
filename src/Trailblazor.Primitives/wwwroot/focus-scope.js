@@ -12,24 +12,24 @@ function isStopWithoutTabIndex(element) {
         || element.isContentEditable && !element.parentElement?.isContentEditable);
 }
 
-// Only the most recently created trapped scope traps; the ones below it resume when it is disposed.
+// Only the scope that started trapping last traps; the ones below it resume when it stops trapping or is disposed.
 const trappedScopes = [];
 
 export function createFocusScope(container, options) {
     // Safari leaves focus on the page when a button opens the scope, so the button pressed is where focus goes back.
-    const previouslyFocused = focusOrigin(container.ownerDocument);
+    let previouslyFocused = focusOrigin(container.ownerDocument);
+    // What had the focus as the newest hold on this scope started, and whether that was inside the scope.
+    let heldFrom = previouslyFocused;
+    let heldInside = container.contains(heldFrom);
     let lastFocusedInside = null;
     // A temporary stop beside a player whose own controls took the Tab; reaching it wraps to the scope's other end.
     let guard = null;
     let guardWrapsForward = true;
-    const scope = { dispose, focusMarkedIfUnmoved, container };
+    const scope = { dispose, focusMarkedIfUnmoved, setTrapped, noteFocus, holdEnded, container };
     // Asked for each time: the container can move to another window, which has a focused element of its own.
     const focusedNow = () => container.ownerDocument.activeElement;
 
-    if (options.trapped) {
-        trappedScopes.push(scope);
-    }
-
+    setTrapped(options.trapped);
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('focusin', onFocusIn);
 
@@ -43,6 +43,51 @@ export function createFocusScope(container, options) {
 
     const settled = focusedNow();
     return scope;
+
+    // Starts or stops trapping while the scope runs, and marks the container while it traps. A scope that starts
+    // trapping is the newest trap from then on.
+    function setTrapped(trapped) {
+        container.toggleAttribute('data-trapped', trapped);
+        const index = trappedScopes.indexOf(scope);
+        if (trapped && index === -1) {
+            trappedScopes.push(scope);
+        } else if (!trapped && index !== -1) {
+            trappedScopes.splice(index, 1);
+        }
+    }
+
+    // Notes what has focus as a hold starts on a scope that is already there, to give focus back to when the hold
+    // ends. A control outside the scope is also where focus goes when the scope does.
+    function noteFocus() {
+        const page = container.ownerDocument;
+        heldFrom = focusOrigin(page);
+        heldInside = container.contains(heldFrom);
+        if (!heldInside && heldFrom !== page.body) {
+            previouslyFocused = heldFrom;
+        }
+    }
+
+    // A hold has ended and the scope stays. Focus goes back to the control outside the scope that had it as the hold
+    // started. When none did, because the hold started from inside the scope or its control went as it started,
+    // focus that is still inside stays where it is, and focus that was lost goes to the control inside that started
+    // the hold, or else to the scope's first control.
+    function holdEnded() {
+        const page = container.ownerDocument;
+        if (!heldInside && heldFrom !== page.body && heldFrom?.isConnected) {
+            giveFocusBack(heldFrom);
+        } else if (focusedNow() === page.body) {
+            giveFocusBack(heldInside && heldFrom.isConnected ? heldFrom : getTabbables(container)[0] ?? container);
+        }
+    }
+
+    // Don't take focus back if the user has already moved it somewhere else on purpose.
+    function giveFocusBack(target) {
+        const focused = focusedNow();
+        const focusIsInsideOrLost = container.contains(focused) || focused === container.ownerDocument.body;
+        if (options.restoreFocus && focusIsInsideOrLost && target?.isConnected) {
+            target.focus();
+        }
+    }
 
     // A field marked to take focus asked before the scope started; it takes focus unless the user has moved it.
     function focusMarkedIfUnmoved() {
@@ -125,17 +170,8 @@ export function createFocusScope(container, options) {
         document.removeEventListener('keydown', onKeyDown);
         document.removeEventListener('focusin', onFocusIn);
         removeGuard();
-        const index = trappedScopes.indexOf(scope);
-        if (index !== -1) {
-            trappedScopes.splice(index, 1);
-        }
-
-        // Don't take focus back if the user has already moved it somewhere else on purpose.
-        const focused = focusedNow();
-        const focusIsInsideOrLost = container.contains(focused) || focused === container.ownerDocument.body;
-        if (options.restoreFocus && focusIsInsideOrLost && previouslyFocused?.isConnected) {
-            previouslyFocused.focus();
-        }
+        setTrapped(false);
+        giveFocusBack(previouslyFocused);
     }
 }
 

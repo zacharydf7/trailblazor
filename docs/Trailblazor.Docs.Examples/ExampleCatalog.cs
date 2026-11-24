@@ -10606,7 +10606,7 @@ public static class ExampleCatalog
             Sections =
             [
                 new("trapping", "Trapping focus", "`Trapped` keeps Tab and Shift+Tab inside a focus scope and brings "
-                    + "focus back if it leaves. When scopes nest, only the newest trapped one traps.",
+                    + "focus back if it leaves. When scopes nest, only the one that started trapping last traps.",
                     typeof(FocusScopeExample)),
                 new("not-trapped", "Without a trap", "Without `Trapped`, a focus scope still moves focus in and gives "
                     + "it back, and Tab moves on to the rest of the page.", typeof(FocusScopeOpenExample)),
@@ -10626,14 +10626,23 @@ public static class ExampleCatalog
                     + "holds the app's other windows too, such as a dock panel's own browser window, and a scope "
                     + "inside such a window holds the page. Toasts, dialogs and the popups "
                     + "`DialogSettings.OutsidePopups` names stay usable, so the content can ask a question in a "
-                    + "dialog. With two blocking scopes, the newer one is in force until it goes. A scope nobody can "
-                    + "get to, such as one in a dock panel behind another tab, holds nothing until it shows, so "
+                    + "dialog. With two blocking scopes, the one whose hold started last is in force until it goes "
+                    + "or stops blocking. A scope nobody can get to, such as one in a dock panel behind another tab, holds nothing until it shows, so "
                     + "the app is never left with nothing usable.",
                     typeof(FocusScopeBlockingExample)),
+                new("editing", "Holding only while editing", "`Blocking` and `Trapped` can change while a scope is "
+                    + "there, so content that stays on the page can hold the rest of it for a while: bind "
+                    + "`Blocking` to whether it is being edited. When the hold starts, focus moves into the scope, "
+                    + "and when it ends, focus goes back to where it was, as when a scope appears and goes; after "
+                    + "a hold that started from a control inside the scope, focus stays inside. A "
+                    + "scope also takes the focus as it starts, which for one that is on the page from the start "
+                    + "means as the page loads. To avoid that, bind `AutoFocus` to the same value: it is read as "
+                    + "the scope starts and again each time a hold starts.",
+                    typeof(FocusScopeEditingExample)),
             ],
             Api = [typeof(TbFocusScope)],
-            Ready = new("[data-part=focus-scope]", "the scope, once it manages the focus and, with `Blocking`, "
-                + "holds what is outside it") { OpenedBy = new("button", "Find a trail") },
+            Ready = new("[data-part=focus-scope]", "the scope, once it manages the focus and, with `Blocking` set "
+                + "as it starts, holds what is outside it") { OpenedBy = new("button", "Find a trail") },
             Keyboard =
             [
                 new(["Tab", "Shift+Tab"], "Keeps focus inside the scope.") { When = "With `Trapped`" },
@@ -10656,8 +10665,10 @@ public static class ExampleCatalog
             ],
             Notes =
             [
-                new("A focus scope's options apply when it first renders, so render it conditionally, as these "
-                    + "examples do, to start it again."),
+                new("A scope that started trapping or holding later than another counts as the newer of the two, "
+                    + "no matter which appeared first."),
+                new("`RestoreFocus` is read as the scope first renders, and `AutoFocus` then and again each time "
+                    + "`Blocking` turns on."),
                 new("In a blocking scope's own window, each element it holds is marked `data-tb-blocked` and drawn "
                     + "at half opacity, so it doesn't look usable. Set `--tb-blocked-opacity` to change that, or "
                     + "to `1` to leave it as it is. The app's other windows dim under a scrim, as for a dialog."),
@@ -10672,12 +10683,21 @@ public static class ExampleCatalog
             Blocks = ["tb-focus-scope"],
             DataParts =
             [
-                new("focus-scope", "The element that keeps focus inside it."),
+                new("focus-scope", "The element that keeps focus inside it. It has `data-trapped` while `Trapped` "
+                    + "is on, even while a newer trap is the one in force."),
             ],
             TestingTip = "bUnit can't move focus, so test the trap in Playwright: press Tab from the last control in "
                 + "the scope and expect the first to be focused with `ToBeFocusedAsync()`. A script applies a "
                 + "blocking scope's hold too, so test it in Playwright: expect a control outside the scope to be "
                 + "inside an `[inert]` element, which `Locator(\"[inert]\").GetByRole(...)` finds.",
+            TestingTips =
+            [
+                "After `Trapped` changes on a scope that stays, wait for `data-trapped` to appear or go before "
+                    + "pressing Tab.",
+                "After `Blocking` turns on for a scope that stays, wait for a control outside it to be inside an "
+                    + "`[inert]` element. Waiting for `data-ready` won't help there, since the scope set it when it "
+                    + "started.",
+            ],
         },
         new("popover", "Popover", ExampleCategory.Overlays,
             "A panel of content that opens beside a trigger, such as filters or a share form, and closes on Escape or "

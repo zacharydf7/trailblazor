@@ -14,12 +14,18 @@ public class ReadyMarkTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var ready = ExampleCatalog.Find(name)!.Ready!;
         var page = await OpenAsync("chromium", $"/examples/{name}");
+        var marked = page.Locator($"{ready.Selector}[data-ready]");
         if (ready.OpenedBy is { } opener)
         {
+            // The mark is looked for on what the opener brings, so what is there already is set aside: a page can
+            // hold another such element that is marked from the start.
+            await page.Locator(ready.Selector).EvaluateAllAsync<int>(
+                "elements => elements.map(element => element.dataset.thereBefore = '').length");
             await ExampleTargetTests.Find(page, opener).ClickAsync();
+            marked = page.Locator($"{ready.Selector}[data-ready]:not([data-there-before])");
         }
 
-        await Expect(page.Locator($"{ready.Selector}[data-ready]").First).ToBeAttachedAsync();
+        await Expect(marked.First).ToBeAttachedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

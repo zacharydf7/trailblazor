@@ -71,4 +71,27 @@ public class FocusScopeExampleTests(BrowserFixture fixture) : BrowserTest(fixtur
 
         await Expect(start).Not.ToBeFocusedAsync();
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FocusScope_ShouldTakeTheFocusAndGiveItBack_WhenBlockingTurnsOnAndOffWhileItStays(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/focus-scope");
+        var edit = Button(page, "Edit details");
+        var trip = page.GetByRole(AriaRole.Group, new() { Name = "Trip details" });
+        await Expect(trip).ToHaveAttributeAsync("data-ready", "");
+        // The scope started with the page and left the focus alone.
+        Assert.False(await trip.EvaluateAsync<bool>("scope => scope.contains(document.activeElement)"));
+
+        await edit.ClickAsync();
+
+        // The hold starts with the scope already there, and the focus moves in as when a scope appears.
+        await Expect(trip.GetByLabel("Trip name")).ToBeFocusedAsync();
+        Assert.True(await edit.EvaluateAsync<bool>("element => element.closest('[inert]') !== null"));
+
+        // Save goes as the edit ends, so the focus would be lost without the scope giving it back.
+        await trip.GetByRole(AriaRole.Button, new() { Name = "Save" }).ClickAsync();
+
+        await Expect(edit).ToBeFocusedAsync();
+        await Expect(page.Locator("[data-tb-blocked]")).ToHaveCountAsync(0);
+    }
 }

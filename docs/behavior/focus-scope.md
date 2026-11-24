@@ -55,6 +55,15 @@ Nothing of its own beyond the keyboard and focus events it listens to. With `Blo
 - [x] The focus goes back to what opened the scope when it was opened and ended from the keyboard, with no press to tell the opener by. `BlockingScopeTests.Scope_ShouldGiveTheFocusBackToWhatOpenedIt_WhenItIsOpenedAndEndedFromTheKeyboard`
 - [x] The app's other windows are held and dim, as under a modal dialog: a dock panel's own browser window while the scope is on the page, and the page and every other window while the scope is in a panel's window. `BlockingScopeTests.Scope_ShouldHoldTheAppsOtherWindows_WhenItBlocksOnThePageOrInAPanelsWindow`
 
+## Changing while it is there
+
+- [x] `Trapped` turned on after the scope started keeps Tab inside from then on, with the scope as the newest trap, and turned off lets Tab leave again. The scope's element has `data-trapped` while `Trapped` is on. `FocusScopeChangeTests.Scope_ShouldStartAndStopKeepingTabInside_WhenTrappedChangesAfterItStarted`, `TbFocusScopeTests.Trapped_ShouldTellTheRunningScope_WhenItChangesAfterTheScopeStarted`, `focus-scope.js`
+- [x] `Blocking` turned on after the scope started holds what is outside, with the scope as the newest hold, and turned off gives it back while the scope stays. `FocusScopeChangeTests.Scope_ShouldHoldWhatIsOutsideAndGiveItBack_WhenBlockingChangesAfterItStarted`, `TbFocusScopeTests.Blocking_ShouldStartAndEndTheHoldAndKeepTheScope_WhenItChangesAfterTheScopeStarted`, `blocking-region.js`
+- [x] When `Blocking` turns on, the focus moves into the scope unless `AutoFocus` is off, and when it turns off, the focus goes back to where it was when the hold started unless `RestoreFocus` is off or the user moved it elsewhere. `FocusScopeExampleTests.FocusScope_ShouldTakeTheFocusAndGiveItBack_WhenBlockingTurnsOnAndOffWhileItStays`, `TbFocusScopeTests.Blocking_ShouldStartAndEndTheHoldAndKeepTheScope_WhenItChangesAfterTheScopeStarted`
+- [x] A hold that started from a control inside the scope leaves the focus inside as it ends, not on what had it when the scope appeared: focus that is still inside stays where it is, and focus that was lost goes to the control the hold started from, or to the scope's first control when that one is gone. `FocusScopeChangeTests.Scope_ShouldKeepTheFocusInside_WhenAHoldThatStartedInsideItEnds`, `FocusScopeChangeTests.Scope_ShouldFocusItsFirstControl_WhenTheControlThatStartedTheHoldInsideItIsGone`
+- [x] A hold that is ending has ended before the next one starts, however fast `Blocking` changes. `TbFocusScopeTests.Blocking_ShouldStartAgainOnlyOnceTheEarlierHoldHasEnded_WhenItIsTurnedBackOnWhileThatOneEnds`
+- [x] A hold that was starting as the scope went away is ended once the script answers. `TbFocusScopeTests.Dispose_ShouldEndALateHold_WhenTheComponentGoesAwayWhileThatHoldStarts`
+
 ## Not applicable
 
 - Closing on Escape: a scope doesn't close itself, which is the panel's job.
