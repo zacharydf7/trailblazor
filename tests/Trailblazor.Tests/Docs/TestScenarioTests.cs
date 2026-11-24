@@ -10,16 +10,16 @@ public class TestScenarioTests : DocsTest
     // a new page ships with one instead of joining it.
     private static readonly string[] Owed =
     [
-        "text", "kbd", "highlight", "qr-code", "avatar", "timeline", "carousel", "virtual-list", "chat", "ai-prompt",
-        "image", "watermark", "divider", "surface", "card", "icon", "icon-button", "button-group",
-        "floating-action-button", "back-to-top", "speech-to-text", "smart-paste", "theme-picker", "ribbon", "toolbar",
-        "insert-divider", "stack", "spacer", "field-row", "grid", "masonry", "dock-manager", "splitter", "viewport",
-        "container", "app-shell", "list", "kanban", "badge", "progress", "label", "form", "rich-text-editor",
-        "markdown-editor", "mention-input", "signature-pad", "tree-select", "cascader", "color-picker", "file-upload",
-        "calendar", "time-picker", "date-time-picker", "date-range-picker", "code-field", "property-grid",
-        "model-fields", "query-builder", "tooltip", "menubar", "context-menu", "command-palette", "hotkeys", "drawer",
-        "lightbox", "focus-scope", "popover", "popconfirm", "tour", "overlay", "tree-grid", "table", "breadcrumbs",
-        "table-of-contents", "empty-state", "skeleton",
+        "text", "kbd", "highlight", "qr-code", "avatar", "timeline", "virtual-list", "chat", "ai-prompt", "image",
+        "watermark", "divider", "surface", "card", "icon", "icon-button", "button-group", "floating-action-button",
+        "back-to-top", "speech-to-text", "smart-paste", "theme-picker", "ribbon", "toolbar", "insert-divider",
+        "stack", "spacer", "field-row", "grid", "masonry", "dock-manager", "viewport", "container", "app-shell",
+        "list", "kanban", "badge", "progress", "label", "rich-text-editor", "markdown-editor", "mention-input",
+        "signature-pad", "tree-select", "cascader", "color-picker", "file-upload", "calendar", "time-picker",
+        "date-time-picker", "date-range-picker", "code-field", "property-grid", "model-fields", "query-builder",
+        "tooltip", "menubar", "command-palette", "hotkeys", "drawer", "lightbox", "focus-scope", "popover",
+        "popconfirm", "tour", "overlay", "tree-grid", "table", "breadcrumbs", "table-of-contents", "empty-state",
+        "skeleton",
     ];
 
     public static TheoryData<string> WithScenario =>
@@ -40,7 +40,7 @@ public class TestScenarioTests : DocsTest
         var scenario = example.Scenario!;
 
         var section = Assert.Single(example.Sections, section => section.Id == scenario.Section);
-        // The sentence follows "A whole test of the ... example:" on the page.
+        // The sentence follows "A whole test of the example under ...:" on the page.
         Assert.Matches(@"^[a-z].*\.$", scenario.Checks);
         // The page says the tests drive that section's example, so each has to.
         Assert.Contains($"Render<{section.Component.Name}>()", TestScenario.Bunit(example));

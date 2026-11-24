@@ -116,7 +116,7 @@ test the suites run:
   catalog name in Pascal case, such as `DataGridScenarioTests` for `data-grid`. The bUnit test renders the example's
   component, and the Playwright test opens `/examples/<name>/<section>`, which shows that one example.
 - `Scenario = new("<section>", "it ...")` in the page's catalog entry names the example's section and says in a
-  sentence what the test does. The sentence follows "A whole test of the ... example:" on the page.
+  sentence what the test does. The sentence follows "A whole test of the example under ...:" on the page.
 - Test a task a user of an app would do, such as filling in, choosing, saving or checking, along with what the app
   shows in response. Drive it through `cut.Tb()` and `page.Tb()`, with the same steps in both packages, and assert on
   what a user would see. Keep comments to what a reader new to the helpers needs.

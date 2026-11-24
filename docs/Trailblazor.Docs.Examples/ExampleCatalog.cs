@@ -760,13 +760,12 @@ public static class ExampleCatalog
                 new("picker", "The buttons for each slide."),
                 new("pick", "The button that shows one slide."),
             ],
-            TestingTip = "`page.Tb().Carousel(\"Featured trails\")` in Playwright, or `cut.Tb().Carousel(...)` in "
-                + "bUnit, finds the carousel by its `AriaLabel`: `NextAsync()`, `PreviousAsync()` and "
-                + "`GoToAsync(index)` move it and, in Playwright, wait until the app's `ActiveIndexChanged` has run, "
-                + "which the picker counts in `data-commits` for `GoToAsync`; `ActiveIndexAsync()` or `ActiveIndex` "
-                + "reads which slide shows, and "
-                + "`CountAsync()` or `Count` reads how many there are. In Playwright, `NextAsync()`, `PreviousAsync()` "
-                + "and `GoToAsync(index)` also wait until the slides have stopped moving. In bUnit, slides turn "
+            Scenario = new("basic", "it steps to the next slide and jumps to the last, and checks which slide shows "
+                + "and which trail the app names."),
+            TestingTip = "`Carousel(name)` finds the carousel by its `AriaLabel` in both packages. `PreviousAsync()` "
+                + "steps back, and `CountAsync()` or `Count` reads how many slides there are. In Playwright, the "
+                + "helpers that move it wait until the app's `ActiveIndexChanged` has run, which the picker counts in "
+                + "`data-commits` for `GoToAsync`, and until the slides have stopped moving. In bUnit, slides turn "
                 + "without moving; register a `FakeTimeProvider` as the `TimeProvider` and advance it past the "
                 + "`AutoPlayInterval` to turn the slides.",
             Telemetry =
@@ -4226,12 +4225,11 @@ public static class ExampleCatalog
                     <TbSplitterPane Label="…">…</TbSplitterPane>
                 </TbSplitter>
                 """,
-            TestingTip = "`page.Tb().Splitter(\"Resize Trails\").ResizeAsync(40)` in Playwright, or "
-                + "`cut.Tb().Splitter(\"Resize Trails\").ResizeAsync(40)` in bUnit, resizes the pane as the "
-                + "separator's keys do, and `SizeAsync()` or `Size` reads its percent. `CollapseAsync()` and "
-                + "`RestoreAsync()` collapse and restore the pane that Enter on the separator toggles, and "
-                + "`CollapsedAsync()` or `Collapsed` reads whether it's collapsed. In "
-                + "Playwright they wait until the app's `CollapsedChanged` has run, which the splitter counts in "
+            Scenario = new("panes", "it reads the trails pane's size, then resizes, collapses and restores the pane, "
+                + "and checks what the app shows after each."),
+            TestingTip = "`Splitter(name)` finds a separator by its name in both packages. `CollapseAsync()` and "
+                + "`RestoreAsync()` act on the pane that Enter on the separator toggles, and in Playwright they wait "
+                + "until the app's `CollapsedChanged` has run, which the splitter counts in "
                 + "`data-commits`. A stacked splitter has no separators, so resize it in a test at a width above "
                 + "`StackBelow`; after changing the viewport, wait for `data-stacked` on `[data-part=splitter]` to "
                 + "be set or gone. bUnit runs no script, so there a splitter never stacks.",
@@ -5504,13 +5502,18 @@ public static class ExampleCatalog
             ],
             Target = new("form", "Trip sign-up"),
             Blocks = ["tb-form"],
+            Scenario = new("complete-form", "it signs up with nothing filled in and reads each field's error, fills "
+                + "in the fields and signs up again, and checks the line the app shows each time."),
             TestingTip = "`page.Tb().Form(\"Trip sign-up\")` in Playwright, or `cut.Tb().Form(...)` in bUnit, finds "
                 + "the form by its accessible name: `SubmitAsync()` submits it, and `ErrorsAsync()` or `Errors` reads "
                 + "the messages its fields show. To check one field, look at its input: "
                 + "`ToHaveAttributeAsync(\"aria-invalid\", \"true\")`, and its message with "
                 + "`ToHaveAccessibleDescriptionAsync`. A "
                 + "`ValidationAsync` message shows only once its check answers, so wait for it: use `WaitForAssertion` "
-                + "in bUnit, or let Playwright's assertions retry.",
+                + "in bUnit, or let Playwright's assertions retry. Each field's own helper, such as "
+                + "`TextField(label).EnterAsync(text)`, is on that field's page: [text field](components/text-field), "
+                + "[number field](components/number-field) and [checkbox](components/checkbox) for the ones the "
+                + "test above uses.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"new-trail\"`, it counts `trailblazor.control.shown` as it first "
@@ -10001,6 +10004,8 @@ public static class ExampleCatalog
                     </Items>
                 </TbContextMenu>
                 """,
+            Scenario = new("keys", "it removes a trail from the menu of its row, adds one from the menu of the rest "
+                + "of the area, and checks what the app did each time."),
             TestingTip = "Right-click with `ClickAsync(new() { Button = MouseButton.Right })`, then find the menu with "
                 + "`GetByRole(AriaRole.Menu, new() { Name = \"Map actions\" })` and its items by role, as in a "
                 + "[menu](components/menu). The area gets `data-ready` once the page is interactive and a right-click "

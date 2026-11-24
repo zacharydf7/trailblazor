@@ -187,9 +187,9 @@
             @if (example.Scenario is { } scenario)
             {
                 <TbText>
-                    @DocsText.Render($"A whole test of the [{SectionTitle(example, scenario)}](components/"
-                        + $"{example.Name}#{scenario.Section}) example: {scenario.Checks} The code below runs in the "
-                        + "library's own test suites, with the helpers from `Trailblazor.Testing` and "
+                    @DocsText.Render($"A whole test of the example under [{SectionTitle(example, scenario)}]"
+                        + $"(components/{example.Name}#{scenario.Section}): {scenario.Checks} The code below runs "
+                        + "in the library's own test suites, with the helpers from `Trailblazor.Testing` and "
                         + "`Trailblazor.Testing.Playwright` that the [testing guide](guides/testing) sets up.")
                 </TbText>
                 <TbText>
