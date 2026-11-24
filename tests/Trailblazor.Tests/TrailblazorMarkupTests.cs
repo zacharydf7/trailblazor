@@ -3315,6 +3315,51 @@ public class TrailblazorMarkupTests : BunitContext
     }
 
     [Fact]
+    public async Task Button_ShouldBeFoundByItsImagesAlternativeText_WhenAnImageIsAllItHolds()
+    {
+        var shown = 0;
+        var cut = Render<TbButton>(parameters => parameters.Add(button => button.OnClick, () => shown++)
+            .AddChildContent<TbImage>(image => image.Add(i => i.Src, "ridge.png").Add(i => i.Alt, "Eagle Ridge")));
+
+        await cut.Tb().Button("Eagle Ridge").ClickAsync();
+
+        Assert.Equal(1, shown);
+    }
+
+    [Fact]
+    public async Task Button_ShouldBeFoundByTheNameOfAnAvatarItHolds_WhenTheAvatarIsAllItHolds()
+    {
+        var shown = 0;
+        var cut = Render<TbButton>(parameters => parameters.Add(button => button.OnClick, () => shown++)
+            .AddChildContent<TbAvatar>(avatar => avatar.Add(a => a.Name, "Ada Lovelace")));
+
+        await cut.Tb().Button("Ada Lovelace").ClickAsync();
+
+        Assert.Equal(1, shown);
+    }
+
+    [Fact]
+    public void Button_ShouldReadAnImageBesideItsTextInOrderAndLeaveOutAHiddenOne_WhenItsNameIsRead()
+    {
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<TbButton>(0);
+            builder.AddAttribute(1, nameof(TbButton.ChildContent), (RenderFragment)(content =>
+                content.AddMarkupContent(0, "<img src=\"map.png\" alt=\"Map\"> of Eagle Ridge")));
+            builder.CloseComponent();
+            builder.OpenComponent<TbButton>(2);
+            builder.AddAttribute(3, nameof(TbButton.ChildContent), (RenderFragment)(content =>
+                content.AddMarkupContent(0, "<img src=\"pin.png\" alt=\"Pin\" aria-hidden=\"true\"> Cedar Flats")));
+            builder.CloseComponent();
+        });
+
+        // Each is found only by the name a browser gives it.
+        Assert.False(cut.Tb().Button("Map of Eagle Ridge").Busy);
+        Assert.False(cut.Tb().Button("Cedar Flats").Busy);
+        Assert.Throws<InvalidOperationException>(() => cut.Tb().Button("Pin Cedar Flats").Busy);
+    }
+
+    [Fact]
     public async Task Button_ShouldFollowItsLink_WhenItHasAnHref()
     {
         var cut = Render<TbButton>(parameters => parameters.Add(button => button.Href, "trails")

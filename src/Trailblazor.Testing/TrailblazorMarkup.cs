@@ -1307,11 +1307,42 @@ internal static class Choices
     // A browser reads each run of spaces, tabs and line breaks as one space, so a template's line breaks and
     // indentation aren't part of the name. A non-breaking space is no such run, and stays as it is.
     private static string OwnName(IElement element) => element.GetAttribute("aria-label")
-        ?? string.Join(' ', string.Concat(element.Descendants<IText>()
-            .Where(text => text.ParentElement?.Closest("[aria-hidden=true]") is not { } hidden
-                || !element.Contains(hidden))
-            .Select(text => text.Data)).Trim().Split([' ', '\t', '\n', '\f', '\r'],
-                StringSplitOptions.RemoveEmptyEntries));
+        ?? (element.GetAttribute("aria-hidden") == "true" ? ""
+            : string.Join(' ', string.Concat(ContentName(element)).Trim().Split([' ', '\t', '\n', '\f', '\r'],
+                StringSplitOptions.RemoveEmptyEntries)));
+
+    // The text a name takes from what an element holds, in order, as a browser takes it: an element inside that has
+    // an aria-label, such as an avatar, counts with that label, an image with its alternative text, and what is
+    // aria-hidden doesn't count.
+    private static IEnumerable<string> ContentName(INode node)
+    {
+        foreach (var child in node.ChildNodes)
+        {
+            if (child is IText text)
+            {
+                yield return text.Data;
+            }
+            else if (child is not IElement inner || inner.GetAttribute("aria-hidden") == "true")
+            {
+                continue;
+            }
+            else if (inner.GetAttribute("aria-label") is { Length: > 0 } label)
+            {
+                yield return $" {label} ";
+            }
+            else if (inner.LocalName == "img")
+            {
+                yield return $" {inner.GetAttribute("alt")} ";
+            }
+            else
+            {
+                foreach (var part in ContentName(inner))
+                {
+                    yield return part;
+                }
+            }
+        }
+    }
 
     // What a failed lookup adds to its message: the names that are there, up to a dozen, so the test's author
     // needn't print the markup to see them.

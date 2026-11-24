@@ -4893,6 +4893,8 @@ public static class ExampleCatalog
                 new("action", "The button or link around the start content, text and description of an item that "
                     + "acts. It takes the item's `id`."),
             ],
+            Scenario = new("buttons", "it shows a campsite by clicking its item, removes it with the item's own "
+                + "button, and checks what the app shows after each."),
             TestingTip = "Find an item by the start of its name, as `GetByRole(AriaRole.Button, new() { NameRegex = "
                 + "new Regex(\"^Pine Hollow\") })`, and check the current one with "
                 + "`ToHaveAttributeAsync(\"aria-current\", \"true\")`. The helpers name items by their text alone: in "
@@ -10777,11 +10779,13 @@ public static class ExampleCatalog
                 new("position", "Which image shows, such as \"2 of 3\"."),
                 new("status", "The live region that reads out each new image."),
             ],
+            Scenario = new("basic", "it opens the second photo from its thumbnail, steps on past the last photo back "
+                + "to the first, checking what each shows, and closes the lightbox."),
             TestingTips =
             [
                 "In Playwright, `page.Tb().Lightbox(\"Trail photos\")` from `Trailblazor.Testing.Playwright` finds the "
                     + "open lightbox by its title: `NextAsync()`, `ZoomInAsync()` and `RotateRightAsync()` press its "
-                    + "buttons and wait for the change; `IndexAsync()`, `AltAsync()`, `ZoomAsync()` and "
+                    + "buttons and wait for the change; `IndexAsync()`, `AltAsync()`, `CaptionAsync()`, `ZoomAsync()` and "
                     + "`RotationAsync()` read what it shows; and `CloseAsync()` closes it with Escape.",
                 "In bUnit, `cut.Tb().Lightbox(\"Trail photos\")` from `Trailblazor.Testing` does the same, with "
                     + "`Index`, `Alt`, `Caption`, `Zoom` and `Rotation` as properties.",
@@ -11015,6 +11019,8 @@ public static class ExampleCatalog
                 new("panel", "The popover panel."),
                 new("title", "The panel's title."),
             ],
+            Scenario = new("opening-from-code", "it opens the filters, ticks one, closes the popover with Apply, "
+                + "checks the filter the app shows, and opens the popover again from the app's own button."),
             TestingTip = "`await page.Tb().Popover(\"Filters\").OpenAsync()` opens it and returns the panel, a "
                 + "`dialog` named by its title or trigger; `CloseAsync()` closes it. Both wait for the popover to be "
                 + "ready. With `AttachOnFirstUse`, the trigger gets `data-ready` only when it's first focused, pointed "

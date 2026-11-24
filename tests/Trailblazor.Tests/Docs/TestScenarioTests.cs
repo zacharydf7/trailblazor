@@ -12,12 +12,11 @@ public class TestScenarioTests : DocsTest
     [
         "text", "avatar", "timeline", "virtual-list", "chat", "ai-prompt", "image", "card", "icon", "icon-button",
         "button-group", "floating-action-button", "back-to-top", "smart-paste", "theme-picker", "ribbon", "toolbar",
-        "insert-divider", "dock-manager", "viewport", "app-shell", "list", "progress", "label", "rich-text-editor",
+        "insert-divider", "dock-manager", "viewport", "app-shell", "progress", "label", "rich-text-editor",
         "markdown-editor", "mention-input", "signature-pad", "color-picker", "file-upload", "calendar", "time-picker",
         "date-time-picker", "date-range-picker", "code-field", "property-grid", "model-fields", "query-builder",
-        "tooltip", "command-palette", "hotkeys", "drawer", "lightbox", "focus-scope", "popover", "tour", "tree-grid",
-        "table", "breadcrumbs", "table-of-contents", "empty-state", "speech-to-text", "overlay", "highlight",
-        "skeleton", "badge",
+        "tooltip", "command-palette", "hotkeys", "drawer", "focus-scope", "tour", "tree-grid", "table", "breadcrumbs",
+        "table-of-contents", "empty-state", "speech-to-text", "overlay", "highlight", "skeleton", "badge",
     ];
 
     // The pages with nothing for a user to do or for a test to check, such as a spacer's, which need no scenario.
