@@ -8413,6 +8413,7 @@ public static class ExampleCatalog
                 new("helper", "The help text under the calendar."),
                 new("error", "The validation message, shown while the value is invalid."),
             ],
+            Scenario = new("value", "it chooses a day and checks what the app shows."),
             TestingTip = "`await page.Tb().Calendar(\"Hike date\").ChooseAsync(date)` from "
                 + "`Trailblazor.Testing.Playwright` picks a date through the years and months views, as a user would, "
                 + "and waits until the calendar has taken it and the app's `ValueChanged` has run, which the "
@@ -8839,10 +8840,13 @@ public static class ExampleCatalog
                 new("month", "One month of days."),
                 new("day", "One day."),
             ],
+            Scenario = new("range-and-value", "it chooses the trip's first and last days and checks the range the "
+                + "field holds and what the app shows."),
             TestingTip = "`await page.Tb().DateRangePicker(\"Trip dates\").ChooseAsync(start, end)` from "
                 + "`Trailblazor.Testing.Playwright` types both dates in the field's own format and waits until the "
                 + "field has taken them. In bUnit, `cut.Tb().DateRangePicker(\"Trip dates\")` from "
-                + "`Trailblazor.Testing` has the same `ChooseAsync(start, end)`, and `Range` reads both. Its boxes "
+                + "`Trailblazor.Testing` has the same `ChooseAsync(start, end)`. `RangeAsync()`, or `Range` in bUnit, "
+                + "reads both. Its boxes "
                 + "have `data-part=\"start-input\"` and `data-part=\"end-input\"`. `EnterAsync(start, end)` types "
                 + "text as it is in each box, in either package, to test the field's errors; null leaves a box "
                 + "unchanged. "
@@ -9183,13 +9187,12 @@ public static class ExampleCatalog
             Anatomy = """
                 <TbCodeField Label="…" @bind-Value="_code" OnComplete="…" />
                 """,
+            Scenario = new("verification-code", "it enters a wrong code and then the right one, and checks what the "
+                + "app answers each time."),
             TestingTips =
             [
-                "`await page.Tb().TextField(\"Verification code\").EnterAsync(\"246810\")` from "
-                    + "`Trailblazor.Testing.Playwright` enters a code the way it enters a text field's text: it waits "
-                    + "until the page is interactive and the field filters what's typed, then returns once the app has "
-                    + "the code. `await cut.Tb().TextField(\"Verification code\").EnterAsync(\"246810\")` does the "
-                    + "same in bUnit.",
+                "In Playwright, `EnterAsync` waits until the page is interactive and the field filters what's "
+                    + "typed, then returns once the app has the code.",
                 "By hand in Playwright, wait for the input's `data-ready`, then fill it by its label: `var code = "
                     + "page.GetByLabel(\"Verification code\"); await Expect(code).ToHaveAttributeAsync(\"data-ready\", "
                     + "\"\"); await code.FillAsync(\"246810\");`. In bUnit, raise one input event with the whole "
@@ -10673,12 +10676,15 @@ public static class ExampleCatalog
                 new("body", "The drawer's content."),
                 new("actions", "The buttons at the bottom of the drawer."),
             ],
+            Scenario = new("basic", "it opens the filters, ticks one and closes the drawer, opens it again to find "
+                + "the filter still ticked, and resets the filters."),
             TestingTips =
             [
                 "In Playwright, `page.Tb().Dialog(\"Trail filters\")` from `Trailblazor.Testing.Playwright` finds a "
                     + "drawer by its title, as it does a dialog: `WaitForAsync()` returns it once open, "
-                    + "`ChooseAsync(\"Show trails\")` clicks one of its buttons, and `CancelAsync()` closes it with "
-                    + "Escape. It skips a drawer that is still sliding out.",
+                    + "`ChooseAsync(\"Show trails\")` clicks one of its buttons and waits for the drawer to close, "
+                    + "`CancelAsync()` closes it with Escape, and `IsOpenAsync()` (`IsOpen` in bUnit) reads whether "
+                    + "it's open. It skips a drawer that is still sliding out.",
                 "In bUnit, `cut.Tb().Dialog(\"Trail filters\")` from `Trailblazor.Testing` does the same. "
                     + "`IDialogService.OpenDialogs` lists the open drawers along with the dialogs, and each one's "
                     + "`Options.Position` is its side.",
@@ -12568,6 +12574,8 @@ public static class ExampleCatalog
                 new("tree-cell", "A row's first cell, which holds its button and is set in by its depth."),
                 new("tree-toggle", "A row's button that shows and hides its child rows."),
             ],
+            Scenario = new("nested-rows", "it filters the trails by name and checks that the match shows under its park and region, then "
+                + "clears the filter and opens a region."),
             TestingTips =
             [
                 "In Playwright, `page.Tb().Grid(\"Trails by region\")` from `Trailblazor.Testing.Playwright` opens a "
