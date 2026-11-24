@@ -1358,6 +1358,8 @@ public static class ExampleCatalog
                 new("content", "The card's content."),
                 new("actions", "The buttons along the bottom."),
             ],
+            Scenario = new("link", "it toggles the Save buttons of two cards and checks which trails are saved, then "
+                + "checks a card's link and, in a browser, follows it by clicking the card."),
             TestingTip = "Find a card by its role and title, with "
                 + "`GetByRole(AriaRole.Article, new() { Name = \"Ridge loop\" })` in Playwright. A card with an `Href` "
                 + "is also found by its link, with `GetByRole(AriaRole.Link, new() { Name = \"Old mill\" })`.",
@@ -4533,6 +4535,8 @@ public static class ExampleCatalog
                 new("group-toggle", "The button that opens and closes a group."),
                 new("group-items", "A group's links."),
             ],
+            Scenario = new("nav-menu", "it follows the Profile link inside the closed Settings group and checks where "
+                + "the user is taken."),
             TestingTips =
             [
                 "`page.Tb().NavMenu(\"Main\")` from `Trailblazor.Testing.Playwright`, or `cut.Tb().NavMenu(...)` "
@@ -5197,6 +5201,8 @@ public static class ExampleCatalog
                 new("badge", "The badge itself, over or beside what it marks."),
                 new("count", "The number the badge shows, such as \"99+\"."),
             ],
+            Scenario = new("visible", "it checks the inbox button's count and name, marks everything read, and checks "
+                + "that the count is gone and the name changed."),
             TestingTip = "The badge's element has `data-part=\"badge\"` and carries the full `Count` in `data-count`, "
                 + "such as `120`. Its `data-part=\"count\"` child holds the number it shows, such as \"99+\", and its "
                 + "text also holds the `Label` when there is one.",
@@ -13217,6 +13223,8 @@ public static class ExampleCatalog
                 new("description", "The sentence or content under the title."),
                 new("actions", "The buttons or links that add what's missing."),
             ],
+            Scenario = new("basic", "it checks the empty state's title, clicks its action, and checks what the app "
+                + "ran."),
             TestingTip = "Find it by its title, as `GetByRole(AriaRole.Heading, new() { Name = \"No trails saved "
                 + "yet\" })`, and its actions by their own roles and names.",
             Telemetry =
