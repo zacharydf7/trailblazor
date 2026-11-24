@@ -26,6 +26,19 @@ public class TbSortableTests : BunitContext
         Assert.Equal("TbSortable needs an ItemTemplate.", error.Message);
     }
 
+    [Theory]
+    [InlineData(0, "No rules yet")]
+    [InlineData(1, null)]
+    public void Render_ShouldShowItsEmptyContentInTheList_WhenItHasNoItems(int count, string? shown)
+    {
+        var cut = Render<TbSortable<string>>(parameters => parameters
+            .Add(list => list.Items, _rules.Take(count).ToList()).Add(list => list.Label, "Rules")
+            .Add(list => list.ItemTemplate, rule => rule).Add(list => list.EmptyContent, "No rules yet"));
+
+        Assert.Equal(shown, cut.FindAll("ul > li[data-part=empty]").SingleOrDefault()?.TextContent);
+        Assert.Equal(count == 0, cut.Find("ul").ClassList.Contains("tb-sortable__list--empty"));
+    }
+
     [Fact]
     public void Render_ShouldNameTheListAndEachHandle_WhenGivenItems()
     {

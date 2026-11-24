@@ -8,7 +8,8 @@
      class="@ClassNames.Join("tb-sortable", Disabled ? "tb-sortable--disabled" : null, Class)">
     @* Safari drops a list's semantics when its markers are hidden, so the role is set as well. *@
     <ul @ref="_list" role="list" aria-label="@Label" data-part="list" data-sortable
-        data-commits="@_answered" data-group="@Group" data-list-id="@ListId" class="tb-sortable__list">
+        data-commits="@_answered" data-group="@Group" data-list-id="@ListId"
+        class="@ClassNames.Join("tb-sortable__list", Items.Count == 0 ? "tb-sortable__list--empty" : null)">
         @for (var index = 0; index < Items.Count; index++)
         {
             var item = Items[index];
@@ -22,6 +23,11 @@
                     Group is null ? null : () => MoveTargets(item), GroupHint)))
                 <div class="tb-sortable__content">@ItemTemplate(item)</div>
             </li>
+        }
+        @if (Items.Count == 0 && EmptyContent is not null)
+        {
+            @* It isn't an item, so it has no handle, and a drop on it goes into the list. *@
+            <li data-part="empty" class="tb-sortable__empty">@EmptyContent</li>
         }
     </ul>
     @* The announcer reads the reason out, so this is only for sight. *@

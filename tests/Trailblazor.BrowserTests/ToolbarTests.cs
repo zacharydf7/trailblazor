@@ -420,6 +420,44 @@ public class ToolbarTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Toolbar_ShouldKeepEveryButtonThatFitsBesideItsMenu_WhenItIsJustWideEnoughForThem(string browser)
+    {
+        var page = await OpenToolbarAsync(browser);
+        var map = Toolbar(page, "Map actions");
+        var shown = map.Locator("[data-toolbar-item]:not([data-overflowed])");
+        // The width of two buttons and the menu's button with the gaps between them, plus the toolbar's padding.
+        var exact = await map.EvaluateAsync<double>("""
+            toolbar => {
+                const style = getComputedStyle(toolbar);
+                const width = part => toolbar.querySelector(part).getBoundingClientRect().width;
+                return 2 * width('[data-toolbar-item]') + width('[data-part=overflow]') + 2 * parseFloat(style.columnGap)
+                    + parseFloat(style.paddingInlineStart) + parseFloat(style.paddingInlineEnd);
+            }
+            """);
+
+        foreach (var direction in new[] { "ltr", "rtl" })
+        {
+            await page.EvaluateAsync("direction => document.documentElement.dir = direction", direction);
+            await SetWidthAsync(exact - 1);
+            await Expect(shown).ToHaveCountAsync(1);
+            await SetWidthAsync(exact);
+            await Expect(shown).ToHaveCountAsync(2);
+        }
+
+        // Text that ends the toolbar's content isn't an element, and a word too long for the toolbar still counts.
+        await SetWidthAsync(400);
+        await Expect(shown).ToHaveCountAsync(4);
+        await map.EvaluateAsync("""
+            toolbar => toolbar.insertBefore(document.createTextNode('W'.repeat(60)),
+                toolbar.querySelector(':scope > [data-part=overflow]'))
+            """);
+        await Expect(shown).ToHaveCountAsync(0);
+
+        Task SetWidthAsync(double width) => map.Locator("xpath=..").EvaluateAsync(
+            "(frame, width) => frame.style.cssText = `inline-size: ${width}px`", width);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Toolbar_ShouldLeaveTheKeysToTheBrowser_WhenAltCtrlOrCmdIsHeldOnItsMenuButton(string browser)
     {
         var page = await OpenToolbarAsync(browser);

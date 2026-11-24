@@ -80,6 +80,33 @@ public class StatesTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Surface_ShouldDrawAnEdgeAroundItsLowElevation_WhenThePageIsDark(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/surface");
+        // A hairline of the border's color, one of no color, and the low surface's own shadows.
+        const string Shadows = """
+            () => {
+                const probe = document.querySelector('main').appendChild(document.createElement('div'));
+                const hairline = color => {
+                    probe.style.boxShadow = `0 0 0 1px ${color}`;
+                    return getComputedStyle(probe).boxShadow;
+                };
+                const hairlines = [hairline('var(--tb-border-subtle)'), hairline('transparent')];
+                probe.remove();
+                return [...hairlines, getComputedStyle(document.querySelector('.tb-surface--low')).boxShadow];
+            }
+            """;
+
+        await SetThemeAsync(page, "dark");
+        var dark = await page.EvaluateAsync<string[]>(Shadows);
+        await SetThemeAsync(page, "light");
+        var light = await page.EvaluateAsync<string[]>(Shadows);
+
+        Assert.EndsWith(dark[0], dark[2]);
+        Assert.EndsWith(light[1], light[2]);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task CheckedBoxes_ShouldLookTheSameEverywhere_WhenChecked(string browser)
     {
         var page = await OpenAsync(browser, "/examples/checkbox");

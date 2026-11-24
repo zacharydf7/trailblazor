@@ -12,6 +12,8 @@ Nothing of its own. It only holds content.
 
 Nothing of its own. It only holds content.
 
+- [x] In the dark theme, where its shadow barely shows, a surface at the `Low` elevation with no border has a hairline edge. `StatesTests.Surface_ShouldDrawAnEdgeAroundItsLowElevation_WhenThePageIsDark`
+
 ## Touch
 
 Nothing of its own. It only holds content.

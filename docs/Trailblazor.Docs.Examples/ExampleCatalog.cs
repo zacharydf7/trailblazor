@@ -1212,7 +1212,9 @@ public static class ExampleCatalog
             Sections =
             [
                 new("elevation", "Elevation", "`Elevation` sets how far the surface seems to rise above the page. "
-                    + "Add your own padding with the [spacing classes](guides/spacing).", typeof(SurfaceExample)),
+                    + "In the dark theme, where a shadow barely shows, a `Low` surface has a hairline edge and a "
+                    + "higher one is lighter than the page. Add your own padding with the "
+                    + "[spacing classes](guides/spacing).", typeof(SurfaceExample)),
                 new("outlined", "Outlined", "`Outlined` adds a border, on its own or with a shadow.",
                     typeof(SurfaceOutlinedExample)),
                 new("element", "Element", "`As` renders the surface as another element, such as "
@@ -1266,7 +1268,9 @@ public static class ExampleCatalog
                     + "still work on their own. In a list of cards, put them in a [grid](components/grid) rendered as "
                     + "a list, with `As=\"LayoutElement.Li\"` on each grid item.", typeof(CardLinkExample)),
                 new("elevation", "Elevation and border", "`Elevation` sets the shadow, which is `Low` unless set, and "
-                    + "`Outlined` adds a border.", typeof(CardElevationExample)),
+                    + "`Outlined` adds a border. In the dark theme, where a shadow barely shows, a `Low` card with no "
+                    + "border has a hairline edge, as a [surface](components/surface) does.",
+                    typeof(CardElevationExample)),
             ],
             Api = [typeof(TbCard)],
             Anatomy = """
@@ -4817,15 +4821,16 @@ public static class ExampleCatalog
                     + "other list by name, and moves the item to the end of that list. `ListId` names each list, and a "
                     + "move's `FromList` and `ToList` say which lists it left and joined, so one `OnMove` can serve "
                     + "them all, with `ApplyBetween(from, to)`. A move between lists goes only to the `OnMove` and "
-                    + "`CanMove` of the list the item goes to; here, Hiked refuses a trail that hasn't been planned.",
-                    typeof(SortableGroupExample)),
+                    + "`CanMove` of the list the item goes to; here, Hiked refuses a trail that hasn't been planned. "
+                    + "An empty list that shares a group keeps room for one item and has a dashed outline, so it "
+                    + "shows where an item can be dropped.", typeof(SortableGroupExample)),
                 new("content", "Your own content", "`ItemTemplate` draws each item, and long text wraps inside it. "
                     + "`ItemLabel` names the handle when items aren't strings, and `KeySelector` tells items apart as "
                     + "they move.", typeof(SortableContentExample)),
                 new("disabled", "Disabled", "`Disabled` turns off the handles and dragging, so people can't change the "
                     + "order. An app's own `MoveAsync` still works.", typeof(SortableDisabledExample)),
-                new("empty", "Empty", "A sortable list has no message of its own, so show your own in its place until "
-                    + "it has items.", typeof(SortableEmptyExample)),
+                new("empty", "Empty", "`EmptyContent` shows in the list while it has no items. It can hold text, or "
+                    + "a button that adds the first ones.", typeof(SortableEmptyExample)),
             ],
             Api = [typeof(TbSortable<>), typeof(SortableMove<>), typeof(MoveCheck), typeof(SortableLabels)],
             Keyboard =
@@ -4856,6 +4861,8 @@ public static class ExampleCatalog
                 "A move to another list is announced with that list's label, such as \"Ridge loop moved to Planned, "
                     + "position 2 of 2.\"",
                 "A move `CanMove` refuses is announced with its reason, which also shows beside the drop.",
+                "`EmptyContent` is read as the list's one item, so word it to stand on its own, such as \"No trails "
+                    + "yet\".",
             ],
             Accessibility =
             [
@@ -4881,6 +4888,7 @@ public static class ExampleCatalog
             [
                 new("list", "The list that holds the items."),
                 new("item", "One item."),
+                new("empty", "The `EmptyContent`, in a list with no items."),
                 new("handle", "The item's drag handle, which also moves it with the keyboard or its menu."),
                 new("drop-reason", "The reason shown while a dragged item is held over a place it may not go."),
             ],
@@ -4892,7 +4900,7 @@ public static class ExampleCatalog
                 + "`MoveToListAsync(\"Ridge loop\", \"Planned\")` moves an item through its handle's menu, and "
                 + "`DragToListAsync` drags it there. The helpers name an item by "
                 + "`ItemLabel`, or by its text when the list has none, so give a list whose items hold a field an "
-                + "`ItemLabel`. "
+                + "`ItemLabel`. `ItemsAsync()` leaves out the `EmptyContent`, which by role is a `listitem`. "
                 + "Without them, press keys on a handle, found as "
                 + "`GetByRole(AriaRole.Button, new() { Name = \"Move Storm warning\" })`, and check the order the "
                 + "app shows. To drag, move the mouse from the handle to the lower half of the item it should "

@@ -45,6 +45,23 @@ public class SortableTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task List_ShouldShowWhereToDropAndTakeAnItemOnItsEmptyContent_WhenItHasNoItems(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/sortable");
+        var hiked = page.GetByRole(AriaRole.List, new() { Name = "Hiked" });
+
+        await Expect(hiked.Locator("[data-part=empty]")).ToHaveTextAsync("No trails yet");
+        await Expect(hiked).ToHaveCSSAsync("outline-style", "dashed");
+
+        // The drop is at the list's middle, on its empty content.
+        await page.Tb().Sortable("Planned").DragToListAsync("Pine trail", "Hiked");
+
+        Assert.Equal(["Pine trail"], await page.Tb().Sortable("Hiked").ItemsAsync());
+        await Expect(hiked.Locator("[data-part=empty]")).ToHaveCountAsync(0);
+        await Expect(hiked).ToHaveCSSAsync("outline-style", "none");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Keys_ShouldLeaveTheHandlesMenuClosed_WhenUpOrDownIsPressedWithAModifier(string browser)
     {
         var page = await OpenReadyAsync(browser);

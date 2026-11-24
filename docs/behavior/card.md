@@ -17,6 +17,7 @@ Familiar apps: the listings on a rental site, and the video tiles on a video sit
 - [x] Ctrl, Cmd, Shift, middle and right clicks on the card do what they do on any link, since the link is what's clicked. `TbCard.razor`
 - [x] Hovering a card with an `Href` underlines its title. `trailblazor.css`
 - [x] The picture shows above the title, though it comes after it in the markup. `CardTests.Card_ShouldShowItsPictureAboveTheTitle_WhenItHasMedia`
+- [x] In the dark theme, where its shadow barely shows, a card at the `Low` elevation with no border has a hairline edge. `StatesTests.Surface_ShouldDrawAnEdgeAroundItsLowElevation_WhenThePageIsDark`, `TbCard.razor`
 - [x] In forced-colors mode, each card keeps a border. `CardTests.Card_ShouldKeepABorder_WhenColorsAreForced`
 
 ## Touch

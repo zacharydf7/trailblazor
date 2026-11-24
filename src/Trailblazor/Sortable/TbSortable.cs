@@ -29,6 +29,10 @@ public sealed partial class TbSortable<TItem> : TbComponentBase, ISortableGroupM
     [Parameter, EditorRequired]
     public RenderFragment<TItem> ItemTemplate { get; set; } = default!;
 
+    /// <summary>What the list shows while it has no items, such as "No trails yet".</summary>
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
     /// <summary>The list's accessible name, such as "Rules".</summary>
     [Parameter, EditorRequired]
     public string Label { get; set; } = "";

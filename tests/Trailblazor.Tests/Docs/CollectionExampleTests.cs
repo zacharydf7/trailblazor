@@ -71,14 +71,15 @@ public class CollectionExampleTests : DocsTest
     }
 
     [Fact]
-    public void SortableEmptyExample_ShouldShowTheListInPlaceOfTheMessage_WhenStopsAreAdded()
+    public void SortableEmptyExample_ShouldShowTheItemsInPlaceOfTheMessage_WhenStopsAreAdded()
     {
         var cut = Render<SortableEmptyExample>();
-        Assert.Empty(cut.FindAll("[data-part=list]"));
+        Assert.Single(cut.FindAll("[data-part=empty]"));
 
         Button(cut, "Add two stops").Click();
 
         Assert.Equal(2, cut.FindAll("[data-part=item]").Count);
+        Assert.Empty(cut.FindAll("[data-part=empty]"));
     }
 
     [Fact]

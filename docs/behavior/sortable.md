@@ -27,6 +27,8 @@ Familiar apps: Trello's lists, Jira's backlog, a mail app's filter rules
 - [x] A place the item may not go shows why, and a drop there changes nothing. `SortableTests.Handle_ShouldShowWhyAndLeaveTheOrder_WhenDraggedWhereTheItemMayNotGo`
 - [x] Letting go outside the list changes nothing. `sortable.js`
 - [x] Dragged over another list of its group, the item lands before or after the item under the pointer, or at the nearest gap between that list's items; a line marks the spot, or an outline marks the list when it's empty. `SortableBoardTests.Handle_ShouldMoveTheItemIntoAnotherListBeforeTheItemDroppedOn_WhenDraggedThere`, `SortableBoardTests.Handle_ShouldMoveTheItemIntoAnEmptyList_WhenDraggedOntoIt`
+- [x] An empty list that shares a group keeps room for one item and has a dashed outline, and an item dropped on its `EmptyContent` goes into the list. `SortableTests.List_ShouldShowWhereToDropAndTakeAnItemOnItsEmptyContent_WhenItHasNoItems`, `trailblazor.css`
+- [x] An empty list, in a group or not, shows its `EmptyContent`, which has no handle and goes away once the list has an item. `TbSortableTests.Render_ShouldShowItsEmptyContentInTheList_WhenItHasNoItems`
 - [x] A list of the group that refuses the item shows why beside the drop, and a drop there changes neither list. `SortableBoardTests.Handle_ShouldShowWhyAndLeaveBothLists_WhenTheListItGoesToRefuses`
 - [x] Escape during a drag cancels it, and the release that follows doesn't open the handle's menu, whether or not the item had moved. `SortableTests.Handle_ShouldLeaveItsMenuClosed_WhenEscapeCancelsAMouseDragBeforeTheRelease`, `SortableTests.Handle_ShouldLeaveItsMenuClosed_WhenEscapeCancelsAFingersHoldBeforeItMoves`
 - [x] A click on a handle opens its menu, but a drag's release doesn't. `sortable.js`
@@ -49,6 +51,7 @@ Familiar apps: Trello's lists, Jira's backlog, a mail app's filter rules
 - [x] Focus stays on the handle after a key moves its item. `SortableTests.Keys_ShouldMoveTheItemAndKeepFocusOnItsHandle_WhenPressedOnTheHandle`
 - [x] Focus goes back to the handle after a move chosen from its menu with the keyboard. `TbSortable.cs`
 - [x] Each handle is named for its item, and says how the keys work. `TbSortableTests.Render_ShouldNameTheListAndEachHandle_WhenGivenItems`
+- [x] Screen readers read `EmptyContent` as the list's one item. `TbSortableTests.Render_ShouldShowItsEmptyContentInTheList_WhenItHasNoItems`
 - [x] Screen readers hear where the item landed. `TbSortableTests.Keys_ShouldMoveTheItemAndSaySo_WhenPressedOnItsHandle`
 - [x] In a list with a `Group`, `Labels.GroupHint` words the handle's key hint. `TbSortableGroupTests.Labels_ShouldWordTheHandlesHint_WhenTheListIsInAGroup`
 - [x] After a move to another list, screen readers hear that list's name with the item's place there. `TbSortableGroupTests.ListKey_ShouldMoveTheItemToTheSamePlaceInTheListBesideAndSaySo_WhenPressed`

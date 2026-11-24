@@ -2680,6 +2680,8 @@ Trailblazor.TbSortable<TItem>.KeySelector.get -> System.Func<TItem, object!>?
 Trailblazor.TbSortable<TItem>.KeySelector.set -> void
 Trailblazor.TbSortable<TItem>.Items.get -> System.Collections.Generic.IReadOnlyList<TItem>!
 Trailblazor.TbSortable<TItem>.Items.set -> void
+Trailblazor.TbSortable<TItem>.EmptyContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbSortable<TItem>.EmptyContent.set -> void
 Trailblazor.TbSortable<TItem>.ItemTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<TItem>!
 Trailblazor.TbSortable<TItem>.ItemTemplate.set -> void
 Trailblazor.TbSortable<TItem>.ItemLabel.get -> System.Func<TItem, string!>?

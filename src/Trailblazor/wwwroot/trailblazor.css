@@ -1776,11 +1776,16 @@
         color: var(--tb-color-text);
     }
 
+    /* Black shadows barely show on a dark page, so there a low surface with no border gets a hairline edge. */
     .tb-surface--low {
         box-shadow: var(--tb-shadow-sm);
     }
 
-    /* Black shadows barely show on a dark page, so higher elevations take the raised surface, lighter in dark mode. */
+    .tb-surface--low:not(.tb-surface--outlined) {
+        box-shadow: var(--tb-shadow-sm), 0 0 0 1px light-dark(transparent, var(--tb-border-subtle));
+    }
+
+    /* Higher elevations take the raised surface, lighter in dark mode. */
     .tb-surface--medium {
         background: var(--tb-color-surface-raised);
         box-shadow: var(--tb-shadow-md);
@@ -10961,6 +10966,21 @@
        dragged into an empty list outlines the list. */
     .tb-sortable__list[data-group] {
         min-block-size: var(--tb-item-height);
+    }
+
+    /* At rest, a dashed line shows that the empty list takes items. A board's column shows that itself. */
+    .tb-sortable__list--empty[data-group]:where(:not(.tb-kanban__cards *)) {
+        border-radius: var(--tb-radius-md);
+        outline: 1px dashed var(--tb-border-strong);
+        outline-offset: -1px;
+    }
+
+    .tb-sortable__empty {
+        display: flex;
+        align-items: center;
+        min-block-size: var(--tb-item-height);
+        padding: var(--tb-space-1) var(--tb-space-2);
+        color: var(--tb-color-text-muted);
     }
 
     .tb-sortable__list[data-drop="end"] {

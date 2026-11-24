@@ -6,6 +6,7 @@
             <TbSortable TItem="string" Items="column.Trails" Label="@column.Name" Group="trip" ListId="@column.Id"
                         OnMove="Move" CanMove="CheckAsync">
                 <ItemTemplate>@context</ItemTemplate>
+                <EmptyContent>No trails yet</EmptyContent>
             </TbSortable>
         </TbStack>
     }

@@ -87,6 +87,9 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-23
 
+- `TbToolbar` now moves a button into its More menu as soon as its content would reach into the toolbar's end padding, in every browser. Before, Chrome, Edge and Safari waited until the content touched the toolbar's edge, 4px later than Firefox.
+- A `TbSurface` or `TbCard` at the `Low` elevation with no border now has a hairline edge in the dark theme, drawn in its `box-shadow` with `--tb-border-subtle`. Before, it was nearly invisible on a dark page, where its shadow barely shows.
+- `TbSortable` has an `EmptyContent`, shown in an `li` with `data-part="empty"` while the list has no items. An empty list has the class `tb-sortable__list--empty`, and one that shares a `Group` now has a dashed outline, so it shows where an item can be dropped. Before, an empty list showed nothing, and took no room unless it shared a `Group`.
 - `TbNumberField` now draws its step buttons at the box's two edges, outside its `Start` and `End` content: the control's children are the decrement button, `start`, the input, `end` and the increment button. Before, `Start` came first, so a `$` before the minus button read as a negative amount.
 - An `Extended` `TbFab` now keeps its label on one line (`white-space: nowrap`). Before, a narrow container wrapped the label onto two lines.
 - A vertical `TbTabs` now keeps its panel's text `--tb-space-4` away from the tab list's divider. Before, the text started right at the divider.

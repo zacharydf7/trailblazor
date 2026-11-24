@@ -27,7 +27,21 @@ export function attachToolbar(toolbar, more, overflow) {
     });
 
     let reported = '';
-    const overflows = () => toolbar.scrollWidth > toolbar.clientWidth;
+    // Chromium and WebKit leave the end padding out of scrollWidth, so the last child's far edge is measured as well.
+    const subpixel = 0.5;
+    const overflows = () => {
+        const last = [...toolbar.children].findLast(child => child.checkVisibility());
+        if (toolbar.scrollWidth > toolbar.clientWidth || !last) {
+            return toolbar.scrollWidth > toolbar.clientWidth;
+        }
+
+        const style = getComputedStyle(toolbar);
+        const [box, end] = [toolbar.getBoundingClientRect(), last.getBoundingClientRect()];
+        const inset = parseFloat(style.paddingInlineEnd) + parseFloat(style.borderInlineEndWidth)
+            + parseFloat(getComputedStyle(last).marginInlineEnd);
+        return style.direction === 'rtl' ? end.left < box.left + inset - subpixel
+            : end.right > box.right - inset + subpixel;
+    };
     const fit = () => {
         delete toolbar.dataset.fitting;
         if (!more) {
