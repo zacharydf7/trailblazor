@@ -94,10 +94,7 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     // suites' own files.
     public TestScenario? Scenario { get; init; }
 
-    // Extra testing advice for the page; text in backticks shows as code.
-    public string? TestingTip { get; init; }
-
-    // The same, as a list, for a component with many things to say.
+    // Testing advice for the page, as short items; text in backticks shows as code.
     public IReadOnlyList<string> TestingTips { get; init; } = [];
 
     // What the component reports through the Trailblazor meter; text in backticks shows as code.
@@ -114,13 +111,16 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     public IReadOnlyList<ExampleNote> NotesShown => Api.Any(IsField) ? [.. Notes, new(FieldNote)] : Notes;
 
     // Every field shows its messages the same way, so a field's page ends its testing tips with how to read them.
-    public IReadOnlyList<string> TestingTipsShown => Api.Any(IsField) ? [.. TestingTips, FieldTesting] : TestingTips;
+    public IReadOnlyList<string> TestingTipsShown => Api.Any(IsField) ? [.. TestingTips, .. FieldTesting] : TestingTips;
 
-    private const string FieldTesting = "A field's error messages sit in `[data-part=error]`, each in its own "
-        + "`[data-part=message]`. Where the testing packages have a helper for the field, it reads them: `Error` is the "
-        + "first one, `Errors` all of them in order, and `Invalid` whether the field is marked invalid. In Playwright "
-        + "they're `ErrorAsync()`, `ErrorsAsync()` and `InvalidAsync()`. `LeaveAsync()` moves focus out of the field, "
-        + "which raises its `OnBlur`.";
+    private static readonly string[] FieldTesting =
+    [
+        "A field's error messages sit in `[data-part=error]`, each in its own `[data-part=message]`.",
+        "Where the testing packages have a helper for the field, it reads the field's error messages: `Error` is the "
+            + "first one, `Errors` all of them in order, and `Invalid` whether the field is marked invalid. In "
+            + "Playwright they're `ErrorAsync()`, `ErrorsAsync()` and `InvalidAsync()`.",
+        "`LeaveAsync()` moves focus out of the field, which raises its `OnBlur`.",
+    ];
 
     private const string FieldLabeling = "With no room for a label, an `AriaLabel` names the field through a label "
         + "only screen readers see. A field with neither gets build warning TB004.";
@@ -379,8 +379,11 @@ public static class ExampleCatalog
             {
                 WithoutHelpers = true,
             },
-            TestingTip = "Text cut off by `MaxLines` is still all in the markup, so text assertions and `GetByText` "
-                + "match the whole string. Whether it is cut off shows only in a browser, not in bUnit.",
+            TestingTips =
+            [
+                "Text cut off by `MaxLines` is still all in the markup, so text assertions and `GetByText` match the "
+                    + "whole string. Whether it is cut off shows only in a browser, not in bUnit.",
+            ],
         },
         new("kbd", "Kbd", ExampleCategory.Content,
             "Keyboard keys and shortcuts shown as keycaps, such as Ctrl+K, in help text and hints.")
@@ -418,7 +421,10 @@ public static class ExampleCatalog
             [
                 new("key", "One key of a combination."),
             ],
-            TestingTip = "Keys have no role of their own; find them by their text, as `GetByText(\"Ctrl\")`.",
+            TestingTips =
+            [
+                "Keys have no role of their own; find them by their text, as `GetByText(\"Ctrl\")`.",
+            ],
         },
         new("highlight", "Highlight", ExampleCategory.Content,
             "Text with the parts that match a search marked, for search results and filtered lists.")
@@ -524,8 +530,11 @@ public static class ExampleCatalog
                 new("bars", "A barcode's image."),
                 new("text", "The value printed under a barcode's bars."),
             ],
-            TestingTip = "Find a code by its role and name, as `GetByRole(AriaRole.Img, new() { Name = \"PERMIT-1042\" "
-                + "})`, and read what it holds from its `data-value`.",
+            TestingTips =
+            [
+                "Find a code by its role and name, as `GetByRole(AriaRole.Img, new() { Name = \"PERMIT-1042\" })`, "
+                    + "and read what it holds from its `data-value`.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"checkout-qr\"`, a QR code or barcode counts "
@@ -609,8 +618,11 @@ public static class ExampleCatalog
             {
                 WithoutHelpers = true,
             },
-            TestingTip = "Find an avatar by its role and name: `GetByRole(AriaRole.Img, new() { Name = \"Ada Lovelace\" })` "
-                + "in Playwright, or `[data-part=avatar][aria-label='Ada Lovelace']` in bUnit.",
+            TestingTips =
+            [
+                "Find an avatar by its role and name: `GetByRole(AriaRole.Img, new() { Name = \"Ada Lovelace\" })` "
+                    + "in Playwright, or `[data-part=avatar][aria-label='Ada Lovelace']` in bUnit.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"profile-avatar\"`, an avatar or avatar group counts "
@@ -685,9 +697,12 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it reads the events' titles in order, and the first event's time as machines "
                 + "read it.") { WithoutHelpers = true },
-            TestingTip = "Find the timeline with `GetByRole(AriaRole.List, new() { Name = \"Trip history\" })` and an "
-                + "event with `GetByRole(AriaRole.Listitem).Filter(new() { HasText = \"Trip booked\" })`. A `time` "
-                + "element's `datetime` attribute holds the time in ISO 8601, whatever the culture.",
+            TestingTips =
+            [
+                "Find the timeline with `GetByRole(AriaRole.List, new() { Name = \"Trip history\" })` and an event "
+                    + "with `GetByRole(AriaRole.Listitem).Filter(new() { HasText = \"Trip booked\" })`.",
+                "A `time` element's `datetime` attribute holds the time in ISO 8601, whatever the culture.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"trip-history\"`, it counts `trailblazor.control.shown` as it "
@@ -791,12 +806,17 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it steps to the next slide and jumps to the last, and checks which slide shows "
                 + "and which trail the app names."),
-            TestingTip = "`Carousel(name)` finds the carousel by its `AriaLabel` in both packages. `PreviousAsync()` "
-                + "steps back, and `CountAsync()` or `Count` reads how many slides there are. In Playwright, the "
-                + "helpers that move it wait until the app's `ActiveIndexChanged` has run, which the picker counts in "
-                + "`data-commits` for `GoToAsync`, and until the slides have stopped moving. In bUnit, slides turn "
-                + "without moving; register a `FakeTimeProvider` as the `TimeProvider` and advance it past the "
-                + "`AutoPlayInterval` to turn the slides.",
+            TestingTips =
+            [
+                "`Carousel(name)` finds the carousel by its `AriaLabel` in both packages.",
+                "`PreviousAsync()` steps back, and `CountAsync()` or `Count` reads how many slides there are.",
+                "In Playwright, the helpers that move the carousel wait until the app's `ActiveIndexChanged` has "
+                    + "run, which the picker counts in `data-commits` for `GoToAsync`, and until the slides have "
+                    + "stopped moving.",
+                "In bUnit, slides turn without moving.",
+                "To turn the slides in bUnit, register a `FakeTimeProvider` as the `TimeProvider` and advance it "
+                    + "past the `AutoPlayInterval`.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"featured-trails\"`, it counts `trailblazor.control.shown` as it "
@@ -885,14 +905,19 @@ public static class ExampleCatalog
             ],
             Scenario = new("items", "it reads how many reports the list holds, and reads a report: the first in "
                 + "bUnit, which draws only the first view, and the last in a browser, after scrolling to it."),
-            TestingTip = "`await page.Tb().VirtualList(\"Trail reports\").ItemAsync(500)` from "
-                + "`Trailblazor.Testing.Playwright` scrolls the list to an item, as a user does, and returns it once "
-                + "drawn; `CountAsync()` reads how many items there are, once an `ItemsProvider` has answered. In bUnit, "
-                + "`cut.Tb().VirtualList(\"Trail reports\")` reads `Count`, and `Item(index)` returns a drawn item. "
-                + "bUnit runs no script, so only the first items are drawn and a far one throws; test it in "
-                + "Playwright. By hand, find the list as "
-                + "`GetByRole(AriaRole.Feed, new() { Name = \"Trail reports\" })` and an item as "
-                + "`GetByRole(AriaRole.Article, new() { Name = \"Report 12: Trail 13\" })`.",
+            TestingTips =
+            [
+                "`await page.Tb().VirtualList(\"Trail reports\").ItemAsync(500)` from "
+                    + "`Trailblazor.Testing.Playwright` scrolls the list to an item, as a user does, and returns it "
+                    + "once drawn.",
+                "`CountAsync()` reads how many items there are, once an `ItemsProvider` has answered.",
+                "In bUnit, `cut.Tb().VirtualList(\"Trail reports\")` reads `Count`, and `Item(index)` returns a "
+                    + "drawn item.",
+                "bUnit runs no script, so only the first items are drawn and a far one throws; test far items in "
+                    + "Playwright.",
+                "By hand, find the list as `GetByRole(AriaRole.Feed, new() { Name = \"Trail reports\" })` and an "
+                    + "item as `GetByRole(AriaRole.Article, new() { Name = \"Report 12: Trail 13\" })`.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"trail-list\"`, it counts `trailblazor.control.shown` as it "
@@ -989,11 +1014,16 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it sends a message, checks that it shows and, in bUnit, that Robin is typing, "
                 + "and waits for Robin's reply to stream in."),
-            TestingTip = "`page.Tb().Chat(\"Trip planning\")` in Playwright, or `cut.Tb().Chat(...)` in bUnit, finds "
-                + "the chat by its `AriaLabel`: `SendAsync(text)` writes and sends a message, and in Playwright waits "
-                + "until `OnSend` has run, which the chat counts in `data-commits`; `AttachAsync(paths)` chooses files "
-                + "for the next message; `MessagesAsync()` or `Messages` reads each message as \"Author: text\", and "
-                + "`TypingAsync()` or `Typing` reads who is typing.",
+            TestingTips =
+            [
+                "`page.Tb().Chat(\"Trip planning\")` in Playwright, or `cut.Tb().Chat(...)` in bUnit, finds the chat "
+                    + "by its `AriaLabel`.",
+                "`SendAsync(text)` writes and sends a message, and in Playwright waits until `OnSend` has run, which "
+                    + "the chat counts in `data-commits`.",
+                "`AttachAsync(paths)` chooses files for the next message.",
+                "`MessagesAsync()` or `Messages` reads each message as \"Author: text\", and `TypingAsync()` or "
+                    + "`Typing` reads who is typing.",
+            ],
         },
         new("ai-prompt", "AI prompt", ExampleCategory.Inputs,
             "A box to write a prompt for a model, with suggestions, and the responses it streams back, each with "
@@ -1078,14 +1108,18 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it asks what to pack, waits for the answer to stream in, checks it, and inserts "
                 + "it into the trip notes."),
-            TestingTip = "`page.Tb().AiPrompt(\"Ask about the ridge trail\")` in Playwright, or "
-                + "`cut.Tb().AiPrompt(...)` in bUnit, finds the prompt by its `Label`: `PromptAsync(text)` writes a "
-                + "prompt and generates, and in Playwright waits until the response is done, stopped or failed; "
-                + "`ResponsesAsync()` or `Responses` "
-                + "reads each response's text, newest first, and `StatusesAsync()` or `Statuses` their statuses; "
-                + "`StopAsync()` stops the response that's generating, and `CopyAsync()`, `RetryAsync()` and "
-                + "`InsertAsync()` act on a response, the newest by "
-                + "default. In bUnit, pass `Generate` a stub that yields fixed chunks.",
+            TestingTips =
+            [
+                "`page.Tb().AiPrompt(\"Ask about the ridge trail\")` in Playwright, or `cut.Tb().AiPrompt(...)` in "
+                    + "bUnit, finds the prompt by its `Label`.",
+                "`PromptAsync(text)` writes a prompt and generates. In Playwright, it waits until the response is "
+                    + "done, stopped or failed.",
+                "`ResponsesAsync()` or `Responses` reads each response's text, newest first, and `StatusesAsync()` "
+                    + "or `Statuses` reads their statuses.",
+                "`StopAsync()` stops the response that's generating.",
+                "`CopyAsync()`, `RetryAsync()` and `InsertAsync()` act on a response, the newest by default.",
+                "In bUnit, pass `Generate` a stub that yields fixed chunks.",
+            ],
         },
         new("image", "Image", ExampleCategory.Content,
             "An image that requires alternative text and can scale to fit its container.")
@@ -1144,9 +1178,12 @@ public static class ExampleCatalog
             {
                 WithoutHelpers = true,
             },
-            TestingTip = "Find an image by its alternative text: `GetByRole(AriaRole.Img, new() { Name = \"A trail "
-                + "winding between two hills\" })` in Playwright, or `img[alt='A trail winding between two hills']` in "
-                + "bUnit.",
+            TestingTips =
+            [
+                "Find an image by its alternative text: `GetByRole(AriaRole.Img, new() { Name = \"A trail winding "
+                    + "between two hills\" })` in Playwright, or `img[alt='A trail winding between two hills']` in "
+                    + "bUnit.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"trail-photo\"`, it counts `trailblazor.control.shown` as it "
@@ -1394,9 +1431,12 @@ public static class ExampleCatalog
             ],
             Scenario = new("link", "it toggles the Save buttons of two cards and checks which trails are saved, then "
                 + "checks a card's link and, in a browser, follows it by clicking the card."),
-            TestingTip = "Find a card by its role and title, with "
-                + "`GetByRole(AriaRole.Article, new() { Name = \"Ridge loop\" })` in Playwright. A card with an `Href` "
-                + "is also found by its link, with `GetByRole(AriaRole.Link, new() { Name = \"Old mill\" })`.",
+            TestingTips =
+            [
+                "Find a card by its role and title, with `GetByRole(AriaRole.Article, new() { Name = \"Ridge loop\" "
+                    + "})` in Playwright. A card with an `Href` is also found by its link, with "
+                    + "`GetByRole(AriaRole.Link, new() { Name = \"Old mill\" })`.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"trail-card\"`, it counts `trailblazor.control.shown` as it first "
@@ -1462,9 +1502,13 @@ public static class ExampleCatalog
             {
                 WithoutHelpers = true,
             },
-            TestingTip = "Find an icon with a `Label` by its role and name: `GetByRole(AriaRole.Img, new() { Name = "
-                + "\"Failed\" })` in Playwright, or `[role=img][aria-label='Failed']` in bUnit. An icon without one is "
-                + "hidden from screen readers and from `GetByRole`, so check the text beside it instead.",
+            TestingTips =
+            [
+                "Find an icon with a `Label` by its role and name: `GetByRole(AriaRole.Img, new() { Name = "
+                    + "\"Failed\" })` in Playwright, or `[role=img][aria-label='Failed']` in bUnit.",
+                "An icon without a `Label` is hidden from screen readers and from `GetByRole`, so check the text "
+                    + "beside it instead.",
+            ],
         },
         new("button", "Button", ExampleCategory.Actions,
             "Starts an action, in filled, outlined or text styles and every tone.")
@@ -1592,19 +1636,24 @@ public static class ExampleCatalog
             ],
             Scenario = new("submit", "it tries to send a trail report with no trail name, checks that nothing is "
                 + "sent and that the field says why, then names the trail and sends it."),
-            TestingTip = "`await page.Tb().Button(\"Save\").ClickAsync()` from `Trailblazor.Testing.Playwright` "
-                + "clicks a button once the page is interactive and it's no longer busy, and returns once the app has "
-                + "run its `OnClick`, or once a dialog opens, since a handler that awaits the dialog's answer finishes "
-                + "only after the test answers it. For a `TbForm`'s submit button it also waits until the form has "
-                + "handled the submit, so the fields' errors can be read straight after the click. `BusyAsync()` "
-                + "reads whether it's busy, and `PressedAsync()` and "
-                + "`MixedAsync()` whether a toggle is pressed or mixed. In bUnit, "
-                + "`cut.Tb().Button(\"Save\").ClickAsync()` throws while the button is busy instead of waiting, and "
-                + "`Busy`, `Pressed` and `Mixed` read the same states. By hand, check a toggle with "
-                + "`ToHaveAttributeAsync(\"aria-pressed\", \"true\")`, a `Loading` button with "
-                + "`ToHaveAttributeAsync(\"aria-busy\", \"true\")`, and a disabled button with `ToBeDisabledAsync()`, "
-                + "which also passes for `aria-disabled`. To move focus to a button from code, `@ref` it and call "
-                + "`FocusAsync()`.",
+            TestingTips =
+            [
+                "`await page.Tb().Button(\"Save\").ClickAsync()` from `Trailblazor.Testing.Playwright` clicks a "
+                    + "button once the page is interactive and the button is no longer busy.",
+                "The Playwright `ClickAsync()` returns once the app has run the button's `OnClick`, or once a dialog "
+                    + "opens, since a handler that awaits the dialog's answer finishes only after the test answers "
+                    + "it.",
+                "For a `TbForm`'s submit button, the Playwright `ClickAsync()` also waits until the form has handled "
+                    + "the submit, so the fields' errors can be read straight after the click.",
+                "`BusyAsync()` reads whether the button is busy, and `PressedAsync()` and `MixedAsync()` whether a "
+                    + "toggle is pressed or mixed.",
+                "In bUnit, `cut.Tb().Button(\"Save\").ClickAsync()` throws while the button is busy instead of "
+                    + "waiting, and `Busy`, `Pressed` and `Mixed` read the same states.",
+                "By hand, check a toggle with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")` and a `Loading` "
+                    + "button with `ToHaveAttributeAsync(\"aria-busy\", \"true\")`.",
+                "By hand, check a disabled button with `ToBeDisabledAsync()`, which also passes for `aria-disabled`.",
+                "To move focus to a button from code, `@ref` it and call `FocusAsync()`.",
+            ],
             Telemetry = ButtonTelemetry("TbButton"),
         },
         new("icon-button", "Icon button", ExampleCategory.Actions,
@@ -1697,12 +1746,15 @@ public static class ExampleCatalog
             ],
             Scenario = new("mixed", "it checks that the Bold button shows that only some words are bold, presses it, "
                 + "and checks that every word is bold."),
-            TestingTip = "`page.Tb().Button(\"Delete\")` from `Trailblazor.Testing.Playwright`, or "
-                + "`cut.Tb().Button(...)` in bUnit, finds it by its name and drives it just like a button, including "
-                + "`PressedAsync()` and `MixedAsync()` (`Pressed` and `Mixed` in bUnit) for a toggle. By hand, "
-                + "find it with "
-                + "`GetByRole(AriaRole.Button, new() { Name = \"Delete\" })`. With `ShowTooltip`, focusing it shows a "
-                + "`tooltip` role with the same text.",
+            TestingTips =
+            [
+                "`page.Tb().Button(\"Delete\")` from `Trailblazor.Testing.Playwright`, or `cut.Tb().Button(...)` in "
+                    + "bUnit, finds an icon button by its name and drives it just like a button.",
+                "The button helpers include `PressedAsync()` and `MixedAsync()` (`Pressed` and `Mixed` in bUnit) for "
+                    + "a toggle icon button.",
+                "By hand, find an icon button with `GetByRole(AriaRole.Button, new() { Name = \"Delete\" })`.",
+                "With `ShowTooltip`, focusing the icon button shows a `tooltip` role with the same text.",
+            ],
             Telemetry = ButtonTelemetry("TbIconButton"),
         },
         new("button-group", "Button group", ExampleCategory.Actions,
@@ -1769,9 +1821,12 @@ public static class ExampleCatalog
             {
                 WithoutHelpers = true,
             },
-            TestingTip = "Find the group by its name, then its buttons inside it: `GetByRole(AriaRole.Group, new() { "
-                + "Name = \"Text alignment\" }).GetByRole(AriaRole.Button, new() { Name = \"Center\" })` in "
-                + "Playwright, or `[role=group][aria-label='Text alignment'] button` in bUnit.",
+            TestingTips =
+            [
+                "Find the group by its name, then its buttons inside it: `GetByRole(AriaRole.Group, new() { Name = "
+                    + "\"Text alignment\" }).GetByRole(AriaRole.Button, new() { Name = \"Center\" })` in Playwright, "
+                    + "or `[role=group][aria-label='Text alignment'] button` in bUnit.",
+            ],
         },
         new("floating-action-button", "Floating action button", ExampleCategory.Actions,
             "A round button for the main action of a screen that stays in view as the page scrolls, and a speed dial "
@@ -2016,8 +2071,8 @@ public static class ExampleCatalog
                 + "app a phrase, so the test is in bUnit alone.") { Only = ScenarioPackage.Bunit },
             TestingTips =
             [
-                "In bUnit, `cut.Tb().SpeechToText(\"Dictate notes\")` finds it: `StartAsync()` and `StopAsync()` press "
-                    + "it, and `SayAsync(\"...\")` hands the app a phrase as the browser would on hearing it.",
+                "In bUnit, `cut.Tb().SpeechToText(\"Dictate notes\")` finds it: `StartAsync()` and `StopAsync()` "
+                    + "press it, and `SayAsync(\"...\")` hands the app a phrase as the browser would on hearing it.",
                 "In Playwright, a test browser has no microphone, so replace `window.SpeechRecognition` with a fake "
                     + "in an init script; `page.Tb().SpeechToText(\"Dictate notes\")` presses it and reads its state.",
             ],
@@ -2153,11 +2208,12 @@ public static class ExampleCatalog
             TestingTips =
             [
                 "In bUnit, `cut.Tb().SmartPaste()` finds it: `PasteAsync(\"...\")` presses it and fills the form "
-                    + "from that text through the box, since bUnit has no clipboard, and `Status` reads the result. "
-                    + "Pass `Extract` a fake that returns fixed values.",
-                "In Playwright, `page.Tb().SmartPaste()` does the same and waits until the form is filled; it makes "
-                    + "the page's clipboard refuse first, so the box opens in every browser. To test the clipboard "
-                    + "itself, replace `navigator.clipboard.readText` in an init script and click `Button`.",
+                    + "from that text through the box, since bUnit has no clipboard, and `Status` reads the result.",
+                "In bUnit, pass `Extract` a fake that returns fixed values.",
+                "In Playwright, `page.Tb().SmartPaste()` has the same `PasteAsync`, and waits until the form is "
+                    + "filled; it makes the page's clipboard refuse first, so the box opens in every browser.",
+                "To test the clipboard itself in Playwright, replace `navigator.clipboard.readText` in an init "
+                    + "script and click `Button`.",
             ],
             Telemetry =
             [
@@ -2280,12 +2336,16 @@ public static class ExampleCatalog
             ],
             Scenario = new("any-number", "it reads which seasons are pressed, turns on two more and turns one off, "
                 + "and checks what the app shows."),
-            TestingTip = "Press an item by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Satellite\" })`, "
-                + "and check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`. Focusing an icon-only item shows "
-                + "a `tooltip` role with its name. In bUnit and Playwright, "
-                + "`Tb().ToggleGroup(\"Map view\").ChooseAsync(\"Satellite\")` presses items by name, `UnchooseAsync` "
-                + "releases them in a multiple or `Clearable` group, and `Chosen` (`ChosenAsync()` in Playwright) "
-                + "reads the pressed ones.",
+            TestingTips =
+            [
+                "Press an item by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Satellite\" })`, and "
+                    + "check it with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")`.",
+                "Focusing an icon-only item shows a `tooltip` role with its name.",
+                "In bUnit and Playwright, `Tb().ToggleGroup(\"Map view\").ChooseAsync(\"Satellite\")` presses items "
+                    + "by name.",
+                "`UnchooseAsync` releases items in a multiple or `Clearable` group, and `Chosen` (`ChosenAsync()` in "
+                    + "Playwright) reads the pressed ones.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName` on an item, such as `\"view-as-list\"`, the item counts "
@@ -2380,12 +2440,16 @@ public static class ExampleCatalog
             ],
             Scenario = new("segments", "it reads the chosen difficulty, chooses another segment, and checks what the "
                 + "app shows."),
-            TestingTip = "Each segment is a native radio, so Playwright's `CheckAsync()` works on "
-                + "`GetByRole(AriaRole.Radio, new() { Name = \"Hard\" })` inside the group, as on a radio group. The "
-                + "radio covers its segment's text, so click the radio rather than the text. In bUnit, `Change(true)` on "
-                + "a segment's `input` chooses it. In bUnit and Playwright, "
-                + "`Tb().RadioGroup(\"Trail difficulty\").ChooseAsync(\"Hard\")` chooses a segment by its text, "
-                + "refusing a read-only or disabled one, and `Chosen` (`ChosenAsync()` in Playwright) reads it.",
+            TestingTips =
+            [
+                "In bUnit and Playwright, `Tb().RadioGroup(\"Trail difficulty\").ChooseAsync(\"Hard\")` chooses a "
+                    + "segment by its text, refusing a read-only or disabled one.",
+                "`Chosen` (`ChosenAsync()` in Playwright) reads the chosen segment.",
+                "Each segment is a native radio, so Playwright's `CheckAsync()` works on `GetByRole(AriaRole.Radio, "
+                    + "new() { Name = \"Hard\" })` inside the group, as on a radio group.",
+                "The radio covers its segment's text, so click the radio rather than the text.",
+                "In bUnit, `Change(true)` on a segment's `input` chooses it.",
+            ],
         },
         new("theme-picker", "Theme picker", ExampleCategory.Actions,
             "Lets people choose a light or dark page, or follow their device, and remembers the choice.")
@@ -2443,8 +2507,11 @@ public static class ExampleCatalog
             Blocks = ["tb-toggle-group", "tb-button"],
             Scenario = new("modes", "it chooses Dark and checks the mode the app shows and, in a browser, the page's "
                 + "theme."),
-            TestingTip = "A test that needs one theme can set `data-tb-theme` on `html` itself. Focusing a choice "
-                + "shows a `tooltip` role with its name.",
+            TestingTips =
+            [
+                "A test that needs one theme can set `data-tb-theme` on `html` itself. Focusing a choice shows a "
+                    + "`tooltip` role with its name.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"header-theme\"`, it counts `trailblazor.control.shown` as it "
@@ -2748,45 +2815,51 @@ public static class ExampleCatalog
             [
                 "`page.Tb().Ribbon(\"Trail planner\")` in Playwright, or `cut.Tb().Ribbon(...)` in bUnit, finds the "
                     + "ribbon by its `AriaLabel`.",
-                "A control's keys are added to its description by the ribbon's script, so bUnit markup has none of "
-                    + "them. In Playwright, `ToHaveAccessibleDescriptionAsync(\"Key tip: Alt, H, B\")` checks them, "
-                    + "and a test that reads the description of a ribbon control with a key tip finds them at its end.",
                 "`SelectAsync(\"Trails\")` selects a tab, and in Playwright waits until it is selected and the app's "
-                    + "callbacks have run. `TabsAsync()` or `Tabs` reads the tabs' titles, `SelectedAsync()` or "
-                    + "`Selected` the selected tab's, and `GroupsAsync()` or `Groups` the selected tab's group names.",
+                    + "callbacks have run.",
+                "`TabsAsync()` or `Tabs` reads the tabs' titles, `SelectedAsync()` or `Selected` the selected tab's, "
+                    + "and `GroupsAsync()` or `Groups` the selected tab's group names.",
                 "`ClickAsync(\"New note\")` clicks a button of the selected tab by its name. In Playwright it waits "
-                    + "for the tab's commands to be ready first, and then until the app's handler has run. It throws "
-                    + "for a disabled button, for a static page, or for a name the selected tab doesn't have, so "
-                    + "select the button's tab first. In Playwright, a button in a collapsed group is reached by "
-                    + "opening the group first, so a test needn't know how wide the ribbon is.",
-                "bUnit runs no script, so groups never collapse there; test collapsing in a browser. By hand, after "
-                    + "a resize, wait two frames for the fit to be marked and then until the row has no "
+                    + "for the tab's commands to be ready first, and then until the app's handler has run.",
+                "`ClickAsync` throws for a disabled button, for a static page, or for a name the selected tab "
+                    + "doesn't have, so select the button's tab first.",
+                "In Playwright, `ClickAsync` reaches a button in a collapsed group by opening the group first, so a "
+                    + "test needn't know how wide the ribbon is.",
+                "`ClickAsync` reaches only the selected tab's commands. Find `Start` and `End` content by role in "
+                    + "the ribbon, such as `GetByRole(AriaRole.Button, new() { Name = \"Save\" })`.",
+                "`CollapseAsync()` and `ExpandAsync()` press a `Collapsible` ribbon's collapse button, and "
+                    + "`IsCollapsedAsync()` or `IsCollapsed` reads whether it is collapsed.",
+                "In Playwright, `ClickAsync` chooses the selected tab of a collapsed ribbon first, to show its "
+                    + "commands; bUnit runs no script, so there it clicks the button directly, without showing the "
+                    + "commands first.",
+                "`PressKeyTipsAsync(\"R\", \"M\")` follows key tips: a tab's and then a command's, or the one of a "
+                    + "button beside the tabs.",
+                "In Playwright, `PressKeyTipsAsync` presses Alt and each key, waiting for the key's badge before it "
+                    + "and for the app's handler after it.",
+                "bUnit runs no script, so there `PressKeyTipsAsync` selects the tab and clicks the button the keys "
+                    + "reach, and throws for a key tip the ribbon doesn't have at that point or for a disabled "
+                    + "control.",
+                "Each `PressKeyTipsAsync` call starts over from Alt, so pass a tab's key and its command's in one "
+                    + "call; a key after the one that chose a command throws.",
+                "A control's keys are added to its description by the ribbon's script, so bUnit markup has none of "
+                    + "them.",
+                "In Playwright, `ToHaveAccessibleDescriptionAsync(\"Key tip: Alt, H, B\")` checks a control's keys, "
+                    + "and a test that reads the description of a ribbon control with a key tip finds them at its "
+                    + "end.",
+                "A tab with a `Context` is found by its `Title` like any other.",
+                "Check a tab's context with `ToHaveAccessibleDescriptionAsync(\"Table tools\")` in Playwright, or "
+                    + "with \"Table tools Key tip: Alt, J\" when the tab has the key tip J.",
+                "Check the context's announcement with `page.Tb().Announcements.ExpectAnnouncedAsync(\"Table "
+                    + "tools\")`. In bUnit, read `Services.GetRequiredService<FakeAnnouncer>().Polite`.",
+                "bUnit runs no script, so groups never collapse there; test collapsing in a browser.",
+                "By hand, after a resize, wait two frames for the fit to be marked and then until the row has no "
                     + "`data-fitting`; `ClickAsync` does both.",
                 "Each group's markup holds the button it collapses into, hidden until then. The helpers skip it; "
                     + "when you find buttons by hand, leave out `[data-part=group-button]`.",
                 "By hand, find a tab's commands with `GetByRole(AriaRole.Toolbar, new() { Name = \"Notes\" })` and "
                     + "wait for their `data-ready`, which is set once the arrow keys work and the first fit is done.",
-                "`CollapseAsync()` and `ExpandAsync()` press a `Collapsible` ribbon's collapse button, and "
-                    + "`IsCollapsedAsync()` or `IsCollapsed` reads whether it is collapsed. In Playwright, "
-                    + "`ClickAsync` chooses the selected tab of a collapsed ribbon first, to show its commands; "
-                    + "bUnit runs no script, so there it clicks the button directly, without showing the commands "
-                    + "first.",
                 "By hand, wait for `data-ready` on the ribbon itself, `[data-part=ribbon]`, before pressing Ctrl+F1 "
                     + "or a collapsed ribbon's tab.",
-                "`ClickAsync` reaches only the selected tab's commands. Find `Start` and `End` content by role in "
-                    + "the ribbon, such as `GetByRole(AriaRole.Button, new() { Name = \"Save\" })`.",
-                "A tab with a `Context` is found by its `Title` like any other. Check its context with "
-                    + "`ToHaveAccessibleDescriptionAsync(\"Table tools\")` in Playwright, or with \"Table tools Key "
-                    + "tip: Alt, J\" when the tab has the key tip J, and the announcement "
-                    + "with `page.Tb().Announcements.ExpectAnnouncedAsync(\"Table tools\")`. In bUnit, read "
-                    + "`Services.GetRequiredService<FakeAnnouncer>().Polite`.",
-                "`PressKeyTipsAsync(\"R\", \"M\")` follows key tips: a tab's and then a command's, or the one of a "
-                    + "button beside the tabs. In Playwright it presses Alt and each key, waiting for the key's "
-                    + "badge before it and for the app's handler after it. bUnit runs no script, so there it "
-                    + "selects the tab and clicks the button the keys reach, and throws for a key tip the ribbon "
-                    + "doesn't have at that point or for a disabled control.",
-                "Each `PressKeyTipsAsync` call starts over from Alt, so pass a tab's key and its command's in one "
-                    + "call; a key after the one that chose a command throws.",
                 "By hand, press Alt once the ribbon has `data-ready`, and wait for `[data-key-tip-shown]` on a "
                     + "control before pressing its key. The ribbon's `data-key-tips` says which level shows.",
             ],
@@ -2902,12 +2975,16 @@ public static class ExampleCatalog
                 """,
             Scenario = new("overflow", "it clicks a toolbar button by its name, then, on a page too narrow for the "
                 + "toolbar, clicks one that has moved into the More menu, and checks what the app ran each time."),
-            TestingTip = "`page.Tb().Toolbar(\"Trail notes\").ClickAsync(\"Add a note\")` in Playwright, or "
-                + "`cut.Tb().Toolbar(...)` in bUnit, clicks a toolbar button by its name once the toolbar is ready, "
-                + "and in Playwright chooses it from the More menu when it has moved there. By hand, find the button "
-                + "with `GetByRole(AriaRole.Button, new() { Name = \"Add a note\" })`; to test the overflow, set the "
-                + "page's viewport narrow, wait for the toolbar's `data-ready`, open the menu button named \"More\" "
-                + "and choose the `menuitem`.",
+            TestingTips =
+            [
+                "`page.Tb().Toolbar(\"Trail notes\").ClickAsync(\"Add a note\")` in Playwright, or "
+                    + "`cut.Tb().Toolbar(...)` in bUnit, clicks a toolbar button by its name once the toolbar is "
+                    + "ready.",
+                "In Playwright, `ClickAsync` chooses the button from the More menu when it has moved there.",
+                "By hand, find the button with `GetByRole(AriaRole.Button, new() { Name = \"Add a note\" })`.",
+                "To test the overflow by hand, set the page's viewport narrow, wait for the toolbar's `data-ready`, "
+                    + "open the menu button named \"More\" and choose the `menuitem`.",
+            ],
         },
         new("insert-divider", "Insert divider", ExampleCategory.Actions,
             "A line between two items that reveals an insert button on hover or keyboard focus, for adding an item "
@@ -2965,10 +3042,14 @@ public static class ExampleCatalog
             ],
             Scenario = new("between-items", "it adds a step after the first one with the divider below it, and checks "
                 + "the order of the steps."),
-            TestingTip = "`page.Tb().InsertDivider(\"Add a step after Pack the tent\").InsertAsync()` in "
-                + "Playwright, or `cut.Tb().InsertDivider(...)` in bUnit, presses the insert button with that label "
-                + "once the page is interactive. By hand, click it by its name, as `GetByRole(AriaRole.Button, new() { "
-                + "Name = \"Add a step after Pack the tent\" })`; Playwright hovers it first, which shows it.",
+            TestingTips =
+            [
+                "`page.Tb().InsertDivider(\"Add a step after Pack the tent\").InsertAsync()` in Playwright, or "
+                    + "`cut.Tb().InsertDivider(...)` in bUnit, presses the insert button with that label once the "
+                    + "page is interactive.",
+                "By hand, click the insert button by its name, as `GetByRole(AriaRole.Button, new() { Name = \"Add a "
+                    + "step after Pack the tent\" })`; Playwright hovers it first, which shows it.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"add-stop\"`, it counts `trailblazor.control.shown` as it first "
@@ -3210,7 +3291,8 @@ public static class ExampleCatalog
             Blocks = ["tb-masonry"],
             TestingTips =
             [
-                "Find the cards as you would anywhere: the masonry changes where they show, not their roles or names.",
+                "Find the cards as you would anywhere: the masonry changes where they show, not their roles or "
+                    + "names.",
                 "In Playwright, wait for `data-ready` on `.tb-masonry` before measuring where the cards are.",
             ],
             Telemetry =
@@ -4022,143 +4104,179 @@ public static class ExampleCatalog
             [
                 "`page.Tb().Dock(\"Hike planner\")` in Playwright, or `cut.Tb().Dock(\"Hike planner\")` in bUnit, "
                     + "finds the dock by its `AriaLabel`; with no name it finds the only one.",
-                "Where Tab goes from a group's menu button depends on how the showing panel starts, which only "
-                    + "the browser checks. In bUnit every showing panel keeps `tabindex=\"0\"`, or `-1` when "
-                    + "`FocusablePanels` is `Never`, so test the tab order in a browser, once the dock has "
-                    + "`data-ready`.",
-                "`SelectAsync(\"Notes\")` and `CloseAsync(\"Notes\")` click a panel's tab or its close mark, by "
-                    + "the panel's title. `PanelsAsync()` or `Panels` lists every tab in reading order, and "
-                    + "`ShowingAsync()` or `Showing` the panels that show.",
-                "`CloseAsync(\"Notes\")` asks the panel's `CanClose`, as a user's close does, and returns "
-                    + "once the panel has gone or been kept. When `CanClose` opens a dialog, the Playwright helper "
-                    + "returns once the dialog is open, for the test to answer. In bUnit, the call finishes once "
-                    + "the dialog is answered: set `FakeDialogService.Answer` before the call, or start the "
-                    + "call, answer the dialog, and then await it.",
+                "`SelectAsync(\"Notes\")` and `CloseAsync(\"Notes\")` click a panel's tab or its close mark, by the "
+                    + "panel's title.",
+                "`PanelsAsync()` or `Panels` lists every tab in reading order, and `ShowingAsync()` or `Showing` the "
+                    + "panels that show.",
+                "`CloseAsync(\"Notes\")` asks the panel's `CanClose`, as a user's close does, and returns once the "
+                    + "panel has gone or been kept.",
+                "When `CanClose` opens a dialog, the Playwright helper returns once the dialog is open, for the test "
+                    + "to answer.",
+                "In bUnit, `CloseAsync` finishes once the dialog is answered: set `FakeDialogService.Answer` before "
+                    + "the call, or start the call, answer the dialog, and then await it.",
                 "`Panel(\"Notes\")` gives the helpers for what a panel holds, such as "
                     + "`Panel(\"Notes\").TextField(\"Packing note\")`, and `PanelElement(\"Notes\")` the panel "
                     + "itself.",
                 "`ResizeAsync(\"Resize Trails\", 40)` moves a separator as its keys do, and `SizeAsync(\"Resize "
-                    + "Trails\")` or `Size(\"Resize Trails\")` reads its percent. In Playwright, `ResizeAsync` throws "
-                    + "an `ArgumentOutOfRangeException` for a percent outside the separator's `aria-valuemin` and "
-                    + "`aria-valuemax`, which follow `MinGroupSize` and the dock's size. bUnit has no pixels, so there "
-                    + "`ResizeAsync` doesn't apply `MinGroupSize`, and throws for a percent below 1 or above 99.",
-                "`MoveTabAsync(\"Notes\", 1)` moves a panel's tab forward in its row, and a negative number moves "
-                    + "it back. `MoveToGroupAsync(\"Notes\", 2)` moves the panel to the group with that number.",
-                "`MoveToNewGroupAsync(\"Notes\", DockPosition.Bottom)` gives a panel a new group on that side of "
-                    + "its own, and `MoveToEdgeAsync(\"Notes\", DockPosition.End)` one along an edge of the dock.",
-                "The move helpers use the group's menu, which acts on the showing panel, so each selects the "
-                    + "panel first. They find the menu's items by the attributes listed for the `group-menu` "
-                    + "part, so they work whatever the `Labels` say.",
+                    + "Trails\")` or `Size(\"Resize Trails\")` reads its percent.",
+                "In Playwright, `ResizeAsync` throws an `ArgumentOutOfRangeException` for a percent outside the "
+                    + "separator's `aria-valuemin` and `aria-valuemax`, which follow `MinGroupSize` and the dock's "
+                    + "size.",
+                "bUnit has no pixels, so there `ResizeAsync` doesn't apply `MinGroupSize`, and throws for a percent "
+                    + "below 1 or above 99.",
+                "`MoveTabAsync(\"Notes\", 1)` moves a panel's tab forward in its row, and a negative number moves it "
+                    + "back.",
+                "`MoveToGroupAsync(\"Notes\", 2)` moves the panel to the group with that number.",
+                "`MoveToNewGroupAsync(\"Notes\", DockPosition.Bottom)` gives a panel a new group on that side of its "
+                    + "own, and `MoveToEdgeAsync(\"Notes\", DockPosition.End)` one along an edge of the dock.",
+                "The move helpers use the group's menu, which acts on the showing panel, so each selects the panel "
+                    + "first. They find the menu's items by the attributes listed for the `group-menu` part, so they "
+                    + "work whatever the `Labels` say.",
                 "`IsCompactAsync()` or `IsCompact` says whether the dock is compact, which `data-compact` on the "
-                    + "`dock` part marks. In Playwright, narrow the dock's container or the viewport, then wait for "
-                    + "`data-compact` to come or go before reading it, as in `Expect(page.Locator(\"[data-part="
-                    + "dock]\")).ToHaveAttributeAsync(\"data-compact\", \"\")`: the helper reads the dock as it is.",
+                    + "`dock` part marks.",
+                "In Playwright, `IsCompactAsync()` reads the dock as it is, so narrow the dock's container or the "
+                    + "viewport, then wait for `data-compact` to come or go before calling it, as in "
+                    + "`Expect(page.Locator(\"[data-part=dock]\")).ToHaveAttributeAsync(\"data-compact\", \"\")`.",
                 "bUnit has no pixels, so there `NarrowAsync()` tells the dock that it is narrower than "
                     + "`CompactBelow`, and `NarrowAsync(false)` that it is wide enough again.",
                 "`MoveToNewGroupAsync` and `MoveToEdgeAsync` throw an `InvalidOperationException` for a compact "
                     + "dock, which has one group, and `MoveToGroupAsync` does for any number but a floating window's.",
-                "When the menu doesn't offer a move, as for a tab already at the end of its row or a panel alone "
-                    + "in its group, the move helper throws an `InvalidOperationException` that says why.",
+                "When the menu doesn't offer a move, as for a tab already at the end of its row or a panel alone in "
+                    + "its group, the move helper throws an `InvalidOperationException` that says why.",
                 "`MaximizeAsync(\"Notes\")` shows a panel and has its group fill the dock, with Maximize in the "
-                    + "group's menu, and `RestoreAsync()` clicks the Restore button. While a group fills the dock, "
-                    + "`ShowingAsync()` or `Showing` lists its showing panel and each window's, and a helper that "
-                    + "clicks a covered panel's tab throws an `InvalidOperationException` that says to restore the "
-                    + "groups first. `MaximizeAsync` throws one too when the group is the dock's only one or fills the "
-                    + "dock already, and `RestoreAsync` when no group fills the dock.",
-                "`FloatAsync(\"Notes\")` takes a panel out into a floating window, with Float in its group's menu, and "
-                    + "`DockAsync(\"Notes\")` docks it with Dock in its window's menu. `FloatingAsync()` or `Floating` "
-                    + "lists the panels in windows. `FloatAsync` throws an `InvalidOperationException` for a panel "
-                    + "that has a window to itself already, and `DockAsync` for one that is docked. Like the move "
-                    + "helpers, both select the panel first and find the menu's item by its `data-move`.",
+                    + "group's menu, and `RestoreAsync()` clicks the Restore button.",
+                "While a group fills the dock, `ShowingAsync()` or `Showing` lists its showing panel and each "
+                    + "window's.",
+                "While a group fills the dock, a helper that clicks a covered panel's tab throws an "
+                    + "`InvalidOperationException` that says to restore the groups first.",
+                "`MaximizeAsync` also throws an `InvalidOperationException` when the group is the dock's only one or "
+                    + "fills the dock already, and `RestoreAsync` when no group fills the dock.",
+                "`FloatAsync(\"Notes\")` takes a panel out into a floating window, with Float in its group's menu, "
+                    + "and `DockAsync(\"Notes\")` docks it with Dock in its window's menu.",
+                "`FloatingAsync()` or `Floating` lists the panels in windows.",
+                "`FloatAsync` throws an `InvalidOperationException` for a panel that has a window to itself already, "
+                    + "and `DockAsync` for one that is docked.",
+                "Like the move helpers, `FloatAsync` and `DockAsync` select the panel first and find the menu's item "
+                    + "by its `data-move`.",
                 "`MoveWindowAsync(\"Notes\", 10, -5)` moves the window that holds a panel by percents of the dock, "
-                    + "here 10 to the right and 5 up, and `ResizeWindowAsync(\"Notes\", -10, 5)` makes it 10 "
-                    + "narrower and 5 taller. Positive numbers go right, down, wider and taller, as the arrow keys "
-                    + "on its Move button or grip do. `WindowAsync(\"Notes\")` or `Window(\"Notes\")` reads its "
-                    + "box, in percent of the dock. They throw an `InvalidOperationException` for a panel that "
-                    + "isn't in a window. bUnit has no pixels and no direction, so it doesn't apply `MinGroupSize` "
-                    + "and takes text to run left to right.",
-                "The items of the grips' menus and of a window's two menus carry `data-step`. The dock's script "
-                    + "marks a step that has nowhere left to go with `aria-disabled=\"true\"` when its menu opens, and "
-                    + "`page.Tb().Menu(\"Size of Notes\").ChooseAsync(...)` throws an `InvalidOperationException` "
-                    + "for it, as for any disabled item. bUnit doesn't run the script, so there every step stays on.",
+                    + "here 10 to the right and 5 up, and `ResizeWindowAsync(\"Notes\", -10, 5)` makes it 10 narrower "
+                    + "and 5 taller.",
+                "For the window helpers, positive numbers go right, down, wider and taller, as the arrow keys on a "
+                    + "window's Move button or grip do.",
+                "`WindowAsync(\"Notes\")` or `Window(\"Notes\")` reads the box of the window that holds a panel, in "
+                    + "percent of the dock.",
+                "The window helpers throw an `InvalidOperationException` for a panel that isn't in a window.",
+                "bUnit has no pixels and no direction, so its window helpers don't apply `MinGroupSize` and take "
+                    + "text to run left to right.",
+                "The items of the grips' menus and of a window's two menus carry `data-step`.",
+                "The dock's script marks a step that has nowhere left to go with `aria-disabled=\"true\"` when its "
+                    + "menu opens, and `page.Tb().Menu(\"Size of Notes\").ChooseAsync(...)` throws an "
+                    + "`InvalidOperationException` for it, as for any disabled item.",
+                "bUnit doesn't run the dock's script, so there every step stays on.",
                 "`ChooseFromTabMenuAsync(\"Notes\", \"Close\")` opens the menu of a panel's tab, as a right-click "
-                    + "does, and clicks an item in it, through the submenus named before it, as in "
-                    + "`ChooseFromTabMenuAsync(\"Notes\", \"Move to group\", \"Group 2: Map\")`. It acts on that "
-                    + "panel without selecting it first, and in Playwright it waits until the app's "
-                    + "`LayoutChanged` has run. The open menu is the `menu` named \"Tab options\".",
+                    + "does, and clicks an item in it.",
+                "`ChooseFromTabMenuAsync` goes through the submenus named before the item, as in "
+                    + "`ChooseFromTabMenuAsync(\"Notes\", \"Move to group\", \"Group 2: Map\")`.",
+                "`ChooseFromTabMenuAsync` acts on that panel without selecting it first, and in Playwright it waits "
+                    + "until the app's `LayoutChanged` has run.",
+                "The open tab menu is the `menu` named \"Tab options\".",
                 "Each group's row of tabs is a context menu named \"Tab options\", so on a page with a dock, find "
                     + "your own context menu by its name, as in `ContextMenu(\"Trail actions\")`.",
                 "In Playwright, `SelectAsync`, `CloseAsync`, `ResizeAsync`, `MaximizeAsync`, `RestoreAsync`, "
-                    + "`FloatAsync`, `DockAsync`, `ReturnAsync`, `MoveWindowAsync`, `ResizeWindowAsync`, "
-                    + "`AutoHideAsync`, `RevealAsync`, `ConcealAsync` and the move helpers wait until the app's "
-                    + "`LayoutChanged` has run (for `ReturnAsync`, until the panel is back) "
-                    + "and the focus has moved, which the dock counts in `data-commits` for everything but a window "
-                    + "coming forward and a panel sliding back because a press or the focus went elsewhere, or because "
-                    + "a strip's button was dragged.",
+                    + "`FloatAsync` and `DockAsync` wait until the app's `LayoutChanged` has run and the focus has "
+                    + "moved.",
+                "In Playwright, `MoveWindowAsync`, `ResizeWindowAsync`, `AutoHideAsync`, `RevealAsync`, "
+                    + "`ConcealAsync` and the move helpers also wait until the app's `LayoutChanged` has run and the "
+                    + "focus has moved.",
+                "In Playwright, `ReturnAsync` waits until the panel is back and the focus has moved.",
+                "The dock counts each change in `data-commits` once `LayoutChanged` has run and the focus has moved, "
+                    + "except a window coming forward and a panel sliding back because a press or the focus went "
+                    + "elsewhere, or because a strip's button was dragged.",
                 "A dropped tab or strip button goes through the same move as the menu, with the same focus, "
-                    + "announcement and telemetry, and the move helpers reach every layout a drop can, some in two "
-                    + "steps. bUnit has no pointer, so it tests moves with the helpers.",
-                "To test the drag itself in Playwright, press on the tab, move the mouse in a few steps and "
-                    + "release, then wait for `data-commits` to go up. A drop where no mark shows changes nothing "
-                    + "and leaves `data-commits` as it was.",
+                    + "announcement and telemetry.",
+                "The move helpers reach every layout a drop can, some in two steps. bUnit has no pointer, so test "
+                    + "moves there with the helpers.",
+                "To test the drag itself in Playwright, press on the tab, move the mouse in a few steps and release, "
+                    + "then wait for `data-commits` to go up. A drop where no mark shows changes nothing and leaves "
+                    + "`data-commits` as it was.",
+                "A window drags the same way as a tab: press on its Move button, its grip or the empty part of its "
+                    + "row, move in a few steps and release, then wait for `data-commits` to go up by one.",
+                "A strip's button drags the same way as a tab, into the dock or onto another strip, and so does a "
+                    + "tab onto a strip: the strip has `data-drop` while the drop would go to it, and the drop counts "
+                    + "in `data-commits`.",
                 "`AutoHideAsync(\"Notes\", DockPosition.Start)` puts a panel away on a strip, with Auto-hide in its "
-                    + "group's menu, `RevealAsync(\"Notes\")` slides it out with its button, and `ConcealAsync()` "
-                    + "slides back the panel that is out, with Escape. `AutoHiddenAsync()` or `AutoHidden` lists the "
-                    + "strips' panels. `Floating` leaves them all out, and `Panels` leaves out all but the one that "
-                    + "is slid out, which has a tab and so is in `Showing` too. A helper that works through a "
-                    + "panel's tab or its menus, such as `SelectAsync`, `CloseAsync`, `DockAsync`, `FloatAsync`, "
-                    + "the move helpers and `ChooseFromTabMenuAsync`, slides a panel on a strip out first; "
-                    + "`Panel` and `PanelElement` don't, so call `RevealAsync` before them. `RevealAsync` throws an "
-                    + "`InvalidOperationException` for a panel that isn't on a strip, and `ConcealAsync` when none "
-                    + "is out.",
+                    + "group's menu.",
+                "`RevealAsync(\"Notes\")` slides a panel on a strip out with its button, and `ConcealAsync()` slides "
+                    + "back the panel that is out, with Escape.",
+                "`AutoHiddenAsync()` or `AutoHidden` lists the strips' panels.",
+                "`Floating` leaves out the strips' panels, and `Panels` leaves out all but the one that is slid out, "
+                    + "which has a tab and so is in `Showing` too.",
+                "A helper that works through a panel's tab or its menus, such as `SelectAsync`, `CloseAsync`, "
+                    + "`DockAsync`, `FloatAsync`, the move helpers and `ChooseFromTabMenuAsync`, slides a panel on a "
+                    + "strip out first.",
+                "`Panel` and `PanelElement` don't slide a panel out, so call `RevealAsync` before them.",
+                "`RevealAsync` throws an `InvalidOperationException` for a panel that isn't on a strip, and "
+                    + "`ConcealAsync` when none is out.",
                 "A slid-out panel's inner edge is a separator the helpers find by its name: `SizeAsync(\"Resize "
-                    + "Notes\")` or `Size(\"Resize Notes\")` reads the share of the dock the panel takes, and "
-                    + "`ResizeAsync(\"Resize Notes\", 40)` sets it, in Playwright with the edge's own arrow keys. A "
-                    + "percent below 10 or above 90 throws in bUnit, and in Playwright one outside the edge's "
-                    + "`aria-valuemin` and `aria-valuemax`.",
-                "A window drags the same way: press on its Move button, its grip or the empty part of its row, "
-                    + "move in a few steps and release, then wait for `data-commits` to go up by one.",
-                "So does a strip's button, into the dock or onto another strip, and a tab onto a strip: the strip "
-                    + "has `data-drop` while the drop would go to it, and the drop counts in `data-commits`.",
-                "`PopOutAsync(\"Notes\")` chooses Open in new window and gives the panel. In Playwright it waits "
-                    + "until the panel is in its new window (`data-popped` alone doesn't say it has arrived), and its "
-                    + "`Page` is that window's page, where the panel's content is found and its components' helpers "
-                    + "work as on any page; closing that page does what closing the window does. In Playwright, to go "
-                    + "on with the helpers inside the panel, call `Tb()` on what it gives, as "
-                    + "`(await dock.PopOutAsync(\"Notes\")).Tb().Button(\"Save\")`.",
+                    + "Notes\")` or `Size(\"Resize Notes\")` reads the share of the dock the panel takes.",
+                "`ResizeAsync(\"Resize Notes\", 40)` sets a slid-out panel's share, in Playwright with the edge's "
+                    + "own arrow keys.",
+                "For a slid-out panel's edge, a percent below 10 or above 90 throws in bUnit, and in Playwright one "
+                    + "outside the edge's `aria-valuemin` and `aria-valuemax`.",
+                "`PopOutAsync(\"Notes\")` chooses Open in new window and gives the panel.",
+                "In Playwright, `PopOutAsync` waits until the panel is in its new window (`data-popped` alone "
+                    + "doesn't say it has arrived).",
+                "In Playwright, the popped-out panel's `Page` is its window's page, where the panel's content is "
+                    + "found and its components' helpers work as on any page; closing that page does what closing the "
+                    + "window does.",
+                "In Playwright, to go on with the helpers inside the panel, call `Tb()` on what `PopOutAsync` gives, "
+                    + "as `(await dock.PopOutAsync(\"Notes\")).Tb().Button(\"Save\")`.",
                 "bUnit has no windows, so there `PopOutAsync` leaves the panel in the markup, drawn as it is in its "
                     + "window, and `Panel` and `PanelElement` still find it.",
                 "`PoppedOutAsync()` in Playwright, or `PoppedOut` in bUnit, lists the panels in windows of their "
-                    + "own, which `Panels`, `Showing` and `Floating` leave out, and `ReturnAsync(\"Notes\")` "
-                    + "presses a panel's Return button. `PopOutAsync` throws an `InvalidOperationException` when "
-                    + "`AllowPopOut` is off, and `ReturnAsync` for a panel that isn't in a window of its own.",
+                    + "own, which `Panels`, `Showing` and `Floating` leave out.",
+                "`ReturnAsync(\"Notes\")` presses a panel's Return button.",
+                "`PopOutAsync` throws an `InvalidOperationException` when `AllowPopOut` is off, and `ReturnAsync` "
+                    + "for a panel that isn't in a window of its own.",
                 "While the page has lost its connection, the `Page` of a panel's window has an `alert` with the "
-                    + "`connection-lost` part. To test it without dropping the circuit, send "
-                    + "`components-reconnect-state-changed` on the page's `document` with `detail.state` `show`, "
-                    + "then `hide`. bUnit runs no script, so there the dock's `data-connection-lost` holds the "
-                    + "notice's text.",
+                    + "`connection-lost` part.",
+                "To test the connection-lost alert without dropping the circuit, send "
+                    + "`components-reconnect-state-changed` on the page's `document` with `detail.state` `show`, then "
+                    + "`hide`.",
+                "bUnit runs no script, so there the dock's `data-connection-lost` holds the connection-lost notice's "
+                    + "text.",
                 "With `KeepWindowFor`, the `Page` that `PopOutAsync` gave stays open when the app takes the panel "
-                    + "away. Until the app makes the panel again, that `Page` has a `status` with the "
+                    + "away.",
+                "Until the app makes the panel again, the `Page` that `PopOutAsync` gave has a `status` with the "
                     + "`empty-window` part, found with `GetByRole(AriaRole.Status)`, and then the panel is back on "
-                    + "it. Both take a moment, so assert them with `Expect`, which waits. In bUnit the panel comes "
-                    + "back drawn as it is in its window, as after `PopOutAsync`.",
-                "In Playwright, announcements made while a panel is in its window can be checked on its `Page` or "
-                    + "on the page's, with `Tb().Announcements.ExpectAnnouncedAsync(text)` on either. Toasts are "
-                    + "on the `Page` the last key, press or focus was in, so right after `PopOutAsync` they are on the "
-                    + "panel's, since the panel takes the focus; while a modal dialog is open they are in that "
-                    + "dialog.",
-                "A dialog opens on the `Page` the last key, press or focus was in. A modal one then moves to "
-                    + "whichever `Page` the next key or press is on, so send keys and presses to the `Page` the "
-                    + "dialog is on. While it is open, the other `Page`s have a `[data-part=scrim]` over them, and "
-                    + "a locator's click there waits on the scrim: press a key or use `Mouse.ClickAsync` to bring "
-                    + "the modal over. A modeless dialog stays where it opened unless it holds the frontmost "
-                    + "modal, goes with its panel, or its window closes.",
+                    + "it.",
+                "The empty-window status and the panel's return both take a moment, so assert them with `Expect`, "
+                    + "which waits.",
+                "With `KeepWindowFor`, a panel the app makes again comes back in bUnit drawn as it is in its window, "
+                    + "as after `PopOutAsync`.",
+                "In Playwright, announcements made while a panel is in its window can be checked on its `Page` or on "
+                    + "the page's, with `Tb().Announcements.ExpectAnnouncedAsync(text)` on either.",
+                "Toasts are on the `Page` the last key, press or focus was in, so right after `PopOutAsync` they are "
+                    + "on the panel's, since the panel takes the focus.",
+                "While a modal dialog is open, toasts are in that dialog.",
+                "A dialog opens on the `Page` the last key, press or focus was in.",
+                "A modal dialog then moves to whichever `Page` the next key or press is on, so send keys and presses "
+                    + "to the `Page` the dialog is on.",
+                "While a modal dialog is open, the other `Page`s have a `[data-part=scrim]` over them, and a "
+                    + "locator's click there waits on the scrim: press a key or use `Mouse.ClickAsync` to bring the "
+                    + "modal over.",
+                "A modeless dialog stays where it opened unless it holds the frontmost modal, goes with its panel, "
+                    + "or its window closes.",
                 "Scan a panel's window for accessibility as a whole, not one element in it: the page's window made "
                     + "the panel's elements, so axe running in the panel's window won't take one of them as what to "
                     + "scan.",
-                "A `DockLayout` needs no renderer: test what your app does with `Open`, `Close`, `Move`, `MoveToEdge`, "
-                    + "`Float`, `FloatAt`, `MoveWindow`, `AutoHide`, `Conceal`, `ResizeAutoHidden`, `Maximize`, "
-                    + "`Restore`, `ToJson` and `TryParse` in plain unit tests.",
+                "Where Tab goes from a group's menu button depends on how the showing panel starts, which only the "
+                    + "browser checks.",
+                "In bUnit every showing panel keeps `tabindex=\"0\"`, or `-1` when `FocusablePanels` is `Never`, so "
+                    + "test the tab order in a browser, once the dock has `data-ready`.",
+                "A `DockLayout` needs no renderer: test what your app does with `Open`, `Close`, `Move`, "
+                    + "`MoveToEdge`, `Float`, `FloatAt`, `MoveWindow`, `AutoHide`, `Conceal`, `ResizeAutoHidden`, "
+                    + "`Maximize`, `Restore`, `ToJson` and `TryParse` in plain unit tests.",
                 "A dock with a `PersistenceKey` starts from what the browser has saved. Playwright gives each new "
                     + "context empty storage, and bUnit has no storage, so there the dock starts from `Layout`.",
             ],
@@ -4295,12 +4413,16 @@ public static class ExampleCatalog
                 """,
             Scenario = new("panes", "it reads the trails pane's size, then resizes, collapses and restores the pane, "
                 + "and checks what the app shows after each."),
-            TestingTip = "`Splitter(name)` finds a separator by its name in both packages. `CollapseAsync()` and "
-                + "`RestoreAsync()` act on the pane that Enter on the separator toggles, and in Playwright they wait "
-                + "until the app's `CollapsedChanged` has run, which the splitter counts in "
-                + "`data-commits`. A stacked splitter has no separators, so resize it in a test at a width above "
-                + "`StackBelow`; after changing the viewport, wait for `data-stacked` on `[data-part=splitter]` to "
-                + "be set or gone. bUnit runs no script, so there a splitter never stacks.",
+            TestingTips =
+            [
+                "`Splitter(name)` finds a separator by its name in both packages.",
+                "`CollapseAsync()` and `RestoreAsync()` act on the pane that Enter on the separator toggles.",
+                "In Playwright, `CollapseAsync()` and `RestoreAsync()` wait until the app's `CollapsedChanged` has "
+                    + "run, which the splitter counts in `data-commits`.",
+                "A stacked splitter has no separators, so resize it in a test at a width above `StackBelow`.",
+                "After changing the viewport, wait for `data-stacked` on `[data-part=splitter]` to be set or gone.",
+                "bUnit runs no script, so there a splitter never stacks.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"map-and-list\"`, it counts `trailblazor.control.shown` as it "
@@ -4406,12 +4528,13 @@ public static class ExampleCatalog
             TestingTips =
             [
                 "In Playwright, `page.Tb().Viewport(\"Ridge trail map\")` from `Trailblazor.Testing.Playwright` has "
-                    + "`ZoomInAsync`, `ZoomOutAsync`, `FitAsync(ViewportFit.Page)` and `ActualSizeAsync`, each "
-                    + "waiting until the app has the new zoom, which `ZoomAsync()` reads, and `CurrentFitAsync()` reads "
-                    + "the fit. Its `Surface` is the box to focus for the keys.",
+                    + "`ZoomInAsync`, `ZoomOutAsync`, `FitAsync(ViewportFit.Page)` and `ActualSizeAsync`.",
+                "In Playwright, `ZoomInAsync`, `ZoomOutAsync`, `FitAsync` and `ActualSizeAsync` wait until the app "
+                    + "has the new zoom. `ZoomAsync()` reads the zoom, and `CurrentFitAsync()` reads the fit.",
+                "In Playwright, the viewport's `Surface` is the box to focus for the keys.",
                 "In bUnit, `cut.Tb().Viewport(\"Ridge trail map\")` from `Trailblazor.Testing` clicks the same "
-                    + "controls, with `FitAsync(ViewportFit.Width)` for a fit, and reads `Zoom` and `CurrentFit`. "
-                    + "The keys, the wheel and a drag need a browser, and so does a fit's zoom, which the browser works "
+                    + "controls, with `FitAsync(ViewportFit.Width)` for a fit, and reads `Zoom` and `CurrentFit`.",
+                "The keys, the wheel and a drag need a browser, and so does a fit's zoom, which the browser works "
                     + "out.",
                 "Without the helpers, wait for the viewport's `data-ready` before pressing keys on the box, and read "
                     + "the zoom from its `data-zoom`.",
@@ -4588,18 +4711,21 @@ public static class ExampleCatalog
                 + "the user is taken."),
             TestingTips =
             [
-                "`page.Tb().NavMenu(\"Main\")` from `Trailblazor.Testing.Playwright`, or `cut.Tb().NavMenu(...)` "
-                    + "in bUnit, finds a nav menu by its navigation landmark's name. `FollowAsync(\"Settings\", "
-                    + "\"Profile\")` opens each closed group named before the link and follows it; opening a group "
-                    + "waits until the app's `ExpandedChanged` has run, which the group's button counts in "
-                    + "`data-commits`. `ExpandAsync(\"Settings\")` and `CollapseAsync(\"Settings\")` open and close a "
-                    + "group the same way, and `ExpandedAsync(\"Settings\")` (`Expanded` in bUnit) reads whether it's "
-                    + "open. `CurrentAsync()` (`Current` in bUnit) reads the current page's link. By hand, "
-                    + "find the navigation with `GetByRole(AriaRole.Navigation, new() { Name = \"Main\" })`, and the "
-                    + "current page's link with `Locator(\"[aria-current=page]\")`.",
+                "`page.Tb().NavMenu(\"Main\")` from `Trailblazor.Testing.Playwright`, or `cut.Tb().NavMenu(...)` in "
+                    + "bUnit, finds a nav menu by its navigation landmark's name.",
+                "`FollowAsync(\"Settings\", \"Profile\")` opens each closed group named before the link and follows "
+                    + "it.",
+                "Opening a group waits until the app's `ExpandedChanged` has run, which the group's button counts in "
+                    + "`data-commits`.",
+                "`ExpandAsync(\"Settings\")` and `CollapseAsync(\"Settings\")` open and close a group the same way, "
+                    + "and `ExpandedAsync(\"Settings\")` (`Expanded` in bUnit) reads whether it's open.",
+                "`CurrentAsync()` (`Current` in bUnit) reads the current page's link.",
+                "By hand, find the navigation with `GetByRole(AriaRole.Navigation, new() { Name = \"Main\" })`, and "
+                    + "the current page's link with `Locator(\"[aria-current=page]\")`.",
                 "Playwright's window is wide unless you set `ViewportSize`; set it narrower than 768px to test the "
-                    + "drawer. On a narrow window, open it with "
-                    + "`GetByRole(AriaRole.Button, new() { Name = \"Navigation\" })`.",
+                    + "drawer.",
+                "On a narrow window, open the drawer with `GetByRole(AriaRole.Button, new() { Name = \"Navigation\" "
+                    + "})`.",
                 "In bUnit, navigate with the `NavigationManager` to make a link current; both menu buttons render, "
                     + "since only the stylesheet chooses between them.",
             ],
@@ -4694,10 +4820,14 @@ public static class ExampleCatalog
             ],
             Scenario = new("closing", "it closes the warning and brings it back with the button the app shows in its "
                 + "place."),
-            TestingTip = "`page.Tb().Alert(\"Close this alert\")` in Playwright, or `cut.Tb().Alert(...)` in bUnit, "
-                + "finds an alert by its text: `CloseAsync()` presses its close button, and `TextAsync()` or `Text` "
-                + "reads its message. `AlertsAsync()`, or `Alerts` in bUnit, reads every alert's message, in order. "
-                + "A danger or warning alert has the `alert` role, and the other tones have `status`.",
+            TestingTips =
+            [
+                "`page.Tb().Alert(\"Close this alert\")` in Playwright, or `cut.Tb().Alert(...)` in bUnit, finds an "
+                    + "alert by its text.",
+                "`CloseAsync()` presses the alert's close button, and `TextAsync()` or `Text` reads its message.",
+                "`AlertsAsync()`, or `Alerts` in bUnit, reads every alert's message, in order.",
+                "A danger or warning alert has the `alert` role, and the other tones have `status`.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"sync-failed\"`, it counts `trailblazor.control.shown` as it "
@@ -4770,9 +4900,12 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it reads the notice, closes it, and brings it back with the button the app shows "
                 + "in its place."),
-            TestingTip = "`page.Tb().Banner(\"Maintenance tonight\")` in Playwright, or `cut.Tb().Banner(...)` in "
-                + "bUnit, finds the banner by its title: `CloseAsync()` presses its close button, and `TextAsync()` or "
-                + "`Text` reads its message.",
+            TestingTips =
+            [
+                "`page.Tb().Banner(\"Maintenance tonight\")` in Playwright, or `cut.Tb().Banner(...)` in bUnit, "
+                    + "finds the banner by its title: `CloseAsync()` presses its close button, and `TextAsync()` or "
+                    + "`Text` reads its message.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"maintenance\"`, it counts `trailblazor.control.shown` as it "
@@ -4868,11 +5001,17 @@ public static class ExampleCatalog
             ],
             Scenario = new("removable", "it reads the tags, removes Archive with its remove button, and checks "
                 + "which tags are left."),
-            TestingTip = "`page.Tb().Chip(\"Archive\")` in Playwright, or `cut.Tb().Chip(\"Archive\")` in bUnit, "
-                + "finds a chip by its text: `ClickAsync()` toggles it or runs its `OnClick`, `RemoveAsync()` presses "
-                + "its remove button, and `SelectedAsync()` or `Selected` reads whether it's selected. "
-                + "`ChipGroup(name)` finds a group by its `AriaLabel`; its `ChipsAsync()`, or `Chips` in bUnit, reads "
-                + "the chips' texts in order, and `Chip(text)` finds a chip inside it.",
+            TestingTips =
+            [
+                "`page.Tb().Chip(\"Archive\")` in Playwright, or `cut.Tb().Chip(\"Archive\")` in bUnit, finds a chip "
+                    + "by its text.",
+                "`ClickAsync()` toggles the chip or runs its `OnClick`, and `RemoveAsync()` presses its remove "
+                    + "button.",
+                "`SelectedAsync()` or `Selected` reads whether the chip is selected.",
+                "`ChipGroup(name)` finds a group by its `AriaLabel`.",
+                "A group's `ChipsAsync()`, or `Chips` in bUnit, reads the chips' texts in order, and its "
+                    + "`Chip(text)` finds a chip inside it.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"filter-open\"`, it counts `trailblazor.control.shown` as it first "
@@ -4967,11 +5106,15 @@ public static class ExampleCatalog
             ],
             Scenario = new("buttons", "it shows a campsite by clicking its item, removes it with the item's own "
                 + "button, and checks what the app shows after each."),
-            TestingTip = "Find an item by the start of its name, as `GetByRole(AriaRole.Button, new() { NameRegex = "
-                + "new Regex(\"^Pine Hollow\") })`, and check the current one with "
-                + "`ToHaveAttributeAsync(\"aria-current\", \"true\")`. The helpers name items by their text alone: in "
-                + "bUnit and Playwright, `Tb().List(\"Campsites\").ClickAsync(\"Pine Hollow\")` clicks one, refusing a "
-                + "disabled item, and `Items` (`ItemsAsync()` in Playwright) reads them.",
+            TestingTips =
+            [
+                "The helpers name items by their text alone: in bUnit and Playwright, "
+                    + "`Tb().List(\"Campsites\").ClickAsync(\"Pine Hollow\")` clicks an item, refusing a disabled "
+                    + "one, and `Items` (`ItemsAsync()` in Playwright) reads the items.",
+                "By hand, find an item by the start of its name, as `GetByRole(AriaRole.Button, new() { NameRegex = "
+                    + "new Regex(\"^Pine Hollow\") })`.",
+                "Check the current item with `ToHaveAttributeAsync(\"aria-current\", \"true\")`.",
+            ],
         },
         new("sortable", "Sortable", ExampleCategory.Content,
             "A list the user puts in order, by dragging an item's handle or with the arrow keys, such as rules whose "
@@ -5074,23 +5217,28 @@ public static class ExampleCatalog
             ],
             Scenario = new("order", "it moves a rule to the top from its handle's menu, checks the new order, and "
                 + "tries a move the app refuses."),
-            TestingTip = "The helpers move an item through its handle's menu, straight to either end or a place at "
-                + "a time: "
-                + "`page.Tb().Sortable(\"Trail alerts, first match wins\").MoveAsync(\"Storm warning\", 0)`, or "
-                + "`cut.Tb().Sortable()` in bUnit. `DragBeforeAsync` and `DragAfterAsync` drag it onto another item, "
-                + "and in Playwright each waits for the app's answer. Between lists, "
-                + "`MoveToListAsync(\"Ridge loop\", \"Planned\")` moves an item through its handle's menu, and "
-                + "`DragToListAsync` drags it there. The helpers name an item by "
-                + "`ItemLabel`, or by its text when the list has none, so give a list whose items hold a field an "
-                + "`ItemLabel`. `ItemsAsync()`, or `Items` in bUnit, reads the items' names in order, and leaves out "
-                + "the `EmptyContent`, which by role is a `listitem`. "
-                + "Without them, press keys on a handle, found as "
-                + "`GetByRole(AriaRole.Button, new() { Name = \"Move Storm warning\" })`, and check the order the "
-                + "app shows. To drag, move the mouse from the handle to the lower half of the item it should "
-                + "follow. A handle gets `data-ready`, and its keys start working, once it's focused, pointed at or "
-                + "clicked: wait for `[data-ready], [data-attach-on-use]`, focus it, then wait for `data-ready`. "
-                + "In bUnit, the sortable's own `MoveAsync(from, to)` moves an item as an app's button would: it asks "
-                + "`CanMove` and raises `OnMove`, but doesn't check `Disabled`, and telemetry doesn't count it.",
+            TestingTips =
+            [
+                "The helpers move an item through its handle's menu, straight to either end or a place at a time: "
+                    + "`page.Tb().Sortable(\"Trail alerts, first match wins\").MoveAsync(\"Storm warning\", 0)`, or "
+                    + "`cut.Tb().Sortable()` in bUnit.",
+                "`DragBeforeAsync` and `DragAfterAsync` drag an item onto another item, and in Playwright each waits "
+                    + "for the app's answer.",
+                "Between lists, `MoveToListAsync(\"Ridge loop\", \"Planned\")` moves an item through its handle's "
+                    + "menu, and `DragToListAsync` drags it there.",
+                "The helpers name an item by `ItemLabel`, or by its text when the list has none, so give a list "
+                    + "whose items hold a field an `ItemLabel`.",
+                "`ItemsAsync()`, or `Items` in bUnit, reads the items' names in order, and leaves out the "
+                    + "`EmptyContent`, which by role is a `listitem`.",
+                "Without the helpers, press keys on a handle, found as `GetByRole(AriaRole.Button, new() { Name = "
+                    + "\"Move Storm warning\" })`, and check the order the app shows.",
+                "To drag without the helpers, move the mouse from the handle to the lower half of the item it should "
+                    + "follow.",
+                "A handle gets `data-ready`, and its keys start working, once it's focused, pointed at or clicked: "
+                    + "wait for `[data-ready], [data-attach-on-use]`, focus it, then wait for `data-ready`.",
+                "In bUnit, the sortable's own `MoveAsync(from, to)` moves an item as an app's button would: it asks "
+                    + "`CanMove` and raises `OnMove`, but doesn't check `Disabled`, and telemetry doesn't count it.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"alert-order\"`, each move the user makes counts "
@@ -5181,13 +5329,18 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it moves a card to another column from its handle's menu, checks both columns, "
                 + "and checks that a move into the full column is refused."),
-            TestingTip = "`page.Tb().Kanban(\"Trail work\")` in Playwright, or `cut.Tb().Kanban(...)` in bUnit, finds "
-                + "the board by its `AriaLabel`: `ColumnsAsync()` or `Columns` reads the titles, "
-                + "`CardsAsync(column)` or `Cards(column)` a column's cards, and `MoveToColumnAsync(card, column)` "
-                + "moves a card to the end of another column through its handle's menu. `Column(title)` gives that "
-                + "column's sortable list, for `MoveAsync` within it or a drag. A move the app refuses, such as into "
-                + "a full column, is announced, which `page.Tb().Announcements` in Playwright or `FakeAnnouncer` in "
-                + "bUnit reads.",
+            TestingTips =
+            [
+                "`page.Tb().Kanban(\"Trail work\")` in Playwright, or `cut.Tb().Kanban(...)` in bUnit, finds the "
+                    + "board by its `AriaLabel`.",
+                "`ColumnsAsync()` or `Columns` reads the column titles, and `CardsAsync(column)` or `Cards(column)` "
+                    + "a column's cards.",
+                "`MoveToColumnAsync(card, column)` moves a card to the end of another column through its handle's "
+                    + "menu.",
+                "`Column(title)` gives that column's sortable list, for `MoveAsync` within it or a drag.",
+                "A move the app refuses, such as into a full column, is announced, which `page.Tb().Announcements` "
+                    + "in Playwright or `FakeAnnouncer` in bUnit reads.",
+            ],
         },
         new("badge", "Badge", ExampleCategory.Feedback,
             "A small count or dot on an icon or button, or in a line of text, that draws the eye to something new.")
@@ -5252,9 +5405,12 @@ public static class ExampleCatalog
             ],
             Scenario = new("visible", "it checks the inbox button's count and name, marks everything read, and checks "
                 + "that the count is gone and the name changed."),
-            TestingTip = "The badge's element has `data-part=\"badge\"` and carries the full `Count` in `data-count`, "
-                + "such as `120`. Its `data-part=\"count\"` child holds the number it shows, such as \"99+\", and its "
-                + "text also holds the `Label` when there is one.",
+            TestingTips =
+            [
+                "The badge's element has `data-part=\"badge\"` and carries the full `Count` in `data-count`, such as "
+                    + "`120`. Its `data-part=\"count\"` child holds the number it shows, such as \"99+\", and its "
+                    + "text also holds the `Label` when there is one.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"unread-badge\"`, it counts `trailblazor.control.shown` as it "
@@ -5337,9 +5493,12 @@ public static class ExampleCatalog
             ],
             Scenario = new("value", "it checks the value the upload bar says, and that the bar with no value says "
                 + "none.") { WithoutHelpers = true },
-            TestingTip = "Find it with `GetByRole(AriaRole.Progressbar, new() { Name = \"Upload\" })` and check "
-                + "`aria-valuenow`, or `aria-valuetext` when it has a `ValueFormatter`. The shown text is in "
-                + "`[data-part=label]` and `[data-part=value]`.",
+            TestingTips =
+            [
+                "Find it with `GetByRole(AriaRole.Progressbar, new() { Name = \"Upload\" })` and check "
+                    + "`aria-valuenow`, or `aria-valuetext` when it has a `ValueFormatter`. The shown text is in "
+                    + "`[data-part=label]` and `[data-part=value]`.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"upload-progress\"`, it counts `trailblazor.control.shown` as "
@@ -5434,9 +5593,12 @@ public static class ExampleCatalog
             ],
             Scenario = new("info-button", "it opens a label's info and checks what it says, then fills the field the "
                 + "label names, found by the label's text."),
-            TestingTip = "The field helpers find a field by its `TbLabel`'s text, as the test above does. In a role "
-                + "query, use an exact name, since the info button's name contains the label, as "
-                + "`GetByRole(AriaRole.Textbox, new() { Name = \"Project code\", Exact = true })`.",
+            TestingTips =
+            [
+                "The field helpers find a field by its `TbLabel`'s text, as the test above does. In a role query, "
+                    + "use an exact name, since the info button's name contains the label, as "
+                    + "`GetByRole(AriaRole.Textbox, new() { Name = \"Project code\", Exact = true })`.",
+            ],
         },
         new("form", "Form", ExampleCategory.Inputs,
             "A form for Trailblazor fields that reports whether it is valid as the fields change and moves focus to "
@@ -5587,16 +5749,20 @@ public static class ExampleCatalog
             Blocks = ["tb-form"],
             Scenario = new("complete-form", "it signs up with nothing filled in and reads each field's error, fills "
                 + "in the fields and signs up again, and checks the line the app shows each time."),
-            TestingTip = "`page.Tb().Form(\"Trip sign-up\")` in Playwright, or `cut.Tb().Form(...)` in bUnit, finds "
-                + "the form by its accessible name: `SubmitAsync()` submits it, and `ErrorsAsync()` or `Errors` reads "
-                + "the messages its fields show. To check one field, look at its input: "
-                + "`ToHaveAttributeAsync(\"aria-invalid\", \"true\")`, and its message with "
-                + "`ToHaveAccessibleDescriptionAsync`. A "
-                + "`ValidationAsync` message shows only once its check answers, so wait for it: use `WaitForAssertion` "
-                + "in bUnit, or let Playwright's assertions retry. Each field's own helper, such as "
-                + "`TextField(label).EnterAsync(text)`, is on that field's page: [text field](components/text-field), "
-                + "[number field](components/number-field) and [checkbox](components/checkbox) for the ones the "
-                + "test above uses.",
+            TestingTips =
+            [
+                "`page.Tb().Form(\"Trip sign-up\")` in Playwright, or `cut.Tb().Form(...)` in bUnit, finds the form "
+                    + "by its accessible name.",
+                "`SubmitAsync()` submits the form, and `ErrorsAsync()` or `Errors` reads the messages its fields "
+                    + "show.",
+                "To check one field, look at its input: `ToHaveAttributeAsync(\"aria-invalid\", \"true\")`, and its "
+                    + "message with `ToHaveAccessibleDescriptionAsync`.",
+                "A `ValidationAsync` message shows only once its check answers, so wait for it: use "
+                    + "`WaitForAssertion` in bUnit, or let Playwright's assertions retry.",
+                "Each field's own helper, such as `TextField(label).EnterAsync(text)`, is on that field's page: "
+                    + "[text field](components/text-field), [number field](components/number-field) and "
+                    + "[checkbox](components/checkbox) for the ones the test above uses.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"new-trail\"`, it counts `trailblazor.control.shown` as it first "
@@ -5790,19 +5956,26 @@ public static class ExampleCatalog
             Scenario = new("validation-and-server-errors", "it enters a permit number that is too short, reads the "
                 + "field's error, and fixes the number; then it checks a handle that is taken, reads the error the "
                 + "app sets, and sees it clear when the handle changes."),
-            TestingTip = "A field with `UpdateDelay` takes its value once typing pauses, so assert with Playwright's "
-                + "`Expect`, which waits, or press Enter to update it at once. In bUnit, which runs no browser, the "
-                + "value updates on each input, so there's nothing to wait for. "
-                + "`await cut.Tb().TextField(\"Trail\").EnterAsync(\"Pine Hollow\")` types the text and commits it, "
-                + "and `page.Tb()` does the same in Playwright, waiting until the app has it; `Text` (`TextAsync()` "
-                + "in Playwright) reads what the field shows. `ShowPasswordAsync()` and "
-                + "`HidePasswordAsync()` press a `Revealable` field's button, and `PasswordShown` "
-                + "(`PasswordShownAsync()` in Playwright) says whether the password shows. The counter's "
-                + "`[data-part=count-shown]` holds what it shows; in bUnit it holds the count the field was rendered "
-                + "with, since only the browser's script updates it as you type. To raise `OnEnter`, press "
-                + "Enter in Playwright, or in bUnit commit the text and then `await cut.Find(\"input\")"
-                + ".TriggerEventAsync(\"ontbenter\", EventArgs.Empty)`, the event the browser sends. For fields that "
-                + "share a label, pass a locator in Playwright, as `TextField(row.GetByLabel(\"Name\"))`.",
+            TestingTips =
+            [
+                "`await cut.Tb().TextField(\"Trail\").EnterAsync(\"Pine Hollow\")` types the text and commits it, "
+                    + "and `page.Tb()` does the same in Playwright, waiting until the app has it.",
+                "`Text` (`TextAsync()` in Playwright) reads what the field shows.",
+                "For fields that share a label, pass a locator in Playwright, as "
+                    + "`TextField(row.GetByLabel(\"Name\"))`.",
+                "A field with `UpdateDelay` takes its value once typing pauses, so assert with Playwright's "
+                    + "`Expect`, which waits, or press Enter to update it at once.",
+                "In bUnit, which runs no browser, a field with `UpdateDelay` takes its value on each input, so "
+                    + "there's nothing to wait for.",
+                "`ShowPasswordAsync()` and `HidePasswordAsync()` press a `Revealable` field's button, and "
+                    + "`PasswordShown` (`PasswordShownAsync()` in Playwright) says whether the password shows.",
+                "Read the counter from its `[data-part=count-shown]` part.",
+                "In bUnit, the counter's `[data-part=count-shown]` holds the count the field was rendered with, "
+                    + "since only the browser's script updates it as you type.",
+                "To raise `OnEnter`, press Enter in Playwright, or in bUnit commit the text and then `await "
+                    + "cut.Find(\"input\").TriggerEventAsync(\"ontbenter\", EventArgs.Empty)`, the event the browser "
+                    + "sends.",
+            ],
         },
         new("rich-text-editor", "Rich text editor", ExampleCategory.Inputs,
             "A labeled field for formatted text, with a toolbar, shortcuts, undo and paste cleanup.")
@@ -6268,38 +6441,42 @@ public static class ExampleCatalog
                     + "types the start of a slash command at the end of the text, chooses the command, and waits "
                     + "until it has run and the app has the value.",
                 "In bUnit, `SlashCommandAsync` runs one of the app's commands: it replaces the editor's text with "
-                    + "the typed text before the slash and the command's HTML, and calls its `OnChosen`. bUnit runs "
-                    + "no script, so there `SlashCommandAsync` throws for one of the editor's own commands; give "
-                    + "`EnterAsync` the HTML it would make instead.",
+                    + "the typed text before the slash and the command's HTML, and calls its `OnChosen`.",
+                "bUnit runs no script, so there `SlashCommandAsync` throws for one of the editor's own commands; "
+                    + "give `EnterAsync` the HTML it would make instead.",
                 "To add a link in Playwright, select the text and press `ControlOrMeta+k`, then fill the dialog's "
                     + "\"Link\" field and press Enter.",
                 "To color text in Playwright, select it, click the \"Text color\" button and then the "
-                    + "`menuitemradio` named by the color, such as \"Red\". In bUnit, give the colored HTML to "
-                    + "`EnterAsync`, such as `<p><span data-tb-color=\"danger\">closed</span></p>`.",
+                    + "`menuitemradio` named by the color, such as \"Red\".",
+                "To color text in bUnit, give the colored HTML to `EnterAsync`, such as `<p><span "
+                    + "data-tb-color=\"danger\">closed</span></p>`.",
                 "In Playwright, `page.Tb().RichTextEditor(label).MentionAsync(\" Thanks @an\", \"Ana Lopez\")` types "
                     + "the start of a mention at the end of the text, chooses the suggestion and waits until the app "
-                    + "has the value. In bUnit, `MentionAsync` replaces the editor's text with the typed text and the "
-                    + "mention, and runs the app's `MentionSearch` or filters `MentionItems` as in a browser.",
+                    + "has the value.",
+                "In bUnit, `MentionAsync` replaces the editor's text with the typed text and the mention, and runs "
+                    + "the app's `MentionSearch` or filters `MentionItems` as in a browser.",
                 "`TransformPaste` is a plain function, so test it on a `RichTextDocument` without the editor.",
                 "To find and replace in Playwright, press `ControlOrMeta+f` in `RichTextEditor(label).Input`, then "
-                    + "work in the `group` named \"Find and replace\": fill its \"Find\" and \"Replace with\" "
-                    + "textboxes and click \"Replace all\", or \"Replace\" by its exact name. Its `status` has the "
-                    + "count, and the app has the value without the editor being left.",
+                    + "work in the `group` named \"Find and replace\".",
+                "In the \"Find and replace\" group, fill the \"Find\" and \"Replace with\" textboxes and click "
+                    + "\"Replace all\", or \"Replace\" by its exact name.",
+                "The \"Find and replace\" group's `status` has the count, and the app has the value without the "
+                    + "editor being left.",
                 "bUnit runs no script, so the find bar stays hidden there; to test what a replacement does to the "
                     + "value, give `EnterAsync` the HTML it makes.",
-                "To test your own marks, give `EnterAsync` HTML that has them, such as "
-                    + "`<p>Press <kbd>Esc</kbd></p>`, and in Playwright click a mark's button by its label.",
-                "To test your own kinds of block, give `EnterAsync` HTML that has them, such as "
-                    + "`<p data-tb-block=\"callout\">Mind the gap</p>`, and in Playwright click a block's "
-                    + "button by its label or run its slash command with `SlashCommandAsync`.",
-                "The floating toolbar is the `toolbar` named \"Selection formatting\". In Playwright it shows a "
-                    + "frame after text is selected with the keyboard or the mouse, so wait for it to be visible "
-                    + "before reading where it is, and click its buttons by name. bUnit runs no script, so "
-                    + "there it stays closed, with its buttons in the markup.",
+                "To test your own marks, give `EnterAsync` HTML that has them, such as `<p>Press "
+                    + "<kbd>Esc</kbd></p>`, and in Playwright click a mark's button by its label.",
+                "To test your own kinds of block, give `EnterAsync` HTML that has them, such as `<p "
+                    + "data-tb-block=\"callout\">Mind the gap</p>`, and in Playwright click a block's button by its "
+                    + "label or run its slash command with `SlashCommandAsync`.",
+                "The floating toolbar is the `toolbar` named \"Selection formatting\".",
+                "In Playwright, the floating toolbar shows a frame after text is selected with the keyboard or the "
+                    + "mouse, so wait for it to be visible before reading where it is, and click its buttons by name.",
+                "bUnit runs no script, so there the floating toolbar stays closed, with its buttons in the markup.",
                 "With `ShowSource`, press the \"HTML source\" button, fill the `source` part and press the button "
                     + "again; the value updates when focus leaves the text area.",
-                "With `ShowCount`, read the count from the `count-shown` part, as `\"12 / 200\"` with a "
-                    + "`MaxLength`; a value past the limit shows its error once the value updates, when focus leaves the "
+                "With `ShowCount`, read the count from the `count-shown` part, as `\"12 / 200\"` with a `MaxLength`.",
+                "A value past the `MaxLength` limit shows its error once the value updates, when focus leaves the "
                     + "editor, or when the form submits.",
             ],
         },
@@ -6641,15 +6818,21 @@ public static class ExampleCatalog
             Scenario = new("limits-and-steps", "it steps the quantity up with the field's buttons, types a number "
                 + "past the limit and checks that the field is invalid and the app keeps its value, then types one "
                 + "within the limits."),
-            TestingTip = "Without a `Format` the field reads what was typed through its own change event, which "
-                + "bUnit's `Change` doesn't reach; `await cut.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` "
-                + "from `Trailblazor.Testing` types into either kind. In Playwright, "
-                + "`await page.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` from "
-                + "`Trailblazor.Testing.Playwright` waits for the field's `data-ready`, types, leaves it and waits "
-                + "until the app has the value. In both, `StepAsync(2)` clicks the increase button twice and "
-                + "`StepAsync(-2)` the decrease button, stopping at `Min` or `Max`, and `Text` (`TextAsync()` in "
-                + "Playwright) reads what the field shows. For fields that share a label, "
-                + "pass a locator in Playwright, as `NumberField(row.GetByLabel(\"Count\"))`.",
+            TestingTips =
+            [
+                "In Playwright, `await page.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` from "
+                    + "`Trailblazor.Testing.Playwright` waits for the field's `data-ready`, types, leaves the field "
+                    + "and waits until the app has the value.",
+                "In both packages, `StepAsync(2)` clicks the increase button twice and `StepAsync(-2)` the decrease "
+                    + "button, stopping at `Min` or `Max`.",
+                "`Text` (`TextAsync()` in Playwright) reads what the field shows.",
+                "For fields that share a label, pass a locator in Playwright, as "
+                    + "`NumberField(row.GetByLabel(\"Count\"))`.",
+                "Without a `Format`, the field reads what was typed through its own change event, which bUnit's "
+                    + "`Change` doesn't reach.",
+                "In bUnit, `await cut.Tb().NumberField(\"Quantity\").EnterAsync(\"3\")` from `Trailblazor.Testing` "
+                    + "types into a field with or without a `Format`.",
+            ],
         },
         new("checkbox", "Checkbox", ExampleCategory.Inputs,
             "Turns an option on or off, or shows that only some of a group are on.")
@@ -6736,15 +6919,21 @@ public static class ExampleCatalog
             ],
             Scenario = new("required", "it reads the message an unticked required box shows once its form validates, "
                 + "ticks the box, and sees the message clear."),
-            TestingTip = "It's a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work on "
-                + "`GetByRole(AriaRole.Checkbox, ...)`, and `ToBeCheckedAsync(new() { Indeterminate = true })` waits "
-                + "for the mixed state, which a script sets after rendering. In bUnit, `Change(true)` on the `input` "
-                + "checks it, but a browser script is what stops a `ReadOnly` box from changing, so a `Change` on one "
-                + "still changes the value. Test read-only behavior in Playwright. In bUnit and Playwright, "
-                + "`Tb().Checkbox(\"Email me updates\").CheckAsync()` and `UncheckAsync()` refuse a read-only or "
-                + "disabled box and, in Playwright, wait until the app has the value; `Checked` (`CheckedAsync()` in "
-                + "Playwright) reads it, and `Indeterminate` (`IndeterminateAsync()`) reads the mixed state. The "
-                + "checkbox's root carries `data-indeterminate` while it's mixed, so bUnit can see it too.",
+            TestingTips =
+            [
+                "`TbCheckbox` renders a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work on "
+                    + "`GetByRole(AriaRole.Checkbox, ...)`.",
+                "`ToBeCheckedAsync(new() { Indeterminate = true })` waits for the mixed state, which a script sets "
+                    + "after rendering.",
+                "In bUnit and Playwright, `Tb().Checkbox(\"Email me updates\").CheckAsync()` and `UncheckAsync()` "
+                    + "refuse a read-only or disabled box and, in Playwright, wait until the app has the value.",
+                "`Checked` (`CheckedAsync()` in Playwright) reads the value, and `Indeterminate` "
+                    + "(`IndeterminateAsync()`) reads the mixed state.",
+                "The checkbox's root carries `data-indeterminate` while it's mixed, so bUnit can see it too.",
+                "In bUnit, `Change(true)` on the `input` checks the box.",
+                "A browser script is what stops a `ReadOnly` box from changing, so in bUnit a `Change` on one still "
+                    + "changes the value. Test read-only behavior in Playwright.",
+            ],
             Telemetry = CheckboxTelemetry,
         },
         new("checkbox-group", "Checkbox group", ExampleCategory.Inputs,
@@ -6851,11 +7040,15 @@ public static class ExampleCatalog
                 """,
             Scenario = new("options-and-value", "it ticks two more days, unticks one, and checks which boxes are "
                 + "ticked and the value the app has."),
-            TestingTip = "Each option is a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work "
-                + "on `GetByRole(AriaRole.Checkbox, ...)` inside the group. In bUnit, `Change(true)` or "
-                + "`Change(false)` on an option's `input` checks or unchecks it. The helpers name options by their "
-                + "text, and `Checked` (`CheckedAsync()` in Playwright) reads the checked ones in the page's order, "
-                + "which can differ from the order of the app's value.",
+            TestingTips =
+            [
+                "Each option is a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work on "
+                    + "`GetByRole(AriaRole.Checkbox, ...)` inside the group.",
+                "In bUnit, `Change(true)` or `Change(false)` on an option's `input` checks or unchecks it.",
+                "The helpers name options by their text.",
+                "`Checked` (`CheckedAsync()` in Playwright) reads the checked options in the page's order, which can "
+                    + "differ from the order of the app's value.",
+            ],
         },
         new("switch", "Switch", ExampleCategory.Inputs,
             "Turns a setting on or off right away.")
@@ -6944,13 +7137,18 @@ public static class ExampleCatalog
             ],
             Scenario = new("label-and-help", "it turns auto-save off and on again and checks the value the app has "
                 + "each time."),
-            TestingTip = "It's a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work on "
-                + "`GetByRole(AriaRole.Switch, ...)`. In bUnit, `Change(true)` on the `input` turns it on, but a "
-                + "browser script is what stops a `ReadOnly` switch from changing, so a `Change` on one still changes "
-                + "the value. Test read-only behavior in Playwright. In bUnit and Playwright, the helper's "
-                + "`CheckAsync()` and `UncheckAsync()` refuse a read-only or disabled switch, and do nothing for a "
-                + "switch that is already on or off, so a test can ask for the state it needs without reading it "
-                + "first.",
+            TestingTips =
+            [
+                "In bUnit and Playwright, the helper's `CheckAsync()` and `UncheckAsync()` refuse a read-only or "
+                    + "disabled switch.",
+                "The helper's `CheckAsync()` and `UncheckAsync()` do nothing for a switch that is already on or off, "
+                    + "so a test can ask for the state it needs without reading it first.",
+                "The switch is a native checkbox, so Playwright's `CheckAsync()` and `UncheckAsync()` work on "
+                    + "`GetByRole(AriaRole.Switch, ...)`.",
+                "In bUnit, `Change(true)` on the `input` turns the switch on.",
+                "A browser script is what stops a `ReadOnly` switch from changing, so in bUnit a `Change` on one "
+                    + "still changes the value. Test read-only behavior in Playwright.",
+            ],
             Telemetry = CheckboxTelemetry,
         },
         new("slider", "Slider", ExampleCategory.Inputs,
@@ -7070,15 +7268,20 @@ public static class ExampleCatalog
             ],
             Scenario = new("range", "it reads both ends of the elevation range, sets new ones, and checks what the "
                 + "app has."),
-            TestingTip = "`await page.Tb().Slider(\"Map brightness\").SetAsync(80)` from "
-                + "`Trailblazor.Testing.Playwright` moves the slider and waits until the app's `ValueChanged` and "
-                + "`OnValueCommitted` have run, which the slider counts in `data-commits` on its root. `ValueAsync()` "
-                + "reads the value back. "
-                + "`RangeSlider(label)` does the same for both thumbs, and `RangeAsync()` reads them. With "
-                + "`GetByRole(AriaRole.Slider).FillAsync(\"80\")` alone, `ToHaveValueAsync(\"80\")` passes before the "
-                + "app hears of the change. A range slider's thumbs are named \"Elevation Minimum\" and \"Elevation "
-                + "Maximum\". In bUnit, `cut.Tb().Slider(\"Map brightness\").SetAsync(80)` moves the slider as a drag "
-                + "does, landing on the nearest step, and `Value` reads it; a range slider's read is `Range`.",
+            TestingTips =
+            [
+                "`await page.Tb().Slider(\"Map brightness\").SetAsync(80)` from `Trailblazor.Testing.Playwright` "
+                    + "moves the slider and waits until the app's `ValueChanged` and `OnValueCommitted` have run, "
+                    + "which the slider counts in `data-commits` on its root.",
+                "`ValueAsync()` reads the value back.",
+                "`RangeSlider(label)` sets both thumbs the same way, and `RangeAsync()` reads them.",
+                "A range slider's thumbs are named \"Elevation Minimum\" and \"Elevation Maximum\".",
+                "With `GetByRole(AriaRole.Slider).FillAsync(\"80\")` alone, `ToHaveValueAsync(\"80\")` passes before "
+                    + "the app hears of the change.",
+                "In bUnit, `cut.Tb().Slider(\"Map brightness\").SetAsync(80)` moves the slider as a drag does, "
+                    + "landing on the nearest step, and `Value` reads it.",
+                "In bUnit, `Range` reads a range slider's thumbs.",
+            ],
         },
         new("radio-group", "Radio group", ExampleCategory.Inputs,
             "Picks one option from a short list shown all at once.")
@@ -7194,11 +7397,15 @@ public static class ExampleCatalog
                 """,
             Scenario = new("error", "it has the app check the arrival day, reads the error the app sets on the group, "
                 + "chooses another day, and sees the error clear."),
-            TestingTip = "Each option is a native radio, so Playwright's `CheckAsync()` works on "
-                + "`GetByRole(AriaRole.Radio, ...)` inside the group. In bUnit, `Change(true)` on an option's `input` "
-                + "chooses it. In bUnit and Playwright, `Tb().RadioGroup(\"Paper size\").ChooseAsync(\"A4\")` chooses "
-                + "an option by its text, refusing a read-only or disabled one, and `Chosen` (`ChosenAsync()` in "
-                + "Playwright) reads it.",
+            TestingTips =
+            [
+                "In bUnit and Playwright, `Tb().RadioGroup(\"Paper size\").ChooseAsync(\"A4\")` chooses an option by "
+                    + "its text, refusing a read-only or disabled one.",
+                "`Chosen` (`ChosenAsync()` in Playwright) reads the chosen option.",
+                "Each option is a native radio, so Playwright's `CheckAsync()` works on `GetByRole(AriaRole.Radio, "
+                    + "...)` inside the group.",
+                "In bUnit, `Change(true)` on an option's `input` chooses it.",
+            ],
         },
         new("rating", "Rating", ExampleCategory.Inputs,
             "A row of stars people choose from to rate something, such as a trail out of five.")
@@ -7283,8 +7490,11 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it gives the ridge loop four stars and clears the rating, and checks what the "
                 + "app has after each."),
-            TestingTip = "`Rating(label)` finds a rating by its label in both packages. `ClearAsync()` works on a "
-                + "`Clearable` rating, and a rating with none chosen reads as 0.",
+            TestingTips =
+            [
+                "`Rating(label)` finds a rating by its label in both packages. `ClearAsync()` works on a `Clearable` "
+                    + "rating, and a rating with none chosen reads as 0.",
+            ],
         },
         new("signature-pad", "Signature pad", ExampleCategory.Inputs,
             "A pad people sign by drawing with a mouse, pen or finger, or by typing their name instead.")
@@ -7357,11 +7567,16 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it draws two strokes and checks what the app says, clears the pad, then types a "
                 + "name and checks the app takes it as the signature."),
-            TestingTip = "In bUnit, `cut.Tb().SignaturePad(\"Signature\").DrawAsync((10, 20), (60, 40))` draws a "
-                + "stroke through points in the signature's space, and `UndoAsync`, `ClearAsync` and "
-                + "`TypeNameAsync(\"Ada Lovelace\")` do the rest. In Playwright, `page.Tb().SignaturePad(...)` "
-                + "draws with the mouse and waits until the pad has taken the stroke and the app's `ValueChanged` has "
-                + "run, which the pad counts in `data-commits` on its root.",
+            TestingTips =
+            [
+                "In bUnit, `cut.Tb().SignaturePad(\"Signature\").DrawAsync((10, 20), (60, 40))` draws a stroke "
+                    + "through points in the signature's space.",
+                "`UndoAsync`, `ClearAsync` and `TypeNameAsync(\"Ada Lovelace\")` undo a stroke, clear the pad and "
+                    + "type a name, in bUnit and in Playwright.",
+                "In Playwright, `page.Tb().SignaturePad(...)` draws with the mouse and waits until the pad has taken "
+                    + "the stroke and the app's `ValueChanged` has run, which the pad counts in `data-commits` on its "
+                    + "root.",
+            ],
         },
         new("select", "Select", ExampleCategory.Inputs,
             "Picks one or several options from a list that opens under the field.")
@@ -7611,23 +7826,30 @@ public static class ExampleCatalog
                 """,
             Scenario = new("multiple", "it chooses two more topics, takes one away and clears the field, and checks "
                 + "the value the app has after each step."),
-            TestingTip = "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` "
-                + "from `Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page, and it "
-                + "works on the native `<select>` too. For object values loaded again, such as entities, give the "
-                + "select a `Comparer` so they still match their options. The helper works the same on a `Filterable` "
-                + "select. For selects that share a label, as in rows of an editable list, pass a locator instead: "
-                + "`page.Tb().Select(row.GetByLabel(\"Size\"))`, or `page.Locator(\"#size\")` for one with an "
-                + "`id`. In bUnit, `await cut.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` from "
-                + "`Trailblazor.Testing` does the same, and `cut.Tb().Select(\"Shipping\").Text` reads what it shows. "
-                + "On a `TbMultiSelect`, `Chosen` lists the chosen options, `UnchooseAsync` takes options away and "
-                + "`ClearAsync()` presses the clear button; in Playwright the read is `ChosenAsync()`. "
-                + "\"Select all\" is an option like the others, so `ChooseAsync(\"Select all\")` chooses it. With "
-                + "`AttachOnFirstUse`, the combobox gets `data-ready` only when it's first focused or pointed at, so "
-                + "`ChooseAsync` focuses it first. `Option(\"Overnight\")` reads whether an option is `Disabled` and "
-                + "`Chosen`, and `Disabled` reads the select; in Playwright they're `OptionAsync` and `DisabledAsync()`. "
-                + "`OpenAsync()` and `CloseAsync()` open and close the list, so a Playwright test can open it once and "
-                + "look at several options, and a bUnit test can run the app's `OpenChanged`; `IsOpenAsync()` "
-                + "(`IsOpen` in bUnit) reads whether it's open.",
+            TestingTips =
+            [
+                "To choose options, `await page.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` from "
+                    + "`Trailblazor.Testing.Playwright` opens the list, picks them and waits for the page.",
+                "The helper works on the native `<select>` too, and works the same on a `Filterable` select.",
+                "For selects that share a label, as in rows of an editable list, pass a locator instead: "
+                    + "`page.Tb().Select(row.GetByLabel(\"Size\"))`, or `page.Locator(\"#size\")` for one with an "
+                    + "`id`.",
+                "In bUnit, `await cut.Tb().Select(\"Shipping\").ChooseAsync(\"Express (1 day)\")` from "
+                    + "`Trailblazor.Testing` does the same, and `cut.Tb().Select(\"Shipping\").Text` reads what it "
+                    + "shows.",
+                "For object values loaded again, such as entities, give the select a `Comparer` so they still match "
+                    + "their options.",
+                "With `AttachOnFirstUse`, the combobox gets `data-ready` only when it's first focused or pointed at, "
+                    + "so `ChooseAsync` focuses it first.",
+                "On a `TbMultiSelect`, `Chosen` lists the chosen options, `UnchooseAsync` takes options away and "
+                    + "`ClearAsync()` presses the clear button; in Playwright the read is `ChosenAsync()`.",
+                "\"Select all\" is an option like the others, so `ChooseAsync(\"Select all\")` chooses it.",
+                "`OpenAsync()` and `CloseAsync()` open and close the list, so a Playwright test can open it once and "
+                    + "look at several options, and a bUnit test can run the app's `OpenChanged`.",
+                "`IsOpenAsync()` (`IsOpen` in bUnit) reads whether the list is open.",
+                "`Option(\"Overnight\")` reads whether an option is `Disabled` and `Chosen`, and `Disabled` reads "
+                    + "the select; in Playwright they're `OptionAsync` and `DisabledAsync()`.",
+            ],
             Telemetry =
             [
                 "The select also counts `trailblazor.control.used` for each choice, with `trailblazor.input` `pointer` "
@@ -7764,19 +7986,19 @@ public static class ExampleCatalog
             [
                 "In Playwright, `await page.Tb().TreeSelect(\"Trail\").ChooseAsync(\"River valley\", \"Cedar "
                     + "Flats\")` from `Trailblazor.Testing.Playwright` waits for the field's script, opens the tree "
-                    + "and the rows along the path, chooses the item, and waits until the app has the value. "
-                    + "`CheckAsync`, `UncheckAsync` and "
-                    + "`FilterAsync` work the same way, and `TextAsync()` reads what the field shows.",
+                    + "and the rows along the path, chooses the item, and waits until the app has the value.",
+                "In Playwright, `CheckAsync`, `UncheckAsync` and `FilterAsync` work the same way as `ChooseAsync`, "
+                    + "and `TextAsync()` reads what the field shows.",
                 "In bUnit, `await cut.Tb().TreeSelect(\"Trail\").ChooseAsync(\"River valley\", \"Cedar Flats\")` "
                     + "from `Trailblazor.Testing` does the same, and `Text` reads the field.",
-                "`Disabled` reads whether the field is disabled (`DisabledAsync()` in Playwright). Playwright also "
-                    + "has `OpenAsync()`, `CloseAsync()` and `IsOpenAsync()` for the tree.",
+                "`Disabled` reads whether the field is disabled (`DisabledAsync()` in Playwright).",
+                "Playwright also has `OpenAsync()`, `CloseAsync()` and `IsOpenAsync()` for the tree.",
                 "In both packages, `OptionAsync(\"River valley\", \"Cedar Flats\")` opens the rows above the item "
                     + "and reads its text, and whether it's disabled and chosen, which in a `TbMultiTreeSelect` means "
                     + "checked.",
-                "The field's button is named by its label and its choice together, as in \"Trail Cedar Flats\", so "
-                    + "a locator that expects the exact name \"Trail\" misses it once something is chosen; "
-                    + "`TreeSelect(label)` finds it by the label alone.",
+                "The field's button is named by its label and its choice together, as in \"Trail Cedar Flats\", so a "
+                    + "locator that expects the exact name \"Trail\" misses it once something is chosen.",
+                "`TreeSelect(label)` finds the field by its label alone.",
             ],
         },
         new("autocomplete", "Autocomplete", ExampleCategory.Inputs,
@@ -7946,14 +8168,14 @@ public static class ExampleCatalog
                     + "field, which commits the text.",
                 "`SuggestionsAsync()`, or `Suggestions` in bUnit, reads the suggestions in the list, which stay "
                     + "after a choice closes it.",
-                "In Playwright, the helpers that type wait until the list's `data-results-for` holds the typed "
-                    + "text, which shows the results are for it. `ChooseAsync`, `TypeAsync`, `EnterAsync` and "
-                    + "`ClearAsync` also wait until the app's handlers, `OnTextChanged` included, have run, which "
-                    + "the list counts in `data-handled`.",
+                "In Playwright, the helpers that type wait until the list's `data-results-for` holds the typed text, "
+                    + "which shows the results are for it.",
+                "In Playwright, `ChooseAsync`, `TypeAsync`, `EnterAsync` and `ClearAsync` also wait until the app's "
+                    + "handlers, `OnTextChanged` included, have run, which the list counts in `data-handled`.",
                 "With a `Search`, the browser waits out `DebounceDelay`, so in bUnit, which has no browser, `Search` "
-                    + "runs and `OnTextChanged` fires on each input. Without a `Search`, `OnTextChanged` fires once "
-                    + "`DebounceDelay` has passed on the app's `TimeProvider`, so advance a `FakeTimeProvider` past "
-                    + "it, or set it to `TimeSpan.Zero`.",
+                    + "runs and `OnTextChanged` fires on each input.",
+                "Without a `Search`, `OnTextChanged` fires once `DebounceDelay` has passed on the app's "
+                    + "`TimeProvider`, so advance a `FakeTimeProvider` past it, or set it to `TimeSpan.Zero`.",
                 "Only the first `MaxItems` matches, 50 by default, become options, so type enough to bring the one "
                     + "you want into the list.",
                 "For fields that share a label, pass a locator in Playwright, as "
@@ -8036,10 +8258,15 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it chooses a parking lot by its path, then another by searching, and checks what "
                 + "the field shows and the value the app has."),
-            TestingTip = "`page.Tb().Cascader(\"Trailhead\")` in Playwright, or `cut.Tb().Cascader(...)` in bUnit, "
-                + "finds the field by its label: `ChooseAsync(\"North ridge\", \"Pine Hollow\", \"Lower lot\")` "
-                + "clicks through the lists, `ChooseResultAsync(\"lower\", \"North ridge / Pine Hollow / Lower lot\")` "
-                + "searches and chooses a path, and `TextAsync()` or `Text` reads the path the field shows.",
+            TestingTips =
+            [
+                "`page.Tb().Cascader(\"Trailhead\")` in Playwright, or `cut.Tb().Cascader(...)` in bUnit, finds the "
+                    + "field by its label.",
+                "`ChooseAsync(\"North ridge\", \"Pine Hollow\", \"Lower lot\")` clicks through the lists.",
+                "`ChooseResultAsync(\"lower\", \"North ridge / Pine Hollow / Lower lot\")` searches and chooses a "
+                    + "path.",
+                "`TextAsync()` or `Text` reads the path the field shows.",
+            ],
         },
         new("tag-input", "Tag input", ExampleCategory.Inputs,
             "A field where people type any number of short labels, such as a trail's features, each shown as a chip.")
@@ -8130,9 +8357,12 @@ public static class ExampleCatalog
             ],
             Scenario = new("required", "it sends the report with no animals and reads the error, adds three "
                 + "animals and removes one, and sends the report."),
-            TestingTip = "In Playwright, `AddAsync` types the tag and presses Enter once the field's keys work, then "
-                + "waits for the app's answer. `Tags` is the locator of the tags, for `Expect`, and `TagsAsync()` "
-                + "reads their texts once. In bUnit, `Tags` is the texts.",
+            TestingTips =
+            [
+                "In Playwright, `AddAsync` types the tag and presses Enter once the field's keys work, then waits "
+                    + "for the app's answer. `Tags` is the locator of the tags, for `Expect`, and `TagsAsync()` reads "
+                    + "their texts once. In bUnit, `Tags` is the texts.",
+            ],
             Telemetry =
             [
                 "It also counts `trailblazor.control.used` with `trailblazor.action` `add` for each addition and "
@@ -8270,13 +8500,18 @@ public static class ExampleCatalog
             ],
             Scenario = new("validation", "it checks the error the app's validation shows for white, chooses another "
                 + "color, and checks the value and that the error is gone."),
-            TestingTip = "`await page.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` from "
-                + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it; for "
-                + "pickers that share a label, pass a locator, as `ColorPicker(row.GetByLabel(\"Color\"))`. In bUnit, "
-                + "`cut.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` types and commits the color. "
-                + "`ValueAsync()`, or `Value` in bUnit, reads the color the field holds. In bUnit, setting "
-                + "`FakeBrowserService.PickedColor` tests the eyedropper. `@bind-Open` opens the color panel from "
-                + "code.",
+            TestingTips =
+            [
+                "`await page.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` from "
+                    + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it.",
+                "For pickers that share a label, pass a locator in Playwright, as "
+                    + "`ColorPicker(row.GetByLabel(\"Color\"))`.",
+                "In bUnit, `cut.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` types and commits the "
+                    + "color.",
+                "`ValueAsync()`, or `Value` in bUnit, reads the color the field holds.",
+                "In bUnit, setting `FakeBrowserService.PickedColor` tests the eyedropper.",
+                "`@bind-Open` opens the color panel from code.",
+            ],
         },
         new("file-upload", "File upload", ExampleCategory.Inputs,
             "Chooses files by clicking or dropping them on a drop zone, and lists them with a way to remove each.")
@@ -8386,14 +8621,19 @@ public static class ExampleCatalog
             ],
             Scenario = new("validation", "it chooses a file whose name has spaces and checks the app's error, then "
                 + "chooses one without and checks the file listed and that the error is gone."),
-            TestingTip = "`await page.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` from "
-                + "`Trailblazor.Testing.Playwright` takes file paths or `FilePayload`s and waits until the field has "
-                + "taken them and the app's `ValueChanged` has run, which the field counts in `data-commits` on its "
-                + "root. In bUnit, `cut.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` chooses files "
-                + "from disk, giving each the type a browser would for its extension, or takes `InputFileContent`s "
-                + "made in the test. `FilesAsync()`, or `Files` in bUnit, reads the names of the files the field "
-                + "lists. The field is ready as soon as `Render` returns, with nothing left to run, so a test can "
-                + "raise events at once.",
+            TestingTips =
+            [
+                "`await page.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` from "
+                    + "`Trailblazor.Testing.Playwright` takes file paths or `FilePayload`s.",
+                "The Playwright `ChooseAsync` waits until the field has taken the files and the app's `ValueChanged` "
+                    + "has run, which the field counts in `data-commits` on its root.",
+                "In bUnit, `cut.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` chooses files from disk, "
+                    + "giving each the type a browser would for its extension.",
+                "The bUnit `ChooseAsync` also takes `InputFileContent`s made in the test.",
+                "`FilesAsync()`, or `Files` in bUnit, reads the names of the files the field lists.",
+                "The field is ready as soon as `Render` returns, with nothing left to run, so a test can raise "
+                    + "events at once.",
+            ],
         },
         new("calendar", "Calendar", ExampleCategory.Inputs,
             "Shows a month in place for choosing one date, with views of the year's months and the decade's years.")
@@ -8501,11 +8741,15 @@ public static class ExampleCatalog
                 new("error", "The validation message, shown while the value is invalid."),
             ],
             Scenario = new("value", "it chooses a day and checks what the app shows."),
-            TestingTip = "`await page.Tb().Calendar(\"Hike date\").ChooseAsync(date)` from "
-                + "`Trailblazor.Testing.Playwright` picks a date through the years and months views, as a user would, "
-                + "and waits until the calendar has taken it and the app's `ValueChanged` has run, which the "
-                + "calendar counts in `data-commits` on its root. In bUnit, `cut.Tb().Calendar(\"Hike date\")"
-                + ".ChooseAsync(date)` from `Trailblazor.Testing` does the same.",
+            TestingTips =
+            [
+                "`await page.Tb().Calendar(\"Hike date\").ChooseAsync(date)` from `Trailblazor.Testing.Playwright` "
+                    + "picks a date through the years and months views, as a user would.",
+                "The Playwright `ChooseAsync` waits until the calendar has taken the date and the app's "
+                    + "`ValueChanged` has run, which the calendar counts in `data-commits` on its root.",
+                "In bUnit, `cut.Tb().Calendar(\"Hike date\").ChooseAsync(date)` from `Trailblazor.Testing` chooses "
+                    + "the date the same way.",
+            ],
         },
         new("date-picker", "Date picker", ExampleCategory.Inputs,
             "Chooses one date, typed in a box or picked in a calendar that opens beside it.")
@@ -8595,13 +8839,18 @@ public static class ExampleCatalog
             ],
             Scenario = new("value", "it chooses a date and clears the field, and checks the value the app has after "
                 + "each."),
-            TestingTip = "`await page.Tb().DatePicker(\"Start date\").ChooseAsync(date)` from "
-                + "`Trailblazor.Testing.Playwright` types the date in the field's own format and waits until the field "
-                + "has taken it. In bUnit, `cut.Tb().DatePicker(\"Start date\")` from `Trailblazor.Testing` has the "
-                + "same `ChooseAsync(date)`. `ValueAsync()`, or `Value` in bUnit, reads the date, and "
-                + "`ChooseAsync(null)` clears it. `EnterAsync(\"31/31/2026\")` types text as it "
-                + "is in either package, so a test can see the field's error for a date it can't read. `@bind-Open` "
-                + "opens the calendar from code, so a test can check it without pressing its button.",
+            TestingTips =
+            [
+                "`await page.Tb().DatePicker(\"Start date\").ChooseAsync(date)` from "
+                    + "`Trailblazor.Testing.Playwright` types the date in the field's own format and waits until the "
+                    + "field has taken it.",
+                "In bUnit, `cut.Tb().DatePicker(\"Start date\")` from `Trailblazor.Testing` has the same "
+                    + "`ChooseAsync(date)`.",
+                "`ValueAsync()`, or `Value` in bUnit, reads the date, and `ChooseAsync(null)` clears it.",
+                "`EnterAsync(\"31/31/2026\")` types text as it is in either package, so a test can see the field's "
+                    + "error for a date it can't read.",
+                "`@bind-Open` opens the calendar from code, so a test can check it without pressing its button.",
+            ],
         },
         new("time-picker", "Time picker", ExampleCategory.Inputs,
             "Chooses a time of day in the browser's own time box, shown in the user's language.")
@@ -8674,9 +8923,13 @@ public static class ExampleCatalog
                 new("input", "The time box."),
             ],
             Scenario = new("value", "it chooses a time and checks the value and what the app shows."),
-            TestingTip = "`page.Tb().TimePicker(\"Start time\")` in Playwright, or `cut.Tb().TimePicker(\"Start "
-                + "time\")` in bUnit, finds the time picker by its label: `ChooseAsync(new TimeOnly(14, 30))` sets the "
-                + "time however the box displays it, and `ValueAsync()` or `Value` reads it.",
+            TestingTips =
+            [
+                "`page.Tb().TimePicker(\"Start time\")` in Playwright, or `cut.Tb().TimePicker(\"Start time\")` in "
+                    + "bUnit, finds the time picker by its label.",
+                "`ChooseAsync(new TimeOnly(14, 30))` sets the time however the box displays it.",
+                "`ValueAsync()` or `Value` reads the time.",
+            ],
         },
         new("date-time-picker", "Date-time picker", ExampleCategory.Inputs,
             "Chooses a date and a time of day: the date typed or picked in a calendar, the time in the browser's own "
@@ -8780,12 +9033,17 @@ public static class ExampleCatalog
                 new("input", "The browser's own date and time box, shown before the page is interactive."),
             ],
             Scenario = new("value", "it chooses a date and a time and checks the value and what the app shows."),
-            TestingTip = "`await page.Tb().DateTimePicker(\"Guided hike starts\").ChooseAsync(start)` from "
-                + "`Trailblazor.Testing.Playwright` types the date in the field's own format, fills the time and waits "
-                + "until the field has taken both. In bUnit, `cut.Tb().DateTimePicker(\"Guided hike starts\")` from "
-                + "`Trailblazor.Testing` has the same `ChooseAsync(start)`, and `Value` reads it. `EnterAsync(text)` "
-                + "types text as it is in the date box, in either package, to test the field's error. `@bind-Open` "
-                + "opens the calendar from code.",
+            TestingTips =
+            [
+                "`await page.Tb().DateTimePicker(\"Guided hike starts\").ChooseAsync(start)` from "
+                    + "`Trailblazor.Testing.Playwright` types the date in the field's own format, fills the time and "
+                    + "waits until the field has taken both.",
+                "In bUnit, `cut.Tb().DateTimePicker(\"Guided hike starts\")` from `Trailblazor.Testing` has the same "
+                    + "`ChooseAsync(start)`, and `Value` reads it.",
+                "`EnterAsync(text)` types text as it is in the date box, in either package, to test the field's "
+                    + "error.",
+                "`@bind-Open` opens the calendar from code.",
+            ],
         },
         new("date-range-picker", "Date range picker", ExampleCategory.Inputs,
             "Chooses a range of dates, typed or picked in a two-month calendar, with ready-made ranges.")
@@ -8931,15 +9189,19 @@ public static class ExampleCatalog
             ],
             Scenario = new("range-and-value", "it chooses the trip's first and last days and checks the range the "
                 + "field holds and what the app shows."),
-            TestingTip = "`await page.Tb().DateRangePicker(\"Trip dates\").ChooseAsync(start, end)` from "
-                + "`Trailblazor.Testing.Playwright` types both dates in the field's own format and waits until the "
-                + "field has taken them. In bUnit, `cut.Tb().DateRangePicker(\"Trip dates\")` from "
-                + "`Trailblazor.Testing` has the same `ChooseAsync(start, end)`. `RangeAsync()`, or `Range` in bUnit, "
-                + "reads both. Its boxes "
-                + "have `data-part=\"start-input\"` and `data-part=\"end-input\"`. `EnterAsync(start, end)` types "
-                + "text as it is in each box, in either package, to test the field's errors; null leaves a box "
-                + "unchanged. "
-                + "`@bind-Open` opens the calendar from code.",
+            TestingTips =
+            [
+                "`await page.Tb().DateRangePicker(\"Trip dates\").ChooseAsync(start, end)` from "
+                    + "`Trailblazor.Testing.Playwright` types both dates in the field's own format and waits until "
+                    + "the field has taken them.",
+                "In bUnit, `cut.Tb().DateRangePicker(\"Trip dates\")` from `Trailblazor.Testing` has the same "
+                    + "`ChooseAsync(start, end)`.",
+                "`RangeAsync()`, or `Range` in bUnit, reads both dates.",
+                "The field's boxes have `data-part=\"start-input\"` and `data-part=\"end-input\"`.",
+                "`EnterAsync(start, end)` types text as it is in each box, in either package, to test the field's "
+                    + "errors; null leaves a box unchanged.",
+                "`@bind-Open` opens the calendar from code.",
+            ],
         },
         new("listbox", "List box", ExampleCategory.Inputs,
             "Picks one or several options from a list that is always shown.")
@@ -9102,14 +9364,19 @@ public static class ExampleCatalog
                 """,
             Scenario = new("multiple", "it chooses two more pieces of gear, takes one away, and checks what the app "
                 + "has after each."),
-            TestingTip = "To choose options, `await page.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from "
-                + "`Trailblazor.Testing.Playwright` picks them and waits for the page, and it works on the native "
-                + "`<select>` too. For object values loaded again, give the list box a `Comparer`. In bUnit, "
-                + "`await cut.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from `Trailblazor.Testing` "
-                + "does the same. In a multiple list box, `UnchooseAsync` takes options away and `Chosen` "
-                + "(`ChosenAsync()` in Playwright) reads the chosen names. `Option(\"Stove\")` reads whether one "
-                + "option is `Disabled` and `Chosen`, and `Disabled` reads the list box; in Playwright they're "
-                + "`OptionAsync` and `DisabledAsync()`.",
+            TestingTips =
+            [
+                "To choose options, `await page.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from "
+                    + "`Trailblazor.Testing.Playwright` picks them and waits for the page, and it works on the native "
+                    + "`<select>` too.",
+                "In bUnit, `await cut.Tb().ListBox(\"Gear to pack\").ChooseAsync(\"Stove\")` from "
+                    + "`Trailblazor.Testing` does the same.",
+                "For object values loaded again, give the list box a `Comparer`.",
+                "In a multiple list box, `UnchooseAsync` takes options away and `Chosen` (`ChosenAsync()` in "
+                    + "Playwright) reads the chosen names.",
+                "`Option(\"Stove\")` reads whether one option is `Disabled` and `Chosen`, and `Disabled` reads the "
+                    + "list box; in Playwright they're `OptionAsync` and `DisabledAsync()`.",
+            ],
             Telemetry =
             [
                 "An option with a `TelemetryName`, such as `\"size-large\"`, counts `trailblazor.control.used` each "
@@ -9204,9 +9471,12 @@ public static class ExampleCatalog
                 """,
             Scenario = new("move-items", "it moves two hikers onto the trip and one back, and checks who the app has "
                 + "on the trip after each."),
-            TestingTip = "`TransferList(label)` finds the field by its label in both packages and names items by "
-                + "their text. `Chosen` (`ChosenAsync()` in Playwright) reads the chosen list, which keeps the order "
-                + "of `Items`.",
+            TestingTips =
+            [
+                "`TransferList(label)` finds the field by its label in both packages and names items by their text. "
+                    + "`Chosen` (`ChosenAsync()` in Playwright) reads the chosen list, which keeps the order of "
+                    + "`Items`.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, it also counts `trailblazor.control.used` with `trailblazor.action` `move` for "
@@ -9280,12 +9550,13 @@ public static class ExampleCatalog
                 + "app answers each time."),
             TestingTips =
             [
-                "In Playwright, `EnterAsync` waits until the page is interactive and the field filters what's "
-                    + "typed, then returns once the app has the code.",
+                "In Playwright, `EnterAsync` waits until the page is interactive and the field filters what's typed, "
+                    + "then returns once the app has the code.",
                 "By hand in Playwright, wait for the input's `data-ready`, then fill it by its label: `var code = "
-                    + "page.GetByLabel(\"Verification code\"); await Expect(code).ToHaveAttributeAsync(\"data-ready\", "
-                    + "\"\"); await code.FillAsync(\"246810\");`. In bUnit, raise one input event with the whole "
-                    + "code, as the browser reports it: `cut.Find(\"[data-part=input]\").Input(\"246810\")`.",
+                    + "page.GetByLabel(\"Verification code\"); await "
+                    + "Expect(code).ToHaveAttributeAsync(\"data-ready\", \"\"); await code.FillAsync(\"246810\");`.",
+                "In bUnit, raise one input event with the whole code, as the browser reports it: "
+                    + "`cut.Find(\"[data-part=input]\").Input(\"246810\")`.",
             ],
         },
         new("property-grid", "Property grid", ExampleCategory.Inputs,
@@ -9354,11 +9625,14 @@ public static class ExampleCatalog
             ],
             Scenario = new("model", "it reads a property, changes two others, and checks which property the app says "
                 + "changed each time."),
-            TestingTip = "`page.Tb().PropertyGrid(\"Trail properties\")` from `Trailblazor.Testing.Playwright` finds the "
-                + "fields inside the grid by their labels, as anywhere else: "
-                + "`.NumberField(\"Length (km)\").EnterAsync(\"8\")` or `.Select(\"Surface\").ChooseAsync(\"Dirt\")`. "
-                + "In bUnit, `cut.Tb().PropertyGrid(\"Trail properties\")` does the same. A property's editor is in "
-                + "`[data-part=property][data-name=LengthKm]`.",
+            TestingTips =
+            [
+                "`page.Tb().PropertyGrid(\"Trail properties\")` from `Trailblazor.Testing.Playwright` finds the "
+                    + "fields inside the grid by their labels, as anywhere else: `.NumberField(\"Length "
+                    + "(km)\").EnterAsync(\"8\")` or `.Select(\"Surface\").ChooseAsync(\"Dirt\")`.",
+                "In bUnit, `cut.Tb().PropertyGrid(\"Trail properties\")` does the same.",
+                "A property's editor is in `[data-part=property][data-name=LengthKm]`.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"trail-settings\"`, it counts `trailblazor.control.shown` as it "
@@ -9441,10 +9715,13 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it submits the form with no trail name and checks the error, then names the "
                 + "trail, sets the length, submits again, and checks that the app saved the hike."),
-            TestingTip = "Find each field by its label with the driver for its kind, as anywhere else: "
-                + "`page.Tb().TextField(\"Trail name\").EnterAsync(\"Ridge loop\")` in Playwright, or "
-                + "`cut.Tb().NumberField(\"Length (km)\").EnterAsync(\"12\")` in bUnit. A property's field is in "
-                + "`[data-part=field][data-name=LengthKm]`.",
+            TestingTips =
+            [
+                "Find each field by its label with the driver for its kind, as anywhere else: "
+                    + "`page.Tb().TextField(\"Trail name\").EnterAsync(\"Ridge loop\")` in Playwright, or "
+                    + "`cut.Tb().NumberField(\"Length (km)\").EnterAsync(\"12\")` in bUnit.",
+                "A property's field is in `[data-part=field][data-name=LengthKm]`.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"new-hike\"`, it counts `trailblazor.control.shown` as it first "
@@ -9733,13 +10010,17 @@ public static class ExampleCatalog
             ],
             Scenario = new("description", "it reads the tooltip of the Add button and, in a browser, checks that the "
                 + "tooltip describes the button and that Escape hides it."),
-            TestingTip = "`await page.Tb().Tooltip(\"Add\").TextAsync()` from `Trailblazor.Testing.Playwright` rests "
-                + "the pointer on the button named \"Add\" and returns the tooltip's text once it shows; it also takes "
-                + "a locator for the trigger. By hand, tab to or hover the trigger, since `FocusAsync` after a click "
-                + "isn't keyboard focus, then find the tooltip with `GetByRole(AriaRole.Tooltip)`; "
-                + "`ToHaveAccessibleDescriptionAsync` on the trigger checks what screen readers hear. In bUnit, "
-                + "`cut.Tb().Tooltip(\"Add\").Text` reads the tooltip's text, which the markup holds from the start, "
-                + "with `role=\"tooltip\"`.",
+            TestingTips =
+            [
+                "`await page.Tb().Tooltip(\"Add\").TextAsync()` from `Trailblazor.Testing.Playwright` rests the "
+                    + "pointer on the button named \"Add\" and returns the tooltip's text once it shows.",
+                "The Playwright `Tooltip` helper also takes a locator for the trigger.",
+                "By hand, tab to or hover the trigger, since `FocusAsync` after a click isn't keyboard focus, then "
+                    + "find the tooltip with `GetByRole(AriaRole.Tooltip)`.",
+                "`ToHaveAccessibleDescriptionAsync` on the trigger checks what screen readers hear.",
+                "In bUnit, `cut.Tb().Tooltip(\"Add\").Text` reads the tooltip's text, which the markup holds from "
+                    + "the start, with `role=\"tooltip\"`.",
+            ],
         },
         new("menu", "Menu", ExampleCategory.Overlays,
             "A list of actions, options and links that opens from a button, with groups and submenus.")
@@ -9904,24 +10185,29 @@ public static class ExampleCatalog
                 """,
             Scenario = new("checks-and-radios", "it checks that the map shows, turns on Elevation and switches the "
                 + "units to kilometers from the menu, and checks what the app has."),
-            TestingTip = "Open the menu with its trigger, then find items by role: `GetByRole(AriaRole.Menuitem)`, "
-                + "`Menuitemcheckbox` or `Menuitemradio`, with `ToBeCheckedAsync` for the last two. An item's `End` "
-                + "text is part of its name, so name an item with its count, such as \"Delete 3\". Its `Description` "
-                + "and `Shortcut` aren't, so check them with `ToHaveAccessibleDescriptionAsync` and the "
-                + "`aria-keyshortcuts` attribute. A group is "
-                + "`GetByRole(AriaRole.Group, new() { Name = \"Units\" })`. The trigger gets `data-ready` once a "
-                + "click on an item reaches the server; `await page.Tb().Menu(\"More options\").ChooseAsync(\"Share\", "
-                + "\"Email\")` from `Trailblazor.Testing.Playwright` waits for it, opens the menu and its submenus, "
-                + "clicks the item, and waits until the app has run the item's handler; the menu closes before the "
-                + "handler runs, so the wait follows the menu's count of finished handlers in `data-commits`. With "
-                + "`AttachOnFirstUse`, the trigger gets `data-ready` only once it's first focused, pointed at or "
-                + "clicked, so `ChooseAsync` focuses it first. In both packages, "
-                + "`OpenAsync()` and `CloseAsync()` open and close the menu, `IsOpen` (`IsOpenAsync()` in "
-                + "Playwright) reads whether it's open, and `Checked(path)` (`CheckedAsync(path)`) reads whether a "
-                + "checkbox or radio item is checked, through the submenus named before it, without opening the "
-                + "menu. In bUnit, "
-                + "check `IsOpen` rather than the items, which are in "
-                + "the markup whether the menu is open or not.",
+            TestingTips =
+            [
+                "Open the menu with its trigger, then find items by role: `GetByRole(AriaRole.Menuitem)`, "
+                    + "`Menuitemcheckbox` or `Menuitemradio`, with `ToBeCheckedAsync` for the last two.",
+                "An item's `End` text is part of its name, so name an item with its count, such as \"Delete 3\".",
+                "An item's `Description` and `Shortcut` aren't part of its name, so check them with "
+                    + "`ToHaveAccessibleDescriptionAsync` and the `aria-keyshortcuts` attribute.",
+                "A group is `GetByRole(AriaRole.Group, new() { Name = \"Units\" })`.",
+                "The trigger gets `data-ready` once a click on an item reaches the server.",
+                "`await page.Tb().Menu(\"More options\").ChooseAsync(\"Share\", \"Email\")` from "
+                    + "`Trailblazor.Testing.Playwright` waits for `data-ready`, opens the menu and its submenus, "
+                    + "clicks the item, and waits until the app has run the item's handler.",
+                "The menu closes before the handler runs, so the Playwright `ChooseAsync` waits on the menu's count "
+                    + "of finished handlers in `data-commits`.",
+                "With `AttachOnFirstUse`, the trigger gets `data-ready` only once it's first focused, pointed at or "
+                    + "clicked, so `ChooseAsync` focuses it first.",
+                "In both packages, `OpenAsync()` and `CloseAsync()` open and close the menu, and `IsOpen` "
+                    + "(`IsOpenAsync()` in Playwright) reads whether it's open.",
+                "`Checked(path)` (`CheckedAsync(path)` in Playwright) reads whether a checkbox or radio item is "
+                    + "checked, through the submenus named before it, without opening the menu.",
+                "In bUnit, check `IsOpen` rather than the items, which are in the markup whether the menu is open or "
+                    + "not.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"row-actions\"`, it counts `trailblazor.control.shown` as it "
@@ -10000,9 +10286,13 @@ public static class ExampleCatalog
             Blocks = ["tb-menubar"],
             Scenario = new("basic", "it chooses a command from two of the bar's menus and checks what the app ran "
                 + "each time."),
-            TestingTip = "`page.Tb().Menubar(\"Trail editor\")` in Playwright, or `cut.Tb().Menubar(...)` in bUnit, "
-                + "finds the bar by its `AriaLabel`: `MenusAsync()` or `Menus` reads the menus' names, and "
-                + "`Menu(\"Edit\").ChooseAsync(\"Undo\")` opens a menu and chooses one of its items.",
+            TestingTips =
+            [
+                "`page.Tb().Menubar(\"Trail editor\")` in Playwright, or `cut.Tb().Menubar(...)` in bUnit, finds the "
+                    + "bar by its `AriaLabel`.",
+                "`MenusAsync()` or `Menus` reads the menus' names.",
+                "`Menu(\"Edit\").ChooseAsync(\"Undo\")` opens a menu and chooses one of its items.",
+            ],
         },
         new("context-menu", "Context menu", ExampleCategory.Overlays,
             "A menu that opens where an area is right-clicked or long-pressed, with items for what was clicked.")
@@ -10116,16 +10406,22 @@ public static class ExampleCatalog
                 """,
             Scenario = new("keys", "it removes a trail from the menu of its row, adds one from the menu of the rest "
                 + "of the area, and checks what the app did each time."),
-            TestingTip = "Right-click with `ClickAsync(new() { Button = MouseButton.Right })`, then find the menu with "
-                + "`GetByRole(AriaRole.Menu, new() { Name = \"Map actions\" })` and its items by role, as in a "
-                + "[menu](components/menu). The area gets `data-ready` once the page is interactive and a right-click "
-                + "will open the menu. The menu gets `data-open` in the render that draws its items as it opens, and "
-                + "`data-key` with the key those items were drawn for. "
-                + "`await page.Tb().ContextMenu().On(page.GetByText(\"Ridge loop\")).ChooseAsync(\"Remove\")` from "
-                + "`Trailblazor.Testing.Playwright` waits for it, right-clicks the element, clicks the item and waits "
-                + "until the app has run the item's handler, which the menu counts in `data-commits`. In "
-                + "bUnit, `await cut.Tb().ContextMenu().On(\"Ridge loop\").ChooseAsync(\"Remove\")` draws the items for "
-                + "that key and clicks one.",
+            TestingTips =
+            [
+                "`await page.Tb().ContextMenu().On(page.GetByText(\"Ridge loop\")).ChooseAsync(\"Remove\")` from "
+                    + "`Trailblazor.Testing.Playwright` waits for the area to be ready, right-clicks the element and "
+                    + "clicks the item.",
+                "The Playwright `ChooseAsync` then waits until the app has run the item's handler, which the menu "
+                    + "counts in `data-commits`.",
+                "In bUnit, `await cut.Tb().ContextMenu().On(\"Ridge loop\").ChooseAsync(\"Remove\")` draws the items "
+                    + "for that key and clicks one.",
+                "By hand, right-click with `ClickAsync(new() { Button = MouseButton.Right })`, then find the menu "
+                    + "with `GetByRole(AriaRole.Menu, new() { Name = \"Map actions\" })` and its items by role, as in "
+                    + "a [menu](components/menu).",
+                "The area gets `data-ready` once the page is interactive and a right-click will open the menu.",
+                "The menu gets `data-open` in the render that draws its items as it opens, and `data-key` with the "
+                    + "key those items were drawn for.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"map-actions\"`, it counts `trailblazor.control.shown` as it first "
@@ -10223,13 +10519,16 @@ public static class ExampleCatalog
             ],
             Scenario = new("commands", "it opens the palette as its shortcut does, finds a command by one of its "
                 + "keywords, runs it, and checks what the app ran."),
-            TestingTip = "The helpers open, search and run commands: "
-                + "`page.Tb().CommandPalette().OpenAsync()` presses its shortcut, then `SearchAsync(\"trail\")` and "
-                + "`ChooseAsync(\"New trail\")` wait for the results and for `OnChoose`, and "
-                + "`cut.Tb().CommandPalette()` does the same in bUnit. Without the helpers, wait until "
-                + "`[data-command-palette] [data-part=hotkey]` has `data-ready` set to its shortcut, such as `Mod+K`, "
-                + "then press `ControlOrMeta+K`, or click the app's own button. Each `option`'s text includes its "
-                + "shortcut's keys, so match its `.tb-command-palette__text > [data-part=label]` for the name alone.",
+            TestingTips =
+            [
+                "`page.Tb().CommandPalette().OpenAsync()` presses the palette's shortcut to open it.",
+                "`SearchAsync(\"trail\")` and `ChooseAsync(\"New trail\")` wait for the results and for `OnChoose`.",
+                "In bUnit, `cut.Tb().CommandPalette()` has the same `OpenAsync`, `SearchAsync` and `ChooseAsync`.",
+                "Without the helpers, wait until `[data-command-palette] [data-part=hotkey]` has `data-ready` set to "
+                    + "its shortcut, such as `Mod+K`, then press `ControlOrMeta+K`, or click the app's own button.",
+                "Each `option`'s text includes its shortcut's keys, so match its `.tb-command-palette__text > "
+                    + "[data-part=label]` for the name alone.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"app-commands\"`, it counts `trailblazor.control.shown` as it "
@@ -10325,15 +10624,19 @@ public static class ExampleCatalog
             ],
             Scenario = new("page", "it presses the save shortcut, checks that the app saved, and opens the help to "
                 + "check the shortcuts it lists."),
-            TestingTip = "`await page.Tb().Hotkey(\"Alt+Shift+S\").PressAsync()` from `Trailblazor.Testing.Playwright` "
-                + "waits until the hotkey's marker has `data-ready` set to its keys, then presses them, with Mod as "
-                + "`ControlOrMeta`. It then waits until the `OnPress` of the hotkey that fired has run, which its "
-                + "marker counts in `data-commits`. Focus what the hotkey needs first, such as a field inside a "
-                + "`Parent` hotkey's element. In bUnit, `await cut.Tb().Hotkey(\"Alt+Shift+S\").PressAsync()` runs "
-                + "it as a press would. "
-                + "Find the help by role: `GetByRole(AriaRole.Dialog, new() { Name = \"Keyboard shortcuts\" })`. A "
-                + "Mod key shows as both `.tb-kbd__mod-other` (Ctrl) and `.tb-kbd__mod-apple` (⌘), and the page "
-                + "styles hide the one that doesn't fit the device.",
+            TestingTips =
+            [
+                "`await page.Tb().Hotkey(\"Alt+Shift+S\").PressAsync()` from `Trailblazor.Testing.Playwright` waits "
+                    + "until the hotkey's marker has `data-ready` set to its keys, then presses them, with Mod as "
+                    + "`ControlOrMeta`.",
+                "In Playwright, `PressAsync` waits until the `OnPress` of the hotkey that fired has run, which its "
+                    + "marker counts in `data-commits`.",
+                "Focus what the hotkey needs first, such as a field inside a `Parent` hotkey's element.",
+                "In bUnit, `await cut.Tb().Hotkey(\"Alt+Shift+S\").PressAsync()` runs the hotkey as a press would.",
+                "Find the help by role: `GetByRole(AriaRole.Dialog, new() { Name = \"Keyboard shortcuts\" })`.",
+                "A Mod key shows as both `.tb-kbd__mod-other` (Ctrl) and `.tb-kbd__mod-apple` (⌘), and the page "
+                    + "styles hide the one that doesn't fit the device.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"save-shortcut\"`, a hotkey counts `trailblazor.control.shown` as "
@@ -10642,42 +10945,54 @@ public static class ExampleCatalog
                 """,
             Scenario = new("confirming", "it clicks Delete report and cancels the confirmation, then clicks again "
                 + "and confirms, and checks what the app did with each answer."),
-            TestingTip = "In bUnit, `this.ShowDialogAsync<TDialog, TResult>(title)` from `Trailblazor.Testing` hosts "
-                + "and opens a dialog in one call, or `this.ShowDialogAsync<TDialog>(title)` for a dialog with no "
-                + "result. "
-                + "`IDialogService.OpenDialogs` lists the open dialogs, newest last, including any still fading out, "
-                + "which have `IsClosing` set, and `HasOpenDialogs` says whether any is open and not closing. On the "
-                + "page, `TbRoot` renders the number of those as `data-tb-open-dialogs` on a hidden element, for a script "
-                + "that checks without knowing the dialogs' markup. `CloseAllAsync()` "
-                + "cancels them all, which resets a page between tests. With a rendered `TbRoot`, as "
-                + "`ShowDialogAsync` gives, navigating with the test's `NavigationManager` in bUnit cancels the "
-                + "open dialogs from `IDialogService` as the app does, unless their options set "
-                + "`CloseOnNavigation = false`. `Show` returns a reference whose `Result` "
-                + "finishes when the dialog closes, and whose `ContentType` and `Parameters` say what it shows. In "
-                + "bUnit, `FakeDialogService` records the dialogs opened through it, finds one with `Last<TDialog, "
-                + "TResult>()`, `Last<TDialog>()` or `LastConfirm()`, "
-                + "answers confirms and alerts with `Answer`, and answers other dialogs as they open with "
-                + "`AnswerWith<TDialog, TResult>(result)` or `AnswerWithCancel<TDialog, TResult>()`, as the "
-                + "Testing guide shows. "
-                + "A confirm's or alert's `Message` is the text it shows; answer a confirm with `ConfirmAsync()` "
-                + "for yes or `CancelAsync()` for no. "
-                + "`root.Tb().Dialog(\"Delete report?\")` finds an open dialog in the markup of the `TbRoot` that "
-                + "shows it: `ChooseAsync(\"Delete\")` clicks a button, and `CancelAsync()` dismisses it as Escape "
-                + "does; when the dialog closes, both wait for a `TbDialog`'s or `TbDrawer`'s `OpenChanged`. In "
-                + "Playwright, `page.Tb().Dialog(\"Delete report?\")` from "
-                + "`Trailblazor.Testing.Playwright` finds a dialog by its title: `WaitForAsync()` returns it once "
-                + "open, `ChooseAsync(\"Delete\")` clicks a button, and `CancelAsync()` presses Escape. Those two "
-                + "wait until the dialog has faded out and left the page, which is when the app gets the answer; for "
-                + "a `TbDialog` or `TbDrawer`, they also wait until its `OpenChanged` has run. A dialog that's "
-                + "fading carries `data-leaving`, so if you write your own wait, wait for the dialog to be gone, not "
-                + "hidden. Nothing on the page marks when a service dialog's caller has finished with the answer, "
-                + "so in Playwright, check what it does with `Expect`. In both, "
-                + "`Dialog()` with no title finds the only open dialog; `Title`, `IsOpen` and `WindowState` "
-                + "(`TitleAsync()` and so on in Playwright) read it; `MinimizeAsync()`, `MaximizeAsync()` and "
-                + "`RestoreAsync()` use its window buttons and wait until `TbDialogHeader.WindowStateChanged` has "
-                + "run; and `WaitForClosedAsync()` waits until the app closes it. To give the header's minimize, "
-                + "maximize and close buttons an `id` or other attributes a test can find them by, set "
-                + "`DialogOptions.WindowButtonAttributes`.",
+            TestingTips =
+            [
+                "In Playwright, `page.Tb().Dialog(\"Delete report?\")` from `Trailblazor.Testing.Playwright` finds a "
+                    + "dialog by its title, and `WaitForAsync()` returns it once open.",
+                "In bUnit, `this.ShowDialogAsync<TDialog, TResult>(title)` from `Trailblazor.Testing` hosts and "
+                    + "opens a dialog in one call, or `this.ShowDialogAsync<TDialog>(title)` for a dialog with no "
+                    + "result.",
+                "In bUnit, `root.Tb().Dialog(\"Delete report?\")` finds an open dialog in the markup of the `TbRoot` "
+                    + "that shows it.",
+                "In bUnit and Playwright, `Dialog()` with no title finds the only open dialog.",
+                "In Playwright, the dialog's `ChooseAsync(\"Delete\")` clicks a button, and `CancelAsync()` presses "
+                    + "Escape.",
+                "In Playwright, `ChooseAsync` and `CancelAsync` wait until the dialog has faded out and left the "
+                    + "page, which is when the app gets the answer; for a `TbDialog` or `TbDrawer`, they also wait "
+                    + "until its `OpenChanged` has run.",
+                "In bUnit, the dialog's `ChooseAsync(\"Delete\")` clicks a button, and `CancelAsync()` dismisses it "
+                    + "as Escape does; when the dialog closes, both wait for a `TbDialog`'s or `TbDrawer`'s "
+                    + "`OpenChanged`.",
+                "`MinimizeAsync()`, `MaximizeAsync()` and `RestoreAsync()` use the dialog's window buttons and wait "
+                    + "until `TbDialogHeader.WindowStateChanged` has run.",
+                "`WaitForClosedAsync()` waits until the app closes the dialog.",
+                "`Title`, `IsOpen` and `WindowState` (`TitleAsync()` and so on in Playwright) read the dialog.",
+                "A dialog that's fading carries `data-leaving`, so if you write your own wait, wait for the dialog "
+                    + "to be gone, not hidden.",
+                "Nothing on the page marks when a service dialog's caller has finished with the answer, so in "
+                    + "Playwright, check what it does with `Expect`.",
+                "To give the header's minimize, maximize and close buttons an `id` or other attributes a test can "
+                    + "find them by, set `DialogOptions.WindowButtonAttributes`.",
+                "`IDialogService.OpenDialogs` lists the open dialogs, newest last, including any still fading out, "
+                    + "which have `IsClosing` set.",
+                "`HasOpenDialogs` says whether any dialog is open and not closing.",
+                "On the page, `TbRoot` renders the number of open dialogs that aren't closing as "
+                    + "`data-tb-open-dialogs` on a hidden element, for a script that checks without knowing the "
+                    + "dialogs' markup.",
+                "`CloseAllAsync()` cancels all the open dialogs, which resets a page between tests.",
+                "With a rendered `TbRoot`, as `ShowDialogAsync` gives, navigating with the test's "
+                    + "`NavigationManager` in bUnit cancels the open dialogs from `IDialogService` as the app does, "
+                    + "unless their options set `CloseOnNavigation = false`.",
+                "`Show` returns a reference whose `Result` finishes when the dialog closes, and whose `ContentType` "
+                    + "and `Parameters` say what it shows.",
+                "In bUnit, `FakeDialogService` records the dialogs opened through it and finds one with "
+                    + "`Last<TDialog, TResult>()`, `Last<TDialog>()` or `LastConfirm()`.",
+                "`FakeDialogService` answers confirms and alerts with `Answer`, and answers other dialogs as they "
+                    + "open with `AnswerWith<TDialog, TResult>(result)` or `AnswerWithCancel<TDialog, TResult>()`, as "
+                    + "the Testing guide shows.",
+                "A confirm's or alert's `Message` is the text it shows; answer a confirm with `ConfirmAsync()` for "
+                    + "yes or `CancelAsync()` for no.",
+            ],
             Telemetry =
             [
                 "With `DialogOptions.TelemetryName`, such as `\"delete-trail\"`, or the `telemetryName` of "
@@ -10780,12 +11095,13 @@ public static class ExampleCatalog
             TestingTips =
             [
                 "In Playwright, `page.Tb().Dialog(\"Trail filters\")` from `Trailblazor.Testing.Playwright` finds a "
-                    + "drawer by its title, as it does a dialog: `WaitForAsync()` returns it once open, "
-                    + "`ChooseAsync(\"Show trails\")` clicks one of its buttons and waits for the drawer to close, "
-                    + "`CancelAsync()` closes it with Escape, and `IsOpenAsync()` (`IsOpen` in bUnit) reads whether "
-                    + "it's open. It skips a drawer that is still sliding out.",
-                "In bUnit, `cut.Tb().Dialog(\"Trail filters\")` from `Trailblazor.Testing` does the same. "
-                    + "`IDialogService.OpenDialogs` lists the open drawers along with the dialogs, and each one's "
+                    + "drawer by its title, as it does a dialog. It skips a drawer that is still sliding out.",
+                "`WaitForAsync()` returns the drawer once it's open, and `ChooseAsync(\"Show trails\")` clicks one "
+                    + "of its buttons and waits for the drawer to close.",
+                "`CancelAsync()` closes the drawer with Escape, and `IsOpenAsync()` (`IsOpen` in bUnit) reads "
+                    + "whether it's open.",
+                "In bUnit, `cut.Tb().Dialog(\"Trail filters\")` from `Trailblazor.Testing` does the same.",
+                "`IDialogService.OpenDialogs` lists the open drawers along with the dialogs, and each one's "
                     + "`Options.Position` is its side.",
                 "A drawer opens only once the page is interactive, so open it after the page is ready.",
             ],
@@ -11020,11 +11336,11 @@ public static class ExampleCatalog
             Scenario = new("trapping", "it opens the panel, checks that focus moves into it and that Tab and "
                 + "Shift+Tab stay inside, then closes it and checks that focus goes back to the button. bUnit can't "
                 + "move focus, so the test is in Playwright alone.") { Only = ScenarioPackage.Playwright },
-            TestingTip = "Like the trap, a blocking scope's hold comes from a script, so test it in Playwright: expect "
-                + "a control outside the scope to be inside an `[inert]` element, which "
-                + "`Locator(\"[inert]\").GetByRole(...)` finds.",
             TestingTips =
             [
+                "Like the trap, a blocking scope's hold comes from a script, so test it in Playwright: expect a "
+                    + "control outside the scope to be inside an `[inert]` element, which "
+                    + "`Locator(\"[inert]\").GetByRole(...)` finds.",
                 "After `Trapped` changes on a scope that stays, wait for `data-trapped` to appear or go before "
                     + "pressing Tab.",
                 "After `Blocking` turns on for a scope that stays, wait for a control outside it to be inside an "
@@ -11128,12 +11444,18 @@ public static class ExampleCatalog
             ],
             Scenario = new("opening-from-code", "it opens the filters, ticks one, closes the popover with Apply, "
                 + "checks the filter the app shows, and opens the popover again from the app's own button."),
-            TestingTip = "`await page.Tb().Popover(\"Filters\").OpenAsync()` opens it and returns the panel, a "
-                + "`dialog` named by its title or trigger; `CloseAsync()` closes it. Both wait for the popover to be "
-                + "ready. With `AttachOnFirstUse`, the trigger gets `data-ready` only when it's first focused, pointed "
-                + "at or clicked, so both focus it first. In bUnit, `cut.Tb().Popover(\"Filters\").OpenAsync()` "
-                + "tells a bound `Open` that it opened and returns the panel. In both packages, `Panel` reads the "
-                + "panel without opening the popover, since the panel renders while closed.",
+            TestingTips =
+            [
+                "`await page.Tb().Popover(\"Filters\").OpenAsync()` opens the popover and returns the panel, a "
+                    + "`dialog` named by its title or trigger, and `CloseAsync()` closes it.",
+                "In Playwright, `OpenAsync` and `CloseAsync` wait for the popover to be ready.",
+                "With `AttachOnFirstUse`, the trigger gets `data-ready` only when it's first focused, pointed at or "
+                    + "clicked, so the Playwright `OpenAsync` and `CloseAsync` focus it first.",
+                "In bUnit, `cut.Tb().Popover(\"Filters\").OpenAsync()` tells a bound `Open` that it opened and "
+                    + "returns the panel.",
+                "In both packages, `Panel` reads the panel without opening the popover, since the panel renders "
+                    + "while closed.",
+            ],
         },
         new("popconfirm", "Popconfirm", ExampleCategory.Overlays,
             "A small question that opens beside the button that asked, such as \"Delete this trail?\", with Cancel and "
@@ -11202,13 +11524,16 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it cancels deleting the trail, then confirms it, and checks what the app did "
                 + "with each answer."),
-            TestingTip = "`await page.Tb().Popconfirm(\"Delete trail\").ConfirmAsync()` opens it, confirms and waits "
-                + "until it closes, which it does once `OnConfirm` has run; `CancelAsync()` cancels and waits until it "
-                + "has closed and `OnCancel` has run. An "
-                + "`OnConfirm` that waits for the user, such as one that opens a dialog, would keep the helper "
-                + "waiting, so click `[data-part=confirm]` instead. In bUnit, "
-                + "`cut.Tb().Popconfirm(\"Delete trail\")` from `Trailblazor.Testing` has `ConfirmAsync` and "
-                + "`CancelAsync`, which press the buttons without opening it first.",
+            TestingTips =
+            [
+                "`await page.Tb().Popconfirm(\"Delete trail\").ConfirmAsync()` opens the popconfirm, confirms and "
+                    + "waits until it closes, which it does once `OnConfirm` has run.",
+                "`CancelAsync()` cancels and waits until the popconfirm has closed and `OnCancel` has run.",
+                "An `OnConfirm` that waits for the user, such as one that opens a dialog, would keep the helper "
+                    + "waiting, so click `[data-part=confirm]` instead.",
+                "In bUnit, `cut.Tb().Popconfirm(\"Delete trail\")` from `Trailblazor.Testing` has `ConfirmAsync` and "
+                    + "`CancelAsync`, which press the buttons without opening the popconfirm first.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"delete-trail\"`, it counts `trailblazor.control.shown` as it first "
@@ -11369,10 +11694,14 @@ public static class ExampleCatalog
             ],
             Scenario = new("page", "it opens the overlay, closes it by clicking outside its content, opens it again "
                 + "and closes it with Escape."),
-            TestingTip = "`page.Tb().Overlay(name)` in Playwright, or `cut.Tb().Overlay(...)` in bUnit, finds the open "
-                + "overlay by its `aria-label`, or the only one. `ClickAsync()` clicks it outside its content and "
-                + "waits for its `OnClick`; with `CloseOnClick`, both `ClickAsync()` and `PressEscapeAsync()` close "
-                + "the overlay, and the value bound with `@bind-Open` turns false.",
+            TestingTips =
+            [
+                "`page.Tb().Overlay(name)` in Playwright, or `cut.Tb().Overlay(...)` in bUnit, finds the open "
+                    + "overlay by its `aria-label`, or the only one.",
+                "`ClickAsync()` clicks the overlay outside its content and waits for its `OnClick`.",
+                "With `CloseOnClick`, both `ClickAsync()` and `PressEscapeAsync()` close the overlay, and the value "
+                    + "bound with `@bind-Open` turns false.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"saving-overlay\"`, it counts `trailblazor.control.shown` as it "
@@ -11566,28 +11895,33 @@ public static class ExampleCatalog
                 """,
             Scenario = new("forms", "it saves an empty form, reads which tabs are marked as needing attention, fills "
                 + "in each tab's field, and saves again."),
-            TestingTip = "Find tabs with `GetByRole(AriaRole.Tab, new() { Name = \"Summary\" })` and check "
-                + "`aria-selected`; the shown panel is `GetByRole(AriaRole.Tabpanel)`. "
-                + "`await cut.Tb().Tabs().SelectAsync(\"Summary\")` from `Trailblazor.Testing` picks a tab by its "
-                + "text in bUnit, and `await page.Tb().Tabs(\"Report sections\").SelectAsync(\"Summary\")` from "
-                + "`Trailblazor.Testing.Playwright` does in a browser, once the list is ready. On a static page, which "
-                + "never becomes ready, click the tab instead. Both helpers also have `CloseAsync(\"Summary\")`, which "
-                + "clicks the close mark of a tab with an `OnClose`, and `AddAsync()`, which clicks the add button; "
-                + "in a browser, each waits until the app's handler has run. A handler that waits for the user, such "
-                + "as one that opens a dialog, would keep the helper waiting, so click `[data-part=add]` or "
-                + "`[data-part=close]` instead and answer the dialog. When every panel has a field with the same "
-                + "label, `Tabs().Panel(\"Summary\").TextField(\"Notes\")` finds the one in that tab's panel, and "
-                + "`PanelElement(\"Summary\")` hands back the panel itself, to check what it shows. Select "
-                + "the tab first: a browser can't use a hidden panel's fields, and in bUnit a panel not yet shown "
-                + "isn't in the markup unless `RenderAllPanels` is set. With no name, `Tabs()` ignores nested tab "
-                + "lists: in bUnit, any inside a panel; in Playwright, only those inside a hidden panel. So in a "
-                + "browser, name the outer list when a shown panel holds another.",
             TestingTips =
             [
-                "Where Tab goes from a tab depends on how the panel starts, which only the browser checks. In bUnit "
-                    + "the shown panel keeps `tabindex=\"0\"` unless `FocusablePanels` is `Never`, so test the tab "
-                    + "order in a browser, once the list has `data-ready`. On a static page, wait for "
-                    + "`data-tb-script` on the `<html>` element instead.",
+                "Find tabs with `GetByRole(AriaRole.Tab, new() { Name = \"Summary\" })` and check `aria-selected`; "
+                    + "the shown panel is `GetByRole(AriaRole.Tabpanel)`.",
+                "`await cut.Tb().Tabs().SelectAsync(\"Summary\")` from `Trailblazor.Testing` picks a tab by its text "
+                    + "in bUnit.",
+                "`await page.Tb().Tabs(\"Report sections\").SelectAsync(\"Summary\")` from "
+                    + "`Trailblazor.Testing.Playwright` picks a tab in a browser, once the list is ready.",
+                "On a static page, which never becomes ready, click the tab instead.",
+                "Both `Tabs` helpers also have `CloseAsync(\"Summary\")`, which clicks the close mark of a tab with "
+                    + "an `OnClose`, and `AddAsync()`, which clicks the add button.",
+                "In a browser, `CloseAsync` and `AddAsync` wait until the app's handler has run.",
+                "A handler that waits for the user, such as one that opens a dialog, would keep the helper waiting, "
+                    + "so click `[data-part=add]` or `[data-part=close]` instead and answer the dialog.",
+                "When every panel has a field with the same label, `Tabs().Panel(\"Summary\").TextField(\"Notes\")` "
+                    + "finds the one in that tab's panel.",
+                "`PanelElement(\"Summary\")` hands back the panel itself, to check what it shows.",
+                "Select the tab before using its panel: a browser can't use a hidden panel's fields, and in bUnit a "
+                    + "panel not yet shown isn't in the markup unless `RenderAllPanels` is set.",
+                "With no name, `Tabs()` ignores nested tab lists: in bUnit, any inside a panel; in Playwright, only "
+                    + "those inside a hidden panel. So in a browser, name the outer list when a shown panel holds "
+                    + "another.",
+                "Where Tab goes from a tab depends on how the panel starts, which only the browser checks.",
+                "In bUnit the shown panel keeps `tabindex=\"0\"` unless `FocusablePanels` is `Never`, so test the "
+                    + "tab order in a browser, once the list has `data-ready`.",
+                "On a static page, wait for `data-tb-script` on the `<html>` element instead of the list's "
+                    + "`data-ready`.",
             ],
             Telemetry =
             [
@@ -11684,17 +12018,24 @@ public static class ExampleCatalog
                 """,
             Scenario = new("items", "it expands the sizing item, reads its answer, and checks that the shipping item "
                 + "closed."),
-            TestingTip = "`await page.Tb().AccordionItem(\"Sizing\").ExpandAsync()` from "
-                + "`Trailblazor.Testing.Playwright` opens an item, in an accordion or on its own, once the page is "
-                + "interactive, and hands back its panel once the app's `ExpandedChanged` has run (the header "
-                + "counts these runs in `data-commits`) and the panel has finished opening; `CollapseAsync` waits the "
-                + "same way until it has finished closing. An item's `data-state` reads `opening` or `closing` while its panel "
-                + "moves, then `open` or `closed`. On a static page, click the item's header instead. In "
-                + "bUnit, `cut.Tb().AccordionItem(\"Sizing\")` from `Trailblazor.Testing` has the same `ExpandAsync` "
-                + "and `CollapseAsync`; bUnit runs no script, so an item it opens or closes stays `opening` or "
-                + "`closing`. Both find an item by its header's full name, or by its title alone when the header "
-                + "also shows a badge, such as \"Reviews\" beside a count. In both packages, `Trigger` is the "
-                + "header's button, whose `aria-expanded` says whether the item is open.",
+            TestingTips =
+            [
+                "`await page.Tb().AccordionItem(\"Sizing\").ExpandAsync()` from `Trailblazor.Testing.Playwright` "
+                    + "opens an item, in an accordion or on its own, once the page is interactive.",
+                "In Playwright, `ExpandAsync` hands back the item's panel once the app's `ExpandedChanged` has run "
+                    + "(the header counts these runs in `data-commits`) and the panel has finished opening.",
+                "In Playwright, `CollapseAsync` waits until the app's `ExpandedChanged` has run and the panel has "
+                    + "finished closing.",
+                "An item's `data-state` reads `opening` or `closing` while its panel moves, then `open` or `closed`.",
+                "On a static page, click the item's header instead.",
+                "In bUnit, `cut.Tb().AccordionItem(\"Sizing\")` from `Trailblazor.Testing` has the same "
+                    + "`ExpandAsync` and `CollapseAsync`.",
+                "bUnit runs no script, so an item the helper opens or closes there stays `opening` or `closing`.",
+                "Both packages find an item by its header's full name, or by its title alone when the header also "
+                    + "shows a badge, such as \"Reviews\" beside a count.",
+                "In both packages, `Trigger` is the header's button, whose `aria-expanded` says whether the item is "
+                    + "open.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"shipping-details\"`, an item counts `trailblazor.control.shown` "
@@ -11999,35 +12340,43 @@ public static class ExampleCatalog
             [
                 "In Playwright, `page.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing.Playwright` follows "
                     + "rows by their path of texts: `ExpandAsync(\"River valley\", \"Fern Gully\")`, "
-                    + "`SelectAsync(...)`, `CheckAsync(...)` and `ItemAsync(...)`. The helpers that act on a row wait "
-                    + "until the app has run its callback, such as `SelectedKeysChanged` or `OnActivate`; a row shows "
-                    + "the change before the callback runs, so the wait follows the tree's count of finished handlers "
-                    + "in `data-commits`.",
-                "`ItemsAsync(...)` returns every row at a path, for rows that share their text. `ExpandAllAsync()` "
-                    + "opens every row, waiting for rows that load or that a `TbTreeItem` renders once open.",
+                    + "`SelectAsync(...)`, `CheckAsync(...)` and `ItemAsync(...)`.",
+                "In Playwright, the helpers that act on a row wait until the app has run its callback, such as "
+                    + "`SelectedKeysChanged` or `OnActivate`.",
+                "A row shows the change before the callback runs, so the Playwright helpers' wait follows the tree's "
+                    + "count of finished handlers in `data-commits`.",
+                "`ItemsAsync(...)` returns every row at a path, for rows that share their text.",
+                "`ExpandAllAsync()` opens every row, waiting for rows that load or that a `TbTreeItem` renders once "
+                    + "open.",
                 "`CollapseAsync(...)` closes a row, and `ActivateAsync(...)` double-clicks one, which raises "
-                    + "`OnActivate`. `RowAsync(text)` finds the one row that shows a text, at any depth, and "
-                    + "`TextsAsync()` reads the texts of the rows that show, in order. "
-                    + "`Branch(\"River valley\")` gives the same helpers with paths that start inside that row.",
+                    + "`OnActivate`.",
+                "`RowAsync(text)` finds the one row that shows a text, at any depth, and `TextsAsync()` reads the "
+                    + "texts of the rows that show, in order.",
+                "`Branch(\"River valley\")` gives the same helpers with paths that start inside that row.",
                 "`DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync` drag one row's path onto another's.",
                 "The helpers follow only the tree's own rows, not those of a tree inside a row.",
                 "In a virtualized tree, the helpers scroll until the row renders, and a drag needs both rows in view "
-                    + "together. Rows also carry `data-index` and `data-inside`, the number of rows in their branch.",
+                    + "together.",
+                "In a virtualized tree, rows also carry `data-index` and `data-inside`, the number of rows in their "
+                    + "branch.",
                 "Every row carries `data-key`, `data-level` and `data-text`, which holds the row's `ItemText`, or a "
-                    + "`TbTreeItem`'s `Text`. The helpers' paths match it even when a template shows something else. A "
-                    + "row being dragged over carries `data-drop`.",
-                "`ItemAttributes` adds attributes to an item's row, such as an `id` a test can find the row by. "
-                    + "A row's toggle is its `[data-part=\"toggle\"]` child, so a row with the id `trail-12` has its "
+                    + "`TbTreeItem`'s `Text`.",
+                "The helpers' paths match a row's `data-text` even when a template shows something else.",
+                "A row being dragged over carries `data-drop`.",
+                "`ItemAttributes` adds attributes to an item's row, such as an `id` a test can find the row by.",
+                "A row's toggle is its `[data-part=\"toggle\"]` child, so a row with the id `trail-12` has its "
                     + "toggle at `#trail-12 > [data-part=\"toggle\"]`.",
                 "A tree of `TbTreeItem`s sets `aria-busy` while items it has just been given become rows.",
-                "In bUnit, `cut.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing` has the same `ExpandAsync`, "
-                    + "`CollapseAsync`, `ExpandAllAsync`, `SelectAsync`, `CheckAsync`, `ActivateAsync`, `Branch`, "
-                    + "`DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync`, with `Texts` for the rows that show "
-                    + "and `Row`, `Item` and `Items` to find rows. A drag step moves what a drag in the browser would, "
-                    + "selected rows included, and goes through `CanMove` and `OnMove`.",
-                "A `TbTreeItem` works only inside a `TbTreeView`. In bUnit, `this.RenderTreeItem<TItem, TKey>(item)` "
-                    + "renders an item, or a component of the app's that renders one, inside a real tree, and takes "
-                    + "the tree's own parameters, such as `Checkable`, as a second argument.",
+                "In bUnit, `cut.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing` has the same "
+                    + "`ExpandAsync`, `CollapseAsync`, `ExpandAllAsync`, `SelectAsync`, `CheckAsync`, "
+                    + "`ActivateAsync`, `Branch`, `DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync`.",
+                "In bUnit, `Texts` reads the rows that show, and `Row`, `Item` and `Items` find rows.",
+                "A bUnit drag step moves what a drag in the browser would, selected rows included, and goes through "
+                    + "`CanMove` and `OnMove`.",
+                "A `TbTreeItem` works only inside a `TbTreeView`.",
+                "In bUnit, `this.RenderTreeItem<TItem, TKey>(item)` renders an item, or a component of the app's "
+                    + "that renders one, inside a real tree.",
+                "`RenderTreeItem` takes the tree's own parameters, such as `Checkable`, as a second argument.",
             ],
             Telemetry =
             [
@@ -12513,70 +12862,75 @@ public static class ExampleCatalog
                 "In Playwright, `page.Tb().Grid(\"Trails\")` from `Trailblazor.Testing.Playwright` finds a row with "
                     + "`Row(\"Cedar Flats\")` and a cell with `await CellAsync(\"Cedar Flats\", \"Region\")`.",
                 "`SortAsync(\"Name\", descending: true)`, `FilterAsync(\"Name\", \"ridge\")`, `SelectAsync(...)`, "
-                    + "`ClickRowAsync(...)` and `GoToPageAsync(2)` drive it. Each waits until the app has run its "
-                    + "callbacks, such as `SortsChanged` or `SelectedItemsChanged`; the grid shows a change before "
-                    + "they run, so the wait follows its count of answered changes in `data-commits`. Sorting, "
-                    + "filtering and paging also wait for a `DataProvider`'s rows.",
-                "With a `StateHref`, the sort headers and the pager are links. In an interactive grid, `SortAsync` and "
-                    + "`GoToPageAsync` still work; on a static page, click the header's link, and `GoToPageAsync` "
-                    + "follows the pager's. To start a test at a view, open the page at an address with "
+                    + "`ClickRowAsync(...)` and `GoToPageAsync(2)` drive the grid.",
+                "In Playwright, each helper that drives the grid waits until the app has run its callbacks, such as "
+                    + "`SortsChanged` or `SelectedItemsChanged`.",
+                "The grid shows a change before its callbacks run, so the Playwright helpers' wait follows its count "
+                    + "of answered changes in `data-commits`.",
+                "In Playwright, sorting, filtering and paging also wait for a `DataProvider`'s rows.",
+                "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync`, "
+                    + "`SortAsync` and `FilterAsync`, and `Cell(row, column)` finds a cell.",
+                "With a `StateHref`, the sort headers and the pager are links.",
+                "In an interactive grid with a `StateHref`, `SortAsync` and `GoToPageAsync` still work; on a static "
+                    + "page, click the header's link, and `GoToPageAsync` follows the pager's.",
+                "With a `StateHref`, start a test at a view by opening the page at an address with "
                     + "`GridState.ToQueryParameters` in its query.",
-                "In a filter menu, `FilterAsync(\"Sites\", \"At least\", \"16\")` picks a condition too, and "
-                    + "`FilterChoicesAsync(\"Region\", \"North ridge\")` leaves exactly those values picked, in a "
-                    + "menu's checkboxes or the filter row's multiple select.",
-                "In the filter row, a choice filter is a select named for its column: "
-                    + "`page.Tb().Select(\"Filter Difficulty\").ChooseAsync(\"Easy\")`.",
+                "In a filter menu, `FilterAsync(\"Sites\", \"At least\", \"16\")` picks a condition too.",
+                "`FilterChoicesAsync(\"Region\", \"North ridge\")` leaves exactly those values picked, in a menu's "
+                    + "checkboxes or the filter row's multiple select.",
+                "In the filter row, a choice filter is a select named for its column: `page.Tb().Select(\"Filter "
+                    + "Difficulty\").ChooseAsync(\"Easy\")`.",
                 "`page.Tb().Select(\"Group by\").ChooseAsync(\"Region\")` groups the rows. Each group's heading is a "
                     + "`[data-part=group]` row whose `[data-part=group-toggle]` button opens or closes it.",
                 "A row's details button is named for the row: `GetByRole(AriaRole.Button, new() { Name = \"Details "
                     + "for Cedar Flats\" })`. Its `aria-controls` names the `[data-part=detail]` row it opens.",
                 "With `OnRowMove`, `page.Tb().Grid(\"Route stops\").MoveRowAsync(\"Trailhead\", 2)` moves a row "
-                    + "through its handle's menu, straight to either end or a place at a time, and "
-                    + "`DragRowBeforeAsync` and `DragRowAfterAsync` drag it onto another row. Rows that can move "
-                    + "carry `data-index`, their place among all the rows.",
-                "Without the helpers, wait for the table's `aria-busy` to clear before clicking a row. A row's move "
-                    + "handle gets `data-ready` only once it's focused, pointed at or clicked: wait for "
-                    + "`[data-ready], [data-attach-on-use]`, focus it, then wait for `data-ready` before pressing its "
-                    + "keys.",
-                "Rows carry `data-key` and `data-selected`, a filtered column's header `data-filtered`, and cells "
-                    + "`data-column`, the field's path such as "
-                    + "`Shipping.City` unless the column has an `Id`. A pinned column's header and cells also carry "
-                    + "`data-pinned`, `start` or `end`, and a filter cell's `data-value` holds its applied values as "
-                    + "invariant text, with a range's two dates separated by a space.",
-                "In bUnit, `cut.Tb().Grid(\"Trails\")` from `Trailblazor.Testing` has the same `Row`, `SelectAsync`, "
-                    + "`SortAsync` and `FilterAsync`, and `Cell(row, column)` finds a cell. In both packages, with "
-                    + "`Async` names in Playwright, `Rows` and `Selected` read the rows shown and the selected ones "
-                    + "as their data cells' texts, and `RowCount` counts the rows shown. `IsBusy` reads whether rows "
-                    + "are loading, from a `DataProvider` or while `Loading` is set, and `WaitForRowsAsync()` waits "
-                    + "until they've loaded. "
-                    + "With that driver as `grid`, `cut.Tb().Within(() => grid.Row(\"Cedar Flats\"))` finds the "
-                    + "fields in one row.",
-                "In bUnit, `await cut.Tb().Menu(\"Export\").ChooseAsync(\"CSV\")` downloads the file into "
-                    + "`FakeBrowserService.Downloads`, where `Text` reads a CSV back, starting with its byte order "
-                    + "mark. In Playwright, wrap the choice in "
-                    + "`page.RunAndWaitForDownloadAsync`. `ExportCsvAsync` returns the text itself. The download's "
-                    + "`SuggestedFilename` is the export's name (`ExportFileName`, or else the grid's label) with "
-                    + "its extension, but in WebKit on Linux it has an underscore for each space.",
-                "`Total(\"Length (km)\")` reads the totals row's cell under a column, such as \"Sum 49.9\", or null "
-                    + "when it shows no total; in Playwright, use `await TotalAsync(\"Length (km)\")`. "
-                    + "`GroupTotals(\"Length (km)\")` reads each open group's totals cell under that column, in "
-                    + "order; in Playwright, use `await GroupTotalsAsync(\"Length (km)\")`. Both leave out the row's "
-                    + "hidden name.",
+                    + "through its handle's menu, straight to either end or a place at a time.",
+                "With `OnRowMove`, `DragRowBeforeAsync` and `DragRowAfterAsync` drag a row onto another row.",
+                "Rows that can move carry `data-index`, their place among all the rows.",
                 "`ResizeColumnAsync(\"Region\", 200)` resizes the Region column to 200 pixels: in Playwright by "
                     + "dragging its edge and waiting until the grid keeps the width and `StateChanged` has run; in "
-                    + "bUnit as the grid's script reports it. A column's header carries the width the grid keeps in "
-                    + "`data-width`.",
+                    + "bUnit as the grid's script reports it.",
+                "A column's header carries the width the grid keeps in `data-width`.",
                 "A column moves from its menu: `page.Tb().Menu(\"Options for Region\").ChooseAsync(\"Move Region "
-                    + "later\")`, and the same in bUnit with `cut.Tb()`. In bUnit, `Columns` reads the column titles "
-                    + "in the order they show; in Playwright, use `await ColumnsAsync()`.",
+                    + "later\")`, and the same in bUnit with `cut.Tb()`.",
+                "In bUnit, `Columns` reads the column titles in the order they show; in Playwright, use `await "
+                    + "ColumnsAsync()`.",
                 "Hide or show a column from the Columns menu: `cut.Tb().Menu(\"Columns\").ChooseAsync(\"Region\")`, "
                     + "and the same in Playwright with `page.Tb()`.",
-                "In bUnit, `ClickRowAsync(\"Cedar Flats\")` clicks a row as the browser reports it, raising "
-                    + "`OnRowClick` and, with `RowClickSelects`, selecting it. A plain `Click()` on the row doesn't.",
                 "Double-click a cell or press Enter on it to edit it. Its field is named for its column, so in bUnit "
                     + "`cut.Tb().NumberField(\"Length (km)\")` finds it, and Enter saves.",
                 "A virtualized grid draws only the rows in view, so scroll its `[data-part=scroll]` box, or call "
                     + "`ScrollToAsync`, before looking for a row further down.",
+                "In both packages, with `Async` names in Playwright, `Rows` and `Selected` read the rows shown and "
+                    + "the selected ones as their data cells' texts, and `RowCount` counts the rows shown.",
+                "`IsBusy` reads whether rows are loading, from a `DataProvider` or while `Loading` is set, and "
+                    + "`WaitForRowsAsync()` waits until they've loaded.",
+                "With the bUnit grid driver as `grid`, `cut.Tb().Within(() => grid.Row(\"Cedar Flats\"))` finds the "
+                    + "fields in one row.",
+                "`Total(\"Length (km)\")` reads the totals row's cell under a column, such as \"Sum 49.9\", or null "
+                    + "when it shows no total; in Playwright, use `await TotalAsync(\"Length (km)\")`.",
+                "`GroupTotals(\"Length (km)\")` reads each open group's totals cell under that column, in order; in "
+                    + "Playwright, use `await GroupTotalsAsync(\"Length (km)\")`.",
+                "`Total` and `GroupTotals` both leave out the row's hidden name.",
+                "In bUnit, `await cut.Tb().Menu(\"Export\").ChooseAsync(\"CSV\")` downloads the file into "
+                    + "`FakeBrowserService.Downloads`, where `Text` reads a CSV back, starting with its byte order "
+                    + "mark.",
+                "In Playwright, wrap the export choice in `page.RunAndWaitForDownloadAsync`.",
+                "`ExportCsvAsync` returns the text itself.",
+                "The download's `SuggestedFilename` is the export's name (`ExportFileName`, or else the grid's "
+                    + "label) with its extension, but in WebKit on Linux it has an underscore for each space.",
+                "Rows carry `data-key` and `data-selected`, and a filtered column's header carries `data-filtered`.",
+                "Cells carry `data-column`, the field's path such as `Shipping.City` unless the column has an `Id`.",
+                "A pinned column's header and cells also carry `data-pinned`, `start` or `end`.",
+                "A filter cell's `data-value` holds its applied values as invariant text, with a range's two dates "
+                    + "separated by a space.",
+                "Without the helpers, wait for the table's `aria-busy` to clear before clicking a row.",
+                "A row's move handle gets `data-ready` only once it's focused, pointed at or clicked: wait for "
+                    + "`[data-ready], [data-attach-on-use]`, focus it, then wait for `data-ready` before pressing its "
+                    + "keys.",
+                "In bUnit, `ClickRowAsync(\"Cedar Flats\")` clicks a row as the browser reports it, raising "
+                    + "`OnRowClick` and, with `RowClickSelects`, selecting it. A plain `Click()` on the row doesn't.",
             ],
             Telemetry =
             [
@@ -12683,10 +13037,10 @@ public static class ExampleCatalog
             [
                 "In Playwright, `page.Tb().Grid(\"Trails by region\")` from `Trailblazor.Testing.Playwright` opens a "
                     + "row with `ExpandAsync(\"North ridge\")` and closes it with `CollapseAsync`, each waiting until "
-                    + "the app has run its `ExpandedParentsChanged`. In bUnit, `cut.Tb().Grid(\"Trails by region\")` "
-                    + "has the same two.",
-                "Rows carry `aria-level`, from 1 for a top row, so a test can read a row's depth, and the rest of the "
-                    + "[data grid's](components/data-grid#testing) helpers work as they do there.",
+                    + "the app has run its `ExpandedParentsChanged`.",
+                "In bUnit, `cut.Tb().Grid(\"Trails by region\")` has the same `ExpandAsync` and `CollapseAsync`.",
+                "Rows carry `aria-level`, from 1 for a top row, so a test can read a row's depth, and the rest of "
+                    + "the [data grid's](components/data-grid#testing) helpers work as they do there.",
             ],
             Telemetry =
             [
@@ -12754,8 +13108,11 @@ public static class ExampleCatalog
             {
                 WithoutHelpers = true,
             },
-            TestingTip = "Find it by role and name, `GetByRole(AriaRole.Table, new() { Name = \"Opening hours\" })`, "
-                + "and its cells with `GetByRole(AriaRole.Cell, ...)`.",
+            TestingTips =
+            [
+                "Find it by role and name, `GetByRole(AriaRole.Table, new() { Name = \"Opening hours\" })`, and its "
+                    + "cells with `GetByRole(AriaRole.Cell, ...)`.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"trail-table\"`, it counts `trailblazor.control.shown` as it "
@@ -12847,10 +13204,14 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it reads the trail's items and the current page, follows the link one level up, "
                 + "and checks where the user is taken."),
-            TestingTip = "`page.Tb().Breadcrumbs()` in Playwright, or `cut.Tb().Breadcrumbs()` in bUnit, finds the "
-                + "only trail, or the one you name: `FollowAsync(\"Guides\")` follows an item's link, "
-                + "`ItemsAsync()` or `Items` reads each item's text, and `CurrentAsync()` or `Current` reads the item "
-                + "marked as the current page.",
+            TestingTips =
+            [
+                "`page.Tb().Breadcrumbs()` in Playwright, or `cut.Tb().Breadcrumbs()` in bUnit, finds the only "
+                    + "trail, or the one you name.",
+                "`FollowAsync(\"Guides\")` follows an item's link.",
+                "`ItemsAsync()` or `Items` reads each item's text, and `CurrentAsync()` or `Current` reads the item "
+                    + "marked as the current page.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"project-breadcrumbs\"`, it counts `trailblazor.control.shown` as "
@@ -12952,13 +13313,14 @@ public static class ExampleCatalog
                 + "and checks which step is current and what the app shows for it."),
             TestingTips =
             [
-                "`page.Tb().Stepper(\"Trip booking\")` in Playwright, or `cut.Tb().Stepper(...)` in bUnit, finds "
-                    + "the stepper: `GoToAsync(\"Gear\")` goes to a step by its title and, in Playwright, waits "
-                    + "until the app's `ActiveKeyChanged` has run, which the stepper counts in `data-commits`; "
-                    + "`StepsAsync()` or `Steps` "
-                    + "reads the steps' titles, and `CurrentAsync()` or `Current` reads the current step's.",
-                "To find a finished step by role yourself, match its accessible name, which ends in \"Completed\", or "
-                    + "`Labels.Completed`, as in \"Trip Completed\".",
+                "`page.Tb().Stepper(\"Trip booking\")` in Playwright, or `cut.Tb().Stepper(...)` in bUnit, finds the "
+                    + "stepper.",
+                "`GoToAsync(\"Gear\")` goes to a step by its title and, in Playwright, waits until the app's "
+                    + "`ActiveKeyChanged` has run, which the stepper counts in `data-commits`.",
+                "`StepsAsync()` or `Steps` reads the steps' titles, and `CurrentAsync()` or `Current` reads the "
+                    + "current step's.",
+                "To find a finished step by role yourself, match its accessible name, which ends in \"Completed\", "
+                    + "or `Labels.Completed`, as in \"Trip Completed\".",
             ],
             Telemetry =
             [
@@ -13062,17 +13424,22 @@ public static class ExampleCatalog
                 new("last", "The button that goes to the last page."),
             ],
             Scenario = new("pages", "it goes to report page 7 and checks the page the pagination and the app show."),
-            TestingTip = "To go to a page, `await page.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from "
-                + "`Trailblazor.Testing.Playwright` clicks it, types it into the page box of a pagination that is "
-                + "compact or has turned to its box for lack of room, or steps toward it through the nearest page "
-                + "shown, or with Next and Previous when none is between, then waits "
-                + "until the app has run its `PageChanged`, which the pagination counts in `data-commits` since it "
-                + "shows the new page first. It waits for the pagination to fit its pages first: `data-ready` comes "
-                + "with the first fit, and `data-fitting` marks a later one that is still to show. In bUnit, "
-                + "`cut.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from `Trailblazor.Testing` does the same, and "
-                + "`Page` (`PageAsync()` in Playwright) reads the current page. bUnit lays nothing out, so there a "
-                + "pagination always shows the "
-                + "pages it was asked for.",
+            TestingTips =
+            [
+                "To go to a page, `await page.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from "
+                    + "`Trailblazor.Testing.Playwright` clicks it, or types it into the page box when the pagination "
+                    + "is compact or has turned to its box for lack of room.",
+                "`GoToPageAsync` can also step toward the page through the nearest page shown, or with Next and "
+                    + "Previous when none is between.",
+                "`GoToPageAsync` then waits until the app has run its `PageChanged`, which the pagination counts in "
+                    + "`data-commits` since it shows the new page first.",
+                "`GoToPageAsync` first waits for the pagination to fit its pages: `data-ready` comes with the first "
+                    + "fit, and `data-fitting` marks a later one that is still to show.",
+                "In bUnit, `cut.Tb().Pagination(\"Photos\").GoToPageAsync(42)` from `Trailblazor.Testing` does the "
+                    + "same.",
+                "`Page` in bUnit, or `PageAsync()` in Playwright, reads the current page.",
+                "In bUnit, which lays nothing out, a pagination always shows the pages it was asked for.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"trail-pages\"`, it counts `trailblazor.control.shown` as it "
@@ -13155,8 +13522,11 @@ public static class ExampleCatalog
                 Only = ScenarioPackage.Playwright,
                 WithoutHelpers = true,
             },
-            TestingTip = "Scroll a section into view and check its link with `ToHaveAttributeAsync(\"aria-current\", "
-                + "\"location\")`.",
+            TestingTips =
+            [
+                "Scroll a section into view and check its link with `ToHaveAttributeAsync(\"aria-current\", "
+                    + "\"location\")`.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"guide-contents\"`, it counts `trailblazor.control.shown` as it "
@@ -13227,10 +13597,14 @@ public static class ExampleCatalog
             Blocks = ["tb-link"],
             Scenario = new("button", "it clicks a link that runs the app's handler and checks that the batch ID "
                 + "shows."),
-            TestingTip = "A link with an `Href` has the `link` role and one without has the `button` role. "
-                + "`Tb().Link(name).ClickAsync()` clicks either kind and waits until its `OnClick` has run, which the "
-                + "link counts in `data-clicks`; to find it yourself, use the role that matches. `ToBeDisabledAsync` "
-                + "checks either kind is disabled.",
+            TestingTips =
+            [
+                "A link with an `Href` has the `link` role and one without has the `button` role.",
+                "`Tb().Link(name).ClickAsync()` clicks either kind and waits until its `OnClick` has run, which the "
+                    + "link counts in `data-clicks`.",
+                "To find a link yourself, use the role that matches its kind.",
+                "`ToBeDisabledAsync` checks either kind is disabled.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"trail-guide\"`, it counts `trailblazor.control.shown` as it first "
@@ -13291,8 +13665,11 @@ public static class ExampleCatalog
             ],
             Scenario = new("basic", "it checks the empty state's title, clicks its action, and checks what the app "
                 + "ran."),
-            TestingTip = "Find it by its title, as `GetByRole(AriaRole.Heading, new() { Name = \"No trails saved "
-                + "yet\" })`, and its actions by their own roles and names.",
+            TestingTips =
+            [
+                "Find it by its title, as `GetByRole(AriaRole.Heading, new() { Name = \"No trails saved yet\" })`, "
+                    + "and its actions by their own roles and names.",
+            ],
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"no-saved-trails\"`, it counts `trailblazor.control.shown` as it "
@@ -13348,10 +13725,14 @@ public static class ExampleCatalog
             ],
             Scenario = new("wrapping-content", "it checks that the trip is busy and out of reach while it loads, ends "
                 + "the loading, and checks that the trip shows."),
-            TestingTip = "Skeletons have no role, so wait for the loaded content rather than for them to go, or check "
-                + "that the region is no longer `aria-busy=\"true\"`: a wrapping skeleton removes the attribute, and "
-                + "a region the app marks has it set to `false`. Wrapped content is in the page while it loads, but "
-                + "hidden, so `ToBeVisibleAsync` waits for it to load.",
+            TestingTips =
+            [
+                "Skeletons have no role, so wait for the loaded content rather than for them to go.",
+                "You can also check that the region is no longer `aria-busy=\"true\"`: a wrapping skeleton removes "
+                    + "the attribute, and a region the app marks has it set to `false`.",
+                "Wrapped content is in the page while it loads, but hidden, so `ToBeVisibleAsync` waits for it to "
+                    + "load.",
+            ],
         },
         new("toast", "Toast", ExampleCategory.Feedback,
             "A brief message in a corner that doesn't interrupt, with an optional title, icon, content and action.")
@@ -13439,15 +13820,20 @@ public static class ExampleCatalog
             ],
             Scenario = new("action", "it archives a report, presses Undo on the toast that says so, and checks what "
                 + "the app did."),
-            TestingTip = "Each toast is an item in the region named `Notifications`. A closed toast fades out with "
-                + "`data-leaving` for a moment, so wait for it to go, as with `ToHaveCountAsync(0)`. "
-                + "`await page.Tb().Toasts.WaitForAsync(\"Report archived\")` from `Trailblazor.Testing.Playwright` "
-                + "returns the toast that shows the text, to click its action. `root.Tb().Toasts.WaitForAsync` does "
-                + "the same in bUnit, called on the markup of the `TbRoot` that shows the toasts. In both, "
-                + "`DismissAsync(\"Report archived\")` closes the newest toast with the text, and "
-                + "`ChooseAsync(\"Report archived\", \"Undo\")` clicks its action; in Playwright, it waits until "
-                + "the app has run the action. In bUnit, awaiting `Closed` on the `ToastReference` that `Show` "
-                + "returns says why the toast closed.",
+            TestingTips =
+            [
+                "Each toast is an item in the region named `Notifications`.",
+                "A closed toast fades out with `data-leaving` for a moment, so wait for it to go, as with "
+                    + "`ToHaveCountAsync(0)`.",
+                "`await page.Tb().Toasts.WaitForAsync(\"Report archived\")` from `Trailblazor.Testing.Playwright` "
+                    + "returns the toast that shows the text, to click its action.",
+                "`root.Tb().Toasts.WaitForAsync` does the same in bUnit, called on the markup of the `TbRoot` that "
+                    + "shows the toasts.",
+                "In both packages, `DismissAsync(\"Report archived\")` closes the newest toast with the text, and "
+                    + "`ChooseAsync(\"Report archived\", \"Undo\")` clicks its action.",
+                "In Playwright, `ChooseAsync` waits until the app has run the action.",
+                "In bUnit, awaiting `Closed` on the `ToastReference` that `Show` returns says why the toast closed.",
+            ],
             Telemetry =
             [
                 "With `ToastOptions.TelemetryName`, such as `\"trail-saved\"`, it counts `trailblazor.control.shown` "

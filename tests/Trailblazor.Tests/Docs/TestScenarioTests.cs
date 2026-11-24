@@ -38,7 +38,7 @@ public class TestScenarioTests : DocsTest
         var scenario = example.Scenario!;
 
         var section = Assert.Single(example.Sections, section => section.Id == scenario.Section);
-        // The sentence follows "A whole test of the example under ...:" on the page.
+        // The sentence follows "The test covers the example under ...:" on the page.
         Assert.Matches(@"^[a-z].*\.$", scenario.Checks);
         Assert.Equal(scenario.Only == ScenarioPackage.Playwright, TestScenario.Bunit(example) is null);
         Assert.Equal(scenario.Only == ScenarioPackage.Bunit, TestScenario.Playwright(example) is null);
@@ -96,8 +96,9 @@ public class TestScenarioTests : DocsTest
         Assert.EndsWith("Assert.Equal(\"Reports sent: 1\", cut.Find(\"output\").TextContent);", bunit.TrimEnd());
         Assert.StartsWith("var page = await OpenAsync(browser, \"/examples/button/submit\");", playwright);
         Assert.Contains("page.Tb().Button(\"Send report\")", playwright);
+        Assert.Equal(["bUnit", "Playwright"], Tabs(cut));
         // The sentence above the tests names the example they drive and links to it.
-        var lead = cut.FindAll("p").Single(text => text.TextContent.Contains("A whole test of the"));
+        var lead = cut.FindAll("p").Single(text => text.TextContent.Contains("The test covers the example under"));
         Assert.Equal(("Submit", "components/button#submit"),
             (lead.QuerySelector("a")!.TextContent, lead.QuerySelector("a")!.GetAttribute("href")));
     }
@@ -110,9 +111,7 @@ public class TestScenarioTests : DocsTest
         Assert.Empty(cut.FindAll("[aria-label='The test in bUnit']"));
         Assert.StartsWith("var page = await OpenAsync(browser, \"/examples/back-to-top/basic\");",
             cut.Find("[aria-label='The test in Playwright']").TextContent);
-        var lead = cut.FindAll("p").Single(text => text.TextContent.Contains("A whole test of the"));
-        Assert.EndsWith("with the helpers from Trailblazor.Testing.Playwright that the testing guide sets up.",
-            lead.TextContent);
+        Assert.Equal(["Playwright"], Tabs(cut));
         Assert.DoesNotContain(cut.FindAll("p"), text => text.TextContent.Contains("BunitContext"));
     }
 
@@ -124,8 +123,7 @@ public class TestScenarioTests : DocsTest
         Assert.Empty(cut.FindAll("[aria-label='The test in Playwright']"));
         Assert.StartsWith("var cut = Render<SpeechToTextExample>();",
             cut.Find("[aria-label='The test in bUnit']").TextContent);
-        var lead = cut.FindAll("p").Single(text => text.TextContent.Contains("A whole test of the"));
-        Assert.EndsWith("with the helpers from Trailblazor.Testing that the testing guide sets up.", lead.TextContent);
+        Assert.Equal(["bUnit"], Tabs(cut));
         Assert.Contains(cut.FindAll("p"), text => text.TextContent.Contains("BunitContext"));
         Assert.DoesNotContain(cut.FindAll("p"), text => text.TextContent.Contains("OpenAsync"));
     }
@@ -135,10 +133,14 @@ public class TestScenarioTests : DocsTest
     {
         var cut = ComponentPage("table");
 
-        var lead = cut.FindAll("p").Single(text => text.TextContent.Contains("A whole test of the"));
-        Assert.EndsWith("The component has no helper of its own, so the tests read it by role and by its markup, as "
-            + "an app's tests would.", lead.TextContent);
+        Assert.Contains(cut.FindAll("p"), text => Regex.Replace(text.TextContent.Trim(), @"\s+", " ")
+            == "The component has no helper of its own, so the tests read it by role and by its markup, as an app's "
+            + "tests would.");
     }
+
+    private static string[] Tabs(IRenderedComponent<Trailblazor.Docs.Pages.ComponentPage> cut) =>
+        [.. cut.FindAll("[role=tablist][aria-label='The test in each package'] [role=tab]")
+            .Select(tab => tab.TextContent.Trim())];
 
     [Fact]
     public void ComponentPage_ShouldShowNoTest_WhenThePageHasNoScenario()

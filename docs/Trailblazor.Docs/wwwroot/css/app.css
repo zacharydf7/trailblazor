@@ -821,6 +821,7 @@ code {
 /* The docs' own text only; an example must look as it does in an app, and listings set their own size. */
 :is(.docs-main, .docs-article__body) > :is(p, h3, .docs-heading--h3, ul, ol, .tb-alert) code,
 .docs-notes code,
+.docs-test-setup code,
 .docs-tokens code,
 .docs-api code {
     padding: 0.1em 0.35em;
@@ -874,6 +875,16 @@ code {
 
 .docs-notes > li + li {
     margin-block-start: var(--tb-space-2);
+}
+
+.docs-notes + .docs-note {
+    margin-block-start: var(--tb-space-4);
+}
+
+/* The line under a test's code that says where it comes from. */
+.docs-test-setup {
+    margin-block-start: var(--tb-space-2);
+    font-size: var(--tb-font-size-sm);
 }
 
 .docs-swatch {

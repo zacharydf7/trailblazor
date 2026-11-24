@@ -26,7 +26,7 @@ public class ExampleCatalogTests
         Assert.Equal(ids.Count, ids.Distinct().Count());
         Assert.Empty(ids.Intersect(["usage", "when-to-use", "when-not-to-use", "accessibility", "keyboard", "labeling",
             "announcements", "what-it-does", "app-duties", "before-interactive", "notes", "telemetry", "design-tokens",
-            "testing", "related"]));
+            "testing", "finding-it", "whole-test", "testing-tips", "related"]));
     }
 
     [Theory, MemberData(nameof(Names))]
@@ -47,7 +47,7 @@ public class ExampleCatalogTests
             .. example.LabelingNotes, .. example.Announcements, .. example.AppDuties, .. example.BeforeInteractive,
             .. example.NotesShown.Select(note => note.Text), .. example.Keyboard.Select(row => row.Action),
             .. example.Keyboard.Select(row => row.When), .. example.TelemetryNotes,
-            .. example.Sections.Select(section => section.Description), example.TestingTip, .. example.TestingTips,
+            .. example.Sections.Select(section => section.Description), .. example.TestingTips,
             example.RightToLeftKeys];
 
         // Matches the path of every link DocsText renders, and anything else written like one.
@@ -75,7 +75,28 @@ public class ExampleCatalogTests
 
         if (example.Target is not null)
         {
-            Assert.True(example.TestingTip is not null || example.TestingTips.Count > 0);
+            Assert.NotEmpty(example.TestingTips);
+        }
+    }
+
+    private const int MaxTestingTipLength = 300;
+
+    // The pages with a tip still to split (#703). A page leaves the list once its tips are short.
+    private static readonly string[] TipsToSplit = ["query-builder", "lightbox"];
+
+    // The tips show as a list, so each item stays short enough to read at a glance.
+    [Theory, MemberData(nameof(Names))]
+    public void Example_ShouldKeepEachTestingTipShort_WhenItsPageListsThem(string name)
+    {
+        var tips = ExampleCatalog.Find(name)!.TestingTipsShown;
+
+        if (TipsToSplit.Contains(name))
+        {
+            Assert.Contains(tips, tip => tip.Length > MaxTestingTipLength);
+        }
+        else
+        {
+            Assert.All(tips, tip => Assert.True(tip.Length <= MaxTestingTipLength, tip));
         }
     }
 

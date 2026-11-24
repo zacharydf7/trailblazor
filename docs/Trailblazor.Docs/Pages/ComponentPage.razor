@@ -165,6 +165,10 @@
             }
 
             <DocsHeading Id="testing" Text="Testing" Class="docs-section" />
+            <TbText class="docs-note">
+                The <a href="guides/testing">testing guide</a> shows how to set up bUnit and Playwright.
+            </TbText>
+            <DocsHeading Id="finding-it" Text="Finding it" Level="TextElement.H3" TextStyle="TextStyle.Subtitle" />
             @if (example.Target is { } target)
             {
                 <TbText>Find it by its role, the way a person finds it:</TbText>
@@ -184,40 +188,6 @@
                     <a href="guides/testing#waiting">testing guide</a> explains.
                 </TbText>
             }
-            @if (example.Scenario is { } scenario)
-            {
-                var bunit = TestScenario.Bunit(example);
-                var playwright = TestScenario.Playwright(example);
-                <TbText>
-                    @DocsText.Render($"A whole test of the example under [{SectionTitle(example, scenario)}]"
-                        + $"(components/{example.Name}#{scenario.Section}): {scenario.Checks} The code below runs "
-                        + (scenario.WithoutHelpers ? "in the library's own test suites, set up as the [testing guide]"
-                            + "(guides/testing) shows. The component has no helper of its own, so the tests read it by "
-                            + "role and by its markup, as an app's tests would."
-                            : $"in the library's own test suites, with the helpers from {Packages(scenario)} that the "
-                            + "[testing guide](guides/testing) sets up."))
-                </TbText>
-                <TbText>
-                    @DocsText.Render(bunit is null ? PlaywrightSetup
-                        : playwright is null ? BunitSetup : $"{BunitSetup} {PlaywrightSetup}")
-                </TbText>
-                @if (bunit is not null)
-                {
-                    <CodeBlock Label="The test in bUnit" Code="@bunit" Language="CodeLanguage.CSharp" />
-                }
-                @if (playwright is not null)
-                {
-                    <CodeBlock Label="The test in Playwright" Code="@playwright" Language="CodeLanguage.CSharp" />
-                }
-            }
-            @if (example.TestingTip is { } tip)
-            {
-                <TbText>@DocsText.Render(tip)</TbText>
-            }
-            @if (example.TestingTipsShown.Count > 0)
-            {
-                @Notes("Testing tips", example.TestingTipsShown)
-            }
             @if (example.DataParts.Count > 0)
             {
                 <TbText>
@@ -226,9 +196,48 @@
                     <a href="@($"components/{example.Name}/api#parts")">API page lists each part</a> and what it is.
                 </TbText>
             }
-            <TbText class="docs-note">
-                The <a href="guides/testing">testing guide</a> shows how to set up bUnit and Playwright.
-            </TbText>
+            @if (example.Scenario is { } scenario)
+            {
+                var bunit = TestScenario.Bunit(example);
+                var playwright = TestScenario.Playwright(example);
+                <DocsHeading Id="whole-test" Text="A whole test" Level="TextElement.H3"
+                             TextStyle="TextStyle.Subtitle" />
+                <TbText>
+                    @DocsText.Render($"The test covers the example under [{SectionTitle(example, scenario)}]"
+                        + $"(components/{example.Name}#{scenario.Section}): {scenario.Checks}")
+                </TbText>
+                @if (scenario.WithoutHelpers)
+                {
+                    <TbText>
+                        The component has no helper of its own, so the tests read it by role and by its markup, as an
+                        app's tests would.
+                    </TbText>
+                }
+                <TbTabs AriaLabel="The test in each package" RenderAllPanels>
+                    @if (bunit is not null)
+                    {
+                        <TbTab Text="bUnit">
+                            <CodeBlock Label="The test in bUnit" Code="@bunit" Language="CodeLanguage.CSharp" />
+                            <TbText class="docs-note docs-test-setup">@DocsText.Render(BunitSetup(scenario))</TbText>
+                        </TbTab>
+                    }
+                    @if (playwright is not null)
+                    {
+                        <TbTab Text="Playwright">
+                            <CodeBlock Label="The test in Playwright" Code="@playwright"
+                                       Language="CodeLanguage.CSharp" />
+                            <TbText class="docs-note docs-test-setup">
+                                @DocsText.Render(PlaywrightSetup(scenario))
+                            </TbText>
+                        </TbTab>
+                    }
+                </TbTabs>
+            }
+            @if (example.TestingTipsShown.Count > 0)
+            {
+                <DocsHeading Id="testing-tips" Text="Tips" Level="TextElement.H3" TextStyle="TextStyle.Subtitle" />
+                @Notes("Testing tips", example.TestingTipsShown)
+            }
 
             <DocsHeading Id="related" Text="Related" Class="docs-section" />
             <ul class="docs-notes" aria-label="Related">
@@ -256,19 +265,16 @@ else
     private static string SectionTitle(Example example, TestScenario scenario) =>
         example.Sections.Single(section => section.Id == scenario.Section).Title;
 
-    private const string BunitSetup = "The bUnit test's class is a `BunitContext` that calls `this.AddTrailblazor()`.";
+    private static string BunitSetup(TestScenario scenario) => $"From the library's own bUnit suite, {Using(scenario)} "
+        + "`Trailblazor.Testing`. The test's class is a `BunitContext` that calls `this.AddTrailblazor()`.";
 
-    private const string PlaywrightSetup = "In the Playwright test, `OpenAsync` is the suite's own: in the browser the "
-        + "test runs for, it opens the example on a page by itself and waits until the page is interactive, as "
-        + "`page.GotoAsync(...)` followed by `page.Tb().InteractiveAsync()` does in your tests, and `Expect` is "
-        + "Playwright's `Assertions.Expect`.";
+    private static string PlaywrightSetup(TestScenario scenario) => "From the library's own Playwright suite, "
+        + $"{Using(scenario)} `Trailblazor.Testing.Playwright`. Its `OpenAsync` opens the example on a page by itself "
+        + "and waits until the page is interactive, as `page.GotoAsync(...)` and `page.Tb().InteractiveAsync()` do in "
+        + "your tests. `Expect` is Playwright's `Assertions.Expect`.";
 
-    private static string Packages(TestScenario scenario) => scenario.Only switch
-    {
-        ScenarioPackage.Bunit => "`Trailblazor.Testing`",
-        ScenarioPackage.Playwright => "`Trailblazor.Testing.Playwright`",
-        _ => "`Trailblazor.Testing` and `Trailblazor.Testing.Playwright`",
-    };
+    private static string Using(TestScenario scenario) =>
+        scenario.WithoutHelpers ? "set up with" : "with the helpers from";
 
     private static IReadOnlyList<string> PlainNotes(Example example) =>
         [.. example.NotesShown.Where(note => !note.Pitfall).Select(note => note.Text)];

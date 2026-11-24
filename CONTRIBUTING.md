@@ -80,8 +80,8 @@ on an entry whose demos need the frame's width, such as a grid or a layout compo
 The rest of the page comes from the entry's other slots. `Api`, `WhenToUse`, `Related`, `Accessibility`, `Blocks`,
 `Target`, `Modes` and `BeforeInteractive` are required; every other slot is optional, and an empty one renders
 nothing. "On this page" lists every H2 section, leaving out Notes and limitations when it's empty. The H3s under
-Usage and Accessibility have ids of their own, such as `#keyboard`, for linking. The page shows the slots in this
-order:
+Usage, Accessibility and Testing have ids of their own, such as `#keyboard` and `#whole-test`, for linking. The page
+shows the slots in this order:
 
 | Slot | Shown under | Holds |
 | --- | --- | --- |
@@ -97,8 +97,10 @@ order:
 | `BeforeInteractive` | Accessibility: Before the page is interactive | What renders, works and posts then |
 | `Modes` | Accessibility: Before the page is interactive, and Getting Started's render modes table | How much works on a static page, and on a prerendered one before it turns interactive |
 | `Notes` | Notes and limitations | Behavior, limitations and known issues; a `Pitfall` shows as a warning |
-| `Telemetry`, `Blocks`, `Target`, `TestingTip` or `TestingTips`, `DataParts` | Their own sections | Counts, styles and how to test it |
-| `Scenario` | Testing | A whole test of one of the page's examples, in bUnit, Playwright or both |
+| `Telemetry`, `Blocks` | Their own sections | Counts and styles |
+| `Target`, `Ready`, `DataParts` | Testing: Finding it | Its role and name, the element marked ready, and its parts |
+| `Scenario` | Testing: A whole test | A whole test of one of the page's examples, in bUnit, Playwright or both, in tabs |
+| `TestingTips` | Testing: Tips | Short items, each a sentence or two that stands alone |
 | `Related` | Related | Catalog names of related components, linked with their summaries |
 
 A field's page adds the shared `AriaLabel` advice to Labeling and the focus events to Notes. Catalog text shows text
@@ -116,7 +118,7 @@ of a test the suites run:
   catalog name in Pascal case, such as `DataGridScenarioTests` for `data-grid`. The bUnit test renders the example's
   component, and the Playwright test opens `/examples/<name>/<section>`, which shows that one example.
 - `Scenario = new("<section>", "it ...")` in the page's catalog entry names the example's section and says in a
-  sentence what the test does. The sentence follows "A whole test of the example under ...:" on the page.
+  sentence what the test does. The sentence follows "The test covers the example under ...:" on the page.
 - Test a task a user of an app would do, such as filling in, choosing, saving or checking, along with what the app
   shows in response. Drive it through `cut.Tb()` and `page.Tb()`, with the same steps in both packages, and assert on
   what a user would see. Keep comments to what a reader new to the helpers needs.
