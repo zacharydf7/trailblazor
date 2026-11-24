@@ -1,8 +1,10 @@
-<TbStack>
+<TbStack Gap="4">
     <TbSurface Outlined class="tb-p-6" style="position: relative" role="region" aria-label="Quarterly report">
-        <TbText TextStyle="TextStyle.Subtitle">Quarterly report</TbText>
-        <TbText>Revenue grew in every region this quarter.</TbText>
-        <TbButton Variant="Variant.Text">Open the details</TbButton>
+        <TbStack Gap="2" Align="Align.Start">
+            <TbText TextStyle="TextStyle.Subtitle">Quarterly report</TbText>
+            <TbText>Revenue grew in every region this quarter.</TbText>
+            <TbButton Variant="Variant.Outlined">Open the details</TbButton>
+        </TbStack>
         <TbOverlay Open="_loading" Contained Blur Blocking>
             <TbProgress Circular AriaLabel="Loading the report" />
         </TbOverlay>

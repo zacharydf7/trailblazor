@@ -8,8 +8,18 @@
 </div>
 <TbFileUpload Label="Trail map" Info="A PDF or an image." DropZone="false" />
 <TbCheckbox Label="Guided hike" Info="A ranger leads the group." @bind-Value="_guided" />
+<div style="max-inline-size: 14rem">
+    <TbSlider Label="How far the group can walk in a day before it has to stop" Info="In kilometers."
+              @bind-Value="_distance" />
+</div>
+<div style="max-inline-size: 14rem">
+    <TbCheckbox Label="Carry a ranger's radio for the whole of the overnight route" Info="Ask at the gate."
+                @bind-Value="_radio" />
+</div>
 
 @code {
     private string? _contact;
     private bool _guided;
+    private bool _radio;
+    private double _distance = 12;
 }

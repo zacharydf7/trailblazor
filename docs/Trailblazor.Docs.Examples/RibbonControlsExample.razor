@@ -1,24 +1,26 @@
-<TbRibbon AriaLabel="Trip report">
-    <TbRibbonTab Title="Report">
-        <TbRibbonGroup Label="Send">
-            <TbMenu>
-                <Trigger>
-                    <TbRibbonButton Large Label="Export" Icon="ExampleIcons.ChevronDown"
-                                    @attributes="context.Attributes" />
-                </Trigger>
-                <ChildContent>
-                    <TbMenuItem OnClick="@(() => _last = "Exported as a PDF")">As a PDF</TbMenuItem>
-                    <TbMenuItem OnClick="@(() => _last = "Exported as a GPX track")">As a GPX track</TbMenuItem>
-                </ChildContent>
-            </TbMenu>
-        </TbRibbonGroup>
-        <TbRibbonGroup Label="Units">
-            <TbSelect @bind-Value="_distance" Items="Distances" AriaLabel="Distance in" Size="Size.Small" />
-            <TbSelect @bind-Value="_height" Items="Heights" AriaLabel="Height in" Size="Size.Small" />
-        </TbRibbonGroup>
-    </TbRibbonTab>
-</TbRibbon>
-<TbText>@(_last ?? "Nothing exported yet"). Distances are in @_distance and heights in @_height.</TbText>
+<TbStack Gap="3">
+    <TbRibbon AriaLabel="Trip report">
+        <TbRibbonTab Title="Report">
+            <TbRibbonGroup Label="Send">
+                <TbMenu>
+                    <Trigger>
+                        <TbRibbonButton Large Label="Export" Icon="ExampleIcons.ChevronDown"
+                                        @attributes="context.Attributes" />
+                    </Trigger>
+                    <ChildContent>
+                        <TbMenuItem OnClick="@(() => _last = "Exported as a PDF")">As a PDF</TbMenuItem>
+                        <TbMenuItem OnClick="@(() => _last = "Exported as a GPX track")">As a GPX track</TbMenuItem>
+                    </ChildContent>
+                </TbMenu>
+            </TbRibbonGroup>
+            <TbRibbonGroup Label="Units">
+                <TbSelect @bind-Value="_distance" Items="Distances" AriaLabel="Distance in" Size="Size.Small" />
+                <TbSelect @bind-Value="_height" Items="Heights" AriaLabel="Height in" Size="Size.Small" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+    </TbRibbon>
+    <TbText>@(_last ?? "Nothing exported yet"). Distances are in @_distance and heights in @_height.</TbText>
+</TbStack>
 
 @code {
     private static readonly string[] Distances = ["miles", "kilometers"];

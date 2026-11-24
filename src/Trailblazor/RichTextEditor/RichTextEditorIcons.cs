@@ -1,6 +1,10 @@
+using System.Globalization;
+using System.Net;
+
 namespace Trailblazor;
 
-// The toolbar's letters are drawn as lines, since visible <text> that a button's name lacks fails WCAG 2.5.3.
+// The toolbar's letters are drawn as lines, since visible <text> that a button's name lacks fails WCAG 2.5.3. Letter
+// alone draws <text>, which passes since its letter comes from the button's own name.
 internal static class RichTextEditorIcons
 {
     private const string Lines = "fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"";
@@ -81,13 +85,14 @@ internal static class RichTextEditorIcons
     public static Icon Table { get; } =
         new($"<path {Lines} stroke-width=\"2\" d=\"M4 5h16v14H4zM4 9.5h16M9.3 5v14M14.7 5v14\" />");
 
-    // A tag with its hole: the plain sign for a mark of the app's own.
-    public static Icon Mark { get; } =
-        new($"<path {Lines} stroke-width=\"2\" d=\"M4 5h7l9 9-7 7-9-9zM8.5 9.5h.01\" />");
-
-    // A framed paragraph: the plain sign for a kind of block of the app's own.
-    public static Icon Block { get; } = new($"<rect {Lines} stroke-width=\"2\" x=\"3\" y=\"5\" width=\"18\" "
-        + $"height=\"14\" rx=\"2\" /><path {Lines} stroke-width=\"2\" d=\"M7 10h10M7 14h6\" />");
+    // The first letter of a mark's or block's label: the sign for one of the app's own that has no icon, so two of
+    // them can be told apart.
+    public static Icon Letter(string label)
+    {
+        var letter = StringInfo.GetNextTextElement(label.Trim()).ToUpper(CultureInfo.CurrentCulture);
+        return new("<text x=\"12\" y=\"18\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"600\">"
+            + $"{WebUtility.HtmlEncode(letter)}</text>");
+    }
 
     // A magnifying glass.
     public static Icon Find { get; } = new($"<circle {Lines} stroke-width=\"2\" cx=\"10.5\" cy=\"10.5\" r=\"5.5\" />"

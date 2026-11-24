@@ -1,39 +1,42 @@
-<TbRibbon AriaLabel="Trail planner">
-    <TbRibbonTab Title="Notes">
-        <TbRibbonGroup Label="Write">
-            <TbRibbonButton Large Label="New note" Icon="ExampleIcons.Plus" OnClick="@(() => _last = "New note")" />
-            <TbRibbonButton Label="Find" Icon="ExampleIcons.Search" OnClick="@(() => _last = "Find")" />
-            <TbRibbonButton Label="Filter" Icon="ExampleIcons.Filter" OnClick="@(() => _last = "Filter")" />
-            <TbRibbonButton Label="Delete" Icon="ExampleIcons.Trash" OnClick="@(() => _last = "Delete")" />
-        </TbRibbonGroup>
-        <TbRibbonGroup Label="Alerts">
-            <TbRibbonButton Large Label="Set an alert" Icon="ExampleIcons.Bell"
-                            OnClick="@(() => _last = "Set an alert")" />
-            <TbRibbonButton Label="Mute" Icon="ExampleIcons.Minus" @bind-Pressed="_muted" />
-            <TbSelect @bind-Value="_remind" Items="Reminders" AriaLabel="Remind me" Size="Size.Small" />
-        </TbRibbonGroup>
-        <TbRibbonGroup Label="Progress">
-            <TbRibbonButton IconOnly Label="Mark as done" Icon="ExampleIcons.Check"
-                            OnClick="@(() => _last = "Mark as done")" />
-            <TbRibbonButton IconOnly Label="Move up" Icon="ExampleIcons.ArrowUp"
-                            OnClick="@(() => _last = "Move up")" />
-            <TbMenu Label="File under" Variant="Variant.Text" Tone="Tone.Neutral" Size="Size.Small">
-                <TbMenuItem OnClick="@(() => _last = "File under Planned")">Planned</TbMenuItem>
-                <TbMenuItem OnClick="@(() => _last = "File under Hiked")">Hiked</TbMenuItem>
-            </TbMenu>
-        </TbRibbonGroup>
-    </TbRibbonTab>
-    <TbRibbonTab Title="Trails">
-        <TbRibbonGroup Label="Plan">
-            <TbRibbonButton Large Label="Add a trail" Icon="ExampleIcons.Trail"
-                            OnClick="@(() => _last = "Add a trail")" />
-            <TbRibbonButton Label="Open a folder" Icon="ExampleIcons.Folder"
-                            OnClick="@(() => _last = "Open a folder")" />
-            <TbRibbonButton Label="Close the trail" Icon="ExampleIcons.Close" Disabled />
-        </TbRibbonGroup>
-    </TbRibbonTab>
-</TbRibbon>
-<TbText>Last command: @(_last ?? "none"). Alerts are @(_muted ? "muted" : "on"), and the reminder comes @_remind.</TbText>
+<TbStack Gap="3">
+    <TbRibbon AriaLabel="Trail planner">
+        <TbRibbonTab Title="Notes">
+            <TbRibbonGroup Label="Write">
+                <TbRibbonButton Large Label="New note" Icon="ExampleIcons.Plus" OnClick="@(() => _last = "New note")" />
+                <TbRibbonButton Label="Find" Icon="ExampleIcons.Search" OnClick="@(() => _last = "Find")" />
+                <TbRibbonButton Label="Filter" Icon="ExampleIcons.Filter" OnClick="@(() => _last = "Filter")" />
+                <TbRibbonButton Label="Delete" Icon="ExampleIcons.Trash" OnClick="@(() => _last = "Delete")" />
+            </TbRibbonGroup>
+            <TbRibbonGroup Label="Alerts">
+                <TbRibbonButton Large Label="Set an alert" Icon="ExampleIcons.Bell"
+                                OnClick="@(() => _last = "Set an alert")" />
+                <TbRibbonButton Label="Mute" Icon="ExampleIcons.Minus" @bind-Pressed="_muted" />
+                <TbSelect @bind-Value="_remind" Items="Reminders" AriaLabel="Remind me" Size="Size.Small" />
+            </TbRibbonGroup>
+            <TbRibbonGroup Label="Progress">
+                <TbRibbonButton IconOnly Label="Mark as done" Icon="ExampleIcons.Check"
+                                OnClick="@(() => _last = "Mark as done")" />
+                <TbRibbonButton IconOnly Label="Move up" Icon="ExampleIcons.ArrowUp"
+                                OnClick="@(() => _last = "Move up")" />
+                <TbMenu Label="File under" Variant="Variant.Text" Tone="Tone.Neutral" Size="Size.Small">
+                    <TbMenuItem OnClick="@(() => _last = "File under Planned")">Planned</TbMenuItem>
+                    <TbMenuItem OnClick="@(() => _last = "File under Hiked")">Hiked</TbMenuItem>
+                </TbMenu>
+            </TbRibbonGroup>
+        </TbRibbonTab>
+        <TbRibbonTab Title="Trails">
+            <TbRibbonGroup Label="Plan">
+                <TbRibbonButton Large Label="Add a trail" Icon="ExampleIcons.Trail"
+                                OnClick="@(() => _last = "Add a trail")" />
+                <TbRibbonButton Label="Open a folder" Icon="ExampleIcons.Folder"
+                                OnClick="@(() => _last = "Open a folder")" />
+                <TbRibbonButton Label="Close the trail" Icon="ExampleIcons.Close" Disabled />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+    </TbRibbon>
+    <TbText>Last command: @(_last ?? "none"). Alerts are @(_muted ? "muted" : "on"), and the reminder comes
+        @_remind.</TbText>
+</TbStack>
 
 @code {
     private static readonly string[] Reminders = ["the day before", "that morning", "an hour ahead"];

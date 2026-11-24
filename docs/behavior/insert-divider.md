@@ -21,8 +21,8 @@ Familiar apps: the add-block button in Notion, the insert handles between rows i
 
 ## Touch
 
-- [x] Where the pointer can't hover, the button stays in view. `InsertDividerTests.InsertDivider_ShouldKeepItsButtonInView_WhenThePointerCannotHover`
-- [x] Where the pointer can't hover, a disabled divider's button shows dimmed. `InsertDividerTests.InsertDivider_ShouldShowADisabledButtonDimmed_WhenThePointerCannotHover`
+- [x] Where the pointer can't hover, the button stays in view, along with a light line. `InsertDividerTests.InsertDivider_ShouldKeepItsButtonAndLineInView_WhenThePointerCannotHover`
+- [x] Where the pointer can't hover, a disabled divider's button and line show dimmed. `InsertDividerTests.InsertDivider_ShouldShowADisabledButtonDimmed_WhenThePointerCannotHover`
 - [x] A tap presses it through the same click a mouse sends, at a target of at least 26px. `TbInsertDivider.razor`
 
 ## Focus

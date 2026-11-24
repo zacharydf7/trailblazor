@@ -29,7 +29,8 @@ public sealed class RichTextBlock
     /// </summary>
     public string? Label { get; init; }
 
-    /// <summary>The icon of the kind's toolbar button. Defaults to a plain framed paragraph.</summary>
+    /// <summary>The icon of the kind's toolbar button. Defaults to the first letter of <see cref="Label"/>, or of
+    /// <see cref="Name"/> without one.</summary>
     public Icon? Icon { get; init; }
 
     /// <summary>The keys that turn a paragraph into the kind and back, written as a <see cref="RichTextMark"/>'s

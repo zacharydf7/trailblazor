@@ -32,18 +32,22 @@ public class LabelTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Label_ShouldWrapItsTextBesideItsInfoButton_WhenTheTextIsLongerThanTheLabelIsWide(string browser)
+    public async Task Label_ShouldPutItsInfoButtonAfterItsLastWord_WhenTheTextIsLongerThanTheLabelIsWide(string browser)
     {
         var page = await OpenAsync(browser, "/examples/label");
 
-        var longText = (await page.GetByText("The person we should call").BoundingBoxAsync())!;
+        var text = page.GetByText("The person we should call");
+        var longText = (await text.BoundingBoxAsync())!;
         var shortText = (await page.GetByText("Permit number").BoundingBoxAsync())!;
         var button = (await page.GetByRole(AriaRole.Button, new() { Name = "Information about The person" })
             .BoundingBoxAsync())!;
+        var lastLine = await text.EvaluateAsync<double[]>(
+            "e => { const text = document.createRange(); text.selectNodeContents(e); "
+            + "const line = [...text.getClientRects()].at(-1); return [line.right, line.top, line.bottom]; }");
 
         Assert.True(longText.Height > shortText.Height * 1.5, $"The text is {longText.Height}px tall.");
-        Assert.True(button.X >= longText.X + longText.Width - 1, "The button should sit beside the text.");
-        Assert.True(button.Y < longText.Y + longText.Height, "The button should sit beside the text, not under it.");
+        Assert.InRange(button.Y + button.Height / 2, lastLine[1], lastLine[2]);
+        Assert.True(button.X >= lastLine[0] - 1, "The button should come after the last word.");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

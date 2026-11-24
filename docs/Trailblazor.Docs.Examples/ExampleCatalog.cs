@@ -3008,9 +3008,10 @@ public static class ExampleCatalog
             [
                 new("between-items", "Between items", "`OnInsert` runs when the divider's button is pressed, and the "
                     + "app adds the item. The button shows when the pointer rests on the line or the button has "
-                    + "keyboard focus, and stays in view on a touch screen, which can't hover. It takes up its space "
-                    + "whether it shows or not, so the list doesn't jump. A disabled divider's button shows dimmed. "
-                    + "`AlwaysVisible` shows the line and the button at rest, as on the first divider here.",
+                    + "keyboard focus, and stays in view on a touch screen, which can't hover, along with a light "
+                    + "line. It takes up its space whether it shows or not, so the list doesn't jump. A disabled "
+                    + "divider's button and line show dimmed. `AlwaysVisible` shows the line and the button at rest, "
+                    + "as on the first divider here.",
                     typeof(InsertDividerExample)),
             ],
             Api = [typeof(TbInsertDivider)],
@@ -6109,9 +6110,9 @@ public static class ExampleCatalog
                     typeof(RichTextEditorSourceExample)),
                 new("your-own-marks", "Your own marks", "`Marks` gives the editor character formats of the "
                     + "app's own, each a `RichTextMark`. The toolbar gets a button for each after the editor's "
-                    + "formats, with the mark's `Label` and `Icon`, and its `Shortcut` turns it on and off. A "
-                    + "mark's "
-                    + "name says how it is written in the value: `cite`, `dfn`, `kbd`, `q`, `samp` and `var` are "
+                    + "formats, with the mark's `Label` and `Icon`, or without an `Icon` the first letter of its "
+                    + "label, and its `Shortcut` turns it on and off. A mark's name says how it is written in the "
+                    + "value: `cite`, `dfn`, `kbd`, `q`, `samp` and `var` are "
                     + "those elements, and any other name is a `<span data-tb-mark=\"name\">`, which your style "
                     + "sheet gives a look. Text pasted in keeps the editor's marks, and code that reads the value "
                     + "keeps them when `RichTextSchema.Marks` has their names. A mark is on or off and carries "
@@ -6119,9 +6120,9 @@ public static class ExampleCatalog
                     typeof(RichTextEditorMarksExample)),
                 new("your-own-blocks", "Your own blocks", "`CustomBlocks` gives the editor kinds of block of "
                     + "the app's own, each a `RichTextBlock`, such as a callout. The toolbar gets a button for "
-                    + "each after the heading, quote and list buttons, with the block's `Label` and `Icon`. The "
-                    + "button, "
-                    + "or the block's `Shortcut`, turns a paragraph into the kind and back, and with "
+                    + "each after the heading, quote and list buttons, with the block's `Label` and `Icon`, or without "
+                    + "an `Icon` the first letter of its label. The button, or the block's `Shortcut`, turns a "
+                    + "paragraph into the kind and back, and with "
                     + "`SlashCommands` the list of commands has it too. A paragraph of the kind is written as "
                     + "`<p data-tb-block=\"name\">`, which your style sheet gives a look, in the editor and "
                     + "wherever you show the value. It holds text and formats, as a plain paragraph does, but "

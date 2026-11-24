@@ -553,6 +553,18 @@ public class TbRichTextEditorTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldDrawTheFirstLetterOfTheLabel_WhenAMarkOrBlockHasNoIcon()
+    {
+        var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")
+            .Add(editor => editor.Marks, [new("var") { Label = "Placeholder" }, new("aside") { Label = "side note" }])
+            .Add(editor => editor.CustomBlocks, [new("callout") { Label = "Warning" }]));
+
+        // Two of the app's own marks without icons can still be told apart, each by its label's first letter.
+        Assert.Equal(["P", "S", "W"], cut.FindAll("[data-part=toolbar] :is([data-format], [data-block=callout]) text")
+            .Select(letter => letter.TextContent));
+    }
+
+    [Fact]
     public void Marks_ShouldStayOnTheFloatingToolbarUnlessToldNotTo_WhenFloatingFormatsNarrowsIt()
     {
         var cut = Render<TbRichTextEditor>(parameters => parameters.Add(editor => editor.Label, "Notes")

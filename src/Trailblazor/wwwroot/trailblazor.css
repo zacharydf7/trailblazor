@@ -981,7 +981,7 @@
 
     /* Each avatar after the first overlaps the one before, with a ring of the page's color between them. */
     .tb-avatar-group > :not(:first-child) {
-        margin-inline-start: -0.5rem;
+        margin-inline-start: calc(var(--tb-avatar-size, 2rem) * -0.15);
     }
 
     .tb-avatar-group .tb-avatar {
@@ -1018,6 +1018,8 @@
 
     .tb-breadcrumbs__separator {
         display: inline-flex;
+        color: var(--tb-color-text-muted);
+        font-weight: var(--tb-font-weight-regular);
     }
 
     .tb-breadcrumbs__link,
@@ -1099,6 +1101,12 @@
     /* A circle's edge crosses the diagonal 14.6% in from each side of its box. */
     .tb-badge-host--overlap > .tb-badge--circular {
         --tb-badge-inset: calc(14.6% + var(--tb-badge-offset));
+    }
+
+    /* An icon button's glyph fills the middle half of its box, so the badge hangs over the glyph's corner, unless it
+       keeps to a round button's edge. */
+    .tb-badge-host--overlap:has(> .tb-icon-button) > .tb-badge:not(.tb-badge--circular) {
+        --tb-badge-inset: calc(25% + var(--tb-badge-offset));
     }
 
     .tb-badge--placement-topend {
@@ -1527,7 +1535,7 @@
         color: var(--tb-color-text);
     }
 
-    /* A field's label and its info button: a long label wraps beside the button rather than pushing it down. */
+    /* A checkbox's or switch's label is one box, so its info button sits beside it in a row. */
     .tb-field__label-row {
         display: flex;
         align-items: center;
@@ -1536,6 +1544,26 @@
 
     .tb-field__label-row > [data-part="label"] {
         min-width: 0;
+    }
+
+    /* Other labels flow with their info buttons as one line of text, so a long label wraps with the button after its
+       last word. The text's end padding, which only its last line gets, keeps room for the button, and the button
+       takes none of its own, so it never wraps onto a line alone. */
+    .tb-label:has(> .tb-label__info),
+    .tb-field__label-row:not(:has(> :is(.tb-checkbox__label, .tb-switch__label))) {
+        display: block;
+    }
+
+    .tb-label:has(> .tb-label__info) > .tb-label__text,
+    .tb-field__label-row:not(:has(> :is(.tb-checkbox__label, .tb-switch__label))) > [data-part="label"] {
+        padding-inline-end: calc(var(--tb-space-1) + var(--tb-control-height-sm));
+    }
+
+    .tb-label > .tb-label__text + .tb-label__info,
+    .tb-field__label-row:not(:has(> :is(.tb-checkbox__label, .tb-switch__label)))
+        > [data-part="label"] + .tb-label__info {
+        margin-inline-start: calc(-1 * var(--tb-control-height-sm));
+        vertical-align: middle;
     }
 
     .tb-label__info-text {
@@ -1568,6 +1596,11 @@
 
     .tb-list--dividers > .tb-list__item + .tb-list__item {
         border-block-start: 1px solid var(--tb-border-subtle);
+    }
+
+    /* A rounded item would bend its divider up at each end. */
+    .tb-list--dividers > .tb-list__item {
+        border-radius: 0;
     }
 
     .tb-list__item {
@@ -1656,7 +1689,8 @@
         font-size: var(--tb-font-size-sm);
     }
 
-    .tb-list__item--selected :is(.tb-list__description, .tb-list__end) {
+    .tb-list__item--selected :is(.tb-list__description, .tb-list__end),
+    .tb-list__item--disabled .tb-list__description {
         color: inherit;
     }
 
@@ -1718,6 +1752,19 @@
     @media (hover: none), (any-pointer: coarse) {
         .tb-insert-divider .tb-button.tb-insert-divider__button {
             opacity: 1;
+        }
+
+        /* At rest the line shows in the border color, lighter than the line hover or focus reveals. */
+        .tb-insert-divider:not(:hover, :has(:focus-visible), .tb-insert-divider--visible)::before {
+            border-block-start: 1px solid var(--tb-border-strong);
+        }
+
+        .tb-insert-divider::before {
+            opacity: 1;
+        }
+
+        .tb-insert-divider:has(:disabled)::before {
+            opacity: var(--tb-disabled-opacity);
         }
 
         .tb-insert-divider .tb-button.tb-insert-divider__button:disabled {
@@ -3568,7 +3615,7 @@
         height: 0.25rem;
         overflow: hidden;
         border-radius: var(--tb-radius-full);
-        background: var(--tb-color-neutral-subtle);
+        background: var(--tb-border-subtle);
     }
 
     .tb-progress--small .tb-progress__bar {
@@ -3669,7 +3716,7 @@
     }
 
     .tb-progress__track {
-        stroke: var(--tb-color-neutral-subtle);
+        stroke: var(--tb-border-subtle);
     }
 
     .tb-progress--circular .tb-progress__indicator {
@@ -11259,6 +11306,7 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
 
     .tb-ribbon__group-button {
         flex: 1;
+        justify-content: flex-end;
     }
 
     /* Without this, the button's own display would override the hidden attribute. */

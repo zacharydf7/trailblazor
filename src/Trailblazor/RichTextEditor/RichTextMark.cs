@@ -37,7 +37,8 @@ public sealed partial class RichTextMark
     /// <summary>The name of the mark's toolbar button. Defaults to <see cref="Name"/>.</summary>
     public string? Label { get; init; }
 
-    /// <summary>The icon of the mark's toolbar button. Defaults to a plain tag.</summary>
+    /// <summary>The icon of the mark's toolbar button. Defaults to the first letter of <see cref="Label"/>, or of
+    /// <see cref="Name"/> without one.</summary>
     public Icon? Icon { get; init; }
 
     /// <summary>The keys that turn the mark on or off, written as <c>aria-keyshortcuts</c> are: a key with

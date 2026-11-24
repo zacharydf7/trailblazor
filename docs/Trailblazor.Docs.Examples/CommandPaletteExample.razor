@@ -1,12 +1,14 @@
-<p>
-    <TbButton Variant="Variant.Outlined" OnClick="() => _open = true">Search commands</TbButton>
-    or press <TbKbd Keys="Ctrl+K" />
-</p>
-<TbCommandPalette TItem="Command" Items="Commands" @bind-Open="_open" ItemText="command => command.Name"
-                  ItemGroup="command => command.Group" ItemIcon="command => command.Icon"
-                  ItemKeywords="command => command.Keywords" ItemShortcut="command => command.Shortcut"
-                  ItemDisabled="command => command.Disabled" OnChoose="command => _ran = command.Name" />
-<p>Last command: @(_ran ?? "none")</p>
+<TbStack Gap="4">
+    <TbStack Row Gap="2" Align="Align.Center">
+        <TbButton Variant="Variant.Outlined" OnClick="() => _open = true">Search commands</TbButton>
+        <span>or press <TbKbd Keys="Ctrl+K" /></span>
+    </TbStack>
+    <TbCommandPalette TItem="Command" Items="Commands" @bind-Open="_open" ItemText="command => command.Name"
+                      ItemGroup="command => command.Group" ItemIcon="command => command.Icon"
+                      ItemKeywords="command => command.Keywords" ItemShortcut="command => command.Shortcut"
+                      ItemDisabled="command => command.Disabled" OnChoose="command => _ran = command.Name" />
+    <p>Last command: @(_ran ?? "none")</p>
+</TbStack>
 
 @code {
     private static readonly Command[] Commands =

@@ -1,13 +1,15 @@
-<TbRibbon AriaLabel="Map layers">
-    <TbRibbonTab Title="Layers">
-        <TbRibbonGroup Label="Show on the map">
-            <TbRibbonButton Label="Huts" Icon="ExampleIcons.Check" @bind-Pressed="_huts" />
-            <TbRibbonButton Label="Closures" Icon="ExampleIcons.Close" @bind-Pressed="_closures" />
-            <TbRibbonButton Label="Summits" Icon="ExampleIcons.ArrowUp" @bind-Pressed="_summits" />
-        </TbRibbonGroup>
-    </TbRibbonTab>
-</TbRibbon>
-<TbText>The map shows @Shown.</TbText>
+<TbStack Gap="3">
+    <TbRibbon AriaLabel="Map layers">
+        <TbRibbonTab Title="Layers">
+            <TbRibbonGroup Label="Show on the map">
+                <TbRibbonButton Label="Huts" Icon="ExampleIcons.Check" @bind-Pressed="_huts" />
+                <TbRibbonButton Label="Closures" Icon="ExampleIcons.Close" @bind-Pressed="_closures" />
+                <TbRibbonButton Label="Summits" Icon="ExampleIcons.ArrowUp" @bind-Pressed="_summits" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+    </TbRibbon>
+    <TbText>The map shows @Shown.</TbText>
+</TbStack>
 
 @code {
     private bool _huts = true;

@@ -1,17 +1,20 @@
-<TbRibbon AriaLabel="Photo tools">
-    <TbRibbonTab Title="Photos">
-        <TbRibbonGroup Label="Album">
-            <TbRibbonButton Large Label="Add photos" Icon="ExampleIcons.Plus" OnClick="@(() => _last = "Add photos")" />
-            <TbRibbonButton Label="Search photos" Icon="ExampleIcons.Search"
-                            OnClick="@(() => _last = "Search photos")" />
-            <TbRibbonButton Label="Move to a folder" Icon="ExampleIcons.Folder"
-                            OnClick="@(() => _last = "Move to a folder")" />
-            <TbRibbonButton IconOnly Label="Remove the photo" Icon="ExampleIcons.Trash"
-                            OnClick="@(() => _last = "Remove the photo")" />
-        </TbRibbonGroup>
-    </TbRibbonTab>
-</TbRibbon>
-<TbText>Last photo command: @(_last ?? "none").</TbText>
+<TbStack Gap="3">
+    <TbRibbon AriaLabel="Photo tools">
+        <TbRibbonTab Title="Photos">
+            <TbRibbonGroup Label="Album">
+                <TbRibbonButton Large Label="Add photos" Icon="ExampleIcons.Plus"
+                                OnClick="@(() => _last = "Add photos")" />
+                <TbRibbonButton Label="Search photos" Icon="ExampleIcons.Search"
+                                OnClick="@(() => _last = "Search photos")" />
+                <TbRibbonButton Label="Move to a folder" Icon="ExampleIcons.Folder"
+                                OnClick="@(() => _last = "Move to a folder")" />
+                <TbRibbonButton IconOnly Label="Remove the photo" Icon="ExampleIcons.Trash"
+                                OnClick="@(() => _last = "Remove the photo")" />
+            </TbRibbonGroup>
+        </TbRibbonTab>
+    </TbRibbon>
+    <TbText>Last photo command: @(_last ?? "none").</TbText>
+</TbStack>
 
 @code {
     private string? _last;

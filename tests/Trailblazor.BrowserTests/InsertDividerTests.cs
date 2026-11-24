@@ -98,11 +98,14 @@ public class InsertDividerTests(BrowserFixture fixture) : BrowserTest(fixture)
 
     // Only Chromium emulates a phone, whose pointer can't hover.
     [Fact]
-    public async Task InsertDivider_ShouldKeepItsButtonInView_WhenThePointerCannotHover()
+    public async Task InsertDivider_ShouldKeepItsButtonAndLineInView_WhenThePointerCannotHover()
     {
         var page = await OpenAsync("chromium", "/examples/insert-divider", new() { IsMobile = true, HasTouch = true });
+        var insert = Insert(page, "Add a step after Pack the tent");
 
-        await Expect(Insert(page, "Add a step after Pack the tent")).ToHaveCSSAsync("opacity", "1");
+        await Expect(insert).ToHaveCSSAsync("opacity", "1");
+        Assert.Equal("1", await insert.EvaluateAsync<string>(
+            "button => getComputedStyle(button.closest('.tb-insert-divider'), '::before').opacity"));
     }
 
     // Only Chromium emulates a phone, whose pointer can't hover.
@@ -111,7 +114,12 @@ public class InsertDividerTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync("chromium", "/insert-dividers", new() { IsMobile = true, HasTouch = true });
 
-        await Expect(Insert(page, "Can't add here")).ToHaveCSSAsync("opacity", await DisabledOpacityAsync(page));
+        var insert = Insert(page, "Can't add here");
+        var dimmed = await DisabledOpacityAsync(page);
+
+        await Expect(insert).ToHaveCSSAsync("opacity", dimmed);
+        Assert.Equal(dimmed, await insert.EvaluateAsync<string>(
+            "button => getComputedStyle(button.closest('.tb-insert-divider'), '::before').opacity"));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

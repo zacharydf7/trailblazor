@@ -496,8 +496,8 @@
 
     // The buttons of the app's own marks: all of them, or those that are also on the toolbar over a selection.
     private IEnumerable<Tool> OwnMarkTools(bool floating) => (Marks ?? []).Where(mark => !floating || mark.Floating)
-        .Select(mark => new Tool(mark.Name, null, null, mark.Icon ?? RichTextEditorIcons.Mark,
-            mark.Label ?? mark.Name, mark.Shortcut));
+        .Select(mark => new Tool(mark.Name, null, null,
+            mark.Icon ?? RichTextEditorIcons.Letter(mark.Label ?? mark.Name), mark.Label ?? mark.Name, mark.Shortcut));
 
     // The buttons of the toolbar over a selection: the character formats, the app's marks, then the link.
     private IReadOnlyList<Tool> FloatingTools =>
@@ -562,8 +562,9 @@
 
             foreach (var block in CustomBlocks ?? [])
             {
-                yield return new Tool(null, block.Name, null, block.Icon ?? RichTextEditorIcons.Block,
-                    block.Label ?? block.Name, block.Shortcut);
+                yield return new Tool(null, block.Name, null,
+                    block.Icon ?? RichTextEditorIcons.Letter(block.Label ?? block.Name), block.Label ?? block.Name,
+                    block.Shortcut);
             }
 
             if ((Blocks & (RichTextBlocks.BulletedLists | RichTextBlocks.NumberedLists)) != 0)

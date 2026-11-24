@@ -5,6 +5,10 @@ public static class ExampleIcons
 {
     public static Icon Plus { get; } = new("<path d=\"M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z\" />");
 
+    public static Icon More { get; } =
+        new("<circle cx=\"12\" cy=\"5\" r=\"2\" /><circle cx=\"12\" cy=\"12\" r=\"2\" /><circle cx=\"12\" "
+            + "cy=\"19\" r=\"2\" />");
+
     public static Icon Check { get; } = new("<path d=\"M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z\" />");
 
     public static Icon Close { get; } =
