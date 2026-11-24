@@ -25,6 +25,9 @@
     private static readonly DockLayout Default =
         new(new DockSplit(new DockGroup("route"), new DockGroup("gear", "crew")));
 
+    // The panels this version has. A layout saved by an older version forgets any other as it is restored.
+    private static readonly string[] Panels = ["route", "gear", "crew"];
+
     private TbDockManager _dock = null!;
     private DockLayout _layout = Default;
     private string? _saved;
@@ -34,7 +37,7 @@
     {
         if (DockLayout.TryParse(_saved, out var layout))
         {
-            _layout = layout;
+            _layout = layout.Retain(Panels);
         }
     }
 }

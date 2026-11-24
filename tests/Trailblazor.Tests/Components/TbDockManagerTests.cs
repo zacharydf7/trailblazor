@@ -944,6 +944,61 @@ public class TbDockManagerTests : BunitContext
         Assert.Empty(changes);
     }
 
+    [Fact]
+    public void RestoreLayout_ShouldChangeTheSavedLayoutBeforeItShowsAndSaveItsAnswer_WhenTheBrowserHoldsOne()
+    {
+        // The browser holds a layout from when the app still had a Weather panel.
+        var saved = Hike.Close("weather");
+        _handle.Setup<string?>("saved", _ => true).SetResult(saved.ToJson());
+        var changes = new List<DockLayout>();
+        string[] kept = ["trails", "map", "notes"];
+
+        Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.PersistenceKey, "hike").Add(dock => dock.LayoutChanged, changes.Add)
+            .Add(dock => dock.RestoreLayout, layout => layout.Retain(kept))
+            .Add(dock => dock.ChildContent, Panels(HikePanels[..3])));
+
+        // The app hears the layout as the hook left it, and so does the browser, which forgets the panel too.
+        var restored = Assert.Single(changes);
+        Assert.Equal(saved.Retain(kept), restored);
+        Assert.Empty(restored.Closed);
+        Assert.Equal(restored.ToJson(), _handle.Invocations["save"].Single().Arguments[1]);
+    }
+
+    [Fact]
+    public void RestoreLayout_ShouldSaveNothing_WhenItLeavesTheSavedLayoutAsItWas()
+    {
+        var saved = Hike.Open("map");
+        _handle.Setup<string?>("saved", _ => true).SetResult(saved.ToJson());
+        var changes = new List<DockLayout>();
+
+        Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.PersistenceKey, "hike").Add(dock => dock.LayoutChanged, changes.Add)
+            .Add(dock => dock.RestoreLayout, layout => layout.Retain(HikePanels.Select(panel => panel.Id)))
+            .Add(dock => dock.ChildContent, Panels(HikePanels)));
+
+        // Nothing in the saved layout was stale, so the app hears it once and the browser is left alone.
+        Assert.Equal([saved], changes);
+        Assert.Empty(_handle.Invocations["save"]);
+    }
+
+    [Fact]
+    public void RestoreLayout_ShouldNotBeAsked_WhenTheBrowserHoldsNoLayout()
+    {
+        _handle.Setup<string?>("saved", _ => true).SetResult(null);
+        var asked = 0;
+
+        Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.PersistenceKey, "hike").Add(dock => dock.RestoreLayout, layout =>
+            {
+                asked++;
+                return layout;
+            }).Add(dock => dock.ChildContent, Panels(HikePanels)));
+
+        Assert.Equal(0, asked);
+        Assert.Empty(_handle.Invocations["save"]);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("not a layout")]

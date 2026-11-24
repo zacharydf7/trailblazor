@@ -4,7 +4,7 @@
         <TbText>Move a panel or a separator, then reload the page.</TbText>
     </TbStack>
     <TbDockManager @bind-Layout="_layout" PersistenceKey="docs-pack-list" AriaLabel="Pack list"
-                   Style="block-size: 16rem">
+                   RestoreLayout="saved => saved.Retain(Panels)" Style="block-size: 16rem">
         <TbDockPanel Id="shelter" Title="Shelter">
             <TbText class="tb-p-3">Tent, footprint and six stakes.</TbText>
         </TbDockPanel>
@@ -20,6 +20,9 @@
 @code {
     private static readonly DockLayout Default =
         new(new DockSplit(new DockGroup("shelter", "kitchen"), new DockGroup("clothes")));
+
+    // The panels this version has. A layout saved by an older version forgets any other as it is read.
+    private static readonly string[] Panels = ["shelter", "kitchen", "clothes"];
 
     // The dock swaps this for the saved layout, when the browser has one.
     private DockLayout _layout = Default;

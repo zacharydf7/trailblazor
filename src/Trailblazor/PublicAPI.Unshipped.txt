@@ -5580,6 +5580,7 @@ Trailblazor.TbModelFields<TModel>.OnChange.get -> Microsoft.AspNetCore.Component
 Trailblazor.TbModelFields<TModel>.OnChange.set -> void
 override Trailblazor.TbNumberField<TValue>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 Trailblazor.TbNumberField<TValue>.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Trailblazor.DialogReference.HasWindow.get -> bool
 Trailblazor.DialogReference.IsClosing.get -> bool
 Trailblazor.TbToggleGroupBase<TValue>.HelperText.get -> string?
 Trailblazor.TbToggleGroupBase<TValue>.HelperText.set -> void
@@ -7251,6 +7252,8 @@ Trailblazor.DockLabels.AwayHint.init -> void
 Trailblazor.DockLabels.ShowWindow.get -> string?
 Trailblazor.DockLabels.ShowWindow.init -> void
 Trailblazor.TbDockManager.LayoutToSave.get -> Trailblazor.DockLayout!
+Trailblazor.TbDockManager.RestoreLayout.get -> System.Func<Trailblazor.DockLayout!, Trailblazor.DockLayout!>?
+Trailblazor.TbDockManager.RestoreLayout.set -> void
 Trailblazor.TbDockManager.PoppedOut.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.TbDockManager.PoppedOutChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyList<string!>!>
 Trailblazor.TbDockManager.PoppedOutChanged.set -> void

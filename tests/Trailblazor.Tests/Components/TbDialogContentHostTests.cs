@@ -1,6 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Trailblazor.Tests.Components;
 
@@ -16,6 +17,17 @@ public class TbDialogContentHostTests : BunitContext
         Assert.Equal("Pine Hollow", cut.Find("[data-testid=name]").TextContent);
         Assert.Equal("Rename trail", cut.Find("[data-testid=title]").TextContent);
         Assert.False(cut.Instance.Result.IsCompleted);
+    }
+
+    [Fact]
+    public void HasWindow_ShouldTellTheContentWhereItShows_WhenInAHostOrOpenedAsADialog()
+    {
+        var hosted = RenderHost().FindComponent<RenameContent>().Instance;
+
+        var opened = Services.GetRequiredService<IDialogService>().Show<RenameContent, string>();
+
+        Assert.False(hosted.HasWindow);
+        Assert.True(opened.HasWindow);
     }
 
     [Fact]
@@ -211,6 +223,8 @@ public class TbDialogContentHostTests : BunitContext
         public Task SaveAsync() => Dialog.CloseAsync($"{Name}!");
 
         public string Title => Dialog.Title;
+
+        public bool HasWindow => Dialog.HasWindow;
 
         public void Retitle(string title) => Dialog.Title = title;
 

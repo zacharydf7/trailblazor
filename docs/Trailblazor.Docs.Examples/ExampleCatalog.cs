@@ -3276,6 +3276,12 @@ public static class ExampleCatalog
                     + "interactive, so a reload keeps the arrangement. The saved layout replaces `Layout` and "
                     + "raises `LayoutChanged`. "
                     + "Setting another `Layout` later replaces what is saved, which is how the Reset button works. "
+                    + "A saved layout keeps a place for each panel in it, including ones a later version of "
+                    + "the app no longer has: they aren't shown, but stay in what is saved. `RestoreLayout` "
+                    + "changes the layout as it is read, before the dock shows it, so "
+                    + "`saved => saved.Retain(ids)` forgets the rest, both in the dock and in the browser's "
+                    + "storage. Give it every panel id this version of the app can show, including panels it "
+                    + "renders only at times, or such a panel loses its saved place. "
                     + "A prerendered page shows the app's own layout until it is interactive, since the server "
                     + "can't read the browser's storage. To show a saved layout from the first render, keep it "
                     + "with the app instead: load it in `OnInitializedAsync`, pass it as `Layout`, save "
@@ -10128,7 +10134,9 @@ public static class ExampleCatalog
                     + "`Parameters` sets the content's parameters as `Show` does, and `DismissAsync` asks the "
                     + "content to close as Escape would, for whatever stands in for Escape there. The host has "
                     + "no window: a size, a position or a header the content sets does nothing, and its title "
-                    + "comes through `@bind-Title`. Once the content closes the host renders nothing. Here the "
+                    + "comes through `@bind-Title`. The content's `Dialog.HasWindow` is false there, so it can "
+                    + "leave out controls of its own that only make sense in a window, such as a maximize "
+                    + "button. Once the content closes the host renders nothing. Here the "
                     + "panel renames the report with the content the first example opens in a dialog.",
                     typeof(DialogHostExample), typeof(RenameDialog)),
                 new("run-time", "Choosing at run time", "`ShowDynamicAsync` opens a dialog by its type, with its "

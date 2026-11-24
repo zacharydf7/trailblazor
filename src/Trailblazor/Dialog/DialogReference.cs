@@ -64,6 +64,12 @@ public abstract class DialogReference
     /// <see cref="DialogSettings"/>.</summary>
     public DialogOptions Options { get; }
 
+    /// <summary>Whether the content shows in a dialog's window. It is false in a
+    /// <see cref="TbDialogContentHost{TDialog, TResult}"/>, which shows the content on the page or in a panel: what
+    /// is set here for a window, such as its size, position or state, does nothing there. Content that draws window
+    /// controls of its own, such as a maximize button, can check this to show them only in a window.</summary>
+    public bool HasWindow { get; internal init; } = true;
+
     /// <summary>Whether the dialog blocks the rest of the page. It starts as <see cref="DialogOptions.Modal"/>, and
     /// setting it switches the open dialog, keeping focus where it was, or moving it into the dialog as it turns
     /// modal. A modal dialog that is minimized leaves the page usable until it is restored.</summary>

@@ -8,7 +8,8 @@ namespace Trailblazor;
 /// written as a <see cref="TbDialogContent{TResult}"/> works there unchanged: its <c>Dialog.CloseAsync(value)</c> and
 /// <c>Dialog.CancelAsync()</c> end it with a result, which <see cref="Result"/> and <see cref="OnClosed"/> give. The
 /// host has no window, so what the content sets on <c>Dialog</c> for one, such as its size or position, does nothing
-/// here, and a <see cref="TbDialogTitle"/> or <see cref="TbDialogHeader"/> in the content isn't shown. Its
+/// here, and a <see cref="TbDialogTitle"/> or <see cref="TbDialogHeader"/> in the content isn't shown. The content can
+/// tell by its <c>Dialog.HasWindow</c>, which is false here. Its
 /// <c>Class</c>, <c>Style</c> and other attributes go on the element around the content. Once the content closes,
 /// the host renders nothing; give it a new <c>@key</c> to show the content again.</summary>
 /// <typeparam name="TDialog">The content to show.</typeparam>
@@ -25,7 +26,7 @@ public sealed class TbDialogContentHost<
     /// <summary>Creates the host.</summary>
     public TbDialogContentHost()
     {
-        _dialog = new(null, new(), typeof(TDialog), _values, isAlert: false, CloseAsync);
+        _dialog = new(null, new(), typeof(TDialog), _values, isAlert: false, CloseAsync) { HasWindow = false };
         _dialog.Changed += OnDialogChanged;
     }
 

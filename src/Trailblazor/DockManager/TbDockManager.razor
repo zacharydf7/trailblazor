@@ -408,6 +408,15 @@
     [Parameter]
     public string? PersistenceKey { get; set; }
 
+    /// <summary>Changes the layout read back under the <see cref="PersistenceKey"/> before the dock shows it, such
+    /// as <c>saved => saved.Retain(ids)</c> to forget the panels this version of the app no longer has, which a saved
+    /// layout otherwise keeps a place for. Give <c>Retain</c> every panel id the app can show, also those it renders
+    /// only at times, or such a panel loses its saved place. What the function returns is shown and handed to
+    /// <see cref="LayoutChanged"/>, and is saved in place of what was read when the two differ. It isn't called when
+    /// nothing is saved, or for a layout the app sets.</summary>
+    [Parameter]
+    public Func<DockLayout, DockLayout>? RestoreLayout { get; set; }
+
     /// <summary>The smallest width or height, in pixels, that a separator leaves a group and that a floating window
     /// or a slid-out panel resizes to. Defaults to 96.</summary>
     [Parameter]
@@ -597,13 +606,24 @@
         // The layout the app starts with isn't saved, only what follows it, so a later version of the app can start
         // with another one.
         _saveAfterRender = false;
-        if (_handle is not null && PersistenceKey is { } key
-            && DockLayout.TryParse(await _handle.InvokeAsync<string?>("saved", key), out var saved)
-            && !_disposed && !saved.Equals(_layout))
+        if (_handle is null || PersistenceKey is not { } key
+            || !DockLayout.TryParse(await _handle.InvokeAsync<string?>("saved", key), out var read) || _disposed)
         {
-            _layout = saved;
-            await LayoutChanged.InvokeAsync(saved);
+            return;
+        }
+
+        var restored = RestoreLayout?.Invoke(read) ?? read;
+        if (!restored.Equals(_layout))
+        {
+            _layout = restored;
+            await LayoutChanged.InvokeAsync(restored);
             StateHasChanged();
+        }
+
+        // The layout as RestoreLayout left it replaces the one read from the browser.
+        if (!restored.Equals(read))
+        {
+            await SaveAsync();
         }
     }
 

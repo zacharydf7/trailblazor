@@ -27,12 +27,13 @@ public class ApiDocsTests
         var reference = ApiDocs.Describe(typeof(DialogReference<>)).Members;
         var dialogs = ApiDocs.Describe(typeof(IDialogService)).Members;
 
-        Assert.Equal(["Title { get; set; }", "Options { get; }", "Modal { get; set; }", "Size { get; set; }",
-            "Width { get; set; }", "Position { get; set; }", "WindowState { get; set; }", "ShowHeader { get; set; }",
-            "CloseButton { get; set; }", "Minimizable { get; set; }", "Maximizable { get; set; }",
-            "Draggable { get; set; }", "Resizable { get; set; }", "ContentType { get; }", "Parameters { get; }",
-            "IsClosing { get; }", "Result { get; }", "event WindowStateChanged", "CancelAsync()", "ConfirmAsync()",
-            "CloseAsync(TResult? value)", "Update<TDialog>(Action<DialogParameters<TDialog>> parameters)"],
+        Assert.Equal(["Title { get; set; }", "Options { get; }", "HasWindow { get; }", "Modal { get; set; }",
+            "Size { get; set; }", "Width { get; set; }", "Position { get; set; }", "WindowState { get; set; }",
+            "ShowHeader { get; set; }", "CloseButton { get; set; }", "Minimizable { get; set; }",
+            "Maximizable { get; set; }", "Draggable { get; set; }", "Resizable { get; set; }", "ContentType { get; }",
+            "Parameters { get; }", "IsClosing { get; }", "Result { get; }", "event WindowStateChanged",
+            "CancelAsync()", "ConfirmAsync()", "CloseAsync(TResult? value)",
+            "Update<TDialog>(Action<DialogParameters<TDialog>> parameters)"],
             reference.Select(member => member.Name));
         Assert.Contains(dialogs, member => member.Name.StartsWith("Show<TDialog, TResult>(string? title = null,",
             StringComparison.Ordinal));
