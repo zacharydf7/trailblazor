@@ -6192,6 +6192,8 @@ public static class ExampleCatalog
                 new("floating-toolbar", "The toolbar over the selection, with `ShowFloatingToolbar`: a popover "
                     + "that is open while it shows."),
             ],
+            Scenario = new("mentions", "it mentions a person from the suggestions and checks the mentions the app is "
+                + "told about."),
             TestingTips =
             [
                 "In bUnit, `cut.Tb().RichTextEditor(label).EnterAsync(html)` sets the value through the editor's own "
@@ -6339,6 +6341,8 @@ public static class ExampleCatalog
                 new("preview-toggle", "The Preview button."),
                 new("preview", "The preview, while it shows."),
             ],
+            Scenario = new("basic", "it enters markdown, checks the app's bound value, and shows the preview to check "
+                + "what it draws."),
             TestingTips =
             [
                 "In bUnit, `cut.Tb().MarkdownEditor(label)` finds the editor: `EnterAsync(markdown)` sets its text, "
@@ -7289,6 +7293,8 @@ public static class ExampleCatalog
                 new("clear", "The Clear button."),
                 new("type-name", "The Type your name toggle."),
             ],
+            Scenario = new("basic", "it draws two strokes and checks what the app says, clears the pad, then types a "
+                + "name and checks the app takes it as the signature."),
             TestingTip = "In bUnit, `cut.Tb().SignaturePad(\"Signature\").DrawAsync((10, 20), (60, 40))` draws a "
                 + "stroke through points in the signature's space, and `UndoAsync`, `ClearAsync` and "
                 + "`TypeNameAsync(\"Ada Lovelace\")` do the rest. In Playwright, `page.Tb().SignaturePad(...)` "
@@ -8200,6 +8206,8 @@ public static class ExampleCatalog
                 new("swatches", "The palette of preset colors."),
                 new("swatch", "One preset color."),
             ],
+            Scenario = new("validation", "it checks the error the app's validation shows for white, chooses another "
+                + "color, and checks the value and that the error is gone."),
             TestingTip = "`await page.Tb().ColorPicker(\"Trail marker\").ChooseAsync(\"#d1242f\")` from "
                 + "`Trailblazor.Testing.Playwright` types the color and waits until the field has taken it; for "
                 + "pickers that share a label, pass a locator, as `ColorPicker(row.GetByLabel(\"Color\"))`. In bUnit, "
@@ -8314,6 +8322,8 @@ public static class ExampleCatalog
                 new("rejected", "The message that lists dropped files the field didn't take."),
                 new("clear", "The button that removes every file."),
             ],
+            Scenario = new("validation", "it chooses a file whose name has spaces and checks the app's error, then "
+                + "chooses one without and checks the file listed and that the error is gone."),
             TestingTip = "`await page.Tb().FileUpload(\"Trail maps\").ChooseAsync(\"map.pdf\")` from "
                 + "`Trailblazor.Testing.Playwright` takes file paths or `FilePayload`s and waits until the field has "
                 + "taken them and the app's `ValueChanged` has run, which the field counts in `data-commits` on its "
