@@ -29,6 +29,22 @@ public class GridBandsTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Bands_ShouldRunAGroupsEdgesThroughTheBlankCellsUnderIt_WhenOnlySomeColumnsAreGroupedAgain(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        // Under Effort and Where, the second row has Distance, then a blank cell each for Hours, Park and Trailhead.
+        var blanks = Grid(page).Locator("thead tr[data-part=bands]").Nth(1).Locator("td[data-band-edge]");
+
+        await Expect(blanks).ToHaveCountAsync(3);
+        foreach (var (at, left, right) in new[] { (0, "0px", "1px"), (1, "1px", "0px"), (2, "0px", "1px") })
+        {
+            await Expect(blanks.Nth(at)).ToHaveCSSAsync("border-left-width", left);
+            await Expect(blanks.Nth(at)).ToHaveCSSAsync("border-right-width", right);
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Bands_ShouldLeaveTheGridWorking_WhenItsColumnsComeAfterItsFirstRender(string browser)
     {
         var page = await OpenAsync(browser, "/grid-bands-late");

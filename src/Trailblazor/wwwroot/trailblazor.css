@@ -9402,9 +9402,15 @@
         gap: var(--tb-space-2);
     }
 
-    /* A range shows two dates side by side. */
+    /* A range shows two dates side by side. Each box would ask for a text box's default width, far more than a date
+       needs, so the boxes share the field's width, and the field's minimum fits two dates. The browser's own date
+       boxes, which stand in until the page is interactive, keep the width they need. */
     .tb-data-grid__filter--date > .tb-field {
-        min-inline-size: 15rem;
+        min-inline-size: 17rem;
+    }
+
+    .tb-data-grid__filter--date .tb-date-range__input[type="text"] {
+        inline-size: 0;
     }
 
     .tb-table--sticky-header thead th {
@@ -9493,6 +9499,14 @@
     .tb-data-grid__band {
         text-align: center;
         border-inline: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-data-grid__bands td[data-band-edge~="start"] {
+        border-inline-start: 1px solid var(--tb-border-subtle);
+    }
+
+    .tb-data-grid__bands td[data-band-edge~="end"] {
+        border-inline-end: 1px solid var(--tb-border-subtle);
     }
 
     .tb-data-grid__detail-toggle {

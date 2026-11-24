@@ -186,6 +186,31 @@ public class DataGridTests(BrowserFixture fixture) : DataGridKeysTests(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Filters_ShouldKeepADateRangeAsNarrowAsTwoDatesNeed_WhenTheGridIsSqueezed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/data-grid");
+        await page.SetViewportSizeAsync(390, 900);
+        var filter = page.Locator(".tb-data-grid__filter--date").First;
+        await Expect(filter.Locator("input[placeholder]")).ToHaveCountAsync(2);
+
+        // The cell's width, then the room each box has to spare beside its placeholder.
+        var sizes = await filter.EvaluateAsync<double[]>("""
+            cell => [cell.getBoundingClientRect().width, ...[...cell.querySelectorAll('input')].map(input => {
+                const style = getComputedStyle(input);
+                const text = document.createElement('canvas').getContext('2d');
+                text.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+                return input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+                    - text.measureText(input.placeholder).width;
+            })]
+            """);
+
+        // The field's 17rem and the cell's padding, not the width of two default text boxes.
+        Assert.InRange(sizes[0], 272, 300);
+        Assert.All(sizes[1..],
+            spare => Assert.True(spare >= 0, $"A date box is {-spare}px short of its placeholder."));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task FilterMenu_ShouldFilterByAConditionAndCheckedChoices_WhenApplied(string browser)
     {
         var page = await OpenAsync(browser, "/examples/data-grid");

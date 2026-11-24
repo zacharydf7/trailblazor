@@ -534,6 +534,27 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         return bands;
     }
 
+    // A blank cell under the first or last column of the column's innermost group carries that group's edge down,
+    // so the edge runs through every row of headings below the group's own.
+    private string? BandEdge(TbColumn<TItem> column)
+    {
+        if (column.Bands is not [.., var group])
+        {
+            return null;
+        }
+
+        var at = _shownColumns.IndexOf(column);
+        bool Shares(int beside) => beside >= 0 && beside < _shownColumns.Count
+            && _shownColumns[beside].Bands.Contains(group) && _shownColumns[beside].Pinned == column.Pinned;
+        return (Shares(at - 1), Shares(at + 1)) switch
+        {
+            (false, false) => "start end",
+            (false, true) => "start",
+            (true, false) => "end",
+            _ => null,
+        };
+    }
+
     // A heading pinned to the end sticks where its last column does; one pinned to the start, where its first does.
     private string? BandPinStyle(List<TbColumn<TItem>> columns) =>
         PinStyle(columns[0].Pinned == ColumnPin.End ? columns[^1] : columns[0]);

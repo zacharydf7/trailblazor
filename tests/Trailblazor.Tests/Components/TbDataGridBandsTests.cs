@@ -101,6 +101,55 @@ public class TbDataGridBandsTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldCarryAGroupsEdgesDownItsBlankCells_WhenOnlySomeOfItsColumnsAreGroupedAgain()
+    {
+        // Name, then Effort over Distance (Length km) and Climb, then Where over Region.
+        var cut = Render<TbDataGrid<Hike>>(parameters => parameters.Add(grid => grid.Items, Hikes)
+            .Add(grid => grid.AriaLabel, "Hikes").Add(grid => grid.KeySelector, hike => hike.Id)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
+            {
+                Column(builder, 0, hike => hike.Name);
+                Group(builder, 10, "Effort", effort =>
+                {
+                    Group(effort, 0, "Distance", distance => Column(distance, 0, hike => hike.LengthKm));
+                    Column(effort, 10, hike => hike.Climb);
+                });
+                Group(builder, 20, "Where", where => Column(where, 0, hike => hike.Region));
+            })));
+
+        Assert.Equal(["-×1", "Distance×1", "-×1", "-×1"], Row(cut, 1));
+        // Name is in no group, Climb is Effort's last column, and Region is all of Where.
+        Assert.Equal([null, null, "end", "start end"],
+            cut.FindAll("thead tr")[1].Children.Select(cell => cell.GetAttribute("data-band-edge")));
+    }
+
+    [Fact]
+    public void Render_ShouldEdgeABlankCellOnBothSides_WhenPinningSplitsItsGroupThere()
+    {
+        // Effort over a pinned Length km and Distance (Climb), so the heading splits between the two columns.
+        var cut = Render<TbDataGrid<Hike>>(parameters => parameters.Add(grid => grid.Items, Hikes)
+            .Add(grid => grid.AriaLabel, "Hikes").Add(grid => grid.KeySelector, hike => hike.Id)
+            .Add(grid => grid.ChildContent, (RenderFragment)(builder => Group(builder, 0, "Effort", effort =>
+            {
+                Column(effort, 0, hike => hike.LengthKm, ColumnPin.Start);
+                Group(effort, 10, "Distance", distance => Column(distance, 0, hike => hike.Climb));
+            }))));
+
+        Assert.Equal(["Effort×1", "Effort×1"], Row(cut, 0));
+        Assert.Equal(["-×1", "Distance×1"], Row(cut, 1));
+        Assert.Equal("start end", cut.FindAll("thead tr")[1].Children[0].GetAttribute("data-band-edge"));
+    }
+
+    private static void Group(RenderTreeBuilder builder, int sequence, string title, Action<RenderTreeBuilder> columns)
+    {
+        builder.OpenComponent<TbColumnGroup<Hike>>(sequence);
+        builder.AddAttribute(sequence + 1, nameof(TbColumnGroup<Hike>.Title), title);
+        builder.AddAttribute(sequence + 2, nameof(TbColumnGroup<Hike>.ChildContent),
+            (RenderFragment)(inner => columns(inner)));
+        builder.CloseComponent();
+    }
+
+    [Fact]
     public void Render_ShouldShowTheGroupsNewTitle_WhenItChanges()
     {
         var title = "Effort";
