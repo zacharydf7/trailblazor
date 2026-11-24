@@ -10,6 +10,18 @@ internal static class Commit
     public static Task WaitAsync(ILocator control, Func<Task<bool>> act, int handlers = 1) =>
         CountedAsync(control.Locator("xpath=ancestor-or-self::*[@data-commits][1]"), "data-commits", act, handlers);
 
+    // Marks the counter a wait is on and the dialogs open before the action, and reads the count so far.
+    private const string MarkAndRead = """
+        (counter, [mark, count]) => {
+            counter.dataset.tbAwaited = mark;
+            for (const dialog of counter.ownerDocument.querySelectorAll('dialog[open]')) {
+                dialog.dataset.tbOpenBefore = mark;
+            }
+
+            return counter.getAttribute(count);
+        }
+        """;
+
     // A TbButton, TbIconButton or TbLink counts its finished OnClick, and a toggle's PressedChanged, in data-clicks.
     public static Task ClickedAsync(ILocator button) => CountedAsync(button, "data-clicks", async () =>
     {
@@ -25,21 +37,43 @@ internal static class Commit
     public static async Task CountedAsync(ILocator counter, string count, Func<Task<bool>> act, int handlers = 1)
     {
         var mark = Guid.NewGuid().ToString("N");
-        var before = await counter.EvaluateAsync<string?>("""
-            (counter, [mark, count]) => {
-                counter.dataset.tbAwaited = mark;
-                for (const dialog of counter.ownerDocument.querySelectorAll('dialog[open]')) {
-                    dialog.dataset.tbOpenBefore = mark;
-                }
-
-                return counter.getAttribute(count);
-            }
-            """, new[] { mark, count });
+        var before = await counter.EvaluateAsync<string?>(MarkAndRead, new[] { mark, count });
         var frame = await FrameAsync(counter);
         // A counter with no count yet, as on a static page, has no handlers to wait for.
         if (await act() && int.TryParse(before, out var start))
         {
             await EndAsync(frame, mark, $"number(@{count}) >= {start + handlers}");
+        }
+    }
+
+    // Waits as CountedAsync does on a counter, and then on a second one the same action also moves, as a submit
+    // button's click moves its form's count once the form has handled the submit. A dialog that opens ends both waits.
+    public static async Task CountedAsync(ILocator counter, string count, ILocator next, string nextCount,
+        Func<Task<bool>> act)
+    {
+        var mark = Guid.NewGuid().ToString("N");
+        var before = await counter.EvaluateAsync<string?>(MarkAndRead, new[] { mark, count });
+        var nextBefore = await next.EvaluateAsync<string?>("""
+            (next, [mark, count]) => {
+                next.dataset.tbAwaited = mark;
+                return next.getAttribute(count);
+            }
+            """, new[] { $"{mark}-next", nextCount });
+        var frame = await FrameAsync(counter);
+        if (!await act())
+        {
+            return;
+        }
+
+        // A counter with no count yet, as on a static page, has no handlers to wait for.
+        if (int.TryParse(before, out var start))
+        {
+            await EndAsync(frame, mark, $"number(@{count}) >= {start + 1}");
+        }
+
+        if (int.TryParse(nextBefore, out var nextStart))
+        {
+            await EndAsync(frame, $"{mark}-next", $"number(@{nextCount}) >= {nextStart + 1}", mark);
         }
     }
 
@@ -77,9 +111,10 @@ internal static class Commit
     }
 
     // Ends when the awaited element meets the landed condition or leaves the page, or when a dialog opens. The wait
-    // looks through the frame rather than the element, so it can still see the element leave.
-    private static Task EndAsync(IFrame frame, string mark, string landed) =>
+    // looks through the frame rather than the element, so it can still see the element leave. The dialogs that were
+    // open before carry the mark of the action's first wait.
+    private static Task EndAsync(IFrame frame, string mark, string landed, string? openBefore = null) =>
         Assertions.Expect(frame.Locator($"xpath=/html[not(.//*[@data-tb-awaited='{mark}'])]"
             + $" | //*[@data-tb-awaited='{mark}'][{landed}]"
-            + $" | //dialog[@open][not(@data-tb-open-before='{mark}')]").First).ToBeAttachedAsync();
+            + $" | //dialog[@open][not(@data-tb-open-before='{openBefore ?? mark}')]").First).ToBeAttachedAsync();
 }

@@ -1568,7 +1568,8 @@
         new("Button, icon button or floating action button", "Its name",
             "`Button(name).ClickAsync()` clicks it once the page is interactive and it's no longer busy, then waits "
             + "until the app has run its `OnClick`, or until a dialog opens, in case the handler awaits the dialog's "
-            + "answer; `BusyAsync()` reads whether it's busy, and `PressedAsync()` and `MixedAsync()` whether a toggle "
+            + "answer; for a `TbForm`'s submit button it then waits until the form has handled the submit. "
+            + "`BusyAsync()` reads whether it's busy, and `PressedAsync()` and `MixedAsync()` whether a toggle "
             + "is pressed or mixed."),
         new("Link", "Its name", "`Link(name).ClickAsync()` clicks it once the page is interactive, then waits until "
             + "the app has run its `OnClick`, the page it goes to has replaced this one, or a dialog opens. On a static "

@@ -33,7 +33,8 @@ public static class PlainAndHelpersCatalog
                 + "would do nothing; bUnit refuses a busy button too, and a browser waits until it's no longer busy. "
                 + "In a browser, `ClickAsync()` waits until the page is interactive, then until the app has run "
                 + "`OnClick`, or, for a handler that awaits a dialog's answer, until the dialog opens, so the test "
-                + "needn't know what the handler changes."),
+                + "needn't know what the handler changes. For a form's submit button it also waits until the form "
+                + "has handled the submit."),
         new("type-and-leave", "Type into a field, then leave it", "TypeAndLeave", true, true,
             "The events the field commits on, in order; the app's answer; a re-keyed field",
             "`EnterAsync(text)` finds the field by its label, even with a required mark, gives it the events it "

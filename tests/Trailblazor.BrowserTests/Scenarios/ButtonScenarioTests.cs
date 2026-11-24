@@ -13,16 +13,16 @@ public class ButtonScenarioTests(BrowserFixture fixture) : BrowserTest(fixture)
         var trail = page.Tb().TextField("Trail name");
         var sent = page.GetByLabel("Reports sent");
 
-        // Without a trail name the form isn't sent, and the field says why. The click returns before the form has
-        // handled its submit, so Expect waits for what the submit shows.
+        // Without a trail name the form isn't sent, and the field says why. The click on a form's submit button
+        // returns once the form has handled the submit.
         await send.ClickAsync();
-        await Expect(page.GetByText("Trail name is required.")).ToBeVisibleAsync();
+        Assert.Equal("Trail name is required.", await trail.ErrorAsync());
         await Expect(sent).ToHaveTextAsync("Reports sent: 0");
 
         await trail.EnterAsync("Pine Hollow loop");
         await send.ClickAsync();
 
-        await Expect(sent).ToHaveTextAsync("Reports sent: 1");
         Assert.Null(await trail.ErrorAsync());
+        await Expect(sent).ToHaveTextAsync("Reports sent: 1");
     }
 }

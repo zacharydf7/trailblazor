@@ -121,8 +121,7 @@ test the suites run:
   shows in response. Drive it through `cut.Tb()` and `page.Tb()`, with the same steps in both packages, and assert on
   what a user would see. Keep comments to what a reader new to the helpers needs.
 - The page shows only the test's body, so the body has to read well alone: the bUnit class is a `BunitContext` that
-  calls `this.AddTrailblazor()`, and each file holds one test. In Playwright, check what a form's submit shows with
-  `Expect`, since a click on a submit button returns before the form has handled it (#698).
+  calls `this.AddTrailblazor()`, and each file holds one test.
 - `TestScenarioTests` lists the pages that have no scenario yet. A page leaves the list when it gets its scenario,
   and a new page ships with one rather than joining the list.
 

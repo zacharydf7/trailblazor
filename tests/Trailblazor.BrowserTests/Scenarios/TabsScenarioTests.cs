@@ -12,10 +12,8 @@ public class TabsScenarioTests(BrowserFixture fixture) : BrowserTest(fixture)
         var plan = page.Tb().Tabs("Trip plan");
         var save = page.Tb().Button("Save trip");
 
-        // Saving an empty form marks each tab whose panel holds a problem. The click returns before the form has
-        // handled its submit, so Expect waits for the first mark.
+        // Saving an empty form marks each tab whose panel holds a problem.
         await save.ClickAsync();
-        await Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Leader (needs attention)" })).ToBeVisibleAsync();
         Assert.Equal(["Leader (needs attention)", "Itinerary (needs attention)"], await plan.TabsAsync());
 
         // A tab loses its mark once its panel's field is filled in.
@@ -26,8 +24,8 @@ public class TabsScenarioTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Tb().TextField("Trail").EnterAsync("Eagle Ridge");
         await save.ClickAsync();
 
-        await Expect(page.GetByText("Saved Ada's trip on Eagle Ridge.")).ToBeVisibleAsync();
         Assert.Equal(["Leader", "Itinerary"], await plan.TabsAsync());
         Assert.Equal("Itinerary", await plan.SelectedAsync());
+        await Expect(page.GetByText("Saved Ada's trip on Eagle Ridge.")).ToBeVisibleAsync();
     }
 }

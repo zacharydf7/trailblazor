@@ -1,0 +1,88 @@
+@page "/slow-submit"
+@inject IDialogService Dialogs
+
+@* Each form's submit handler takes a while, so a click on its submit button that returned too soon would show. The
+   second button's own handler takes longer than the form's. *@
+<TbForm OnValidSubmit="SaveAsync" OnInvalidSubmit="RefuseAsync" aria-label="Trip" id="trip-form">
+    <TbTextField Label="Trail" @bind-Value="_trail" Required />
+    <TbButton Type="ButtonType.Submit">Save the trip</TbButton>
+    <TbButton Type="ButtonType.Submit" OnClick="NoteAsync">Save and note</TbButton>
+</TbForm>
+<output data-testid="trip">@_trip</output>
+<output data-testid="noted">@_noted</output>
+
+@* The handler waits for a dialog's answer, which only the test gives. Its other button is in this form and submits
+   the first one. *@
+<TbForm OnValidSubmit="AskAsync" aria-label="Report">
+    <TbButton Type="ButtonType.Submit">Delete the report</TbButton>
+    <TbButton Type="ButtonType.Submit" form="trip-form">Save the trip from the report</TbButton>
+</TbForm>
+<output data-testid="report">@_report</output>
+
+@* The handler takes the form off the page once it has run. *@
+@if (!_sent)
+{
+    <TbForm OnValidSubmit="SendAsync" aria-label="Message">
+        <TbButton Type="ButtonType.Submit">Send the message</TbButton>
+    </TbForm>
+}
+<output data-testid="message">@(_sent ? "Sent" : "")</output>
+
+@* A form in a dialog that stays open, with its submit button in the dialog's footer, outside the form. *@
+<TbButton OnClick="() => _booking = true">Book the hut</TbButton>
+<TbDialog @bind-Open="_booking" Title="Book the hut">
+    <TbForm OnInvalidSubmit="TurnDownAsync" aria-label="Booking" id="booking-form">
+        <TbTextField Label="Guest" @bind-Value="_guest" Required />
+    </TbForm>
+    <TbDialogActions>
+        <TbButton Type="ButtonType.Submit" form="booking-form">Book</TbButton>
+    </TbDialogActions>
+</TbDialog>
+<output data-testid="booking">@_booked</output>
+
+@code {
+    private static readonly TimeSpan Slow = TimeSpan.FromMilliseconds(400);
+
+    private string? _trail;
+    private string _trip = "";
+    private string _noted = "";
+    private string _report = "";
+    private bool _sent;
+    private bool _booking;
+    private string? _guest;
+    private string _booked = "";
+
+    private async Task SaveAsync()
+    {
+        await Task.Delay(Slow);
+        _trip = $"Saved {_trail}";
+    }
+
+    private async Task RefuseAsync()
+    {
+        await Task.Delay(Slow);
+        _trip = "Refused";
+    }
+
+    private async Task NoteAsync()
+    {
+        await Task.Delay(Slow * 2);
+        _noted = "Noted";
+    }
+
+    private async Task AskAsync() =>
+        _report = await Dialogs.ConfirmAsync("Delete the report?", "This can't be undone.", "Delete")
+            ? "Deleted" : "Kept";
+
+    private async Task SendAsync()
+    {
+        await Task.Delay(Slow);
+        _sent = true;
+    }
+
+    private async Task TurnDownAsync()
+    {
+        await Task.Delay(Slow);
+        _booked = "Turned down";
+    }
+}

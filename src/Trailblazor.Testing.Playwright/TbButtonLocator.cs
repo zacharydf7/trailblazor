@@ -21,9 +21,11 @@ public sealed class TbButtonLocator(ILocator scope, string name)
 
     /// <summary>Clicks the button, as a user does, once the page is interactive and the button is no longer busy, and
     /// waits until the app has run its <c>OnClick</c>, or until a dialog opens, since a handler that awaits the
-    /// dialog's answer finishes only once the test answers it. On a static page, a link button is followed and a
-    /// form's submit or reset button is clicked, without the wait. Throws for a disabled button, or for any other
-    /// button on a static page, where it does nothing.</summary>
+    /// dialog's answer finishes only once the test answers it. For a <c>TbForm</c>'s submit button, it then waits
+    /// until the form has handled the submit, so its <c>OnValidSubmit</c> or <c>OnInvalidSubmit</c> has run and the
+    /// fields show their errors. On a static page, a link button is followed and a form's submit or reset button is
+    /// clicked, without the wait. Throws for a disabled button, or for any other button on a static page, where it
+    /// does nothing.</summary>
     public async Task ClickAsync()
     {
         await Button.WaitForAsync();
@@ -54,11 +56,24 @@ public sealed class TbButtonLocator(ILocator scope, string name)
             throw new InvalidOperationException("The button is disabled, so a user can't click it.");
         }
 
-        // The wait follows the button it marks, so it holds when the click renames the button.
-        await Commit.CountedAsync(Button, "data-clicks", async () =>
+        async Task<bool> ClickAsync()
         {
             await Button.ClickAsync();
             return true;
-        });
+        }
+
+        // A submit button submits its form after the click, and a TbForm counts a submit once it has handled it. The
+        // form is the button's owner, which a form attribute can name from outside it or from inside another form.
+        var form = await Button.EvaluateAsync<string?>("button => button.type === 'submit' "
+            + "&& button.form?.hasAttribute('data-submits') ? button.form.id : null");
+        if (form is not null)
+        {
+            await Commit.CountedAsync(Button, "data-clicks", Scope.Document(scope).Locator($"[id='{form}']"),
+                "data-submits", ClickAsync);
+            return;
+        }
+
+        // The wait follows the button it marks, so it holds when the click renames the button.
+        await Commit.CountedAsync(Button, "data-clicks", ClickAsync);
     }
 }
