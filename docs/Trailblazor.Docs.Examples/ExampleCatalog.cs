@@ -4692,6 +4692,8 @@ public static class ExampleCatalog
                 new("actions", "The links or buttons after the message."),
                 new("close", "The close button."),
             ],
+            Scenario = new("basic", "it reads the notice, closes it, and brings it back with the button the app shows "
+                + "in its place."),
             TestingTip = "`page.Tb().Banner(\"Maintenance tonight\")` in Playwright, or `cut.Tb().Banner(...)` in "
                 + "bUnit, finds the banner by its title: `CloseAsync()` presses its close button, and `TextAsync()` or "
                 + "`Text` reads its message.",
@@ -4788,10 +4790,13 @@ public static class ExampleCatalog
                     "The chip's body, around its icon and label: a button or link when it acts, otherwise text."),
                 new("remove", "The button that removes the chip."),
             ],
+            Scenario = new("removable", "it reads the tags, removes Archive with its remove button, and checks "
+                + "which tags are left."),
             TestingTip = "`page.Tb().Chip(\"Archive\")` in Playwright, or `cut.Tb().Chip(\"Archive\")` in bUnit, "
                 + "finds a chip by its text: `ClickAsync()` toggles it or runs its `OnClick`, `RemoveAsync()` presses "
                 + "its remove button, and `SelectedAsync()` or `Selected` reads whether it's selected. "
-                + "`ChipGroup(name)` finds a group by its `AriaLabel`.",
+                + "`ChipGroup(name)` finds a group by its `AriaLabel`; its `ChipsAsync()`, or `Chips` in bUnit, reads "
+                + "the chips' texts in order, and `Chip(text)` finds a chip inside it.",
             Telemetry =
             [
                 "With a `TelemetryName`, such as `\"filter-open\"`, it counts `trailblazor.control.shown` as it first "
@@ -8478,10 +8483,13 @@ public static class ExampleCatalog
                 new("clear", "The button that clears the date."),
                 new("popover", "The calendar button and the calendar it opens."),
             ],
+            Scenario = new("value", "it chooses a date and clears the field, and checks the value the app has after "
+                + "each."),
             TestingTip = "`await page.Tb().DatePicker(\"Start date\").ChooseAsync(date)` from "
                 + "`Trailblazor.Testing.Playwright` types the date in the field's own format and waits until the field "
                 + "has taken it. In bUnit, `cut.Tb().DatePicker(\"Start date\")` from `Trailblazor.Testing` has the "
-                + "same `ChooseAsync(date)`, and `Value` reads the date. `EnterAsync(\"31/31/2026\")` types text as it "
+                + "same `ChooseAsync(date)`. `ValueAsync()`, or `Value` in bUnit, reads the date, and "
+                + "`ChooseAsync(null)` clears it. `EnterAsync(\"31/31/2026\")` types text as it "
                 + "is in either package, so a test can see the field's error for a date it can't read. `@bind-Open` "
                 + "opens the calendar from code, so a test can check it without pressing its button.",
         },
@@ -11841,6 +11849,8 @@ public static class ExampleCatalog
                     <TbTreeItem Value="…" Text="…" />
                 </TbTreeView>
                 """,
+            Scenario = new("filter-and-select", "it filters the trails by name, checks which rows are left, opens one "
+                + "by its path, and checks what the app shows."),
             TestingTips =
             [
                 "In Playwright, `page.Tb().Tree(\"Trails by region\")` from `Trailblazor.Testing.Playwright` follows "
@@ -11852,7 +11862,8 @@ public static class ExampleCatalog
                 "`ItemsAsync(...)` returns every row at a path, for rows that share their text. `ExpandAllAsync()` "
                     + "opens every row, waiting for rows that load or that a `TbTreeItem` renders once open.",
                 "`CollapseAsync(...)` closes a row, and `ActivateAsync(...)` double-clicks one, which raises "
-                    + "`OnActivate`. `RowAsync(text)` finds the one row that shows a text, at any depth. "
+                    + "`OnActivate`. `RowAsync(text)` finds the one row that shows a text, at any depth, and "
+                    + "`TextsAsync()` reads the texts of the rows that show, in order. "
                     + "`Branch(\"River valley\")` gives the same helpers with paths that start inside that row.",
                 "`DragBeforeAsync`, `DragAfterAsync` and `DragIntoAsync` drag one row's path onto another's.",
                 "The helpers follow only the tree's own rows, not those of a tree inside a row.",
@@ -13260,6 +13271,8 @@ public static class ExampleCatalog
                 new("action", "The toast's action button, such as Undo."),
                 new("close", "The button that dismisses the toast."),
             ],
+            Scenario = new("action", "it archives a report, presses Undo on the toast that says so, and checks what "
+                + "the app did."),
             TestingTip = "Each toast is an item in the region named `Notifications`. A closed toast fades out with "
                 + "`data-leaving` for a moment, so wait for it to go, as with `ToHaveCountAsync(0)`. "
                 + "`await page.Tb().Toasts.WaitForAsync(\"Report archived\")` from `Trailblazor.Testing.Playwright` "
