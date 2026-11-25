@@ -1,18 +1,22 @@
 <TbDockManager Layout="Layout" AriaLabel="Field guide" Style="block-size: 14rem">
     @foreach (var chapter in Chapters)
     {
-        <TbDockPanel @key="chapter.Id" Id="@chapter.Id" Title="@chapter.Title" Icon="chapter.Icon">
+        <TbDockPanel @key="chapter.Id" Id="@chapter.Id" Title="@chapter.Title" Icon="chapter.Icon"
+                     TabEnd="@(chapter.New > 0 ? NewCount(chapter.New) : null)">
             <TbText class="tb-p-3">@chapter.Title</TbText>
         </TbDockPanel>
     }
 </TbDockManager>
 
 @code {
-    private sealed record Chapter(string Id, string Title, Icon? Icon = null);
+    private sealed record Chapter(string Id, string Title, Icon? Icon = null, int New = 0);
+
+    private static RenderFragment NewCount(int count) =>
+        @<TbBadge Count="count" Tone="Tone.Neutral" Label="@($"{count} new")" />;
 
     private static readonly Chapter[] Chapters =
     [
-        new("birds", "Birds", ExampleIcons.Trail), new("mammals", "Mammals"), new("trees", "Trees"),
+        new("birds", "Birds", ExampleIcons.Trail), new("mammals", "Mammals", New: 2), new("trees", "Trees"),
         new("flowers", "Wildflowers of the high meadows in early summer"), new("fungi", "Fungi"),
         new("insects", "Insects"), new("tracks", "Tracks and signs"), new("weather", "Reading the weather"),
         new("index", "Index"),

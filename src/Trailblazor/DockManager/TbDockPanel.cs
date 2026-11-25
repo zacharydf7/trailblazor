@@ -23,6 +23,14 @@ public sealed class TbDockPanel : TbComponentBase, IDisposable
     [Parameter]
     public Icon? Icon { get; set; }
 
+    /// <summary>Content in the panel's tab after its title, such as a count or a status dot. Screen readers hear its
+    /// text after the tab's name, as its description, and the tab and the panel keep <see cref="Title"/> as their
+    /// name, so the menus, the testing helpers and the announcements as the panel moves still name it by its title.
+    /// Give it text a screen reader can say, such as a badge's <c>Label</c>, keep it short, and leave controls out of
+    /// it: the tab is a button.</summary>
+    [Parameter]
+    public RenderFragment? TabEnd { get; set; }
+
     /// <summary>Whether the user can close the panel, from the mark on its tab, with Delete or Backspace on the tab,
     /// with a middle click, or from Close in its group's menu. Defaults to true. <see cref="DockLayout.Open"/> shows
     /// a closed panel again.</summary>

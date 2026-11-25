@@ -36,7 +36,7 @@
             <input aria-label="Note" />
             <div style="block-size: 60rem">Pack list</div>
         </TbDockPanel>
-        <TbDockPanel Id="gear" Title="Gear">
+        <TbDockPanel Id="gear" Title="Gear" TabEnd="@(Counts ? GearCount : null)">
             <button type="button">Add gear</button>
         </TbDockPanel>
         <TbDockPanel Id="weather" Title="Weather">
@@ -102,6 +102,11 @@
 
     [SupplyParameterFromQuery]
     private bool Locked { get; set; }
+
+    [SupplyParameterFromQuery]
+    private bool Counts { get; set; }
+
+    private static readonly RenderFragment GearCount = @<TbBadge Count="3" Tone="Tone.Neutral" Label="3 to pack" />;
 
     protected override void OnInitialized()
     {

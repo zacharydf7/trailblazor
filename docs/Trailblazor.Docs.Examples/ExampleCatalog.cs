@@ -3949,7 +3949,9 @@ public static class ExampleCatalog
                 new("many", "Many panels and long titles", "A row with more tabs than fit scrolls sideways and "
                     + "fades at each side that has tabs past it, and the showing tab is brought into view. Go to tab, "
                     + "in the group's menu and each tab's, lists every tab of the group, to show one that has "
-                    + "scrolled away. A long title is cut short. `Icon` puts an icon before a tab's title.",
+                    + "scrolled away. A long title is cut short. `Icon` puts an icon before a tab's title, and "
+                    + "`TabEnd` puts a count or a status dot after it, as on Mammals, which screen readers hear as the "
+                    + "tab's description, so the tab is still named by its title.",
                     typeof(DockManagerManyExample)),
                 new("narrow", "Narrow docks", "A dock narrower than `CompactBelow`, 640 pixels unless set, is "
                     + "compact: where its layout puts groups side by side, it shows its docked panels as the tabs of "
@@ -4037,7 +4039,8 @@ public static class ExampleCatalog
             [
                 "`AriaLabel` names the dock, which is a `group`. Without one the group has no name, which suits a "
                     + "page with one dock.",
-                "Each tab is named by its panel's `Title`, and each panel by its tab.",
+                "Each tab is named by its panel's `Title`, and each panel by its tab. A panel's `TabEnd` isn't part "
+                    + "of either name; it describes the tab.",
                 "Each group's tab list is named \"Panel group\" followed by its number.",
                 "Each separator is named \"Resize\" followed by the title of the panel showing in the group just "
                     + "before it, and the grip on its line is a menu `button` named \"Size of\" followed by the "
@@ -4086,7 +4089,8 @@ public static class ExampleCatalog
             Announcements =
             [
                 "On a tab, screen readers say its title, that it's a tab, whether it's selected and its place "
-                    + "among the group's tabs. A closable tab adds \"Press Delete to close\". A panel with "
+                    + "among the group's tabs. A panel's `TabEnd` adds its text first, as in \"Mammals, tab, 2 new\". "
+                    + "A closable tab adds \"Press Delete to close\". A panel with "
                     + "`Modified` adds \"Unsaved changes\", on its tab before that hint, and on its strip button. In "
                     + "a window of its own, it's said on the panel's button in the away row, after \"In its own "
                     + "browser window\", and on its window's return button.",
@@ -4222,6 +4226,8 @@ public static class ExampleCatalog
                 "Give the dock an `AriaLabel` when the page has more than one, and give each panel a short "
                     + "`Title`, since an icon alone doesn't name a tab.",
                 "Offer a way to reopen closed panels, such as a View menu that calls `Open`.",
+                "Give `TabEnd` content text a screen reader can say, such as a badge's `Label`, since a dot alone "
+                    + "says nothing; keep it short, and put no links or buttons in it, since the tab is a button.",
                 "When the layout is `Locked`, say so on the page, since a drag that does nothing gives no reason.",
                 "When `CanClose` asks a question, ask it in a dialog, which gives the focus back to where it "
                     + "was when the answer keeps the panel.",
@@ -4494,6 +4500,8 @@ public static class ExampleCatalog
                     + "it is dragged."),
                 new("icon", "A tab's or a strip button's icon."),
                 new("title", "A tab's or a strip button's title."),
+                new("tab-end", "A tab's `TabEnd` content, after its title. It is left out of the tab's name and read "
+                    + "as the tab's description."),
                 new("close", "The close mark on a closable tab."),
                 new("modified", "The dot on the tab, strip button, away row button or return button of a panel "
                     + "with `Modified`. That tab or button also gets `data-modified`."),
@@ -4558,6 +4566,8 @@ public static class ExampleCatalog
                     + "part marks.",
                 "For a locked dock the move helpers, `FloatAsync`, `DockAsync`, `AutoHideAsync` and `PopOutAsync` "
                     + "throw; selecting, closing, maximizing, restoring and resizing still work.",
+                "A tab's `TabEnd` isn't part of its name, so the helpers and a `tab` locator find it by its title. "
+                    + "Check its text with `ToHaveAccessibleDescriptionAsync` on the tab, or read the `tab-end` part.",
                 "`SelectAsync(\"Map\")` shows a tab however far its row has scrolled. To go through Go to tab as a "
                     + "user does, `ChooseFromTabMenuAsync(\"Trails\", \"Go to tab\", \"Map\")`.",
                 "`PanelsAsync()` or `Panels` lists every tab in reading order, and `ShowingAsync()` or `Showing` the "

@@ -671,6 +671,41 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public void Tab_ShouldShowItsEndAfterTheTitleAndBeDescribedByIt_WhenThePanelHasTabEnd()
+    {
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.ChildContent, (RenderFragment)(builder =>
+            {
+                foreach (var (id, title) in new[] { ("trails", "Trails"), ("map", "Map"), ("notes", "Notes") })
+                {
+                    builder.OpenComponent<TbDockPanel>(0);
+                    builder.SetKey(id);
+                    builder.AddComponentParameter(1, nameof(TbDockPanel.Id), id);
+                    builder.AddComponentParameter(2, nameof(TbDockPanel.Title), title);
+                    if (id == "trails")
+                    {
+                        builder.AddComponentParameter(3, nameof(TbDockPanel.TabEnd),
+                            (RenderFragment)(end => end.AddContent(0, "2 new")));
+                    }
+
+                    builder.CloseComponent();
+                }
+            })));
+
+        var trails = cut.Find("[role=tab][data-panel=trails]");
+        var title = trails.QuerySelector("[data-part=title]")!;
+        var end = trails.QuerySelector("[data-part=title] + [data-part=tab-end]")!;
+        Assert.Equal("2 new", end.TextContent);
+        Assert.StartsWith(end.Id + " ", trails.GetAttribute("aria-describedby"));
+        Assert.Equal(title.Id, trails.GetAttribute("aria-labelledby"));
+        Assert.Equal(title.Id, cut.Find($"[role=tabpanel][id='{trails.GetAttribute("aria-controls")}']")
+            .GetAttribute("aria-labelledby"));
+        Assert.Null(Tab(cut, "Map").GetAttribute("aria-labelledby"));
+        Assert.DoesNotContain("-end-", Tab(cut, "Map").GetAttribute("aria-describedby"));
+        Assert.Equal(["Trails", "Map", "Notes"], cut.Tb().Dock().Panels);
+    }
+
+    [Fact]
     public async Task GoToTab_ShouldShowThatPanel_WhenChosenInTheGroupsMenu()
     {
         DockLayout? changed = null;

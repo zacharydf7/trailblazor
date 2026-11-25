@@ -379,6 +379,21 @@ public class DockManagerDriverTests(BrowserFixture fixture) : DockManagerPage(fi
         // The third column, on the far side of the next separator, keeps its quarter.
         Assert.Equal(0.25 * 766, (await page.Locator(".tb-dock__group").Nth(2).BoundingBoxAsync())!.Width, 1.0);
     }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tab_ShouldShowItsEndAndBeDescribedByIt_WhenThePanelHasTabEnd(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?counts=true");
+        var gear = Tab(page, "Gear");
+
+        await page.Tb().Dock().SelectAsync("Gear");
+
+        await Expect(gear.Locator("[data-part=tab-end]")).ToBeVisibleAsync();
+        await Expect(gear).ToHaveAccessibleDescriptionAsync("3 to pack Press Delete to close");
+        await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Gear", Exact = true })).ToBeVisibleAsync();
+        await Expect(gear.Locator("[data-part=close]")).ToBeVisibleAsync();
+        Assert.Equal(["Trails", "Map", "Notes", "Gear", "Weather"], await page.Tb().Dock().PanelsAsync());
+    }
 }
 
 public abstract class DockManagerPage(BrowserFixture fixture) : BrowserTest(fixture)

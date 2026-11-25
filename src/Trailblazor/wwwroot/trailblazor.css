@@ -8432,6 +8432,13 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         white-space: nowrap;
     }
 
+    /* A count or a dot after the title keeps its size, so a long title is the part that's cut short. */
+    .tb-dock__tab-end {
+        display: inline-flex;
+        align-items: center;
+        flex: none;
+    }
+
     /* A modified panel's dot takes the room of a close mark, so a tab keeps its width as the two trade places. */
     .tb-dock__close,
     .tb-dock__modified {

@@ -8000,3 +8000,5 @@ Trailblazor.DockLabels.GoToTab.init -> void
 Trailblazor.TbDockManager.Locked.get -> bool
 Trailblazor.TbDockManager.Locked.set -> void
 const Trailblazor.TbStrings.DockGoToTab = "Dock.GoToTab" -> string!
+Trailblazor.TbDockPanel.TabEnd.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDockPanel.TabEnd.set -> void
