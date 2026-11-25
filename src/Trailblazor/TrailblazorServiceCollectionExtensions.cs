@@ -58,6 +58,7 @@ public static class TrailblazorServiceCollectionExtensions
         services.TryAddScoped<SortableGroups>();
         services.TryAddScoped<HotkeyRegistry>();
         services.TryAddScoped<FormRegistry>();
+        services.TryAddScoped<TimestampTicker>();
         services.TryAddScoped<IThemeService, ThemeService>();
         services.AddMetrics();
         services.TryAddSingleton<TelemetryInstruments>();

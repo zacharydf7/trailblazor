@@ -1,24 +1,25 @@
 # Timestamp
 
-Pattern: none; it is a `time` element with the moment in its `datetime`
+Pattern: none; it is a `time` element with the moment in its `datetime`, and a relative one is a tooltip's trigger
 
 Familiar apps: the "Expires Dec 4, 2026" line on a membership page, the sent time on an email in an inbox
 
 ## Keyboard
 
-Nothing of its own: it is text, with nothing to press.
+- [x] A relative timestamp is a tab stop, so its tooltip shows on keyboard focus, and Escape hides it. Other formats have nothing to press. `TimestampTests.Relative_ShouldBeDescribedByTheExactTime_WhenFocused`
 
 ## Pointer
 
-Nothing of its own: it is text.
+- [x] Resting the pointer on a relative timestamp shows its exact time; other formats are plain text. `tooltip.js`
 
 ## Touch
 
-Nothing of its own: it is text.
+- [x] A tap on a relative timestamp shows its exact time, since the tap does nothing else. `TimestampTests.Relative_ShouldShowTheExactTime_WhenTapped`
 
 ## Focus
 
 - [x] A missing value shows a dash, which screen readers hear as "Not set". `TbTimestampTests.Render_ShouldShowADashReadAsNotSet_WhenTheValueIsNull`
+- [x] A relative timestamp's exact time is its description. `TbTimestampTests.TbTimestamp_ShouldDescribeExactTime_WhenRelative`, `TimestampTests.Relative_ShouldBeDescribedByTheExactTime_WhenFocused`
 
 ## Time zones
 
@@ -32,6 +33,11 @@ Nothing of its own: it is text.
 
 - [x] `FutureText` shows while the moment is ahead and switches to `PastText` as it passes. `TbTimestampTests.TbTimestamp_ShouldUseFutureText_WhenValueIsAhead`, `TbTimestampTests.TbTimestamp_ShouldSwitchToPastText_WhenTimePasses`
 
+## Relative
+
+- [x] It says how far the moment is from now, in minutes, hours, days, months or years, or "just now". `TbTimestampTests.TbTimestamp_ShouldShowRelativeText_WhenGivenRelative`
+- [x] It keeps up as time passes, on one timer for every relative timestamp on the page, which ticks those with the same wait together and leaves a timestamp that went away. `TbTimestampTests.Relative_ShouldKeepUp_WhenTimePasses`, `TimestampTickerTests.Wait_ShouldFireTheEarlierOwnerFirst_WhenItRegistersSecond`, `TimestampTickerTests.Stop_ShouldKeepTheTickFromFiring_WhenCalledBeforeItIsDue`, `TimestampTickerTests.Fire_ShouldCallEveryDueOwnerOnce_WhenTwoAreDueTogether`
+
 ## Not applicable
 
-- Announcing the switch from future to past: the text changes in place, as a clock's does, without a live region.
+- Announcing the switch from future to past, or a relative timestamp's new words: the text changes in place, as a clock's does, without a live region.

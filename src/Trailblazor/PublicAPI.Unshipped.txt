@@ -7800,3 +7800,25 @@ override Trailblazor.TimeZoneAbbreviation.ToString() -> string!
 static Trailblazor.TimeZoneAbbreviation.operator !=(Trailblazor.TimeZoneAbbreviation? left, Trailblazor.TimeZoneAbbreviation? right) -> bool
 static Trailblazor.TimeZoneAbbreviation.operator ==(Trailblazor.TimeZoneAbbreviation? left, Trailblazor.TimeZoneAbbreviation? right) -> bool
 ~override Trailblazor.TbTimestamp.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TimestampFormat.Relative = 3 -> Trailblazor.TimestampFormat
+const Trailblazor.TbStrings.TimestampDaysAgo = "Timestamp.DaysAgo" -> string!
+const Trailblazor.TbStrings.TimestampDaysAgoOne = "Timestamp.DaysAgoOne" -> string!
+const Trailblazor.TbStrings.TimestampHoursAgo = "Timestamp.HoursAgo" -> string!
+const Trailblazor.TbStrings.TimestampHoursAgoOne = "Timestamp.HoursAgoOne" -> string!
+const Trailblazor.TbStrings.TimestampInDays = "Timestamp.InDays" -> string!
+const Trailblazor.TbStrings.TimestampInDaysOne = "Timestamp.InDaysOne" -> string!
+const Trailblazor.TbStrings.TimestampInHours = "Timestamp.InHours" -> string!
+const Trailblazor.TbStrings.TimestampInHoursOne = "Timestamp.InHoursOne" -> string!
+const Trailblazor.TbStrings.TimestampInMinutes = "Timestamp.InMinutes" -> string!
+const Trailblazor.TbStrings.TimestampInMinutesOne = "Timestamp.InMinutesOne" -> string!
+const Trailblazor.TbStrings.TimestampInMonths = "Timestamp.InMonths" -> string!
+const Trailblazor.TbStrings.TimestampInMonthsOne = "Timestamp.InMonthsOne" -> string!
+const Trailblazor.TbStrings.TimestampInYears = "Timestamp.InYears" -> string!
+const Trailblazor.TbStrings.TimestampInYearsOne = "Timestamp.InYearsOne" -> string!
+const Trailblazor.TbStrings.TimestampJustNow = "Timestamp.JustNow" -> string!
+const Trailblazor.TbStrings.TimestampMinutesAgo = "Timestamp.MinutesAgo" -> string!
+const Trailblazor.TbStrings.TimestampMinutesAgoOne = "Timestamp.MinutesAgoOne" -> string!
+const Trailblazor.TbStrings.TimestampMonthsAgo = "Timestamp.MonthsAgo" -> string!
+const Trailblazor.TbStrings.TimestampMonthsAgoOne = "Timestamp.MonthsAgoOne" -> string!
+const Trailblazor.TbStrings.TimestampYearsAgo = "Timestamp.YearsAgo" -> string!
+const Trailblazor.TbStrings.TimestampYearsAgoOne = "Timestamp.YearsAgoOne" -> string!

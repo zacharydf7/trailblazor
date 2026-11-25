@@ -14,7 +14,7 @@ Familiar apps: none; it isn't a control
 
 ## Touch
 
-Nothing of its own. Touch has no hover, so the tooltip of `ShowFullText` doesn't show on a tap.
+- [x] A tap on cut-off text shows its tooltip, since the tap does nothing else; inside a link or button the tap is the control's. `TextTests.FullText_ShouldShowItsTooltip_WhenTapped`
 
 ## Focus
 

@@ -11,4 +11,9 @@ public enum TimestampFormat
 
     /// <summary>The date and the time, such as 11/25/2026 3:45 PM.</summary>
     DateTime,
+
+    /// <summary>How far the moment is from now, such as "in 3 days", "2 hours ago" or "just now", with the date and
+    /// time in a tooltip that is also its description. It keeps up as time passes. Under 45 seconds is "just now";
+    /// then minutes up to 45, hours up to 22, days up to 26, months up to 320 days, and years, each rounded.</summary>
+    Relative,
 }

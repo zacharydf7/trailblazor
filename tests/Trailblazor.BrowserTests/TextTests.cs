@@ -45,6 +45,19 @@ public class TextTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FullText_ShouldShowItsTooltip_WhenTapped(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-full-text", new() { HasTouch = true });
+        var pine = page.Tb().Text(Pine);
+        Assert.True(await pine.IsCutAsync());
+
+        await pine.Element.TapAsync();
+
+        await Expect(pine.Element.Locator("[role=tooltip]")).ToHaveTextAsync(Pine);
+        await Expect(pine.Element.Locator("[role=tooltip]")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task FullText_ShouldComeAndGoWithTheCut_WhenTheBoxIsResized(string browser)
     {
         var page = await OpenAsync(browser, "/text-full-text");

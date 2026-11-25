@@ -3,8 +3,19 @@
 
 @if (Value is { } value)
 {
-    <time @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-timestamp", Class)" style="@Style"
-          datetime="@ShownTime.Iso(value)">@TextOf(value)</time>
+    @if (Format == TimestampFormat.Relative)
+    {
+        @* The exact moment is the tooltip and the description; tabindex lets keyboard users reach it too. *@
+        <TbTooltip Text="@ExactText(value)">
+            <time @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-timestamp", Class)" style="@Style"
+                  datetime="@ShownTime.Iso(value)" tabindex="0">@TextOf(value)</time>
+        </TbTooltip>
+    }
+    else
+    {
+        <time @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-timestamp", Class)" style="@Style"
+              datetime="@ShownTime.Iso(value)">@TextOf(value)</time>
+    }
 }
 else
 {

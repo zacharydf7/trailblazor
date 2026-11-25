@@ -54,6 +54,7 @@ public partial class LabelsRuleTests
         ["RichTextLinkDialog"] = ["TbRichTextEditor"],
         ["Comparisons"] = ["TbDataGrid", "TbQueryBuilder"],
         ["FieldCount"] = ["TbTextField", "TbRichTextEditor"],
+        ["RelativeTime"] = ["TbTimestamp"],
     };
 
     // Services outside any component, and base classes whose strings every subclass shares.

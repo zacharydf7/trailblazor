@@ -1,0 +1,15 @@
+@page "/timestamp-relative"
+
+@* A relative timestamp three days ahead, whose exact time is its tooltip and description. *@
+<TbTimestamp Value="_snow" Format="TimestampFormat.Relative" />
+
+@* The same inside a button, whose press is the button's. *@
+<button type="button" @onclick="() => _pressed++">
+    Snow report, <TbTimestamp Value="_snow" Format="TimestampFormat.Relative" />
+</button>
+<output>@_pressed</output>
+
+@code {
+    private readonly DateTimeOffset _snow = DateTimeOffset.UtcNow.AddDays(3).AddHours(1);
+    private int _pressed;
+}

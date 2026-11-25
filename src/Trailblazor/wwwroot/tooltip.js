@@ -6,6 +6,11 @@ import { onEachPage } from '../Trailblazor.Primitives/pages.js';
 // server nothing, even to set up. The JS initializer imports this at startup; each bubble carries its own settings.
 const focusableSelector = 'a[href], button, input, select, textarea, [tabindex]';
 // A TbTooltip wraps its trigger, and cut-off text that shows its full text in a tooltip is its own trigger.
+// A trigger that a press does nothing else to: no role of its own, and neither a control nor inside one.
+const controls = 'a[href], button, input, select, textarea, label, summary, [contenteditable], [role=button], '
+    + '[role=link], [role=option], [role=menuitem], [role=menuitemcheckbox], [role=menuitemradio], [role=tab], '
+    + '[role=treeitem], [role=checkbox], [role=radio], [role=switch], [role=row], [role=gridcell]';
+const isPlain = trigger => !trigger.matches('[role]') && !trigger.closest(controls);
 const anchorSelector = '.tb-tooltip-anchor, .tb-text--full-text, .tb-button--reason';
 const bubbleSelector = ':is(.tb-tooltip-anchor, .tb-text--full-text, .tb-button--reason) > [data-part="tooltip"]';
 
@@ -75,8 +80,8 @@ const showSoon = anchor => {
 // The tooltip is inside the anchor, so moving onto it keeps it open, unless it's forced over the anchor and lets
 // presses through. The CSS bridges the gap onto the tooltip, and the hide delay covers a path that strays off the
 // bridge (WCAG 1.4.13 hoverable).
-// A touch has no hover: its user gets a tooltip by focusing a text field, so a touch neither starts a tooltip's show
-// delay nor hides one when it leaves the trigger.
+// A touch has no hover: its user gets a tooltip by focusing a text field or by pressing a trigger that does nothing
+// else, so a touch neither starts a tooltip's show delay nor hides one when it leaves the trigger.
 document.addEventListener('pointerover', event => {
     const anchor = anchorOf(event.target);
     if (anchor && event.pointerType !== 'touch' && !anchor.contains(event.relatedTarget)) {
@@ -106,8 +111,9 @@ document.addEventListener('focusin', event => {
     }
 });
 document.addEventListener('focusout', event => hide(anchorOf(event.target)));
-// A press on a trigger that's off does nothing else, so it shows the tooltip that says why, on touch too; the next
-// press anywhere else hides it. A tooltip shown for keyboard focus stays, as focus does.
+// A press on a trigger that's off, or on one that isn't a control, such as a relative timestamp, does nothing else,
+// so it shows the tooltip, on touch too; the next press anywhere else hides it. A tooltip shown for keyboard focus stays, as focus
+// does.
 document.addEventListener('pointerdown', event => {
     const anchor = anchorOf(event.target);
     if (shown?.byPointer && !shown.anchor.contains(event.target)) {
@@ -115,7 +121,8 @@ document.addEventListener('pointerdown', event => {
     }
 
     const trigger = anchor && described.get(bubbleOf(anchor))?.trigger;
-    if (trigger?.getAttribute('aria-disabled') === 'true' && trigger.contains(event.target)) {
+    const pressShows = trigger && (trigger.getAttribute('aria-disabled') === 'true' || isPlain(trigger));
+    if (pressShows && trigger.contains(event.target)) {
         show(anchor, true);
         return;
     }

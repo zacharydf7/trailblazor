@@ -357,7 +357,8 @@ public static class ExampleCatalog
                     + "ellipsis. `MaxLength` cuts it to a number of characters instead, as the next example shows.",
                 typeof(TextMaxLinesExample)),
                 new("full-text", "Showing the whole text", "With `ShowFullText`, text that `MaxLines` cuts off shows "
-                    + "its full text in a tooltip on hover and keyboard focus, and only that text becomes a tab stop: "
+                    + "its full text in a tooltip on hover, keyboard focus or a tap, and only that text becomes a tab "
+                    + "stop: "
                     + "Cedar Flats fits, so it gets neither. `MaxLength` cuts text to a number of characters as the "
                     + "page renders, for an ID in a fixed-width column, as the permit shows. Characters differ in "
                     + "width, so prefer `MaxLines` where it fits.", typeof(TextFullTextExample)),
@@ -381,8 +382,8 @@ public static class ExampleCatalog
             AppDuties =
             [
                 "Don't cut off text sighted people need unless `ShowFullText` shows it or the page shows it somewhere "
-                    + "else. Touch has no hover, so the tooltip doesn't reach touch users; show text they need "
-                    + "somewhere else.",
+                    + "else. A touch user sees the tooltip only by tapping the text, which inside a link or button "
+                    + "follows it instead, so show text they need somewhere else there.",
             ],
             Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
@@ -482,7 +483,8 @@ public static class ExampleCatalog
             Sections =
             [
                 new("basic", "Timestamp", "`Value` is a `DateTimeOffset`, shown with the current culture's short "
-                    + "pattern for `Format`: `Date`, `Time`, or `DateTime`, the default. `FormatString` takes any .NET "
+                    + "pattern for `Format`: `Date`, `Time`, or `DateTime`, the default; `Relative` has its own "
+                    + "section below. `FormatString` takes any .NET "
                     + "format instead. A null value shows a dash, which screen readers hear as \"Not set\".",
                     typeof(TimestampExample)),
                 new("zones", "Time zones", "A timestamp shows its moment in its own `TimeZone`, else a "
@@ -497,19 +499,27 @@ public static class ExampleCatalog
                     + "moment, with `{0}` for it: `FutureText` while it's ahead and `PastText` once it has passed, "
                     + "such as \"Expires {0}\" and \"Expired {0}\". The timestamp switches as the moment passes, as "
                     + "the parking pass here does.", typeof(TimestampExpiryExample)),
+                new("relative", "Relative", "`TimestampFormat.Relative` says how far the moment is from now, such as "
+                    + "\"in 2 days\", \"3 hours ago\" or \"just now\", and keeps up as time passes, on one timer "
+                    + "for every relative timestamp on the page. The exact date and time is its tooltip and its "
+                    + "description, shaped by `FormatString` and `ShowZone`; the timestamp is a tab stop so keyboard "
+                    + "users reach it, and a tap shows it too.",
+                    typeof(TimestampRelativeExample)),
             ],
             Api = [typeof(TbTimestamp), typeof(TimeSettings), typeof(TimeZoneAbbreviation)],
             Announcements =
             [
                 "A missing value reads \"Not set\".",
-                "The switch from `FutureText` to `PastText` isn't announced; the text changes in place, as a clock's "
-                    + "does.",
+                "A relative timestamp's exact date and time is its description.",
+                "The switch from `FutureText` to `PastText`, and a relative timestamp's new words, aren't announced; "
+                    + "the text changes in place, as a clock's does.",
             ],
             Accessibility =
             [
                 "It renders a `time` element with the moment in ISO 8601 in its `datetime`, so screen readers read "
                     + "the text shown and machines read the exact moment.",
-                "It handles no keys of its own.",
+                "It handles no keys of its own. A relative timestamp is a tab stop, so its tooltip shows on keyboard "
+                    + "focus, and Escape hides it; a hover or a tap shows it too.",
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
@@ -517,13 +527,19 @@ public static class ExampleCatalog
                 "Before the page is interactive it shows the zone the server resolves. Once it is interactive, a "
                     + "zone the app reads from the browser takes over, and on WebAssembly so does the browser's own "
                     + "local zone.",
-                "`FutureText` turns into `PastText` as the moment passes only on an interactive page; a static page "
-                    + "keeps the words it rendered with.",
+                "`FutureText` turns into `PastText` as the moment passes, and a relative timestamp keeps up, only on "
+                    + "an interactive page; a static page keeps the words it rendered with.",
             ],
             Notes =
             [
-                new("Its words come from the app's localizer alone: `Value.Empty` (\"Not set\") and `Timestamp.Zone` "
-                    + "(\"UTC{0}\"). `FutureText` and `PastText` word each use."),
+                new("Its words come from the app's localizer alone: `Value.Empty` (\"Not set\"), `Timestamp.Zone` "
+                    + "(\"UTC{0}\"), `Timestamp.JustNow`, and a key for each unit and direction, such as "
+                    + "`Timestamp.InDays` (\"in {0} days\") and `Timestamp.DaysAgo`, each with a one-form such as "
+                    + "`Timestamp.InDaysOne`. `FutureText` and `PastText` word each use."),
+                new("Each relative timestamp is a tab stop, so a long list of them adds many; in a dense list, a "
+                    + "format other than `Relative`, such as `DateTime`, adds none. Inside a link or a button, use "
+                    + "another format too: a tab stop inside a control confuses screen readers, and a tap there "
+                    + "follows the control rather than showing the exact time."),
             ],
             Target = null,
             Blocks = ["tb-timestamp"],
@@ -532,8 +548,11 @@ public static class ExampleCatalog
             TestingTips =
             [
                 "Read its text and its `datetime` attribute; it has no helper. Register a `FakeTimeProvider` as the "
-                    + "`TimeProvider` to fix the current time for `FutureText` and `PastText`, and cascade a "
-                    + "`TimeZoneInfo` to fix the zone.",
+                    + "`TimeProvider` to fix the current time for `FutureText`, `PastText` and relative text, and "
+                    + "cascade a `TimeZoneInfo` to fix the zone.",
+                "In bUnit, advancing the `FakeTimeProvider` moves a relative timestamp on, so wait for the new text "
+                    + "with `WaitForAssertion`; its exact time is the `[role=tooltip]` text. In Playwright, Tab to it "
+                    + "and check it with `ToHaveAccessibleDescriptionAsync`.",
             ],
         },
         new("highlight", "Highlight", ExampleCategory.Content,
@@ -10172,8 +10191,9 @@ public static class ExampleCatalog
                     + "stays after the pointer leaves. Both are 300 milliseconds unless set, and `options.Tooltips` in "
                     + "`AddTrailblazor` changes them for the whole app. Once the pointer shows one tooltip, the next it "
                     + "reaches shows at once, as along a toolbar, until half a second after the last one hides. A touch "
-                    + "has no hover, so it shows a tooltip only by focusing a text field or by tapping a button marked "
-                    + "`aria-disabled`, such as one with a `DisabledReason`.", typeof(TooltipDelayExample)),
+                    + "has no hover, so it shows a tooltip by focusing a text field, by tapping a button marked "
+                    + "`aria-disabled`, such as one with a `DisabledReason`, or by tapping a trigger that isn't a "
+                    + "control, such as text or an icon.", typeof(TooltipDelayExample)),
                 new("turning-off", "Turning a tooltip off", "`Disabled`, or `Text` left blank, shows no tooltip and "
                     + "adds no description, so a tooltip that only sometimes applies needs no `@if`. The switch here "
                     + "turns the delete button's tooltip off.", typeof(TooltipDisabledExample)),
@@ -10204,8 +10224,9 @@ public static class ExampleCatalog
                 "A click or tap on a button hides its tooltip, and neither the focus that click leaves nor the focus "
                     + "handed back by a dialog closed with the mouse shows it, so it doesn't cover what someone is "
                     + "working on. A text field shows its tooltip on any focus, since its user is about to type.",
-                "A click or tap on a button marked `aria-disabled` shows its tooltip instead, so someone on a touch "
-                    + "screen can learn why it's off; the press does nothing else anyway.",
+                "A click or tap on a button marked `aria-disabled`, or on a trigger that isn't a control and sits "
+                    + "in none, such as a relative timestamp, cut-off text or an icon, shows its tooltip instead, so "
+                    + "someone on a touch screen can read it; the press does nothing else anyway.",
                 "Moving the pointer onto the tooltip keeps it open.",
                 "Only one tooltip shows at a time: showing one, by hover or focus, hides any other, including one "
                     + "shown for keyboard focus.",

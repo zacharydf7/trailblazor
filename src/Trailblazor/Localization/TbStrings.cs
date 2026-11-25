@@ -312,6 +312,78 @@ public static class TbStrings
     /// <summary>"UTC{0}": a timestamp's zone when the app has no abbreviation for it; {0} is the offset, such as "−5",
     /// or nothing at UTC itself.</summary>
     public const string TimestampZone = "Timestamp.Zone";
+    /// <summary>"just now": a relative timestamp less than 45 seconds from now, either way.</summary>
+    public const string TimestampJustNow = "Timestamp.JustNow";
+
+    /// <summary>"{0} minutes ago": a relative timestamp of a past moment; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="TimestampMinutesAgoOne"/> as its one-form.</summary>
+    public const string TimestampMinutesAgo = "Timestamp.MinutesAgo";
+
+    /// <summary>"1 minute ago": the one-form of <see cref="TimestampMinutesAgo"/>.</summary>
+    public const string TimestampMinutesAgoOne = "Timestamp.MinutesAgoOne";
+
+    /// <summary>"in {0} minutes": a relative timestamp of a moment ahead; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="TimestampInMinutesOne"/> as its one-form.</summary>
+    public const string TimestampInMinutes = "Timestamp.InMinutes";
+
+    /// <summary>"in 1 minute": the one-form of <see cref="TimestampInMinutes"/>.</summary>
+    public const string TimestampInMinutesOne = "Timestamp.InMinutesOne";
+
+    /// <summary>"{0} hours ago": a relative timestamp of a past moment; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="TimestampHoursAgoOne"/> as its one-form.</summary>
+    public const string TimestampHoursAgo = "Timestamp.HoursAgo";
+
+    /// <summary>"1 hour ago": the one-form of <see cref="TimestampHoursAgo"/>.</summary>
+    public const string TimestampHoursAgoOne = "Timestamp.HoursAgoOne";
+
+    /// <summary>"in {0} hours": a relative timestamp of a moment ahead; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="TimestampInHoursOne"/> as its one-form.</summary>
+    public const string TimestampInHours = "Timestamp.InHours";
+
+    /// <summary>"in 1 hour": the one-form of <see cref="TimestampInHours"/>.</summary>
+    public const string TimestampInHoursOne = "Timestamp.InHoursOne";
+
+    /// <summary>"{0} days ago": a relative timestamp of a past moment; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="TimestampDaysAgoOne"/> as its one-form.</summary>
+    public const string TimestampDaysAgo = "Timestamp.DaysAgo";
+
+    /// <summary>"1 day ago": the one-form of <see cref="TimestampDaysAgo"/>.</summary>
+    public const string TimestampDaysAgoOne = "Timestamp.DaysAgoOne";
+
+    /// <summary>"in {0} days": a relative timestamp of a moment ahead; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="TimestampInDaysOne"/> as its one-form.</summary>
+    public const string TimestampInDays = "Timestamp.InDays";
+
+    /// <summary>"in 1 day": the one-form of <see cref="TimestampInDays"/>.</summary>
+    public const string TimestampInDaysOne = "Timestamp.InDaysOne";
+
+    /// <summary>"{0} months ago": a relative timestamp of a past moment; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="TimestampMonthsAgoOne"/> as its one-form.</summary>
+    public const string TimestampMonthsAgo = "Timestamp.MonthsAgo";
+
+    /// <summary>"1 month ago": the one-form of <see cref="TimestampMonthsAgo"/>.</summary>
+    public const string TimestampMonthsAgoOne = "Timestamp.MonthsAgoOne";
+
+    /// <summary>"in {0} months": a relative timestamp of a moment ahead; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="TimestampInMonthsOne"/> as its one-form.</summary>
+    public const string TimestampInMonths = "Timestamp.InMonths";
+
+    /// <summary>"in 1 month": the one-form of <see cref="TimestampInMonths"/>.</summary>
+    public const string TimestampInMonthsOne = "Timestamp.InMonthsOne";
+
+    /// <summary>"{0} years ago": a relative timestamp of a past moment; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="TimestampYearsAgoOne"/> as its one-form.</summary>
+    public const string TimestampYearsAgo = "Timestamp.YearsAgo";
+
+    /// <summary>"1 year ago": the one-form of <see cref="TimestampYearsAgo"/>.</summary>
+    public const string TimestampYearsAgoOne = "Timestamp.YearsAgoOne";
+
+    /// <summary>"in {0} years": a relative timestamp of a moment ahead; {0} is how many. Asked for through
+    /// <see cref="ITbLocalizer.Plural"/>, with <see cref="TimestampInYearsOne"/> as its one-form.</summary>
+    public const string TimestampInYears = "Timestamp.InYears";
+
+    /// <summary>"in 1 year": the one-form of <see cref="TimestampInYears"/>.</summary>
+    public const string TimestampInYearsOne = "Timestamp.InYearsOne";
 
     /// <summary>"{0} can't be chosen.": shown when a typed date is outside Min and Max, or IsDateDisabled rules it
     /// out; {0} is the date as typed.</summary>
@@ -1776,6 +1848,16 @@ public static class TbStrings
         [RatingStars] = RatingStar,
         [TagInputTooMany] = TagInputTooManyOne,
         [SmartPasteFilled] = SmartPasteFilledOne,
+        [TimestampMinutesAgo] = TimestampMinutesAgoOne,
+        [TimestampInMinutes] = TimestampInMinutesOne,
+        [TimestampHoursAgo] = TimestampHoursAgoOne,
+        [TimestampInHours] = TimestampInHoursOne,
+        [TimestampDaysAgo] = TimestampDaysAgoOne,
+        [TimestampInDays] = TimestampInDaysOne,
+        [TimestampMonthsAgo] = TimestampMonthsAgoOne,
+        [TimestampInMonths] = TimestampInMonthsOne,
+        [TimestampYearsAgo] = TimestampYearsAgoOne,
+        [TimestampInYears] = TimestampInYearsOne,
     }.ToFrozenDictionary();
 
     private static readonly FrozenDictionary<string, string> EnglishText = new Dictionary<string, string>
@@ -1877,6 +1959,27 @@ public static class TbStrings
         [DateHintYear] = "Y",
         [EmptyValue] = "Not set",
         [TimestampZone] = "UTC{0}",
+        [TimestampJustNow] = "just now",
+        [TimestampMinutesAgo] = "{0} minutes ago",
+        [TimestampMinutesAgoOne] = "1 minute ago",
+        [TimestampInMinutes] = "in {0} minutes",
+        [TimestampInMinutesOne] = "in 1 minute",
+        [TimestampHoursAgo] = "{0} hours ago",
+        [TimestampHoursAgoOne] = "1 hour ago",
+        [TimestampInHours] = "in {0} hours",
+        [TimestampInHoursOne] = "in 1 hour",
+        [TimestampDaysAgo] = "{0} days ago",
+        [TimestampDaysAgoOne] = "1 day ago",
+        [TimestampInDays] = "in {0} days",
+        [TimestampInDaysOne] = "in 1 day",
+        [TimestampMonthsAgo] = "{0} months ago",
+        [TimestampMonthsAgoOne] = "1 month ago",
+        [TimestampInMonths] = "in {0} months",
+        [TimestampInMonthsOne] = "in 1 month",
+        [TimestampYearsAgo] = "{0} years ago",
+        [TimestampYearsAgoOne] = "1 year ago",
+        [TimestampInYears] = "in {0} years",
+        [TimestampInYearsOne] = "in 1 year",
         [DatePickerUnavailable] = "{0} can't be chosen.",
         [TimePickerOutOfRange] = "Choose a time from {0} to {1}.",
         [TimePickerAtLeast] = "Choose {0} or later.",

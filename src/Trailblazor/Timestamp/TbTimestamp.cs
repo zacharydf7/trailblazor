@@ -12,18 +12,19 @@ public partial class TbTimestamp : IDisposable
     private static readonly TimeSpan LongestWait = TimeSpan.FromDays(40);
 
     private ITimer? _turn;
+    private bool _disposed;
 
     /// <summary>The moment to show. A null value shows a dash, which screen readers hear as "Not set".</summary>
     [Parameter]
     public DateTimeOffset? Value { get; set; }
 
-    /// <summary>Whether it shows the date, the time, or both. Defaults to <see cref="TimestampFormat.DateTime"/>.
-    /// </summary>
+    /// <summary>Whether it shows the date, the time, both, or how far the moment is from now. Defaults to
+    /// <see cref="TimestampFormat.DateTime"/>.</summary>
     [Parameter]
     public TimestampFormat Format { get; set; } = TimestampFormat.DateTime;
 
-    /// <summary>A .NET date and time format, such as <c>"MMMM d, yyyy"</c>, in place of <see cref="Format"/>.
-    /// </summary>
+    /// <summary>A .NET date and time format, such as <c>"MMMM d, yyyy"</c>, in place of <see cref="Format"/>. With
+    /// <see cref="TimestampFormat.Relative"/>, it shapes the exact time in the tooltip.</summary>
     [Parameter]
     public string? FormatString { get; set; }
 
@@ -33,7 +34,8 @@ public partial class TbTimestamp : IDisposable
     public TimeZoneInfo? TimeZone { get; set; }
 
     /// <summary>Adds the zone after the time: its UTC offset, such as "UTC−5", or the abbreviation the app gives in
-    /// <see cref="TimeSettings.Abbreviations"/>, such as "EST".</summary>
+    /// <see cref="TimeSettings.Abbreviations"/>, such as "EST". With <see cref="TimestampFormat.Relative"/>, the zone
+    /// goes in the tooltip.</summary>
     [Parameter]
     public bool ShowZone { get; set; }
 
@@ -60,6 +62,15 @@ public partial class TbTimestamp : IDisposable
 
     private string TextOf(DateTimeOffset value)
     {
+        var now = Time.GetUtcNow();
+        var text = Format == TimestampFormat.Relative ? RelativeTime.Of(value, now, Localizer).Text : ExactText(value);
+        var words = value <= now ? PastText : FutureText;
+        return words is null ? text : string.Format(CultureInfo.CurrentCulture, words, text);
+    }
+
+    // The moment in the shown zone: the text for the other formats, and a relative timestamp's tooltip.
+    private string ExactText(DateTimeOffset value)
+    {
         var zone = ShownTime.Zone(TimeZone, CascadedTimeZone, Services);
         var shown = TimeZoneInfo.ConvertTime(value, zone);
         var text = shown.ToString(FormatString ?? Format switch
@@ -68,17 +79,38 @@ public partial class TbTimestamp : IDisposable
             TimestampFormat.Time => "t",
             _ => "g",
         }, CultureInfo.CurrentCulture);
-        if (ShowZone)
-        {
-            text += " " + ShownTime.ZoneName(shown, zone, Services, Localizer[TbStrings.TimestampZone]);
-        }
-
-        var words = value <= Time.GetUtcNow() ? PastText : FutureText;
-        return words is null ? text : string.Format(CultureInfo.CurrentCulture, words, text);
+        return ShowZone ? $"{text} {ShownTime.ZoneName(shown, zone, Services, Localizer[TbStrings.TimestampZone])}"
+            : text;
     }
 
     /// <inheritdoc />
-    protected override void OnParametersSet() => WaitForTheMoment();
+    protected override void OnParametersSet()
+    {
+        WaitForTheMoment();
+        WaitForTheWords();
+    }
+
+    // A relative timestamp renders again when its words can next change, on the circuit's one ticker.
+    private void WaitForTheWords()
+    {
+        var ticker = Services.GetService<TimestampTicker>();
+        if (ticker is null || !RendererInfo.IsInteractive || _disposed)
+        {
+            return;
+        }
+
+        if (Format != TimestampFormat.Relative || Value is not { } value)
+        {
+            ticker.Stop(this);
+            return;
+        }
+
+        ticker.Wait(this, RelativeTime.Of(value, Time.GetUtcNow(), Localizer).Refresh, () => _ = InvokeAsync(() =>
+        {
+            WaitForTheWords();
+            StateHasChanged();
+        }));
+    }
 
     // With FutureText or PastText set, a moment still ahead renders again once it passes.
     private void WaitForTheMoment()
@@ -90,6 +122,12 @@ public partial class TbTimestamp : IDisposable
         {
             _turn = Time.CreateTimer(_ => _ = InvokeAsync(() =>
             {
+                // A tick queued before the timestamp went away can run after it.
+                if (_disposed)
+                {
+                    return;
+                }
+
                 WaitForTheMoment();
                 StateHasChanged();
             }), null, left.Value < LongestWait ? left.Value : LongestWait, Timeout.InfiniteTimeSpan);
@@ -97,5 +135,10 @@ public partial class TbTimestamp : IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose() => _turn?.Dispose();
+    public void Dispose()
+    {
+        _disposed = true;
+        _turn?.Dispose();
+        Services.GetService<TimestampTicker>()?.Stop(this);
+    }
 }

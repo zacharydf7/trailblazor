@@ -1,0 +1,16 @@
+@* How far each trail update's time is from now; rest the pointer on one, tap it or tab to it for the exact time. *@
+<TbStack Gap="2">
+    @foreach (var (note, at) in _notes)
+    {
+        <TbText>@note, <TbTimestamp Value="at" Format="TimestampFormat.Relative" /></TbText>
+    }
+</TbStack>
+
+@code {
+    private readonly (string Note, DateTimeOffset At)[] _notes =
+    [
+        ("Trail open", DateTimeOffset.UtcNow.AddSeconds(-20)),
+        ("Bridge repaired", DateTimeOffset.UtcNow.AddHours(-3)),
+        ("Snow expected", DateTimeOffset.UtcNow.AddDays(2)),
+    ];
+}

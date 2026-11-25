@@ -20,8 +20,8 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 - [x] A pointer that leaves before the delay ends shows nothing. `tooltip.js`
 - [x] Leaving the trigger hides the tooltip after a delay. `TooltipTests.Tooltip_ShouldClose_WhenThePointerLeaves`
 - [x] Moving onto the bubble keeps it open, across the gap too. `TooltipTests.Tooltip_ShouldStayOpen_WhenThePointerMovesOntoIt`
-- [x] Pressing the trigger hides the tooltip. `TooltipTests.Tooltip_ShouldClose_WhenTheTriggerIsPressedWhileItShows`
-- [x] A click leaves it closed while the pointer stays on the trigger. `TooltipTests.Tooltip_ShouldStayClosed_WhenTheTriggerIsClicked`
+- [x] Pressing a trigger that's a control hides the tooltip. `TooltipTests.Tooltip_ShouldClose_WhenTheTriggerIsPressedWhileItShows`
+- [x] A click on a control leaves its tooltip closed while the pointer stays on the trigger. `TooltipTests.Tooltip_ShouldStayClosed_WhenTheTriggerIsClicked`
 - [x] It follows the trigger as the page scrolls. `AnchoredPositionTests.Scroll_ShouldKeepFloatingAttached_WhenScrollContainerScrolls`
 - [x] It flips to the other side when there's no room. `AnchoredPositionTests.CreateAsync_ShouldFlipToTop_WhenThereIsNoRoomBelow`
 - [x] Once the pointer shows a tooltip, the next one it reaches shows at once, as along a toolbar, until half a second after the last one hides. A tooltip shown for keyboard focus doesn't count, so a pointer passing by leaves it alone. `TooltipTests.Tooltip_ShouldShowAtOnce_WhenThePointerMovesOnFromAnotherThatShowed`, `TooltipTests.Tooltip_ShouldShowAtOnce_WhenThePointerReachesItSoonAfterAnotherHid`, `TooltipTests.Tooltip_ShouldKeepAFocusedTriggersTooltip_WhenThePointerPassesAnotherTrigger`
@@ -37,6 +37,7 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 
 - [x] A touch neither starts a tooltip's show delay nor hides a tooltip when it leaves the trigger, so a tap on an enabled button shows no tooltip, and a text field's tooltip stays when the finger lifts. `TooltipTests.Tooltip_ShouldNotStartItsWait_WhenATouchArrives`, `TooltipTests.Tooltip_ShouldStay_WhenATouchLeavesItsTrigger`
 - [x] A tap into a text field shows it, since a text field's focus counts as keyboard focus. `tooltip.js`
+- [x] A tap on a trigger that isn't a control and sits in none, such as a relative timestamp or cut-off text, shows its tooltip too; inside a button the tap is the button's. `TimestampTests.Relative_ShouldShowTheExactTime_WhenTapped`, `TextTests.FullText_ShouldShowItsTooltip_WhenTapped`, `TimestampTests.Relative_ShouldLeaveTheTapToTheButton_WhenInsideOne`
 - [x] A tap on a button marked `aria-disabled` shows its tooltip, since the tap does nothing else, and a tap elsewhere hides it. `ButtonTests.Button_ShouldSayWhyItIsOff_WhenHoveredFocusedOrTapped`
 
 ## Focus

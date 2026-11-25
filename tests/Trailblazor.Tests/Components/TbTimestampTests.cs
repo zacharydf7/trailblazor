@@ -140,6 +140,49 @@ public class TbTimestampTests : BunitContext
         Assert.EndsWith(" UTC", cut.Find("time").TextContent);
     }
 
+    [Theory]
+    [InlineData(10, "just now")]
+    [InlineData(-30, "just now")]
+    [InlineData(60, "in 1 minute")]
+    [InlineData(-25 * 60, "25 minutes ago")]
+    [InlineData(-2 * 3600, "2 hours ago")]
+    [InlineData(3 * 86400, "in 3 days")]
+    [InlineData(-40 * 86400, "1 month ago")]
+    [InlineData(400 * 86400, "in 1 year")]
+    public void TbTimestamp_ShouldShowRelativeText_WhenGivenRelative(int seconds, string expected)
+    {
+        var cut = RenderStamp(_time.GetUtcNow().AddSeconds(seconds),
+            parameters => parameters.Add(stamp => stamp.Format, TimestampFormat.Relative));
+
+        Assert.Equal(expected, cut.Find("time").TextContent);
+    }
+
+    [Fact]
+    public void TbTimestamp_ShouldDescribeExactTime_WhenRelative()
+    {
+        var cut = RenderStamp(Expiry, parameters => parameters.Add(stamp => stamp.Format, TimestampFormat.Relative)
+            .Add(stamp => stamp.TimeZone, Tokyo).Add(stamp => stamp.FutureText, "Expires {0}"));
+
+        // The tooltip holds the exact moment, and the time is a tab stop so keyboard users reach it.
+        var time = cut.Find("time");
+        Assert.Equal(("Expires in 5 days", "0"), (time.TextContent, time.GetAttribute("tabindex")));
+        Assert.Equal(Shown(Expiry, Tokyo, "g"), cut.Find("[role=tooltip]").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Relative_ShouldKeepUp_WhenTimePasses()
+    {
+        var cut = RenderStamp(_time.GetUtcNow().AddSeconds(50),
+            parameters => parameters.Add(stamp => stamp.Format, TimestampFormat.Relative));
+        Assert.Equal("in 1 minute", cut.Find("time").TextContent);
+
+        _time.Advance(TimeSpan.FromSeconds(30));
+
+        cut.WaitForAssertion(() => Assert.Equal("just now", cut.Find("time").TextContent));
+        _time.Advance(TimeSpan.FromSeconds(75));
+        cut.WaitForAssertion(() => Assert.Equal("1 minute ago", cut.Find("time").TextContent));
+    }
+
     [Fact]
     public void Render_ShouldShowADashReadAsNotSet_WhenTheValueIsNull()
     {
