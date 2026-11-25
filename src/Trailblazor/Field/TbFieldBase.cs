@@ -1015,6 +1015,13 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
 
     private List<string> HeldMessages() => [.. _editContext!.GetValidationMessages(_field!.Value)];
 
+    IReadOnlyList<string> IFormField.ShownErrors() => Errors;
+
+    string IFormField.ControlId => ControlId;
+
+    // The element a link to the field points at: the input, or what a field without one input renders instead.
+    private protected virtual string ControlId => InputId;
+
     bool IFormField.IsDirty() => _parseError is not null || !SameValue(Value, _valueToResetTo);
 
     SmartPasteField? IFormField.DescribeForPaste()

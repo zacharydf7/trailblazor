@@ -78,6 +78,8 @@
 
     private string StartId => $"{InputId}-start";
 
+    private protected override string ControlId => StartId;
+
     private string EndId => $"{InputId}-end";
 
     // A range the parent left empty, or turned around, still draws its thumbs in order.

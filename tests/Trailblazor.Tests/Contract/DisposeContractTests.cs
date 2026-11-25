@@ -27,6 +27,7 @@ public class DisposeContractTests : BunitContext
         [typeof(TbNavGroup)] = typeof(TbNavMenu), [typeof(TbStep)] = typeof(TbStepper),
         [typeof(TbCarouselSlide)] = typeof(TbCarousel), [typeof(TbColumnGroup<>)] = typeof(TbDataGrid<>),
         [typeof(TbModelField)] = typeof(TbModelFields<>), [typeof(TbSmartPaste)] = typeof(TbForm),
+        [typeof(TbValidationSummary)] = typeof(TbForm),
         [typeof(TbDescriptionItem)] = typeof(TbDescriptionList),
         [typeof(TbDockPanel)] = typeof(TbDockManager),
     };

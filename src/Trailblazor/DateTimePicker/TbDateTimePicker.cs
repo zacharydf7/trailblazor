@@ -121,6 +121,9 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
 
     private string DateId => $"{InputId}-date";
 
+    // A static page shows the browser's own date and time box in place of the two boxes.
+    private protected override string ControlId => RendererInfo.IsInteractive ? DateId : InputId;
+
     private string TimeId => $"{InputId}-time";
 
     private CultureInfo DateCulture => CalendarDates.Gregorian(Culture ?? CultureInfo.CurrentCulture);

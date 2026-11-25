@@ -208,7 +208,9 @@
         <DocsHeading Id="error-summary" Text="Error summary" Class="docs-section" />
         <TbText>
             On a long form, the first error can be the only one in view. A summary above the form lists every message
-            and lets each one move focus to its field, while the fields keep their own messages. Bind
+            and lets each one move focus to its field, while the fields keep their own messages.
+            <a href="components/validation-summary"><code>TbValidationSummary</code></a> does this for you; build
+            your own, as below, when the summary should take focus on a failed submit. Bind
             <code>Errors</code> to know when to show it, and read each field's messages from your edit context to link
             them.
         </TbText>

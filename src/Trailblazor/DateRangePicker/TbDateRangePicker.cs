@@ -118,6 +118,8 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
 
     private string StartId => $"{InputId}-start";
 
+    private protected override string ControlId => StartId;
+
     private string EndId => $"{InputId}-end";
 
     private string PanelId => $"{FieldId}-panel";

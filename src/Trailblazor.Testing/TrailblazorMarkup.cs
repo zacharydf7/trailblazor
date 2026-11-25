@@ -701,6 +701,9 @@ public sealed class TrailblazorMarkup
             "description list", null);
     });
 
+    /// <summary>The <c>TbValidationSummary</c> in the scope, which shows only while its form has messages.</summary>
+    public TbValidationSummaryDriver ValidationSummary() => new(() => _findAll(".tb-validation-summary"));
+
     /// <summary>The <c>TbCopyButton</c> with these words, its <c>Labels.Copy</c>, such as "Copy", or the only one
     /// when none are given.</summary>
     public TbCopyButtonDriver CopyButton(string? label = null) => new(() => Only(_findAll(".tb-copy-button")
@@ -6243,4 +6246,28 @@ public sealed class TbCopyButtonDriver
     /// <summary>Presses the button, which copies through the app's <c>IBrowserService</c>. With the kit's
     /// <see cref="FakeBrowserService"/>, <see cref="FakeBrowserService.Copied"/> then lists the text.</summary>
     public async Task CopyAsync() => await _find().ClickAsync(new MouseEventArgs());
+}
+
+/// <summary>A <c>TbValidationSummary</c>, which shows only while its form has messages.</summary>
+public sealed class TbValidationSummaryDriver
+{
+    private readonly Func<IReadOnlyList<IElement>> _find;
+
+    internal TbValidationSummaryDriver(Func<IReadOnlyList<IElement>> find) => _find = find;
+
+    /// <summary>The messages it lists, in order, or none while it doesn't show.</summary>
+    public IReadOnlyList<string> Messages =>
+        [.. _find().SelectMany(summary => summary.QuerySelectorAll("[data-part=item]"))
+            .Select(item => item.TextContent.Trim())];
+
+    /// <summary>Presses the link of this message, which moves focus to its field. A message the list doesn't show,
+    /// or one that belongs to no field and so has no link, throws.</summary>
+    public async Task FollowAsync(string message)
+    {
+        var link = _find().SelectMany(summary => summary.QuerySelectorAll("[data-part=link]"))
+            .FirstOrDefault(link => link.TextContent.Trim() == message)
+            ?? throw new InvalidOperationException($"The validation summary has no link \"{message}\"; it lists "
+                + string.Join(", ", Messages.Select(shown => $"\"{shown}\"")) + ".");
+        await link.ClickAsync(new MouseEventArgs());
+    }
 }

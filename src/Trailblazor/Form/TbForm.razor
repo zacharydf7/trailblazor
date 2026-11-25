@@ -36,6 +36,7 @@
     internal const string SubmittingCascade = "TbForm.Submitting";
 
     private readonly List<IFormField> _fields = [];
+    private readonly List<TbValidationSummary> _summaries = [];
     private readonly string _id = $"tb-form-{Guid.NewGuid():N}";
     private readonly object _noModel = new();
     private EditContext _editContext;
@@ -437,6 +438,10 @@
 
     internal void Add(IFormField field) => _fields.Add(field);
 
+    internal void Add(TbValidationSummary summary) => _summaries.Add(summary);
+
+    internal void Remove(TbValidationSummary summary) => _summaries.Remove(summary);
+
     internal IReadOnlyList<IFormField> Fields => _fields;
 
     // One edit renders the parent and raises several events, so they share one report, made once the edit's renders are
@@ -617,6 +622,12 @@
         {
             Errors = errors;
             await ErrorsChanged.InvokeAsync(errors);
+        }
+
+        // A field's own messages can change while the form's stay the same, so a summary looks again each time.
+        foreach (var summary in _summaries.ToList())
+        {
+            summary.Refresh();
         }
     }
 

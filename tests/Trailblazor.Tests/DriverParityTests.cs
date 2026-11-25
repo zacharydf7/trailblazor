@@ -46,7 +46,7 @@ public class DriverParityTests
         ["TbRibbon"] = "Ribbon",
         ["TbBackToTop"] = "BackToTop",
         ["TbCopyButton"] = "CopyButton", ["TbSpeechToText"] = "SpeechToText", ["TbText"] = "Text",
-        ["TbSmartPaste"] = "SmartPaste", ["TbAsyncContent"] = "AsyncContent",
+        ["TbSmartPaste"] = "SmartPaste", ["TbValidationSummary"] = "ValidationSummary", ["TbAsyncContent"] = "AsyncContent",
         ["TbDescriptionList"] = "DescriptionList",
         ["TbInPlaceEditor"] = "InPlaceEditor", ["TbDockManager"] = "Dock",
         ["TbNavMenu"] = "NavMenu", ["TbCodeField"] = "TextField", ["TbButton"] = "Button",

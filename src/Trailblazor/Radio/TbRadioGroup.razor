@@ -6,7 +6,7 @@
 @inject JsModuleLoader Modules
 
 @* Radios that share a name already give one tab stop and arrow-key selection, so no script is needed. *@
-<fieldset aria-labelledby="@(HasInfo ? LabelId : null)" @attributes="GroupRootAttributes" @ref="_group"
+<fieldset aria-labelledby="@(HasInfo ? LabelId : null)" @attributes="GroupRootAttributes" id="@GroupId" @ref="_group"
           role="radiogroup" disabled="@Disabled" style="@Style" data-commits="@Commits"
           data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
           data-ready="@(RendererInfo.IsInteractive ? "" : null)"
@@ -34,6 +34,11 @@
 </fieldset>
 
 @code {
+    // The group has no one control, so a link to it points at the group, which keeps an id it was given.
+    private string GroupId => GivenId ?? FieldId;
+
+    private protected override string ControlId => GroupId;
+
     private readonly List<IGroupOption> _options = [];
     private ElementReference _group;
 

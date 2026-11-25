@@ -7943,3 +7943,13 @@ static Trailblazor.CopyButtonLabels.operator ==(Trailblazor.CopyButtonLabels? le
 Trailblazor.TbTextField<TValue>.Copyable.get -> bool
 Trailblazor.TbTextField<TValue>.Copyable.set -> void
 Trailblazor.IDialogService.PromptAsync(string! title, string! label, string? initial = null, System.Func<string!, string?>? validate = null, string? confirmText = null, string? cancelText = null, string? telemetryName = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<string?>!
+Trailblazor.TbValidationSummary
+Trailblazor.TbValidationSummary.Dispose() -> void
+Trailblazor.TbValidationSummary.TbValidationSummary() -> void
+Trailblazor.TbValidationSummary.Title.get -> string?
+Trailblazor.TbValidationSummary.Title.set -> void
+const Trailblazor.TbStrings.ValidationSummaryTitle = "ValidationSummary.Title" -> string!
+override Trailblazor.TbValidationSummary.OnParametersSet() -> void
+~override Trailblazor.TbValidationSummary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbValidationSummary.HeadingLevel.get -> int
+Trailblazor.TbValidationSummary.HeadingLevel.set -> void

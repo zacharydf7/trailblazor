@@ -2510,6 +2510,33 @@
         padding: 0;
     }
 
+    /* The summary stands out by its border and heading as well as its color, and its links look like links. */
+    .tb-validation-summary {
+        display: grid;
+        gap: var(--tb-space-2);
+        padding: var(--tb-space-3) var(--tb-space-4);
+        border: 1px solid var(--tb-color-danger);
+        border-inline-start-width: 4px;
+        border-radius: var(--tb-radius-md);
+    }
+
+    .tb-validation-summary__title {
+        margin: 0;
+        font-weight: var(--tb-font-weight-semibold);
+    }
+
+    .tb-validation-summary__list {
+        display: grid;
+        gap: var(--tb-space-1);
+        margin: 0;
+        padding-inline-start: var(--tb-space-5);
+    }
+
+    .tb-validation-summary__link {
+        color: var(--tb-color-danger);
+        text-decoration: underline;
+    }
+
     /* A refused copy shows in the danger color as well as in its words or its icon. */
     .tb-copy-button[data-state="failed"] {
         color: var(--tb-color-danger);

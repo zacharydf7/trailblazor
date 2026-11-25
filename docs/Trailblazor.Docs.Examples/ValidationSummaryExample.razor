@@ -1,0 +1,20 @@
+@* A hike sign-up whose summary lists what to fix, with each field's message a link to the field. *@
+<TbForm OnValidSubmit="SignUp">
+    <TbStack Gap="3" Style="max-inline-size: 24rem">
+        <TbValidationSummary />
+        <TbTextField TValue="string" Label="Name" @bind-Value="_name" Required />
+        <TbTextField TValue="string" Label="Email" Type="TextFieldType.Email" @bind-Value="_email" Required />
+        <TbTextField TValue="string" Label="Emergency contact" @bind-Value="_contact" Required />
+        <TbButton Type="ButtonType.Submit" Variant="Variant.Filled">Sign up</TbButton>
+        <output>@_status</output>
+    </TbStack>
+</TbForm>
+
+@code {
+    private string? _name;
+    private string? _email;
+    private string? _contact;
+    private string? _status;
+
+    private void SignUp() => _status = "You're signed up for the hike.";
+}

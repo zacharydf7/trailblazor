@@ -1,0 +1,29 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+@implements IDisposable
+
+@* No live region: a failed submit moves focus to the first field with a message, so a screen reader reads it, and the
+   list waits to be read. *@
+@if (Items is { Count: > 0 } items)
+{
+    <section @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-validation-summary", Class)"
+             style="@Style" aria-labelledby="@_titleId">
+        @Heading
+        <ul class="tb-validation-summary__list" data-part="list">
+            @foreach (var (message, member) in items)
+            {
+                <li class="tb-validation-summary__item" data-part="item">
+                    @if (member is null)
+                    {
+                        @message
+                    }
+                    else
+                    {
+                        <a href="#@member.ControlId" class="tb-validation-summary__link" data-part="link"
+                           @onclick="_follow.For(member)" @onclick:preventDefault>@message</a>
+                    }
+                </li>
+            }
+        </ul>
+    </section>
+}

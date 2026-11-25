@@ -32,6 +32,7 @@ public class TelemetryContractTests : BunitContext
         ["TbTimestamp"] = "it only shows a date",
         ["TbDescriptionList"] = "it only shows terms and values",
         ["TbDescriptionItem"] = "part of TbDescriptionList, which only shows terms and values",
+        ["TbValidationSummary"] = "it lists the form's messages, and the form counts its failed submits",
         ["TbHighlight"] = "it is text inside other components, such as search results, which count themselves",
         ["TbDialogContentHost"] = "it shows content the app wrote, whose own controls count themselves",
         ["TbTooltip"] =

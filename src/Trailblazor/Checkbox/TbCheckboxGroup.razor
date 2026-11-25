@@ -8,7 +8,7 @@
 
 @* ARIA gives a group no required state, so a description says "required" to screen readers instead. The
    invalid state goes on the group and on each checkbox, where screen readers announce it. *@
-<fieldset aria-labelledby="@(HasInfo ? LabelId : null)" @attributes="GroupRootAttributes" @ref="_group"
+<fieldset aria-labelledby="@(HasInfo ? LabelId : null)" @attributes="GroupRootAttributes" id="@GroupId" @ref="_group"
           disabled="@Disabled" style="@Style" data-commits="@Commits"
           data-static="@(AssignedRenderMode is null && !RendererInfo.IsInteractive ? "" : null)"
           data-ready="@(RendererInfo.IsInteractive ? "" : null)"
@@ -35,6 +35,11 @@
 </fieldset>
 
 @code {
+    // The group has no one control, so a link to it points at the group, which keeps an id it was given.
+    private string GroupId => GivenId ?? FieldId;
+
+    private protected override string ControlId => GroupId;
+
     private readonly List<IGroupOption> _options = [];
     private ElementReference _group;
 

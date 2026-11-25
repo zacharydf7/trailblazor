@@ -374,6 +374,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// the scope when none are given.</summary>
     public TbCopyButtonLocator CopyButton(string? label = null) => new(scope, label);
 
+    /// <summary>The <c>TbValidationSummary</c> in the scope, which shows only while its form has messages.</summary>
+    public TbValidationSummaryLocator ValidationSummary() => new(scope);
+
     /// <summary>The <c>TbInPlaceEditor</c> with this <c>Label</c>.</summary>
     public TbInPlaceEditorLocator InPlaceEditor(string label) => new(scope, label);
 

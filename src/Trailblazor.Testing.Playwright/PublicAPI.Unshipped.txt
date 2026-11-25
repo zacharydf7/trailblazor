@@ -710,3 +710,9 @@ Trailblazor.Testing.Playwright.TbCopyButtonLocator.Element.get -> Microsoft.Play
 Trailblazor.Testing.Playwright.TbCopyButtonLocator.StateAsync() -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TbCopyButtonLocator.TbCopyButtonLocator(Microsoft.Playwright.ILocator! scope, string? label) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.CopyButton(string? label = null) -> Trailblazor.Testing.Playwright.TbCopyButtonLocator!
+Trailblazor.Testing.Playwright.TbValidationSummaryLocator
+Trailblazor.Testing.Playwright.TbValidationSummaryLocator.Element.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbValidationSummaryLocator.FollowAsync(string! message) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbValidationSummaryLocator.MessagesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbValidationSummaryLocator.TbValidationSummaryLocator(Microsoft.Playwright.ILocator! scope) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.ValidationSummary() -> Trailblazor.Testing.Playwright.TbValidationSummaryLocator!

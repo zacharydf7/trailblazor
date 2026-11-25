@@ -1,0 +1,28 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+@* A trail the server refused to save: one message for a field, and one for the trail as a whole, which has no field
+   to link to. *@
+<TbForm EditContext="_context">
+    <TbStack Gap="3" Style="max-inline-size: 24rem">
+        <TbValidationSummary Title="The trail wasn't saved" HeadingLevel="3" />
+        <TbTextField TValue="string" Label="Trail name" @bind-Value="_trail.Name" Error="@_nameTaken" />
+    </TbStack>
+</TbForm>
+
+@code {
+    private readonly Trail _trail = new() { Name = "Cedar Flats" };
+    private EditContext _context = default!;
+    private string? _nameTaken = "That name is taken.";
+
+    protected override void OnInitialized()
+    {
+        _context = new EditContext(_trail);
+        new ValidationMessageStore(_context).Add(new FieldIdentifier(_trail, string.Empty),
+            "New trails close for the winter on December 1.");
+    }
+
+    private sealed class Trail
+    {
+        public string? Name { get; set; }
+    }
+}

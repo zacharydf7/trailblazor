@@ -6052,7 +6052,8 @@ public static class ExampleCatalog
                 "Skip it for a control that acts as soon as it changes, such as a search box or a [switch]"
                     + "(components/switch) that applies a setting.",
             ],
-            Related = ["text-field", "number-field", "select", "checkbox", "alert", "field-row"],
+            Related = ["text-field", "number-field", "select", "checkbox", "alert", "field-row",
+                "validation-summary"],
             Pattern = new("Form landmark", "https://www.w3.org/WAI/ARIA/apg/patterns/landmarks/examples/form.html"),
             Sections =
             [
@@ -6094,8 +6095,10 @@ public static class ExampleCatalog
                     + "next submit until it is cleared, so clear it when the value changes. While the handler runs, "
                     + "the form shows its submit button as busy and drops a second submit, so the page needs no "
                     + "flag of its own.", typeof(FormServerExample)),
-                new("error-summary", "Error summary", "For a long form, list the errors above it, and let each one "
-                    + "move focus to its field. `OnSubmit` leaves focus to you, so the summary can take it, and the "
+                new("error-summary", "Error summary", "`TbValidationSummary` lists the form's messages for you, each "
+                    + "a link to its field: see [validation summary](components/validation-summary). Build your own, "
+                    + "as here, when the summary should take focus on a failed submit. For a long form, list the "
+                    + "errors above it, and let each one move focus to its field. `OnSubmit` leaves focus to you, so the summary can take it, and the "
                     + "page title starts with \"Error:\" while there are errors.", typeof(FormErrorSummaryExample)),
                 new("changes", "Unsaved changes", "`IsDirty` says whether any field differs from the value its parent "
                     + "last gave it, so you can ask before the user leaves the page, and `IsTouched` says whether the "
@@ -6208,6 +6211,97 @@ public static class ExampleCatalog
                     + "each submit it validates.",
                 "On an invalid submit, each field with a `TelemetryName` and an error counts "
                     + "`trailblazor.field.invalid`, so the fields people trip over stand out. No value is recorded.",
+            ],
+        },
+        new("validation-summary", "Validation summary", ExampleCategory.Inputs,
+            "A list of what to fix in a form, with each field's message a link that moves focus to the field.")
+        {
+            WhenToUse =
+            [
+                "Use it at the top of a long form, where the fields with problems can be out of sight after a submit.",
+            ],
+            WhenNotToUse =
+            [
+                "For a short form whose fields all show at once, the messages under the fields are enough.",
+                "To have the summary take focus after a failed submit, build your own, as in "
+                    + "[the form's error summary](components/form#error-summary).",
+                "Blazor's own `ValidationSummary` lists the same messages as text, with no links to their fields.",
+            ],
+            Related = ["form", "alert"],
+            Sections =
+            [
+                new("basic", "Validation summary", "Put it inside a [form](components/form). It shows only while the "
+                    + "form has messages, such as after a failed submit: under a heading, each field's messages in "
+                    + "field order, then the form's own. A field's message is a link that moves focus to the field. "
+                    + "Press Sign up with the fields empty, then fill one in.", typeof(ValidationSummaryExample)),
+                new("form-messages", "Messages that belong to no field", "A message the form holds for the whole "
+                    + "model, such as one the server returns, has no field to link to, so it shows as text after the "
+                    + "fields' messages. `Title` replaces the heading and `HeadingLevel` sets its level; this summary "
+                    + "shows as the page loads, with what the server refused.", typeof(ValidationSummaryServerExample)),
+            ],
+            Api = [typeof(TbValidationSummary)],
+            Labeling =
+            [
+                "It's a region landmark named by its heading, \"Fix these to continue\" by default. Each link is named "
+                    + "by its message, which names its field when it's the default required message.",
+            ],
+            Announcements =
+            [
+                "It isn't a live region: a failed submit moves focus to the first field with a message, so a screen "
+                    + "reader reads that message, and the list waits to be read.",
+            ],
+            Accessibility =
+            [
+                "It describes each problem in text (WCAG 3.3.1), and each field's link moves focus to the field.",
+                "Its heading is a real heading, an `h2` unless `HeadingLevel` says otherwise, so screen readers can "
+                    + "jump to it.",
+                "It stands out by its border and heading as well as its color.",
+            ],
+            AppDuties =
+            [
+                "Write messages that make sense out of context, since the summary shows them away from their fields; "
+                    + "a field's default required message already names it.",
+                "With `OnSubmit`, focus stays where it was; move it to the first field with a message, since the "
+                    + "summary can't take focus.",
+                "Set `HeadingLevel` to fit the page's outline.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.Partial),
+            BeforeInteractive =
+            [
+                "On a static page it lists the messages the page renders with, such as a server's; each link points "
+                    + "at its field, so following it scrolls to the field, and moves focus there once the page is "
+                    + "interactive.",
+            ],
+            Notes =
+            [
+                new("Its one string is `ValidationSummary.Title`, which `Title` replaces for one summary."),
+                new("Outside a [form](components/form) it throws, since it lists a form's messages.")
+                    { Pitfall = true },
+            ],
+            Target = new("link", "Email is required.")
+            {
+                OpenedBy = new("button", "Sign up"),
+            },
+            Blocks = ["tb-validation-summary"],
+            DataParts =
+            [
+                new("title", "The heading."),
+                new("list", "The list of messages."),
+                new("item", "One message."),
+                new("link", "A field's message, as a link to the field."),
+            ],
+            Scenario = new("basic", "it submits the empty form, reads the summary, follows the link to the email "
+                + "field, and checks that focus moved there (in bUnit, that focus was asked for)."),
+            TestingTips =
+            [
+                "`ValidationSummary().Messages` (`MessagesAsync()` in Playwright) reads the messages it lists, none "
+                    + "while it doesn't show, and `FollowAsync(message)` presses a message's link.",
+                "`MessagesAsync()` reads what shows now without waiting; read it after a helper that waits, or check "
+                    + "`Expect(summary.Element).ToBeVisibleAsync()` first.",
+                "A message that belongs to no field has no link, so `FollowAsync` can't press it.",
+                "Several summaries on a page merge in bUnit and are ambiguous in Playwright: scope to one with "
+                    + "`Within(...)`, or a locator for its form.",
+                "By role, it's `GetByRole(AriaRole.Region, new() { Name = \"Fix these to continue\" })`.",
             ],
         },
         new("text-field", "Text field", ExampleCategory.Inputs,

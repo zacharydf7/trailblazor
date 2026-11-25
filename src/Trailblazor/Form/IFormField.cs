@@ -6,6 +6,15 @@ internal interface IFormField
     // Whether the field would fail validation now, without showing any message.
     bool HasProblems();
 
+    // The messages the field shows under it now.
+    IReadOnlyList<string> ShownErrors();
+
+    // The id of the element a link to the field points at: its control, or the element holding its controls.
+    string ControlId { get; }
+
+    // Moves focus to the field, as a link in a validation summary does.
+    ValueTask FocusAsync(bool preventScroll = false);
+
     // Whether the value differs from the one a reset goes back to, or the field holds text it can't read.
     bool IsDirty();
 

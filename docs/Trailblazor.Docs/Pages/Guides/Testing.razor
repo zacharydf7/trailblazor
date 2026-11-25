@@ -500,6 +500,13 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>ValidationSummary().Messages</code></th>
+                        <td>
+                            The messages the form's summary lists, none while it doesn't show.
+                            <code>FollowAsync(message)</code> presses a message's link.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>SmartPaste(label).PasteAsync(text)</code></th>
                         <td>
                             Presses the button, enters this text in the box that opens, and fills the form from it.
@@ -1912,6 +1919,9 @@
             + "waits until no load is running and the first one has finished. `StateAsync()` reads what it shows, "
             + "`BusyAsync()` whether it's loading, and `RetryAsync()` presses Retry after a failure and waits for "
             + "the load."),
+        new("Validation summary", "None; scope the page to tell several apart",
+            "`ValidationSummary().MessagesAsync()` reads the messages it lists, and `FollowAsync(message)` presses a "
+            + "message's link and waits until focus has reached the field."),
         new("Smart paste", "Its button's Label, or none for the only one", "`SmartPaste(label).PasteAsync(text)` "
             + "presses the button, enters the text in the box that opens, and waits until the fields are "
             + "filled. It first makes the page's clipboard refuse, so the box opens in every browser. "

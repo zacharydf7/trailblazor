@@ -409,6 +409,9 @@ public static class TbStrings
     /// <summary>"1 minute": the one-form of <see cref="CountdownMinutes"/>.</summary>
     public const string CountdownMinutesOne = "Countdown.MinutesOne";
 
+    /// <summary>"Fix these to continue": the heading of a validation summary.</summary>
+    public const string ValidationSummaryTitle = "ValidationSummary.Title";
+
     /// <summary>"Copy": a copy button's words, and its name when it shows only its icon.</summary>
     public const string CopyButtonCopy = "CopyButton.Copy";
 
@@ -2025,6 +2028,7 @@ public static class TbStrings
         [CountdownSecondsOne] = "1 second",
         [CountdownMinutes] = "{0} minutes",
         [CountdownMinutesOne] = "1 minute",
+        [ValidationSummaryTitle] = "Fix these to continue",
         [CopyButtonCopy] = "Copy",
         [CopyButtonCopied] = "Copied",
         [CopyButtonFailed] = "Couldn't copy",

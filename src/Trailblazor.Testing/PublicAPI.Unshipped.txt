@@ -649,3 +649,7 @@ Trailblazor.Testing.TrailblazorMarkup.CopyButton(string? label = null) -> Trailb
 Trailblazor.Testing.FakeDialogService.AnswerPrompt.get -> System.Func<Trailblazor.DialogReference!, string?>?
 Trailblazor.Testing.FakeDialogService.AnswerPrompt.set -> void
 Trailblazor.Testing.FakeDialogService.PromptAsync(string! title, string! label, string? initial = null, System.Func<string!, string?>? validate = null, string? confirmText = null, string? cancelText = null, string? telemetryName = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.TbValidationSummaryDriver
+Trailblazor.Testing.TbValidationSummaryDriver.FollowAsync(string! message) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbValidationSummaryDriver.Messages.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TrailblazorMarkup.ValidationSummary() -> Trailblazor.Testing.TbValidationSummaryDriver!
