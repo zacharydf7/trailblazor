@@ -65,6 +65,9 @@ public static class GuideCatalog
             "Common testing tasks in plain bUnit and Playwright beside the helpers, and what the helpers add."),
         new("guides/wrapping", "Wrapping components",
             "Give a component your app's defaults in a wrapper of your own, and pass everything else through."),
+        new("guides/coming-from-another-library", "Coming from another library",
+            "Move pages over from another Blazor component library: the parameter names that differ, and the build "
+                + "warnings that catch habits carried over."),
         new("guides/upgrading", "Upgrading",
             "Every public name that was renamed or removed and what to use in its place, plus every change to markup or "
                 + "behavior that tests, styles or scripts can depend on."),

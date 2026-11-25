@@ -1,0 +1,191 @@
+@page "/guides/coming-from-another-library"
+
+<PageTitle>Coming from another library · Trailblazor</PageTitle>
+
+<DocsArticle Class="docs-article--guide">
+    <Contents>
+        <TbTableOfContentsItem TargetId="names" Text="Names that differ" />
+        <TbTableOfContentsItem TargetId="habits" Text="Habits the analyzers catch" />
+        <TbTableOfContentsItem TargetId="related" Text="Related" />
+    </Contents>
+    <Header>
+        <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Coming from another library</TbText>
+        <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
+            Moving pages over from another Blazor component library? Most parameters keep a familiar name. This guide
+            lists the ones that don't, and the build warnings that catch habits carried over.
+        </TbText>
+    </Header>
+    <ChildContent>
+        <DocsHeading Id="names" Text="Names that differ" Class="docs-section" />
+        <div class="docs-api" tabindex="0" role="region" aria-label="Names that differ">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Often written elsewhere</th>
+                        <th scope="col">In Trailblazor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row"><code>Color</code> on a button, chip or alert</th>
+                        <td><code>Tone</code>, such as <code>Tone="Tone.Danger"</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Severity</code> on an alert or a snackbar message</th>
+                        <td>
+                            <code>Tone</code> too, such as <code>Toasts.Show("Saved", Tone.Success)</code> on
+                            <code>IToastService</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Dense</code>, or a margin setting, to make a control smaller</th>
+                        <td>
+                            <code>Size="Size.Small"</code> on the control, or compact
+                            <a href="guides/theming#density">density</a> for the whole app
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Text</code> on a button</th>
+                        <td>The button's content: <code>&lt;TbButton&gt;Save&lt;/TbButton&gt;</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A typography setting on text</th>
+                        <td>
+                            <code>TextStyle</code> on <code>TbText</code>, with <code>As</code> for the element:
+                            <code>TextStyle="TextStyle.Headline" As="TextElement.H1"</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Spacing</code> and <code>AlignItems</code> on a stack</th>
+                        <td>
+                            <code>Gap</code> and <code>Align</code>; <code>Row</code> and <code>Justify</code> keep
+                            their names
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">An adornment position with an adornment icon or text</th>
+                        <td>
+                            The <code>Start</code> and <code>End</code> slots, which take any content:
+                            <code>&lt;Start&gt;&lt;TbIcon Icon="MaterialSymbols.Outlined.Search" /&gt;&lt;/Start&gt;</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>ErrorText</code>, or <code>Error</code> as a flag beside a message</th>
+                        <td>
+                            <code>Error</code>, the message itself; <code>Invalid</code> marks a field without one
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>RequiredError</code></th>
+                        <td><code>RequiredMessage</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Counter</code></th>
+                        <td><code>MaxLength</code> with <code>ShowCount</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Immediate</code>, to update the value as people type</th>
+                        <td><code>UpdateOnInput</code>, with <code>UpdateDelay</code> to wait for a pause</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>InputType</code> on a text field</th>
+                        <td><code>Type</code>, such as <code>Type="TextFieldType.Password"</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>T</code> on a field</th>
+                        <td>
+                            <code>TValue</code> on most fields; <code>TItem</code> on those that hold a list, such as
+                            <code>TbMultiSelect</code>; <code>TDate</code>, <code>TTime</code> or
+                            <code>TDateTime</code> on the pickers
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>MultiSelection</code> on a select</th>
+                        <td>A <code>TbMultiSelect</code>, bound to a list</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A search function and a to-string function on an autocomplete</th>
+                        <td><code>Search</code> and <code>ItemText</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Visible</code>, <code>IsOpen</code> or <code>Show</code> on an overlay</th>
+                        <td><code>Open</code>, with <code>@@bind-Open</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A panel or page index on tabs, a carousel or a ribbon</th>
+                        <td><code>ActiveIndex</code> by position; tabs and a ribbon also take <code>ActiveKey</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>MaxWidth</code> on a dialog</th>
+                        <td>
+                            <code>Size</code>, such as <code>Size="DialogSize.Large"</code>, or <code>Width</code> for a
+                            CSS width
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A message box service, or a snackbar service</th>
+                        <td>
+                            <code>IDialogService</code>'s <code>ConfirmAsync</code> and <code>AlertAsync</code>, and
+                            <code>IToastService</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A server data function, load data event or items provider on a grid</th>
+                        <td>
+                            <code>DataProvider</code>, which gets a <code>GridRequest</code> and a cancellation token
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Rows per page</th>
+                        <td><code>PageSize</code></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><code>Property</code> on a grid column</th>
+                        <td><code>Field</code>, an expression such as <code>Field="trail => trail.Name"</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <DocsHeading Id="habits" Text="Habits the analyzers catch" Class="docs-section" />
+        <TbText>
+            The <a href="guides/analyzers">analyzers</a> warn as the app builds about mistakes that are easy to carry
+            over:
+        </TbText>
+        <ul>
+            <li>
+                TB005: a type parameter given under another library's name, such as <code>T="bool"</code> on a
+                component whose type parameter is <code>TValue</code>. Razor passes it on as a plain attribute.
+            </li>
+            <li>
+                TB003: <code>Value</code> set without <code>ValueChanged</code>, so the user's change snaps back.
+                Use <code>@@bind-Value</code>.
+            </li>
+            <li>
+                TB010: text written without its <code>@@</code>, such as <code>Label="GetLabel()"</code>, which shows
+                the words rather than calling the method.
+            </li>
+            <li>
+                TB007: an option's value typed differently from its list, such as <code>Value="1"</code> in a select
+                of strings, since Razor infers each option's type from its own value.
+            </li>
+            <li>
+                TB011: an autocomplete used to pick from a list the page already has, where a filterable
+                <code>TbSelect</code> fits better.
+            </li>
+            <li>
+                TB001 and TB004: a control or field with no name or label, which screen readers then read as just its
+                role.
+            </li>
+        </ul>
+
+        <DocsHeading Id="related" Text="Related" Class="docs-section" />
+        <ul>
+            <li><a href="guides/migrating-tests">Migrating tests</a>: what replaces another library's test setup.</li>
+            <li><a href="guides/upgrading">Upgrading</a>: names Trailblazor itself has renamed.</li>
+            <li><a href="guides/wrapping">Wrapping components</a>: give a component your app's defaults.</li>
+            <li><a href="guides/theming">Theming</a>: tones, density and design tokens.</li>
+        </ul>
+        <GuideFooter Page="GetType()" />
+    </ChildContent>
+</DocsArticle>
