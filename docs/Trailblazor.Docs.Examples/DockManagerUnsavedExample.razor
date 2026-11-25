@@ -7,7 +7,7 @@
             Open Entry
         </TbButton>
     }
-    <TbDockManager @bind-Layout="_layout" AriaLabel="Trip journal" Style="block-size: 14rem">
+    <TbDockManager @bind-Layout="_layout" AriaLabel="Trip journal" AllowPopOut Style="block-size: 14rem">
         <ChildContent>
             <TbDockPanel Id="entry" Title="Entry" Modified="@(_text != _saved)" CanClose="MayCloseEntryAsync">
                 <TbStack Gap="2" Class="tb-p-3">

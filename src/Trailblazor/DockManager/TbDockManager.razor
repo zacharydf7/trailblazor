@@ -27,16 +27,33 @@
          class="tb-dock__away">
         @foreach (var id in away)
         {
-            <TbMenu @key="id" Label="@Panel(id)!.Title" Size="Size.Small" Variant="Variant.Text" AttachOnFirstUse
-                    data-part="away-menu" data-panel="@id"
+            var panel = Panel(id)!;
+            <TbMenu @key="id" AttachOnFirstUse data-part="away-menu" data-panel="@id"
                     Description="@(Labels.AwayHint ?? Localizer[TbStrings.DockAwayHint])">
-                @* The script brings the window forward in the click itself, while the browser still allows it. *@
-                <TbMenuItem data-away="show" data-window="@PanelId(id)">
-                    @(Labels.ShowWindow ?? Localizer[TbStrings.DockShowWindow])
-                </TbMenuItem>
-                <TbMenuItem data-away="return" OnClick="() => ReturnFromPageAsync(id, focus: true)">
-                    @(Labels.Return ?? Localizer[TbStrings.DockReturn])
-                </TbMenuItem>
+                @* The built-in trigger holds only a label, so the unsaved changes dot needs a trigger of its own. *@
+                <Trigger>
+                    <TbButton Size="Size.Small" Variant="Variant.Text" @attributes="context.Attributes"
+                              aria-describedby="@WithModifiedHint(context.Attributes, panel)"
+                              data-modified="@(panel.Modified ? "" : null)">
+                        <ChildContent>
+                            @panel.Title
+                            @if (panel.Modified)
+                            {
+                                <span data-part="modified" aria-hidden="true" class="tb-dock__modified"></span>
+                            }
+                        </ChildContent>
+                        <End><TbIcon Icon="BuiltInIcons.ChevronDown" Size="Size.Small" /></End>
+                    </TbButton>
+                </Trigger>
+                <ChildContent>
+                    @* The script brings the window forward in the click itself, while the browser still allows it. *@
+                    <TbMenuItem data-away="show" data-window="@PanelId(id)">
+                        @(Labels.ShowWindow ?? Localizer[TbStrings.DockShowWindow])
+                    </TbMenuItem>
+                    <TbMenuItem data-away="return" OnClick="() => ReturnFromPageAsync(id, focus: true)">
+                        @(Labels.Return ?? Localizer[TbStrings.DockReturn])
+                    </TbMenuItem>
+                </ChildContent>
             </TbMenu>
         }
     </div>
@@ -178,9 +195,23 @@
                 @if (host.Popped)
                 {
                     <div data-part="return-bar" class="tb-dock__return-bar">
+                        @* aria-describedby can't reach the page's hint from another window, so the return button
+                           gets its own. *@
+                        @if (host.Panel.Modified)
+                        {
+                            <span id="@ReturnHintId(host.Panel.Name)" hidden>
+                                @(Labels.Modified ?? Localizer[TbStrings.DockModified])
+                            </span>
+                        }
                         <TbButton Size="Size.Small" Variant="Variant.Text" data-part="return"
+                                  aria-describedby="@(host.Panel.Modified ? ReturnHintId(host.Panel.Name) : null)"
+                                  data-modified="@(host.Panel.Modified ? "" : null)"
                                   OnClick="() => ReturnAsync(host.Panel.Name, focus: true)">
                             @(Labels.Return ?? Localizer[TbStrings.DockReturn])
+                            @if (host.Panel.Modified)
+                            {
+                                <span data-part="modified" aria-hidden="true" class="tb-dock__modified"></span>
+                            }
                         </TbButton>
                     </div>
                 }
@@ -763,6 +794,12 @@
     private string TabId(string panel) => $"{_id}-tab-{panel}";
 
     private string PanelId(string panel) => $"{_id}-panel-{panel}";
+
+    private string ReturnHintId(string panel) => $"{PanelId(panel)}-modified";
+
+    private string? WithModifiedHint(IReadOnlyDictionary<string, object> trigger, TbDockPanel panel) =>
+        panel.Modified ? $"{trigger.GetValueOrDefault("aria-describedby")} {_modifiedHintId}".Trim()
+            : trigger.GetValueOrDefault("aria-describedby") as string;
 
     // Only a dock that runs on the server stops working when the connection to the server is lost.
     private string? ConnectionLostText => AllowPopOut && RendererInfo.Name == "Server"

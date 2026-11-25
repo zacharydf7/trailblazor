@@ -2155,7 +2155,7 @@ public class TbDockManagerTests : BunitContext
     }
 
     private sealed record Panel(string Id, string Title, bool Closable = true, bool KeepAlive = true,
-        bool AllowPopOut = true, TimeSpan? KeepWindowFor = null);
+        bool AllowPopOut = true, TimeSpan? KeepWindowFor = null, bool Modified = false);
 
     [Fact]
     public async Task AutoHide_ShouldPutThePanelOnAStripWithTheFocusOnItsButton_WhenChosenInAGroupsMenu()
@@ -2982,6 +2982,40 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public async Task Away_ShouldMarkTheButtonAndTellScreenReaders_WhenThePanelInItsOwnWindowIsModified()
+    {
+        var cut = RenderPoppable(Hike, panels: [.. HikePanels.Select(panel => panel with { Modified = true })]);
+
+        await cut.Tb().Dock().PopOutAsync("Notes");
+
+        var button = cut.Find("[data-part=away-menu] [data-part=trigger]");
+        Assert.True(button.HasAttribute("data-modified"));
+        Assert.Equal("true", button.QuerySelector("[data-part=modified]")!.GetAttribute("aria-hidden"));
+        Assert.Equal(["In its own browser window", "Unsaved changes"], button.GetAttribute("aria-describedby")!
+            .Split(' ').Select(id => cut.Find($"[id='{id}']").TextContent));
+        // Its window's return button says so too, from a hint that goes with it into the window.
+        var back = cut.Find("[data-panel=notes] [data-part=return]");
+        Assert.True(back.HasAttribute("data-modified"));
+        Assert.NotNull(back.QuerySelector("[data-part=modified]"));
+        Assert.Equal("Unsaved changes", cut.Find($"[data-panel=notes] [id='{back.GetAttribute("aria-describedby")}']")
+            .TextContent.Trim());
+    }
+
+    [Fact]
+    public async Task Away_ShouldLeaveTheButtonUnmarked_WhenThePanelInItsOwnWindowIsntModified()
+    {
+        var cut = RenderPoppable(Hike);
+
+        await cut.Tb().Dock().PopOutAsync("Notes");
+
+        var button = cut.Find("[data-part=away-menu] [data-part=trigger]");
+        Assert.False(button.HasAttribute("data-modified"));
+        Assert.Null(button.QuerySelector("[data-part=modified]"));
+        Assert.Single(button.GetAttribute("aria-describedby")!.Split(' '));
+        Assert.Null(cut.Find("[data-panel=notes] [data-part=return]").GetAttribute("aria-describedby"));
+    }
+
+    [Fact]
     public async Task Away_ShouldBringThePanelBackWithTheFocusOnItsTab_WhenReturnIsChosenInItsMenu()
     {
         var cut = RenderPoppable(Hike);
@@ -3498,6 +3532,7 @@ public class TbDockManagerTests : BunitContext
                 content.AddAttribute(2, nameof(Probe.Log), _log);
                 content.CloseComponent();
             }));
+            builder.AddAttribute(8, nameof(TbDockPanel.Modified), panel.Modified);
             builder.CloseComponent();
         }
     };

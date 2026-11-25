@@ -39,7 +39,8 @@ public sealed class TbDockPanel : TbComponentBase, IDisposable
 
     /// <summary>Marks the panel as holding unsaved changes. Its tab shows a dot, which gives way to the close mark
     /// while the pointer or the keyboard focus is on the tab, and screen readers hear "Unsaved changes" with the tab's
-    /// name. The button of a panel put away on a strip shows and says the same.</summary>
+    /// name. The button of a panel put away on a strip shows and says the same, and so do the panel's button in the
+    /// away row and its window's return button while it is in a window of its own.</summary>
     [Parameter]
     public bool Modified { get; set; }
 

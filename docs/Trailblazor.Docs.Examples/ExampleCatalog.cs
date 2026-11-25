@@ -3500,9 +3500,10 @@ public static class ExampleCatalog
                     + "their layout.", typeof(DockManagerCloseExample)),
                 new("unsaved", "Unsaved changes", "`Modified` marks a panel that holds unsaved changes: its tab "
                     + "shows a dot, which gives way to the close mark while the pointer or the keyboard focus is "
-                    + "on the tab. `CanClose` is asked before the user closes the panel, by any route, and returning "
-                    + "false keeps it open, with its content and the focus as they were. Change the entry and "
-                    + "close its tab to be asked. The app's own `Layout.Close` isn't asked.",
+                    + "on the tab. A panel in a window of its own shows the dot on its button in the page's away row "
+                    + "and on its window's return button. `CanClose` is asked before the user closes the panel, by "
+                    + "any route, and returning false keeps it open, with its content and the focus as they were. "
+                    + "Change the entry and close its tab to be asked. The app's own `Layout.Close` isn't asked.",
                     typeof(DockManagerUnsavedExample)),
                 new("keep-alive", "Keeping content alive", "A panel's content renders when the panel first shows "
                     + "and then stays, hidden, while another tab shows, so what the user typed, opened or scrolled "
@@ -3648,8 +3649,9 @@ public static class ExampleCatalog
             [
                 "On a tab, screen readers say its title, that it's a tab, whether it's selected and its place "
                     + "among the group's tabs. A closable tab adds \"Press Delete to close\". A panel with "
-                    + "`Modified` adds \"Unsaved changes\", on its tab before that hint, and on its strip "
-                    + "button.",
+                    + "`Modified` adds \"Unsaved changes\", on its tab before that hint, and on its strip button. In "
+                    + "a window of its own, it's said on the panel's button in the away row, after \"In its own "
+                    + "browser window\", and on its window's return button.",
                 "After a panel moves, from a menu or a dropped tab or strip button, screen readers hear where it went, "
                     + "as in \"Trails moved to panel group 2.\"",
                 "As a tab's menu opens, screen readers hear its name, \"Tab options\".",
@@ -4053,8 +4055,8 @@ public static class ExampleCatalog
                 new("icon", "A tab's or a strip button's icon."),
                 new("title", "A tab's or a strip button's title."),
                 new("close", "The close mark on a closable tab."),
-                new("modified", "The dot on the tab or strip button of a panel with `Modified`. That tab or "
-                    + "button also gets `data-modified`."),
+                new("modified", "The dot on the tab, strip button, away row button or return button of a panel "
+                    + "with `Modified`. That tab or button also gets `data-modified`."),
                 new("panel", "One panel's content, with `data-panel` holding its `Id`. A hidden one is `inert`. "
                     + "`data-dock-group` holds the number of its group's row. One in a floating window has "
                     + "`data-floating`, the class `tb-dock__panel--floating` and its window's `--tb-dock-z`. One "
