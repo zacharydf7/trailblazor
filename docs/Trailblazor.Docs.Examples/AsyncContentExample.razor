@@ -1,6 +1,6 @@
 @* The groups take a moment to load; Reload loads them again while the list stays in view. *@
 <TbStack Gap="3" Style="max-inline-size: 26rem">
-    <TbStack Row Gap="2" Align="Align.End">
+    <TbStack Row Wrap Gap="2" Align="Align.End">
         <TbTextField TValue="string" Label="Find a group" @bind-Value="_search" UpdateOnInput Clearable
                      Style="flex: 1" />
         <TbButton Variant="Variant.Outlined" OnClick="() => _region!.ReloadAsync()">Reload</TbButton>

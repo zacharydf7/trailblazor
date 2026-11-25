@@ -1,5 +1,6 @@
 using System.Globalization;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Trailblazor.Tests.Components;
 
@@ -35,6 +36,9 @@ public class TbTimelineTests : BunitContext
     {
         var culture = CultureInfo.CurrentCulture;
         CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+        // Times show in the shared zone, so the test sets one with the booking's own offset.
+        Services.Configure<TrailblazorOptions>(options => options.Times.TimeZone =
+            TimeZoneInfo.CreateCustomTimeZone("Booking", TimeSpan.FromHours(-5), "Booking", "Booking"));
         try
         {
             var cut = Render<TbTimeline>(parameters => parameters
