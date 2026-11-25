@@ -67,6 +67,62 @@ public partial class ScriptWindowsTests
         Assert.Empty(PageLines.Except(asked));
     }
 
+    // Events only the page's own window has: Blazor's reconnect notice, the page being left or shown again, and
+    // find-in-page revealing a hidden panel, which only a static page has and a popped-out panel is always interactive.
+    private static readonly HashSet<string> PageEvents =
+        ["components-reconnect-state-changed", "pagehide", "pageshow", "beforematch"];
+
+    // By event type only: a type pop-out.js sends on only as it captures needs a capturing listener on the page, and
+    // one it sends on only to the page's window needs a listener there.
+    [Fact]
+    public void Scripts_ShouldOnlyListenOnThePageForEventsAnotherWindowSendsOn_WhenCalled()
+    {
+        var popOut = File.ReadAllText(Path.Combine(Repository.Root, "src", "Trailblazor", "wwwroot", "pop-out.js"));
+        var sentOn = SentOnLists().Matches(popOut).SelectMany(list => Quoted().Matches(list.Groups["list"].Value))
+            .Select(type => type.Groups["type"].Value).ToHashSet();
+        var scripts = new[] { "Trailblazor", "Trailblazor.Primitives" }
+            .SelectMany(project => Directory.GetFiles(Path.Combine(Repository.Root, "src", project, "wwwroot"), "*.js"))
+            .Select(file => (Name: Path.GetFileName(file), Text: File.ReadAllText(file))).ToList();
+        // A listener whose type is a loop's variable takes each type the loop lists.
+        var heard = scripts.SelectMany(script => OnThePage().Matches(script.Text)
+                .Select(listener => listener.Groups["type"].Value)
+                .Concat(LoopOnThePage().Matches(script.Text).SelectMany(loop => Quoted()
+                    .Matches(loop.Groups["list"].Value).Select(type => type.Groups["type"].Value)))
+                .Select(type => (script.Name, Type: type)))
+            .ToList();
+
+        Assert.Empty(heard.Where(listener => !sentOn.Contains(listener.Type) && !PageEvents.Contains(listener.Type))
+            .Select(listener => $"{listener.Name}: {listener.Type}"));
+        // Any other listener on the page whose type isn't written out can't be checked.
+        Assert.Equal(scripts.Sum(script => LoopOnThePage().Count(script.Text)),
+            scripts.Sum(script => ByVariableOnThePage().Count(script.Text)));
+        // A page event that a script no longer hears, or that pop-out.js now sends on, has to come off the list.
+        Assert.DoesNotContain(PageEvents,
+            type => sentOn.Contains(type) || heard.All(listener => listener.Type != type));
+    }
+
+    // The lists in pop-out.js of the events another window sends on to the page: those that bubble, those heard on
+    // their way down, and those of the window itself.
+    [GeneratedRegex(@"(?:const bubbling = new Set\(|const captured = |const ofTheWindow = )\[(?<list>[^\]]*)\]")]
+    private static partial Regex SentOnLists();
+
+    [GeneratedRegex("'(?<type>[^']+)'")]
+    private static partial Regex Quoted();
+
+    // A listener on the page's own document or window, named or not, which hears another window's events only when
+    // they're sent on.
+    [GeneratedRegex(@"(?<![\w.])(?:(?:document|window)\.)?addEventListener\(\s*'(?<type>[^']+)'")]
+    private static partial Regex OnThePage();
+
+    // A listener on the page whose type is a variable.
+    [GeneratedRegex(@"(?<![\w.])(?:(?:document|window)\.)?addEventListener\(\s*[A-Za-z_]")]
+    private static partial Regex ByVariableOnThePage();
+
+    // A loop over a list of types that puts a listener for each on the page.
+    [GeneratedRegex(@"for \(const (?<name>\w+) of \[(?<list>[^\]]*)\]\) \{\s*"
+        + @"(?:(?:document|window)\.)?addEventListener\(\k<name>,")]
+    private static partial Regex LoopOnThePage();
+
     // What only the page's own window answers for: its focused element, what it holds, its size, its frames, its
     // selection, the windows it opens and its own kinds of element, which one drawn in another window may not be. The
     // name must stand by itself, not be the member of something else, as in `list.ownerDocument.body`.
