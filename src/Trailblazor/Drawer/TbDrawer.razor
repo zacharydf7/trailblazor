@@ -26,20 +26,21 @@
     [Parameter]
     public DrawerSide Side { get; set; } = DrawerSide.End;
 
-    /// <summary>Whether the drawer blocks the rest of the page while it is open, with a backdrop behind it. Defaults
-    /// to true. When false, people can go on using the page beside the drawer, such as the list a filter panel
-    /// applies to. Applies the next time the drawer opens.</summary>
+    /// <summary>Whether the drawer blocks the rest of the page while it is open, with a backdrop behind it. Left
+    /// unset, it follows <see cref="DialogOptions.Modal"/>, which defaults to true. When false, people can go on
+    /// using the page beside the drawer, such as the list a filter panel applies to. Applies the next time the drawer
+    /// opens.</summary>
     [Parameter]
-    public bool Modal { get; set; } = true;
+    public bool? Modal { get; set; }
 
-    /// <summary>How wide a drawer at the start or end is. Defaults to <see cref="DialogSize.Small"/>. A drawer at the
-    /// top or bottom spans the window and is as tall as its content. Applies the next time the drawer opens.
-    /// </summary>
+    /// <summary>How wide a drawer at the start or end is. Left unset, it follows <see cref="Options"/>, or is
+    /// <see cref="DialogSize.Small"/>. A drawer at the top or bottom spans the window and is as tall as its content.
+    /// Applies the next time the drawer opens.</summary>
     [Parameter]
-    public DialogSize Size { get; set; } = DialogSize.Small;
+    public DialogSize? Size { get; set; }
 
-    /// <summary>A CSS width, such as <c>"20rem"</c>, used in place of <see cref="Size"/>. Applies the next time the
-    /// drawer opens.</summary>
+    /// <summary>A CSS width, such as <c>"20rem"</c>, used in place of <see cref="Size"/>. Left unset, it follows
+    /// <see cref="Options"/>. Applies the next time the drawer opens.</summary>
     [Parameter]
     public string? Width { get; set; }
 
@@ -56,9 +57,9 @@
     public string? TelemetryName { get; set; }
 
     /// <summary>Other dialog options, such as <see cref="DialogOptions.DismissOnBackdrop"/>,
-    /// <see cref="DialogOptions.InitialFocus"/> or <see cref="DialogOptions.Classes"/>. The drawer's own
-    /// <see cref="Side"/>, <see cref="Modal"/>, <see cref="Size"/> and <see cref="Width"/> override the matching
-    /// options, and its <see cref="TelemetryName"/> does when set.</summary>
+    /// <see cref="DialogOptions.InitialFocus"/> or <see cref="DialogOptions.Classes"/>. The drawer's
+    /// <see cref="Side"/> sets the position, and its own <see cref="Modal"/>, <see cref="Size"/>,
+    /// <see cref="Width"/> and <see cref="TelemetryName"/> override the matching options when set.</summary>
     [Parameter]
     public DialogOptions? Options { get; set; }
 
@@ -75,9 +76,9 @@
 
     private DialogOptions DrawerOptions => (Options ?? new()) with
     {
-        Modal = Modal,
-        Size = Size,
-        Width = Width,
+        Modal = Modal ?? Options?.Modal ?? true,
+        Size = Size ?? Options?.Size ?? DialogSize.Small,
+        Width = Width ?? Options?.Width,
         Position = Side switch
         {
             DrawerSide.Start => DialogPosition.Start,

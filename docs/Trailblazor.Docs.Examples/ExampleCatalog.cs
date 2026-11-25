@@ -734,7 +734,7 @@ public static class ExampleCatalog
             [
                 new("qr-code", "QR code", "`Value` is the text or link the code holds. `ErrorCorrection` sets how much "
                     + "of the code can be covered or scratched and still scan: `Medium` by default, `High` for a "
-                    + "printout that gets handled. Each module is 4 pixels unless `Size` sets the width and height, "
+                    + "printout that gets handled. Each module is 4 pixels unless `Width` sets the width and height, "
                     + "or a narrower container shrinks the code to fit. A value too long for the code throws, so "
                     + "check one from users or data with `TbQrCode.CanEncode` first.", typeof(QrCodeExample)),
                 new("barcode", "Barcode", "`Format` is `Code128`, the default, for printable ASCII text, or `Ean13` "
@@ -6172,9 +6172,10 @@ public static class ExampleCatalog
                     + "[guide](guides/forms#model-and-data-annotations) says which message."),
                 new("A form with `OnSubmit` isn't counted in `trailblazor.form.submitted`, since it doesn't validate "
                     + "the submit itself."),
-                new("A form takes `OnSubmit`, or `OnValidSubmit` and `OnInvalidSubmit`, not both. `OnSubmit` replaces "
-                    + "the check that raises the other two, so a form given both throws as it renders, and build "
-                    + "warning [TB015](guides/analyzers#rules) reports it in markup.") { Pitfall = true },
+                new("A form takes `OnSubmit`, or either or both of `OnValidSubmit` and `OnInvalidSubmit`. `OnSubmit` "
+                    + "replaces the check that raises the other two, so a form given `OnSubmit` with either of them "
+                    + "throws as it renders, and build warning [TB015](guides/analyzers#rules) reports it in markup.")
+                    { Pitfall = true },
                 new("From a submit until its handler finishes, `IsSubmitting` is true, the form's submit buttons "
                     + "show as busy, and another submit is dropped. `ShowSubmitting=\"false\"` leaves the buttons "
                     + "as they are. A submit button outside the form, such as in a dialog's footer, shows as busy "
@@ -11252,9 +11253,10 @@ public static class ExampleCatalog
                     + "small, a click outside doesn't answer it, and `confirmText`, `cancelText` and `options` change "
                     + "its buttons and window; this one's button says Rename.", typeof(DialogPromptExample)),
                 new("in-markup", "Written in markup", "`TbDialog` opens with `@bind-Open`, for a dialog that needs no "
-                    + "class of its own, and its content sees the page's fields. `TbDialogDescription` describes any "
-                    + "dialog, in markup or opened from code, so screen readers read that text with the title as the "
-                    + "dialog opens.",
+                    + "class of its own, and its content sees the page's fields. The dialog's own `Modal`, `Size` and "
+                    + "`Width` override the matching `Options` when set, as on a drawer. `TbDialogDescription` "
+                    + "describes any dialog, in markup or opened from code, so screen readers read that text with the "
+                    + "title as the dialog opens.",
                     typeof(DialogMarkupExample)),
                 new("commands", "Opening before the page is interactive", "Until the page is interactive, a "
                     + "`TbDialog` with an `id` renders closed, so a button with `commandfor` set to that id and "
@@ -11608,8 +11610,8 @@ public static class ExampleCatalog
                 new("basic", "Drawer", "`@bind-Open` opens the drawer, and turns false when people close it. `Title` "
                     + "names it and shows in its header with a close button. Put its buttons in a `TbDialogActions`, "
                     + "which stays at the bottom however long the content is. `Options` takes other dialog options, "
-                    + "such as `DismissOnBackdrop` or `InitialFocus`; the drawer's own `Side`, `Modal`, `Size` and "
-                    + "`Width` override the matching ones.", typeof(DrawerExample)),
+                    + "such as `DismissOnBackdrop` or `InitialFocus`. `Side` sets the position, and the drawer's own "
+                    + "`Modal`, `Size` and `Width` override the matching options when set.", typeof(DrawerExample)),
                 new("sides", "Sides and sheets", "`Side` sets the edge it slides in from: `End` unless set, or `Start`, "
                     + "`Top` or `Bottom`. Start and end follow the reading direction. A drawer at the top or bottom "
                     + "is a sheet across the window, as tall as its content.", typeof(DrawerSideExample)),

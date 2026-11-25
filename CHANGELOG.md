@@ -8,6 +8,10 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Renamed and removed
 
+#### 2026-11-25
+
+- TbQrCode.Size → TbQrCode.Width, as on TbBarcode
+
 #### 2026-11-16
 
 - new TbSliderLocator, TbRangeSliderLocator, TbTimePickerLocator, TbDatePickerLocator, TbCheckboxGroupLocator, TbRadioGroupLocator, TbRatingLocator, TbToggleGroupLocator, TbTagInputLocator, TbRichTextEditorLocator, TbListBoxLocator, TbTransferListLocator, TbFileUploadLocator, TbDateRangePickerLocator, TbCalendarLocator, TbDateTimePickerLocator or TbTreeSelectLocator with a label → page.Tb().Slider(label) and the like, or new TbSliderLocator(scope, locator) and the like, given the element the field's id goes on
@@ -87,6 +91,8 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-25
 
+- A `TbDrawer`'s `Modal` and `Size` are now nullable, and when left unset they and `Width` follow the drawer's `Options`. All three always overrode the options before, so `Options` with `Modal = false`, a `Size` or a `Width` had no effect. With neither set, a drawer is still modal and `Small`.
+- `TbDialog` gains `Modal`, `Size` and `Width`, which override the matching `Options` when set, as on a drawer.
 - A `TbForm` given `OnSubmit` beside `OnValidSubmit` or `OnInvalidSubmit` now throws as it renders, as `EditForm` does. It used to raise only `OnSubmit` and never the other two.
 - The analyzer has three new warnings. TB013 reports `TbDataGrid` parameters that don't go together, which throw as the grid renders: `Items` with a `DataProvider`; `Groups` with a `DataProvider`; a `ChildrenSelector` with a `DataProvider`, `Groups`, `OnRowMove` or a `PageSize`; and `Virtualize` with a `DetailTemplate`, with a `PageSize`, or with no `Height` or `Fill`. TB014 reports a `TbHotkey` whose `Keys`, written as text, can't be read, or are a key people type without `AllowCharacterKey`. TB015 reports a `TbForm` with `OnSubmit` beside `OnValidSubmit` or `OnInvalidSubmit`.
 - New `TbValidationSummary`, inside a `TbForm`: while the form has messages, a `section.tb-validation-summary` named by its `h2[data-part="title"]` heading (the level from `HeadingLevel`; the string key `ValidationSummary.Title`, "Fix these to continue") with a `[data-part="list"]` of `[data-part="item"]` messages, each field's message as an `a[data-part="link"]` that moves focus to the field. `TbRadioGroup` and `TbCheckboxGroup` now always render an id on their `fieldset`, which a link points at. The testing helpers are `ValidationSummary()` in both packages.

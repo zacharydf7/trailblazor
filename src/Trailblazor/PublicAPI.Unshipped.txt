@@ -2030,6 +2030,12 @@ Trailblazor.TbDialog.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCal
 Trailblazor.TbDialog.OpenChanged.set -> void
 Trailblazor.TbDialog.Options.get -> Trailblazor.DialogOptions?
 Trailblazor.TbDialog.Options.set -> void
+Trailblazor.TbDialog.Modal.get -> bool?
+Trailblazor.TbDialog.Modal.set -> void
+Trailblazor.TbDialog.Size.get -> Trailblazor.DialogSize?
+Trailblazor.TbDialog.Size.set -> void
+Trailblazor.TbDialog.Width.get -> string?
+Trailblazor.TbDialog.Width.set -> void
 Trailblazor.TbDialog.TbDialog() -> void
 Trailblazor.TbDialog.Title.get -> string!
 Trailblazor.TbDialog.Title.set -> void
@@ -4224,7 +4230,7 @@ Trailblazor.TbDrawer.CanDismiss.get -> System.Func<Trailblazor.DialogDismissReas
 Trailblazor.TbDrawer.CanDismiss.set -> void
 Trailblazor.TbDrawer.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbDrawer.ChildContent.set -> void
-Trailblazor.TbDrawer.Modal.get -> bool
+Trailblazor.TbDrawer.Modal.get -> bool?
 Trailblazor.TbDrawer.Modal.set -> void
 Trailblazor.TbDrawer.Open.get -> bool
 Trailblazor.TbDrawer.Open.set -> void
@@ -4232,7 +4238,7 @@ Trailblazor.TbDrawer.OpenChanged.get -> Microsoft.AspNetCore.Components.EventCal
 Trailblazor.TbDrawer.OpenChanged.set -> void
 Trailblazor.TbDrawer.Side.get -> Trailblazor.DrawerSide
 Trailblazor.TbDrawer.Side.set -> void
-Trailblazor.TbDrawer.Size.get -> Trailblazor.DialogSize
+Trailblazor.TbDrawer.Size.get -> Trailblazor.DialogSize?
 Trailblazor.TbDrawer.Size.set -> void
 Trailblazor.TbDrawer.TbDrawer() -> void
 Trailblazor.TbDrawer.TelemetryName.get -> string?
@@ -6235,11 +6241,11 @@ Trailblazor.TbQrCode.AriaLabel.get -> string?
 Trailblazor.TbQrCode.AriaLabel.set -> void
 Trailblazor.TbQrCode.ErrorCorrection.get -> Trailblazor.QrErrorCorrection
 Trailblazor.TbQrCode.ErrorCorrection.set -> void
-Trailblazor.TbQrCode.Size.get -> string?
-Trailblazor.TbQrCode.Size.set -> void
 Trailblazor.TbQrCode.TbQrCode() -> void
 Trailblazor.TbQrCode.Value.get -> string!
 Trailblazor.TbQrCode.Value.set -> void
+Trailblazor.TbQrCode.Width.get -> string?
+Trailblazor.TbQrCode.Width.set -> void
 override Trailblazor.TbBarcode.OnParametersSet() -> void
 override Trailblazor.TbQrCode.OnParametersSet() -> void
 ~override Trailblazor.TbBarcode.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

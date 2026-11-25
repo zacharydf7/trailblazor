@@ -15,16 +15,15 @@ public class TbDrawerTests : BunitContext
     {
         Render<TbDrawer>(parameters => parameters.Add(drawer => drawer.Open, true)
             .Add(drawer => drawer.Title, "Filters").Add(drawer => drawer.Side, DrawerSide.Start)
-            .Add(drawer => drawer.Width, "30rem")
             .Add(drawer => drawer.Options, new DialogOptions
             {
                 DismissOnBackdrop = false, ShowHeader = false, Position = DialogPosition.Center, Width = "10rem",
-                Modal = false, TelemetryName = "trail-filters",
+                Modal = false, Size = DialogSize.Large, TelemetryName = "trail-filters",
             }));
 
-        Assert.Equal((false, false, DialogPosition.Start, "30rem", true, "trail-filters"),
+        Assert.Equal((false, false, DialogPosition.Start, "10rem", false, DialogSize.Large, "trail-filters"),
             (OpenOptions.DismissOnBackdrop, OpenOptions.ShowHeader, OpenOptions.Position, OpenOptions.Width,
-                OpenOptions.Modal, OpenOptions.TelemetryName));
+                OpenOptions.Modal, OpenOptions.Size, OpenOptions.TelemetryName));
     }
 
     [Fact]
@@ -74,6 +73,7 @@ public class TbDrawerTests : BunitContext
     {
         Render<TbDrawer>(parameters => parameters.Add(drawer => drawer.Open, true)
             .Add(drawer => drawer.Title, "Filters").Add(drawer => drawer.Modal, false)
+            .Add(drawer => drawer.Options, new DialogOptions { Modal = true, Size = DialogSize.Small, Width = "10rem" })
             .Add(drawer => drawer.Size, DialogSize.Large).Add(drawer => drawer.Width, "20rem")
             .Add(drawer => drawer.TelemetryName, "trail-filters"));
 

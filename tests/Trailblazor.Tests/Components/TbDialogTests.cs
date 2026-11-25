@@ -104,6 +104,27 @@ public class TbDialogTests : BunitContext
     }
 
     [Fact]
+    public void Open_ShouldTakeItsOwnModalSizeAndWidthOverTheOptions_WhenBothGiveThem()
+    {
+        Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Rename")
+            .Add(d => d.Options, new DialogOptions { Modal = true, Size = DialogSize.Small, Width = "10rem" })
+            .Add(d => d.Modal, false).Add(d => d.Size, DialogSize.Large).Add(d => d.Width, "40rem"));
+
+        var options = Assert.Single(Dialogs.OpenDialogs).Options;
+        Assert.Equal((false, DialogSize.Large, "40rem"), (options.Modal, options.Size, options.Width));
+    }
+
+    [Fact]
+    public void Open_ShouldFollowTheOptions_WhenModalSizeAndWidthAreUnset()
+    {
+        Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Rename")
+            .Add(d => d.Options, new DialogOptions { Modal = false, Size = DialogSize.Small, Width = "10rem" }));
+
+        var options = Assert.Single(Dialogs.OpenDialogs).Options;
+        Assert.Equal((false, DialogSize.Small, "10rem"), (options.Modal, options.Size, options.Width));
+    }
+
+    [Fact]
     public void Render_ShouldAddPartClasses_WhenTheOptionsHaveClasses()
     {
         var cut = Render<TbDialog>(parameters => parameters.Add(d => d.Open, true).Add(d => d.Title, "Rename")

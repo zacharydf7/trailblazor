@@ -33,7 +33,7 @@ public class QrCodeTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task QrCode_ShouldBeASquareOfFourPixelsAModule_WhenItHasNoSize(string browser)
+    public async Task QrCode_ShouldBeASquareOfFourPixelsAModule_WhenItHasNoWidth(string browser)
     {
         var page = await OpenAsync(browser, "/examples/qr-code");
 

@@ -31,9 +31,26 @@ public sealed class TbDialog : TbComponentBase, IAsyncDisposable
     [Parameter, EditorRequired]
     public string Title { get; set; } = "";
 
-    /// <summary>How the dialog behaves, as for a dialog opened from code. They're read each time it opens.</summary>
+    /// <summary>How the dialog behaves, as for a dialog opened from code. They're read each time it opens. The
+    /// dialog's own <see cref="Modal"/>, <see cref="Size"/>, <see cref="Width"/> and <see cref="Labels"/> override the
+    /// matching options when set.</summary>
     [Parameter]
     public DialogOptions? Options { get; set; }
+
+    /// <summary>Whether the dialog blocks the rest of the page and keeps focus inside it. Left unset, it follows
+    /// <see cref="DialogOptions.Modal"/>, which defaults to true. It's read each time the dialog opens.</summary>
+    [Parameter]
+    public bool? Modal { get; set; }
+
+    /// <summary>How wide the dialog grows. Left unset, it follows <see cref="Options"/>, then
+    /// <see cref="DialogSettings.Size"/>. It's read each time the dialog opens.</summary>
+    [Parameter]
+    public DialogSize? Size { get; set; }
+
+    /// <summary>The widest the dialog grows, as a CSS length such as <c>"40rem"</c>, in place of <see cref="Size"/>.
+    /// Left unset, it follows <see cref="Options"/>. It's read each time the dialog opens.</summary>
+    [Parameter]
+    public string? Width { get; set; }
 
     /// <summary>The words the header's buttons and the Move and Resize menus show and say to screen readers, in place
     /// of <see cref="DialogOptions.Labels"/>. Each one left null uses the app's text. It's read each time the dialog
@@ -74,8 +91,13 @@ public sealed class TbDialog : TbComponentBase, IAsyncDisposable
         }
     }
 
-    private DialogOptions OpenedOptions =>
-        Labels is null ? Options ?? new() : (Options ?? new()) with { Labels = Labels };
+    private DialogOptions OpenedOptions => (Options ?? new()) with
+    {
+        Modal = Modal ?? Options?.Modal ?? true,
+        Size = Size ?? Options?.Size,
+        Width = Width ?? Options?.Width,
+        Labels = Labels ?? Options?.Labels,
+    };
 
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)

@@ -38,16 +38,16 @@ public class TbQrCodeTests : BunitContext
     }
 
     [Fact]
-    public void Render_ShouldSizeTheCode_WhenGivenASize()
+    public void Render_ShouldSizeTheCode_WhenGivenAWidth()
     {
         var cut = Render<TbQrCode>(parameters => parameters.Add(code => code.Value, "HELLO WORLD")
-            .Add(code => code.Size, "6rem").Add(code => code.Style, "margin: 1rem"));
+            .Add(code => code.Width, "6rem").Add(code => code.Style, "margin: 1rem"));
 
         Assert.Equal("inline-size: 6rem; margin: 1rem", cut.Find("svg").GetAttribute("style"));
     }
 
     [Fact]
-    public void Render_ShouldGiveEachModuleFourPixels_WhenItHasNoSize()
+    public void Render_ShouldGiveEachModuleFourPixels_WhenItHasNoWidth()
     {
         var cut = Render<TbQrCode>(parameters => parameters.Add(code => code.Value, "HELLO WORLD"));
 

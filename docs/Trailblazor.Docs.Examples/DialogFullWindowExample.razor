@@ -1,6 +1,6 @@
 <TbButton Variant="Variant.Outlined" OnClick="() => _open = true">Plan a trip</TbButton>
 
-<TbDialog @bind-Open="_open" Title="Trip planner" Options="new() { Size = DialogSize.Full }">
+<TbDialog @bind-Open="_open" Title="Trip planner" Size="DialogSize.Full">
     <TbTabs AriaLabel="Trip" Fill>
         <TbTab Text="Stops">
             <TbDataGrid TItem="Stop" Items="Stops" AriaLabel="Stops" KeySelector="stop => stop.Mile" Fill

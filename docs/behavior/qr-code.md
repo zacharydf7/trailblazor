@@ -21,6 +21,7 @@ Nothing of its own: it is an image.
 - [x] It takes no focus, and screen readers read it as an image named by its value, or by `AriaLabel`. `TbQrCodeTests.Render_ShouldDrawAnImageNamedByItsValueWithAQuietZone_WhenGivenAValue`, `TbQrCodeTests.Render_ShouldNameTheImageWithTheAriaLabel_WhenOneIsGiven`
 - [x] A barcode's printed value is hidden from screen readers, so it isn't read twice. `TbBarcodeTests.Render_ShouldDrawAnImageNamedByItsValueAndPrintTheValueHidden_WhenGivenAValue`
 - [x] Codes stay dark on light in dark mode and in forced colors, so a scanner can still read them. `QrCodeTests.Codes_ShouldStayDarkOnLight_WhenTheThemeIsDark`, `QrCodeTests.Codes_ShouldStayDarkOnLight_WhenColorsAreForced`
+- [x] `Width` sets a QR code's width and height; without it, each module is 4 pixels. `TbQrCodeTests.Render_ShouldSizeTheCode_WhenGivenAWidth`, `TbQrCodeTests.Render_ShouldGiveEachModuleFourPixels_WhenItHasNoWidth`
 - [x] A code wider than its container shrinks to fit rather than widening the page. `DocsSiteTests.ComponentPage_ShouldFitThePageWidth_WhenTheScreenIsAPhone`
 - [x] A barcode's printed value wraps in a container narrower than the text. `trailblazor.css`
 - [x] The symbols match independent encoders, mask choice included. `BarcodeEncoderTests.QrEncode_ShouldMatchAReferenceEncoder_WhenGivenLongerText`, `BarcodeEncoderTests.Code128Encode_ShouldMatchAReferenceEncoder_WhenGivenText`, `BarcodeEncoderTests.Ean13Encode_ShouldMatchAReferenceEncoder_WhenGivenDigits`

@@ -20,6 +20,7 @@ Familiar apps: the filter panel on a shop's search results, and the share sheet 
 - [x] A bottom sheet spans the window's width at its bottom edge. `DrawerTests.Drawer_ShouldSpanTheBottomOfTheWindow_WhenItIsABottomSheet`
 - [x] The actions stay at the bottom of the drawer, however short the content is, even when a form holds them. `DrawerTests.Drawer_ShouldKeepItsActionsAtTheBottom_WhenItsContentIsShort`, `DialogTests.Dialog_ShouldPinItsActionsToTheBottomOfTheWindow_WhenFullOrMaximized`
 - [x] A drawer that isn't modal leaves the page usable beside it. `DrawerTests.Drawer_ShouldLeaveThePageUsable_WhenItIsNotModal`
+- [x] A drawer's own `Modal`, `Size` and `Width` take the place of its options' when set; unset, it follows the options, and is modal and `Small` when they don't say. `TbDrawerTests.Open_ShouldPassTheDrawersSettingsToItsDialog_WhenTheyAreSet`, `TbDrawerTests.Options_ShouldReachTheDialogUnderTheDrawersOwnSettings_WhenGiven`, `TbDrawerTests.Open_ShouldOpenAModalDialogAtTheEnd_WhenTrue`
 
 ## Touch
 
