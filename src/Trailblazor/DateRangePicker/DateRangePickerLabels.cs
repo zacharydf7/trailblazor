@@ -54,4 +54,16 @@ public sealed record DateRangePickerLabels
     /// <summary>The message for an end date before the start. Leave it null for the app's text for <see
     /// cref="TbStrings.DateRangePickerEndBeforeStart"/>. </summary>
     public string? EndBeforeStart { get; init; }
+
+    /// <summary>Heads the column of week numbers. Leave it null for the app's text for
+    /// <see cref="TbStrings.CalendarWeekShort"/>.</summary>
+    public string? WeekShort { get; init; }
+
+    /// <summary>The full name of the column of week numbers, which screen readers can say in place of its heading.
+    /// Leave it null for the app's text for <see cref="TbStrings.CalendarWeek"/>.</summary>
+    public string? Week { get; init; }
+
+    /// <summary>The full name of a week's row, with <c>{0}</c> for its number, which screen readers can say in place of
+    /// the number. Leave it null for the app's text for <see cref="TbStrings.CalendarWeekNumber"/>.</summary>
+    public string? WeekNumber { get; init; }
 }

@@ -8055,3 +8055,26 @@ const Trailblazor.TbStrings.FileUploadUploading = "FileUpload.Uploading" -> stri
 Trailblazor.TbFileUpload.OnUploaded.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
 Trailblazor.TbFileUpload.OnUploaded.set -> void
 override Trailblazor.TbFileUpload.OnParametersSet() -> void
+Trailblazor.CalendarLabels.Week.get -> string?
+Trailblazor.CalendarLabels.Week.init -> void
+Trailblazor.CalendarLabels.WeekNumber.get -> string?
+Trailblazor.CalendarLabels.WeekNumber.init -> void
+Trailblazor.CalendarLabels.WeekShort.get -> string?
+Trailblazor.CalendarLabels.WeekShort.init -> void
+Trailblazor.DateRangePickerLabels.Week.get -> string?
+Trailblazor.DateRangePickerLabels.Week.init -> void
+Trailblazor.DateRangePickerLabels.WeekNumber.get -> string?
+Trailblazor.DateRangePickerLabels.WeekNumber.init -> void
+Trailblazor.DateRangePickerLabels.WeekShort.get -> string?
+Trailblazor.DateRangePickerLabels.WeekShort.init -> void
+Trailblazor.TbCalendar<TDate>.ShowWeekNumbers.get -> bool
+Trailblazor.TbCalendar<TDate>.ShowWeekNumbers.set -> void
+Trailblazor.TbDatePicker<TDate>.ShowWeekNumbers.get -> bool
+Trailblazor.TbDatePicker<TDate>.ShowWeekNumbers.set -> void
+Trailblazor.TbDateRangePicker<TDate>.ShowWeekNumbers.get -> bool
+Trailblazor.TbDateRangePicker<TDate>.ShowWeekNumbers.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.ShowWeekNumbers.get -> bool
+Trailblazor.TbDateTimePicker<TDateTime>.ShowWeekNumbers.set -> void
+const Trailblazor.TbStrings.CalendarWeek = "Calendar.Week" -> string!
+const Trailblazor.TbStrings.CalendarWeekNumber = "Calendar.WeekNumber" -> string!
+const Trailblazor.TbStrings.CalendarWeekShort = "Calendar.WeekShort" -> string!

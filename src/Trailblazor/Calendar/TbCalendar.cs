@@ -77,6 +77,11 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
     [Parameter]
     public CultureInfo? Culture { get; set; }
 
+    /// <summary>Shows each week's number before its days, by the culture's rule, such as ISO 8601 weeks for de-DE.
+    /// </summary>
+    [Parameter]
+    public bool ShowWeekNumbers { get; set; }
+
     /// <summary>The words the calendar says to screen readers.</summary>
     [Parameter]
     public CalendarLabels Labels { get; set; } = new();
@@ -343,6 +348,13 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
     private static DateOnly DayOf(DateOnly date) => date;
 
     private static DateOnly YearOf(DateOnly date) => new(date.Year, 1, 1);
+
+    private string WeekShortLabel => Labels.WeekShort ?? Localizer[TbStrings.CalendarWeekShort];
+
+    private string WeekLabel => Labels.Week ?? Localizer[TbStrings.CalendarWeek];
+
+    private string WeekName(int number) =>
+        string.Format(DateCulture, Labels.WeekNumber ?? Localizer[TbStrings.CalendarWeekNumber], number);
 
     private string PreviousLabel => _view switch
     {

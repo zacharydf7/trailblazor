@@ -47,6 +47,11 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter]
     public Func<DateOnly, bool>? IsDateDisabled { get; set; }
 
+    /// <summary>Shows each week's number before its days, by the culture's rule, such as ISO 8601 weeks for de-DE.
+    /// </summary>
+    [Parameter]
+    public bool ShowWeekNumbers { get; set; }
+
     /// <summary>How far apart the times that can be chosen are, such as 15 minutes; the time box's arrows move by it. A
     /// step that isn't a whole number of minutes adds seconds to the box. Defaults to a minute.</summary>
     [Parameter]

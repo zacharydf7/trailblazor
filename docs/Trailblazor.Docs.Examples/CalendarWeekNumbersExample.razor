@@ -1,0 +1,9 @@
+@using System.Globalization
+
+<TbCalendar TDate="DateOnly" Label="Shift week" @bind-Value="_shift" ShowWeekNumbers Culture="British" />
+
+@code {
+    private static readonly CultureInfo British = new("en-GB");
+
+    private DateOnly? _shift = new(2027, 1, 4);
+}

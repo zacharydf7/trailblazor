@@ -57,6 +57,7 @@ Familiar apps: the date ranges on flight and hotel booking sites, Google Analyti
 - [x] A read-only field keeps its boxes read only and turns off its buttons. `TbDateRangePickerTests.Render_ShouldTurnOffItsButtonsAndLeaveOutClear_WhenReadOnlyAndClearable`
 - [x] A click on a blank part of the calendar, such as a month's title, leaves focus where it was, so the keys still work and Escape returns focus to the calendar button. `DateRangePickerTests.Calendar_ShouldKeepItsKeys_WhenABlankPartIsPressed`
 - [x] `Start` and `End` content sit in the box before the start box and after the end box, with `End` before the field's own buttons, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
+- [x] With `ShowWeekNumbers`, each month's weeks are numbered by the culture's rule, as on the calendar. `TbDateRangePickerTests.ShowWeekNumbers_ShouldNumberEachMonthsWeeks_WhenSet`
 
 ## Not applicable
 

@@ -63,6 +63,30 @@ public class TbDateRangePickerTests : BunitContext
     }
 
     [Fact]
+    public void ShowWeekNumbers_ShouldNumberEachMonthsWeeks_WhenSet()
+    {
+        var cut = RenderPicker(June3To10, parameters => parameters.Add(picker => picker.ShowWeekNumbers, true));
+
+        var months = cut.FindAll("[data-part=month]");
+        Assert.Equal(["23", "24", "25", "26", "27"],
+            months[0].QuerySelectorAll("[data-part=week]").Select(week => week.TextContent.Trim()));
+        Assert.Equal("Week 23", months[0].QuerySelector("[data-part=week]")!.GetAttribute("abbr"));
+        Assert.Equal("Wk", months[0].QuerySelector("[data-part=week-heading]")!.TextContent.Trim());
+    }
+
+    [Fact]
+    public void ShowWeekNumbers_ShouldWordTheColumnAndRows_WhenGivenLabels()
+    {
+        var cut = RenderPicker(June3To10, parameters => parameters.Add(picker => picker.ShowWeekNumbers, true)
+            .Add(picker => picker.Labels,
+                new DateRangePickerLabels { WeekShort = "W", Week = "Week no.", WeekNumber = "No. {0}" }));
+
+        var heading = cut.Find("[data-part=week-heading]");
+        Assert.Equal(("W", "Week no.", "No. 23"), (heading.TextContent.Trim(), heading.GetAttribute("abbr"),
+            cut.Find("[data-part=week]").GetAttribute("abbr")));
+    }
+
+    [Fact]
     public void Render_ShouldOpenOnTheRangeAndMarkItAndToday_WhenGivenARange()
     {
         var cut = RenderPicker(June3To10);

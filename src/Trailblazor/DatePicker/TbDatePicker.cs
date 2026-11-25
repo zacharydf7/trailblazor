@@ -40,6 +40,11 @@ public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
     [Parameter]
     public Func<TDate, bool>? IsDateDisabled { get; set; }
 
+    /// <summary>Shows each week's number before its days, by the culture's rule, such as ISO 8601 weeks for de-DE.
+    /// </summary>
+    [Parameter]
+    public bool ShowWeekNumbers { get; set; }
+
     /// <summary>How the box shows and reads dates, such as <c>MM/dd/yyyy</c>. Defaults to the culture's short date.
     /// </summary>
     [Parameter]

@@ -445,6 +445,15 @@ public class TbDateTimePickerTests : BunitContext
         Assert.Equal([new DateTime(2026, 6, 4, 14, 30, 0)], _changes);
     }
 
+    [Fact]
+    public void ShowWeekNumbers_ShouldShowThemInTheCalendar_WhenSet()
+    {
+        var cut = RenderPicker(new DateTime(2026, 6, 3, 9, 0, 0),
+            parameters => parameters.Add(picker => picker.ShowWeekNumbers, true));
+
+        Assert.Equal(5, cut.FindAll("[role=grid] [data-part=week]").Count);
+    }
+
     private IRenderedComponent<TbDateTimePicker<DateTime>> RenderPicker(DateTime? value,
         Action<ComponentParameterCollectionBuilder<TbDateTimePicker<DateTime>>>? configure = null,
         CultureInfo? culture = null) =>

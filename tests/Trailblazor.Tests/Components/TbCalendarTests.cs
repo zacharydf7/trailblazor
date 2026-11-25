@@ -484,6 +484,81 @@ public class TbCalendarTests : BunitContext
     private DotNetObjectReference<CalendarEvents> Events() =>
         (DotNetObjectReference<CalendarEvents>)_module.Invocations["createCalendar"].Single().Arguments[1]!;
 
+    [Fact]
+    public void ShowWeekNumbers_ShouldNumberEachWeekByTheCulturesRule_WhenSet()
+    {
+        var english = RenderWeeks(new DateOnly(2027, 1, 15), English);
+        var german = RenderWeeks(new DateOnly(2027, 1, 15), German);
+
+        // In en-US the week with January 1 is week 1; in de-DE weeks follow ISO 8601, so that week is 2026's 53rd.
+        Assert.Equal(["1", "2", "3", "4", "5", "6"], WeekNumbers(english));
+        Assert.Equal(["53", "1", "2", "3", "4"], WeekNumbers(german));
+        var heading = english.Find("thead th[data-part=week-heading]");
+        Assert.Equal(("Wk", "Week", "col"), (heading.TextContent.Trim(), heading.GetAttribute("abbr"),
+            heading.GetAttribute("scope")));
+        var week = english.Find("tbody th[data-part=week]");
+        Assert.Equal(("Week 1", "row"), (week.GetAttribute("abbr"), week.GetAttribute("scope")));
+    }
+
+    [Fact]
+    public void ShowWeekNumbers_ShouldGiveTheIsoNumber_WhenAWeekStartsOnTheLastDayOfTheYear()
+    {
+        var cut = RenderWeeks(new DateOnly(2007, 12, 3), German);
+
+        // Monday, December 31, 2007 starts ISO week 1 of 2008, which GetWeekOfYear calls week 53.
+        Assert.Equal(["48", "49", "50", "51", "52", "1"], WeekNumbers(cut));
+    }
+
+    [Theory]
+    [InlineData("en-US", 2026, 12, "49,50,51,52,1")]
+    [InlineData("en-US", 2027, 1, "1,2,3,4,5,6")]
+    [InlineData("pt-PT", 2027, 1, "52,1,2,3,4,5")]
+    [InlineData("ar-SA", 2026, 6, "23,24,25,26,27")]
+    [InlineData("fa-IR", 2026, 6, "23,24,25,26,27")]
+    public void ShowWeekNumbers_ShouldGiveAWeekOneGregorianNumber_WhenGivenAMonth(string culture, int year, int month,
+        string numbers)
+    {
+        // A week across New Year has one number in December and January, and a culture with its own calendar, such as
+        // ar-SA or fa-IR, numbers the Gregorian weeks the grid shows.
+        var cut = RenderWeeks(new DateOnly(year, month, 15), CultureInfo.GetCultureInfo(culture));
+
+        Assert.Equal(numbers, string.Join(",", WeekNumbers(cut)));
+    }
+
+    [Fact]
+    public void ShowWeekNumbers_ShouldWordTheColumnAndRows_WhenGivenLabels()
+    {
+        var cut = Render<TbCalendar<DateOnly>>(parameters => parameters.Add(calendar => calendar.Value, June3)
+            .Add(calendar => calendar.Label, "Hike date").Add(calendar => calendar.Culture, English)
+            .Add(calendar => calendar.ShowWeekNumbers, true)
+            .Add(calendar => calendar.Labels,
+                new CalendarLabels { WeekShort = "W", Week = "Week no.", WeekNumber = "No. {0}" }));
+
+        var heading = cut.Find("[data-part=week-heading]");
+        Assert.Equal(("W", "Week no.", "No. 23"), (heading.TextContent.Trim(), heading.GetAttribute("abbr"),
+            cut.Find("[data-part=week]").GetAttribute("abbr")));
+        Assert.Contains("tb-calendar__grid--week-numbers", cut.Find("[role=grid]").ClassList);
+    }
+
+    [Fact]
+    public void Render_ShouldShowNoWeekNumbers_WhenShowWeekNumbersIsOff()
+    {
+        var cut = RenderCalendar(June3);
+
+        Assert.Empty(cut.FindAll("[data-part=week], [data-part=week-heading]"));
+        Assert.Equal(7, cut.FindAll("thead th").Count);
+    }
+
+    private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
+
+    private IRenderedComponent<TbCalendar<DateOnly>> RenderWeeks(DateOnly value, CultureInfo culture) =>
+        Render<TbCalendar<DateOnly>>(parameters => parameters.Add(calendar => calendar.Value, value)
+            .Add(calendar => calendar.Label, "Hike date").Add(calendar => calendar.Culture, culture)
+            .Add(calendar => calendar.ShowWeekNumbers, true));
+
+    private static List<string> WeekNumbers(IRenderedComponent<TbCalendar<DateOnly>> cut) =>
+        [.. cut.FindAll("[data-part=week]").Select(week => week.TextContent.Trim())];
+
     private static IElement Cell(IRenderedComponent<TbCalendar<DateOnly>> cut, string date) =>
         cut.Find($"[role=grid] [data-date='{date}']");
 

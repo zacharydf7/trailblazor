@@ -36,6 +36,7 @@ Familiar apps: the start of a calendar event, a ride or shuttle booking
 - [x] A step that isn't a whole number of minutes adds seconds to the time box. `TbDateTimePickerTests.Render_ShouldShowSeconds_WhenTheStepIsUnderAMinute`
 - [x] A static page shows the browser's own date and time box, named by the label, and a static form posts the value with no offset, which Blazor reads in the server's time zone. `TbDateTimePickerTests.Render_ShouldShowTheBrowsersDateAndTimeBox_WhenStatic`, `DateTimePickerTests.ChooseAsync_ShouldPostTheValue_WhenThePickerIsStatic`
 - [x] `Start` and `End` content sit in the box before the date box and after the time box, with `End` after the field's own buttons, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
+- [x] `ShowWeekNumbers` numbers the calendar's weeks, as on the calendar. `TbDateTimePickerTests.ShowWeekNumbers_ShouldShowThemInTheCalendar_WhenSet`
 
 ## Not applicable
 

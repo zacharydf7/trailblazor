@@ -40,6 +40,28 @@ internal static partial class CalendarDates
         }
     }
 
+    // A week's number by the culture's rule, in the Gregorian calendar the grid shows, read from the day that rule
+    // decides by, so a week across New Year has one number in both months: its last day for FirstDay, its fourth for
+    // FirstFourDayWeek (the ISO 8601 number for Monday weeks) and its first for FirstFullWeek.
+    public static int WeekNumber(DateOnly?[] week, CultureInfo culture)
+    {
+        var at = Array.FindIndex(week, date => date is not null);
+        var format = culture.DateTimeFormat;
+        var offset = format.CalendarWeekRule switch
+        {
+            CalendarWeekRule.FirstDay => 6,
+            CalendarWeekRule.FirstFourDayWeek => 3,
+            _ => 0,
+        };
+        // Clamped, so the first week of year 1 and the last of 9999 don't step outside the dates DateOnly holds.
+        var day = DateOnly.FromDayNumber(Math.Clamp(week[at]!.Value.DayNumber - at + offset,
+            DateOnly.MinValue.DayNumber, DateOnly.MaxValue.DayNumber));
+        return GridCalendar.GetWeekOfYear(day.ToDateTime(TimeOnly.MinValue), format.CalendarWeekRule,
+            format.FirstDayOfWeek);
+    }
+
+    private static readonly GregorianCalendar GridCalendar = new();
+
     public static IEnumerable<int> WeekDays(CultureInfo culture) => Enumerable.Range(0, 7)
         .Select(day => ((int)culture.DateTimeFormat.FirstDayOfWeek + day) % 7);
 

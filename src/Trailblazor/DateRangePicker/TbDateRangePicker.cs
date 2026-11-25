@@ -56,6 +56,11 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     [Parameter]
     public Func<TDate, bool>? IsDateDisabled { get; set; }
 
+    /// <summary>Shows each week's number before its days, by the culture's rule, such as ISO 8601 weeks for de-DE.
+    /// </summary>
+    [Parameter]
+    public bool ShowWeekNumbers { get; set; }
+
     /// <summary>How the boxes show and read dates, such as <c>MM/dd/yyyy</c>. Defaults to the culture's short date.
     /// </summary>
     [Parameter]
@@ -472,6 +477,11 @@ public partial class TbDateRangePicker<TDate> : IAsyncDisposable where TDate : s
     private string EndLabel => Labels.End ?? Localizer[TbStrings.DateRangePickerEnd];
     private string OpenLabel => Labels.Open ?? Localizer[TbStrings.DateRangePickerOpen];
     private string PreviousMonthLabel => Labels.PreviousMonth ?? Localizer[TbStrings.DateRangePickerPreviousMonth];
+    private string WeekShortLabel => Labels.WeekShort ?? Localizer[TbStrings.CalendarWeekShort];
+    private string WeekLabel => Labels.Week ?? Localizer[TbStrings.CalendarWeek];
+
+    private string WeekName(int number) =>
+        string.Format(DateCulture, Labels.WeekNumber ?? Localizer[TbStrings.CalendarWeekNumber], number);
     private string NextMonthLabel => Labels.NextMonth ?? Localizer[TbStrings.DateRangePickerNextMonth];
     private string PresetsLabel => Labels.Presets ?? Localizer[TbStrings.DateRangePickerPresets];
     private string ClearLabel => Labels.Clear ?? Localizer[TbStrings.DateRangePickerClear];

@@ -137,6 +137,10 @@
             <table role="grid" aria-labelledby="@titleId" class="tb-date-range__grid">
                 <thead>
                     <tr>
+                        @if (ShowWeekNumbers)
+                        {
+                            <th scope="col" abbr="@WeekLabel" data-part="week-heading">@WeekShortLabel</th>
+                        }
                         @foreach (var day in WeekDays(DateCulture))
                         {
                             <th scope="col" abbr="@DateCulture.DateTimeFormat.DayNames[day]">
@@ -149,6 +153,13 @@
                     @foreach (var week in Weeks(month, DateCulture))
                     {
                         <tr>
+                            @if (ShowWeekNumbers)
+                            {
+                                var number = WeekNumber(week, DateCulture);
+                                <th scope="row" abbr="@WeekName(number)" data-part="week">
+                                    @number.ToString(DateCulture)
+                                </th>
+                            }
                             @foreach (var day in week)
                             {
                                 @if (day is { } date)

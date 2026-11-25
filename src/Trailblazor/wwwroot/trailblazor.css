@@ -10789,11 +10789,16 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         cursor: pointer;
     }
 
-    /* Months and years share the width of a week, four to a row. */
+    /* Months and years share the width of a week, with its number when shown, four to a row. */
     .tb-calendar__grid--months .tb-calendar__cell,
     .tb-calendar__grid--years .tb-calendar__cell {
         width: calc(7 * (var(--tb-control-height) - 0.25rem) / 4);
         min-height: calc(1.5 * var(--tb-control-height));
+    }
+
+    .tb-calendar__grid--week-numbers.tb-calendar__grid--months .tb-calendar__cell,
+    .tb-calendar__grid--week-numbers.tb-calendar__grid--years .tb-calendar__cell {
+        width: calc(8 * (var(--tb-control-height) - 0.25rem) / 4);
     }
 
     .tb-calendar__cell:hover:not([aria-disabled="true"], :disabled, .tb-calendar__cell--selected) {

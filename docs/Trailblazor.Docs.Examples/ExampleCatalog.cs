@@ -9319,6 +9319,13 @@ public static class ExampleCatalog
                     + "dot for a day with events. Give it words for screen readers, which hear them after the date. "
                     + "`@bind-Month` holds the month that's shown, so your app can load what its days show.",
                     typeof(CalendarDayTemplateExample)),
+                new("week-numbers", "Week numbers", "`ShowWeekNumbers` shows each week's number before its days, "
+                    + "by the `Culture`'s rule, in the Gregorian dates the grid shows. Here it is en-GB, whose weeks "
+                    + "follow ISO 8601, so the week with January 1, 2027 is 2026's 53rd; in en-US it is week 1, in "
+                    + "December's view too. The [date picker](components/date-picker), the "
+                    + "[date-time picker](components/date-time-picker) and the "
+                    + "[date range picker](components/date-range-picker) take it too.",
+                    typeof(CalendarWeekNumbersExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the date from changing while "
                     + "the months can still be browsed. `Disabled` turns every button off and takes the calendar out "
                     + "of the tab order.", typeof(CalendarStatesExample)),
@@ -9345,6 +9352,9 @@ public static class ExampleCatalog
                     + "such as \"Hike date November 2026\".",
                 "Each day is named by its full date. The title button is named by the title and what it shows next, "
                     + "such as \"November 2026, choose a month\".",
+                "With `ShowWeekNumbers`, the week numbers are row headers under a \"Wk\" column heading. Screen "
+                    + "readers can say the column as \"Week\" and each number as \"Week 12\", which "
+                    + "`Labels.WeekShort`, `Week` and `WeekNumber` word.",
             ],
             Announcements =
             [
@@ -9385,6 +9395,8 @@ public static class ExampleCatalog
                 new("grid", "The grid of days, months or years; `data-view` says which."),
                 new("day", "One day."),
                 new("day-content", "The content `DayTemplate` adds to a day."),
+                new("week-heading", "The heading of the week numbers, with `ShowWeekNumbers`."),
+                new("week", "A week's number, with `ShowWeekNumbers`."),
                 new("month", "One month, in the months view."),
                 new("year", "One year, in the years view."),
                 new("input", "The browser's date box."),
@@ -9426,7 +9438,8 @@ public static class ExampleCatalog
                     + "calendar, which opens on the chosen date. A typed date follows the field's format but may leave "
                     + "out leading zeros or give the year in two digits. `TDate` can be `DateOnly` or "
                     + "`DateTime`; time zones are never converted, a date left alone keeps its time, and a newly typed "
-                    + "or picked date is midnight.",
+                    + "or picked date is midnight. `ShowWeekNumbers` numbers the calendar's weeks, as on the "
+                    + "[calendar](components/calendar#week-numbers).",
                     typeof(DatePickerExample)),
                 new("limits", "Dates that can't be chosen", "`Min`, `Max` and `IsDateDisabled` set which dates can be "
                     + "chosen. Typing any other date shows a message, and the calendar marks those days as "
@@ -9610,7 +9623,9 @@ public static class ExampleCatalog
                     + "or give the year in two digits. The time is set in the browser's own time box, shown in the "
                     + "user's language. A date chosen with no time is midnight, and a time set first waits for a date. "
                     + "`TDateTime` can be `DateTime`, shown as written, or `DateTimeOffset`, shown in the app's "
-                    + "[time zone](guides/time-zones); a date and time the user chooses takes that zone's offset.",
+                    + "[time zone](guides/time-zones); a date and time the user chooses takes that zone's offset. "
+                    + "`ShowWeekNumbers` numbers the calendar's weeks, as on the "
+                    + "[calendar](components/calendar#week-numbers).",
                     typeof(DateTimePickerExample)),
                 new("limits", "Earliest, latest and steps", "`Min` and `Max` set the earliest and latest moments; a "
                     + "value outside them shows a message, and the calendar marks the days outside them as "
@@ -9740,7 +9755,8 @@ public static class ExampleCatalog
                     + "typed dates may also leave out leading zeros or give the year in two digits. "
                     + "`Culture` sets the month and day names, the first day of the week, and the format when `Format` "
                     + "isn't set. It defaults to the current culture. Dates stay Gregorian, like the calendar's grid, "
-                    + "even for a culture with its own calendar, such as th-TH.",
+                    + "even for a culture with its own calendar, such as th-TH. `ShowWeekNumbers` numbers each week by "
+                    + "the culture's rule, as on the [calendar](components/calendar#week-numbers).",
                     typeof(DateRangePickerFormatExample)),
                 new("placeholders", "Placeholders", "Each empty box shows the format. `StartPlaceholder` and "
                     + "`EndPlaceholder` show other words instead, so give the format in `HelperText`.",
@@ -9850,6 +9866,8 @@ public static class ExampleCatalog
                 new("next-month", "The button that shows the month after."),
                 new("month", "One month of days."),
                 new("day", "One day."),
+                new("week-heading", "The heading of a month's week numbers, with `ShowWeekNumbers`."),
+                new("week", "A week's number, with `ShowWeekNumbers`."),
             ],
             Scenario = new("range-and-value", "it chooses the trip's first and last days and checks the range the "
                 + "field holds and what the app shows."),

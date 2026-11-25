@@ -228,6 +228,15 @@ public class TbDatePickerTests : BunitContext
         Assert.False(cut.FindComponent<TbPopover>().Instance.Open);
     }
 
+    [Fact]
+    public void ShowWeekNumbers_ShouldShowThemInTheCalendar_WhenSet()
+    {
+        var cut = RenderPicker(new DateOnly(2026, 6, 3),
+            parameters => parameters.Add(picker => picker.ShowWeekNumbers, true));
+
+        Assert.Equal(5, cut.FindAll("[role=grid] [data-part=week]").Count);
+    }
+
     private IRenderedComponent<TbDatePicker<DateOnly>> RenderPicker(DateOnly? value,
         Action<ComponentParameterCollectionBuilder<TbDatePicker<DateOnly>>>? configure = null) =>
         Render<TbDatePicker<DateOnly>>(parameters =>

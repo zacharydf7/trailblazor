@@ -287,6 +287,17 @@ public static class TbStrings
     /// decade's years; {0} is the year.</summary>
     public const string CalendarChooseYear = "Calendar.ChooseYear";
 
+    /// <summary>"Wk": heads a calendar's column of week numbers.</summary>
+    public const string CalendarWeekShort = "Calendar.WeekShort";
+
+    /// <summary>"Week": the full name of a calendar's column of week numbers, which screen readers can say in place of
+    /// its heading.</summary>
+    public const string CalendarWeek = "Calendar.Week";
+
+    /// <summary>"Week {0}": the full name of a week's row in a calendar, which screen readers can say in place of its
+    /// number; {0} is the number.</summary>
+    public const string CalendarWeekNumber = "Calendar.WeekNumber";
+
     /// <summary>"Choose a date": names a date picker's button that opens the calendar, and the calendar.</summary>
     public const string DatePickerOpen = "DatePicker.Open";
 
@@ -2023,6 +2034,9 @@ public static class TbStrings
         [CalendarNextDecade] = "Next decade",
         [CalendarChooseMonth] = "{0}, choose a month",
         [CalendarChooseYear] = "{0}, choose a year",
+        [CalendarWeekShort] = "Wk",
+        [CalendarWeek] = "Week",
+        [CalendarWeekNumber] = "Week {0}",
         [DatePickerOpen] = "Choose a date",
         [DatePickerClear] = "Clear",
         [DatePickerBadDate] = "Enter the date as {0}.",

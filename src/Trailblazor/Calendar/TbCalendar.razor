@@ -43,11 +43,16 @@
                aria-describedby="@DescribedWithRequired(InputDescribedBy)"
                aria-readonly="@(ReadOnly ? "true" : null)" aria-invalid="@(ShowsInvalid ? "true" : null)"
                aria-disabled="@(Disabled ? "true" : null)"
-               class="@ClassNames.Join("tb-calendar__grid", ClassNames.Modifier("tb-calendar__grid", _view), Classes?.Input)">
+               class="@ClassNames.Join("tb-calendar__grid", ClassNames.Modifier("tb-calendar__grid", _view),
+                          ShowWeekNumbers ? "tb-calendar__grid--week-numbers" : null, Classes?.Input)">
             @if (_view == View.Days)
             {
                 <thead>
                     <tr>
+                        @if (ShowWeekNumbers)
+                        {
+                            <th scope="col" abbr="@WeekLabel" data-part="week-heading">@WeekShortLabel</th>
+                        }
                         @foreach (var day in WeekDays(DateCulture))
                         {
                             <th scope="col" abbr="@DateCulture.DateTimeFormat.DayNames[day]">
@@ -60,6 +65,13 @@
                     @foreach (var week in Weeks(FirstOfMonth(_focus), DateCulture))
                     {
                         <tr>
+                            @if (ShowWeekNumbers)
+                            {
+                                var number = WeekNumber(week, DateCulture);
+                                <th scope="row" abbr="@WeekName(number)" data-part="week">
+                                    @number.ToString(DateCulture)
+                                </th>
+                            }
                             @foreach (var day in week)
                             {
                                 @if (day is { } date)
