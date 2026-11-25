@@ -15,6 +15,20 @@ public class TooltipTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Tooltip_ShouldTakeBackAndGiveBackItsDescription_WhenDescribesTurnsOffAndOn(string browser)
+    {
+        var page = await OpenAsync(browser, "/tooltip-describes");
+        var copy = page.GetByRole(AriaRole.Button, new() { Name = "Copy" });
+        await Expect(copy).ToHaveAccessibleDescriptionAsync("Saves a copy to your trips");
+
+        await copy.ClickAsync();
+        await Expect(copy).ToHaveAccessibleDescriptionAsync("");
+        await copy.ClickAsync();
+
+        await Expect(copy).ToHaveAccessibleDescriptionAsync("Saves a copy to your trips");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Tooltip_ShouldShowAndDescribeItsTrigger_WhenThePageIsStatic(string browser)
     {
         var page = await OpenStaticAsync(browser, "/static-tooltip");

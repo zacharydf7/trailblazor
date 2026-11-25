@@ -35,8 +35,9 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 
 ## Touch
 
-- [x] A touch neither starts a tooltip's show delay nor hides a tooltip when it leaves the trigger, so a tap on a button shows no tooltip, and a text field's tooltip stays when the finger lifts. `TooltipTests.Tooltip_ShouldNotStartItsWait_WhenATouchArrives`, `TooltipTests.Tooltip_ShouldStay_WhenATouchLeavesItsTrigger`
+- [x] A touch neither starts a tooltip's show delay nor hides a tooltip when it leaves the trigger, so a tap on an enabled button shows no tooltip, and a text field's tooltip stays when the finger lifts. `TooltipTests.Tooltip_ShouldNotStartItsWait_WhenATouchArrives`, `TooltipTests.Tooltip_ShouldStay_WhenATouchLeavesItsTrigger`
 - [x] A tap into a text field shows it, since a text field's focus counts as keyboard focus. `tooltip.js`
+- [x] A tap on a button marked `aria-disabled` shows its tooltip, since the tap does nothing else, and a tap elsewhere hides it. `ButtonTests.Button_ShouldSayWhyItIsOff_WhenHoveredFocusedOrTapped`
 
 ## Focus
 
@@ -46,6 +47,7 @@ Familiar apps: Windows and macOS toolbar tips, VS Code's toolbar, a browser's `t
 - [x] The tooltip's text is the trigger's description. `TooltipTests.Tooltip_ShouldDescribeTheTriggerWithItsContent_WhenGivenRichContent`
 - [x] The description comes back when the trigger re-renders. `TooltipTests.Tooltip_ShouldStillDescribeTheTrigger_WhenTheTriggerRewritesItsDescription`
 - [x] A tooltip turned off neither shows nor describes. `TooltipTests.Tooltip_ShouldNeitherShowNorDescribe_WhileItIsTurnedOff`
+- [x] With `Describes` turned off, the tooltip takes its description back from the trigger, and gives it back when turned on again. `TooltipTests.Tooltip_ShouldTakeBackAndGiveBackItsDescription_WhenDescribesTurnsOffAndOn`
 - [x] A tooltip on a static page shows and describes its trigger. `TooltipTests.Tooltip_ShouldShowAndDescribeItsTrigger_WhenThePageIsStatic`
 
 ## Not applicable

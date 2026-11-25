@@ -3,7 +3,8 @@
 
 @if (ShowTooltip)
 {
-    <TbTooltip Text="@AriaLabel">@Button</TbTooltip>
+    @* While the button shows its reason, its own tooltip holds the name too. *@
+    <TbTooltip Text="@AriaLabel" Disabled="TipsReason">@Button</TbTooltip>
 }
 else
 {
@@ -19,6 +20,8 @@ else
     /// </summary>
     [Parameter, EditorRequired]
     public string AriaLabel { get; set; } = "";
+
+    private protected override string? TipName => ShowTooltip ? AriaLabel : null;
 
     /// <summary>Shows <see cref="AriaLabel"/> in a tooltip on hover and keyboard focus, so people who see the icon learn its
     /// name too. Screen readers hear the name once, as the button's label.</summary>

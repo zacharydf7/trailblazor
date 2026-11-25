@@ -15,6 +15,7 @@ Familiar apps: Windows and macOS menus, VS Code's and Google Docs' menus
 - [x] Space chooses the item too. `MenuTests.Menu_ShouldChooseTheItem_WhenSpaceIsPressed`
 - [x] Enter and Space follow a link item. `MenuTests.LinkItem_ShouldFollowItsAddress_WhenChosenWithEnterOrSpace`
 - [x] A disabled item can be reached, and Enter or Space on it does nothing. `MenuTests.Menu_ShouldFocusADisabledItemButNotChooseIt_WhenEnterOrSpaceIsPressed`
+- [x] A disabled item's `DisabledReason` takes its description's place, shown and read after its text; an enabled item keeps its own description. `DisabledReasonTests.Render_ShouldShowTheReasonAsTheItemsDescription_WhenAMenuItemIsDisabled`, `DisabledReasonTests.Render_ShouldKeepTheItemsOwnDescription_WhenAMenuItemIsEnabled`
 - [x] Right opens a submenu on its first item, and Left closes it back to its item. `MenuTests.SubMenu_ShouldKeepTheKeysWithinEachList_WhenOpenedAndClosedWithTheArrowKeys`
 - [x] In right-to-left text, Left opens a submenu and Right closes it. `MenuTests.SubMenu_ShouldOpenWithTheLeftArrow_WhenThePageIsRightToLeft`
 - [x] Escape closes one level at a time, and each level returns focus to what opened it. `MenuTests.SubMenu_ShouldCloseOneLevelAtATime_WhenEscapeIsPressed`

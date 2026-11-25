@@ -64,6 +64,15 @@ else
     [Parameter]
     public bool Disabled { get; set; }
 
+    /// <summary>Why the item is off, shown in place of its <see cref="Description"/> line and read as its
+    /// description. It applies only while the item is <see cref="Disabled"/>, so it can stay set when the item turns
+    /// on.</summary>
+    [Parameter]
+    public string? DisabledReason { get; set; }
+
+    private string? ShownDescription => Disabled && !string.IsNullOrWhiteSpace(DisabledReason) ? DisabledReason
+        : Description;
+
     /// <summary>Makes the item a link to this address, followed when the item is chosen.</summary>
     [Parameter]
     public string? Href { get; set; }
@@ -96,7 +105,8 @@ else
     private readonly string _descriptionId = $"tb-menu-item-{Guid.NewGuid():N}-description";
 
     // Each keeps what the consumer set and adds the item's own.
-    private object? DescribedBy => Description is null ? AdditionalAttributes?.GetValueOrDefault("aria-describedby")
+    private object? DescribedBy => ShownDescription is null
+        ? AdditionalAttributes?.GetValueOrDefault("aria-describedby")
         : $"{AdditionalAttributes?.GetValueOrDefault("aria-describedby")} {_descriptionId}".TrimStart();
 
     private object? KeyShortcuts => Shortcut is null ? AdditionalAttributes?.GetValueOrDefault("aria-keyshortcuts")
@@ -117,7 +127,7 @@ else
         {
             <TbIcon Icon="icon" Size="Size.Small" Class="@Classes?.Icon" data-part="icon" />
         }
-        @if (Description is null)
+        @if (ShownDescription is null)
         {
             <span data-part="label" class="@Classes?.Label">@ChildContent</span>
         }
@@ -127,7 +137,7 @@ else
             <span class="tb-menu__text">
                 <span data-part="label" class="@Classes?.Label">@ChildContent</span>
                 <span id="@_descriptionId" data-part="description" class="tb-menu__description"
-                      aria-hidden="true">@Description</span>
+                      aria-hidden="true">@ShownDescription</span>
             </span>
         }
         @if (End is not null)

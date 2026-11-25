@@ -10,7 +10,7 @@ Familiar apps: the ribbon in Word and Excel, the command bar in File Explorer
 - [x] Tab moves from the selected tab into its commands, which are one tab stop, and then out of the ribbon. The panel around the commands is no stop of its own. `Start` content comes before the tabs, and `End` content and then the collapse button come between the tabs and the commands. `RibbonTests.Ribbon_ShouldBeTwoTabStops_WhenTabbedThrough`, `RibbonTabsOnlyTests.CollapsedRibbon_ShouldShowTheCommandsAndHideThemAgain_WhenEnterThenEscapeArePressed`, `TbRibbonTests.Render_ShouldLeaveThePanelOutOfTheTabOrder_WhenCalled`, `TbRibbonTests.Start_ShouldComeBeforeTheTabsAndEndBeforeTheCollapseButton_WhenGiven`
 - [x] Shift+Tab comes back to the control that last had the focus, and from there to the selected tab. `RibbonTests.Ribbon_ShouldBeTwoTabStops_WhenTabbedThrough`
 - [x] Left and Right move across every control of the tab's groups, from one group into the next, and Home and End go to the tab's first and last control. `RibbonTests.Ribbon_ShouldMoveAcrossItsGroupsWithTheArrows_WhenACommandHasFocus`
-- [x] The arrows reach a select and a menu's button, and pass over a button that is turned off. `RibbonTests.Ribbon_ShouldMoveAcrossItsGroupsWithTheArrows_WhenACommandHasFocus`, `RibbonTests.Ribbon_ShouldShowAnotherTabsCommands_WhenTheArrowKeysMoveAlongItsTabs`
+- [x] The arrows reach a select and a menu's button, and pass over a button that is turned off unless it has a `DisabledReason`. `RibbonTests.Ribbon_ShouldMoveAcrossItsGroupsWithTheArrows_WhenACommandHasFocus`, `RibbonTests.Ribbon_ShouldShowAnotherTabsCommands_WhenTheArrowKeysMoveAlongItsTabs`, `roving-focus.js`
 - [x] The arrows wrap at the ends and swap in right-to-left text, and a text field, select or editable area keeps its own arrows, Home and End. `roving-focus.js`
 - [x] The commands of a tab shown later get their one tab stop and their keys once it shows. `RibbonTests.Ribbon_ShouldShowAnotherTabsCommands_WhenTheArrowKeysMoveAlongItsTabs`
 - [x] Enter and Space press a button, and turn a toggle button on or off. `TbButtonBase.razor`
@@ -60,6 +60,7 @@ Familiar apps: the ribbon in Word and Excel, the command bar in File Explorer
 
 - [x] A tap presses a button or selects a tab through the same click a mouse sends, and a swipe scrolls a row that is too narrow even for its groups' buttons. `TbButtonBase.razor`, `trailblazor.css`
 - [x] Each button is at least 24px high and wide. `RibbonTests.Group_ShouldStackItsSmallControlsBesideALargeButton_WhenItHoldsBoth`
+- [x] A disabled button with a `DisabledReason`, with text or only an icon, is described by the reason, as a button's is. `DisabledReasonTests.Render_ShouldDescribeTheRibbonButtonWithItsReason_WhenDisabled`
 
 ## Focus
 

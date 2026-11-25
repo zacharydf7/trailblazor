@@ -33,8 +33,10 @@ public class ButtonExampleTests : DocsTest
         var cut = Render<ButtonDisabledExample>();
 
         Assert.True(Button(cut, "Disabled").HasAttribute("disabled"));
-        Assert.False(Button(cut, "Publish").HasAttribute("disabled"));
-        Assert.Equal("true", Button(cut, "Publish").GetAttribute("aria-disabled"));
+        var publish = Button(cut, "Publish");
+        Assert.Equal((false, "true"), (publish.HasAttribute("disabled"), publish.GetAttribute("aria-disabled")));
+        var reason = cut.Find($"#{publish.GetAttribute("aria-describedby")}");
+        Assert.Equal("Add a title before publishing", reason.TextContent);
     }
 
     [Fact]

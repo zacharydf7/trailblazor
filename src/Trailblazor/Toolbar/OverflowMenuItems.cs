@@ -46,6 +46,7 @@ internal sealed class OverflowMenuItems : ComponentBase
             builder.AddComponentParameter(4, nameof(TbMenuItem.TelemetryName), button.TelemetryName);
             builder.AddComponentParameter(5, nameof(TbMenuItem.ChildContent),
                 (RenderFragment)(content => content.AddContent(0, button.Name)));
+            builder.AddComponentParameter(6, nameof(TbMenuItem.DisabledReason), button.DisabledReason);
             builder.CloseComponent();
         }
     }

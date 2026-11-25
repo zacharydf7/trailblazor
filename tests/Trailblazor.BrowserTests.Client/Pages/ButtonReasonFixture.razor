@@ -1,0 +1,28 @@
+@page "/button-reason"
+
+@* Buttons that are off and say why, beside ones that are on. *@
+<TbButton Disabled DisabledReason="Name the trip first.">Publish</TbButton>
+<TbButton>Save draft</TbButton>
+<TbTooltip Text="Syncing is paused"><TbButton Disabled FocusableWhenDisabled>Sync</TbButton></TbTooltip>
+
+@* Buttons that turn themselves off once used. *@
+<TbButton Disabled="_sent" DisabledReason="Already sent." OnClick="() => _sent = true">Send invite</TbButton>
+<TbButton Disabled="_why is not null" DisabledReason="@_why" OnClick='() => _why = "Already saved."'>
+    Save trip
+</TbButton>
+<TbToolbar AriaLabel="Trip">
+    <TbToolbarButton Icon="BuiltInIcons.Minus" AriaLabel="Undo" Disabled="_undone" DisabledReason="Nothing to undo."
+                     OnClick="() => _undone = true" />
+</TbToolbar>
+
+@* Buttons whose layout needs them to be the box themselves. *@
+<div style="width: 20rem">
+    <TbButton FullWidth Disabled DisabledReason="Pick a date first.">Book</TbButton>
+</div>
+<TbFab Icon="BuiltInIcons.Minus" Label="Add a stop" Disabled DisabledReason="The trip is full." />
+
+@code {
+    private bool _sent;
+    private bool _undone;
+    private string? _why;
+}

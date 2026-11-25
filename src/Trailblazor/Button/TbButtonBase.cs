@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,8 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     private ITimer? _cooledTimer;
     private ITimer? _cooldownTimer;
     private readonly string _cooldownId = $"tb-button-cooldown-{Guid.NewGuid():N}";
+    private readonly string _reasonId = $"tb-button-reason-{Guid.NewGuid():N}";
+    private readonly string _reasonTipId = $"tb-button-reason-tip-{Guid.NewGuid():N}";
 
     /// <summary>How strongly the button is drawn.</summary>
     [Parameter]
@@ -49,6 +52,13 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     /// and a keyboard user can still find it and learn why it is off.</summary>
     [Parameter]
     public bool FocusableWhenDisabled { get; set; }
+
+    /// <summary>Why the button is off, shown in a tooltip on hover, keyboard focus and a press, and read as its
+    /// description. It applies only while the button is off, so it can stay set when the button turns on. While it
+    /// applies, the button stays a tab stop, as with <see cref="FocusableWhenDisabled"/>, and a press only shows the
+    /// reason.</summary>
+    [Parameter]
+    public string? DisabledReason { get; set; }
 
     /// <summary>Shows a busy spinner and ignores clicks, but keeps the button focusable so focus isn't lost while
     /// the work runs. A submit button shows the same while the <see cref="TbForm"/> it submits handles a submit: the
@@ -152,8 +162,28 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
         : null;
 
 
-    private string? DescribedBy =>
-        ClassNames.Joined([Theirs("aria-describedby") as string, Cooling ? _cooldownId : null], " ");
+    private string? DescribedBy => ClassNames.Joined([Theirs("aria-describedby") as string,
+        Cooling ? _cooldownId : null, ShowsReason ? _reasonId : null], " ");
+
+    // The reason shows while the button is off, and keeps the button a tab stop so the reason can be reached.
+    private protected bool ShowsReason => Off && !string.IsNullOrWhiteSpace(DisabledReason);
+
+    private bool KeepsFocus => FocusableWhenDisabled || ShowsReason;
+
+    [CascadingParameter]
+    private ReasonTooltip? OuterReasonTooltip { get; set; }
+
+    // The button's own tooltip shows the reason, unless a tooltip around it already does.
+    private protected bool TipsReason => ShowsReason && OuterReasonTooltip is null;
+
+    // The name the reason's tooltip shows above the reason, for a button whose name shows only in a tooltip.
+    private protected virtual string? TipName => null;
+
+    // A button can render without AddTrailblazor, so its reason's tooltip then falls back to the default delays.
+    private TooltipSettings Tooltips => Services.GetService<IOptions<TrailblazorOptions>>()?.Value.Tooltips ?? new();
+
+    private static string Milliseconds(TimeSpan delay) =>
+        delay.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
 
     private TrailblazorOptions Options => Services.GetRequiredService<IOptions<TrailblazorOptions>>().Value;
 
@@ -175,7 +205,7 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     private bool Toggles => PressedChanged.HasDelegate;
 
     // Still focusable, but nothing happens when it is pressed.
-    private bool Inert => Busy || Cooling || (Off && FocusableWhenDisabled);
+    private bool Inert => Busy || Cooling || (Off && KeepsFocus);
 
     private int? Clicks => RendererInfo.IsInteractive ? _clicks : null;
 
@@ -184,7 +214,7 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     private string RootClass(string? extra) => ClassNames.Join("tb-button",
         ClassNames.Modifier("tb-button", ShownVariant), ClassNames.Modifier("tb-button", ShownTone),
         ClassNames.Modifier("tb-button", ShownSize), PressedLook == PressedLook.Quiet ? "tb-button--quiet" : null,
-        extra, Class);
+        TipsReason ? "tb-button--reason" : null, extra, Class);
 
     private object? Theirs(string attribute) => AdditionalAttributes?.GetValueOrDefault(attribute);
 
@@ -265,6 +295,12 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     {
         if (Off || Cooling)
         {
+            if (ShowsReason)
+            {
+                // How often people press a button that's off is worth knowing.
+                Telemetry.Used(TelemetryName, "pressed_off");
+            }
+
             return;
         }
 

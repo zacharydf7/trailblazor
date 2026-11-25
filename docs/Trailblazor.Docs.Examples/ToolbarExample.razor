@@ -15,6 +15,8 @@
         <TbToolbarSeparator />
         <TbToolbarButton AriaLabel="Mark as done" Icon="ExampleIcons.Check" OnClick="@(() => _last = "Mark as done")" />
         <TbToolbarButton AriaLabel="Delete note" Icon="ExampleIcons.Trash" OnClick="@(() => _last = "Delete note")" />
+        <TbToolbarButton AriaLabel="Share notes" Icon="ExampleIcons.Trail" Disabled
+                         DisabledReason="Mark a note as done first" />
     </TbToolbar>
 </div>
 <TbText>Last action: @(_last ?? "none")</TbText>

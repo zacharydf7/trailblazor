@@ -1,0 +1,10 @@
+@page "/tooltip-describes"
+
+@* A tooltip the app stops and starts describing its trigger. *@
+<TbTooltip Text="Saves a copy to your trips" Describes="_describes">
+    <TbButton OnClick="() => _describes = !_describes">Copy</TbButton>
+</TbTooltip>
+
+@code {
+    private bool _describes = true;
+}

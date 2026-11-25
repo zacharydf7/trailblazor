@@ -1,0 +1,8 @@
+@page "/static-button-reason"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Rendered as static SSR: a form whose submit button is off with a reason, so it stays focusable but mustn't post. *@
+<form method="post">
+    <input name="note" aria-label="Note" />
+    <TbButton Type="ButtonType.Submit" Disabled DisabledReason="Fill in the note first.">Send</TbButton>
+</form>

@@ -5,17 +5,21 @@
 @* data-toolbar-item marks what the toolbar hides when the button moves into its overflow menu. *@
 @if (Icon is Icon icon)
 {
-    <TbTooltip Text="@AriaLabel" Placement="Placement.Bottom" data-toolbar-item="@Id">
-        <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@AriaLabel" Variant="Variant"
-                      Size="ShownSize" Disabled="Disabled" BusyWhileRunning="BusyWhileRunning" OnClick="OnClick"
-                      TelemetryName="@TelemetryName" Class="@Class" Style="@Style" />
+    <TbTooltip Text="@AriaLabel" Placement="Placement.Bottom" data-toolbar-item="@Id" Describes="!ShowsReason"
+               TextContent="@(ShowsReason ? TbButtonBase.ReasonLines(AriaLabel, DisabledReason) : null)">
+        <CascadingValue Value="_reasonTooltip" IsFixed="true">
+            <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@AriaLabel" Variant="Variant"
+                          Size="ShownSize" Disabled="Disabled" DisabledReason="@DisabledReason"
+                          BusyWhileRunning="BusyWhileRunning" OnClick="OnClick" TelemetryName="@TelemetryName"
+                          Class="@Class" Style="@Style" />
+        </CascadingValue>
     </TbTooltip>
 }
 else
 {
     <TbButton @attributes="AdditionalAttributes" Variant="Variant" Size="ShownSize" Disabled="Disabled"
-              BusyWhileRunning="BusyWhileRunning" OnClick="OnClick" TelemetryName="@TelemetryName"
-              data-toolbar-item="@Id" Class="@Class" Style="@Style">
+              DisabledReason="@DisabledReason" BusyWhileRunning="BusyWhileRunning" OnClick="OnClick"
+              TelemetryName="@TelemetryName" data-toolbar-item="@Id" Class="@Class" Style="@Style">
         @Label
     </TbButton>
 }
@@ -49,6 +53,15 @@ else
     /// <summary>Turns the button, and its item in the overflow menu, off.</summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>Why the button is off, shown in a tooltip on hover, keyboard focus and a press, and read as its
+    /// description, as a <see cref="TbButton"/>'s is. It applies only while the button is off.</summary>
+    [Parameter]
+    public string? DisabledReason { get; set; }
+
+    private readonly ReasonTooltip _reasonTooltip = new();
+
+    private bool ShowsReason => Disabled && !string.IsNullOrWhiteSpace(DisabledReason);
 
     /// <summary>Whether the button counts as busy while the task its <c>OnClick</c> returned is still running, as a
     /// <see cref="TbButton"/> does. Defaults to the app's <see cref="ButtonSettings.BusyWhileRunning"/>.</summary>

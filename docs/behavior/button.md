@@ -49,7 +49,10 @@ Familiar apps: the buttons in any native dialog, Gmail's and GitHub's action but
 - [x] A mouse click doesn't show the ring. `trailblazor.css`
 - [x] A disabled button is out of the tab order. `TbButtonTests.Click_ShouldNotInvokeOnClick_WhenDisabled`
 - [x] A focusable disabled button stays in the tab order and shows its tooltip. `ButtonTests.Button_ShouldStayInTheTabOrderAndShowItsTooltip_WhenDisabledButFocusable`
+- [x] A button that turns itself off with a reason keeps focus, in a toolbar too and when the reason arrives with `Disabled`, and keeps its own place in the layout: full width, or fixed for a floating button, whose tooltip sits next to it. `ButtonTests.Button_ShouldKeepFocus_WhenItTurnsItselfOffWithAReason`, `ButtonTests.Button_ShouldKeepItsOwnPlaceAndTooltip_WhenOffWithAReason`
+- [x] On a static page, a submit button that's off with a reason doesn't post its form, from a click or from Enter in a field. `ButtonTests.Button_ShouldNotPostItsForm_WhenOffWithAReasonOnAStaticPage`
 - [x] A focusable disabled link stays in the tab order. `TbButtonTests.Render_ShouldKeepTheLinkFocusable_WhenDisabledButFocusable`
+- [x] A disabled button with a `DisabledReason` stays in the tab order and is described by the reason, which a tooltip shows on hover, keyboard focus and a tap. A press does nothing but count `pressed_off`, and an enabled button ignores the reason. `ButtonTests.Button_ShouldSayWhyItIsOff_WhenHoveredFocusedOrTapped`, `DisabledReasonTests.Render_ShouldDescribeTheButtonWithItsReason_WhenDisabled`, `DisabledReasonTests.Click_ShouldStayFocusableAndCountThePress_WhenDisabledWithAReason`, `DisabledReasonTests.Render_ShouldIgnoreTheReason_WhenEnabled`
 - [x] A loading button keeps focus while the work runs. `TbButtonTests.Click_ShouldNotInvokeOnClickButStayFocusable_WhenLoading`
 - [x] `FocusAsync` moves focus to it. `TbButtonTests.FocusAsync_ShouldFocusTheButton_WhenCalled`
 

@@ -293,9 +293,11 @@ public static class ExampleCatalog
             + "renders interactively, and `trailblazor.control.used` for each click it acts on, as a button or as a "
             + $"link. Both are tagged with the name and `trailblazor.component` `{component}`.",
         $"A disabled button{(component == "TbButton" ? ", or one cooling down," : "")} counts as shown but not "
-            + "used. A click it ignores because it is loading, its form is submitting, or its last click is still "
-            + "running counts as `trailblazor.control.used` with the action `ignored_busy`; many of those point to a "
-            + "slow handler. Without a `TelemetryName` it counts nothing.",
+            + "used, except that a press on a disabled one with a `DisabledReason` counts as "
+            + "`trailblazor.control.used` with the action `pressed_off`, which shows how often people try it. A "
+            + "click it ignores because it is loading, its form is submitting, or its last click is still running "
+            + "counts as `trailblazor.control.used` with the action `ignored_busy`; many of those point to a slow "
+            + "handler. Without a `TelemetryName` it counts nothing.",
     ];
 
     private const string InlineClickNote = "Blazor matches parameter names regardless of case, so `onclick` binds to "
@@ -1616,8 +1618,13 @@ public static class ExampleCatalog
                     + "there's no handler to wait for, it does the same while its post is on its way, for up to "
                     + "10 seconds.",
                     typeof(ButtonLoadingExample)),
-                new("disabled", "Disabled", "`Disabled` turns the button off and takes it out of the tab order. With "
-                    + "`FocusableWhenDisabled` it stays a tab stop, so its tooltip can say why it is off.",
+                new("disabled", "Disabled", "`Disabled` turns the button off and takes it out of the tab order. "
+                    + "`DisabledReason` says why: the button stays a tab stop, a tooltip shows the reason on hover, "
+                    + "keyboard focus and a tap, and screen readers hear it as the button's description. Pressing it "
+                    + "only shows the reason. The reason applies only while the button is off, through `Disabled`, a "
+                    + "disabled button group, or a disabled form for a submit or reset button, so it can stay set "
+                    + "while the button is on. "
+                    + "`FocusableWhenDisabled` keeps a disabled button a tab stop without a reason.",
                     typeof(ButtonDisabledExample)),
                 new("links", "Links", "`Href` renders a link drawn as a button, so it can open in a new tab. A "
                     + "disabled one has no `href`, so it can't be followed.", typeof(ButtonLinkExample)),
@@ -1656,12 +1663,15 @@ public static class ExampleCatalog
                 "During a `Cooldown`, its description says how many seconds are left, such as \"Available again "
                     + "in 30 seconds\", and is read out once as it starts; the seconds shown after its text are "
                     + "hidden from screen readers.",
+                "With a `DisabledReason`, a disabled button's reason is read as its description after its name.",
                 "With `@bind-Pressed`, its state is announced through `aria-pressed`.",
             ],
             Accessibility =
             [
-                "A busy button, one cooling down, or a `Disabled` one with `FocusableWhenDisabled` is marked "
-                    + "`aria-disabled` and stays a tab stop.",
+                "A busy button, one cooling down, or a `Disabled` one with `FocusableWhenDisabled` or a "
+                    + "`DisabledReason` is marked `aria-disabled` and stays a tab stop.",
+                "A `DisabledReason` is the button's description, not part of its name. Its tooltip is hidden from "
+                    + "screen readers, so they don't hear the reason twice.",
                 "With `PressedLook.Quiet`, the bar under a pressed toggle stands out by at least 3:1 from its tint, "
                     + "the page, and a hovered or selected row, in every palette, light and dark.",
                 "With reduced motion, the busy spinner stops turning. In forced-colors mode a pressed button takes "
@@ -1677,6 +1687,9 @@ public static class ExampleCatalog
             [
                 "It renders as the same native element. A link already works, and a submit button posts its form. "
                     + "`OnClick` starts working once the page is interactive.",
+                "A `DisabledReason` already describes the button and shows in its tooltip; a press on it counts as "
+                    + "`pressed_off` only once the page is interactive.",
+                "A submit button that's off with a `DisabledReason` doesn't post its form, though it stays a tab stop.",
                 InlineClickNote,
             ],
             Notes =
@@ -1693,6 +1706,8 @@ public static class ExampleCatalog
                 new("icon", "An icon button's icon."),
                 new("label", "The button's text."),
                 new("cooldown", "The seconds left of a `Cooldown`, after the text, hidden from screen readers."),
+                new("tooltip", "The tooltip of a `DisabledReason`, inside the button while it's off, hidden from "
+                    + "screen readers."),
                 new("spinner", "The spinner shown while the button is busy: loading, submitting its form, or "
                     + "still running a click."),
                 new("end", "The end icon or content, after the label."),
@@ -1708,6 +1723,11 @@ public static class ExampleCatalog
                     + "it.",
                 "For a `TbForm`'s submit button, the Playwright `ClickAsync()` also waits until the form has handled "
                     + "the submit, so the fields' errors can be read straight after the click.",
+                "Check a `DisabledReason` with `ToHaveAccessibleDescriptionAsync` in Playwright, or in bUnit with the "
+                    + "text of the element the button's `aria-describedby` names.",
+                "A reason's tooltip is hidden from screen readers, so find it with "
+                    + "`GetByRole(AriaRole.Tooltip, new() { IncludeHidden = true })`.",
+                "`ClickAsync()` throws for a button that's off, even one that stays a tab stop.",
                 "`BusyAsync()` reads whether the button is busy, and `PressedAsync()` and `MixedAsync()` whether a "
                     + "toggle is pressed or mixed.",
                 "A button stays busy up to `options.Busy.Minimum` after its `OnClick` ends. The Playwright "
@@ -1767,8 +1787,10 @@ public static class ExampleCatalog
                     + "icon button is busy the same way by itself while its `OnClick` runs, as a "
                     + "[button](components/button#busy) is.",
                     typeof(IconButtonLoadingExample)),
-                new("disabled", "Disabled", "`Disabled` turns the button off and takes it out of the tab order. With "
-                    + "`FocusableWhenDisabled` it stays a tab stop, so its tooltip can still be read.",
+                new("disabled", "Disabled", "`Disabled` turns the button off and takes it out of the tab order. "
+                    + "`DisabledReason` keeps it a tab stop and says why it's off, as a "
+                    + "[button](components/button#disabled) does; with `ShowTooltip`, one tooltip shows the name "
+                    + "above the reason.",
                     typeof(IconButtonDisabledExample)),
             ],
             Api = [typeof(TbIconButton), typeof(IconButtonClasses)],
@@ -1792,8 +1814,9 @@ public static class ExampleCatalog
             ],
             Accessibility =
             [
-                "A busy icon button, or a `Disabled` one with `FocusableWhenDisabled`, is marked `aria-disabled` "
-                    + "and stays a tab stop, as a button does.",
+                "A busy icon button, or a `Disabled` one with `FocusableWhenDisabled` or a `DisabledReason`, is "
+                    + "marked `aria-disabled` and stays a tab stop, as a button does. The reason is its description, "
+                    + "and its name stays its `AriaLabel`.",
                 "With `PressedLook.Quiet`, the bar under a pressed toggle stands out by at least 3:1 from its tint, "
                     + "the page, and a hovered or selected row, in every palette, light and dark.",
                 "With reduced motion, the busy spinner stops turning. In forced-colors mode a pressed button takes "
@@ -1817,6 +1840,8 @@ public static class ExampleCatalog
             [
                 new("icon", "The icon the button shows."),
                 new("spinner", "The spinner shown in place of the icon while the button is busy."),
+                new("tooltip", "The tooltip of a `DisabledReason`, inside the button while it's off, hidden from "
+                    + "screen readers; with `ShowTooltip` it shows the name first."),
             ],
             Scenario = new("mixed", "it checks that the Bold button shows that only some words are bold, presses it, "
                 + "and checks that every word is bold."),
@@ -1827,7 +1852,9 @@ public static class ExampleCatalog
                 "The button helpers include `PressedAsync()` and `MixedAsync()` (`Pressed` and `Mixed` in bUnit) for "
                     + "a toggle icon button.",
                 "By hand, find an icon button with `GetByRole(AriaRole.Button, new() { Name = \"Delete\" })`.",
-                "With `ShowTooltip`, focusing the icon button shows a `tooltip` role with the same text.",
+                "With `ShowTooltip`, focusing the icon button shows a `tooltip` role with the same text. With a "
+                    + "`DisabledReason` while it's off, the tooltip shows the name and the reason on two lines and is "
+                    + "hidden from screen readers, as on a [button](components/button#disabled).",
             ],
             Telemetry = ButtonTelemetry("TbIconButton"),
         },
@@ -1929,7 +1956,10 @@ public static class ExampleCatalog
                     typeof(FabExample)),
                 new("extended", "With its label", "`Extended` shows the `Label` beside the icon, for an action the "
                     + "icon alone doesn't make clear. `Position` picks a corner, the bottom edge's center, or "
-                    + "`Inline`, which leaves the button where the layout puts it, such as in an app bar.",
+                    + "`Inline`, which leaves the button where the layout puts it, such as in an app bar. A "
+                    + "`Disabled` one with a `DisabledReason` says why it's off, as a "
+                    + "[button](components/button#disabled) does, with the tooltip next to the button wherever it "
+                    + "sits.",
                     typeof(FabExtendedExample)),
                 new("speed-dial", "Speed dial", "`TbSpeedDial` opens its `TbMenuItem`s as round actions above the "
                     + "trigger, or below it at the top of the window, each with its text beside it. It is a menu "
@@ -1968,6 +1998,8 @@ public static class ExampleCatalog
                     + "after the content it acts on.",
                 "A fixed button can cover the end of the page. Leave room at the bottom of a scrolling page, as much "
                     + "as the button and its `--tb-fab-offset`, so nothing stays hidden under it.",
+                "A `Disabled` floating button with a `DisabledReason` stays a tab stop, marked `aria-disabled`, and "
+                    + "the reason is its description.",
             ],
             AppDuties =
             [
@@ -1991,6 +2023,8 @@ public static class ExampleCatalog
                 new("label", "An extended button's text, and each action's."),
                 new("trigger", "The button that opens a speed dial."),
                 new("menu", "A speed dial's list of actions."),
+                new("tooltip", "The tooltip of a `DisabledReason`, inside the button while it's off, hidden from "
+                    + "screen readers."),
             ],
             Anatomy = """
                 <TbFab Icon="…" Label="…" OnClick="…" />
@@ -2620,11 +2654,14 @@ public static class ExampleCatalog
                 new("basic", "Ribbon", "A `TbRibbon` holds `TbRibbonTab`s, each with a `Title` and its "
                     + "`TbRibbonGroup`s. A group has a `Label`, shown under its controls, and the controls fill "
                     + "columns of up to three rows. This ribbon also holds a toggle, a select, a menu and, on its "
-                    + "Trails tab, a button turned off with `Disabled`, which the arrow keys pass over.",
+                    + "Trails tab, a button turned off with `Disabled`, which the arrow keys pass over unless it has "
+                    + "a `DisabledReason`.",
                     typeof(RibbonExample)),
                 new("buttons", "Button sizes", "A `TbRibbonButton` shows its `Icon` beside its `Label`. `Large` makes "
                     + "it as tall as the group's rows, with the icon above the text, for a group's main command; "
-                    + "`IconOnly` leaves the text to a tooltip.", typeof(RibbonButtonsExample)),
+                    + "`IconOnly` leaves the text to a tooltip. A disabled one with a `DisabledReason`, such as "
+                    + "the \"Share the album\" button here, says why it's off, as a [button](components/button#disabled) "
+                    + "does, and the arrow keys still reach it.", typeof(RibbonButtonsExample)),
                 new("toggles", "Toggle buttons", "`@bind-Pressed` makes a `TbRibbonButton` a toggle, which stays on "
                     + "until it is pressed again.", typeof(RibbonToggleExample)),
                 new("controls", "Other controls", "A group takes other controls too, such as a select, and a "
@@ -2950,7 +2987,8 @@ public static class ExampleCatalog
                 "A `TbRibbonButton` with a `TelemetryName` counts `trailblazor.control.shown` as it first renders, "
                     + "which for a button in a tab shown later is when that tab is first shown, and "
                     + "`trailblazor.control.used` each time it is chosen. Whether a toggle turned on or off is "
-                    + "never recorded.",
+                    + "never recorded. A press on a disabled one with a `DisabledReason` counts as "
+                    + "`trailblazor.control.used` with the action `pressed_off`.",
             ],
         },
         new("toolbar", "Toolbar", ExampleCategory.Actions,
@@ -2977,7 +3015,9 @@ public static class ExampleCatalog
                 new("overflow", "Buttons that move into a menu", "A `TbToolbarButton` with no room moves into a menu "
                     + "at the toolbar's end, keeping its text and action. A `TbToolbarSeparator` draws a line between "
                     + "groups of buttons, and becomes a line in the menu when buttons on both sides of it move. Other "
-                    + "content, such as a toggle group, never moves. Drag the frame's corner here to see it happen.",
+                    + "content, such as a toggle group, never moves. Drag the frame's corner here to see it happen. "
+                    + "A disabled icon button with a `DisabledReason`, such as the Share notes button here, shows its "
+                    + "name and the reason in one tooltip, and in the menu the reason is its item's description.",
                     typeof(ToolbarExample)),
                 new("overflow-label", "Naming the menu", "`OverflowLabel` names the button that opens the overflow "
                     + "menu. The name is \"More\" unless set.", typeof(ToolbarOverflowExample)),
@@ -2993,7 +3033,8 @@ public static class ExampleCatalog
             [
                 new(["Tab"], "Moves into the toolbar and out of it, as one tab stop."),
                 new(["Left", "Right"], "Moves between every control in the toolbar, including toggle group items and "
-                    + "a `Disabled` button with `FocusableWhenDisabled`, even one with an `Href`.")
+                    + "a `Disabled` button with `FocusableWhenDisabled` or a `DisabledReason`, even one with an "
+                    + "`Href`.")
                     { When = "In a row" },
                 new(["Up", "Down"], "Moves between every control in the toolbar.") { When = "When `Vertical`" },
                 new(["Home", "End"], "Goes to the first or last control."),
@@ -3008,6 +3049,8 @@ public static class ExampleCatalog
             Announcements =
             [
                 "A tooltip that repeats a button's name isn't read a second time as its description.",
+                "A disabled `TbToolbarButton`'s `DisabledReason` is its description, in the row and in the overflow "
+                    + "menu.",
             ],
             Accessibility =
             [
@@ -3034,7 +3077,9 @@ public static class ExampleCatalog
                     + "`trailblazor.control.shown` as it first renders and `trailblazor.control.used` each time it "
                     + "is chosen, in the row or in the overflow menu. Uses in the row are tagged "
                     + "`trailblazor.component` `TbButton`, or `TbIconButton` for an icon-only button. Uses from the "
-                    + "overflow menu are tagged `TbMenuItem`.",
+                    + "overflow menu are tagged `TbMenuItem`. A press in the row on a disabled button with a "
+                    + "`DisabledReason` counts as `trailblazor.control.used` with the action `pressed_off`; its "
+                    + "item in the overflow menu counts nothing.",
                 "The toolbar itself counts nothing, and neither do the other controls in it unless they have a "
                     + "`TelemetryName` of their own.",
             ],
@@ -10032,7 +10077,8 @@ public static class ExampleCatalog
                 "For links, buttons or anything longer to read, use a [popover](components/popover), which the "
                     + "keyboard can reach.",
                 "For something people need in order to use the page, put it on the page, such as a field's "
-                    + "`HelperText`, because a tap on a button doesn't show a tooltip.",
+                    + "`HelperText`, because a tap on an enabled button doesn't show a tooltip.",
+                "To say why a button is off, use its `DisabledReason`, which also shows in a tooltip on a tap.",
                 "For an icon button's name, use the [icon button](components/icon-button)'s `ShowTooltip`.",
             ],
             Related = ["popover", "icon-button", "button"],
@@ -10053,7 +10099,8 @@ public static class ExampleCatalog
                     + "stays after the pointer leaves. Both are 300 milliseconds unless set, and `options.Tooltips` in "
                     + "`AddTrailblazor` changes them for the whole app. Once the pointer shows one tooltip, the next it "
                     + "reaches shows at once, as along a toolbar, until half a second after the last one hides. A touch "
-                    + "has no hover, so it shows a tooltip only by focusing a text field.", typeof(TooltipDelayExample)),
+                    + "has no hover, so it shows a tooltip only by focusing a text field or by tapping a button marked "
+                    + "`aria-disabled`, such as one with a `DisabledReason`.", typeof(TooltipDelayExample)),
                 new("turning-off", "Turning a tooltip off", "`Disabled`, or `Text` left blank, shows no tooltip and "
                     + "adds no description, so a tooltip that only sometimes applies needs no `@if`. The switch here "
                     + "turns the delete button's tooltip off.", typeof(TooltipDisabledExample)),
@@ -10071,6 +10118,8 @@ public static class ExampleCatalog
             [
                 "A tooltip is a description, not a name: its text goes into the `aria-describedby` of the first "
                     + "focusable element it wraps. That element still needs a name of its own.",
+                "With `Describes=\"false\"` it adds no description and is hidden from screen readers, for a trigger "
+                    + "that already describes itself with the same words.",
             ],
             Announcements =
             [
@@ -10082,6 +10131,8 @@ public static class ExampleCatalog
                 "A click or tap on a button hides its tooltip, and neither the focus that click leaves nor the focus "
                     + "handed back by a dialog closed with the mouse shows it, so it doesn't cover what someone is "
                     + "working on. A text field shows its tooltip on any focus, since its user is about to type.",
+                "A click or tap on a button marked `aria-disabled` shows its tooltip instead, so someone on a touch "
+                    + "screen can learn why it's off; the press does nothing else anyway.",
                 "Moving the pointer onto the tooltip keeps it open.",
                 "Only one tooltip shows at a time: showing one, by hover or focus, hides any other, including one "
                     + "shown for keyboard focus.",
@@ -10109,7 +10160,8 @@ public static class ExampleCatalog
                     + "pointer on the button named \"Add\" and returns the tooltip's text once it shows.",
                 "The Playwright `Tooltip` helper also takes a locator for the trigger.",
                 "By hand, tab to or hover the trigger, since `FocusAsync` after a click isn't keyboard focus, then "
-                    + "find the tooltip with `GetByRole(AriaRole.Tooltip)`.",
+                    + "find the tooltip with `GetByRole(AriaRole.Tooltip)`, adding `IncludeHidden = true` for one "
+                    + "with `Describes=\"false\"`.",
                 "`ToHaveAccessibleDescriptionAsync` on the trigger checks what screen readers hear.",
                 "In bUnit, `cut.Tb().Tooltip(\"Add\").Text` reads the tooltip's text, which the markup holds from "
                     + "the start, with `role=\"tooltip\"`.",
@@ -10141,7 +10193,8 @@ public static class ExampleCatalog
                 new("descriptions-and-shortcuts", "Descriptions and shortcuts", "`Description` adds a line of muted "
                     + "text under an item's text, and `Shortcut` shows the keys that do the same thing, such as "
                     + "`\"Alt+Shift+R\"`. Neither becomes part of the item's name; screen readers hear both after "
-                    + "it. The item only shows its shortcut; a `TbHotkey` listens for the keys.",
+                    + "it. The item only shows its shortcut; a `TbHotkey` listens for the keys. While an item is "
+                    + "`Disabled`, its `DisabledReason` takes the description's place to say why.",
                     typeof(MenuShortcutExample)),
                 new("submenus", "Submenus", "`TbSubMenu` opens a second list beside an item. Resting the pointer on "
                     + "the item opens the list without moving focus into it, and on the way there the pointer can "
@@ -10228,7 +10281,8 @@ public static class ExampleCatalog
                 "Checkbox items are `menuitemcheckbox`es and radio items `menuitemradio`s, with `aria-checked`. A "
                     + "`TbMenuGroup` or radio group is a `group` named by its `Label`, and `TbMenuSeparator` is a "
                     + "`separator`.",
-                "An item's `End` is part of its name. Its `Description` is its `aria-describedby`, and its "
+                "An item's `End` is part of its name. Its `Description`, or its `DisabledReason` while it's "
+                    + "`Disabled`, is its `aria-describedby`, and its "
                     + "`Shortcut` its `aria-keyshortcuts`, so screen readers hear both after the name.",
             ],
             Accessibility =
@@ -10254,7 +10308,7 @@ public static class ExampleCatalog
                 new("icon", "An item's icon."),
                 new("label", "An item's text."),
                 new("end", "An item's `End` content, such as a count."),
-                new("description", "An item's `Description`."),
+                new("description", "An item's `Description`, or its `DisabledReason` while it's `Disabled`."),
                 new("shortcut", "An item's `Shortcut` keys."),
                 new("indicator", "The check or dot a checkbox or radio item shows."),
                 new("chevron", "The arrow that shows an item opens a submenu."),

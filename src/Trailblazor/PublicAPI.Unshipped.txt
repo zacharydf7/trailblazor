@@ -1739,6 +1739,8 @@ Trailblazor.TbButton.Cooldown.get -> System.TimeSpan?
 Trailblazor.TbButton.Cooldown.set -> void
 Trailblazor.TbButtonBase.BusyWhileRunning.get -> bool?
 Trailblazor.TbButtonBase.BusyWhileRunning.set -> void
+Trailblazor.TbButtonBase.DisabledReason.get -> string?
+Trailblazor.TbButtonBase.DisabledReason.set -> void
 Trailblazor.TbButtonBase.Disabled.get -> bool
 Trailblazor.TbButtonBase.Disabled.set -> void
 Trailblazor.TbButtonBase.Dispose() -> void
@@ -2397,6 +2399,8 @@ Trailblazor.TbMenuGroup.TbMenuGroup() -> void
 Trailblazor.TbMenuItem
 Trailblazor.TbMenuItem.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbMenuItem.ChildContent.set -> void
+Trailblazor.TbMenuItem.DisabledReason.get -> string?
+Trailblazor.TbMenuItem.DisabledReason.set -> void
 Trailblazor.TbMenuItem.Disabled.get -> bool
 Trailblazor.TbMenuItem.Disabled.set -> void
 Trailblazor.TbMenuItem.Href.get -> string?
@@ -2988,6 +2992,8 @@ Trailblazor.TbToolbar.Vertical.set -> void
 Trailblazor.TbToolbarButton
 Trailblazor.TbToolbarButton.BusyWhileRunning.get -> bool?
 Trailblazor.TbToolbarButton.BusyWhileRunning.set -> void
+Trailblazor.TbToolbarButton.DisabledReason.get -> string?
+Trailblazor.TbToolbarButton.DisabledReason.set -> void
 Trailblazor.TbToolbarButton.Disabled.get -> bool
 Trailblazor.TbToolbarButton.Disabled.set -> void
 Trailblazor.TbToolbarButton.Dispose() -> void
@@ -3524,6 +3530,8 @@ Trailblazor.Viewport.Width.init -> void
 
 Trailblazor.TbTooltip.BubbleClass.get -> string?
 Trailblazor.TbTooltip.BubbleClass.set -> void
+Trailblazor.TbTooltip.Describes.get -> bool
+Trailblazor.TbTooltip.Describes.set -> void
 Trailblazor.TbTooltip.Disabled.get -> bool
 Trailblazor.TbTooltip.Disabled.set -> void
 Trailblazor.TbTooltip.MaxWidth.get -> string?
@@ -7537,6 +7545,8 @@ Trailblazor.TbRibbon.TbRibbon() -> void
 Trailblazor.TbRibbonButton
 Trailblazor.TbRibbonButton.BusyWhileRunning.get -> bool?
 Trailblazor.TbRibbonButton.BusyWhileRunning.set -> void
+Trailblazor.TbRibbonButton.DisabledReason.get -> string?
+Trailblazor.TbRibbonButton.DisabledReason.set -> void
 Trailblazor.TbRibbonButton.Disabled.get -> bool
 Trailblazor.TbRibbonButton.Disabled.set -> void
 Trailblazor.TbRibbonButton.Icon.get -> Trailblazor.Icon?

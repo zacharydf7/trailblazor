@@ -6,8 +6,8 @@ import { onEachPage } from '../Trailblazor.Primitives/pages.js';
 // server nothing, even to set up. The JS initializer imports this at startup; each bubble carries its own settings.
 const focusableSelector = 'a[href], button, input, select, textarea, [tabindex]';
 // A TbTooltip wraps its trigger, and cut-off text that shows its full text in a tooltip is its own trigger.
-const anchorSelector = '.tb-tooltip-anchor, .tb-text--full-text';
-const bubbleSelector = ':is(.tb-tooltip-anchor, .tb-text--full-text) > [data-part="tooltip"]';
+const anchorSelector = '.tb-tooltip-anchor, .tb-text--full-text, .tb-button--reason';
+const bubbleSelector = ':is(.tb-tooltip-anchor, .tb-text--full-text, .tb-button--reason) > [data-part="tooltip"]';
 
 // The trigger each bubble describes, so its description can be taken back when the bubble goes.
 const described = new WeakMap();
@@ -106,7 +106,22 @@ document.addEventListener('focusin', event => {
     }
 });
 document.addEventListener('focusout', event => hide(anchorOf(event.target)));
-document.addEventListener('pointerdown', event => hide(anchorOf(event.target)));
+// A press on a trigger that's off does nothing else, so it shows the tooltip that says why, on touch too; the next
+// press anywhere else hides it.
+document.addEventListener('pointerdown', event => {
+    const anchor = anchorOf(event.target);
+    if (shown && !shown.anchor.contains(event.target)) {
+        hideShown();
+    }
+
+    const trigger = anchor && described.get(bubbleOf(anchor))?.trigger;
+    if (trigger?.getAttribute('aria-disabled') === 'true' && trigger.contains(event.target)) {
+        show(anchor, true);
+        return;
+    }
+
+    hide(anchor);
+});
 
 // Escape always dismisses a tooltip (WCAG 1.4.13), even one still waiting to show. The Escape that hides a shown one
 // is used up, so a dialog around it stays open.
@@ -128,9 +143,10 @@ document.addEventListener('keydown', event => {
     }
 });
 
-// Adds the tooltip's id to the trigger's description, unless it is already there, the tooltip only repeats the
-// trigger's name (which a screen reader would then read twice), or the tooltip is hidden from screen readers. Then it
-// sets a TbTooltip's data-ready, which tests wait for before hovering; text marks its own once it is measured.
+// Adds the tooltip's id to the trigger's description unless it's already there, and takes it back while the
+// tooltip only repeats the trigger's name (which a screen reader would then read twice) or is hidden from screen
+// readers. Then it sets a TbTooltip's data-ready, which tests wait for before hovering; text marks its own once it
+// is measured.
 function describe(tooltip) {
     const anchor = tooltip.parentElement;
     const trigger = anchor.querySelector(focusableSelector) ?? anchor;
@@ -139,6 +155,8 @@ function describe(tooltip) {
         || tooltip.getAttribute('aria-hidden') === 'true';
     if (!ids.includes(tooltip.id) && !repeatsName) {
         trigger.setAttribute('aria-describedby', [...ids, tooltip.id].join(' '));
+    } else if (ids.includes(tooltip.id) && repeatsName) {
+        setDescribedBy(trigger, ids.filter(id => id !== tooltip.id));
     }
 
     const isNew = !described.has(tooltip);
@@ -165,13 +183,7 @@ function forget(tooltip) {
         hideShown();
     }
 
-    const ids = describedBy(trigger).filter(id => id !== tooltip.id);
-    if (ids.length > 0) {
-        trigger.setAttribute('aria-describedby', ids.join(' '));
-    } else {
-        trigger.removeAttribute('aria-describedby');
-    }
-
+    setDescribedBy(trigger, describedBy(trigger).filter(id => id !== tooltip.id));
     if (!bubbleOf(anchor) && anchor.matches('.tb-tooltip-anchor')) {
         delete anchor.dataset.ready;
     }
@@ -179,6 +191,14 @@ function forget(tooltip) {
 
 function describedBy(element) {
     return (element.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean);
+}
+
+function setDescribedBy(element, ids) {
+    if (ids.length > 0) {
+        element.setAttribute('aria-describedby', ids.join(' '));
+    } else {
+        element.removeAttribute('aria-describedby');
+    }
 }
 
 // Bubbles come and go as tooltips are turned on and off, and Blazor rewrites aria-describedby when a trigger
@@ -212,6 +232,7 @@ const onChanges = records => {
 };
 onEachPage(page => {
     const observer = new MutationObserver(onChanges);
-    observer.observe(page, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-describedby'] });
+    observer.observe(page,
+        { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-describedby', 'aria-hidden'] });
     page.querySelectorAll(bubbleSelector).forEach(describe);
 });

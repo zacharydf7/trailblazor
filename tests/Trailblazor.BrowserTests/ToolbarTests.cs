@@ -120,7 +120,7 @@ public class ToolbarTests(BrowserFixture fixture) : BrowserTest(fixture)
         await page.Keyboard.PressAsync("ArrowRight");
         await Expect(Button(page, "Add a note")).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("End");
-        await Expect(Button(page, "Delete note")).ToBeFocusedAsync();
+        await Expect(Button(page, "Share notes")).ToBeFocusedAsync();
         await page.Keyboard.PressAsync("Home");
 
         await Expect(Button(page, "Newest")).ToBeFocusedAsync();
@@ -364,7 +364,7 @@ public class ToolbarTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         await NarrowAsync(page, "100%");
 
-        await Expect(Button(page, "Delete note")).ToBeFocusedAsync();
+        await Expect(Button(page, "Share notes")).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

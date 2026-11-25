@@ -2,6 +2,32 @@
 @inherits TbComponentBase
 
 @code {
+    // The reason's span is hidden so it stays out of the button's name; aria-describedby still reads hidden text. The
+    // tooltip goes inside the button, which is its anchor, so the button is never wrapped and keeps its focus and its
+    // place in the layout. Screen readers hear the reason as the description, so the tooltip is hidden from them.
+    private RenderFragment Reason => @<text>
+        @if (ShowsReason)
+        {
+            <span id="@_reasonId" hidden>@DisabledReason</span>
+        }
+        @if (TipsReason)
+        {
+            <span id="@_reasonTipId" popover="manual" role="tooltip" data-part="tooltip" aria-hidden="true"
+                  data-placement="@Anchors.Side(Placement.Top)" data-align="@Anchors.Align(PlacementAlign.Center)"
+                  data-offset="6" data-show-delay="@Milliseconds(Tooltips.ShowDelay)"
+                  data-hide-delay="@Milliseconds(Tooltips.HideDelay)" class="tb-tooltip">
+                @ReasonLines(TipName, DisabledReason)
+            </span>
+        }
+    </text>;
+
+    internal static RenderFragment ReasonLines(string? name, string? reason) => @<text>
+        @if (name is not null)
+        {
+            <span class="tb-tooltip__line">@name</span>
+        }
+        <span class="tb-tooltip__line">@reason</span>
+    </text>;
     // Attributes set here come after the consumer's, so where the button sets nothing the consumer's value is kept.
     private protected RenderFragment Root(string? extraClass, string? ariaLabel, RenderFragment content) =>
         @<text>
@@ -11,20 +37,22 @@
                    role="link". *@
                 <a @ref="_element" @attributes="AdditionalAttributes" href="@(Off ? null : Href)"
                    role="@(Off ? "link" : Theirs("role"))"
-                   tabindex="@(Off ? (FocusableWhenDisabled ? "0" : null) : Theirs("tabindex"))"
-                   data-kept-focusable="@(Off && FocusableWhenDisabled ? "" : null)"
+                   tabindex="@(Off ? (KeepsFocus ? "0" : null) : Theirs("tabindex"))"
+                   data-kept-focusable="@(Off && KeepsFocus ? "" : null)"
                    aria-label="@(ariaLabel ?? Theirs("aria-label"))"
                    aria-disabled="@(Off || Busy ? "true" : null)" aria-busy="@(Busy ? "true" : null)"
+                   aria-describedby="@DescribedBy"
                    data-clicks="@Clicks" data-static="@StaticMark"
                    class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"
                    @onclick:preventDefault="Ignores">
                     @content
+                    @Reason
                 </a>
             }
             else
             {
                 <button @ref="_element" @attributes="AdditionalAttributes" type="@TypeAttribute"
-                        disabled="@(Off && !FocusableWhenDisabled)"
+                        disabled="@(Off && !KeepsFocus)"
                         aria-label="@(ariaLabel ?? Theirs("aria-label"))"
                         aria-disabled="@(Inert ? "true" : null)" aria-busy="@(Busy ? "true" : null)"
                         aria-describedby="@DescribedBy"
@@ -39,6 +67,7 @@
                         @* Hidden so it stays out of the button's name; aria-describedby still reads hidden text. *@
                         <span id="@_cooldownId" hidden>@CooldownWords(left)</span>
                     }
+                    @Reason
                 </button>
             }
         </text>;

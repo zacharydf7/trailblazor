@@ -85,6 +85,11 @@ they run by version. The docs site's Upgrading page is built from both.
 
 ### Markup and behavior
 
+#### 2026-11-25
+
+- `TbButton`, `TbIconButton`, `TbFab`, `TbToolbarButton`, `TbRibbonButton` and `TbMenuItem` take a `DisabledReason`. While a button with a reason is off, it stays focusable with `aria-disabled`, and `aria-describedby` points at a hidden span holding the reason. The button also gets the class `tb-button--reason` and holds a tooltip of its own, a `[data-part="tooltip"]` bubble with `aria-hidden="true"` that shows the reason in a `.tb-tooltip__line` span. For an icon button with `ShowTooltip`, a line with the name comes first, and the icon button's usual `TbTooltip` is off while the reason shows. An icon-only toolbar button shows both lines in its usual name tooltip instead, whose bubble is then `aria-hidden`. With a `TelemetryName`, a press on a button that's off with a reason counts `trailblazor.control.used` with the action `pressed_off`. A disabled menu item, including a toolbar button's item in the overflow menu, shows the reason in `data-part="description"` in place of its `Description`, and counts nothing when pressed. On a static page, a submit button marked `aria-disabled` no longer posts its form, whether or not the form is a `TbForm`.
+- `TbTooltip` takes `Describes`; when it's false, the trigger gets no `aria-describedby` from the tooltip and the bubble has `aria-hidden="true"`, and a tooltip that stops describing its trigger takes its id back. A pointer press on any trigger marked `aria-disabled` now shows its tooltip instead of hiding it, including a busy, cooling-down or `FocusableWhenDisabled` button, and a pointer press outside a shown tooltip and its trigger hides that tooltip.
+
 #### 2026-11-24
 
 - The bUnit helpers' names now leave out content inside a `hidden` element, as a browser does.

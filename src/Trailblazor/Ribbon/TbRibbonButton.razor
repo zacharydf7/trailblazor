@@ -4,16 +4,17 @@
 @if (IconOnly && Icon is Icon icon)
 {
     <TbIconButton @attributes="AdditionalAttributes" Icon="icon" AriaLabel="@Label" ShowTooltip Variant="Variant.Text"
-                  Tone="Tone.Neutral" Size="Size.Small" Disabled="Disabled" BusyWhileRunning="BusyWhileRunning"
-                  Pressed="Pressed" PressedChanged="PressedChanged" OnClick="OnClick" TelemetryName="@TelemetryName"
-                  Class="@ClassNames.Join("tb-ribbon__button", Class)" Style="@Style" data-key-tip="@ShownKeyTip" />
+                  Tone="Tone.Neutral" Size="Size.Small" Disabled="Disabled" DisabledReason="@DisabledReason"
+                  BusyWhileRunning="BusyWhileRunning" Pressed="Pressed" PressedChanged="PressedChanged"
+                  OnClick="OnClick" TelemetryName="@TelemetryName" Class="@ClassNames.Join("tb-ribbon__button", Class)"
+                  Style="@Style" data-key-tip="@ShownKeyTip" />
 }
 else
 {
     <TbButton @attributes="AdditionalAttributes" StartIcon="Icon" Variant="Variant.Text" Tone="Tone.Neutral"
-              Size="Size.Small" Disabled="Disabled" BusyWhileRunning="BusyWhileRunning" Pressed="Pressed"
-              PressedChanged="PressedChanged" OnClick="OnClick" TelemetryName="@TelemetryName" Style="@Style"
-              data-key-tip="@ShownKeyTip"
+              Size="Size.Small" Disabled="Disabled" DisabledReason="@DisabledReason" BusyWhileRunning="BusyWhileRunning"
+              Pressed="Pressed" PressedChanged="PressedChanged" OnClick="OnClick" TelemetryName="@TelemetryName"
+              Style="@Style" data-key-tip="@ShownKeyTip"
               Class="@ClassNames.Join("tb-ribbon__button", Large ? "tb-ribbon__button--large" : null, Class)">
         @Label
     </TbButton>
@@ -41,6 +42,11 @@ else
     /// <summary>Turns the button off.</summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>Why the button is off, shown in a tooltip on hover, keyboard focus and a press, and read as its
+    /// description, as a <see cref="TbButton"/>'s is. It applies only while the button is off.</summary>
+    [Parameter]
+    public string? DisabledReason { get; set; }
 
     /// <summary>Whether the button counts as busy while the task its <c>OnClick</c> returned is still running, as a
     /// <see cref="TbButton"/> does. Defaults to the app's <see cref="ButtonSettings.BusyWhileRunning"/>.</summary>

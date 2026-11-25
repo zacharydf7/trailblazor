@@ -30,6 +30,7 @@ Familiar apps: Gmail's compose button, Google Calendar's create button and the n
 
 ## Focus
 
+- [x] A `Disabled` floating button with a `DisabledReason` stays a tab stop, is described by the reason, and shows it in a tooltip next to the button, wherever the button is fixed. `DisabledReasonTests.Render_ShouldDescribeTheFloatingButtonWithItsReason_WhenDisabled`, `ButtonTests.Button_ShouldKeepItsOwnPlaceAndTooltip_WhenOffWithAReason`
 - [x] Opening a speed dial focuses its first action, and closing it returns focus to the trigger. `FabTests.SpeedDial_ShouldTakeTheMenuButtonsKeys_WhenUsedFromTheKeyboard`
 
 ## Screen readers

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Trailblazor.Docs.Pages;
+using Trailblazor.Testing;
 
 namespace Trailblazor.Tests.Docs;
 
@@ -46,10 +47,9 @@ public abstract class DocsTest : BunitContext
         });
     }
 
-    // A button by its accessible name: its aria-label, or else its text.
+    // A button by its accessible name, as a screen reader reads it.
     protected static IElement Button<T>(IRenderedComponent<T> cut, string name) where T : IComponent =>
-        cut.FindAll("button").Single(button =>
-            (button.GetAttribute("aria-label") ?? button.TextContent.Trim()) == name);
+        cut.FindAll("button").Single(button => Choices.NameOf(button) == name);
 
     // A field's input by the text of its label.
     protected static IElement Input(IParentNode scope, string label) =>

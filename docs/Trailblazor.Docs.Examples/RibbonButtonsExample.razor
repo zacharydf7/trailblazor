@@ -10,6 +10,8 @@
                                 OnClick="@(() => _last = "Move to a folder")" />
                 <TbRibbonButton IconOnly Label="Remove the photo" Icon="ExampleIcons.Trash"
                                 OnClick="@(() => _last = "Remove the photo")" />
+                <TbRibbonButton IconOnly Label="Share the album" Icon="ExampleIcons.Trail" Disabled
+                                DisabledReason="Add a photo first" />
             </TbRibbonGroup>
         </TbRibbonTab>
     </TbRibbon>

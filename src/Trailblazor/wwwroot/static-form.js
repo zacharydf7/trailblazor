@@ -45,6 +45,12 @@ function mark(form, button) {
 // Listening in the capture phase, ahead of Blazor, lets a second submit be dropped before Blazor sends an enhanced
 // one; Blazor ignores a submit that's already canceled.
 document.addEventListener('submit', event => {
+    // A button that's off but kept focusable, as with a DisabledReason, has no disabled attribute to stop its post.
+    if (event.submitter?.matches('.tb-button[aria-disabled="true"]')) {
+        event.preventDefault();
+        return;
+    }
+
     const form = event.target;
     if (event.defaultPrevented || !form.matches?.('form.tb-form[data-tb-static]')) {
         return;

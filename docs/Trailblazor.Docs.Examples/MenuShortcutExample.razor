@@ -7,6 +7,9 @@
         <TbMenuItem Description="Fits the route on one page" OnClick="@(() => _last = "Printed")">
             Print a map
         </TbMenuItem>
+        <TbMenuItem Description="Sends the route to the group" Disabled DisabledReason="Name the route first">
+            Share
+        </TbMenuItem>
     </TbMenu>
     <output aria-label="Last route action">@_last</output>
 </TbStack>

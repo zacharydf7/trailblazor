@@ -66,6 +66,97 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldSayWhyItIsOff_WhenHoveredFocusedOrTapped(string browser)
+    {
+        var page = await OpenAsync(browser, "/button-reason", new() { HasTouch = true });
+        var publish = page.GetByRole(AriaRole.Button, new() { Name = "Publish" });
+        var reason = page.GetByRole(AriaRole.Tooltip, new() { IncludeHidden = true }).Filter(new()
+        {
+            HasText = "Name the trip first.",
+        });
+
+        await Expect(publish).ToHaveAccessibleDescriptionAsync("Name the trip first.");
+        await Expect(publish).ToHaveAttributeAsync("aria-disabled", "true");
+        // A tap shows it, since a press would do nothing else, and a tap anywhere else hides it. Playwright won't
+        // tap what's aria-disabled unless forced, though a finger can.
+        await publish.TapAsync(new() { Force = true });
+        await Expect(reason).ToBeVisibleAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Save draft" }).TapAsync();
+        await Expect(reason).ToBeHiddenAsync();
+        // Keyboard focus shows it too, and Escape hides it.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Save draft" }).FocusAsync();
+        await page.Keyboard.PressAsync("Shift+Tab");
+        await Expect(publish).ToBeFocusedAsync();
+        await Expect(reason).ToBeVisibleAsync();
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(reason).ToBeHiddenAsync();
+        await publish.HoverAsync();
+        await Expect(reason).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldKeepFocus_WhenItTurnsItselfOffWithAReason(string browser)
+    {
+        var page = await OpenAsync(browser, "/button-reason");
+        var send = page.GetByRole(AriaRole.Button, new() { Name = "Send invite" });
+        var undo = page.GetByRole(AriaRole.Button, new() { Name = "Undo" });
+
+        await send.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(send).ToHaveAccessibleDescriptionAsync("Already sent.");
+        await Expect(send).ToBeFocusedAsync();
+        await undo.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(undo).ToHaveAccessibleDescriptionAsync("Nothing to undo.");
+        await Expect(undo).ToBeFocusedAsync();
+        // A reason that arrives with Disabled, rather than staying set, keeps focus too.
+        var save = page.GetByRole(AriaRole.Button, new() { Name = "Save trip" });
+        await save.FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(save).ToHaveAccessibleDescriptionAsync("Already saved.");
+        await Expect(save).ToBeFocusedAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldNotPostItsForm_WhenOffWithAReasonOnAStaticPage(string browser)
+    {
+        var page = await OpenStaticAsync(browser, "/static-button-reason");
+        // The library's script stops the post, so the test waits for it to load.
+        await Expect(page.Locator("html")).ToHaveAttributeAsync("data-tb-script", "");
+        // Records whether each submit went ahead, and stops it either way so the page stays.
+        await page.EvaluateAsync("() => document.querySelector('form').addEventListener('submit', event => { "
+            + "window.posts = [...(window.posts ?? []), !event.defaultPrevented]; event.preventDefault(); })");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Send" }).ClickAsync(new() { Force = true });
+        await page.GetByRole(AriaRole.Textbox, new() { Name = "Note" }).PressAsync("Enter");
+
+        var posts = await page.EvaluateAsync<bool[]>("() => window.posts");
+        Assert.Equal([false, false], posts);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldKeepItsOwnPlaceAndTooltip_WhenOffWithAReason(string browser)
+    {
+        var page = await OpenAsync(browser, "/button-reason");
+        var book = page.GetByRole(AriaRole.Button, new() { Name = "Book" });
+        var fab = page.GetByRole(AriaRole.Button, new() { Name = "Add a stop" });
+        var full = page.GetByRole(AriaRole.Tooltip, new() { IncludeHidden = true }).Filter(new()
+        {
+            HasText = "The trip is full.",
+        });
+
+        Assert.Equal(320, (await book.BoundingBoxAsync())!.Width, tolerance: 1);
+        await fab.HoverAsync();
+        await Expect(full).ToBeVisibleAsync();
+
+        // The fixed button's tooltip sits just above it, not where the button sits in the markup.
+        var button = (await fab.BoundingBoxAsync())!;
+        var tooltip = (await full.BoundingBoxAsync())!;
+        Assert.InRange(button.Y - (tooltip.Y + tooltip.Height), 0, 20);
+        Assert.True(tooltip.X < button.X + button.Width && tooltip.X + tooltip.Width > button.X);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldRefuseADisabledButton_WhenAskedToClickIt(string browser)
     {
         var page = await OpenAsync(browser, "/button-busy");
@@ -244,15 +335,15 @@ public class ButtonTests(BrowserFixture fixture) : BrowserTest(fixture)
     [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Button_ShouldStayInTheTabOrderAndShowItsTooltip_WhenDisabledButFocusable(string browser)
     {
-        var page = await OpenAsync(browser, "/examples/button");
-        var publish = page.GetByRole(AriaRole.Button, new() { Name = "Publish" });
-        await page.GetByRole(AriaRole.Button, new() { Name = "Save the trip" }).FocusAsync();
+        var page = await OpenAsync(browser, "/button-reason");
+        var sync = page.GetByRole(AriaRole.Button, new() { Name = "Sync" });
+        await page.GetByRole(AriaRole.Button, new() { Name = "Save draft" }).FocusAsync();
 
         await page.Keyboard.PressAsync("Tab");
 
-        await Expect(publish).ToBeFocusedAsync();
-        await Expect(publish).ToBeDisabledAsync();
-        await Expect(page.GetByRole(AriaRole.Tooltip)).ToHaveTextAsync("Add a title before publishing");
+        await Expect(sync).ToBeFocusedAsync();
+        await Expect(sync).ToBeDisabledAsync();
+        await Expect(page.GetByRole(AriaRole.Tooltip)).ToHaveTextAsync("Syncing is paused");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

@@ -33,6 +33,7 @@ Familiar apps: the icon bars in Gmail and Google Docs, GitHub's issue actions
 - [x] Keyboard focus shows the tooltip, and its name isn't read twice. `ButtonTests.IconButton_ShouldShowItsNameWithoutDescribingItself_WhenFocusedWithShowTooltip`
 - [x] Focus left by a click doesn't bring the tooltip back. `TooltipTests.Tooltip_ShouldStayClosed_WhenFocusReturnsToTheTriggerAfterAClickElsewhere`
 - [x] A focusable disabled one stays in the tab order, and a loading one keeps focus. `TbButtonBase.razor`
+- [x] A disabled one with a `DisabledReason` stays in the tab order, is described by the reason, and with `ShowTooltip` shows its name and the reason in one tooltip. `DisabledReasonTests.Render_ShouldShowTheNameAndTheReasonInOneTooltip_WhenAnIconButtonIsDisabledWithAReason`
 
 ## Not applicable
 
