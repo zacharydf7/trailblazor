@@ -660,3 +660,6 @@ Trailblazor.Testing.TbFileUploadDriver.RetryAsync(string! file) -> System.Thread
 Trailblazor.Testing.TbFileUploadDriver.Status(string! file) -> Trailblazor.FileUploadStatus
 Trailblazor.Testing.TbFileUploadDriver.UploadAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbFileUploadDriver.WaitForUploadsAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbKanbanDriver.CollapseAsync(string! column) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbKanbanDriver.ExpandAsync(string! column) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbKanbanDriver.IsCollapsed(string! column) -> bool

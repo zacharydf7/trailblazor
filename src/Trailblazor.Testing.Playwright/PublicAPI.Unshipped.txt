@@ -723,3 +723,6 @@ Trailblazor.Testing.Playwright.TbFileUploadLocator.RetryAsync(string! file) -> S
 Trailblazor.Testing.Playwright.TbFileUploadLocator.StatusAsync(string! file) -> System.Threading.Tasks.Task<Trailblazor.FileUploadStatus>!
 Trailblazor.Testing.Playwright.TbFileUploadLocator.UploadAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbFileUploadLocator.WaitForUploadsAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbKanbanLocator.CollapseAsync(string! column) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbKanbanLocator.ExpandAsync(string! column) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbKanbanLocator.IsCollapsedAsync(string! column) -> System.Threading.Tasks.Task<bool>!

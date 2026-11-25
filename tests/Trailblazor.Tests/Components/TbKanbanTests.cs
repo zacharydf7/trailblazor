@@ -169,6 +169,120 @@ public class TbKanbanTests : BunitContext
         Assert.Equal("TbKanban needs an AriaLabel.", thrown.Message);
     }
 
+    [Fact]
+    public async Task Collapse_ShouldHideTheCardsAndKeepTheTitleAndCount_WhenTheColumnsButtonIsPressed()
+    {
+        IReadOnlyCollection<string>? reported = null;
+        var cut = RenderBoard(parameters => parameters.Add(board => board.Collapsible, true)
+            .Add(board => board.CollapsedColumnsChanged, (IReadOnlyCollection<string> ids) => reported = ids));
+        var board = cut.Tb().Kanban("Trail work");
+        var button = cut.Find("[data-key=todo] [data-part=collapse]");
+        var before = (button.GetAttribute("aria-label"), button.GetAttribute("aria-expanded"));
+        var controlsCards = cut.Find($"[id='{button.GetAttribute("aria-controls")}']").ClassList
+            .Contains("tb-kanban__cards");
+
+        await board.CollapseAsync("To do");
+
+        var todo = cut.Find("[data-key=todo]");
+        Assert.Equal(("Cards in To do", "true"), before);
+        Assert.True(controlsCards);
+        Assert.True(board.IsCollapsed("To do"));
+        Assert.Null(todo.QuerySelector("[data-part=list]"));
+        Assert.Equal("2", todo.QuerySelector("[data-part=count]")!.TextContent);
+        var collapse = todo.QuerySelector("[data-part=collapse]")!;
+        Assert.Equal(("Cards in To do", "false", null), (collapse.GetAttribute("aria-label"),
+            collapse.GetAttribute("aria-expanded"), collapse.GetAttribute("aria-controls")));
+        Assert.Empty(board.Cards("To do"));
+        Assert.Equal(["todo"], reported);
+        await board.ExpandAsync("To do");
+        Assert.Equal(["Clear the ridge path", "Mark the river ford"], board.Cards("To do"));
+    }
+
+    [Fact]
+    public void CollapsedColumns_ShouldCollapseTheColumnsGiven_WhenSet()
+    {
+        var cut = RenderBoard(parameters => parameters.Add(board => board.Collapsible, true)
+            .Add(board => board.CollapsedColumns, ["done"]));
+
+        Assert.Equal((false, true), (cut.Tb().Kanban("Trail work").IsCollapsed("To do"),
+            cut.Tb().Kanban("Trail work").IsCollapsed("Done")));
+        Assert.Contains("tb-kanban__column--collapsed", cut.Find("[data-key=done]").ClassList);
+    }
+
+    [Fact]
+    public async Task CollapsedColumns_ShouldKeepTheUsersToggles_WhenTheParentRendersTheSameOnes()
+    {
+        IReadOnlyCollection<string> given = ["done"];
+        var cut = RenderBoard(parameters => parameters.Add(board => board.Collapsible, true)
+            .Add(board => board.CollapsedColumns, given));
+        await cut.Tb().Kanban("Trail work").ExpandAsync("Done");
+
+        cut.Render(parameters => parameters.Add(board => board.CollapsedColumns, given));
+
+        Assert.False(cut.Tb().Kanban("Trail work").IsCollapsed("Done"));
+    }
+
+    [Fact]
+    public async Task Expand_ShouldOfferTheColumnInTheBoardsOrder_WhenItStartedCollapsed()
+    {
+        var cut = RenderBoard(parameters => parameters.Add(board => board.Collapsible, true)
+            .Add(board => board.CollapsedColumns, ["todo"]));
+
+        await cut.Tb().Kanban("Trail work").ExpandAsync("To do");
+
+        var group = cut.Find("[data-key=doing] [data-part=list]").GetAttribute("data-group")!;
+        Assert.Equal(["todo", "doing", "done"],
+            Services.GetRequiredService<SortableGroups>().Lists<ISortableGroupMember>(group)
+                .Select(list => list.ListId));
+    }
+
+    [Fact]
+    public async Task MoveToColumn_ShouldNotOfferACollapsedColumn_WhenOneIsCollapsed()
+    {
+        var cut = RenderBoard(parameters => parameters.Add(board => board.Collapsible, true)
+            .Add(board => board.CollapsedColumns, ["done"]));
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Kanban("Trail work").MoveToColumnAsync("Fix the footbridge", "Done"));
+        Assert.Contains("Done", refused.Message);
+        Assert.Empty(_moves);
+    }
+
+    [Fact]
+    public async Task MoveToColumn_ShouldMoveTheCard_WhenAColumnBeforeItsOwnIsCollapsed()
+    {
+        var cut = RenderBoard(parameters => parameters.Add(board => board.Collapsible, true)
+            .Add(board => board.CollapsedColumns, ["todo"]));
+
+        await cut.Tb().Kanban("Trail work").MoveToColumnAsync("Fix the footbridge", "Done");
+
+        Assert.Equal(("doing", "done"), (_moves.Single().FromList, _moves.Single().ToList));
+    }
+
+    [Fact]
+    public async Task Collapse_ShouldBeCounted_WhenTheBoardHasATelemetryName()
+    {
+        using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",
+            "trailblazor.control.used");
+        var cut = RenderBoard(parameters => parameters.Add(board => board.TelemetryName, "trail-work")
+            .Add(board => board.Collapsible, true));
+
+        await cut.Tb().Kanban().CollapseAsync("Doing");
+        await cut.Tb().Kanban().ExpandAsync("Doing");
+
+        Assert.Equal(["collapse", "expand"], used.GetMeasurementSnapshot().Select(measurement =>
+            measurement.Tags["trailblazor.action"]));
+    }
+
+    [Fact]
+    public async Task Collapse_ShouldThrow_WhenTheBoardIsNotCollapsible()
+    {
+        var cut = RenderBoard();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cut.Tb().Kanban("Trail work").CollapseAsync("Done"));
+        Assert.Empty(cut.FindAll("[data-part=collapse]"));
+    }
+
     private IReadOnlyList<KanbanColumn<string>> Columns() =>
     [
         new("todo", "To do", _cards["todo"]),

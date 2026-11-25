@@ -1,0 +1,24 @@
+<TbKanban TItem="string" AriaLabel="Season plan" Columns="Columns" Collapsible @bind-CollapsedColumns="_collapsed"
+          OnMove="(SortableMove<string> move) => move.ApplyBetween(_cards[move.FromList!], _cards[move.ToList!])">
+    <CardTemplate>@context</CardTemplate>
+</TbKanban>
+<output>Collapsed: @(_collapsed.Count == 0 ? "none" : string.Join(", ", _collapsed))</output>
+
+@code {
+    private readonly Dictionary<string, List<string>> _cards = new()
+    {
+        ["ideas"] = ["A night walk", "A river clean-up"],
+        ["planned"] = ["Spring hike"],
+        ["past"] = ["Winter lantern walk", "Autumn bird count"],
+    };
+
+    // Past starts collapsed; an app can save this bound list, such as in the user's settings, to restore it.
+    private IReadOnlyCollection<string> _collapsed = ["past"];
+
+    private IReadOnlyList<KanbanColumn<string>> Columns =>
+    [
+        new("ideas", "Ideas", _cards["ideas"]),
+        new("planned", "Planned", _cards["planned"]),
+        new("past", "Past", _cards["past"]),
+    ];
+}

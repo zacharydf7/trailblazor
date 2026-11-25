@@ -8086,3 +8086,12 @@ Trailblazor.TbCalendar<TDate>.Pick.get -> Trailblazor.CalendarPick
 Trailblazor.TbCalendar<TDate>.Pick.set -> void
 Trailblazor.TbDatePicker<TDate>.Pick.get -> Trailblazor.CalendarPick
 Trailblazor.TbDatePicker<TDate>.Pick.set -> void
+Trailblazor.KanbanLabels.Cards.get -> string?
+Trailblazor.KanbanLabels.Cards.init -> void
+Trailblazor.TbKanban<TItem>.CollapsedColumns.get -> System.Collections.Generic.IReadOnlyCollection<string!>?
+Trailblazor.TbKanban<TItem>.CollapsedColumns.set -> void
+Trailblazor.TbKanban<TItem>.CollapsedColumnsChanged.get -> Microsoft.AspNetCore.Components.EventCallback<System.Collections.Generic.IReadOnlyCollection<string!>!>
+Trailblazor.TbKanban<TItem>.CollapsedColumnsChanged.set -> void
+Trailblazor.TbKanban<TItem>.Collapsible.get -> bool
+Trailblazor.TbKanban<TItem>.Collapsible.set -> void
+const Trailblazor.TbStrings.KanbanCards = "Kanban.Cards" -> string!

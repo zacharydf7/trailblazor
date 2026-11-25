@@ -5658,17 +5658,46 @@ public sealed class TbKanbanDriver
     /// <summary>The columns' titles, left to right.</summary>
     public IReadOnlyList<string> Columns => [.. ColumnElements().Select(TitleOf)];
 
-    /// <summary>The names of the cards in the column titled <paramref name="column"/>, top first.</summary>
-    public IReadOnlyList<string> Cards(string column) => Column(column).Items;
+    /// <summary>The names of the cards in the column titled <paramref name="column"/>, top first, or none while it's
+    /// collapsed.</summary>
+    public IReadOnlyList<string> Cards(string column) => IsCollapsed(column) ? [] : Column(column).Items;
 
     /// <summary>The column titled <paramref name="column"/>, as a sortable list: its cards move within it with
-    /// <c>MoveAsync</c>, or to another column with <c>MoveToListAsync</c>. Throws when the board has no such column.
-    /// </summary>
+    /// <c>MoveAsync</c>, or to another column with <c>MoveToListAsync</c>. Throws when the board has no such column, or
+    /// the column is collapsed.</summary>
     public TbSortableDriver Column(string column) => new(() => ColumnElement(column)
-        .QuerySelector("[data-part=list][data-sortable]")!, _findAll, _scripts);
+        .QuerySelector("[data-part=list][data-sortable]") ?? throw new InvalidOperationException(
+            $"The column \"{column}\" is collapsed, so it shows no cards; open it with ExpandAsync first."),
+        _findAll, _scripts);
+
+    /// <summary>Whether the column titled <paramref name="column"/> is collapsed.</summary>
+    public bool IsCollapsed(string column) => ColumnElement(column).HasAttribute("data-collapsed");
+
+    /// <summary>Collapses the column titled <paramref name="column"/>, as its header's button does. Throws when the
+    /// board isn't <c>Collapsible</c>, or the column is already collapsed.</summary>
+    public async Task CollapseAsync(string column) => await ToggleAsync(column, collapse: true);
+
+    /// <summary>Opens the collapsed column titled <paramref name="column"/>, as its header's button does. Throws when
+    /// the board isn't <c>Collapsible</c>, or the column is already open.</summary>
+    public async Task ExpandAsync(string column) => await ToggleAsync(column, collapse: false);
+
+    private async Task ToggleAsync(string column, bool collapse)
+    {
+        var element = ColumnElement(column);
+        if (element.HasAttribute("data-collapsed") == collapse)
+        {
+            throw new InvalidOperationException(
+                $"The column \"{column}\" is already {(collapse ? "collapsed" : "open")}.");
+        }
+
+        var button = element.QuerySelector(":scope > [data-part=header] > [data-part=collapse]")
+            ?? throw new InvalidOperationException("This board isn't Collapsible, so its columns can't collapse.");
+        await button.ClickAsync(new MouseEventArgs());
+    }
 
     /// <summary>Moves the card named <paramref name="card"/> to the end of the column titled <paramref name="column"/>,
-    /// through its handle's menu as a user would. Throws when the board has no such card or column.</summary>
+    /// through its handle's menu as a user would. Throws when the board has no such card or column, the card is in a
+    /// collapsed column, or the column is collapsed.</summary>
     public async Task MoveToColumnAsync(string card, string column)
     {
         ColumnElement(column);

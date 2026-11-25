@@ -21,6 +21,30 @@ public class KanbanTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Collapse_ShouldKeepFocusOnTheButtonAndOpenAgain_WhenPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/kanban/collapsing");
+        var board = page.Tb().Kanban("Season plan");
+        var collapse = page.GetByRole(AriaRole.Button, new() { Name = "Cards in Planned", Exact = true });
+        await collapse.FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(collapse).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(collapse).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(collapse).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(collapse).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(collapse).ToHaveAttributeAsync("aria-expanded", "false");
+        var collapsed = await board.IsCollapsedAsync("Planned");
+        await board.ExpandAsync("Past");
+
+        Assert.True(collapsed);
+        Assert.Equal(["Winter lantern walk", "Autumn bird count"], await board.CardsAsync("Past"));
+        await Expect(page.Locator("output")).ToHaveTextAsync("Collapsed: planned");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Kanban_ShouldFadeTheSideWithMoreColumns_WhenItScrollsWithNoScrollbarOfItsOwn(string browser)
     {
         var page = await OpenReadyAsync(browser);

@@ -97,6 +97,10 @@ public static class TbStrings
     /// column's title and {1} its limit.</summary>
     public const string KanbanFull = "Kanban.Full";
 
+    /// <summary>"Cards in {0}": names the button that collapses a Kanban column and opens it again, whose
+    /// aria-expanded says which; {0} is the column's title.</summary>
+    public const string KanbanCards = "Kanban.Cards";
+
     /// <summary>"{0}, more choices": names a cascader's choice that opens more choices; {0} is its text.</summary>
     public const string CascaderMore = "Cascader.More";
 
@@ -1974,6 +1978,7 @@ public static class TbStrings
         [AiPromptCopied] = "Copied",
         [KanbanCount] = "{0} of {1}",
         [KanbanFull] = "{0} is full: its limit is {1}.",
+        [KanbanCards] = "Cards in {0}",
         [CascaderMore] = "{0}, more choices",
         [CascaderResults] = "Results: {0}",
         [CascaderNoResults] = "No matches",

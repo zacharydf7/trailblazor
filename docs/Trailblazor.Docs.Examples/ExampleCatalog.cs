@@ -5755,6 +5755,13 @@ public static class ExampleCatalog
                     + "comes to rest on that column. Where the browser shows no scrollbar until the board scrolls, as "
                     + "on a phone, the board fades at each side that has more columns: it gets `data-more-left` and "
                     + "`data-more-right` for those sides, and a `mask-image` draws the fade.", typeof(KanbanExample)),
+                new("collapsing", "Collapsing columns", "`Collapsible` puts a button in each column's header that "
+                    + "collapses the column to a strip with its title and count, and opens it again. "
+                    + "`@bind-CollapsedColumns` holds the collapsed columns' ids, so your app can start with some "
+                    + "collapsed, as Past is here, or keep them in the user's settings; a one-way value has to be the "
+                    + "same collection on each render, or it resets the user's choices. A collapsed column shows no "
+                    + "cards and no `ColumnFooterTemplate`, so none can move into it until it's open, and a card's "
+                    + "Left and Right skip it.", typeof(KanbanCollapseExample)),
             ],
             Api = [typeof(TbKanban<>), typeof(KanbanColumn<>), typeof(KanbanLabels), typeof(SortableMove<>)],
             Keyboard =
@@ -5763,12 +5770,14 @@ public static class ExampleCatalog
                     { When = "On a card's handle" },
                 new(["Home", "End"], "Moves the card to the top or bottom of its column.")
                     { When = "On a card's handle" },
-                new(["Left", "Right"], "Moves the card to the column before or after, and focus follows it.")
+                new(["Left", "Right"], "Moves the card to the open column before or after, and focus follows it.")
                     { When = "On a card's handle" },
                 new(["Enter", "Space"], "Opens its menu: Move up, Move down, Move to the start and Move to the end, then "
                     + "Move to each other column.")
                     { When = "On a card's handle" },
                 new(["Escape"], "Cancels a drag.") { When = "While dragging" },
+                new(["Enter", "Space"], "Collapses the column, or opens it again.")
+                    { When = "On a column's collapse button" },
             ],
             Labeling =
             [
@@ -5777,6 +5786,9 @@ public static class ExampleCatalog
                 "Each card's handle is named \"Move\" followed by the card's `CardLabel`. `Labels.Moves` rewords the "
                     + "handles and their announcements, and `Labels.Count` and `Labels.Full` the count and the "
                     + "refusal.",
+                "With `Collapsible`, each column's button is named \"Cards in\" followed by the column's title, and "
+                    + "`aria-expanded` says whether the column is open, with `aria-controls` pointing to its cards "
+                    + "while it is. `Labels.Cards` rewords the name.",
             ],
             Announcements =
             [
@@ -5790,23 +5802,33 @@ public static class ExampleCatalog
                 "A click on a handle opens the same menu as Enter or Space, the single-pointer way that replaces "
                     + "dragging (WCAG 2.5.7).",
                 "A full column's count turns red and says how many it takes, so being full doesn't rely on color.",
+                "A column's collapse button stays the same element as the column collapses, so focus stays on it.",
             ],
             Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
             BeforeInteractive =
             [
-                "The columns and cards render, and the board scrolls sideways and snaps to its columns. Dragging, "
-                    + "the handles and the fade at the board's sides start working once the page is interactive.",
+                "The columns and cards render, and the board scrolls sideways and snaps to its columns. Columns in "
+                    + "`CollapsedColumns` render collapsed. Dragging, the handles, the collapse buttons and the fade "
+                    + "at the board's sides start working once the page is interactive.",
             ],
             Ready = new(".tb-sortable", "each column's list"),
             Target = new("region", "Trail work"),
             Blocks = ["tb-kanban"],
             DataParts =
             [
-                new("column", "One column, with `data-key` for its `Id` and `data-full` once it holds its `Limit`."),
-                new("header", "The column's title and count."),
+                new("column", "One column, with `data-key` for its `Id`, `data-full` once it holds its `Limit`, "
+                    + "and `data-collapsed` while it's collapsed."),
+                new("header", "The column's title, count and, with `Collapsible`, its collapse button."),
                 new("title", "The column's title."),
                 new("count", "How many cards it holds, against its `Limit` when it has one."),
-                new("footer", "What `ColumnFooterTemplate` draws under the column."),
+                new("footer", "What `ColumnFooterTemplate` draws under the column, while it's open."),
+                new("collapse", "The button that collapses a column and opens it again, with `Collapsible`."),
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trail-work\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders, and `trailblazor.control.used` with the action `move` for each move, and `collapse` or "
+                    + "`expand` each time a column collapses or opens. Which card or column is never recorded.",
             ],
             Scenario = new("basic", "it moves a card to another column from its handle's menu, checks both columns, "
                 + "and checks that a move into the full column is refused."),
@@ -5819,6 +5841,10 @@ public static class ExampleCatalog
                 "`MoveToColumnAsync(card, column)` moves a card to the end of another column through its handle's "
                     + "menu.",
                 "`Column(title)` gives that column's sortable list, for `MoveAsync` within it or a drag.",
+                "`CollapseAsync(column)` and `ExpandAsync(column)` press a column's collapse button, and "
+                    + "`IsCollapsedAsync(column)`, or `IsCollapsed(column)` in bUnit, reads whether it's collapsed.",
+                "A collapsed column's `CardsAsync` or `Cards` is empty, and `MoveToColumnAsync` finds cards only in "
+                    + "open columns and can't move a card into a collapsed one.",
                 "A move the app refuses, such as into a full column, is announced, which `page.Tb().Announcements` "
                     + "in Playwright or `FakeAnnouncer` in bUnit reads.",
             ],

@@ -11317,6 +11317,20 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         color: var(--tb-color-danger-text);
     }
 
+    /* A collapsed column is a narrow strip with its title running down it. */
+    .tb-kanban__column--collapsed {
+        flex-basis: auto;
+    }
+
+    .tb-kanban__column--collapsed .tb-kanban__header {
+        flex-direction: column-reverse;
+        align-items: center;
+    }
+
+    .tb-kanban__column--collapsed .tb-kanban__title {
+        writing-mode: vertical-rl;
+    }
+
     /* An empty column keeps room to drop a card into. */
     .tb-kanban__cards .tb-sortable__list {
         min-block-size: var(--tb-space-12);

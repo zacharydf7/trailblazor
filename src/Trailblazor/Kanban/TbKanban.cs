@@ -18,6 +18,10 @@ public partial class TbKanban<TItem>
     private ElementReference _board;
     private IJSObjectReference? _edges;
     private bool _disposed;
+    private HashSet<string> _collapsed = [];
+    // The collapsed columns last given, so a parent's render that passes the same collection leaves the user's
+    // toggles alone.
+    private IReadOnlyCollection<string>? _givenCollapsed;
 
     /// <summary>Names the board for screen readers, such as "Trail work". Required.</summary>
     [Parameter, EditorRequired]
@@ -57,6 +61,22 @@ public partial class TbKanban<TItem>
     [Parameter]
     public RenderFragment<KanbanColumn<TItem>>? ColumnFooterTemplate { get; set; }
 
+    /// <summary>Shows a button in each column's header that collapses the column to its title and count, and opens it
+    /// again. A collapsed column shows no cards and no <see cref="ColumnFooterTemplate"/>, and no card can move into it
+    /// until it's open.</summary>
+    [Parameter]
+    public bool Collapsible { get; set; }
+
+    /// <summary>The <see cref="KanbanColumn{TItem}.Id"/>s of the collapsed columns. Bind it with
+    /// <c>@bind-CollapsedColumns</c> to keep them, such as in the user's settings, or pass the same collection on each
+    /// render. Set <see cref="Collapsible"/> too, so people can open them.</summary>
+    [Parameter]
+    public IReadOnlyCollection<string>? CollapsedColumns { get; set; }
+
+    /// <summary>Raised with the collapsed columns' ids each time a column collapses or opens.</summary>
+    [Parameter]
+    public EventCallback<IReadOnlyCollection<string>> CollapsedColumnsChanged { get; set; }
+
     /// <summary>Turns off the cards' move handles, so no card can move.</summary>
     [Parameter]
     public bool Disabled { get; set; }
@@ -68,7 +88,8 @@ public partial class TbKanban<TItem>
 
     /// <summary>A label this board's use is counted under, such as <c>"trail-work"</c>, so the app can see how people
     /// use it through the <c>Trailblazor</c> meter: counted in <c>trailblazor.control.shown</c> when it first renders,
-    /// and in <c>trailblazor.control.used</c> each time a card moves. Which card is never recorded.</summary>
+    /// and in <c>trailblazor.control.used</c> each time a card moves, with the action <c>move</c>, or a column
+    /// collapses or opens, with <c>collapse</c> or <c>expand</c>. Which card or column is never recorded.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
@@ -80,6 +101,9 @@ public partial class TbKanban<TItem>
 
     [Inject]
     private JsModuleLoader Modules { get; set; } = default!;
+
+    [Inject]
+    private SortableGroups Groups { get; set; } = default!;
 
     private ControlTelemetry Telemetry => field ??= new(Services, GetType());
 
@@ -97,7 +121,18 @@ public partial class TbKanban<TItem>
         {
             throw new InvalidOperationException($"{nameof(TbKanban<TItem>)} needs an {nameof(AriaLabel)}.");
         }
+
+        if (!ReferenceEquals(CollapsedColumns, _givenCollapsed))
+        {
+            _givenCollapsed = CollapsedColumns;
+            _collapsed = [.. CollapsedColumns ?? []];
+        }
+
+        OrderColumns();
     }
+
+    // The cards' menus offer the columns in the board's order, even one that opens after the others rendered.
+    private void OrderColumns() => Groups.Order(_group, Columns.Select(column => column.Id));
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -152,6 +187,22 @@ public partial class TbKanban<TItem>
         }
 
         return CanMove is null ? MoveCheck.Allow : await CanMove(move);
+    }
+
+    private string ToggleLabel(KanbanColumn<TItem> column) => string.Format(CultureInfo.CurrentCulture,
+        Labels.Cards ?? Localizer[TbStrings.KanbanCards], column.Title);
+
+    private async Task ToggleAsync(KanbanColumn<TItem> column)
+    {
+        var collapsing = _collapsed.Add(column.Id);
+        if (!collapsing)
+        {
+            _collapsed.Remove(column.Id);
+        }
+
+        Telemetry.Used(TelemetryName, collapsing ? "collapse" : "expand");
+        OrderColumns();
+        await CollapsedColumnsChanged.InvokeAsync([.. _collapsed]);
     }
 
     private async Task MoveAsync(SortableMove<TItem> move)

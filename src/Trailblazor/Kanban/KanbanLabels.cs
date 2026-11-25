@@ -12,6 +12,10 @@ public sealed record KanbanLabels
     /// limit, for <see cref="TbStrings.KanbanFull"/>.</summary>
     public string? Full { get; init; }
 
+    /// <summary>Names the button that collapses a column and opens it again, with <c>{0}</c> for its title, for
+    /// <see cref="TbStrings.KanbanCards"/>. Its <c>aria-expanded</c> says whether the column is open.</summary>
+    public string? Cards { get; init; }
+
     /// <summary>The words each column's move handles show and say: their names, hint and menu, and what is read out
     /// after a move.</summary>
     public SortableLabels Moves { get; init; } = new();

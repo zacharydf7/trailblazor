@@ -12,19 +12,35 @@
         @* The ids come from the column's place, since an app's Id can hold spaces that would split an IDREF list. *@
         var titleId = $"{_id}-{index}-title";
         var countId = $"{_id}-{index}-count";
+        var cardsId = $"{_id}-{index}-cards";
+        var collapsed = _collapsed.Contains(column.Id);
         <div @key="column.Id" role="group" aria-labelledby="@titleId" aria-describedby="@countId" data-part="column"
-             data-key="@column.Id" data-full="@(IsFull(column) ? "" : null)" class="tb-kanban__column">
+             data-key="@column.Id" data-full="@(IsFull(column) ? "" : null)"
+             data-collapsed="@(collapsed ? "" : null)"
+             class="@ClassNames.Join("tb-kanban__column", collapsed ? "tb-kanban__column--collapsed" : null)">
             <div data-part="header" class="tb-kanban__header">
                 <span id="@titleId" data-part="title" class="tb-kanban__title">@column.Title</span>
                 <span id="@countId" data-part="count" class="tb-kanban__count">@CountText(column)</span>
+                @if (Collapsible)
+                {
+                    <TbIconButton Icon="@(collapsed ? BuiltInIcons.ChevronEnd : BuiltInIcons.ChevronStart)"
+                                  Size="Size.Small" Variant="Variant.Text" AriaLabel="@ToggleLabel(column)"
+                                  aria-expanded="@(collapsed ? "false" : "true")"
+                                  aria-controls="@(collapsed ? null : cardsId)" data-part="collapse"
+                                  OnClick="() => ToggleAsync(column)" class="tb-kanban__collapse" />
+                }
             </div>
-            <TbSortable TItem="TItem" Items="column.Cards" ItemTemplate="CardTemplate" Label="@column.Title"
-                        ItemLabel="CardLabel" KeySelector="KeySelector" Group="@_group" ListId="@column.Id"
-                        OnMove="MoveAsync" CanMove="move => CheckAsync(column, move)" Disabled="Disabled"
-                        Labels="Labels.Moves" class="tb-kanban__cards" />
-            @if (ColumnFooterTemplate is not null)
+            @* A collapsed column shows no cards, so no card can move into it until it opens again. *@
+            @if (!collapsed)
             {
-                <div data-part="footer" class="tb-kanban__footer">@ColumnFooterTemplate(column)</div>
+                <TbSortable TItem="TItem" Items="column.Cards" ItemTemplate="CardTemplate" Label="@column.Title"
+                            ItemLabel="CardLabel" KeySelector="KeySelector" Group="@_group" ListId="@column.Id"
+                            OnMove="MoveAsync" CanMove="move => CheckAsync(column, move)" Disabled="Disabled"
+                            Labels="Labels.Moves" id="@cardsId" class="tb-kanban__cards" />
+                @if (ColumnFooterTemplate is not null)
+                {
+                    <div data-part="footer" class="tb-kanban__footer">@ColumnFooterTemplate(column)</div>
+                }
             }
         </div>
     }
