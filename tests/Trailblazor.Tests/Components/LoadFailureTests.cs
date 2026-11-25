@@ -39,19 +39,45 @@ public class LoadFailureTests : BunitContext
     }
 
     [Fact]
-    public async Task Grid_ShouldLogAWarningAndCountTheFailure_WhenItsProviderThrowsDuringAnExport()
+    public async Task Grid_ShouldCountAFailedExportAndRaiseOnLoadFailed_WhenItsProviderThrowsDuringAnExport()
     {
         var loads = 0;
+        var failed = new List<Exception>();
+        var host = Render<AnnouncerHost>();
         var cut = Render<TbDataGrid<string>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
             .Add(grid => grid.TelemetryName, "trail-grid").Add(grid => grid.ChildContent, NameColumn())
-            .Add(grid => grid.Exportable, true)
+            .Add(grid => grid.Exportable, true).Add(grid => grid.OnLoadFailed, (Exception error) => failed.Add(error))
             .Add(grid => grid.DataProvider, (_, _) => ++loads == 1
                 ? Task.FromResult(new GridResult<string>(["Pine Hollow"], 1))
                 : Task.FromException<GridResult<string>>(new IOException("Down"))));
 
         await cut.Tb().Menu("Export").ChooseAsync("CSV");
 
-        AssertFailed("Trailblazor.TbDataGrid", "TbDataGrid trail-grid failed to load.", "trail-grid", "load");
+        AssertFailed("Trailblazor.TbDataGrid", "TbDataGrid trail-grid failed to export.", "trail-grid", "export");
+        Assert.Equal("Down", Assert.Single(failed).Message);
+        host.WaitForAssertion(() => Assert.Contains("Couldn't export the rows.", Spoken(host)));
+    }
+
+    [Fact]
+    public async Task Grid_ShouldCountAFailedExportButNoFailedLoad_WhenAColumnThrowsWhileTheFileIsBuilt()
+    {
+        var failed = new List<Exception>();
+        var host = Render<AnnouncerHost>();
+        var trip = new Trip();
+        var cut = Render<TbDataGrid<Trip>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trips")
+            .Add(grid => grid.TelemetryName, "trip-grid")
+            .Add(grid => grid.DataProvider, (_, _) => Task.FromResult(new GridResult<Trip>([trip], 1)))
+            .Add(grid => grid.Exportable, true).Add(grid => grid.OnLoadFailed, (Exception error) => failed.Add(error))
+            .Add(grid => grid.Labels, new DataGridLabels { ExportFailed = "The trips didn't export." })
+            .AddChildContent<TbColumn<Trip>>(column => column.Add(name => name.Field, trip => trip.Name)));
+        trip.Broken = true;
+
+        await cut.Tb().Menu("Export").ChooseAsync("CSV");
+
+        AssertFailed("Trailblazor.TbDataGrid", "TbDataGrid trip-grid failed to export.", "trip-grid", "export");
+        Assert.Empty(failed);
+        host.WaitForAssertion(() => Assert.Contains("The trips didn't export.", Spoken(host)));
+        Assert.DoesNotContain("Couldn't load the rows.", Spoken(host));
     }
 
     [Fact]
@@ -148,6 +174,37 @@ public class LoadFailureTests : BunitContext
     }
 
     [Fact]
+    public async Task ExportCsvAsync_ShouldThrowTheProvidersOwnException_WhenTheProviderFails()
+    {
+        var loads = 0;
+        var cut = Render<TbDataGrid<string>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
+            .Add(grid => grid.ChildContent, NameColumn())
+            .Add(grid => grid.DataProvider, (_, _) => ++loads == 1
+                ? Task.FromResult(new GridResult<string>(["Pine Hollow"], 1))
+                : Task.FromException<GridResult<string>>(new IOException("Down"))));
+
+        var thrown = await Assert.ThrowsAsync<IOException>(() => cut.InvokeAsync(() => cut.Instance.ExportCsvAsync()));
+
+        Assert.Equal("Down", thrown.Message);
+    }
+
+    [Fact]
+    public void Tree_ShouldLogAKeyByItsType_WhenTheItemIsItsOwnKey()
+    {
+        var place = new Place { Name = "North" };
+        var cut = Render<TbTreeView<Place, Place>>(parameters => parameters.Add(tree => tree.AriaLabel, "Places")
+            .Add(tree => tree.Items, [place]));
+        // A record's equality and hash code follow its values, so the row no longer finds it.
+        place.Name = "South";
+
+        cut.Find("[role=treeitem]").Click();
+
+        var log = Assert.Single(_logs.GetSnapshot(), log => log.Category == "Trailblazor.TbTreeView");
+        Assert.Equal("The tree Places dropped an event for the key of type Place, which no row has anymore.",
+            log.Message);
+    }
+
+    [Fact]
     public void Tree_ShouldLogAtDebug_WhenAClickedRowsKeyFindsNoRowNow()
     {
         var key = new Shifty();
@@ -170,6 +227,22 @@ public class LoadFailureTests : BunitContext
         public override int GetHashCode() => Hash;
 
         public override string ToString() => nameof(Shifty);
+    }
+
+    private static IReadOnlyList<string> Spoken(IRenderedComponent<AnnouncerHost> host) =>
+        [.. host.FindAll("[role=status] p").Select(p => p.TextContent)];
+
+    private sealed record Place
+    {
+        public string Name { get; set; } = "";
+    }
+
+    // A trip whose name throws once it breaks, as a column's field can while a file is built.
+    private sealed class Trip
+    {
+        public bool Broken { get; set; }
+
+        public string Name => Broken ? throw new IOException("Down") : "Pine Hollow";
     }
 
     private IEnumerable<FakeLogRecord> Warnings() => _logs.GetSnapshot().Where(log => log.Level >= LogLevel.Warning);

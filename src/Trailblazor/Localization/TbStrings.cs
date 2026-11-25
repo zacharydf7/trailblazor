@@ -1386,6 +1386,9 @@ public static class TbStrings
     /// <summary>"Couldn't load the rows.": shown when a data grid's rows fail to load.</summary>
     public const string DataGridLoadFailed = "DataGrid.LoadFailed";
 
+    /// <summary>"Couldn't export the rows.": read out when a data grid's export fails.</summary>
+    public const string DataGridExportFailed = "DataGrid.ExportFailed";
+
     /// <summary>"Retry": names the button that loads a data grid's rows again after a failure.</summary>
     public const string DataGridRetry = "DataGrid.Retry";
 
@@ -2155,6 +2158,7 @@ public static class TbStrings
         [ToolbarMore] = "More",
         [DataGridLoading] = "Loading…",
         [DataGridLoadFailed] = "Couldn't load the rows.",
+        [DataGridExportFailed] = "Couldn't export the rows.",
         [DataGridRetry] = "Retry",
         [DataGridEmpty] = "Nothing to show.",
         [DataGridSelectAll] = "Select all rows",

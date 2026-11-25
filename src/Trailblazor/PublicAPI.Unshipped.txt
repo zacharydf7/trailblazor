@@ -524,6 +524,7 @@ const Trailblazor.TbStrings.DataGridAscending = "DataGrid.Ascending" -> string!
 const Trailblazor.TbStrings.DataGridDescending = "DataGrid.Descending" -> string!
 const Trailblazor.TbStrings.DataGridEmpty = "DataGrid.Empty" -> string!
 const Trailblazor.TbStrings.DataGridLoadFailed = "DataGrid.LoadFailed" -> string!
+const Trailblazor.TbStrings.DataGridExportFailed = "DataGrid.ExportFailed" -> string!
 const Trailblazor.TbStrings.DataGridLoading = "DataGrid.Loading" -> string!
 const Trailblazor.TbStrings.DataGridOrder = "DataGrid.Order" -> string!
 const Trailblazor.TbStrings.DataGridPages = "DataGrid.Pages" -> string!
@@ -1064,6 +1065,8 @@ Trailblazor.DataGridLabels.Empty.init -> void
 Trailblazor.DataGridLabels.Equals(Trailblazor.DataGridLabels? other) -> bool
 Trailblazor.DataGridLabels.LoadFailed.get -> string?
 Trailblazor.DataGridLabels.LoadFailed.init -> void
+Trailblazor.DataGridLabels.ExportFailed.get -> string?
+Trailblazor.DataGridLabels.ExportFailed.init -> void
 Trailblazor.DataGridLabels.Loading.get -> string?
 Trailblazor.DataGridLabels.Loading.init -> void
 Trailblazor.DataGridLabels.PageSize.get -> string?

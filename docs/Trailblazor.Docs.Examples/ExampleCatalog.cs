@@ -12714,6 +12714,8 @@ public static class ExampleCatalog
                 "After a filter changes, the count of rows shown is read out, such as \"Rows shown: 2.\"",
                 "A failed load and a `DataProvider` load with no rows are read out. With `EmptyContent`, set "
                     + "`Labels.Empty` to what should be read out.",
+                "A failed export reads \"Couldn't export the rows.\", or `Labels.ExportFailed`, and the rows shown "
+                    + "stay as they were.",
                 "An edit's error shows under its field and is read out.",
                 "Each move of a row is read out with its new position, and so is the reason `CanMoveRow` refuses one.",
             ],
@@ -12963,9 +12965,9 @@ public static class ExampleCatalog
                     + "`keyboard` made it.",
                 "A page `ScrollToAsync` moves to, or a group it opens, isn't counted, and which column, filter "
                     + "value, page, group, rows or width were used, or what value an edit saved, is never recorded.",
-                "A `DataProvider` that fails, for the rows or for an export, is counted in "
-                    + "`trailblazor.control.failed`, with the action `load`, and logged as a warning whether or not "
-                    + "the grid has a `TelemetryName`.",
+                "A `DataProvider` that fails to load the rows is counted in `trailblazor.control.failed` with the "
+                    + "action `load`, and an export that fails, in its provider or while the file is built, with the "
+                    + "action `export`. Each is logged as a warning whether or not the grid has a `TelemetryName`.",
             ],
         },
         new("tree-grid", "Tree grid", ExampleCategory.Content,

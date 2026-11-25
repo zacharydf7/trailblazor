@@ -1457,7 +1457,10 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
         Services.GetService<ILoggerFactory>()?.CreateLogger(GetType()).LogDebug(
             "The tree {Tree} dropped an event for the key {Key}, which no row has anymore.",
-            TelemetryName ?? AriaLabel ?? "(unnamed)", key);
+            TelemetryName ?? AriaLabel ?? "(unnamed)",
+            // Without a KeySelector the key is the item itself, which may hold personal data, so a key that isn't text
+            // or IFormattable is written as its type.
+            KeySelector is not null || key is string or IFormattable ? key : $"of type {key.GetType().Name}");
         return Task.CompletedTask;
     }
 

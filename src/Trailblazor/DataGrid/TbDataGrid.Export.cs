@@ -13,8 +13,9 @@ public partial class TbDataGrid<TItem>
 
     /// <summary>Adds an Export menu to the bar above the rows. It downloads the rows the filters leave, from every
     /// page, as a CSV file, an Excel workbook or a PDF with the content <see cref="ExportCsvAsync"/>,
-    /// <see cref="ExportExcelAsync"/> and <see cref="ExportPdfAsync"/> return. A <see cref="DataProvider"/> that fails raises
-    /// <see cref="OnLoadFailed"/> and leaves the rows shown as they were.</summary>
+    /// <see cref="ExportExcelAsync"/> and <see cref="ExportPdfAsync"/> return. An export that fails reads
+    /// "Couldn't export the rows.", or <see cref="DataGridLabels.ExportFailed"/>, and leaves the rows shown as they
+    /// were; when its <see cref="DataProvider"/> failed, it also raises <see cref="OnLoadFailed"/>.</summary>
     [Parameter]
     public bool Exportable { get; set; }
 
@@ -32,7 +33,7 @@ public partial class TbDataGrid<TItem>
     public async Task<string> ExportCsvAsync(GridExportRows rows = GridExportRows.Shown)
     {
         var (columns, items) = await ExportedAsync(rows);
-        return CsvExport.Write(columns.Select(column => column.Heading), CellsOf(columns, items));
+        return CsvOf(columns, items);
     }
 
     /// <summary>The rows as an Excel workbook (.xlsx) of one sheet, with a bold header row that stays in view. Numbers,
@@ -43,7 +44,7 @@ public partial class TbDataGrid<TItem>
     public async Task<byte[]> ExportExcelAsync(GridExportRows rows = GridExportRows.Shown)
     {
         var (columns, items) = await ExportedAsync(rows);
-        return XlsxExport.Write(ExportName, [.. columns.Select(column => column.Heading)], CellsOf(columns, items));
+        return ExcelOf(columns, items);
     }
 
     /// <summary>The rows as a PDF of landscape A4 pages that repeat the export's name (<see cref="ExportFileName"/>, or
@@ -58,9 +59,18 @@ public partial class TbDataGrid<TItem>
     public async Task<byte[]> ExportPdfAsync(GridExportRows rows = GridExportRows.Shown)
     {
         var (columns, items) = await ExportedAsync(rows);
-        return PdfExport.Write(ExportFileName ?? AriaLabel ?? "Export", [.. columns.Select(column => column.Heading)],
-            [.. PdfLinesOf(columns, items, rows == GridExportRows.Shown)]);
+        return PdfOf(columns, items, rows);
     }
+
+    private string CsvOf(List<TbColumn<TItem>> columns, IReadOnlyList<TItem> items) =>
+        CsvExport.Write(columns.Select(column => column.Heading), CellsOf(columns, items));
+
+    private byte[] ExcelOf(List<TbColumn<TItem>> columns, IReadOnlyList<TItem> items) =>
+        XlsxExport.Write(ExportName, [.. columns.Select(column => column.Heading)], CellsOf(columns, items));
+
+    private byte[] PdfOf(List<TbColumn<TItem>> columns, IReadOnlyList<TItem> items, GridExportRows rows) =>
+        PdfExport.Write(ExportFileName ?? AriaLabel ?? "Export", [.. columns.Select(column => column.Heading)],
+            [.. PdfLinesOf(columns, items, rows == GridExportRows.Shown)]);
 
     // Shown rows come under their groups' headings, as the grid shows them, and every export ends with its totals.
     private IEnumerable<PdfLine> PdfLinesOf(List<TbColumn<TItem>> columns, IReadOnlyList<TItem> items, bool shown)
@@ -144,7 +154,7 @@ public partial class TbDataGrid<TItem>
         return (columns, (await DataProvider(request, _exporting.Token)).Items);
     }
 
-    // A provider's failure is the grid's to report, as when it loads a page, but the rows shown stay as they were.
+    // The grid reports a failed export itself and keeps the rows shown; only a provider failure raises OnLoadFailed.
     private async Task ExportFromMenuAsync(ExportFormat format)
     {
         Telemetry.Used(TelemetryName, format switch
@@ -153,15 +163,11 @@ public partial class TbDataGrid<TItem>
             ExportFormat.Pdf => "export_pdf",
             _ => "export_csv",
         });
-        byte[] content;
+        List<TbColumn<TItem>> columns;
+        IReadOnlyList<TItem> items;
         try
         {
-            content = format switch
-            {
-                ExportFormat.Excel => await ExportExcelAsync(),
-                ExportFormat.Pdf => await ExportPdfAsync(),
-                _ => [.. Encoding.UTF8.GetPreamble(), .. Encoding.UTF8.GetBytes(await ExportCsvAsync())],
-            };
+            (columns, items) = await ExportedAsync(GridExportRows.Shown);
         }
         catch (Exception) when (_exporting.IsCancellationRequested)
         {
@@ -170,9 +176,28 @@ public partial class TbDataGrid<TItem>
         }
         catch (Exception exception)
         {
-            Announcer.Polite(LoadFailedLabel);
-            Telemetry.Failed(TelemetryName, AriaLabel, "load", exception);
-            await OnLoadFailed.InvokeAsync(exception);
+            ReportExportFailure(exception);
+            if (DataProvider is not null)
+            {
+                await OnLoadFailed.InvokeAsync(exception);
+            }
+
+            return;
+        }
+
+        byte[] content;
+        try
+        {
+            content = format switch
+            {
+                ExportFormat.Excel => ExcelOf(columns, items),
+                ExportFormat.Pdf => PdfOf(columns, items, GridExportRows.Shown),
+                _ => [.. Encoding.UTF8.GetPreamble(), .. Encoding.UTF8.GetBytes(CsvOf(columns, items))],
+            };
+        }
+        catch (Exception exception)
+        {
+            ReportExportFailure(exception);
             return;
         }
 
@@ -184,6 +209,12 @@ public partial class TbDataGrid<TItem>
             _ => ("csv", CsvType),
         };
         await Browser.DownloadAsync(stream, $"{ExportName}.{extension}", type);
+    }
+
+    private void ReportExportFailure(Exception exception)
+    {
+        Announcer.Polite(Text(Labels.ExportFailed, TbStrings.DataGridExportFailed));
+        Telemetry.Failed(TelemetryName, AriaLabel, "export", exception);
     }
 
     private enum ExportFormat

@@ -34,12 +34,13 @@ public static class TelemetryCatalog
             + "on an alert, and a choice in a select or list box, or of an option, whether a pointer or the keyboard "
             + "made it, as trailblazor.input."),
         new("trailblazor.control.failed", "Counter", "{failure}",
-            "Loads and searches that failed in controls with a TelemetryName.", [.. CommonTags, ActionTag],
-            "A data grid's DataProvider throws, for its rows or for an export, or a tree view's LoadChildren "
-            + "throws, with the action load. An autocomplete's or a mention input's Search, or a rich text "
-            + "editor's MentionSearch, throws, with the action search. A load or a search that was canceled or "
-            + "replaced isn't counted. Each failure is also logged as a warning, whether or not the control has a "
-            + "TelemetryName."),
+            "Loads, searches and exports that failed in controls with a TelemetryName.", [.. CommonTags, ActionTag],
+            "A data grid's DataProvider throws for its rows, or a tree view's LoadChildren throws, with the action "
+            + "load. A data grid's export fails, in its DataProvider or while the file is built, such as when a "
+            + "column's field throws, with the action export. An autocomplete's or a mention input's Search, or "
+            + "a rich text editor's MentionSearch, throws, with the action search. A load or a search that was "
+            + "canceled or replaced isn't counted. Each failure is also logged as a warning, whether or not the "
+            + "control has a TelemetryName."),
         new("trailblazor.dialog.closed", "Counter", "{dialog}",
             "Dialogs with a TelemetryName that closed, by how they closed.", [.. CommonTags, OutcomeTag],
             "A dialog with a TelemetryName closes: confirmed, canceled, or dismissed by escape, backdrop or "

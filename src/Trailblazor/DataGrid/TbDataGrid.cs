@@ -449,9 +449,11 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     [Parameter]
     public RenderFragment? EmptyContent { get; set; }
 
-    /// <summary>Raised when the <see cref="DataProvider"/> fails; the grid offers to try again. The failure is also
-    /// logged as a warning, and counted in <c>trailblazor.control.failed</c> when the grid has a
-    /// <see cref="TelemetryName"/>.</summary>
+    /// <summary>Raised when the <see cref="DataProvider"/> fails, whether it's loading the rows or an export; after a
+    /// failed load, the grid offers to try again. An export that fails for another reason, such as a column's field
+    /// throwing while the file is built, doesn't raise this. Every failure is also logged as a warning, and counted
+    /// in <c>trailblazor.control.failed</c> when the grid has a <see cref="TelemetryName"/>: as <c>load</c>, or as
+    /// <c>export</c> for any failed export.</summary>
     [Parameter]
     public EventCallback<Exception> OnLoadFailed { get; set; }
 
@@ -476,8 +478,9 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <c>filter</c>, <c>page</c>, <c>page_size</c>, <c>select</c>, <c>move</c>, <c>group</c>, <c>expand</c>,
     /// <c>collapse</c>, <c>edit</c>, <c>open_detail</c>, <c>close_detail</c>, <c>export_csv</c>,
     /// <c>export_excel</c> or <c>export_pdf</c> each time the user does one. A <see cref="DataProvider"/> that fails
-    /// is counted in <c>trailblazor.control.failed</c>. Which column, filter value, page, group, rows or value is
-    /// never recorded. It names the grid, never the user.</summary>
+    /// to load the rows is counted in <c>trailblazor.control.failed</c> as <c>load</c>, and a failed export as
+    /// <c>export</c>. Which column, filter value, page, group, rows or value is never recorded. It names the grid,
+    /// never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 

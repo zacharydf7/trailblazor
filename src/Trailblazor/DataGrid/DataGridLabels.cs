@@ -11,6 +11,10 @@ public sealed record DataGridLabels
     /// cref="TbStrings.DataGridLoadFailed"/>.</summary>
     public string? LoadFailed { get; init; }
 
+    /// <summary>Read out when an export fails. Leave it null for the app's text for <see
+    /// cref="TbStrings.DataGridExportFailed"/>.</summary>
+    public string? ExportFailed { get; init; }
+
     /// <summary>The button that loads the rows again after a failure. Leave it null for the app's text for <see
     /// cref="TbStrings.DataGridRetry"/>.</summary>
     public string? Retry { get; init; }
