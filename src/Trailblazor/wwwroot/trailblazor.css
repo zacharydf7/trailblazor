@@ -1976,6 +1976,37 @@
         text-align: center;
     }
 
+    /* The region keeps its place while it loads; a reload's bar sits over the top of the content. */
+    .tb-async-content {
+        position: relative;
+    }
+
+    .tb-async-content__status:not(:empty) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--tb-space-2);
+        padding: var(--tb-space-6) var(--tb-space-4);
+    }
+
+    .tb-async-content__progress {
+        position: absolute;
+        inset-block-start: 0;
+        inset-inline: 0;
+    }
+
+    .tb-async-content__failed {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--tb-space-2) var(--tb-space-3);
+        padding: var(--tb-space-3) 0;
+    }
+
+    .tb-async-content__message {
+        margin: 0;
+    }
+
     /* An empty state sits centered in the space it stands in for, with a muted icon above its title. */
     .tb-empty-state {
         --tb-empty-state-icon-size: 3rem;

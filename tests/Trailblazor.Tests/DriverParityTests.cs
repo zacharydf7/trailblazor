@@ -45,7 +45,7 @@ public class DriverParityTests
         ["TbSpeedDial"] = "Menu", ["TbToolbar"] = "Toolbar", ["TbInsertDivider"] = "InsertDivider",
         ["TbRibbon"] = "Ribbon",
         ["TbBackToTop"] = "BackToTop", ["TbSpeechToText"] = "SpeechToText", ["TbText"] = "Text",
-        ["TbSmartPaste"] = "SmartPaste",
+        ["TbSmartPaste"] = "SmartPaste", ["TbAsyncContent"] = "AsyncContent",
         ["TbInPlaceEditor"] = "InPlaceEditor", ["TbDockManager"] = "Dock",
         ["TbNavMenu"] = "NavMenu", ["TbCodeField"] = "TextField", ["TbButton"] = "Button",
         ["TbIconButton"] = "Button",

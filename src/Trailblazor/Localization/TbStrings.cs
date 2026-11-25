@@ -1352,6 +1352,17 @@ public static class TbStrings
     /// <summary>"Couldn't fill the form": shown and said when the model failed.</summary>
     public const string SmartPasteFailed = "SmartPaste.Failed";
 
+    /// <summary>"Loading {0}": shown and said while an async content region's first load is slow; {0} is its
+    /// <see cref="TbAsyncContent.Label"/>, such as "groups".</summary>
+    public const string AsyncContentLoading = "AsyncContent.Loading";
+
+    /// <summary>"Unable to load {0}.": shown and said when an async content region's load fails; {0} is its
+    /// <see cref="TbAsyncContent.Label"/>.</summary>
+    public const string AsyncContentLoadFailed = "AsyncContent.LoadFailed";
+
+    /// <summary>"Retry": the button that loads an async content region again after a failure.</summary>
+    public const string AsyncContentRetry = "AsyncContent.Retry";
+
     /// <summary>"Back to top": the name of the button that takes a scrolled page back to its top.</summary>
     public const string BackToTopLabel = "BackToTop.Label";
 
@@ -2161,6 +2172,9 @@ public static class TbStrings
         [SmartPasteFilledOne] = "Filled 1 field",
         [SmartPasteNothing] = "Found nothing to fill",
         [SmartPasteFailed] = "Couldn't fill the form",
+        [AsyncContentLoading] = "Loading {0}",
+        [AsyncContentLoadFailed] = "Unable to load {0}.",
+        [AsyncContentRetry] = "Retry",
         [BackToTopLabel] = "Back to top",
         [InPlaceEditorEdit] = "Edit",
         [InPlaceEditorSave] = "Save",

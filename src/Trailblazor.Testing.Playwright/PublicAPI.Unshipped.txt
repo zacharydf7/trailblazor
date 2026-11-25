@@ -689,3 +689,11 @@ Trailblazor.Testing.Playwright.TbRibbonLocator.PressKeyTipsAsync(params string![
 Trailblazor.Testing.Playwright.TbDockLocator.PopOutAsync(string! panel) -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
 Trailblazor.Testing.Playwright.TbDockLocator.PoppedOutAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbDockLocator.ReturnAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAsyncContentLocator
+Trailblazor.Testing.Playwright.TbAsyncContentLocator.BusyAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbAsyncContentLocator.Region.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbAsyncContentLocator.RetryAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbAsyncContentLocator.StateAsync() -> System.Threading.Tasks.Task<Trailblazor.AsyncContentState>!
+Trailblazor.Testing.Playwright.TbAsyncContentLocator.TbAsyncContentLocator(Microsoft.Playwright.ILocator! scope, string? label) -> void
+Trailblazor.Testing.Playwright.TbAsyncContentLocator.WaitUntilLoadedAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TrailblazorPage.AsyncContent(string? label = null) -> Trailblazor.Testing.Playwright.TbAsyncContentLocator!

@@ -314,6 +314,8 @@ public class ComponentContractTests : BunitContext
                 var type when type == typeof(RenderFragment<string>) =>
                     (RenderFragment<string>)(text => item => item.AddContent(0, text)),
                 var type when type == typeof(Func<string, object>) => (Func<string, object>)(text => text),
+                var type when type == typeof(Func<CancellationToken, Task>) =>
+                    (Func<CancellationToken, Task>)(_ => Task.CompletedTask),
                 var type when type == typeof(Func<string, string>) => (Func<string, string>)(text => text),
                 var type when type == typeof(Func<string, CancellationToken, IAsyncEnumerable<string>>) =>
                     (Func<string, CancellationToken, IAsyncEnumerable<string>>)((_, _) =>

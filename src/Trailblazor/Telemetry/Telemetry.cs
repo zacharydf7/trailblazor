@@ -36,6 +36,9 @@ internal sealed class Telemetry(TelemetryInstruments instruments, IOptions<Trail
     public void ControlFailed(string telemetryName, Type component, string action) =>
         Add(instruments.ControlsFailed, 1, telemetryName, NameOf(component), (ActionTag, action));
 
+    public void LoadFinished(string telemetryName, Type component, string outcome, TimeSpan took) =>
+        Add(instruments.LoadDuration, took.TotalSeconds, telemetryName, NameOf(component), (OutcomeTag, outcome));
+
     public void DialogClosed(string telemetryName, Type component, string outcome, TimeSpan open)
     {
         Add(instruments.DialogsClosed, 1, telemetryName, NameOf(component), (OutcomeTag, outcome));

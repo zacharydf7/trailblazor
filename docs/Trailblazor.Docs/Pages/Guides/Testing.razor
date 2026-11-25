@@ -483,6 +483,15 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>AsyncContent(label).WaitUntilLoadedAsync()</code></th>
+                        <td>
+                            Waits until no load is running and the first one has finished. <code>State</code> reads
+                            what it shows, <code>Busy</code> whether it's loading, and <code>RetryAsync()</code> presses
+                            Retry after a failure. Hold a load open with a <code>TaskCompletionSource</code>, and
+                            advance a <code>FakeTimeProvider</code> past the spinner's delay.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>SmartPaste(label).PasteAsync(text)</code></th>
                         <td>
                             Presses the button, enters this text in the box that opens, and fills the form from it.
@@ -1622,6 +1631,10 @@
             + "response's text, newest first, and `StatusesAsync()` their statuses. `StopAsync()` stops the "
             + "response that's generating, and `CopyAsync()`, `RetryAsync()` and `InsertAsync()` act on a "
             + "response, the newest by default."),
+        new("Async content", "Its Label, or none for the only one", "`AsyncContent(label).WaitUntilLoadedAsync()` "
+            + "waits until no load is running and the first one has finished. `StateAsync()` reads what it shows, "
+            + "`BusyAsync()` whether it's loading, and `RetryAsync()` presses Retry after a failure and waits for "
+            + "the load."),
         new("Smart paste", "Its button's Label, or none for the only one", "`SmartPaste(label).PasteAsync(text)` "
             + "presses the button, enters the text in the box that opens, and waits until the fields are "
             + "filled. It first makes the page's clipboard refuse, so the box opens in every browser. "

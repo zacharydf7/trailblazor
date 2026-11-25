@@ -7682,3 +7682,74 @@ Trailblazor.TbDockManager.AllowPopOut.get -> bool
 Trailblazor.TbDockManager.FocusablePanels.get -> Trailblazor.TabPanelFocus
 Trailblazor.TbDockManager.FocusablePanels.set -> void
 Trailblazor.TbDockManager.AllowPopOut.set -> void
+Trailblazor.AsyncContentFailure
+Trailblazor.AsyncContentFailure.<Clone>$() -> Trailblazor.AsyncContentFailure!
+Trailblazor.AsyncContentFailure.AsyncContentFailure(System.Exception! Exception, System.Func<System.Threading.Tasks.Task!>! RetryAsync) -> void
+Trailblazor.AsyncContentFailure.Deconstruct(out System.Exception! Exception, out System.Func<System.Threading.Tasks.Task!>! RetryAsync) -> void
+Trailblazor.AsyncContentFailure.Equals(Trailblazor.AsyncContentFailure? other) -> bool
+Trailblazor.AsyncContentFailure.Exception.get -> System.Exception!
+Trailblazor.AsyncContentFailure.Exception.init -> void
+Trailblazor.AsyncContentFailure.RetryAsync.get -> System.Func<System.Threading.Tasks.Task!>!
+Trailblazor.AsyncContentFailure.RetryAsync.init -> void
+Trailblazor.AsyncContentLabels
+Trailblazor.AsyncContentLabels.<Clone>$() -> Trailblazor.AsyncContentLabels!
+Trailblazor.AsyncContentLabels.AsyncContentLabels() -> void
+Trailblazor.AsyncContentLabels.Equals(Trailblazor.AsyncContentLabels? other) -> bool
+Trailblazor.AsyncContentLabels.LoadFailed.get -> string?
+Trailblazor.AsyncContentLabels.LoadFailed.init -> void
+Trailblazor.AsyncContentLabels.Loading.get -> string?
+Trailblazor.AsyncContentLabels.Loading.init -> void
+Trailblazor.AsyncContentLabels.Retry.get -> string?
+Trailblazor.AsyncContentLabels.Retry.init -> void
+Trailblazor.AsyncContentState
+Trailblazor.AsyncContentState.Content = 4 -> Trailblazor.AsyncContentState
+Trailblazor.AsyncContentState.Empty = 2 -> Trailblazor.AsyncContentState
+Trailblazor.AsyncContentState.Failed = 1 -> Trailblazor.AsyncContentState
+Trailblazor.AsyncContentState.Loading = 0 -> Trailblazor.AsyncContentState
+Trailblazor.AsyncContentState.NoMatches = 3 -> Trailblazor.AsyncContentState
+Trailblazor.TbAsyncContent
+Trailblazor.TbAsyncContent.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAsyncContent.ChildContent.set -> void
+Trailblazor.TbAsyncContent.Dispose() -> void
+Trailblazor.TbAsyncContent.EmptyContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAsyncContent.EmptyContent.set -> void
+Trailblazor.TbAsyncContent.FailedContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.AsyncContentFailure!>?
+Trailblazor.TbAsyncContent.FailedContent.set -> void
+Trailblazor.TbAsyncContent.HasNoMatches.get -> System.Func<bool>?
+Trailblazor.TbAsyncContent.HasNoMatches.set -> void
+Trailblazor.TbAsyncContent.IsEmpty.get -> System.Func<bool>?
+Trailblazor.TbAsyncContent.IsEmpty.set -> void
+Trailblazor.TbAsyncContent.Label.get -> string!
+Trailblazor.TbAsyncContent.Label.set -> void
+Trailblazor.TbAsyncContent.Labels.get -> Trailblazor.AsyncContentLabels!
+Trailblazor.TbAsyncContent.Labels.set -> void
+Trailblazor.TbAsyncContent.Load.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task!>?
+Trailblazor.TbAsyncContent.Load.set -> void
+Trailblazor.TbAsyncContent.LoadKey.get -> object?
+Trailblazor.TbAsyncContent.LoadKey.set -> void
+Trailblazor.TbAsyncContent.LoadingContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAsyncContent.LoadingContent.set -> void
+Trailblazor.TbAsyncContent.NoMatchesContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAsyncContent.NoMatchesContent.set -> void
+Trailblazor.TbAsyncContent.OnLoadFailed.get -> Microsoft.AspNetCore.Components.EventCallback<System.Exception!>
+Trailblazor.TbAsyncContent.OnLoadFailed.set -> void
+Trailblazor.TbAsyncContent.ReloadAsync() -> System.Threading.Tasks.Task!
+Trailblazor.TbAsyncContent.TbAsyncContent() -> void
+Trailblazor.TbAsyncContent.TelemetryName.get -> string?
+Trailblazor.TbAsyncContent.TelemetryName.set -> void
+const Trailblazor.TbStrings.AsyncContentLoadFailed = "AsyncContent.LoadFailed" -> string!
+const Trailblazor.TbStrings.AsyncContentLoading = "AsyncContent.Loading" -> string!
+const Trailblazor.TbStrings.AsyncContentRetry = "AsyncContent.Retry" -> string!
+override Trailblazor.AsyncContentFailure.Equals(object? obj) -> bool
+override Trailblazor.AsyncContentFailure.GetHashCode() -> int
+override Trailblazor.AsyncContentFailure.ToString() -> string!
+override Trailblazor.AsyncContentLabels.Equals(object? obj) -> bool
+override Trailblazor.AsyncContentLabels.GetHashCode() -> int
+override Trailblazor.AsyncContentLabels.ToString() -> string!
+override Trailblazor.TbAsyncContent.OnAfterRender(bool firstRender) -> void
+override Trailblazor.TbAsyncContent.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+static Trailblazor.AsyncContentFailure.operator !=(Trailblazor.AsyncContentFailure? left, Trailblazor.AsyncContentFailure? right) -> bool
+static Trailblazor.AsyncContentFailure.operator ==(Trailblazor.AsyncContentFailure? left, Trailblazor.AsyncContentFailure? right) -> bool
+static Trailblazor.AsyncContentLabels.operator !=(Trailblazor.AsyncContentLabels? left, Trailblazor.AsyncContentLabels? right) -> bool
+static Trailblazor.AsyncContentLabels.operator ==(Trailblazor.AsyncContentLabels? left, Trailblazor.AsyncContentLabels? right) -> bool
+~override Trailblazor.TbAsyncContent.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

@@ -1,0 +1,19 @@
+@page "/async-content-retry"
+
+@* The first two loads fail and the third works, each after a moment. *@
+<TbAsyncContent Label="groups" Load="LoadAsync">
+    <p>Dawn hikers</p>
+</TbAsyncContent>
+
+@code {
+    private int _tries;
+
+    private async Task LoadAsync(CancellationToken token)
+    {
+        await Task.Delay(300, token);
+        if (++_tries < 3)
+        {
+            throw new HttpRequestException("Offline");
+        }
+    }
+}

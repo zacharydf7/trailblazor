@@ -18,7 +18,7 @@ public static class TelemetryCatalog
     // Whether a pointer or the keyboard made a choice in a select or list box, or of an option.
     public const string InputTag = "trailblazor.input";
 
-    // How a dialog, toast or form submit ended.
+    // How a dialog, toast, form submit or load ended.
     public const string OutcomeTag = "trailblazor.outcome";
 
     public static IReadOnlyList<TelemetryInstrument> Instruments { get; } =
@@ -38,9 +38,16 @@ public static class TelemetryCatalog
             "A data grid's DataProvider throws for its rows, or a tree view's LoadChildren throws, with the action "
             + "load. A data grid's export fails, in its DataProvider or while the file is built, such as when a "
             + "column's field throws, with the action export. An autocomplete's or a mention input's Search, or "
-            + "a rich text editor's MentionSearch, throws, with the action search. A load or a search that was "
+            + "a rich text editor's MentionSearch, throws, with the action search. An async content region's Load "
+            + "throws, with the action load. A load or a search that was "
             + "canceled or replaced isn't counted. Each failure is also logged as a warning, whether or not the "
             + "control has a TelemetryName."),
+        new("trailblazor.load.duration", "Histogram", "s",
+            "How long loads of controls with a TelemetryName took, by whether they loaded or failed.",
+            [.. CommonTags, OutcomeTag],
+            "A TbAsyncContent with a TelemetryName finishes a load, with the seconds it took and the outcome loaded "
+            + "or failed; the time a spinner is held to its minimum isn't counted. A load that was canceled or "
+            + "replaced isn't recorded."),
         new("trailblazor.dialog.closed", "Counter", "{dialog}",
             "Dialogs with a TelemetryName that closed, by how they closed.", [.. CommonTags, OutcomeTag],
             "A dialog with a TelemetryName closes: confirmed, canceled, or dismissed by escape, backdrop or "

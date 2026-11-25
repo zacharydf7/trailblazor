@@ -628,3 +628,9 @@ Trailblazor.Testing.TbRibbonDriver.PressKeyTipsAsync(params string![]! keyTips) 
 Trailblazor.Testing.TbDockDriver.PopOutAsync(string! panel) -> System.Threading.Tasks.Task<AngleSharp.Dom.IElement!>!
 Trailblazor.Testing.TbDockDriver.PoppedOut.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbDockDriver.ReturnAsync(string! panel) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbAsyncContentDriver
+Trailblazor.Testing.TbAsyncContentDriver.Busy.get -> bool
+Trailblazor.Testing.TbAsyncContentDriver.RetryAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbAsyncContentDriver.State.get -> Trailblazor.AsyncContentState
+Trailblazor.Testing.TbAsyncContentDriver.WaitUntilLoadedAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TrailblazorMarkup.AsyncContent(string? label = null) -> Trailblazor.Testing.TbAsyncContentDriver!

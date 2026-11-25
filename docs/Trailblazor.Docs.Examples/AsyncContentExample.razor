@@ -1,0 +1,48 @@
+@* The groups take a moment to load; Reload loads them again while the list stays in view. *@
+<TbStack Gap="3" Style="max-inline-size: 26rem">
+    <TbStack Row Gap="2" Align="Align.End">
+        <TbTextField TValue="string" Label="Find a group" @bind-Value="_search" UpdateOnInput Clearable
+                     Style="flex: 1" />
+        <TbButton Variant="Variant.Outlined" OnClick="() => _region!.ReloadAsync()">Reload</TbButton>
+    </TbStack>
+    <TbSwitch Label="Load no groups" @bind-Value="_none" />
+    <TbSurface Outlined>
+        <TbAsyncContent @ref="_region" Label="groups" Load="LoadAsync" IsEmpty="() => _groups.Count == 0"
+                        HasNoMatches="() => Matches.Count == 0">
+            <EmptyContent>
+                <TbEmptyState Compact HeadingLevel="4" Title="No groups yet" />
+            </EmptyContent>
+            <NoMatchesContent>
+                <TbEmptyState Compact HeadingLevel="4" Title="No groups match">
+                    <Actions>
+                        <TbButton Variant="Variant.Text" OnClick='() => _search = ""'>Clear the search</TbButton>
+                    </Actions>
+                </TbEmptyState>
+            </NoMatchesContent>
+            <ChildContent>
+                <TbList aria-label="Hiking groups">
+                    @foreach (var group in Matches)
+                    {
+                        <TbListItem>@group</TbListItem>
+                    }
+                </TbList>
+            </ChildContent>
+        </TbAsyncContent>
+    </TbSurface>
+</TbStack>
+
+@code {
+    private TbAsyncContent? _region;
+    private List<string> _groups = [];
+    private string? _search;
+    private bool _none;
+
+    private List<string> Matches =>
+        [.. _groups.Where(group => group.Contains(_search ?? "", StringComparison.OrdinalIgnoreCase))];
+
+    private async Task LoadAsync(CancellationToken token)
+    {
+        await Task.Delay(500, token);
+        _groups = _none ? [] : ["Dawn hikers", "Ridge runners", "Weekend wanderers"];
+    }
+}

@@ -1,0 +1,31 @@
+@* Every other load fails: the first, which Retry loads again, and then the next Reload. *@
+<TbStack Gap="3" Style="max-inline-size: 26rem">
+    <TbButton Variant="Variant.Outlined" OnClick="() => _region!.ReloadAsync()">Reload</TbButton>
+    <TbSurface Outlined>
+        <TbAsyncContent @ref="_region" Label="trail reports" Load="LoadAsync">
+            <TbList aria-label="Trail reports">
+                @foreach (var report in _reports)
+                {
+                    <TbListItem>@report</TbListItem>
+                }
+            </TbList>
+        </TbAsyncContent>
+    </TbSurface>
+</TbStack>
+
+@code {
+    private TbAsyncContent? _region;
+    private List<string> _reports = [];
+    private int _tries;
+
+    private async Task LoadAsync(CancellationToken token)
+    {
+        await Task.Delay(300, token);
+        if (++_tries % 2 == 1)
+        {
+            throw new HttpRequestException("The trail service didn't answer.");
+        }
+
+        _reports = ["Pine Hollow loop: dry", "Cedar Flats: muddy after the bridge"];
+    }
+}

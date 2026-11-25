@@ -20,6 +20,8 @@ internal sealed class TelemetryInstruments
             "Uses of controls with a TelemetryName, such as clicks and choices.");
         ControlsFailed = meter.CreateCounter<long>("trailblazor.control.failed", "{failure}",
             "Loads, searches and exports that failed in controls with a TelemetryName.");
+        LoadDuration = meter.CreateHistogram<double>("trailblazor.load.duration", "s",
+            "How long loads of controls with a TelemetryName took, by whether they loaded or failed.");
         DialogsClosed = meter.CreateCounter<long>("trailblazor.dialog.closed", "{dialog}",
             "Dialogs with a TelemetryName that closed, by how they closed.");
         DialogDuration = meter.CreateHistogram<double>("trailblazor.dialog.duration", "s",
@@ -106,6 +108,8 @@ internal sealed class TelemetryInstruments
     public Counter<long> ControlsUsed { get; }
 
     public Counter<long> ControlsFailed { get; }
+
+    public Histogram<double> LoadDuration { get; }
 
     public Counter<long> DialogsClosed { get; }
 

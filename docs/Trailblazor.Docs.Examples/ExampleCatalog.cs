@@ -13769,6 +13769,127 @@ public static class ExampleCatalog
                     + "renders and `trailblazor.control.used` for each click it acts on, as a link or as a button.",
             ],
         },
+        new("async-content", "Async content", ExampleCategory.Feedback,
+            "A region that loads its content, with a spinner while it's slow, a message with Retry when it fails, and "
+                + "messages for nothing loaded and nothing matched.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it for a section that loads its own data, such as a list from an API, in place of a loading flag, "
+                    + "a try and catch, and the messages around them.",
+            ],
+            WhenNotToUse =
+            [
+                "For a table, a [data grid](components/data-grid) loads its own rows page by page.",
+                "For a button whose work takes a while, the [button](components/button#busy) shows that it's busy.",
+            ],
+            Related = ["empty-state", "skeleton", "progress", "data-grid"],
+            Sections =
+            [
+                new("basic", "Loading a list", "`Load` loads the content into the app's own fields, and the region "
+                    + "shows `ChildContent` once it has. A load slower than `options.Busy.ShowDelay`, 200 "
+                    + "milliseconds, shows a spinner named \"Loading groups\" from `Label`, kept for "
+                    + "`options.Busy.Minimum`, 400 milliseconds, so it doesn't flicker; a busy button uses the same "
+                    + "two settings. `IsEmpty` shows `EmptyContent`, here once the \"Load no groups\" switch is on "
+                    + "and Reload is pressed, and `HasNoMatches` shows `NoMatchesContent` while the search matches "
+                    + "nothing. Both are functions, such as `() => _groups.Count == 0`, which the region asks each "
+                    + "time it renders, so they read what `Load` filled.", typeof(AsyncContentExample)),
+                new("failure", "When a load fails", "A load that throws, its own timeout included, shows \"Unable to "
+                    + "load trail reports.\" with a Retry button, and `OnLoadFailed` gets the exception. The message "
+                    + "stays while Retry loads again, so the button keeps focus and shows that it's busy. A failed "
+                    + "reload shows the message above what loaded before. Here every other load fails: the first, and "
+                    + "the first Reload after a Retry.", typeof(AsyncContentFailureExample)),
+                new("skeleton", "Reloading, with a skeleton first", "`LoadingContent` takes the spinner's place on a "
+                    + "first load, such as a [skeleton](components/skeleton) in the content's shape; screen readers "
+                    + "still hear \"Loading the profile\". `ReloadAsync()`, or a new `LoadKey` as here, loads again "
+                    + "and keeps the last profile in view, under a thin bar once the load is slow.",
+                    typeof(AsyncContentSkeletonExample)),
+            ],
+            Api = [typeof(TbAsyncContent), typeof(AsyncContentLabels), typeof(AsyncContentFailure),
+                typeof(AsyncContentState)],
+            Labeling =
+            [
+                "`Label` names what it loads, such as \"groups\" or \"the profile\", and fills in \"Loading groups\" "
+                    + "and \"Unable to load groups.\". Without one it throws as it renders. `Labels` replaces those "
+                    + "sentences whole, since a noun put into a sentence doesn't fit every language. It also names "
+                    + "the Retry button.",
+                "The region itself has no role or name; its content keeps its own.",
+            ],
+            Announcements =
+            [
+                "A slow first load says \"Loading groups\" through a polite `status`, which is always on the page so "
+                    + "screen readers hear the words appear.",
+                "A failed load is announced politely, through the [announcer](guides/announcements), with the "
+                    + "built-in message even when `FailedContent` replaces it on screen, so set `Labels.LoadFailed` "
+                    + "to match.",
+                "A load that works says nothing, and neither does a reload that works; while a reload or a retry "
+                    + "runs, the region has `aria-busy=\"true\"`.",
+            ],
+            Accessibility =
+            [
+                "It handles no keys of its own; Retry is an ordinary button.",
+                "Focus never moves while it loads or fails. After a Retry that loads the content, focus goes to the "
+                    + "region, since the Retry button it was on is gone, and screen readers read its content.",
+                "With reduced motion, the spinner and the reload's bar pulse instead, and in forced-colors mode they "
+                    + "take the system colors, as [progress](components/progress) does.",
+            ],
+            AppDuties =
+            [
+                "Pass the token `Load` gets on to the work it does, such as an `HttpClient` call, so a load that's "
+                    + "replaced, or whose region goes away, stops.",
+            ],
+            Modes = new(ModeSupport.Partial, ModeSupport.None),
+            BeforeInteractive =
+            [
+                "On a static page it loads as the page renders and shows the result, or the failure without Retry.",
+                "While a page prerenders it renders empty, with `data-state=\"loading\"` and no spinner, and loads "
+                    + "once the page is interactive, so the load runs once.",
+            ],
+            Notes =
+            [
+                new("`IsEmpty` wins over `HasNoMatches` when both are true. Without `EmptyContent` or "
+                    + "`NoMatchesContent`, `ChildContent` shows in their place."),
+                new("A failed reload sets `data-state=\"failed\"` while what loaded before still shows under the "
+                    + "message."),
+            ],
+            Target = new("list", "Hiking groups"),
+            Blocks = ["tb-async-content"],
+            DataParts =
+            [
+                new("status", "The polite status that holds the loading words, and the spinner while a first load is "
+                    + "slow."),
+                new("loading", "The `LoadingContent` shown in the spinner's place, hidden from screen readers."),
+                new("progress", "The thin bar over the content while a reload is slow."),
+                new("failed", "The failure: the message and Retry button, or the `FailedContent`."),
+                new("retry", "The Retry button."),
+            ],
+            Scenario = new("failure", "it waits for the first load to fail, retries, and checks that the reports "
+                + "show."),
+            TestingTips =
+            [
+                "`WaitUntilLoadedAsync()` waits until no load runs and the first has finished. `State` says what it "
+                    + "shows, from its `data-state`, and `Busy` whether it's loading; in Playwright they're "
+                    + "`StateAsync()` and `BusyAsync()`.",
+                "In bUnit, hold a load open with a `TaskCompletionSource`, and advance a `FakeTimeProvider`, "
+                    + "registered as the `TimeProvider`, past the 200 millisecond delay to see the spinner.",
+                "`RetryAsync()` presses Retry and returns once the load it starts has finished. It throws when "
+                    + "`FailedContent` replaces the message, so press your own button by its role and name.",
+                "By hand, find the region with `Locator(\".tb-async-content[data-label='groups']\")`, and within "
+                    + "it the loading words with `GetByRole(AriaRole.Status)` and Retry with "
+                    + "`GetByRole(AriaRole.Button, new() { Name = \"Retry\" })`, since each region has its own.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"trip-groups\"`, it counts `trailblazor.control.shown` as it first "
+                    + "renders interactively, and records how long each load took in `trailblazor.load.duration`, "
+                    + "with the outcome `loaded` or `failed`; the time a spinner is held to its minimum isn't "
+                    + "counted.",
+                "A failed load counts `trailblazor.control.failed` with the action `load`, and a Retry counts "
+                    + "`trailblazor.control.used` with the action `retried`. A failure is logged as a warning whether "
+                    + "or not it has a `TelemetryName`. Nothing it loads is ever recorded.",
+            ],
+        },
         new("empty-state", "Empty state", ExampleCategory.Feedback,
             "A message that takes the place of content that isn't there yet, such as an empty list, with a way to add "
                 + "it.")
@@ -13782,6 +13903,8 @@ public static class ExampleCatalog
             [
                 "While content loads, use a [skeleton](components/skeleton).",
                 "For an error, such as a failed load, use an [alert](components/alert).",
+                "For a section that loads its own data, [async content](components/async-content) shows an empty "
+                    + "state for you, along with loading and failure.",
             ],
             Related = ["skeleton", "alert", "card"],
             Sections =
@@ -13846,6 +13969,8 @@ public static class ExampleCatalog
             [
                 "For work with no shape to show, or when you know how much is done, use "
                     + "[progress](components/progress).",
+                "For a section that loads its own data, [async content](components/async-content) shows your "
+                    + "skeleton while it loads, marks the region busy and handles failure.",
             ],
             Related = ["progress", "surface"],
             Sections =

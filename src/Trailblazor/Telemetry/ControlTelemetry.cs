@@ -42,6 +42,14 @@ internal sealed class ControlTelemetry(IServiceProvider services, Type component
         }
     }
 
+    public void Loaded(string? telemetryName, string outcome, TimeSpan took)
+    {
+        if (telemetryName is not null)
+        {
+            Service?.LoadFinished(telemetryName, component, outcome, took);
+        }
+    }
+
     public void Invalid(string? telemetryName)
     {
         if (telemetryName is not null)

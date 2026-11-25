@@ -185,6 +185,12 @@
                 <strong>Hotkeys:</strong> shown as they render, and used each time their keys fire them.
             </li>
             <li>
+                <strong>Async content:</strong> shown as it renders, with how long each load took in
+                <code>trailblazor.load.duration</code> by the outcome <code>loaded</code> or <code>failed</code>. A
+                failed load counts in <code>trailblazor.control.failed</code> with the action <code>load</code>, and a
+                Retry is used with the action <code>retried</code>. Nothing it loads is ever recorded.
+            </li>
+            <li>
                 <strong>Viewports:</strong> shown as they render, and used with the action <code>zoom</code> and the
                 input <code>keyboard</code> or <code>pointer</code> each time the user zooms, or <code>fit</code> each
                 time they pick a fit. Panning isn't counted, and the zoom itself is never recorded.
@@ -439,10 +445,12 @@
             "`trailblazor.control.used` by `trailblazor.action`: sorts and page sizes to set better defaults, "
             + "expands and moves to see how a tree is used."),
         new("Failing data", "Which lists and searches fail, and how often?",
-            "Data grids, tree views, autocompletes and mention inputs.",
+            "Data grids, tree views, async content, autocompletes and mention inputs.",
             "`trailblazor.control.failed` by name and `trailblazor.action` (`load`, `search` or a grid's `export`). "
             + "Each failure is "
             + "also a warning in the app's log, with the exception."),
+        new("Slow data", "Which sections keep people waiting?", "Async content regions.",
+            "`trailblazor.load.duration` by name: the loads to speed up or cache first."),
         new("Accessibility", "How many people choose by keyboard, and close dialogs with Escape?",
             "Selects, list boxes, their options, and dialogs.",
             "`trailblazor.control.used` by `trailblazor.input`, and dialogs closed with `escape`: real keyboard use "

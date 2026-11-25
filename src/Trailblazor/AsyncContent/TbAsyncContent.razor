@@ -1,0 +1,51 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+<div @ref="_root" @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-async-content", Class)"
+     style="@Style" tabindex="-1" data-label="@Label"
+     data-state="@(State is AsyncContentState.NoMatches ? "no-matches" : State.ToString().ToLowerInvariant())"
+     aria-busy="@(Reloading ? "true" : null)">
+    @* The status is always there, so screen readers hear the loading words when they appear in it. *@
+    <div role="status" data-part="status"
+         class="@(LoadingContent is null ? "tb-async-content__status" : "tb-visually-hidden")">
+        @if (ShowsSpinner)
+        {
+            @if (LoadingContent is null)
+            {
+                <TbProgress Circular Size="Size.Small" AriaLabel="@LoadingText" aria-hidden="true" />
+            }
+            <span>@LoadingText</span>
+        }
+    </div>
+    @if (ShowsSpinner && LoadingContent is not null)
+    {
+        <div data-part="loading" aria-hidden="true">@LoadingContent</div>
+    }
+    @if (ShowsProgress)
+    {
+        <TbProgress AriaLabel="@LoadingText" Size="Size.Small" class="tb-async-content__progress"
+                    data-part="progress" aria-hidden="true" />
+    }
+    @if (_failure is { } failure)
+    {
+        <div data-part="failed" class="tb-async-content__failed">
+            @if (FailedContent is null)
+            {
+                <p class="tb-async-content__message">@FailedText</p>
+                @if (RendererInfo.IsInteractive)
+                {
+                    <TbButton Variant="Variant.Outlined" Tone="Tone.Neutral" Size="Size.Small" OnClick="RetryAsync"
+                              data-part="retry">@RetryText</TbButton>
+                }
+            }
+            else
+            {
+                @FailedContent(new(failure, RetryAsync))
+            }
+        </div>
+    }
+    @if (_loaded)
+    {
+        @ShownContent
+    }
+</div>

@@ -1,0 +1,40 @@
+@* A skeleton in the content's shape takes the spinner's place while the profile loads. *@
+<TbStack Gap="3" Style="max-inline-size: 26rem">
+    <TbButton Variant="Variant.Outlined" OnClick="() => _key++">Load another profile</TbButton>
+    <TbAsyncContent Label="the profile" Load="LoadAsync" LoadKey="_key">
+        <LoadingContent>
+            <TbStack Row Gap="4" Align="Align.Center">
+                <TbSkeleton Shape="SkeletonShape.Circle" Width="3rem" />
+                <TbStack Gap="1" Style="flex: 1">
+                    <TbSkeleton Width="40%" />
+                    <TbSkeleton Width="70%" />
+                </TbStack>
+            </TbStack>
+        </LoadingContent>
+        <ChildContent>
+            <TbStack Row Gap="4" Align="Align.Center">
+                <TbAvatar Name="@_name" />
+                <TbStack Gap="1">
+                    <TbText TextStyle="TextStyle.Subtitle">@_name</TbText>
+                    <TbText>Leads the @_group</TbText>
+                </TbStack>
+            </TbStack>
+        </ChildContent>
+    </TbAsyncContent>
+</TbStack>
+
+@code {
+    private static readonly (string Name, string Group)[] Profiles =
+        [("Maya Chen", "Dawn hikers"), ("Omar Haddad", "Ridge runners")];
+
+    private int _key;
+    private string _name = "";
+    private string _group = "";
+
+    private async Task LoadAsync(CancellationToken token)
+    {
+        // A first load shows the skeleton; a reload keeps this profile in view under a thin bar.
+        await Task.Delay(1200, token);
+        (_name, _group) = Profiles[_key % Profiles.Length];
+    }
+}

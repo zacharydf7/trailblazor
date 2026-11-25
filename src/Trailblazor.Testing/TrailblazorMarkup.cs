@@ -692,6 +692,12 @@ public sealed class TrailblazorMarkup
             || paste.QuerySelector("[data-part=button] [data-part=label]")!.TextContent.Trim() == label)
         .ToList(), "smart paste button", label), _findAll);
 
+    /// <summary>The <c>TbAsyncContent</c> with this <c>Label</c>, such as "groups", or the only one when no label is
+    /// given.</summary>
+    public TbAsyncContentDriver AsyncContent(string? label = null) => new(() => Only(_findAll(".tb-async-content")
+        .Where(region => label is null || region.GetAttribute("data-label") == label).ToList(),
+        "async content region", label), _scripts);
+
     /// <summary>The <c>TbInPlaceEditor</c> with this <c>Label</c>.</summary>
     public TbInPlaceEditorDriver InPlaceEditor(string label) => new(() =>
     {
@@ -2712,6 +2718,42 @@ public sealed class TbInPlaceEditorDriver
         var button = _find().QuerySelector($"[data-part={part}]")
             ?? throw new InvalidOperationException("The in-place editor isn't editing; call EditAsync first.");
         await button.ClickAsync(new MouseEventArgs { Detail = 1 });
+    }
+}
+
+/// <summary>A <c>TbAsyncContent</c>, found by its <c>Label</c>.</summary>
+public sealed class TbAsyncContentDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+
+    internal TbAsyncContentDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>What it shows: loading, failed, empty, no matches or the content. A reload keeps the state of what it
+    /// shows; <see cref="Busy"/> says it's loading.</summary>
+    public AsyncContentState State =>
+        Enum.Parse<AsyncContentState>(_find().GetAttribute("data-state")!.Replace("-", ""), ignoreCase: true);
+
+    /// <summary>Whether a load is running, a first load or a reload.</summary>
+    public bool Busy => State == AsyncContentState.Loading || _find().GetAttribute("aria-busy") == "true";
+
+    /// <summary>Waits until no load is running and the first one has finished, loaded or failed.</summary>
+    public async Task WaitUntilLoadedAsync()
+    {
+        _find();
+        await _scripts.WaitForAsync(() => !Busy && State != AsyncContentState.Loading);
+    }
+
+    /// <summary>Presses the Retry button a failed load shows, and returns once the load it starts has finished. Throws
+    /// when no Retry button shows: the load hasn't failed, or its <c>FailedContent</c> has buttons of its own.
+    /// </summary>
+    public async Task RetryAsync()
+    {
+        var retry = _find().QuerySelector(":scope > [data-part=failed] [data-part=retry]")
+            ?? throw new InvalidOperationException(State == AsyncContentState.Failed
+                ? "The failure shows no Retry button; its FailedContent has buttons of its own."
+                : "No load has failed, so there's no Retry button.");
+        await retry.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
 }
 
