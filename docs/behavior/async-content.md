@@ -32,6 +32,7 @@ Nothing of its own: it holds no gestures, only its Retry button.
 - [x] `Labels` replaces the sentences, and `FailedContent` replaces the message and its Retry. `TbAsyncContentTests.Labels_ShouldReplaceTheSentences_WhenGiven`, `TbAsyncContentTests.FailedContent_ShouldTakeTheMessagesPlace_WhenGiven`
 - [x] On a static page it loads as the page renders and shows no Retry; while a page prerenders it waits, so the load runs once. `TbAsyncContentTests.Render_ShouldLoadAndOfferNoRetry_WhenThePageIsStatic`, `TbAsyncContent.cs`
 - [x] With a `TelemetryName` it records each load's time, without the spinner's hold, and counts failures and retries. `TbAsyncContentTests.Telemetry_ShouldCountTheLoadsFailuresAndRetries_WhenNamed`
+- [x] With a `TelemetryName`, each `Load` call runs in a `TbAsyncContent load` span from the `Trailblazor` source. `TelemetrySpanTests.AsyncContent_ShouldTraceItsLoad_WhenSomeoneListens`
 
 ## Not applicable
 

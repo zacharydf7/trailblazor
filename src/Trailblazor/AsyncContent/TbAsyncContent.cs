@@ -87,7 +87,8 @@ public partial class TbAsyncContent : IDisposable
     /// <summary>A label this region is counted under, such as <c>"trip-groups"</c>, through the <c>Trailblazor</c>
     /// meter: in <c>trailblazor.control.shown</c> when it first renders, <c>trailblazor.load.duration</c> with how
     /// long each load took, <c>trailblazor.control.failed</c> for each failure and <c>trailblazor.control.used</c> for
-    /// each retry. Nothing it loads is recorded.</summary>
+    /// each retry, and each load runs in a span from the <c>Trailblazor</c> source. Nothing it loads is
+    /// recorded.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
@@ -184,6 +185,7 @@ public partial class TbAsyncContent : IDisposable
         }
 
         Exception? failure = null;
+        var span = Telemetry.StartSpan(TelemetryName, "load");
         try
         {
             await Load!(token);
@@ -191,6 +193,15 @@ public partial class TbAsyncContent : IDisposable
         catch (Exception exception)
         {
             failure = exception;
+        }
+
+        if (token.IsCancellationRequested)
+        {
+            span.Finish("canceled");
+        }
+        else
+        {
+            span.Finish(failure is null ? "succeeded" : "failed", failure: failure);
         }
 
         // A load that was replaced, or whose region went away, has its token canceled, so whatever it ended with is

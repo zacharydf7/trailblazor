@@ -137,8 +137,9 @@ public sealed record Example(string Name, string Title, ExampleCategory Category
     private const string FieldTelemetry = "With a `TelemetryName`, such as `\"trail-name\"`, it counts "
         + "`trailblazor.control.shown` as it first renders, and `trailblazor.field.invalid` each time its `TbForm` is "
         + "submitted while it has an error. An autocomplete or a mention input also counts a `Search` that fails, "
-        + "and a rich text editor a `MentionSearch` that fails, in `trailblazor.control.failed`. Its value is never "
-        + "recorded.";
+        + "and a rich text editor a `MentionSearch` that fails, in `trailblazor.control.failed`. Each of those "
+        + "`Search` and `MentionSearch` calls, failed or not, runs in a span from the `Trailblazor` source (see "
+        + "[tracing](guides/telemetry#tracing)). Its value is never recorded.";
 
     private static bool IsField(Type type)
     {
@@ -13088,6 +13089,9 @@ public static class ExampleCatalog
                     + "recorded.",
                 "A `LoadChildren` that fails is counted in `trailblazor.control.failed`, with the action `load`, "
                     + "and logged as a warning whether or not the tree has a `TelemetryName`.",
+                "With a `TelemetryName`, each `LoadChildren` call runs in a `TbTreeView load` span from the "
+                    + "`Trailblazor` source, with the number of children that came back (see "
+                    + "[tracing](guides/telemetry#tracing)).",
             ],
         },
         new("data-grid", "Data grid", ExampleCategory.Content,
@@ -13661,6 +13665,9 @@ public static class ExampleCatalog
                 "A `DataProvider` that fails to load the rows is counted in `trailblazor.control.failed` with the "
                     + "action `load`, and an export that fails, in its provider or while the file is built, with the "
                     + "action `export`. Each is logged as a warning whether or not the grid has a `TelemetryName`.",
+                "With a `TelemetryName`, each `DataProvider` call for the rows shown runs in a `TbDataGrid load` "
+                    + "span from the `Trailblazor` source, with the number of rows that came back (see "
+                    + "[tracing](guides/telemetry#tracing)).",
             ],
         },
         new("tree-grid", "Tree grid", ExampleCategory.Content,
@@ -14444,6 +14451,8 @@ public static class ExampleCatalog
                 "A failed load counts `trailblazor.control.failed` with the action `load`, and a Retry counts "
                     + "`trailblazor.control.used` with the action `retried`. A failure is logged as a warning whether "
                     + "or not it has a `TelemetryName`. Nothing it loads is ever recorded.",
+                "With a `TelemetryName`, each `Load` call runs in a `TbAsyncContent load` span from the "
+                    + "`Trailblazor` source (see [tracing](guides/telemetry#tracing)).",
             ],
         },
         new("countdown", "Countdown", ExampleCategory.Feedback,

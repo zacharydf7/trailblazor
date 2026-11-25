@@ -364,6 +364,7 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
         }
 
         _searching = true;
+        var span = Search is null ? null : Telemetry.StartSpan(TelemetryName, "search");
         try
         {
             IEnumerable<TValue> found;
@@ -378,6 +379,7 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
 
             token.ThrowIfCancellationRequested();
             _results = [.. MaxItems is int most ? found.Take(most) : found];
+            span.Finish("succeeded", _results.Count);
             _choose.KeepOnly(_results);
             _searching = false;
             _searched = true;
@@ -393,9 +395,11 @@ public partial class TbAutocomplete<[DynamicallyAccessedMembers(DynamicallyAcces
         // A search the user moved on from ends quietly, even when it reports the cancel its own way.
         catch (Exception) when (token.IsCancellationRequested)
         {
+            span.Finish("canceled");
         }
         catch (Exception exception)
         {
+            span.Finish("failed", failure: exception);
             _results = [];
             _searching = _searched = false;
             _failed = true;

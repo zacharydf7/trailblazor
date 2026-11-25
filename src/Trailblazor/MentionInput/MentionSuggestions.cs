@@ -18,7 +18,7 @@ internal sealed class MentionSuggestions : IDisposable
     // search's own failure clears them and is thrown on.
     public async Task<bool> FindAsync(MentionQuery? query, int number,
         Func<MentionQuery, CancellationToken, Task<IEnumerable<MentionItem>>>? search, IEnumerable<MentionItem>? items,
-        int most)
+        int most, ControlTelemetry? telemetry = null, string? telemetryName = null)
     {
         Stop();
         if (query is null)
@@ -29,21 +29,25 @@ internal sealed class MentionSuggestions : IDisposable
 
         _search = new CancellationTokenSource();
         var token = _search.Token;
+        var span = search is null ? null : telemetry?.StartSpan(telemetryName, "search");
         try
         {
             var found = search is not null ? await search(query, token)
                 : items?.Where(item => TextFold.Contains(item.Text, query.Text)) ?? [];
             token.ThrowIfCancellationRequested();
             (Results, Trigger, ResultsFor) = ([.. found.Take(most)], query.Trigger, number);
+            span.Finish("succeeded", Results.Count);
             return true;
         }
         // A search the user moved on from ends quietly, even when it reports the cancel its own way.
         catch (Exception) when (token.IsCancellationRequested)
         {
+            span.Finish("canceled");
             return false;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            span.Finish("failed", failure: exception);
             Clear(number);
             throw;
         }

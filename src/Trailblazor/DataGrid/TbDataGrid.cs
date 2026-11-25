@@ -479,8 +479,8 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <c>collapse</c>, <c>edit</c>, <c>open_detail</c>, <c>close_detail</c>, <c>export_csv</c>,
     /// <c>export_excel</c> or <c>export_pdf</c> each time the user does one. A <see cref="DataProvider"/> that fails
     /// to load the rows is counted in <c>trailblazor.control.failed</c> as <c>load</c>, and a failed export as
-    /// <c>export</c>. Which column, filter value, page, group, rows or value is never recorded. It names the grid,
-    /// never the user.</summary>
+    /// <c>export</c>, and each call for the rows shown runs in a span from the <c>Trailblazor</c> source. Which column,
+    /// filter value, page, group, rows or value is never recorded. It names the grid, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
 
@@ -1006,17 +1006,22 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _loading = true;
         _failed = false;
         GridResult<TItem> result;
+        var span = Telemetry.StartSpan(TelemetryName, "load");
         try
         {
             result = await DataProvider!(asked, request.CancellationToken);
+            span.Finish(request.CancellationToken.IsCancellationRequested ? "canceled" : "succeeded",
+                result.Items.Count);
         }
         // Virtualize drops a load it has moved past and expects that load to throw OperationCanceledException.
         catch (Exception) when (request.CancellationToken.IsCancellationRequested)
         {
+            span.Finish("canceled");
             throw new OperationCanceledException(request.CancellationToken);
         }
         catch (Exception exception)
         {
+            span.Finish("failed", failure: exception);
             _loading = false;
             _total = 0;
             await ShowLoadFailedAsync(exception);
@@ -1951,17 +1956,21 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         _loading = true;
         _failed = false;
         GridResult<TItem>? result = null;
+        var span = Telemetry.StartSpan(TelemetryName, "load");
         try
         {
             result = await DataProvider(request, load.Token);
+            span.Finish(load.IsCancellationRequested ? "canceled" : "succeeded", result.Items.Count);
         }
         // A load a newer one replaced ends quietly, even when its provider reports the cancel its own way.
         catch (Exception) when (load.IsCancellationRequested)
         {
+            span.Finish("canceled");
             return;
         }
         catch (Exception exception)
         {
+            span.Finish("failed", failure: exception);
             await ShowLoadFailedAsync(exception);
         }
         finally

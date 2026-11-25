@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -41,6 +42,10 @@ internal sealed class ControlTelemetry(IServiceProvider services, Type component
             Service?.ControlFailed(telemetryName, component, action);
         }
     }
+
+    // A span around a call to the app's data, for a control with a TelemetryName; Finish ends it.
+    public Activity? StartSpan(string? telemetryName, string action) =>
+        telemetryName is null ? null : Service?.StartSpan(telemetryName, component, action);
 
     public void Loaded(string? telemetryName, string outcome, TimeSpan took)
     {

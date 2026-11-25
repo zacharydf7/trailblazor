@@ -348,7 +348,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// <summary>A label the tree's use is counted under, such as <c>"folders"</c>, so the app can see how people use it
     /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>expand</c>,
     /// <c>collapse</c>, <c>select</c>, <c>check</c>, <c>activate</c> or <c>move</c> each time the user does one.
-    /// A <see cref="LoadChildren"/> that fails is counted in <c>trailblazor.control.failed</c>. Opening rows from
+    /// A <see cref="LoadChildren"/> that fails is counted in <c>trailblazor.control.failed</c>, and each call runs in
+    /// a span from the <c>Trailblazor</c> source. Opening rows from
     /// code isn't counted, and which rows is never recorded. It names the tree, never the user.</summary>
     [Parameter]
     public string? TelemetryName { get; set; }
@@ -1810,17 +1811,21 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
         _failed.Remove(node.Key);
         Flatten();
         StateHasChanged();
+        var span = Telemetry.StartSpan(TelemetryName, "load");
         try
         {
             _loaded[node.Key] = [.. await load(node.Item, cancel.Token)];
+            span.Finish(cancel.IsCancellationRequested ? "canceled" : "succeeded", _loaded[node.Key].Count);
         }
         catch (Exception) when (cancel.IsCancellationRequested)
         {
             // The row was closed while its children loaded, so they load again when it opens; a loader may report
             // the cancel with its own exception.
+            span.Finish("canceled");
         }
         catch (Exception exception)
         {
+            span.Finish("failed", failure: exception);
             _failed.Add(node.Key);
             Announcer.Polite(LoadFailedLabel);
             Telemetry.Failed(TelemetryName, AriaLabel, "load", exception);

@@ -14,6 +14,7 @@
         <TbTableOfContentsItem TargetId="whats-recorded" Text="What's recorded" />
         <TbTableOfContentsItem TargetId="whats-never-recorded" Text="What's never recorded" />
         <TbTableOfContentsItem TargetId="your-own-tags" Text="Your own tags" />
+        <TbTableOfContentsItem TargetId="tracing" Text="Tracing" />
         <TbTableOfContentsItem TargetId="render-modes" Text="Render modes" />
         <TbTableOfContentsItem TargetId="reading-the-counts" Text="Reading the counts" />
         <TbTableOfContentsItem TargetId="testing" Text="Testing" />
@@ -291,15 +292,16 @@
         <ul class="docs-notes">
             <li>
                 Values, text people type, dialog and page titles, labels' text and anything about the user. Only the
-                names you give and the components' types are recorded; that's by design and can't be configured.
-                This is about the meter. The warning a failed load, search, export or upload writes to the app's log is
+                names you give and the components' types are recorded, and on a span the number of items and a failed
+                call's exception type; that's by design and can't be configured. This is about the meter and the
+                spans. The warning a failed load, search, export or upload writes to the app's log is
                 separate:
                 it carries the app's own exception, and names a control that has no <code>TelemetryName</code> by
                 its label.
             </li>
             <li>
-                Nothing is recorded until something listens to the meter, and nothing leaves the app unless the app
-                exports it. Trailblazor never sends anything anywhere itself.
+                Nothing is recorded until something listens to the meter or the source, and nothing leaves the app
+                unless the app exports it. Trailblazor never sends anything anywhere itself.
             </li>
         </ul>
         <DocsCallout Tone="Tone.Warning" Title="Keep your own tags clean">
@@ -317,6 +319,45 @@
             series in the dashboard.
         </TbText>
         <CodeBlock Label="Tags for the user's customer" Code="@Tags" />
+
+        <DocsHeading Id="tracing" Text="Tracing" Class="docs-section" />
+        <TbText>
+            A control with a <code>TelemetryName</code> also traces its calls to your data: a data grid's
+            <code>DataProvider</code> for the rows it shows (an export's isn't traced), a tree view's
+            <code>LoadChildren</code>, an autocomplete's or a mention input's
+            <code>Search</code>, a rich text editor's <code>MentionSearch</code>, and an async content region's
+            <code>Load</code>. Each call is a span named for the component and what it does, such as
+            <code>TbDataGrid load</code>, so your own database or HTTP spans nest under it and a slow grid leads to its
+            query. Listen to the <code>Trailblazor</code> source beside the meter:
+        </TbText>
+        <CodeBlock Label="Program.cs" Code="@Tracing" />
+        <ul class="docs-notes">
+            <li>
+                Each span has the tags <code>trailblazor.telemetry_name</code>, <code>trailblazor.component</code> and
+                <code>trailblazor.action</code>, your own tags, and <code>trailblazor.outcome</code>:
+                <code>succeeded</code>, <code>failed</code> or <code>canceled</code>. An async content region's
+                <code>trailblazor.load.duration</code> calls the same success <code>loaded</code>.
+            </li>
+            <li>
+                A grid's, tree view's or search's call that returned has <code>trailblazor.items</code>: the rows or
+                children that came back, or the results kept, at most the field's limit.
+            </li>
+            <li>
+                A call that failed has the error status and <code>error.type</code>, the exception's type. Its message
+                is left out, since it can hold your data.
+            </li>
+            <li>A control without a <code>TelemetryName</code> starts no span, as it counts nothing.</li>
+            <li>
+                Unlike the counts, spans don't wait for the page to be interactive. A grid, a tree view's open rows or
+                a static page's async content region that loads on the server is traced there, so a prerendered grid
+                or tree gives two spans, one for each load, unless a <code>PrerenderKey</code> keeps what it loaded.
+            </li>
+            <li>
+                A WebAssembly client exports its spans only if it sets up tracing as it does the meter below, with
+                <code>WithTracing</code>, a traces endpoint on your server, and the <code>TracerProvider</code>
+                resolved before the app runs.
+            </li>
+        </ul>
 
         <DocsHeading Id="render-modes" Text="Render modes" Class="docs-section" />
         <ul class="docs-notes">
@@ -392,13 +433,26 @@
             hears only this test's components, even with other tests running alongside.
         </TbText>
         <CodeBlock Label="A bUnit test" Code="@Test" />
+        <TbText>
+            Check spans with an <code>ActivityListener</code> for the <code>Trailblazor</code> source. Unlike the
+            meter factory, a listener hears every test in the process, so give each control under test a
+            <code>TelemetryName</code> no other test uses, and pick its spans out by
+            <code>trailblazor.telemetry_name</code>.
+        </TbText>
 
         <DocsHeading Id="cost-and-turning-it-off" Text="Cost and turning it off" Class="docs-section" />
         <ul>
             <li>When nothing listens, a count is one check, well under a nanosecond.</li>
             <li>When something listens, a count costs tens of nanoseconds, far less than a render.</li>
+            <li>
+                When nothing listens to the <code>Trailblazor</code> source, or the components are turned off as below,
+                a call to your data starts no span.
+            </li>
         </ul>
-        <TbText>An app that listens to every meter but doesn't want its UI counted turns the components off:</TbText>
+        <TbText>
+            An app that listens to every meter but doesn't want its UI counted turns the components off, which stops
+            their spans too; there's no setting that keeps one without the other:
+        </TbText>
         <CodeBlock Label="Turning the counts off" Code="@Off" />
 
         <DocsHeading Id="api" Text="API" Class="docs-section" />
@@ -465,6 +519,12 @@
             .WithMetrics(metrics => metrics
                 .AddMeter("Trailblazor")
                 .AddOtlpExporter());
+        """;
+
+    private const string Tracing = """
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(metrics => metrics.AddMeter("Trailblazor").AddOtlpExporter())
+            .WithTracing(tracing => tracing.AddSource("Trailblazor").AddOtlpExporter());
         """;
 
     private const string Labels = """

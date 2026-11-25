@@ -163,7 +163,7 @@
         var query = trigger is null || ReadOnly || Disabled ? null : new MentionQuery(trigger, text);
         try
         {
-            if (!await _suggestions.FindAsync(query, number, Search, Items, MaxItems))
+            if (!await _suggestions.FindAsync(query, number, Search, Items, MaxItems, Telemetry, TelemetryName))
             {
                 return;
             }

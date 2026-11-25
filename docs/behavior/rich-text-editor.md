@@ -75,6 +75,7 @@ Familiar apps: Google Docs, Word for the web, Gmail's compose box, Outlook's mes
 - [x] Escape closes the suggestions until the text changes, and Enter then starts a paragraph again. `RichTextEditorSuggestionTests.Suggestions_ShouldStayClosedUntilTheTextChanges_WhenEscapeIsPressed`
 - [x] The app hears the mentions in the text when the user's edit changes them: one chosen, deleted or brought back by undo. `RichTextEditorSuggestionTests.Mentions_ShouldBeReportedAgain_WhenAChosenMentionIsDeletedAndTheChoiceUndone`, `TbRichTextEditorTests.OnMentionsChanged_ShouldReportOnlyWhatTheUserChanges_WhenTheValueGainsAndLosesMentions`
 - [x] A search that fails closes the suggestions, is read out and reaches the app. `RichTextEditorSuggestionTests.Suggestions_ShouldCloseAndTellTheApp_WhenTheSearchFails`, `TbRichTextEditorTests.Query_ShouldEmptyTheListAndTellTheApp_WhenTheSearchFails`
+- [x] With a `TelemetryName`, each `MentionSearch` call runs in a `TbRichTextEditor search` span from the `Trailblazor` source, and a slash command lookup starts none. `TelemetrySpanTests.RichTextEditor_ShouldTraceItsMentionSearchButNotItsSlashCommands_WhenSomeoneListens`
 - [ ] Text composed with an input method right beside a mention stays outside it. UNCONFIRMED
 - [ ] An input method's composition doesn't open the suggestions until it is committed. UNCONFIRMED
 - [x] In a read-only editor, the keys move the caret and select text but change nothing. `RichTextEditorTests.ReadOnly_ShouldKeepItsTextButLetItBeSelected_WhenTheUserTriesToEditIt`

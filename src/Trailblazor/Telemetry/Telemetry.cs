@@ -18,6 +18,11 @@ internal sealed class Telemetry(TelemetryInstruments instruments, IOptions<Trail
 
     public const string OutcomeTag = "trailblazor.outcome";
 
+    public const string ItemsTag = "trailblazor.items";
+
+    // One source for the whole process, as ActivitySource is meant to be used; an app listens with AddSource.
+    internal static readonly ActivitySource Spans = new(TelemetryInstruments.MeterName);
+
     // Toasts come from a service, not a component, so they share one component name.
     private const string ToastComponent = "Toast";
 
@@ -54,6 +59,28 @@ internal sealed class Telemetry(TelemetryInstruments instruments, IOptions<Trail
 
     public void FieldInvalid(string telemetryName, Type component) =>
         Add(instruments.FieldsInvalid, 1, telemetryName, NameOf(component));
+
+    // A span around a call to the app's data, such as a grid's DataProvider, so the app's own database or HTTP spans
+    // nest under it. Nothing is started when no one listens.
+    public Activity? StartSpan(string telemetryName, Type component, string action)
+    {
+        if (!Spans.HasListeners() || !options.Value.Telemetry.Enabled
+            || Spans.StartActivity($"{NameOf(component)} {action}") is not { } span)
+        {
+            return null;
+        }
+
+        span.SetTag(NameTag, telemetryName).SetTag(ComponentTag, NameOf(component)).SetTag(ActionTag, action);
+        foreach (var source in appTags)
+        {
+            foreach (var tag in source.Tags)
+            {
+                span.SetTag(tag.Key, tag.Value);
+            }
+        }
+
+        return span;
+    }
 
     // Nothing is built when no one listens, so an unwatched control costs a check.
     private void Add<T>(Instrument<T> instrument, T value, string telemetryName, string component,
