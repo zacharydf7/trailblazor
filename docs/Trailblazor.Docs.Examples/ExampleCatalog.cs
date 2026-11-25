@@ -362,12 +362,20 @@ public static class ExampleCatalog
                     + "Cedar Flats fits, so it gets neither. `MaxLength` cuts text to a number of characters as the "
                     + "page renders, for an ID in a fixed-width column, as the permit shows. Characters differ in "
                     + "width, so prefer `MaxLines` where it fits.", typeof(TextFullTextExample)),
+                new("middle", "Cutting in the middle", "`Truncation=\"TextTruncation.Middle\"` keeps the start and "
+                    + "the end of a file name, an ID or a path. With a `MaxLines` of 1, it keeps as much of both as "
+                    + "the box holds once the page is interactive, as the long file name shows, while the short one "
+                    + "fits and stays whole; with `MaxLength`, as the permit shows, it keeps that many characters as "
+                    + "the page renders. Copying just the cut text, with nothing around it, copies the whole text.",
+                    typeof(TextMiddleExample)),
             ],
-            Api = [typeof(TbText)],
+            Api = [typeof(TbText), typeof(TextTruncation)],
             Keyboard =
             [
                 new(["Tab"], "Reaches text that `ShowFullText` reveals, only while it is cut off, and shows its "
-                    + "tooltip."),
+                    + "tooltip. Alone inside something that takes focus, such as a link, a button or a cell of a "
+                    + "grid with `CellNavigation`, the text is no tab stop of its own: focus on what holds it shows "
+                    + "the tooltip. Two such texts in one holder each keep their own tab stop."),
                 new(["Escape"], "Hides the tooltip.") { When = "While the tooltip shows" },
             ],
             Accessibility =
@@ -375,8 +383,8 @@ public static class ExampleCatalog
                 "Text cut off by `MaxLines` is all still there for screen readers.",
                 "With `ShowFullText`, screen readers hear cut-off text once: the tooltip only repeats it, so the "
                     + "tooltip is hidden from them and describes nothing.",
-                "Screen readers skip the shortened text that `MaxLength` shows and read the full text from a hidden "
-                    + "copy.",
+                "Screen readers skip the shortened text that `MaxLength` or a middle cut shows and read the full "
+                    + "text from a hidden copy.",
                 "The tooltip stays while the pointer moves onto it, and Escape hides it (WCAG 1.4.13).",
             ],
             AppDuties =
@@ -392,22 +400,33 @@ public static class ExampleCatalog
                 "`MaxLength` shortens text as the page renders. Cut-off text with `ShowFullText` gets its tooltip "
                     + "and its tab stop once the page is interactive, and text that `MaxLines` cuts off once its "
                     + "script has measured it. Screen readers read all of it either way.",
+                "A middle cut with a `MaxLines` of 1 fits its box once the page is interactive; before then it shows "
+                    + "the `MaxLength` cut, or, without one, the whole text cut off at the end.",
             ],
-            Ready = new(".tb-text", "text with `MaxLines` and `ShowFullText`, after its script has measured whether "
-                + "its box cuts it off"),
+            Ready = new(".tb-text", "text with `ShowFullText`, or cut in the middle with a `MaxLines` of 1, after its "
+                + "script has measured its box"),
             Notes =
             [
                 new("`As` defaults to a paragraph, so a heading moved into `TbText` can keep its look through "
                     + "`TextStyle` but stops being a heading to screen readers. "
                     + "Give it a heading level, such as `As=\"TextElement.H2\"`.")
                     { Pitfall = true },
+                new("Directly in a table's cell, text with a `MaxLines` of 1 takes the column's width rather than "
+                    + "widening the column to fit, so give the column a width, such as a data grid column's `Width`, "
+                    + "where its text should be cut."),
+                new("Copying text that `MaxLength` or a middle cut shortens gives the whole text when the selection "
+                    + "holds nothing else; a selection that runs on past it copies what shows."),
             ],
             Target = new("heading", "Display"),
             Blocks = ["tb-text"],
             DataParts =
             [
-                new("full-text", "With `ShowFullText` or `MaxLength`, the whole text: the text itself, or a hidden "
-                    + "copy beside what `MaxLength` shows."),
+                new("full-text", "With `ShowFullText`, `MaxLength` or a middle cut, the whole text: the text itself, "
+                    + "or a hidden copy beside what `MaxLength` or a middle cut shows."),
+                new("shortened", "The text cut to `MaxLength`, or, for a middle cut without one, the whole text cut "
+                    + "off at the end until its script fits it to the box; hidden from screen readers."),
+                new("middle", "What fits the box, the whole text or a middle cut, which the script fills once the "
+                    + "page is interactive; hidden from screen readers."),
                 new("tooltip", "The tooltip that `ShowFullText` shows for cut-off text."),
             ],
             Scenario = new("full-text", "it checks that the long trail name is cut off, and that its tooltip shows "
@@ -417,12 +436,15 @@ public static class ExampleCatalog
                 "Text cut off by `MaxLines` without `ShowFullText` is still all in the markup, so text assertions "
                     + "and `GetByText` match the whole string. With `ShowFullText` or `MaxLength`, read it with "
                     + "`Tb().Text(\"...\")`.",
-                "`Tb().Text(\"...\")` finds text with `ShowFullText` or `MaxLength` by its whole text. `IsCut` "
+                "`Tb().Text(\"...\")` finds text with `ShowFullText`, `MaxLength` or a middle cut by its whole text. `IsCut` "
                     + "(`IsCutAsync()` in Playwright) reads whether it is cut off, and `FullText` (`FullTextAsync()`) "
                     + "its whole text.",
                 "Only a browser measures whether `MaxLines` cuts text off. In bUnit, "
                     + "`Tb().Text(\"...\").SetCutAsync(true)` tells the text it is cut off, as its script would. In "
                     + "Playwright, `IsCutAsync()` waits for the first measurement once the page is interactive.",
+                "`ShownText` (`ShownTextAsync()` in Playwright) reads what the text shows, such as "
+                    + "\"cedar-fl…-v3.pdf\". Only a browser fits a middle cut to its box, so in bUnit it reads the "
+                    + "`MaxLength` cut or the whole text.",
             ],
         },
         new("kbd", "Kbd", ExampleCategory.Content,

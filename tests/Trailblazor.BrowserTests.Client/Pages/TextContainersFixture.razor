@@ -1,0 +1,43 @@
+@page "/text-containers"
+
+@* Cut-off text that shows its full text, where a column or a list sets its width: in a grid that moves focus from cell
+   to cell, and in list items that are links or plain, one of them a link holding two cut texts and one a link holding
+   text cut to a length. *@
+<TbDataGrid TItem="Trail" Items="Trails" AriaLabel="Trails" KeySelector="trail => trail.Id" CellNavigation>
+    <TbColumn TItem="Trail" Id="name" Title="Name" Width="8rem">
+        <CellTemplate>
+            <TbText As="TextElement.Span" MaxLines="1" ShowFullText Text="@context.Name" />
+        </CellTemplate>
+    </TbColumn>
+    <TbColumn Field="trail => trail.LengthKm" Title="Length (km)" />
+</TbDataGrid>
+<TbButton>Between</TbButton>
+<div style="inline-size: 10rem">
+    <TbList>
+        <TbListItem Href="#cedar">
+            <TbText As="TextElement.Span" MaxLines="1" ShowFullText Text="Cedar Flats loop through the old growth" />
+        </TbListItem>
+        <TbListItem>
+            <TbText As="TextElement.Span" MaxLines="1" ShowFullText Text="Pine Hollow loop past the river bend" />
+        </TbListItem>
+        <TbListItem Href="#raven">
+            <ChildContent>
+                <TbText As="TextElement.Span" MaxLines="1" ShowFullText Text="Raven Falls climb past the old mill" />
+            </ChildContent>
+            <Description>
+                <TbText As="TextElement.Span" MaxLines="1" ShowFullText Text="Six miles of steep drops on both sides" />
+            </Description>
+        </TbListItem>
+        <TbListItem Href="#permit">
+            <TbText As="TextElement.Span" MaxLength="10" ShowFullText Text="Permit TRL-2026-004173-N" />
+        </TbListItem>
+    </TbList>
+</div>
+<TbButton>After</TbButton>
+
+@code {
+    private static readonly Trail[] Trails =
+        [new(1, "Eagle Ridge traverse along the crest", 9.6), new(2, "Cedar Flats", 3.1)];
+
+    private sealed record Trail(int Id, string Name, double LengthKm);
+}

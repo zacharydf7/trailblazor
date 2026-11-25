@@ -23,6 +23,7 @@ import './tooltip.js';
 import './throttled-input.js';
 import './debounced-input.js';
 import './text-count.js';
+import './text-copy.js';
 import './message-hold.js';
 import { measurePageScrollbar } from './page-scroll.js';
 import { isApple } from '../Trailblazor.Primitives/platform.js';

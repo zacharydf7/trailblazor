@@ -814,10 +814,17 @@
         text-overflow: ellipsis;
     }
 
-    /* Text cut to MaxLength copies as it shows, not with the hidden full text beside it. */
+    /* Selecting shortened text highlights what shows; text-copy.js copies the whole text when nothing else is
+       selected. */
     .tb-text > .tb-visually-hidden[data-part="full-text"] {
         -webkit-user-select: none;
         user-select: none;
+    }
+
+    /* Once the script has cut a middle-cut text to fit its box, that cut takes the place of the one made as the page
+       rendered. */
+    .tb-text[data-middle-shown] > [data-part="shortened"] {
+        display: none;
     }
 
     /* The tooltip of ShowFullText sits inside the text, and that of a button's reason inside the button, so it
@@ -832,6 +839,13 @@
         text-transform: none;
         white-space: normal;
         overflow-wrap: anywhere;
+    }
+
+    /* Directly in a table's cell, text kept to one line takes the column's width rather than widening the column to
+       fit, so the column's width, or its share of the table's, decides where it's cut. */
+    :where(td, th) > .tb-text--truncate {
+        inline-size: 0;
+        min-inline-size: 100%;
     }
 
     /* Line clamping still needs the prefixed box in every engine. */

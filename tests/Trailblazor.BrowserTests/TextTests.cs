@@ -125,6 +125,148 @@ public class TextTests(BrowserFixture fixture) : BrowserTest(fixture)
         Assert.Equal(Eagle, await page.Tb().Text(Eagle).FullTextAsync());
     }
 
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MiddleCut_ShouldKeepTheStartAndEndThatFit_WhenTheBoxIsNarrow(string browser)
+    {
+        const string report = "trail-report-final-revision-v3.pdf";
+        var page = await OpenAsync(browser, "/text-middle");
+        var text = page.Tb().Text(report);
+
+        var shown = await text.ShownTextAsync();
+
+        Assert.True(await text.IsCutAsync());
+        Assert.Matches(@"^trail-report-.*….*-v3\.pdf$", shown);
+        Assert.False(await text.Element.EvaluateAsync<bool>("text => text.scrollWidth > text.clientWidth"));
+        await text.Element.HoverAsync();
+        await Expect(text.Element.Locator("[role=tooltip]")).ToHaveTextAsync(report);
+        await Expect(text.Element).ToMatchAriaSnapshotAsync($"- paragraph: {report}");
+        await page.GetByTestId("box").EvaluateAsync("box => box.style.inlineSize = '40rem'");
+        await Expect(text.Element).Not.ToHaveAttributeAsync("data-cut", "");
+        Assert.Equal(report, await text.ShownTextAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MiddleCut_ShouldKeepTheNameAndTheExtension_WhenTheFileNameIsRightToLeft(string browser)
+    {
+        const string report = "דוח_שבילים_סופי_גרסה_3.pdf";
+        var page = await OpenAsync(browser, "/text-middle");
+        var text = page.Tb().Text(report);
+
+        var shown = await text.ShownTextAsync();
+
+        Assert.True(await text.IsCutAsync());
+        Assert.StartsWith("דוח", shown);
+        Assert.EndsWith("3.pdf", shown);
+        Assert.False(await text.Element.EvaluateAsync<bool>("text => text.scrollWidth > text.clientWidth"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Copy_ShouldGiveTheWholeText_WhenTheSelectionHoldsOnlyShortenedText(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-middle");
+        // What the page puts on the clipboard, or nothing when it leaves the copy to the browser.
+        await page.EvaluateAsync("""
+            () => addEventListener('copy', event => window.copied = event.clipboardData.getData('text/plain'))
+            """);
+        var permit = page.Tb().Text("TRL-2026-004173-S").Element;
+
+        await permit.SelectTextAsync();
+        await page.Keyboard.PressAsync("ControlOrMeta+C");
+        Assert.Equal("TRL-2026-004173-S", await page.EvaluateAsync<string>("() => window.copied"));
+        // A middle cut that its script fitted to the box copies whole too.
+        var report = page.Tb().Text("trail-report-final-revision-v3.pdf");
+        Assert.True(await report.IsCutAsync());
+        await report.Element.SelectTextAsync();
+        await page.Keyboard.PressAsync("ControlOrMeta+C");
+        Assert.Equal("trail-report-final-revision-v3.pdf", await page.EvaluateAsync<string>("() => window.copied"));
+        await page.GetByTestId("sentence").SelectTextAsync();
+        await page.Keyboard.PressAsync("ControlOrMeta+C");
+
+        Assert.Equal("", await page.EvaluateAsync<string>("() => window.copied"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FullText_ShouldLeaveTheTabStopToWhatHoldsIt_WhenInALinkOrAGridCell(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-containers");
+        var (eagle, cedar) = (page.Tb().Text("Eagle Ridge traverse along the crest"),
+            page.Tb().Text("Cedar Flats loop through the old growth"));
+        // The grid's column and the list's width cut both.
+        Assert.True(await eagle.IsCutAsync());
+        Assert.True(await cedar.IsCutAsync());
+
+        // Tab goes from the link, which WebKit leaves out of the Tab order by default, to the plain item's text,
+        // never into the link's own text. The link's focus shows that text's tooltip.
+        var link = cedar.Element.Locator("xpath=ancestor::a");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Between" }).FocusAsync();
+        await page.Keyboard.PressAsync("Tab");
+        if (browser != "webkit")
+        {
+            await Expect(link).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Tab");
+        }
+
+        await Expect(page.Tb().Text("Pine Hollow loop past the river bend").Element).ToBeFocusedAsync();
+        await link.FocusAsync();
+        await Expect(cedar.Element.Locator("[role=tooltip]")).ToBeVisibleAsync();
+        // In the grid, the arrow keys reach the cell, whose focus shows the text's tooltip.
+        await page.GetByRole(AriaRole.Columnheader, new() { Name = "Name", Exact = true }).FocusAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+
+        await Expect(eagle.Element.Locator("xpath=ancestor::td")).ToBeFocusedAsync();
+        await Expect(eagle.Element.Locator("[role=tooltip]")).ToBeVisibleAsync();
+        Assert.Null(await eagle.Element.GetAttributeAsync("tabindex"));
+        // Text cut to a length is held the same way.
+        var permit = page.Tb().Text("Permit TRL-2026-004173-N");
+        Assert.True(await permit.IsCutAsync());
+        await Expect(permit.Element).Not.ToHaveAttributeAsync("tabindex", "0");
+        await permit.Element.Locator("xpath=ancestor::a").FocusAsync();
+        await Expect(permit.Element.Locator("[role=tooltip]")).ToBeVisibleAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task FullText_ShouldKeepEachTabStop_WhenALinkHoldsTwoCutTexts(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-containers");
+        var (title, description) = (page.Tb().Text("Raven Falls climb past the old mill"),
+            page.Tb().Text("Six miles of steep drops on both sides"));
+
+        Assert.True(await title.IsCutAsync());
+        Assert.True(await description.IsCutAsync());
+
+        // The link's focus couldn't show both tooltips, so each text stays a tab stop of its own.
+        await Expect(title.Element).ToHaveAttributeAsync("tabindex", "0");
+        await Expect(description.Element).ToHaveAttributeAsync("tabindex", "0");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MiddleCut_ShouldShowTheTextAgain_WhenTurnedOff(string browser)
+    {
+        const string report = "trail-report-final-revision-v3.pdf";
+        var page = await OpenAsync(browser, "/text-middle");
+        var text = page.Tb().Text(report);
+        Assert.Contains("…", await text.ShownTextAsync());
+        var cut = page.GetByRole(AriaRole.Button, new() { Name = "Switch the cut" });
+
+        await cut.ClickAsync();
+        await Expect(text.Element).Not.ToHaveAttributeAsync("data-middle-shown", "");
+        await Expect(text.Element.Locator("[data-part=full-text]")).ToBeVisibleAsync();
+        await cut.ClickAsync();
+
+        await Expect(text.Element).ToHaveAttributeAsync("data-middle-shown", "");
+        await Expect(text.Element.Locator("[data-part=middle]")).ToContainTextAsync("…");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task MaxLength_ShouldCutTheMiddle_WhenTruncationIsMiddle(string browser)
+    {
+        var page = await OpenAsync(browser, "/text-middle");
+
+        var text = page.Tb().Text("TRL-2026-004173-N-permit");
+
+        Assert.Equal("TRL-2026…-permit", await text.ShownTextAsync());
+    }
+
     // The lines the text shows, whether it holds more than it shows, and how it clips the rest.
     private static Task<string[]> FitAsync(IPage page, string testId) =>
         page.GetByTestId(testId).EvaluateAsync<string[]>("""

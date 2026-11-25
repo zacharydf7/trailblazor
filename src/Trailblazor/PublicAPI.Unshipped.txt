@@ -7898,3 +7898,8 @@ Trailblazor.TbCountdown.ShowStay.set -> void
 Trailblazor.CountdownEnd
 Trailblazor.CountdownEnd.GoNow = 1 -> Trailblazor.CountdownEnd
 Trailblazor.CountdownEnd.TimeRanOut = 0 -> Trailblazor.CountdownEnd
+Trailblazor.TbText.Truncation.get -> Trailblazor.TextTruncation
+Trailblazor.TbText.Truncation.set -> void
+Trailblazor.TextTruncation
+Trailblazor.TextTruncation.End = 0 -> Trailblazor.TextTruncation
+Trailblazor.TextTruncation.Middle = 1 -> Trailblazor.TextTruncation

@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Trailblazor.Testing;
 
 namespace Trailblazor.Tests.Components;
@@ -118,6 +119,74 @@ public class TbTextTests : BunitContext
         Assert.Equal(expected, TbText.Shortened(text, most));
     }
 
+    [Theory]
+    [InlineData("trail-report-final-v3.pdf", 10, "trail…3.pdf")]
+    [InlineData("trail-report-final-v3.pdf", 9, "trail….pdf")]
+    [InlineData("trail-report-final-v3.pdf", 1, "t…")]
+    [InlineData("Cedar Flats", 11, null)]
+    [InlineData("Big Cedar Flats", 6, "Big…ats")]
+    [InlineData("🏔️🏔️ Lake 🏔️🏔️", 4, "🏔️🏔️…🏔️🏔️")]
+    public void ShortenedInTheMiddle_ShouldKeepTheStartAndTheEnd_WhenGivenText(string text, int most, string? expected)
+    {
+        Assert.Equal(expected, TbText.ShortenedInTheMiddle(text, most));
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheMiddleCutAndReadTheWhole_WhenTruncationIsMiddle()
+    {
+        var cut = Render<TbText>(parameters => parameters.Add(text => text.Text, "trail-report-final-v3.pdf")
+            .Add(text => text.MaxLength, 10).Add(text => text.Truncation, TextTruncation.Middle));
+
+        var text = cut.Tb().Text("trail-report-final-v3.pdf");
+        Assert.Equal((true, "trail…3.pdf"), (text.IsCut, text.ShownText));
+        Assert.Contains("tb-text--middle", cut.Find("p").ClassList);
+        // Without MaxLines nothing is measured, so the script leaves it as it rendered.
+        Assert.Empty(cut.FindAll("[data-part=middle]"));
+    }
+
+    [Fact]
+    public async Task Render_ShouldCutTheMiddleOnceMeasured_WhenGivenOneLine()
+    {
+        var cut = Render<TbText>(parameters => parameters.Add(text => text.Text, "trail-report-final-v3.pdf")
+            .Add(text => text.MaxLines, 1).Add(text => text.MaxLength, 10)
+            .Add(text => text.Truncation, TextTruncation.Middle).Add(text => text.ShowFullText, true));
+        var text = cut.Tb().Text("trail-report-final-v3.pdf");
+        // Until the script has measured, MaxLength's cut shows, and the script has an empty span to fill.
+        Assert.Equal((true, "trail…3.pdf"), (text.IsCut, text.ShownText));
+        Assert.Equal("true", cut.Find("[data-part=middle]").GetAttribute("aria-hidden"));
+
+        await text.SetCutAsync(false);
+
+        // The box holds the whole text, so it isn't cut, and has no tooltip, though MaxLength would cut it.
+        Assert.False(text.IsCut);
+        Assert.Empty(cut.FindAll("[role=tooltip]"));
+    }
+
+    [Fact]
+    public void Truncation_ShouldStartTheScriptAgain_WhenItChanges()
+    {
+        var cut = Render<TbText>(parameters => parameters.Add(text => text.Text, "trail-report-final-v3.pdf")
+            .Add(text => text.MaxLines, 1).Add(text => text.ShowFullText, true));
+
+        cut.Render(parameters => parameters.Add(text => text.Truncation, TextTruncation.Middle));
+
+        // Each start says whether it measures the box and whether it cuts the middle.
+        Assert.Equal([(true, false), (true, true)], JSInterop.Invocations["watchTextCut"]
+            .Select(call => ((bool)call.Arguments[2]!, (bool)call.Arguments[3]!)));
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheWholeTextUntilInteractive_WhenAMiddleCutHasNoMaxLength()
+    {
+        SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        var cut = Render<TbText>(parameters => parameters.Add(text => text.Text, "trail-report-final-v3.pdf")
+            .Add(text => text.MaxLines, 1).Add(text => text.Truncation, TextTruncation.Middle));
+
+        Assert.Equal("trail-report-final-v3.pdf", cut.Find("p").TextContent);
+        Assert.Empty(cut.FindAll("[data-part=middle]"));
+    }
+
     [Fact]
     public void Render_ShouldShowTheShortenedTextAndHideItFromScreenReaders_WhenMaxLengthCutsIt()
     {
@@ -188,5 +257,13 @@ public class TbTextTests : BunitContext
             parameters.Add(text => text.Text, Pine).AddChildContent(Pine))).Message);
         Assert.Contains("ShowFullText needs MaxLines or MaxLength", Assert.Throws<InvalidOperationException>(() =>
             Render<TbText>(parameters => parameters.Add(text => text.ShowFullText, true))).Message);
+        Assert.All(new Action<ComponentParameterCollectionBuilder<TbText>>[]
+        {
+            parameters => parameters.Add(text => text.MaxLines, 1).AddChildContent(Pine),
+            parameters => parameters.Add(text => text.Text, Pine).Add(text => text.MaxLines, 2),
+            parameters => parameters.Add(text => text.Text, Pine),
+        }, setup => Assert.Contains("middle Truncation needs Text", Assert.Throws<InvalidOperationException>(() =>
+            Render<TbText>(parameters => setup(parameters.Add(text => text.Truncation, TextTruncation.Middle))))
+            .Message));
     }
 }

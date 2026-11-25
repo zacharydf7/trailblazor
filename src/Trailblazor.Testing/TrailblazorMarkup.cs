@@ -2618,9 +2618,13 @@ public sealed class TbTextDriver
     /// </summary>
     public string FullText => FullTextOf(_find())!;
 
+    /// <summary>The text as it shows: cut to <c>MaxLength</c>, at the end or in the middle, or whole. Only a browser
+    /// fits a middle cut to its box, so in bUnit this reads the <c>MaxLength</c> cut or the whole text.</summary>
+    public string ShownText => _find().QuerySelector(":scope > [data-part=shortened]")?.TextContent ?? FullText;
+
     /// <summary>Tells text with <c>MaxLines</c> and <c>ShowFullText</c> whether its box cuts it off, as its script does
     /// in a browser whenever the box or the text changes.</summary>
-    public Task SetCutAsync(bool cut) => _scripts.InvokeAsync(() => (_cut ??= _scripts.Text(_find())).OnCut(cut));
+    public Task SetCutAsync(bool cut) => _scripts.InvokeAsync(() => (_cut ??= _scripts.Text(_find())).OnCut(cut, false));
 
     // Read as a browser shows it, with the markup's line breaks and indents as single spaces.
     internal static string? FullTextOf(IElement text) =>

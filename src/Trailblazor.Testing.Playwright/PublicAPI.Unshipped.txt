@@ -703,3 +703,4 @@ Trailblazor.Testing.Playwright.TbDescriptionListLocator.TbDescriptionListLocator
 Trailblazor.Testing.Playwright.TbDescriptionListLocator.TermsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbDescriptionListLocator.ValueOfAsync(string! term) -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.DescriptionList() -> Trailblazor.Testing.Playwright.TbDescriptionListLocator!
+Trailblazor.Testing.Playwright.TbTextLocator.ShownTextAsync() -> System.Threading.Tasks.Task<string!>!

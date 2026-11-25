@@ -1,0 +1,23 @@
+@page "/text-middle"
+
+@* Text cut in the middle: a file name measured in a box a test can widen, with a button that switches it to an end
+   cut and back, an ID cut to a length, a right-to-left file name, and a cut ID inside a sentence, to copy alone or with
+   the words around it. *@
+<div data-testid="box" style="inline-size: 12rem">
+    <TbText MaxLines="1" Truncation="_truncation" ShowFullText Text="trail-report-final-revision-v3.pdf" />
+</div>
+<TbButton OnClick="Switch">Switch the cut</TbButton>
+<TbText MaxLength="15" Truncation="TextTruncation.Middle" Text="TRL-2026-004173-N-permit" />
+<div dir="rtl" style="inline-size: 8rem">
+    <TbText MaxLines="1" Truncation="TextTruncation.Middle" Text="דוח_שבילים_סופי_גרסה_3.pdf" />
+</div>
+<p data-testid="sentence">
+    Permit <TbText As="TextElement.Span" MaxLength="12" Text="TRL-2026-004173-S" /> is valid.
+</p>
+
+@code {
+    private TextTruncation _truncation = TextTruncation.Middle;
+
+    private void Switch() =>
+        _truncation = _truncation == TextTruncation.Middle ? TextTruncation.End : TextTruncation.Middle;
+}

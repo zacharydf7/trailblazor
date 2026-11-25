@@ -6,10 +6,12 @@ import { onEachPage } from '../Trailblazor.Primitives/pages.js';
 // server nothing, even to set up. The JS initializer imports this at startup; each bubble carries its own settings.
 const focusableSelector = 'a[href], button, input, select, textarea, [tabindex]';
 // A TbTooltip wraps its trigger, and cut-off text that shows its full text in a tooltip is its own trigger.
+// What takes focus itself, rather than through a field or an active option.
+const focusTakers = 'a[href], button, summary, [role=button], [role=link], [role=menuitem], [role=menuitemcheckbox], '
+    + '[role=menuitemradio], [role=tab], [role=treeitem], [role=row], [role=gridcell]';
 // A trigger that a press does nothing else to: no role of its own, and neither a control nor inside one.
-const controls = 'a[href], button, input, select, textarea, label, summary, [contenteditable], [role=button], '
-    + '[role=link], [role=option], [role=menuitem], [role=menuitemcheckbox], [role=menuitemradio], [role=tab], '
-    + '[role=treeitem], [role=checkbox], [role=radio], [role=switch], [role=row], [role=gridcell]';
+const controls = `${focusTakers}, input, select, textarea, label, [contenteditable], [role=option], [role=checkbox], `
+    + '[role=radio], [role=switch]';
 const isPlain = trigger => !trigger.matches('[role]') && !trigger.closest(controls);
 const anchorSelector = '.tb-tooltip-anchor, .tb-text--full-text, .tb-button--reason';
 const bubbleSelector = ':is(.tb-tooltip-anchor, .tb-text--full-text, .tb-button--reason) > [data-part="tooltip"]';
@@ -30,6 +32,16 @@ const bubbleOf = anchor => anchor?.querySelector(':scope > [data-part="tooltip"]
 const anchorOf = target => {
     const anchor = target?.closest?.(anchorSelector);
     return bubbleOf(anchor) ? anchor : null;
+};
+
+// Cut-off text alone inside something that takes focus, such as a link or a grid's cell, is no tab stop of its own;
+// focus on the holder shows its tooltip instead, when it holds exactly one such text. text.js uses this list to tell
+// whether a text sits in one.
+export const textHolders = `${focusTakers}, :is([role=grid], [role=treegrid]) :is(td, th)`;
+const heldTextOf = target => {
+    const texts = [...(target?.querySelectorAll?.('.tb-text--full-text') ?? [])]
+        .filter(text => bubbleOf(text) && text.parentElement.closest(textHolders) === target);
+    return texts.length === 1 ? texts[0] : null;
 };
 
 const hideShown = () => {
@@ -104,13 +116,13 @@ document.addEventListener('pointerout', event => {
 // Focus a click or tap leaves, or that a dialog closed by one hands back, isn't :focus-visible: its user wants the
 // control, not its description. A text field is, since its user is about to type.
 document.addEventListener('focusin', event => {
-    const anchor = anchorOf(event.target);
+    const anchor = anchorOf(event.target) ?? heldTextOf(event.target);
     if (anchor && event.target.matches(':focus-visible')) {
         // Focus a closing popup hands back arrives mid-hide, when showPopover() throws, so the show waits a task.
         later(anchor, show, 0);
     }
 });
-document.addEventListener('focusout', event => hide(anchorOf(event.target)));
+document.addEventListener('focusout', event => hide(anchorOf(event.target) ?? heldTextOf(event.target)));
 // A press on a trigger that's off, or on one that isn't a control, such as a relative timestamp, does nothing else,
 // so it shows the tooltip, on touch too; the next press anywhere else hides it. A tooltip shown for keyboard focus stays, as focus
 // does.

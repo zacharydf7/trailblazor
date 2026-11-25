@@ -641,3 +641,4 @@ Trailblazor.Testing.TbDescriptionListDriver
 Trailblazor.Testing.TbDescriptionListDriver.Terms.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TbDescriptionListDriver.ValueOf(string! term) -> string!
 Trailblazor.Testing.TrailblazorMarkup.DescriptionList() -> Trailblazor.Testing.TbDescriptionListDriver!
+Trailblazor.Testing.TbTextDriver.ShownText.get -> string!
