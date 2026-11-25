@@ -17,3 +17,6 @@ TB009 | Usage | Warning | A tree view's parameters don't go together
 TB010 | Usage | Warning | A parameter's text looks like code
 TB011 | Usage | Info | An autocomplete opens a known list on focus
 TB012 | Usage | Info | A tree's items are their own keys and compare by reference
+TB013 | Usage | Warning | A data grid's parameters don't go together
+TB014 | Usage | Warning | A hotkey's keys can't be used as written
+TB015 | Usage | Warning | A form has OnSubmit beside OnValidSubmit or OnInvalidSubmit

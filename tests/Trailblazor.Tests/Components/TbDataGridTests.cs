@@ -302,6 +302,15 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void Render_ShouldThrow_WhenGivenItemsAndADataProvider()
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => RenderTrails(configure: parameters => parameters
+            .Add(grid => grid.DataProvider, (_, _) => Task.FromResult(new GridResult<Trail>([], 0)))));
+
+        Assert.Contains("takes Items or a DataProvider, not both", error.Message);
+    }
+
+    [Fact]
     public void Render_ShouldThrow_WhenTwoColumnsShareAnId()
     {
         var error = Assert.Throws<InvalidOperationException>(() => RenderTrails(configure: parameters => parameters

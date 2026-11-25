@@ -32,8 +32,10 @@ public class DisposeContractTests : BunitContext
         [typeof(TbDockPanel)] = typeof(TbDockManager),
     };
 
-    // Callbacks left without a handler: a handled ActiveKeyChanged makes the tabs keyed, so every tab would need a Key.
-    private static readonly HashSet<string> Unhandled = ["TbTabs.ActiveKeyChanged", "TbRibbon.ActiveKeyChanged"];
+    // Callbacks left without a handler: a handled ActiveKeyChanged makes the tabs keyed, so every tab would need a Key,
+    // and a form throws for OnSubmit beside OnValidSubmit.
+    private static readonly HashSet<string> Unhandled =
+        ["TbTabs.ActiveKeyChanged", "TbRibbon.ActiveKeyChanged", "TbForm.OnSubmit"];
 
     private readonly FakeTimeProvider _time = new();
     private readonly List<object?> _callbacks = [];

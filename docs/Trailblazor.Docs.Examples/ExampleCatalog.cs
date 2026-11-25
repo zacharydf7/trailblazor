@@ -6172,6 +6172,9 @@ public static class ExampleCatalog
                     + "[guide](guides/forms#model-and-data-annotations) says which message."),
                 new("A form with `OnSubmit` isn't counted in `trailblazor.form.submitted`, since it doesn't validate "
                     + "the submit itself."),
+                new("A form takes `OnSubmit`, or `OnValidSubmit` and `OnInvalidSubmit`, not both. `OnSubmit` replaces "
+                    + "the check that raises the other two, so a form given both throws as it renders, and build "
+                    + "warning [TB015](guides/analyzers#rules) reports it in markup.") { Pitfall = true },
                 new("From a submit until its handler finishes, `IsSubmitting` is true, the form's submit buttons "
                     + "show as busy, and another submit is dropped. `ShowSubmitting=\"false\"` leaves the buttons "
                     + "as they are. A submit button outside the form, such as in a dialog's footer, shows as busy "
@@ -11135,7 +11138,9 @@ public static class ExampleCatalog
             [
                 "A key people type, such as \"?\" or \"Shift+G\", without Mod, Ctrl, Alt or Meta, is a character key "
                     + "shortcut. A hotkey throws for one unless `AllowCharacterKey` is set, and even then it never "
-                    + "fires while someone types in a field. A named key such as Escape or F2 isn't one.",
+                    + "fires while someone types in a field. A named key such as Escape or F2 isn't one. Keys written "
+                    + "as text in markup get build warning [TB014](guides/analyzers#rules) when they need "
+                    + "`AllowCharacterKey` or can't be read.",
                 "A hotkey stops the browser's own action for its keys, so a shortcut such as Mod+S no longer saves "
                     + "the page.",
                 "The help shows Mod as ⌘ on Apple devices and Ctrl elsewhere, as a [kbd](components/kbd) does.",
@@ -13347,6 +13352,11 @@ public static class ExampleCatalog
                     + "not only the columns. Without a `PageSize` that is every row the provider gives, so set "
                     + "one on a long grid. With WebAssembly or Auto that text is in the page for anyone to "
                     + "read. Give the grid rows of a type made for showing, with nothing a user shouldn't see.")
+                    { Pitfall = true },
+                new("Some setups throw as the grid renders: `Items` with a `DataProvider`; `Groups` with a "
+                    + "`DataProvider`; a `ChildrenSelector` with a `DataProvider`, `Groups`, `OnRowMove` or a "
+                    + "`PageSize`; and `Virtualize` with a `DetailTemplate`, with a `PageSize`, or with no `Height` or "
+                    + "`Fill`. Build warning [TB013](guides/analyzers#rules) reports them in markup.")
                     { Pitfall = true },
                 new("Rows that don't come back from JSON as they went in aren't kept under a `PrerenderKey`: "
                     + "the grid logs a warning as it prerenders and asks the provider again, as it does without "

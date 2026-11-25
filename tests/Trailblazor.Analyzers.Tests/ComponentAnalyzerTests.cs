@@ -1491,6 +1491,199 @@ public class ComponentAnalyzerTests
         Assert.Empty(missing);
     }
 
+    private const string GridItems = """__builder.AddComponentParameter(1, "Items", new[] { "cedar" });""";
+
+    private const string GridProvider = """
+        __builder.AddComponentParameter(2, "DataProvider",
+            (System.Func<GridRequest, System.Threading.CancellationToken, Task<GridResult<string>>>)(
+                (request, _) => null!));
+        """;
+
+    private const string GridGroups = """__builder.AddComponentParameter(3, "Groups", new[] { "Region" });""";
+
+    private const string GridChildren = """
+        __builder.AddComponentParameter(4, "ChildrenSelector",
+            (System.Func<string, IEnumerable<string>?>)(trail => null));
+        """;
+
+    private const string GridVirtualize = """__builder.AddComponentParameter(5, "Virtualize", true);""";
+
+    private const string GridHeight = """__builder.AddComponentParameter(6, "Height", "20rem");""";
+
+    [Theory]
+    [InlineData(GridItems, "")]
+    [InlineData(GridProvider, "")]
+    [InlineData(GridItems + GridProvider, "takes Items or a DataProvider, not both")]
+    [InlineData(GridProvider + GridGroups, "groups only rows held in Items, not rows from a DataProvider")]
+    [InlineData(GridItems + GridGroups, "")]
+    [InlineData(GridItems + GridChildren, "")]
+    [InlineData(GridProvider + GridChildren, "with a ChildrenSelector takes its rows from Items, and can't group them, " +
+        "move them or split them into pages; set Virtualize to show many rows")]
+    [InlineData(GridItems + GridChildren + GridGroups, "with a ChildrenSelector takes its rows from Items, and can't " +
+        "group them, move them or split them into pages; set Virtualize to show many rows")]
+    [InlineData(GridItems + GridChildren + """
+        __builder.AddComponentParameter(7, "OnRowMove",
+            EventCallback.Factory.Create<SortableMove<string>>(this, _ => { }));
+        """, "with a ChildrenSelector takes its rows from Items, and can't group them, move them or split them into " +
+        "pages; set Virtualize to show many rows")]
+    [InlineData(GridItems + GridChildren + """__builder.AddComponentParameter(7, "PageSize", 20);""",
+        "with a ChildrenSelector takes its rows from Items, and can't group them, move them or split them into " +
+        "pages; set Virtualize to show many rows")]
+    [InlineData(GridItems + GridChildren + """__builder.AddComponentParameter(7, "PageSize", (int?)null);""", "")]
+    [InlineData(GridItems + GridVirtualize + GridHeight + """
+        __builder.AddComponentParameter(7, "DetailTemplate", (RenderFragment<string>)(trail => __builder2 => { }));
+        """, "that virtualizes its rows can't have a DetailTemplate")]
+    [InlineData(GridItems + GridVirtualize, "that virtualizes its rows needs a Height or Fill, and no PageSize")]
+    [InlineData(GridItems + GridVirtualize + GridHeight, "")]
+    [InlineData(GridItems + GridVirtualize + """__builder.AddComponentParameter(7, "Fill", true);""", "")]
+    [InlineData(GridItems + GridVirtualize + GridHeight + """__builder.AddComponentParameter(7, "PageSize", 20);""",
+        "that virtualizes its rows needs a Height or Fill, and no PageSize")]
+    [InlineData(GridItems + """__builder.AddComponentParameter(5, "Virtualize", false);""", "")]
+    [InlineData(GridItems + GridVirtualize + """
+        __builder.AddMultipleAttributes(7, new Dictionary<string, object> { ["Height"] = "20rem" });
+        """, "")]
+    public async Task ComponentAnalyzer_ShouldReportGridSetupOnlyWhenParametersClash_WhenAGridIsSetUp(
+        string parameters, string expected)
+    {
+        var diagnostics = await RunAsync($$"""
+            __builder.OpenComponent<TbDataGrid<string>>(0);
+            {{parameters}}
+            __builder.CloseComponent();
+            """);
+
+        Assert.Equal(expected == "" ? [] : [$"TbDataGrid {expected}"], diagnostics.Select(item => item.GetMessage()));
+        Assert.All(diagnostics, diagnostic => Assert.Equal("TB013", diagnostic.Id));
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenAComponentPassesItsOwnParametersToAGrid()
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<TbDataGrid<string>>(0);
+            __builder.AddComponentParameter(1, "Items", Trails);
+            {{GridProvider}}
+            __builder.CloseComponent();
+            """, """
+            [Parameter]
+            public IEnumerable<string>? Trails { get; set; }
+            """);
+
+        Assert.Empty(ids);
+    }
+
+    [Theory]
+    [InlineData("Mod+", "can't be read: end them with one key, after any of Mod, Ctrl, Alt, Shift and Meta, as in " +
+        "\"Mod+S\"")]
+    [InlineData("Hyper+S", "can't be read: end them with one key, after any of Mod, Ctrl, Alt, Shift and Meta, as in " +
+        "\"Mod+S\"")]
+    [InlineData("g", "are a key people type, with no Mod, Ctrl, Alt or Meta. Set AllowCharacterKey, and let people " +
+        "turn the hotkey off.")]
+    [InlineData("Shift+?", "are a key people type, with no Mod, Ctrl, Alt or Meta. Set AllowCharacterKey, and let " +
+        "people turn the hotkey off.")]
+    [InlineData("Space", "are a key people type, with no Mod, Ctrl, Alt or Meta. Set AllowCharacterKey, and let " +
+        "people turn the hotkey off.")]
+    [InlineData("Mod+S", "")]
+    [InlineData("ctrl + shift + p", "")]
+    [InlineData("Escape", "")]
+    [InlineData("Shift+Enter", "")]
+    [InlineData("F2", "")]
+    public async Task ComponentAnalyzer_ShouldReportHotkeyKeys_WhenTheyCantBeReadOrAreACharacterKeyNotAllowed(
+        string keys, string expected)
+    {
+        var diagnostics = await RunAsync($$"""
+            __builder.OpenComponent<TbHotkey>(0);
+            __builder.AddComponentParameter(1, "Keys", "{{keys}}");
+            __builder.CloseComponent();
+            """);
+
+        Assert.Equal(expected == "" ? [] : [$"TbHotkey's keys \"{keys}\" {expected}"],
+            diagnostics.Select(item => item.GetMessage()));
+        Assert.All(diagnostics, diagnostic => Assert.Equal("TB014", diagnostic.Id));
+    }
+
+    [Theory]
+    [InlineData("""__builder.AddComponentParameter(2, "AllowCharacterKey", true);""")]
+    [InlineData("""__builder.AddComponentParameter(2, "AllowCharacterKey", _allowed);""")]
+    [InlineData("""
+        __builder.AddMultipleAttributes(2, new Dictionary<string, object> { ["AllowCharacterKey"] = true });
+        """)]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenACharacterKeyMayBeAllowed(string allow)
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<TbHotkey>(0);
+            __builder.AddComponentParameter(1, "Keys", "?");
+            {{allow}}
+            __builder.CloseComponent();
+            """, "private bool _allowed;");
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldLeaveTheKeysToRunTime_WhenTheyAreNotText()
+    {
+        var ids = await IdsAsync("""
+            __builder.OpenComponent<TbHotkey>(0);
+            __builder.AddComponentParameter(1, "Keys", _keys);
+            __builder.CloseComponent();
+            """, "private string _keys = \"g\";");
+
+        Assert.Empty(ids);
+    }
+
+    private const string Submit = """
+        __builder.AddComponentParameter(1, "OnSubmit",
+            EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Forms.EditContext>(this, _ => { }));
+        """;
+
+    private const string ValidSubmit = """
+        __builder.AddComponentParameter(2, "OnValidSubmit",
+            EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Forms.EditContext>(this, _ => { }));
+        """;
+
+    private const string InvalidSubmit = """
+        __builder.AddComponentParameter(3, "OnInvalidSubmit",
+            EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Forms.EditContext>(this, _ => { }));
+        """;
+
+    [Theory]
+    [InlineData(Submit, "")]
+    [InlineData(ValidSubmit + InvalidSubmit, "")]
+    [InlineData(Submit + ValidSubmit, "OnValidSubmit")]
+    [InlineData(Submit + InvalidSubmit, "OnInvalidSubmit")]
+    [InlineData(Submit + ValidSubmit + InvalidSubmit, "OnValidSubmit and OnInvalidSubmit")]
+    public async Task ComponentAnalyzer_ShouldReportSubmitHandlers_WhenAFormHasOnSubmitBesideTheOthers(
+        string parameters, string expected)
+    {
+        var diagnostics = await RunAsync($$"""
+            __builder.OpenComponent<TbForm>(0);
+            {{parameters}}
+            __builder.CloseComponent();
+            """);
+
+        Assert.Equal(expected == "" ? [] : [$"TbForm has OnSubmit beside {expected}, so it throws as it renders. " +
+            "Check the form in OnSubmit with ValidateAsync, or remove OnSubmit."],
+            diagnostics.Select(item => item.GetMessage()));
+        Assert.All(diagnostics, diagnostic => Assert.Equal("TB015", diagnostic.Id));
+    }
+
+    [Fact]
+    public async Task ComponentAnalyzer_ShouldReportNothing_WhenAComponentPassesItsOwnHandlersToAForm()
+    {
+        var ids = await IdsAsync($$"""
+            __builder.OpenComponent<TbForm>(0);
+            {{Submit}}
+            __builder.AddComponentParameter(2, "OnValidSubmit",
+                EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Forms.EditContext>(this, Saved));
+            __builder.CloseComponent();
+            """, """
+            [Parameter]
+            public EventCallback<Microsoft.AspNetCore.Components.Forms.EditContext> Saved { get; set; }
+            """);
+
+        Assert.Empty(ids);
+    }
+
     [Fact]
     public void ComponentAnalyzer_ShouldNameOnlyComponentsWithALabelAndAnIcon_WhenItsLabeledTableIsRead()
     {

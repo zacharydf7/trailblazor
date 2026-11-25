@@ -670,6 +670,17 @@ public class TbFormTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=error]"));
     }
 
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void Render_ShouldThrow_WhenGivenOnSubmitWithOnValidSubmitOrOnInvalidSubmit(bool valid, bool invalid)
+    {
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            RenderForm(onValid: valid ? () => { } : null, onInvalid: invalid ? () => { } : null, onSubmit: () => { }));
+
+        Assert.Contains("takes OnSubmit or the other two, not both", error.Message);
+    }
+
     [Fact]
     public void Render_ShouldCheckTheModelWithTheAppsServices_WhenAnAnnotationNeedsOne()
     {

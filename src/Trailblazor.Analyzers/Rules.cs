@@ -80,4 +80,23 @@ internal static class Rules
         "and the tab stop goes back to the first row. A tree whose objects live as long as the page is fine as it " +
         "is, so this is a suggestion. A record, a string, and a class that overrides both Equals and GetHashCode " +
         "aren't reported.");
+
+    public static readonly DiagnosticDescriptor GridSetup = new("TB013", "A data grid's parameters don't go together",
+        "TbDataGrid {0}", Usage, DiagnosticSeverity.Warning, isEnabledByDefault: true, "A data grid takes its rows " +
+        "from Items or from a DataProvider, and groups only rows held in Items. A tree grid, one with a " +
+        "ChildrenSelector, takes its rows from Items and can't be grouped, split into pages or given OnRowMove. A " +
+        "virtualized grid needs a Height or Fill, and can't have a PageSize or a DetailTemplate. Each of these " +
+        "setups throws as it renders.");
+
+    public static readonly DiagnosticDescriptor HotkeyKeys = new("TB014", "A hotkey's keys can't be used as written",
+        "TbHotkey's keys \"{0}\" {1}", Usage, DiagnosticSeverity.Warning, isEnabledByDefault: true, "A hotkey's " +
+        "keys are any of Mod, Ctrl, Alt, Shift and Meta, then one key, joined by plus signs. A key people type, with " +
+        "no Mod, Ctrl, Alt or Meta, needs AllowCharacterKey. Any other keys throw as the hotkey renders.");
+
+    public static readonly DiagnosticDescriptor SubmitHandlers = new("TB015",
+        "A form has OnSubmit beside OnValidSubmit or OnInvalidSubmit", "TbForm has OnSubmit beside {0}, so it " +
+        "throws as it renders. Check the form in OnSubmit with ValidateAsync, or remove OnSubmit.", Usage,
+        DiagnosticSeverity.Warning, isEnabledByDefault: true, "OnSubmit is raised in place of the form's own " +
+        "check, so a form with it never raises OnValidSubmit or OnInvalidSubmit. A form given both throws as it " +
+        "renders, which ends a Blazor Server circuit.");
 }

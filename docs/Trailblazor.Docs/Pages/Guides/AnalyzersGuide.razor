@@ -16,9 +16,11 @@
             in the <code>.razor</code> file, about a control or field screen readers can't name, a dialog with no title,
             a value that snaps back after the user changes it, a type parameter given under the wrong name, a
             component written outside the one it belongs in, an option whose value isn't its list's type, a slider of
-            something other than a number, a tree view whose parameters don't go together, and code written as plain
-            text without its <code>@@</code>. It also suggests a filterable select where an autocomplete opens a known
-            list, and a <code>KeySelector</code> for a tree whose items are their own keys and compare by reference.
+            something other than a number, a tree view or data grid whose parameters don't go together, code written
+            as plain text without its <code>@@</code>, hotkey keys that can't be used as written, and a form with
+            <code>OnSubmit</code> beside <code>OnValidSubmit</code> or <code>OnInvalidSubmit</code>. It also suggests a
+            filterable select where an autocomplete opens a known list, and a <code>KeySelector</code> for a tree whose
+            items are their own keys and compare by reference.
         </TbText>
     </Header>
     <ChildContent>
@@ -166,6 +168,45 @@
                             objects live as long as the page.
                         </td>
                     </tr>
+                    <tr>
+                        <th scope="row">TB013</th>
+                        <td>
+                            A <code>TbDataGrid</code> is given <code>Items</code> and a <code>DataProvider</code>;
+                            <code>Groups</code> with a <code>DataProvider</code>; a <code>ChildrenSelector</code> with a
+                            <code>DataProvider</code>, <code>Groups</code>, <code>OnRowMove</code> or a
+                            <code>PageSize</code>; or <code>Virtualize</code> with a <code>DetailTemplate</code>, with a
+                            <code>PageSize</code>, or with no <code>Height</code> or <code>Fill</code>. Each of these
+                            throws as it renders.
+                        </td>
+                        <td>
+                            Keep one of the setups the warning names and remove the other, or give a virtualized grid a
+                            <code>Height</code> or <code>Fill</code>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">TB014</th>
+                        <td>
+                            A <code>TbHotkey</code>'s <code>Keys</code> can't be read, such as <code>"Mod+"</code> or
+                            <code>"Hyper+S"</code>, or are a key people type, such as <code>"?"</code> or
+                            <code>"Shift+G"</code>, without <code>AllowCharacterKey</code>. Either throws as it renders.
+                        </td>
+                        <td>
+                            Write any of Mod, Ctrl, Alt, Shift and Meta, then one key, as in <code>"Mod+S"</code>. For a
+                            key people type, set <code>AllowCharacterKey</code> and let people turn the hotkey off.
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">TB015</th>
+                        <td>
+                            A <code>TbForm</code> has <code>OnSubmit</code> beside <code>OnValidSubmit</code> or
+                            <code>OnInvalidSubmit</code>. <code>OnSubmit</code> replaces the form's own check, which is
+                            what raises the other two, so they would never run. The form throws as it renders instead.
+                        </td>
+                        <td>
+                            Remove <code>OnSubmit</code> to have the form check itself, or check it in
+                            <code>OnSubmit</code> with <code>ValidateAsync</code> and remove the other two.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -272,6 +313,17 @@
                 that implements <code>IEquatable</code> without overriding <code>GetHashCode</code> is reported,
                 since a tree finds a key by its hash. The rule looks only at the library's own trees, not at a
                 component of yours that inherits one.
+            </li>
+            <li>
+                TB013 and TB015 count a parameter as TB009 does: one passed along from your component's own
+                parameters, or chosen with <code>?:</code>, isn't counted. A virtualized grid given attributes spread
+                with <code>@@attributes</code> may get its <code>Height</code> from them, so it isn't asked for one.
+            </li>
+            <li>
+                TB014 checks only <code>Keys</code> written as text, such as <code>Keys="Mod+S"</code>. Keys held in a
+                variable are checked by the hotkey as it renders. A hotkey given attributes spread with
+                <code>@@attributes</code> may get <code>AllowCharacterKey</code> from them, so a key people type isn't
+                reported.
             </li>
         </ul>
 

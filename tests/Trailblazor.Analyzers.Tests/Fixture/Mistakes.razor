@@ -13,6 +13,9 @@
 <TbSelect TValue="string"><TbOption Value="@("1")">One</TbOption></TbSelect>
 <TbTextField Label="GetLabel()" @bind-Value="_trail" />
 <TbTextField Label="@("GetLabel()")" @bind-Value="_trail" />
+<TbDataGrid Items="_trails" Virtualize="true" />
+<TbHotkey Keys="g" />
+<TbForm OnSubmit="Save" OnValidSubmit="Save" />
 
 @code {
     private string? _trail;
@@ -20,4 +23,6 @@
     private readonly string[] _trails = [];
 
     private string GetLabel() => "Trail";
+
+    private void Save() { }
 }

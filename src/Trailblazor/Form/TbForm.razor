@@ -170,16 +170,17 @@
 
     /// <summary>Raised on submit instead of the form validating; check it yourself with
     /// <see cref="ValidateAsync"/>. Focus stays where it is, so the handler can move it, for example to an error
-    /// summary. The submit isn't counted under <see cref="TelemetryName"/>.</summary>
+    /// summary. The submit isn't counted under <see cref="TelemetryName"/>. A form with it throws if also given
+    /// <see cref="OnValidSubmit"/> or <see cref="OnInvalidSubmit"/>.</summary>
     [Parameter]
     public EventCallback<EditContext> OnSubmit { get; set; }
 
-    /// <summary>Raised on submit when the form is valid.</summary>
+    /// <summary>Raised on submit when the form is valid. Not with <see cref="OnSubmit"/>.</summary>
     [Parameter]
     public EventCallback<EditContext> OnValidSubmit { get; set; }
 
     /// <summary>Raised on submit when the form isn't valid. Focus then moves to the first field with an error, once
-    /// the fields have shown their messages.</summary>
+    /// the fields have shown their messages. Not with <see cref="OnSubmit"/>.</summary>
     [Parameter]
     public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
@@ -261,6 +262,13 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        if (OnSubmit.HasDelegate && (OnValidSubmit.HasDelegate || OnInvalidSubmit.HasDelegate))
+        {
+            throw new InvalidOperationException($"{nameof(TbForm)} raises {nameof(OnSubmit)} in place of " +
+                $"{nameof(OnValidSubmit)} and {nameof(OnInvalidSubmit)}, so it takes {nameof(OnSubmit)} or the other " +
+                "two, not both.");
+        }
+
         var context = EditContext ?? (Model is null ? _editContext
             : ReferenceEquals(Model, _model) ? _editContext : new EditContext(Model));
         _model = Model;

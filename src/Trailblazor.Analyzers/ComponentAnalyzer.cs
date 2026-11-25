@@ -11,8 +11,9 @@ namespace Trailblazor.Analyzers;
 /// <summary>Reports Trailblazor controls and fields with no accessible name, dialogs with no title, inputs given a
 /// Value without ValueChanged, attributes that look like a misnamed type parameter, components written outside the
 /// one they belong in, items whose value isn't their list's type, sliders of something other than a number, tree
-/// views whose parameters don't go together, and string parameters given text that looks like code. It also suggests
-/// a filterable select for an autocomplete that opens a known list on focus.</summary>
+/// views and data grids whose parameters don't go together, string parameters given text that looks like code, hotkey
+/// keys that can't be used as written, and forms given OnSubmit beside OnValidSubmit or OnInvalidSubmit. It also
+/// suggests a filterable select for an autocomplete that opens a known list on focus.</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ComponentAnalyzer : DiagnosticAnalyzer
 {
@@ -115,7 +116,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         Rules.NoAccessibleName, Rules.NoDialogTitle, Rules.ValueWithoutValueChanged, Rules.NoFieldLabel,
         Rules.TypeParameterAsAttribute, Rules.OutsideItsParent, Rules.ItemTypeMismatch, Rules.SliderNotANumber,
-        Rules.TreeSetup, Rules.CodeAsText, Rules.KnownListAutocomplete, Rules.ReferenceKeys);
+        Rules.TreeSetup, Rules.CodeAsText, Rules.KnownListAutocomplete, Rules.ReferenceKeys, Rules.GridSetup,
+        Rules.HotkeyKeys, Rules.SubmitHandlers);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -141,7 +143,10 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
                 compilation.GetTypeByMetadataName("Trailblazor.TbTreeView`2"),
                 [.. Labeled.Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()],
                 compilation.GetTypeByMetadataName("Trailblazor.TbAutocomplete`1"),
-                [.. KeyedTrees.Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()]);
+                [.. KeyedTrees.Select(compilation.GetTypeByMetadataName).OfType<INamedTypeSymbol>()],
+                compilation.GetTypeByMetadataName("Trailblazor.TbDataGrid`1"),
+                compilation.GetTypeByMetadataName("Trailblazor.TbHotkey"),
+                compilation.GetTypeByMetadataName("Trailblazor.TbForm"));
             // Razor passes each .razor file to analyzers too, which is where a component's tag is found.
             var razorFiles = start.Options.AdditionalFiles
                 .Where(file => file.Path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
@@ -205,6 +210,9 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         CheckCodeAsText(context, invocation, usage);
         CheckKnownList(context, usage, types.Autocomplete);
         CheckReferenceKeys(context, invocation, usage, types);
+        CheckGridSetup(context, usage, types.DataGrid);
+        CheckHotkeyKeys(context, usage, types.Hotkey);
+        CheckSubmitHandlers(context, usage, types.Form);
 
         if (component.ContainingNamespace.ToDisplayString() == "Trailblazor" && Property(component, "Value") is not null
             && Property(component, "ValueChanged") is not null && usage.Has("Value") && !usage.Has("ValueChanged")
@@ -380,7 +388,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        bool Set(string name) => usage.Parameters.TryGetValue(name, out var parameter) && IsSurelySet(parameter.Value);
+        bool Set(string name) => IsGiven(usage, name);
         if (Set("ChildContent") && (Set("Items") || Set("ChildrenSelector") || Set("ParentKeySelector")
             || Set("LoadChildren")))
         {
@@ -409,6 +417,78 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         {
             context.ReportDiagnostic(Diagnostic.Create(Rules.TreeSetup, usage.Location,
                 "needs a KeySelector when its items aren't their own keys"));
+        }
+    }
+
+    // Repeats the checks the data grid makes as it renders, in the same order, for the parameters set in markup. A grid
+    // with splatted attributes may get its Height from them.
+    private static void CheckGridSetup(OperationAnalysisContext context, ComponentUsage usage,
+        INamedTypeSymbol? dataGrid)
+    {
+        if (!SymbolEqualityComparer.Default.Equals(usage.Component.OriginalDefinition, dataGrid))
+        {
+            return;
+        }
+
+        bool Set(string name) => IsGiven(usage, name);
+        var virtualizes = IsOn(usage, "Virtualize");
+        var (parameter, problem) =
+            Set("Items") && Set("DataProvider") ? ("DataProvider", "takes Items or a DataProvider, not both")
+            : Set("DataProvider") && Set("Groups")
+                ? ("Groups", "groups only rows held in Items, not rows from a DataProvider")
+            : Set("ChildrenSelector") && (Set("DataProvider") || Set("Groups") || Set("OnRowMove") || Set("PageSize"))
+                ? ("ChildrenSelector", "with a ChildrenSelector takes its rows from Items, and can't group them, " +
+                    "move them or split them into pages; set Virtualize to show many rows")
+            : virtualizes && Set("DetailTemplate")
+                ? ("DetailTemplate", "that virtualizes its rows can't have a DetailTemplate")
+            : virtualizes && (Set("PageSize") || !usage.Has("Height") && !IsOn(usage, "Fill")
+                && !usage.HasSplattedAttributes)
+                ? ("Virtualize", "that virtualizes its rows needs a Height or Fill, and no PageSize")
+            : (null, null);
+        if (problem is not null)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Rules.GridSetup, usage.Parameters[parameter!].Location,
+                problem));
+        }
+    }
+
+    // Repeats the hotkey's own check of keys written as text. Splatted attributes may hold AllowCharacterKey.
+    private static void CheckHotkeyKeys(OperationAnalysisContext context, ComponentUsage usage,
+        INamedTypeSymbol? hotkey)
+    {
+        if (!SymbolEqualityComparer.Default.Equals(usage.Component, hotkey)
+            || !usage.Parameters.TryGetValue("Keys", out var keys)
+            || Unwrap(keys.Value)?.ConstantValue is not { HasValue: true, Value: string text })
+        {
+            return;
+        }
+
+        var problem = !HotkeyKeys.IsReadable(text) ? "can't be read: end them with one key, after any of Mod, " +
+                "Ctrl, Alt, Shift and Meta, as in \"Mod+S\""
+            : HotkeyKeys.IsCharacterKey(text) && !IsOn(usage, "AllowCharacterKey") && !usage.HasSplattedAttributes
+                ? "are a key people type, with no Mod, Ctrl, Alt or Meta. Set AllowCharacterKey, and let people turn " +
+                    "the hotkey off."
+            : null;
+        if (problem is not null)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Rules.HotkeyKeys, keys.Location, text, problem));
+        }
+    }
+
+    // OnSubmit takes the place of the form's own check, which is what raises OnValidSubmit and OnInvalidSubmit.
+    private static void CheckSubmitHandlers(OperationAnalysisContext context, ComponentUsage usage,
+        INamedTypeSymbol? form)
+    {
+        if (!SymbolEqualityComparer.Default.Equals(usage.Component, form) || !IsGiven(usage, "OnSubmit"))
+        {
+            return;
+        }
+
+        var others = new[] { "OnValidSubmit", "OnInvalidSubmit" }.Where(name => IsGiven(usage, name)).ToList();
+        if (others.Count > 0)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Rules.SubmitHandlers, usage.Parameters["OnSubmit"].Location,
+                string.Join(" and ", others)));
         }
     }
 
@@ -474,6 +554,9 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
     private static bool WaitsForCharacters(ComponentUsage usage) =>
         usage.Parameters.TryGetValue("MinCharacters", out var least)
         && !(Unwrap(least.Value)?.ConstantValue is { HasValue: true, Value: 0 });
+
+    private static bool IsGiven(ComponentUsage usage, string name) =>
+        usage.Parameters.TryGetValue(name, out var parameter) && IsSurelySet(parameter.Value);
 
     // Whether markup surely gives the parameter a value. A component's own parameter passed along, or a ?: choice,
     // may be null as the page runs, and the tree view's checks treat null as not given.
@@ -593,13 +676,18 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         Unwrap(value)?.ConstantValue is { HasValue: true } constant
         && (constant.Value is null || constant.Value is string text && string.IsNullOrWhiteSpace(text));
 
-    // The value as written in markup, looking through conversions, Razor's type checks, and the parameters of its
-    // type-inference helpers, which receive the markup's values from a call elsewhere in the page.
+    // The value as written in markup, looking through conversions, Razor's type checks, the EventCallback.Factory call
+    // that wraps an EventCallback passed along, and the parameters of its type-inference helpers, which receive the
+    // markup's values from a call elsewhere in the page.
     private static IOperation? Unwrap(IOperation? value) => value switch
     {
         IConversionOperation conversion => Unwrap(conversion.Operand),
         IInvocationOperation { TargetMethod.Name: "TypeCheck", Arguments.Length: 1 } check =>
             Unwrap(check.Arguments[0].Value),
+        IInvocationOperation
+        {
+            TargetMethod: { Name: "Create", ContainingType.Name: "EventCallbackFactory" }, Arguments.Length: 2,
+        } create when create.Arguments[1].Parameter?.Type.Name == "EventCallback" => Unwrap(create.Arguments[1].Value),
         IParameterReferenceOperation
         {
             Parameter.ContainingSymbol: IMethodSymbol { ContainingType.Name: "TypeInference" },
@@ -658,7 +746,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         INamedTypeSymbol? dialogService, (INamedTypeSymbol Child, INamedTypeSymbol Host)[] hosted,
         (INamedTypeSymbol Item, INamedTypeSymbol List)[] listed, INamedTypeSymbol[] sliders,
         INamedTypeSymbol? treeView, INamedTypeSymbol[] labeled, INamedTypeSymbol? autocomplete,
-        INamedTypeSymbol[] keyedTrees)
+        INamedTypeSymbol[] keyedTrees, INamedTypeSymbol? dataGrid, INamedTypeSymbol? hotkey, INamedTypeSymbol? form)
     {
         public (INamedTypeSymbol Type, string[] Names)[] Named { get; } = named;
 
@@ -683,5 +771,11 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
         public INamedTypeSymbol? Autocomplete { get; } = autocomplete;
 
         public INamedTypeSymbol[] KeyedTrees { get; } = keyedTrees;
+
+        public INamedTypeSymbol? DataGrid { get; } = dataGrid;
+
+        public INamedTypeSymbol? Hotkey { get; } = hotkey;
+
+        public INamedTypeSymbol? Form { get; } = form;
     }
 }
