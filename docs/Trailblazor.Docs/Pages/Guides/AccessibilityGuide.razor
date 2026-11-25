@@ -119,8 +119,17 @@
                 <a href="components/accordion">accordion</a>'s headers are level 3 until you set its
                 <code>HeadingLevel</code>.
             </li>
+            <li>
+                <strong>Some text is for screen readers only.</strong> The class <code>tb-visually-hidden</code> hides
+                text on screen but leaves it for screen readers. Use it for the words that explain a count or a row of
+                icons, or for the header of a column of row buttons. To hide a field's label where the page already
+                shows what the field is for, set the field's <code>Classes</code> to
+                <code>new FieldClasses { Label = "tb-visually-hidden" }</code>. The class name is public and won't
+                change.
+            </li>
         </ul>
         <CodeBlock Label="A question as the page's heading" Code="@QuestionHeading" />
+        <CodeBlock Label="Text for screen readers only" Code="@ScreenReaderText" />
 
         <DocsHeading Id="how-its-tested" Text="How it's tested" Class="docs-section" />
         <TbText>
@@ -243,5 +252,12 @@
     private const string QuestionHeading = """
         <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">How many are going?</TbText>
         <TbNumberField AriaLabel="How many are going?" @bind-Value="_partySize" />
+        """;
+
+    private const string ScreenReaderText = """
+        <span aria-hidden="true">★★★☆☆</span>
+        <span class="tb-visually-hidden">Rated 3 of 5</span>
+
+        <th scope="col"><span class="tb-visually-hidden">Actions</span></th>
         """;
 }
