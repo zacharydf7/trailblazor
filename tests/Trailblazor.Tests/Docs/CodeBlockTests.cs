@@ -11,8 +11,8 @@ public class CodeBlockTests : BunitContext
     private FakeBrowserService Browser => Services.GetRequiredService<FakeBrowserService>();
 
     [Theory]
-    [InlineData(true, "Copied Project reference.")]
-    [InlineData(false, "Couldn't copy Project reference.")]
+    [InlineData(true, "Copied")]
+    [InlineData(false, "Couldn't copy")]
     public void CodeBlock_ShouldCopyItsCodeWithUnixLineBreaksAndSaySo_WhenCopyIsClicked(bool canCopy, string message)
     {
         Browser.CanCopy = canCopy;
@@ -20,7 +20,7 @@ public class CodeBlockTests : BunitContext
         var cut = Render<CodeBlock>(parameters => parameters.Add(block => block.Label, "Project reference")
             .Add(block => block.Code, "<ItemGroup>\r\n  <PackageReference Include=\"Trailblazor\" />\r\n</ItemGroup>"));
 
-        cut.Find("button[aria-label='Copy Project reference']").Click();
+        cut.Find("[data-label='Copy Project reference']").Click();
 
         Assert.Equal(canCopy ? ["<ItemGroup>\n  <PackageReference Include=\"Trailblazor\" />\n</ItemGroup>"] : [],
             Browser.Copied);

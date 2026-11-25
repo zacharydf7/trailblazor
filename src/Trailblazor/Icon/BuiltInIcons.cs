@@ -80,6 +80,10 @@ internal static class BuiltInIcons
 
     public static Icon Check { get; } = new("<path d=\"M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z\" />");
 
+    // A sheet over another, the second one's corner showing behind it.
+    public static Icon Copy { get; } =
+        new("<path d=\"M8 2h12v14h-2V4H8zM4 6h12v16H4zm2 2v12h8V8z\" />");
+
     public static Icon Info { get; } = new("<path d=\"M11 7h2v2h-2zm0 4h2v6h-2zm1-9a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"
         + "m0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z\" />");
 

@@ -1,0 +1,10 @@
+@* An invite link with an icon button that copies it; its words name it and show in its tooltip. *@
+<TbStack Row Gap="1" Align="Align.Center" Wrap>
+    <TbText As="TextElement.Span">@Link</TbText>
+    <TbCopyButton Text="@Link" IconOnly Labels="InviteLabels" />
+</TbStack>
+
+@code {
+    private const string Link = "https://example.com/j/cedar-hikers";
+    private static readonly CopyButtonLabels InviteLabels = new() { Copy = "Copy the invite link" };
+}

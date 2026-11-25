@@ -1,12 +1,7 @@
-@inject IBrowserService Browser
-@inject IAnnouncer Announcer
-
 @* Long lines scroll rather than wrap, so a word never breaks; scrolling needs focus for keyboard users. *@
 <div class="docs-code">
     <div class="docs-code__bar">
-        <TbButton Variant="Variant.Text" Size="Size.Small" aria-label="@($"Copy {Label}")" OnClick="CopyAsync">
-            Copy
-        </TbButton>
+        <TbCopyButton Text="@Text" Size="Size.Small" IconOnly Labels="CopyLabels" />
     </div>
     <pre class="docs-source" role="region" tabindex="0" aria-label="@Label"><code>@Highlighted</code></pre>
 </div>
@@ -43,5 +38,6 @@
         }
     };
 
-    private Task CopyAsync() => CodeCopier.CopyAsync(Browser, Announcer, Label, Text);
+    // Its words name the code it copies, since a page can hold several blocks.
+    private CopyButtonLabels CopyLabels => new() { Copy = $"Copy {Label}" };
 }

@@ -66,9 +66,9 @@ public class ComponentPageTests : DocsTest
     }
 
     [Theory]
-    [InlineData(true, "Copied TreeViewVirtualExample.razor.")]
-    [InlineData(false, "Couldn't copy TreeViewVirtualExample.razor.")]
-    public void ComponentPage_ShouldCopyTheShownFileAndSayWhichItCopied_WhenCopyCodeIsClicked(bool canCopy,
+    [InlineData(true, "Copied")]
+    [InlineData(false, "Couldn't copy")]
+    public void ComponentPage_ShouldCopyTheShownFileAndSayHowItWent_WhenCopyCodeIsClicked(bool canCopy,
         string message)
     {
         Browser.CanCopy = canCopy;

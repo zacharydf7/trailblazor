@@ -56,6 +56,11 @@
     [Parameter]
     public bool Clearable { get; set; }
 
+    /// <summary>Shows a button at the field's end that copies its text, for a value people copy elsewhere, such as an
+    /// API key in a read-only field. Screen readers hear it with the field's visible label.</summary>
+    [Parameter]
+    public bool Copyable { get; set; }
+
     /// <summary>Adds a button that shows and hides the password; the button is pressed while the password shows. It
     /// needs <see cref="Type"/> set to <see cref="TextFieldType.Password"/>. A read-only or disabled field keeps it
     /// hidden. On a static page, Trailblazor's script shows and hides the password.</summary>
@@ -214,7 +219,7 @@
 
     private bool ShowsClear => Clearable && !Disabled && !ReadOnly && !string.IsNullOrEmpty(Text);
 
-    private RenderFragment? EndWithClear => !ShowsClear && !Revealable ? End :
+    private RenderFragment? EndWithClear => !ShowsClear && !Revealable && !Copyable ? End :
         @<text>
             @if (ShowsClear)
             {
@@ -230,6 +235,11 @@
                               aria-describedby="@ClearDescribedBy" Size="Size.Small" Pressed="_revealed"
                               PressedChanged="Reveal" Disabled="@(Disabled || ReadOnly)" data-part="reveal"
                               data-other-icon="@(StaticPage ? BuiltInIcons.EyeOff.Svg : null)" />
+            }
+            @if (Copyable)
+            {
+                <TbCopyButton IconOnly Text="@(Text ?? "")" Size="Size.Small" Disabled="Disabled"
+                              aria-describedby="@ClearDescribedBy" data-part="copy" />
             }
             @End
         </text>;

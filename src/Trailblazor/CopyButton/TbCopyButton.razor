@@ -1,0 +1,18 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* data-label keeps its words while it shows how a copy went, so a test finds it by them. *@
+@if (IconOnly)
+{
+    <TbIconButton @attributes="AdditionalAttributes" Icon="@ShownIcon" AriaLabel="@CopyText" ShowTooltip
+                  Variant="Variant" Size="Size" Disabled="@Unusable" Class="@ClassNames.Join("tb-copy-button", Class)"
+                  Style="@Style" data-state="@StateName" data-label="@CopyText" data-copies="@_copies"
+                  OnClick="CopyAsync" />
+}
+else
+{
+    <TbButton @attributes="AdditionalAttributes" StartIcon="@ShownIcon" Variant="Variant" Size="Size"
+              Disabled="@Unusable" Class="@ClassNames.Join("tb-copy-button", Class)" Style="@Style"
+              data-state="@StateName" data-label="@CopyText" data-copies="@_copies"
+              OnClick="CopyAsync">@ShownLabel</TbButton>
+}

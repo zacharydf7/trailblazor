@@ -409,6 +409,16 @@ public static class TbStrings
     /// <summary>"1 minute": the one-form of <see cref="CountdownMinutes"/>.</summary>
     public const string CountdownMinutesOne = "Countdown.MinutesOne";
 
+    /// <summary>"Copy": a copy button's words, and its name when it shows only its icon.</summary>
+    public const string CopyButtonCopy = "CopyButton.Copy";
+
+    /// <summary>"Copied": shown and announced for a moment after a copy button copies.</summary>
+    public const string CopyButtonCopied = "CopyButton.Copied";
+
+    /// <summary>"Couldn't copy": shown and announced for a moment when the browser refuses a copy button's copy.
+    /// </summary>
+    public const string CopyButtonFailed = "CopyButton.Failed";
+
     /// <summary>"{0} can't be chosen.": shown when a typed date is outside Min and Max, or IsDateDisabled rules it
     /// out; {0} is the date as typed.</summary>
     public const string DatePickerUnavailable = "DatePicker.Unavailable";
@@ -2013,6 +2023,9 @@ public static class TbStrings
         [CountdownSecondsOne] = "1 second",
         [CountdownMinutes] = "{0} minutes",
         [CountdownMinutesOne] = "1 minute",
+        [CopyButtonCopy] = "Copy",
+        [CopyButtonCopied] = "Copied",
+        [CopyButtonFailed] = "Couldn't copy",
         [DatePickerUnavailable] = "{0} can't be chosen.",
         [TimePickerOutOfRange] = "Choose a time from {0} to {1}.",
         [TimePickerAtLeast] = "Choose {0} or later.",

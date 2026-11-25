@@ -642,3 +642,7 @@ Trailblazor.Testing.TbDescriptionListDriver.Terms.get -> System.Collections.Gene
 Trailblazor.Testing.TbDescriptionListDriver.ValueOf(string! term) -> string!
 Trailblazor.Testing.TrailblazorMarkup.DescriptionList() -> Trailblazor.Testing.TbDescriptionListDriver!
 Trailblazor.Testing.TbTextDriver.ShownText.get -> string!
+Trailblazor.Testing.TbCopyButtonDriver
+Trailblazor.Testing.TbCopyButtonDriver.CopyAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbCopyButtonDriver.State.get -> string!
+Trailblazor.Testing.TrailblazorMarkup.CopyButton(string? label = null) -> Trailblazor.Testing.TbCopyButtonDriver!

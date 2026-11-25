@@ -1,6 +1,4 @@
 @using Trailblazor.Docs.Examples
-@inject IBrowserService Browser
-@inject IAnnouncer Announcer
 
 @* The demo comes first and its code only on request, so a page with several sections stays short. *@
 <div class="docs-example docs-example--frame" data-full-width="@(FullWidth ? "" : null)">
@@ -18,7 +16,7 @@
                   aria-expanded="@(_showCode ? "true" : "false")" OnClick="() => _showCode = !_showCode">
             @(_showCode ? "Hide code" : "Show code")
         </TbButton>
-        <TbButton Variant="Variant.Text" Size="Size.Small" OnClick="CopyAsync">Copy code</TbButton>
+        <TbCopyButton Text="@CodeOf(Section.Sources[_file])" Size="Size.Small" Labels="CopyLabels" />
         <TbLink Href="@($"preview/{Name}/{Section.Id}")" NewTab class="docs-example__alone">Open on its own</TbLink>
     </div>
     <div id="@CodeId" class="docs-example__code" hidden="@(!_showCode)">
@@ -73,6 +71,5 @@
     private string CodeOf(ExampleSource source) =>
         Section.Controls is { } controls ? controls.MarkupFor(_values!) : source.Text;
 
-    private Task CopyAsync() => CodeCopier.CopyAsync(Browser, Announcer, FileOf(Section.Sources[_file]),
-        CodeOf(Section.Sources[_file]));
+    private static readonly CopyButtonLabels CopyLabels = new() { Copy = "Copy code" };
 }

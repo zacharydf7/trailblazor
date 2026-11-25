@@ -370,6 +370,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// no label is given.</summary>
     public TbAsyncContentLocator AsyncContent(string? label = null) => new(scope, label);
 
+    /// <summary>The <c>TbCopyButton</c> with these words, its <c>Labels.Copy</c>, such as "Copy", or the only one in
+    /// the scope when none are given.</summary>
+    public TbCopyButtonLocator CopyButton(string? label = null) => new(scope, label);
+
     /// <summary>The <c>TbInPlaceEditor</c> with this <c>Label</c>.</summary>
     public TbInPlaceEditorLocator InPlaceEditor(string label) => new(scope, label);
 

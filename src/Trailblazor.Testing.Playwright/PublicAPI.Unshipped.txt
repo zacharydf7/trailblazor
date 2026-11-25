@@ -704,3 +704,9 @@ Trailblazor.Testing.Playwright.TbDescriptionListLocator.TermsAsync() -> System.T
 Trailblazor.Testing.Playwright.TbDescriptionListLocator.ValueOfAsync(string! term) -> System.Threading.Tasks.Task<string!>!
 Trailblazor.Testing.Playwright.TrailblazorPage.DescriptionList() -> Trailblazor.Testing.Playwright.TbDescriptionListLocator!
 Trailblazor.Testing.Playwright.TbTextLocator.ShownTextAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbCopyButtonLocator
+Trailblazor.Testing.Playwright.TbCopyButtonLocator.CopyAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbCopyButtonLocator.Element.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbCopyButtonLocator.StateAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbCopyButtonLocator.TbCopyButtonLocator(Microsoft.Playwright.ILocator! scope, string? label) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.CopyButton(string? label = null) -> Trailblazor.Testing.Playwright.TbCopyButtonLocator!

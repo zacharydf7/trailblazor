@@ -2058,6 +2058,107 @@ public static class ExampleCatalog
             ],
             Telemetry = ButtonTelemetry("TbIconButton"),
         },
+        new("copy-button", "Copy button", ExampleCategory.Actions,
+            "A button that copies a piece of text, such as a command or a link, and shows and says that it did.")
+        {
+            WhenToUse =
+            [
+                "Use it beside text people copy elsewhere, such as a command, an invite link or an API key.",
+            ],
+            WhenNotToUse =
+            [
+                "To share a page through the operating system's share sheet, use the browser's share call in a "
+                    + "[button](components/button).",
+                "For the value in a [text field](components/text-field), use the field's `Copyable` rather than a "
+                    + "button beside it.",
+                "For text that isn't ready until after the press, such as text the page downloads then: Safari "
+                    + "refuses that copy, so load the text first.",
+            ],
+            Related = ["button", "icon-button", "text-field"],
+            Pattern = new("button", "https://www.w3.org/WAI/ARIA/apg/patterns/button/"),
+            Sections =
+            [
+                new("basic", "Copy button", "`Text` is what it copies. Pressed, it shows a check and \"Copied\" for "
+                    + "two seconds and says \"Copied\" to screen readers, or shows and says \"Couldn't copy\" when "
+                    + "the browser refuses, as on a page that isn't secure. Give it the text before it's pressed: "
+                    + "Safari refuses a copy that waits for anything after the press.", typeof(CopyButtonExample)),
+                new("icon", "Icon only", "`IconOnly` shows just the icon, named by `Labels.Copy` and with that name "
+                    + "in its tooltip, so give it words that say what it copies. After a press its icon turns to a "
+                    + "check, or to an error mark when the browser refuses.", typeof(CopyButtonIconExample)),
+                new("fields", "In a field", "`Copyable` on a [text field](components/text-field) puts an icon copy "
+                    + "button at the field's end, which screen readers hear with the field's visible label. It suits a "
+                    + "read-only field, but works in any. A code to copy, such as one to pair a device, belongs in "
+                    + "such a field, not in a [code field](components/code-field), which is for typing one.",
+                    typeof(CopyButtonFieldExample)),
+            ],
+            Api = [typeof(TbCopyButton), typeof(CopyButtonLabels)],
+            Labeling =
+            [
+                "Its words, \"Copy\" by default, name it; with `IconOnly` they're its `aria-label` and its tooltip. "
+                    + "For two seconds after a press, a button with words is named by the words it shows, such as "
+                    + "\"Copied\".",
+                "Name it through `Labels.Copy`, not an `aria-label` attribute, which would keep the name while the "
+                    + "words it shows change.",
+            ],
+            Announcements =
+            [
+                "A copy says \"Copied\", or \"Couldn't copy\", politely, through the "
+                    + "[announcer](guides/announcements), since the clipboard itself says nothing.",
+            ],
+            Accessibility =
+            [
+                "It is an ordinary button, and keeps focus while it shows how the copy went.",
+                "After a copy, its words change to \"Copied\" and its icon to a check. After a refused copy, its words "
+                    + "change to \"Couldn't copy\" and its icon to an error mark, as well as turning the danger color, "
+                    + "so neither result is shown by color alone.",
+            ],
+            Keyboard =
+            [
+                new(["Enter", "Space"], "Copies the text."),
+            ],
+            AppDuties =
+            [
+                "Show the text it copies beside it, so people know what they'll get.",
+                "Where several copy buttons share a page, give each words that say what it copies.",
+            ],
+            Modes = new(ModeSupport.DisplayOnly, ModeSupport.DisplayOnly),
+            BeforeInteractive =
+            [
+                "Before the page is interactive it shows, turned off, since copying runs in the browser.",
+            ],
+            Notes =
+            [
+                new("Its strings are `CopyButton.Copy`, `CopyButton.Copied` and `CopyButton.Failed`, which `Labels` "
+                    + "replaces for one button."),
+                new("Its parts are a [button](components/button)'s, or an [icon button](components/icon-button)'s "
+                    + "with `IconOnly`."),
+            ],
+            Target = new("button", "Copy the invite link"),
+            Blocks = ["tb-button", "tb-icon-button", "tb-copy-button"],
+            DataParts = [],
+            Scenario = new("basic", "it presses the button and checks that it says it copied, and in bUnit what "
+                + "reached the clipboard."),
+            TestingTips =
+            [
+                "`CopyButton(label)` finds it by its `Labels.Copy` words, kept in `data-label` while it shows how a "
+                    + "copy went, or finds the only one when no label is given. `CopyAsync()` presses it, and `State` "
+                    + "(`StateAsync()` in Playwright) reads `idle`, `copied` or `failed`.",
+                "A button with words is named by what it shows, so a role locator for \"Copy\" stops matching after "
+                    + "a press; find it with `CopyButton()` instead.",
+                "\"Copied\" shows for two seconds, so assert it right after the press, or hold it in bUnit with a "
+                    + "`FakeTimeProvider`.",
+                "In bUnit, the kit's fake browser service lists what was copied in `Copied`; set `CanCopy` to false "
+                    + "to see a refused copy. In Playwright, Chromium copies only in a context granted "
+                    + "`clipboard-read` and `clipboard-write`; in Firefox, paste into a field to read the clipboard.",
+            ],
+            Telemetry =
+            [
+                "With a `TelemetryName`, such as `\"install-command\"`, it counts `trailblazor.control.shown` as it "
+                    + "first renders interactively, and `trailblazor.control.used` with the action `copied` or "
+                    + "`failed`, both tagged with the name and `trailblazor.component` `TbCopyButton`. The text it "
+                    + "copies is never recorded.",
+            ],
+        },
         new("button-group", "Button group", ExampleCategory.Actions,
             "Joins related buttons into one control, in a row or a column, with settings shared by all of them.")
         {
@@ -6125,7 +6226,7 @@ public static class ExampleCatalog
                     + "(components/autocomplete) when the list is long enough to search.",
                 "For a range of dates, use a [date range picker](components/date-range-picker).",
             ],
-            Related = ["number-field", "autocomplete", "select", "form", "label"],
+            Related = ["number-field", "autocomplete", "select", "form", "label", "copy-button"],
             Sections =
             [
                 new("try-it", "Try it", "Use the controls to see what each parameter does.",
@@ -6286,6 +6387,7 @@ public static class ExampleCatalog
                 new("input", "The text input."),
                 new("clear", "The button that clears the text."),
                 new("reveal", "The button that shows and hides a password."),
+                new("copy", "The button that `Copyable` adds, which copies the text."),
                 new("count", "The counter under the field, with `ShowCount`."),
                 new("count-shown", "The counter's text, such as 12 / 200, which screen readers skip."),
                 new("count-said", "The counter's words for screen readers, such as 12 of 200 characters."),

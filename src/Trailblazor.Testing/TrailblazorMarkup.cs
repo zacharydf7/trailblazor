@@ -701,6 +701,11 @@ public sealed class TrailblazorMarkup
             "description list", null);
     });
 
+    /// <summary>The <c>TbCopyButton</c> with these words, its <c>Labels.Copy</c>, such as "Copy", or the only one
+    /// when none are given.</summary>
+    public TbCopyButtonDriver CopyButton(string? label = null) => new(() => Only(_findAll(".tb-copy-button")
+        .Where(button => label is null || button.GetAttribute("data-label") == label).ToList(), "copy button", label));
+
     /// <summary>The <c>TbAsyncContent</c> with this <c>Label</c>, such as "groups", or the only one when no label is
     /// given.</summary>
     public TbAsyncContentDriver AsyncContent(string? label = null) => new(() => Only(_findAll(".tb-async-content")
@@ -6222,4 +6227,20 @@ public sealed class TbOverlayDriver
             ? _name is null ? "No overlay is open." : $"No overlay named \"{_name}\" is open."
             : $"{overlays.Count} overlays are open; name the one to use with its aria-label.");
     }
+}
+
+/// <summary>A <c>TbCopyButton</c>, found by its words.</summary>
+public sealed class TbCopyButtonDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbCopyButtonDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>How its last copy went, while it still shows it: <c>copied</c> or <c>failed</c>; <c>idle</c> before
+    /// a copy and once the moment passes.</summary>
+    public string State => _find().GetAttribute("data-state")!;
+
+    /// <summary>Presses the button, which copies through the app's <c>IBrowserService</c>. With the kit's
+    /// <see cref="FakeBrowserService"/>, <see cref="FakeBrowserService.Copied"/> then lists the text.</summary>
+    public async Task CopyAsync() => await _find().ClickAsync(new MouseEventArgs());
 }

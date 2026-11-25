@@ -2510,6 +2510,11 @@
         padding: 0;
     }
 
+    /* A refused copy shows in the danger color as well as in its words or its icon. */
+    .tb-copy-button[data-state="failed"] {
+        color: var(--tb-color-danger);
+    }
+
     .tb-icon-button.tb-button--small {
         min-width: var(--tb-control-height-sm);
     }

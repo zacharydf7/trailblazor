@@ -7903,3 +7903,42 @@ Trailblazor.TbText.Truncation.set -> void
 Trailblazor.TextTruncation
 Trailblazor.TextTruncation.End = 0 -> Trailblazor.TextTruncation
 Trailblazor.TextTruncation.Middle = 1 -> Trailblazor.TextTruncation
+Trailblazor.CopyButtonLabels
+Trailblazor.CopyButtonLabels.<Clone>$() -> Trailblazor.CopyButtonLabels!
+Trailblazor.CopyButtonLabels.Copied.get -> string?
+Trailblazor.CopyButtonLabels.Copied.init -> void
+Trailblazor.CopyButtonLabels.Copy.get -> string?
+Trailblazor.CopyButtonLabels.Copy.init -> void
+Trailblazor.CopyButtonLabels.CopyButtonLabels() -> void
+Trailblazor.CopyButtonLabels.Equals(Trailblazor.CopyButtonLabels? other) -> bool
+Trailblazor.CopyButtonLabels.Failed.get -> string?
+Trailblazor.CopyButtonLabels.Failed.init -> void
+Trailblazor.TbCopyButton
+Trailblazor.TbCopyButton.Disabled.get -> bool
+Trailblazor.TbCopyButton.Disabled.set -> void
+Trailblazor.TbCopyButton.Dispose() -> void
+Trailblazor.TbCopyButton.IconOnly.get -> bool
+Trailblazor.TbCopyButton.IconOnly.set -> void
+Trailblazor.TbCopyButton.Labels.get -> Trailblazor.CopyButtonLabels!
+Trailblazor.TbCopyButton.Labels.set -> void
+Trailblazor.TbCopyButton.Size.get -> Trailblazor.Size
+Trailblazor.TbCopyButton.Size.set -> void
+Trailblazor.TbCopyButton.TbCopyButton() -> void
+Trailblazor.TbCopyButton.TelemetryName.get -> string?
+Trailblazor.TbCopyButton.TelemetryName.set -> void
+Trailblazor.TbCopyButton.Text.get -> string!
+Trailblazor.TbCopyButton.Text.set -> void
+Trailblazor.TbCopyButton.Variant.get -> Trailblazor.Variant
+Trailblazor.TbCopyButton.Variant.set -> void
+const Trailblazor.TbStrings.CopyButtonCopied = "CopyButton.Copied" -> string!
+const Trailblazor.TbStrings.CopyButtonCopy = "CopyButton.Copy" -> string!
+const Trailblazor.TbStrings.CopyButtonFailed = "CopyButton.Failed" -> string!
+override Trailblazor.CopyButtonLabels.Equals(object? obj) -> bool
+override Trailblazor.CopyButtonLabels.GetHashCode() -> int
+override Trailblazor.CopyButtonLabels.ToString() -> string!
+override Trailblazor.TbCopyButton.OnAfterRender(bool firstRender) -> void
+static Trailblazor.CopyButtonLabels.operator !=(Trailblazor.CopyButtonLabels? left, Trailblazor.CopyButtonLabels? right) -> bool
+static Trailblazor.CopyButtonLabels.operator ==(Trailblazor.CopyButtonLabels? left, Trailblazor.CopyButtonLabels? right) -> bool
+~override Trailblazor.TbCopyButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+Trailblazor.TbTextField<TValue>.Copyable.get -> bool
+Trailblazor.TbTextField<TValue>.Copyable.set -> void

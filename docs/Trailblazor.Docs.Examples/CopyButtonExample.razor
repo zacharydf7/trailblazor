@@ -1,0 +1,9 @@
+@* The command to install a package, with a button that copies it. *@
+<TbStack Row Gap="2" Align="Align.Center" Wrap>
+    <code>@Command</code>
+    <TbCopyButton Text="@Command" />
+</TbStack>
+
+@code {
+    private const string Command = "dotnet add package Trailblazor";
+}

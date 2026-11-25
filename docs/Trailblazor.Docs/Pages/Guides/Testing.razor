@@ -528,6 +528,14 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>CopyButton(label).CopyAsync()</code></th>
+                        <td>
+                            Presses the copy button with these words, or the only one; the fake browser service's
+                            <code>Copied</code> then lists the text. <code>State</code> reads <code>idle</code>,
+                            <code>copied</code> or <code>failed</code>.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>BackToTop().ClickAsync()</code></th>
                         <td>
                             Presses the button, which is there whether or not the page has scrolled, since only a
@@ -1914,6 +1922,9 @@
             + "`MaxLength` or a middle cut is cut off, waiting for its script's first measurement when it has "
             + "`ShowFullText`, or is cut in the middle to fit its box, on an interactive page. `FullTextAsync()` "
             + "reads its whole text, and `ShownTextAsync()`, which waits the same way, what it shows."),
+        new("Copy button", "Its words, or none for the only one", "`CopyButton(label).CopyAsync()` presses the "
+            + "button and returns once it shows how the copy went, and `StateAsync()` reads `idle`, `copied` or "
+            + "`failed`."),
         new("Back to top", "Nothing: a page has one", "`BackToTop().ClickAsync()` presses the button once it "
             + "shows and waits until the app has handled the press. `IsShownAsync()` reads whether it shows, "
             + "which it does once the page has scrolled past its threshold."),

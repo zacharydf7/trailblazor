@@ -45,6 +45,7 @@ public static class AccessibilityStatusCatalog
         new("icon", None, NotYet, None),
         new("button", Tested, NotYet, NotYet),
         new("icon-button", NotYet, NotYet, NotYet),
+        new("copy-button", None, NotYet, NotYet),
         new("button-group", NotYet, NotYet, None),
         new("floating-action-button", Tested, NotYet, NotYet),
         new("back-to-top", Tested, NotYet, Tested),

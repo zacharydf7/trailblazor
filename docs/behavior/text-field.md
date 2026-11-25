@@ -38,6 +38,8 @@ Familiar apps: any web form, Windows and macOS text boxes, the search box in a m
 - [x] Pasted text fits the mask, and a short paste says so. `TextFieldTests.TextField_ShouldFitPastedTextAndFlagAShortOne_WhenItHasAMask`
 - [x] Text that doesn't parse stays in the input with its message, so it can be fixed. `TextFieldTests.TextField_ShouldKeepTheTextAndExplain_WhenTheTextDoesNotParse`
 
+- [x] `Copyable` adds a button at the end that copies the text, heard with the field's visible label. `TbCopyButtonTests.Copyable_ShouldCopyTheFieldsText_WhenTheTextFieldsButtonIsPressed`
+
 ## Touch
 
 - [ ] A tap on the box's padding focuses the input. UNCONFIRMED
