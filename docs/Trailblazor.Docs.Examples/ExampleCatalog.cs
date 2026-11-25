@@ -3798,6 +3798,14 @@ public static class ExampleCatalog
                     + "Selecting a tab, the separators, Maximize, Close and moving a floating window still work, and so "
                     + "do the app's own layout changes. A group whose menu would be empty shows no menu and no tab "
                     + "menu.", typeof(DockManagerLockExample)),
+                new("active-panel", "The active panel", "`@bind-ActivePanel` holds the id of the showing panel of "
+                    + "the group that people last pressed or focused, for a command such as Save to act on, as the "
+                    + "button above the dock does. It follows that group as the dock shows it: when another of its "
+                    + "tabs shows, such as Gear beside Route, that tab's panel is the active one, and when the active "
+                    + "panel closes or moves to a strip, its group's showing panel takes its place. It's null until "
+                    + "people use a group, and again when its group's last panel closes. Setting it makes the showing "
+                    + "panel of that panel's group the active one, and changes neither the layout nor the focus.",
+                    typeof(DockManagerActiveExample)),
                 new("floating", "Floating windows", "Float in a panel's menus takes it out of its group into a window "
                     + "that floats above the docked groups, inside the dock. So does a drag: a tab dropped on the "
                     + "middle of its own group floats in a window under the pointer, half as wide and as tall as the "
@@ -4229,6 +4237,8 @@ public static class ExampleCatalog
                 "Give `TabEnd` content text a screen reader can say, such as a badge's `Label`, since a dot alone "
                     + "says nothing; keep it short, and put no links or buttons in it, since the tab is a button.",
                 "When the layout is `Locked`, say so on the page, since a drag that does nothing gives no reason.",
+                "Name the panel a command acts on, as in Save Route, since the dock doesn't show or announce which "
+                    + "panel is active.",
                 "When `CanClose` asks a question, ask it in a dialog, which gives the focus back to where it "
                     + "was when the answer keeps the panel.",
                 "Set `FocusablePanels` to `Never` only when every panel starts with a control; otherwise a "
@@ -4473,7 +4483,8 @@ public static class ExampleCatalog
                     + "all its children. It has `data-moving` while a tab or a strip's button is dragged, "
                     + "`data-resizing` while a separator, a window or a slid-out panel's edge is, "
                     + "`data-compact-below` with the `CompactBelow` width in pixels, which `Breakpoint.Xs` leaves "
-                    + "out, `data-compact` while it is compact, and `data-locked` while it is `Locked`."),
+                    + "out, `data-compact` while it is compact, `data-locked` while it is `Locked`, and "
+                    + "`data-active-panel` with the `ActivePanel`'s id."),
                 new("group", "One group's row, across the top of the group's box. `data-group` holds its number, "
                     + "from 0. The one that fills the dock has `data-maximized`, and the ones it covers have the "
                     + "class `tb-dock__group--covered`. A floating window's row has `data-floating`, the class "
@@ -4564,6 +4575,9 @@ public static class ExampleCatalog
                     + "panel's title.",
                 "`IsLockedAsync()` or `IsLocked` says whether the dock is `Locked`, which `data-locked` on the `dock` "
                     + "part marks.",
+                "`ActivePanelAsync()` or `ActivePanel` gives the title of the `ActivePanel`. In Playwright, wait "
+                    + "for the panel's id first, as in `ToHaveAttributeAsync(\"data-active-panel\", \"notes\")` on "
+                    + "the dock; bUnit runs no script, so a press or the focus doesn't change it there.",
                 "For a locked dock the move helpers, `FloatAsync`, `DockAsync`, `AutoHideAsync` and `PopOutAsync` "
                     + "throw; selecting, closing, maximizing, restoring and resizing still work.",
                 "A tab's `TabEnd` isn't part of its name, so the helpers and a `tab` locator find it by its title. "

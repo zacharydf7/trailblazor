@@ -1,0 +1,35 @@
+<TbStack Gap="2">
+    <TbStack Row Gap="2" Align="Align.Center">
+        <TbButton Size="Size.Small" Disabled="_active is null" OnClick="Save">
+            @(_active is null ? "Save" : $"Save {Titles[_active]}")
+        </TbButton>
+        <output>@_saved</output>
+    </TbStack>
+    <TbDockManager Layout="Layout" @bind-ActivePanel="_active" AriaLabel="Trip notes" Style="block-size: 16rem">
+        <TbDockPanel Id="route" Title="Route">
+            <div class="tb-p-3"><TbTextField Label="Route notes" @bind-Value="_route" /></div>
+        </TbDockPanel>
+        <TbDockPanel Id="gear" Title="Gear">
+            <div class="tb-p-3"><TbTextField Label="Gear notes" @bind-Value="_gear" /></div>
+        </TbDockPanel>
+        <TbDockPanel Id="camp" Title="Camp">
+            <div class="tb-p-3"><TbTextField Label="Camp notes" @bind-Value="_camp" /></div>
+        </TbDockPanel>
+    </TbDockManager>
+</TbStack>
+
+@code {
+    private static readonly DockLayout Layout =
+        new(new DockSplit(new DockGroup("route", "gear"), new DockGroup("camp")));
+
+    private static readonly Dictionary<string, string> Titles =
+        new() { ["route"] = "Route", ["gear"] = "Gear", ["camp"] = "Camp" };
+
+    private string? _active;
+    private string? _route;
+    private string? _gear;
+    private string? _camp;
+    private string? _saved;
+
+    private void Save() => _saved = $"Saved the {Titles[_active!].ToLowerInvariant()} notes.";
+}

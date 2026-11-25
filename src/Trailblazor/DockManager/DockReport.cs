@@ -5,15 +5,15 @@ namespace Trailblazor;
 
 // Hears the browser select a tab with the arrow keys, close one with a key or a middle click, move a separator,
 // drop a dragged tab or strip button or pull a tab out into a window, double-click a tab, press or focus a window
-// behind another, move or resize a window, resize or leave a slid-out panel, close a panel's browser window, and
-// find the dock narrower than its compact width or wide enough again, so the public dock needn't expose [JSInvokable]
-// methods.
+// behind another, move or resize a window, resize or leave a slid-out panel, close a panel's browser window,
+// find the dock narrower than its compact width or wide enough again, and see a press or the focus go to another
+// group, so the public dock needn't expose [JSInvokable] methods.
 internal sealed class DockReport(Func<Exception, Task> onException, Func<string, Task> onSelect,
     Func<string, bool, Task> onClose, Func<int, double, int, Task> onResize, Func<string, string?, string, Task> onMove,
     Func<string, Task> onMaximize, Func<string, Task> onRaise, Func<string, DockBox, bool, int, Task> onFloat,
     Func<string, DockBox, Task> onPullOut, Func<bool, Task> onConceal, Func<string, double, int, Task> onSlide,
     Func<string, string, Task> onAutoHide, Func<bool, string?, bool, Task> onNarrow, Func<string, Task> onReturn,
-    Func<string, Task> onKeptWindowClosed, Func<string, bool> holds)
+    Func<string, Task> onKeptWindowClosed, Func<string, Task> onEngage, Func<string, bool> holds)
     : ScriptListener(onException)
 {
     // Whether the dock holds the tab with this element id, by which the bUnit driver finds a dock's reports. Panel
@@ -79,4 +79,8 @@ internal sealed class DockReport(Func<Exception, Task> onException, Func<string,
     // The browser window kept open for a panel the app took away has closed while the panel was still away.
     [JSInvokable]
     public Task OnKeptWindowClosed(string panel) => Run(() => onKeptWindowClosed(panel));
+
+    // A press or the focus went to a group whose showing panel isn't the active panel; this is that showing panel.
+    [JSInvokable]
+    public Task OnEngage(string panel) => Run(() => onEngage(panel));
 }

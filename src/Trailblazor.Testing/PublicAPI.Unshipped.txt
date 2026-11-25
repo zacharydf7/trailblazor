@@ -654,3 +654,4 @@ Trailblazor.Testing.TbValidationSummaryDriver.FollowAsync(string! message) -> Sy
 Trailblazor.Testing.TbValidationSummaryDriver.Messages.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Trailblazor.Testing.TrailblazorMarkup.ValidationSummary() -> Trailblazor.Testing.TbValidationSummaryDriver!
 Trailblazor.Testing.TbDockDriver.IsLocked.get -> bool
+Trailblazor.Testing.TbDockDriver.ActivePanel.get -> string?

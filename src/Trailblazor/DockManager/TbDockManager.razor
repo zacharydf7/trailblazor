@@ -65,6 +65,7 @@
      data-report="@_reported" data-commits="@(RendererInfo.IsInteractive ? _counted : null)"
      data-min-size="@MinGroupSize" data-focusable-panels="@PanelStops" data-persistence-key="@PersistenceKey"
      data-compact-below="@CompactWidth" data-compact="@_compact" data-locked="@(Locked ? "" : null)"
+     data-active-panel="@_active"
      data-connection-lost="@ConnectionLostText"
      class="tb-dock">
     @Content(_declared, panels)
@@ -408,6 +409,12 @@
     private bool _compact;
     // The docked panel last brought to the front, which is the one a compact dock shows.
     private string? _front;
+    // The ActivePanel the dock has, the one the parent last passed, the panels of the group it shows in, and whether
+    // it moved and that is still to be reported: after LayoutChanged, or once the dock has rendered.
+    private string? _active;
+    private string? _activeFromParent;
+    private HashSet<string> _activeGroup = [];
+    private bool _activeMoved;
     // The tabs of the one group a compact dock showed at the last render, by which the panel that takes a departed
     // one's place is found.
     private List<string> _merged = [];
@@ -513,6 +520,19 @@
     [Parameter]
     public bool Locked { get; set; }
 
+    /// <summary>The id of the showing panel in the group that last had the focus or a press, for a command such as
+    /// Save to act on. It follows that group as the dock shows it: when another of its tabs shows, by people or by
+    /// the app's layout, that tab's panel is the active one, and when the active panel leaves the group, by closing or
+    /// moving to a strip, the group's showing panel takes its place. Null until people use a group, and again when
+    /// its group is gone. Setting it makes the showing panel of that panel's group the active one, and changes neither
+    /// the layout nor the focus.</summary>
+    [Parameter]
+    public string? ActivePanel { get; set; }
+
+    /// <summary>Raised with <see cref="ActivePanel"/> when it changes.</summary>
+    [Parameter]
+    public EventCallback<string?> ActivePanelChanged { get; set; }
+
     /// <summary>Raised with <see cref="PoppedOut"/> when a panel goes to a browser window of its own or comes back
     /// from one.</summary>
     [Parameter]
@@ -596,6 +616,13 @@
     protected override void OnParametersSet()
     {
         _declared++;
+        if (ActivePanel != _activeFromParent)
+        {
+            _activeFromParent = ActivePanel;
+            _active = ActivePanel;
+            _activeGroup = [];
+        }
+
         // The dock replaces its own layout only when the parent passes a different one, so a render with the same
         // layout keeps what the user did since.
         if (!Equals(Layout, _layoutFromParent))
@@ -615,6 +642,14 @@
         Telemetry.Rendered(TelemetryName);
         try
         {
+            // The parent's layout or panels, or a change of width, can move what shows.
+            FollowActive();
+            if (_activeMoved)
+            {
+                StateHasChanged();
+            }
+
+            await ReportActiveMovedAsync();
             // First, so a panel that came back is in the dock before its tab takes the focus.
             await ShowPoppedAsync();
             if (_focusAfterRender is { } focused)
@@ -686,7 +721,7 @@
                 _keptWindows.Remove(panel);
                 return Task.CompletedTask;
             },
-            tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
+            EngageFromScriptAsync, tab => tab.StartsWith($"{_id}-tab-", StringComparison.Ordinal)));
         var handle = await module.InvokeAsync<IJSObjectReference?>("attachDock", _root, _report);
         if (handle is not null && _disposed)
         {
@@ -1032,6 +1067,10 @@
                 // Its own group showed the panel already, so the layout stays as it is.
                 Telemetry.Used(TelemetryName, "select");
             }
+
+            // A compact dock brings a panel to the front without a new layout.
+            FollowActive();
+            await ReportActiveMovedAsync();
         }
         finally
         {
@@ -1794,6 +1833,60 @@
 
         await LayoutChanged.InvokeAsync(layout);
         await SaveAsync();
+        FollowActive();
+        await ReportActiveMovedAsync();
+    }
+
+    // Keeps ActivePanel on the showing panel of its group as the dock shows it, which in a compact dock is the one
+    // group of every docked panel. When the active panel leaves the groups, the showing panel of the group that held
+    // it takes its place.
+    private void FollowActive()
+    {
+        if (_active is null)
+        {
+            return;
+        }
+
+        var shown = Shown();
+        var groups = shown.Groups.Concat(shown.Floats).Append(shown.Revealed).OfType<DockGroupBox>().ToList();
+        var group = groups.FirstOrDefault(each => each.Panels.Contains(_active))
+            ?? groups.FirstOrDefault(each => each.Panels.Any(_activeGroup.Contains));
+        _activeGroup = group is null ? [] : [.. group.Panels];
+        if (group?.Active != _active)
+        {
+            _active = group?.Active;
+            _activeMoved = true;
+        }
+    }
+
+    private async Task ReportActiveMovedAsync()
+    {
+        if (_activeMoved)
+        {
+            _activeMoved = false;
+            await ActivePanelChanged.InvokeAsync(_active);
+        }
+    }
+
+    private async Task SetActiveAsync(string panel)
+    {
+        if (panel != _active)
+        {
+            _active = panel;
+            _activeGroup = [];
+            _activeMoved = true;
+            FollowActive();
+            await ReportActiveMovedAsync();
+        }
+    }
+
+    private async Task EngageFromScriptAsync(string panel)
+    {
+        if (Panel(panel) is not null)
+        {
+            await SetActiveAsync(panel);
+            StateHasChanged();
+        }
     }
 
     // A press or the focus went into a window that isn't in front. Which window is in front is part of the layout,

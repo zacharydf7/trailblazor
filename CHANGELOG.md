@@ -91,6 +91,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-25
 
+- `TbDockManager` has `ActivePanel` and `ActivePanelChanged`: the showing panel of the group that people last pressed or focused, for a command such as Save. The dock's root has `data-active-panel` with its id, and both testing packages' dock helpers have `ActivePanelAsync()` or `ActivePanel`, which give its title.
 - `TbDockPanel` has `TabEnd`, content after the title in the panel's tab, such as a count. It renders in `[data-part=tab-end]`, and the tab's `aria-describedby` points to it first, so screen readers hear it as the tab's description. On such a panel the tab and the panel are named by `aria-labelledby` on the title, `[data-part=title]`, so they keep the title as their name.
 - `TbDockManager` has `Locked`, which keeps the panels where they are: the menus offer no Move, New group, Auto-hide, Open in new window, Float or Dock; tabs and strip buttons don't drag; and a group whose menu would be empty shows no menu and no tab menu. The dock's root has `data-locked` while it is locked. Both testing packages' dock helpers have `IsLockedAsync()` or `IsLocked`, and their move helpers throw for a locked dock.
 - A dock group's menu, and each tab's, have a Go to tab submenu after the moves that lists the group's tabs, when the group has more than one. Each item has `data-go-to` with its panel's id. `DockLabels.GoToTab` and the string `Dock.GoToTab` word the submenu.

@@ -10,7 +10,8 @@
 <div style="inline-size: 48rem; block-size: 24rem" dir="@Direction">
     @* Tests narrow this dock to move its separators' limits, so it keeps its groups unless a test asks for the
        compact form. *@
-    <TbDockManager @bind-Layout="_layout" AriaLabel="Hike planner" MinGroupSize="64" PersistenceKey="@Key"
+    <TbDockManager @bind-Layout="_layout" @bind-ActivePanel="_active" AriaLabel="Hike planner" MinGroupSize="64"
+                   PersistenceKey="@Key"
                    CompactBelow="@(Compact ? Breakpoint.Sm : Breakpoint.Xs)" Locked="Locked">
         <EmptyContent>Nothing is open.</EmptyContent>
         <ChildContent>
@@ -59,6 +60,7 @@
 </div>
 @* Below the dock, so text that wraps as the layout changes never moves what a test has measured. *@
 <p data-testid="layout">@_layout.ToJson()</p>
+<p data-testid="active">@_active</p>
 
 @code {
     // Trails and Map share a group beside Notes and Gear, which sit above the weather.
@@ -87,6 +89,8 @@
     private static readonly DockLayout OnlyNotes = new(new DockGroup("notes"), ["trails", "map", "gear", "weather"]);
 
     private DockLayout _layout = Start;
+
+    private string? _active;
 
     [SupplyParameterFromQuery]
     private string? Direction { get; set; }

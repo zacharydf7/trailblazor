@@ -3558,6 +3558,15 @@ public sealed class TbDockDriver
     /// maximizing, restoring and resizing still work.</summary>
     public bool IsLocked => _find().HasAttribute("data-locked");
 
+    /// <summary>The title of the dock's <c>ActivePanel</c>, the showing panel of the group that last had the focus or
+    /// a press, or null before any has, or while that panel is in a window of its own. bUnit runs no script, so a
+    /// press or the focus doesn't change it there; selecting another tab of its group, closing it and the app's own
+    /// <c>ActivePanel</c> do.</summary>
+    public string? ActivePanel => _find().GetAttribute("data-active-panel") is { } id
+        ? Tabs().Concat(StripButtons()).Where(tab => tab.GetAttribute("data-panel") == id).Select(Title)
+            .FirstOrDefault()
+        : null;
+
     private const string Locked = "The dock is Locked, so its menus offer no moves: set Locked to false first.";
 
     /// <summary>Tells the dock that it is narrower than its <c>CompactBelow</c> width or, with false, that it is

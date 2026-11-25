@@ -185,6 +185,22 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     /// maximizing, restoring and resizing still work.</summary>
     public async Task<bool> IsLockedAsync() => await Root.GetAttributeAsync("data-locked") is not null;
 
+    /// <summary>The title of the dock's <c>ActivePanel</c>, the showing panel of the group that last had the focus or
+    /// a press, or null before any has, or while that panel is in a window of its own. It reads the dock as it is and
+    /// doesn't wait: after a press or a focus change, wait for <c>data-active-panel</c> on the dock first.</summary>
+    public async Task<string?> ActivePanelAsync()
+    {
+        if (await Root.GetAttributeAsync("data-active-panel") is not { } id)
+        {
+            return null;
+        }
+
+        var titles = await Tabs.Or(StripButtons).EvaluateAllAsync<string[]>(
+            "(items, id) => items.filter(item => item.dataset.panel === id)"
+            + ".map(item => item.querySelector('[data-part=title]').textContent)", id);
+        return titles.FirstOrDefault();
+    }
+
     private const string Locked = "The dock is Locked, so its menus offer no moves: set Locked to false first.";
 
     private const string Compact = "The dock is compact: it is narrower than its CompactBelow width and shows one "

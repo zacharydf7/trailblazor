@@ -706,6 +706,80 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public async Task ActivePanel_ShouldBeTheEngagedGroupsShowingPanel_WhenTheScriptReportsAPressOrTheFocus()
+    {
+        var reported = new List<string?>();
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.ActivePanelChanged, (string? panel) => reported.Add(panel))
+            .Add(dock => dock.ChildContent, Panels(HikePanels)));
+        Assert.Null(cut.Tb().Dock().ActivePanel);
+
+        await cut.InvokeAsync(() => Report().OnEngage("notes"));
+        await cut.InvokeAsync(() => Report().OnEngage("photos"));
+
+        Assert.Equal(["notes"], reported);
+        Assert.Equal("Notes", cut.Tb().Dock().ActivePanel);
+        Assert.Equal("notes", cut.Find("[data-part=dock]").GetAttribute("data-active-panel"));
+    }
+
+    [Fact]
+    public async Task ActivePanel_ShouldFollowItsGroupsShowingTab_WhenAnotherTabIsSelectedOrItCloses()
+    {
+        var reported = new List<string?>();
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.ActivePanelChanged, (string? panel) => reported.Add(panel))
+            .Add(dock => dock.ChildContent, Panels(HikePanels)));
+        var dock = cut.Tb().Dock();
+        await cut.InvokeAsync(() => Report().OnEngage("trails"));
+
+        await dock.SelectAsync("Map");
+        await dock.SelectAsync("Notes");
+        await dock.CloseAsync("Map");
+
+        Assert.Equal(["trails", "map", "trails"], reported);
+        Assert.Equal("Trails", dock.ActivePanel);
+    }
+
+    [Fact]
+    public void ActivePanel_ShouldBeTheAppsPanel_WhenTheAppSetsIt()
+    {
+        var changes = 0;
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.LayoutChanged, _ => changes++)
+            .Add(dock => dock.ActivePanel, "weather").Add(dock => dock.ChildContent, Panels(HikePanels)));
+
+        Assert.Equal("Weather", cut.Tb().Dock().ActivePanel);
+        Assert.Equal(0, changes);
+        Assert.DoesNotContain(JSInterop.Invocations,
+            call => call.Identifier.Contains("focus", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ActivePanel_ShouldFollowWhatTheDockShows_WhenTheAppsLayoutOrACompactDockMovesIt()
+    {
+        var reported = new List<string?>();
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
+            .Add(dock => dock.ActivePanelChanged, (string? panel) => reported.Add(panel))
+            .Add(dock => dock.ChildContent, Panels(HikePanels)));
+        var dock = cut.Tb().Dock();
+        await cut.InvokeAsync(() => Report().OnEngage("trails"));
+
+        // The app shows another tab of the active group, then closes that tab.
+        cut.Render(parameters => parameters.Add(dock => dock.Layout, Hike.Open("map")));
+        cut.Render(parameters => parameters.Add(dock => dock.Layout, Hike.Close("map")));
+        // A compact dock shows every docked panel in one group, so another of its tabs takes the part.
+        cut.Render(parameters => parameters.Add(dock => dock.CompactBelow, Breakpoint.Xl));
+        await dock.NarrowAsync();
+        await dock.SelectAsync("Notes");
+        await dock.NarrowAsync(false);
+        await cut.InvokeAsync(() => Report().OnEngage("weather"));
+        await dock.CloseAsync("Weather");
+
+        Assert.Equal(["trails", "map", "trails", "notes", "weather", null], reported);
+        Assert.Null(dock.ActivePanel);
+    }
+
+    [Fact]
     public async Task GoToTab_ShouldShowThatPanel_WhenChosenInTheGroupsMenu()
     {
         DockLayout? changed = null;

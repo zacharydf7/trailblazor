@@ -306,6 +306,30 @@ public class DockManagerTests(BrowserFixture fixture) : DockManagerPage(fixture)
     }
 }
 
+public class DockManagerActivePanelTests(BrowserFixture fixture) : DockManagerPage(fixture)
+{
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ActivePanel_ShouldFollowThePressAndTheFocus_WhenTheyGoToAnotherGroup(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+        var dock = page.Tb().Dock();
+        Assert.Null(await dock.ActivePanelAsync());
+
+        await page.GetByLabel("Trail name").ClickAsync();
+        await Expect(page.GetByTestId("active")).ToHaveTextAsync("trails");
+        Assert.Equal("Trails", await dock.ActivePanelAsync());
+
+        await Tab(page, "Notes").FocusAsync();
+        await Expect(page.GetByTestId("active")).ToHaveTextAsync("notes");
+
+        // Another tab of the active group takes its place.
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(Tab(page, "Gear")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(page.GetByTestId("active")).ToHaveTextAsync("gear");
+        Assert.Equal("Gear", await dock.ActivePanelAsync());
+    }
+}
+
 public class DockManagerDriverTests(BrowserFixture fixture) : DockManagerPage(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]

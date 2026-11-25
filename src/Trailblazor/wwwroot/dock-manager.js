@@ -983,9 +983,22 @@ export function attachDock(root, reporter) {
         const holder = beforeMenu?.menu.isConnected ? beforeMenu.holder : page.activeElement;
         return tab === holder || Boolean(page.getElementById(tab.getAttribute('aria-controls'))?.contains(holder));
     };
-    // A press or the focus inside a window that isn't in front brings it forward.
+    // The showing panel of the group a press or the focus went to, through its row or its panel.
+    const engagedPanel = target => {
+        const row = ownPart(target, 'group');
+        const panel = row ? null : ownPart(target, 'panel');
+        const group = row ?? groupsInOrder().find(each => panel && each.dataset.group === panel.dataset.dockGroup);
+        return group ? tabsOf(group).find(tab => tab.getAttribute('aria-selected') === 'true')?.dataset.panel : null;
+    };
     const onEngage = event => {
-        // A slid-out panel and the panels the strips keep hidden are drawn as windows, in front of them all.
+        // The dock renders its ActivePanel on the root, so the script tells it only of a change.
+        const engaged = engagedPanel(event.target);
+        if (engaged && engaged !== root.dataset.activePanel) {
+            callDotNet(reporter, 'OnEngage', engaged);
+        }
+
+        // A press or the focus inside a window that isn't in front brings it forward. A slid-out panel and the panels
+        // the strips keep hidden are drawn as windows, in front of them all.
         const floating = [...root.children].filter(child => child.hasAttribute('data-floating')
             && !child.hasAttribute('data-edge') && !child.classList.contains('tb-dock__panel--hidden'));
         const part = floating.find(child => child.contains(event.target));

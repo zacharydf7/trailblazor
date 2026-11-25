@@ -687,6 +687,8 @@
                             <code>CompactBelow</code> width, and <code>IsCompact</code> says whether it shows its
                             docked panels as one group. <code>IsLocked</code> says whether the dock is
                             <code>Locked</code>, and the move helpers throw for a locked dock.
+                            <code>ActivePanel</code> gives the title of the dock's <code>ActivePanel</code>; a press
+                            or the focus doesn't change it in bUnit, which runs no script.
                             <code>ChooseFromTabMenuAsync(panel, path)</code> opens the menu of a panel's
                             tab, as a right-click does, and clicks an item in it, through the submenus named before
                             it. <code>MaximizeAsync(panel)</code> has a panel's group fill the dock, and
@@ -1794,6 +1796,7 @@
             + "its group's menu, and wait until the app has the layout. `IsCompactAsync()` says whether the dock is "
             + "compact: narrower than its `CompactBelow` width and showing its docked panels as one group. "
             + "`IsLockedAsync()` says whether the dock is `Locked`, and the move helpers throw for a locked dock. "
+            + "`ActivePanelAsync()` gives the title of the dock's `ActivePanel`, without waiting. "
             + "`ChooseFromTabMenuAsync(panel, path)` "
             + "right-clicks a panel's tab, clicks an item in the menu that opens, through the submenus named before "
             + "it, and waits until the app has the layout. `MaximizeAsync(panel)` has a panel's group fill the dock "
