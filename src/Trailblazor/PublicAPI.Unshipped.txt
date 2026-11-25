@@ -7822,3 +7822,30 @@ const Trailblazor.TbStrings.TimestampMonthsAgo = "Timestamp.MonthsAgo" -> string
 const Trailblazor.TbStrings.TimestampMonthsAgoOne = "Timestamp.MonthsAgoOne" -> string!
 const Trailblazor.TbStrings.TimestampYearsAgo = "Timestamp.YearsAgo" -> string!
 const Trailblazor.TbStrings.TimestampYearsAgoOne = "Timestamp.YearsAgoOne" -> string!
+Trailblazor.DescriptionLayout
+Trailblazor.DescriptionLayout.Inline = 1 -> Trailblazor.DescriptionLayout
+Trailblazor.DescriptionLayout.Stacked = 0 -> Trailblazor.DescriptionLayout
+Trailblazor.TbDescriptionItem
+Trailblazor.TbDescriptionItem.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDescriptionItem.ChildContent.set -> void
+Trailblazor.TbDescriptionItem.TbDescriptionItem() -> void
+Trailblazor.TbDescriptionItem.Term.get -> string?
+Trailblazor.TbDescriptionItem.Term.set -> void
+Trailblazor.TbDescriptionItem.TermContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDescriptionItem.TermContent.set -> void
+Trailblazor.TbDescriptionItem.Value.get -> string?
+Trailblazor.TbDescriptionItem.Value.set -> void
+Trailblazor.TbDescriptionList
+Trailblazor.TbDescriptionList.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDescriptionList.ChildContent.set -> void
+Trailblazor.TbDescriptionList.Columns.get -> int
+Trailblazor.TbDescriptionList.Columns.set -> void
+Trailblazor.TbDescriptionList.EmptyText.get -> string?
+Trailblazor.TbDescriptionList.EmptyText.set -> void
+Trailblazor.TbDescriptionList.Layout.get -> Trailblazor.DescriptionLayout
+Trailblazor.TbDescriptionList.Layout.set -> void
+Trailblazor.TbDescriptionList.TbDescriptionList() -> void
+override Trailblazor.TbDescriptionItem.OnParametersSet() -> void
+override Trailblazor.TbDescriptionList.OnParametersSet() -> void
+~override Trailblazor.TbDescriptionItem.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Trailblazor.TbDescriptionList.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

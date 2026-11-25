@@ -1,0 +1,34 @@
+@page "/description-list"
+
+@* The same two-column list in a wide box and in a narrow one, which falls back to one column. *@
+@foreach (var (box, width) in Boxes)
+{
+    <div data-box="@box" style="inline-size: @width">
+        <TbDescriptionList Columns="2">
+            <TbDescriptionItem Term="Trail" Value="Cedar Flats" />
+            <TbDescriptionItem Term="Removed by" Value="Robin Hale" />
+        </TbDescriptionList>
+    </div>
+}
+
+<div data-box="inline" style="inline-size: 40rem">
+    <TbDescriptionList Layout="DescriptionLayout.Inline">
+        <TbDescriptionItem Term="Trail" Value="Cedar Flats" />
+    </TbDescriptionList>
+</div>
+
+@* A list whose first value holds another list with a term of the same name. *@
+<div data-box="nested">
+    <TbDescriptionList>
+        <TbDescriptionItem Term="Trail">
+            <TbDescriptionList>
+                <TbDescriptionItem Term="Owner" Value="Park service" />
+            </TbDescriptionList>
+        </TbDescriptionItem>
+        <TbDescriptionItem Term="Owner" Value="Robin Hale" />
+    </TbDescriptionList>
+</div>
+
+@code {
+    private static readonly (string Box, string Width)[] Boxes = [("wide", "50rem"), ("narrow", "20rem")];
+}

@@ -1,0 +1,44 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* With columns, the wrapper is the container a narrow width is measured on, so the list can fall back to one. *@
+<div @attributes="AdditionalAttributes" style="@ColumnsStyle"
+     class="@ClassNames.Join("tb-description-list", ClassNames.Modifier("tb-description-list", Layout),
+                Columns > 1 ? "tb-description-list--columns" : null, Class)">
+    <dl data-part="list" class="tb-description-list__list">
+        @* Not fixed, so items render again when the list's EmptyText changes. *@
+        <CascadingValue Value="this">@ChildContent</CascadingValue>
+    </dl>
+</div>
+
+@code {
+    /// <summary>The <see cref="TbDescriptionItem"/>s, each a term and its value.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Whether each term sits above its value or in a column beside it. Defaults to
+    /// <see cref="DescriptionLayout.Stacked"/>.</summary>
+    [Parameter]
+    public DescriptionLayout Layout { get; set; } = DescriptionLayout.Stacked;
+
+    /// <summary>How many pairs sit side by side, at least 1. Defaults to 1. Below 30rem of its own width, the list
+    /// falls back to one column, whatever the window's width.</summary>
+    [Parameter]
+    public int Columns { get; set; } = 1;
+
+    /// <summary>What screen readers hear for a blank value, which shows as a dash. Defaults to the app's text for
+    /// <see cref="TbStrings.EmptyValue"/>, "Not set".</summary>
+    [Parameter]
+    public string? EmptyText { get; set; }
+
+    [Inject]
+    private ITbLocalizer Localizer { get; set; } = default!;
+
+    internal string ShownEmptyText => EmptyText ?? Localizer[TbStrings.EmptyValue];
+
+    private string ColumnsStyle => Styles.Join($"--tb-description-list-columns: {Columns}", Style)!;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet() =>
+        ArgumentOutOfRangeException.ThrowIfLessThan(Columns, 1, nameof(Columns));
+}

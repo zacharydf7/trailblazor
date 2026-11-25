@@ -637,3 +637,7 @@ Trailblazor.Testing.TrailblazorMarkup.AsyncContent(string? label = null) -> Trai
 Trailblazor.Testing.FakeBrowserService.GetTimeZoneAsync() -> System.Threading.Tasks.Task<System.TimeZoneInfo?>!
 Trailblazor.Testing.FakeBrowserService.TimeZone.get -> System.TimeZoneInfo?
 Trailblazor.Testing.FakeBrowserService.TimeZone.set -> void
+Trailblazor.Testing.TbDescriptionListDriver
+Trailblazor.Testing.TbDescriptionListDriver.Terms.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbDescriptionListDriver.ValueOf(string! term) -> string!
+Trailblazor.Testing.TrailblazorMarkup.DescriptionList() -> Trailblazor.Testing.TbDescriptionListDriver!

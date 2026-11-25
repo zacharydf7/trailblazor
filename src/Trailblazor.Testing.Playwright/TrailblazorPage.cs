@@ -362,6 +362,10 @@ public sealed class TrailblazorPage(ILocator scope)
     /// label is given.</summary>
     public TbSmartPasteLocator SmartPaste(string? label = null) => new(scope, label);
 
+    /// <summary>The only <c>TbDescriptionList</c> in the scope, leaving out one inside another's value; scope the page
+    /// to tell several apart.</summary>
+    public TbDescriptionListLocator DescriptionList() => new(scope);
+
     /// <summary>The <c>TbAsyncContent</c> with this <c>Label</c>, such as "groups", or the only one in the scope when
     /// no label is given.</summary>
     public TbAsyncContentLocator AsyncContent(string? label = null) => new(scope, label);

@@ -1,0 +1,15 @@
+@* A removed trail's details, two pairs to a row, with a long note that wraps in its column. *@
+<TbDescriptionList Layout="DescriptionLayout.Inline" Columns="2">
+    <TbDescriptionItem Term="Trail" Value="Cedar Flats" />
+    <TbDescriptionItem Term="Removed by" Value="Robin Hale" />
+    <TbDescriptionItem Term="Date">
+        <TbTimestamp Value="Removed" Format="TimestampFormat.Date" />
+    </TbDescriptionItem>
+    <TbDescriptionItem Term="Note" Value="@Note" />
+</TbDescriptionList>
+
+@code {
+    private const string Note =
+        "Merged into the Cedar Flats loop after the spring survey found the two trails share most of their route.";
+    private static readonly DateTimeOffset Removed = new(2026, 11, 2, 16, 0, 0, TimeSpan.Zero);
+}

@@ -555,6 +555,92 @@ public static class ExampleCatalog
                     + "and check it with `ToHaveAccessibleDescriptionAsync`.",
             ],
         },
+        new("description-list", "Description list", ExampleCategory.Content,
+            "Read-only terms and their values for a detail view, such as who removed a trail and when.")
+        {
+            FullWidth = true,
+            WhenToUse =
+            [
+                "Use it to show a record's details as terms and values, such as \"Removed by\" and \"Date\", in a "
+                    + "detail view or a side panel.",
+            ],
+            WhenNotToUse =
+            [
+                "For rows of records with the same columns, use a [table](components/table) or a "
+                    + "[data grid](components/data-grid).",
+                "To edit the values, use a [property grid](components/property-grid) or a "
+                    + "[form](components/form).",
+            ],
+            Related = ["property-grid", "table", "timestamp"],
+            Sections =
+            [
+                new("basic", "Description list", "Each `TbDescriptionItem` takes a `Term`, or `TermContent` for a "
+                    + "formatted term, and a `Value`, or `ChildContent` for a value such as a "
+                    + "[timestamp](components/timestamp) or a link. `Layout=\"DescriptionLayout.Inline\"` puts the "
+                    + "terms in a column beside their values, and `Columns` puts pairs side by side; below 30rem of "
+                    + "its own width, the list falls back to one column, whatever the window's width. A long value "
+                    + "wraps within its column.", typeof(DescriptionListExample)),
+                new("stacked", "Stacked", "The default `Stacked` layout puts each term above its value, which suits a "
+                    + "narrow card. Here the ranger station's value is a link, and the elevation's term is formatted "
+                    + "with `TermContent`.", typeof(DescriptionListStackedExample)),
+                new("empty", "Blank values", "A blank `Value` shows a dash, which screen readers hear as the list's "
+                    + "`EmptyText`, \"Not set\" by default, as the second list here words it. `ChildContent` shows as "
+                    + "given, so pass a value that may be blank through `Value`.", typeof(DescriptionListEmptyExample)),
+            ],
+            Api = [typeof(TbDescriptionList), typeof(TbDescriptionItem)],
+            Labeling =
+            [
+                "The list has no name of its own, and attributes such as `aria-label` go on its wrapper, which has no "
+                    + "role; a heading above it names the details. Each value is named by its term.",
+            ],
+            Announcements =
+            [
+                "A blank `Value` reads as the list's `EmptyText`, \"Not set\" by default.",
+            ],
+            Accessibility =
+            [
+                "It renders a `dl`, with each `dt` and `dd` pair in a `div`, which HTML allows, so the pairs have the "
+                    + "`term` and `definition` roles.",
+                "It handles no keys of its own; links and buttons in its values work as anywhere.",
+            ],
+            AppDuties =
+            [
+                "Put a heading above the details, and keep each term unique within a list, since screen readers and "
+                    + "`ValueOf` both go by the term's text.",
+            ],
+            Modes = new(ModeSupport.Full, ModeSupport.Full),
+            BeforeInteractive =
+            [
+                PlainHtml,
+            ],
+            Notes =
+            [
+                new("With `Columns` above 1, the list takes its width from the space it sits in, not from its text, so "
+                    + "inside a box that sizes to its content, such as an inline-block or a popover, give it a width.")
+                    { Pitfall = true },
+                new("Its one string is `Value.Empty` (\"Not set\"), shared with the [timestamp](components/timestamp); "
+                    + "`EmptyText` replaces it for one list."),
+            ],
+            Target = new("term") { Text = "Date" },
+            Blocks = ["tb-description-list"],
+            DataParts =
+            [
+                new("list", "The `dl` that holds the pairs."),
+                new("item", "One pair: a `div` around its term and value."),
+                new("term", "A pair's `dt`."),
+                new("value", "A pair's `dd`."),
+            ],
+            Scenario = new("basic", "it reads who removed the trail and what the note says."),
+            TestingTips =
+            [
+                "`DescriptionList().ValueOf(term)` reads a term's value as it shows, or an empty string for a blank "
+                    + "one, and `Terms` lists the terms; in Playwright they're `ValueOfAsync(term)` and "
+                    + "`TermsAsync()`.",
+                "In bUnit, `ValueOf` throws listing the terms when none matches; in Playwright it waits for the "
+                    + "term. `Within` in bUnit, or a scoped page in Playwright, tells several lists apart.",
+                "By hand, the pairs have the `term` and `definition` roles.",
+            ],
+        },
         new("highlight", "Highlight", ExampleCategory.Content,
             "Text with the parts that match a search marked, for search results and filtered lists.")
         {

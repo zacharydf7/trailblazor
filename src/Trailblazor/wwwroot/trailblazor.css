@@ -1981,6 +1981,48 @@
         font-variant-numeric: tabular-nums;
     }
 
+    /* A description list with columns falls back to one where the space it sits in is narrow; only then is it a
+       container, since a container's width can't come from its content. */
+    .tb-description-list--columns {
+        container-type: inline-size;
+    }
+
+    .tb-description-list__list {
+        display: grid;
+        grid-template-columns: repeat(var(--tb-description-list-columns, 1), minmax(0, 1fr));
+        gap: var(--tb-space-3) var(--tb-space-6);
+        margin: 0;
+    }
+
+    @container (max-width: 30rem) {
+        .tb-description-list__list {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    .tb-description-list__item {
+        display: grid;
+        align-content: start;
+        gap: var(--tb-space-1);
+    }
+
+    /* Inline, every term takes the same share beside its value, so the terms line up. */
+    .tb-description-list--inline .tb-description-list__item {
+        grid-template-columns: minmax(6rem, 35%) minmax(0, 1fr);
+        gap: var(--tb-space-3);
+    }
+
+    .tb-description-list__term {
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+        font-weight: var(--tb-font-weight-medium);
+    }
+
+    .tb-description-list__value {
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+
     /* The region keeps its place while it loads; a reload's bar sits over the top of the content. */
     .tb-async-content {
         position: relative;

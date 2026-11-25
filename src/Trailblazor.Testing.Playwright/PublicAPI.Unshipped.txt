@@ -697,3 +697,9 @@ Trailblazor.Testing.Playwright.TbAsyncContentLocator.StateAsync() -> System.Thre
 Trailblazor.Testing.Playwright.TbAsyncContentLocator.TbAsyncContentLocator(Microsoft.Playwright.ILocator! scope, string? label) -> void
 Trailblazor.Testing.Playwright.TbAsyncContentLocator.WaitUntilLoadedAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TrailblazorPage.AsyncContent(string? label = null) -> Trailblazor.Testing.Playwright.TbAsyncContentLocator!
+Trailblazor.Testing.Playwright.TbDescriptionListLocator
+Trailblazor.Testing.Playwright.TbDescriptionListLocator.List.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbDescriptionListLocator.TbDescriptionListLocator(Microsoft.Playwright.ILocator! scope) -> void
+Trailblazor.Testing.Playwright.TbDescriptionListLocator.TermsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbDescriptionListLocator.ValueOfAsync(string! term) -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TrailblazorPage.DescriptionList() -> Trailblazor.Testing.Playwright.TbDescriptionListLocator!

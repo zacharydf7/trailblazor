@@ -692,6 +692,15 @@ public sealed class TrailblazorMarkup
             || paste.QuerySelector("[data-part=button] [data-part=label]")!.TextContent.Trim() == label)
         .ToList(), "smart paste button", label), _findAll);
 
+    /// <summary>The only <c>TbDescriptionList</c> in the scope, leaving out one inside another's value;
+    /// <see cref="Within"/> tells several apart.</summary>
+    public TbDescriptionListDriver DescriptionList() => new(() =>
+    {
+        var lists = _findAll(".tb-description-list");
+        return Only([.. lists.Where(list => !lists.Any(outer => outer != list && outer.Contains(list)))],
+            "description list", null);
+    });
+
     /// <summary>The <c>TbAsyncContent</c> with this <c>Label</c>, such as "groups", or the only one when no label is
     /// given.</summary>
     public TbAsyncContentDriver AsyncContent(string? label = null) => new(() => Only(_findAll(".tb-async-content")
@@ -2719,6 +2728,41 @@ public sealed class TbInPlaceEditorDriver
             ?? throw new InvalidOperationException("The in-place editor isn't editing; call EditAsync first.");
         await button.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
+}
+
+/// <summary>A <c>TbDescriptionList</c>: terms and their values.</summary>
+public sealed class TbDescriptionListDriver
+{
+    private readonly Func<IElement> _find;
+
+    internal TbDescriptionListDriver(Func<IElement> find) => _find = find;
+
+    /// <summary>The terms, in order.</summary>
+    public IReadOnlyList<string> Terms =>
+        [.. Items().Select(item =>
+            Notices.Collapsed(item.QuerySelector(":scope > [data-part=term]")!.TextContent))];
+
+    /// <summary>The value of the term with this text, as it shows, or an empty string for a blank value, which shows a
+    /// dash. Throws when no term has the text.</summary>
+    public string ValueOf(string term)
+    {
+        var item = Items().FirstOrDefault(each =>
+                Notices.Collapsed(each.QuerySelector(":scope > [data-part=term]")!.TextContent) == term)
+            ?? throw new InvalidOperationException($"No term reads \"{term}\"; the terms are "
+                + string.Join(", ", Terms.Select(each => $"\"{each}\"")) + ".");
+        // A blank value's dash and the words screen readers hear for it, and a tooltip's bubble, aren't shown text.
+        var value = (IElement)item.QuerySelector(":scope > [data-part=value]")!.Clone();
+        foreach (var hidden in value.QuerySelectorAll("[aria-hidden=true], .tb-visually-hidden, [role=tooltip]"))
+        {
+            hidden.Remove();
+        }
+
+        return Notices.Collapsed(value.TextContent);
+    }
+
+    // The list's own pairs, not those of another list inside a value.
+    private IEnumerable<IElement> Items() =>
+        _find().QuerySelectorAll(":scope > [data-part=list] > [data-part=item]");
 }
 
 /// <summary>A <c>TbAsyncContent</c>, found by its <c>Label</c>.</summary>

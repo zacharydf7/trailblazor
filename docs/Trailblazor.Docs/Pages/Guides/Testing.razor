@@ -483,6 +483,13 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>DescriptionList().ValueOf(term)</code></th>
+                        <td>
+                            The value of a term as it shows, or an empty string for a blank one, which shows a dash.
+                            <code>Terms</code> lists the terms. <code>Within</code> tells several lists apart.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>AsyncContent(label).WaitUntilLoadedAsync()</code></th>
                         <td>
                             Waits until no load is running and the first one has finished. <code>State</code> reads
@@ -1631,6 +1638,9 @@
             + "response's text, newest first, and `StatusesAsync()` their statuses. `StopAsync()` stops the "
             + "response that's generating, and `CopyAsync()`, `RetryAsync()` and `InsertAsync()` act on a "
             + "response, the newest by default."),
+        new("Description list", "None; scope the page to tell several apart",
+            "`DescriptionList().ValueOfAsync(term)` reads a term's value as it shows, or an empty string for a blank "
+            + "one. `TermsAsync()` lists the terms."),
         new("Async content", "Its Label, or none for the only one", "`AsyncContent(label).WaitUntilLoadedAsync()` "
             + "waits until no load is running and the first one has finished. `StateAsync()` reads what it shows, "
             + "`BusyAsync()` whether it's loading, and `RetryAsync()` presses Retry after a failure and waits for "

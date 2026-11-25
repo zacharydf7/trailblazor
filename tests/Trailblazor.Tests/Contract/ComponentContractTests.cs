@@ -15,7 +15,8 @@ public class ComponentContractTests : BunitContext
     // or style; TbRadio, TbCheckboxItem, TbTab, TbOption, TbToggleItem, TbSplitterPane, TbTreeItem, TbMenuRadioItem,
     // TbDialogDescription, TbColumn, TbColumnGroup, TbTableOfContentsItem, TbBreadcrumb, TbNavLink, TbNavGroup, TbStep,
     // TbCarouselSlide, TbDockPanel and TbRibbonTab only render inside their parent (see their parents' tests),
-    // TbTreeItemEnd only in a tree row's template, and TbSmartPaste only inside a TbForm.
+    // TbTreeItemEnd only in a tree row's template, TbSmartPaste only inside a TbForm, and TbDescriptionItem only inside
+    // a TbDescriptionList.
     internal static readonly Type[] NotRenderedAlone =
     [
         typeof(TbRoot), typeof(TbStyles), typeof(TbThemeHead), typeof(TbInteractiveMark), typeof(TbRadio<>),
@@ -26,7 +27,7 @@ public class ComponentContractTests : BunitContext
         typeof(TbTableOfContentsItem), typeof(TbBreadcrumb), typeof(TbNavLink), typeof(TbNavGroup),
         typeof(TbStep), typeof(TbCarouselSlide), typeof(TbColumnGroup<>), typeof(TbModelField),
         typeof(TbDialogHeaderActions), typeof(TbDialogHeader), typeof(TbTreeItemEnd), typeof(TbSmartPaste),
-        typeof(TbDockPanel),
+        typeof(TbDockPanel), typeof(TbDescriptionItem),
     ];
 
     // Generic components, such as fields, are checked with string as their type argument unless listed here.
@@ -52,6 +53,7 @@ public class ComponentContractTests : BunitContext
         [typeof(TbToolbarButton)] = (nameof(TbToolbarButton.Label), "Sample"),
         [typeof(TbTooltip)] = (nameof(TbTooltip.Text), "Sample"),
         [typeof(TbProgress)] = (nameof(TbProgress.Label), "Sample"),
+        [typeof(TbDescriptionItem)] = (nameof(TbDescriptionItem.Term), "Sample"),
         [typeof(TbToggleGroup<string>)] = (nameof(TbToggleGroup<string>.AriaLabel), "Sample"),
         [typeof(TbMultiToggleGroup<string>)] = (nameof(TbMultiToggleGroup<string>.AriaLabel), "Sample"),
         [typeof(TbDialog)] = (nameof(TbDialog.Open), true),

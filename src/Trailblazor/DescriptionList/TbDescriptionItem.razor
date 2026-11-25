@@ -1,0 +1,72 @@
+@namespace Trailblazor
+@inherits TbComponentBase
+
+@* Each pair sits in a div, which a dl allows, so the list can lay the pairs out in columns. *@
+<div @attributes="AdditionalAttributes" data-part="item" class="@ClassNames.Join("tb-description-list__item", Class)"
+     style="@Style">
+    <dt data-part="term" class="tb-description-list__term">
+        @if (TermContent is not null)
+        {
+            @TermContent
+        }
+        else
+        {
+            @Term
+        }
+    </dt>
+    <dd data-part="value" class="tb-description-list__value">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else if (!string.IsNullOrWhiteSpace(Value))
+        {
+            @Value
+        }
+        else
+        {
+            @EmptyValue.Of(List.ShownEmptyText)
+        }
+    </dd>
+</div>
+
+@code {
+    /// <summary>What the value is, such as "Removed by". Required unless <see cref="TermContent"/> is given.
+    /// </summary>
+    [Parameter]
+    public string? Term { get; set; }
+
+    /// <summary>Formatted content for the term, in place of <see cref="Term"/>.</summary>
+    [Parameter]
+    public RenderFragment? TermContent { get; set; }
+
+    /// <summary>The value as text. A blank one shows a dash, which screen readers hear as the list's
+    /// <see cref="TbDescriptionList.EmptyText"/>.</summary>
+    [Parameter]
+    public string? Value { get; set; }
+
+    /// <summary>The value as content, such as a <see cref="TbTimestamp"/> or a link, in place of
+    /// <see cref="Value"/>. It shows as given, so pass a value that may be blank through <see cref="Value"/> to show
+    /// the dash.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter]
+    private TbDescriptionList List { get; set; } = default!;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (List is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbDescriptionItem)} goes inside a {nameof(TbDescriptionList)}.");
+        }
+
+        if (string.IsNullOrWhiteSpace(Term) && TermContent is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbDescriptionItem)} needs a {nameof(Term)} or {nameof(TermContent)}.");
+        }
+    }
+}

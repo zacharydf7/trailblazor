@@ -20,5 +20,5 @@
 else
 {
     <span @attributes="AdditionalAttributes" class="@ClassNames.Join("tb-timestamp", "tb-timestamp--empty", Class)"
-          style="@Style">@ShownTime.Empty(Localizer[TbStrings.EmptyValue])</span>
+          style="@Style">@EmptyValue.Of(Localizer[TbStrings.EmptyValue])</span>
 }

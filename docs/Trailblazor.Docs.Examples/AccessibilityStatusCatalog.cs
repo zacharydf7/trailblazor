@@ -28,6 +28,7 @@ public static class AccessibilityStatusCatalog
         new("text", None, None, None),
         new("kbd", None, Tested, None),
         new("timestamp", None, None, None),
+        new("description-list", None, None, None),
         new("highlight", None, Tested, None),
         new("qr-code", None, Tested, None),
         new("avatar", None, Tested, None),
