@@ -3527,7 +3527,9 @@ public static class ExampleCatalog
                     + "one group that fills it, one panel at a time, in the groups' order. The width is the dock's "
                     + "whole width, strips included, not the window's, so a dock in a narrow column is compact on a "
                     + "wide screen too, as the switch shows; on a phone the dock is narrow either way. The layout "
-                    + "keeps every group, and they show again once the dock is wide enough. The button calls "
+                    + "keeps every group, and they show again once the dock is wide enough. A floating window in a "
+                    + "compact dock is at least 18rem by 14rem, but no larger than the dock, and moves back inside the "
+                    + "dock to fit, so its tabs, buttons and panel stay usable. The button calls "
                     + "`ShowAsync(panel)` on the dock, which brings a docked panel to the front from code.",
                     typeof(DockManagerCompactExample)),
             ],

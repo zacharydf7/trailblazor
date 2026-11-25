@@ -8054,6 +8054,33 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         overflow: auto;
     }
 
+    /* A compact dock can be as narrow as a phone, where a window's share of the dock is too small to use. In a
+       compact dock a window is at least 18rem by 14rem, but no larger than the dock, and moves back inside it. */
+    .tb-dock[data-compact] > :is(.tb-dock__group--floating:not(.tb-dock__group--revealed),
+        .tb-dock__panel--floating:not(.tb-dock__panel--revealed), .tb-dock__window-grip) {
+        --tb-dock-fit-w: max(var(--tb-dock-live-w, var(--tb-dock-w)) * 1%, min(100%, 18rem));
+        --tb-dock-fit-h: max(var(--tb-dock-live-h, var(--tb-dock-h)) * 1%, min(100%, 14rem));
+        --tb-dock-fit-x: min(var(--tb-dock-live-x, var(--tb-dock-x)) * 1%, 100% - var(--tb-dock-fit-w));
+        --tb-dock-fit-y: min(var(--tb-dock-live-y, var(--tb-dock-y)) * 1%, 100% - var(--tb-dock-fit-h));
+    }
+
+    .tb-dock[data-compact] > :is(.tb-dock__group--floating:not(.tb-dock__group--revealed),
+        .tb-dock__panel--floating:not(.tb-dock__panel--revealed)) {
+        inset-inline-start: var(--tb-dock-fit-x);
+        inset-block-start: var(--tb-dock-fit-y);
+        inline-size: var(--tb-dock-fit-w);
+    }
+
+    .tb-dock[data-compact] > .tb-dock__panel--floating:not(.tb-dock__panel--revealed) {
+        inset-block-start: calc(var(--tb-dock-fit-y) + var(--tb-dock-tabs-size));
+        block-size: calc(var(--tb-dock-fit-h) - var(--tb-dock-tabs-size));
+    }
+
+    .tb-dock[data-compact] > .tb-menu.tb-dock__window-grip {
+        inset-inline-start: calc(var(--tb-dock-fit-x) + var(--tb-dock-fit-w) - 24px);
+        inset-block-start: calc(var(--tb-dock-fit-y) + var(--tb-dock-fit-h) - 24px);
+    }
+
     /* A hidden panel keeps its content and its scroll position, out of sight, out of the tab order and out of
        layout. */
     .tb-dock__panel--hidden {

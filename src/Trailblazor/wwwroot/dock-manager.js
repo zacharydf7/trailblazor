@@ -330,6 +330,24 @@ export function attachDock(root, reporter) {
     // its corner. Its row, its panels and its grip take the new box at once, as the parts beside a separator do.
     const isRtl = () => getComputedStyle(root).direction === 'rtl';
     const between = (value, low, high) => Math.min(Math.max(value, low), Math.max(low, high));
+    // As the stylesheet does, a compact dock draws a window at least 18rem by 14rem but no larger than the dock,
+    // moved back inside it. Moves and resizes start from that box, so the window follows the pointer at once.
+    const leastWindow = () => {
+        const rem = parseFloat(getComputedStyle(root.ownerDocument.documentElement).fontSize);
+        return root.hasAttribute('data-compact')
+            ? { width: Math.min(100, 18 * rem / root.clientWidth * 100),
+                height: Math.min(100, 14 * rem / root.clientHeight * 100) }
+            : { width: 0, height: 0 };
+    };
+    const drawn = box => {
+        const least = leastWindow();
+        const [width, height] = [Math.max(box.width, least.width), Math.max(box.height, least.height)];
+        return { ...box, width, height, x: Math.min(box.x, 100 - width), y: Math.min(box.y, 100 - height) };
+    };
+    // A side the move or resize left as drawn keeps the size the layout has, so the layout gets no size that a
+    // compact dock only drew.
+    const toSave = (box, start, stored) => ({ ...box, width: box.width === start.width ? stored.width : box.width,
+        height: box.height === start.height ? stored.height : box.height });
     const rowOf = index => groupsInOrder().find(each => each.dataset.group === String(index));
     // A window's row, its panels and its grip, which all carry the row's number.
     const windowParts = row => [...root.children].filter(child => child.hasAttribute('data-floating')
@@ -342,10 +360,12 @@ export function attachDock(root, reporter) {
                 y: between(start.y + dy, 0, 100 - start.height) };
         }
 
-        const least = Number(root.dataset.minSize);
+        const [least, drawnLeast] = [Number(root.dataset.minSize), leastWindow()];
         return { ...start,
-            width: between(start.width + dx, Math.max(10, least / root.clientWidth * 100), 100 - start.x),
-            height: between(start.height + dy, Math.max(10, least / root.clientHeight * 100), 100 - start.y) };
+            width: between(start.width + dx, Math.max(10, least / root.clientWidth * 100, drawnLeast.width),
+                100 - start.x),
+            height: between(start.height + dy, Math.max(10, least / root.clientHeight * 100, drawnLeast.height),
+                100 - start.y) };
     };
     const placeWindow = (row, box) => {
         for (const part of windowParts(row)) {
@@ -365,15 +385,16 @@ export function attachDock(root, reporter) {
             taller: [0, 1], shorter: [0, -1] }[step];
         const resize = ['wider', 'narrower', 'taller', 'shorter'].includes(step);
         const sideways = (step === 'left' || step === 'right') && isRtl() ? -dx : dx;
-        const start = boxOf(row);
+        const [stored, start] = [boxOf(row), drawn(boxOf(row))];
         const side = resize ? (dx ? 'width' : 'height') : (dx ? 'x' : 'y');
-        return { resize, side, asked: start[side] + (dx ? sideways : dy) * percent,
-            box: changed(start, sideways * percent, dy * percent, resize) };
+        const box = changed(start, sideways * percent, dy * percent, resize);
+        return { resize, side, from: start[side], asked: start[side] + (dx ? sideways : dy) * percent, box,
+            saved: toSave(box, start, stored) };
     };
     const stepWindow = (row, step, percent) => {
-        const { resize, box } = windowStep(row, step, percent);
-        placeWindow(row, box);
-        reportWindow(row, box, resize);
+        const { resize, saved } = windowStep(row, step, percent);
+        placeWindow(row, saved);
+        reportWindow(row, saved, resize);
     };
     // A slid-out panel resizes by its inner edge, the one away from its strip. Its box grows from the dock's edge by
     // a percent of the dock, and stays between nine tenths of the dock and a tenth, or the smallest a group may be if
@@ -449,8 +470,8 @@ export function attachDock(root, reporter) {
         }
 
         const row = holder.dataset.part === 'window-grip' ? rowOf(holder.dataset.group) : ownPart(holder, 'group');
-        const { side, asked, box } = windowStep(row, step, 10);
-        return went(boxOf(row)[side], asked, box[side]);
+        const { side, from, asked, box } = windowStep(row, step, 10);
+        return went(from, asked, box[side]);
     };
     const markSteps = menu => {
         const holder = stepMenuOf(menu);
@@ -545,8 +566,8 @@ export function attachDock(root, reporter) {
 
             // Captured where it was pressed, inside the tab menu's area, so that menu still hears the press end.
             (lifted.handle ?? event.target).setPointerCapture(event.pointerId);
-            windowDrag = { ...lifted, x: event.clientX, y: event.clientY, start: boxOf(lifted.row), box: null,
-                dragged: false };
+            windowDrag = { ...lifted, x: event.clientX, y: event.clientY, stored: boxOf(lifted.row),
+                start: lifted.edge ? boxOf(lifted.row) : drawn(boxOf(lifted.row)), box: null, dragged: false };
             return;
         }
 
@@ -577,7 +598,8 @@ export function attachDock(root, reporter) {
                 const [across, down] = [dx / root.clientWidth * 100, dy / root.clientHeight * 100];
                 windowDrag.box = windowDrag.edge
                     ? slid(windowDrag.start, windowDrag.edge, outward(windowDrag.edge, across, down))
-                    : changed(windowDrag.start, isRtl() ? -across : across, down, windowDrag.resize);
+                    : toSave(changed(windowDrag.start, isRtl() ? -across : across, down, windowDrag.resize),
+                        windowDrag.start, windowDrag.stored);
                 placeWindow(windowDrag.row, windowDrag.box);
             }
 

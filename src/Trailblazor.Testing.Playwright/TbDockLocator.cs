@@ -361,8 +361,8 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     }
 
     /// <summary>The box of the floating window that holds the panel with this title, in percent of the dock: where
-    /// it starts, from the side where text starts and from the top, and its width and height. Throws for a panel
-    /// that isn't in a window.</summary>
+    /// it starts, from the side where text starts and from the top, and its width and height. A compact dock can
+    /// draw the window bigger than this box. Throws for a panel that isn't in a window.</summary>
     public async Task<(double X, double Y, double Width, double Height)> WindowAsync(string panel)
     {
         var box = await (await WindowRowAsync(panel)).EvaluateAsync<double[]>(

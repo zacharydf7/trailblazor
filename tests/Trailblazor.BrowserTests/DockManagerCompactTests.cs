@@ -99,6 +99,56 @@ public class DockManagerCompactTests(BrowserFixture fixture) : DockManagerPage(f
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldKeepARoomySizeInsideTheDock_WhenTheDockIsCompact(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?compact=true");
+        var dock = page.Tb().Dock();
+        await dock.FloatAsync("Weather");
+        await dock.MoveWindowAsync("Weather", 25, 25);
+        var row = page.Locator(".tb-dock > .tb-dock__group--floating");
+        var grip = page.Locator(".tb-dock__window-grip > [data-part=trigger]");
+
+        await NarrowAsync(page, "390px");
+
+        await Expect(page.Locator(".tb-dock")).ToHaveAttributeAsync("data-compact", "");
+        var area = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        var (top, panel) = ((await row.BoundingBoxAsync())!, (await Panel(page, "Weather").BoundingBoxAsync())!);
+        // Half of this dock would be under 200 pixels each way. The window is 18rem by 14rem instead, and moved back
+        // so it doesn't run past the dock's end and bottom.
+        Assert.Equal(288, top.Width, 1.0);
+        Assert.Equal(224, panel.Y + panel.Height - top.Y, 1.0);
+        Assert.Equal((top.X, top.Width), (panel.X, panel.Width));
+        Assert.Equal(area.X + area.Width - 1, top.X + top.Width, 1.0);
+        Assert.Equal(area.Y + area.Height - 1, panel.Y + panel.Height, 1.0);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Move the Weather window" })).ToBeInViewportAsync();
+        var corner = (await grip.BoundingBoxAsync())!;
+        Assert.Equal(top.X + top.Width, corner.X + corner.Width, 1.0);
+        Assert.Equal(panel.Y + panel.Height, corner.Y + corner.Height, 1.0);
+
+        // A move and a resize start from the window that shows, and it can't get shorter than it is. The layout
+        // keeps its own size on each side they leave alone.
+        await dock.MoveWindowAsync("Weather", -10, 0);
+        Assert.Equal((50, 50), ((await dock.WindowAsync("Weather")).Width, (await dock.WindowAsync("Weather")).Height));
+        await dock.ResizeWindowAsync("Weather", 1, 0);
+        Assert.Equal(50, (await dock.WindowAsync("Weather")).Height);
+        var resized = (await row.BoundingBoxAsync())!;
+        Assert.Equal(top.X - 38.8, resized.X, 1.0);
+        Assert.Equal(288 + 3.88, resized.Width, 1.0);
+        await grip.ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Menuitem, new() { Name = "Shorter" }))
+            .ToHaveAttributeAsync("aria-disabled", "true");
+        await page.Keyboard.PressAsync("Escape");
+
+        await NarrowAsync(page, "48rem");
+
+        // Wide again, the window takes the share of the dock it was given while compact.
+        await Expect(page.Locator(".tb-dock")).Not.ToHaveAttributeAsync("data-compact", "");
+        var wide = (await page.Locator(".tb-dock").BoundingBoxAsync())!;
+        Assert.Equal((wide.Width - 2) * (await dock.WindowAsync("Weather")).Width / 100,
+            (await row.BoundingBoxAsync())!.Width, 1.0);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task TabRow_ShouldFadeTheSideThatHasTabsPastIt_WhenItsTabsDontFit(string browser)
     {
         // Four tabs in a group too narrow for them, scrolled to the last one, which shows.
