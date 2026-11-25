@@ -97,6 +97,22 @@ internal sealed class ScriptCalls(IServiceProvider services, Func<Func<Task>, Ta
             call.Arguments.ElementAtOrDefault(2) as DotNetObjectReference<Trailblazor.Primitives.DismissableLayer>)
         .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value).LastOrDefault();
 
+    // What the text script reports for this text, whose box it measures. bUnit's markup loses the element's reference
+    // once the text re-renders with other attributes, so then it falls back to the only text being measured.
+    public TextCut Text(IElement text)
+    {
+        var id = text.GetAttribute("blazor:elementReference");
+        var live = Js.Invocations["watchTextCut"]
+            .Where(call => string.IsNullOrEmpty(id)
+                || (call.Arguments.ElementAtOrDefault(0) is ElementReference reference && reference.Id == id))
+            .Select(call => call.Arguments.ElementAtOrDefault(1) as DotNetObjectReference<TextCut>)
+            .Where(handed => handed is not null && IsLive(handed)).Select(handed => handed!.Value).Distinct().ToList();
+        return live.Count == 1 ? live[0] : throw new InvalidOperationException(live.Count == 0
+            ? "The text's script measures its box only with MaxLines and ShowFullText, once the text renders "
+                + "interactively."
+            : "Several texts are measured and this one has re-rendered, so its script can't be found. Call "
+                + "SetCutAsync on this text before it re-renders.");
+    }
     // The events the mention script calls back for this field's input, as a trigger is typed and a suggestion chosen.
     public MentionInputEvents MentionInput(IElement input) => Js.Invocations["createMentionInput"]
         .Select(call => call.Arguments.ElementAtOrDefault(2) as DotNetObjectReference<MentionInputEvents>)
@@ -658,6 +674,15 @@ public sealed class TrailblazorMarkup
         return buttons.Count == 1 ? buttons[0] : throw new InvalidOperationException(buttons.Count == 0
             ? $"No dictation button is labeled \"{label}\"."
             : $"{buttons.Count} dictation buttons are labeled \"{label}\".");
+    }, _scripts);
+
+    /// <summary>The <c>TbText</c> with <c>ShowFullText</c> or <c>MaxLength</c> whose whole text is this.</summary>
+    public TbTextDriver Text(string text) => new(() =>
+    {
+        var texts = _findAll(".tb-text").Where(element => TbTextDriver.FullTextOf(element) == text).ToList();
+        return texts.Count == 1 ? texts[0] : throw new InvalidOperationException(texts.Count == 0
+            ? $"No text with ShowFullText or MaxLength reads \"{text}\"."
+            : $"{texts.Count} texts read \"{text}\".");
     }, _scripts);
 
     /// <summary>The <c>TbSmartPaste</c> whose button has this <c>Label</c>, or the only one when no label is given.
@@ -2556,6 +2581,34 @@ public sealed class TbInsertDividerDriver
 
         await insert.ClickAsync(new MouseEventArgs { Detail = 1 });
     }
+}
+
+/// <summary>A <c>TbText</c> with <c>ShowFullText</c> or <c>MaxLength</c>, found by its whole text.</summary>
+public sealed class TbTextDriver
+{
+    private readonly Func<IElement> _find;
+    private readonly ScriptCalls _scripts;
+    private TextCut? _cut;
+
+    internal TbTextDriver(Func<IElement> find, ScriptCalls scripts) => (_find, _scripts) = (find, scripts);
+
+    /// <summary>Whether the text is cut off. <c>MaxLength</c> cuts it as it renders. Only a browser can measure
+    /// whether <c>MaxLines</c> does, so in bUnit it is cut once <see cref="SetCutAsync"/> says so.</summary>
+    public bool IsCut => _find().HasAttribute("data-cut");
+
+    /// <summary>The whole text, which screen readers read and which the tooltip shows when the text is cut off.
+    /// </summary>
+    public string FullText => FullTextOf(_find())!;
+
+    /// <summary>Tells text with <c>MaxLines</c> and <c>ShowFullText</c> whether its box cuts it off, as its script does
+    /// in a browser whenever the box or the text changes.</summary>
+    public Task SetCutAsync(bool cut) => _scripts.InvokeAsync(() => (_cut ??= _scripts.Text(_find())).OnCut(cut));
+
+    // Read as a browser shows it, with the markup's line breaks and indents as single spaces.
+    internal static string? FullTextOf(IElement text) =>
+        text.QuerySelector(":scope > [data-part=full-text]") is { } full
+            ? string.Join(' ', full.TextContent.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
+            : null;
 }
 
 /// <summary>A <c>TbSpeechToText</c>, found by its button's <c>Label</c>.</summary>

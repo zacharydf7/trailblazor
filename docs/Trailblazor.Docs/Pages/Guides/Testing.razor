@@ -499,6 +499,15 @@
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row"><code>Text(text).IsCut</code></th>
+                        <td>
+                            Finds text with <code>ShowFullText</code> or <code>MaxLength</code> by its whole text, and
+                            reads whether it is cut off. <code>FullText</code> reads the whole text. Only a browser
+                            measures whether <code>MaxLines</code> cuts text off, so <code>SetCutAsync(true)</code>
+                            tells the text it is cut off, as its script would.
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><code>BackToTop().ClickAsync()</code></th>
                         <td>
                             Presses the button, which is there whether or not the page has scrolled, since only a
@@ -1622,6 +1631,10 @@
             + "speech. A test browser has no microphone, so call `page.UseFakeSpeechAsync()` before the page "
             + "opens the app, or reload the page after. Then `SayAsync(text)` hands the app a phrase and waits until "
             + "the app has handled it and, without `Continuous`, until the button stops listening."),
+        new("Text", "Its whole text", "`Text(text).IsCutAsync()` reads whether text with `ShowFullText` or "
+            + "`MaxLength` is cut off, waiting for its script's first measurement when it has `MaxLines` and "
+            + "`ShowFullText` on an interactive page, and "
+            + "`FullTextAsync()` reads its whole text."),
         new("Back to top", "Nothing: a page has one", "`BackToTop().ClickAsync()` presses the button once it "
             + "shows and waits until the app has handled the press. `IsShownAsync()` reads whether it shows, "
             + "which it does once the page has scrolled past its threshold."),

@@ -1,0 +1,27 @@
+@page "/text-full-text"
+
+@* Cut-off text that shows its full text in a tooltip, in a box a test can widen, beside text that fits, and the same
+   in right-to-left text. *@
+<div data-testid="box" style="max-inline-size: 16rem">
+    <TbText MaxLines="1" ShowFullText>
+        Pine Hollow loop climbs through old cedar groves to a lookout over the river valley.
+    </TbText>
+    <TbText MaxLines="2" ShowFullText>
+        Eagle Ridge traverse follows the crest for six miles, with steep drops on both sides, two creek crossings and
+        a long descent through switchbacks to the trailhead.
+    </TbText>
+    <TbText MaxLines="1" ShowFullText>Cedar Flats</TbText>
+    <TbText MaxLength="14" ShowFullText Text="Permit TRL-2026-004173-N" />
+    <TbText MaxLines="1" MaxLength="14" Text="Permit TRL-2026-004173-S" />
+    <TbButton>After the texts</TbButton>
+    <TbText MaxLines="1" ShowFullText>@_note</TbText>
+    <TbButton OnClick="() => _note = Long">Lengthen the note</TbButton>
+</div>
+<div dir="rtl" style="max-inline-size: 10rem">
+    <TbText MaxLines="1" ShowFullText>שביל היער הישן עובר דרך חורשות ארזים עד תצפית על העמק</TbText>
+</div>
+
+@code {
+    private const string Long = "Bring water: the creek at the second crossing runs dry by midsummer most years.";
+    private string _note = "Bring water";
+}

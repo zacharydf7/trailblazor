@@ -1,9 +1,14 @@
 using Bunit;
+using Trailblazor.Testing;
 
 namespace Trailblazor.Tests.Components;
 
 public class TbTextTests : BunitContext
 {
+    private const string Pine = "Pine Hollow loop climbs through old cedar groves";
+
+    public TbTextTests() => this.AddTrailblazor();
+
     [Fact]
     public void Render_ShouldRenderABodyParagraph_WhenNoParametersAreSet()
     {
@@ -97,5 +102,91 @@ public class TbTextTests : BunitContext
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             Render<TbText>(parameters => parameters.Add(text => text.MaxLines, 0)));
+    }
+
+    [Theory]
+    [InlineData("Pine Hollow loop", 16, null)]
+    [InlineData("Pine Hollow loop   ", 16, null)]
+    [InlineData("Pine Hollow loop", 13, "Pine Hollow…")]
+    [InlineData("Pine Hollow loop", 12, "Pine Hollow…")]
+    [InlineData("Pine Hollow loop", 11, "Pine Hollow…")]
+    [InlineData("Big Cedar Flats trail", 15, "Big Cedar Flats…")]
+    [InlineData("Permit TRL-2026-004173-N", 14, "Permit TRL-202…")]
+    [InlineData("Lake 🏔️🏔️🏔️", 6, "Lake 🏔️…")]
+    public void Shortened_ShouldCutAtASpaceOrElseInsideAWord_WhenGivenText(string text, int most, string? expected)
+    {
+        Assert.Equal(expected, TbText.Shortened(text, most));
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheShortenedTextAndHideItFromScreenReaders_WhenMaxLengthCutsIt()
+    {
+        var cut = Render<TbText>(parameters => parameters.Add(text => text.Text, Pine).Add(text => text.MaxLength, 20));
+
+        var text = cut.Find("p");
+        Assert.True(text.HasAttribute("data-cut"));
+        Assert.Equal(Pine, text.QuerySelector(".tb-visually-hidden[data-part=full-text]")!.TextContent);
+        Assert.Equal("Pine Hollow loop…", text.QuerySelector("[aria-hidden=true]")!.TextContent);
+        // Without ShowFullText, it is no tab stop and has no tooltip.
+        Assert.Null(text.GetAttribute("tabindex"));
+        Assert.Empty(text.QuerySelectorAll("[role=tooltip]"));
+    }
+
+    [Fact]
+    public void Render_ShouldShowTheWholeTextInATooltipAndBeATabStop_WhenMaxLengthCutsTextWithShowFullText()
+    {
+        var cut = Render<TbText>(parameters => parameters.Add(text => text.Text, Pine).Add(text => text.MaxLength, 20)
+            .Add(text => text.ShowFullText, true).Add(text => text.FullTextPlacement, Placement.Bottom));
+
+        var text = cut.Find("p");
+        var tooltip = text.QuerySelector(":scope > [role=tooltip]")!;
+        Assert.Equal(("0", Pine, "true", "Bottom"), (text.GetAttribute("tabindex"), tooltip.TextContent,
+            tooltip.GetAttribute("aria-hidden"), tooltip.GetAttribute("data-placement")));
+        Assert.Contains("tb-text--full-text", text.ClassList);
+        Assert.True(cut.Tb().Text(Pine).IsCut);
+    }
+
+    [Fact]
+    public void Render_ShouldNeitherCutNorShowATooltip_WhenTheTextFitsMaxLength()
+    {
+        var cut = Render<TbText>(parameters => parameters.Add(text => text.Text, "Cedar Flats")
+            .Add(text => text.MaxLength, 20).Add(text => text.ShowFullText, true));
+
+        var text = cut.Find("p");
+        Assert.Equal((false, null, "Cedar Flats"), (text.HasAttribute("data-cut"), text.GetAttribute("tabindex"),
+            text.TextContent));
+        Assert.False(cut.Tb().Text("Cedar Flats").IsCut);
+    }
+
+    [Fact]
+    public async Task SetCutAsync_ShouldBringAndTakeTheTooltipAndTheTabStop_WhenMaxLinesTextIsMeasured()
+    {
+        var cut = Render<TbText>(parameters => parameters.Add(text => text.MaxLines, 1)
+            .Add(text => text.ShowFullText, true).AddChildContent(Pine));
+        var text = cut.Tb().Text(Pine);
+        Assert.Equal((false, false), (text.IsCut, cut.Find("p").HasAttribute("data-ready")));
+
+        await text.SetCutAsync(true);
+
+        Assert.Equal((true, Pine), (text.IsCut, text.FullText));
+        Assert.Equal(("0", ""), (cut.Find("p").GetAttribute("tabindex"), cut.Find("p").GetAttribute("data-ready")));
+        Assert.Equal(Pine, cut.Find("[role=tooltip]").TextContent);
+        await text.SetCutAsync(false);
+        Assert.False(text.IsCut);
+        Assert.Null(cut.Find("p").GetAttribute("tabindex"));
+        Assert.Empty(cut.FindAll("[role=tooltip]"));
+    }
+
+    [Fact]
+    public void Render_ShouldThrow_WhenTheCutOffParametersDontFit()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => Render<TbText>(parameters => parameters
+            .Add(text => text.Text, Pine).Add(text => text.MaxLength, 0)));
+        Assert.Contains("MaxLength needs Text", Assert.Throws<InvalidOperationException>(() =>
+            Render<TbText>(parameters => parameters.Add(text => text.MaxLength, 5).AddChildContent(Pine))).Message);
+        Assert.Contains("not both", Assert.Throws<InvalidOperationException>(() => Render<TbText>(parameters =>
+            parameters.Add(text => text.Text, Pine).AddChildContent(Pine))).Message);
+        Assert.Contains("ShowFullText needs MaxLines or MaxLength", Assert.Throws<InvalidOperationException>(() =>
+            Render<TbText>(parameters => parameters.Add(text => text.ShowFullText, true))).Message);
     }
 }

@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-24
 
+- `TbText` with `ShowFullText` or `MaxLength` holds its whole text in `data-part="full-text"`: around the text, or, while `MaxLength` cuts it, in a hidden copy beside the shortened text. It has `data-cut` while the text is cut off. Cut-off text with `ShowFullText` also has `tabindex="0"`, the class `tb-text--full-text` and a tooltip (`data-part="tooltip"`). Text with `MaxLines` and `ShowFullText` has `data-measures`, and `data-ready` once its script has measured it. A tooltip bubble with `aria-hidden="true"` no longer describes its trigger.
 - `TbSpeechToText`'s root has `data-heard`, the number of phrases whose `OnText` the app has finished handling.
 - A floating window in a compact `TbDockManager` (`data-compact`) is now at least 18rem by 14rem, but no larger than the dock, and moves back inside the dock to fit. Its Move button and grip move and resize it from the box that shows, and won't make it smaller than that least size. Before, it kept its percent of the dock, which left it about 150 pixels wide on a phone.
 - The `trailblazor.control.failed` instrument's description now reads "Loads, searches and exports that failed in controls with a TelemetryName."

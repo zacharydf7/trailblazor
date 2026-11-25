@@ -44,7 +44,8 @@ public class DriverParityTests
         ["TbTooltip"] = "Tooltip", ["TbDrawer"] = "Dialog",
         ["TbSpeedDial"] = "Menu", ["TbToolbar"] = "Toolbar", ["TbInsertDivider"] = "InsertDivider",
         ["TbRibbon"] = "Ribbon",
-        ["TbBackToTop"] = "BackToTop", ["TbSpeechToText"] = "SpeechToText", ["TbSmartPaste"] = "SmartPaste",
+        ["TbBackToTop"] = "BackToTop", ["TbSpeechToText"] = "SpeechToText", ["TbText"] = "Text",
+        ["TbSmartPaste"] = "SmartPaste",
         ["TbInPlaceEditor"] = "InPlaceEditor", ["TbDockManager"] = "Dock",
         ["TbNavMenu"] = "NavMenu", ["TbCodeField"] = "TextField", ["TbButton"] = "Button",
         ["TbIconButton"] = "Button",
@@ -96,7 +97,7 @@ public class DriverParityTests
         ["TbSkeleton"] = NotInteractive,
         ["TbSpacer"] = NotInteractive, ["TbStack"] = NotInteractive, ["TbStyles"] = NotInteractive,
         ["TbSurface"] = NotInteractive,
-        ["TbTable"] = NotInteractive, ["TbText"] = NotInteractive,
+        ["TbTable"] = NotInteractive,
         ["TbHighlight"] = NotInteractive,
         ["TbThemeHead"] = NotInteractive, ["TbTimeline"] = NotInteractive, ["TbWatermark"] = NotInteractive,
     };
@@ -120,6 +121,8 @@ public class DriverParityTests
         ["TbMarkdownEditorLocator.Press(String)"] = "the editor's script adds the marks, which only a browser runs; bUnit "
             + "enters the markdown with EnterAsync",
         ["TbBackToTopLocator.IsShown()"] = "it shows once the page scrolls, which only a browser does",
+        ["TbTextDriver.SetCut(Boolean)"] = "only a browser measures whether MaxLines cuts text off; Playwright's "
+            + "IsCutAsync waits for that measurement",
     };
 
     [Fact]

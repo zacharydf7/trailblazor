@@ -623,6 +623,12 @@ Trailblazor.Testing.Playwright.TbSpeechToTextLocator.StartAsync() -> System.Thre
 Trailblazor.Testing.Playwright.TbSpeechToTextLocator.StopAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbSpeechToTextLocator.TbSpeechToTextLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.SpeechToText(string! label) -> Trailblazor.Testing.Playwright.TbSpeechToTextLocator!
+Trailblazor.Testing.Playwright.TbTextLocator
+Trailblazor.Testing.Playwright.TbTextLocator.Element.get -> Microsoft.Playwright.ILocator!
+Trailblazor.Testing.Playwright.TbTextLocator.FullTextAsync() -> System.Threading.Tasks.Task<string!>!
+Trailblazor.Testing.Playwright.TbTextLocator.IsCutAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbTextLocator.TbTextLocator(Microsoft.Playwright.ILocator! scope, string! text) -> void
+Trailblazor.Testing.Playwright.TrailblazorPage.Text(string! text) -> Trailblazor.Testing.Playwright.TbTextLocator!
 Trailblazor.Testing.Playwright.TbInPlaceEditorLocator
 Trailblazor.Testing.Playwright.TbInPlaceEditorLocator.CancelAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbInPlaceEditorLocator.EditAsync() -> System.Threading.Tasks.Task!

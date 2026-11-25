@@ -6,15 +6,16 @@ namespace Trailblazor.BrowserTests.Scenarios;
 public class TextScenarioTests(BrowserFixture fixture) : BrowserTest(fixture)
 {
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Headings_ShouldBeTheTextGivenAHeadingElement_WhenRead(string browser)
+    public async Task TrailNames_ShouldShowTheWholeOfTheOneCutOff_WhenItIsTooLong(string browser)
     {
-        var page = await OpenAsync(browser, "/examples/text/elements");
+        const string name = "Pine Hollow loop climbs through old cedar groves to a lookout over the river valley.";
+        var page = await OpenAsync(browser, "/examples/text/full-text");
+        var pine = page.Tb().Text(name);
 
-        // Text has no helper of its own. Its look doesn't make it a heading; its As does.
-        var heading = new PageGetByRoleOptions { Name = "A small heading that's still a heading", Level = 3 };
-        await Expect(page.GetByRole(AriaRole.Heading, heading)).ToBeVisibleAsync();
-        await Expect(page.GetByText("Large text that isn't a heading")).ToBeVisibleAsync();
-        await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Large text that isn't a heading" }))
-            .ToHaveCountAsync(0);
+        // IsCutAsync waits for the text's script to measure its box.
+        Assert.True(await pine.IsCutAsync());
+        await pine.Element.HoverAsync();
+
+        await Expect(pine.Element.Locator("[role=tooltip]")).ToHaveTextAsync(name);
     }
 }

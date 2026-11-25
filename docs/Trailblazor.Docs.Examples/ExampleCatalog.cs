@@ -349,22 +349,46 @@ public static class ExampleCatalog
                 new("muted-and-tones", "Muted and tones", "`Muted` makes the text quieter, for hints and timestamps, "
                     + "and `Tone` colors it by meaning.", typeof(TextToneExample)),
                 new("max-lines", "Cutting text off", "`MaxLines` cuts the text off after that many lines, with an "
-                    + "ellipsis.", typeof(TextMaxLinesExample)),
+                    + "ellipsis. `MaxLength` cuts it to a number of characters instead, as the next example shows.",
+                typeof(TextMaxLinesExample)),
+                new("full-text", "Showing the whole text", "With `ShowFullText`, text that `MaxLines` cuts off shows "
+                    + "its full text in a tooltip on hover and keyboard focus, and only that text becomes a tab stop: "
+                    + "Cedar Flats fits, so it gets neither. `MaxLength` cuts text to a number of characters as the "
+                    + "page renders, for an ID in a fixed-width column, as the permit shows. Characters differ in "
+                    + "width, so prefer `MaxLines` where it fits.", typeof(TextFullTextExample)),
             ],
             Api = [typeof(TbText)],
+            Keyboard =
+            [
+                new(["Tab"], "Reaches text that `ShowFullText` reveals, only while it is cut off, and shows its "
+                    + "tooltip."),
+                new(["Escape"], "Hides the tooltip.") { When = "While the tooltip shows" },
+            ],
             Accessibility =
             [
                 "Text cut off by `MaxLines` is all still there for screen readers.",
+                "With `ShowFullText`, screen readers hear cut-off text once: the tooltip only repeats it, so the "
+                    + "tooltip is hidden from them and describes nothing.",
+                "Screen readers skip the shortened text that `MaxLength` shows and read the full text from a hidden "
+                    + "copy.",
+                "The tooltip stays while the pointer moves onto it, and Escape hides it (WCAG 1.4.13).",
             ],
             AppDuties =
             [
-                "Don't cut off text sighted people need without showing it somewhere else.",
+                "Don't cut off text sighted people need unless `ShowFullText` shows it or the page shows it somewhere "
+                    + "else. Touch has no hover, so the tooltip doesn't reach touch users; show text they need "
+                    + "somewhere else.",
             ],
             Modes = new(ModeSupport.Full, ModeSupport.Full),
             BeforeInteractive =
             [
                 PlainHtml,
+                "`MaxLength` shortens text as the page renders. Cut-off text with `ShowFullText` gets its tooltip "
+                    + "and its tab stop once the page is interactive, and text that `MaxLines` cuts off once its "
+                    + "script has measured it. Screen readers read all of it either way.",
             ],
+            Ready = new(".tb-text", "text with `MaxLines` and `ShowFullText`, after its script has measured whether "
+                + "its box cuts it off"),
             Notes =
             [
                 new("`As` defaults to a paragraph, so a heading moved into `TbText` can keep its look through "
@@ -374,15 +398,25 @@ public static class ExampleCatalog
             ],
             Target = new("heading", "Display"),
             Blocks = ["tb-text"],
-            Scenario = new("elements", "it checks that the small text given a heading element is a heading, and that "
-                + "the large text without one isn't.")
-            {
-                WithoutHelpers = true,
-            },
+            DataParts =
+            [
+                new("full-text", "With `ShowFullText` or `MaxLength`, the whole text: the text itself, or a hidden "
+                    + "copy beside what `MaxLength` shows."),
+                new("tooltip", "The tooltip that `ShowFullText` shows for cut-off text."),
+            ],
+            Scenario = new("full-text", "it checks that the long trail name is cut off, and that its tooltip shows "
+                + "the whole name."),
             TestingTips =
             [
-                "Text cut off by `MaxLines` is still all in the markup, so text assertions and `GetByText` match the "
-                    + "whole string. Whether it is cut off shows only in a browser, not in bUnit.",
+                "Text cut off by `MaxLines` without `ShowFullText` is still all in the markup, so text assertions "
+                    + "and `GetByText` match the whole string. With `ShowFullText` or `MaxLength`, read it with "
+                    + "`Tb().Text(\"...\")`.",
+                "`Tb().Text(\"...\")` finds text with `ShowFullText` or `MaxLength` by its whole text. `IsCut` "
+                    + "(`IsCutAsync()` in Playwright) reads whether it is cut off, and `FullText` (`FullTextAsync()`) "
+                    + "its whole text.",
+                "Only a browser measures whether `MaxLines` cuts text off. In bUnit, "
+                    + "`Tb().Text(\"...\").SetCutAsync(true)` tells the text it is cut off, as its script would. In "
+                    + "Playwright, `IsCutAsync()` waits for the first measurement once the page is interactive.",
             ],
         },
         new("kbd", "Kbd", ExampleCategory.Content,

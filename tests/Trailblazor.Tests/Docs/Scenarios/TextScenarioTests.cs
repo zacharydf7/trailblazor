@@ -10,12 +10,16 @@ public class TextScenarioTests : BunitContext
     public TextScenarioTests() => this.AddTrailblazor();
 
     [Fact]
-    public async Task Headings_ShouldBeTheTextGivenAHeadingElement_WhenRead()
+    public async Task TrailNames_ShouldShowTheWholeOfTheOneCutOff_WhenItIsTooLong()
     {
-        var cut = Render<TextElementExample>();
+        const string name = "Pine Hollow loop climbs through old cedar groves to a lookout over the river valley.";
+        var cut = Render<TextFullTextExample>();
+        var pine = cut.Tb().Text(name);
 
-        // Text has no helper of its own. Its look doesn't make it a heading; its As does.
-        Assert.Equal("A small heading that's still a heading", cut.Find("h3").TextContent);
-        Assert.Single(cut.FindAll("h1, h2, h3, h4, h5, h6"));
+        // Only a browser measures the box, so SetCutAsync tells the text it is cut off, as its script would.
+        await pine.SetCutAsync(true);
+
+        Assert.True(pine.IsCut);
+        Assert.Equal(name, cut.Find(".tb-text--truncate > [role=tooltip]").TextContent.Trim());
     }
 }

@@ -355,6 +355,9 @@ public sealed class TrailblazorPage(ILocator scope)
     /// <summary>The <c>TbSpeechToText</c> whose button has this <c>Label</c>, such as "Dictate".</summary>
     public TbSpeechToTextLocator SpeechToText(string label) => new(scope, label);
 
+    /// <summary>The <c>TbText</c> with <c>ShowFullText</c> or <c>MaxLength</c> whose whole text is this.</summary>
+    public TbTextLocator Text(string text) => new(scope, text);
+
     /// <summary>The <c>TbSmartPaste</c> whose button has this <c>Label</c>, or the only one in the scope when no
     /// label is given.</summary>
     public TbSmartPasteLocator SmartPaste(string? label = null) => new(scope, label);

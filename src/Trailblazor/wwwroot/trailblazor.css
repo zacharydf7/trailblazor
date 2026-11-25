@@ -814,6 +814,25 @@
         text-overflow: ellipsis;
     }
 
+    /* Text cut to MaxLength copies as it shows, not with the hidden full text beside it. */
+    .tb-text > .tb-visually-hidden[data-part="full-text"] {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    /* The tooltip of ShowFullText sits inside the text, so it takes back what the text's style hands down, such as
+       keeping to one line, and breaks a long ID to fit. */
+    .tb-text > .tb-tooltip {
+        font-family: var(--tb-font-family);
+        font-style: normal;
+        font-weight: var(--tb-font-weight-regular);
+        letter-spacing: normal;
+        text-align: start;
+        text-transform: none;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
     /* Line clamping still needs the prefixed box in every engine. */
     .tb-text--clamp {
         display: -webkit-box;

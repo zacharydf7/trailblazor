@@ -5,7 +5,9 @@ import { onEachPage } from '../Trailblazor.Primitives/pages.js';
 // Hover, focus and Escape stay in the browser, and one set of listeners serves every tooltip, so a tooltip costs the
 // server nothing, even to set up. The JS initializer imports this at startup; each bubble carries its own settings.
 const focusableSelector = 'a[href], button, input, select, textarea, [tabindex]';
-const bubbleSelector = '.tb-tooltip-anchor > [data-part="tooltip"]';
+// A TbTooltip wraps its trigger, and cut-off text that shows its full text in a tooltip is its own trigger.
+const anchorSelector = '.tb-tooltip-anchor, .tb-text--full-text';
+const bubbleSelector = ':is(.tb-tooltip-anchor, .tb-text--full-text) > [data-part="tooltip"]';
 
 // The trigger each bubble describes, so its description can be taken back when the bubble goes.
 const described = new WeakMap();
@@ -21,7 +23,7 @@ let hidAt = -Infinity;
 
 const bubbleOf = anchor => anchor?.querySelector(':scope > [data-part="tooltip"]') ?? null;
 const anchorOf = target => {
-    const anchor = target?.closest?.('.tb-tooltip-anchor');
+    const anchor = target?.closest?.(anchorSelector);
     return bubbleOf(anchor) ? anchor : null;
 };
 
@@ -126,21 +128,25 @@ document.addEventListener('keydown', event => {
     }
 });
 
-// Adds the tooltip's id to the trigger's description, unless it is already there or the tooltip only repeats the
-// trigger's name, which a screen reader would then read twice. Then it sets data-ready, which tests wait for before
-// hovering.
+// Adds the tooltip's id to the trigger's description, unless it is already there, the tooltip only repeats the
+// trigger's name (which a screen reader would then read twice), or the tooltip is hidden from screen readers. Then it
+// sets a TbTooltip's data-ready, which tests wait for before hovering; text marks its own once it is measured.
 function describe(tooltip) {
     const anchor = tooltip.parentElement;
     const trigger = anchor.querySelector(focusableSelector) ?? anchor;
     const ids = describedBy(trigger);
-    const repeatsName = trigger.getAttribute('aria-label')?.trim() === tooltip.textContent.trim();
+    const repeatsName = trigger.getAttribute('aria-label')?.trim() === tooltip.textContent.trim()
+        || tooltip.getAttribute('aria-hidden') === 'true';
     if (!ids.includes(tooltip.id) && !repeatsName) {
         trigger.setAttribute('aria-describedby', [...ids, tooltip.id].join(' '));
     }
 
     const isNew = !described.has(tooltip);
     described.set(tooltip, { anchor, trigger });
-    anchor.dataset.ready = '';
+    if (anchor.matches('.tb-tooltip-anchor')) {
+        anchor.dataset.ready = '';
+    }
+
     // A bubble that arrives under focus or the pointer, as when its text appears, shows as if the focus or pointer had
     // just arrived.
     const focused = anchor.ownerDocument.activeElement;
@@ -166,7 +172,7 @@ function forget(tooltip) {
         trigger.removeAttribute('aria-describedby');
     }
 
-    if (!bubbleOf(anchor)) {
+    if (!bubbleOf(anchor) && anchor.matches('.tb-tooltip-anchor')) {
         delete anchor.dataset.ready;
     }
 }
