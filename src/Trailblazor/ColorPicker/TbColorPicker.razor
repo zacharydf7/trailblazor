@@ -6,7 +6,7 @@
 {
     @Layout(Classes, @<text>
         @Input
-    </text>, Preview, Buttons)
+    </text>, Joined(Start, Preview), Joined(End, Buttons))
 }
 else
 {
@@ -22,7 +22,7 @@ else
                aria-describedby="@InputDescribedBy" data-static="@(AssignedRenderMode is null ? "" : null)"
                data-prerender="@(AssignedRenderMode is null ? null : "")"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
-    </text>, Preview, null)
+    </text>, Joined(Start, Preview), End)
 }
 
 @code {

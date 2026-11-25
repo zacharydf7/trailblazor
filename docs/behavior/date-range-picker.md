@@ -56,6 +56,7 @@ Familiar apps: the date ranges on flight and hotel booking sites, Google Analyti
 - [x] Clearing moves focus to the start box. `DateRangePickerTests.Clear_ShouldEmptyBothDatesAndFocusTheStart_WhenClicked`
 - [x] A read-only field keeps its boxes read only and turns off its buttons. `TbDateRangePickerTests.Render_ShouldTurnOffItsButtonsAndLeaveOutClear_WhenReadOnlyAndClearable`
 - [x] A click on a blank part of the calendar, such as a month's title, leaves focus where it was, so the keys still work and Escape returns focus to the calendar button. `DateRangePickerTests.Calendar_ShouldKeepItsKeys_WhenABlankPartIsPressed`
+- [x] `Start` and `End` content sit in the box before the start box and after the end box, with `End` before the field's own buttons, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 
 ## Not applicable
 

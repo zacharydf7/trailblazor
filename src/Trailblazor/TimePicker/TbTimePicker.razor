@@ -11,4 +11,4 @@
                         step="@StepSeconds" @onchange="args => SetTextAsync(args.Value as string)" disabled="@Disabled"
                         readonly="@ReadOnly" aria-required="@AriaRequired"
                         aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
-                        class="@ClassNames.Join("tb-field__input", Classes?.Input)" />, null, null)
+                        class="@ClassNames.Join("tb-field__input", Classes?.Input)" />, Start, End)

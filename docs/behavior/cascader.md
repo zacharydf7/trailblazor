@@ -31,6 +31,7 @@ Familiar apps: the country, region and city pickers on shipping forms, Ant Desig
 - [x] Focus stays in the input, and `aria-activedescendant` names the active choice in whichever list it's in. `CascaderTests.Cascader_ShouldChooseAPathWithTheKeys_WhenRightOpensEachLevel`
 - [x] A value given from code shows its path and opens its levels. `TbCascaderTests.Render_ShouldShowTheValuesPathAndOpenItsLevels_WhenGivenAValue`
 - [x] Leaving the field takes a path typed in full, and otherwise puts the value's path back. `TbCascaderTests.Change_ShouldTakeAPathTypedInFull_WhenTheFieldIsLeft`, `TbCascaderTests.Change_ShouldPutTheValuesPathBack_WhenTheTextIsNoPath`
+- [x] `Start` and `End` content sit in the box before and after the input, with `End` before the field's own buttons, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 
 ## Not applicable
 

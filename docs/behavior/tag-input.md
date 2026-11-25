@@ -39,6 +39,7 @@ Familiar apps: the topics field of a GitHub repository, the recipient field of a
 - [x] A tag that's already there, past the limit or refused by the check stays in the input with its message, and the input is marked invalid. `TagInputTests.TagInput_ShouldKeepARefusedTagInTheInputWithItsMessage_WhenItIsAlreadyThere`, `TbTagInputTests.AddAsync_ShouldRefuseTheTag_WhenTheFieldHasMaxTags`, `TbTagInputTests.AddAsync_ShouldShowTheChecksMessage_WhenTagValidationRefusesTheTag`
 - [x] A disabled or read-only field shows its tags without remove buttons. `TbTagInputTests.Render_ShouldOfferNoWayToChangeTheTags_WhenDisabledOrReadOnly`
 - [x] A static form posts the tags. `TagInputTests.TagInput_ShouldPostItsTags_WhenUsedInAStaticForm`
+- [x] `Start` and `End` content sit in the box before the tags and after the input, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 
 ## Not applicable
 

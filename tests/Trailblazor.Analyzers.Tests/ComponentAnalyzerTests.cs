@@ -1404,6 +1404,8 @@ public class ComponentAnalyzerTests
     [InlineData("")]
     [InlineData("__builder.AddComponentParameter(4, \"FreeText\", false);")]
     [InlineData("__builder.AddComponentParameter(4, \"MinCharacters\", 0);")]
+    [InlineData("__builder.AddComponentParameter(4, \"Start\", "
+        + "(Microsoft.AspNetCore.Components.RenderFragment)(_ => { }));")]
     public async Task ComponentAnalyzer_ShouldSuggestAFilterableSelect_WhenAnAutocompleteOpensAKnownListOnFocus(
         string more)
     {
@@ -1455,8 +1457,6 @@ public class ComponentAnalyzerTests
         + "EventCallback.Factory.Create<string>(this, _ => { }));")]
     [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"Columns\", "
         + "new AutocompleteColumn<string>[0]);")]
-    [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"Start\", "
-        + "(Microsoft.AspNetCore.Components.RenderFragment)(_ => { }));")]
     [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"MinCharacters\", 2);")]
     [InlineData("_regions", "true", "__builder.AddComponentParameter(4, \"MinCharacters\", _least);")]
     [InlineData("_regions", "true", "__builder.AddMultipleAttributes(4, new Dictionary<string, object>());")]

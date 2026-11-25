@@ -30,6 +30,14 @@ public partial class TbTimePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
     [Parameter]
     public TimePickerLabels Labels { get; set; } = new();
 
+    /// <summary>Content before the input, usually an icon.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content after the input, such as a unit or a button.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
     /// <summary>Extra CSS classes for the field's parts.</summary>
     [Parameter]
     public FieldClasses? Classes { get; set; }

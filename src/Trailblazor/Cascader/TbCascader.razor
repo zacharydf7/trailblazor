@@ -64,7 +64,7 @@
             }
         </div>
     }
-</text>, Start, End)
+</text>, Start, Joined(End, Buttons))
 
 @code {
     // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
@@ -99,7 +99,7 @@
         builder.CloseElement();
     };
 
-    private RenderFragment End =>
+    private RenderFragment Buttons =>
         @<text>
             @if (Clearable && !Disabled && !ReadOnly && !string.IsNullOrEmpty(_text))
             {

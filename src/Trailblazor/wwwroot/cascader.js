@@ -1,5 +1,6 @@
 import { createAnchoredPosition } from '../Trailblazor.Primitives/anchored-position.js';
 import { isComposing } from '../Trailblazor.Primitives/composing.js';
+import { inAppControl } from './field-slots.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { pointerMoved } from '../Trailblazor.Primitives/resting-pointer.js';
 
@@ -178,7 +179,7 @@ export function createCascader(input, popup, events) {
     // A click anywhere in the field opens the lists, through its chevron too; the clear button and the lists handle
     // their own clicks.
     const onControlClick = event => {
-        if (event.target.closest('button') || popup.contains(event.target)) {
+        if (event.target.closest('button') || popup.contains(event.target) || inAppControl(event.target)) {
             return;
         }
 

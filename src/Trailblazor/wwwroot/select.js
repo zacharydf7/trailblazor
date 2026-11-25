@@ -6,6 +6,7 @@ import { isComposing } from '../Trailblazor.Primitives/composing.js';
 import { callDotNet } from '../Trailblazor.Primitives/dotnet-call.js';
 import { viewOf } from '../Trailblazor.Primitives/pages.js';
 import { pointerMoved } from '../Trailblazor.Primitives/resting-pointer.js';
+import { inAppControl } from './field-slots.js';
 
 // Keys, typing and the open list stay in the browser; choosing clicks the option, which reaches the server.
 export function createSelect(combobox, listbox, toggle) {
@@ -416,7 +417,7 @@ export function createSelect(combobox, listbox, toggle) {
         }
 
         // The clear button and the popup, which sit inside the control too, handle their own clicks.
-        if (event.target.closest('button') || popup.contains(event.target)) {
+        if (event.target.closest('button') || popup.contains(event.target) || inAppControl(event.target)) {
             return;
         }
 

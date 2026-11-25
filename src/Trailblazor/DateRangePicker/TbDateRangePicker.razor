@@ -41,6 +41,7 @@
         @if (RendererInfo.IsInteractive)
         {
             <span data-part="end" class="@ClassNames.Join("tb-field__end", Classes?.End)">
+                @End
                 @if (Clearable && !Disabled && !ReadOnly && HasDates)
                 {
                     <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" aria-describedby="@ClearDescribedBy"
@@ -84,7 +85,7 @@
             </div>
         </div>
     }
-</text>, null, null)
+</text>, Start, RendererInfo.IsInteractive ? null : End)
 
 @code {
     // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.

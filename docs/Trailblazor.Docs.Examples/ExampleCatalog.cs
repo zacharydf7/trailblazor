@@ -320,7 +320,7 @@ public static class ExampleCatalog
         new("label", "The field's visible label."),
         new("control", "The box around the input and its start and end content."),
         new("start", "Content before the input, such as an icon or a prefix."),
-        new("end", "Content after the input, such as a unit or a button."),
+        new("end", "Content after the input, such as a unit or a button, and the field's own buttons, such as clear."),
         new("helper", "The help text under the field."),
         new("error", "The validation messages, shown while the value is invalid."),
         new("validation-status", "With `ShowValidationStatus`, the check's status: \"Checking…\" while it runs, "
@@ -6372,7 +6372,11 @@ public static class ExampleCatalog
                     + "the value to `null`, while deleting the text by hand leaves an empty string.",
                     typeof(TextFieldSearchExample)),
                 new("start-and-end", "Start and end content", "`Start` and `End` hold an icon, a prefix or a unit beside "
-                    + "the input.", typeof(TextFieldAdornmentExample)),
+                    + "the input. Every boxed field has them, except the code field and the editors, whose boxes have "
+                    + "no room, and the mention input for now. On a select, tree select, autocomplete, cascader, date "
+                    + "picker, date range picker or color picker, `End` comes before the field's own buttons, such as "
+                    + "its clear button. On a text field, as on a date-time picker, it comes after them.",
+                    typeof(TextFieldAdornmentExample)),
                 new("mask", "Mask", "`Mask` fits typing to a pattern such as `(000) 000-0000`, where `0` is a digit, "
                     + "`a` a letter and `*` either, and adds the parentheses and dashes as you type, keeping the caret "
                     + "in place. The value holds only what was typed into the slots, or the whole text, parentheses "
@@ -8315,6 +8319,8 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("`Start` and `End` hold content before and after the input, such as an icon or a unit, as on a "
+                    + "[text field](components/text-field#start-and-end). `End` comes before the field's own buttons."),
                 new("A select bound to a value type, such as `Guid`, clears to its default, which shows the option "
                     + "with that value or else the placeholder, and `Required` never fires on it. Bind the nullable "
                     + "form, such as `Guid?`.") { Pitfall = true },
@@ -8464,6 +8470,10 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("`Start` and `End` hold content before and after the trigger, such as an icon or a unit, as on a "
+                    + "[text field](components/text-field#start-and-end). `End` comes before the field's own buttons."),
+                new("A press anywhere in the box outside the trigger, such as its padding or a `Start` icon, focuses "
+                    + "the trigger without opening the tree, unless it lands on a button or another control."),
                 new("After changing `Items`, or the children it holds, in place, call `RefreshAsync`. A new collection, "
                     + "or a branch that loads, is read again by itself.") { Pitfall = true },
                 new("Without a `KeySelector`, each item is its own key, which suits strings and records whose "
@@ -8508,6 +8518,7 @@ public static class ExampleCatalog
             Blocks = ["tb-tree-select"],
             DataParts =
             [
+                .. FieldParts,
                 new("input", "The button that opens the tree and shows the choice."),
                 new("value", "The chosen item's text, or the placeholder."),
                 new("filter", "The filter box above the tree."),
@@ -8568,7 +8579,7 @@ public static class ExampleCatalog
                     + "pick from a list you already have, use a [select](components/select#filtering) with "
                     + "`Filterable`, which shows an arrow and opens on a click even when it already has focus. "
                     + "Analyzer rule [TB011](guides/analyzers#rules) suggests one for an autocomplete given `Items` "
-                    + "and `OpenOnFocus` with no `Search`, `FreeText`, `OnTextChanged`, `Columns`, `Start` or "
+                    + "and `OpenOnFocus` with no `Search`, `FreeText`, `OnTextChanged`, `Columns` or "
                     + "`MinCharacters`, none of which a select has.",
                     typeof(AutocompleteOrSelectExample)),
                 new("items", "A fixed list", "`Items` is a list you already have, filtered by what someone types, "
@@ -8610,8 +8621,8 @@ public static class ExampleCatalog
                     typeof(AutocompleteOpenOnFocusExample)),
                 new("clearing", "Clearing", "`Clearable` shows a button that clears the field, and a nullable value "
                     + "clears to `null`.", typeof(AutocompleteClearExample)),
-                new("start", "Start content", "`Start` puts content before the input, usually an icon.",
-                    typeof(AutocompleteStartExample)),
+                new("start", "Start and end content", "`Start` puts content before the input, usually an icon, and "
+                    + "`End` puts content after it, before the clear button.", typeof(AutocompleteStartExample)),
                 new("required", "Required", "`Required` shows a marker. Once the field is changed or its form "
                     + "validates, a message shows while it's empty. `RequiredMessage` replaces the default, which uses "
                     + "the label.", typeof(AutocompleteRequiredExample)),
@@ -8779,6 +8790,11 @@ public static class ExampleCatalog
                 "It is a plain text input, so a static form still posts what was typed.",
             ],
             Ready = new("[role=combobox]", "the input"),
+            Notes =
+            [
+                new("`Start` and `End` hold content before and after the input, such as an icon or a unit, as on a "
+                    + "[text field](components/text-field#start-and-end). `End` comes before the field's own buttons."),
+            ],
             Target = new("combobox", "Trailhead"),
             Blocks = ["tb-field", "tb-cascader"],
             DataParts =
@@ -8880,12 +8896,19 @@ public static class ExampleCatalog
                     + "page is interactive. Until then the tags have no remove buttons.",
             ],
             Ready = new("[data-part=input]", "the input"),
+            Notes =
+            [
+                new("`Start` and `End` hold content before the tags and after the input, such as an icon or a unit, "
+                    + "as on a [text field](components/text-field#start-and-end)."),
+            ],
             Target = new("textbox", "Trail features"),
             Blocks = ["tb-tag-input", "tb-chip"],
             DataParts =
             [
                 new("label", "The field's visible label."),
-                new("control", "The box around the tags and the input."),
+                new("control", "The box around the tags, the input and their start and end content."),
+                new("start", "Content before the tags, such as an icon."),
+                new("end", "Content after the input, such as a unit or a button."),
                 new("tags", "The list of tags."),
                 new("tag", "One tag."),
                 new("remove", "A tag's remove button."),
@@ -8998,6 +9021,9 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("`Start` and `End` hold content before and after the input, such as an icon or a unit, as on a "
+                    + "[text field](components/text-field#start-and-end). `Start` comes before the color swatch, and "
+                    + "`End` before the field's own buttons."),
                 new("A press around the text box, such as on the field's padding, focuses it, unless it lands on a button."),
                 new("During a drag on the pad, the thumb follows the pointer at once, but `ValueChanged` is raised only a "
                     + "few times a second, and once more when the drag ends. The sliders below the pad raise `ValueChanged` "
@@ -9358,6 +9384,8 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("`Start` and `End` hold content before and after the input, such as an icon or a unit, as on a "
+                    + "[text field](components/text-field#start-and-end). `End` comes before the field's own buttons."),
                 new("`@ref` the picker and call `FocusAsync()` to move focus to the box."),
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
@@ -9445,6 +9473,8 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("`Start` and `End` hold content before and after the input, such as an icon or a unit, as on a "
+                    + "[text field](components/text-field#start-and-end)."),
                 new("`@ref` the picker and call `FocusAsync()` to move focus to the box."),
             ],
             Modes = new(ModeSupport.Full, ModeSupport.Partial),
@@ -9551,6 +9581,9 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("`Start` and `End` hold content before the date box and after the time box, such as an icon or "
+                    + "a unit, as on a [text field](components/text-field#start-and-end). `End` comes after the "
+                    + "field's own buttons."),
                 new("`@ref` the picker and call `FocusAsync()` to move focus to the date box."),
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
@@ -9701,6 +9734,9 @@ public static class ExampleCatalog
             ],
             Notes =
             [
+                new("`Start` and `End` hold content before the start box and after the end box, such as an icon or "
+                    + "a unit, as on a [text field](components/text-field#start-and-end). `End` comes before the "
+                    + "field's own buttons."),
                 new("A press around the date boxes, such as on the field's padding, focuses the start box, unless it lands "
                     + "on a button."),
                 new("`@ref` the picker and call `FocusAsync()` to move focus to the start box."),

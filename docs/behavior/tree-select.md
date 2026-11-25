@@ -17,6 +17,7 @@ Familiar apps: the folder picker in Google Drive's move dialog, the category pic
 
 ## Pointer
 
+- [x] Pressing the box outside its trigger, such as its padding or a start icon, focuses the trigger without opening it, as a text field's box focuses its input, unless it lands on a button or another control. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`, `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsStartIconIsPressed`
 - [x] A click on an item chooses it and shows its text in the field. `TbTreeSelectTests.Choose_ShouldSetTheValueAndShowItsText_WhenAnItemIsClicked`
 - [x] A click on the item already chosen closes the tree without reporting a change. `TbTreeSelectTests.Choose_ShouldCloseTheTreeWithoutRaisingAChange_WhenTheChosenItemIsClickedAgain`
 - [x] An item that can't be chosen, such as a region, opens and closes but isn't chosen. `TbTreeSelectTests.Activate_ShouldLeaveTheValue_WhenTheItemCantBeChosen`
@@ -46,6 +47,7 @@ Familiar apps: the folder picker in Google Drive's move dialog, the category pic
 - [x] A control outside the tree that takes focus after the tree starts to close keeps it, as with a popover. `popover.js`
 - [x] Clicking the label opens the tree, as a click on the field's button does. `TbTreeSelectTests.Render_ShouldNameTheButtonByItsLabelAndChoice_WhenShown`
 - [x] A read-only field stays focusable and shows its choice, but opens nothing; a disabled one can't be focused. `TbTreeSelectTests.Render_ShouldShowAFocusableButtonThatOpensNothing_WhenReadOnly`, `TbTreeSelectTests.Render_ShouldDisableTheButton_WhenDisabled`
+- [x] `Start` and `End` content sit in the box before and after the trigger, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 
 ## Screen readers
 

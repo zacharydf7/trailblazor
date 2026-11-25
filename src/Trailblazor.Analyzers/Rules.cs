@@ -67,7 +67,7 @@ internal static class Rules
         "Filterable fits better.", Usage, DiagnosticSeverity.Info, isEnabledByDefault: true,
         "An autocomplete is a text field that suggests: it shows no arrow, and a click on a field that already has " +
         "focus doesn't open its list. Given Items and OpenOnFocus with no Search, FreeText, OnTextChanged, " +
-        "Columns, Start or MinCharacters, it's used to pick from a list the page already has. A TbSelect with " +
+        "Columns or MinCharacters, it's used to pick from a list the page already has. A TbSelect with " +
         "Filterable does that with an arrow and a click that opens it, and narrows the list as someone types, just " +
         "as the autocomplete does.");
 

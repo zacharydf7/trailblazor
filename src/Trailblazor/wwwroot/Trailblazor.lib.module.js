@@ -41,6 +41,7 @@ import './browser.js';
 import './date-grid.js';
 import './dialog.js';
 import './field.js';
+import './field-slots.js';
 import './inert.js';
 import './mention-suggestions.js';
 import { forwardToo } from './pop-out.js';

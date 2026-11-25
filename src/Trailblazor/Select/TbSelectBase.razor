@@ -71,7 +71,7 @@
             }
         </select>
     }
-</text>, null, RendererInfo.IsInteractive ? End : null)
+</text>, Start, Joined(End, RendererInfo.IsInteractive ? Buttons : null))
 
 @code {
     private RenderFragment Listbox =>
@@ -138,7 +138,7 @@
         </div>;
     }
 
-    private RenderFragment End =>
+    private RenderFragment Buttons =>
         @<text>
             @if (Clearable && !Disabled && !ReadOnly && HasChoice)
             {

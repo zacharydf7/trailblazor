@@ -60,6 +60,7 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - [x] With `OpenOnFocus`, focus coming back from within the field, such as after a choice or a clear, doesn't open the list again. `AutocompleteTests.OpenOnFocus_ShouldLeaveTheListClosed_WhenFocusComesBackFromWithinTheField`, `AutocompleteTests.OpenOnFocus_ShouldLeaveTheListClosed_WhenFocusTabsBackFromTheClearButton`
 - [x] A read-only field can't take a suggestion left over from before it became read-only. `AutocompleteTests.Autocomplete_ShouldNotActivateAnOption_WhenAnArrowIsPressedAfterTheFieldTurnedReadOnly`, `TbAutocompleteTests.Click_ShouldLeaveTheValue_WhenTheFieldTurnedReadOnlyOrDisabledWithTheListShowing`
 - [x] Text typed before the field turned read-only isn't committed, and the value's text comes back. `TbAutocompleteTests.Change_ShouldPutBackTheValuesText_WhenTheFieldTurnedReadOnlyWithTextTyped`
+- [x] `Start` and `End` content sit in the box before and after the input, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 
 ## Not applicable
 
@@ -68,7 +69,7 @@ Familiar apps: a browser's address bar, the search boxes in Google and GitHub
 - Alt+Up closing an open list: it moves up instead; the pattern lists closing as optional, and few people know it in a text field.
 - A click on the field opening the list without `OpenOnFocus`: it suggests as the user types, and a known list belongs in a select.
 - A tap on the field opening the list without `OpenOnFocus`: the same reason as a click.
-- An arrow on the field that opens the list: a select with `Filterable` has one, and the analyzer suggests that select (TB011) for an autocomplete given `Items` and `OpenOnFocus` with no `Search`, `FreeText`, `OnTextChanged`, `Columns`, `Start` or `MinCharacters`.
+- An arrow on the field that opens the list: a select with `Filterable` has one, and the analyzer suggests that select (TB011) for an autocomplete given `Items` and `OpenOnFocus` with no `Search`, `FreeText`, `OnTextChanged`, `Columns` or `MinCharacters`.
 - Page Up, Page Down, Home and End in the list: they're optional in the pattern, and Home and End stay with the text.
 - Tab choosing the active option: the pattern's example doesn't, and the field settles what was typed.
 - Escape clearing a closed field: it's optional in the pattern.

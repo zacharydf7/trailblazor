@@ -56,7 +56,7 @@
             }
         </div>
     }
-</text>, Start, End)
+</text>, Start, Joined(End, ClearButton))
 
 @code {
     // Method groups keep their handler ids between renders, unlike @bind's closures; value syncs as with @bind.
@@ -98,7 +98,7 @@
 
     private Task OnClearedAsync() => HandledAsync(ClearAsync);
 
-    private RenderFragment? End => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(_text) ? null :
+    private RenderFragment? ClearButton => !Clearable || Disabled || ReadOnly || string.IsNullOrEmpty(_text) ? null :
         @<TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@(Labels.Clear ?? Localizer[TbStrings.AutocompleteClear])"
                        aria-describedby="@ClearDescribedBy" Size="Size.Small" OnClick="OnClearedAsync"
                        data-part="clear" />;

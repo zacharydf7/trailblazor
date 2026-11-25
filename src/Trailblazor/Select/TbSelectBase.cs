@@ -53,6 +53,15 @@ public abstract partial class TbSelectBase<[DynamicallyAccessedMembers(Dynamical
     [Parameter]
     public bool AttachOnFirstUse { get; set; }
 
+    /// <summary>Content before the input, usually an icon.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content after the input, such as a unit or a button. It comes before the field's own buttons.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
     /// <summary>Extra CSS classes for the field's inner parts.</summary>
     [Parameter]
     public FieldClasses? Classes { get; set; }

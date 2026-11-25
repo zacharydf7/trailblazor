@@ -1,5 +1,6 @@
-// The whole box of a text field acts as its text box, as a native input's own padding does. The JS initializer imports
-// this at startup, so static pages are covered too.
+// The whole box of a text field acts as its text box, as a native input's own padding does, and a tree select's box
+// focuses its trigger without opening it. A select's own script opens it on a press anywhere in its box. The JS
+// initializer imports this at startup, so static pages are covered too.
 const interactive = 'a[href], button, input, select, textarea, label, summary, [tabindex], [popover]';
 
 document.addEventListener('mousedown', event => {
@@ -11,7 +12,7 @@ document.addEventListener('mousedown', event => {
         return;
     }
 
-    const input = box.querySelector('input.tb-field__input, textarea.tb-field__input');
+    const input = box.querySelector('input.tb-field__input, textarea.tb-field__input, button.tb-field__input');
     if (input && !input.matches(':disabled')) {
         // The press's default action runs after this handler and would take focus back off the input.
         event.preventDefault();

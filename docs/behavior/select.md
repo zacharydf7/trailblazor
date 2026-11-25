@@ -26,6 +26,7 @@ Familiar apps: a native `<select>`, the dropdowns in Windows and macOS settings
 
 ## Pointer
 
+- [x] Pressing the box outside its buttons, such as its padding or a start icon, focuses the select and opens it, and the app's own controls in `Start` or `End`, such as an input, keep their clicks. `FieldBoxTests.Box_ShouldFocusItsInput_WhenItsPaddingIsPressed`, `FieldBoxTests.Box_ShouldOpenTheSelect_WhenItsStartIconIsPressed`, `FieldBoxTests.Box_ShouldLeaveTheSelectClosed_WhenAnInputInItsEndIsPressed`
 - [x] `Filterable` turned on or off after the page is interactive keeps the keys working, and the filter too when it's on, since the script attaches again to the list in its new place. `LiveOptionsTests.Select_ShouldFilterAndChooseByKey_WhenFilterableIsTurnedOnLater`, `TbSelectTests.Filterable_ShouldAttachTheScriptAgainToTheNewList_WhenItChanges`, `TbSelectTests.Filterable_ShouldOpenTheListAgain_WhenItChangesWhileOpen`
 - [x] The clear button follows the select's `Comparer`: a value it finds equal to `default` counts as no choice and shows no clear button. `ComparerTests.Select_ShouldShowNoClearButton_WhenItsComparerFindsTheValueEmpty`
 - [x] Options made from `Items` work as `TbOption`s do: a click chooses one, a template shows in place of its text, a disabled one can't be chosen, a static page lists them as native options, chips show and remove them, a list filled in place shows, and the keys reach them. `SelectItemsTests.Click_ShouldChooseTheItem_WhenItsOptionIsClicked`, `SelectItemsTests.Click_ShouldLeaveTheValue_WhenTheItemIsDisabled`, `SelectItemsTests.Render_ShouldShowTheTemplateAndNameItWithItsText_WhenGivenAnItemTemplate`, `SelectItemsTests.SelectAll_ShouldChooseEveryEnabledItem_WhenTheMultiSelectHasItems`, `SelectItemsTests.Render_ShouldListTheItemsAsNativeOptions_WhenThePageIsStatic`, `SelectItemsTests.RemoveChip_ShouldTakeOutTheItem_WhenItsChipIsRemoved`, `SelectItemsTests.Render_ShouldShowItemsAddedToTheList_WhenItIsFilledInPlace`, `SelectTests.Select_ShouldReachAndChooseItsItemsByKey_WhenItsOptionsComeFromItems`
@@ -64,6 +65,7 @@ Familiar apps: a native `<select>`, the dropdowns in Windows and macOS settings
 - [x] A read-only select keeps its value and doesn't open. `TbSelectTests.Click_ShouldKeepTheValueAndHideClear_WhenReadOnly`
 - [x] Pressing a disabled option or a group heading keeps focus on the combobox or filter, so the keys keep working. `SelectLongTests.Select_ShouldKeepFocusAndItsKeys_WhenADisabledOptionIsPressed`, `SelectLongTests.Select_ShouldKeepFocusInTheFilter_WhenAGroupHeadingIsPressed`
 - [x] A press in the filter's text box still moves its caret. `SelectLongTests.Filter_ShouldMoveItsCaret_WhenItsTextBoxIsPressed`
+- [x] `Start` and `End` content sit in the box before and after the input, with `End` before the field's own buttons, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 
 ## Not applicable
 

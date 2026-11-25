@@ -493,8 +493,8 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
     }
 
     // OpenOnFocus on a list the page already has is there so people can pick without typing, which is a select's
-    // job. A select has no Search, FreeText, OnTextChanged, Columns, Start or MinCharacters, and splatted attributes
-    // may hold any of them.
+    // job. A select has no Search, FreeText, OnTextChanged, Columns or MinCharacters, and splatted attributes may
+    // hold any of them.
     private static void CheckKnownList(OperationAnalysisContext context, ComponentUsage usage,
         INamedTypeSymbol? autocomplete)
     {
@@ -503,7 +503,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
             && Unwrap(opens.Value)?.ConstantValue is { HasValue: true, Value: true }
             && usage.Parameters.TryGetValue("Items", out var items) && IsSurelySet(items.Value)
             && !usage.Has("Search") && !IsOn(usage, "FreeText") && !usage.Has("OnTextChanged")
-            && !usage.Has("Columns") && !usage.Has("Start") && !WaitsForCharacters(usage)
+            && !usage.Has("Columns") && !WaitsForCharacters(usage)
             && !usage.HasSplattedAttributes)
         {
             context.ReportDiagnostic(Diagnostic.Create(Rules.KnownListAutocomplete, opens.Location,

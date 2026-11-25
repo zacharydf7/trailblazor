@@ -5,6 +5,14 @@
 </TbTextField>
 <TbTextField TValue="string" Label="Notes" Lines="3" />
 <TbNumberField TValue="int" Label="Copies" />
+<TbSelect TValue="string" Label="Trail">
+    <Start><span data-testid="trail-start">Go</span></Start>
+    <End><input aria-label="Trail note" /></End>
+    <ChildContent><TbOption Value="@("Pine")">Pine</TbOption></ChildContent>
+</TbSelect>
+<TbTreeSelect TItem="string" TKey="string" Label="Area" Items="Towns" ItemText="town => town">
+    <Start><span data-testid="area-start">In</span></Start>
+</TbTreeSelect>
 <TbAutocomplete TValue="string" Label="Town" Items="Towns" Clearable />
 <TbColorPicker Label="Color" />
 <TbDateRangePicker TDate="DateOnly" Label="Dates" />

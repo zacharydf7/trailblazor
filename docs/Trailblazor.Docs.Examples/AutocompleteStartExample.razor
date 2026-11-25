@@ -1,5 +1,6 @@
-<TbAutocomplete @bind-Value="_peak" Label="Peak" Items="Peaks">
+<TbAutocomplete @bind-Value="_peak" Label="Peak" Items="Peaks" Clearable>
     <Start><TbIcon Icon="ExampleIcons.Search" /></Start>
+    <End><TbText TextStyle="TextStyle.Caption">@Peaks.Length peaks</TbText></End>
 </TbAutocomplete>
 
 @code {

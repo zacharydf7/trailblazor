@@ -29,10 +29,10 @@
                aria-invalid="@(ShowsInvalid ? "true" : null)" aria-describedby="@InputDescribedBy"
                class="@ClassNames.Join("tb-field__input", Classes?.Input)" />
     }
-</text>, null, RendererInfo.IsInteractive ? End : null)
+</text>, Start, Joined(End, RendererInfo.IsInteractive ? Buttons : null))
 
 @code {
-    private RenderFragment End => @<text>
+    private RenderFragment Buttons => @<text>
         @if (Clearable && !Disabled && !ReadOnly && (Value is not null || Text is { Length: > 0 }))
         {
             <TbIconButton Icon="BuiltInIcons.Close" AriaLabel="@ClearLabel" aria-describedby="@ClearDescribedBy"

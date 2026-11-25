@@ -86,6 +86,14 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter]
     public DateTimePickerLabels Labels { get; set; } = new();
 
+    /// <summary>Content before the date box, usually an icon.</summary>
+    [Parameter]
+    public RenderFragment? Start { get; set; }
+
+    /// <summary>Content after the time box and the field's own buttons, such as a unit or a button.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+
     /// <summary>Extra CSS classes for the field's parts.</summary>
     [Parameter]
     public FieldClasses? Classes { get; set; }

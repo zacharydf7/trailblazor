@@ -19,7 +19,8 @@ public class FieldBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/field-box");
 
-        foreach (var input in new[] { "Notes", "Copies", "Town", "Color", "Locked" })
+        // A select opens on a press anywhere in its box, so it comes last.
+        foreach (var input in new[] { "Notes", "Copies", "Town", "Color", "Locked", "Area", "Trail" })
         {
             await PressPaddingAsync(page, input);
             await Expect(Box(page, input).Locator(".tb-field__input")).ToBeFocusedAsync();
@@ -52,9 +53,40 @@ public class FieldBoxTests(BrowserFixture fixture) : BrowserTest(fixture)
     {
         var page = await OpenAsync(browser, "/field-box");
 
-        await page.GetByTestId("name-start").ClickAsync();
+        foreach (var (start, input) in new[] { ("name-start", "Name"), ("area-start", "Area") })
+        {
+            await page.GetByTestId(start).ClickAsync();
+            await Expect(Box(page, input).Locator(".tb-field__input")).ToBeFocusedAsync();
+        }
 
-        await Expect(page.GetByLabel("Name", new() { Exact = true })).ToBeFocusedAsync();
+        await Expect(page.GetByRole(AriaRole.Combobox, new() { Name = "Area" }))
+            .ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Box_ShouldLeaveTheSelectClosed_WhenAnInputInItsEndIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/field-box");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByLabel("Trail note").ClickAsync();
+
+        await Expect(page.GetByLabel("Trail note")).ToBeFocusedAsync();
+        await Expect(trail).ToHaveAttributeAsync("aria-expanded", "false");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Box_ShouldOpenTheSelect_WhenItsStartIconIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/field-box");
+        var trail = page.GetByRole(AriaRole.Combobox, new() { Name = "Trail" });
+        await Expect(trail).ToHaveAttributeAsync("data-ready", "");
+
+        await page.GetByTestId("trail-start").ClickAsync();
+
+        await Expect(trail).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(trail).ToBeFocusedAsync();
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

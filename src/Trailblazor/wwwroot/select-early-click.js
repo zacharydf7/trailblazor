@@ -1,3 +1,5 @@
+import { inAppControl } from './field-slots.js';
+
 // A select's script attaches some time after the select renders, longer on a slow link. A click that lands first
 // marks the select, and the script opens the list when it attaches, unless the user has since moved on.
 // The marked selects in the window an event was in: a part of the page can show in a window of its own.
@@ -7,8 +9,9 @@ const pending = event => (event.target.ownerDocument ?? document)
 document.addEventListener('click', event => {
     const control = event.target.closest?.('[data-part="control"]');
     const combobox = control?.querySelector(':scope > .tb-select__trigger');
-    // Skip what the attached select ignores too: its buttons, its popup and a chip's remove mark.
-    const wanted = combobox && !('ready' in combobox.dataset)
+    // Skip what the attached select ignores too: its buttons, its popup, a chip's remove mark and the app's own
+    // controls in the start and end slots.
+    const wanted = combobox && !('ready' in combobox.dataset) && !inAppControl(event.target)
         && !event.target.closest('button, [popover], [data-part="chip-remove"]') ? combobox : null;
     // A second click on the same select cancels the first, just as it would close an attached select's list.
     const again = wanted && 'openWhenReady' in wanted.dataset;

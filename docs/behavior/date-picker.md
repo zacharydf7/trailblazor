@@ -30,6 +30,7 @@ Familiar apps: the date field of a booking or travel form, a due-date field in a
 - [x] The calendar's grid, not an autofocus mark, tells the popover where focus goes, so a field marked AutoFocus after the picker still takes focus as a dialog opens. `TbDatePickerTests.Render_ShouldMarkTheGridForThePopoverToFocus_WhenInteractive`
 - [x] The box is named by the label and shows the format as its placeholder. `TbDatePickerTests.Render_ShouldShowTheDateInTheFormatWithItAsThePlaceholder_WhenGivenADate`
 - [x] Before the page is interactive, the browser's own date box stands in and posts the date. `TbDatePickerTests.Render_ShouldShowTheBrowsersDateBox_WhenStatic`, `DatePickerTests.ChooseAsync_ShouldPostTheDate_WhenThePickerIsStatic`
+- [x] `Start` and `End` content sit in the box before and after the input, with `End` before the field's own buttons, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 
 ## Not applicable
 

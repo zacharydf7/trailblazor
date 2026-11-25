@@ -23,6 +23,7 @@ Familiar apps: the start time of a calendar event, a pickup slot in a booking fo
 
 - [x] The box is named by the label, and a step that isn't a whole number of minutes adds seconds. `TbTimePickerTests.Render_ShouldShowTheTimeInTheTimeBoxWithItsLimitsAndStep_WhenGivenThem`, `TbTimePickerTests.Render_ShouldShowSeconds_WhenTheStepIsUnderAMinute`
 - [x] A static form posts the time. `TimePickerTests.Picker_ShouldPostTheTime_WhenTheFormIsStatic`
+- [x] `Start` and `End` content sit in the box before and after the input, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 
 ## Not applicable
 

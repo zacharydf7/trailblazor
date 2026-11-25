@@ -31,6 +31,15 @@
             @AfterMessages
         </div>;
 
+    // The app's content and the field's own in one slot, or null when neither has any. Each keeps its own region
+    // whether or not the other is there, so the app's content isn't rebuilt when a clear button comes and goes.
+    private protected static RenderFragment? Joined(RenderFragment? first, RenderFragment? second) =>
+        first is null && second is null ? null : builder =>
+        {
+            builder.AddContent(0, first);
+            builder.AddContent(1, second);
+        };
+
     private RenderFragment FieldLabel(FieldClasses? classes) =>
         @<label data-part="label" id="@LabelId" for="@(LabelTargetsInput ? InputId : null)"
                 class="@ClassNames.Join("tb-field__label", LabelHiddenClass, classes?.Label)">

@@ -7959,3 +7959,39 @@ override Trailblazor.TbValidationSummary.OnParametersSet() -> void
 ~override Trailblazor.TbValidationSummary.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 Trailblazor.TbValidationSummary.HeadingLevel.get -> int
 Trailblazor.TbValidationSummary.HeadingLevel.set -> void
+Trailblazor.TbAutocomplete<TValue>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbAutocomplete<TValue>.End.set -> void
+Trailblazor.TbCascader<TValue>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbCascader<TValue>.End.set -> void
+Trailblazor.TbColorPicker.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbColorPicker.End.set -> void
+Trailblazor.TbColorPicker.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbColorPicker.Start.set -> void
+Trailblazor.TbDatePicker<TDate>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDatePicker<TDate>.End.set -> void
+Trailblazor.TbDatePicker<TDate>.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDatePicker<TDate>.Start.set -> void
+Trailblazor.TbDateRangePicker<TDate>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDateRangePicker<TDate>.End.set -> void
+Trailblazor.TbDateRangePicker<TDate>.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDateRangePicker<TDate>.Start.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDateTimePicker<TDateTime>.End.set -> void
+Trailblazor.TbDateTimePicker<TDateTime>.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbDateTimePicker<TDateTime>.Start.set -> void
+Trailblazor.TbSelectBase<TValue>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbSelectBase<TValue>.End.set -> void
+Trailblazor.TbSelectBase<TValue>.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbSelectBase<TValue>.Start.set -> void
+Trailblazor.TbTagInput.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTagInput.End.set -> void
+Trailblazor.TbTagInput.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTagInput.Start.set -> void
+Trailblazor.TbTimePicker<TTime>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTimePicker<TTime>.End.set -> void
+Trailblazor.TbTimePicker<TTime>.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTimePicker<TTime>.Start.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.End.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.End.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Start.set -> void
