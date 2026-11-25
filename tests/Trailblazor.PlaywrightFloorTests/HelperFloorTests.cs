@@ -39,4 +39,19 @@ public class HelperFloorTests(FloorFixture fixture)
 
         Assert.Equal(1, await page.GetByText("Deleted", new() { Exact = true }).CountAsync());
     }
+
+    [Fact]
+    public async Task Speech_ShouldReachTheApp_WhenSaid()
+    {
+        var page = await fixture.OpenAsync("/examples/speech-to-text");
+        await page.UseFakeSpeechAsync();
+        await page.ReloadAsync();
+        var dictate = page.Tb().SpeechToText("Dictate notes");
+
+        await dictate.StartAsync();
+        await dictate.SayAsync("Bridge out at mile three.");
+
+        Assert.Equal("Bridge out at mile three.",
+            await page.GetByRole(AriaRole.Textbox, new() { Name = "Trail notes" }).InputValueAsync());
+    }
 }

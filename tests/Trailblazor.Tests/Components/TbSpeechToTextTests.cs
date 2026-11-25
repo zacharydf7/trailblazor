@@ -148,6 +148,24 @@ public class TbSpeechToTextTests : BunitContext
         Assert.Equal(["Muddy by the bridge"], _said);
     }
 
+    [Fact]
+    public async Task SayAsync_ShouldCountThePhraseOnceOnTextHasFinished_WhenTheHandlerIsSlow()
+    {
+        Recognizes();
+        var handled = new TaskCompletionSource();
+        var cut = Render<TbSpeechToText>(parameters => parameters.Add(button => button.Label, "Dictate notes")
+            .Add(button => button.OnText, (string _) => handled.Task));
+        var button = cut.Tb().SpeechToText("Dictate notes");
+        await button.StartAsync();
+
+        var saying = button.SayAsync("Muddy by the bridge");
+        var pending = cut.Find(".tb-speech-to-text").GetAttribute("data-heard");
+        await cut.InvokeAsync(handled.SetResult);
+        await saying;
+
+        Assert.Equal(("0", "1"), (pending, cut.Find(".tb-speech-to-text").GetAttribute("data-heard")));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

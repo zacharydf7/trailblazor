@@ -116,19 +116,6 @@ public class TestScenarioTests : DocsTest
     }
 
     [Fact]
-    public void ComponentPage_ShouldShowOnlyTheBunitTest_WhenTheScenarioIsOnlyInBunit()
-    {
-        var cut = ComponentPage("speech-to-text");
-
-        Assert.Empty(cut.FindAll("[aria-label='The test in Playwright']"));
-        Assert.StartsWith("var cut = Render<SpeechToTextExample>();",
-            cut.Find("[aria-label='The test in bUnit']").TextContent);
-        Assert.Equal(["bUnit"], Tabs(cut));
-        Assert.Contains(cut.FindAll("p"), text => text.TextContent.Contains("BunitContext"));
-        Assert.DoesNotContain(cut.FindAll("p"), text => text.TextContent.Contains("OpenAsync"));
-    }
-
-    [Fact]
     public void ComponentPage_ShouldSayTheTestsReadTheComponentByRole_WhenItHasNoHelper()
     {
         var cut = ComponentPage("table");

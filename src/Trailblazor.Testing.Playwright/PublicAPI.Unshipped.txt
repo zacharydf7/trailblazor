@@ -8,6 +8,8 @@ Trailblazor.Testing.Playwright.TbAccordionItemLocator.CollapseAsync() -> System.
 Trailblazor.Testing.Playwright.TbAccordionItemLocator.ExpandAsync() -> System.Threading.Tasks.Task<Microsoft.Playwright.ILocator!>!
 Trailblazor.Testing.Playwright.TbAccordionItemLocator.Trigger.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.SlowLink
+Trailblazor.Testing.Playwright.FakeSpeech
+static Trailblazor.Testing.Playwright.FakeSpeech.UseFakeSpeechAsync(this Microsoft.Playwright.IPage! page) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbAnnouncementsLocator
 Trailblazor.Testing.Playwright.TbAnnouncementsLocator.Assertive.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbAnnouncementsLocator.ExpectAnnouncedAsync(string! text) -> System.Threading.Tasks.Task!
@@ -616,6 +618,7 @@ Trailblazor.Testing.Playwright.TbSpeechToTextLocator
 Trailblazor.Testing.Playwright.TbSpeechToTextLocator.Button.get -> Microsoft.Playwright.ILocator!
 Trailblazor.Testing.Playwright.TbSpeechToTextLocator.IsAvailableAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbSpeechToTextLocator.IsListeningAsync() -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbSpeechToTextLocator.SayAsync(string! text) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbSpeechToTextLocator.StartAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbSpeechToTextLocator.StopAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbSpeechToTextLocator.TbSpeechToTextLocator(Microsoft.Playwright.ILocator! scope, string! label) -> void

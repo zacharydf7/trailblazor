@@ -1,0 +1,17 @@
+@page "/speech-to-text"
+
+@* A dictation button that keeps listening after each phrase, and one that stops after each. *@
+<TbTextField TValue="string" Label="Trail log" @bind-Value="_log">
+    <End><TbSpeechToText Label="Dictate log" Continuous OnText="text => _log = Joined(_log, text)" /></End>
+</TbTextField>
+<TbTextField TValue="string" Label="Trail notes" @bind-Value="_notes">
+    <End><TbSpeechToText Label="Dictate notes" OnText="text => _notes = Joined(_notes, text)" /></End>
+</TbTextField>
+
+@code {
+    private string? _log;
+    private string? _notes;
+
+    private static string Joined(string? before, string text) =>
+        string.IsNullOrEmpty(before) ? text : $"{before} {text}";
+}

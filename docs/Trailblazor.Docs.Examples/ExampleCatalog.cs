@@ -2070,16 +2070,16 @@ public static class ExampleCatalog
                 new("button", "The toggle button, pressed while it listens."),
             ],
             Scenario = new("basic", "it starts dictating, hands the app a phrase as the browser does on hearing one, "
-                + "and checks the notes. A test browser has no microphone, and only the bUnit helpers can hand the "
-                + "app a phrase, so the test is in bUnit alone.") { Only = ScenarioPackage.Bunit },
+                + "and checks the notes."),
             TestingTips =
             [
                 "In bUnit, `cut.Tb().SpeechToText(\"Dictate notes\")` finds it: `StartAsync()` and `StopAsync()` "
                     + "press it, and `SayAsync(\"...\")` hands the app a phrase as the browser would on hearing it.",
-                "In bUnit, `SayAsync(\"...\")` on a button without `Continuous` then stops listening, as a browser "
-                    + "does after one phrase: call `StartAsync()` again before the next phrase, or set `Continuous`.",
-                "In Playwright, a test browser has no microphone, so replace `window.SpeechRecognition` with a fake "
-                    + "in an init script; `page.Tb().SpeechToText(\"Dictate notes\")` presses it and reads its state.",
+                "After `SayAsync(\"...\")`, a button without `Continuous` stops listening, as a browser does after "
+                    + "one phrase: call `StartAsync()` again before the next phrase, or set `Continuous`.",
+                "In Playwright, a test browser has no microphone, so call `page.UseFakeSpeechAsync()` before the "
+                    + "page opens the app, or reload the page after. Then `page.Tb().SpeechToText(\"Dictate notes\")` "
+                    + "presses it, reads its state, and hands the app a phrase with `SayAsync(\"...\")`.",
             ],
             Telemetry =
             [

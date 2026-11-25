@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-24
 
+- `TbSpeechToText`'s root has `data-heard`, the number of phrases whose `OnText` the app has finished handling.
 - A floating window in a compact `TbDockManager` (`data-compact`) is now at least 18rem by 14rem, but no larger than the dock, and moves back inside the dock to fit. Its Move button and grip move and resize it from the box that shows, and won't make it smaller than that least size. Before, it kept its percent of the dock, which left it about 150 pixels wide on a phone.
 - The `trailblazor.control.failed` instrument's description now reads "Loads, searches and exports that failed in controls with a TelemetryName."
 - A `TbDataGrid` export that fails now counts in `trailblazor.control.failed` with the action `export` and says "Couldn't export the rows." (`Labels.ExportFailed`, or the text key `DataGrid.ExportFailed`), whether the provider failed or the file couldn't be built, such as when a column's field throws. `OnLoadFailed` is raised only when the provider failed. Before, any failed export counted as a failed `load`, said "Couldn't load the rows." and raised `OnLoadFailed`.

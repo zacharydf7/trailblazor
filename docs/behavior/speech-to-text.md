@@ -16,6 +16,7 @@ Familiar apps: the microphone buttons in Google Docs' voice typing and Gmail's s
 - [x] Disabling it while it listens stops listening. `TbSpeechToTextTests.Disabled_ShouldStopListening_WhenSetWhileListening`
 - [x] Each phrase heard is handed to the app. `SpeechToTextTests.SpeechToText_ShouldFillTheFieldFromWhatIsSaid_WhenListening`, `TbSpeechToTextTests.SayAsync_ShouldHandThePhraseToTheApp_WhenListening`
 - [x] Why it stopped without hearing anything is handed to the app. `TbSpeechToTextTests.Errors_ShouldReachTheApp_WhenRecognitionFails`
+- [x] In Playwright, `UseFakeSpeechAsync` stands in for the browser's speech recognition and `SayAsync` hands the app a phrase and waits until the app has handled it and, without `Continuous`, until the button stops listening. As in a browser, one recognition listens at a time, so starting another button stops the first. When the page isn't using fake speech or the button isn't listening, `SayAsync` throws and says what to call. Both work on the package's minimum Playwright version. `SpeechToTextTests.SayAsync_ShouldHandTheAppAPhraseAndWaitForTheStop_WhenThePageUsesFakeSpeech`, `SpeechToTextTests.SayAsync_ShouldKeepListening_WhenTheButtonIsContinuous`, `SpeechToTextTests.SayAsync_ShouldReachOnlyTheButtonStartedLast_WhenAnotherWasListening`, `SpeechToTextTests.SayAsync_ShouldSayWhatToCall_WhenThePageHasNoFakeSpeech`, `HelperFloorTests.Speech_ShouldReachTheApp_WhenSaid`
 
 ## Touch
 

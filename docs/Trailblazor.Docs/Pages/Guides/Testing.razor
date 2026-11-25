@@ -1619,8 +1619,9 @@
         new("Speech to text", "Its button's Label", "`SpeechToText(label).StartAsync()` and `StopAsync()` press "
             + "the button and wait for it to change. `IsListeningAsync()` reads whether it's listening, and "
             + "`IsAvailableAsync()` whether the button shows, which it does where the browser recognizes "
-            + "speech. A test browser has no microphone, so replace `window.SpeechRecognition` with a fake in "
-            + "an init script."),
+            + "speech. A test browser has no microphone, so call `page.UseFakeSpeechAsync()` before the page "
+            + "opens the app, or reload the page after. Then `SayAsync(text)` hands the app a phrase and waits until "
+            + "the app has handled it and, without `Continuous`, until the button stops listening."),
         new("Back to top", "Nothing: a page has one", "`BackToTop().ClickAsync()` presses the button once it "
             + "shows and waits until the app has handled the press. `IsShownAsync()` reads whether it shows, "
             + "which it does once the page has scrolled past its threshold."),

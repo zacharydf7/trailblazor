@@ -125,8 +125,8 @@ of a test the suites run:
 - A component with no helper of its own, such as a table or a progress bar, is read by role, or by `data-part` where a
   role can't reach, in Playwright and by its markup in bUnit, as an app's tests would. Set `WithoutHelpers = true` on
   its scenario, and the page says so.
-- Some components can be checked in only one package: back to top scrolls a page, which only a browser does, and only
-  the bUnit helpers can hand a phrase to speech to text. Such a page shows the one test. Set
+- Some components can be checked in only one package: back to top scrolls a page, which only a browser does. Such a
+  page shows the one test. Set
   `Only = ScenarioPackage.Playwright` or `Only = ScenarioPackage.Bunit` on its scenario, leave out the other
   package's file, and add a sentence to the scenario saying why the test is in one package alone.
 - The page shows only the test's body, so the body has to read well alone: the bUnit class is a `BunitContext` that

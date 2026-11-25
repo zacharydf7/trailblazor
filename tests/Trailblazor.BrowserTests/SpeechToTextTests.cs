@@ -71,6 +71,76 @@ public class SpeechToTextTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SayAsync_ShouldHandTheAppAPhraseAndWaitForTheStop_WhenThePageUsesFakeSpeech(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/speech-to-text");
+        await page.UseFakeSpeechAsync();
+        await page.ReloadAsync();
+        var dictate = page.Tb().SpeechToText("Dictate notes");
+        Assert.Equal("The dictation button isn't listening; call StartAsync first.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => dictate.SayAsync("Muddy"))).Message);
+
+        await dictate.StartAsync();
+        await dictate.SayAsync("Muddy by the bridge");
+
+        Assert.False(await dictate.IsListeningAsync());
+        await Expect(page.GetByRole(AriaRole.Textbox, new() { Name = "Trail notes" }))
+            .ToHaveValueAsync("Muddy by the bridge");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SayAsync_ShouldKeepListening_WhenTheButtonIsContinuous(string browser)
+    {
+        var page = await OpenAsync(browser, "/speech-to-text");
+        await page.UseFakeSpeechAsync();
+        await page.ReloadAsync();
+        var dictate = page.Tb().SpeechToText("Dictate log");
+
+        var log = page.GetByRole(AriaRole.Textbox, new() { Name = "Trail log" });
+
+        await dictate.StartAsync();
+        await dictate.SayAsync("Mile one.");
+        Assert.Equal("Mile one.", await log.InputValueAsync());
+        await dictate.SayAsync("Mile two.");
+
+        Assert.True(await dictate.IsListeningAsync());
+        Assert.Equal("Mile one. Mile two.", await log.InputValueAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SayAsync_ShouldReachOnlyTheButtonStartedLast_WhenAnotherWasListening(string browser)
+    {
+        var page = await OpenAsync(browser, "/speech-to-text");
+        await page.UseFakeSpeechAsync();
+        await page.ReloadAsync();
+        var (log, notes) = (page.Tb().SpeechToText("Dictate log"), page.Tb().SpeechToText("Dictate notes"));
+        await log.StartAsync();
+
+        await notes.StartAsync();
+
+        // As in a browser, one recognition listens at a time, so the log's stopped.
+        Assert.Equal("The dictation button isn't listening; call StartAsync first.",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => log.SayAsync("Mile one."))).Message);
+        await notes.SayAsync("Muddy by the bridge.");
+        Assert.Equal("", await page.GetByRole(AriaRole.Textbox, new() { Name = "Trail log" }).InputValueAsync());
+        Assert.Equal("Muddy by the bridge.",
+            await page.GetByRole(AriaRole.Textbox, new() { Name = "Trail notes" }).InputValueAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task SayAsync_ShouldSayWhatToCall_WhenThePageHasNoFakeSpeech(string browser)
+    {
+        var page = await OpenWithAsync(browser, FakeRecognition);
+        var dictate = page.Tb().SpeechToText("Dictate notes");
+        await dictate.StartAsync();
+
+        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() => dictate.SayAsync("Muddy"));
+
+        Assert.Equal("The page isn't using fake speech; call page.UseFakeSpeechAsync() before the page opens the "
+            + "app, or reload the page after.", thrown.Message);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task SpeechToText_ShouldStayHidden_WhenTheBrowserRecognizesNoSpeech(string browser)
     {
         var page = await OpenWithAsync(browser,

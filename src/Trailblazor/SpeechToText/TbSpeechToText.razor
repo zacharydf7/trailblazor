@@ -8,8 +8,9 @@
 @inject IAnnouncer Announcer
 @inject IServiceProvider Services
 
-@* The button shows only where the browser recognizes speech, which only its script can tell. *@
-<span @ref="_root" @attributes="AdditionalAttributes" style="@Style" hidden="@(!_available)"
+@* The button shows only where the browser recognizes speech, which only its script can tell. data-heard counts the
+   phrases the app has handled, which a test waits for. *@
+<span @ref="_root" @attributes="AdditionalAttributes" style="@Style" hidden="@(!_available)" data-heard="@_heard"
       class="@ClassNames.Join("tb-speech-to-text", Class)">
     <TbIconButton id="@_buttonId" Icon="BuiltInIcons.Microphone"
                   AriaLabel="@(Label ?? Localizer[TbStrings.SpeechToTextLabel])" Pressed="_listening"
@@ -24,6 +25,7 @@
     private bool _available;
     private bool _listening;
     private int _session;
+    private int _heard;
     private bool _stopsAfterPhrase;
     private bool _disposed;
 
@@ -144,7 +146,18 @@
         }
     }
 
-    private Task TextAsync(string text) => OnText.InvokeAsync(text);
+    private async Task TextAsync(string text)
+    {
+        try
+        {
+            await OnText.InvokeAsync(text);
+        }
+        finally
+        {
+            _heard++;
+            StateHasChanged();
+        }
+    }
 
     private Task ErrorAsync(string error) => OnError.InvokeAsync(error switch
     {

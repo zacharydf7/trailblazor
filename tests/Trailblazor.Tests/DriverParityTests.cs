@@ -119,8 +119,6 @@ public class DriverParityTests
         ["TbTreeSelectLocator.IsOpen()"] = InMarkup,
         ["TbMarkdownEditorLocator.Press(String)"] = "the editor's script adds the marks, which only a browser runs; bUnit "
             + "enters the markdown with EnterAsync",
-        ["TbSpeechToTextDriver.Say(String)"] = "a test browser has no microphone to hear with; Playwright tests "
-            + "replace window.SpeechRecognition with a fake",
         ["TbBackToTopLocator.IsShown()"] = "it shows once the page scrolls, which only a browser does",
     };
 
