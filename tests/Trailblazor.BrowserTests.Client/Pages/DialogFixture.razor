@@ -12,8 +12,8 @@
     <TbButton OnClick="() => PlacedAsync(DialogPosition.Top)">Top</TbButton>
     <TbButton OnClick="() => PlacedAsync(DialogPosition.Start)">Start</TbButton>
     <TbButton OnClick="AboutAsync">About</TbButton>
-    <TbButton OnClick="() => NotesAsync(DialogSize.Medium)">Notes</TbButton>
-    <TbButton OnClick="() => NotesAsync(DialogSize.Full)">Full notes</TbButton>
+    <TbButton BusyWhileRunning="false" OnClick="() => NotesAsync(DialogSize.Medium)">Notes</TbButton>
+    <TbButton BusyWhileRunning="false" OnClick="() => NotesAsync(DialogSize.Full)">Full notes</TbButton>
     <TbButton OnClick='() => Dialogs.ShowAsync<FormNameDialog, string>("Form name",
                   options: new() { Modal = false, Maximizable = true })'>
         Form name
