@@ -625,6 +625,34 @@ public static class TbStrings
     /// the limit.</summary>
     public const string FileUploadTooManyOne = "FileUpload.TooManyOne";
 
+    /// <summary>"Upload": the file upload's button that sends the chosen files when it doesn't send them at once.
+    /// </summary>
+    public const string FileUploadUpload = "FileUpload.Upload";
+
+    /// <summary>"Uploading {0}": a file's progress bar while it is sent; {0} is its name.</summary>
+    public const string FileUploadUploading = "FileUpload.Uploading";
+
+    /// <summary>"Cancel uploading {0}": the button that stops a file's upload; {0} is its name.</summary>
+    public const string FileUploadCancel = "FileUpload.Cancel";
+
+    /// <summary>"Retry {0}": the button that sends a failed or canceled file again; {0} is its name.</summary>
+    public const string FileUploadRetry = "FileUpload.Retry";
+
+    /// <summary>"Uploaded": what a sent file shows.</summary>
+    public const string FileUploadUploaded = "FileUpload.Uploaded";
+
+    /// <summary>"Couldn't upload": what a file shows when its upload failed.</summary>
+    public const string FileUploadFailed = "FileUpload.Failed";
+
+    /// <summary>"Canceled": what a file shows when its upload was canceled.</summary>
+    public const string FileUploadCanceled = "FileUpload.Canceled";
+
+    /// <summary>"{0} uploaded.": said when a file is sent; {0} is its name.</summary>
+    public const string FileUploadFileUploaded = "FileUpload.FileUploaded";
+
+    /// <summary>"{0} didn't upload.": said when a file's upload fails; {0} is its name.</summary>
+    public const string FileUploadFileFailed = "FileUpload.FileFailed";
+
     /// <summary>"Information about {0}": names a label's info button; {0} is the label's text.</summary>
     public const string LabelInfo = "Label.Info";
 
@@ -2097,6 +2125,15 @@ public static class TbStrings
         [FileUploadGigabytes] = "{0} GB",
         [FileUploadTooMany] = "Choose at most {0} files.",
         [FileUploadTooManyOne] = "Choose only one file.",
+        [FileUploadUpload] = "Upload",
+        [FileUploadUploading] = "Uploading {0}",
+        [FileUploadCancel] = "Cancel uploading {0}",
+        [FileUploadRetry] = "Retry {0}",
+        [FileUploadUploaded] = "Uploaded",
+        [FileUploadFailed] = "Couldn't upload",
+        [FileUploadCanceled] = "Canceled",
+        [FileUploadFileUploaded] = "{0} uploaded.",
+        [FileUploadFileFailed] = "{0} didn't upload.",
         [LabelInfo] = "Information about {0}",
         [ListBoxEmpty] = "Nothing to choose from",
         [TransferListAvailable] = "Available",

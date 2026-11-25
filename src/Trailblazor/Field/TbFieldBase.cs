@@ -1227,10 +1227,18 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     // Override to clear what a field holds beside its value when a form resets.
     private protected virtual Task OnResetAsync() => Task.CompletedTask;
 
+    // Override to stop work a field started, such as an upload, when it goes away.
+    private protected virtual void OnDisposed()
+    {
+    }
+
+    private protected bool IsDisposed => _disposed;
+
     /// <inheritdoc />
     public void Dispose()
     {
         _disposed = true;
+        OnDisposed();
         _checking?.Cancel();
         _form?.Remove(this);
         DetachEditContext();

@@ -1192,9 +1192,34 @@ public sealed class TbFileUploadLocator(ILocator scope, ILocator field) : TbFiel
 
     /// <summary>The names of the files the field lists as chosen, in order. A field with <c>Hidden</c> set lists none,
     /// and neither does one on a static page, whose files post with the form.</summary>
-    public async Task<IReadOnlyList<string>> FilesAsync() => await Control
-        .Locator("xpath=ancestor::*[contains(concat(' ', @class, ' '), ' tb-file-upload ')][1]")
-        .Locator("[data-part=file] .tb-file-upload__name").AllTextContentsAsync();
+    public async Task<IReadOnlyList<string>> FilesAsync() => await Root.Locator("[data-part=file]")
+        .EvaluateAllAsync<string[]>("files => files.map(file => file.dataset.name)");
+
+    /// <summary>Where the listed file with this name stands: <c>Chosen</c> for a field without <c>Upload</c>. It reads
+    /// the field as it is; to wait for uploads to end, call <see cref="WaitForUploadsAsync"/> first.</summary>
+    public async Task<FileUploadStatus> StatusAsync(string file) =>
+        await Listed(file).GetAttributeAsync("data-status") is { } status
+            ? Enum.Parse<FileUploadStatus>(status, ignoreCase: true) : FileUploadStatus.Chosen;
+
+    /// <summary>Waits until no file is being sent or waiting its turn, so the app's <c>Upload</c> has finished with each.
+    /// </summary>
+    public Task WaitForUploadsAsync() => Assertions.Expect(Root).Not.ToHaveAttributeAsync("data-uploading", "");
+
+    /// <summary>Sends the chosen files that haven't been sent, as the Upload button does when <c>AutoUpload</c> is
+    /// off.</summary>
+    public Task UploadAsync() => Commit.ClickedAsync(Root.Locator("[data-part=upload]"));
+
+    /// <summary>Stops the upload of the listed file with this name, as its cancel button does.</summary>
+    public Task CancelAsync(string file) => Commit.ClickedAsync(Listed(file).Locator("[data-part=cancel]"));
+
+    /// <summary>Sends the listed file with this name again, as its retry button does.</summary>
+    public Task RetryAsync(string file) => Commit.ClickedAsync(Listed(file).Locator("[data-part=retry]"));
+
+    private ILocator Root =>
+        Control.Locator("xpath=ancestor::*[contains(concat(' ', @class, ' '), ' tb-file-upload ')][1]");
+
+    private ILocator Listed(string file) => Root.Locator(
+        $"[data-part=file][data-name=\"{file.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"]");
 
     private async Task ChooseAsync(Func<ILocator, Task> choose)
     {

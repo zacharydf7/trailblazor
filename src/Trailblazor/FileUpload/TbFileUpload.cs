@@ -12,6 +12,10 @@ namespace Trailblazor;
 public partial class TbFileUpload
 {
     private readonly List<string> _rejected = [];
+    // Each chosen file's upload, by the file the value holds.
+    private readonly Dictionary<IBrowserFile, FileUploadItem> _items = new(ReferenceEqualityComparer.Instance);
+    // How many OnUploaded handlers are still running.
+    private int _handling;
     private ListeningInputFile? _input;
     // InputFile hears the browser only after its first interactive render, so tests wait for this before choosing.
     private bool _ready;
@@ -101,6 +105,7 @@ public partial class TbFileUpload
     public async Task ClearAsync()
     {
         _rejected.Clear();
+        Forget([]);
         await SetValueAsync(null);
         StateHasChanged();
         await ClearPickerAsync();
@@ -112,7 +117,16 @@ public partial class TbFileUpload
     private protected override async Task OnResetAsync()
     {
         _rejected.Clear();
+        Forget(Files);
         await ClearPickerAsync();
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        // A value the app sets stops the uploads of the files it leaves out.
+        Forget(Files);
     }
 
     private async Task ClearPickerAsync()
@@ -155,6 +169,229 @@ public partial class TbFileUpload
         builder.AddComponentReferenceCapture(23, component => _input = (ListeningInputFile)component);
         builder.CloseComponent();
     };
+
+    /// <summary>Sends a chosen file, such as to storage or an API: read it with <c>OpenReadStream</c>, report the bytes
+    /// sent so far to the <see cref="IProgress{T}"/>, and stop when the token is canceled. With it, the field shows
+    /// each file's progress, a button that cancels it while it runs, and a retry after it fails or is canceled; a
+    /// failure is logged as a warning, and counted in <c>trailblazor.control.failed</c> when the field has a
+    /// <c>TelemetryName</c>. Without it, the field only chooses files, and the app sends them.</summary>
+    [Parameter]
+    public Func<IBrowserFile, IProgress<long>, CancellationToken, Task>? Upload { get; set; }
+
+    /// <summary>Raised with each file <see cref="Upload"/> has sent, such as to list what has been uploaded. Unlike
+    /// <see cref="Upload"/>, it renders the page again.</summary>
+    [Parameter]
+    public EventCallback<IBrowserFile> OnUploaded { get; set; }
+
+    /// <summary>Sends files with <see cref="Upload"/> as soon as they are chosen. Defaults to true; false shows an
+    /// Upload button, and <see cref="UploadAsync"/> sends them from code.</summary>
+    [Parameter]
+    public bool AutoUpload { get; set; } = true;
+
+    /// <summary>How many files <see cref="Upload"/> sends at a time, at least 1. Defaults to 3; the others wait their
+    /// turn.</summary>
+    [Parameter]
+    public int MaxConcurrent { get; set; } = 3;
+
+    /// <summary>What a chosen file shows in place of its name and size, such as a thumbnail from
+    /// <c>RequestImageFileAsync</c>. The field's own progress bar, buttons and status still follow it.</summary>
+    [Parameter]
+    public RenderFragment<FileUploadItem>? FileTemplate { get; set; }
+
+    /// <summary>Sends the chosen files that haven't been sent, as the Upload button does when
+    /// <see cref="AutoUpload"/> is off. Does nothing without <see cref="Upload"/>.</summary>
+    public Task UploadAsync()
+    {
+        StartWaiting();
+        return Task.CompletedTask;
+    }
+
+    // Whether a chosen file hasn't been sent or started yet, for the Upload button.
+    private bool HasWaiting => Files.Any(file => Item(file) is { Status: FileUploadStatus.Chosen, Stop: null });
+
+    // Whether any file is being sent or waiting its turn, or OnUploaded is running, which the testing helpers wait on.
+    private bool Busy => _handling > 0 || _items.Values.Any(item => item.Status == FileUploadStatus.Uploading
+        || item.Status == FileUploadStatus.Chosen && item.Stop is not null);
+
+    private FileUploadItem Item(IBrowserFile file)
+    {
+        if (!_items.TryGetValue(file, out var item))
+        {
+            item = new FileUploadItem(file);
+            _items[file] = item;
+        }
+
+        return item;
+    }
+
+    // Starts waiting files until MaxConcurrent run at once.
+    private void StartWaiting()
+    {
+        if (Upload is null)
+        {
+            return;
+        }
+
+        foreach (var file in Files)
+        {
+            var item = Item(file);
+            if (item.Status == FileUploadStatus.Chosen && item.Stop is null)
+            {
+                item.Stop = new CancellationTokenSource();
+            }
+        }
+
+        var running = _items.Values.Count(item => item.Status == FileUploadStatus.Uploading);
+        foreach (var item in Files.Select(Item).Where(item => item.Status == FileUploadStatus.Chosen && item.Stop is not null)
+            .Take(Math.Max(1, MaxConcurrent) - running).ToList())
+        {
+            _ = SendAsync(item);
+        }
+    }
+
+    private async Task SendAsync(FileUploadItem item)
+    {
+        item.Status = FileUploadStatus.Uploading;
+        item.Sent = 0;
+        var stop = item.Stop!;
+        StateHasChanged();
+        var sent = false;
+        try
+        {
+            await Upload!(item.File, new Reporter(this, item), stop.Token);
+            sent = true;
+        }
+        catch (OperationCanceledException) when (stop.IsCancellationRequested)
+        {
+            item.Status = FileUploadStatus.Canceled;
+        }
+        catch (Exception exception)
+        {
+            item.Status = FileUploadStatus.Failed;
+            Announcer.Polite(Named(Labels.FileFailed, TbStrings.FileUploadFileFailed, item.File.Name));
+            Telemetry.Failed(TelemetryName, Label ?? AriaLabel, "upload", exception);
+        }
+        finally
+        {
+            item.Stop = null;
+            stop.Dispose();
+        }
+
+        if (sent)
+        {
+            (item.Status, item.Sent) = (FileUploadStatus.Uploaded, item.File.Size);
+            Announcer.Polite(Named(Labels.FileUploaded, TbStrings.FileUploadFileUploaded, item.File.Name));
+            // Counted before the render below, so the field shows busy until the app's handler has run.
+            _handling++;
+        }
+
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        StartWaiting();
+        StateHasChanged();
+        if (sent)
+        {
+            await RaiseUploadedAsync(item.File);
+        }
+    }
+
+    // The field stays busy until the app's handler has run, so the testing helpers' wait covers it too. Nothing awaits
+    // the send, so an error in the handler goes to the renderer as an event's would.
+    private async Task RaiseUploadedAsync(IBrowserFile file)
+    {
+        try
+        {
+            await OnUploaded.InvokeAsync(file);
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+        finally
+        {
+            _handling--;
+        }
+
+        if (!IsDisposed)
+        {
+            StateHasChanged();
+        }
+    }
+
+    // A file's first button cancels its upload while it is sent, retries it after it fails or is canceled, and
+    // otherwise removes it. Being one button, it keeps the focus as the file's upload starts and ends.
+    private Task PressAsync(FileUploadItem item)
+    {
+        switch (item.Status)
+        {
+            case FileUploadStatus.Uploading:
+                item.Stop?.Cancel();
+                return Task.CompletedTask;
+            case FileUploadStatus.Failed or FileUploadStatus.Canceled:
+                item.Status = FileUploadStatus.Chosen;
+                item.Stop = new CancellationTokenSource();
+                StartWaiting();
+                return Task.CompletedTask;
+            default:
+                return RemoveAsync(item.File);
+        }
+    }
+
+    private (Icon Icon, string Part, string Label) Button(FileUploadItem item) => item.Status switch
+    {
+        FileUploadStatus.Uploading =>
+            (BuiltInIcons.Close, "cancel", Named(Labels.Cancel, TbStrings.FileUploadCancel, item.File.Name)),
+        FileUploadStatus.Failed or FileUploadStatus.Canceled =>
+            (BuiltInIcons.RotateLeft, "retry", Named(Labels.Retry, TbStrings.FileUploadRetry, item.File.Name)),
+        _ => (BuiltInIcons.Close, "remove", string.Format(CultureInfo.CurrentCulture, RemoveLabel, item.File.Name)),
+    };
+
+    // A file that leaves the field stops its upload.
+    private void Forget(IEnumerable<IBrowserFile> kept)
+    {
+        var keep = kept.ToHashSet(ReferenceEqualityComparer.Instance);
+        foreach (var gone in _items.Keys.Where(file => !keep.Contains(file)).ToList())
+        {
+            _items[gone].Stop?.Cancel();
+            _items.Remove(gone);
+        }
+    }
+
+    private protected override void OnDisposed()
+    {
+        foreach (var item in _items.Values)
+        {
+            item.Stop?.Cancel();
+        }
+    }
+
+    // Reports bytes sent from wherever the app's upload runs, and renders only when the shown percent moves.
+    private sealed class Reporter(TbFileUpload field, FileUploadItem item) : IProgress<long>
+    {
+        public void Report(long value) => _ = field.InvokeAsync(() =>
+        {
+            if (item.Status != FileUploadStatus.Uploading)
+            {
+                return;
+            }
+
+            var before = Percent(item);
+            item.Sent = value;
+            if (Percent(item) != before)
+            {
+                field.StateHasChanged();
+            }
+        });
+    }
+
+    private static int Percent(FileUploadItem item) =>
+        item.File.Size <= 0 ? 0 : (int)Math.Clamp(100 * item.Sent / item.File.Size, 0, 100);
+
+    private string Named(string? label, string key, string name) =>
+        string.Format(CultureInfo.CurrentCulture, label ?? Localizer[key], name);
 
     /// <inheritdoc />
     public override ValueTask FocusAsync(bool preventScroll = false) =>
@@ -205,13 +442,19 @@ public partial class TbFileUpload
         }
 
         Announcer.Polite(string.Join(" ", [Count(chosen.Count), .. _rejected]));
+        Forget(chosen);
         await SetValueAsync(chosen.Count == 0 ? null : chosen);
+        if (AutoUpload)
+        {
+            StartWaiting();
+        }
     }
 
     // The button that was pressed goes with its file, so focus moves to the input rather than the page.
     private async Task RemoveAsync(IBrowserFile file)
     {
         var left = Files.Where(other => other != file).ToList();
+        Forget(left);
         await SetValueAsync(left.Count == 0 ? null : left);
         // Emptying the input lets the file be dropped again, and Blazor keeps the others by id, so none are lost.
         await ClearPickerAsync();
@@ -253,6 +496,7 @@ public partial class TbFileUpload
         template, amount.ToString("0.#", CultureInfo.CurrentCulture));
 
     private string ZoneLabel => Labels.Zone ?? Localizer[TbStrings.FileUploadZone];
+    private string UploadButtonLabel => Labels.Upload ?? Localizer[TbStrings.FileUploadUpload];
     private string ChooseLabel => Labels.Choose ?? Localizer[TbStrings.FileUploadChoose];
     private string RemoveLabel => Labels.Remove ?? Localizer[TbStrings.FileUploadRemove];
     private string ClearLabel => Labels.Clear ?? Localizer[TbStrings.FileUploadClear];

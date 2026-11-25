@@ -4310,7 +4310,50 @@ public sealed class TbFileUploadDriver : TbFieldDriver
     /// <summary>The names of the files the field lists as chosen, in order. A field with <c>Hidden</c> set lists none.
     /// </summary>
     public IReadOnlyList<string> Files =>
-        [.. FieldRoot().QuerySelectorAll("[data-part=file] .tb-file-upload__name").Select(name => name.TextContent)];
+        [.. FieldRoot().QuerySelectorAll("[data-part=file]").Select(file => file.GetAttribute("data-name")!)];
+
+    /// <summary>Where the listed file with this name stands: <c>Chosen</c> for a field without <c>Upload</c>. Throws for
+    /// a name the field doesn't list.</summary>
+    public FileUploadStatus Status(string file) => Listed(file).GetAttribute("data-status") is { } status
+        ? Enum.Parse<FileUploadStatus>(status, ignoreCase: true) : FileUploadStatus.Chosen;
+
+    /// <summary>Waits until no file is being sent or waiting its turn, so the app's <c>Upload</c> has finished with each.
+    /// </summary>
+    public async Task WaitForUploadsAsync()
+    {
+        // Found first, so a field that isn't there fails as any helper does rather than as a wait that runs out.
+        FieldRoot();
+        await _scripts.WaitForAsync(() => !FieldRoot().HasAttribute("data-uploading"));
+    }
+
+    /// <summary>Sends the chosen files that haven't been sent, as the Upload button does when <c>AutoUpload</c> is
+    /// off. Throws when the field shows no Upload button, or it is off.</summary>
+    public async Task UploadAsync() => await PressAsync(FieldRoot().QuerySelector("[data-part=upload]"),
+        "The field has no enabled Upload button: it needs Upload set, AutoUpload off and a file not yet sent.");
+
+    /// <summary>Stops the upload of the listed file with this name, as its cancel button does. Throws when that file
+    /// isn't being sent.</summary>
+    public async Task CancelAsync(string file) => await PressAsync(Listed(file).QuerySelector("[data-part=cancel]"),
+        $"\"{file}\" isn't being sent.");
+
+    /// <summary>Sends the listed file with this name again, as its retry button does. Throws when that file's upload
+    /// hasn't failed or been canceled.</summary>
+    public async Task RetryAsync(string file) => await PressAsync(Listed(file).QuerySelector("[data-part=retry]"),
+        $"\"{file}\" hasn't failed or been canceled.");
+
+    private IElement Listed(string file) =>
+        FieldRoot().QuerySelectorAll("[data-part=file]").FirstOrDefault(item => item.GetAttribute("data-name") == file)
+        ?? throw new InvalidOperationException($"The field lists no file named \"{file}\".");
+
+    private static async Task PressAsync(IElement? button, string missing)
+    {
+        if (button is null || button.HasAttribute("disabled"))
+        {
+            throw new InvalidOperationException(missing);
+        }
+
+        await button.ClickAsync(new MouseEventArgs());
+    }
 
     // The files at these paths, each with the type a browser gives its extension.
     internal static InputFileContent[] FromPaths(string[] paths) => [.. paths.Select(path =>

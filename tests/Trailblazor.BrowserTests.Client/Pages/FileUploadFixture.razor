@@ -12,6 +12,9 @@
     <TbButton OnClick="() => _import.OpenAsync()">Import settings</TbButton>
     <TbButton OnClick="() => _import.ClearAsync()">Forget the import</TbButton>
     <output data-testid="imported">@(_imported?[0].Name ?? "none")</output>
+    <TbFileUpload Label="Reports" Multiple Upload="SendAsync" OnUploaded="file => _uploaded.Add(file.Name)" />
+    <output data-testid="sent">@_sent bytes, @string.Join(", ", _uploaded)</output>
+    <TbFileUpload Label="Held" Upload="(file, progress, stop) => Task.Delay(Timeout.Infinite, stop)" />
 </TbStack>
 
 @code {
@@ -20,6 +23,8 @@
     private IReadOnlyList<IBrowserFile>? _imported;
     private TbFileUpload _import = default!;
     private string _read = "";
+    private long _sent;
+    private readonly List<string> _uploaded = [];
 
     private static string Names(IReadOnlyList<IBrowserFile>? files) =>
         files is null ? "none" : string.Join(", ", files.Select(file => file.Name));
@@ -36,5 +41,21 @@
         }
 
         _read = $"{total} bytes";
+    }
+
+    // Reads the file's stream to its end in chunks, as an upload to storage would, reporting each one.
+    private async Task SendAsync(IBrowserFile file, IProgress<long> progress, CancellationToken stop)
+    {
+        await using var stream = file.OpenReadStream();
+        var buffer = new byte[8_192];
+        var sent = 0L;
+        int read;
+        while ((read = await stream.ReadAsync(buffer, stop)) > 0)
+        {
+            sent += read;
+            progress.Report(sent);
+        }
+
+        _sent += sent;
     }
 }

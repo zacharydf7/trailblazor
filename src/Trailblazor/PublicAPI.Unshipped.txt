@@ -8006,3 +8006,52 @@ Trailblazor.TbDockManager.ActivePanel.get -> string?
 Trailblazor.TbDockManager.ActivePanel.set -> void
 Trailblazor.TbDockManager.ActivePanelChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
 Trailblazor.TbDockManager.ActivePanelChanged.set -> void
+Trailblazor.FileUploadItem
+Trailblazor.FileUploadItem.File.get -> Microsoft.AspNetCore.Components.Forms.IBrowserFile!
+Trailblazor.FileUploadItem.Sent.get -> long
+Trailblazor.FileUploadItem.Status.get -> Trailblazor.FileUploadStatus
+Trailblazor.FileUploadLabels.Cancel.get -> string?
+Trailblazor.FileUploadLabels.Cancel.init -> void
+Trailblazor.FileUploadLabels.Canceled.get -> string?
+Trailblazor.FileUploadLabels.Canceled.init -> void
+Trailblazor.FileUploadLabels.Failed.get -> string?
+Trailblazor.FileUploadLabels.Failed.init -> void
+Trailblazor.FileUploadLabels.FileFailed.get -> string?
+Trailblazor.FileUploadLabels.FileFailed.init -> void
+Trailblazor.FileUploadLabels.FileUploaded.get -> string?
+Trailblazor.FileUploadLabels.FileUploaded.init -> void
+Trailblazor.FileUploadLabels.Retry.get -> string?
+Trailblazor.FileUploadLabels.Retry.init -> void
+Trailblazor.FileUploadLabels.Upload.get -> string?
+Trailblazor.FileUploadLabels.Upload.init -> void
+Trailblazor.FileUploadLabels.Uploaded.get -> string?
+Trailblazor.FileUploadLabels.Uploaded.init -> void
+Trailblazor.FileUploadLabels.Uploading.get -> string?
+Trailblazor.FileUploadLabels.Uploading.init -> void
+Trailblazor.FileUploadStatus
+Trailblazor.FileUploadStatus.Canceled = 4 -> Trailblazor.FileUploadStatus
+Trailblazor.FileUploadStatus.Chosen = 0 -> Trailblazor.FileUploadStatus
+Trailblazor.FileUploadStatus.Failed = 3 -> Trailblazor.FileUploadStatus
+Trailblazor.FileUploadStatus.Uploaded = 2 -> Trailblazor.FileUploadStatus
+Trailblazor.FileUploadStatus.Uploading = 1 -> Trailblazor.FileUploadStatus
+Trailblazor.TbFileUpload.AutoUpload.get -> bool
+Trailblazor.TbFileUpload.AutoUpload.set -> void
+Trailblazor.TbFileUpload.FileTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Trailblazor.FileUploadItem!>?
+Trailblazor.TbFileUpload.FileTemplate.set -> void
+Trailblazor.TbFileUpload.MaxConcurrent.get -> int
+Trailblazor.TbFileUpload.MaxConcurrent.set -> void
+Trailblazor.TbFileUpload.Upload.get -> System.Func<Microsoft.AspNetCore.Components.Forms.IBrowserFile!, System.IProgress<long>!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>?
+Trailblazor.TbFileUpload.Upload.set -> void
+Trailblazor.TbFileUpload.UploadAsync() -> System.Threading.Tasks.Task!
+const Trailblazor.TbStrings.FileUploadCancel = "FileUpload.Cancel" -> string!
+const Trailblazor.TbStrings.FileUploadCanceled = "FileUpload.Canceled" -> string!
+const Trailblazor.TbStrings.FileUploadFailed = "FileUpload.Failed" -> string!
+const Trailblazor.TbStrings.FileUploadFileFailed = "FileUpload.FileFailed" -> string!
+const Trailblazor.TbStrings.FileUploadFileUploaded = "FileUpload.FileUploaded" -> string!
+const Trailblazor.TbStrings.FileUploadRetry = "FileUpload.Retry" -> string!
+const Trailblazor.TbStrings.FileUploadUpload = "FileUpload.Upload" -> string!
+const Trailblazor.TbStrings.FileUploadUploaded = "FileUpload.Uploaded" -> string!
+const Trailblazor.TbStrings.FileUploadUploading = "FileUpload.Uploading" -> string!
+Trailblazor.TbFileUpload.OnUploaded.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Forms.IBrowserFile!>
+Trailblazor.TbFileUpload.OnUploaded.set -> void
+override Trailblazor.TbFileUpload.OnParametersSet() -> void

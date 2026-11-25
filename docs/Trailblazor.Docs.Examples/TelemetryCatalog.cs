@@ -34,12 +34,13 @@ public static class TelemetryCatalog
             + "on an alert, and a choice in a select or list box, or of an option, whether a pointer or the keyboard "
             + "made it, as trailblazor.input."),
         new("trailblazor.control.failed", "Counter", "{failure}",
-            "Loads, searches and exports that failed in controls with a TelemetryName.", [.. CommonTags, ActionTag],
+            "Loads, searches, exports and uploads that failed in controls with a TelemetryName.", [.. CommonTags, ActionTag],
             "A data grid's DataProvider throws for its rows, or a tree view's LoadChildren throws, with the action "
             + "load. A data grid's export fails, in its DataProvider or while the file is built, such as when a "
             + "column's field throws, with the action export. An autocomplete's or a mention input's Search, or "
             + "a rich text editor's MentionSearch, throws, with the action search. An async content region's Load "
-            + "throws, with the action load. A load or a search that was "
+            + "throws, with the action load. A file upload's Upload throws, with the action upload. A load or a "
+            + "search that was "
             + "canceled or replaced isn't counted. Each failure is also logged as a warning, whether or not the "
             + "control has a TelemetryName."),
         new("trailblazor.load.duration", "Histogram", "s",

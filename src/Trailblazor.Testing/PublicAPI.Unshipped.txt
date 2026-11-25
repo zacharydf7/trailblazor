@@ -655,3 +655,8 @@ Trailblazor.Testing.TbValidationSummaryDriver.Messages.get -> System.Collections
 Trailblazor.Testing.TrailblazorMarkup.ValidationSummary() -> Trailblazor.Testing.TbValidationSummaryDriver!
 Trailblazor.Testing.TbDockDriver.IsLocked.get -> bool
 Trailblazor.Testing.TbDockDriver.ActivePanel.get -> string?
+Trailblazor.Testing.TbFileUploadDriver.CancelAsync(string! file) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbFileUploadDriver.RetryAsync(string! file) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbFileUploadDriver.Status(string! file) -> Trailblazor.FileUploadStatus
+Trailblazor.Testing.TbFileUploadDriver.UploadAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.TbFileUploadDriver.WaitForUploadsAsync() -> System.Threading.Tasks.Task!

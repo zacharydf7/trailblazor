@@ -59,4 +59,40 @@ public sealed record FileUploadLabels
     /// <summary>A file's size in gigabytes, with <c>{0}</c> for the number. Leave it null for the app's text for
     /// <see cref="TbStrings.FileUploadGigabytes"/>.</summary>
     public string? Gigabytes { get; init; }
+
+    /// <summary>The button that sends the chosen files when <see cref="TbFileUpload.AutoUpload"/> is off. Leave it null
+    /// for the app's text for <see cref="TbStrings.FileUploadUpload"/>.</summary>
+    public string? Upload { get; init; }
+
+    /// <summary>A file's progress bar while it is sent, with <c>{0}</c> for its name. Leave it null for the app's text
+    /// for <see cref="TbStrings.FileUploadUploading"/>.</summary>
+    public string? Uploading { get; init; }
+
+    /// <summary>The button that stops a file's upload, with <c>{0}</c> for its name. Leave it null for the app's text
+    /// for <see cref="TbStrings.FileUploadCancel"/>.</summary>
+    public string? Cancel { get; init; }
+
+    /// <summary>The button that sends a failed or canceled file again, with <c>{0}</c> for its name. Leave it null
+    /// for the app's text for <see cref="TbStrings.FileUploadRetry"/>.</summary>
+    public string? Retry { get; init; }
+
+    /// <summary>What a sent file shows. Leave it null for the app's text for <see cref="TbStrings.FileUploadUploaded"/>.
+    /// </summary>
+    public string? Uploaded { get; init; }
+
+    /// <summary>What a file shows when its upload failed. Leave it null for the app's text for
+    /// <see cref="TbStrings.FileUploadFailed"/>.</summary>
+    public string? Failed { get; init; }
+
+    /// <summary>What a file shows when its upload was canceled. Leave it null for the app's text for
+    /// <see cref="TbStrings.FileUploadCanceled"/>.</summary>
+    public string? Canceled { get; init; }
+
+    /// <summary>What screen readers hear when a file is sent, with <c>{0}</c> for its name. Leave it null for the
+    /// app's text for <see cref="TbStrings.FileUploadFileUploaded"/>.</summary>
+    public string? FileUploaded { get; init; }
+
+    /// <summary>What screen readers hear when a file's upload fails, with <c>{0}</c> for its name. Leave it null for
+    /// the app's text for <see cref="TbStrings.FileUploadFileFailed"/>.</summary>
+    public string? FileFailed { get; init; }
 }

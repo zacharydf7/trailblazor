@@ -718,3 +718,8 @@ Trailblazor.Testing.Playwright.TbValidationSummaryLocator.TbValidationSummaryLoc
 Trailblazor.Testing.Playwright.TrailblazorPage.ValidationSummary() -> Trailblazor.Testing.Playwright.TbValidationSummaryLocator!
 Trailblazor.Testing.Playwright.TbDockLocator.IsLockedAsync() -> System.Threading.Tasks.Task<bool>!
 Trailblazor.Testing.Playwright.TbDockLocator.ActivePanelAsync() -> System.Threading.Tasks.Task<string?>!
+Trailblazor.Testing.Playwright.TbFileUploadLocator.CancelAsync(string! file) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbFileUploadLocator.RetryAsync(string! file) -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbFileUploadLocator.StatusAsync(string! file) -> System.Threading.Tasks.Task<Trailblazor.FileUploadStatus>!
+Trailblazor.Testing.Playwright.TbFileUploadLocator.UploadAsync() -> System.Threading.Tasks.Task!
+Trailblazor.Testing.Playwright.TbFileUploadLocator.WaitForUploadsAsync() -> System.Threading.Tasks.Task!

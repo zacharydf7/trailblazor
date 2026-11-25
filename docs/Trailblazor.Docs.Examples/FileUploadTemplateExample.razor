@@ -1,0 +1,29 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<TbFileUpload Label="Field notes" Multiple Accept=".txt,.pdf" Upload="SendAsync" Style="max-inline-size: 28rem">
+    <FileTemplate>
+        <TbStack Gap="0">
+            <strong>@context.File.Name</strong>
+            <TbText TextStyle="TextStyle.Caption">@Kilobytes(context.Sent) of @Kilobytes(context.File.Size) KB sent</TbText>
+        </TbStack>
+    </FileTemplate>
+</TbFileUpload>
+
+@code {
+    private static string Kilobytes(long bytes) => (bytes / 1024.0).ToString("0.0");
+
+    // Stands in for sending to storage: reads the file in chunks, pausing after each so the progress shows.
+    private static async Task SendAsync(IBrowserFile file, IProgress<long> progress, CancellationToken stop)
+    {
+        await using var stream = file.OpenReadStream(cancellationToken: stop);
+        var buffer = new byte[Math.Max(16_384, file.Size / 25)];
+        var sent = 0L;
+        int read;
+        while ((read = await stream.ReadAsync(buffer, stop)) > 0)
+        {
+            sent += read;
+            progress.Report(sent);
+            await Task.Delay(40, stop);
+        }
+    }
+}

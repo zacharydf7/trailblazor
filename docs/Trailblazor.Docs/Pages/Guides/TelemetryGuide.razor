@@ -167,7 +167,8 @@
                 in <code>trailblazor.field.invalid</code> each time its <code>TbForm</code> is submitted while it has an
                 error, so the fields people trip over stand out. A <code>Revealable</code> text field also counts as
                 used, with the action <code>reveal</code>, each time its password is shown. An autocomplete or a
-                mention input counts a <code>Search</code> that fails in <code>trailblazor.control.failed</code>.
+                mention input counts a <code>Search</code> that fails in <code>trailblazor.control.failed</code>, and
+                a file upload an <code>Upload</code> that fails, with the action <code>upload</code>.
                 No value is ever recorded.
             </li>
             <li>
@@ -291,7 +292,7 @@
             <li>
                 Values, text people type, dialog and page titles, labels' text and anything about the user. Only the
                 names you give and the components' types are recorded; that's by design and can't be configured.
-                This is about the meter. The warning a failed load, search or export writes to the app's log is
+                This is about the meter. The warning a failed load, search, export or upload writes to the app's log is
                 separate:
                 it carries the app's own exception, and names a control that has no <code>TelemetryName</code> by
                 its label.
@@ -445,8 +446,9 @@
             "`trailblazor.control.used` by `trailblazor.action`: sorts and page sizes to set better defaults, "
             + "expands and moves to see how a tree is used."),
         new("Failing data", "Which lists and searches fail, and how often?",
-            "Data grids, tree views, async content, autocompletes and mention inputs.",
-            "`trailblazor.control.failed` by name and `trailblazor.action` (`load`, `search` or a grid's `export`). "
+            "Data grids, tree views, async content, autocompletes, mention inputs and file uploads.",
+            "`trailblazor.control.failed` by name and `trailblazor.action` (`load`, `search`, `upload` or a grid's "
+            + "`export`). "
             + "Each failure is "
             + "also a warning in the app's log, with the exception."),
         new("Slow data", "Which sections keep people waiting?", "Async content regions.",

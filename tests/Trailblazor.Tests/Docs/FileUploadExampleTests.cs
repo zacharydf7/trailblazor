@@ -1,6 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components.Forms;
 using Trailblazor.Docs.Examples;
+using Trailblazor.Testing;
 
 namespace Trailblazor.Tests.Docs;
 
@@ -18,6 +19,60 @@ public class FileUploadExampleTests : DocsTest
         cut.FindComponent<InputFile>().UploadFiles(Pdf("map.pdf"), Pdf("ridge.pdf"));
 
         Assert.Contains("Trail maps value: map.pdf, ridge.pdf", cut.Markup);
+    }
+
+    [Fact]
+    public async Task SendExample_ShouldListTheFileSent_WhenItIsChosen()
+    {
+        var cut = Render<FileUploadSendExample>();
+        var photos = cut.Tb().FileUpload("Trip photos");
+
+        await photos.ChooseAsync(InputFileContent.CreateFromBinary(new byte[100], "ridge.png", contentType: "image/png"));
+        await photos.WaitForUploadsAsync();
+
+        Assert.Equal(FileUploadStatus.Uploaded, photos.Status("ridge.png"));
+        Assert.Equal("Sent: ridge.png.", cut.Find("output").TextContent);
+    }
+
+    [Fact]
+    public async Task SendExample_ShouldOfferRetry_WhenTheUploadsFail()
+    {
+        var cut = Render<FileUploadSendExample>();
+        await cut.Tb().Switch("Make the uploads fail").CheckAsync();
+        var photos = cut.Tb().FileUpload("Trip photos");
+
+        await photos.ChooseAsync(InputFileContent.CreateFromBinary(new byte[100], "ridge.png", contentType: "image/png"));
+        await photos.WaitForUploadsAsync();
+
+        Assert.Equal(FileUploadStatus.Failed, photos.Status("ridge.png"));
+        Assert.NotNull(cut.Find("[data-part=retry]"));
+    }
+
+    [Fact]
+    public async Task OnRequestExample_ShouldSendTheFiles_WhenUploadIsPressed()
+    {
+        var cut = Render<FileUploadOnRequestExample>();
+        var routes = cut.Tb().FileUpload("Route files");
+        await routes.ChooseAsync(Pdf("ridge.pdf"));
+        var before = routes.Status("ridge.pdf");
+
+        await routes.UploadAsync();
+        await routes.WaitForUploadsAsync();
+
+        Assert.Equal((FileUploadStatus.Chosen, FileUploadStatus.Uploaded), (before, routes.Status("ridge.pdf")));
+    }
+
+    [Fact]
+    public async Task TemplateExample_ShouldShowHowMuchWasSent_WhenAFileIsSent()
+    {
+        var cut = Render<FileUploadTemplateExample>();
+        var notes = cut.Tb().FileUpload("Field notes");
+
+        await notes.ChooseAsync(Pdf("ridge.pdf", 2048));
+        await notes.WaitForUploadsAsync();
+
+        Assert.Equal("2.0 of 2.0 KB sent", cut.Find("[data-part=file] .tb-text").TextContent.Trim());
+        Assert.Equal(["ridge.pdf"], notes.Files);
     }
 
     [Fact]

@@ -13,6 +13,41 @@ public class FileUploadTests(BrowserFixture fixture) : BrowserTest(fixture)
         page.Locator(".tb-file-upload").Filter(new() { Has = page.GetByLabel(label, new() { Exact = true }) });
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Upload_ShouldSendTheFileThroughItsStream_WhenChosenOnTheServerOrInWebAssembly(string browser)
+    {
+        foreach (var mode in new[] { "", "?mode=webassembly" })
+        {
+            var page = await OpenAsync(browser, "/file-upload" + mode);
+            var reports = page.Tb().FileUpload("Reports");
+
+            await reports.ChooseAsync(File("day-one.pdf", new string('x', 40_000)));
+            await reports.WaitForUploadsAsync();
+
+            Assert.Equal(FileUploadStatus.Uploaded, await reports.StatusAsync("day-one.pdf"));
+            await Expect(page.GetByTestId("sent")).ToHaveTextAsync("40000 bytes, day-one.pdf");
+        }
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task CancelAndRetry_ShouldKeepTheFocusOnTheFilesButton_WhenPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/file-upload");
+        var held = page.Tb().FileUpload("Held");
+        await held.ChooseAsync(File("day-one.pdf"));
+        var cancel = Field(page, "Held").Locator("[data-part=cancel]");
+        await cancel.FocusAsync();
+
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(Field(page, "Held").Locator("[data-part=retry]")).ToBeFocusedAsync();
+        await page.Keyboard.PressAsync("Enter");
+        await Expect(cancel).ToBeFocusedAsync();
+        await held.CancelAsync("day-one.pdf");
+        await held.WaitForUploadsAsync();
+
+        Assert.Equal(FileUploadStatus.Canceled, await held.StatusAsync("day-one.pdf"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task DropZone_ShouldWriteItsPromptInThePrimaryText_WhenHovered(string browser)
     {
         var page = await OpenAsync(browser, "/file-upload");

@@ -9438,6 +9438,21 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         color: var(--tb-color-text-muted);
     }
 
+    /* A file's progress takes the room between its name and its buttons. */
+    .tb-file-upload__progress {
+        flex: 1 1 6rem;
+        min-inline-size: 4rem;
+    }
+
+    .tb-file-upload__status {
+        color: var(--tb-color-text-muted);
+        font-size: var(--tb-font-size-sm);
+    }
+
+    .tb-file-upload__file[data-status="failed"] .tb-file-upload__status {
+        color: var(--tb-color-danger-text);
+    }
+
     .tb-file-upload__clear {
         align-self: flex-start;
     }

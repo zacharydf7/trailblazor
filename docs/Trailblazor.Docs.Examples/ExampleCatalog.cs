@@ -9158,6 +9158,17 @@ public static class ExampleCatalog
                 new("reading-files", "Reading the files", "Each new choice replaces the last, as the browser's file "
                     + "input does, so read the files with `OpenReadStream` before someone chooses again.",
                     typeof(FileUploadReadExample)),
+                new("uploading", "Uploading", "`Upload` sends each chosen file: read it with `OpenReadStream`, report "
+                    + "the bytes sent to the `IProgress<long>`, and stop when the token is canceled. The field then "
+                    + "shows each file's progress and a button that cancels it while it runs, then \"Uploaded\", or a "
+                    + "retry button after it fails or is canceled; turn on the switch to see a failure. `OnUploaded` is "
+                    + "raised with each file sent.", typeof(FileUploadSendExample)),
+                new("sending-on-request", "Sending on request", "The field sends files as soon as they're chosen, "
+                    + "three at a time unless `MaxConcurrent` changes that. With `AutoUpload=\"false\"`, an Upload "
+                    + "button sends them, and `UploadAsync()` does from code.", typeof(FileUploadOnRequestExample)),
+                new("file-template", "File template", "`FileTemplate` shows a file in place of its name and size, such "
+                    + "as how much of it has been sent, or a thumbnail from `RequestImageFileAsync`. The progress bar and "
+                    + "buttons still follow it.", typeof(FileUploadTemplateExample)),
                 new("required", "Required", "`Required` shows a marker. Once the field is changed or its form "
                     + "validates, a message shows while no file is chosen. `RequiredMessage` replaces the default, "
                     + "which uses the label.", typeof(FileUploadRequiredExample)),
@@ -9166,15 +9177,16 @@ public static class ExampleCatalog
                 new("error", "Errors from your app", "`Error` shows a message your app sets, such as one from a server. "
                     + "Until your app clears it, the form won't submit, so clear it when the files change.",
                     typeof(FileUploadErrorExample)),
-                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` turns off the picker and the remove "
-                    + "and clear buttons, and leaves the chosen files listed. A file input has no read-only state, so "
-                    + "the field disables it: the picker can't be focused, its files don't post, and a dropped file is "
-                    + "refused. `Disabled` behaves and looks the same on this field.",
+                new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` turns off the picker and the "
+                    + "remove, clear, cancel, retry and Upload buttons, and leaves the chosen files listed. A file "
+                    + "input has no read-only state, so the field disables it: the picker can't be focused, its files "
+                    + "don't post, and a dropped file is refused. `Disabled` behaves and looks the same on this field.",
                     typeof(FileUploadStatesExample)),
                 new("labels", "Built-in text", "`Labels` replaces the words the field shows and reads out, such as the "
                     + "zone's text and the number of files chosen.", typeof(FileUploadLabelsExample)),
             ],
-            Api = [typeof(TbFileUpload), typeof(FileUploadLabels), typeof(FieldClasses)],
+            Api = [typeof(TbFileUpload), typeof(FileUploadItem), typeof(FileUploadStatus), typeof(FileUploadLabels),
+                typeof(FieldClasses)],
             Keyboard =
             [
                 new(["Enter", "Space"], "Opens the file dialog."),
@@ -9183,6 +9195,9 @@ public static class ExampleCatalog
             [
                 "It is the browser's own file input, named by the `Label`, laid over the drop zone.",
                 "The chosen files are a `list`, and each has a \"Remove\" button named with its file.",
+                "While a file is sent, its progress bar is named \"Uploading\" with the file's name, and its cancel "
+                    + "button \"Cancel uploading\" with it. After a failure or cancel, its retry button is named "
+                    + "\"Retry\" with the file.",
             ],
             Announcements =
             [
@@ -9192,10 +9207,14 @@ public static class ExampleCatalog
                 "A validation message that appears as someone changes the files is read out once, and a failed submit "
                     + "reads none out, as on a [text field](components/text-field).",
                 "An `Error` your app sets is read out once when it appears, even after a submit.",
+                "With `Upload`, screen readers hear when each file is sent or fails, and nothing when one is "
+                    + "canceled or as its progress moves.",
             ],
             Accessibility =
             [
                 "Focus moves back to the input when a file is removed.",
+                "A file's cancel button becomes its retry button when the upload stops, and the reverse, so focus "
+                    + "stays on it.",
             ],
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
@@ -9210,6 +9229,16 @@ public static class ExampleCatalog
                     { Pitfall = true },
                 new("Check each file's type and size again on your server. They come from the browser, so the limits "
                     + "here only help the person choosing.") { Pitfall = true },
+                new("`Upload` is a delegate, not an event, so the page doesn't render again after a change it makes; "
+                    + "make such changes from `OnUploaded`, which renders the page as any event does.")
+                    { Pitfall = true },
+                new("A failed `Upload` shows \"Couldn't upload\" and never the exception's message, which could hold "
+                    + "details meant for your logs."),
+            ],
+            Telemetry =
+            [
+                "A failed `Upload` is counted in `trailblazor.control.failed`, with the action `upload`, and logged as "
+                    + "a warning whether or not the field has a `TelemetryName`.",
             ],
             Ready = new("[data-part=input]", "the file input"),
             Target = new("button", "Trail maps"),
@@ -9222,8 +9251,15 @@ public static class ExampleCatalog
                 new("zone", "The drop zone, which also opens the file picker."),
                 new("input", "The file input."),
                 new("files", "The list of chosen files."),
-                new("file", "One chosen file."),
-                new("remove", "The button that removes a file."),
+                new("file", "One chosen file, with `data-name` holding its name and, with `Upload`, `data-status` "
+                    + "holding where it stands: `chosen`, `uploading`, `uploaded`, `failed` or `canceled`."),
+                new("remove", "The button that removes a file. While the file is sent, the same button is its cancel "
+                    + "button, and after a failure or cancel its retry button, with a second remove button beside it."),
+                new("progress", "A file's progress bar while it is sent."),
+                new("cancel", "The button that stops a file's upload."),
+                new("status", "What a file shows once its upload is over: Uploaded, Couldn't upload or Canceled."),
+                new("retry", "The button that sends a failed or canceled file again."),
+                new("upload", "The button that sends the chosen files when `AutoUpload` is off."),
                 new("rejected", "The message that lists dropped files the field didn't take."),
                 new("clear", "The button that removes every file."),
             ],
@@ -9239,6 +9275,12 @@ public static class ExampleCatalog
                     + "giving each the type a browser would for its extension.",
                 "The bUnit `ChooseAsync` also takes `InputFileContent`s made in the test.",
                 "`FilesAsync()`, or `Files` in bUnit, reads the names of the files the field lists.",
+                "With `Upload`, `WaitForUploadsAsync()` waits until no file is being sent or waiting its turn, which "
+                    + "`data-uploading` on the field's root marks, and `StatusAsync(name)`, or `Status(name)` in bUnit, "
+                    + "reads where a file stands.",
+                "`UploadAsync()`, `CancelAsync(name)` and `RetryAsync(name)` press the Upload, cancel and retry "
+                    + "buttons. In bUnit, give `Upload` a fake that waits on a `TaskCompletionSource`, so a test can "
+                    + "finish, fail or cancel each file.",
                 "The field is ready as soon as `Render` returns, with nothing left to run, so a test can raise "
                     + "events at once.",
             ],

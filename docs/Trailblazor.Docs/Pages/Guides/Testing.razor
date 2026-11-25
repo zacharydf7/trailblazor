@@ -725,7 +725,12 @@
                             Chooses the files at these paths. A file with a common extension gets the type a browser
                             gives it, such as <code>image/png</code> for a <code>.png</code>, and any other file an
                             empty type. <code>ChooseAsync(files)</code> takes bUnit's <code>InputFileContent</code>s,
-                            made in the test, and <code>Files</code> reads the names of the files the field lists.
+                            made in the test, and <code>Files</code> reads the names of the files the field lists, also
+                            with a <code>FileTemplate</code>. With <code>Upload</code>,
+                            <code>WaitForUploadsAsync()</code> waits until no file is being sent or waiting its turn,
+                            <code>Status(name)</code> reads where a file stands, and <code>UploadAsync()</code>,
+                            <code>CancelAsync(name)</code> and <code>RetryAsync(name)</code> press the Upload, cancel and
+                            retry buttons.
                         </td>
                     </tr>
                     <tr>
@@ -1709,7 +1714,10 @@
             + "reads the color the field holds."),
         new("File upload", "Its label", "`FileUpload(label).ChooseAsync(paths)` chooses files by path, or "
             + "`FilePayload`s made in the test, and waits until the app's `ValueChanged` has run; `FilesAsync()` reads "
-            + "the names of the files the field lists."),
+            + "the names of the files the field lists, also with a `FileTemplate`. With `Upload`, "
+            + "`WaitForUploadsAsync()` waits until no file is being sent or waiting its turn, `StatusAsync(name)` "
+            + "reads where a file stands, and `UploadAsync()`, `CancelAsync(name)` and `RetryAsync(name)` press the "
+            + "Upload, cancel and retry buttons and wait until the app has handled the press."),
         new("Date picker", "Its label", "`DatePicker(label).ChooseAsync(date)` types the date in the field's format "
             + "and waits until the field has it, and `ValueAsync()` reads it. `EnterAsync(text)` types text as it is, "
             + "such as a date the field can't read, to test its error."),

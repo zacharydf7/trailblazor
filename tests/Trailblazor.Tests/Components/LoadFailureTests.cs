@@ -143,6 +143,21 @@ public class LoadFailureTests : BunitContext
     }
 
     [Fact]
+    public async Task FileUpload_ShouldLogAWarningAndCountTheFailure_WhenItsUploadThrows()
+    {
+        var cut = Render<TbFileUpload>(parameters => parameters.Add(field => field.Label, "Photos")
+            .Add(field => field.TelemetryName, "trail-photos")
+            .Add(field => field.Upload, (_, _, _) => throw new IOException("Down")));
+        var photos = cut.Tb().FileUpload("Photos");
+
+        await photos.ChooseAsync(InputFileContent.CreateFromText("x", "ridge.pdf", contentType: "application/pdf"));
+        await photos.WaitForUploadsAsync();
+
+        AssertFailed("Trailblazor.TbFileUpload", "TbFileUpload trail-photos failed to upload.", "trail-photos",
+            "upload");
+    }
+
+    [Fact]
     public void Grid_ShouldLogUnderItsLabelAndCountNothing_WhenItHasNoTelemetryName()
     {
         var cut = Render<TbDataGrid<string>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")

@@ -198,6 +198,7 @@ public class ExampleCatalogTests
         ["ColorPicker"] = ["hue", "saturation", "brightness", "alpha", "red", "green", "blue"],
         ["DataGrid"] = ["tree-cell"],
         ["Dialog"] = ["minimize", "maximize", "move", "resize"],
+        ["FileUpload"] = ["cancel", "retry"],
         ["Pagination"] = ["first", "previous", "next", "last"],
         ["Select"] = ["placeholder", "value"],
         ["Slider"] = ["start-thumb", "end-thumb"],

@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @inherits TbFieldBase<IReadOnlyList<IBrowserFile>?>
 
-<div @attributes="RootAttributes" style="@Style" data-commits="@Commits"
+<div @attributes="RootAttributes" style="@Style" data-commits="@Commits" data-uploading="@(Busy ? "" : null)"
      class="@ClassNames.Join("tb-field", "tb-file-upload", ShowsInvalid ? "tb-field--invalid" : null,
                 Disabled ? "tb-field--disabled" : null, ReadOnly ? "tb-field--readonly" : null, Class)">
     @* A hidden field keeps its input so code can open the picker, out of sight and reach; its errors still show. *@
@@ -37,16 +37,42 @@
         <ul data-part="files" class="tb-file-upload__files">
             @foreach (var file in Files)
             {
-                <li data-part="file" class="tb-file-upload__file">
-                    <span class="tb-file-upload__name">@file.Name</span>
-                    <span class="tb-file-upload__size">@FormatSize(file.Size)</span>
-                    <TbIconButton Icon="BuiltInIcons.Close" Size="Size.Small" Variant="Variant.Text"
-                                  AriaLabel="@string.Format(CultureInfo.CurrentCulture, RemoveLabel, file.Name)"
-                                  Disabled="@(Disabled || ReadOnly)" OnClick="() => RemoveAsync(file)"
-                                  data-part="remove" />
+                var item = Item(file);
+                <li @key="file" data-part="file" data-name="@file.Name"
+                    data-status="@(Upload is null ? null : item.Status.ToString().ToLowerInvariant())"
+                    class="tb-file-upload__file">
+                    @if (FileTemplate is not null)
+                    {
+                        @FileTemplate(item)
+                    }
+                    else
+                    {
+                        <span class="tb-file-upload__name">@file.Name</span>
+                        <span class="tb-file-upload__size">@FormatSize(file.Size)</span>
+                    }
+                    @if (Upload is not null)
+                    {
+                        @Progress(item)
+                    }
+                    @{ var button = Button(item); }
+                    <TbIconButton Icon="button.Icon" Size="Size.Small" Variant="Variant.Text" AriaLabel="@button.Label"
+                                  Disabled="@(Disabled || ReadOnly)" OnClick="() => PressAsync(item)"
+                                  data-part="@button.Part" />
+                    @if (item.Status is FileUploadStatus.Failed or FileUploadStatus.Canceled)
+                    {
+                        <TbIconButton Icon="BuiltInIcons.Close" Size="Size.Small" Variant="Variant.Text"
+                                      AriaLabel="@string.Format(CultureInfo.CurrentCulture, RemoveLabel, file.Name)"
+                                      Disabled="@(Disabled || ReadOnly)" OnClick="() => RemoveAsync(file)"
+                                      data-part="remove" />
+                    }
                 </li>
             }
         </ul>
+        @if (Upload is not null && !AutoUpload)
+        {
+            <TbButton Size="Size.Small" Disabled="@(Disabled || ReadOnly || !HasWaiting)" OnClick="UploadAsync"
+                      data-part="upload" class="tb-file-upload__upload">@UploadButtonLabel</TbButton>
+        }
         <TbButton Variant="Variant.Text" Size="Size.Small" Disabled="@(Disabled || ReadOnly)"
                   OnClick="OnClearClickedAsync" data-part="clear"
                   class="tb-file-upload__clear">@ClearLabel</TbButton>
@@ -64,6 +90,23 @@
 </div>
 
 @code {
+    private RenderFragment Progress(FileUploadItem item) => item.Status switch
+    {
+        FileUploadStatus.Uploading =>
+            @<TbProgress Value="Percent(item)" Size="Size.Small" data-part="progress" class="tb-file-upload__progress"
+                         AriaLabel="@Named(Labels.Uploading, TbStrings.FileUploadUploading, item.File.Name)" />,
+        FileUploadStatus.Uploaded =>
+            @<span data-part="status" class="tb-file-upload__status">
+                @(Labels.Uploaded ?? Localizer[TbStrings.FileUploadUploaded])
+            </span>,
+        FileUploadStatus.Failed or FileUploadStatus.Canceled =>
+            @<span data-part="status" class="tb-file-upload__status">
+                @(item.Status == FileUploadStatus.Failed ? Labels.Failed ?? Localizer[TbStrings.FileUploadFailed]
+                    : Labels.Canceled ?? Localizer[TbStrings.FileUploadCanceled])
+            </span>,
+        _ => @<text></text>,
+    };
+
     private RenderFragment UploadLabel =>
         @<label data-part="label" id="@LabelId" for="@InputId" aria-hidden="@(Hidden ? "true" : null)"
                 class="@ClassNames.Join("tb-field__label", Hidden ? "tb-visually-hidden" : LabelHiddenClass,
