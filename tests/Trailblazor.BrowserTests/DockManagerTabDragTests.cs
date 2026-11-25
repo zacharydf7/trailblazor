@@ -34,6 +34,24 @@ public class DockManagerTabDragTests(BrowserFixture fixture) : DockManagerPage(f
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldLeaveThePanelsWhereTheyAre_WhenATabIsDraggedInALockedDock(string browser)
+    {
+        var page = await OpenDockAsync(browser, "?locked=true");
+        var commits = await page.Locator(".tb-dock").GetAttributeAsync("data-commits");
+        var notes = (await Tab(page, "Notes").BoundingBoxAsync())!;
+
+        await CarryAsync(page, "Map", notes.X + notes.Width * 0.75f, notes.Y + notes.Height / 2);
+        await Expect(Mark(page)).ToBeHiddenAsync();
+        await Expect(Tab(page, "Map")).Not.ToHaveAttributeAsync("data-dragging", "");
+        await page.Mouse.UpAsync();
+
+        Assert.Equal(["Trails", "Map", "Notes", "Gear", "Weather"], await page.Tb().Dock().PanelsAsync());
+        Assert.Equal(commits, await page.Locator(".tb-dock").GetAttributeAsync("data-commits"));
+        Assert.True(await page.Tb().Dock().IsLockedAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => page.Tb().Dock().FloatAsync("Map"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dock_ShouldMoveATabAlongItsRowAndLeaveItAlone_WhenItIsDroppedPastANeighborOrOnItsOwnPlace(
         string browser)
     {

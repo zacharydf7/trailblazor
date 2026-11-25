@@ -3773,7 +3773,9 @@ public static class ExampleCatalog
                     + "Without a drag, the menu after each group's tabs moves the group's showing panel back or "
                     + "forward in its row, to the end of another group, or to a new group beside its own or along an "
                     + "edge of the dock, and can also close it. A right-click on a tab opens the same menu for that "
-                    + "tab's panel, whether or not it shows.", typeof(DockManagerDragExample)),
+                    + "tab's panel, whether or not it shows. A `Locked` dock offers neither the drags nor the moves "
+                    + "(see A locked layout).",
+                    typeof(DockManagerDragExample)),
                 new("moving-from-code", "Moving panels from code", "`DockLayout.Move(panel, target, position)` gives "
                     + "back a layout with a panel beside another one, for the app to set as `Layout`: "
                     + "`DockPosition.Before` or `After` makes it a tab next to the target's and shows it, and "
@@ -3790,6 +3792,12 @@ public static class ExampleCatalog
                     + "fills the dock, `Restore()` one in which every group shows, and `Maximized` is the group "
                     + "that fills the dock, or null. Opening a panel in a covered group, or moving one to a "
                     + "covered group or a new one, shows every group again.", typeof(DockManagerMaximizeExample)),
+                new("locked", "A locked layout", "`Locked` keeps the panels where they are, for a kiosk, for people "
+                    + "who must not lose a panel, or for a workspace that is still loading: the menus offer no Move, "
+                    + "New group, Auto-hide, Open in new window, Float or Dock, and tabs and strip buttons don't drag. "
+                    + "Selecting a tab, the separators, Maximize, Close and moving a floating window still work, and so "
+                    + "do the app's own layout changes. A group whose menu would be empty shows no menu and no tab "
+                    + "menu.", typeof(DockManagerLockExample)),
                 new("floating", "Floating windows", "Float in a panel's menus takes it out of its group into a window "
                     + "that floats above the docked groups, inside the dock. So does a drag: a tab dropped on the "
                     + "middle of its own group floats in a window under the pointer, half as wide and as tall as the "
@@ -3939,8 +3947,9 @@ public static class ExampleCatalog
                     + "can be reached, as Packing list is. `FocusablePanels` set to `Always` makes every showing "
                     + "panel a tab stop, and `Never` none.", typeof(DockManagerPanelStopsExample)),
                 new("many", "Many panels and long titles", "A row with more tabs than fit scrolls sideways and "
-                    + "fades at each side that has tabs past it, and the showing tab is brought into view. A long "
-                    + "title is cut short. `Icon` puts an icon before a tab's title.",
+                    + "fades at each side that has tabs past it, and the showing tab is brought into view. Go to tab, "
+                    + "in the group's menu and each tab's, lists every tab of the group, to show one that has "
+                    + "scrolled away. A long title is cut short. `Icon` puts an icon before a tab's title.",
                     typeof(DockManagerManyExample)),
                 new("narrow", "Narrow docks", "A dock narrower than `CompactBelow`, 640 pixels unless set, is "
                     + "compact: where its layout puts groups side by side, it shows its docked panels as the tabs of "
@@ -3973,15 +3982,18 @@ public static class ExampleCatalog
                     + "`FocusablePanels` changes this.")
                     { When = "On a group's menu button" },
                 new(["Shift+F10", "Context menu key"], "Opens the tab's menu on its first item. The menu moves, "
-                    + "floats, docks, auto-hides or closes its panel and maximizes or restores its group, and with "
-                    + "`AllowPopOut` it opens the panel in a browser window of its own.")
+                    + "floats, docks, auto-hides or closes its panel, shows another of the group's tabs and maximizes "
+                    + "or restores its group, and with `AllowPopOut` it opens the panel in a browser window of its "
+                    + "own. In a `Locked` dock it only shows another tab, maximizes or restores and closes, and a group with "
+                    + "none of those has no menu.")
                     { When = "On a tab" },
                 new(["Escape"], "Cancels the drag and leaves the panel where it was.")
                     { When = "While a tab or a strip's button is dragged" },
                 new(["Enter", "Space", "Down"], "Opens the group's menu on its first item. The menu moves, floats, "
-                    + "docks, auto-hides or closes the group's showing panel and maximizes or restores the group, and "
-                    + "with `AllowPopOut` it opens the panel in a browser window of its own. Inside it, the keys are "
-                    + "those of a [menu](components/menu).")
+                    + "docks, auto-hides or closes the group's showing panel, shows another of its tabs and maximizes "
+                    + "or restores the group, and with `AllowPopOut` it opens the panel in a browser window of its "
+                    + "own. In a `Locked` dock it only shows another tab, maximizes or restores and closes. Inside it, the "
+                    + "keys are those of a [menu](components/menu).")
                     { When = "On a group's menu button" },
                 new(["Up"], "Opens that menu on its last item.") { When = "On a group's menu button" },
                 new(["Left", "Right"], "Moves the separator by 1% of the space its two sides share.")
@@ -4210,6 +4222,7 @@ public static class ExampleCatalog
                 "Give the dock an `AriaLabel` when the page has more than one, and give each panel a short "
                     + "`Title`, since an icon alone doesn't name a tab.",
                 "Offer a way to reopen closed panels, such as a View menu that calls `Open`.",
+                "When the layout is `Locked`, say so on the page, since a drag that does nothing gives no reason.",
                 "When `CanClose` asks a question, ask it in a dialog, which gives the focus back to where it "
                     + "was when the answer keeps the panel.",
                 "Set `FocusablePanels` to `Never` only when every panel starts with a control; otherwise a "
@@ -4454,7 +4467,7 @@ public static class ExampleCatalog
                     + "all its children. It has `data-moving` while a tab or a strip's button is dragged, "
                     + "`data-resizing` while a separator, a window or a slid-out panel's edge is, "
                     + "`data-compact-below` with the `CompactBelow` width in pixels, which `Breakpoint.Xs` leaves "
-                    + "out, and `data-compact` while it is compact."),
+                    + "out, `data-compact` while it is compact, and `data-locked` while it is `Locked`."),
                 new("group", "One group's row, across the top of the group's box. `data-group` holds its number, "
                     + "from 0. The one that fills the dock has `data-maximized`, and the ones it covers have the "
                     + "class `tb-dock__group--covered`. A floating window's row has `data-floating`, the class "
@@ -4475,7 +4488,8 @@ public static class ExampleCatalog
                     + "in a browser window of its own. Its items carry `data-move` (`back`, `forward`, `pop-out`, "
                     + "`float`, `dock`, `maximize`, `restore` or `close`), `data-move-group` with a group's "
                     + "number, or `data-move-beside`, `data-move-edge` or `data-move-hide` with `start`, `end`, `top` "
-                    + "or `bottom`."),
+                    + "or `bottom`. Go to tab lists the group's tabs, each item with `data-go-to` holding its panel's "
+                    + "`Id`. A locked dock leaves out the moves, and the menu itself when nothing is left."),
                 new("tab", "One panel's tab, with `data-panel` holding the panel's `Id`, and `data-dragging` while "
                     + "it is dragged."),
                 new("icon", "A tab's or a strip button's icon."),
@@ -4540,6 +4554,12 @@ public static class ExampleCatalog
                     + "finds the dock by its `AriaLabel`; with no name it finds the only one.",
                 "`SelectAsync(\"Notes\")` and `CloseAsync(\"Notes\")` click a panel's tab or its close mark, by the "
                     + "panel's title.",
+                "`IsLockedAsync()` or `IsLocked` says whether the dock is `Locked`, which `data-locked` on the `dock` "
+                    + "part marks.",
+                "For a locked dock the move helpers, `FloatAsync`, `DockAsync`, `AutoHideAsync` and `PopOutAsync` "
+                    + "throw; selecting, closing, maximizing, restoring and resizing still work.",
+                "`SelectAsync(\"Map\")` shows a tab however far its row has scrolled. To go through Go to tab as a "
+                    + "user does, `ChooseFromTabMenuAsync(\"Trails\", \"Go to tab\", \"Map\")`.",
                 "`PanelsAsync()` or `Panels` lists every tab in reading order, and `ShowingAsync()` or `Showing` the "
                     + "panels that show.",
                 "`CloseAsync(\"Notes\")` asks the panel's `CanClose`, as a user's close does, and returns once the "

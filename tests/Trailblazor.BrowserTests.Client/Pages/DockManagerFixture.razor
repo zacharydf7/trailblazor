@@ -11,7 +11,7 @@
     @* Tests narrow this dock to move its separators' limits, so it keeps its groups unless a test asks for the
        compact form. *@
     <TbDockManager @bind-Layout="_layout" AriaLabel="Hike planner" MinGroupSize="64" PersistenceKey="@Key"
-                   CompactBelow="@(Compact ? Breakpoint.Sm : Breakpoint.Xs)">
+                   CompactBelow="@(Compact ? Breakpoint.Sm : Breakpoint.Xs)" Locked="Locked">
         <EmptyContent>Nothing is open.</EmptyContent>
         <ChildContent>
         <TbDockPanel Id="trails" Title="Trails">
@@ -99,6 +99,9 @@
 
     [SupplyParameterFromQuery]
     private bool Compact { get; set; }
+
+    [SupplyParameterFromQuery]
+    private bool Locked { get; set; }
 
     protected override void OnInitialized()
     {

@@ -716,3 +716,4 @@ Trailblazor.Testing.Playwright.TbValidationSummaryLocator.FollowAsync(string! me
 Trailblazor.Testing.Playwright.TbValidationSummaryLocator.MessagesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
 Trailblazor.Testing.Playwright.TbValidationSummaryLocator.TbValidationSummaryLocator(Microsoft.Playwright.ILocator! scope) -> void
 Trailblazor.Testing.Playwright.TrailblazorPage.ValidationSummary() -> Trailblazor.Testing.Playwright.TbValidationSummaryLocator!
+Trailblazor.Testing.Playwright.TbDockLocator.IsLockedAsync() -> System.Threading.Tasks.Task<bool>!

@@ -7995,3 +7995,8 @@ Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.End.get -> Microsoft.AspNetCor
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.End.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Start.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.Start.set -> void
+Trailblazor.DockLabels.GoToTab.get -> string?
+Trailblazor.DockLabels.GoToTab.init -> void
+Trailblazor.TbDockManager.Locked.get -> bool
+Trailblazor.TbDockManager.Locked.set -> void
+const Trailblazor.TbStrings.DockGoToTab = "Dock.GoToTab" -> string!

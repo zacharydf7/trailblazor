@@ -1,0 +1,22 @@
+<TbStack Gap="2">
+    <TbSwitch @bind-Value="_locked" Label="Lock the layout" />
+    <TbDockManager @bind-Layout="_layout" Locked="_locked" AriaLabel="Trip board" Style="block-size: 20rem">
+        <TbDockPanel Id="route" Title="Route">
+            <TbText class="tb-p-3">Trailhead to the saddle, then along the ridge to the summit.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="gear" Title="Gear">
+            <TbText class="tb-p-3">Boots, water filter, rain shell and a map.</TbText>
+        </TbDockPanel>
+        <TbDockPanel Id="weather" Title="Weather" Closable="false">
+            <TbText class="tb-p-3">Clear in the morning, with showers after three.</TbText>
+        </TbDockPanel>
+    </TbDockManager>
+</TbStack>
+
+@code {
+    private bool _locked = true;
+
+    private DockLayout _layout = new(new DockSplit(
+        new DockGroup("route", "gear") { Size = 2 },
+        new DockGroup("weather") { Size = 1 }));
+}

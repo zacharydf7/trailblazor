@@ -629,6 +629,76 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
+    public void Menu_ShouldOfferNoMoves_WhenTheDockIsLocked()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        cut.Render(parameters => parameters.Add(dock => dock.Locked, true));
+
+        var menu = cut.FindAll("[data-part=group-menu]")[0];
+        Assert.Empty(menu.QuerySelectorAll(
+            "[data-move=back], [data-move=forward], [data-move=float], [data-move=pop-out], [data-move=dock], "
+            + "[data-move-group], [data-move-beside], [data-move-edge], [data-move-hide]"));
+        Assert.Equal(["Trails", "Map"], menu.QuerySelectorAll("[data-go-to]").Select(item => item.TextContent.Trim()));
+        Assert.NotNull(menu.QuerySelector("[data-move=maximize]"));
+        Assert.NotNull(menu.QuerySelector("[data-move=close]"));
+        Assert.Equal("", cut.Find("[data-part=dock]").GetAttribute("data-locked"));
+    }
+
+    [Fact]
+    public void Menu_ShouldNotShow_WhenTheDockIsLockedAndItsOnlyPanelCantCloseOrFillTheDock()
+    {
+        var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Locked, true)
+            .Add(dock => dock.Layout, new DockLayout(new DockGroup("notes")))
+            .Add(dock => dock.ChildContent, Panels(new Panel("notes", "Notes", Closable: false))));
+
+        Assert.Empty(cut.FindAll("[data-part=group-menu]"));
+        Assert.True(Assert.Single(cut.FindComponents<TbContextMenu>()).Instance.Disabled);
+    }
+
+    [Fact]
+    public async Task Helpers_ShouldRefuseToMoveAPanelButStillMaximize_WhenTheDockIsLocked()
+    {
+        var cut = RenderDock(Hike, HikePanels);
+        cut.Render(parameters => parameters.Add(dock => dock.Locked, true));
+        var dock = cut.Tb().Dock();
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => dock.FloatAsync("Trails"));
+        await dock.MaximizeAsync("Trails");
+
+        Assert.True(dock.IsLocked);
+        Assert.Contains("Locked", refused.Message);
+        Assert.NotEmpty(cut.FindAll("[data-part=restore]"));
+    }
+
+    [Fact]
+    public async Task GoToTab_ShouldShowThatPanel_WhenChosenInTheGroupsMenu()
+    {
+        DockLayout? changed = null;
+        var cut = RenderDock(Hike, HikePanels, layout => changed = layout);
+
+        await cut.Find("[data-part=group-menu] [data-go-to=map]").ClickAsync();
+
+        Assert.Equal("map", changed!.GroupOf("map")!.Active);
+        Assert.Equal("true", Tab(cut, "Map").GetAttribute("aria-selected"));
+    }
+
+    [Fact]
+    public async Task Drop_ShouldKeepTheLayoutAndStillCount_WhenTheDockIsLocked()
+    {
+        var changes = 0;
+        var cut = RenderDock(Hike, HikePanels, _ => changes++);
+        cut.Render(parameters => parameters.Add(dock => dock.Locked, true));
+
+        await cut.InvokeAsync(() => Report().OnMove("map", "weather", "Top"));
+        await cut.InvokeAsync(() => Report().OnPullOut("map", 10, 10, 50, 50));
+        await cut.InvokeAsync(() => Report().OnAutoHide("map", "Start"));
+
+        Assert.Equal(0, changes);
+        Assert.Equal([["Trails", "Map"], ["Notes"], ["Weather"]], cut.FindAll("[data-part=group]").Select(Titles));
+        Assert.Equal("3", cut.Find("[data-part=dock]").GetAttribute("data-commits"));
+    }
+
+    [Fact]
     public async Task Menu_ShouldMoveTheTabAlongItsRowAndSayWhereItWent_WhenForwardIsChosen()
     {
         using var used = new MetricCollector<long>(Services.GetRequiredService<IMeterFactory>(), "Trailblazor",

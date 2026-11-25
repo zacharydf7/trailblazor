@@ -944,11 +944,14 @@ export function attachDock(root, reporter) {
         },
         onCancel: endCarry,
     };
+    // A locked dock keeps its panels where they are, so its tabs and strip buttons don't drag.
+    const unlocked = () => !('locked' in root.dataset);
     const tabDrag = createPointerDrag(root, { ...carrying, itemSelector: '.tb-dock__tab',
-        ignoreSelector: '[data-part="close"]', ownsPress: target => Boolean(ownPart(target, 'tab')) });
+        ignoreSelector: '[data-part="close"]', ownsPress: target => unlocked() && Boolean(ownPart(target, 'tab')) });
     // A strip's button drags as a tab does: into the dock, to where the mark shows, or onto another strip.
     const stripDrag = createPointerDrag(root.parentElement, { ...carrying, itemSelector: '[data-part="strip-button"]',
-        ownsPress: target => target.closest('[data-part="strip"]')?.parentElement === root.parentElement });
+        ownsPress: target => unlocked()
+            && target.closest('[data-part="strip"]')?.parentElement === root.parentElement });
 
     // The tab menu that last opened and what held the focus then. The menu gives the focus back a moment after it
     // closes, and in WebAssembly the dock asks who holds the focus before that, so until the menu has closed this is

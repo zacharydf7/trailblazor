@@ -41,6 +41,10 @@ public sealed record DockLabels
     /// <see cref="TbStrings.DockMoveToGroup"/>.</summary>
     public string? MoveToGroup { get; init; }
 
+    /// <summary>The submenu that lists a group's tabs, to show one. Leave it null for the app's text for
+    /// <see cref="TbStrings.DockGoToTab"/>.</summary>
+    public string? GoToTab { get; init; }
+
     /// <summary>Names a group in that submenu, with <c>{0}</c> for its number and <c>{1}</c> for the title of its
     /// showing panel. Leave it null for the app's text for <see cref="TbStrings.DockGroupItem"/>.</summary>
     public string? GroupItem { get; init; }

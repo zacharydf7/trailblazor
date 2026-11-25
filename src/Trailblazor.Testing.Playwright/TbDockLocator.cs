@@ -180,14 +180,26 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     /// go first.</summary>
     public async Task<bool> IsCompactAsync() => await Root.GetAttributeAsync("data-compact") is not null;
 
+    /// <summary>Whether the dock is <c>Locked</c>, so that its menus offer no moves and its tabs don't drag. For a
+    /// locked dock the helpers that move, float, dock, auto-hide or pop out a panel throw; selecting, closing,
+    /// maximizing, restoring and resizing still work.</summary>
+    public async Task<bool> IsLockedAsync() => await Root.GetAttributeAsync("data-locked") is not null;
+
+    private const string Locked = "The dock is Locked, so its menus offer no moves: set Locked to false first.";
+
     private const string Compact = "The dock is compact: it is narrower than its CompactBelow width and shows one "
         + "group, so a panel can't get a new group. Make the dock wider, or set a smaller CompactBelow, such as "
         + "Breakpoint.Xs.";
 
     // Clicks an item of the menu of the panel's group, which acts on the group's showing panel, and waits until the
     // app has the layout.
-    private async Task ChooseAsync(string panel, string hook, string missing)
+    private async Task ChooseAsync(string panel, string hook, string missing, bool moves = true)
     {
+        if (moves && await IsLockedAsync())
+        {
+            throw new InvalidOperationException(Locked);
+        }
+
         var tab = await ReachableAsync(panel);
         if (await tab.GetAttributeAsync("aria-selected") != "true")
         {
@@ -196,6 +208,12 @@ public sealed class TbDockLocator(ILocator scope, string? name)
 
         var trigger = tab.Locator(
             "xpath=ancestor::*[@data-part='group'][1]/*[@data-part='group-menu']/*[@data-part='trigger']");
+        // A locked dock leaves out a menu that would have nothing in it.
+        if (await trigger.CountAsync() == 0)
+        {
+            throw new InvalidOperationException(missing);
+        }
+
         // The items are on the page whether the menu is open or not.
         var item = Scope.Document(scope).Locator($"[id='{await trigger.GetAttributeAsync("aria-controls")}']")
             .Locator(hook);
@@ -399,7 +417,7 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     /// <summary>Shows the panel with this title and has its group fill the dock, with "Maximize" in its group's
     /// menu. Throws when the group is the dock's only one, or fills the dock already.</summary>
     public async Task MaximizeAsync(string panel) => await ChooseAsync(panel, "[data-move=maximize]",
-        $"The group of \"{panel}\" is the dock's only one, or fills the dock already.");
+        $"The group of \"{panel}\" is the dock's only one, or fills the dock already.", moves: false);
 
     /// <summary>Shows every group again, with the Restore button of the group that fills the dock, and waits until
     /// the app's <c>LayoutChanged</c> has run. Throws when no group fills the dock.</summary>

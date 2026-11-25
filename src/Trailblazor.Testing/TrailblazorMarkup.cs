@@ -3553,6 +3553,13 @@ public sealed class TbDockDriver
     /// docked panels showing as the tabs of one group in place of the groups its layout puts side by side.</summary>
     public bool IsCompact => _find().HasAttribute("data-compact");
 
+    /// <summary>Whether the dock is <c>Locked</c>, so that its menus offer no moves and its tabs don't drag. For a
+    /// locked dock the helpers that move, float, dock, auto-hide or pop out a panel throw; selecting, closing,
+    /// maximizing, restoring and resizing still work.</summary>
+    public bool IsLocked => _find().HasAttribute("data-locked");
+
+    private const string Locked = "The dock is Locked, so its menus offer no moves: set Locked to false first.";
+
     /// <summary>Tells the dock that it is narrower than its <c>CompactBelow</c> width or, with false, that it is
     /// wide enough again. On a page the dock's script does this from the dock's own width. A narrow dock whose
     /// layout puts groups side by side becomes compact, unless its <c>CompactBelow</c> is <c>Breakpoint.Xs</c>.
@@ -3679,7 +3686,7 @@ public sealed class TbDockDriver
     /// <summary>Shows the panel with this title and has its group fill the dock, as "Maximize" in its group's menu
     /// does. Throws when the group is the dock's only one, or fills the dock already.</summary>
     public async Task MaximizeAsync(string panel) => await ChooseAsync(panel, "[data-move=maximize]",
-        $"The group of \"{panel}\" is the dock's only one, or fills the dock already.");
+        $"The group of \"{panel}\" is the dock's only one, or fills the dock already.", moves: false);
 
     /// <summary>Shows every group again, as the Restore button of the group that fills the dock does. Throws when
     /// no group fills the dock.</summary>
@@ -3743,8 +3750,13 @@ public sealed class TbDockDriver
     }
 
     // Clicks an item of the menu of the panel's group, which acts on the group's showing panel.
-    private async Task ChooseAsync(string panel, string item, string missing)
+    private async Task ChooseAsync(string panel, string item, string missing, bool moves = true)
     {
+        if (moves && IsLocked)
+        {
+            throw new InvalidOperationException(Locked);
+        }
+
         await SlidOutAsync(panel);
         if (Reachable(panel).GetAttribute("aria-selected") != "true")
         {
@@ -3753,8 +3765,8 @@ public sealed class TbDockDriver
 
         var menu = Tab(panel).Closest("[data-part=group]")!.Children
             .SingleOrDefault(child => child.GetAttribute("data-part") == "group-menu")
-            ?? throw new InvalidOperationException(
-                "The dock is on a static page, where it has no menus; render it on an interactive page.");
+            ?? throw new InvalidOperationException(IsLocked ? missing
+                : "The dock is on a static page, where it has no menus; render it on an interactive page.");
         var found = menu.QuerySelector(item);
         if (found is null || found.GetAttribute("aria-disabled") == "true")
         {

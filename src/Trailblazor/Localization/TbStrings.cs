@@ -930,6 +930,9 @@ public static class TbStrings
     /// <summary>"Open in new window": a dock menu item that opens a panel in a browser window of its own.</summary>
     public const string DockPopOut = "Dock.PopOut";
 
+    /// <summary>"Go to tab": the dock submenu that lists a group's tabs, to show one.</summary>
+    public const string DockGoToTab = "Dock.GoToTab";
+
     /// <summary>"Return to the dock": the button in a dock panel's own browser window that brings the panel back.
     /// </summary>
     public const string DockReturn = "Dock.Return";
@@ -2171,6 +2174,7 @@ public static class TbStrings
         [DockDock] = "Dock",
         [DockFloated] = "{0} floats in a window.",
         [DockPopOut] = "Open in new window",
+        [DockGoToTab] = "Go to tab",
         [DockReturn] = "Return to the dock",
         [DockPoppedOut] = "{0} opened in a new window.",
         [DockReturned] = "{0} is back in the dock.",

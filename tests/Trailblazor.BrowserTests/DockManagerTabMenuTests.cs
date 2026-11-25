@@ -56,6 +56,17 @@ public class DockManagerTabMenuTests(BrowserFixture fixture) : DockManagerPage(f
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Dock_ShouldShowTheChosenTab_WhenGoToTabIsChosenInATabsMenu(string browser)
+    {
+        var page = await OpenDockAsync(browser);
+
+        await page.Tb().Dock().ChooseFromTabMenuAsync("Trails", "Go to tab", "Map");
+
+        await Expect(Tab(page, "Map")).ToHaveAttributeAsync("aria-selected", "true");
+        Assert.Equal(["Map", "Notes", "Weather"], await page.Tb().Dock().ShowingAsync());
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Dock_ShouldOpenTheFocusedTabsMenuAndGiveTheFocusBack_WhenShiftF10OrTheMenuKeyIsPressed(
         string browser)
     {

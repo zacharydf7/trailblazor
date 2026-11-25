@@ -64,7 +64,7 @@
      tabindex="@(empty ? "-1" : null)"
      data-report="@_reported" data-commits="@(RendererInfo.IsInteractive ? _counted : null)"
      data-min-size="@MinGroupSize" data-focusable-panels="@PanelStops" data-persistence-key="@PersistenceKey"
-     data-compact-below="@CompactWidth" data-compact="@_compact"
+     data-compact-below="@CompactWidth" data-compact="@_compact" data-locked="@(Locked ? "" : null)"
      data-connection-lost="@ConnectionLostText"
      class="tb-dock">
     @Content(_declared, panels)
@@ -108,7 +108,8 @@
                 @* A right-click, a long press, Shift+F10 or the context menu key on a tab opens the menu for that
                    tab's panel, and on the row's empty part for the group's showing panel. *@
                 <TbContextMenu Class="tb-dock__tab-area"
-                               AriaLabel="@(Labels.TabMenu ?? Localizer[TbStrings.DockTabMenu])">
+                               AriaLabel="@(Labels.TabMenu ?? Localizer[TbStrings.DockTabMenu])"
+                               Disabled="@(!HasMenu(group, group.Box.Active, others))">
                     <ChildContent>
                         <div role="tablist" data-part="tabs" class="tb-dock__tabs" data-context-key="@group.Box.Active"
                              aria-label="@(group.Edge is not null
@@ -168,11 +169,14 @@
                                       AriaLabel="@(Labels.Restore ?? Localizer[TbStrings.DockRestore])"
                                       OnClick="() => MaximizeAsync(group.Box.Active, false)" />
                     }
-                    <TbMenu Icon="BuiltInIcons.More" Size="Size.Small" Align="PlacementAlign.End" AttachOnFirstUse
-                            Class="tb-dock__menu" data-part="group-menu"
-                            AriaLabel="@Format(Labels.Menu, TbStrings.DockMenu, Panel(group.Box.Active)!.Title)">
-                        @MenuItems(group, group.Box.Active, others, id => CloseAsync(id, true))
-                    </TbMenu>
+                    @if (HasMenu(group, group.Box.Active, others))
+                    {
+                        <TbMenu Icon="BuiltInIcons.More" Size="Size.Small" Align="PlacementAlign.End" AttachOnFirstUse
+                                Class="tb-dock__menu" data-part="group-menu"
+                                AriaLabel="@Format(Labels.Menu, TbStrings.DockMenu, Panel(group.Box.Active)!.Title)">
+                            @MenuItems(group, group.Box.Active, others, id => CloseAsync(id, true))
+                        </TbMenu>
+                    }
                 }
             </div>
         }
@@ -491,6 +495,14 @@
     /// on the page. Off by default.</summary>
     [Parameter]
     public bool AllowPopOut { get; set; }
+
+    /// <summary>Keeps the panels where they are: their menus offer no Move, New group, Auto-hide, Open in new window,
+    /// Float or Dock, their tabs and strip buttons can't be dragged, and a group whose menu would be empty shows none.
+    /// Selecting a tab, the separators, maximizing, closing, moving a floating window and the app's own layout changes
+    /// still work. For a kiosk, for people who must not lose a panel, or for a workspace that is still loading. Off by
+    /// default.</summary>
+    [Parameter]
+    public bool Locked { get; set; }
 
     /// <summary>Raised with <see cref="PoppedOut"/> when a panel goes to a browser window of its own or comes back
     /// from one.</summary>
@@ -1268,6 +1280,58 @@
         Func<string, Task> close) => __builder =>
     {
         var tabs = group.Box.Panels;
+        var canMaximize = CanMaximize(group, others);
+        @if (!Locked)
+        {
+            @MoveItems(group, panel, others)
+        }
+        @if (tabs.Count > 1)
+        {
+            @* A row with too many tabs scrolls sideways, so the menu lists them all. *@
+            <TbSubMenu Label="@(Labels.GoToTab ?? Localizer[TbStrings.DockGoToTab])">
+                @foreach (var each in tabs)
+                {
+                    <TbMenuItem @key="each" data-go-to="@each" OnClick="() => SelectAsync(each)">
+                        @Panel(each)!.Title
+                    </TbMenuItem>
+                }
+            </TbSubMenu>
+        }
+        @if (group.Maximized)
+        {
+            <TbMenuItem data-move="restore" OnClick="() => MaximizeAsync(panel, false)">
+                @(Labels.Restore ?? Localizer[TbStrings.DockRestore])
+            </TbMenuItem>
+        }
+        else if (canMaximize)
+        {
+            <TbMenuItem data-move="maximize" OnClick="() => MaximizeAsync(panel, true)">
+                @(Labels.Maximize ?? Localizer[TbStrings.DockMaximize])
+            </TbMenuItem>
+        }
+        @if (Panel(panel)!.Closable)
+        {
+            @if (!Locked || tabs.Count > 1 || group.Maximized || canMaximize)
+            {
+                <TbMenuSeparator />
+            }
+            <TbMenuItem data-move="close" OnClick="() => close(panel)">
+                @(Labels.Close ?? Localizer[TbStrings.DockClose])
+            </TbMenuItem>
+        }
+    };
+
+    // Whether the menu for one of a group's panels has anything to offer: a locked dock can leave it empty.
+    private bool HasMenu(GroupSlot group, string panel, List<GroupSlot> others) => !Locked || group.Box.Panels.Count > 1
+        || group.Maximized || CanMaximize(group, others) || Panel(panel)!.Closable;
+
+    private static bool CanMaximize(GroupSlot group, List<GroupSlot> others) =>
+        group.Layer is null && others.Any(each => each.Layer is null);
+
+    // The items that move a panel, which a locked dock leaves out.
+    private RenderFragment MoveItems(GroupSlot group, string panel, List<GroupSlot> others) => __builder =>
+    {
+        var tabs = group.Box.Panels;
         var at = tabs.TakeWhile(each => each != panel).Count();
         var sibling = tabs.FirstOrDefault(each => each != panel);
         <TbMenuItem Disabled="at == 0" data-move="back"
@@ -1350,25 +1414,6 @@
             <TbMenuItem data-move="dock"
                         OnClick="() => MoveAsync(panel, _layout.Close(panel).Open(panel), DockAction)">
                 @(Labels.Dock ?? Localizer[TbStrings.DockDock])
-            </TbMenuItem>
-        }
-        @if (group.Maximized)
-        {
-            <TbMenuItem data-move="restore" OnClick="() => MaximizeAsync(panel, false)">
-                @(Labels.Restore ?? Localizer[TbStrings.DockRestore])
-            </TbMenuItem>
-        }
-        else if (group.Layer is null && others.Any(each => each.Layer is null))
-        {
-            <TbMenuItem data-move="maximize" OnClick="() => MaximizeAsync(panel, true)">
-                @(Labels.Maximize ?? Localizer[TbStrings.DockMaximize])
-            </TbMenuItem>
-        }
-        @if (Panel(panel)!.Closable)
-        {
-            <TbMenuSeparator />
-            <TbMenuItem data-move="close" OnClick="() => close(panel)">
-                @(Labels.Close ?? Localizer[TbStrings.DockClose])
             </TbMenuItem>
         }
     };
@@ -1644,9 +1689,9 @@
     // A dragged tab or strip button was dropped on a strip, which puts its panel away there.
     private async Task AutoHideFromScriptAsync(string panel, string edge)
     {
-        // A drop the dock can't use, for a panel it doesn't have or a name that isn't one of the four edges, keeps the
-        // layout and still counts.
-        if (Panel(panel) is not null && Enum.TryParse<DockPosition>(edge, ignoreCase: true, out var where)
+        // A drop the dock can't use, in a locked dock, for a panel it doesn't have or a name that isn't one of the four
+        // edges, keeps the layout and still counts.
+        if (!Locked && Panel(panel) is not null && Enum.TryParse<DockPosition>(edge, ignoreCase: true, out var where)
             && where is DockPosition.Start or DockPosition.End or DockPosition.Top or DockPosition.Bottom)
         {
             await AutoHideAsync(panel, where);
@@ -1780,10 +1825,12 @@
     // no target.
     private async Task MoveFromScriptAsync(string panel, string? target, string position)
     {
-        // A drop the dock can't use keeps the layout: a panel or a place it doesn't have, or an edge given Before or
-        // After. It still counts as a move that changed nothing, so a test that waits for the drop goes on.
+        // A drop the dock can't use keeps the layout: one in a locked dock, a panel or a place it doesn't have, or an
+        // edge given Before or After. It still counts as a move that changed nothing, so a test that waits for the
+        // drop goes on.
         var layout = _layout;
-        if (Panel(panel) is not null && Enum.TryParse<DockPosition>(position, out var where) && Enum.IsDefined(where))
+        if (!Locked && Panel(panel) is not null && Enum.TryParse<DockPosition>(position, out var where)
+            && Enum.IsDefined(where))
         {
             layout = target is not null ? _layout.Move(panel, target, where)
                 : where is DockPosition.Before or DockPosition.After ? _layout : _layout.MoveToEdge(panel, where);
@@ -1796,8 +1843,9 @@
     // A dragged tab was dropped on the middle of its own group, which pulls its panel out into a window there.
     private async Task PullOutFromScriptAsync(string panel, DockBox box)
     {
-        // Rounded as a window's style is. A panel the dock doesn't have keeps the layout, as any other drop does.
-        await MoveAsync(panel, Panel(panel) is null ? _layout
+        // Rounded as a window's style is. A locked dock, or a panel the dock doesn't have, keeps the layout, as any
+        // other drop does.
+        await MoveAsync(panel, Locked || Panel(panel) is null ? _layout
             : _layout.FloatAt(panel, Round(box.X), Round(box.Y), Round(box.Width), Round(box.Height)), FloatAction);
         StateHasChanged();
     }
