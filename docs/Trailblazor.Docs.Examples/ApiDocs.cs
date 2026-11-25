@@ -49,9 +49,10 @@ public static partial class ApiDocs
     };
 
     // A component lists its parameters, apart from Class, Style and attributes, which every component takes, in
-    // Parameters, Content and Events groups, then its own methods. An options type lists the properties a caller
-    // sets. A service interface, or a handle the library hands out, which has no constructor to call, lists its
-    // properties, events and methods, leaving out the accessor methods the compiler makes for the first two.
+    // Parameters, Content and Events groups, then the public properties of its own that aren't parameters, such as a
+    // layout to save, then its own methods. An options type lists the properties a caller sets. A service interface,
+    // or a handle the library hands out, which has no constructor to call, lists its properties, events and methods,
+    // leaving out the accessor methods the compiler makes for the first two.
     public static ApiType Describe(Type type)
     {
         var id = IdOf(type);
@@ -88,10 +89,16 @@ public static partial class ApiDocs
                 Groups(new ApiGroup("Properties", [.. members.Select(pair => pair.member)], true)));
         }
 
+        var nullability = new NullabilityInfoContext();
         return new(TypeName(type), id, Summary($"T:{type.FullName}"), Groups(
             new("Parameters", Kind(members, KindOf.Value), true),
             new("Content", Kind(members, KindOf.Content), false),
             new("Events", Kind(members, KindOf.Event), false),
+            new("Properties", [.. type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(property => !property.IsDefined(typeof(ParameterAttribute))
+                    && property.DeclaringType != typeof(TbComponentBase))
+                .OrderBy(property => Depth(property.DeclaringType!)).ThenBy(property => property.MetadataToken)
+                .Select(property => InterfaceProperty(property, nullability, id))], false),
             new("Methods", Methods(type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                 .Where(method => method.DeclaringType!.IsAssignableTo(typeof(TbComponentBase))
                     && !SharedComponentMethods.Contains(method.Name)), id), false)));

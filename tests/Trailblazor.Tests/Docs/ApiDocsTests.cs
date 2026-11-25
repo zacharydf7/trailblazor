@@ -159,6 +159,19 @@ public class ApiDocsTests
     }
 
     [Fact]
+    public void Describe_ShouldListPropertiesThatArentParameters_WhenAComponentHasThem()
+    {
+        var groups = ApiDocs.Describe(typeof(TbDockManager)).Groups;
+
+        var properties = groups.Single(group => group.Name == "Properties");
+        Assert.Equal(["Parameters", "Content", "Events", "Properties", "Methods"], groups.Select(group => group.Name));
+        Assert.Contains(properties.Members, member => member is { Name: "PoppedOut { get; }",
+            Type: "IReadOnlyList<string>" } && member.Description.Length > 0);
+        Assert.Contains(properties.Members, member => member.Name == "LayoutToSave { get; }");
+        Assert.DoesNotContain(ApiDocs.Describe(typeof(TbButton)).Groups, group => group.Name == "Properties");
+    }
+
+    [Fact]
     public void Describe_ShouldListEnumValuesAndMarkTheDefault_WhenAParameterIsAnEnum()
     {
         var variant = ApiDocs.Describe(typeof(TbButton)).Members.Single(member => member.Name == "Variant");
