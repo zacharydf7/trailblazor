@@ -3958,8 +3958,8 @@ public static class ExampleCatalog
                     + "fades at each side that has tabs past it, and the showing tab is brought into view. Go to tab, "
                     + "in the group's menu and each tab's, lists every tab of the group, to show one that has "
                     + "scrolled away. A long title is cut short. `Icon` puts an icon before a tab's title, and "
-                    + "`TabEnd` puts a count or a status dot after it, as on Mammals, which screen readers hear as the "
-                    + "tab's description, so the tab is still named by its title.",
+                    + "`TabEnd` puts a count or a status dot after it, as on Mammals. That content is part of the "
+                    + "tab's name, but the panel, the menus and the testing helpers still go by the title.",
                     typeof(DockManagerManyExample)),
                 new("narrow", "Narrow docks", "A dock narrower than `CompactBelow`, 640 pixels unless set, is "
                     + "compact: where its layout puts groups side by side, it shows its docked panels as the tabs of "
@@ -4047,8 +4047,8 @@ public static class ExampleCatalog
             [
                 "`AriaLabel` names the dock, which is a `group`. Without one the group has no name, which suits a "
                     + "page with one dock.",
-                "Each tab is named by its panel's `Title`, and each panel by its tab. A panel's `TabEnd` isn't part "
-                    + "of either name; it describes the tab.",
+                "Each tab is named by its panel's `Title`, and each panel by its tab. A panel's `TabEnd` adds to its "
+                    + "tab's name, and the panel is then named by the title alone.",
                 "Each group's tab list is named \"Panel group\" followed by its number.",
                 "Each separator is named \"Resize\" followed by the title of the panel showing in the group just "
                     + "before it, and the grip on its line is a menu `button` named \"Size of\" followed by the "
@@ -4097,7 +4097,7 @@ public static class ExampleCatalog
             Announcements =
             [
                 "On a tab, screen readers say its title, that it's a tab, whether it's selected and its place "
-                    + "among the group's tabs. A panel's `TabEnd` adds its text first, as in \"Mammals, tab, 2 new\". "
+                    + "among the group's tabs. A panel's `TabEnd` follows the title, as in \"Mammals 2 new, tab\". "
                     + "A closable tab adds \"Press Delete to close\". A panel with "
                     + "`Modified` adds \"Unsaved changes\", on its tab before that hint, and on its strip button. In "
                     + "a window of its own, it's said on the panel's button in the away row, after \"In its own "
@@ -4511,8 +4511,7 @@ public static class ExampleCatalog
                     + "it is dragged."),
                 new("icon", "A tab's or a strip button's icon."),
                 new("title", "A tab's or a strip button's title."),
-                new("tab-end", "A tab's `TabEnd` content, after its title. It is left out of the tab's name and read "
-                    + "as the tab's description."),
+                new("tab-end", "A tab's `TabEnd` content, after its title and part of the tab's name."),
                 new("close", "The close mark on a closable tab."),
                 new("modified", "The dot on the tab, strip button, away row button or return button of a panel "
                     + "with `Modified`. That tab or button also gets `data-modified`."),
@@ -4580,8 +4579,9 @@ public static class ExampleCatalog
                     + "the dock; bUnit runs no script, so a press or the focus doesn't change it there.",
                 "For a locked dock the move helpers, `FloatAsync`, `DockAsync`, `AutoHideAsync` and `PopOutAsync` "
                     + "throw; selecting, closing, maximizing, restoring and resizing still work.",
-                "A tab's `TabEnd` isn't part of its name, so the helpers and a `tab` locator find it by its title. "
-                    + "Check its text with `ToHaveAccessibleDescriptionAsync` on the tab, or read the `tab-end` part.",
+                "The helpers find a tab by its title even when its `TabEnd` adds to its name. A `tab` role locator "
+                    + "with `Exact = true` needs the whole name, as in `GetByRole(AriaRole.Tab, new() { Name = "
+                    + "\"Mammals 2 new\", Exact = true })`.",
                 "`SelectAsync(\"Map\")` shows a tab however far its row has scrolled. To go through Go to tab as a "
                     + "user does, `ChooseFromTabMenuAsync(\"Trails\", \"Go to tab\", \"Map\")`.",
                 "`PanelsAsync()` or `Panels` lists every tab in reading order, and `ShowingAsync()` or `Showing` the "

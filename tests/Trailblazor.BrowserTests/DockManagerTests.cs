@@ -405,15 +405,16 @@ public class DockManagerDriverTests(BrowserFixture fixture) : DockManagerPage(fi
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
-    public async Task Tab_ShouldShowItsEndAndBeDescribedByIt_WhenThePanelHasTabEnd(string browser)
+    public async Task Tab_ShouldShowItsEndAndBeNamedByIt_WhenThePanelHasTabEnd(string browser)
     {
         var page = await OpenDockAsync(browser, "?counts=true");
-        var gear = Tab(page, "Gear");
+        var gear = Tab(page, "Gear 3 to pack");
 
         await page.Tb().Dock().SelectAsync("Gear");
 
         await Expect(gear.Locator("[data-part=tab-end]")).ToBeVisibleAsync();
-        await Expect(gear).ToHaveAccessibleDescriptionAsync("3 to pack Press Delete to close");
+        await Expect(gear).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(gear).ToHaveAccessibleDescriptionAsync("Press Delete to close");
         await Expect(page.GetByRole(AriaRole.Tabpanel, new() { Name = "Gear", Exact = true })).ToBeVisibleAsync();
         await Expect(gear.Locator("[data-part=close]")).ToBeVisibleAsync();
         Assert.Equal(["Trails", "Map", "Notes", "Gear", "Weather"], await page.Tb().Dock().PanelsAsync());

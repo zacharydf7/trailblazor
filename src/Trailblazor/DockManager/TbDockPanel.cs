@@ -23,11 +23,11 @@ public sealed class TbDockPanel : TbComponentBase, IDisposable
     [Parameter]
     public Icon? Icon { get; set; }
 
-    /// <summary>Content in the panel's tab after its title, such as a count or a status dot. Screen readers hear its
-    /// text after the tab's name, as its description, and the tab and the panel keep <see cref="Title"/> as their
-    /// name, so the menus, the testing helpers and the announcements as the panel moves still name it by its title.
-    /// Give it text a screen reader can say, such as a badge's <c>Label</c>, keep it short, and leave controls out of
-    /// it: the tab is a button.</summary>
+    /// <summary>Content in the panel's tab after its title, such as a count or a status dot. Its text is part of the
+    /// tab's name, so the name matches what the tab shows for screen readers and speech input. The panel keeps
+    /// <see cref="Title"/> as its name, and the menus, the announcements and the testing helpers still name it by its
+    /// title. Give it text a screen reader can say, such as a badge's <c>Label</c>, keep it short, and leave controls
+    /// out of it: the tab is a button.</summary>
     [Parameter]
     public RenderFragment? TabEnd { get; set; }
 

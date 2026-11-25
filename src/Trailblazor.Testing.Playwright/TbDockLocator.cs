@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 
 namespace Trailblazor.Testing.Playwright;
@@ -13,8 +14,11 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     // The dock's own tabs, not those of tabs inside a panel.
     private ILocator Tabs => Root.Locator(":scope > .tb-dock__group .tb-dock__tab");
 
-    private ILocator Tab(string panel) =>
-        Tabs.And(Root.GetByRole(AriaRole.Tab, new() { Name = panel, Exact = true }));
+    // By the title alone, since a panel's TabEnd content follows it in the tab's name.
+    private ILocator Tab(string panel) => Tabs.Filter(new() { Has = Title(panel) });
+
+    private ILocator Title(string panel) => Root.Page.Locator("[data-part=title]",
+        new() { HasTextRegex = new Regex($"^{Regex.Escape(panel)}$") });
 
     // The frame around the dock's area, which holds the strips of auto-hidden panels beside it.
     private ILocator Frame => Root.Locator("xpath=..");
@@ -29,9 +33,9 @@ public sealed class TbDockLocator(ILocator scope, string? name)
     private async Task<ILocator> ReachableAsync(string panel)
     {
         await Assertions.Expect(Root).ToHaveAttributeAsync("data-ready", "");
-        // A covered tab is hidden from screen readers, so only IncludeHidden finds it by role.
+        // A covered tab is hidden from screen readers, so it is found by its title rather than by role.
         var covered = Root.Locator(":scope > .tb-dock__group--covered .tb-dock__tab")
-            .And(Root.GetByRole(AriaRole.Tab, new() { Name = panel, Exact = true, IncludeHidden = true }));
+            .Filter(new() { Has = Title(panel) });
         if (await covered.CountAsync() > 0)
         {
             throw new InvalidOperationException(

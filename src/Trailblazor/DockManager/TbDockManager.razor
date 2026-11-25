@@ -127,20 +127,19 @@
                                         tabindex="@(selected ? 0 : -1)" data-part="tab" data-panel="@id"
                                         data-context-key="@id"
                                         aria-keyshortcuts="@(panel.Closable ? "Delete Backspace" : null)"
-                                        aria-labelledby="@(panel.TabEnd is null ? null : TitleId(id))"
-                                        aria-describedby="@TabHints(id, panel)" class="tb-dock__tab"
+                                        aria-describedby="@TabHints(panel)" class="tb-dock__tab"
                                         data-modified="@(panel.Modified ? "" : null)" @onclick="_select.For(id)">
                                     @if (panel.Icon is { } icon)
                                     {
                                         <TbIcon Icon="icon" Size="Size.Small" data-part="icon" />
                                     }
-                                    @* With TabEnd content, the tab and its panel are named by the title alone, and
-                                       the content describes the tab. *@
+                                    @* TabEnd content is part of the tab's name, and its panel is named by the title
+                                       alone. *@
                                     <span id="@(panel.TabEnd is null ? null : TitleId(id))" data-part="title"
                                           class="tb-dock__title">@panel.Title</span>
                                     @if (panel.TabEnd is { } end)
                                     {
-                                        <span id="@TabEndId(id)" data-part="tab-end" class="tb-dock__tab-end">@end</span>
+                                        <span data-part="tab-end" class="tb-dock__tab-end">@end</span>
                                     }
                                     @if (panel.Modified)
                                     {
@@ -1135,21 +1134,16 @@
         }
     }
 
-    // What screen readers hear after a tab's name: its TabEnd content, then that it is modified and how to close it.
-    private string? TabHints(string id, TbDockPanel panel)
+    // What describes a tab to screen readers: that its panel has unsaved changes, and how to close it.
+    private string? TabHints(TbDockPanel panel)
     {
-        var hints = new[]
-        {
-            panel.TabEnd is null ? null : TabEndId(id), panel.Modified ? _modifiedHintId : null,
-            panel.Closable ? _closeHintId : null,
-        }.OfType<string>().ToList();
+        var hints = new[] { panel.Modified ? _modifiedHintId : null, panel.Closable ? _closeHintId : null }
+            .OfType<string>().ToList();
         return hints.Count == 0 ? null : string.Join(' ', hints);
     }
 
-    // Prefixes that no other id here uses, so a panel whose id has a hyphen can't take another's.
+    // A prefix that no other id here uses, so a panel whose id has a hyphen can't take another's.
     private string TitleId(string panel) => $"{_id}-title-{panel}";
-
-    private string TabEndId(string panel) => $"{_id}-end-{panel}";
 
     // The showing tab of the group that fills the dock, which covers the others, or else of the first group or window.
     private string? FirstShowingTab()

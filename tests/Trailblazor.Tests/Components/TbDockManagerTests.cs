@@ -671,7 +671,7 @@ public class TbDockManagerTests : BunitContext
     }
 
     [Fact]
-    public void Tab_ShouldShowItsEndAfterTheTitleAndBeDescribedByIt_WhenThePanelHasTabEnd()
+    public void Tab_ShouldShowItsEndAfterTheTitleAndNameTheTabByBoth_WhenThePanelHasTabEnd()
     {
         var cut = Render<TbDockManager>(parameters => parameters.Add(dock => dock.Layout, Hike)
             .Add(dock => dock.ChildContent, (RenderFragment)(builder =>
@@ -696,12 +696,11 @@ public class TbDockManagerTests : BunitContext
         var title = trails.QuerySelector("[data-part=title]")!;
         var end = trails.QuerySelector("[data-part=title] + [data-part=tab-end]")!;
         Assert.Equal("2 new", end.TextContent);
-        Assert.StartsWith(end.Id + " ", trails.GetAttribute("aria-describedby"));
-        Assert.Equal(title.Id, trails.GetAttribute("aria-labelledby"));
+        Assert.Null(end.GetAttribute("aria-hidden"));
+        Assert.Null(trails.GetAttribute("aria-labelledby"));
         Assert.Equal(title.Id, cut.Find($"[role=tabpanel][id='{trails.GetAttribute("aria-controls")}']")
             .GetAttribute("aria-labelledby"));
-        Assert.Null(Tab(cut, "Map").GetAttribute("aria-labelledby"));
-        Assert.DoesNotContain("-end-", Tab(cut, "Map").GetAttribute("aria-describedby"));
+        Assert.Null(Tab(cut, "Map").QuerySelector("[data-part=title]")!.GetAttribute("id"));
         Assert.Equal(["Trails", "Map", "Notes"], cut.Tb().Dock().Panels);
     }
 
