@@ -1,16 +1,22 @@
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Trailblazor.Primitives;
+using Trailblazor.Tests.Docs;
 
 namespace Trailblazor.Tests.Contract;
 
 // A script's call arrives outside Blazor's events, so what it throws would go back to the script and show only in the
 // browser's console. Every object the library hands a script must hand a failure to its owner instead.
-public class ScriptListenerContractTests
+public partial class ScriptListenerContractTests
 {
     private const string Thrown = "Thrown by the app's callback.";
+
+    // The browser service's listener belongs to no component, so it logs a failure instead. A dismissable layer is
+    // made by its own CreateAsync, which passes on the handler its caller gives.
+    private static readonly HashSet<string> Exempt = ["BrowserService.cs", "DismissableLayer.cs"];
 
     private static readonly Type[] Called = [.. new[] { typeof(TbButton).Assembly, typeof(ScriptListener).Assembly }
         .SelectMany(assembly => assembly.GetTypes()).Where(type => Calls(type).Any())
@@ -41,6 +47,47 @@ public class ScriptListenerContractTests
         await Assert.IsAssignableFrom<Task>(answer);
         Assert.Equal(Thrown, Assert.Single(failures).Message);
     }
+
+    [Fact]
+    public void Source_ShouldHandEachListenersFailuresToItsComponent_WhenItMakesOne()
+    {
+        var listeners = Called.Where(type => type.IsSubclassOf(typeof(ScriptListener)))
+            .Select(type => type.Name.Split('`')[0]).ToHashSet();
+        var built = $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}";
+        var sources = new[] { "Trailblazor", "Trailblazor.Primitives" }
+            .SelectMany(project => Directory.EnumerateFiles(Path.Combine(Repository.Root, "src", project), "*.*",
+                SearchOption.AllDirectories))
+            .Where(file => Path.GetExtension(file) is ".cs" or ".razor"
+                && !file.Contains(built, StringComparison.Ordinal) && !Exempt.Contains(Path.GetFileName(file)))
+            .Select(file => (Name: Path.GetFileName(file), Text: File.ReadAllText(file))).ToList();
+        var made = sources.SelectMany(source => Made().Matches(source.Text)
+                .Where(site => listeners.Contains(site.Groups["type"].Value))
+                .Select(site => (source.Name, Type: site.Groups["type"].Value, First: site.Groups["first"].Value)))
+            .ToList();
+        var run = sources.SelectMany(source => RunCalls().Matches(source.Text)
+            .Select(call => (source.Name, Arguments: call.Groups["arguments"].Value))).ToList();
+
+        Assert.Empty(made.Where(site => site.First != "DispatchExceptionAsync")
+            .Select(site => $"{site.Name}: new {site.Type}({site.First}"));
+        Assert.Empty(run
+            .Where(call => !Regex.IsMatch(call.Arguments, @",\s*DispatchExceptionAsync\s*$"))
+            .Select(call => $"{call.Name}: {call.Arguments}"));
+        // Each listener is made with its type named somewhere, so none is made only where this can't read it, as with
+        // a target-typed new.
+        Assert.Empty(listeners.Except(made.Select(site => site.Type)).Except([nameof(BrowserListener<>), nameof(DismissableLayer)]));
+        Assert.Contains(run, call => call.Name == "TbOverlay.razor");
+    }
+
+    // A listener made with its type named, or with a target-typed new inside Create<T>, and its first argument.
+    [GeneratedRegex(@"(?:\bnew (?<type>[A-Z]\w*)(?:<[^>()]*>)?|\bCreate<(?<type>[A-Z]\w*)(?:<[^>()]*>)?>\(\s*new)"
+        + @"\(\s*(?<first>[\w.]+)")]
+    private static partial Regex Made();
+
+    // A call that runs a script's work through ScriptListener, or makes a dismissable layer, with all its arguments,
+    // however they nest.
+    [GeneratedRegex(@"(?:ScriptListener\.RunAsync|DismissableLayer\.CreateAsync)\("
+        + @"(?<arguments>(?>[^()]+|\((?<open>)|\)(?<-open>))*(?(open)(?!)))\)")]
+    private static partial Regex RunCalls();
 
     private static IEnumerable<MethodInfo> Calls(Type type) => type
         .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
