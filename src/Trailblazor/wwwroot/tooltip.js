@@ -107,10 +107,10 @@ document.addEventListener('focusin', event => {
 });
 document.addEventListener('focusout', event => hide(anchorOf(event.target)));
 // A press on a trigger that's off does nothing else, so it shows the tooltip that says why, on touch too; the next
-// press anywhere else hides it.
+// press anywhere else hides it. A tooltip shown for keyboard focus stays, as focus does.
 document.addEventListener('pointerdown', event => {
     const anchor = anchorOf(event.target);
-    if (shown && !shown.anchor.contains(event.target)) {
+    if (shown?.byPointer && !shown.anchor.contains(event.target)) {
         hideShown();
     }
 
