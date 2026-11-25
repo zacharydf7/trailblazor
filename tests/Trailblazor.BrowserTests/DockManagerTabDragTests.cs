@@ -430,6 +430,8 @@ public class DockManagerTabDragTests(BrowserFixture fixture) : DockManagerPage(f
         await DialogMoveAndResizeTests.TouchAsync(touch, "touchMove", x + 30, y);
         await Expect(Tab(page, "Map")).Not.ToHaveAttributeAsync("data-dragging", "");
         await DialogMoveAndResizeTests.TouchAsync(touch, "touchEnd", null, null);
+        // The swipe made its group's panel active, which the page binds; waiting keeps that render out of the hold.
+        await Expect(dock).ToHaveAttributeAsync("data-active-panel", "trails");
 
         // A finger that holds still for a moment picks the tab up. The page reports the pickup itself: if the finger
         // then rests for half a second, the tab is put down again, and on a slow machine polling for the attribute
