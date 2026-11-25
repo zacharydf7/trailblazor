@@ -259,7 +259,7 @@ public abstract partial class TbFieldBase<[DynamicallyAccessedMembers(Dynamicall
     private protected ITbLocalizer Localizer { get; set; } = default!;
 
     [Inject]
-    private IServiceProvider Services { get; set; } = default!;
+    private protected IServiceProvider Services { get; set; } = default!;
 
     [Inject]
     private IOptions<TrailblazorOptions> Options { get; set; } = default!;

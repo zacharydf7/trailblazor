@@ -9292,8 +9292,9 @@ public static class ExampleCatalog
                     + "picked in the calendar; a typed date follows the field's format but may leave out leading zeros "
                     + "or give the year in two digits. The time is set in the browser's own time box, shown in the "
                     + "user's language. A date chosen with no time is midnight, and a time set first waits for a date. "
-                    + "`TDateTime` can be `DateTime` or `DateTimeOffset`; the picker shows exactly the date "
-                    + "and time it is given and never converts time zones.", typeof(DateTimePickerExample)),
+                    + "`TDateTime` can be `DateTime`, shown as written, or `DateTimeOffset`, shown in the app's "
+                    + "[time zone](guides/time-zones); a date and time the user chooses takes that zone's offset.",
+                    typeof(DateTimePickerExample)),
                 new("limits", "Earliest, latest and steps", "`Min` and `Max` set the earliest and latest moments; a "
                     + "value outside them shows a message, and the calendar marks the days outside them as "
                     + "unavailable. `IsDateDisabled` rules out whole days. `Step` sets how far apart the times are, "
@@ -9340,12 +9341,12 @@ public static class ExampleCatalog
             ],
             AppDuties =
             [
-                "For a `DateTimeOffset`, set `TimeZone` to the user's time zone. Without it, a changed value keeps its "
-                    + "offset and a first value takes the offset of the app's `TimeProvider`, which on a server is the "
-                    + "server's time zone.",
-                "A static form posts the date and time with no offset, and Blazor reads it in the server's time zone "
-                    + "whatever `TimeZone` says, so bind a `DateTime` in a static form and add the user's offset after "
-                    + "the post.",
+                "For a `DateTimeOffset`, give the app the user's time zone, as the [time zones "
+                    + "guide](guides/time-zones) shows, or set the picker's own `TimeZone`. Without either, it uses the "
+                    + "local zone of the app's `TimeProvider`, which on a server is the server's.",
+                "A static form shows a `DateTimeOffset` in the app's time zone but posts it with no offset, and "
+                    + "Blazor reads it in the server's, so an unchanged value moves unless the two zones match. Bind a "
+                    + "`DateTime` in a static form and add the user's offset after the post.",
                 "The time box shows the time in the browser's language, not the app's `Culture`.",
             ],
             Notes =
@@ -9373,6 +9374,8 @@ public static class ExampleCatalog
             Scenario = new("value", "it chooses a date and a time and checks the value and what the app shows."),
             TestingTips =
             [
+                "For a `DateTimeOffset`, cascade a `TimeZoneInfo` or set `options.Times.TimeZone`, so `Value` and the "
+                    + "chosen offset are the same on every machine ([time zones](guides/time-zones)).",
                 "`await page.Tb().DateTimePicker(\"Guided hike starts\").ChooseAsync(start)` from "
                     + "`Trailblazor.Testing.Playwright` types the date in the field's own format, fills the time and "
                     + "waits until the field has taken both.",

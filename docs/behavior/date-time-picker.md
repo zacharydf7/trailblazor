@@ -15,8 +15,8 @@ Familiar apps: the start of a calendar event, a ride or shuttle booking
 - [x] A value before the earliest or after the latest shows a message naming the limits; one on a limit shows none. `TbDateTimePickerTests.Change_ShouldShowAMessage_WhenTheValueIsOutsideTheLimits`, `TbDateTimePickerTests.Change_ShouldShowNoMessage_WhenTheValueIsOnTheLimit`
 - [x] Enter on the calendar button opens the calendar on the chosen day; arrows move and Enter picks, keeping the time and returning focus to the button. `DateTimePickerTests.Picker_ShouldPickADayWithTheKeysAndKeepTheTime_WhenTheCalendarButtonIsPressed`
 - [x] Tab moves from the date box to the calendar button, then to the time box, which is named after the label. `DateTimePickerTests.Picker_ShouldMoveFromTheDateToTheCalendarButtonToTheTime_WhenTabIsPressed`
-- [x] A DateTime keeps its kind, and a DateTimeOffset keeps its offset. `TbDateTimePickerTests.Change_ShouldKeepTheKind_WhenTheDateTimeIsUtc`, `TbDateTimePickerTests.Change_ShouldKeepTheOffset_WhenBoundToADateTimeOffset`
-- [x] A first DateTimeOffset takes the app's TimeProvider zone, and a TimeZone gives each value that zone's offset for its date. `TbDateTimePickerTests.Change_ShouldTakeTheOffsetOfTheAppsTimeZone_WhenTheFirstValueIsChosen`, `TbDateTimePickerTests.Change_ShouldTakeTheZonesOffsetForThatDate_WhenGivenATimeZone`
+- [x] A DateTime keeps its kind. `TbDateTimePickerTests.Change_ShouldKeepTheKind_WhenTheDateTimeIsUtc`
+- [x] A DateTimeOffset shows in the shared zone (the picker's own TimeZone, then a cascaded zone, then the app's, then the TimeProvider's local zone), and a chosen value takes that zone's offset for its date. `TbDateTimePickerTests.Change_ShouldShowAndSetTheTimeInTheCascadedZone_WhenOneIsCascaded`, `TbDateTimePickerTests.Change_ShouldShowAndSetTheTimeInTheAppsZone_WhenTheOptionsGiveOne`, `TbDateTimePickerTests.TimeZone_ShouldWin_WhenAZoneIsAlsoCascadedAndInTheOptions`, `TbDateTimePickerTests.Change_ShouldTakeTheOffsetOfTheAppsTimeZone_WhenTheFirstValueIsChosen`, `TbDateTimePickerTests.Change_ShouldTakeTheZonesOffsetForThatDate_WhenGivenATimeZone`
 
 ## Pointer
 

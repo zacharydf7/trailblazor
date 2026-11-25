@@ -15,16 +15,17 @@
         <TbText TextStyle="TextStyle.Headline" As="TextElement.H1">Time zones</TbText>
         <TbText TextStyle="TextStyle.Subtitle" class="docs-lead">
             The dates and times Trailblazor shows follow one zone: a timestamp, a chat message's time, a timeline
-            event and a data grid's <code>DateTimeOffset</code> column, in its cells, filter and exports. Set the zone
-            once and they all follow it. The date pickers show a value as it is written, with the date and time
-            picker's own <code>TimeZone</code> giving a new value its offset.
+            event, and a data grid's <code>DateTimeOffset</code> column, in its cells, filter and exports. A date and
+            time picker shows a <code>DateTimeOffset</code> in the zone too, and a value the user picks takes the zone's
+            offset. Set the zone once and they all follow it. A <code>DateTime</code>, and a date picker's date, show as
+            written.
         </TbText>
     </Header>
     <ChildContent>
         <DocsHeading Id="which-zone" Text="Which zone" Class="docs-section" />
         <TbText>A date shows in the first of these that is set:</TbText>
         <ol>
-            <li>The component's own <code>TimeZone</code>, on a timestamp or a chat.</li>
+            <li>The component's own <code>TimeZone</code>, on a timestamp, a chat or a date and time picker.</li>
             <li>A <code>TimeZoneInfo</code> cascaded around it, such as the signed-in user's zone.</li>
             <li><code>options.Times.TimeZone</code> in <code>AddTrailblazor</code>, for an app that shows one zone.</li>
             <li>The <code>TimeProvider</code>'s local zone.</li>
@@ -70,6 +71,7 @@
         <DocsHeading Id="related" Text="Related" Class="docs-section" />
         <ul>
             <li><a href="components/timestamp">Timestamp</a>: a date and time in the app's zone.</li>
+            <li><a href="components/date-time-picker">Date-time picker</a>: choosing a date and time in the app's zone.</li>
             <li>
                 <a href="guides/browser">Browser</a>: reading the browser's zone, and the rest of the browser service.
             </li>

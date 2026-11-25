@@ -7,8 +7,8 @@ namespace Trailblazor;
 
 /// <summary>Chooses a date and a time of day: the date typed into a box or picked in a calendar beside it, and the time
 /// in the browser's own time box. Bind it with <c>@bind-Value</c> to a <see cref="DateTime"/> or
-/// <see cref="DateTimeOffset"/>. It shows exactly the date and time it is given and never converts time zones; a date
-/// chosen with no time is midnight.</summary>
+/// <see cref="DateTimeOffset"/>. It shows a <see cref="DateTime"/> as written, and a <see cref="DateTimeOffset"/> in
+/// the app's time zone, which <see cref="TimeZone"/> explains; a date chosen with no time is midnight.</summary>
 public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TDateTime>
     where TDateTime : struct
 {
@@ -69,10 +69,12 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter]
     public string? Placeholder { get; set; }
 
-    /// <summary>For a <see cref="DateTimeOffset"/>, the time zone that gives each date and time the user chooses its
-    /// offset. Without it, a changed value keeps its offset, and a first one takes the offset of the app's
-    /// <see cref="TimeProvider"/>, which on a server is the server's time zone. In a static form, Blazor reads the
-    /// posted value and gives it the server's offset, whatever this is set to.</summary>
+    /// <summary>For a <see cref="DateTimeOffset"/>, the time zone it shows the value in; each date and time the user
+    /// chooses takes this zone's offset. Left null, it uses the same zone as every other date the library shows: a
+    /// <see cref="TimeZoneInfo"/> cascaded around it, then <see cref="TimeSettings.TimeZone"/>, then the local zone of
+    /// the app's <see cref="TimeProvider"/>, which on a server is the server's. A static form shows the value in that
+    /// zone but posts it with no offset, and Blazor reads it in the server's, so an unchanged value moves unless the
+    /// two zones match.</summary>
     [Parameter]
     public TimeZoneInfo? TimeZone { get; set; }
 
@@ -88,8 +90,11 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
     [Parameter]
     public FieldClasses? Classes { get; set; }
 
-    [Inject]
-    private TimeProvider Time { get; set; } = default!;
+    [CascadingParameter]
+    private TimeZoneInfo? CascadedTimeZone { get; set; }
+
+    // The zone a DateTimeOffset shows in and takes its offset from.
+    private TimeZoneInfo Zone => ShownTime.Zone(TimeZone, CascadedTimeZone, Services);
 
     // The label names the group of boxes, not one box, unless the browser's own box stands in for both.
     private protected override bool LabelTargetsInput => !RendererInfo.IsInteractive;
@@ -354,11 +359,11 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
 
     private string Shown(TDateTime value) => WallClock(value).ToString("g", DateCulture);
 
-    // The date and time as written, whatever the offset; nothing is converted.
-    private static DateTime WallClock(TDateTime value) => value is DateTimeOffset offset ? offset.DateTime
-        : (DateTime)(object)value;
+    // A DateTime as written, and a DateTimeOffset in the zone it shows in.
+    private DateTime WallClock(TDateTime value) => value is DateTimeOffset offset
+        ? TimeZoneInfo.ConvertTime(offset, Zone).DateTime : (DateTime)(object)value;
 
-    // A DateTime keeps its kind. A DateTimeOffset takes the zone's offset for that time, or keeps the one it had.
+    // A DateTime keeps its kind. A DateTimeOffset takes the zone's offset for that time.
     private TDateTime Combine(DateOnly date, TimeOnly time)
     {
         var local = date.ToDateTime(time);
@@ -367,9 +372,7 @@ public partial class TbDateTimePicker<[DynamicallyAccessedMembers(DynamicallyAcc
             return (TDateTime)(object)(Value is DateTime old ? DateTime.SpecifyKind(local, old.Kind) : local);
         }
 
-        var offset = TimeZone?.GetUtcOffset(local)
-            ?? (Value is DateTimeOffset kept ? kept.Offset : Time.LocalTimeZone.GetUtcOffset(local));
-        return (TDateTime)(object)new DateTimeOffset(local, offset);
+        return (TDateTime)(object)new DateTimeOffset(local, Zone.GetUtcOffset(local));
     }
 
     private string DateLabel => Labels.Date ?? Localizer[TbStrings.DateTimePickerDate];

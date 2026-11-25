@@ -312,16 +312,46 @@ public class TbDateTimePickerTests : BunitContext
     }
 
     [Fact]
-    public async Task Change_ShouldKeepTheOffset_WhenBoundToADateTimeOffset()
+    public async Task Change_ShouldShowAndSetTheTimeInTheCascadedZone_WhenOneIsCascaded()
     {
         var changes = new List<DateTimeOffset?>();
-        var cut = RenderOffsetPicker(new DateTimeOffset(June3At2, TimeSpan.FromHours(5)), changes);
+        // 14:30 at UTC+5 is 9:30 at UTC; the cascaded zone is UTC−7, where it's 2:30 in the morning.
+        var cut = RenderOffsetPicker(new DateTimeOffset(June3At2, TimeSpan.FromHours(5)), changes,
+            cascaded: Zone(-7));
+        Assert.Equal(("6/3/2026", "02:30"), (DateBox(cut).GetAttribute("value"), TimeBox(cut).GetAttribute("value")));
 
         await TimeBox(cut).ChangeAsync(new ChangeEventArgs { Value = "09:15" });
 
-        Assert.Equal([new DateTimeOffset(2026, 6, 3, 9, 15, 0, TimeSpan.FromHours(5))], changes);
-        Assert.Equal("6/3/2026", DateBox(cut).GetAttribute("value"));
+        Assert.Equal([new DateTimeOffset(2026, 6, 3, 9, 15, 0, TimeSpan.FromHours(-7))], changes);
     }
+
+    [Fact]
+    public async Task Change_ShouldShowAndSetTheTimeInTheAppsZone_WhenTheOptionsGiveOne()
+    {
+        Services.Configure<TrailblazorOptions>(options => options.Times.TimeZone = Zone(-7));
+        _time.SetLocalTimeZone(Zone(9));
+        var changes = new List<DateTimeOffset?>();
+        var cut = RenderOffsetPicker(new DateTimeOffset(June3At2, TimeSpan.Zero), changes);
+        Assert.Equal("07:30", TimeBox(cut).GetAttribute("value"));
+
+        await DateBox(cut).ChangeAsync(new ChangeEventArgs { Value = "6/12/2026" });
+
+        Assert.Equal([new DateTimeOffset(2026, 6, 12, 7, 30, 0, TimeSpan.FromHours(-7))], changes);
+    }
+
+    [Fact]
+    public void TimeZone_ShouldWin_WhenAZoneIsAlsoCascadedAndInTheOptions()
+    {
+        Services.Configure<TrailblazorOptions>(options => options.Times.TimeZone = Zone(-7));
+
+        var cut = RenderOffsetPicker(new DateTimeOffset(June3At2, TimeSpan.Zero), [], cascaded: Zone(9),
+            configure: parameters => parameters.Add(picker => picker.TimeZone, Zone(2)));
+
+        Assert.Equal("16:30", TimeBox(cut).GetAttribute("value"));
+    }
+
+    private static TimeZoneInfo Zone(int hours) =>
+        TimeZoneInfo.CreateCustomTimeZone($"UTC{hours}", TimeSpan.FromHours(hours), $"UTC{hours}", $"UTC{hours}");
 
     [Fact]
     public async Task Change_ShouldTakeTheOffsetOfTheAppsTimeZone_WhenTheFirstValueIsChosen()
@@ -428,12 +458,24 @@ public class TbDateTimePickerTests : BunitContext
 
     private IRenderedComponent<TbDateTimePicker<DateTimeOffset>> RenderOffsetPicker(DateTimeOffset? value,
         List<DateTimeOffset?> changes,
-        Action<ComponentParameterCollectionBuilder<TbDateTimePicker<DateTimeOffset>>>? configure = null) =>
-        Render<TbDateTimePicker<DateTimeOffset>>(parameters =>
+        Action<ComponentParameterCollectionBuilder<TbDateTimePicker<DateTimeOffset>>>? configure = null,
+        TimeZoneInfo? cascaded = null)
+    {
+        void Picker(ComponentParameterCollectionBuilder<TbDateTimePicker<DateTimeOffset>> parameters)
         {
             parameters.Add(picker => picker.Value, value).Add(picker => picker.Label, "Starts")
                 .Add(picker => picker.Culture, English)
                 .Add(picker => picker.ValueChanged, (DateTimeOffset? time) => changes.Add(time));
             configure?.Invoke(parameters);
-        });
+        }
+
+        if (cascaded is null)
+        {
+            return Render<TbDateTimePicker<DateTimeOffset>>(Picker);
+        }
+
+        var host = Render<CascadingValue<TimeZoneInfo>>(parameters => parameters.Add(cascade => cascade.Value, cascaded)
+            .AddChildContent<TbDateTimePicker<DateTimeOffset>>(Picker));
+        return host.FindComponent<TbDateTimePicker<DateTimeOffset>>();
+    }
 }
