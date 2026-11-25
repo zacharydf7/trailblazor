@@ -85,6 +85,21 @@ public interface IDialogService
     Task AlertAsync(string title, string message, string? okText = null, Tone tone = Tone.Info,
         string? telemetryName = null, DialogOptions? options = null);
 
+    /// <summary>Asks for one line of text in a field named <paramref name="label"/>, starting from
+    /// <paramref name="initial"/>, and returns the text, or null when it's canceled. Enter or the confirm button
+    /// passes the text to <paramref name="validate"/>, when given; it returns a message to show under the field, which
+    /// keeps the dialog open, or null or a blank message to accept the text. The buttons say the app's text for
+    /// <see cref="TbStrings.DialogConfirm"/> and <see cref="TbStrings.DialogCancel"/>, "OK" and "Cancel" in English,
+    /// unless
+    /// <paramref name="confirmText"/> and <paramref name="cancelText"/> say otherwise. With a
+    /// <paramref name="telemetryName"/>, it counts as <see cref="DialogOptions.TelemetryName"/> describes, in place of
+    /// the options' own. <paramref name="options"/> work as for any dialog. Unless they say otherwise, it's small and
+    /// a click outside it doesn't answer it.</summary>
+    /// <exception cref="ArgumentException"><paramref name="title"/> or <paramref name="label"/> is blank.</exception>
+    Task<string?> PromptAsync(string title, string label, string? initial = null,
+        Func<string, string?>? validate = null, string? confirmText = null, string? cancelText = null,
+        string? telemetryName = null, DialogOptions? options = null);
+
     /// <summary>Cancels every open dialog, newest first, without asking them.</summary>
     Task CloseAllAsync();
 }

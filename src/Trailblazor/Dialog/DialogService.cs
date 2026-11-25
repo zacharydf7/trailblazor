@@ -117,6 +117,30 @@ internal sealed class DialogService(IOptions<TrailblazorOptions> trailblazorOpti
         string? telemetryName = null, DialogOptions? options = null) =>
         await OpenAlert(title, message, okText, tone, telemetryName, options).Result;
 
+    public async Task<string?> PromptAsync(string title, string label, string? initial = null,
+        Func<string, string?>? validate = null, string? confirmText = null, string? cancelText = null,
+        string? telemetryName = null, DialogOptions? options = null) =>
+        (await OpenPrompt(title, label, initial, validate, confirmText, cancelText, telemetryName, options).Result)
+            .Value;
+
+    internal DialogReference<string> OpenPrompt(string title, string label, string? initial,
+        Func<string, string?>? validate, string? confirmText, string? cancelText, string? telemetryName,
+        DialogOptions? options)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+        ArgumentException.ThrowIfNullOrWhiteSpace(label);
+        var parameters = new Dictionary<string, object?>
+        {
+            [nameof(PromptDialog.Label)] = label,
+            [nameof(PromptDialog.Initial)] = initial,
+            [nameof(PromptDialog.Validate)] = validate,
+            [nameof(PromptDialog.ConfirmText)] = confirmText ?? localizer[TbStrings.DialogConfirm],
+            [nameof(PromptDialog.CancelText)] = cancelText ?? localizer[TbStrings.DialogCancel],
+        };
+        return Open<string>(title, typeof(PromptDialog), parameters, AnswerOptions(options, telemetryName),
+            isAlert: false);
+    }
+
     // The dialogs behind ConfirmAsync and AlertAsync, which FakeDialogService records and answers.
     internal DialogReference<bool> OpenConfirm(string title, string message, string? confirmText, string? cancelText,
         Tone tone, string? telemetryName, DialogOptions? options)

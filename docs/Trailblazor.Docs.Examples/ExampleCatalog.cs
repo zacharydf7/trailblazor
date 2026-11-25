@@ -11146,6 +11146,12 @@ public static class ExampleCatalog
                     + "icon is decorative, so say what happened in the message. They open small, and a click outside "
                     + "doesn't answer them; `DialogOptions` can change that or anything else, such as "
                     + "`options: new() { Size = DialogSize.Medium }`.", typeof(DialogConfirmExample)),
+                new("prompt", "Asking for text", "`PromptAsync` asks for one line of text in a labeled field, which "
+                    + "takes focus, and returns the text, or null when the prompt is canceled. Enter or the confirm "
+                    + "button passes the text to `validate`; a message it returns shows under the field and keeps the "
+                    + "dialog open. Here a name shorter than three letters is refused. Like a confirmation, it opens "
+                    + "small, a click outside doesn't answer it, and `confirmText`, `cancelText` and `options` change "
+                    + "its buttons and window; this one's button says Rename.", typeof(DialogPromptExample)),
                 new("in-markup", "Written in markup", "`TbDialog` opens with `@bind-Open`, for a dialog that needs no "
                     + "class of its own, and its content sees the page's fields. `TbDialogDescription` describes any "
                     + "dialog, in markup or opened from code, so screen readers read that text with the title as the "
@@ -11270,16 +11276,23 @@ public static class ExampleCatalog
                 {
                     When = "On the Resize button",
                 },
+                new(["Enter"], "Passes the text to the check and, if it's accepted, confirms the prompt.")
+                {
+                    When = "In a `PromptAsync` field",
+                },
             ],
             Labeling =
             [
                 "A native `<dialog>` named by its title. A blank title, in markup or passed to `IDialogService`, gets "
                     + "build warning TB002. Leaving the title out is fine when the content overrides `DefaultTitle`; "
                     + "otherwise `Show` throws. An icon in a `TbDialogTitle` is hidden from screen readers.",
+                "`PromptAsync`'s field is named by its `label`, which can't be blank.",
             ],
             Announcements =
             [
                 "`ConfirmAsync` and `AlertAsync` open an `alertdialog` described by its message.",
+                "`PromptAsync` opens a `dialog` named by its title; a refused text's message describes the field and "
+                    + "is read out once.",
                 "Toasts and announcements made while a modal is open appear inside it, so the inert page doesn't hide "
                     + "them.",
             ],
@@ -11295,8 +11308,9 @@ public static class ExampleCatalog
                     + "`right`. Firefox can draw the scrollbar on the left, on a right-to-left page or in a right-to-left "
                     + "Firefox, so an element against the left edge holds still if it adds "
                     + "`var(--tb-scroll-lock-offset-left, 0px)` to its `left`.",
-                "A click that starts and ends on the backdrop cancels a modal. `ConfirmAsync` and `AlertAsync` dialogs "
-                    + "ignore it, so a stray click can't answer them, unless their options set `DismissOnBackdrop`.",
+                "A click that starts and ends on the backdrop cancels a modal. `ConfirmAsync`, `AlertAsync` and "
+                    + "`PromptAsync` dialogs ignore it, so a stray click can't answer them, unless their options set "
+                    + "`DismissOnBackdrop`.",
                 "A non-modal dialog comes to the front when it's pressed or takes focus, along with any dialog nested "
                     + "in it.",
                 "A dialog fades in and out with the motion tokens; reduced motion opens and closes it at once. As it "
@@ -11450,16 +11464,22 @@ public static class ExampleCatalog
                     + "the Testing guide shows.",
                 "A confirm's or alert's `Message` is the text it shows; answer a confirm with `ConfirmAsync()` for "
                     + "yes or `CancelAsync()` for no.",
+                "A prompt holds a text field: answer it with `TextField(label).EnterAsync(text)` and "
+                    + "`Dialog(title).ChooseAsync(...)` with its confirm button's text, OK by default. In Playwright, "
+                    + "`ChooseAsync` waits for the dialog to close, so to check a refused text, press Enter instead.",
+                "In bUnit, `FakeDialogService.AnswerPrompt` submits the text it returns as a prompt opens, cancels "
+                    + "when it returns null, and throws when `validate` refuses the text.",
             ],
             Telemetry =
             [
                 "With `DialogOptions.TelemetryName`, such as `\"delete-trail\"`, or the `telemetryName` of "
-                    + "`ConfirmAsync` and `AlertAsync`, it counts `trailblazor.control.shown` each time it opens, and "
+                    + "`ConfirmAsync`, `AlertAsync` and `PromptAsync`, it counts `trailblazor.control.shown` each time it opens, and "
                     + "`trailblazor.dialog.closed` and `trailblazor.dialog.duration` with `trailblazor.outcome`: "
                     + "`confirmed`, `canceled`, `escape`, `backdrop` or `close_button`. A dialog that a navigation "
                     + "closes counts as `canceled`.",
                 "Its `trailblazor.component` is the content's type, such as `EditTrailDialog`, `ConfirmDialog` for "
-                    + "`ConfirmAsync` and `AlertAsync`, or `TbDialog` for one in markup. Its title and result are "
+                    + "`ConfirmAsync` and `AlertAsync`, `PromptDialog` for `PromptAsync`, or `TbDialog` for one in "
+                    + "markup. Its title and result are "
                     + "never recorded.",
                 "The header's window buttons count `trailblazor.control.used` with `trailblazor.action` `minimize`, "
                     + "`maximize` or `restore`, so you can see whether anyone uses them. Changes made from code "

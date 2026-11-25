@@ -275,4 +275,30 @@ public class FakeDialogServiceTests : BunitContext
     private sealed class NoticeDialog : TbDialogContent;
 
     private sealed class KeepGoingDialog : TbDialogContent<bool>;
+
+    private static string? AtLeastThree(string name) => name.Length < 3 ? "Use at least 3 letters." : null;
+
+    [Fact]
+    public async Task AnswerPrompt_ShouldSubmitTheTextOrCancel_WhenSet()
+    {
+        var dialogs = Services.GetRequiredService<FakeDialogService>();
+        dialogs.AnswerPrompt = _ => "Cedar Flats";
+        Assert.Equal("Cedar Flats", await dialogs.PromptAsync("Rename trail", "Name", validate: AtLeastThree));
+
+        dialogs.AnswerPrompt = _ => null;
+
+        Assert.Null(await dialogs.PromptAsync("Rename trail", "Name"));
+    }
+
+    [Fact]
+    public async Task AnswerPrompt_ShouldThrowNamingTheMessage_WhenTheCheckRefusesTheText()
+    {
+        var dialogs = Services.GetRequiredService<FakeDialogService>();
+        dialogs.AnswerPrompt = _ => "Ox";
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            dialogs.PromptAsync("Rename trail", "Name", validate: AtLeastThree));
+
+        Assert.Contains("Use at least 3 letters.", refused.Message);
+    }
 }

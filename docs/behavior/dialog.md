@@ -17,6 +17,8 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] Arrow keys on the Move button move the dialog. `DialogMoveAndResizeTests.Dialog_ShouldMoveAStepPerArrowKey_WhenItsMoveButtonHasFocus`
 - [x] Arrow keys on the grip resize it. `DialogMoveAndResizeTests.Dialog_ShouldGrowAStepPerArrowKey_WhenTheGripHasFocus`
 
+- [x] Enter in a prompt's field submits it. `PromptDialogTests.PromptAsync_ShouldSubmit_WhenEnterIsPressedInTheField`, `DialogPromptTests.Prompt_ShouldStartInTheFieldAndSubmitOnEnter_WhenOpened`
+
 ## Pointer
 
 - [x] A click on the backdrop cancels a modal. `DialogTests.Dialog_ShouldCancel_WhenTheBackdropIsClicked`
@@ -27,6 +29,8 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] `ShowAsync<TDialog>`, for a dialog with no result, returns true only when the dialog is confirmed with true: canceling it, or closing it from code with false, returns false. `DialogServiceTests.ShowAsync_ShouldSayYesOnlyToAConfirmedTrue_WhenADialogWithNoResultIsClosedFromCode`, `FakeDialogServiceTests.Last_ShouldAnswerYesOnlyWithAConfirmedTrue_WhenTheTestClosesADialogWithNoResult`
 - [x] A dialog opened through `IDialogService`, modal or not, is canceled when the app goes to another page in place, by a link, from code or with the browser's Back button. It closes as from code, without asking whether it may be dismissed, and the page under it can be used again. A change of only the query string or the fragment leaves it open, as do a trailing slash and other capitals in the path, and so does a dialog the new page opens as it renders. `DialogServiceTests.Dialog_ShouldBeCanceled_WhenTheAppGoesToAnotherPage`, `DialogServiceTests.Dialog_ShouldStayOpen_WhenThePageTheAppGoesToOpensItAsItRenders`, `DialogServiceTests.Dialog_ShouldStayOpen_WhenOnlyTheQueryStringOrTheFragmentChanges`, `DialogNavigationTests.Dialog_ShouldBeCanceled_WhenALinkOrTheBackButtonTakesTheAppToAnotherPage`
 - [x] `CloseOnNavigation = false` in a dialog's options keeps it open across pages, and `DialogSettings.CloseOnNavigation` sets that for the app, which a dialog's own option overrides either way. A `TbDialog` in markup isn't closed by navigation, and neither is a dialog whose content stops the navigation with a `NavigationLock`. `DialogServiceTests.Dialog_ShouldStayOpen_WhenANavigationLockInItsContentStopsTheNavigation`, `DialogServiceTests.Dialog_ShouldStayOpen_WhenTheAppOrItsOptionsKeepItAcrossPages`, `DialogServiceTests.TbDialog_ShouldStayOpen_WhenTheAppGoesToAnotherPageUnderIt`, `DialogNavigationTests.Dialog_ShouldStayOpen_WhenItsOptionsKeepItAcrossPages`
+- [x] `PromptAsync` returns the text when confirmed and null when canceled; a refused text keeps it open with the message under the field until the text changes, and a blank message accepts. It opens small and a click outside doesn't answer it. `PromptDialogTests.PromptAsync_ShouldReturnTheText_WhenConfirmed`, `PromptDialogTests.PromptAsync_ShouldStayOpenAndSayWhy_WhenTheCheckRefusesTheText`, `PromptDialogTests.PromptAsync_ShouldReturnNull_WhenCanceled`, `PromptDialogTests.PromptAsync_ShouldAcceptTheText_WhenTheCheckReturnsABlankMessage`, `PromptDialogTests.PromptAsync_ShouldOpenSmallAndIgnoreTheBackdrop_WhenGivenNoOptions`
+- [x] The fake dialog service's `AnswerPrompt` submits or cancels a prompt as it opens, and throws for a text the check refuses. `FakeDialogServiceTests.AnswerPrompt_ShouldSubmitTheTextOrCancel_WhenSet`, `FakeDialogServiceTests.AnswerPrompt_ShouldThrowNamingTheMessage_WhenTheCheckRefusesTheText`
 - [x] A click outside a `ConfirmAsync` or `AlertAsync` dialog doesn't answer it, unless its options set `DismissOnBackdrop`. `DialogServiceTests.ConfirmAndAlert_ShouldStayOpenOnABackdropClickButTakeEscape_WhenTheAppKeepsTheDefaults`
 - [x] `ConfirmAsync` and `AlertAsync` take `DialogOptions`, keeping their small size and backdrop rule where the options leave them out, and a `telemetryName` argument takes the place of the options' own. `DialogServiceTests.ConfirmAndAlert_ShouldTakeTheOptionsAndKeepTheDefaultsTheyLeaveOut_WhenGivenOptions`
 - [x] The page behind a modal can't scroll. `DialogTests.Dialog_ShouldLockPageScroll_WhenModal`
@@ -103,9 +107,11 @@ Familiar apps: Windows and macOS message boxes and tool windows, Google Docs' di
 - [x] Outside a dialog, the actions bar keeps within its container; in a dialog it still reaches the dialog's edges. `DialogHostTests.Actions_ShouldStayInsideThePanel_WhenDialogContentIsHostedInADockPanel`, `DialogHostTests.Actions_ShouldReachTheDialogsEdges_WhenTheSameContentShowsInADialog`
 - [x] Hosted content may close from any thread, as in a dialog. A host that is removed while its content is still open finishes its result as canceled. The content's title reaches the host's parent when the content changes it, and a render of the parent doesn't undo it. `TbDialogContentHostTests.Host_ShouldCloseAndTellItsParent_WhenTheContentClosesFromAnotherThread`, `TbDialogContentHostTests.Result_ShouldFinishAsCanceled_WhenTheHostGoesAwayWithItsContentOpen`, `TbDialogContentHostTests.Title_ShouldFollowTheContentAndTheParent_WhenEitherChangesIt`
 
+- [x] A prompt starts in its field. `DialogPromptTests.Prompt_ShouldStartInTheFieldAndSubmitOnEnter_WhenOpened`
+
 ## Not applicable
 
-- Enter running a default button, as in an OS dialog: that comes from a form in the dialog's content.
+- Enter running a default button, as in an OS dialog: that comes from a form in the dialog's content; `PromptAsync`'s field submits on Enter.
 - Tab wrapping strictly inside a modal: it follows the browser's native modal and may leave for the browser's own controls.
 - Moving or resizing a modal: it already blocks the page, so there's nothing to uncover.
 - Double-clicking the header to maximize, or Escape canceling a drag, as on Windows: the header buttons maximize, and Escape dismisses as usual.

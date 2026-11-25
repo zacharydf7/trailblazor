@@ -549,10 +549,12 @@ public static class TbStrings
     /// <summary>"Extra large": the Resize menu's item for <see cref="DialogSize.ExtraLarge"/>.</summary>
     public const string DialogSizeExtraLarge = "Dialog.Size.ExtraLarge";
 
-    /// <summary>"OK": the confirm button of <see cref="IDialogService.ConfirmAsync"/>.</summary>
+    /// <summary>"OK": the confirm button of <see cref="IDialogService.ConfirmAsync"/> and
+    /// <see cref="IDialogService.PromptAsync"/>.</summary>
     public const string DialogConfirm = "Dialog.Confirm";
 
-    /// <summary>"Cancel": the cancel button of <see cref="IDialogService.ConfirmAsync"/>.</summary>
+    /// <summary>"Cancel": the cancel button of <see cref="IDialogService.ConfirmAsync"/> and
+    /// <see cref="IDialogService.PromptAsync"/>.</summary>
     public const string DialogCancel = "Dialog.Cancel";
 
     /// <summary>"{0} isn't valid.": shown when a field's text can't be read as its type; {0} is the field's label.

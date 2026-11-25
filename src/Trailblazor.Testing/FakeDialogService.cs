@@ -3,11 +3,11 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Trailblazor.Testing;
 
-/// <summary>Records the dialogs a component opens, and answers its confirms and alerts when told to, for bUnit.
-/// <c>AddTrailblazor()</c> registers it as the <see cref="IDialogService"/>; get it from <c>Services</c>. Dialogs open
-/// as they otherwise would, so a rendered <see cref="TbRoot"/> shows them, and each stays open until the test, the
-/// component or a click in it closes it, or, with a rendered <see cref="TbRoot"/>, the test navigates to another
-/// page.</summary>
+/// <summary>Records the dialogs a component opens, and answers its confirms, alerts and prompts when told to, for
+/// bUnit. <c>AddTrailblazor()</c> registers it as the <see cref="IDialogService"/>; get it from <c>Services</c>.
+/// Dialogs open as they otherwise would, so a rendered <see cref="TbRoot"/> shows them, and each stays open until the
+/// test, the component or a click in it closes it, or, with a rendered <see cref="TbRoot"/>, the test navigates to
+/// another page.</summary>
 public sealed class FakeDialogService : IDialogService
 {
     private readonly DialogService _dialogs;
@@ -26,6 +26,12 @@ public sealed class FakeDialogService : IDialogService
     /// <summary>Answers each confirm and alert as it opens, so a click that awaits one finishes: true confirms, false
     /// cancels, and null leaves it open, as when this isn't set. An alert closes on either answer.</summary>
     public Func<DialogReference, bool?>? Answer { get; set; }
+
+    /// <summary>Answers each prompt as it opens, so a click that awaits one finishes: the text it returns submits, as
+    /// if typed and confirmed, and null cancels. A text the prompt's check refuses throws an
+    /// <see cref="InvalidOperationException"/> that includes the check's message. Leave it unset to answer through
+    /// the dialog, as a user would.</summary>
+    public Func<DialogReference, string?>? AnswerPrompt { get; set; }
 
     /// <inheritdoc />
     public IReadOnlyList<DialogReference> OpenDialogs => _dialogs.OpenDialogs;
@@ -129,6 +135,32 @@ public sealed class FakeDialogService : IDialogService
         var dialog = Record(_dialogs.OpenAlert(title, message, okText, tone, telemetryName, options));
         await AnswerAsync(dialog);
         await dialog.Result;
+    }
+
+    /// <inheritdoc />
+    public async Task<string?> PromptAsync(string title, string label, string? initial = null,
+        Func<string, string?>? validate = null, string? confirmText = null, string? cancelText = null,
+        string? telemetryName = null, DialogOptions? options = null)
+    {
+        var dialog = Record(_dialogs.OpenPrompt(title, label, initial, validate, confirmText, cancelText,
+            telemetryName, options));
+        if (AnswerPrompt is { } answer)
+        {
+            if (answer(dialog) is not { } text)
+            {
+                await dialog.CancelAsync();
+            }
+            else if (validate?.Invoke(text) is { } refused && !string.IsNullOrWhiteSpace(refused))
+            {
+                throw new InvalidOperationException($"The prompt \"{title}\" refuses \"{text}\": {refused}");
+            }
+            else
+            {
+                await dialog.CloseAsync(text);
+            }
+        }
+
+        return (await dialog.Result).Value;
     }
 
     /// <inheritdoc />

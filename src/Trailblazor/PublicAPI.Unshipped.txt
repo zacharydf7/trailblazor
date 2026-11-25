@@ -7942,3 +7942,4 @@ static Trailblazor.CopyButtonLabels.operator ==(Trailblazor.CopyButtonLabels? le
 ~override Trailblazor.TbCopyButton.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 Trailblazor.TbTextField<TValue>.Copyable.get -> bool
 Trailblazor.TbTextField<TValue>.Copyable.set -> void
+Trailblazor.IDialogService.PromptAsync(string! title, string! label, string? initial = null, System.Func<string!, string?>? validate = null, string? confirmText = null, string? cancelText = null, string? telemetryName = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<string?>!

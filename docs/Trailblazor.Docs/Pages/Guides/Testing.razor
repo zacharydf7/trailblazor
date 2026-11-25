@@ -831,7 +831,7 @@
             <code>AddTrailblazor()</code> makes a <code>FakeDialogService</code> the <code>IDialogService</code>; get it
             from <code>Services</code>. Dialogs open as they otherwise would, and the service records each one in
             <code>Opened</code>, with its <code>Title</code>, <code>ContentType</code>, <code>Parameters</code> and
-            <code>Options</code>, which for a confirm or alert include the options it was given.
+            <code>Options</code>, which for a confirm, alert or prompt include the options it was given.
         </TbText>
         <ul>
             <li>
@@ -855,6 +855,10 @@
             <li>
                 <code>Answer</code> answers each confirm and alert as it opens: true confirms, false cancels, and null
                 leaves it open.
+            </li>
+            <li>
+                <code>AnswerPrompt</code> answers each prompt as it opens: the text it returns is submitted, null
+                cancels, and a text the prompt's check refuses throws, naming its message.
             </li>
             <li>
                 <code>AnswerWith&lt;TDialog, TResult&gt;(result)</code> closes each <code>TDialog</code> with

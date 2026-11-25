@@ -646,3 +646,6 @@ Trailblazor.Testing.TbCopyButtonDriver
 Trailblazor.Testing.TbCopyButtonDriver.CopyAsync() -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbCopyButtonDriver.State.get -> string!
 Trailblazor.Testing.TrailblazorMarkup.CopyButton(string? label = null) -> Trailblazor.Testing.TbCopyButtonDriver!
+Trailblazor.Testing.FakeDialogService.AnswerPrompt.get -> System.Func<Trailblazor.DialogReference!, string?>?
+Trailblazor.Testing.FakeDialogService.AnswerPrompt.set -> void
+Trailblazor.Testing.FakeDialogService.PromptAsync(string! title, string! label, string? initial = null, System.Func<string!, string?>? validate = null, string? confirmText = null, string? cancelText = null, string? telemetryName = null, Trailblazor.DialogOptions? options = null) -> System.Threading.Tasks.Task<string?>!

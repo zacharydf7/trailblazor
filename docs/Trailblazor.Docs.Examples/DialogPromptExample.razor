@@ -1,0 +1,18 @@
+@inject IDialogService Dialogs
+
+@* Renames a trail through a prompt that refuses a name shorter than three letters. *@
+<TbStack Row Gap="2" Align="Align.Center" Wrap>
+    <TbText As="TextElement.Span">@_name</TbText>
+    <TbButton Variant="Variant.Outlined" OnClick="RenameAsync">Rename trail</TbButton>
+</TbStack>
+
+@code {
+    private string _name = "Cedar Flats";
+
+    private async Task RenameAsync()
+    {
+        var name = await Dialogs.PromptAsync("Rename trail", "Name", _name,
+            text => text.Trim().Length < 3 ? "Use at least 3 letters." : null, "Rename");
+        _name = name?.Trim() ?? _name;
+    }
+}
