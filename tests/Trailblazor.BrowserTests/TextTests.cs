@@ -135,7 +135,8 @@ public class TextTests(BrowserFixture fixture) : BrowserTest(fixture)
         var shown = await text.ShownTextAsync();
 
         Assert.True(await text.IsCutAsync());
-        Assert.Matches(@"^trail-report-.*….*-v3\.pdf$", shown);
+        // How much fits depends on the font, so only the ends are checked.
+        Assert.Matches(@"^trail-report.*….*-v3\.pdf$", shown);
         Assert.False(await text.Element.EvaluateAsync<bool>("text => text.scrollWidth > text.clientWidth"));
         await text.Element.HoverAsync();
         await Expect(text.Element.Locator("[role=tooltip]")).ToHaveTextAsync(report);
