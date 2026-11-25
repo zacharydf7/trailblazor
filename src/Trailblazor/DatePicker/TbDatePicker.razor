@@ -11,7 +11,7 @@
            data-value give them. *@
         <input @attributes="ControlAttributes" @ref="_input" data-part="input" id="@InputId" name="@InputNameAttribute"
                type="text" autocomplete="off" value="@Text" @onchange="args => SetTextAsync(args.Value as string)"
-               data-format="@DateFormat" data-culture="@DateCulture.Name"
+               data-format="@DateFormat" data-pick="@PickMark(Pick)" data-culture="@DateCulture.Name"
                data-value="@(Chosen is { } committed ? Iso(committed) : "")"
                placeholder="@(Placeholder ?? FormatHint(DateFormat, Localizer))"
                disabled="@Disabled" readonly="@ReadOnly"
@@ -48,7 +48,7 @@
                 <CascadingValue TValue="TbForm" Value="null">
                     <TbCalendar @ref="_calendar" TDate="TDate" Value="Value" ValueChanged="KeepCalendarValue"
                                 OnDayPicked="PickAsync" Min="Min" Max="Max" IsDateDisabled="IsDateDisabled"
-                                ShowWeekNumbers="ShowWeekNumbers"
+                                ShowWeekNumbers="ShowWeekNumbers" Pick="Pick"
                                 Culture="DateCulture" Labels="@(Labels.Calendar ?? new())" Disabled="Disabled"
                                 ReadOnly="ReadOnly" InputAttributes="GridAttributes" />
                 </CascadingValue>

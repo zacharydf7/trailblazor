@@ -193,6 +193,16 @@ public class CalendarTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ChooseAsync_ShouldStopAtTheMonth_WhenTheCalendarPicksMonths(string browser)
+    {
+        var page = await OpenAsync(browser, "/calendar");
+
+        await page.Tb().Calendar("Report month").ChooseAsync(new DateOnly(2031, 3, 15));
+
+        await Expect(page.GetByTestId("report")).ToHaveTextAsync("2031-03-01");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ChooseAsync_ShouldPickADateInAnotherDecade_WhenUsedFromTheTestingHelpers(string browser)
     {
         var page = await OpenAsync(browser, "/calendar");

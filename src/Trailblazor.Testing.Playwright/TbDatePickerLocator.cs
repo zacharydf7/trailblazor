@@ -35,8 +35,15 @@ public sealed class TbDatePickerLocator(ILocator scope, ILocator input) : TbFiel
             await Input.PressAsync("Tab");
             return changes;
         });
+        // With Pick the field holds the month's or year's first day, or Min, so only the part typed is compared.
+        var held = date?.ToString(await Input.GetAttributeAsync("data-pick") switch
+        {
+            "month" => "yyyy-MM",
+            "year" => "yyyy",
+            _ => "yyyy-MM-dd",
+        }, CultureInfo.InvariantCulture);
         await Assertions.Expect(Input).ToHaveAttributeAsync("data-value",
-            date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "");
+            held is null ? new Regex("^$") : new Regex($"^{held}"));
     }
 
     /// <summary>Types this text in the field as it is, leaves the field and waits until the field has taken it, so a

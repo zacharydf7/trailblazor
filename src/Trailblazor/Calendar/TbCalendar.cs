@@ -60,9 +60,16 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
     [Parameter]
     public Func<TDate, bool>? IsDateDisabled { get; set; }
 
-    /// <summary>Raised when a day that can be chosen is picked, even the one already chosen, so a popup holding
-    /// the calendar can close. <see cref="TbFieldBase{TValue}.ValueChanged"/> is raised only for a new date.
-    /// </summary>
+    /// <summary>What a pick chooses: a day by default, or a month or a year. With a month or a year, the calendar
+    /// opens on the months or the years and goes no deeper, so <see cref="IsDateDisabled"/>,
+    /// <see cref="ShowWeekNumbers"/> and <see cref="DayTemplate"/> have no effect and <c>MonthChanged</c> isn't raised.
+    /// A value set by the app keeps its day.</summary>
+    [Parameter]
+    public CalendarPick Pick { get; set; }
+
+    /// <summary>Raised when a day that can be chosen is picked, or a month or a year with <see cref="Pick"/>, even
+    /// the one already chosen, so a popup holding the calendar can close.
+    /// <see cref="TbFieldBase{TValue}.ValueChanged"/> is raised only for a new date.</summary>
     [Parameter]
     public EventCallback<TDate> OnDayPicked { get; set; }
 
@@ -137,6 +144,11 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
+        if (_view < Deepest)
+        {
+            _view = Deepest;
+        }
+
         // A value from the parent brings its month into view; one the calendar reported is already there.
         if (!Nullable.Equals(Value, _lastValue))
         {
@@ -218,12 +230,7 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
     private async Task OnShowDateAsync(DateOnly date)
     {
         _moved = true;
-        _focus = _view switch
-        {
-            View.Days => date,
-            View.Months => SameDayIn(date, _focus.Day),
-            _ => SameDayIn(new DateOnly(date.Year, _focus.Month, 1), _focus.Day),
-        };
+        _focus = FocusFrom(date);
         await ReportMonthAsync();
         StateHasChanged();
     }
@@ -235,20 +242,41 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
         StateHasChanged();
     }
 
-    private Task PickAsync(DateOnly date) => _view switch
+    private Task PickAsync(DateOnly date)
     {
-        View.Days => PickDayAsync(date),
-        View.Months => ZoomInAsync(View.Days, date, IsUnavailableMonth(date)),
-        _ => ZoomInAsync(View.Months, date, IsUnavailableYear(date.Year)),
+        var unavailable = _view switch
+        {
+            View.Days => IsUnavailable(date),
+            View.Months => IsUnavailableMonth(date),
+            _ => IsUnavailableYear(date.Year),
+        };
+        return _view == Deepest ? PickValueAsync(date, unavailable)
+            : ZoomInAsync(_view == View.Months ? View.Days : View.Months, date, unavailable);
+    }
+
+    // Where focus goes from a cell in the view shown: the day itself, or the same day of the month or year's month.
+    private DateOnly FocusFrom(DateOnly cell) => _view switch
+    {
+        View.Days => cell,
+        View.Months => SameDayIn(cell, _focus.Day),
+        _ => SameDayIn(new DateOnly(cell.Year, _focus.Month, 1), _focus.Day),
     };
 
-    private async Task PickDayAsync(DateOnly day)
+    // The view Pick stops at, where a pick sets the value instead of showing what's inside.
+    private View Deepest => Pick switch
+    {
+        CalendarPick.Month => View.Months,
+        CalendarPick.Year => View.Years,
+        _ => View.Days,
+    };
+
+    private async Task PickValueAsync(DateOnly date, bool unavailable)
     {
         _moved = true;
-        _focus = day;
-        if (!ReadOnly && !IsUnavailable(day))
+        _focus = FocusFrom(date);
+        if (!ReadOnly && !unavailable)
         {
-            var value = Keep(day, Value);
+            var value = Keep(Picked(Pick, date, MinDate), Value);
             _lastValue = value;
             await SetValueAsync(value);
             await OnDayPicked.InvokeAsync(value!.Value);
@@ -267,15 +295,15 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
         }
 
         _moved = true;
+        _focus = Clamp(FocusFrom(date));
         _view = view;
-        _focus = Clamp(SameDayIn(_view == View.Days ? date : new DateOnly(date.Year, _focus.Month, 1), _focus.Day));
         await ReportMonthAsync();
     }
 
     // Shows the chosen date's month again, or today's, such as each time a date picker's popup closes.
     internal void ShowChosen()
     {
-        _view = View.Days;
+        _view = Deepest;
         _focus = Clamp(Chosen ?? Today);
         _shown++;
         StateHasChanged();
@@ -327,9 +355,9 @@ public partial class TbCalendar<[DynamicallyAccessedMembers(DynamicallyAccessedM
 
     private bool IsUnavailable(DateOnly date) => CalendarDates.IsUnavailable(date, Min, Max, IsDateDisabled);
 
-    private bool IsUnavailableMonth(DateOnly month) => month < FirstOfMonth(MinDate) || month > MaxDate;
+    private bool IsUnavailableMonth(DateOnly month) => CalendarDates.IsUnavailableMonth(month, MinDate, MaxDate);
 
-    private bool IsUnavailableYear(int year) => year < MinDate.Year || year > MaxDate.Year;
+    private bool IsUnavailableYear(int year) => CalendarDates.IsUnavailableYear(year, MinDate, MaxDate);
 
     private DateOnly Clamp(DateOnly date) => date < MinDate ? MinDate : date > MaxDate ? MaxDate : date;
 

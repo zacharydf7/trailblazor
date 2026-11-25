@@ -1,0 +1,6 @@
+<TbCalendar TDate="DateOnly" Label="Report month" @bind-Value="_month" Pick="CalendarPick.Month" />
+<output>Report month value: @(_month?.ToString("yyyy-MM-dd") ?? "null")</output>
+
+@code {
+    private DateOnly? _month;
+}

@@ -9319,6 +9319,13 @@ public static class ExampleCatalog
                     + "dot for a day with events. Give it words for screen readers, which hear them after the date. "
                     + "`@bind-Month` holds the month that's shown, so your app can load what its days show.",
                     typeof(CalendarDayTemplateExample)),
+                new("pick", "Picking a month or a year", "`Pick=\"CalendarPick.Month\"` opens the calendar on the "
+                    + "year's months and sets the value when one is picked, to the month's first day, or to the first "
+                    + "day `Min` allows in it. `CalendarPick.Year` does the same with the decade's years and "
+                    + "January 1. With `CalendarPick.Month`, pressing the title still shows the decade's years, and "
+                    + "picking one opens its months. `IsDateDisabled`, `ShowWeekNumbers` and `DayTemplate` don't "
+                    + "apply, since there are no days, and a value your app sets keeps its day.",
+                    typeof(CalendarPickExample)),
                 new("week-numbers", "Week numbers", "`ShowWeekNumbers` shows each week's number before its days, "
                     + "by the `Culture`'s rule, in the Gregorian dates the grid shows. Here it is en-GB, whose weeks "
                     + "follow ISO 8601, so the week with January 1, 2027 is 2026's 53rd; in en-US it is week 1, in "
@@ -9343,7 +9350,8 @@ public static class ExampleCatalog
                 new(["Page Up", "Page Down"], "Changes the month, or the year or decade in the months and years views.")
                     { When = "In the grid" },
                 new(["Shift+Page Up", "Shift+Page Down"], "Changes the year.") { When = "In the days view" },
-                new(["Enter", "Space"], "Picks the day, or opens the month or year.") { When = "In the grid" },
+                new(["Enter", "Space"], "Picks the day, or opens the month or year; with `Pick`, picks the month "
+                    + "or year.") { When = "In the grid" },
                 new(["Tab"], "Moves between the previous button, the title, the next button and the grid."),
             ],
             Labeling =
@@ -9358,8 +9366,8 @@ public static class ExampleCatalog
             ],
             Announcements =
             [
-                "The chosen day is `aria-selected`, today is `aria-current=\"date\"`, and days that can't be chosen "
-                    + "are `aria-disabled`.",
+                "The chosen day, or month or year with `Pick`, is `aria-selected`, today is "
+                    + "`aria-current=\"date\"`, and days that can't be chosen are `aria-disabled`.",
                 "Moving to another month, year or decade reads out the new title.",
                 "A validation message that appears as someone picks a date is read out once, as on a "
                     + "[text field](components/text-field).",
@@ -9380,7 +9388,8 @@ public static class ExampleCatalog
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
-                "It shows the browser's own date box, so a static form still posts the date.",
+                "It shows the browser's own date box, so a static form still posts the date. That box always takes "
+                    + "a day, even with `Pick`, and the day it posts is kept.",
             ],
             Ready = new("[role=grid]", "the grid"),
             Target = new("group", "Hike date"),
@@ -9412,6 +9421,8 @@ public static class ExampleCatalog
                     + "`ValueChanged` has run, which the calendar counts in `data-commits` on its root.",
                 "In bUnit, `cut.Tb().Calendar(\"Hike date\").ChooseAsync(date)` from `Trailblazor.Testing` chooses "
                     + "the date the same way.",
+                "With `Pick`, both helpers stop at the month or the year, so `ChooseAsync(new(2027, 3, 15))` on a "
+                    + "month calendar holds March 1, 2027.",
             ],
         },
         new("date-picker", "Date picker", ExampleCategory.Inputs,
@@ -9444,6 +9455,12 @@ public static class ExampleCatalog
                 new("limits", "Dates that can't be chosen", "`Min`, `Max` and `IsDateDisabled` set which dates can be "
                     + "chosen. Typing any other date shows a message, and the calendar marks those days as "
                     + "unavailable. `Clearable` shows a button that clears the date.", typeof(DatePickerLimitsExample)),
+                new("pick", "Picking a month or a year", "`Pick=\"CalendarPick.Month\"` makes the field choose a "
+                    + "month, held as its first day, or the first day `Min` allows in it. The box takes the culture's "
+                    + "short date without its day, such as 3/2027 in en-US, unless `Format` is set, and the calendar "
+                    + "opens on the year's months. `CalendarPick.Year` takes the year alone, held as January 1, or the "
+                    + "first day `Min` allows in it. A value your app sets keeps its day, and `IsDateDisabled` and "
+                    + "`ShowWeekNumbers` don't apply.", typeof(DatePickerPickExample)),
                 new("read-only-and-disabled", "Read-only and disabled", "`ReadOnly` keeps the date from changing: the "
                     + "box can't be edited and the calendar button turns off. `Disabled` takes the field out of the tab "
                     + "order and the post.", typeof(DatePickerStatesExample)),
@@ -9453,10 +9470,11 @@ public static class ExampleCatalog
             [
                 new(["Enter", "Space"], "Opens the calendar with focus on the chosen date, or today.")
                     { When = "On the calendar button" },
-                new(["Left", "Right", "Up", "Down"], "Moves by a day or a week, as in a "
-                    + "[calendar](components/calendar#accessibility).") { When = "In the calendar" },
-                new(["Enter", "Space"], "Picks the day, closes the calendar and returns focus to the button.")
+                new(["Left", "Right", "Up", "Down"], "Moves by a day or a week, or with `Pick` by a month or year "
+                    + "or a row of them, as in a [calendar](components/calendar#accessibility).")
                     { When = "In the calendar" },
+                new(["Enter", "Space"], "Picks the day, or the month or year with `Pick`, closes the calendar and "
+                    + "returns focus to the button.") { When = "In the calendar" },
                 new(["Escape"], "Closes the calendar without changing the date.") { When = "In the calendar" },
                 new(["Tab"], "Moves through the calendar's controls, and closes it as focus leaves.")
                     { When = "In the calendar" },
@@ -9465,7 +9483,8 @@ public static class ExampleCatalog
             [
                 "The box is named by the `Label`, and shows the format as its placeholder unless `Placeholder` sets "
                     + "another.",
-                "The calendar button and the calendar are named \"Choose a date\", or by `Labels.Open`.",
+                "The calendar button and the calendar are named \"Choose a date\", or by `Labels.Open`, which can "
+                    + "say \"Choose a month\" for a field with `Pick`.",
             ],
             Announcements =
             [
@@ -9491,7 +9510,8 @@ public static class ExampleCatalog
             Modes = new(ModeSupport.Partial, ModeSupport.Partial),
             BeforeInteractive =
             [
-                "It shows the browser's own date box, so a static form still posts the date.",
+                "It shows the browser's own date box, so a static form still posts the date. That box always takes "
+                    + "a day, even with `Pick`, and the day it posts is kept.",
             ],
             Ready = new("[data-part=trigger]", "the button that opens the calendar"),
             Target = new("textbox", "Start date"),
@@ -9512,6 +9532,8 @@ public static class ExampleCatalog
                     + "field has taken it.",
                 "In bUnit, `cut.Tb().DatePicker(\"Start date\")` from `Trailblazor.Testing` has the same "
                     + "`ChooseAsync(date)`.",
+                "With `Pick`, `ChooseAsync` types the month or the year in the field's format, and the field holds "
+                    + "its first day, or the first day `Min` allows.",
                 "`ValueAsync()`, or `Value` in bUnit, reads the date, and `ChooseAsync(null)` clears it.",
                 "`EnterAsync(\"31/31/2026\")` types text as it is in either package, so a test can see the field's "
                     + "error for a date it can't read.",

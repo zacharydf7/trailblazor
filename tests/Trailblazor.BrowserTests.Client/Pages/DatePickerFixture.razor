@@ -4,10 +4,15 @@
 <TbStack Gap="4">
     <TbDatePicker TDate="DateOnly" Label="Start date" @bind-Value="_start" Culture="ShownCulture" />
     <output data-testid="start">@(_start?.ToString("yyyy-MM-dd") ?? "none")</output>
+    @* Its calendar button is named for a month, so it doesn't share the other's name. *@
+    <TbDatePicker TDate="DateOnly" Label="Start month" @bind-Value="_month" Culture="ShownCulture"
+                  Pick="CalendarPick.Month" Labels="@(new() { Open = "Choose a month" })" />
+    <output data-testid="month">@(_month?.ToString("yyyy-MM-dd") ?? "none")</output>
 </TbStack>
 
 @code {
     private DateOnly? _start = new DateOnly(2026, 6, 3);
+    private DateOnly? _month;
 
     // A test can show the dates in another culture, such as ?dates=th-TH.
     [SupplyParameterFromQuery(Name = "dates")]

@@ -228,6 +228,65 @@ public class TbDatePickerTests : BunitContext
         Assert.False(cut.FindComponent<TbPopover>().Instance.Open);
     }
 
+    [Theory]
+    [InlineData("en-US", CalendarPick.Month, "3/2027", "MM/YYYY", "2027-03-01")]
+    [InlineData("de-DE", CalendarPick.Month, "3.2027", "MM.YYYY", "2027-03-01")]
+    [InlineData("ja-JP", CalendarPick.Month, "2027/3", "YYYY/MM", "2027-03-01")]
+    [InlineData("en-US", CalendarPick.Year, "2027", "YYYY", "2027-01-01")]
+    public async Task Pick_ShouldReadAMonthOrAYearInTheCulturesFormat_WhenTyped(string culture, CalendarPick pick,
+        string typed, string hint, string held)
+    {
+        var cut = Render<TbDatePicker<DateOnly>>(parameters => parameters.Add(picker => picker.Label, "Start date")
+            .Add(picker => picker.Culture, CultureInfo.GetCultureInfo(culture)).Add(picker => picker.Pick, pick));
+        var field = cut.Tb().DatePicker("Start date");
+
+        await field.EnterAsync(typed);
+
+        Assert.Equal(DateOnly.Parse(held, CultureInfo.InvariantCulture), field.Value);
+        Assert.Equal(hint, cut.Find("input[data-part=input]").GetAttribute("placeholder"));
+        Assert.Empty(cut.FindAll("[data-part=error]"));
+    }
+
+    [Fact]
+    public async Task Pick_ShouldRefuseAMonthBeforeMin_WhenTyped()
+    {
+        var cut = RenderPicker(null, parameters => parameters.Add(picker => picker.Pick, CalendarPick.Month)
+            .Add(picker => picker.Min, new DateOnly(2026, 6, 15)));
+        var field = cut.Tb().DatePicker("Start date");
+
+        await field.EnterAsync("5/2026");
+        var refused = field.Value;
+        await field.EnterAsync("6/2026");
+
+        Assert.Null(refused);
+        Assert.Equal(new DateOnly(2026, 6, 15), field.Value);
+    }
+
+    [Fact]
+    public async Task Pick_ShouldRefuseAYearAfterMax_WhenTyped()
+    {
+        var cut = RenderPicker(null, parameters => parameters.Add(picker => picker.Pick, CalendarPick.Year)
+            .Add(picker => picker.Max, new DateOnly(2026, 6, 15)));
+        var field = cut.Tb().DatePicker("Start date");
+
+        await field.EnterAsync("2027");
+
+        Assert.Null(field.Value);
+        Assert.NotEmpty(cut.FindAll("[data-part=error]"));
+    }
+
+    [Fact]
+    public void Pick_ShouldShowAMonthPickedInTheCalendarInTheBox_WhenItIsMonth()
+    {
+        var cut = RenderPicker(null, parameters => parameters.Add(picker => picker.Pick, CalendarPick.Month));
+        var view = cut.Find("[role=grid]").GetAttribute("data-view");
+
+        cut.Find("[role=grid] [data-part=month][data-date='2026-03-01']").Click();
+
+        Assert.Equal(("months", new DateOnly(2026, 3, 1)), (view, cut.Tb().DatePicker("Start date").Value));
+        Assert.Equal("3/2026", cut.Find("input[data-part=input]").GetAttribute("value"));
+    }
+
     [Fact]
     public void ShowWeekNumbers_ShouldShowThemInTheCalendar_WhenSet()
     {

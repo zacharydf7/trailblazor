@@ -88,6 +88,16 @@ public class DatePickerTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task ChooseAsync_ShouldTypeTheMonth_WhenThePickerPicksMonths(string browser)
+    {
+        var page = await OpenAsync(browser, "/date-picker");
+
+        await page.Tb().DatePicker("Start month").ChooseAsync(new DateOnly(2027, 3, 15));
+
+        await Expect(page.GetByTestId("month")).ToHaveTextAsync("2027-03-01");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task ChooseAsync_ShouldTypeAGregorianYear_WhenTheCulturesCalendarIsAnother(string browser)
     {
         var page = await OpenAsync(browser, "/date-picker?dates=th-TH");

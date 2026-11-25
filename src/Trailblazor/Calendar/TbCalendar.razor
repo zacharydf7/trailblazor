@@ -37,7 +37,7 @@
         @RequiredDescription
         @* The grid stays one element across the views, since the script listens on it. *@
         <table @ref="_grid" @attributes="ControlAttributes" id="@InputId" role="grid" data-part="grid"
-               data-view="@_view.ToString().ToLowerInvariant()" data-shown="@_shown"
+               data-view="@_view.ToString().ToLowerInvariant()" data-pick="@PickMark(Pick)" data-shown="@_shown"
                data-ready="@(_handle is null ? null : "")"
                aria-labelledby="@(ShownLabel is null ? TitleId : $"{LabelId} {TitleId}")"
                aria-describedby="@DescribedWithRequired(InputDescribedBy)"
@@ -116,12 +116,16 @@
                                 <td aria-selected="@(IsChosen(month, FirstOfMonth) ? "true" : null)">
                                     <button type="button" data-part="month" data-date="@Iso(month)"
                                             tabindex="@(month.Month == _focus.Month ? 0 : -1)"
-                                            aria-label="@month.ToString("Y", DateCulture)"
                                             aria-disabled="@(IsUnavailableMonth(month) ? "true" : null)"
                                             aria-current="@(IsToday(month, FirstOfMonth) ? "true" : null)"
                                             disabled="@Disabled" class="@CellClass(month, FirstOfMonth)"
                                             @onclick="_pick.For(month)">
-                                        @DateCulture.DateTimeFormat.GetAbbreviatedMonthName(month.Month)
+                                        @* Named by the full month and year rather than aria-label, which would have to
+                                           hold the short name shown. *@
+                                        <span aria-hidden="true">
+                                            @DateCulture.DateTimeFormat.GetAbbreviatedMonthName(month.Month)
+                                        </span>
+                                        <span class="tb-visually-hidden">@month.ToString("Y", DateCulture)</span>
                                     </button>
                                 </td>
                             }

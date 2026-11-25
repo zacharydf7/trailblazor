@@ -16,9 +16,9 @@ public sealed class TbCalendarLocator(ILocator scope, ILocator calendar) : TbFie
     private ILocator Grid => Root.Locator("[role=grid]");
 
     /// <summary>Picks this date as a user would, up to the years, over to its decade, then down through its year and
-    /// month to the day, and waits until the calendar has taken it and the app's <c>ValueChanged</c> has run. A
-    /// statically rendered calendar gets it in the browser's own date box. A read-only or disabled calendar throws, and
-    /// so does a date it doesn't let the user choose.</summary>
+    /// month to the day, or with <c>Pick</c> to the month or the year, and waits until the calendar has taken it and
+    /// the app's <c>ValueChanged</c> has run. A statically rendered calendar gets it in the browser's own date box. A
+    /// read-only or disabled calendar throws, and so does a date it doesn't let the user choose.</summary>
     public async Task ChooseAsync(DateOnly date)
     {
         var input = Root.Locator("input[data-static]");
@@ -55,18 +55,39 @@ public sealed class TbCalendarLocator(ILocator scope, ILocator calendar) : TbFie
             await Assertions.Expect(first).Not.ToHaveAttributeAsync("data-date", shown);
         }
 
-        await (await OfferedAsync(year, date)).ClickAsync();
+        // A calendar with Pick sets the value at the year or the month, and shows nothing deeper.
+        var pick = await Grid.GetAttributeAsync("data-pick");
+        var offeredYear = await OfferedAsync(year, date);
+        if (pick == "year")
+        {
+            await PickAsync(offeredYear, $"{date.Year:0000}-01-01");
+            return;
+        }
+
+        await offeredYear.ClickAsync();
         await Assertions.Expect(Grid).ToHaveAttributeAsync("data-view", "months");
-        var month = await OfferedAsync(Grid.Locator($"[data-date='{date.Year:0000}-{date.Month:00}-01']"), date);
+        var firstDay = $"{date.Year:0000}-{date.Month:00}-01";
+        var month = await OfferedAsync(Grid.Locator($"[data-date='{firstDay}']"), date);
+        if (pick == "month")
+        {
+            await PickAsync(month, firstDay);
+            return;
+        }
+
         await month.ClickAsync();
         await Assertions.Expect(Grid).ToHaveAttributeAsync("data-view", "days");
-        var day = await OfferedAsync(Grid.Locator($"[data-date='{Iso(date)}']"), date);
+        await PickAsync(await OfferedAsync(Grid.Locator($"[data-date='{Iso(date)}']"), date), Iso(date));
+    }
+
+    // Waits until the app has taken the pick and the calendar marks the cell chosen.
+    private async Task PickAsync(ILocator cell, string iso)
+    {
         await Commit.WaitAsync(Root, async () =>
         {
-            await day.ClickAsync();
+            await cell.ClickAsync();
             return true;
         });
-        await Assertions.Expect(Grid.Locator($"td:has([data-date='{Iso(date)}'])"))
+        await Assertions.Expect(Grid.Locator($"td:has([data-date='{iso}'])"))
             .ToHaveAttributeAsync("aria-selected", "true");
     }
 

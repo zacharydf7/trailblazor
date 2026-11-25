@@ -1,0 +1,14 @@
+<TbStack Gap="4">
+    <TbDatePicker TDate="DateOnly" Label="Start month" @bind-Value="_start" Pick="CalendarPick.Month" Min="_today" />
+    <output>Start month value: @(_start?.ToString("yyyy-MM-dd") ?? "null")</output>
+    <TbDatePicker TDate="DateOnly" Label="Graduation year" @bind-Value="_graduation" Pick="CalendarPick.Year"
+                  Max="_today" />
+    <output>Graduation year value: @(_graduation?.ToString("yyyy-MM-dd") ?? "null")</output>
+</TbStack>
+
+@code {
+    private static readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+
+    private DateOnly? _start;
+    private DateOnly? _graduation;
+}

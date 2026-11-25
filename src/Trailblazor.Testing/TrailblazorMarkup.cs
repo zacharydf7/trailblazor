@@ -4662,7 +4662,9 @@ public sealed class TbCalendarDriver : TbFieldDriver
     internal TbCalendarDriver(Func<IElement> find) : base(find) => _find = find;
 
     /// <summary>Picks this date as a user would: up to the years, over to its decade, then down through its year and
-    /// month to the day. A disabled or read-only calendar, or a date it can't choose, throws.</summary>
+    /// month to the day. A calendar with <c>Pick</c> stops at the month or the year, which it holds as their first
+    /// day, or the first day <c>Min</c> allows. A disabled or read-only calendar, or a date it can't choose,
+    /// throws.</summary>
     public async Task ChooseAsync(DateOnly date)
     {
         var grid = Grid();
@@ -4684,8 +4686,19 @@ public sealed class TbCalendarDriver : TbFieldDriver
             await ClickAsync(_find().QuerySelector(shown > date.Year ? "[data-part=previous]" : "[data-part=next]")!);
         }
 
+        var pick = Grid().GetAttribute("data-pick");
         await ClickCellAsync(year, date);
+        if (pick == "year")
+        {
+            return;
+        }
+
         await ClickCellAsync($"{date.Year:0000}-{date.Month:00}-01", date);
+        if (pick == "month")
+        {
+            return;
+        }
+
         await ClickCellAsync(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), date);
     }
 

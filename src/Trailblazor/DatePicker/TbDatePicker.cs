@@ -40,13 +40,20 @@ public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
     [Parameter]
     public Func<TDate, bool>? IsDateDisabled { get; set; }
 
+    /// <summary>What the field chooses: a day by default, or a month or a year. With a month or a year, the
+    /// calendar opens on the months or the years and goes no deeper, the box takes the culture's short date without
+    /// its day, or the year alone, unless <see cref="Format"/> is set, and <see cref="IsDateDisabled"/> and
+    /// <see cref="ShowWeekNumbers"/> don't apply.</summary>
+    [Parameter]
+    public CalendarPick Pick { get; set; }
+
     /// <summary>Shows each week's number before its days, by the culture's rule, such as ISO 8601 weeks for de-DE.
     /// </summary>
     [Parameter]
     public bool ShowWeekNumbers { get; set; }
 
-    /// <summary>How the box shows and reads dates, such as <c>MM/dd/yyyy</c>. Defaults to the culture's short date.
-    /// </summary>
+    /// <summary>How the box shows and reads dates, such as <c>MM/dd/yyyy</c>. Defaults to the culture's short date, or
+    /// with <see cref="Pick"/> that date without its day, or the year alone.</summary>
     [Parameter]
     public string? Format { get; set; }
 
@@ -85,7 +92,12 @@ public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
 
     private CultureInfo DateCulture => CalendarDates.Gregorian(Culture ?? CultureInfo.CurrentCulture);
 
-    private string DateFormat => Format ?? DateCulture.DateTimeFormat.ShortDatePattern;
+    private string DateFormat => Format ?? Pick switch
+    {
+        CalendarPick.Month => MonthPattern(DateCulture.DateTimeFormat.ShortDatePattern),
+        CalendarPick.Year => "yyyy",
+        _ => DateCulture.DateTimeFormat.ShortDatePattern,
+    };
 
     private DateOnly? Chosen => Value is { } value ? ToDate(value) : null;
 
@@ -125,7 +137,7 @@ public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
             return false;
         }
 
-        value = Keep(date, Value);
+        value = Keep(Picked(Pick, date, MinDate), Value);
         return true;
     }
 
@@ -177,7 +189,16 @@ public partial class TbDatePicker<[DynamicallyAccessedMembers(DynamicallyAccesse
         await _input.FocusAsync();
     }
 
-    private bool IsUnavailable(DateOnly date) => CalendarDates.IsUnavailable(date, Min, Max, IsDateDisabled);
+    private bool IsUnavailable(DateOnly date) => Pick switch
+    {
+        CalendarPick.Month => IsUnavailableMonth(FirstOfMonth(date), MinDate, MaxDate),
+        CalendarPick.Year => IsUnavailableYear(date.Year, MinDate, MaxDate),
+        _ => CalendarDates.IsUnavailable(date, Min, Max, IsDateDisabled),
+    };
+
+    private DateOnly MinDate => Min is { } min ? ToDate(min) : DateOnly.MinValue;
+
+    private DateOnly MaxDate => Max is { } max ? ToDate(max) : DateOnly.MaxValue;
 
     private string OpenLabel => Labels.Open ?? Localizer[TbStrings.DatePickerOpen];
     private string ClearLabel => Labels.Clear ?? Localizer[TbStrings.DatePickerClear];

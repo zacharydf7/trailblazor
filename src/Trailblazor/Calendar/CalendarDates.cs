@@ -72,6 +72,31 @@ internal static partial class CalendarDates
 
     public static DateOnly FirstOfMonth(DateOnly date) => new(date.Year, date.Month, 1);
 
+    // The date a pick holds: a month's first day, or January 1 for a year, moved up to min when min falls inside it.
+    public static DateOnly Picked(CalendarPick pick, DateOnly date, DateOnly min)
+    {
+        var first = pick switch
+        {
+            CalendarPick.Month => FirstOfMonth(date),
+            CalendarPick.Year => new DateOnly(date.Year, 1, 1),
+            _ => date,
+        };
+        return first < min ? min : first;
+    }
+
+    // What the grid and the date picker's box tell the testing helpers about Pick, or nothing for a day.
+    public static string? PickMark(CalendarPick pick) =>
+        pick == CalendarPick.Day ? null : pick.ToString().ToLowerInvariant();
+
+    // A month or a year can't be chosen when it lies wholly before min or after max.
+    public static bool IsUnavailableMonth(DateOnly month, DateOnly min, DateOnly max) =>
+        month < FirstOfMonth(min) || month > max;
+
+    public static bool IsUnavailableYear(int year, DateOnly min, DateOnly max) => year < min.Year || year > max.Year;
+
+    // A culture's short date without its day, such as M/yyyy from M/d/yyyy or MM.yyyy from dd.MM.yyyy.
+    public static string MonthPattern(string datePattern) => DayAndSeparator().Replace(datePattern, "", 1);
+
     // A date before min, after max, or one isDisabled rules out can't be chosen.
     public static bool IsUnavailable<TDate>(DateOnly date, TDate? min, TDate? max, Func<TDate, bool>? isDisabled)
         where TDate : struct =>
@@ -107,6 +132,9 @@ internal static partial class CalendarDates
         return DateOnly.TryParseExact(text.Trim(), [loose, FullYear().Replace(loose, "yy")], culture,
             DateTimeStyles.None, out date);
     }
+
+    [GeneratedRegex("^d{1,2}[^dMy]*|[^dMy]*(?<!d)d{1,2}(?!d)")]
+    private static partial Regex DayAndSeparator();
 
     [GeneratedRegex("(?<!d)dd(?!d)")]
     private static partial Regex PaddedDay();

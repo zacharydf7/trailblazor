@@ -32,6 +32,7 @@ Familiar apps: the date field of a booking or travel form, a due-date field in a
 - [x] Before the page is interactive, the browser's own date box stands in and posts the date. `TbDatePickerTests.Render_ShouldShowTheBrowsersDateBox_WhenStatic`, `DatePickerTests.ChooseAsync_ShouldPostTheDate_WhenThePickerIsStatic`
 - [x] `Start` and `End` content sit in the box before and after the input, with `End` before the field's own buttons, on a static page too. `FieldAdornmentTests.Render_ShouldPutTheAppsStartAndEndFirstInTheBoxsSlots_WhenGivenStartAndEnd`
 - [x] `ShowWeekNumbers` numbers the calendar's weeks, as on the calendar. `TbDatePickerTests.ShowWeekNumbers_ShouldShowThemInTheCalendar_WhenSet`
+- [x] With `Pick`, the box reads a month in the culture's short date without its day, or a year alone, and refuses one wholly outside `Min` and `Max`; its calendar opens on the months and a month picked there shows in the box. `TbDatePickerTests.Pick_ShouldReadAMonthOrAYearInTheCulturesFormat_WhenTyped`, `TbDatePickerTests.Pick_ShouldRefuseAMonthBeforeMin_WhenTyped`, `TbDatePickerTests.Pick_ShouldRefuseAYearAfterMax_WhenTyped`, `TbDatePickerTests.Pick_ShouldShowAMonthPickedInTheCalendarInTheBox_WhenItIsMonth`, `DatePickerTests.ChooseAsync_ShouldTypeTheMonth_WhenThePickerPicksMonths`
 
 ## Not applicable
 

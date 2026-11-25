@@ -197,7 +197,9 @@ public class TbCalendarTests : BunitContext
         Assert.Equal("2026", cut.Find("[data-part=title]").TextContent.Trim());
         Assert.Equal(12, cut.FindAll("[data-part=month]").Count);
         Assert.Equal("0", Cell(cut, "2026-06-01").GetAttribute("tabindex"));
-        Assert.Equal("June 2026", Cell(cut, "2026-06-01").GetAttribute("aria-label"));
+        // Named by its full month and year, with the short name shown hidden from screen readers.
+        Assert.Equal(("June 2026", "true"), (Cell(cut, "2026-06-01").QuerySelector(".tb-visually-hidden")!.TextContent,
+            Cell(cut, "2026-06-01").QuerySelector("[aria-hidden]")!.GetAttribute("aria-hidden")));
         Assert.Equal("true", Cell(cut, "2026-06-01").ParentElement!.GetAttribute("aria-selected"));
 
         await cut.Find("[data-part=title]").ClickAsync(new MouseEventArgs());
@@ -538,6 +540,98 @@ public class TbCalendarTests : BunitContext
         Assert.Equal(("W", "Week no.", "No. 23"), (heading.TextContent.Trim(), heading.GetAttribute("abbr"),
             cut.Find("[data-part=week]").GetAttribute("abbr")));
         Assert.Contains("tb-calendar__grid--week-numbers", cut.Find("[role=grid]").ClassList);
+    }
+
+    [Fact]
+    public void Pick_ShouldOpenOnTheMonthsAndHoldAMonthsFirstDay_WhenItIsMonth()
+    {
+        var cut = RenderCalendar(null, parameters => parameters.Add(calendar => calendar.Pick, CalendarPick.Month));
+        var view = cut.Find("[role=grid]").GetAttribute("data-view");
+
+        cut.Find("[data-part=month][data-date='2026-03-01']").Click();
+
+        Assert.Equal(("months", new DateOnly(2026, 3, 1)), (view, _changes.Single()));
+        Assert.Equal("months", cut.Find("[role=grid]").GetAttribute("data-view"));
+        Assert.Equal("true", cut.Find("[data-part=month][data-date='2026-03-01']").ParentElement!
+            .GetAttribute("aria-selected"));
+    }
+
+    [Fact]
+    public void Pick_ShouldOpenOnTheYearsAndHoldJanuaryFirst_WhenItIsYear()
+    {
+        var cut = RenderCalendar(null, parameters => parameters.Add(calendar => calendar.Pick, CalendarPick.Year));
+        var view = cut.Find("[role=grid]").GetAttribute("data-view");
+
+        cut.Find("[data-part=year][data-date='2027-01-01']").Click();
+
+        Assert.Equal(("years", new DateOnly(2027, 1, 1)), (view, _changes.Single()));
+    }
+
+    [Fact]
+    public void Pick_ShouldHoldTheFirstDayMinAllows_WhenMinFallsInsideTheMonth()
+    {
+        var cut = RenderCalendar(null, parameters => parameters.Add(calendar => calendar.Pick, CalendarPick.Month)
+            .Add(calendar => calendar.Min, new DateOnly(2026, 6, 15)));
+
+        cut.Find("[data-part=month][data-date='2026-05-01']").Click();
+        cut.Find("[data-part=month][data-date='2026-06-01']").Click();
+
+        Assert.Equal([new DateOnly(2026, 6, 15)], _changes);
+    }
+
+    [Fact]
+    public void Pick_ShouldStillShowTheYearsAndPickAMonthInThem_WhenTheTitleIsPressed()
+    {
+        var cut = RenderCalendar(null, parameters => parameters.Add(calendar => calendar.Pick, CalendarPick.Month));
+
+        cut.Find("[data-part=title]").Click();
+        cut.Find("[data-part=year][data-date='2028-01-01']").Click();
+        var view = cut.Find("[role=grid]").GetAttribute("data-view");
+        cut.Find("[data-part=month][data-date='2028-09-01']").Click();
+
+        Assert.Equal(("months", new DateOnly(2028, 9, 1)), (view, _changes.Single()));
+    }
+
+    [Fact]
+    public void Pick_ShouldHoldTheFirstDayMinAllows_WhenMinFallsInsideTheYear()
+    {
+        var cut = RenderCalendar(null, parameters => parameters.Add(calendar => calendar.Pick, CalendarPick.Year)
+            .Add(calendar => calendar.Min, new DateOnly(2026, 6, 15)));
+
+        cut.Find("[data-part=year][data-date='2026-01-01']").Click();
+
+        Assert.Equal([new DateOnly(2026, 6, 15)], _changes);
+    }
+
+    [Fact]
+    public async Task Pick_ShouldSetTheMonth_WhenTheBrowserAsksForAPick()
+    {
+        var cut = RenderCalendar(null, parameters => parameters.Add(calendar => calendar.Pick, CalendarPick.Month));
+
+        await cut.InvokeAsync(() => Events().Value.OnPick(new DateOnly(2026, 9, 1)));
+
+        Assert.Equal([new DateOnly(2026, 9, 1)], _changes);
+        Assert.Equal("months", cut.Find("[role=grid]").GetAttribute("data-view"));
+    }
+
+    [Fact]
+    public async Task ChooseAsync_ShouldStopAtTheMonth_WhenTheCalendarPicksMonths()
+    {
+        var cut = RenderCalendar(null, parameters => parameters.Add(calendar => calendar.Pick, CalendarPick.Month));
+
+        await cut.Tb().Calendar("Hike date").ChooseAsync(new DateOnly(2027, 3, 15));
+
+        Assert.Equal([new DateOnly(2027, 3, 1)], _changes);
+    }
+
+    [Fact]
+    public async Task ChooseAsync_ShouldStopAtTheYear_WhenTheCalendarPicksYears()
+    {
+        var cut = RenderCalendar(null, parameters => parameters.Add(calendar => calendar.Pick, CalendarPick.Year));
+
+        await cut.Tb().Calendar("Hike date").ChooseAsync(new DateOnly(2031, 5, 9));
+
+        Assert.Equal([new DateOnly(2031, 1, 1)], _changes);
     }
 
     [Fact]

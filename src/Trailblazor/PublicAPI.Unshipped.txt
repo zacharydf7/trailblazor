@@ -8078,3 +8078,11 @@ Trailblazor.TbDateTimePicker<TDateTime>.ShowWeekNumbers.set -> void
 const Trailblazor.TbStrings.CalendarWeek = "Calendar.Week" -> string!
 const Trailblazor.TbStrings.CalendarWeekNumber = "Calendar.WeekNumber" -> string!
 const Trailblazor.TbStrings.CalendarWeekShort = "Calendar.WeekShort" -> string!
+Trailblazor.CalendarPick
+Trailblazor.CalendarPick.Day = 0 -> Trailblazor.CalendarPick
+Trailblazor.CalendarPick.Month = 1 -> Trailblazor.CalendarPick
+Trailblazor.CalendarPick.Year = 2 -> Trailblazor.CalendarPick
+Trailblazor.TbCalendar<TDate>.Pick.get -> Trailblazor.CalendarPick
+Trailblazor.TbCalendar<TDate>.Pick.set -> void
+Trailblazor.TbDatePicker<TDate>.Pick.get -> Trailblazor.CalendarPick
+Trailblazor.TbDatePicker<TDate>.Pick.set -> void
