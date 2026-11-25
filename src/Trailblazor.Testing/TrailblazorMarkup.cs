@@ -1348,7 +1348,7 @@ internal static class Choices
 
     // The text a name takes from what an element holds, in order, as a browser takes it: an element inside that has
     // an aria-label, such as an avatar, counts with that label, an image with its alternative text, and what is
-    // aria-hidden doesn't count.
+    // aria-hidden or hidden doesn't count.
     private static IEnumerable<string> ContentName(INode node)
     {
         foreach (var child in node.ChildNodes)
@@ -1357,7 +1357,8 @@ internal static class Choices
             {
                 yield return text.Data;
             }
-            else if (child is not IElement inner || inner.GetAttribute("aria-hidden") == "true")
+            else if (child is not IElement inner || inner.GetAttribute("aria-hidden") == "true"
+                || inner.HasAttribute("hidden"))
             {
                 continue;
             }

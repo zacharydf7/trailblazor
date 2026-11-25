@@ -1720,6 +1720,23 @@ Trailblazor.TbButton.StartIcon.get -> Trailblazor.Icon?
 Trailblazor.TbButton.StartIcon.set -> void
 Trailblazor.TbButton.TbButton() -> void
 Trailblazor.TbButtonBase
+Trailblazor.TbButton.Labels.get -> Trailblazor.ButtonLabels!
+Trailblazor.TbButton.Labels.set -> void
+Trailblazor.ButtonLabels
+Trailblazor.ButtonLabels.<Clone>$() -> Trailblazor.ButtonLabels!
+Trailblazor.ButtonLabels.ButtonLabels() -> void
+Trailblazor.ButtonLabels.Cooldown.get -> string?
+Trailblazor.ButtonLabels.Cooldown.init -> void
+Trailblazor.ButtonLabels.CooldownLeft.get -> string?
+Trailblazor.ButtonLabels.CooldownLeft.init -> void
+Trailblazor.ButtonLabels.Equals(Trailblazor.ButtonLabels? other) -> bool
+override Trailblazor.ButtonLabels.Equals(object? obj) -> bool
+override Trailblazor.ButtonLabels.GetHashCode() -> int
+override Trailblazor.ButtonLabels.ToString() -> string!
+static Trailblazor.ButtonLabels.operator !=(Trailblazor.ButtonLabels? left, Trailblazor.ButtonLabels? right) -> bool
+static Trailblazor.ButtonLabels.operator ==(Trailblazor.ButtonLabels? left, Trailblazor.ButtonLabels? right) -> bool
+Trailblazor.TbButton.Cooldown.get -> System.TimeSpan?
+Trailblazor.TbButton.Cooldown.set -> void
 Trailblazor.TbButtonBase.BusyWhileRunning.get -> bool?
 Trailblazor.TbButtonBase.BusyWhileRunning.set -> void
 Trailblazor.TbButtonBase.Disabled.get -> bool
@@ -6921,6 +6938,9 @@ Trailblazor.TbSpeechToText.OnText.set -> void
 Trailblazor.TbSpeechToText.TbSpeechToText() -> void
 Trailblazor.TbSpeechToText.TelemetryName.get -> string?
 Trailblazor.TbSpeechToText.TelemetryName.set -> void
+const Trailblazor.TbStrings.ButtonCooldown = "Button.Cooldown" -> string!
+const Trailblazor.TbStrings.ButtonCooldownLeft = "Button.CooldownLeft" -> string!
+const Trailblazor.TbStrings.ButtonCooldownOne = "Button.CooldownOne" -> string!
 const Trailblazor.TbStrings.SpeechToTextLabel = "SpeechToText.Label" -> string!
 const Trailblazor.TbStrings.SpeechToTextListening = "SpeechToText.Listening" -> string!
 const Trailblazor.TbStrings.SpeechToTextStopped = "SpeechToText.Stopped" -> string!

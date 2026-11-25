@@ -21,6 +21,12 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     private bool _busyShown;
     private DateTimeOffset _busyShownAt;
     private ITimer? _busyTimer;
+    // The running cooldown's start and length, and the timers that count it down and end it.
+    private long? _coolingSince;
+    private TimeSpan _coolingFor;
+    private ITimer? _cooledTimer;
+    private ITimer? _cooldownTimer;
+    private readonly string _cooldownId = $"tb-button-cooldown-{Guid.NewGuid():N}";
 
     /// <summary>How strongly the button is drawn.</summary>
     [Parameter]
@@ -95,6 +101,11 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     [Parameter]
     public bool? BusyWhileRunning { get; set; }
 
+    // A TbButton's Cooldown and its words; the other buttons have no text to show the seconds after.
+    private protected virtual TimeSpan? CooldownLength => null;
+
+    private protected virtual string CooldownWords(int seconds) => "";
+
     /// <summary>A label this button's use is counted under, such as <c>"export-csv"</c>, so the app can count how often
     /// people see it and use it through the <c>Trailblazor</c> meter. Controls that share a label count together; a
     /// control without one isn't counted. It names what the button does, never the user, and must never hold a
@@ -113,7 +124,7 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     private bool FormSubmitting { get; set; }
 
     [Inject]
-    private IServiceProvider Services { get; set; } = default!;
+    private protected IServiceProvider Services { get; set; } = default!;
 
     private protected Variant ShownVariant => TbButtonGroup.Choose(_givenVariant, Variant, Group?.Variant);
 
@@ -129,6 +140,20 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
 
     // Busy, or running a click that hasn't shown its spinner yet: clicks are ignored either way.
     private bool Ignores => Busy || _running;
+
+    private bool Cooling => _coolingSince is not null;
+
+    // The whole seconds left of the cooldown, counting a part second as one.
+    // A timer can fire a few milliseconds early, which mustn't round a second up to the one before.
+    private static readonly TimeSpan TickLeeway = TimeSpan.FromMilliseconds(50);
+
+    private protected int? CooldownLeft => _coolingSince is { } since
+        ? Math.Max(1, (int)Math.Ceiling((_coolingFor - Time.GetElapsedTime(since) - TickLeeway).TotalSeconds))
+        : null;
+
+
+    private string? DescribedBy =>
+        ClassNames.Joined([Theirs("aria-describedby") as string, Cooling ? _cooldownId : null], " ");
 
     private TrailblazorOptions Options => Services.GetRequiredService<IOptions<TrailblazorOptions>>().Value;
 
@@ -150,7 +175,7 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     private bool Toggles => PressedChanged.HasDelegate;
 
     // Still focusable, but nothing happens when it is pressed.
-    private bool Inert => Busy || (Off && FocusableWhenDisabled);
+    private bool Inert => Busy || Cooling || (Off && FocusableWhenDisabled);
 
     private int? Clicks => RendererInfo.IsInteractive ? _clicks : null;
 
@@ -207,6 +232,8 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     public void Dispose()
     {
         _busyTimer?.Dispose();
+        _cooldownTimer?.Dispose();
+        _cooledTimer?.Dispose();
         if (_hearsForms)
         {
             Registry!.Changed -= OnFormChanged;
@@ -236,7 +263,7 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
 
     private async Task HandleClickAsync(MouseEventArgs args)
     {
-        if (Off)
+        if (Off || Cooling)
         {
             return;
         }
@@ -259,6 +286,7 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
         if (!RunsBusy)
         {
             await OnClick.InvokeAsync(args);
+            CoolDown();
             return;
         }
 
@@ -267,12 +295,13 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
         try
         {
             await OnClick.InvokeAsync(args);
+            CoolDown();
         }
         finally
         {
             _running = false;
             var left = _busyShownAt + Options.Busy.Minimum - Time.GetUtcNow();
-            if (_busyShown && left > TimeSpan.Zero)
+            if (_busyShown && left > TimeSpan.Zero && !Cooling)
             {
                 SetBusyTimer(HideBusy, left);
             }
@@ -303,4 +332,26 @@ public abstract partial class TbButtonBase : TbComponentBase, IDisposable
     }
 
     private void HideBusy() => _busyShown = false;
+
+    // Starts the cooldown, announces once how long it lasts, updates the seconds left each second and ends it on time.
+    private void CoolDown()
+    {
+        if (CooldownLength is not { } length || length <= TimeSpan.Zero || Toggles || Href is not null)
+        {
+            return;
+        }
+
+        (_coolingSince, _coolingFor) = (Time.GetTimestamp(), length);
+        Services.GetRequiredService<IAnnouncer>().Polite(CooldownWords(CooldownLeft!.Value));
+        _cooldownTimer?.Dispose();
+        _cooldownTimer = Time.CreateTimer(_ => _ = InvokeAsync(StateHasChanged), null, TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(1));
+        _cooledTimer?.Dispose();
+        _cooledTimer = Time.CreateTimer(_ => _ = InvokeAsync(() =>
+        {
+            _cooldownTimer?.Dispose();
+            _coolingSince = null;
+            StateHasChanged();
+        }), null, length, Timeout.InfiniteTimeSpan);
+    }
 }

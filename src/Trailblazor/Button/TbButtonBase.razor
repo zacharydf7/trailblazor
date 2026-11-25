@@ -27,12 +27,18 @@
                         disabled="@(Off && !FocusableWhenDisabled)"
                         aria-label="@(ariaLabel ?? Theirs("aria-label"))"
                         aria-disabled="@(Inert ? "true" : null)" aria-busy="@(Busy ? "true" : null)"
+                        aria-describedby="@DescribedBy"
                         data-clicks="@Clicks" data-static="@StaticMark"
                         aria-pressed="@(Toggles ? (Mixed ? "mixed" : Pressed ? "true" : "false")
                                           : Theirs("aria-pressed"))"
                         class="@RootClass(extraClass)" style="@Style" @onclick="OnClickAsync"
                         @onclick:preventDefault="Inert || _running">
                     @content
+                    @if (CooldownLeft is { } left)
+                    {
+                        @* Hidden so it stays out of the button's name; aria-describedby still reads hidden text. *@
+                        <span id="@_cooldownId" hidden>@CooldownWords(left)</span>
+                    }
                 </button>
             }
         </text>;

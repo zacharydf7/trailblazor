@@ -1298,6 +1298,19 @@ public static class TbStrings
     /// <summary>"{0} of {1}": shows which tour step shows; {0} is its number and {1} the number of steps.</summary>
     public const string TourPosition = "Tour.Position";
 
+    /// <summary>"({0})": the seconds left shown after a button's text while its <c>Cooldown</c> runs; {0} is how
+    /// many.</summary>
+    public const string ButtonCooldownLeft = "Button.CooldownLeft";
+
+    /// <summary>"Available again in {0} seconds": describes a button whose <c>Cooldown</c> has started, and is read
+    /// out once; {0} is how many. Asked for through <see cref="ITbLocalizer.Plural"/>, with
+    /// <see cref="ButtonCooldownOne"/> as its one-form.</summary>
+    public const string ButtonCooldown = "Button.Cooldown";
+
+    /// <summary>"Available again in 1 second": describes a button whose one-second <c>Cooldown</c> has started; {0},
+    /// if used, is the count.</summary>
+    public const string ButtonCooldownOne = "Button.CooldownOne";
+
     /// <summary>"Dictate": the name of the button that fills a field from speech.</summary>
     public const string SpeechToTextLabel = "SpeechToText.Label";
 
@@ -1740,6 +1753,7 @@ public static class TbStrings
         [CodeFieldDigits] = CodeFieldDigitsOne,
         [CodeFieldCharacters] = CodeFieldCharactersOne,
         [FileUploadChosen] = FileUploadChosenOne,
+        [ButtonCooldown] = ButtonCooldownOne,
         [FileUploadTooMany] = FileUploadTooManyOne,
         [RatingStars] = RatingStar,
         [TagInputTooMany] = TagInputTooManyOne,
@@ -2131,6 +2145,9 @@ public static class TbStrings
         [TourDone] = "Done",
         [TourSkip] = "Skip tour",
         [TourPosition] = "{0} of {1}",
+        [ButtonCooldownLeft] = "({0})",
+        [ButtonCooldown] = "Available again in {0} seconds",
+        [ButtonCooldownOne] = "Available again in 1 second",
         [SpeechToTextLabel] = "Dictate",
         [SpeechToTextListening] = "Listening",
         [SpeechToTextStopped] = "Stopped listening",

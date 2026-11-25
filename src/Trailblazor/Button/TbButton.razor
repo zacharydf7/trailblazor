@@ -1,5 +1,6 @@
 @namespace Trailblazor
 @inherits TbButtonBase
+@using Microsoft.Extensions.DependencyInjection
 
 @Root(FullWidth ? "tb-button--full-width" : null, null, @<text>
     @if (Busy)
@@ -17,6 +18,11 @@
         </span>
     }
     <span data-part="label" class="@ClassNames.Join("tb-button__label", Classes?.Label)">@ChildContent</span>
+    @if (CooldownLeft is { } left)
+    {
+        @* Hidden from screen readers so the countdown isn't read every second; the description says it once. *@
+        <span aria-hidden="true" data-part="cooldown" class="tb-button__cooldown">@LeftText(left)</span>
+    }
     @if (End is not null || EndIcon is not null)
     {
         <span data-part="end" class="@ClassNames.Join("tb-button__end", Classes?.End)">
@@ -57,4 +63,28 @@
     /// <summary>Extra CSS classes for the button's inner parts.</summary>
     [Parameter]
     public ButtonClasses? Classes { get; set; }
+
+    /// <summary>How long the button ignores clicks after its <c>OnClick</c> finishes without throwing, for an action
+    /// such as Resend code. It stays focusable and shows the seconds left after its text. Its description says how
+    /// many seconds are left, and screen readers hear it once as the cooldown starts. Toggle buttons and links never
+    /// cool down. A reload ends it, so enforce any limit that must hold on the server.</summary>
+    [Parameter]
+    public TimeSpan? Cooldown { get; set; }
+
+    /// <summary>The words the button shows and says while its <see cref="Cooldown"/> runs.</summary>
+    [Parameter]
+    public ButtonLabels Labels { get; set; } = new();
+
+    // Asked for only once a cooldown runs, so a button works without AddTrailblazor.
+    private ITbLocalizer Localizer => Services.GetRequiredService<ITbLocalizer>();
+
+    private protected override TimeSpan? CooldownLength => Cooldown;
+
+    private string LeftText(int left) => string.Format(
+        System.Globalization.CultureInfo.CurrentCulture, Labels.CooldownLeft ?? Localizer[TbStrings.ButtonCooldownLeft],
+        left);
+
+    private protected override string CooldownWords(int seconds) => string.Format(
+        System.Globalization.CultureInfo.CurrentCulture,
+        Labels.Cooldown ?? Localizer.Plural(TbStrings.ButtonCooldown, seconds), seconds);
 }

@@ -1,0 +1,6 @@
+<TbButton Variant="Variant.Outlined" Cooldown="TimeSpan.FromSeconds(30)" OnClick="ResendAsync">Resend code</TbButton>
+
+@code {
+    // Stands in for sending the code again.
+    private static Task ResendAsync() => Task.Delay(300);
+}

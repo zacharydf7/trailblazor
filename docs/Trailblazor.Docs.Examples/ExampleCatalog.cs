@@ -292,9 +292,10 @@ public static class ExampleCatalog
         "With a `TelemetryName`, such as `\"export-csv\"`, it counts `trailblazor.control.shown` once as it first "
             + "renders interactively, and `trailblazor.control.used` for each click it acts on, as a button or as a "
             + $"link. Both are tagged with the name and `trailblazor.component` `{component}`.",
-        "A disabled button counts as shown but not used. A click it ignores because it is loading, its form is "
-            + "submitting, or its last click is still running counts as `trailblazor.control.used` with the action "
-            + "`ignored_busy`; many of those point to a slow handler. Without a `TelemetryName` it counts nothing.",
+        $"A disabled button{(component == "TbButton" ? ", or one cooling down," : "")} counts as shown but not "
+            + "used. A click it ignores because it is loading, its form is submitting, or its last click is still "
+            + "running counts as `trailblazor.control.used` with the action `ignored_busy`; many of those point to a "
+            + "slow handler. Without a `TelemetryName` it counts nothing.",
     ];
 
     private const string InlineClickNote = "Blazor matches parameter names regardless of case, so `onclick` binds to "
@@ -1600,6 +1601,12 @@ public static class ExampleCatalog
                     + "`Minimum` the timing. Toggles and links are never busy this way. A button whose `OnClick` "
                     + "awaits a dialog's answer stays busy while the dialog is open, which suits a modal one; for a "
                     + "non-modal window, turn it off.", typeof(ButtonBusyExample)),
+                new("cooldown", "Cooldown", "`Cooldown` makes the button ignore clicks for that long after its "
+                    + "`OnClick` finishes without throwing, for an action such as Resend code. It stays focusable and "
+                    + "shows the seconds left after its text. Its description says how many seconds are left, and "
+                    + "screen readers hear it once as the cooldown starts. Toggles and links never cool down. A "
+                    + "reload ends it, so enforce any limit that must hold on the server. `Labels` words the "
+                    + "seconds and the description.", typeof(ButtonCooldownExample)),
                 new("loading", "Loading", "`Loading` shows the same spinner and ignores clicks for as long as the "
                     + "app sets it, such as when the button's text changes while it saves. The button stays focusable, "
                     + "so "
@@ -1629,7 +1636,8 @@ public static class ExampleCatalog
                 new("long-labels", "Long labels", "Long text wraps inside the button, and the button grows to fit.",
                     typeof(ButtonLongExample)),
             ],
-            Api = [typeof(TbButton), typeof(ButtonClasses), typeof(ButtonSettings), typeof(BusySettings)],
+            Api = [typeof(TbButton), typeof(ButtonClasses), typeof(ButtonLabels), typeof(ButtonSettings),
+                typeof(BusySettings)],
             Keyboard =
             [
                 new(["Enter", "Space"], "Presses it.") { When = "As a button" },
@@ -1645,12 +1653,15 @@ public static class ExampleCatalog
             Announcements =
             [
                 "`Loading`, or a click still running once its spinner shows, marks it `aria-busy`.",
+                "During a `Cooldown`, its description says how many seconds are left, such as \"Available again "
+                    + "in 30 seconds\", and is read out once as it starts; the seconds shown after its text are "
+                    + "hidden from screen readers.",
                 "With `@bind-Pressed`, its state is announced through `aria-pressed`.",
             ],
             Accessibility =
             [
-                "A busy button, or a `Disabled` one with `FocusableWhenDisabled`, is marked `aria-disabled` and "
-                    + "stays a tab stop.",
+                "A busy button, one cooling down, or a `Disabled` one with `FocusableWhenDisabled` is marked "
+                    + "`aria-disabled` and stays a tab stop.",
                 "With `PressedLook.Quiet`, the bar under a pressed toggle stands out by at least 3:1 from its tint, "
                     + "the page, and a hovered or selected row, in every palette, light and dark.",
                 "With reduced motion, the busy spinner stops turning. In forced-colors mode a pressed button takes "
@@ -1681,6 +1692,7 @@ public static class ExampleCatalog
                 new("start", "The start icon or content, before the label."),
                 new("icon", "An icon button's icon."),
                 new("label", "The button's text."),
+                new("cooldown", "The seconds left of a `Cooldown`, after the text, hidden from screen readers."),
                 new("spinner", "The spinner shown while the button is busy: loading, submitting its form, or "
                     + "still running a click."),
                 new("end", "The end icon or content, after the label."),
@@ -1709,6 +1721,9 @@ public static class ExampleCatalog
                 "By hand, check a toggle with `ToHaveAttributeAsync(\"aria-pressed\", \"true\")` and a busy "
                     + "button with `ToHaveAttributeAsync(\"aria-busy\", \"true\")`.",
                 "By hand, check a disabled button with `ToBeDisabledAsync()`, which also passes for `aria-disabled`.",
+                "During a `Cooldown`, `ClickAsync()` throws in both packages, since the button is marked "
+                    + "`aria-disabled`. In bUnit, step through it with a `FakeTimeProvider`; the seconds left are in "
+                    + "`[data-part=cooldown]`, and `FakeAnnouncer.Polite` has the description exactly once.",
                 "To move focus to a button from code, `@ref` it and call `FocusAsync()`.",
             ],
             Telemetry = ButtonTelemetry("TbButton"),
