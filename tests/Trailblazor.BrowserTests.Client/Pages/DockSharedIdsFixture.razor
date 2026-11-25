@@ -1,0 +1,15 @@
+@page "/dock-shared-ids"
+
+@* Two docks without a PersistenceKey whose panels share ids, as two pages' docks can. *@
+<div style="inline-size: 40rem; block-size: 12rem">
+    <TbDockManager AriaLabel="North" AllowPopOut>
+        <TbDockPanel Id="notes" Title="Notes">North notes</TbDockPanel>
+        <TbDockPanel Id="map" Title="Map">North map</TbDockPanel>
+    </TbDockManager>
+</div>
+<div style="inline-size: 40rem; block-size: 12rem">
+    <TbDockManager AriaLabel="South" AllowPopOut>
+        <TbDockPanel Id="notes" Title="Notes">South notes</TbDockPanel>
+        <TbDockPanel Id="map" Title="Map">South map</TbDockPanel>
+    </TbDockManager>
+</div>

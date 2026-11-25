@@ -1031,10 +1031,13 @@ export function attachDock(root, reporter) {
     const opened = new Map();
     const lapsed = new Set();
     // Where each panel's browser window last was on the screen and how large, by the panel's id. It is kept for the
-    // browser session, or beside the saved layout when the dock has a PersistenceKey. Storage can be full or turned
-    // off, and then a window opens over the dock each time.
+    // browser session, or beside the saved layout when the dock has a PersistenceKey. Without one, the dock's name
+    // keeps it apart from another dock's panel of the same id; the address doesn't, so one dock shown at several
+    // addresses keeps one place. Storage can be full or turned off, and then a window opens over the dock each time.
     const boxStore = () => 'persistenceKey' in root.dataset ? localStorage : sessionStorage;
-    const boxKey = panel => `tb-dock-window:${root.dataset.persistenceKey ?? ''}:${panel}`;
+    const boxKey = panel => 'persistenceKey' in root.dataset
+        ? `tb-dock-window:${root.dataset.persistenceKey}:${panel}`
+        : `tb-dock-window::${root.getAttribute('aria-label') ?? ''}:${panel}`;
     const keptBox = panel => {
         try {
             const box = JSON.parse(boxStore().getItem(boxKey(panel)));

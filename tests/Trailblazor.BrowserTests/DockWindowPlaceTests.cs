@@ -87,13 +87,34 @@ public class DockWindowPlaceTests(BrowserFixture fixture) : BrowserTest(fixture)
         var box = await window.EvaluateAsync<int[]>(Box);
         // The dock notes a window's place from time to time, and only what it keeps says that it has.
         await page.WaitForFunctionAsync(
-            "left => JSON.parse(sessionStorage.getItem('tb-dock-window::notes'))?.left === left", box[2]);
+            "left => JSON.parse(sessionStorage.getItem('tb-dock-window::Workbench:notes'))?.left === left",
+            box[2]);
         await window.CloseAsync();
         await Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Notes" })).ToBeVisibleAsync();
         var again = await PopOutAsync(page, "Notes");
 
         Assert.Equal(Asking(box), await AskedAsync(page, 1));
         Assert.Equal(box, await again.EvaluateAsync<int[]>(Box));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Window_ShouldKeepItsOwnPlace_WhenAnotherDockWithoutAPersistenceKeyHasAPanelOfTheSameId(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/dock-shared-ids");
+        await Expect(page.GetByRole(AriaRole.Group, new() { Name = "South" })).ToHaveAttributeAsync("data-ready", "");
+        await page.EvaluateAsync(NoteAsked);
+        // North's Notes window was last here.
+        await page.EvaluateAsync("() => sessionStorage.setItem('tb-dock-window::North:notes', "
+            + "JSON.stringify({ width: 320, height: 200, left: 40, top: 30 }))");
+
+        await page.RunAndWaitForPopupAsync(() => page.Tb().Dock("South").ChooseFromTabMenuAsync("Notes",
+            "Open in new window"));
+        await page.RunAndWaitForPopupAsync(() => page.Tb().Dock("North").ChooseFromTabMenuAsync("Notes",
+            "Open in new window"));
+
+        Assert.DoesNotContain("width=320,height=200", await AskedAsync(page, 0));
+        Assert.Equal("popup,width=320,height=200,left=40,top=30", await AskedAsync(page, 1));
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

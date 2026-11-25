@@ -445,7 +445,8 @@
     /// saved under the new one. To keep layouts on a server instead, bind <see cref="Layout"/> and save
     /// <see cref="DockLayout.ToJson"/> of <see cref="LayoutToSave"/>. With <see cref="AllowPopOut"/>, the dock also
     /// saves where each panel's browser window last was, and its size, beside the layout; without a key it keeps
-    /// them for the browser session.</summary>
+    /// them for the browser session, under the dock's <see cref="AriaLabel"/>, so docks whose panels share ids need
+    /// different names.</summary>
     [Parameter]
     public string? PersistenceKey { get; set; }
 
