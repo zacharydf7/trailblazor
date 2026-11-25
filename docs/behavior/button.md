@@ -26,7 +26,7 @@ Familiar apps: the buttons in any native dialog, Gmail's and GitHub's action but
 - [x] Ctrl+click and middle-click open a button with an `Href` in a new tab. `TbButtonBase.razor`
 - [x] A disabled link has no address to follow. `TbButtonTests.Render_ShouldDropTheAddressButKeepTheLinkRole_WhenALinkIsDisabled`
 - [x] A loading link ignores clicks. `TbButtonTests.Click_ShouldIgnoreTheClick_WhenALinkIsLoading`
-- [x] A submit button in a `TbForm` ignores clicks and shows a spinner while the form handles a submit. `TbFormSubmittingTests.Click_ShouldBeIgnored_WhenTheFormIsHandlingASubmit`, `TbFormSubmittingTests.Submit_ShouldShowTheSubmitButtonsBusy_WhenTheHandlerIsRunning`
+- [x] A submit button ignores clicks and shows a spinner while the `TbForm` it submits handles a submit: the one its `form` attribute names, or else the one around it. `TbFormOtherFormButtonTests.Button_ShouldShowBusy_WhenTheFormItsFormAttributeNamesSubmits`, `TbFormSubmittingTests.Click_ShouldBeIgnored_WhenTheFormIsHandlingASubmit`, `TbFormSubmittingTests.Submit_ShouldShowTheSubmitButtonsBusy_WhenTheHandlerIsRunning`
 - [x] Turning an outlined toggle off shows at once, while the pointer is still on it. `ToggleItemsTests.Item_ShouldShowItTurnedOff_WhenClickedWithThePointerStillOnIt`
 - [x] With `PressedLook.Quiet`, a pressed toggle shows a tint and a bar in its text color, and the bar stands out by at least 3:1 from the tint, the page and a hovered or selected tree row. `TokensTests.PressedToggle_ShouldStandOutAndKeepItsTextReadable_WhenAPaletteAndThemeAreApplied`, `TbButtonTests.Render_ShouldMarkTheQuietLook_WhenGivenAPressedLook`
 
@@ -50,4 +50,4 @@ Familiar apps: the buttons in any native dialog, Gmail's and GitHub's action but
 
 - Space on a button with an `Href`: it's a link, and links only take Enter.
 - Keeping focus when `Disabled` turns on: a native disabled button can't hold focus, so `Loading` or `FocusableWhenDisabled` is the way to keep it.
-- Ignoring a double click: every click counts unless the app sets `Loading`, since only the app knows when the work ends. A submit button in a `TbForm` is the exception: the form knows, and shows the button as busy while it handles a submit.
+- Ignoring a double click: every click counts unless the app sets `Loading`, since only the app knows when the work ends. A submit button is the exception: the `TbForm` it submits knows, and shows the button as busy while it handles a submit.

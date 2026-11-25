@@ -1719,6 +1719,7 @@ Trailblazor.TbButton.TbButton() -> void
 Trailblazor.TbButtonBase
 Trailblazor.TbButtonBase.Disabled.get -> bool
 Trailblazor.TbButtonBase.Disabled.set -> void
+Trailblazor.TbButtonBase.Dispose() -> void
 Trailblazor.TbButtonBase.FocusableWhenDisabled.get -> bool
 Trailblazor.TbButtonBase.FocusableWhenDisabled.set -> void
 Trailblazor.TbButtonBase.FocusAsync(bool preventScroll = false) -> System.Threading.Tasks.ValueTask

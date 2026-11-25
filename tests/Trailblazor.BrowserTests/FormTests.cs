@@ -95,6 +95,36 @@ public class FormTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldShowBusyAndSendOnce_WhenItSubmitsTheFormItsFormAttributeNamesFromOutside(
+        string browser)
+    {
+        var page = await OpenAsync(browser, "/form-outside-button");
+        await Field(page, "Destination").FillAsync("Eagle Ridge");
+
+        await Button(page, "Send trip").ClickAsync();
+
+        await Expect(Button(page, "Send trip")).ToHaveAttributeAsync("aria-busy", "true");
+        // Playwright treats aria-disabled as disabled and would wait until the timeout without Force.
+        await Button(page, "Send trip").ClickAsync(new() { Force = true });
+        await Button(page, "Finish").ClickAsync();
+
+        await Expect(Button(page, "Send trip")).Not.ToHaveAttributeAsync("aria-busy", "true");
+        await Expect(page.GetByTestId("sent")).ToHaveTextAsync("1");
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Button_ShouldBeDisabled_WhenTheFormItsFormAttributeNamesFromOutsideIsDisabled(string browser)
+    {
+        var page = await OpenAsync(browser, "/form-outside-button");
+
+        await Button(page, "Lock").ClickAsync();
+
+        await Expect(Button(page, "Send trip")).ToBeDisabledAsync();
+        await Button(page, "Lock").ClickAsync();
+        await Expect(Button(page, "Send trip")).ToBeEnabledAsync();
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Helper_ShouldSubmitOnceInteractive_WhenThePageIsStillPrerendered(string browser)
     {
         var (page, held) = await OpenHeldAsync(browser, "/examples/form");

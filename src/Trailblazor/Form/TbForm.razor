@@ -11,6 +11,7 @@
 @implements IDisposable
 @inject JsModuleLoader Modules
 @inject IServiceProvider Services
+@inject FormRegistry Registry
 
 @* The fields check themselves, so the browser's own validation bubbles are turned off. *@
 <EditForm @attributes="FormAttributes" id="@Id" EditContext="_editContext" FormName="@FormName"
@@ -20,7 +21,7 @@
            being rendered again by their parents. *@
         <CascadingValue Value="Disabled" Name="@DisabledCascade">
             <CascadingValue Value="!RequiredMarkers" Name="@HiddenMarkersCascade">
-                <CascadingValue Value="@(_submitting && ShowSubmitting)" Name="@SubmittingCascade">
+                <CascadingValue Value="@ShowsSubmitting" Name="@SubmittingCascade">
                     @ChildContent
                 </CascadingValue>
             </CascadingValue>
@@ -47,6 +48,8 @@
     private int _submits;
     // IsSubmitting is a parameter the parent can overwrite, so the form tracks the real state here.
     private bool _submitting;
+    private string? _registeredId;
+    private bool _registeredDisabled;
     // While a field's edit, a reset or a validation is under way, renders and the context's events hold their report
     // until it ends.
     private int _edits;
@@ -84,8 +87,9 @@
     public string? FormName { get; set; }
 
     /// <summary>Turns off every field in the form, as a field's own <c>Disabled</c> does: the fields can't be focused
-    /// or changed, and they aren't posted. The form's submit and reset buttons turn off too, and the form ignores a
-    /// submit. A field's own <c>Disabled</c> still applies while this is false.</summary>
+    /// or changed, and they aren't posted. The form's submit and reset buttons turn off too, as do those elsewhere
+    /// with a <c>form</c> attribute that names the form, and the form ignores a submit. A field's own
+    /// <c>Disabled</c> still applies while this is false.</summary>
     [Parameter]
     public bool Disabled { get; set; }
 
@@ -101,15 +105,17 @@
     [Parameter]
     public bool RequiredMarkers { get; set; } = true;
 
-    /// <summary>Shows each submit button in the form as busy while the form handles a submit, as the button's
-    /// <c>Loading</c> does: with a spinner, marked busy for screen readers, and still focusable. Turn it off to show
-    /// the wait another way, from <see cref="IsSubmitting"/>. A second submit is dropped either way.</summary>
+    /// <summary>Shows each submit button in the form, or elsewhere with a <c>form</c> attribute that names the form, as
+    /// busy while the form handles a submit, as the button's <c>Loading</c> does: with a spinner, marked busy for
+    /// screen readers, and still focusable. Turn it off to show the wait another way, from
+    /// <see cref="IsSubmitting"/>. A second submit is dropped either way.</summary>
     [Parameter]
     public bool ShowSubmitting { get; set; } = true;
 
     /// <summary>Whether the form is handling a submit: from the submit, through its checks, until
     /// <see cref="OnSubmit"/>, <see cref="OnValidSubmit"/> or <see cref="OnInvalidSubmit"/> finishes, even by
-    /// throwing. A submit that arrives meanwhile is dropped, and the form's submit buttons show as busy unless
+    /// throwing. A submit that arrives meanwhile is dropped, and the form's submit buttons, in it or naming it with
+    /// a <c>form</c> attribute, show as busy unless
     /// <see cref="ShowSubmitting"/> is off. Bind it with <c>@bind-IsSubmitting</c>, such as to turn off a cancel
     /// button meanwhile. Setting it from the page doesn't start or end a submit.</summary>
     [Parameter]
@@ -194,6 +200,8 @@
 
     private object Id => AdditionalAttributes?.GetValueOrDefault("id") ?? _id;
 
+    internal bool ShowsSubmitting => _submitting && ShowSubmitting;
+
     // FormReporter is internal, so Razor can't name it; the form renders it through this.
     private RenderFragment Reporter => builder =>
     {
@@ -277,6 +285,29 @@
         // The parent can change a value or the model without any field reporting it.
         _stale = true;
         _modelPasses = null;
+        Register();
+    }
+
+    // Keeps the form findable by its id, and tells the buttons that name it when it turns on or off.
+    private void Register()
+    {
+        var id = Id.ToString()!;
+        if (id != _registeredId)
+        {
+            if (_registeredId is not null)
+            {
+                Registry.Remove(_registeredId, this);
+            }
+
+            _registeredId = id;
+            _registeredDisabled = Disabled;
+            Registry.Add(id, this);
+        }
+        else if (Disabled != _registeredDisabled)
+        {
+            _registeredDisabled = Disabled;
+            Registry.Change(id);
+        }
     }
 
     /// <inheritdoc />
@@ -463,12 +494,14 @@
         _submitting = IsSubmitting = true;
         try
         {
+            Registry.Change(_registeredId!);
             await IsSubmittingChanged.InvokeAsync(true);
             await RaiseSubmitAsync(context);
         }
         finally
         {
             _submitting = IsSubmitting = false;
+            Registry.Change(_registeredId!);
             await IsSubmittingChanged.InvokeAsync(false);
         }
     }
@@ -616,6 +649,11 @@
     /// <inheritdoc />
     public void Dispose()
     {
+        if (_registeredId is not null)
+        {
+            Registry.Remove(_registeredId, this);
+        }
+
         _editContext.OnFieldChanged -= OnFieldChanged;
         _editContext.OnValidationStateChanged -= OnValidationStateChanged;
         _annotations?.Dispose();

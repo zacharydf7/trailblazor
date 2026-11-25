@@ -1557,7 +1557,8 @@ public static class ExampleCatalog
                     typeof(ButtonIconExample)),
                 new("loading", "Loading", "`Loading` shows a spinner and ignores clicks, so a slow action can't run "
                     + "twice. The button stays focusable, so focus isn't lost while it waits. A `TbForm`'s submit "
-                    + "button shows the same by itself while the form handles a submit. On a static page, where "
+                    + "button, in the form or naming it with `form`, shows the same by itself while the form handles "
+                    + "a submit. On a static page, where "
                     + "there's no handler to wait for, it does the same while its post is on its way, for up to "
                     + "10 seconds.",
                     typeof(ButtonLoadingExample)),
@@ -1573,7 +1574,9 @@ public static class ExampleCatalog
                     + "in its text color along the bottom, in place of the variant's fill or edge. It suits text "
                     + "toggles among other content, such as a toolbar's view options.", typeof(ButtonQuietExample)),
                 new("submit", "Submit", "A button defaults to `type=\"button\"`, so it never submits a form by "
-                    + "accident. `Type=\"ButtonType.Submit\"` makes it submit its form.", typeof(ButtonSubmitExample)),
+                    + "accident. `Type=\"ButtonType.Submit\"` makes it submit its form. A submit button outside "
+                    + "the form, such as in a dialog's footer, names the form's `id` in its `form` attribute, and then "
+                    + "shows busy and turns off with that form as one inside it does.", typeof(ButtonSubmitExample)),
                 new("focus", "Moving focus", "Take a `@ref` to the button and call `FocusAsync()`, for example to "
                     + "move focus to a Retry button when a save fails.", typeof(ButtonFocusExample)),
                 new("long-labels", "Long labels", "Long text wraps inside the button, and the button grows to fit.",
@@ -5699,9 +5702,9 @@ public static class ExampleCatalog
                     + "`FocusAsync()` would.",
                 "With `OnSubmit`, focus stays where it is, so your handler can move it.",
                 "A reset leaves focus where it was.",
-                "While the form handles a submit, each submit button in it shows a spinner, is marked "
-                    + "`aria-busy` and `aria-disabled`, and stays focusable, as a button with `Loading` does, unless "
-                    + "`ShowSubmitting` is off.",
+                "While the form handles a submit, each of its submit buttons, in it or naming it with `form`, "
+                    + "shows a spinner, is marked `aria-busy` and `aria-disabled`, and stays focusable, as a button "
+                    + "with `Loading` does, unless `ShowSubmitting` is off.",
             ],
             AppDuties =
             [
@@ -5739,9 +5742,10 @@ public static class ExampleCatalog
                     + "the submit itself."),
                 new("From a submit until its handler finishes, `IsSubmitting` is true, the form's submit buttons "
                     + "show as busy, and another submit is dropped. `ShowSubmitting=\"false\"` leaves the buttons "
-                    + "as they are. A submit button outside the form, tied to it with the `form` attribute, doesn't "
-                    + "show as busy, since the form's cascade doesn't reach it. Its second submit is still "
-                    + "dropped. Bind `@bind-IsSubmitting` and set that button's `Loading` from it."),
+                    + "as they are. A submit button outside the form, such as in a dialog's footer, shows as busy "
+                    + "and turns off with it too when the form has an `id` and the button's `form` attribute names "
+                    + "it: `<TbForm id=\"trip\">` and `<TbButton Type=\"ButtonType.Submit\" form=\"trip\">`. A submit "
+                    + "button inside another form follows the form it names rather than the one around it."),
                 new("Every field has `FocusAsync()`, to move focus from code. A disabled field doesn't take focus."),
                 new("A reset leaves a field's `Error` in place, so clear it in `OnReset` if the form is starting over. A "
                     + "message from a `DataAnnotationsValidator` inside the form stays too, unless the reset changes "

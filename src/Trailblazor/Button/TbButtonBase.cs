@@ -1,15 +1,17 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Trailblazor;
 
 /// <summary>What <see cref="TbButton"/> and <see cref="TbIconButton"/> share.</summary>
-public abstract partial class TbButtonBase : TbComponentBase
+public abstract partial class TbButtonBase : TbComponentBase, IDisposable
 {
     private ElementReference _element;
     // How many clicks the button has finished handling; the Playwright driver waits for it to change.
     private int _clicks;
     private ControlTelemetry? _telemetry;
+    private bool _hearsForms;
     private bool _givenVariant;
     private bool _givenTone;
     private bool _givenSize;
@@ -37,8 +39,9 @@ public abstract partial class TbButtonBase : TbComponentBase
     public bool FocusableWhenDisabled { get; set; }
 
     /// <summary>Shows a busy spinner and ignores clicks, but keeps the button focusable so focus isn't lost while
-    /// the work runs. A submit button in a <see cref="TbForm"/> shows the same while the form handles a submit,
-    /// unless the form's <c>ShowSubmitting</c> is off.</summary>
+    /// the work runs. A submit button shows the same while the <see cref="TbForm"/> it submits handles a submit: the
+    /// one its <c>form</c> attribute names, or else the one around it, unless the form's <c>ShowSubmitting</c> is
+    /// off.</summary>
     [Parameter]
     public bool Loading { get; set; }
 
@@ -66,7 +69,9 @@ public abstract partial class TbButtonBase : TbComponentBase
     [Parameter]
     public PressedLook PressedLook { get; set; }
 
-    /// <summary>What the button does inside a form. Defaults to <see cref="ButtonType.Button"/>.</summary>
+    /// <summary>What the button does inside a form. Defaults to <see cref="ButtonType.Button"/>. A submit or reset
+    /// button turns off with the <see cref="TbForm"/> its <c>form</c> attribute names, wherever the button is, or else
+    /// with the form around it, and a submit button shows busy while that form submits.</summary>
     [Parameter]
     public ButtonType Type { get; set; } = ButtonType.Button;
 
@@ -102,9 +107,17 @@ public abstract partial class TbButtonBase : TbComponentBase
     private protected Size ShownSize => TbButtonGroup.Choose(_givenSize, Size, Group?.Size);
 
     private bool Off => Disabled || Group?.Disabled == true
-        || (FormDisabled && Type is ButtonType.Submit or ButtonType.Reset);
+        || (OwnForm(FormDisabled, form => form.Disabled) && Type is ButtonType.Submit or ButtonType.Reset);
 
-    private protected bool Busy => Loading || (FormSubmitting && Type is ButtonType.Submit);
+    private protected bool Busy => Loading || (OwnForm(FormSubmitting, form => form.ShowsSubmitting)
+        && Type is ButtonType.Submit);
+
+    private string? FormId => Theirs("form") as string;
+
+    private FormRegistry? Registry => field ??= Services.GetService<FormRegistry>();
+
+    private bool OwnForm(bool around, Func<TbForm, bool> named) =>
+        FormId is { } id ? Registry?.Find(id) is { } form && named(form) : around;
 
     private ControlTelemetry Telemetry => _telemetry ??= new(Services, GetType());
 
@@ -143,6 +156,20 @@ public abstract partial class TbButtonBase : TbComponentBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        // Only a button that names a form hears the forms change, so a page of plain buttons costs nothing.
+        if ((FormId is not null) != _hearsForms && Registry is { } registry)
+        {
+            _hearsForms = !_hearsForms;
+            if (_hearsForms)
+            {
+                registry.Changed += OnFormChanged;
+            }
+            else
+            {
+                registry.Changed -= OnFormChanged;
+            }
+        }
+
         if (Href is not null && Toggles)
         {
             throw new InvalidOperationException("A button with an Href is a link, which can't be a toggle.");
@@ -151,6 +178,23 @@ public abstract partial class TbButtonBase : TbComponentBase
 
     /// <inheritdoc />
     protected override void OnAfterRender(bool firstRender) => Telemetry.Rendered(TelemetryName);
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (_hearsForms)
+        {
+            Registry!.Changed -= OnFormChanged;
+        }
+    }
+
+    private void OnFormChanged(string id)
+    {
+        if (id == FormId)
+        {
+            _ = InvokeAsync(StateHasChanged);
+        }
+    }
 
     private async Task OnClickAsync(MouseEventArgs args)
     {

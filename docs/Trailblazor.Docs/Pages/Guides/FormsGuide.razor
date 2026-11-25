@@ -242,8 +242,10 @@
         <DocsHeading Id="submit-in-progress" Text="A submit in progress" Class="docs-section" />
         <TbText>
             While the form's handler runs, each submit button in the form shows a spinner, is marked busy for screen
-            readers and ignores more clicks, as a button with <code>Loading</code> does. It stays focusable, so focus
-            isn't lost. The form drops a second submit meanwhile, so the handler needs no flag of its own.
+            readers and ignores more clicks, as a button with <code>Loading</code> does. So does one outside it, such as
+            in a dialog's footer, whose <code>form</code> attribute names the form's <code>id</code>. It stays
+            focusable, so focus isn't lost. The form drops a second submit meanwhile, so the handler needs no flag of
+            its own.
             <code>@@bind-IsSubmitting</code> lets the page follow it, such as to turn off a cancel button, and
             <code>ShowSubmitting="false"</code> leaves the buttons as they are. When the save finishes, say so: an
             <code>output</code> element reads out changes to its text, or use the

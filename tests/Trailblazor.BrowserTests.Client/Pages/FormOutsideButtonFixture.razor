@@ -1,0 +1,25 @@
+@page "/form-outside-button"
+
+@* A form whose submit button sits outside it, as in a dialog's footer, and names it with its form attribute. The
+   handler waits for a click on Finish, so the form stays in the middle of a submit until then. *@
+<TbForm id="trip-form" aria-label="Trip" OnValidSubmit="SendAsync" Disabled="_locked">
+    <TbTextField Label="Destination" @bind-Value="_destination" />
+</TbForm>
+<TbButton Type="ButtonType.Submit" form="trip-form">Send trip</TbButton>
+<TbButton OnClick="() => _hold.TrySetResult()">Finish</TbButton>
+<TbButton OnClick="() => _locked = !_locked">Lock</TbButton>
+<p>Trips sent: <span data-testid="sent">@_sent</span></p>
+
+@code {
+    private TaskCompletionSource _hold = new();
+    private string? _destination;
+    private bool _locked;
+    private int _sent;
+
+    private async Task SendAsync()
+    {
+        _sent++;
+        await _hold.Task;
+        _hold = new();
+    }
+}

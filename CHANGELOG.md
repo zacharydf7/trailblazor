@@ -87,6 +87,7 @@ they run by version. The docs site's Upgrading page is built from both.
 
 #### 2026-11-24
 
+- A `TbButton`, `TbIconButton` or `TbFab` that submits or resets now follows the `TbForm` its `form` attribute names, turning off with it and, for a submit button, showing busy while it submits, wherever the button is: outside any form, such as in a dialog's footer, or inside another form, which it no longer follows. Before, it followed only the form around it, so a button outside its form never showed busy or turned off. `TbButtonBase` is now `IDisposable`.
 - A `TbSplitter` with `StackBelow` now keeps focus inside it when it stacks while a separator has focus: focus moves to the first control in the pane before that separator, or to the pane itself when it holds none, which stays focusable only until focus leaves it. When the pane before is collapsed, the pane after takes focus. Collapsing the pane that holds focus while stacked moves focus into the next pane that shows. Before, the hidden separator lost focus to the page.
 - The utility classes have `tb-text-nowrap`, which keeps text on one line, such as a date a browser would otherwise break after a hyphen.
 - In `TbRichTextEditor`, a mark or block of the app's own with no `Icon` now shows the first letter of its label, or of its name without one, on its toolbar button, so two of them can be told apart. Before, every such mark showed the same tag and every such block the same framed paragraph.

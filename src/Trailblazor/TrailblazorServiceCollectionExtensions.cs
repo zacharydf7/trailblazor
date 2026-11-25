@@ -57,6 +57,7 @@ public static class TrailblazorServiceCollectionExtensions
         services.TryAddScoped<ITbLocalizer, TbLocalizer>();
         services.TryAddScoped<SortableGroups>();
         services.TryAddScoped<HotkeyRegistry>();
+        services.TryAddScoped<FormRegistry>();
         services.TryAddScoped<IThemeService, ThemeService>();
         services.AddMetrics();
         services.TryAddSingleton<TelemetryInstruments>();
