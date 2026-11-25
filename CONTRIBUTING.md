@@ -214,6 +214,18 @@ The same idea gets the same name on every component.
   the attributes for the element that opens the popup.
 - A slot before or after a component's main content, such as an icon in a button or a unit in a field, is `Start` or
   `End`.
+- The current item is `ActiveIndex` when it is a position, as on the carousel, tabs and ribbon, and `ActiveKey` when it
+  is a key, as on the tabs, stepper, ribbon and table of contents. The lightbox's `Index` and the tour's `Step` are
+  still to be renamed (#623).
+- A component that lays its items in a column unless told otherwise, such as the stack and the radio and checkbox
+  groups, takes `Row`. One that lays them in a row unless told otherwise, such as the toolbar, tabs, stepper, splitter
+  and button and toggle groups, takes `Vertical`, and so does the divider, whose line runs across unless told otherwise.
+  The flag always names the direction that isn't the default.
+- A function that says at once how each item of a list or tree shows or behaves starts with `Item`, such as
+  `ItemText`, `ItemDisabled`, `ItemMovable` and `ItemSelectable`. `HasChildren` and a tree's `Filter` keep their names,
+  since they ask about the data rather than how an item shows, and a calendar's `IsDateDisabled` asks about a date, not
+  an item. An asynchronous check starts with `Can`: the sortable, kanban, tree view and data grid all ask `CanMove`
+  before a move and raise `OnMove` after it.
 - A component with two or more built-in strings takes them as a `Labels` record, such as `PaginationLabels`, whose
   members are null by default. The accessible name of its landmark or group is still set by `AriaLabel`, not by
   `Labels`. `LabelsRuleTests` reads the files of each component, its base classes and the internal parts it renders,

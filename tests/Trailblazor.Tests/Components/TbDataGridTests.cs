@@ -1358,13 +1358,13 @@ public class TbDataGridTests : BunitContext
         List<Trail> trails = [.. Trails];
 
         var cut = RenderTrails(trails, parameters => parameters
-            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+            .Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
 
         cut.WaitForAssertion(() => Assert.Equal(true, module.Invocations["createDataGrid"].Single().Arguments[1]));
     }
 
     [Fact]
-    public void RowMove_ShouldMarkTheGridUnreadyUntilRowsCanMove_WhenRowMoveIsAddedLater()
+    public void RowMove_ShouldMarkTheGridUnreadyUntilRowsCanMove_WhenOnMoveIsAddedLater()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/data-grid.js");
         var script = module.SetupModule("createDataGrid", _ => true);
@@ -1374,7 +1374,7 @@ public class TbDataGridTests : BunitContext
         cut.WaitForAssertion(() => Assert.Equal(false, module.Invocations["createDataGrid"].Single().Arguments[1]));
 
         cut.Render(parameters => parameters
-            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+            .Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
 
         cut.WaitForAssertion(() => Assert.Equal([false, true],
             script.Invocations["setReady"].Select(call => (bool)call.Arguments[0]!)));
@@ -1386,7 +1386,7 @@ public class TbDataGridTests : BunitContext
         List<Trail> trails = [.. Enumerable.Range(1, 500).Select(id => new Trail(id, $"Trail {id}", id, default))];
 
         var cut = RenderTrails(trails, parameters => parameters
-            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+            .Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
 
         Assert.Equal(500, cut.FindAll("[data-part=handle] > [data-part=trigger]").Count);
         Assert.Empty(JSInterop.Invocations["createMenu"]);
@@ -1398,7 +1398,7 @@ public class TbDataGridTests : BunitContext
         List<Trail> trails = [.. Trails];
         var announcer = Render<AnnouncerHost>();
         var cut = RenderTrails(trails, parameters => parameters.Add(grid => grid.PageSize, 2)
-            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+            .Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
         Assert.Equal("Move Pine Hollow", cut.Find("[data-part=handle] > [data-part=trigger]")
             .GetAttribute("aria-label"));
 
@@ -1415,7 +1415,7 @@ public class TbDataGridTests : BunitContext
     {
         List<Trail> trails = [.. Trails];
         var cut = RenderTrails(trails, parameters => parameters.Add(grid => grid.PageSize, 2)
-            .Add(grid => grid.Page, 2).Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+            .Add(grid => grid.Page, 2).Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
 
         await cut.InvokeAsync(() => MoveEvents().OnKey("4", "Home"));
 
@@ -1428,8 +1428,8 @@ public class TbDataGridTests : BunitContext
     {
         List<Trail> trails = [.. Trails];
         var cut = RenderTrails(trails, parameters => parameters
-            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
-            .Add(grid => grid.CanMoveRow, move => Task.FromResult(move.To == 0
+            .Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
+            .Add(grid => grid.CanMove, move => Task.FromResult(move.To == 0
                 ? MoveCheck.Refuse("Pine Hollow stays first.") : MoveCheck.Allow)));
 
         var refused = await cut.InvokeAsync(() => MoveEvents().OnDragOver("3", "1", before: true));
@@ -1441,14 +1441,14 @@ public class TbDataGridTests : BunitContext
     }
 
     [Fact]
-    public async Task RowMove_ShouldAskAndMoveOnce_WhenAKeyComesAgainWhileCanMoveRowRuns()
+    public async Task RowMove_ShouldAskAndMoveOnce_WhenAKeyComesAgainWhileCanMoveRuns()
     {
         List<Trail> trails = [.. Trails];
         var asks = 0;
         var held = new TaskCompletionSource<MoveCheck>();
         var cut = RenderTrails(trails, parameters => parameters
-            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
-            .Add(grid => grid.CanMoveRow, _ =>
+            .Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
+            .Add(grid => grid.CanMove, _ =>
             {
                 asks++;
                 return held.Task;
@@ -1468,7 +1468,7 @@ public class TbDataGridTests : BunitContext
     {
         List<Trail> trails = [.. Trails];
         var cut = RenderTrails(trails, parameters => parameters
-            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
+            .Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
             .Add(grid => grid.Sorts, [new GridSort("Name", SortDirection.Ascending)]));
 
         await cut.InvokeAsync(() => MoveEvents().OnKey("1", "ArrowDown"));
@@ -1482,7 +1482,7 @@ public class TbDataGridTests : BunitContext
     {
         List<Trail> trails = [.. Trails];
         var cut = RenderTrails(trails, parameters => parameters
-            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
+            .Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails)));
         var sort = cut.Find("th[data-column=Name] [data-part=sort]");
 
         await sort.ClickAsync(new());
@@ -1518,7 +1518,7 @@ public class TbDataGridTests : BunitContext
     {
         List<Trail> trails = [.. Trails];
         var cut = RenderTrails(trails, parameters => parameters.Add(grid => grid.SelectionMode,
-            SelectionMode.Multiple).Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails)),
+            SelectionMode.Multiple).Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails)),
             PinnedColumns(ColumnPin.Start, ColumnPin.Start, ColumnPin.None));
 
         var styles = Enumerable.Range(0, 4).Select(slot => $"inset-inline-start: var(--tb-data-grid-pin-{slot}, 0px)");

@@ -8,7 +8,7 @@
 </TbDataGrid>
 <p data-testid="asked">@_asked</p>
 <TbDataGrid TItem="string" Items="_stops" AriaLabel="Stops" Virtualize Height="15rem"
-            OnRowMove="(SortableMove<string> move) => move.ApplyTo(_stops)">
+            OnMove="(SortableMove<string> move) => move.ApplyTo(_stops)">
     <TbColumn Field="stop => stop" Title="Stop" Id="stop" />
 </TbDataGrid>
 

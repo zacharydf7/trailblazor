@@ -230,7 +230,7 @@ public class TbTreeViewTests : BunitContext
     [Fact]
     public void Click_ShouldLeaveARowUnselected_WhenItIsntSelectable()
     {
-        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.IsSelectable,
+        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.ItemSelectable,
             place => place.Children is null));
 
         Row(cut, "1").Click();
@@ -670,7 +670,8 @@ public class TbTreeViewTests : BunitContext
     [Fact]
     public void DoubleClick_ShouldOpenAParentRowThatCantBeSelectedOnce_WhenItsClicksComeFirst()
     {
-        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.IsSelectable, place => place.Id != 1));
+        var cut = RenderPlaces(Nested,
+            parameters => parameters.Add(tree => tree.ItemSelectable, place => place.Id != 1));
 
         Row(cut, "1").Click(new() { Detail = 1 });
         Row(cut, "1").Click(new() { Detail = 2 });
@@ -1180,7 +1181,8 @@ public class TbTreeViewTests : BunitContext
     [Fact]
     public async Task SelectAsync_ShouldChangeNothing_WhenTheRowCantBeSelectedOrNoRowHasTheKey()
     {
-        var cut = RenderPlaces(Nested, parameters => parameters.Add(tree => tree.IsSelectable, place => place.Id != 4));
+        var cut = RenderPlaces(Nested,
+            parameters => parameters.Add(tree => tree.ItemSelectable, place => place.Id != 4));
 
         await cut.InvokeAsync(() => cut.Instance.SelectAsync(4));
         await cut.InvokeAsync(() => cut.Instance.SelectAsync(99));

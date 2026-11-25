@@ -4,7 +4,7 @@
 
 <li @attributes="AdditionalAttributes" style="@Style" class="@ClassNames.Join("tb-table-of-contents__item", Class)">
     <a href="@Contents!.Href(TargetId)" data-target="@TargetId" data-part="link" class="tb-table-of-contents__link"
-       style="--tb-table-of-contents-level: @Level" aria-current="@(Contents.Active == TargetId ? "location" : null)"
+       style="--tb-table-of-contents-level: @Level" aria-current="@(Contents.ActiveKey == TargetId ? "location" : null)"
        @onclick="Contents.Followed">@Text</a>
     @if (ChildContent is not null)
     {

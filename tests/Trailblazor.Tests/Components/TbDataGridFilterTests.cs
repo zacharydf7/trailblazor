@@ -181,7 +181,7 @@ public class TbDataGridFilterTests : BunitContext
     public async Task Reorder_ShouldNotBeOffered_WhenAFilterHidesRows()
     {
         var cut = RenderHikes(configure: parameters => parameters
-            .Add(grid => grid.OnRowMove, (SortableMove<Hike> _) => { }));
+            .Add(grid => grid.OnMove, (SortableMove<Hike> _) => { }));
         Assert.NotEmpty(cut.FindAll("[data-part=order]"));
 
         await cut.Tb().Grid("Hikes").FilterAsync("Name", "ridge");

@@ -7,7 +7,7 @@
     </TbSortable>
 </div>
 <output data-testid="moved-to">@_rules.IndexOf("Rule 1")</output>
-<TbDataGrid TItem="string" Items="_stops" AriaLabel="Stops" Height="150px" OnRowMove="move => move.ApplyTo(_stops)">
+<TbDataGrid TItem="string" Items="_stops" AriaLabel="Stops" Height="150px" OnMove="move => move.ApplyTo(_stops)">
     <TbColumn TItem="string" Title="Stop" Id="stop">
         <CellTemplate>@context</CellTemplate>
     </TbColumn>

@@ -52,7 +52,7 @@ public class TbMultiTreeSelect<TItem, [DynamicallyAccessedMembers(DynamicallyAcc
 
     private protected override IReadOnlyCollection<TKey> SelectedKeys => [];
 
-    // The tree's checked keys, including headings IsSelectable keeps out of the value, and the value they produced.
+    // The tree's checked keys, including headings ItemSelectable keeps out of the value, and the value they produced.
     // While Value is still that same list, the tree keeps these keys, so a heading stays checked and reaches items
     // that load later.
     private IReadOnlyCollection<TKey> _treeKeys = [];
@@ -124,11 +124,11 @@ public class TbMultiTreeSelect<TItem, [DynamicallyAccessedMembers(DynamicallyAcc
     }
 
     // The value for the tree's checked keys: the items held in memory in tree order, then loaded children, then keys
-    // whose items haven't loaded. When IsSelectable leaves out a heading, its key isn't part of the value.
+    // whose items haven't loaded. When ItemSelectable leaves out a heading, its key isn't part of the value.
     private IReadOnlyList<TKey> ValueOf(IReadOnlyCollection<TKey> keys, OrderedDictionary<TKey, TItem> items)
     {
         var chosen = keys.ToHashSet();
-        var known = items.Where(pair => chosen.Contains(pair.Key) && IsSelectable?.Invoke(pair.Value) != false);
+        var known = items.Where(pair => chosen.Contains(pair.Key) && ItemSelectable?.Invoke(pair.Value) != false);
         return [.. known.Select(pair => pair.Key), .. keys.Where(key => !items.ContainsKey(key))];
     }
 
@@ -136,7 +136,7 @@ public class TbMultiTreeSelect<TItem, [DynamicallyAccessedMembers(DynamicallyAcc
     private protected override bool SameValue(IReadOnlyList<TKey>? value, IReadOnlyList<TKey>? other) =>
         SameItems(value, other, null);
 
-    // When IsSelectable leaves out a heading, its checkbox still checks the rows inside it.
+    // When ItemSelectable leaves out a heading, its checkbox still checks the rows inside it.
     private protected override async Task CheckedAsync(IReadOnlyCollection<TKey> keys)
     {
         var value = ValueOf(keys, ByKey());

@@ -246,7 +246,7 @@ public class TbTreeSelectTests : BunitContext
     [Fact]
     public void Activate_ShouldLeaveTheValue_WhenTheItemCantBeChosen()
     {
-        var cut = RenderInMemory(parameters => parameters.Add(select => select.IsSelectable, place => !place.Area));
+        var cut = RenderInMemory(parameters => parameters.Add(select => select.ItemSelectable, place => !place.Area));
 
         Item(cut, "North ridge").DoubleClick();
         Item(cut, "North ridge").Click();

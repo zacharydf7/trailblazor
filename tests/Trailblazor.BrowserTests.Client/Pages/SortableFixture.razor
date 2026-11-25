@@ -11,7 +11,7 @@
     <ItemTemplate>@context <TbTextField TValue="string" Label="@($"Note for {context}")" /></ItemTemplate>
 </TbSortable>
 @* A list inside a grid's cell moves its own items, and only its own. *@
-<TbDataGrid TItem="string" Items="_crews" AriaLabel="Crews" OnRowMove="move => move.ApplyTo(_crews)">
+<TbDataGrid TItem="string" Items="_crews" AriaLabel="Crews" OnMove="move => move.ApplyTo(_crews)">
     <TbColumn TItem="string" Title="Crew" Id="crew">
         <CellTemplate>
             @context
@@ -26,14 +26,14 @@
     </TbColumn>
 </TbDataGrid>
 <output data-testid="crews">@string.Join(", ", _crews); @string.Join(", ", _members)</output>
-<TbDataGrid TItem="string" Items="_stops" AriaLabel="Route stops" OnRowMove="move => move.ApplyTo(_stops)">
+<TbDataGrid TItem="string" Items="_stops" AriaLabel="Route stops" OnMove="move => move.ApplyTo(_stops)">
     <TbColumn TItem="string" Title="Stop" Id="stop">
         <CellTemplate>@context</CellTemplate>
     </TbColumn>
 </TbDataGrid>
 @* Rows far wider than the grid's own scroll box, whose middles are out of view. *@
 <div style="width: 320px">
-    <TbDataGrid TItem="string" Items="_camps" AriaLabel="Camps" Height="160px" OnRowMove="move => move.ApplyTo(_camps)">
+    <TbDataGrid TItem="string" Items="_camps" AriaLabel="Camps" Height="160px" OnMove="move => move.ApplyTo(_camps)">
         <TbColumn TItem="string" Title="Camp" Id="camp">
             <CellTemplate>@context</CellTemplate>
         </TbColumn>

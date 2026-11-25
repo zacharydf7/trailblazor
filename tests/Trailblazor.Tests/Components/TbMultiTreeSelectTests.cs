@@ -95,7 +95,7 @@ public class TbMultiTreeSelectTests : BunitContext
     [Fact]
     public async Task Clear_ShouldUncheckEveryRow_WhenClearableAndClicked()
     {
-        var cut = RenderPlaces(parameters => parameters.Add(select => select.IsSelectable, place => !place.Area)
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.ItemSelectable, place => !place.Area)
             .Add(select => select.Clearable, true));
         Item(cut, "North ridge").QuerySelector("[data-part=check]")!.Click();
         Assert.Equal(["pine", "eagle"], Chosen[^1]);
@@ -112,7 +112,7 @@ public class TbMultiTreeSelectTests : BunitContext
         var cut = Render<TbMultiTreeSelect<Place, string>>(parameters => parameters
             .Add(select => select.Label, "Trails").Add(select => select.Items, Countries)
             .Add(select => select.KeySelector, place => place.Id).Add(select => select.ItemText, place => place.Name)
-            .Add(select => select.IsSelectable, place => !place.Area)
+            .Add(select => select.ItemSelectable, place => !place.Area)
             .Add(select => select.LoadChildren,
                 (place, _) => Task.FromResult<IEnumerable<Place>>(place.Children ?? []))
             .Add(select => select.HasChildren, place => place.Children is not null)
@@ -171,9 +171,9 @@ public class TbMultiTreeSelectTests : BunitContext
     }
 
     [Fact]
-    public void Check_ShouldLeaveAHeadingOutOfTheValue_WhenIsSelectableExcludesIt()
+    public void Check_ShouldLeaveAHeadingOutOfTheValue_WhenItemSelectableExcludesIt()
     {
-        var cut = RenderPlaces(parameters => parameters.Add(select => select.IsSelectable, place => !place.Area));
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.ItemSelectable, place => !place.Area));
 
         // A click on a heading's row opens or closes it, so the test checks it through its checkbox.
         Item(cut, "North ridge").QuerySelector("[data-part=check]")!.Click();
@@ -184,7 +184,7 @@ public class TbMultiTreeSelectTests : BunitContext
     [Fact]
     public void Check_ShouldUncheckEverythingInside_WhenAHeadingAboveAnotherIsClickedTwice()
     {
-        var cut = RenderPlaces(parameters => parameters.Add(select => select.IsSelectable, place => !place.Area),
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.ItemSelectable, place => !place.Area),
             Countries);
 
         Item(cut, "Highlands").QuerySelector("[data-part=check]")!.Click();
@@ -198,7 +198,7 @@ public class TbMultiTreeSelectTests : BunitContext
     [Fact]
     public void Check_ShouldUncheckANestedHeadingOnTheFirstClick_WhenTheValueCameFromOutside()
     {
-        var cut = RenderPlaces(parameters => parameters.Add(select => select.IsSelectable, place => !place.Area)
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.ItemSelectable, place => !place.Area)
             .Add(select => select.Value, ["pine"]), Countries);
         Assert.Equal("true", Item(cut, "Highlands").GetAttribute("aria-checked"));
 
@@ -215,7 +215,7 @@ public class TbMultiTreeSelectTests : BunitContext
         var cut = Render<TbMultiTreeSelect<Place, string>>(parameters => parameters
             .Add(select => select.Label, "Trails").Add(select => select.Items, Countries)
             .Add(select => select.KeySelector, place => place.Id).Add(select => select.ItemText, place => place.Name)
-            .Add(select => select.IsSelectable, place => !place.Area)
+            .Add(select => select.ItemSelectable, place => !place.Area)
             .Add(select => select.LoadChildren,
                 (place, _) => Task.FromResult<IEnumerable<Place>>(place.Children ?? []))
             .Add(select => select.HasChildren, place => place.Children is not null)
@@ -240,7 +240,7 @@ public class TbMultiTreeSelectTests : BunitContext
             builder.AddAttribute(2, "Items", Countries);
             builder.AddAttribute(3, "KeySelector", (Func<Place, string>)(place => place.Id));
             builder.AddAttribute(4, "ItemText", (Func<Place, string>)(place => place.Name));
-            builder.AddAttribute(5, "IsSelectable", (Func<Place, bool>)(place => !place.Area));
+            builder.AddAttribute(5, "ItemSelectable", (Func<Place, bool>)(place => !place.Area));
             builder.AddAttribute(6, "LoadChildren", (Func<Place, CancellationToken, Task<IEnumerable<Place>>>)
                 ((place, _) => Task.FromResult<IEnumerable<Place>>(place.Children ?? [])));
             builder.AddAttribute(7, "HasChildren", (Func<Place, bool>)(place => place.Children is not null));
@@ -260,9 +260,9 @@ public class TbMultiTreeSelectTests : BunitContext
     }
 
     [Fact]
-    public void Check_ShouldOfferNoCheckOnAHeading_WhenIsSelectableExcludesItAndItHoldsNothing()
+    public void Check_ShouldOfferNoCheckOnAHeading_WhenItemSelectableExcludesItAndItHoldsNothing()
     {
-        var cut = RenderPlaces(parameters => parameters.Add(select => select.IsSelectable, place => !place.Area),
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.ItemSelectable, place => !place.Area),
             [.. Places, new("closed", "Closed ridge", Area: true)]);
 
         Assert.Null(Item(cut, "Closed ridge").QuerySelector("[data-part=check]"));
@@ -270,9 +270,9 @@ public class TbMultiTreeSelectTests : BunitContext
     }
 
     [Fact]
-    public void Check_ShouldOfferNoCheckOnAHeading_WhenIsSelectableExcludesItAndCascadeChecksIsOff()
+    public void Check_ShouldOfferNoCheckOnAHeading_WhenItemSelectableExcludesItAndCascadeChecksIsOff()
     {
-        var cut = RenderPlaces(parameters => parameters.Add(select => select.IsSelectable, place => !place.Area)
+        var cut = RenderPlaces(parameters => parameters.Add(select => select.ItemSelectable, place => !place.Area)
             .Add(select => select.CascadeChecks, false));
         var north = Item(cut, "North ridge");
 

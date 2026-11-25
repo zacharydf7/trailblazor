@@ -234,7 +234,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
 
     /// <summary>Whether a row can be selected, so group and heading rows can't. Defaults to every row.</summary>
     [Parameter]
-    public Func<TItem, bool>? IsSelectable { get; set; }
+    public Func<TItem, bool>? ItemSelectable { get; set; }
 
     /// <summary>Whether a row is turned off: it can be focused but not selected, checked or activated. A click, a
     /// double-click and Enter leave such a row as it is, and its chevron and the Left and Right arrow keys still open
@@ -307,7 +307,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     /// <summary>Decides which rows can be moved. When null, every row that isn't disabled can be moved. It runs as each
     /// row renders, so keep it fast, and don't let it throw: an exception there takes the page down.</summary>
     [Parameter]
-    public Func<TItem, bool>? CanMoveItem { get; set; }
+    public Func<TItem, bool>? ItemMovable { get; set; }
 
     /// <summary>Asked whether a move is allowed, as a drag passes over a place and before a keyboard move. Refuse
     /// with <see cref="MoveCheck.Refuse"/> and a reason, which shows beside the place and is read out. An item can
@@ -459,8 +459,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     // What a row shows beyond its context. Markup makes new functions and templates on every render, so they're
     // compared by method.
     private object RowsFor => (BuiltFor, Classes, Disabled, SelectionMode, Checkable, CascadeChecks, Virtualize,
-        (ItemText?.Method, ItemIcon?.Method, ItemClass?.Method, ItemAttributes?.Method, IsSelectable?.Method,
-            ItemDisabled?.Method, CanMoveItem?.Method, OnMove.HasDelegate),
+        (ItemText?.Method, ItemIcon?.Method, ItemClass?.Method, ItemAttributes?.Method, ItemSelectable?.Method,
+            ItemDisabled?.Method, ItemMovable?.Method, OnMove.HasDelegate),
         (ItemTemplate?.Method, ItemEndTemplate?.Method, InsertTemplate?.Method));
 
     /// <summary>Draws every row again. Call it after changing page state that a template, or a function such as
@@ -550,7 +550,8 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     // would reach nothing.
     private bool CanCheck(TreeNode<TItem> node) => Checkable
         && ((HasValue(node)
-                && (Choice is null || (CascadeChecks && node.HasChildren) || IsSelectable?.Invoke(node.Item) != false))
+                && (Choice is null || (CascadeChecks && node.HasChildren)
+                    || ItemSelectable?.Invoke(node.Item) != false))
             || (CascadeChecks && node.Children.Count > 0));
 
     private static List<TKey> Reported(IEnumerable<object> keys) =>
@@ -1261,7 +1262,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private IEnumerable<TreeNode<TItem>> Siblings(TreeNode<TItem> node) => node.Parent?.Children ?? _roots;
 
     private bool CanDragRow(TreeNode<TItem> node) => OnMove.HasDelegate && MovePositions != TreeMovePositions.None
-        && HasValue(node) && !Disabled && !IsItemDisabled(node) && CanMoveItem?.Invoke(node.Item) != false;
+        && HasValue(node) && !Disabled && !IsItemDisabled(node) && ItemMovable?.Invoke(node.Item) != false;
 
     private bool Allows(TreeMovePosition position) => MovePositions.HasFlag(position switch
     {
@@ -1551,7 +1552,7 @@ public partial class TbTreeView<TItem, TKey> : IAsyncDisposable, ITreeItemHost<T
     private bool FollowsFocus => SelectionFollowsFocus && SelectionMode == SelectionMode.Single && !Disabled;
 
     private bool CanSelect(TreeNode<TItem> node) => SelectionMode != SelectionMode.None && HasValue(node)
-        && IsSelectable?.Invoke(node.Item) != false && !IsItemDisabled(node);
+        && ItemSelectable?.Invoke(node.Item) != false && !IsItemDisabled(node);
 
     private ContentSlot EndSlotOf(object key)
     {

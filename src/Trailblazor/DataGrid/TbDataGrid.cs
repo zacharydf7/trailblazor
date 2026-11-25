@@ -466,12 +466,12 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     /// <see cref="SortableMove{TItem}.ApplyTo"/> does, and the grid shows the new order. Each row's handle is a menu
     /// with a script of its own, so give a grid of many rows a <see cref="PageSize"/>.</summary>
     [Parameter]
-    public EventCallback<SortableMove<TItem>> OnRowMove { get; set; }
+    public EventCallback<SortableMove<TItem>> OnMove { get; set; }
 
     /// <summary>Asked while a row is dragged over a place and before a move is made. A refusal's reason shows beside
     /// the drop and is read out.</summary>
     [Parameter]
-    public Func<SortableMove<TItem>, Task<MoveCheck>>? CanMoveRow { get; set; }
+    public Func<SortableMove<TItem>, Task<MoveCheck>>? CanMove { get; set; }
 
     /// <summary>A label the grid's use is counted under, such as <c>"jobs"</c>, so the app can see how people use it
     /// through the <c>Trailblazor</c> meter: shown when it renders, and used with the action <c>sort</c>,
@@ -621,7 +621,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     };
 
     // Rows move among all the items, so only rows held in memory, all shown in their own order, can be moved.
-    private bool CanReorder => OnRowMove.HasDelegate && Items is not null && _sorts.Count == 0
+    private bool CanReorder => OnMove.HasDelegate && Items is not null && _sorts.Count == 0
         && !AppliedFilters.Any() && !AppliedGroups.Any();
 
     // A group on a column that isn't there, or can't group, is kept but doesn't group the rows.
@@ -665,7 +665,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
         // A tree's rows follow their parents, which a provider's pages, groups or moved rows would break apart, and a
         // page could start with a row whose parent is on the page before.
-        if (ChildrenSelector is not null && (DataProvider is not null || Groups is { Count: > 0 } || OnRowMove.HasDelegate
+        if (ChildrenSelector is not null && (DataProvider is not null || Groups is { Count: > 0 } || OnMove.HasDelegate
             || PageSize is not null))
         {
             throw new InvalidOperationException($"A {nameof(TbDataGrid<TItem>)} with a {nameof(ChildrenSelector)} " +
@@ -760,7 +760,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
                 await AttachAsync();
             }
 
-            if (_moveEvents is null && OnRowMove.HasDelegate && RendererInfo.IsInteractive)
+            if (_moveEvents is null && OnMove.HasDelegate && RendererInfo.IsInteractive)
             {
                 await AttachReorderAsync();
             }
@@ -1772,7 +1772,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
 
         // Tests wait for data-ready, so with rows that move it waits for their reordering too.
-        var waitForReorder = _createdWaitingForReorder = OnRowMove.HasDelegate && _reorder is null;
+        var waitForReorder = _createdWaitingForReorder = OnMove.HasDelegate && _reorder is null;
         var handle = await module.InvokeAsync<IJSObjectReference?>("createDataGrid", _table, waitForReorder);
         if (handle is not null && _disposed)
         {
@@ -1792,7 +1792,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
         }
     }
 
-    // Rows can move once the app handles OnRowMove, which it may start doing after the first render.
+    // Rows can move once the app handles OnMove, which it may start doing after the first render.
     private async Task AttachReorderAsync()
     {
         _moveEvents = DotNetObjectReference.Create(new SortableEvents(DispatchExceptionAsync, OnRowDragOverAsync,
@@ -1856,7 +1856,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
 
     private Task<MoveCheck> OnRowDragOverAsync(string id, string targetId, bool before) =>
         CanReorder && ItemMover<TItem>.DropIndex(AllIndexOf(id), AllIndexOf(targetId), before) is { } to
-            ? Mover.CheckAsync(AllItems, AllIndexOf(id), to, CanMoveRow, list: null) : Task.FromResult(new MoveCheck(false));
+            ? Mover.CheckAsync(AllItems, AllIndexOf(id), to, CanMove, list: null) : Task.FromResult(new MoveCheck(false));
 
     private Task OnRowDropAsync(string id, string targetId, bool before) =>
         ItemMover<TItem>.DropIndex(AllIndexOf(id), AllIndexOf(targetId), before) is { } to
@@ -1876,7 +1876,7 @@ public partial class TbDataGrid<TItem> : IAsyncDisposable
     private async Task MoveRowCoreAsync(int from, int to, string input)
     {
         if (!CanReorder || from < 0
-            || !await Mover.MoveAsync(() => AllItems, from, to, CanMoveRow, OnRowMove, LabelOf, Labels.RowHandles.Moved,
+            || !await Mover.MoveAsync(() => AllItems, from, to, CanMove, OnMove, LabelOf, Labels.RowHandles.Moved,
                 list: null))
         {
             return;

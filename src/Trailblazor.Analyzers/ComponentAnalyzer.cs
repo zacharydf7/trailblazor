@@ -436,7 +436,7 @@ public sealed class ComponentAnalyzer : DiagnosticAnalyzer
             Set("Items") && Set("DataProvider") ? ("DataProvider", "takes Items or a DataProvider, not both")
             : Set("DataProvider") && Set("Groups")
                 ? ("Groups", "groups only rows held in Items, not rows from a DataProvider")
-            : Set("ChildrenSelector") && (Set("DataProvider") || Set("Groups") || Set("OnRowMove") || Set("PageSize"))
+            : Set("ChildrenSelector") && (Set("DataProvider") || Set("Groups") || Set("OnMove") || Set("PageSize"))
                 ? ("ChildrenSelector", "with a ChildrenSelector takes its rows from Items, and can't group them, " +
                     "move them or split them into pages; set Virtualize to show many rows")
             : virtualizes && Set("DetailTemplate")

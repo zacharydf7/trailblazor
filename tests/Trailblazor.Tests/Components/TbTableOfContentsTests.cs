@@ -27,12 +27,12 @@ public class TbTableOfContentsTests : BunitContext
     }
 
     [Fact]
-    public async Task Active_ShouldMarkTheSectionInViewAndRaiseActiveChanged_WhenTheScriptReportsIt()
+    public async Task ActiveKey_ShouldMarkTheSectionInViewAndRaiseActiveKeyChanged_WhenTheScriptReportsIt()
     {
         var module = JSInterop.SetupModule("./_content/Trailblazor/table-of-contents.js");
         module.SetupModule("attachTableOfContents", _ => true);
         var raised = new List<string?>();
-        var cut = RenderGuide(parameters => parameters.Add(contents => contents.ActiveChanged,
+        var cut = RenderGuide(parameters => parameters.Add(contents => contents.ActiveKeyChanged,
             (string? active) => raised.Add(active)));
         var events = ((DotNetObjectReference<TableOfContentsEvents>)module.Invocations["attachTableOfContents"]
             .Single().Arguments[1]!).Value;
@@ -43,7 +43,7 @@ public class TbTableOfContentsTests : BunitContext
         await cut.InvokeAsync(() => events.OnActive(null));
 
         Assert.Empty(cut.FindAll("[aria-current]"));
-        Assert.Null(cut.Instance.Active);
+        Assert.Null(cut.Instance.ActiveKey);
         Assert.Equal(["climb", null], raised);
     }
 

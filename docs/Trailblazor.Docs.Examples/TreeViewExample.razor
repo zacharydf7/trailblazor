@@ -7,7 +7,7 @@
     <TbTreeView TItem="Place" TKey="int" AriaLabel="Trails by region" Items="Regions" KeySelector="place => place.Id"
                 ChildrenSelector="place => place.Children" ItemText="place => place.Name"
                 ItemIcon="place => place.Children is null ? ExampleIcons.Trail : ExampleIcons.Folder"
-                IsSelectable="place => place.Children is null" InitialExpandDepth="1"
+                ItemSelectable="place => place.Children is null" InitialExpandDepth="1"
                 Filter="@(string.IsNullOrWhiteSpace(_search) ? null : Matches)" @bind-SelectedKeys="_selected"
                 OnActivate="Open">
         <ItemEndTemplate>

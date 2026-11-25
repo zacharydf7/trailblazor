@@ -65,7 +65,7 @@ public class TbDataGridLabelsTests : BunitContext
     {
         RenderFragment<Hike> detail = hike => builder => builder.AddContent(0, hike.Name);
         var cut = RenderHikes(parameters => parameters.Add(grid => grid.SelectionMode, SelectionMode.Multiple)
-            .Add(grid => grid.DetailTemplate, detail).Add(grid => grid.OnRowMove, (SortableMove<Hike> _) => { })
+            .Add(grid => grid.DetailTemplate, detail).Add(grid => grid.OnMove, (SortableMove<Hike> _) => { })
             .Add(grid => grid.HideableColumns, true).Add(grid => grid.Exportable, true)
             .Add(grid => grid.PageSize, 1));
 
@@ -258,7 +258,7 @@ public class TbDataGridLabelsTests : BunitContext
         Assert.Equal("Spurs of Pine Hollow",
             tree.Find("tr[data-key='1'] [data-part=tree-toggle]").GetAttribute("aria-label"));
 
-        var cut = RenderHikes(parameters => parameters.Add(grid => grid.OnRowMove, (SortableMove<Hike> _) => { }));
+        var cut = RenderHikes(parameters => parameters.Add(grid => grid.OnMove, (SortableMove<Hike> _) => { }));
         await cut.Tb().Grid("Hikes").MoveRowAsync("Pine Hollow", 1);
 
         host.WaitForAssertion(() => Assert.Contains("Pine Hollow sits at 2 of 2", Spoken(host)));

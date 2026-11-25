@@ -2108,7 +2108,7 @@ public class TrailblazorMarkupTests : BunitContext
         List<Trail> trails = [new("Pine Hollow"), new("Cedar Flats"), new("Lake camp")];
         var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
             .Add(grid => grid.Items, trails)
-            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
+            .Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
             .Add(grid => grid.ChildContent, NameColumn));
 
         await cut.Tb().Grid("Trails").DragRowBeforeAsync("Lake camp", "Pine Hollow");
@@ -2124,7 +2124,7 @@ public class TrailblazorMarkupTests : BunitContext
         List<Trail> trails = [new("Pine Hollow"), new("Cedar Flats"), new("Lake camp")];
         var cut = Render<TbDataGrid<Trail>>(parameters => parameters.Add(grid => grid.AriaLabel, "Trails")
             .Add(grid => grid.Items, trails).Add(grid => grid.PageSize, 2)
-            .Add(grid => grid.OnRowMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
+            .Add(grid => grid.OnMove, (SortableMove<Trail> move) => move.ApplyTo(trails))
             .Add(grid => grid.ChildContent, (RenderFragment)(builder =>
             {
                 builder.OpenComponent<TbColumn<Trail>>(0);

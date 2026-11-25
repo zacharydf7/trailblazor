@@ -346,7 +346,7 @@ public class TreeItemTests : BunitContext
         Row[] rows = [new("guides", [new("guide"), new("api")], "Guides", NoValue: true)];
         var cut = RenderFiles(rows, parameters => parameters.Add(tree => tree.InitialExpandDepth, 1)
             .Add(tree => tree.ItemDisabled, value => value.Length == 0)
-            .Add(tree => tree.IsSelectable, value => value.Length > 0)
+            .Add(tree => tree.ItemSelectable, value => value.Length > 0)
             .Add(tree => tree.ItemText, value => value.ToUpperInvariant())
             .Add(tree => tree.Filter, value => value.StartsWith('g'))
             .Add(tree => tree.ItemEndTemplate, context => builder => builder.AddContent(0, context.Item.Length)));

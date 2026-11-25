@@ -452,7 +452,7 @@ public class TbSmartPasteTests : BunitContext
         Field<TbAutocomplete<string>, string>(builder, "Trailhead", ("Items", new[] { "Gate" }), ("FreeText", true));
         Field<TbTransferList<string>, IReadOnlyList<string>>(builder, "Hikers", Hikers);
         Field<TbTreeSelect<Place, string>, string>(builder, "Camp",
-            Tree(("IsSelectable", (Func<Place, bool>)(place => !place.Heading))));
+            Tree(("ItemSelectable", (Func<Place, bool>)(place => !place.Heading))));
         Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Stops", Tree());
         Field<TbCascader<string>, string>(builder, "Route", ("Items", Routes));
         Field<TbTagInput, IReadOnlyList<string>>(builder, "Tags");
@@ -545,7 +545,7 @@ public class TbSmartPasteTests : BunitContext
             Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Rests", Tree());
             Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Nooks", Tree());
             Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Naps",
-                Tree(("IsSelectable", (Func<Place, bool>)(place => place.Key != "south"))));
+                Tree(("ItemSelectable", (Func<Place, bool>)(place => place.Key != "south"))));
             Field<TbCascader<string>, string>(builder, "Way", ("Items", Routes), ("AllowParents", true));
             Field<TbTagInput, IReadOnlyList<string>>(builder, "Tags", ("Value", new[] { "old" }), ("MaxTags", 2));
         });
@@ -598,7 +598,7 @@ public class TbSmartPasteTests : BunitContext
         Finds(new() { ["Tours"] = "Dunes" });
         // The field is bound: each render gives it the value it last raised.
         var cut = RenderForm(builder => Field<TbMultiTreeSelect<Place, string>, IReadOnlyList<string>>(builder, "Tours",
-            [.. LoadingTree, ("IsSelectable", (Func<Place, bool>)(place => !place.Heading)),
+            [.. LoadingTree, ("ItemSelectable", (Func<Place, bool>)(place => !place.Heading)),
                 ("Value", _values.GetValueOrDefault("Tours"))]));
         Rows(cut, "South")[0].QuerySelector("[data-part=toggle]")!.Click();
         cut.WaitForAssertion(() => Assert.Single(Rows(cut, "Dunes")));

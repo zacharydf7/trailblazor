@@ -2586,10 +2586,10 @@ public static class ExampleCatalog
                     + "with nothing under it, or at any choice with `AllowParents`. A path through a disabled choice "
                     + "isn't offered."),
                 new("A tree select offers the items it knows of, which are those held in memory and the children "
-                    + "loaded so far, apart from disabled items and those `IsSelectable` leaves out."),
+                    + "loaded so far, apart from disabled items and those `ItemSelectable` leaves out."),
                 new("With `CascadeChecks`, a multiple tree select checks an item named as its tree does: the enabled "
                     + "items inside it come with it, whether held in memory or loaded so far, and a parent is in the "
-                    + "value only while every item inside it is checked. A heading that `IsSelectable` leaves out, "
+                    + "value only while every item inside it is checked. A heading that `ItemSelectable` leaves out, "
                     + "checked before its items loaded, stays checked."),
                 new("A tag input is `Multiple` and has no `Choices`. It takes one tag on each line, or between its "
                     + "`Separators`, and replaces its tags with those that pass the checks a typed tag gets, for a "
@@ -5608,7 +5608,7 @@ public static class ExampleCatalog
             ],
             WhenNotToUse =
             [
-                "To reorder rows with columns, use a [data grid](components/data-grid) with `OnRowMove`.",
+                "To reorder rows with columns, use a [data grid](components/data-grid) with `OnMove`.",
                 "To reorder nested items, use a [tree view](components/tree-view) with `OnMove`.",
             ],
             Related = ["data-grid", "tree-view", "list"],
@@ -8469,7 +8469,7 @@ public static class ExampleCatalog
                     + "build the tree as they do for a tree view, and `@bind-Value` holds the chosen item's key. "
                     + "Choosing an item, by click, Enter or Space, closes the tree and shows its text in the field; "
                     + "choosing the item already chosen just closes it. The key type's default, such as 0 for an "
-                    + "`int`, means nothing is chosen. `IsSelectable` lets headings such as a region open without "
+                    + "`int`, means nothing is chosen. `ItemSelectable` lets headings such as a region open without "
                     + "being chosen. `Filterable` adds a filter box that keeps the items whose text contains what's "
                     + "typed, with the items above and below them, once typing pauses. Matching ignores case and "
                     + "accents. `LoadChildren` loads a branch when it opens, and the filter covers only the branches "
@@ -8484,7 +8484,7 @@ public static class ExampleCatalog
                     + "field counts the rest, as in \"4 more\", and `Labels.More` words the count. Checking an item "
                     + "checks the items inside it, and a parent shows whether all, some or none of them are checked; "
                     + "`CascadeChecks=\"false\"` "
-                    + "checks each row on its own. When `IsSelectable` leaves out a heading, it has a checkbox only "
+                    + "checks each row on its own. When `ItemSelectable` leaves out a heading, it has a checkbox only "
                     + "while checks cascade; the checkbox checks the items inside it, including those that load "
                     + "later, but the heading isn't part of the value. The value lists keys in tree order, except "
                     + "that with `LoadChildren` the keys of loaded items come after the rest. The filter, "
@@ -12830,7 +12830,7 @@ public static class ExampleCatalog
                     + "finger, or with Alt+Shift and the arrows. A finger holds still for a moment first, so a swipe "
                     + "still scrolls. `OnMove` says what moved and where, and the app applies it, so it can be undone "
                     + "like any other change. A drag that rests on a closed row opens it. `CanMove` can refuse a move "
-                    + "and say why, and `CanMoveItem` decides which rows can be moved at all; it runs as each row "
+                    + "and say why, and `ItemMovable` decides which rows can be moved at all; it runs as each row "
                     + "renders, so keep it fast and don't let it throw. `InsertTemplate` puts content on each row's "
                     + "edge, such as the buttons here that add a row. It shows when the pointer reaches that edge or "
                     + "the content has keyboard focus, and on a touch screen for the focused row.",
@@ -13292,10 +13292,10 @@ public static class ExampleCatalog
                     + "aren't kept, so a grid with an `Aggregate` column asks once more for them, with the rows in "
                     + "view. This site doesn't prerender, so here the grid just loads.",
                     typeof(DataGridPrerenderedExample)),
-                new("reorder-rows", "Reorder rows", "With `OnRowMove`, rows held in `Items` can be put in order while "
+                new("reorder-rows", "Reorder rows", "With `OnMove`, rows held in `Items` can be put in order while "
                     + "the grid isn't sorted or filtered. Each row gets a handle in an \"Order\" column: drag it, press "
                     + "the arrow keys on it, or choose from its menu. Moves can cross pages, and the app applies each "
-                    + "one. `CanMoveRow` can refuse a move and say why.", typeof(DataGridReorderExample)),
+                    + "one. `CanMove` can refuse a move and say why.", typeof(DataGridReorderExample)),
                 new("labels", "Built-in text", "`Labels` replaces every word the grid itself shows and reads out, "
                     + "such as the header checkbox's name, the page size list's label and the count of rows shown. Its "
                     + "`RowHandles` words the row handles and `Comparisons` names the filter menus' comparisons. "
@@ -13409,7 +13409,7 @@ public static class ExampleCatalog
                 "A failed export reads \"Couldn't export the rows.\", or `Labels.ExportFailed`, and the rows shown "
                     + "stay as they were.",
                 "An edit's error shows under its field and is read out.",
-                "Each move of a row is read out with its new position, and so is the reason `CanMoveRow` refuses one.",
+                "Each move of a row is read out with its new position, and so is the reason `CanMove` refuses one.",
             ],
             Accessibility =
             [
@@ -13482,7 +13482,7 @@ public static class ExampleCatalog
                     + "read. Give the grid rows of a type made for showing, with nothing a user shouldn't see.")
                     { Pitfall = true },
                 new("Some setups throw as the grid renders: `Items` with a `DataProvider`; `Groups` with a "
-                    + "`DataProvider`; a `ChildrenSelector` with a `DataProvider`, `Groups`, `OnRowMove` or a "
+                    + "`DataProvider`; a `ChildrenSelector` with a `DataProvider`, `Groups`, `OnMove` or a "
                     + "`PageSize`; and `Virtualize` with a `DetailTemplate`, with a `PageSize`, or with no `Height` or "
                     + "`Fill`. Build warning [TB013](guides/analyzers#rules) reports them in markup.")
                     { Pitfall = true },
@@ -13600,9 +13600,9 @@ public static class ExampleCatalog
                     + "`[data-part=group]` row whose `[data-part=group-toggle]` button opens or closes it.",
                 "A row's details button is named for the row: `GetByRole(AriaRole.Button, new() { Name = \"Details "
                     + "for Cedar Flats\" })`. Its `aria-controls` names the `[data-part=detail]` row it opens.",
-                "With `OnRowMove`, `page.Tb().Grid(\"Route stops\").MoveRowAsync(\"Trailhead\", 2)` moves a row "
+                "With `OnMove`, `page.Tb().Grid(\"Route stops\").MoveRowAsync(\"Trailhead\", 2)` moves a row "
                     + "through its handle's menu, straight to either end or a place at a time.",
-                "With `OnRowMove`, `DragRowBeforeAsync` and `DragRowAfterAsync` drag a row onto another row.",
+                "With `OnMove`, `DragRowBeforeAsync` and `DragRowAfterAsync` drag a row onto another row.",
                 "Rows that can move carry `data-index`, their place among all the rows.",
                 "`ResizeColumnAsync(\"Region\", 200)` resizes the Region column to 200 pixels: in Playwright by "
                     + "dragging its edge and waiting until the grid keeps the width and `StateChanged` has run; in "
@@ -14187,7 +14187,7 @@ public static class ExampleCatalog
                 new("sections", "Sections and nesting", "Each `TbTableOfContentsItem` links to the element with its "
                     + "`TargetId`, and an item inside another makes a nested list. The link to the section in view is "
                     + "marked as the page, or a scrolling panel, scrolls.", typeof(TableOfContentsExample)),
-                new("active", "Knowing the section in view", "`ActiveChanged` gives you a section's id when a table "
+                new("active", "Knowing the section in view", "`ActiveKeyChanged` gives you a section's id when a table "
                     + "of contents marks it as the section in view, and null when none is. Here the example shows the "
                     + "section's title for its id.", typeof(TableOfContentsActiveExample)),
             ],

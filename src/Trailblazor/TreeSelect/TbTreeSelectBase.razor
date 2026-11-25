@@ -41,7 +41,7 @@
                                 ChildrenSelector="ChildrenSelector"
                                 LoadChildren="@(LoadChildren is null ? null : LoadAndKeepAsync)"
                                 HasChildren="HasChildren" ItemText="ItemText" ItemIcon="ItemIcon"
-                                IsSelectable="IsSelectable" ItemDisabled="ItemDisabled"
+                                ItemSelectable="ItemSelectable" ItemDisabled="ItemDisabled"
                                 InitialExpandDepth="InitialExpandDepth" AriaLabel="@ShownLabel" Filter="FilterMatch"
                                 FilterKeepsDescendants SelectedKeys="SelectedKeys" Checkable="ChecksRows"
                                 CheckedKeys="CheckedKeys" CheckedKeysChanged="CheckedAsync"
@@ -109,7 +109,7 @@
     /// <summary>Whether an item can be chosen, so a heading such as a country can open without being chosen.
     /// Defaults to every item.</summary>
     [Parameter]
-    public Func<TItem, bool>? IsSelectable { get; set; }
+    public Func<TItem, bool>? ItemSelectable { get; set; }
 
     /// <summary>Whether an item is turned off: it shows, but can't be chosen.</summary>
     [Parameter]
@@ -346,7 +346,7 @@
         Known().Where(CanBeChosen).Select(item => ((string?)ItemText(item), (object?)KeyOf(item)));
 
     private bool CanBeChosen(TItem item) =>
-        IsSelectable?.Invoke(item) != false && ItemDisabled?.Invoke(item) != true;
+        ItemSelectable?.Invoke(item) != false && ItemDisabled?.Invoke(item) != true;
 
     private string Name => GetType().Name.Split('`')[0];
 

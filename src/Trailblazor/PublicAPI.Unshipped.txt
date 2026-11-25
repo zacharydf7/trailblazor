@@ -478,9 +478,9 @@ Trailblazor.TbPopconfirm.Trigger.set -> void
 Trailblazor.TbPopconfirm.Variant.get -> Trailblazor.Variant
 Trailblazor.TbPopconfirm.Variant.set -> void
 Trailblazor.TbTableOfContents
-Trailblazor.TbTableOfContents.Active.get -> string?
-Trailblazor.TbTableOfContents.ActiveChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
-Trailblazor.TbTableOfContents.ActiveChanged.set -> void
+Trailblazor.TbTableOfContents.ActiveKey.get -> string?
+Trailblazor.TbTableOfContents.ActiveKeyChanged.get -> Microsoft.AspNetCore.Components.EventCallback<string?>
+Trailblazor.TbTableOfContents.ActiveKeyChanged.set -> void
 Trailblazor.TbTableOfContents.AriaLabel.get -> string?
 Trailblazor.TbTableOfContents.AriaLabel.set -> void
 Trailblazor.TbTableOfContents.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
@@ -1922,8 +1922,8 @@ Trailblazor.TbContainer.TbContainer() -> void
 Trailblazor.TbDataGrid<TItem>
 Trailblazor.TbDataGrid<TItem>.AriaLabel.get -> string?
 Trailblazor.TbDataGrid<TItem>.AriaLabel.set -> void
-Trailblazor.TbDataGrid<TItem>.CanMoveRow.get -> System.Func<Trailblazor.SortableMove<TItem>!, System.Threading.Tasks.Task<Trailblazor.MoveCheck!>!>?
-Trailblazor.TbDataGrid<TItem>.CanMoveRow.set -> void
+Trailblazor.TbDataGrid<TItem>.CanMove.get -> System.Func<Trailblazor.SortableMove<TItem>!, System.Threading.Tasks.Task<Trailblazor.MoveCheck!>!>?
+Trailblazor.TbDataGrid<TItem>.CanMove.set -> void
 Trailblazor.TbDataGrid<TItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Trailblazor.TbDataGrid<TItem>.ChildContent.set -> void
 Trailblazor.TbDataGrid<TItem>.DataProvider.get -> System.Func<Trailblazor.GridRequest!, System.Threading.CancellationToken, System.Threading.Tasks.Task<Trailblazor.GridResult<TItem>!>!>?
@@ -1947,8 +1947,8 @@ Trailblazor.TbDataGrid<TItem>.OnLoadFailed.get -> Microsoft.AspNetCore.Component
 Trailblazor.TbDataGrid<TItem>.OnLoadFailed.set -> void
 Trailblazor.TbDataGrid<TItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TItem>
 Trailblazor.TbDataGrid<TItem>.OnRowClick.set -> void
-Trailblazor.TbDataGrid<TItem>.OnRowMove.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.SortableMove<TItem>!>
-Trailblazor.TbDataGrid<TItem>.OnRowMove.set -> void
+Trailblazor.TbDataGrid<TItem>.OnMove.get -> Microsoft.AspNetCore.Components.EventCallback<Trailblazor.SortableMove<TItem>!>
+Trailblazor.TbDataGrid<TItem>.OnMove.set -> void
 Trailblazor.TbDataGrid<TItem>.Page.get -> int
 Trailblazor.TbDataGrid<TItem>.Page.set -> void
 Trailblazor.TbDataGrid<TItem>.PageChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
@@ -3076,8 +3076,8 @@ Trailblazor.TbTreeItem<TItem>.Value.set -> void
 Trailblazor.TbTreeView<TItem, TKey>
 Trailblazor.TbTreeView<TItem, TKey>.AriaLabel.get -> string?
 Trailblazor.TbTreeView<TItem, TKey>.AriaLabel.set -> void
-Trailblazor.TbTreeView<TItem, TKey>.CanMoveItem.get -> System.Func<TItem, bool>?
-Trailblazor.TbTreeView<TItem, TKey>.CanMoveItem.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ItemMovable.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeView<TItem, TKey>.ItemMovable.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.CanMove.get -> System.Func<Trailblazor.TreeMove<TItem>!, System.Threading.Tasks.Task<Trailblazor.MoveCheck!>!>?
 Trailblazor.TbTreeView<TItem, TKey>.CanMove.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.CascadeChecks.get -> bool
@@ -3117,8 +3117,8 @@ Trailblazor.TbTreeView<TItem, TKey>.InsertTemplate.get -> Microsoft.AspNetCore.C
 Trailblazor.TbTreeView<TItem, TKey>.InsertTemplate.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ItemDisabled.get -> System.Func<TItem, bool>?
 Trailblazor.TbTreeView<TItem, TKey>.ItemDisabled.set -> void
-Trailblazor.TbTreeView<TItem, TKey>.IsSelectable.get -> System.Func<TItem, bool>?
-Trailblazor.TbTreeView<TItem, TKey>.IsSelectable.set -> void
+Trailblazor.TbTreeView<TItem, TKey>.ItemSelectable.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeView<TItem, TKey>.ItemSelectable.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ItemAttributes.get -> System.Func<TItem, System.Collections.Generic.IReadOnlyDictionary<string!, object!>?>?
 Trailblazor.TbTreeView<TItem, TKey>.ItemAttributes.set -> void
 Trailblazor.TbTreeView<TItem, TKey>.ItemClass.get -> System.Func<TItem, string?>?
@@ -4795,8 +4795,8 @@ Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.InitialExpandDepth.get -> int
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.InitialExpandDepth.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemDisabled.get -> System.Func<TItem, bool>?
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemDisabled.set -> void
-Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.IsSelectable.get -> System.Func<TItem, bool>?
-Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.IsSelectable.set -> void
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemSelectable.get -> System.Func<TItem, bool>?
+Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemSelectable.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemIcon.get -> System.Func<TItem, Trailblazor.Icon?>?
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemIcon.set -> void
 Trailblazor.TbTreeSelectBase<TItem, TKey, TValue>.ItemText.get -> System.Func<TItem, string!>!

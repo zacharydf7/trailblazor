@@ -5066,7 +5066,7 @@ public sealed class TbTreeDriver
         {
             throw new InvalidOperationException($"The row at {string.Join(" > ", row)} can't be dragged: the tree "
                 + "needs an OnMove and mustn't be disabled, and the row must be enabled, have a value and be allowed "
-                + "by CanMoveItem.");
+                + "by ItemMovable.");
         }
 
         var rows = OwnRows();
@@ -5323,8 +5323,8 @@ public sealed class TbGridDriver
 
     /// <summary>Moves the row with a cell whose text is exactly <paramref name="row"/> to <paramref name="index"/>
     /// among all the rows, on every page, through its handle's menu as a user would: Move to start or Move to end for
-    /// the first or last place, else Move up or Move down a place at a time, so <c>CanMoveRow</c> and
-    /// <c>OnRowMove</c> see each step. A step the app refuses ends the move. The row must be on the page shown, and the
+    /// the first or last place, else Move up or Move down a place at a time, so <c>CanMove</c> and
+    /// <c>OnMove</c> see each step. A step the app refuses ends the move. The row must be on the page shown, and the
     /// grid shows the page it lands on. Throws when the rows can't move or <paramref name="index"/> is past the last
     /// row.</summary>
     public async Task MoveRowAsync(string row, int index) => await HandleMenu.MoveAsync(
@@ -5334,7 +5334,7 @@ public sealed class TbGridDriver
         int.Parse(_find().GetAttribute("data-count") ?? "0", CultureInfo.InvariantCulture), index, row);
 
     private IElement MovableRow(string cell) => Row(cell) is var row && row.HasAttribute("data-index") ? row
-        : throw new InvalidOperationException("The grid's rows can't move: it needs an OnRowMove and in-memory Items, "
+        : throw new InvalidOperationException("The grid's rows can't move: it needs an OnMove and in-memory Items, "
             + "and mustn't be sorted, filtered or grouped.");
 
     /// <summary>Drags the row with a cell whose text is exactly <paramref name="row"/> by its handle onto the top half

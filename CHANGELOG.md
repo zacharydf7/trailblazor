@@ -11,6 +11,10 @@ they run by version. The docs site's Upgrading page is built from both.
 #### 2026-11-25
 
 - TbQrCode.Size → TbQrCode.Width, as on TbBarcode
+- TbDataGrid.CanMoveRow and OnRowMove → CanMove and OnMove, as on TbSortable, TbKanban and TbTreeView
+- TbTreeView.CanMoveItem → ItemMovable
+- TbTreeView.IsSelectable, TbTreeSelect.IsSelectable and TbMultiTreeSelect.IsSelectable → ItemSelectable
+- TbTableOfContents.Active and ActiveChanged → ActiveKey and ActiveKeyChanged
 
 #### 2026-11-16
 

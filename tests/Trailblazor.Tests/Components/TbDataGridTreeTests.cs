@@ -262,7 +262,7 @@ public class TbDataGridTreeTests : BunitContext
             }
             else if (option == "move")
             {
-                parameters.Add(grid => grid.OnRowMove, (SortableMove<Folder> _) => { });
+                parameters.Add(grid => grid.OnMove, (SortableMove<Folder> _) => { });
             }
             else
             {

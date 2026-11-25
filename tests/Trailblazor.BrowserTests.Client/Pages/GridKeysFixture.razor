@@ -21,7 +21,7 @@
 </TbDataGrid>
 <button type="button" @onclick="() => _keys = false">Turn off keys</button>
 <TbDataGrid @ref="_stopGrid" TItem="string" Items="_stops" AriaLabel="Stops in order" CellNavigation
-            OnRowMove="(SortableMove<string> move) => move.ApplyTo(_stops)">
+            OnMove="(SortableMove<string> move) => move.ApplyTo(_stops)">
     <TbColumn Field="stop => stop" Title="Stop" Id="stop" />
     <TbColumn Title="Visit" Id="visit">
         <CellTemplate>

@@ -2,7 +2,7 @@
     <TbGridItem SpanMd="6">
         <TbTreeView TItem="Place" TKey="int" AriaLabel="Trails by region" Items="Regions" KeySelector="place => place.Id"
                     ChildrenSelector="place => place.Children" ItemText="place => place.Name"
-                    IsSelectable="place => place.Children is null" InitialExpandDepth="1"
+                    ItemSelectable="place => place.Children is null" InitialExpandDepth="1"
                     SelectionMode="SelectionMode.Single" SelectionFollowsFocus @bind-SelectedKeys="_selected" />
     </TbGridItem>
     <TbGridItem SpanMd="6">

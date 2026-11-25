@@ -19,7 +19,7 @@ Familiar apps: the "On this page" panel of documentation sites, GitHub's outline
 - [x] Scrolled to the end, the last section showing is marked. `TableOfContentsTests.TableOfContents_ShouldMarkTheLastSectionShowing_WhenThePanelIsScrolledToTheEnd`
 - [x] Following a link marks that link until the page or panel holding the sections scrolls again, even when a later section is also near the top or the scroll can't bring it there, and a key, a click or a scroll somewhere else keeps it. `TableOfContentsTests.TableOfContents_ShouldKeepTheFollowedLinkMarked_WhenALaterSectionWouldWinByPosition`
 - [x] A scroll that starts before a followed link's own scroll settles, and takes its section out of view, marks the section in view once it settles. `TableOfContentsTests.TableOfContents_ShouldMarkTheSectionInView_WhenAScrollAwayStartsBeforeTheFollowedOneSettles`
-- [x] `ActiveChanged` reports each section that comes into view. `TableOfContentsTests.TableOfContents_ShouldReportTheSection_WhenAnotherComesIntoView`
+- [x] `ActiveKeyChanged` reports each section that comes into view. `TableOfContentsTests.TableOfContents_ShouldReportTheSection_WhenAnotherComesIntoView`
 
 ## Touch
 

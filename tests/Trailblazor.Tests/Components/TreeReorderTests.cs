@@ -31,7 +31,7 @@ public class TreeReorderTests : BunitContext
     [Fact]
     public void Render_ShouldMarkTheRowsThatMoveAndDescribeTheirKeys_WhenOnMoveIsSet()
     {
-        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.CanMoveItem, place => place.Name != "South"));
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.ItemMovable, place => place.Name != "South"));
 
         var north = Row(cut, "1");
         Assert.True(north.HasAttribute("data-draggable"));
@@ -318,7 +318,7 @@ public class TreeReorderTests : BunitContext
     [Fact]
     public async Task Keys_ShouldMoveNothing_WhenTheRowCantBeDragged()
     {
-        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.CanMoveItem, place => place.Name != "South"));
+        var cut = RenderPlaces(parameters => parameters.Add(tree => tree.ItemMovable, place => place.Name != "South"));
 
         await cut.InvokeAsync(() => Events().OnKey("4", "MoveUp", false, false));
 

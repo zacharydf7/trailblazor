@@ -37,7 +37,7 @@
     /// <summary>Raised when another section comes into view as the page scrolls, with its
     /// <see cref="TbTableOfContentsItem.TargetId"/>, or null when none is in view.</summary>
     [Parameter]
-    public EventCallback<string?> ActiveChanged { get; set; }
+    public EventCallback<string?> ActiveKeyChanged { get; set; }
 
     /// <summary>A label this table of contents' use is counted under, such as <c>"guide-contents"</c>, so the app can
     /// count how often people see it and follow its links through the <c>Trailblazor</c> meter. Controls that share a
@@ -48,7 +48,7 @@
 
     /// <summary>The <see cref="TbTableOfContentsItem.TargetId"/> of the section in view, or null when none is.
     /// </summary>
-    public string? Active { get; private set; }
+    public string? ActiveKey { get; private set; }
 
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
@@ -99,19 +99,19 @@
 
     private async Task OnActiveAsync(string? targetId)
     {
-        if (targetId == Active)
+        if (targetId == ActiveKey)
         {
             return;
         }
 
-        var previous = Active;
-        Active = targetId;
+        var previous = ActiveKey;
+        ActiveKey = targetId;
         foreach (var item in _items.Where(item => item.TargetId == previous || item.TargetId == targetId))
         {
             item.Refresh();
         }
 
-        await ActiveChanged.InvokeAsync(targetId);
+        await ActiveKeyChanged.InvokeAsync(targetId);
     }
 
     // A page that keeps this component while its address changes needs links to the new address.

@@ -84,7 +84,7 @@ internal static class Rules
     public static readonly DiagnosticDescriptor GridSetup = new("TB013", "A data grid's parameters don't go together",
         "TbDataGrid {0}", Usage, DiagnosticSeverity.Warning, isEnabledByDefault: true, "A data grid takes its rows " +
         "from Items or from a DataProvider, and groups only rows held in Items. A tree grid, one with a " +
-        "ChildrenSelector, takes its rows from Items and can't be grouped, split into pages or given OnRowMove. A " +
+        "ChildrenSelector, takes its rows from Items and can't be grouped, split into pages or given OnMove. A " +
         "virtualized grid needs a Height or Fill, and can't have a PageSize or a DetailTemplate. Each of these " +
         "setups throws as it renders.");
 

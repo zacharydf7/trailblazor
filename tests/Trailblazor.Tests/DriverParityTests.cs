@@ -86,7 +86,8 @@ public class DriverParityTests
         ["TbAppShell"] = "its menu button is a plain button found by its role, and whether the navigation is open "
             + "or collapsed shows on the page",
         ["TbImage"] = "its OnLoad and OnError report the image loading or failing, not anything a user does",
-        ["TbTableOfContents"] = "its entries are plain links found by their role, and ActiveChanged follows scrolling",
+        ["TbTableOfContents"] =
+            "its entries are plain links found by their role, and ActiveKeyChanged follows scrolling",
 
         ["TbAppBar"] = NotInteractive, ["TbAvatar"] = NotInteractive,
         ["TbAvatarGroup"] = NotInteractive, ["TbBadge"] = NotInteractive, ["TbBarcode"] = NotInteractive,

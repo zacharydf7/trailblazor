@@ -227,7 +227,7 @@ public class DataGridExampleTests : DocsTest
         Assert.Contains("With cell navigation", cut.Markup);
         Assert.Contains("On a row's move handle", cut.Markup);
         Assert.Contains("ClickRowAsync", cut.Find("ul[aria-label='Testing tips']").TextContent);
-        Assert.DoesNotContain("OnRowMove", accessibility);
+        Assert.DoesNotContain("OnMove", accessibility);
         Assert.DoesNotContain("PageSizes", accessibility);
     }
 

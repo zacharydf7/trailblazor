@@ -182,7 +182,7 @@ public class TbDataGridGroupTests : BunitContext
     {
         List<Hike> hikes = [.. Hikes];
         var cut = RenderHikes(parameters => parameters.Add(grid => grid.Groups, ["Difficulty"])
-            .Add(grid => grid.OnRowMove, (SortableMove<Hike> move) => move.ApplyTo(hikes)));
+            .Add(grid => grid.OnMove, (SortableMove<Hike> move) => move.ApplyTo(hikes)));
 
         Assert.Empty(cut.FindAll("[data-part=order]"));
     }

@@ -169,7 +169,7 @@ public class TbContractTests
             builder.OpenComponent<TbDataGrid<string>>(0);
             builder.AddComponentParameter(1, nameof(TbDataGrid<string>.Items), Trails);
             builder.AddComponentParameter(2, nameof(TbDataGrid<string>.AriaLabel), "Trails");
-            builder.AddComponentParameter(3, nameof(TbDataGrid<string>.OnRowMove),
+            builder.AddComponentParameter(3, nameof(TbDataGrid<string>.OnMove),
                 EventCallback.Factory.Create<SortableMove<string>>(this, _ => { }));
             builder.AddComponentParameter(4, nameof(TbDataGrid<string>.ChildContent), (RenderFragment)(columns =>
             {

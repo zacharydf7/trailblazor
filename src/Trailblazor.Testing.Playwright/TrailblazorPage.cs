@@ -1522,7 +1522,7 @@ public sealed class TbTreeLocator(ILocator scope, ILocator tree)
         {
             throw new InvalidOperationException($"The row at {string.Join(" > ", row)} can't be dragged: the tree "
                 + "needs an OnMove and mustn't be disabled, and the row must be enabled, have a value and be allowed "
-                + "by CanMoveItem.");
+                + "by ItemMovable.");
         }
 
         var destination = await RowAsync(target);
@@ -2019,8 +2019,8 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
 
     /// <summary>Moves the row with a cell whose text is exactly <paramref name="row"/> to <paramref name="index"/>
     /// among all the rows, on every page, through its handle's menu as a user would: Move to start or Move to end for
-    /// the first or last place, else Move up or Move down a place at a time, so <c>CanMoveRow</c> and
-    /// <c>OnRowMove</c> see each step. Waits for each step's answer, and a step the app refuses ends the move. The row
+    /// the first or last place, else Move up or Move down a place at a time, so <c>CanMove</c> and
+    /// <c>OnMove</c> see each step. Waits for each step's answer, and a step the app refuses ends the move. The row
     /// must be on the page shown, and the grid shows the page it lands on. Throws when the rows can't move or
     /// <paramref name="index"/> is past the last row.</summary>
     public Task MoveRowAsync(string row, int index) => HandleMoves.MoveAsync(Root, Handle(row), () => PlaceAsync(row),
@@ -2062,7 +2062,7 @@ public sealed class TbGridLocator(ILocator scope, ILocator grid)
         Row(row).Locator(":scope > td > [data-part=handle] > [aria-haspopup=menu]");
 
     private async Task<int> PlaceAsync(string row) => int.Parse(await Row(row).GetAttributeAsync("data-index")
-        ?? throw new InvalidOperationException("The grid's rows can't move: it needs an OnRowMove and in-memory "
+        ?? throw new InvalidOperationException("The grid's rows can't move: it needs an OnMove and in-memory "
             + "Items, and mustn't be sorted, filtered or grouped."), CultureInfo.InvariantCulture);
 
     /// <summary>Sorts the rows by this column alone, ascending or descending, clicking its header until it shows that

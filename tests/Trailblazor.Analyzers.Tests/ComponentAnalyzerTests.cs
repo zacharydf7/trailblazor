@@ -1522,7 +1522,7 @@ public class ComponentAnalyzerTests
     [InlineData(GridItems + GridChildren + GridGroups, "with a ChildrenSelector takes its rows from Items, and can't " +
         "group them, move them or split them into pages; set Virtualize to show many rows")]
     [InlineData(GridItems + GridChildren + """
-        __builder.AddComponentParameter(7, "OnRowMove",
+        __builder.AddComponentParameter(7, "OnMove",
             EventCallback.Factory.Create<SortableMove<string>>(this, _ => { }));
         """, "with a ChildrenSelector takes its rows from Items, and can't group them, move them or split them into " +
         "pages; set Virtualize to show many rows")]

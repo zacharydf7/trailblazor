@@ -1,8 +1,9 @@
 namespace Trailblazor;
 
 /// <summary>Whether a move the user asked for is allowed, and if not, why, in words shown beside the drop and read out,
-/// such as "The default rule stays last." <see cref="TbSortable{TItem}.CanMove"/>, the data grid's
-/// <c>CanMoveRow</c> and the tree view's <c>CanMove</c> answer with one.</summary>
+/// such as "The default rule stays last." The <c>CanMove</c> of <see cref="TbSortable{TItem}"/>,
+/// <see cref="TbKanban{TItem}"/>, <see cref="TbDataGrid{TItem}"/> and <see cref="TbTreeView{TItem, TKey}"/> answers with
+/// one.</summary>
 /// <param name="Allowed">Whether the items may move there.</param>
 /// <param name="Reason">Why they may not, when they may not.</param>
 public sealed record MoveCheck(bool Allowed, string? Reason = null)
