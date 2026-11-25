@@ -5644,8 +5644,8 @@ public sealed class TbCommandPaletteDriver
     private IElement Listbox() => _findAll($"[id='{Open().GetAttribute("aria-controls")}']").Single();
 }
 
-/// <summary>A <c>TbKanban</c>, found by its <c>AriaLabel</c>. Each column is a sortable list named by its title.
-/// </summary>
+/// <summary>A <c>TbKanban</c>, found by its <c>AriaLabel</c>. Each column is a sortable list named by its title, or
+/// with lanes each lane's cell of it is, named "{column}, {lane}".</summary>
 public sealed class TbKanbanDriver
 {
     private readonly Func<IElement> _find;
@@ -5659,14 +5659,15 @@ public sealed class TbKanbanDriver
     public IReadOnlyList<string> Columns => [.. ColumnElements().Select(TitleOf)];
 
     /// <summary>The names of the cards in the column titled <paramref name="column"/>, top first, or none while it's
-    /// collapsed.</summary>
-    public IReadOnlyList<string> Cards(string column) => IsCollapsed(column) ? [] : Column(column).Items;
+    /// collapsed. On a board with lanes, this throws: name the lane.</summary>
+    public IReadOnlyList<string> Cards(string column) =>
+        Lanes.Count > 0 ? throw LanesNamed() : IsCollapsed(column) ? [] : Column(column).Items;
 
     /// <summary>The column titled <paramref name="column"/>, as a sortable list: its cards move within it with
-    /// <c>MoveAsync</c>, or to another column with <c>MoveToListAsync</c>. Throws when the board has no such column, or
-    /// the column is collapsed.</summary>
-    public TbSortableDriver Column(string column) => new(() => ColumnElement(column)
-        .QuerySelector("[data-part=list][data-sortable]") ?? throw new InvalidOperationException(
+    /// <c>MoveAsync</c>, or to another column with <c>MoveToListAsync</c>. Throws when the board has no such column,
+    /// the column is collapsed, or the board has lanes, whose cells <c>Cell</c> gives.</summary>
+    public TbSortableDriver Column(string column) => Lanes.Count > 0 ? throw LanesNamed() : new(() =>
+        ColumnElement(column).QuerySelector("[data-part=list][data-sortable]") ?? throw new InvalidOperationException(
             $"The column \"{column}\" is collapsed, so it shows no cards; open it with ExpandAsync first."),
         _findAll, _scripts);
 
@@ -5697,13 +5698,60 @@ public sealed class TbKanbanDriver
 
     /// <summary>Moves the card named <paramref name="card"/> to the end of the column titled <paramref name="column"/>,
     /// through its handle's menu as a user would. Throws when the board has no such card or column, the card is in a
-    /// collapsed column, or the column is collapsed.</summary>
+    /// collapsed column, or the column is collapsed. On a board with lanes, name the lane too.</summary>
     public async Task MoveToColumnAsync(string card, string column)
     {
         ColumnElement(column);
+        if (Lanes.Count > 0)
+        {
+            throw LanesNamed();
+        }
+
         var from = Columns.FirstOrDefault(title => Cards(title).Contains(card))
             ?? throw new InvalidOperationException($"This board has no card \"{card}\".");
         await Column(from).MoveToListAsync(card, column);
+    }
+
+    private static InvalidOperationException LanesNamed() =>
+        new("This board has lanes, so name the lane too, as Cards(column, lane) or Cell(column, lane) do.");
+
+    /// <summary>The lanes' titles, top to bottom, or none on a board without lanes.</summary>
+    public IReadOnlyList<string> Lanes => [.. _find().QuerySelectorAll(":scope > [data-part=lanes] > [data-part=lane]")
+        .Select(lane => lane.TextContent.Trim())];
+
+    /// <summary>The names of the cards in the lane titled <paramref name="lane"/> of the column titled
+    /// <paramref name="column"/>, top first, or none while the column is collapsed.</summary>
+    public IReadOnlyList<string> Cards(string column, string lane) =>
+        IsCollapsed(column) ? [] : Cell(column, lane).Items;
+
+    /// <summary>The lane titled <paramref name="lane"/>'s cell of the column titled <paramref name="column"/>, as a
+    /// sortable list. Throws when the board has no such column or lane, or the column is collapsed.</summary>
+    public TbSortableDriver Cell(string column, string lane) => new(() => ColumnElement(column)
+        .QuerySelectorAll("[data-part=cell] [data-part=list][data-sortable]")
+        .FirstOrDefault(list => list.GetAttribute("aria-label") == $"{column}, {lane}")
+        ?? throw new InvalidOperationException(IsCollapsed(column)
+            ? $"The column \"{column}\" is collapsed, so it shows no cards; open it with ExpandAsync first."
+            : $"This board has no lane \"{lane}\" in the column \"{column}\"."), _findAll, _scripts);
+
+    /// <summary>Moves the card named <paramref name="card"/> to the end of the lane titled <paramref name="lane"/> in
+    /// the column titled <paramref name="column"/>, through its handle's menu as a user would. Throws when the board
+    /// has no such card, column or lane, or either column is collapsed.</summary>
+    public async Task MoveToColumnAsync(string card, string column, string lane)
+    {
+        ColumnElement(column);
+        if (Lanes.Count == 0)
+        {
+            throw new InvalidOperationException("This board has no lanes, so name only the column.");
+        }
+
+        var from = Columns.SelectMany(title => Lanes.Select(other => (Column: title, Lane: other)))
+            .FirstOrDefault(cell => Cards(cell.Column, cell.Lane).Contains(card));
+        if (from == default)
+        {
+            throw new InvalidOperationException($"This board has no card \"{card}\".");
+        }
+
+        await Cell(from.Column, from.Lane).MoveToListAsync(card, $"{column}, {lane}");
     }
 
     private List<IElement> ColumnElements() => [.. _find().QuerySelectorAll(":scope > [data-part=column]")];

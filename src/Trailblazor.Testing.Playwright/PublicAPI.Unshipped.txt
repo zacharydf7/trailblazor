@@ -726,3 +726,7 @@ Trailblazor.Testing.Playwright.TbFileUploadLocator.WaitForUploadsAsync() -> Syst
 Trailblazor.Testing.Playwright.TbKanbanLocator.CollapseAsync(string! column) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbKanbanLocator.ExpandAsync(string! column) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.Playwright.TbKanbanLocator.IsCollapsedAsync(string! column) -> System.Threading.Tasks.Task<bool>!
+Trailblazor.Testing.Playwright.TbKanbanLocator.CardsAsync(string! column, string! lane) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbKanbanLocator.Cell(string! column, string! lane) -> Trailblazor.Testing.Playwright.TbSortableLocator!
+Trailblazor.Testing.Playwright.TbKanbanLocator.LanesAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string!>!>!
+Trailblazor.Testing.Playwright.TbKanbanLocator.MoveToColumnAsync(string! card, string! column, string! lane) -> System.Threading.Tasks.Task!

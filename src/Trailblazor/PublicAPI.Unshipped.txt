@@ -8095,3 +8095,22 @@ Trailblazor.TbKanban<TItem>.CollapsedColumnsChanged.set -> void
 Trailblazor.TbKanban<TItem>.Collapsible.get -> bool
 Trailblazor.TbKanban<TItem>.Collapsible.set -> void
 const Trailblazor.TbStrings.KanbanCards = "Kanban.Cards" -> string!
+Trailblazor.KanbanLane<TItem>
+Trailblazor.KanbanLane<TItem>.<Clone>$() -> Trailblazor.KanbanLane<TItem>!
+Trailblazor.KanbanLane<TItem>.Cards.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<TItem>!>!
+Trailblazor.KanbanLane<TItem>.Cards.init -> void
+Trailblazor.KanbanLane<TItem>.CellId(string! columnId) -> string!
+Trailblazor.KanbanLane<TItem>.Deconstruct(out string! Id, out string! Title, out System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<TItem>!>! Cards) -> void
+Trailblazor.KanbanLane<TItem>.Equals(Trailblazor.KanbanLane<TItem>? other) -> bool
+Trailblazor.KanbanLane<TItem>.Id.get -> string!
+Trailblazor.KanbanLane<TItem>.Id.init -> void
+Trailblazor.KanbanLane<TItem>.KanbanLane(string! Id, string! Title, System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<TItem>!>! Cards) -> void
+Trailblazor.KanbanLane<TItem>.Title.get -> string!
+Trailblazor.KanbanLane<TItem>.Title.init -> void
+Trailblazor.TbKanban<TItem>.Lanes.get -> System.Collections.Generic.IReadOnlyList<Trailblazor.KanbanLane<TItem>!>?
+Trailblazor.TbKanban<TItem>.Lanes.set -> void
+override Trailblazor.KanbanLane<TItem>.Equals(object? obj) -> bool
+override Trailblazor.KanbanLane<TItem>.GetHashCode() -> int
+override Trailblazor.KanbanLane<TItem>.ToString() -> string!
+static Trailblazor.KanbanLane<TItem>.operator !=(Trailblazor.KanbanLane<TItem>? left, Trailblazor.KanbanLane<TItem>? right) -> bool
+static Trailblazor.KanbanLane<TItem>.operator ==(Trailblazor.KanbanLane<TItem>? left, Trailblazor.KanbanLane<TItem>? right) -> bool

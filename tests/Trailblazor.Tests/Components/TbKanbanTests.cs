@@ -283,6 +283,101 @@ public class TbKanbanTests : BunitContext
         Assert.Empty(cut.FindAll("[data-part=collapse]"));
     }
 
+    private readonly Dictionary<string, List<string>> _cells = new()
+    {
+        ["north/todo"] = ["Clear the ridge path"],
+        ["north/doing"] = ["Fix the footbridge"],
+        ["north/done"] = [],
+        ["south/todo"] = ["Mark the river ford"],
+        ["south/doing"] = ["Paint the signs"],
+        ["south/done"] = [],
+    };
+
+    private IRenderedComponent<TbKanban<string>> RenderLanes(int? doingLimit = null) => Render<TbKanban<string>>(
+        parameters => parameters.Add(board => board.AriaLabel, "Crew board")
+            .Add(board => board.Columns, [new("todo", "To do", []), new("doing", "Doing", []) { Limit = doingLimit },
+                new("done", "Done", [])])
+            .Add(board => board.Lanes, [Lane("north", "North crew"), Lane("south", "South crew")])
+            .Add(board => board.CardTemplate, card => builder => builder.AddContent(0, card))
+            .Add(board => board.OnMove, (SortableMove<string> move) =>
+            {
+                _moves.Add(move);
+                move.ApplyBetween(_cells[move.FromList!], _cells[move.ToList!]);
+            }));
+
+    private KanbanLane<string> Lane(string id, string title) => new(id, title,
+        new Dictionary<string, IReadOnlyList<string>>
+    {
+        ["todo"] = _cells[$"{id}/todo"],
+        ["doing"] = _cells[$"{id}/doing"],
+        ["done"] = _cells[$"{id}/done"],
+    });
+
+    [Fact]
+    public void Lanes_ShouldShowEachLanesCellInEachColumn_WhenGiven()
+    {
+        var cut = RenderLanes();
+        var board = cut.Tb().Kanban("Crew board");
+
+        Assert.Equal(["North crew", "South crew"], board.Lanes);
+        Assert.Equal(["Fix the footbridge"], board.Cards("Doing", "North crew"));
+        Assert.Throws<InvalidOperationException>(() => board.Cards("Doing"));
+        Assert.Equal("2", cut.Find("[data-key=doing] [data-part=count]").TextContent);
+        Assert.Equal(["To do, North crew", "To do, South crew"], cut.FindAll("[data-key=todo] [data-part=list]")
+            .Select(list => list.GetAttribute("aria-label")));
+        Assert.Contains("tb-kanban--lanes", cut.Find("section").ClassList);
+    }
+
+    [Fact]
+    public void Lanes_ShouldShowTheColumnsAsABoardWithoutLanes_WhenEmpty()
+    {
+        var cut = RenderBoard(parameters => parameters.Add(board => board.Lanes, []));
+
+        Assert.Equal(["Clear the ridge path", "Mark the river ford"], cut.Tb().Kanban("Trail work").Cards("To do"));
+        Assert.DoesNotContain("tb-kanban--lanes", cut.Find("section").ClassList);
+    }
+
+    [Fact]
+    public void Lanes_ShouldThrow_WhenAnIdHoldsASlash()
+    {
+        var thrown = Assert.Throws<InvalidOperationException>(() => Render<TbKanban<string>>(parameters => parameters
+            .Add(board => board.AriaLabel, "Crew board").Add(board => board.Columns, [new("to/do", "To do", [])])
+            .Add(board => board.Lanes, [new KanbanLane<string>("north", "North crew",
+                new Dictionary<string, IReadOnlyList<string>>())])
+            .Add(board => board.CardTemplate, card => builder => builder.AddContent(0, card))));
+
+        Assert.Contains("to/do", thrown.Message);
+    }
+
+    [Fact]
+    public async Task MoveToColumn_ShouldMoveTheCardToAnotherLanesCell_WhenTheBoardHasLanes()
+    {
+        var cut = RenderLanes();
+
+        await cut.Tb().Kanban("Crew board").MoveToColumnAsync("Fix the footbridge", "Done", "South crew");
+
+        Assert.Equal(("north/doing", "south/done"), (_moves.Single().FromList, _moves.Single().ToList));
+        Assert.Equal(["Fix the footbridge"], cut.Tb().Kanban("Crew board").Cards("Done", "South crew"));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => cut.Tb().Kanban("Crew board").MoveToColumnAsync("Paint the signs", "Done"));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => RenderBoard().Tb().Kanban("Trail work")
+                .MoveToColumnAsync("Fix the footbridge", "Done", "North crew"));
+    }
+
+    [Fact]
+    public async Task Lanes_ShouldRefuseAMoveIntoAFullColumnButNotWithinIt_WhenTheColumnHasALimit()
+    {
+        var cut = RenderLanes(doingLimit: 2);
+        var board = cut.Tb().Kanban("Crew board");
+
+        await board.MoveToColumnAsync("Fix the footbridge", "Doing", "South crew");
+        await board.MoveToColumnAsync("Clear the ridge path", "Doing", "North crew");
+
+        Assert.Equal(["north/doing"], _moves.Select(move => move.FromList));
+        Assert.Equal(["Paint the signs", "Fix the footbridge"], board.Cards("Doing", "South crew"));
+    }
+
     private IReadOnlyList<KanbanColumn<string>> Columns() =>
     [
         new("todo", "To do", _cards["todo"]),

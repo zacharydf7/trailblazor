@@ -11317,6 +11317,64 @@ d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-
         color: var(--tb-color-danger-text);
     }
 
+    /* With lanes, the columns share the board's rows: their headers, one row per lane, then their footers. */
+    .tb-kanban--lanes {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: max-content;
+        grid-template-rows: auto repeat(var(--tb-kanban-lanes), auto) auto;
+        row-gap: var(--tb-space-2);
+    }
+
+    .tb-kanban--lanes > .tb-kanban__column:not(.tb-kanban__column--collapsed) {
+        inline-size: var(--tb-kanban-column-width, 18rem);
+    }
+
+    /* A collapsed column's header runs down every row, so its title doesn't stretch the board's first row. */
+    .tb-kanban--lanes .tb-kanban__column--collapsed .tb-kanban__header {
+        grid-row: 1 / -1;
+        align-self: start;
+    }
+
+    .tb-kanban--lanes > :is(.tb-kanban__column, .tb-kanban__lanes) {
+        display: grid;
+        grid-row: 1 / -1;
+        grid-template-rows: subgrid;
+    }
+
+    .tb-kanban--lanes .tb-kanban__cells {
+        display: grid;
+        grid-row: 2 / span var(--tb-kanban-lanes);
+        grid-template-rows: subgrid;
+    }
+
+    /* The lane titles stay in view as the board scrolls sideways, so the board doesn't snap a column under them or fade
+       them out at its start. */
+    .tb-kanban--lanes {
+        scroll-snap-type: none;
+    }
+
+    .tb-kanban--lanes[data-more-left]:not(:focus-visible) {
+        mask-image: none;
+    }
+
+    .tb-kanban--lanes[data-more-left][data-more-right]:not(:focus-visible) {
+        mask-image: linear-gradient(to left, transparent, black var(--tb-space-8));
+    }
+
+    .tb-kanban__lanes {
+        position: sticky;
+        inset-inline-start: 0;
+        z-index: 1;
+        background: var(--tb-color-surface);
+    }
+
+    .tb-kanban__lane {
+        align-self: start;
+        padding: var(--tb-space-2) var(--tb-space-1);
+        font-weight: 600;
+    }
+
     /* A collapsed column is a narrow strip with its title running down it. */
     .tb-kanban__column--collapsed {
         flex-basis: auto;

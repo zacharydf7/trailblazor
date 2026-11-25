@@ -21,6 +21,89 @@ public class KanbanTests(BrowserFixture fixture) : BrowserTest(fixture)
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Lanes_ShouldKeepACardInItsLane_WhenLeftOrRightIsPressed(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/kanban/lanes");
+        await Expect(page.Locator(".tb-kanban .tb-sortable:not([data-ready])")).ToHaveCountAsync(0);
+        var board = page.Tb().Kanban("Crew board");
+
+        await Handle(page, "Fix the footbridge").FocusAsync();
+        await page.Keyboard.PressAsync("ArrowLeft");
+
+        await Expect(page.GetByRole(AriaRole.List, new() { Name = "To do, North crew", Exact = true })
+            .GetByText("Fix the footbridge")).ToBeVisibleAsync();
+        Assert.Equal(["Mark the river ford", "Cut back the hedge"], await board.CardsAsync("To do", "South crew"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Lanes_ShouldLineUpALanesCellsAcrossTheColumns_WhenShown(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/kanban/lanes");
+        var cells = page.Locator("[data-part=cell][data-lane=south]");
+
+        var tops = await cells.EvaluateAllAsync<double[]>(
+            "cells => cells.map(cell => cell.getBoundingClientRect().top)");
+        var lane = await page.Locator("[data-part=lane][data-key=south]").BoundingBoxAsync();
+
+        Assert.Equal(3, tops.Length);
+        Assert.All(tops, top => Assert.Equal(tops[0], top, 0.5));
+        Assert.Equal(tops[0], lane!.Y, 0.5);
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Lanes_ShouldNarrowACollapsedColumnAndKeepTheRows_WhenOneCollapses(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/kanban/lanes");
+        var board = page.Tb().Kanban("Crew board");
+        var southTop = await page.Locator("[data-part=cell][data-lane=south]").First.BoundingBoxAsync();
+
+        await board.CollapseAsync("Done");
+
+        var done = await board.Kanban.Locator("[data-part=column][data-key=done]").BoundingBoxAsync();
+        var lanes = await board.Kanban.Locator("[data-part=lanes]").BoundingBoxAsync();
+        Assert.True(done!.Width < 100, $"The collapsed column is {done.Width}px wide.");
+        Assert.True(lanes!.Width < 200, $"The lane titles take {lanes.Width}px.");
+        Assert.Equal(southTop!.Y,
+            (await page.Locator("[data-part=cell][data-lane=south]").First.BoundingBoxAsync())!.Y, 0.5);
+        var button = await board.Kanban.Locator("[data-key=done] [data-part=collapse]").BoundingBoxAsync();
+        Assert.True(button!.Y - done.Y < 40, $"The collapsed column's button is {button.Y - done.Y}px down it.");
+        Assert.Equal(["Paint the signs"], await board.CardsAsync("Doing", "South crew"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => board.CardsAsync("Doing"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Lanes_ShouldKeepTheLaneTitlesInView_WhenTheBoardScrollsSideways(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/kanban/lanes");
+        await page.SetViewportSizeAsync(390, 800);
+        var board = page.Tb().Kanban("Crew board").Kanban;
+
+        await board.EvaluateAsync("board => board.scrollLeft = 300");
+
+        await Expect(board).ToHaveAttributeAsync("data-more-left", "");
+        var lanes = await board.Locator("[data-part=lanes]").BoundingBoxAsync();
+        var edge = await board.BoundingBoxAsync();
+        Assert.Equal(edge!.X, lanes!.X, 1);
+        // Only a side with more columns past it fades, and the lane titles' side doesn't.
+        Assert.DoesNotContain("to right",
+            await board.EvaluateAsync<string>("board => getComputedStyle(board).maskImage"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
+    public async Task Lanes_ShouldMoveACardToAnotherLane_WhenMovedThroughItsMenu(string browser)
+    {
+        var page = await OpenAsync(browser, "/examples/kanban/lanes");
+        await Expect(page.Locator(".tb-kanban .tb-sortable:not([data-ready])")).ToHaveCountAsync(0);
+        var board = page.Tb().Kanban("Crew board");
+
+        await board.MoveToColumnAsync("Fix the footbridge", "Doing", "South crew");
+
+        Assert.Equal(["North crew", "South crew"], await board.LanesAsync());
+        Assert.Equal(["Paint the signs", "Fix the footbridge"], await board.CardsAsync("Doing", "South crew"));
+        Assert.Empty(await board.CardsAsync("Doing", "North crew"));
+    }
+
+    [Theory, ClassData(typeof(AllBrowsers))]
     public async Task Collapse_ShouldKeepFocusOnTheButtonAndOpenAgain_WhenPressed(string browser)
     {
         var page = await OpenAsync(browser, "/examples/kanban/collapsing");
@@ -117,7 +200,7 @@ public class KanbanTests(BrowserFixture fixture) : BrowserTest(fixture)
 
         Assert.Equal(["Fix the footbridge", "Clear fallen trees"], await board.CardsAsync("Doing"));
         Assert.Equal(["Repaint blazes"], await board.CardsAsync("To do"));
-        await Expect(page.Locator("[data-part=column][data-key=doing]")).ToHaveAttributeAsync("data-full", "");
+        await Expect(board.Kanban.Locator("[data-part=column][data-key=doing]")).ToHaveAttributeAsync("data-full", "");
     }
 
     [Theory, ClassData(typeof(AllBrowsers))]

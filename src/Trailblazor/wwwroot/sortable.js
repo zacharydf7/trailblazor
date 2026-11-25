@@ -113,7 +113,9 @@ export function attachSortable(list, events, itemSelector = '[data-part="item"]'
             return;
         }
 
-        const lists = groupLists();
+        // In a board with lanes, Left and Right move a card only to the lists in its own lane.
+        const laneOf = element => element.closest('[data-lane]')?.dataset.lane;
+        const lists = groupLists().filter(other => laneOf(other) === laneOf(list));
         const forward = (event.key === 'ArrowRight') !== (getComputedStyle(list).direction === 'rtl');
         const target = lists[lists.indexOf(list) + (forward ? 1 : -1)];
         if (target) {

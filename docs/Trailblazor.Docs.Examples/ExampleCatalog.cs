@@ -5762,18 +5762,30 @@ public static class ExampleCatalog
                     + "same collection on each render, or it resets the user's choices. A collapsed column shows no "
                     + "cards and no `ColumnFooterTemplate`, so none can move into it until it's open, and a card's "
                     + "Left and Right skip it.", typeof(KanbanCollapseExample)),
+                new("lanes", "Swimlanes", "`Lanes` adds rows across the columns, such as a crew or a priority, as "
+                    + "`KanbanLane` records, each with an `Id`, a `Title` and its `Cards` in each column by the "
+                    + "column's `Id`. The columns then give only their headings and limits, and each lane's cell of a "
+                    + "column is a list of its own, named by both, such as \"Doing, North crew\". A move's `FromList` "
+                    + "and `ToList` are the cells' `CellId`s, so apply it between your cells' lists. A card's Left "
+                    + "and Right stay in its lane, its menu moves it to any cell, and a column's `Limit` counts every "
+                    + "lane's cards in it: Doing starts full here, so a card moves between its lanes but none can join "
+                    + "it. The lane titles stay in view as the board scrolls sideways, so a board with lanes doesn't "
+                    + "snap to its columns.", typeof(KanbanLanesExample)),
             ],
-            Api = [typeof(TbKanban<>), typeof(KanbanColumn<>), typeof(KanbanLabels), typeof(SortableMove<>)],
+            Api = [typeof(TbKanban<>), typeof(KanbanColumn<>), typeof(KanbanLane<>), typeof(KanbanLabels),
+                typeof(SortableMove<>)],
             Keyboard =
             [
                 new(["Up", "Down"], "Moves the card one place in its column, and focus stays on the handle.")
                     { When = "On a card's handle" },
                 new(["Home", "End"], "Moves the card to the top or bottom of its column.")
                     { When = "On a card's handle" },
-                new(["Left", "Right"], "Moves the card to the open column before or after, and focus follows it.")
+                new(["Left", "Right"], "Moves the card to the open column before or after, in its own lane with "
+                    + "`Lanes`, and focus follows it.")
                     { When = "On a card's handle" },
                 new(["Enter", "Space"], "Opens its menu: Move up, Move down, Move to the start and Move to the end, then "
-                    + "Move to each other column.")
+                    + "Move to each other column, or with `Lanes` each other cell, such as \"Move to Doing, North "
+                    + "crew\".")
                     { When = "On a card's handle" },
                 new(["Escape"], "Cancels a drag.") { When = "While dragging" },
                 new(["Enter", "Space"], "Collapses the column, or opens it again.")
@@ -5782,7 +5794,9 @@ public static class ExampleCatalog
             Labeling =
             [
                 "The board is a region named by `AriaLabel`. Each column is a `group` named by its title and described "
-                    + "by its count, and its cards are a `list` named by its title.",
+                    + "by its count, and its cards are a `list` named by its title. With `Lanes`, each lane's cell of "
+                    + "a column is a `list` named by both, such as \"Doing, North crew\", which is how screen readers "
+                    + "hear the lane; the lane titles before the columns are plain text.",
                 "Each card's handle is named \"Move\" followed by the card's `CardLabel`. `Labels.Moves` rewords the "
                     + "handles and their announcements, and `Labels.Count` and `Labels.Full` the count and the "
                     + "refusal.",
@@ -5793,7 +5807,7 @@ public static class ExampleCatalog
             Announcements =
             [
                 "Each move is announced with the card's new place, such as \"Fix the footbridge moved to Done, "
-                    + "position 2 of 2.\"",
+                    + "position 2 of 2.\" With `Lanes`, the cell is named, as in \"moved to Done, South crew\".",
                 "A move into a full column is refused, and the reason is read out, such as \"Doing is full: its "
                     + "limit is 2.\" A reason `CanMove` gives is read out the same way.",
             ],
@@ -5823,6 +5837,9 @@ public static class ExampleCatalog
                 new("count", "How many cards it holds, against its `Limit` when it has one."),
                 new("footer", "What `ColumnFooterTemplate` draws under the column, while it's open."),
                 new("collapse", "The button that collapses a column and opens it again, with `Collapsible`."),
+                new("lanes", "With `Lanes`, the strip of lane titles before the board's columns."),
+                new("lane", "One lane's title, with `data-key` for its `Id`."),
+                new("cell", "With `Lanes`, one lane's list in a column, with `data-lane` for the lane's `Id`."),
             ],
             Telemetry =
             [
@@ -5843,6 +5860,12 @@ public static class ExampleCatalog
                 "`Column(title)` gives that column's sortable list, for `MoveAsync` within it or a drag.",
                 "`CollapseAsync(column)` and `ExpandAsync(column)` press a column's collapse button, and "
                     + "`IsCollapsedAsync(column)`, or `IsCollapsed(column)` in bUnit, reads whether it's collapsed.",
+                "With `Lanes`, `LanesAsync()` or `Lanes` reads the lane titles, `CardsAsync(column, lane)` or "
+                    + "`Cards(column, lane)` reads a cell's cards, `Cell(column, lane)` gives the cell's sortable "
+                    + "list, and `MoveToColumnAsync(card, column, lane)` moves a card to a cell.",
+                "On a board with lanes, `CardsAsync(column)` or `Cards(column)`, `MoveToColumnAsync(card, column)` "
+                    + "and the bUnit `Column(column)` throw, so a test names the lane; the collapse helpers still "
+                    + "take a column alone.",
                 "A collapsed column's `CardsAsync` or `Cards` is empty, and `MoveToColumnAsync` finds cards only in "
                     + "open columns and can't move a card into a collapsed one.",
                 "A move the app refuses, such as into a full column, is announced, which `page.Tb().Announcements` "

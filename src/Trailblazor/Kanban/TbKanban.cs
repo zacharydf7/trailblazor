@@ -27,9 +27,18 @@ public partial class TbKanban<TItem>
     [Parameter, EditorRequired]
     public string AriaLabel { get; set; } = "";
 
-    /// <summary>The columns, left to right, each with its cards. Apply each <see cref="OnMove"/> to them.</summary>
+    /// <summary>The columns, left to right, each with its cards. Apply each <see cref="OnMove"/> to them. With
+    /// <see cref="Lanes"/>, they give only their headings and limits, and the lanes hold the cards.</summary>
     [Parameter, EditorRequired]
     public IReadOnlyList<KanbanColumn<TItem>> Columns { get; set; } = [];
+
+    /// <summary>Swimlanes: rows across the columns, such as a team or a priority, each with its cards in each column.
+    /// With them, each column's cards come from the lanes rather than its own <see cref="KanbanColumn{TItem}.Cards"/>,
+    /// each lane's cell of a column is a list of its own, and a move's lists are the cells'
+    /// <see cref="KanbanLane{TItem}.CellId"/>s. A card's Left and Right stay in its lane. An empty list shows no lanes.
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<KanbanLane<TItem>>? Lanes { get; set; }
 
     /// <summary>Draws a card. Required.</summary>
     [Parameter, EditorRequired]
@@ -48,7 +57,9 @@ public partial class TbKanban<TItem>
     /// <summary>Raised when the user moves a card. Within a column, apply it with
     /// <see cref="SortableMove{TItem}.ApplyTo"/>; between columns, its <see cref="SortableMove{TItem}.FromList"/> and
     /// <see cref="SortableMove{TItem}.ToList"/> are the columns' <see cref="KanbanColumn{TItem}.Id"/>s, and
-    /// <see cref="SortableMove{TItem}.ApplyBetween"/> applies it.</summary>
+    /// <see cref="SortableMove{TItem}.ApplyBetween"/> applies it. With <see cref="Lanes"/>, they are the cells'
+    /// <see cref="KanbanLane{TItem}.CellId"/>s, and <see cref="SortableMove{TItem}.ApplyBetween"/> applies any move,
+    /// such as to another lane of the same column.</summary>
     [Parameter]
     public EventCallback<SortableMove<TItem>> OnMove { get; set; }
 
@@ -107,12 +118,28 @@ public partial class TbKanban<TItem>
 
     private ControlTelemetry Telemetry => field ??= new(Services, GetType());
 
-    private static bool IsFull(KanbanColumn<TItem> column) => column.Cards.Count >= column.Limit;
+    private bool IsFull(KanbanColumn<TItem> column) => CountOf(column) >= column.Limit;
+
+    private int CountOf(KanbanColumn<TItem> column) =>
+        ShownLanes?.Sum(lane => CardsIn(lane, column).Count) ?? column.Cards.Count;
+
+    private static IReadOnlyList<TItem> CardsIn(KanbanLane<TItem> lane, KanbanColumn<TItem> column) =>
+        lane.Cards.GetValueOrDefault(column.Id) ?? [];
+
+    private static string CellLabel(KanbanColumn<TItem> column, KanbanLane<TItem> lane) =>
+        $"{column.Title}, {lane.Title}";
+
+    // An empty list of lanes shows the columns as a board without lanes does.
+    private IReadOnlyList<KanbanLane<TItem>>? ShownLanes => Lanes is { Count: > 0 } ? Lanes : null;
+
+    // The lanes' count sets the grid's rows: the headers, one per lane, then the footers.
+    private string? BoardStyle => Styles.Join(ShownLanes is { } lanes
+        ? $"--tb-kanban-lanes: {lanes.Count.ToString(CultureInfo.InvariantCulture)}" : null, Style);
 
     private string CountText(KanbanColumn<TItem> column) => column.Limit is { } limit
         ? string.Format(CultureInfo.CurrentCulture, Labels.Count ?? Localizer[TbStrings.KanbanCount],
-            column.Cards.Count, limit)
-        : column.Cards.Count.ToString(CultureInfo.CurrentCulture);
+            CountOf(column), limit)
+        : CountOf(column).ToString(CultureInfo.CurrentCulture);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -120,6 +147,15 @@ public partial class TbKanban<TItem>
         if (string.IsNullOrWhiteSpace(AriaLabel))
         {
             throw new InvalidOperationException($"{nameof(TbKanban<TItem>)} needs an {nameof(AriaLabel)}.");
+        }
+
+        // A cell's id joins its lane's and column's with a slash, so an id with one could name two cells.
+        if (ShownLanes is { } lanes && lanes.Select(lane => lane.Id).Concat(Columns.Select(column => column.Id))
+            .FirstOrDefault(id => id.Contains('/')) is { } slashed)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(TbKanban<TItem>)} with {nameof(Lanes)} can't take the id \"{slashed}\": lane and column ids "
+                + "can't hold a slash.");
         }
 
         if (!ReferenceEquals(CollapsedColumns, _givenCollapsed))
@@ -132,7 +168,9 @@ public partial class TbKanban<TItem>
     }
 
     // The cards' menus offer the columns in the board's order, even one that opens after the others rendered.
-    private void OrderColumns() => Groups.Order(_group, Columns.Select(column => column.Id));
+    private void OrderColumns() => Groups.Order(_group, ShownLanes is not { } lanes
+        ? Columns.Select(column => column.Id)
+        : lanes.SelectMany(lane => Columns.Select(column => lane.CellId(column.Id))));
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -177,10 +215,11 @@ public partial class TbKanban<TItem>
         }
     }
 
-    // A move within a column never fills it; one from another column does once the column holds its limit.
+    // A move within a column never fills it, even to another lane; one from another column does once the column holds
+    // its limit.
     private async Task<MoveCheck> CheckAsync(KanbanColumn<TItem> column, SortableMove<TItem> move)
     {
-        if (move.FromList != move.ToList && IsFull(column))
+        if (ColumnOf(move.FromList) != ColumnOf(move.ToList) && IsFull(column))
         {
             return MoveCheck.Refuse(string.Format(CultureInfo.CurrentCulture,
                 Labels.Full ?? Localizer[TbStrings.KanbanFull], column.Title, column.Limit));
@@ -188,6 +227,9 @@ public partial class TbKanban<TItem>
 
         return CanMove is null ? MoveCheck.Allow : await CanMove(move);
     }
+
+    private string? ColumnOf(string? list) => ShownLanes is not { } lanes ? list : Columns.FirstOrDefault(column =>
+        lanes.Any(lane => lane.CellId(column.Id) == list))?.Id;
 
     private string ToggleLabel(KanbanColumn<TItem> column) => string.Format(CultureInfo.CurrentCulture,
         Labels.Cards ?? Localizer[TbStrings.KanbanCards], column.Title);

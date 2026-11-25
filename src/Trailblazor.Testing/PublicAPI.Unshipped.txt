@@ -663,3 +663,7 @@ Trailblazor.Testing.TbFileUploadDriver.WaitForUploadsAsync() -> System.Threading
 Trailblazor.Testing.TbKanbanDriver.CollapseAsync(string! column) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbKanbanDriver.ExpandAsync(string! column) -> System.Threading.Tasks.Task!
 Trailblazor.Testing.TbKanbanDriver.IsCollapsed(string! column) -> bool
+Trailblazor.Testing.TbKanbanDriver.Cards(string! column, string! lane) -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbKanbanDriver.Cell(string! column, string! lane) -> Trailblazor.Testing.TbSortableDriver!
+Trailblazor.Testing.TbKanbanDriver.Lanes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Trailblazor.Testing.TbKanbanDriver.MoveToColumnAsync(string! card, string! column, string! lane) -> System.Threading.Tasks.Task!

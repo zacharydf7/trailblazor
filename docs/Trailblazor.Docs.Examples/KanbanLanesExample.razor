@@ -1,0 +1,29 @@
+<TbKanban TItem="string" AriaLabel="Crew board" Columns="Columns" Lanes="Lanes" Collapsible
+          OnMove="(SortableMove<string> move) => move.ApplyBetween(_cells[move.FromList!], _cells[move.ToList!])">
+    <CardTemplate>@context</CardTemplate>
+</TbKanban>
+
+@code {
+    // Each lane keeps its cards in each column, by the cells' ids, so a move applies between two cells' lists.
+    private readonly Dictionary<string, List<string>> _cells = new()
+    {
+        ["north/todo"] = ["Clear the ridge path"],
+        ["north/doing"] = ["Fix the footbridge"],
+        ["north/done"] = [],
+        ["south/todo"] = ["Mark the river ford", "Cut back the hedge"],
+        ["south/doing"] = ["Paint the signs"],
+        ["south/done"] = [],
+    };
+
+    private static readonly IReadOnlyList<KanbanColumn<string>> Columns =
+    [
+        new("todo", "To do", []),
+        new("doing", "Doing", []) { Limit = 2 },
+        new("done", "Done", []),
+    ];
+
+    private IReadOnlyList<KanbanLane<string>> Lanes => [Lane("north", "North crew"), Lane("south", "South crew")];
+
+    private KanbanLane<string> Lane(string id, string title) => new(id, title,
+        Columns.ToDictionary(column => column.Id, column => (IReadOnlyList<string>)_cells[$"{id}/{column.Id}"]));
+}

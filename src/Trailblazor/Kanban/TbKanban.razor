@@ -3,9 +3,20 @@
 @inherits TbComponentBase
 @implements IAsyncDisposable
 
-@* Each column is a sortable list in one group, so its cards move within it and to the other columns. *@
-<section @attributes="AdditionalAttributes" @ref="_board" aria-label="@AriaLabel" style="@Style"
-         class="@ClassNames.Join("tb-kanban", Class)">
+@* Each column, or each lane's cell of it, is a sortable list in one group, so its cards move within it and to the
+   others. With lanes, the board is a grid whose columns share its rows, so a lane's cells line up. *@
+<section @attributes="AdditionalAttributes" @ref="_board" aria-label="@AriaLabel" style="@BoardStyle"
+         class="@ClassNames.Join("tb-kanban", ShownLanes is null ? null : "tb-kanban--lanes", Class)">
+    @if (ShownLanes is { } lanes)
+    {
+        <div data-part="lanes" class="tb-kanban__lanes">
+            <span class="tb-kanban__corner"></span>
+            @foreach (var lane in lanes)
+            {
+                <span @key="lane.Id" data-part="lane" data-key="@lane.Id" class="tb-kanban__lane">@lane.Title</span>
+            }
+        </div>
+    }
     @for (var index = 0; index < Columns.Count; index++)
     {
         var column = Columns[index];
@@ -31,12 +42,31 @@
                 }
             </div>
             @* A collapsed column shows no cards, so no card can move into it until it opens again. *@
-            @if (!collapsed)
+            @if (!collapsed && ShownLanes is null)
             {
                 <TbSortable TItem="TItem" Items="column.Cards" ItemTemplate="CardTemplate" Label="@column.Title"
                             ItemLabel="CardLabel" KeySelector="KeySelector" Group="@_group" ListId="@column.Id"
                             OnMove="MoveAsync" CanMove="move => CheckAsync(column, move)" Disabled="Disabled"
                             Labels="Labels.Moves" id="@cardsId" class="tb-kanban__cards" />
+            }
+            else if (!collapsed)
+            {
+                @* The cells sit in the box the collapse button's aria-controls names, a subgrid so the board's rows
+                   still line them up. *@
+                <div id="@cardsId" class="tb-kanban__cells">
+                    @foreach (var lane in ShownLanes!)
+                    {
+                        <TbSortable @key="lane.Id" TItem="TItem" Items="CardsIn(lane, column)"
+                                    ItemTemplate="CardTemplate" Label="@CellLabel(column, lane)" ItemLabel="CardLabel"
+                                    KeySelector="KeySelector" Group="@_group" ListId="@lane.CellId(column.Id)"
+                                    OnMove="MoveAsync" CanMove="move => CheckAsync(column, move)" Disabled="Disabled"
+                                    Labels="Labels.Moves" data-part="cell" data-lane="@lane.Id"
+                                    class="tb-kanban__cards" />
+                    }
+                </div>
+            }
+            @if (!collapsed)
+            {
                 @if (ColumnFooterTemplate is not null)
                 {
                     <div data-part="footer" class="tb-kanban__footer">@ColumnFooterTemplate(column)</div>
