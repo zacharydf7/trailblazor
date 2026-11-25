@@ -41,9 +41,7 @@ public class LabelTests(BrowserFixture fixture) : BrowserTest(fixture)
         var shortText = (await page.GetByText("Permit number").BoundingBoxAsync())!;
         var button = (await page.GetByRole(AriaRole.Button, new() { Name = "Information about The person" })
             .BoundingBoxAsync())!;
-        var lastLine = await text.EvaluateAsync<double[]>(
-            "e => { const text = document.createRange(); text.selectNodeContents(e); "
-            + "const line = [...text.getClientRects()].at(-1); return [line.right, line.top, line.bottom]; }");
+        var lastLine = await LastLineAsync(text);
 
         Assert.True(longText.Height > shortText.Height * 1.5, $"The text is {longText.Height}px tall.");
         Assert.InRange(button.Y + button.Height / 2, lastLine[1], lastLine[2]);

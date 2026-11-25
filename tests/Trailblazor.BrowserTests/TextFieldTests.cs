@@ -620,10 +620,10 @@ public class TextFieldTests(BrowserFixture fixture) : BrowserTest(fixture)
         var field = page.GetByRole(AriaRole.Textbox, new() { Name = "Backcountry permit", Exact = true });
 
         await Expect(field).ToBeVisibleAsync();
-        var label = (await page.GetByText("Backcountry permit", new() { Exact = true }).BoundingBoxAsync())!;
+        var lastLine = await LastLineAsync(page.GetByText("Backcountry permit", new() { Exact = true }));
         var button = (await info.BoundingBoxAsync())!;
-        Assert.InRange(button.Y + button.Height / 2, label.Y, label.Y + label.Height);
-        Assert.True(button.X > label.X + label.Width);
+        Assert.InRange(button.Y + button.Height / 2, lastLine[1], lastLine[2]);
+        Assert.True(button.X > lastLine[0]);
 
         await info.HoverAsync();
         await Expect(page.GetByText("The number on your park permit, such as PX-2041.")).ToBeVisibleAsync();

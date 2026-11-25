@@ -52,9 +52,7 @@ public class FieldInfoTests(BrowserFixture fixture) : BrowserTest(fixture)
         await BoxAsync(label);
         var button =
             await BoxAsync(page.GetByRole(AriaRole.Button, new() { Name = $"Information about {labelStart}" }));
-        var lastLine = await label.EvaluateAsync<double[]>(
-            "e => { const text = document.createRange(); text.selectNodeContents(e); "
-            + "const line = [...text.getClientRects()].at(-1); return [line.right, line.top, line.bottom]; }");
+        var lastLine = await LastLineAsync(label);
 
         Assert.InRange(button.Y + button.Height / 2, lastLine[1], lastLine[2]);
         Assert.True(button.X >= lastLine[0] - 1);

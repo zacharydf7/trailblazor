@@ -241,6 +241,12 @@ public abstract class BrowserTest(BrowserFixture fixture) : IAsyncDisposable
 
     // Colors transition when the theme flips, so wait until no CSS transition is still running. A transition another
     // replaces, as when a component re-renders for the new theme, ends canceled, so the wait goes on to its successor.
+    // Where a label's text ends: its last line's right edge, top and bottom. A label's own box can run past its text,
+    // as when it keeps room for an info button, so the text is measured on its own.
+    protected static Task<double[]> LastLineAsync(ILocator text) => text.EvaluateAsync<double[]>(
+        "e => { const text = document.createRange(); text.selectNodeContents(e); "
+        + "const line = [...text.getClientRects()].at(-1); return [line.right, line.top, line.bottom]; }");
+
     protected static Task SetThemeAsync(IPage page, string theme) =>
         page.EvaluateAsync("""
             async theme => {
